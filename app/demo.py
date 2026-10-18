@@ -1,7 +1,13 @@
 """演示数据（GUI-only 开发模式）。
 
-这里所有内容都是合成的：阶段按“运行开始后的秒数”推进，结论是写死的预设值。
-页面必须明确标注“演示数据 / 未执行真实工具”，不能当作修复证据
+语言规范（2026-10-18，团队决定）：
+- 界面可以中文，但**上传 / API / 导出数据一律英文 ASCII**。
+- 因此本文件里的所有数据字符串（契约、义务、原因、变更区域、产物角色、
+  路线规范名等）都用英文；中文显示文案在 app/i18n.py 里，只给模板用。
+- 测试会扫描 /api/jobs/{id} 和导出 JSON，确保没有中日韩字符。
+
+这里所有内容都是合成的：阶段按"运行开始后的秒数"推进，结论是写死的预设值。
+页面必须明确标注"演示数据 / 未执行真实工具"，不能当作修复证据
 （对应技术设计 §12：GUI-only development mode using stored or synthetic results,
 clearly labeled; it must never emit accepted-patch evidence）。
 
@@ -18,60 +24,22 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-# 每个阶段的“演示推进速度”（秒）。仅用于让页面动起来，不是真实耗时。
+# 每个阶段的"演示推进速度"（秒）。仅用于让页面动起来，不是真实耗时。
 STAGE_SECONDS = 1.2
 
-# 状态下拉/展示用的中文标签
-PHASE_LABELS: dict[str, str] = {
-    "draft": "草稿",
-    "screening": "输入筛查",
-    "analyzing": "二进制分析",
-    "roundtrip": "C 往返校验",
-    "generating": "候选生成",
-    "applying": "写入副本",
-    "validating": "共享校验",
-    "finished": "已完成",
-}
-
-STAGE_LABELS = {name: label for name, label in PHASE_LABELS.items() if name != "finished"}
-
-OUTCOME_LABELS: dict[str, str] = {
-    "success_within_scope": "成功（声明范围内）",
-    "unsupported": "不支持",
-    "rejected": "被拒",
-    "inconclusive": "不确定",
-    "error": "错误",
-    "cancelled": "已取消",
-}
-
-STATE_LABELS: dict[str, str] = {
-    "pending": "待执行",
-    "active": "进行中",
-    "done": "已完成",
-    "cancelled": "已取消",
-}
-
-# 验证/兼容结果的展示文案（页面上不直接露英文枚举）
-VALUE_LABELS: dict[str, str] = {
-    "not_run": "未运行（not_run）",
-    "passed": "通过",
-    "failed": "失败",
-    "inconclusive": "不确定",
-    "unavailable": "不可用",
-}
-
-# Route A 没有 roundtrip；Route B 多一步“语义不变往返”
+# Route A 没有 roundtrip；Route B 多一步"语义不变往返"
 ROUTE_STAGES: dict[str, list[str]] = {
     "A": ["screening", "analyzing", "generating", "applying", "validating"],
     "B": ["screening", "analyzing", "roundtrip", "generating", "applying", "validating"],
 }
 
-ROUTE_NAMES = {
-    "A": "Route A · 直接指令修复",
-    "B": "Route B · 恢复 C 后回填",
+# 规范名（英文，会进入 API/导出；中文显示名在 i18n.py）
+ROUTE_NAMES_EN: dict[str, str] = {
+    "A": "Route A - Direct instruction repair",
+    "B": "Route B - Recovered C reintegration",
 }
 
-# 内存里的“数据库”。真实版本是 SQLite（技术设计 §6）。
+# 内存里的"数据库"。真实版本是 SQLite（技术设计 §6）。
 JOBS: dict[str, dict[str, Any]] = {}
 
 
@@ -98,14 +66,14 @@ def create_job(
     invalid_outcome: str,
     assumptions: str,
 ) -> dict[str, Any]:
-    """登记一个任务（演示版：所有数据在内存里）。"""
+    """登记一个任务（演示版：所有数据在内存里，字段值一律英文）。"""
     contract_body = {
-        "valid_domain": valid_domain.strip() or "输入长度 0–64 字节；不接受越界长度",
-        "forbidden": forbidden.strip() or "目标缓冲区越界写（超过 8 字节）",
-        "invalid_outcome": invalid_outcome.strip() or "返回错误码 1，不越界、不崩溃",
+        "valid_domain": valid_domain.strip() or "Input length 0-64 bytes; out-of-range lengths rejected",
+        "forbidden": forbidden.strip() or "Out-of-bounds write to the target buffer (more than 8 bytes)",
+        "invalid_outcome": invalid_outcome.strip() or "Return error code 1 without out-of-bounds access or crash",
         "assumptions": [
             line.strip()
-            for line in (assumptions or "单进程；Linux x86-64 ELF；未开启栈保护").splitlines()
+            for line in (assumptions or "Single process\nLinux x86-64 ELF\nStack protector disabled").splitlines()
             if line.strip()
         ],
     }
@@ -116,9 +84,9 @@ def create_job(
         "demo": True,
         "filename": filename,
         "original_sha256": original_sha256,
-        "defect": defect.strip() or "（未填写缺陷描述）",
+        "defect": defect.strip() or "strcpy in stack_buf does not check length; overlong input writes out of bounds",
         "valid_tests": [line.strip() for line in valid_tests.splitlines() if line.strip()],
-        "environment": environment.strip() or "Ubuntu x86-64 VM（演示：未启用执行）",
+        "environment": environment.strip() or "Ubuntu x86-64 VM (demo: execution disabled)",
         "created_at": _now_iso(),
         "run_started_at": None,
         "cancelled": False,
@@ -136,12 +104,9 @@ def create_job(
 
 def _route_state(key: str) -> dict[str, Any]:
     return {
-        "name": ROUTE_NAMES[key],
+        "name": ROUTE_NAMES_EN[key],
         "phase": "draft",
-        "phase_label": PHASE_LABELS["draft"],
         "outcome": None,
-        "outcome_label": None,
-        "outcome_class": "outcome-none",
         "outcome_reason": "",
         "stages": [],
         "tests": {"passed": 0, "total": 8},
@@ -178,88 +143,102 @@ def _elapsed(job: dict[str, Any]) -> float:
 
 
 def _obligations_for(route: str) -> list[dict[str, Any]]:
-    """演示用的 V0–V5 义务清单（对应技术设计 §9 的验证阶梯）。
+    """演示用的 V0-V5 义务清单（对应技术设计 §9 的验证阶梯）。
 
     注意：结论是写死的演示值。Route A 在 V3 有效输入回归失败 -> rejected；
     Route B 的 V4 有界符号验证预算用尽 -> inconclusive。
-    这样的组合恰好演示“不能把未完成当成功”。
+    这样的组合恰好演示"不能把未完成当成功"。
+
+    数据字段全部英文 ASCII（会进入证据页与导出 JSON）。
     """
     passed = [
-        {"id": "V0", "kind": "身份与前置条件", "description": "输入哈希、契约 revision、测试清单哈希一致"},
-        {"id": "V1", "kind": "结构与放置", "description": "指令边界、改动区间、跳转目标可审计"},
-        {"id": "V2", "kind": "接口与兼容", "description": "签名、栈/寄存器约定、加载执行检查"},
+        {
+            "id": "V0",
+            "kind": "Identity and preconditions",
+            "description": "Input hash, contract revision, and test manifest hash match",
+        },
+        {
+            "id": "V1",
+            "kind": "Structure and placement",
+            "description": "Instruction boundaries, changed intervals, and branch targets are auditable",
+        },
+        {
+            "id": "V2",
+            "kind": "Interface and compatibility",
+            "description": "Signature, stack/register conventions, and loader execution checks",
+        },
     ]
     if route == "A":
         return [
             *[
-                {**item, "required": True, "result": "passed", "scope": "frozen job inputs", "reason": "演示数据：通过"}
+                {**item, "required": True, "result": "passed", "scope": "frozen job inputs", "reason": "Demo data: passed"}
                 for item in passed
             ],
             {
                 "id": "V3",
-                "kind": "具体行为",
-                "description": "复现输入、非法输入 oracle、有效输入回归",
+                "kind": "Concrete behavior",
+                "description": "Reproducer, invalid-input oracle, valid-input regression",
                 "required": True,
                 "result": "failed",
-                "scope": "冻结的测试清单（8 个有效输入）",
-                "reason": "有效输入回归 case 3 失败：返回值 7 != 3",
+                "scope": "Frozen test manifest (8 valid inputs)",
+                "reason": "Valid-input regression case 3 failed: return value 7 != 3",
             },
             {
                 "id": "V4",
-                "kind": "有界符号安全",
-                "description": "候选自身的模型、输入域、越界访问谓词",
+                "kind": "Bounded symbolic security",
+                "description": "Candidate-specific model, input domain, out-of-bounds access predicate",
                 "required": True,
                 "result": "not_run",
-                "scope": "—",
-                "reason": "V3 已失败，保留诊断证据，不再继续",
+                "scope": "n/a",
+                "reason": "V3 failed; diagnostic evidence retained and verification not continued",
             },
             {
                 "id": "V5",
-                "kind": "可复现性",
-                "description": "最终哈希、版本、replay 输入与独立复现",
+                "kind": "Reproducibility",
+                "description": "Final hashes, versions, replay inputs, independent replay",
                 "required": True,
                 "result": "not_run",
-                "scope": "—",
-                "reason": "候选未通过前置检查",
+                "scope": "n/a",
+                "reason": "Candidate did not pass prerequisite checks",
             },
         ]
     return [
         *[
-            {**item, "required": True, "result": "passed", "scope": "frozen job inputs", "reason": "演示数据：通过"}
+            {**item, "required": True, "result": "passed", "scope": "frozen job inputs", "reason": "Demo data: passed"}
             for item in passed
         ],
         {
             "id": "V3",
-            "kind": "具体行为",
-            "description": "复现输入、非法输入 oracle、有效输入回归",
+            "kind": "Concrete behavior",
+            "description": "Reproducer, invalid-input oracle, valid-input regression",
             "required": True,
             "result": "passed",
-            "scope": "冻结的测试清单（8 个有效输入）",
-            "reason": "8/8 通过；非法输入走拒绝路径",
+            "scope": "Frozen test manifest (8 valid inputs)",
+            "reason": "8/8 passed; invalid input follows the rejection path",
         },
         {
             "id": "V4",
-            "kind": "有界符号安全",
-            "description": "候选自身的模型、输入域、越界访问谓词",
+            "kind": "Bounded symbolic security",
+            "description": "Candidate-specific model, input domain, out-of-bounds access predicate",
             "required": True,
             "result": "inconclusive",
-            "scope": "函数级 · 入口前置条件 · 输入长度 0–64",
-            "reason": "探索预算（120 秒）用尽；内存安全义务未解决",
+            "scope": "Function level - entry preconditions - input length 0-64",
+            "reason": "Exploration budget (120 s) exhausted; memory-safety obligation unresolved",
         },
         {
             "id": "V5",
-            "kind": "可复现性",
-            "description": "最终哈希、版本、replay 输入与独立复现",
+            "kind": "Reproducibility",
+            "description": "Final hashes, versions, replay inputs, independent replay",
             "required": True,
             "result": "not_run",
-            "scope": "—",
-            "reason": "V4 未完成，不进入复现",
+            "scope": "n/a",
+            "reason": "V4 incomplete; replay not started",
         },
     ]
 
 
 def _apply_finished(route: dict[str, Any], key: str) -> None:
-    """两条路线都结束时，写入演示用的最终数据。"""
+    """两条路线都结束时，写入演示用的最终数据（字段值英文）。"""
     if key == "A":
         route.update(
             {
@@ -269,7 +248,7 @@ def _apply_finished(route: dict[str, Any], key: str) -> None:
                 "changed_regions": [
                     {
                         "address": "0x0000000000401136",
-                        "kind": "原地改写",
+                        "kind": "in-place edit",
                         "before": "e8 75 fe ff ff",
                         "after": "e8 15 ff ff ff",
                     }
@@ -278,7 +257,7 @@ def _apply_finished(route: dict[str, Any], key: str) -> None:
                 "ai_usage": "unavailable",
                 "elapsed_s": round(len(ROUTE_STAGES["A"]) * STAGE_SECONDS, 1),
                 "outcome": "rejected",
-                "outcome_reason": "有效输入回归 case 3 失败（返回值 7 != 3）",
+                "outcome_reason": "Valid-input regression case 3 failed (return value 7 != 3)",
             }
         )
     else:
@@ -290,22 +269,22 @@ def _apply_finished(route: dict[str, Any], key: str) -> None:
                 "changed_regions": [
                     {
                         "address": "0x00000000004011a0",
-                        "kind": "新增代码区",
-                        "before": "（原函数 0x1a3 字节）",
-                        "after": "（重编译后 0x1f2 字节）",
+                        "kind": "added code region",
+                        "before": "original function 0x1a3 bytes",
+                        "after": "recompiled 0x1f2 bytes",
                     }
                 ],
                 "manual_interventions": 1,
-                "ai_usage": "8.2k 输入 / 1.4k 输出 tokens",
+                "ai_usage": "8.2k input / 1.4k output tokens",
                 "elapsed_s": round(len(ROUTE_STAGES["B"]) * STAGE_SECONDS, 1),
                 "outcome": "inconclusive",
-                "outcome_reason": "有界符号验证：探索预算用尽，内存安全义务未解决",
+                "outcome_reason": "Bounded symbolic verification: exploration budget exhausted; memory-safety obligation unresolved",
             }
         )
 
 
 def snapshot(job: dict[str, Any]) -> dict[str, Any]:
-    """生成页面/接口用的只读快照。每次轮询都会调用它来推进演示进度。"""
+    """生成页面/接口用的只读快照（只含英文数据，不含中文显示标签）。"""
     elapsed = _elapsed(job)
     cancelled = job["cancelled"]
     started = job["run_started_at"] is not None
@@ -329,19 +308,12 @@ def snapshot(job: dict[str, Any]) -> dict[str, Any]:
                 state = "active"
             else:
                 state = "pending"
-            stages.append(
-                {
-                    "name": name,
-                    "label": STAGE_LABELS[name],
-                    "state": state,
-                    "state_label": STATE_LABELS[state],
-                }
-            )
+            stages.append({"name": name, "state": state})
 
         if cancelled:
             route["phase"] = "finished"
             route["outcome"] = "cancelled"
-            route["outcome_reason"] = "操作者取消（演示数据）"
+            route["outcome_reason"] = "Operator cancelled (demo data)"
         elif route_finished:
             route["phase"] = "finished"
             if route["outcome"] is None:
@@ -352,19 +324,10 @@ def snapshot(job: dict[str, Any]) -> dict[str, Any]:
         else:
             route["phase"] = "draft"
 
-        route["phase_label"] = PHASE_LABELS[route["phase"]]
-        route["verification_label"] = VALUE_LABELS.get(route["verification"], route["verification"])
-        route["compatibility_label"] = VALUE_LABELS.get(route["compatibility"], route["compatibility"])
-        if route["outcome"]:
-            route["outcome_label"] = OUTCOME_LABELS[route["outcome"]]
-            route["outcome_class"] = "outcome-" + route["outcome"].replace("_", "-")
-        else:
-            route["outcome_label"] = None
-            route["outcome_class"] = "outcome-none"
         route["stages"] = stages
         routes[key] = route
 
-    # Job 级阶段取“两条路线里更靠后的那个”，两条都结束才算 finished
+    # Job 级阶段取"两条路线里更靠后的那个"，两条都结束才算 finished
     if cancelled:
         job_phase = "finished"
     elif not started:
@@ -386,7 +349,6 @@ def snapshot(job: dict[str, Any]) -> dict[str, Any]:
         "environment": job["environment"],
         "created_at": job["created_at"],
         "phase": job_phase,
-        "phase_label": PHASE_LABELS[job_phase],
         "cancelled": cancelled,
         "contract": job["contract"],
         "routes": routes,
@@ -403,12 +365,12 @@ def artifacts(job: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
     base = _sha(job["id"] + job["original_sha256"])[:16]
     return {
         "A": [
-            {"name": "candidate-A.elf", "role": "候选二进制", "sha256": _sha(base + "A.elf")},
-            {"name": "edit-manifest-A.json", "role": "改动清单", "sha256": _sha(base + "A.edit")},
+            {"name": "candidate-A.elf", "role": "candidate binary", "sha256": _sha(base + "A.elf")},
+            {"name": "edit-manifest-A.json", "role": "edit manifest", "sha256": _sha(base + "A.edit")},
         ],
         "B": [
-            {"name": "candidate-B.elf", "role": "候选二进制", "sha256": _sha(base + "B.elf")},
-            {"name": "recovered-B.c", "role": "恢复的 C（原始/归一化/修复）", "sha256": _sha(base + "B.c")},
-            {"name": "roundtrip-B.json", "role": "语义不变往返报告", "sha256": _sha(base + "B.rt")},
+            {"name": "candidate-B.elf", "role": "candidate binary", "sha256": _sha(base + "B.elf")},
+            {"name": "recovered-B.c", "role": "recovered C (raw / normalized / repaired)", "sha256": _sha(base + "B.c")},
+            {"name": "roundtrip-B.json", "role": "unchanged round-trip report", "sha256": _sha(base + "B.rt")},
         ],
     }

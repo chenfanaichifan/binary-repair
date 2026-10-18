@@ -170,6 +170,19 @@ GUI 影响：契约保存后显示新 revision/hash；`approve` 带精确期望�
 
 ---
 
+### 6.1 语言规范（2026-10-18 团队决定）
+
+- **界面（UI）**：允许中文 —— 标题、按钮、状态徽章、说明文字。
+- **上传 / API / 导出数据**：一律英文 ASCII —— 缺陷描述、复现输入、环境、契约四项、
+  任务字段、obligations、结论原因、变更区域、产物角色、导出 JSON。
+- 服务端校验：非 ASCII 表单内容返回 `422`；前端提交前先拦截。
+- 上传文件名转 ASCII 安全名，避免中文名进入导出数据。
+- 测试守护：`/api/jobs/{id}` 与导出 JSON 扫描无中日韩字符；UI 页面仍为中文
+  （`tests/test_language_policy.py`）。
+- 好处：证据/报告可直接给英文语境的客户、队友和提案使用，不需要二次翻译。
+
+---
+
 ## 7. 开发模式与数据真实性（演示的红线）
 
 - 加一个**显式的 GUI-only 开发模式**：用 stored/synthetic 结果驱动界面，**页面必须明确标注**（如 "development fixture — execution disabled"）；该模式**永远不能产出 accepted-patch 证据**（TechDesign §12）

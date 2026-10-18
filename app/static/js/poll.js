@@ -3,6 +3,9 @@
    - 不编造进度百分比，只显示阶段与状态；
    - 用 textContent 更新，不把服务端内容当 HTML 注入；
    - 任务结束（finished / cancelled）后停止轮询。
+
+   语言规范：API 只返回英文 code（如 phase: "analyzing"、outcome: "rejected"），
+   中文显示文案在前端映射（本文件），因此 API/导出数据保持全英文。
 */
 (function () {
   "use strict";
@@ -11,6 +14,24 @@
   var jobId = body.dataset.jobId;
   if (!jobId) return;
 
+  var PHASE_LABELS = {
+    draft: "草稿",
+    screening: "输入筛查",
+    analyzing: "二进制分析",
+    roundtrip: "C 往返校验",
+    generating: "候选生成",
+    applying: "写入副本",
+    validating: "共享校验",
+    finished: "已完成"
+  };
+  var OUTCOME_LABELS = {
+    success_within_scope: "成功（声明范围内）",
+    unsupported: "不支持",
+    rejected: "被拒",
+    inconclusive: "不确定",
+    error: "错误",
+    cancelled: "已取消"
+  };
   var STATE_LABELS = {
     pending: "待执行",
     active: "进行中",
@@ -31,13 +52,17 @@
     if (el) el.textContent = text;
   }
 
+  function outcomeClass(outcome) {
+    return outcome ? "outcome-" + outcome.replace(/_/g, "-") : "outcome-none";
+  }
+
   function updateRoute(key, route) {
-    setText("phase-" + key, route.phase_label);
+    setText("phase-" + key, PHASE_LABELS[route.phase] || route.phase);
 
     var badge = $("outcome-" + key);
     if (badge) {
-      badge.textContent = route.outcome_label || "尚无结论";
-      badge.className = "badge " + (route.outcome_class || "outcome-none");
+      badge.textContent = OUTCOME_LABELS[route.outcome] || "尚无结论";
+      badge.className = "badge " + outcomeClass(route.outcome);
     }
 
     var list = $("stages-" + key);
@@ -85,7 +110,7 @@
   }
 
   function updateJob(data) {
-    setText("job-phase", data.phase_label);
+    setText("job-phase", PHASE_LABELS[data.phase] || data.phase);
 
     var finished = data.phase === "finished" || data.cancelled;
     var outcomes = Object.keys(data.routes).map(function (key) {

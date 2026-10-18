@@ -7,6 +7,16 @@
 > **重要**：当前所有阶段推进和结论都是演示 fixture，页面顶部有横幅标注。
 > 它不是修复结果，不能当作“补丁已验证”的证据。接真实数据后横幅会消失。
 
+## 0. 语言规范（重要，2026-10-18 团队决定）
+
+- **界面（UI）允许中文**：标题、按钮、状态徽章、说明文字都是中文。
+- **上传 / API / 导出数据一律英文 ASCII**：缺陷描述、复现输入、环境、契约四项、
+  obligations、结论原因、变更区域、产物角色、导出 JSON 全部英文。
+- 服务端校验：非 ASCII 表单内容返回 `422`；浏览器在提交前也会先拦截。
+- 上传文件名自动转成 ASCII 安全名（例如 `样本.bin` -> `sample.bin`），避免中文进入导出数据。
+- 有测试守护：`/api/jobs/{id}` 与导出 JSON 扫描不到中日韩字符，UI 页面仍为中文
+  （见 `tests/test_language_policy.py`）。
+
 ## 1. 快速开始（Windows）
 
 前提：已经装好 Python 3.13（本机已装），并在项目目录里有 `.venv` 虚拟环境。
@@ -65,6 +75,7 @@ binaryrepair-mvp/
 ├─ app/
 │  ├─ main.py            # FastAPI 入口、三屏路由、状态接口、导出接口
 │  ├─ demo.py            # 演示数据（阶段推进、义务 V0–V5、产物）；接真实后端时替换这里
+│  ├─ i18n.py            # 中文显示标签（只给模板/前端用，不进入 API 与导出）
 │  ├─ templates/         # base + 三屏模板（Jinja2）
 │  └─ static/            # css/app.css、js/poll.js
 ├─ tests/test_smoke.py   # 冒烟测试（三屏 200、Host 校验、导出）
@@ -83,7 +94,8 @@ binaryrepair-mvp/
 ```
 
 覆盖：三屏可打开、Host 校验拒绝外部域名、建任务后哈希是 64 位、启动后阶段不再是 draft、
-证据页含 V0 与 diagnostic candidate、导出带 attachment 且 `demo: true`、取消后状态是 cancelled。
+证据页含 V0 与 diagnostic candidate、导出带 attachment 且 `demo: true`、取消后状态是 cancelled；
+另有语言规范测试：API/导出无中日韩字符、中文表单内容返回 422、中文文件名被转 ASCII、UI 仍为中文。
 
 ## 6. 常见问题
 

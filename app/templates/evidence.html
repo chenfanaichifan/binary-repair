@@ -16,15 +16,16 @@
 
 <p class="limits">
   导出不代表生产批准。失败或不确定的产物必须标为 <strong>diagnostic candidate</strong>，不能显示为成功。
-  哈希只证明身份，不证明正确性。符号验证是“有界”验证，不是整体程序安全证明。
+  哈希只证明身份，不证明正确性。符号验证是"有界"验证，不是整体程序安全证明。
+  证据内容为英文（符合语言规范），界面文案为中文。
 </p>
 
 {% for key, route in job.routes.items() %}
 <article class="card evidence-card" data-testid="evidence-{{ key }}">
   <header class="route-head">
-    <h2>{{ route.name }}</h2>
-    <span class="badge {{ route.outcome_class }}" data-testid="evidence-outcome-{{ key }}">
-      {{ route.outcome_label or "尚无结论" }}
+    <h2>{{ route_names_zh.get(key, route.name) }}</h2>
+    <span class="badge {% if route.outcome %}outcome-{{ route.outcome | replace('_', '-') }}{% else %}outcome-none{% endif %}" data-testid="evidence-outcome-{{ key }}">
+      {{ outcome_labels_zh.get(route.outcome) or "尚无结论" }}
     </span>
   </header>
 
@@ -57,8 +58,8 @@
   <h3>测试与范围</h3>
   <dl class="facts">
     <div><dt>有效输入测试</dt><dd>{{ route.tests.passed }}/{{ route.tests.total }}</dd></div>
-    <div><dt>有界验证</dt><dd>{{ route.verification_label }}</dd></div>
-    <div><dt>兼容性</dt><dd>{{ route.compatibility_label }}</dd></div>
+    <div><dt>有界验证</dt><dd>{{ value_labels_zh.get(route.verification, route.verification) }}</dd></div>
+    <div><dt>兼容性</dt><dd>{{ value_labels_zh.get(route.compatibility, route.compatibility) }}</dd></div>
     <div><dt>耗时</dt><dd>{{ route.elapsed_s }} s</dd></div>
     <div><dt>人工介入</dt><dd>{{ route.manual_interventions }} 次</dd></div>
     <div><dt>AI 用量</dt><dd>{{ route.ai_usage }}</dd></div>

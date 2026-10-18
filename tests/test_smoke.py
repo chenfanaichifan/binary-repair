@@ -2,6 +2,9 @@
 
 运行（在项目根目录）：
     .\\.venv\\Scripts\\python.exe -m pytest -q
+
+注意（2026-10-18 语言规范）：上传的表单内容必须英文 ASCII；本文件里的表单数据
+全部用英文，否则会被 422 拦截。
 """
 
 from fastapi.testclient import TestClient
@@ -12,13 +15,13 @@ from app.main import app
 client = TestClient(app, base_url="http://127.0.0.1")
 
 CONTRACT_FORM = {
-    "defect": "strcpy 未检查长度，超长输入越界写",
-    "valid_tests": "正常输入：hello\n边界输入：8 字节",
-    "environment": "Ubuntu x86-64 VM（测试：未执行）",
-    "valid_domain": "输入长度 0–64 字节",
-    "forbidden": "越界写目标缓冲区",
-    "invalid_outcome": "返回错误码 1，不越界",
-    "assumptions": "单进程\n未开启栈保护",
+    "defect": "strcpy in stack_buf does not check length; overlong input writes out of bounds",
+    "valid_tests": "valid: hello\nboundary: 8 bytes",
+    "environment": "Ubuntu x86-64 VM (test: execution disabled)",
+    "valid_domain": "Input length 0-64 bytes",
+    "forbidden": "Out-of-bounds write to the target buffer",
+    "invalid_outcome": "Return error code 1 without out-of-bounds access",
+    "assumptions": "Single process\nStack protector disabled",
 }
 
 
