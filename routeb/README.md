@@ -23,7 +23,7 @@ Patcherex2 版本、6 个 oracle 用例的实际输出。
 先跑一遍原始二进制，确认漏洞真的可复现：
 
 ```bash
-cd route-b/routeb
+cd routeb
 ./fixture/build.sh
 python3 verify.py --binary fixture/vuln --mode vulnerable
 # 6/6 passed：4 个有效输入正常，2 个超长输入 guard=CORRUPT
@@ -129,7 +129,7 @@ python3 verify.py --binary out/vuln_roundtrip --reference fixture/vuln --mode ro
 round trip 通过后，才允许让模型改这个函数。
 
 ```bash
-cd route-b
+cd ..
 .venv/bin/python scripts/demo_candidate.py \
     --recovered routeb/out/copy_name.normalized.c \
     --out-c routeb/out/copy_name.model.c

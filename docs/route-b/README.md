@@ -40,7 +40,7 @@
 **在 Mac 上就能做完**，不需要等 Ubuntu。
 
 ```bash
-cd route-b
+cd binary-repair
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -114,7 +114,7 @@ $GHIDRA_HOME/support/analyzeHeadless 2>&1 | head -3
 然后跑我们自己的小样本（没有客户数据，纯合成）：
 
 ```bash
-cd route-b/routeb
+cd routeb
 ./fixture/build.sh
 
 # 先确认漏洞真的存在：4 个有效输入正常，2 个超长输入 guard=CORRUPT
@@ -174,7 +174,7 @@ cat out/copy_name.c.meta.txt
 ## 3. 代码地图
 
 ```
-route-b/
+.
 ├── binaryrepair_ai/
 │   ├── settings.py     环境变量与 .env；key 只进这个进程
 │   ├── pricing.py      官方价格表 + peak/off-peak + 最坏情况预估
@@ -190,12 +190,15 @@ route-b/
 ├── db/                 SQLite DDL（001_init.sql）+ 迁移器 + 表说明
 ├── app/                与 verification 对齐的公共入口（domain/candidates、services/provider）
 ├── tests/              64 个离线用例：provider、schema 契约、数据库约束、AI 边界
-└── routeb/
-    ├── fixture/        合成漏洞样本 + 构建脚本
-    ├── ghidra/         ExportFunction.java + export.sh
-    ├── verify.py       行为 oracle（vulnerable / fixed / roundtrip）
-    ├── probe_patcherex2.py  文档示例 + round trip + fixed 三个实验
-    └── experiment/     归一化/修复参考实现
+├── routeb/
+│   ├── fixture/        合成漏洞样本 + 构建脚本
+│   ├── ghidra/         ExportFunction.java + export.sh
+│   ├── verify.py       行为 oracle（vulnerable / fixed / roundtrip）
+│   ├── probe_patcherex2.py  文档示例 + round trip + fixed 三个实验
+│   └── experiment/     归一化/修复参考实现
+└── docs/route-b/
+    ├── README.md       本文件
+    └── 02-member-5-candidate-provider.md   给成员4的接口回复
 ```
 
 ### 3.1 给 1 号（集成）的接口
