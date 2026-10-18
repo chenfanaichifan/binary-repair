@@ -133,3 +133,118 @@ def test_confidential_derived_content_may_not_leave_host_by_default() -> None:
     if may_leave is None:
         pytest.skip("candidates.may_leave_host is not implemented yet")
     assert may_leave(classification="client", derived=True) is False
+
+
+# ---------------------------------------------------------------------------
+# Schema limits confirmed by member 5 (2026-10-18): 512 characters per
+# free-text string, 32 entries per list, 20,000 characters for replacement_c.
+# ---------------------------------------------------------------------------
+
+
+def route_b_candidate() -> dict:
+    """A payload that should pass validation, shaped by schema v1 for Route B.
+
+    The schema has 14 fields in total, but the two route-specific pairs are
+    mutually exclusive: a Route B payload omits the Route A template fields and
+    carries ``recovered_function_sha256`` and ``replacement_c`` instead.
+    """
+    payload = valid_candidate()
+    payload.pop("template_id")
+    payload.pop("parameters")
+    payload["route"] = "route_b"
+    payload["recovered_function_sha256"] = "c" * 64
+    payload["replacement_c"] = "int copy_input(const char *s) { (void)s; return 0; }"
+    return payload
+
+
+def test_route_b_candidate_passes_validation() -> None:
+    """Route B is the Route A schema plus two route-specific fields (14 total)."""
+    validate = _require("validate_candidate")
+    assert validate(route_b_candidate()) is not None
+
+
+def test_oversized_free_text_is_rejected() -> None:
+    validate = _require("validate_candidate")
+    payload = valid_candidate()
+    payload["expected_effects"] = ["a" * 513]
+    with pytest.raises(Exception):
+        validate(payload)
+
+
+def test_maximum_free_text_length_is_accepted() -> None:
+    """Boundary: 512 characters is legal, 513 is not (first-invalid rule)."""
+    validate = _require("validate_candidate")
+    payload = valid_candidate()
+    payload["expected_effects"] = ["a" * 512]
+    assert validate(payload) is not None
+
+
+def test_too_many_list_entries_is_rejected() -> None:
+    validate = _require("validate_candidate")
+    payload = valid_candidate()
+    payload["assumptions"] = ["an assumption"] * 33
+    with pytest.raises(Exception):
+        validate(payload)
+
+
+def test_oversized_replacement_c_is_rejected() -> None:
+    validate = _require("validate_candidate")
+    payload = route_b_candidate()
+    payload["replacement_c"] = "x" * 20_001
+    with pytest.raises(Exception):
+        validate(payload)
+
+
+def test_allowed_targets_override_is_honoured() -> None:
+    """The server may inject a wider allowlist; a candidate may not widen itself."""
+    validate = _require("validate_candidate")
+    payload = valid_candidate()
+    payload["target_entry"] = "some_other_function"
+    with pytest.raises(Exception):
+        validate(payload)
+    assert validate(payload, allowed_targets=["some_other_function"]) is not None
+
+
+# ---------------------------------------------------------------------------
+# Provider typed failure: app.services.provider.ProviderFailure(reason=...)
+# Confirmed by member 5 (2026-10-18). The provider is not needed by the
+# candidate-schema tests, so these tests skip on their own until it exists.
+# ---------------------------------------------------------------------------
+
+PROVIDER_FAILURE_REASON_NAMES = (
+    "TIMEOUT",
+    "QUOTA",
+    "BUDGET",
+    "EMPTY",
+    "MALFORMED_JSON",
+    "SCHEMA",
+)
+
+
+def _provider():
+    return pytest.importorskip(
+        "app.services.provider",
+        reason=(
+            "app.services.provider is not implemented yet; "
+            "see docs_BinaryRepair/verification-design.md section 4.3"
+        ),
+    )
+
+
+def test_provider_failure_reason_enum_is_complete() -> None:
+    provider = _provider()
+    reasons = getattr(provider, "FailureReason", None)
+    if reasons is None:
+        pytest.skip("app.services.provider.FailureReason is not implemented yet")
+    for name in PROVIDER_FAILURE_REASON_NAMES:
+        assert hasattr(reasons, name), f"FailureReason.{name} is missing"
+
+
+def test_provider_failure_carries_its_reason() -> None:
+    provider = _provider()
+    failure_cls = getattr(provider, "ProviderFailure", None)
+    reasons = getattr(provider, "FailureReason", None)
+    if failure_cls is None or reasons is None:
+        pytest.skip("app.services.provider.ProviderFailure is not implemented yet")
+    failure = failure_cls(reasons.TIMEOUT, "provider timed out")
+    assert failure.reason is reasons.TIMEOUT

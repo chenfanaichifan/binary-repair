@@ -77,7 +77,7 @@ Note: `parameters` is a template-specific field whose inner keys are declared by
 | # | Question | Default answer (accept as-is) |
 |---|---|---|
 | 4.3.1 | Do you accept the `validate_candidate(payload)` / `may_leave_host(...)` signatures? | accept |
-| 4.3.2 | Is the schema v1 field set exactly the 11 fields above? List any additions or removals | yes |
+| 4.3.2 | Is the schema v1 field set exactly the 12 top-level fields above for Route A, and does Route B add `recovered_function_sha256` and `replacement_c` (Tech Design §10)? List any additions or removals | yes |
 | 4.3.3 | Who provides the target allowlist? | The module's default contract (containing at least `copy_input`), plus an `allowed_targets=None` parameter for runtime injection. A candidate may only reference the allowlist, never extend it |
 | 4.3.4 | Which module holds the provider's typed failure and what is it called? The four failure classes (timeout / quota / empty / malformed JSON) currently have **no** automated test | Suggest a `ProviderFailure(reason=...)` in `app.services.provider`, with an enum reason; you choose the names and I add the tests |
 | 4.3.5 | How are extra fields rejected: pydantic `extra="forbid"` or hand-written validation? | Implementation is free. Behaviour must cover items 2–7 above, including oversized strings |
@@ -93,7 +93,7 @@ If you disagree with anything: give the alternative signature and how it guarant
 [ ] accept as-is
 [ ] needs changes: ____
 
-4.3.2 schema v1 fields: exactly these 11 / change to: ____
+4.3.2 schema v1 fields: Route A = these 12 / Route B adds recovered_function_sha256 + replacement_c / change to: ____
 4.3.3 target allowlist source: ____
 4.3.4 provider failure type: module ____ name ____
 4.3.5 rejection approach: pydantic / hand-written / other ____
