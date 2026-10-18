@@ -245,6 +245,8 @@ h3 { font-size: 14px; margin: 18px 0 8px; color: var(--muted); text-transform: n
 .obligations { width: 100%; border-collapse: collapse; font-size: 13px; }
 .obligations th, .obligations td { text-align: left; padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .obligations th { color: var(--muted); font-size: 12px; font-weight: 600; }
+.obligations th:first-child, .obligations td:first-child { width: 52px; white-space: nowrap; }
+.obligations th:nth-child(2), .obligations td:nth-child(2) { width: 132px; }
 .result {
   display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;
 }
