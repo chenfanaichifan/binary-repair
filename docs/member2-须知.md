@@ -239,6 +239,7 @@ PRD 成功指标里与你直接相关的两条：
 | 依赖 | 找谁 | 需要拿到什么 |
 |---|---|---|
 | API 契约、job 生命周期、跨屏字段 | 成员 1（集成/提案） | 字段名、状态枚举、409/422 语义、idempotency |
+| 真实数据接口（http 模式） | 成员 1（controller） | 6 个接口 + 返回 JSON；GUI 已留适配层（`app/backend.py`），接上后换 `BINARYREPAIR_BACKEND=http` 即可 |
 | 上传/哈希/架构筛错 | 成员 3（binary/sample） | 真实 fixture 或可用的筛查接口与错误码 |
 | evidence 数据结构 | 成员 4（验收规则 + 三套测试） | obligations、scope、counts、changed regions、V0–V5 摘要、六类 outcome 判定规则 |
 | 测试边界 | 成员 4（主）+ 你（GUI e2e） | 验收规则测试、负例/安全测试由他主写；GUI 旅程 e2e 由你写；集成测试归属当面确认（成员 1 已卸下） |
@@ -335,12 +336,13 @@ node_modules/
 .DS_Store
 ```
 
-### 12.4 分支 / PR / commit
+### 12.4 分支 / commit（2026-10-18 团队决定：只推分支，不并主线）
 
-- 每屏一个 PR：`feat(gui): setup+review view`、`feat(gui): comparison view`、`feat(gui): evidence+export view`
-- PR 描述里贴：验收项（对应本文件第 2、6、8 节）、三屏截图、手工回归记录
-- commit 示例：`feat(gui): add status polling and truthful phase labels`、`docs(gui): add member2 must-know`
-- 提交前自查：`pytest`（能跑的层级）、`ruff check .`、三屏手工检查
+- **只推分支，不合并 main**：从最新 `main` 切 `member2-*` 分支，commit 后 push 分支即可；不再自行开"合并进 main"的 PR（团队需要集成时再统一处理）。
+- 分支命名示例：`member2-backend-adapter`、`member2-e2e`、`member2-proposal`
+- commit 示例：`feat(gui): add status polling and truthful phase labels`、`feat(backend): add mock/http data adapter`
+- 提交前自查：`pytest`（能跑的层级）、三屏手工检查
+- 每个功能一个分支；如果团队要求开 PR 审核，可以开，但**不自行合并**
 
 ### 12.5 README 必须写清
 

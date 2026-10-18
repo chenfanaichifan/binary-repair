@@ -1,11 +1,35 @@
 # BinaryRepair MVP · GUI 骨架（Member 2）
 
-这是「项目 11：AI 驱动的二进制漏洞自动修复与正确性验证」的**图形界面第一步**：
-把三个页面（新建/复核 → 进度对比 → 证据导出）跑起来，并用**明确标注的演示数据**
-把状态语义和字段固定下来。真实执行链路（VM、Route A/B、angr 校验）由其他成员接入。
+这是「项目 11：AI 驱动的二进制漏洞自动修复与正确性验证」的**图形界面**：
+三个页面（新建/复核 → 进度对比 → 证据导出）已经跑通，数据来源通过
+`app/backend.py` 适配层切换——`mock`（合成演示数据）或 `http`（成员 1 的 controller API）。
+真实执行链路（VM、Route A/B、angr 校验）由其他成员提供，GUI 侧只消费约定好的英文 JSON。
 
-> **重要**：当前所有阶段推进和结论都是演示 fixture，页面顶部有横幅标注。
-> 它不是修复结果，不能当作“补丁已验证”的证据。接真实数据后横幅会消失。
+> **重要**：mock 模式（默认）是**演示 fixture**，页面顶部有横幅标注，不能当作
+> “补丁已验证”的证据；http 模式接入真实 controller 后，横幅由快照里的 `demo` 字段决定。
+
+## 0.1 数据来源模式（mock / http）
+
+默认 `mock`：用 `app/demo.py` 的合成数据，不执行二进制，页面有“演示数据”横幅。
+
+接真实 controller 时（成员 1 提供；没出来之前可以先用本地 stub 联调）：
+
+```powershell
+# 终端 1：启动本地假 controller（返回合成数据，演示契约用；快照 demo=true，页面仍标“演示数据”）
+.\.venv\Scripts\python.exe -m uvicorn tools.stub_backend:app --host 127.0.0.1 --port 8000
+
+# 终端 2：启动 GUI 的 http 模式
+$env:BINARYREPAIR_BACKEND = "http"
+$env:BINARYREPAIR_API_BASE = "http://127.0.0.1:8000"
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+```
+
+- 配置项：`BINARYREPAIR_BACKEND`（`mock`/`http`）、`BINARYREPAIR_API_BASE`、`BINARYREPAIR_API_TIMEOUT`（默认 5 秒）
+- GUI 只消费 6 个接口：`POST /api/jobs`、`GET /api/jobs/{id}`、
+  `POST /api/jobs/{id}/start|cancel`、`GET /api/jobs/{id}/obligations|artifacts`
+  （契约写在 `app/backend.py` 顶部注释，与 TechDesign §7 对齐）
+- http 模式会扫描响应：出现中日韩字符、缺 `id`/`phase`/`routes`、网络失败都会变成英文错误，
+  不会 500 traceback（`tests/test_backend_contract.py` 守护）
 
 ## 0. 语言规范（重要，2026-10-18 团队决定）
 
@@ -74,11 +98,16 @@ python -m venv .venv
 binaryrepair-mvp/
 ├─ app/
 │  ├─ main.py            # FastAPI 入口、三屏路由、状态接口、导出接口
-│  ├─ demo.py            # 演示数据（阶段推进、义务 V0–V5、产物）；接真实后端时替换这里
+│  ├─ backend.py         # 数据来源适配器：mock（demo）/ http（controller API）、错误映射、语言检查
+│  ├─ demo.py            # 演示数据（mock 模式）；阶段推进、义务 V0–V5、产物
 │  ├─ i18n.py            # 中文显示标签（只给模板/前端用，不进入 API 与导出）
 │  ├─ templates/         # base + 三屏模板（Jinja2）
 │  └─ static/            # css/app.css、js/poll.js
-├─ tests/test_smoke.py   # 冒烟测试（三屏 200、Host 校验、导出）
+├─ tools/stub_backend.py # 本地假 controller（联调 http 模式用，合成数据）
+├─ tests/
+│  ├─ test_smoke.py      # 冒烟测试（三屏 200、Host 校验、导出）
+│  ├─ test_language_policy.py   # 语言规范（API/导出无中文，UI 中文）
+│  └─ test_backend_contract.py  # 数据来源契约（http 映射、错误、stub 形状）
 ├─ fixtures/public/      # 只放公开样本（规则见该目录 README）
 ├─ docs/                 # 说明文档（含 member2 须知）
 ├─ var/jobs/             # 运行时产物，已在 .gitignore 中忽略
@@ -95,7 +124,9 @@ binaryrepair-mvp/
 
 覆盖：三屏可打开、Host 校验拒绝外部域名、建任务后哈希是 64 位、启动后阶段不再是 draft、
 证据页含 V0 与 diagnostic candidate、导出带 attachment 且 `demo: true`、取消后状态是 cancelled；
-另有语言规范测试：API/导出无中日韩字符、中文表单内容返回 422、中文文件名被转 ASCII、UI 仍为中文。
+另有语言规范测试：API/导出无中日韩字符、中文表单内容返回 422、中文文件名被转 ASCII、UI 仍为中文；
+以及数据来源契约测试：http 模式请求路径/multipart/快照映射、404 与网络错误映射、
+非英文响应拦截、stub controller 的 JSON 形状。
 
 ## 6. 常见问题
 
@@ -110,11 +141,11 @@ binaryrepair-mvp/
 
 ## 7. 下一步（按依赖顺序）
 
-1. **和成员 1 对齐 API 契约**：把 `demo.py` 的字段换成 `/api/jobs/{id}` 真实返回；页面与轮询逻辑不用改。
+1. **把 controller 契约发给成员 1 对齐**：GUI 已按 `app/backend.py` 顶部约定的 6 个接口留好适配层；他实现后换 `BINARYREPAIR_BACKEND=http` 即可，页面与轮询逻辑不用改。
 2. **从成员 4 拿验收规则**：六类 outcome 的判定、`not_run` 展示、负例清单；本页的徽章/义务表按他的规则校准。
 3. **接成员 3 的 fixture 与 provenance**：上传校验（架构/格式）、来源字段。
-4. **GitHub**：本目录已是独立仓库根目录，`git init` 后提交；提交前确认 `.gitignore` 生效（`.venv`、`var/jobs` 不会进库）。
-5. 之后按 PRD F1/F5 补：契约 revision 与 409 stale approval、CSRF/session、真实导出包。
+4. **GitHub 工作流（2026-10-18 团队决定）**：以后**只推分支，不合并 main**；分支命名 `member2-*`，团队需要时再统一集成。
+5. 之后按 PRD F1/F5 补：契约 revision 与 409 stale approval、CSRF/session、真实导出包（controller 的 export 端点）。
 
 ## 8. 保密与数据边界（必读）
 
