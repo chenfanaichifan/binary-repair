@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}进度与对比{% endblock %}
+
+{% block content %}
+<section class="job-head">
+  <div class="job-head-main">
+    <h1>{{ job.filename }}</h1>
+    <p class="hash">SHA-256 <code data-testid="original-sha256">{{ job.original_sha256 }}</code></p>
+    <p class="meta">
+      任务 <code>{{ job.id }}</code> ·
+      契约 r{{ job.contract.revision }} <code>{{ job.contract.sha256[:16] }}…</code> ·
+      创建于 {{ job.created_at }} ·
+      环境 {{ job.environment }}
+    </p>
+  </div>
+  <div class="head-actions">
+    {% if job.phase == "draft" %}
+    <form method="post" action="/jobs/{{ job.id }}/start">
+      <button class="btn primary" type="submit" data-testid="start-run">批准并启动（演示）</button>
+    </form>
+    {% elif job.phase != "finished" %}
+    <form method="post" action="/jobs/{{ job.id }}/cancel">
+      <button class="btn ghost" type="submit" data-testid="cancel-run">取消</button>
+    </form>
+    {% endif %}
+    <a class="btn ghost" href="/jobs/{{ job.id }}/evidence" data-testid="open-evidence">查看证据</a>
+  </div>
+</section>
+
+<div class="statusbar">
+  <span class="status-item">任务阶段：<span class="badge" id="job-phase" data-testid="job-phase">{{ job.phase_label }}</span></span>
+  <span class="status-item">整体结论：
+    <span class="badge outcome-none" id="job-outcome" data-testid="job-outcome">
+      {% if job.phase == "finished" and not job.cancelled %}未达成（需两条路线各自成功）{% else %}—{% endif %}
+    </span>
+  </span>
+  <span class="status-item muted">每 2 秒自动刷新 · 未执行 = not_run · <span id="poll-status">轮询中…</span></span>
+</div>
+
+<div class="contract-strip">
+  <details>
+    <summary>查看安全契约（r{{ job.contract.revision }}）</summary>
+    <dl class="facts">
+      <div><dt>有效输入域</dt><dd>{{ job.contract.valid_domain }}</dd></div>
+      <div><dt>禁止行为</dt><dd>{{ job.contract.forbidden }}</dd></div>
+      <div><dt>非法输入应有行为</dt><dd>{{ job.contract.invalid_outcome }}</dd></div>
+      <div><dt>假设</dt><dd>{{ job.contract.assumptions | join("；") }}</dd></div>
+    </dl>
+  </details>
+</div>
+
+<div class="routes">
+  {% for key, route in job.routes.items() %}
+  <article class="route-card" data-route="{{ key }}" data-testid="route-{{ key }}">
+    <header class="route-head">
+      <h2>{{ route.name }}</h2>
+      <span class="badge {{ route.outcome_class }}" id="outcome-{{ key }}" data-testid="outcome-{{ key }}">
+        {{ route.outcome_label or "尚无结论" }}
+      </span>
+    </header>
+
+    <p class="route-phase">阶段：<span id="phase-{{ key }}">{{ route.phase_label }}</span></p>
+
+    <ol class="stages" id="stages-{{ key }}">
+      {% for stage in route.stages %}
+      <li class="stage stage-{{ stage.state }}" data-stage="{{ stage.name }}" data-testid="stage-{{ key }}-{{ stage.name }}">
+        <span class="dot"></span>
+        <span class="stage-name">{{ stage.label }}</span>
+        <span class="stage-state">{{ stage.state_label }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+
+    <dl class="facts">
+      <div><dt>有效输入测试</dt><dd id="tests-{{ key }}">{{ route.tests.passed }}/{{ route.tests.total }}</dd></div>
+      <div><dt>有界验证</dt><dd id="verification-{{ key }}">{{ route.verification_label }}</dd></div>
+      <div><dt>兼容性</dt><dd id="compatibility-{{ key }}">{{ route.compatibility_label }}</dd></div>
+      <div><dt>耗时</dt><dd id="elapsed-{{ key }}">{{ route.elapsed_s }} s</dd></div>
+      <div><dt>人工介入</dt><dd id="manual-{{ key }}">{{ route.manual_interventions }} 次</dd></div>
+      <div><dt>AI 用量</dt><dd id="ai-{{ key }}">{{ route.ai_usage }}</dd></div>
+    </dl>
+
+    <p class="reason" id="reason-{{ key }}">{% if route.outcome_reason %}结论原因：{{ route.outcome_reason }}{% endif %}</p>
+
+    <details class="regions">
+      <summary>改动 / 新增区域</summary>
+      <table>
+        <thead><tr><th>地址</th><th>类型</th><th>修改前</th><th>修改后</th></tr></thead>
+        <tbody id="regions-{{ key }}">
+          {% for region in route.changed_regions %}
+          <tr><td><code>{{ region.address }}</code></td><td>{{ region.kind }}</td><td><code>{{ region.before }}</code></td><td><code>{{ region.after }}</code></td></tr>
+          {% else %}
+          <tr><td colspan="4" class="muted">尚未产生改动（或未执行）</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  </article>
+  {% endfor %}
+</div>
+
+<p class="limits">
+  限制：本页数据是演示 fixture，阶段推进与结论均为预设；真实结果来自 VM 内执行与验收引擎。
+  “更小的补丁”不等于“更安全”，两条路线需各自成功才算整体成功。
+</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/poll.js" defer></script>
+{% endblock %}

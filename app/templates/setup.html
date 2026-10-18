@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}新建任务与契约复核{% endblock %}
+
+{% block content %}
+<h1>① 新建任务与契约复核</h1>
+<p class="lead">
+  对应 PRD F1：上传二进制、说明缺陷、给出复现输入与有效输入测试，然后确认“安全契约”。
+  复核者确认后，两条路线必须引用<strong>同一个</strong>输入哈希和契约。
+</p>
+
+<form class="card form" method="post" action="/jobs" enctype="multipart/form-data" data-testid="setup-form">
+  <section class="form-section">
+    <h2>输入</h2>
+
+    <label class="field">
+      <span class="label">二进制样本（Linux x86-64 ELF）<em>必填</em></span>
+      <input type="file" name="binary" required data-testid="binary-input">
+      <small>演示模式只计算并显示 SHA-256，不解析、不执行文件。</small>
+    </label>
+
+    <label class="field">
+      <span class="label">缺陷描述</span>
+      <textarea name="defect" rows="3" placeholder="例：stack_buf 中 strcpy 未检查长度，超长输入会越界写" data-testid="defect-input"></textarea>
+    </label>
+
+    <label class="field">
+      <span class="label">复现输入 / 有效输入测试（每行一条）</span>
+      <textarea name="valid_tests" rows="4" placeholder="正常输入：hello&#10;边界输入：8 字节&#10;非法输入：64 字节" data-testid="tests-input"></textarea>
+    </label>
+
+    <label class="field">
+      <span class="label">执行环境</span>
+      <input type="text" name="environment" placeholder="Ubuntu x86-64 VM（默认：未启用执行）" data-testid="env-input">
+    </label>
+  </section>
+
+  <section class="form-section">
+    <h2>安全契约（可编辑，复核后生效）</h2>
+
+    <label class="field">
+      <span class="label">有效输入域</span>
+      <input type="text" name="valid_domain" value="输入长度 0–64 字节；不接受越界长度" data-testid="contract-domain">
+    </label>
+
+    <label class="field">
+      <span class="label">禁止行为</span>
+      <input type="text" name="forbidden" value="目标缓冲区越界写（超过 8 字节）" data-testid="contract-forbidden">
+    </label>
+
+    <label class="field">
+      <span class="label">非法输入应有行为</span>
+      <input type="text" name="invalid_outcome" value="返回错误码 1，不越界、不崩溃" data-testid="contract-invalid">
+    </label>
+
+    <label class="field">
+      <span class="label">假设（每行一条）</span>
+      <textarea name="assumptions" rows="3" data-testid="contract-assumptions">单进程
+Linux x86-64 ELF
+未开启栈保护</textarea>
+    </label>
+  </section>
+
+  <div class="actions">
+    <button class="btn primary" type="submit" data-testid="create-job">登记任务并进入复核</button>
+    <span class="hint">演示模式：不会执行任何二进制，只登记哈希与契约。</span>
+  </div>
+</form>
+
+<div class="card note">
+  <h2>这一步之后是什么</h2>
+  <ol class="steps">
+    <li>进入 <strong>② 进度与对比</strong> 屏，看到两条路线各自的阶段；</li>
+    <li>点击“批准并启动（演示）”，阶段按演示时间推进；</li>
+    <li>进入 <strong>③ 证据</strong> 屏，查看 V0–V5 义务、范围与导出；</li>
+    <li>真实版本里，这些数据由成员 1 的 controller 和成员 4 的验收引擎提供。</li>
+  </ol>
+</div>
+{% endblock %}
