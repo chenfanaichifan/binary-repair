@@ -1,11 +1,12 @@
 # Handoffs: interface confirmation files for teammates
 
-These are "ready to send" confirmation requests derived from the interface contracts in `docs_BinaryRepair/verification-design.md` (§4.1 and §4.3). Goal: the two slices develop in parallel against the same interface instead of guessing.
+These are "ready to send" confirmation requests derived from the interface contracts in `docs_BinaryRepair/verification-design.md` (§4.1, §4.3) and the fixture/VM requirements in `TechDesign-BinaryRepair-MVP.md` (§5, §14). Goal: the slices develop in parallel against the same interface instead of guessing.
 
 | File | Recipient | Confirm | Status | Unblocks after confirmation |
 |---|---|---|---|---|
 | `01-member-1-obligation-interface.md` | Member 1 | §4.1 Obligation / Verdict call interface + owner of `reviewed_scope_sha256` | Confirmed 2026-10-18 (contract in `verification-design.md` §4.1) | Write `app.services.jobs` without guessing the shape; once the module lands, `tests/integration/test_identity_state.py` moves from skip to run |
 | `02-member-5-candidate-provider.md` | Member 5 | §4.3 candidate schema, data boundary, provider failure type | Confirmed 2026-10-18 (contract in `verification-design.md` §4.3) | Write `app.domain.candidates` against a clear acceptance standard; once the module lands, `tests/integration/test_ai_boundary.py` moves from skip to run |
+| `03-member-3-fixture-vm.md` | Member 3 | §5 fixture profile, frozen test manifest, VM or explicit blocker | To send | A real ELF and frozen input manifest unlock V1–V4 checks; a recorded blocker also unblocks planning |
 
 ## Confirmation log
 
