@@ -87,6 +87,11 @@ route-a/
 
 Taken from `PRD-BinaryRepair-MVP.md` and `TechDesign-BinaryRepair-MVP.md`:
 
+- **English only.** Every committed artifact is written in English: docs, code
+  comments, script output labels, commit messages, branch names, file names, and
+  report headings. The single exception is machine output pasted into
+  `reports/` — keep it verbatim, and add an English note if the tool printed
+  localized text.
 - Target profile: ELF64, x86-64, little-endian, ideally non-PIE, symbols kept
   for localisation; defect class is a public CWE-121 stack buffer overflow.
 - Never run the sample on the host. All execution happens inside the isolated
