@@ -31,7 +31,7 @@
 
 ---
 
-## 1. 两个入口（已实现）
+## 1. 三个入口（已实现）
 
 模块：`app/domain/candidates.py`（骨架 `pytest.importorskip` 绑定的名字）
 
@@ -45,6 +45,9 @@ def validate_candidate(
     max_replacement_chars: int = 20_000,
 ) -> CandidateV1:
     """合法 payload 返回非 None 的 CandidateV1；任何不合法都抛 CandidateRejected。"""
+
+def validate_candidate_for_context(payload: dict, ctx: RepairContext) -> CandidateV1:
+    """在 validate_candidate 之上做 job 绑定；失败同样抛 CandidateRejected。"""
 
 def may_leave_host(
     classification: str,
@@ -73,6 +76,114 @@ provider 在返回候选前已经做了同样的 context 绑定检查（`check_c
 | `validate_candidate(payload)` | ✅ | 只校验格式 | 只校验格式 | 只校验格式 |
 | `validate_candidate_for_context(payload, ctx)` | ✅ | ✅ | ✅ | ✅ |
 | `require_candidate(result)`（provider 之后） | ✅ | ✅ | ✅ | ✅ |
+
+### 1.1 `validate_candidate_for_context` 完整签名（可直接加断言）
+
+```python
+def validate_candidate_for_context(
+    payload: dict,
+    ctx: RepairContext,
+) -> CandidateV1
+```
+
+- 两个参数都是 **positional-or-keyword**，下面两种写法等价：
+  `validate_candidate_for_context(payload, ctx)` /
+  `validate_candidate_for_context(payload=payload, ctx=ctx)`；
+- 返回 `CandidateV1`（非 None）；失败抛 `CandidateRejected`；
+- 可能出现的 `reason_code` 只有三类：
+  `schema_invalid`（结构/路由字段不一致）、`scope_violation`（target/evidence/调用越界）、
+  `identity_mismatch`（三个 hash 或 recovered hash 对不上）；
+- `RepairContext`、`TemplateSpec`、`TemplateParam` 已从 `app.domain.candidates` re-export，
+  测试不用去 import 实现包。
+
+它在 `validate_candidate` 之上额外做 5 项绑定：
+
+| 检查 | 不通过时 |
+|---|---|
+| `candidate.route == ctx.route` | `schema_invalid` |
+| `original/contract/analysis_sha256` 分别等于 ctx 的 | `identity_mismatch` |
+| `target_entry == ctx.target_entry` | `scope_violation` |
+| `evidence_ids ⊆ ctx.allowed_evidence_ids` | `scope_violation` |
+| Route B：`recovered_function_sha256 == ctx.recovered_function_sha256` | `identity_mismatch` |
+
+Route A 的模板与参数区间取自 `ctx.templates`（不是模块默认值）；Route B 的
+`allowed_calls` / `max_replacement_chars` 也取自 ctx。
+
+**可以直接落进 `tests/integration/test_ai_boundary.py` 的用例：**
+
+```python
+import pytest
+from app.domain.candidates import (
+    CandidateRejected,
+    RepairContext,
+    TemplateParam,
+    TemplateSpec,
+    validate_candidate_for_context,
+)
+
+SHA = "a" * 64
+SCOPE = "b" * 64
+
+
+def ctx() -> RepairContext:
+    return RepairContext(
+        route="route_a",
+        original_sha256=SHA,
+        contract_sha256=SCOPE,
+        analysis_sha256=SCOPE,
+        target_entry="copy_input",
+        contract_summary="Valid: 0..63 bytes. Invalid: >=64 returns -1.",
+        allowed_evidence_ids=["evidence-1"],
+        templates=[
+            TemplateSpec(
+                template_id="bounded-copy-guard",
+                description="Reject input at or above capacity.",
+                parameters={"capacity": TemplateParam(min_value=1, max_value=4096)},
+            )
+        ],
+    )
+
+
+def payload(**over) -> dict:
+    base = {
+        "schema_version": 1,
+        "original_sha256": SHA,
+        "contract_sha256": SCOPE,
+        "analysis_sha256": SCOPE,
+        "route": "route_a",
+        "target_entry": "copy_input",
+        "evidence_ids": ["evidence-1"],
+        "template_id": "bounded-copy-guard",
+        "parameters": {"capacity": 64},
+        "expected_effects": ["overlong input rejected"],
+        "assumptions": ["capacity is 64 bytes"],
+        "uncertainties": [],
+    }
+    base.update(over)
+    return base
+
+
+def test_context_binding_accepts() -> None:
+    assert validate_candidate_for_context(payload(), ctx()) is not None
+
+
+@pytest.mark.parametrize(
+    "field,bad,reason",
+    [
+        ("original_sha256", "c" * 64, "identity_mismatch"),
+        ("evidence_ids", ["evidence-2"], "scope_violation"),
+        ("target_entry", "copy_name", "scope_violation"),
+    ],
+)
+def test_context_binding_rejects(field, bad, reason) -> None:
+    with pytest.raises(CandidateRejected) as exc:
+        validate_candidate_for_context(payload(**{field: bad}), ctx())
+    assert exc.value.reason_code == reason
+```
+
+这三条已经在我本地 `tests/test_ai_boundary_contract.py` 的
+`test_context_bound_validation_rejects_unissued_evidence` 旁边跑通；你加上后如果失败，
+把 `reason_code` 发我即可定位。
 
 ---
 
