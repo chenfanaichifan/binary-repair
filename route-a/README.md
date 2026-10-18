@@ -1,6 +1,6 @@
 # Route A — Binary analysis
 
-Branch: `He-Xinwei-route-a`
+Branch: `member-3-route-a`
 Owner: **He-Xinwei** — Member 3 (binary / sample)
 Lab item: **3 — Binary analysis and Route A**
 Status: **skeleton only — work not started** (2026-10-15)
