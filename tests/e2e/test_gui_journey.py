@@ -1,0 +1,174 @@
+"""Browser end-to-end acceptance tests for the GUI (Technical Design section 13).
+
+Journeys:
+1. Full operator journey in demo mode: setup -> start -> comparison -> evidence -> export.
+2. Refresh during a run keeps state and shows unfinished stages.
+3. Cancellation produces the `cancelled` outcome and keeps evidence.
+4. Local-controller mode is honest: no start action, real job persisted, `not_started`.
+
+The suite launches headless Microsoft Edge and drives it over the DevTools
+protocol, so no browser or Playwright download is required. It skips with a clear
+message when Edge is not installed.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import time
+
+import httpx
+
+CJK = re.compile(r"[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uff00-\uffef]")
+
+DEFECT = "strcpy in stack_buf does not check length; overlong input writes out of bounds"
+SHA_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _wait_location(page, prefix: str, timeout: float = 20.0) -> str:
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        location = page.location()
+        if location.startswith(prefix):
+            return location
+        time.sleep(0.1)
+    raise AssertionError(f"timed out waiting for location {prefix!r}; current={page.location()!r}")
+
+
+def _wait_job_location(page, timeout: float = 20.0) -> str:
+    """Wait for a job page: /jobs/<id> (controller ids are hex, mock ids use job-)."""
+
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        location = page.location()
+        if (
+            location.startswith("/jobs/")
+            and location != "/jobs/new"
+            and not location.rstrip("/").endswith("/evidence")
+        ):
+            return location
+        time.sleep(0.1)
+    raise AssertionError(f"timed out waiting for a job page; current={page.location()!r}")
+
+
+def _create_job_via_ui(page, base_url: str, tmp_path) -> str:
+    page.navigate(base_url + "/jobs/new")
+    sample = tmp_path / "sample.bin"
+    sample.write_bytes(b"\x7fELF e2e sample bytes")
+    page.set_file_input('[data-testid="binary-input"]', str(sample))
+    page.set_value('[data-testid="defect-input"]', DEFECT)
+    page.set_value('[data-testid="tests-input"]', "valid: hello\nboundary: 8 bytes")
+    page.set_value('[data-testid="env-input"]', "Ubuntu x86-64 VM (demo: execution disabled)")
+    page.click('[data-testid="create-job"]')
+    location = _wait_job_location(page)
+    return location.rstrip("/").rsplit("/", 1)[-1]
+
+
+def _stage_states(page, route: str) -> list[str]:
+    return page.eval_js(
+        "Array.from(document.querySelectorAll('[data-testid^=\"stage-%s-\"] .stage-state'))"
+        ".map(el => el.textContent.trim())" % route
+    ) or []
+
+
+def test_full_journey_setup_to_export(mock_server, page, tmp_path):
+    job_id = _create_job_via_ui(page, mock_server, tmp_path)
+
+    sha = page.text('[data-testid="original-sha256"]')
+    assert SHA_PATTERN.match(sha), sha
+
+    page.click('[data-testid="start-run"]')
+    _wait_job_location(page)
+
+    page.wait_js(
+        "document.querySelector('[data-testid=\"outcome-A\"]')?.textContent?.includes('被拒')",
+        timeout=30,
+    )
+    page.wait_js(
+        "document.querySelector('[data-testid=\"outcome-B\"]')?.textContent?.includes('不确定')",
+        timeout=30,
+    )
+    assert "未达成" in page.text('[data-testid="job-outcome"]')
+
+    page.click('[data-testid="open-evidence"]')
+    _wait_location(page, f"/jobs/{job_id}/evidence")
+    assert "V0" in page.text("body")
+
+    href = page.eval_js(
+        "document.querySelector('[data-testid=\"export-evidence\"]')?.getAttribute('href')"
+    )
+    assert href and href.endswith(f"/api/jobs/{job_id}/export"), href
+
+    with httpx.Client(base_url=mock_server, timeout=20.0) as client:
+        response = client.get(href)
+    assert response.status_code == 200
+    bundle = response.json()
+    assert bundle["demo"] is True
+    assert bundle["content_language"] == "en"
+    assert "not production approval" in bundle["note"]
+    assert not CJK.search(json.dumps(bundle, ensure_ascii=False))
+
+
+def test_refresh_keeps_state_and_shows_unfinished_stages(mock_server, page, tmp_path):
+    _create_job_via_ui(page, mock_server, tmp_path)
+    page.click('[data-testid="start-run"]')
+    _wait_job_location(page)
+
+    time.sleep(1.5)
+    page.reload()
+    page.wait_js(
+        "!document.querySelector('[data-testid=\"job-phase\"]')?.textContent?.includes('草稿')",
+        timeout=10,
+    )
+
+    states = _stage_states(page, "A")
+    assert any(state in ("待执行", "进行中") for state in states), states
+
+    page.wait_js(
+        "document.querySelector('[data-testid=\"outcome-A\"]')?.textContent?.includes('被拒')",
+        timeout=30,
+    )
+
+
+def test_cancel_keeps_evidence(mock_server, page, tmp_path):
+    job_id = _create_job_via_ui(page, mock_server, tmp_path)
+    page.click('[data-testid="start-run"]')
+    _wait_job_location(page)
+
+    time.sleep(1.5)
+    page.click('[data-testid="cancel-run"]')
+    _wait_job_location(page)
+
+    page.wait_js(
+        "document.querySelector('[data-testid=\"outcome-A\"]')?.textContent?.includes('已取消')",
+        timeout=10,
+    )
+    page.wait_js(
+        "document.querySelector('[data-testid=\"outcome-B\"]')?.textContent?.includes('已取消')",
+        timeout=10,
+    )
+
+    page.click('[data-testid="open-evidence"]')
+    _wait_location(page, f"/jobs/{job_id}/evidence")
+    assert "V0" in page.text("body")
+
+
+def test_local_mode_is_honest(local_server, page, tmp_path):
+    base_url, data_dir = local_server
+    page.navigate(base_url + "/jobs/new")
+    assert "local controller" in page.text("body")
+
+    job_id = _create_job_via_ui(page, base_url, tmp_path)
+    page.wait_js(
+        "!!document.querySelector('[data-testid=\"start-unavailable\"]')", timeout=10
+    )
+    assert "尚未提供修复执行接口" in page.text('[data-testid="start-unavailable"]')
+
+    with httpx.Client(base_url=base_url, timeout=20.0) as client:
+        status = client.get(f"/api/jobs/{job_id}").json()
+    assert status["demo"] is False
+    assert status["execution"] == "not_started"
+    assert not CJK.search(json.dumps(status, ensure_ascii=False))
+
+    assert (data_dir / "app.db").exists()
+    assert (data_dir / "jobs" / job_id / "original.bin").exists()

@@ -1,5 +1,6 @@
-# BinaryRepair MVP — GUI 分工的第一步依赖
-# 团队后续会改成 pyproject.toml + 锁文件（见 TechDesign §12）；这里先用最简单的 requirements.txt。
+# BinaryRepair MVP - GUI slice dependencies
+# The team plans to move to pyproject.toml + a lock file (Technical Design section 12).
+# This file stays intentionally simple for the local demo and tests.
 
 fastapi>=0.143
 uvicorn[standard]>=0.54

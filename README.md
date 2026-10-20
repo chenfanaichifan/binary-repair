@@ -366,6 +366,18 @@ error mapping (404, network failure, non-English payload), the stub controller's
 shape, and local mode (SQLite job persistence, honest `not_run` obligations, hidden start
 action).
 
+### Browser end-to-end (Edge + DevTools protocol)
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q tests/e2e
+```
+
+No extra dependency or browser download is required: the suite launches headless
+Microsoft Edge and drives it over the DevTools protocol. It skips with a clear message
+when Edge is not installed. Covered journeys: setup -> start -> comparison -> evidence ->
+export, refresh during a run, cancellation with retained evidence, and local-controller
+honesty (no start action, real job persisted, `execution=not_started`).
+
 ## Language policy
 
 The GUI displays Chinese; uploaded, API, and exported data must be English ASCII.
