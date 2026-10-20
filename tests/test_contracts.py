@@ -115,3 +115,21 @@ def test_default_obligations_cover_v0_to_v5() -> None:
         "symbolic",
         "reproducibility",
     }
+
+
+def test_module_helpers_match_methods() -> None:
+    from app.domain.contracts import canonical_contract_json, contract_sha256
+
+    original = contract()
+    data = original.to_dict()
+    assert canonical_contract_json(data) == original.canonical_json()
+    assert contract_sha256(data) == original.sha256()
+
+
+def test_module_helper_rejects_unknown_field() -> None:
+    from app.domain.contracts import canonical_contract_json
+
+    data = contract().to_dict()
+    data["extra"] = "not allowed"
+    with pytest.raises(ValueError):
+        canonical_contract_json(data)

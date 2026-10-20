@@ -178,3 +178,18 @@ class SecurityContract:
         if missing:
             raise ValueError(f"missing contract fields: {sorted(missing)}")
         return cls(**{key: data[key] for key in _REQUIRED_KEYS})
+
+
+# -- single canonicalization entry points for the controller -----------------
+# The controller must call these; it must not re-implement sorting or JSON
+# settings. Keeping the implementation here is what prevents two hashes for the
+# same reviewed contract.
+
+def canonical_contract_json(data: dict[str, Any]) -> str:
+    """Return the canonical JSON text for a persisted contract dict."""
+    return SecurityContract.from_dict(data).canonical_json()
+
+
+def contract_sha256(data: dict[str, Any]) -> str:
+    """Return the reviewed-scope hash for a persisted contract dict."""
+    return SecurityContract.from_dict(data).sha256()
