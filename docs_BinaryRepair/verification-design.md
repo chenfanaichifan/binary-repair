@@ -439,12 +439,16 @@ Honest list of what is **not** verified yet.
    `4bab2214e5a17272bb32c20972e3d9ccc422c93e9853cbf89346dbbdf5eb16d9`). That is
    gate 6 criterion (a) only; symbolic detection and therefore gate 6 completion
    remain pending V4.
-6. **`main` integration is not green (2026-10-20).** 5 failures: three db-v2
-   failures (`contracts.body_json` is missing because `002_ai_tables.sql` uses
-   `CREATE TABLE IF NOT EXISTS` on the table the baseline already created) and two
-   frozen V3-manifest hash mismatches (`valid.json` / `invalid.json` and the
-   manifest set; recheck on Linux/guest before touching the constants). Until
-   fixed, `main` must not be presented as a working integration or used for
+6. **`main` integration is not green (2026-10-20).** Three **real** db-v2
+   failures: `contracts.body_json` is missing because `002_ai_tables.sql` uses
+   `CREATE TABLE IF NOT EXISTS` on the table the baseline already created. The two
+   V3-manifest failures are a **Windows checkout artifact**, not a freeze error:
+   the committed LF blobs hash to the frozen per-file values (`valid.json`
+   `17b2ee39…`, `invalid.json` `d493f370…`) and the set hash `a564f039…`
+   reproduces from them (`handoffs/08-manifest-freeze-answer.md`). Without a
+   `.gitattributes` on `main`, Windows applies CRLF and the hashes change; add
+   `* text=auto eol=lf` and do not change the constants. Until the db-v2 fix
+   lands, `main` must not be presented as a working integration or used for
    acceptance claims.
 
 ---
