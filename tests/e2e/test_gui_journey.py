@@ -19,6 +19,8 @@ import time
 
 import httpx
 
+from config import SESSION_TOKEN
+
 CJK = re.compile(r"[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uff00-\uffef]")
 
 DEFECT = "strcpy in stack_buf does not check length; overlong input writes out of bounds"
@@ -62,7 +64,14 @@ def _approve_current_contract(page) -> None:
     )
 
 
+def _bootstrap(page, base_url: str) -> None:
+    """Start the local session with the one-time token (then cookie-based)."""
+
+    page.navigate(base_url + "/?token=" + SESSION_TOKEN)
+
+
 def _create_job_via_ui(page, base_url: str, tmp_path) -> str:
+    _bootstrap(page, base_url)
     page.navigate(base_url + "/jobs/new")
     sample = tmp_path / "sample.bin"
     sample.write_bytes(b"\x7fELF e2e sample bytes")
@@ -112,6 +121,7 @@ def test_full_journey_setup_to_export(mock_server, page, tmp_path):
     assert href and href.endswith(f"/api/jobs/{job_id}/export"), href
 
     with httpx.Client(base_url=mock_server, timeout=20.0) as client:
+        client.get("/?token=" + SESSION_TOKEN)
         response = client.get(href)
     assert response.status_code == 200
     bundle = response.json()
@@ -169,6 +179,7 @@ def test_cancel_keeps_evidence(mock_server, page, tmp_path):
 
 def test_local_mode_is_honest(local_server, page, tmp_path):
     base_url, data_dir = local_server
+    _bootstrap(page, base_url)
     page.navigate(base_url + "/jobs/new")
     assert "local controller" in page.text("body")
 
@@ -179,6 +190,7 @@ def test_local_mode_is_honest(local_server, page, tmp_path):
     assert "尚未提供修复执行接口" in page.text('[data-testid="start-unavailable"]')
 
     with httpx.Client(base_url=base_url, timeout=20.0) as client:
+        client.get("/?token=" + SESSION_TOKEN)
         status = client.get(f"/api/jobs/{job_id}").json()
     assert status["demo"] is False
     assert status["execution"] == "not_started"

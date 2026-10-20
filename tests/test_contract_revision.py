@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 
 from app import demo
 from app.backend import BackendError, LocalBackend, MockBackend
-from app.main import app as gui_app
+from app.main import CSRF_TOKEN, SESSION_TOKEN, app as gui_app
 
 FORM = {
     "defect": "strcpy in stack_buf does not check length; overlong input writes out of bounds",
@@ -140,9 +140,10 @@ def test_local_backend_contract_revision_persists(tmp_path):
 
 def test_gui_renders_contract_conflicts_as_pages():
     client = TestClient(gui_app, base_url="http://127.0.0.1")
+    assert client.get("/?token=" + SESSION_TOKEN).status_code == 200
     created = client.post(
         "/jobs",
-        data=FORM,
+        data={**FORM, "csrf": CSRF_TOKEN},
         files={"binary": ("sample.bin", PAYLOAD, "application/octet-stream")},
         follow_redirects=False,
     )
@@ -152,7 +153,7 @@ def test_gui_renders_contract_conflicts_as_pages():
     # Stale revision: the page renders the 409 with a visible error, not JSON.
     conflict = client.post(
         f"/jobs/{job_id}/contract",
-        data={"expected_revision": "9", "valid_domain": "x"},
+        data={"expected_revision": "9", "valid_domain": "x", "csrf": CSRF_TOKEN},
     )
     assert conflict.status_code == 409
     assert 'data-testid="job-error"' in conflict.text
@@ -166,6 +167,7 @@ def test_gui_renders_contract_conflicts_as_pages():
             "forbidden": "Out-of-bounds write",
             "invalid_outcome": "Return error code 1",
             "assumptions": "Single process",
+            "csrf": CSRF_TOKEN,
         },
         follow_redirects=False,
     )
@@ -176,23 +178,35 @@ def test_gui_renders_contract_conflicts_as_pages():
 
     stale_approval = client.post(
         f"/jobs/{job_id}/approve",
-        data={"expected_sha256": "0" * 64, "reviewer_label": "reviewer"},
+        data={"expected_sha256": "0" * 64, "reviewer_label": "reviewer", "csrf": CSRF_TOKEN},
     )
     assert stale_approval.status_code == 409
 
     approved = client.post(
         f"/jobs/{job_id}/approve",
-        data={"expected_sha256": contract["sha256"], "reviewer_label": "reviewer"},
+        data={
+            "expected_sha256": contract["sha256"],
+            "reviewer_label": "reviewer",
+            "csrf": CSRF_TOKEN,
+        },
         follow_redirects=False,
     )
     assert approved.status_code == 303
 
-    started = client.post(f"/jobs/{job_id}/start", follow_redirects=False)
+    started = client.post(
+        f"/jobs/{job_id}/start",
+        data={"csrf": CSRF_TOKEN},
+        follow_redirects=False,
+    )
     assert started.status_code == 303
 
     # Reviewer labels are uploaded data: non-ASCII must be rejected.
     rejected = client.post(
         f"/jobs/{job_id}/approve",
-        data={"expected_sha256": contract["sha256"], "reviewer_label": "评审"},
+        data={
+            "expected_sha256": contract["sha256"],
+            "reviewer_label": "评审",
+            "csrf": CSRF_TOKEN,
+        },
     )
     assert rejected.status_code == 422

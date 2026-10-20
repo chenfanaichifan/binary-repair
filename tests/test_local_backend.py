@@ -121,9 +121,10 @@ def test_gui_local_mode_uses_real_controller(tmp_path, monkeypatch):
     monkeypatch.setattr(gui, "BACKEND_MODE", "local")
 
     client = TestClient(gui.app, base_url="http://127.0.0.1")
+    assert client.get("/?token=" + gui.SESSION_TOKEN).status_code == 200
     created = client.post(
         "/jobs",
-        data=FORM,
+        data={**FORM, "csrf": gui.CSRF_TOKEN},
         files={"binary": ("sample.bin", PAYLOAD, "application/octet-stream")},
         follow_redirects=False,
     )

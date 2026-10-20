@@ -22,6 +22,7 @@ from pathlib import Path
 import pytest
 
 from cdp import find_edge, launch_browser, stop_browser
+from config import SESSION_TOKEN
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -81,7 +82,9 @@ def stop_gui(process: subprocess.Popen) -> None:
 
 @pytest.fixture(scope="session")
 def mock_server():
-    process, base_url = start_gui({"BINARYREPAIR_BACKEND": "mock"})
+    process, base_url = start_gui(
+        {"BINARYREPAIR_BACKEND": "mock", "BINARYREPAIR_SESSION_TOKEN": SESSION_TOKEN}
+    )
     try:
         yield base_url
     finally:
@@ -94,6 +97,7 @@ def local_server(tmp_path):
         {
             "BINARYREPAIR_BACKEND": "local",
             "BINARYREPAIR_DATA_DIR": str(tmp_path),
+            "BINARYREPAIR_SESSION_TOKEN": SESSION_TOKEN,
         }
     )
     try:

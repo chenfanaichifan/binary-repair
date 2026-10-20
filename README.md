@@ -276,10 +276,20 @@ GUI only consumes the agreed English JSON contract.
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+.\start.ps1            # prints a one-time ?token=... URL
 ```
 
-Open <http://127.0.0.1:8123>.
+Open the URL printed by the launcher. A plain <http://127.0.0.1:8123> without the session
+cookie returns `401`.
+
+## Local session and CSRF
+
+- The launcher generates a random session token and prints `http://127.0.0.1:8123/?token=...`.
+- The first visit sets an `HttpOnly; SameSite=Strict` cookie and redirects to the clean URL;
+  the token disappears from the address bar.
+- Every non-static request requires the session; missing or wrong sessions receive `401`.
+- POST forms include a `_csrf` token derived from the session; a missing or invalid token
+  returns `403`, and cross-origin POSTs are rejected by Origin validation.
 
 ## Data-source modes (mock / http / local)
 

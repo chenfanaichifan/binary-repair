@@ -37,9 +37,14 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
+import os
 import re
+import secrets
 from pathlib import Path
+from urllib.parse import urlparse
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
@@ -59,6 +64,13 @@ BASE_DIR = Path(__file__).resolve().parent
 # 上传大小上限（对应技术设计里的 20 MiB 默认值）
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 
+# 本机会话：launcher 用 ?token=... 引导一次，之后靠 HttpOnly cookie。
+# CSRF token 由会话 token 派生，服务端渲染进表单，POST 必须回传。
+SESSION_TOKEN = os.environ.get("BINARYREPAIR_SESSION_TOKEN") or secrets.token_urlsafe(32)
+CSRF_TOKEN = hmac.new(SESSION_TOKEN.encode("utf-8"), b"gui-csrf", hashlib.sha256).hexdigest()
+SESSION_COOKIE = "br_session"
+ALLOWED_HOSTS = {"127.0.0.1", "localhost"}
+
 # 上传文件名只保留 ASCII 安全字符，避免中文名进入 API/导出数据
 _UNSAFE_FILENAME_CHARS = re.compile(r"[^A-Za-z0-9._-]+")
 
@@ -74,6 +86,7 @@ templates.env.globals.update(
     state_labels_zh=i18n.STATE_LABELS_ZH,
     value_labels_zh=i18n.VALUE_LABELS_ZH,
     route_names_zh=i18n.ROUTE_NAMES_ZH,
+    csrf_token=CSRF_TOKEN,
 )
 
 # 数据来源（测试里默认 mock；接真实 controller 时只需换环境变量）
@@ -110,17 +123,64 @@ async def backend_error_handler(request: Request, exc: BackendError) -> JSONResp
 
 
 @app.middleware("http")
-async def local_only(request: Request, call_next):
-    """只接受本机访问：Host 必须是 127.0.0.1 / localhost。
+async def security_gate(request: Request, call_next):
+    """本地安全边界（Technical Design section 11）。
 
-    这是技术设计 §11 的第一条安全要求（绑定 127.0.0.1）。它挡不住所有攻击，
-    但能挡住"恶意网页把请求发到你的本地服务"这一类问题的一部分。
-    后续还要加 session token、CSRF、Origin 校验。
+    - Host 必须是 127.0.0.1 / localhost；
+    - 首次访问用 ?token=<一次性 token> 引导，换成 HttpOnly + SameSite=Strict cookie，
+      并把 token 从地址栏去掉；
+    - 之后所有非静态请求都要求有效会话；
+    - POST 还要通过同源 Origin 检查（CSRF token 由路由校验）。
     """
     host = (request.headers.get("host") or "").split(":")[0].strip().lower()
-    if host not in {"127.0.0.1", "localhost"}:
+    if host not in ALLOWED_HOSTS:
         return JSONResponse({"detail": "Local access only (host check failed)."}, status_code=403)
+
+    path = request.url.path
+    if path.startswith("/static/") or path in {"/healthz", "/favicon.ico"}:
+        return await call_next(request)
+
+    token = request.query_params.get("token")
+    if token and secrets.compare_digest(token, SESSION_TOKEN):
+        response = RedirectResponse(url=path or "/", status_code=303)
+        response.set_cookie(
+            SESSION_COOKIE,
+            SESSION_TOKEN,
+            httponly=True,
+            samesite="strict",
+            path="/",
+        )
+        return response
+
+    session = request.cookies.get(SESSION_COOKIE)
+    if not session or not secrets.compare_digest(session, SESSION_TOKEN):
+        return JSONResponse(
+            {
+                "detail": (
+                    "Authentication required. Open the launcher URL containing ?token=... "
+                    "to start the local session."
+                )
+            },
+            status_code=401,
+        )
+
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+        origin = request.headers.get("origin")
+        if origin:
+            parsed = urlparse(origin)
+            if parsed.scheme != "http" or (parsed.hostname or "") not in ALLOWED_HOSTS:
+                return JSONResponse(
+                    {"detail": "Cross-origin request rejected."}, status_code=403
+                )
+
     return await call_next(request)
+
+
+def _require_csrf(token: str) -> None:
+    """Validate the CSRF token rendered into every POST form."""
+
+    if not token or not secrets.compare_digest(str(token), CSRF_TOKEN):
+        raise HTTPException(status_code=403, detail="CSRF token missing or invalid.")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -148,12 +208,14 @@ async def create_job(
     forbidden: str = Form(""),
     invalid_outcome: str = Form(""),
     assumptions: str = Form(""),
+    csrf: str = Form(""),
 ):
     """接收上传并登记输入哈希（F1：输入身份用哈希记录）。
 
     演示模式只保存哈希和元数据；http 模式把文件转给 controller。
     所有文本字段必须是英文 ASCII（语言规范）。
     """
+    _require_csrf(csrf)
     raw = await binary.read()
     if len(raw) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
@@ -223,9 +285,11 @@ async def update_contract(
     forbidden: str = Form(""),
     invalid_outcome: str = Form(""),
     assumptions: str = Form(""),
+    csrf: str = Form(""),
 ):
     """Create a new contract revision; a stale ``expected_revision`` returns 409."""
 
+    _require_csrf(csrf)
     for field_name, field_value in (
         ("valid_domain", valid_domain),
         ("forbidden", forbidden),
@@ -253,9 +317,11 @@ async def approve_contract(
     job_id: str,
     expected_sha256: str = Form(""),
     reviewer_label: str = Form(""),
+    csrf: str = Form(""),
 ):
     """Approve the current contract revision; a stale hash returns 409."""
 
+    _require_csrf(csrf)
     _require_english("reviewer_label", reviewer_label)
     try:
         BACKEND.approve_contract(
@@ -269,12 +335,13 @@ async def approve_contract(
 
 
 @app.post("/jobs/{job_id}/start")
-async def start_run(request: Request, job_id: str):
+async def start_run(request: Request, job_id: str, csrf: str = Form("")):
     """批准并启动：mock 模式是演示推进，http 模式转给 controller。
 
     Unapproved contracts are rejected with an explicit 409 page instead of an
     opaque JSON error.
     """
+    _require_csrf(csrf)
     try:
         BACKEND.start(job_id)
     except BackendError as exc:
@@ -283,8 +350,9 @@ async def start_run(request: Request, job_id: str):
 
 
 @app.post("/jobs/{job_id}/cancel")
-async def cancel_run(request: Request, job_id: str):
+async def cancel_run(request: Request, job_id: str, csrf: str = Form("")):
     """取消：真实版本要等进程树确认终止后才能记录 cancelled。"""
+    _require_csrf(csrf)
     try:
         BACKEND.cancel(job_id)
     except BackendError as exc:
