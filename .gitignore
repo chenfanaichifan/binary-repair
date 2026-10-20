@@ -1,19 +1,29 @@
-# Runtime artifacts and uploads
-var/
 # Python
+.venv/
+venv/
 __pycache__/
 *.py[cod]
 *.egg-info/
-.venv/
-venv/
-# Test and tool caches
 .pytest_cache/
 pytest-cache-files-*/
 .ruff_cache/
 .mypy_cache/
-# Local agent scratch file
-.write-probe.tmp
-# Secrets / local config
+
+# Local configuration and secrets (never commit)
 .env
 .env.*
 !.env.example
+
+# Runtime artifacts (Tech Design §12): job artifacts, pids, browser temp dirs
+var/
+*.log
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local agent scratch file
+.write-probe.tmp
