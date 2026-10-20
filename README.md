@@ -254,19 +254,22 @@ No completed-MVP date is established; estimates follow the feasibility gates in 
 
 ---
 
-# BinaryRepair MVP 鈥?GUI + data-source adapter (Member 2)
+---
+
+# BinaryRepair MVP — GUI + data-source adapter (Member 2)
 
 Graphical interface for Project 11: AI-driven automated binary vulnerability repair and
-correctness verification. The three screens are unchanged; data now comes through an
-adapter layer that can read either the synthetic demo store (`mock`) or Member 1's
-controller API (`http`).
+correctness verification. The three screens are unchanged; data comes through an adapter
+layer that can read the synthetic demo store (`mock`), Member 1's controller API (`http`),
+or Member 1's local job store (`local`).
 
-Real execution (VM, Route A/B, angr verification) is provided by the other members;
-the GUI only consumes the agreed English JSON contract.
+Real execution (VM, Route A/B, angr verification) is provided by the other members; the
+GUI only consumes the agreed English JSON contract.
 
 > Default `mock` mode is clearly labeled demo fixture data, not a repair result, and must
-> never be treated as evidence that a patch is verified. In `http` mode the banner follows
-> the snapshot's `demo` field: it disappears only when the controller reports `demo: false`.
+> never be treated as evidence that a patch is verified. In `http` and `local` modes the
+> banner follows the snapshot: it disappears only when the controller reports real data.
+> Local mode keeps the banner off but shows a "execution not available" hint.
 
 ## Quick start (mock mode, default)
 
@@ -278,7 +281,7 @@ python -m venv .venv
 
 Open <http://127.0.0.1:8123>.
 
-## Data-source modes (mock / http)
+## Data-source modes (mock / http / local)
 
 `mock` uses `app/demo.py` (synthetic data, no execution, banner shown).
 
@@ -295,11 +298,24 @@ $env:BINARYREPAIR_API_BASE = "http://127.0.0.1:8000"
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
 ```
 
+`local` calls Member 1's job controller directly in-process (`app/services/jobs.py`): the
+job identity, original bytes, and SHA-256 are persisted in SQLite under
+`BINARYREPAIR_DATA_DIR` (default `var/`). Repair execution is not implemented yet, so the
+comparison screen shows phases as "not started" and obligations as `not_run`; the start
+action is hidden instead of pretending a run exists.
+
+```powershell
+$env:BINARYREPAIR_BACKEND = "local"
+$env:BINARYREPAIR_DATA_DIR = "var"
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+```
+
 Configuration:
 
-- `BINARYREPAIR_BACKEND` 鈥?`mock` (default) or `http`
-- `BINARYREPAIR_API_BASE` 鈥?controller base URL (default `http://127.0.0.1:8000`)
-- `BINARYREPAIR_API_TIMEOUT` 鈥?request timeout in seconds (default 5)
+- `BINARYREPAIR_BACKEND` — `mock` (default), `http`, or `local`
+- `BINARYREPAIR_API_BASE` — controller base URL for `http` (default `http://127.0.0.1:8000`)
+- `BINARYREPAIR_API_TIMEOUT` — request timeout in seconds for `http` (default 5)
+- `BINARYREPAIR_DATA_DIR` — SQLite and artifact directory for `local` (default `var`)
 
 ### Controller contract consumed by the GUI
 
@@ -313,24 +329,28 @@ GET  /api/jobs/{id}/artifacts         {"A": [...], "B": [...]}
 ```
 
 Details are documented at the top of `app/backend.py`; the surface follows Technical
-Design 搂7. HTTP mode checks responses: CJK characters, missing `id`/`phase`/`routes`, and
-network failures become explicit English errors instead of 500 tracebacks.
+Design section 7. HTTP mode checks responses: CJK characters, missing
+`id`/`phase`/`routes`, and network failures become explicit English errors instead of 500
+tracebacks.
 
 ## Structure
 
 ```
 app/
-鈹溾攢 main.py            FastAPI entry, three-screen routes, status API, export
-鈹溾攢 backend.py         mock/http data-source adapter, error mapping, language checks
-鈹溾攢 demo.py            Synthetic demo data (phases, V0鈥揤5 obligations, artifacts)
-鈹溾攢 i18n.py            Chinese display labels (UI only; never enters API or exports)
-鈹溾攢 templates/         base + three screens (Jinja2)
-鈹斺攢 static/            css/app.css, js/poll.js
+├─ main.py            FastAPI entry, three-screen routes, status API, export
+├─ backend.py         mock/http/local data-source adapters, error mapping, language checks
+├─ demo.py            Synthetic demo data (phases, V0–V5 obligations, artifacts)
+├─ i18n.py            Chinese display labels (UI only; never enters API or exports)
+├─ db/                Member 1 job store (SQLite connection + schema)
+├─ services/jobs.py   Member 1 minimal controller (create_job / get_job)
+├─ templates/         base + three screens (Jinja2)
+└─ static/            css/app.css, js/poll.js
 tools/stub_backend.py Local stub controller (synthetic data) for http-mode integration
 tests/
-鈹溾攢 test_smoke.py            Three screens, host check, export
-鈹溾攢 test_language_policy.py  API/exports have no CJK; UI stays Chinese
-鈹斺攢 test_backend_contract.py HTTP mapping, error mapping, CJK rejection, stub shape
+├─ test_smoke.py            Three screens, host check, export
+├─ test_language_policy.py  API/exports have no CJK; UI stays Chinese
+├─ test_backend_contract.py HTTP mapping, error mapping, CJK rejection, stub shape
+└─ test_local_backend.py    Local controller mode: real job persistence, honest not_run states
 fixtures/public/      Public samples only
 ```
 
@@ -342,8 +362,9 @@ fixtures/public/      Public samples only
 
 Covers the three screens, host validation, export attachment and `demo: true`, cancel
 state, API/export language policy, HTTP adapter request paths and multipart forwarding,
-error mapping (404, network failure, non-English payload), and the stub controller's
-JSON shape.
+error mapping (404, network failure, non-English payload), the stub controller's JSON
+shape, and local mode (SQLite job persistence, honest `not_run` obligations, hidden start
+action).
 
 ## Language policy
 
@@ -353,6 +374,7 @@ Non-ASCII form content is rejected with `422` and uploaded filenames are sanitiz
 ## Known limitations
 
 - Stub and demo data are synthetic; no binary is executed.
+- Local mode has a real job store but no repair execution: start/cancel return `409`.
 - Contract revision and `409 stale approval` handling are not implemented yet.
 - The GUI assembles exports locally; the controller export endpoint is future work.
 - HTTP mode calls the controller synchronously; fine for a local single-operator demo.
@@ -360,5 +382,5 @@ Non-ASCII form content is rejected with `422` and uploaded filenames are sanitiz
 ## Sources
 
 - PRD v1.0 (2026-10-15): F1, F4, F5, UI/UX direction, success metrics
-- Technical Design v1.0 (2026-10-15): 搂6, 搂7, 搂9, 搂11, 搂12, 搂13, 搂14
+- Technical Design v1.0 (2026-10-15): section 6, 7, 9, 11, 12, 13, 14
 - `docs/member2-notes.md`: role notes with sources

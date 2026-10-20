@@ -1,11 +1,14 @@
 """数据来源适配器：GUI 不直接依赖 demo.py，而是通过这一层取数据。
 
-两种模式（环境变量 BINARYREPAIR_BACKEND 切换）：
+三种模式（环境变量 BINARYREPAIR_BACKEND 切换）：
 
 - ``mock``（默认）：使用 ``app/demo.py`` 的合成数据，用于演示 / 离线开发；
   页面顶部会显示"演示数据"横幅，不执行真实二进制。
 - ``http``：调用成员 1 的 controller API（真实数据）。真实 controller 没出来之前，
   可以用 ``tools/stub_backend.py`` 这个本地假服务联调。
+- ``local``：直接调用仓库里的成员 1 controller（``app/services/jobs.py`` 的
+  SQLite job store）。任务身份、输入哈希、原始字节都是**真实持久化**的；
+  修复执行（Route A/B）尚未实现，页面会如实显示"未执行"。
 
 约定（2026-10-18 团队决定）：
 - GUI 只消费下面这组接口；页面模板与轮询逻辑不关心数据来自哪里。
@@ -26,17 +29,31 @@ import hashlib
 import json
 import os
 import re
+from pathlib import Path
 from typing import Any, Protocol
 
 import httpx
 
 from app import demo
+from app.services import jobs as job_store
 
 BACKEND_ENV = "BINARYREPAIR_BACKEND"
 API_BASE_ENV = "BINARYREPAIR_API_BASE"
 API_TIMEOUT_ENV = "BINARYREPAIR_API_TIMEOUT"
+DATA_DIR_ENV = "BINARYREPAIR_DATA_DIR"
 DEFAULT_API_BASE = "http://127.0.0.1:8000"
 DEFAULT_TIMEOUT_SECONDS = 5.0
+DEFAULT_DATA_DIR = "var"
+
+# Route stage names for the placeholder snapshot in local mode (English, no CJK).
+ROUTE_STAGES: dict[str, list[str]] = {
+    "A": ["screening", "analyzing", "generating", "applying", "validating"],
+    "B": ["screening", "analyzing", "roundtrip", "generating", "applying", "validating"],
+}
+ROUTE_NAMES_EN: dict[str, str] = {
+    "A": "Route A - Direct instruction repair",
+    "B": "Route B - Recovered C reintegration",
+}
 
 _CJK_PATTERN = re.compile(
     r"[\u2e80-\u2fff\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]"
@@ -71,6 +88,7 @@ class BackendError(RuntimeError):
 
 class Backend(Protocol):
     mode: str
+    supports_start: bool
 
     def create_job(self, *, binary_bytes: bytes, filename: str, defect: str, valid_tests: str,
                    environment: str, valid_domain: str, forbidden: str, invalid_outcome: str,
@@ -88,6 +106,7 @@ class MockBackend:
     """演示数据模式：包装 app/demo.py（合成数据，页面会明确标注）。"""
 
     mode = "mock"
+    supports_start = True
 
     def create_job(self, *, binary_bytes: bytes, filename: str, defect: str, valid_tests: str,
                    environment: str, valid_domain: str, forbidden: str, invalid_outcome: str,
@@ -149,6 +168,7 @@ class HttpBackend:
     """
 
     mode = "http"
+    supports_start = True
 
     def __init__(self, base_url: str | None = None, timeout: float | None = None,
                  transport: httpx.BaseTransport | None = None) -> None:
@@ -266,17 +286,253 @@ class HttpBackend:
         }
 
 
+class LocalBackend:
+    """本地 controller 模式：直接调用 ``app/services/jobs.py`` 的 SQLite job store。
+
+    真实的：任务 id、输入哈希、原始字节、创建时间都由成员 1 的 controller 持久化；
+    未实现的：Route A/B 执行与验收，所以路线状态如实显示为 not started / not_run。
+    ``supports_start = False``，GUI 不会给出"启动"按钮。
+    """
+
+    mode = "local"
+    supports_start = False
+
+    def __init__(self, data_dir: str | Path | None = None) -> None:
+        self.data_dir = Path(
+            data_dir or os.environ.get(DATA_DIR_ENV, DEFAULT_DATA_DIR)
+        ).resolve()
+
+    # ---------- 内部工具 ----------
+
+    def _meta_path(self, job_id: str) -> Path:
+        return self.data_dir / "jobs" / job_id / "gui_meta.json"
+
+    def _read_meta(self, job_id: str) -> dict[str, Any]:
+        path = self._meta_path(job_id)
+        if not path.exists():
+            return {}
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {}
+        return payload if isinstance(payload, dict) else {}
+
+    def _write_meta(self, job_id: str, payload: dict[str, Any]) -> None:
+        path = self._meta_path(job_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, ensure_ascii=True, indent=2), encoding="utf-8")
+
+    def _record(self, job_id: str) -> job_store.JobRecord:
+        record = job_store.get_job(job_id, data_dir=self.data_dir)
+        if record is None:
+            raise BackendError(404, "Job not found.")
+        return record
+
+    @staticmethod
+    def _contract(
+        *,
+        valid_domain: str = "",
+        forbidden: str = "",
+        invalid_outcome: str = "",
+        assumptions: str = "",
+    ) -> dict[str, Any]:
+        body = {
+            "valid_domain": valid_domain.strip()
+            or "Input length 0-64 bytes; out-of-range lengths rejected",
+            "forbidden": forbidden.strip()
+            or "Out-of-bounds write to the target buffer (more than 8 bytes)",
+            "invalid_outcome": invalid_outcome.strip()
+            or "Return error code 1 without out-of-bounds access or crash",
+            "assumptions": [
+                line.strip()
+                for line in (
+                    assumptions
+                    or "Single process\nLinux x86-64 ELF\nStack protector disabled"
+                ).splitlines()
+                if line.strip()
+            ],
+        }
+        sha256 = hashlib.sha256(
+            json.dumps(body, sort_keys=True, ensure_ascii=True).encode("utf-8")
+        ).hexdigest()
+        return {"revision": 1, "sha256": sha256, **body}
+
+    @staticmethod
+    def _placeholder_routes(phase: str) -> dict[str, dict[str, Any]]:
+        routes: dict[str, dict[str, Any]] = {}
+        for key, stage_names in ROUTE_STAGES.items():
+            routes[key] = {
+                "name": ROUTE_NAMES_EN[key],
+                "phase": phase,
+                "outcome": None,
+                "outcome_reason": "",
+                "stages": [{"name": name, "state": "pending"} for name in stage_names],
+                "tests": {"passed": 0, "total": 8},
+                "verification": "not_run",
+                "compatibility": "not_run",
+                "changed_regions": [],
+                "manual_interventions": 0,
+                "ai_usage": "unavailable",
+                "elapsed_s": 0.0,
+            }
+        return routes
+
+    # ---------- Backend 接口 ----------
+
+    def create_job(self, *, binary_bytes: bytes, filename: str, defect: str, valid_tests: str,
+                   environment: str, valid_domain: str, forbidden: str, invalid_outcome: str,
+                   assumptions: str) -> str:
+        record = job_store.create_job(
+            original_bytes=binary_bytes,
+            filename=filename,
+            defect_description=defect or "Defect description not provided.",
+            data_dir=self.data_dir,
+        )
+        self._write_meta(
+            record.id,
+            {
+                "valid_tests": [line.strip() for line in valid_tests.splitlines() if line.strip()],
+                "environment": environment.strip()
+                or "Ubuntu x86-64 VM (execution not implemented)",
+                "contract": self._contract(
+                    valid_domain=valid_domain,
+                    forbidden=forbidden,
+                    invalid_outcome=invalid_outcome,
+                    assumptions=assumptions,
+                ),
+            },
+        )
+        return record.id
+
+    def get_snapshot(self, job_id: str) -> dict[str, Any]:
+        record = self._record(job_id)
+        meta = self._read_meta(job_id)
+        return {
+            "id": record.id,
+            "demo": False,
+            "data_source": "local-controller",
+            "execution": "not_started",
+            "filename": record.filename,
+            "original_sha256": record.original_sha256,
+            "defect": record.defect_description,
+            "valid_tests": meta.get("valid_tests", []),
+            "environment": meta.get("environment", ""),
+            "created_at": record.created_at,
+            "phase": record.phase,
+            "cancelled": False,
+            "contract": meta.get("contract") or self._contract(),
+            "routes": self._placeholder_routes(record.phase),
+        }
+
+    def start(self, job_id: str) -> None:
+        self._record(job_id)
+        raise BackendError(
+            409, "Local controller mode does not implement run execution yet."
+        )
+
+    def cancel(self, job_id: str) -> None:
+        self._record(job_id)
+        raise BackendError(
+            409, "Local controller mode does not implement run execution yet."
+        )
+
+    def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
+        self._record(job_id)
+        identity = {
+            "id": "V0",
+            "kind": "Identity and preconditions",
+            "description": "Job record exists in the controller store and the original hash matches the stored bytes",
+            "required": True,
+            "result": "passed",
+            "scope": "controller job store",
+            "reason": "Job record and original hash verified.",
+        }
+        pending = [
+            {
+                "id": "V1",
+                "kind": "Structure and placement",
+                "description": "Instruction boundaries, changed intervals, and branch targets are auditable",
+                "required": True,
+                "result": "not_run",
+                "scope": "n/a",
+                "reason": "Repair execution is not implemented by the local controller yet.",
+            },
+            {
+                "id": "V2",
+                "kind": "Interface and compatibility",
+                "description": "Signature, stack/register conventions, and loader execution checks",
+                "required": True,
+                "result": "not_run",
+                "scope": "n/a",
+                "reason": "Repair execution is not implemented by the local controller yet.",
+            },
+            {
+                "id": "V3",
+                "kind": "Concrete behavior",
+                "description": "Reproducer, invalid-input oracle, valid-input regression",
+                "required": True,
+                "result": "not_run",
+                "scope": "n/a",
+                "reason": "Repair execution is not implemented by the local controller yet.",
+            },
+            {
+                "id": "V4",
+                "kind": "Bounded symbolic security",
+                "description": "Candidate-specific model, input domain, out-of-bounds access predicate",
+                "required": True,
+                "result": "not_run",
+                "scope": "n/a",
+                "reason": "Repair execution is not implemented by the local controller yet.",
+            },
+            {
+                "id": "V5",
+                "kind": "Reproducibility",
+                "description": "Final hashes, versions, replay inputs, independent replay",
+                "required": True,
+                "result": "not_run",
+                "scope": "n/a",
+                "reason": "Repair execution is not implemented by the local controller yet.",
+            },
+        ]
+        return {
+            "A": [identity, *[dict(item) for item in pending]],
+            "B": [dict(identity), *[dict(item) for item in pending]],
+        }
+
+    def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
+        self._record(job_id)
+        return {"A": [], "B": []}
+
+    def export_bundle(self, job_id: str) -> dict[str, Any]:
+        snapshot = self.get_snapshot(job_id)
+        return {
+            "schema_version": 1,
+            "demo": False,
+            "content_language": "en",
+            "note": (
+                "Local controller mode: job identity and original bytes are real; "
+                "repair execution is not implemented. This export is not production approval."
+            ),
+            "job": snapshot,
+            "obligations": self.get_obligations(job_id),
+            "artifacts": self.get_artifacts(job_id),
+        }
+
+
 def backend_mode() -> str:
     mode = os.environ.get(BACKEND_ENV, "mock").strip().lower() or "mock"
-    if mode not in {"mock", "http"}:
-        raise ValueError(f"{BACKEND_ENV} must be 'mock' or 'http', got {mode!r}.")
+    if mode not in {"mock", "http", "local"}:
+        raise ValueError(f"{BACKEND_ENV} must be 'mock', 'http' or 'local', got {mode!r}.")
     return mode
 
 
 def get_backend() -> Backend:
     """按环境变量创建数据来源。main.py 在启动时调用一次。"""
-    if backend_mode() == "http":
+    mode = backend_mode()
+    if mode == "http":
         return HttpBackend()
+    if mode == "local":
+        return LocalBackend()
     return MockBackend()
 
 
@@ -284,6 +540,8 @@ def backend_description(backend: Backend) -> str:
     """给页面/健康检查显示的数据来源说明（英文，可进入 API）。"""
     if backend.mode == "http":
         return f"controller API at {backend.base_url}"  # type: ignore[attr-defined]
+    if backend.mode == "local":
+        return f"local controller (SQLite data dir: {backend.data_dir})"  # type: ignore[attr-defined]
     return "synthetic demo data (no execution)"
 
 
@@ -291,6 +549,7 @@ __all__ = [
     "Backend",
     "BackendError",
     "HttpBackend",
+    "LocalBackend",
     "MockBackend",
     "backend_description",
     "backend_mode",

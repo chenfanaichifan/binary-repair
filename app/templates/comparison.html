@@ -15,9 +15,13 @@
   </div>
   <div class="head-actions">
     {% if job.phase == "draft" %}
-    <form method="post" action="/jobs/{{ job.id }}/start">
-      <button class="btn primary" type="submit" data-testid="start-run">批准并启动（演示）</button>
-    </form>
+      {% if can_start %}
+      <form method="post" action="/jobs/{{ job.id }}/start">
+        <button class="btn primary" type="submit" data-testid="start-run">批准并启动</button>
+      </form>
+      {% else %}
+      <span class="hint" data-testid="start-unavailable">当前数据来源只登记任务，尚未提供修复执行接口。</span>
+      {% endif %}
     {% elif job.phase != "finished" %}
     <form method="post" action="/jobs/{{ job.id }}/cancel">
       <button class="btn ghost" type="submit" data-testid="cancel-run">取消</button>
@@ -103,6 +107,7 @@
   限制：本页数据是演示 fixture，阶段推进与结论均为预设；真实结果来自 VM 内执行与验收引擎。
   "更小的补丁"不等于"更安全"，两条路线需各自成功才算整体成功。
   数据字段为英文（符合语言规范），界面文案为中文。
+  <br>数据来源：{{ backend_note }}
 </p>
 {% endblock %}
 

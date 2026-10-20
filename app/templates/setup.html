@@ -12,6 +12,9 @@
   <strong>语言规范</strong>：界面是中文，但<strong>上传与导出的内容必须用英文（ASCII）</strong>。
   缺陷描述、测试、环境、契约字段都会进入任务数据与导出报告，请一律用英文填写；非英文字符会被拦截。
 </div>
+{% if backend_note %}
+<p class="muted">数据来源：{{ backend_note }}</p>
+{% endif %}
 
 <form class="card form" method="post" action="/jobs" enctype="multipart/form-data" data-testid="setup-form">
   <section class="form-section">

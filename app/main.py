@@ -11,9 +11,17 @@
     .\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
 （controller 还没出来时，可以用 tools/stub_backend.py 这个本地假服务先联调。）
 
+怎么运行（本地 controller 模式，接成员 1 的真实任务存储）：
+    $env:BINARYREPAIR_BACKEND = "local"
+    $env:BINARYREPAIR_DATA_DIR = "var"
+    .\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+（任务身份、输入哈希、原始字节会真实写入 SQLite + 文件；Route A/B 执行尚未实现。）
+
 数据来源：
 - mock 模式：app/demo.py 的合成数据，页面顶部有"演示数据"横幅，不执行真实二进制；
-- http 模式：通过 app/backend.py 调用 controller；页面模板与轮询逻辑完全不变。
+- http 模式：通过 app/backend.py 调用 controller；页面模板与轮询逻辑完全不变；
+- local 模式：直接调用仓库里的 app/services/jobs.py（成员 1 的 SQLite job store），
+  任务登记是真实的，修复执行未实现，页面会如实显示 not started / not_run。
 
 语言规范（2026-10-18，团队决定）：
 - 界面（UI）可以中文：模板里的标题、按钮、状态徽章、说明都是中文；
@@ -126,7 +134,7 @@ async def setup_page(request: Request):
     return templates.TemplateResponse(
         request,
         "setup.html",
-        {"demo": BACKEND_MODE == "mock", "job": None},
+        {"demo": BACKEND_MODE == "mock", "job": None, "backend_note": backend_description(BACKEND)},
     )
 
 
@@ -184,7 +192,12 @@ async def comparison_page(request: Request, job_id: str):
     return templates.TemplateResponse(
         request,
         "comparison.html",
-        {"demo": bool(snapshot.get("demo")), "job": snapshot},
+        {
+            "demo": bool(snapshot.get("demo")),
+            "job": snapshot,
+            "can_start": BACKEND.supports_start,
+            "backend_note": backend_description(BACKEND),
+        },
     )
 
 
@@ -214,6 +227,7 @@ async def evidence_page(request: Request, job_id: str):
             "job": snapshot,
             "obligations": BACKEND.get_obligations(job_id),
             "artifacts": BACKEND.get_artifacts(job_id),
+            "backend_note": backend_description(BACKEND),
         },
     )
 
