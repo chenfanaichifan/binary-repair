@@ -73,10 +73,14 @@ def demo() -> int:
         return 0 if ok else 1
 
 
-def replace(binary: Path, c_file: Path, out: Path, mode: str) -> int:
+def replace(binary: Path, c_file: Path, out: Path, mode: str, func: str, skip_verify: bool) -> int:
     c_source = c_file.read_text()
-    patch_function(binary, "copy_name", c_source, out)
+    patch_function(binary, func, c_source, out)
     print(f"wrote {out} ({out.stat().st_size} bytes)")
+
+    if skip_verify:
+        print("skipped the fixture oracle; run the team's test manifest on this binary")
+        return 0
 
     if mode == "roundtrip":
         cmd = [
@@ -93,6 +97,8 @@ def main() -> int:
     ap.add_argument("--demo", action="store_true")
     ap.add_argument("--mode", choices=["roundtrip", "fixed"])
     ap.add_argument("--binary", type=Path, default=HERE / "fixture" / "vuln")
+    ap.add_argument("--func", default="copy_name", help="function to replace")
+    ap.add_argument("--skip-verify", action="store_true", help="do not run the fixture oracle")
     ap.add_argument("--c-source", type=Path)
     ap.add_argument("--out", type=Path, default=HERE / "out" / "vuln_patched")
     args = ap.parse_args()
@@ -104,7 +110,9 @@ def main() -> int:
         ap.error("use --demo, or --mode roundtrip|fixed with --c-source")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    return replace(args.binary, args.c_source, args.out, args.mode)
+    return replace(
+        args.binary, args.c_source, args.out, args.mode, args.func, args.skip_verify
+    )
 
 
 if __name__ == "__main__":

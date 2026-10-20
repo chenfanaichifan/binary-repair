@@ -72,24 +72,33 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
-def build_context(binary: Path, recovered: Path, signature: str) -> RepairContext:
+def build_context(
+    binary: Path,
+    recovered: Path,
+    signature: str,
+    *,
+    function: str = "copy_name",
+    contract_text: str = CONTRACT,
+    allowed_calls: tuple[str, ...] = (),
+    evidence_ids: list[str] | None = None,
+) -> RepairContext:
     recovered_c = recovered.read_text()
     analysis = json.dumps(
-        {"binary": sha256_file(binary), "function": "copy_name", "callees": []},
+        {"binary": sha256_file(binary), "function": function, "callees": list(allowed_calls)},
         sort_keys=True,
     )
     return RepairContext(
         route="route_b",
         original_sha256=sha256_file(binary),
-        contract_sha256=sha256_text(CONTRACT),
+        contract_sha256=sha256_text(contract_text),
         analysis_sha256=sha256_text(analysis),
-        target_entry="copy_name",
+        target_entry=function,
         target_signature=signature,
-        contract_summary=CONTRACT,
-        allowed_evidence_ids=EVIDENCE_IDS,
+        contract_summary=contract_text,
+        allowed_evidence_ids=evidence_ids or EVIDENCE_IDS,
         recovered_c=recovered_c,
         recovered_function_sha256=sha256_text(recovered_c),
-        allowed_calls=[],
+        allowed_calls=list(allowed_calls),
     )
 
 
@@ -148,7 +157,11 @@ def main() -> int:
     ap.add_argument("--mock", action="store_true")
     ap.add_argument("--binary", type=Path, default=DEFAULT_BINARY)
     ap.add_argument("--recovered", type=Path, default=DEFAULT_RECOVERED)
+    ap.add_argument("--function", default="copy_name", help="reviewed target function")
     ap.add_argument("--signature", default="int copy_name(char *dst, const char *src, unsigned int n)")
+    ap.add_argument("--contract", type=Path, help="reviewed contract text file")
+    ap.add_argument("--allowed-calls", default="", help="comma-separated callee allowlist")
+    ap.add_argument("--evidence-ids", default=",".join(EVIDENCE_IDS))
     ap.add_argument("--out-c", type=Path)
     ap.add_argument("--thinking", action="store_true")
     args = ap.parse_args()
@@ -164,7 +177,23 @@ def main() -> int:
         )
         return 2
 
-    ctx = build_context(args.binary, args.recovered, args.signature)
+    if args.mock and args.function != "copy_name":
+        print("--mock is only defined for the synthetic copy_name fixture", file=sys.stderr)
+        return 2
+
+    contract_text = args.contract.read_text() if args.contract else CONTRACT
+    allowed_calls = tuple(c.strip() for c in args.allowed_calls.split(",") if c.strip())
+    evidence_ids = [e.strip() for e in args.evidence_ids.split(",") if e.strip()]
+
+    ctx = build_context(
+        args.binary,
+        args.recovered,
+        args.signature,
+        function=args.function,
+        contract_text=contract_text,
+        allowed_calls=allowed_calls,
+        evidence_ids=evidence_ids,
+    )
 
     print("== reviewed context ==")
     print(f"  original_sha256          {ctx.original_sha256}")
