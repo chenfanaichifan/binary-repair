@@ -1,1 +1,1 @@
-"""BinaryRepair MVP —— 应用包（GUI 分工）。"""
+"""Controller service package (no GUI)."""
