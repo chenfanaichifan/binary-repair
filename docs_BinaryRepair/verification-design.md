@@ -262,6 +262,64 @@ is where the data-boundary guarantees actually live.
 
 ---
 
+### 4.4 Fixture oracle for the public CWE-121 case (draft, pending member 3)
+
+The public sample is still being selected (member 3 is deciding between the Juliet data-flow
+variant and a patched harness, options A and B). This section freezes the **shape** of the
+behavioural oracle so both repair routes can be written against one contract. Values marked
+TBD are confirmed by member 3 and then promoted from draft to frozen.
+
+#### Contract constants
+
+| Constant | Meaning | Value |
+|---|---|---|
+| `DEST_CAPACITY` | bytes in the destination buffer declared inside the target function | TBD — Juliet's `char dest[50]` suggests 50, but the real value comes from the selected fixture |
+| `MAX_VALID_LEN` | largest input length that must be accepted | `DEST_CAPACITY - 1` (reserve one byte for `strcpy`'s NUL terminator) |
+| `ERROR_STDERR` | exact stderr bytes on the invalid path | `"ERROR: input exceeds destination capacity\n"` — pending confirmation |
+
+**Off-by-one rule.** `strcpy(dest, data)` writes `strlen(data) + 1` bytes. With
+`DEST_CAPACITY = 50`, an input of length 50 writes the NUL terminator at index 50, one byte
+past the buffer. The largest valid input is therefore `49`, not `50`. The oracle uses
+`MAX_VALID_LEN = DEST_CAPACITY - 1`; the "first invalid" case is `MAX_VALID_LEN + 1`.
+
+#### Valid input oracle
+
+| argv[1] length | Expected |
+|---|---|
+| 0 (empty) | `return_code = 0`, `stdout` = original behaviour, `stderr` = "" |
+| 1 (smallest) | same |
+| 10 (typical) | same |
+| `MAX_VALID_LEN` (largest valid) | same |
+
+The original program's stdout and return code on valid inputs are **measured** on the original
+binary by member 3 and written into the frozen manifest; they must not be invented.
+
+#### Invalid input oracle
+
+| argv[1] length | Expected |
+|---|---|
+| `MAX_VALID_LEN + 1` (first invalid) | `return_code = 1`, `stderr = ERROR_STDERR`, `stdout` = "" |
+| `MAX_VALID_LEN + 51` (much longer) | same |
+
+Invalid inputs must **not** crash: `return_code` must be 1, not `-11`/SIGSEGV, and V4 must show
+no out-of-bounds destination write. A crash is evidence the repair failed, not evidence of the
+invalid-input path.
+
+#### Both routes share this oracle
+
+Route A (instruction patch) and Route B (recovered-C recompile) must implement the **same
+observable behaviour**, including the exact `stderr` bytes and return code. If the two routes
+print different messages or exit with different codes, V3 cannot use one assertion set and the
+F5 comparison becomes meaningless. The reviewer freezes `ERROR_STDERR` once, in the contract,
+**before** either route runs.
+
+#### Pending inputs from member 3
+
+1. Actual `DEST_CAPACITY` and the source line it comes from.
+2. Measured stdout and return code of the original binary on the four valid inputs.
+3. Confirmation of `ERROR_STDERR` (exact bytes) or a replacement string.
+4. Harness invocation shape: does the harness `main` call the target with `argv[1]` directly?
+
 ## 5. Test coverage matrix
 
 Maps the verification ladder (Tech Design §9) to where each gate is checked.
