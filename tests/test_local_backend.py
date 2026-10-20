@@ -147,3 +147,7 @@ def test_gui_local_mode_uses_real_controller(tmp_path, monkeypatch):
 
     setup = client.get("/jobs/new")
     assert "local controller" in setup.text
+
+    health = client.get("/healthz")
+    assert health.status_code == 200
+    assert not _has_cjk_in_payload(json.loads(health.text))

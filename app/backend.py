@@ -541,7 +541,9 @@ def backend_description(backend: Backend) -> str:
     if backend.mode == "http":
         return f"controller API at {backend.base_url}"  # type: ignore[attr-defined]
     if backend.mode == "local":
-        return f"local controller (SQLite data dir: {backend.data_dir})"  # type: ignore[attr-defined]
+        # Do not echo the data directory: it may contain non-ASCII path segments and
+        # API payloads must stay English ASCII (language policy).
+        return "local controller (SQLite job store)"
     return "synthetic demo data (no execution)"
 
 
