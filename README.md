@@ -12,9 +12,9 @@ BinaryRepair repairs one known vulnerability in a Linux x86-64 ELF **without ori
 
 > **Status: MVP in progress; `main` is currently the per-branch archive.** The runnable slices live under
 > `agent/<member>/`; the root `app/` tree was removed in the 2026-10-20 cleanup. The GUI skeleton and the
-> AI candidate layer run from their folders. The public fixture, the two real repair routes, and the VM
-> broker are not implemented yet. No binary has been repaired or verified. Do not present demo data as
-> repair evidence.
+> AI candidate layer run from their folders. The job controller is not on `main` yet; the identity suite
+> skips. The public fixture, the two real repair routes, and the VM broker are not implemented yet. No
+> binary has been repaired or verified. Do not present demo data as repair evidence.
 
 ---
 
@@ -25,7 +25,7 @@ BinaryRepair repairs one known vulnerability in a Linux x86-64 ELF **without ori
 | GUI — setup / comparison / evidence screens | `agent/member2-gui`, `agent/member2-backend-adapter` | demo data, banner-labelled | 6 + 5 (language policy, smoke) plus adapter contract tests |
 | AI candidate schema + provider failure typing | `agent/member-5-deepseek-schema` | complete slice | 18 + 15 + 11 + 11 + 8 + 3 |
 | Acceptance engine (outcomes, decision rules) | `agent/member-4-verification` | complete slice; integration depends on the candidate/job slices | 29 unit |
-| Job controller, SQLite schema | `agent/member-1-interface-reply` | implemented | 8 identity |
+| Job controller, SQLite schema | `agent/member-1-interface-reply` (identity tests only) | not on `main` yet; the identity suite skips | — |
 | Route A analysis kit | `agent/member-3-route-a` | docs and scripts | — |
 | Route B feasibility kit | `agent/member-5-deepseek-schema` | provider, schema, kit | — |
 | Public fixture + test manifest | not delivered | — | — |
@@ -143,10 +143,10 @@ agent/
   member-3-route-a/route-a/       Route A analysis docs and scripts
   member-4-verification/          acceptance engine, verification design, handoffs
   member-5-deepseek-schema/       candidate schema, DeepSeek provider, SQLite, Route B kit
-  member-1-interface-reply/       job controller, identity tests, §4.1 reply
+  member-1-interface-reply/       identity tests and §4.1 reply (job controller not on main yet)
 ```
 
-Each folder is a full branch tree with its own `app/`, tests, requirements, and README. Work in the
+Each folder is a full branch tree with its own layout, tests, and README where applicable. Work in the
 folder that owns the slice (or on a feature branch); do not edit another slice's folder in place.
 
 The target end-to-end structure — once the slices are integrated into one runnable tree — is:
@@ -191,7 +191,7 @@ python -m pytest tests/integration/test_identity_state.py -q
 - GUI slice: 6 + 5 tests (smoke and language policy), plus adapter contract tests.
 - Acceptance slice: 29 unit tests; the AI-boundary and identity integration suites need the candidate
   and job slices in the same tree, so they skip in the isolated folder.
-- Job-controller slice: 8 identity tests pass.
+- Job-controller slice: the identity suite skips until `app.services.jobs` is added; a skip is not a pass.
 - The AI-boundary suite never calls the real provider, needs no API key, and spends no money.
 - No uploaded or repaired binary is executed on the host.
 
@@ -243,8 +243,8 @@ These are not optional.
 
 ## Roadmap and known gaps
 
-1. Integrate the job controller (`agent/member-1-interface-reply`), acceptance engine
-   (`agent/member-4-verification`), and GUI (`agent/member2-gui`) into one runnable tree.
+1. Add the job controller and SQLite schema on `main` (not there yet), then integrate it with the
+   acceptance engine (`agent/member-4-verification`) and GUI (`agent/member2-gui`) in one runnable tree.
 2. Public CWE-121 fixture with provenance and a frozen test manifest.
 3. Disposable Ubuntu VM, toolchain smoke tests, and the broker.
 4. Route A instruction-repair chain and Route B recovered-C round trip.
