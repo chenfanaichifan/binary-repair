@@ -97,6 +97,30 @@ def test_full_journey_setup_to_export(mock_server, page, tmp_path):
     sha = page.text('[data-testid="original-sha256"]')
     assert SHA_PATTERN.match(sha), sha
 
+    # Interactive security visualization: vulnerability highlighting and AI candidate.
+    page.wait_js("!!document.querySelector('[data-testid=\"code-view\"]')", timeout=10)
+    page.click('[data-code-route="A"] .code-tab[data-view="original"]')
+    page.click('[data-code-route="A"] .code-line.is-vulnerable')
+    page.wait_js(
+        "document.querySelector('[data-testid=\"code-detail-A\"]')?.textContent?.includes('Unbounded strcpy')",
+        timeout=5,
+    )
+    page.click('[data-code-route="A"] .code-tab[data-view="repaired"]')
+    added = page.eval_js(
+        "document.querySelectorAll('[data-code-route=\"A\"] .code-panel[data-panel=\"repaired\"] .code-line.is-added').length"
+    )
+    assert added >= 2, added
+    page.click('[data-code-route="A"] .code-tab[data-view="diff"]')
+    changed = page.eval_js(
+        "document.querySelectorAll('[data-code-route=\"A\"] .code-panel[data-panel=\"diff\"] .code-line.is-changed').length"
+    )
+    assert changed >= 1, changed
+    page.click('[data-code-route="A"] .code-tab[data-view="candidate"]')
+    page.wait_js(
+        "document.body.textContent.includes('guard-strcpy-v1')",
+        timeout=5,
+    )
+
     _approve_current_contract(page)
     page.click('[data-testid="start-run"]')
     _wait_job_location(page)

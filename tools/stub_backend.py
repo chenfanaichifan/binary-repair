@@ -20,7 +20,7 @@ import hashlib
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
-from app import demo
+from app import demo, visuals
 
 app = FastAPI(title="BinaryRepair stub controller (synthetic)")
 
@@ -135,6 +135,11 @@ async def get_obligations(job_id: str):
 @app.get("/api/jobs/{job_id}/artifacts")
 async def get_artifacts(job_id: str):
     return demo.artifacts(_job_or_404(job_id))
+
+
+@app.get("/api/jobs/{job_id}/visuals")
+async def get_visuals(job_id: str):
+    return visuals.build(_job_or_404(job_id))
 
 
 @app.get("/healthz")

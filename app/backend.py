@@ -35,7 +35,7 @@ from typing import Any, Protocol
 
 import httpx
 
-from app import demo
+from app import demo, visuals
 from app.services import jobs as job_store
 
 BACKEND_ENV = "BINARYREPAIR_BACKEND"
@@ -113,6 +113,7 @@ class Backend(Protocol):
     ) -> dict[str, Any]: ...
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
+    def get_visuals(self, job_id: str) -> dict[str, Any]: ...
     def export_bundle(self, job_id: str) -> dict[str, Any]: ...
 
 
@@ -199,6 +200,9 @@ class MockBackend:
 
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         return demo.artifacts(self._job(job_id))
+
+    def get_visuals(self, job_id: str) -> dict[str, Any]:
+        return visuals.build(self._job(job_id))
 
     def export_bundle(self, job_id: str) -> dict[str, Any]:
         snapshot = self.get_snapshot(job_id)
@@ -361,6 +365,12 @@ class HttpBackend:
         payload = self._request("GET", f"/api/jobs/{job_id}/artifacts", where="get_artifacts")
         if not isinstance(payload, dict):
             raise BackendError(502, "Backend artifacts response must be an object.")
+        return payload
+
+    def get_visuals(self, job_id: str) -> dict[str, Any]:
+        payload = self._request("GET", f"/api/jobs/{job_id}/visuals", where="get_visuals")
+        if not isinstance(payload, dict):
+            raise BackendError(502, "Backend visuals response must be an object.")
         return payload
 
     def export_bundle(self, job_id: str) -> dict[str, Any]:
@@ -677,6 +687,13 @@ class LocalBackend:
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         self._record(job_id)
         return {"A": [], "B": []}
+
+    def get_visuals(self, job_id: str) -> dict[str, Any]:
+        self._record(job_id)
+        return {
+            "available": False,
+            "note": "Repair execution is not implemented by the local controller yet.",
+        }
 
     def export_bundle(self, job_id: str) -> dict[str, Any]:
         snapshot = self.get_snapshot(job_id)

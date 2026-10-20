@@ -136,6 +136,8 @@ def _controller_router(request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, json=OBLIGATIONS)
     if request.method == "GET" and path == "/api/jobs/job-abc123/artifacts":
         return httpx.Response(200, json=ARTIFACTS)
+    if request.method == "GET" and path == "/api/jobs/job-abc123/visuals":
+        return httpx.Response(200, json={"available": True, "routes": {"A": {"mode": "asm"}}})
     return httpx.Response(404, json={"detail": "Job not found."})
 
 
@@ -181,6 +183,9 @@ def test_http_backend_maps_controller_contract():
     )
     assert approved["approved"] is True
 
+    visuals_payload = backend.get_visuals(job_id)
+    assert visuals_payload["available"] is True
+
     paths = [(request.method, request.url.path) for request in requests]
     assert ("POST", "/api/jobs") in paths
     assert ("GET", "/api/jobs/job-abc123") in paths
@@ -188,6 +193,7 @@ def test_http_backend_maps_controller_contract():
     assert ("POST", "/api/jobs/job-abc123/cancel") in paths
     assert ("POST", "/api/jobs/job-abc123/contract") in paths
     assert ("POST", "/api/jobs/job-abc123/approve") in paths
+    assert ("GET", "/api/jobs/job-abc123/visuals") in paths
     assert ("GET", "/api/jobs/job-abc123/obligations") in paths
     assert ("GET", "/api/jobs/job-abc123/artifacts") in paths
 

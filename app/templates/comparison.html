@@ -103,6 +103,81 @@
   </details>
 </div>
 
+{% if visuals and visuals.available %}
+<section class="code-view" data-testid="code-view">
+  <h2>漏洞与修复视图（交互演示）</h2>
+  <p class="muted">{{ visuals.note }}</p>
+  <div class="code-grid">
+  {% for key, view in visuals.routes.items() %}
+    <article class="code-card" data-code-route="{{ key }}" data-mode="{{ view.mode }}">
+      <header class="code-head">
+        <h3>{{ route_names_zh.get(key, view.name) }}</h3>
+        <span class="muted">{{ view.function }} · <code>{{ view.range }}</code></span>
+      </header>
+      <p class="vuln-callout">漏洞位置 <code>{{ view.vulnerable.addr }}</code>：{{ view.vulnerable.reason }}<br><span class="muted">{{ view.vulnerable.contract }}</span></p>
+
+      <div class="code-tabs" role="tablist">
+        <button type="button" class="code-tab is-active" data-view="original">原始代码</button>
+        <button type="button" class="code-tab" data-view="repaired">修复后代码</button>
+        <button type="button" class="code-tab" data-view="diff">差异</button>
+        <button type="button" class="code-tab" data-view="candidate">AI 候选</button>
+      </div>
+
+      <div class="code-panel" data-panel="original">
+        <ol class="code-lines">
+        {% for line in view.original %}
+          <li class="code-line {% if line.tag %}is-{{ line.tag }}{% endif %}" {% if line.detail %}data-detail="{{ line.detail }}" tabindex="0"{% endif %}>
+            {% if view.mode == 'c' %}<span class="code-no">{{ line.line }}</span>{% else %}<span class="code-addr">{{ line.addr }}</span><span class="code-bytes">{{ line.bytes }}</span>{% endif %}
+            <span class="code-text">{{ line.text }}</span>
+          </li>
+        {% endfor %}
+        </ol>
+      </div>
+
+      <div class="code-panel is-hidden" data-panel="repaired">
+        <ol class="code-lines">
+        {% for line in view.repaired %}
+          <li class="code-line {% if line.tag %}is-{{ line.tag }}{% endif %}" {% if line.detail %}data-detail="{{ line.detail }}" tabindex="0"{% endif %}>
+            {% if view.mode == 'c' %}<span class="code-no">{{ line.line }}</span>{% else %}<span class="code-addr">{{ line.addr }}</span><span class="code-bytes">{{ line.bytes }}</span>{% endif %}
+            <span class="code-text">{{ line.text }}</span>
+          </li>
+        {% endfor %}
+        </ol>
+      </div>
+
+      <div class="code-panel is-hidden" data-panel="diff">
+        <ol class="code-lines">
+        {% for line in view.diff %}
+          <li class="code-line is-{{ line.status }}" {% if line.detail %}data-detail="{{ line.detail }}" tabindex="0"{% endif %}>
+            <span class="code-no">{{ line.addr or line.line or '' }}</span>
+            <span class="code-text">{{ line.text }}</span>
+          </li>
+        {% endfor %}
+        </ol>
+      </div>
+
+      <div class="code-panel is-hidden" data-panel="candidate">
+        <dl class="facts">
+          <div><dt>模板</dt><dd><code>{{ view.candidate.template_id }}</code></dd></div>
+          <div><dt>模型</dt><dd>{{ view.candidate.model }}</dd></div>
+          <div><dt>尝试次数</dt><dd>{{ view.candidate.attempts }}</dd></div>
+          <div><dt>AI 用量</dt><dd>{{ view.candidate.ai_usage }}</dd></div>
+          <div><dt>理由</dt><dd>{{ view.candidate.rationale }}</dd></div>
+          <div><dt>假设</dt><dd>{{ view.candidate.assumptions | join("；") }}</dd></div>
+          <div><dt>不确定性</dt><dd>{{ view.candidate.uncertainties | join("；") }}</dd></div>
+        </dl>
+        <p class="muted">AI 只负责提出候选；是否通过由确定性检查决定，界面不提供“跳过检查”的操作。</p>
+      </div>
+
+      <div class="code-detail" data-testid="code-detail-{{ key }}">点击高亮行查看漏洞/改动详情</div>
+    </article>
+  {% endfor %}
+  </div>
+</section>
+{% elif visuals %}
+<p class="limits" data-testid="code-view-unavailable">代码视图不可用：{{ visuals.note }}</p>
+{% endif %}
+
 <div class="routes">
   {% for key, route in job.routes.items() %}
   <article class="route-card" data-route="{{ key }}" data-testid="route-{{ key }}">
@@ -163,4 +238,5 @@
 
 {% block scripts %}
 <script src="/static/js/poll.js" defer></script>
+<script src="/static/js/codeview.js" defer></script>
 {% endblock %}

@@ -256,12 +256,17 @@ def _comparison_response(
 ):
     """Render the comparison screen (also used for explicit 409 conflict errors)."""
     snapshot = BACKEND.get_snapshot(job_id)
+    try:
+        code_visuals = BACKEND.get_visuals(job_id)
+    except BackendError:
+        code_visuals = {"available": False, "note": "Code view is unavailable from the controller."}
     return templates.TemplateResponse(
         request,
         "comparison.html",
         {
             "demo": bool(snapshot.get("demo")),
             "job": snapshot,
+            "visuals": code_visuals,
             "can_start": BACKEND.supports_start,
             "backend_note": backend_description(BACKEND),
             "error": error,

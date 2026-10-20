@@ -382,6 +382,18 @@ error mapping (404, network failure, non-English payload), the stub controller's
 shape, and local mode (SQLite job persistence, honest `not_run` obligations, hidden start
 action).
 
+## Security visualization
+
+The comparison screen renders an interactive code view for each route:
+
+- disassembly (Route A) or recovered C (Route B) with the vulnerable instruction/line highlighted;
+- a repaired view with added/patched lines and a diff tab;
+- an AI-candidate tab with template id, model, rationale, assumptions and uncertainties.
+
+Click a highlighted line to read the vulnerability or change detail in the panel below.
+The visualization data is currently synthetic and labelled as such; the view is ready to
+consume worker output once execution is connected.
+
 ### Browser end-to-end (Edge + DevTools protocol)
 
 ```powershell
