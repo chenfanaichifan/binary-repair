@@ -251,3 +251,101 @@ These are not optional.
 5. Shared acceptance over both final candidates, then export and independent replay.
 
 No completed-MVP date is established; estimates follow the feasibility gates in the technical design.
+
+---
+# BinaryRepair MVP ¡ª GUI slice (Member 2)
+
+Graphical interface for Project 11: AI-driven automated binary vulnerability repair and
+correctness verification. This snapshot contains the three-screen GUI driven by clearly
+labeled demo data; it does not execute binaries.
+
+> The demo banner is always visible in mock mode. The data is synthetic fixture data,
+> not a repair result, and must never be treated as evidence that a patch is verified.
+
+## Quick start (Windows)
+
+The project uses a local `.venv`:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\start.ps1          # or run.bat
+```
+
+Manual start:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+```
+
+Open <http://127.0.0.1:8123>. The service binds to localhost only.
+
+## Demo walkthrough
+
+1. **Setup / Review** ¡ª choose any file as the sample (only its SHA-256 is recorded), fill
+   in the defect description and valid-input tests, review the editable security contract.
+2. **Progress / Comparison** ¡ª start the demo run; phases advance roughly every 1.2 s and
+   the page refreshes every 2 s. Route A ends as `rejected` (valid-input regression failed),
+   Route B as `inconclusive` (symbolic exploration budget exhausted). This is intentional:
+   incomplete or failed obligations must never be shown as success.
+3. **Evidence / Export** ¡ª obligations V0¨CV5, scope and assumptions, artifact hashes,
+   diagnostic-candidate labeling, replay instructions, and a JSON export that states it is
+   not production approval.
+
+## Three screens and requirements
+
+| Screen | Requirement | Implemented in this snapshot |
+|---|---|---|
+| Setup / Review (`setup.html`) | PRD F1 | Upload, SHA-256 identity, defect/tests/environment, editable contract, pre-execution validation (422 empty, 413 oversized) |
+| Progress / Comparison (`comparison.html`) | PRD F5, UI/UX direction | Side-by-side routes, independent phase indicators, six outcome badges, test/verification/compatibility/time/manual-intervention/AI-usage facts, cancel, refresh-safe polling |
+| Evidence / Export (`evidence.html`) | PRD F4/F5 | V0¨CV5 obligation table, scope and assumptions, artifact hashes, diagnostic-candidate labeling, JSON export, replay notes |
+
+State model: `phase` (draft/screening/analyzing/roundtrip/generating/applying/validating/
+finished) and `outcome` (success_within_scope/unsupported/rejected/inconclusive/error/
+cancelled) are displayed as two independent axes; `not_run` is never treated as passed.
+
+## Structure
+
+```
+app/
+©À©¤ main.py            FastAPI entry, three-screen routes, status API, export
+©À©¤ demo.py            Synthetic demo data (phases, V0¨CV5 obligations, artifacts)
+©À©¤ i18n.py            Chinese display labels (UI only; never enters API or exports)
+©À©¤ templates/         base + three screens (Jinja2)
+©¸©¤ static/            css/app.css, js/poll.js
+tests/
+©À©¤ test_smoke.py            Three screens, host check, export
+©¸©¤ test_language_policy.py  API/exports have no CJK; UI stays Chinese
+fixtures/public/      Public samples only
+```
+
+## Tests
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+Covers: screens reachable, Host check rejects foreign hosts, 64-character input hash,
+phase progresses after start, evidence shows V0 and the diagnostic label, export is an
+attachment with `demo: true`, cancel becomes `cancelled`; API/export contain no CJK while
+the UI remains Chinese.
+
+## Known limitations
+
+- Demo data only; no binary is parsed or executed.
+- Contract revision and `409 stale approval` handling are not implemented yet.
+- No session token or CSRF protection yet; only host validation is in place.
+- Exports are assembled by the GUI; the controller export endpoint is future work.
+
+## Language policy
+
+The GUI displays Chinese; uploaded, API, and exported data must be English ASCII.
+Non-ASCII form content is rejected and uploaded filenames are sanitized to ASCII.
+
+## Sources
+
+- PRD v1.0 (2026-10-15): F1, F4, F5, UI/UX direction, success metrics
+- Technical Design v1.0 (2026-10-15): ¡ì6 state/lifecycle, ¡ì7 three views and API, ¡ì9
+  verification ladder, ¡ì11 local-service security, ¡ì12 layout and dev mode, ¡ì13 testing,
+  ¡ì14 work allocation
+- `docs/member2-notes.md`: role notes with sources
