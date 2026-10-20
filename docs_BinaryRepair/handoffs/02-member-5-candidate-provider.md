@@ -3,7 +3,8 @@
 **Recipient:** Member 5 (candidate schema + provider)
 **From:** Verification slice (Member 4)
 **Date:** 2026-10-18
-**Basis:** `docs_BinaryRepair/verification-design.md` §4.3; skeleton tests in `tests/integration/test_ai_boundary.py`
+**Basis:** `docs_BinaryRepair/verification-design.md` §4.3; the member-4 skeleton was replaced by `tests/test_ai_boundary_contract.py` on `main` (2026-10-20)
+**Status:** Confirmed 2026-10-18; implemented and merged to `main` on 2026-10-20. Retained as the interface record.
 **Needs a reply:** two things — (1) do you accept the signatures of the two entry points below; (2) which module holds the provider's typed failure and what it is called. A fill-in template is at the end; two minutes to reply.
 
 ---

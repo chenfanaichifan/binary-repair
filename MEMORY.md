@@ -4,13 +4,13 @@ Update this after major decisions, completed phases, or bugs that future agents 
 
 ## Current State
 
-- Current task: member-4 verification slice — acceptance rules, 29 unit tests, and the AI-boundary contract suite (17 tests) implemented; the identity/state suite is still a skeleton.
+- Current task: member-4 verification slice — acceptance rules and 29 unit tests implemented on the member-4 branch. The AI-boundary skeleton was removed on 2026-10-20 because member 5's implementation and `main` tests supersede it. The identity/state suite is still a skeleton.
 - Current phase: Foundation / environment and fixture feasibility.
-- Next step: merge member 5's `member-5-deepseek-schema` branch into `main` (it already has the root `app/domain/candidates.py` and `app/services/provider.py`), so the AI-boundary suite runs in the shared tree; member 1 still has to land `app.services.jobs` before the identity/state suite activates.
-- Handoff [2026-10-18]: both interface confirmations are complete and recorded in `verification-design.md` (§4.1 member 1, §4.3 member 5). Member 5's branch `member-5-deepseek-schema` (commit `e175436`) moved the code to the shared root; the contract suite passes **17/17** in an isolated worktree of that branch. The member-4 branch still skips until that branch is merged, and a skip is never reported as a pass.
+- Next step: merge the acceptance engine (`app/domain/outcomes.py`, `app/domain/acceptance.py`, `tests/unit/test_acceptance.py`) into `main`, which already carries member 5's `app/domain/candidates.py`, `app/services/provider.py`, and `tests/test_ai_boundary_contract.py` (19 tests). Member 1 still has to land `app.services.jobs` before the identity/state suite activates.
+- Handoff [2026-10-18]: both interface confirmations are complete and recorded in `verification-design.md` (§4.1 member 1, §4.3 member 5). Member 5's implementation is now on `main`.
 - Handoff [2026-10-18]: member 3 fixture/VM handoff created at `docs_BinaryRepair/handoffs/03-member-3-fixture-vm.md` — §5 fixture profile, frozen test-manifest format with valid/invalid/oracle coverage, disposable VM requirements and version/image-hash recording, and the six-proof fixture selection gate with named owners. Awaiting reply; a recorded blocker is an acceptable delivery for this week.
-- Remote [2026-10-18]: `origin/member-4-verification` is pushed at `e000424` and the annotated tag `member4-verification-0.1.0` is pushed; `origin/main` still contains only the initial `README.md`, so the project documents (`PRD`, `TechDesign`, `research`, `agent_docs/`, `REVIEW-CHECKLIST.md`) remain untracked locally.
-- Blocked by: none for the acceptance rules (implemented and passing). Integration and AI-boundary tests skip by design until their owning modules exist. Binary execution is blocked until the Ubuntu host, disposable guest, and isolation self-check exist.
+- Remote [2026-10-20]: `main` is `024f887` and now contains the `agent/` subtree archive, member 2's GUI with English docs, and member 5's `app/domain/candidates.py`, `app/services/provider.py`, and 19 AI-boundary/provider tests. `origin/member-4-verification` is behind the local branch by 7 commits; the acceptance engine is still missing from `main`.
+- Blocked by: none for the acceptance rules (implemented and passing). The identity/state suite still skips until `app.services.jobs` exists. Binary execution is blocked until the Ubuntu host, disposable guest, and isolation self-check exist.
 
 ## Decisions
 

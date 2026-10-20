@@ -104,7 +104,7 @@ One successful route is never a successful run.
 | `tests/unit/test_acceptance.py` | implemented — 29 passing tests, negative-first |
 | `tests/conftest.py` | implemented — shared synthetic ELF builders, project-root import path |
 | `tests/integration/test_identity_state.py` | contract skeleton — activates when `app.services.jobs` exists |
-| `tests/integration/test_ai_boundary.py` | contract suite — 17 tests pass against `origin/member-5-deepseek-schema` (`e175436`); skips on the member-4 branch until that branch lands |
+| `tests/integration/test_ai_boundary.py` | **removed 2026-10-20** — superseded by `tests/test_ai_boundary_contract.py` on `main` (19 tests, member 5's implementation) |
 
 Reason codes are persisted and exported, so they are part of the evidence
 contract: **add values, do not rename existing ones.**
@@ -186,7 +186,7 @@ the behaviours may not.
 
 ### 4.3 Candidate schema and provider — what member 5 provides
 
-Consumed by `tests/integration/test_ai_boundary.py`.
+Consumed by `tests/test_ai_boundary_contract.py` and `tests/test_provider_failures.py` on `main`. The member-4 skeleton `tests/integration/test_ai_boundary.py` was removed on 2026-10-20 because member 5's implementation and tests supersede it.
 
 | Need | Behaviour it must support |
 |---|---|

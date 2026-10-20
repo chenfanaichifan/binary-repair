@@ -5,7 +5,7 @@ These are "ready to send" confirmation requests derived from the interface contr
 | File | Recipient | Confirm | Status | Unblocks after confirmation |
 |---|---|---|---|---|
 | `01-member-1-obligation-interface.md` | Member 1 | §4.1 Obligation / Verdict call interface + owner of `reviewed_scope_sha256` | Confirmed 2026-10-18 (contract in `verification-design.md` §4.1) | Write `app.services.jobs` without guessing the shape; once the module lands, `tests/integration/test_identity_state.py` moves from skip to run |
-| `02-member-5-candidate-provider.md` | Member 5 | §4.3 candidate schema, data boundary, provider failure type | Confirmed 2026-10-18 (contract in `verification-design.md` §4.3) | Write `app.domain.candidates` against a clear acceptance standard; once the module lands, `tests/integration/test_ai_boundary.py` moves from skip to run |
+| `02-member-5-candidate-provider.md` | Member 5 | §4.3 candidate schema, data boundary, provider failure type | Confirmed 2026-10-18; merged to `main` 2026-10-20 (contract in `verification-design.md` §4.3) | Implemented: `app/domain/candidates.py`, `app/services/provider.py`, `tests/test_ai_boundary_contract.py` (19 tests) |
 | `03-member-3-fixture-vm.md` | Member 3 | §5 fixture profile, frozen test manifest, VM or explicit blocker | To send | A real ELF and frozen input manifest unlock V1–V4 checks; a recorded blocker also unblocks planning |
 
 ## Confirmation log
@@ -21,9 +21,10 @@ These are "ready to send" confirmation requests derived from the interface contr
   `app.services.provider.ProviderFailure(reason: FailureReason)` with
   `TIMEOUT`, `QUOTA`, `BUDGET`, `EMPTY`, `MALFORMED_JSON`, `SCHEMA`.
   Tests for the limits, the Route B shape, the allowlist override, and the
-  provider reason enum now live in `tests/integration/test_ai_boundary.py`; they
-  stay skipped until the owning modules exist. Member 5's implementation is not
-  on `origin` yet.
+  provider reason enum now live in `tests/test_ai_boundary_contract.py` and
+  `tests/test_provider_failures.py` on `main`; the member-4 skeleton
+  `tests/integration/test_ai_boundary.py` was removed on 2026-10-20 as
+  superseded.
 - 2026-10-18 — Member 5's branch moved everything to the shared root in commit
   `e175436` (`app/domain/candidates.py`, `app/services/provider.py`,
   `binaryrepair_ai/`, `schemas/`). Running the contract suite in an isolated
