@@ -11,6 +11,8 @@ $bytes = New-Object byte[] 24
 $rng.GetBytes($bytes)
 $token = [Convert]::ToBase64String($bytes).Replace("+", "-").Replace("/", "_").TrimEnd("=")
 $env:BINARYREPAIR_SESSION_TOKEN = $token
+New-Item -ItemType Directory -Force (Join-Path $project "var") | Out-Null
+Set-Content -Path (Join-Path $project "var\session.token") -Value $token -NoNewline
 $url = "http://127.0.0.1:8123/?token=$token"
 
 Write-Host ""
