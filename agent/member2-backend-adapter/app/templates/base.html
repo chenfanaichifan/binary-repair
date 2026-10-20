@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}BinaryRepair{% endblock %} · GUI 骨架</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body data-job-id="{{ job.id if job else '' }}" data-demo="{{ '1' if demo else '0' }}">
+  <header class="topbar">
+    <div class="brand"><span class="logo">BR</span> BinaryRepair <span class="tag">GUI 骨架</span></div>
+    <nav class="topnav">
+      <a href="/jobs/new">新建任务</a>
+    </nav>
+  </header>
+
+  {% if demo %}
+  <div class="demo-banner" role="status">
+    <strong>GUI-only 开发模式</strong>：页面数据为合成演示 fixture，<strong>未执行真实修复</strong>；
+    不能作为“补丁已验证”的证据。真实链路接入后此横幅会消失。
+  </div>
+  {% endif %}
+
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>阶段（phase）与结论（outcome）分开显示 · 未执行显示 not_run · 只有两条路线都成功才算整体成功 · 导出不代表生产批准</p>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

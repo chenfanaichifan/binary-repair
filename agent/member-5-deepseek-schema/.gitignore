@@ -1,0 +1,11 @@
+.env
+.venv/
+.venv-patcherex/
+__pycache__/
+*.pyc
+.pytest_cache/
+var/
+routeb/out/
+routeb/fixture/vuln
+routeb/fixture/*.o
+*.core
