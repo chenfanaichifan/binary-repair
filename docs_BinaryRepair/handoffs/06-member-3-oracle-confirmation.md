@@ -49,6 +49,17 @@ I can supply **(a)** now. **(b) depends on V4 tooling and is currently blocked**
 I will label gate 6 as "concrete evidence provided, symbolic detection pending V4". I will not
 present the manifest 4/6 result as gate 6 passing.
 
+**Update (2026-10-20): concrete evidence supplied by member 3.** Member 3 reported the crash
+run from the guest: `100 x 'A' -> SIGSEGV` reproduced **5/5** with exit code **139**; after
+`strcpy`, `[rbp] = [rbp+8] = 0x4141414141414141`; the faulting instruction is `ret` at
+`0x401317`; backtrace #1 is `0x4141414141414141`. The record is in
+`evidence/07-gate6-crash-evidence.txt` (sha256 prefix `4bab2214`). This satisfies gate 6
+criterion (a), but two things remain open: the file and its **full** sha256 are not in this
+repository yet (searched all refs and the working tree), so M4 cannot recompute the hash or
+attach the artifact to the evidence bundle; and symbolic detection (b) still depends on V4
+tooling (§3). The report line is therefore "concrete counterexample PASS (guest run, member 3),
+symbolic detection pending V4 — gate 6 partial", never "gate 6 complete".
+
 ## 3. Two project-level risks I am escalating to the lead
 
 These are not solvable between us; I am reporting them, not asking you to fix them alone.

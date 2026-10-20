@@ -58,6 +58,8 @@ Update this after major decisions, completed phases, or bugs that future agents 
 
 - [2026-10-20] `main` is no longer a bare deletion target: it was rebuilt to `453fe95` (`app/` GUI + minimal jobs, `tests/`, `agent/` archive, README, run scripts), and member 1 owns the root README. It may still change, so the option-B deferral stands: do not merge the acceptance engine into `main` until the owner confirms the layout. Separately, `git fetch` / `ls-remote` from the DSH sandbox fail with `error adding trust anchors from file: .../Git/ucrt64/etc/ssl/certs/ca-bundle.crt`; `-c http.sslBackend=schannel` plus an approved escalation works for both fetch and push (push verified 2026-10-20).
 
+- [2026-10-20] Gate 6 stays **partial**: the concrete counterexample was reported from member 3's guest run — `100 x 'A'` -> SIGSEGV, reproduced 5/5, exit 139; after `strcpy`, `[rbp] = [rbp+8] = 0x4141414141414141`; faulting instruction `ret` @ `0x401317`; backtrace #1 `0x4141414141414141`. The record is `evidence/07-gate6-crash-evidence.txt` (sha256 prefix `4bab2214`), but the file and its full hash are **not in the repository**, so M4 cannot recompute the hash or attach the artifact yet; symbolic detection (angr/Z3/LIEF) is pending V4. Report gate 6 as "concrete evidence PASS (guest run), symbolic pending V4 — partial", never as complete.
+
 ## Completed
 
 - [x] Source PRD and Tech Design read end to end; approved facts extracted.
