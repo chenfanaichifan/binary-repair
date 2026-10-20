@@ -1,5 +1,6 @@
--- Job store for the member-1 controller.
--- Identity/state tables for the §4.2 contract.
+-- v1 baseline for the controller schema: jobs + artifacts only.
+-- AI tables (contracts/runs/attempts/obligations/events/model_calls) are created
+-- by migrations/002_ai_tables.sql; verdict columns are added by 003.
 
 PRAGMA foreign_keys = ON;
 
@@ -22,28 +23,4 @@ CREATE TABLE IF NOT EXISTS artifacts (
     created_at    TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS contracts (
-    id              TEXT PRIMARY KEY,
-    job_id          TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
-    revision        INTEGER NOT NULL,
-    input_sha256    TEXT NOT NULL,
-    manifest_sha256 TEXT NOT NULL,
-    scope_sha256    TEXT NOT NULL,
-    reviewer_label  TEXT NOT NULL,
-    approved_at     TEXT NOT NULL,
-    UNIQUE (job_id, revision)
-);
-
-CREATE TABLE IF NOT EXISTS runs (
-    id              TEXT PRIMARY KEY,
-    job_id          TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
-    contract_id     TEXT NOT NULL REFERENCES contracts(id),
-    idempotency_key TEXT NOT NULL,
-    phase           TEXT NOT NULL DEFAULT 'queued',
-    started_at      TEXT NOT NULL,
-    UNIQUE (job_id, idempotency_key)
-);
-
 CREATE INDEX IF NOT EXISTS idx_artifacts_job_id ON artifacts(job_id);
-CREATE INDEX IF NOT EXISTS idx_contracts_job_id ON contracts(job_id);
-CREATE INDEX IF NOT EXISTS idx_runs_job_id ON runs(job_id);
