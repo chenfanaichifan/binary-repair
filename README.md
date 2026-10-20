@@ -1,130 +1,150 @@
-# BinaryRepair MVP · GUI 骨架（Member 2）
+# BinaryRepair MVP · GUI Skeleton (Member 2)
 
-这是「项目 11：AI 驱动的二进制漏洞自动修复与正确性验证」的**图形界面第一步**：
-把三个页面（新建/复核 → 进度对比 → 证据导出）跑起来，并用**明确标注的演示数据**
-把状态语义和字段固定下来。真实执行链路（VM、Route A/B、angr 校验）由其他成员接入。
+This is the first GUI step for Project 11: AI-driven binary vulnerability repair and correctness verification.
+It brings up the three screens (create/review → progress/comparison → evidence/export) and fixes the
+status semantics and field names with **clearly labelled demo data**. The real execution chain
+(VM, Route A/B, angr checks) will be wired in by the other members.
 
-> **重要**：当前所有阶段推进和结论都是演示 fixture，页面顶部有横幅标注。
-> 它不是修复结果，不能当作“补丁已验证”的证据。接真实数据后横幅会消失。
+> **Important:** every phase transition and outcome on these screens is a demo fixture, and a banner
+> at the top of the page says so. It is not a repair result and must not be treated as evidence that
+> a patch is verified. The banner disappears when real data is connected.
 
-## 0. 语言规范（重要，2026-10-18 团队决定）
+## 0. Language policy (important; team decision, 2026-10-18)
 
-- **界面（UI）允许中文**：标题、按钮、状态徽章、说明文字都是中文。
-- **上传 / API / 导出数据一律英文 ASCII**：缺陷描述、复现输入、环境、契约四项、
-  obligations、结论原因、变更区域、产物角色、导出 JSON 全部英文。
-- 服务端校验：非 ASCII 表单内容返回 `422`；浏览器在提交前也会先拦截。
-- 上传文件名自动转成 ASCII 安全名（例如 `样本.bin` -> `sample.bin`），避免中文进入导出数据。
-- 有测试守护：`/api/jobs/{id}` 与导出 JSON 扫描不到中日韩字符，UI 页面仍为中文
-  （见 `tests/test_language_policy.py`）。
+- **The UI may use Chinese**: titles, buttons, status badges, and explanatory text are Chinese.
+- **Uploaded data, API payloads, and exports must be English ASCII**: defect description, reproduction
+  input, environment, the four contract fields, obligations, outcome reasons, changed regions,
+  artifact roles, and export JSON are all English.
+- Server-side validation: non-ASCII form content returns `422`; the browser also blocks it before submission.
+- Uploaded filenames are converted to ASCII-safe names (for example, a Chinese filename becomes
+  `sample.bin`) so non-ASCII characters never enter export data.
+- Tests guard this: `/api/jobs/{id}` and export JSON are scanned for CJK characters, while the UI stays
+  Chinese (see `tests/test_language_policy.py`).
 
-## 1. 快速开始（Windows）
+## 1. Quick start (Windows)
 
-前提：已经装好 Python 3.13（本机已装），并在项目目录里有 `.venv` 虚拟环境。
+Prerequisite: Python 3.13 (installed locally) and a `.venv` in the project directory.
 
-在**项目目录**打开终端（PowerShell 或命令提示符），任选一种：
+Open a terminal in the **project directory** (PowerShell or Command Prompt), then choose one:
 
 ```powershell
-.\start.ps1          # PowerShell 一键启动
+.\start.ps1          # one-command PowerShell start
 ```
 
 ```bat
-run.bat              :: 双击也可以
+run.bat              :: double-click also works
 ```
 
-或者手动：
+Or manually:
 
 ```powershell
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
 ```
 
-然后浏览器打开 **<http://127.0.0.1:8123>**（只监听本机，别人访问不到）。
+Then open **<http://127.0.0.1:8123>** in a browser (it listens on localhost only; other machines
+cannot reach it).
 
-如果 `.venv` 不存在（换电脑/重装后）：
+If `.venv` does not exist (new machine or reinstall):
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-## 2. 你会看到什么（第一次演示流程）
+## 2. What you will see (first demo run)
 
-1. 打开后进入 **① 新建任务与契约复核**：选择任意文件当样本（演示只算哈希）、填缺陷描述、看/改安全契约；
-2. 点「登记任务并进入复核」→ 进入 **② 进度与对比**：两条路线并排，此时都是“草稿”；
-3. 点「批准并启动（演示）」→ 阶段每约 1.2 秒推进一次，页面每 2 秒自动刷新；
-4. 结束后：Route A 显示 **被拒**（有效输入回归失败），Route B 显示 **不确定**（有界符号预算用尽）——
-   这是故意设计的，用来演示“未完成 / 未通过不能被显示成成功”；
-5. 点「查看证据」→ **③ 证据与导出**：V0–V5 义务、范围、产物哈希、诊断候选标注、导出 JSON；
-6. 「导出证据 JSON」下载的文件里同样带 `demo: true` 和“导出不代表生产批准”的说明。
+1. The app opens on **① Create job and review contract**: choose any file as the sample (the demo only
+   hashes it), enter the defect description, and view/edit the security contract.
+2. Click **Register job and continue to review** → **② Progress and comparison**: both routes are shown
+   side by side, initially as "draft".
+3. Click **Approve and start (demo)** → the phase advances about every 1.2 seconds, and the page
+   refreshes every 2 seconds.
+4. When it finishes: Route A shows **rejected** (valid-input regression failed) and Route B shows
+   **inconclusive** (bounded symbolic budget exhausted). This is deliberate: it demonstrates that
+   "not finished / not passed" must never be displayed as success.
+5. Click **View evidence** → **③ Evidence and export**: V0–V5 obligations, scope, artifact hashes,
+   diagnostic-candidate label, and export JSON.
+6. The file downloaded by **Export evidence JSON** also carries `demo: true` and a note that export is
+   not production approval.
 
-## 3. 三个页面和需求的对应
+## 3. The three screens and the requirements they cover
 
-| 页面 | 对应需求 | 本骨架已实现 |
+| Screen | Requirement | Implemented in this skeleton |
 |---|---|---|
-| ① `setup.html` | PRD **F1** 图形化建任务与契约复核 | 上传、SHA-256 登记、缺陷/测试/环境输入、可编辑契约、执行前校验（空文件 422、超大 413） |
-| ② `comparison.html` | PRD **F5**、UI/UX Direction | 双路线并排、阶段独立指示、六类结论徽章、测试/验证/兼容/耗时/人工介入/AI 用量、取消、轮询 |
-| ③ `evidence.html` | PRD **F4/F5** | V0–V5 义务表、范围与假设、产物哈希、diagnostic candidate 标注、导出、replay 说明 |
+| ① `setup.html` | PRD **F1** graphical job creation and contract review | Upload, SHA-256 registration, defect/test/environment inputs, editable contract, pre-run validation (empty file 422, oversized 413) |
+| ② `comparison.html` | PRD **F5**, UI/UX Direction | Side-by-side routes, independent stage indicators, six outcome badges, test/verification/compatibility/duration/human-intervention/AI-usage fields, cancel, polling |
+| ③ `evidence.html` | PRD **F4/F5** | V0–V5 obligation table, scope and assumptions, artifact hashes, diagnostic-candidate label, export, replay notes |
 
-状态语义按技术设计实现：`phase`（draft/screening/analyzing/roundtrip/generating/applying/validating/finished）与
-`outcome`（success_within_scope/unsupported/rejected/inconclusive/error/cancelled）**两条轴分开显示**；
-`not_run` 不会被算成通过。
+Status semantics follow the technical design: `phase`
+(draft/screening/analyzing/roundtrip/generating/applying/validating/finished) and `outcome`
+(success_within_scope/unsupported/rejected/inconclusive/error/cancelled) are displayed on **two separate
+axes**; `not_run` is never counted as passed.
 
-## 4. 目录结构
+## 4. Directory layout
 
-```
+```text
 binaryrepair-mvp/
 ├─ app/
-│  ├─ main.py            # FastAPI 入口、三屏路由、状态接口、导出接口
-│  ├─ demo.py            # 演示数据（阶段推进、义务 V0–V5、产物）；接真实后端时替换这里
-│  ├─ i18n.py            # 中文显示标签（只给模板/前端用，不进入 API 与导出）
-│  ├─ templates/         # base + 三屏模板（Jinja2）
-│  └─ static/            # css/app.css、js/poll.js
-├─ tests/test_smoke.py   # 冒烟测试（三屏 200、Host 校验、导出）
-├─ fixtures/public/      # 只放公开样本（规则见该目录 README）
-├─ docs/                 # 说明文档（含 member2 须知）
-├─ var/jobs/             # 运行时产物，已在 .gitignore 中忽略
+│  ├─ main.py            # FastAPI entry, three-screen routes, status API, export API
+│  ├─ demo.py            # demo data (phase progression, V0–V5 obligations, artifacts); replace when the real backend is connected
+│  ├─ i18n.py            # Chinese display labels (templates/frontend only; never enter API or exports)
+│  ├─ templates/         # base + three-screen templates (Jinja2)
+│  └─ static/            # css/app.css, js/poll.js
+├─ tests/test_smoke.py   # smoke tests (three screens 200, host check, export)
+├─ fixtures/public/      # public samples only (rules in that directory's README)
+├─ docs/                 # documentation (including the member-2 notes)
+├─ var/jobs/             # runtime artifacts, ignored by .gitignore
 ├─ requirements.txt
 ├─ start.ps1 / run.bat
 └─ README.md
 ```
 
-## 5. 跑测试
+## 5. Running the tests
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-覆盖：三屏可打开、Host 校验拒绝外部域名、建任务后哈希是 64 位、启动后阶段不再是 draft、
-证据页含 V0 与 diagnostic candidate、导出带 attachment 且 `demo: true`、取消后状态是 cancelled；
-另有语言规范测试：API/导出无中日韩字符、中文表单内容返回 422、中文文件名被转 ASCII、UI 仍为中文。
+Coverage: the three screens open; the host check rejects foreign domains; a created job has a
+64-character hash; the phase is no longer `draft` after start; the evidence page contains V0 and a
+diagnostic candidate; the export is an attachment with `demo: true`; a cancelled job reports `cancelled`.
+Separate language-policy tests: API/export contain no CJK characters, Chinese form content returns 422,
+Chinese filenames are converted to ASCII, and the UI stays Chinese.
 
-## 6. 常见问题
+## 6. FAQ
 
-| 现象 | 原因 / 解决 |
+| Symptom | Cause / fix |
 |---|---|
-| `uvicorn: command not found` | 不要直接敲 `uvicorn`，用 `.\.venv\Scripts\python.exe -m uvicorn ...` |
-| 端口被占用 | 换端口：把命令里的 `8123` 改成 `8124` 等 |
-| `无法加载文件 start.ps1，因为在此系统上禁止运行脚本` | PowerShell 执行策略限制：改用 `run.bat`，或执行 `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` 后重试 |
-| 页面 403 | 用 `localhost` / `127.0.0.1` 打开；Host 校验会拒绝其他域名 |
-| 装依赖很慢/失败 | 换镜像：`.\.venv\Scripts\python.exe -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple` |
-| 改了 `.py` 不生效 | uvicorn 没开自动重载，重启即可；开发可加 `--reload` |
+| `uvicorn: command not found` | Do not call `uvicorn` directly; use `.\.venv\Scripts\python.exe -m uvicorn ...` |
+| Port already in use | Change `8123` to `8124` etc. in the command |
+| `start.ps1 cannot be loaded because running scripts is disabled` | PowerShell execution policy; use `run.bat`, or run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` and retry |
+| Page returns 403 | Open `localhost` / `127.0.0.1`; the host check rejects other domains |
+| Dependency install is slow or fails | Use a mirror: `.\.venv\Scripts\python.exe -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple` |
+| `.py` changes do not take effect | uvicorn is not in reload mode; restart, or add `--reload` for development |
 
-## 7. 下一步（按依赖顺序）
+## 7. Next steps (dependency order)
 
-1. **和成员 1 对齐 API 契约**：把 `demo.py` 的字段换成 `/api/jobs/{id}` 真实返回；页面与轮询逻辑不用改。
-2. **从成员 4 拿验收规则**：六类 outcome 的判定、`not_run` 展示、负例清单；本页的徽章/义务表按他的规则校准。
-3. **接成员 3 的 fixture 与 provenance**：上传校验（架构/格式）、来源字段。
-4. **GitHub**：本目录已是独立仓库根目录，`git init` 后提交；提交前确认 `.gitignore` 生效（`.venv`、`var/jobs` 不会进库）。
-5. 之后按 PRD F1/F5 补：契约 revision 与 409 stale approval、CSRF/session、真实导出包。
+1. **Align the API contract with Member 1**: replace the fields from `demo.py` with the real
+   `/api/jobs/{id}` response; the pages and polling logic do not change.
+2. **Get the acceptance rules from Member 4**: the six outcome decisions, `not_run` display, and
+   negative-case list; calibrate this page's badges/obligation table to those rules.
+3. **Connect Member 3's fixture and provenance**: upload validation (architecture/format) and source fields.
+4. **GitHub**: this GUI slice is archived under `agent/member2-gui/` in the shared repository; do not
+   run `git init` here. Use the shared branch/PR flow, and keep `.gitignore` effective (`.venv` and
+   `var/jobs` do not enter the repository).
+5. Then fill in PRD F1/F5: contract revision and 409 stale approval, CSRF/session, real export bundle.
 
-## 8. 保密与数据边界（必读）
+## 8. Confidentiality and data boundary (required reading)
 
-- 只把**公开样本/自己构造的样本**放进 `fixtures/public/`；
-- **不要**把客户二进制、机密派生内容、API key、`.env` 提交到 GitHub；
-- 三份项目文档（PRD/研究/技术设计）属团队内部资料，入库前先问团队；
-- 导出产物只用于评审，不代表生产批准。
+- Put only **public samples / self-built samples** in `fixtures/public/`.
+- **Do not** commit client binaries, confidential derived content, API keys, or `.env` to GitHub.
+- The three project documents (PRD/research/technical design) are internal team material; ask the team
+  before committing them.
+- Exported artifacts are for review only and do not represent production approval.
 
-## 9. 文档出处
+## 9. Document sources
 
-- PRD（v1.0，2026-10-15）：F1、F4、F5、UI/UX Direction、Success Metrics
-- TechDesign（v1.0，2026-10-15）：§6 状态与生命周期、§7 三视图与 API、§9 验证阶梯、§11 本地服务安全、§12 目录与 dev mode、§13 测试、§14 分工
-- 分工与协作边界：`docs/member2-须知.md`（2026-10-18 团队分工版）
+- PRD (v1.0, 2026-10-15): F1, F4, F5, UI/UX Direction, Success Metrics
+- TechDesign (v1.0, 2026-10-15): §6 state and lifecycle, §7 three views and API, §9 verification ladder,
+  §11 local service security, §12 directory and dev mode, §13 tests, §14 roles
+- Roles and collaboration boundaries: `docs/member2-须知.md` (2026-10-18 team division version)
