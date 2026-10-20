@@ -15,6 +15,12 @@ def contract(**over) -> SecurityContract:
         valid_behavior="returns 0 and copies the input unchanged",
         forbidden_behavior="any write outside the 64-byte destination",
         invalid_input_response="return -1 without writing",
+        dest_capacity_bytes=50,
+        max_valid_input_bytes=49,
+        capacity_includes_terminator=True,
+        invalid_exit_code=1,
+        invalid_stdout="",
+        invalid_stderr="ERROR: input exceeds destination capacity\n",
         authorized_edits=("add a capacity guard at function entry",),
         allowed_calls=(),
         environment_assumptions=("System V AMD64 ABI", "single thread"),
@@ -48,6 +54,10 @@ def test_list_order_does_not_change_hash() -> None:
         ("allowed_calls", ("memcpy",)),
         ("environment_assumptions", ("System V AMD64 ABI",)),
         ("required_obligations", ("identity",)),
+        ("dest_capacity_bytes", 64),
+        ("max_valid_input_bytes", 48),
+        ("invalid_exit_code", 2),
+        ("invalid_stderr", "different error\n"),
     ],
 )
 def test_any_field_change_changes_hash(field: str, value) -> None:
@@ -133,3 +143,24 @@ def test_module_helper_rejects_unknown_field() -> None:
     data["extra"] = "not allowed"
     with pytest.raises(ValueError):
         canonical_contract_json(data)
+
+
+def test_capacity_must_leave_room_for_terminator() -> None:
+    with pytest.raises(ValueError):
+        contract(dest_capacity_bytes=50, max_valid_input_bytes=50)
+
+
+def test_invalid_exit_code_must_fit_a_process_status() -> None:
+    with pytest.raises(ValueError):
+        contract(invalid_exit_code=256)
+
+
+def test_empty_stdout_is_allowed_but_stderr_can_be_exact() -> None:
+    c = contract(invalid_stdout="", invalid_stderr="ERROR: input exceeds destination capacity\n")
+    assert c.invalid_stdout == ""
+    assert c.invalid_stderr.endswith("\n")
+    assert c.to_dict()["invalid_stderr"] == "ERROR: input exceeds destination capacity\n"
+
+
+def test_schema_version_is_two() -> None:
+    assert contract().schema_version == 2

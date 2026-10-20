@@ -28,7 +28,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Iterable
 
-CONTRACT_SCHEMA_VERSION = 1
+CONTRACT_SCHEMA_VERSION = 2
 
 # V0-V5 kinds accepted by the acceptance engine (verification-design §4.1.4).
 OBLIGATION_KINDS = (
@@ -60,22 +60,48 @@ _TEXT_FIELDS = (
     "forbidden_behavior",
     "invalid_input_response",
 )
-_REQUIRED_KEYS = _TEXT_FIELDS + _LIST_FIELDS + ("schema_version",)
+_NUMERIC_FIELDS = (
+    "dest_capacity_bytes",
+    "max_valid_input_bytes",
+    "capacity_includes_terminator",
+    "invalid_exit_code",
+)
+_BYTE_TEXT_FIELDS = ("invalid_stdout", "invalid_stderr")
+_REQUIRED_KEYS = (
+    _TEXT_FIELDS + _LIST_FIELDS + _NUMERIC_FIELDS + _BYTE_TEXT_FIELDS + ("schema_version",)
+)
 
 
-def _clean_text(value: Any, field: str, limit: int = _MAX_TEXT) -> str:
+def _clean_text(
+    value: Any, field: str, limit: int = _MAX_TEXT, *, allow_empty: bool = False
+) -> str:
     if not isinstance(value, str):
         raise TypeError(f"{field} must be a string")
     if "\x00" in value:
         raise ValueError(f"{field} must not contain NUL")
     text = value.strip()
     if not text:
+        if allow_empty:
+            return ""
         raise ValueError(f"{field} must not be empty")
     if len(text) > limit:
         raise ValueError(f"{field} is longer than {limit} characters")
     if not _TEXT_RE.match(text):
         raise ValueError(f"{field} must be printable ASCII")
     return text
+
+
+def _clean_byte_text(value: Any, field: str, limit: int = _MAX_TEXT) -> str:
+    """Exact bytes-as-text for expected stdout/stderr: no strip, no folding."""
+    if not isinstance(value, str):
+        raise TypeError(f"{field} must be a string")
+    if "\x00" in value:
+        raise ValueError(f"{field} must not contain NUL")
+    if len(value) > limit:
+        raise ValueError(f"{field} is longer than {limit} characters")
+    if value and not _TEXT_RE.match(value):
+        raise ValueError(f"{field} must be printable ASCII")
+    return value
 
 
 def _clean_list(values: Iterable[Any], field: str, *, pattern: re.Pattern | None = None) -> tuple[str, ...]:
@@ -104,6 +130,12 @@ class SecurityContract:
     valid_behavior: str
     forbidden_behavior: str
     invalid_input_response: str
+    dest_capacity_bytes: int
+    max_valid_input_bytes: int
+    capacity_includes_terminator: bool
+    invalid_exit_code: int
+    invalid_stdout: str
+    invalid_stderr: str
     authorized_edits: tuple[str, ...] = ()
     allowed_calls: tuple[str, ...] = ()
     environment_assumptions: tuple[str, ...] = ()
@@ -122,6 +154,37 @@ class SecurityContract:
         )
         for field in ("valid_domain", "valid_behavior", "forbidden_behavior", "invalid_input_response"):
             object.__setattr__(self, field, _clean_text(getattr(self, field), field))
+
+        if not isinstance(self.dest_capacity_bytes, int) or isinstance(self.dest_capacity_bytes, bool):
+            raise TypeError("dest_capacity_bytes must be an integer")
+        if self.dest_capacity_bytes < 1:
+            raise ValueError("dest_capacity_bytes must be >= 1")
+        if not isinstance(self.max_valid_input_bytes, int) or isinstance(self.max_valid_input_bytes, bool):
+            raise TypeError("max_valid_input_bytes must be an integer")
+        if self.max_valid_input_bytes < 0:
+            raise ValueError("max_valid_input_bytes must be >= 0")
+        if not isinstance(self.capacity_includes_terminator, bool):
+            raise TypeError("capacity_includes_terminator must be a bool")
+        if self.capacity_includes_terminator:
+            if self.max_valid_input_bytes >= self.dest_capacity_bytes:
+                raise ValueError(
+                    "max_valid_input_bytes must be < dest_capacity_bytes when the terminator is counted"
+                )
+        elif self.max_valid_input_bytes > self.dest_capacity_bytes:
+            raise ValueError(
+                "max_valid_input_bytes must be <= dest_capacity_bytes when the terminator is not counted"
+            )
+        if not isinstance(self.invalid_exit_code, int) or isinstance(self.invalid_exit_code, bool):
+            raise TypeError("invalid_exit_code must be an integer")
+        if not 0 <= self.invalid_exit_code <= 255:
+            raise ValueError("invalid_exit_code must be in 0..255")
+        object.__setattr__(
+            self, "invalid_stdout", _clean_byte_text(self.invalid_stdout, "invalid_stdout")
+        )
+        object.__setattr__(
+            self, "invalid_stderr", _clean_byte_text(self.invalid_stderr, "invalid_stderr")
+        )
+
         object.__setattr__(
             self, "allowed_calls", _clean_list(self.allowed_calls, "allowed_calls", pattern=_ENTRY_RE)
         )
@@ -143,6 +206,12 @@ class SecurityContract:
             "valid_behavior": self.valid_behavior,
             "forbidden_behavior": self.forbidden_behavior,
             "invalid_input_response": self.invalid_input_response,
+            "dest_capacity_bytes": self.dest_capacity_bytes,
+            "max_valid_input_bytes": self.max_valid_input_bytes,
+            "capacity_includes_terminator": self.capacity_includes_terminator,
+            "invalid_exit_code": self.invalid_exit_code,
+            "invalid_stdout": self.invalid_stdout,
+            "invalid_stderr": self.invalid_stderr,
             "authorized_edits": list(self.authorized_edits),
             "allowed_calls": list(self.allowed_calls),
             "environment_assumptions": list(self.environment_assumptions),

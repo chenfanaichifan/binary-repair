@@ -146,3 +146,127 @@ HAVING n > 1;
 
 002 合入后，成员1 再改 `jobs.py` / `controller_api.py` / `connection.py`，并报
 identity / controller API / attempts 的真实 pytest 数。
+
+---
+
+## 6. SecurityContract v2：容量与非法路径变成数值字段
+
+纯文本 `valid_domain` / `invalid_input_response` 只给人看；gate 3/5 和验收需要机器
+可读，所以 `SecurityContract` 升到 **schema_version=2**，新增必填字段：
+
+```python
+dest_capacity_bytes: int          # 50
+max_valid_input_bytes: int        # 49
+capacity_includes_terminator: bool# True（strcpy 的 NUL 计入 50）
+invalid_exit_code: int            # 1
+invalid_stdout: str               # ""（空字符串是合法值，不 strip）
+invalid_stderr: str               # "ERROR: input exceeds destination capacity\n"
+```
+
+约束：
+
+- `dest_capacity_bytes >= 1`；
+- `capacity_includes_terminator=True` 时 `max_valid_input_bytes < dest_capacity_bytes`；
+- `False` 时 `max_valid_input_bytes <= dest_capacity_bytes`；
+- `invalid_exit_code` 在 `0..255`；
+- `invalid_stdout` / `invalid_stderr` 保留精确字节文本（不 strip、不折叠换行），只允许
+  printable ASCII + `\n`/`\t`，允许空串。
+
+fixture 的值：
+
+```json
+{"dest_capacity_bytes":50,
+ "max_valid_input_bytes":49,
+ "capacity_includes_terminator":true,
+ "invalid_exit_code":1,
+ "invalid_stdout":"",
+ "invalid_stderr":"ERROR: input exceeds destination capacity\n"}
+```
+
+gate 3 的 guard 直接读 `max_valid_input_bytes`（`len > 49` → invalid），不要从文本里
+正则解析 50/49。`valid_domain` 仍保留人类可读描述，两者必须一致（review 检查）。
+
+`schema_version` 从 1 升到 2；`from_dict` 仍然 strict，旧 body 缺字段会被拒绝，不会
+静默补默认值。
+
+---
+
+## 7. `runs.manifest_sha256`：canonical 索引，不是测试用例的重排
+
+manifest 文件（`valid.json` / `invalid.json`）按字节冻结为 artifact；`manifest_sha256`
+是下面这个小索引的 hash：
+
+```json
+{"case_id":"CWE121_src_char_declare_cpy_51b",
+ "manifests":[{"name":"invalid.json","sha256":"<file sha>"},
+              {"name":"valid.json","sha256":"<file sha>"}],
+ "original_sha256":"aa4281...",
+ "schema_version":1}
+```
+
+canonical 规则：
+
+- 顶层 key 排序；compact separator `(",", ":")`；UTF-8；`ensure_ascii=False`；
+- `manifests` **按 name 排序**；name 必须唯一、相对 POSIX 路径、不含 `..`；
+- 每个 `sha256` 是该文件**原始字节**的 SHA-256（lowercase hex）；
+- 文件内部 case 顺序、缩进、换行都影响文件 hash；冻结后重排/格式化 = 新 manifest。
+
+唯一实现（controller 直接调，不要自己拼 JSON）：
+
+```python
+from app.domain.manifests import (
+    ManifestEntry, manifest_entries_from_files,
+    manifest_set_json, manifest_set_sha256,
+)
+
+entries = manifest_entries_from_files([valid_path, invalid_path], root=fixtures_dir)
+manifest_json = manifest_set_json(case_id=..., original_sha256=..., entries=entries)
+manifest_sha = manifest_set_sha256(case_id=..., original_sha256=..., entries=entries)
+```
+
+存哪：
+
+- `runs.manifest_sha256` = 上面的 `manifest_sha`；
+- `manifest_json` 作为 artifact（role `test_manifest`）保存，或由 controller 重算校验；
+- 两个 JSON 文件本身也作为 artifact 保存，路径/哈希进 `artifacts`。
+
+审批绑定：
+
+```text
+jobs.original_sha256
++ contracts.sha256
++ runs.manifest_sha256
+```
+
+run 创建时三者一起复制/校验；`reviewed_scope_sha256` 仍等于 `contracts.sha256`，
+manifest 单独绑定，不塞进 contract body，避免循环 hash。
+
+---
+
+## 8. attempts 重试语义
+
+| 概念 | 含义 |
+|---|---|
+| run | 一次执行：冻结的 `(job, contract, manifest)` + 一个 `idempotency_key` |
+| attempt | run 内某一条路线的一次尝试；`sequence` 从 1 递增 |
+
+规则：
+
+1. **同一个 idempotency key 复用**：返回已有 run（HTTP 200）和它的 attempts；
+   不新建 run，也不新建 attempt。
+2. 如果同一个 key 但 `job_id` / `contract_id` / `manifest_sha256` 与已存 run 不一致：
+   **409 conflict**，不覆盖、不新建。
+3. **重试一条路线**：走显式 retry 端点，在**同一个 run** 下新建 attempt，
+   `sequence+1`；旧 attempt 保留。
+4. **新 run** 只在以下情况创建：
+   - 新的 idempotency key；
+   - 契约重新评审（新 `contracts.sha256`）或 manifest 重新冻结（新
+     `runs.manifest_sha256`）后的新执行；
+   - 操作员显式 "rerun"（生成新 key）。
+5. provider 内部的 transport retry 不新建 attempt；它是同一个 attempt 内的一次
+   `model_calls` 记录。候选被拒绝后重新生成，才新建 attempt。
+6. run 进入终态后不可追加 attempt；要重跑必须新 key（规则 4）。
+
+`attempts` 在 run 启动时预建 route_a/route_b 两行，`sequence=1`、`phase='queued'`、
+`outcome=NULL`；retry 端点再追加。这样 `/api/attempts/{id}/evidence` 在生成期间
+就有 id。
