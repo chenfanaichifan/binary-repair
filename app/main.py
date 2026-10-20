@@ -66,7 +66,30 @@ MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 
 # 本机会话：launcher 用 ?token=... 引导一次，之后靠 HttpOnly cookie。
 # CSRF token 由会话 token 派生，服务端渲染进表单，POST 必须回传。
-SESSION_TOKEN = os.environ.get("BINARYREPAIR_SESSION_TOKEN") or secrets.token_urlsafe(32)
+def _load_session_token() -> str:
+    """Return the persisted local session token (env override wins).
+
+    The token is written to ``var/session.token`` once and reused across restarts,
+    so the browser cookie stays valid and users do not have to re-login every time.
+    """
+    configured = os.environ.get("BINARYREPAIR_SESSION_TOKEN")
+    if configured:
+        return configured
+    token_file = BASE_DIR.parent / "var" / "session.token"
+    try:
+        if token_file.exists():
+            stored = token_file.read_text(encoding="utf-8").strip()
+            if stored:
+                return stored
+        token = secrets.token_urlsafe(32)
+        token_file.parent.mkdir(parents=True, exist_ok=True)
+        token_file.write_text(token, encoding="utf-8")
+        return token
+    except OSError:
+        return secrets.token_urlsafe(32)
+
+
+SESSION_TOKEN = _load_session_token()
 CSRF_TOKEN = hmac.new(SESSION_TOKEN.encode("utf-8"), b"gui-csrf", hashlib.sha256).hexdigest()
 SESSION_COOKIE = "br_session"
 ALLOWED_HOSTS = {"127.0.0.1", "localhost"}
@@ -210,7 +233,7 @@ def _auth_required_page() -> str:
   <li>用完整地址打开一次（token 会随即从地址栏消失）；</li>
   <li>如果终端已关闭：重新运行 <code>.\\start.ps1</code>，它会生成新 token 并自动打开浏览器。</li>
 </ol>
-<p class="hint">会话 token 每次重启都会变化；不要把它粘贴到公开 Issue 或截图里。</p>
+<p class="hint">token 首次启动后保存在 <code>var/session.token</code>，重启服务不会改变，所以只需登录一次；不要把带 token 的链接发到公开位置。</p>
 </div></body></html>"""
 
 

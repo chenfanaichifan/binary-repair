@@ -5,14 +5,19 @@ $ErrorActionPreference = "Stop"
 $project = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $project
 
-# Random one-time local session token; the printed URL carries it once.
-$rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
-$bytes = New-Object byte[] 24
-$rng.GetBytes($bytes)
-$token = [Convert]::ToBase64String($bytes).Replace("+", "-").Replace("/", "_").TrimEnd("=")
-$env:BINARYREPAIR_SESSION_TOKEN = $token
+# Stable local session token: reused across restarts so the browser cookie stays valid.
+$tokenFile = Join-Path $project "var\session.token"
 New-Item -ItemType Directory -Force (Join-Path $project "var") | Out-Null
-Set-Content -Path (Join-Path $project "var\session.token") -Value $token -NoNewline
+$token = ""
+if (Test-Path $tokenFile) { $token = (Get-Content $tokenFile -Raw).Trim() }
+if (-not $token) {
+    $rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+    $bytes = New-Object byte[] 24
+    $rng.GetBytes($bytes)
+    $token = [Convert]::ToBase64String($bytes).Replace("+", "-").Replace("/", "_").TrimEnd("=")
+    Set-Content -Path $tokenFile -Value $token -NoNewline
+}
+$env:BINARYREPAIR_SESSION_TOKEN = $token
 $url = "http://127.0.0.1:8123/?token=$token"
 
 Write-Host ""
