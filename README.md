@@ -141,5 +141,5 @@ binaryrepair-mvp/
 ```bash
 pytest -q tests/test_ai_boundary_contract.py tests/test_provider_failures.py
 python schemas/generate.py --check
-python db/migrate.py --db var/app.db
+python app/db/migrate.py --db var/app.db
 ```

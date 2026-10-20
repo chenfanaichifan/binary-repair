@@ -8,8 +8,8 @@ Rules:
   * the process is safe to run on every start
 
 Usage:
-    python db/migrate.py --db var/app.db
-    python db/migrate.py --db var/app.db --dry-run
+    python app/db/migrate.py --db var/app.db
+    python app/db/migrate.py --db var/app.db --dry-run
 """
 
 from __future__ import annotations

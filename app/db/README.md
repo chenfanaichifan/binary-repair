@@ -50,8 +50,8 @@ route      : A B
 ## 3. 迁移规则
 
 ```bash
-python db/migrate.py --db var/app.db           # 应用
-python db/migrate.py --db var/app.db --dry-run # 只看待应用
+python app/db/migrate.py --db var/app.db           # 应用
+python app/db/migrate.py --db var/app.db --dry-run # 只看待应用
 ```
 
 - 文件名 `NNN_name.sql`，按数字顺序应用；已应用的文件**永远不改**，改 schema 就加新文件。

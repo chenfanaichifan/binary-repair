@@ -10,6 +10,9 @@
 > **真实样本：** 成员 3 冻结 ELF 后，按
 > [03-feasibility-checklist.md](03-feasibility-checklist.md) 的 G0–G9 执行；
 > 本文档的 fixture 只用于流程预演。
+>
+> **集成位置：** 根目录是唯一入口，模块边界与调用链见
+> [04-root-integration.md](04-root-integration.md)。
 
 ## 0. 先把边界说清楚
 
@@ -159,7 +162,7 @@ cat out/copy_name.c.meta.txt
 | 时间 | 任务 | 产出 |
 |---|---|---|
 | 1 h | **schema 契约冻结**：candidate/context JSON Schema + 示例 + drift 检查，交给 2 号/4 号评审 | `schemas/README.md` + `generated/*.json` + 64 个测试全绿 |
-| 1 h | **DB 迁移**：001_init.sql 在临时库跑通，确认约束（幂等键、复合外键、pass 必须有证据） | `db/migrate.py` 可重复执行，`db/README.md` |
+| 1 h | **DB 迁移**：001_init.sql 在临时库跑通，确认约束（幂等键、复合外键、pass 必须有证据） | `app/db/migrate.py` 可重复执行，`app/db/README.md` |
 | 1 h | 把 `binaryrepair_ai` 接进主应用（1 号提供 job/contract/analysis 的 hash 与 evidence id） | `app/services/provider.py` 一层薄封装 + 一条真实 candidate 记录 |
 | 1 h | Route B：归一化 → round trip（失败也要记录） | 一份 PASS/FAIL/UNSUPPORTED 记录（含 hash 与命令） |
 | 0.5 h | 模型修复 → 回填 → `verify.py --mode fixed`（若 round trip 已通过） | 6/6 结果或明确 blocker |
@@ -191,8 +194,8 @@ cat out/copy_name.c.meta.txt
 │   ├── smoke.py        今天的无害调用（--mock 可离线）
 │   └── demo_candidate.py  审核上下文 → 模型 → 校验后的 candidate（可写出 C）
 ├── schemas/            candidate/context JSON Schema（生成物 + 契约说明 + 示例）
-├── db/                 SQLite DDL（001_init.sql）+ 迁移器 + 表说明
-├── app/                与 verification 对齐的公共入口（domain/candidates、services/provider）
+├── app/db/             SQLite DDL（001_init.sql）+ 迁移器 + 表说明
+├── app/                公共入口：domain/candidates、domain/contracts、services/provider
 ├── tests/              64 个离线用例：provider、schema 契约、数据库约束、AI 边界
 ├── routeb/
 │   ├── fixture/        合成漏洞样本 + 构建脚本
@@ -202,7 +205,9 @@ cat out/copy_name.c.meta.txt
 │   └── experiment/     归一化/修复参考实现
 └── docs/route-b/
     ├── README.md       本文件
-    └── 02-member-5-candidate-provider.md   给成员4的接口回复
+    ├── 02-member-5-candidate-provider.md   给成员4的接口回复
+    ├── 03-feasibility-checklist.md         真实样本 G0–G9
+    └── 04-root-integration.md             根集成与契约哈希
 ```
 
 ### 3.1 给 1 号（集成）的接口

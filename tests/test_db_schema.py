@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from db.migrate import applied_versions, apply_migrations, connect
+from app.db.migrate import applied_versions, apply_migrations, connect
 
 H = "a" * 64
 NOW = "2026-10-18T00:00:00+00:00"

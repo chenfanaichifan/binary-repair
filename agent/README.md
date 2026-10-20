@@ -1,5 +1,8 @@
 # agent
 
+> **Read-only archive.** Do not develop here. The runnable integration point is
+> the repository root; these folders are historical snapshots kept for reference.
+
 Per-branch archive of the member workstreams, created with `git subtree add`.
 Each subfolder keeps the history of its source branch; the original branch is
 not rewritten.
