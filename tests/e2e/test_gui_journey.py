@@ -73,15 +73,55 @@ def _bootstrap(page, base_url: str) -> None:
 def _create_job_via_ui(page, base_url: str, tmp_path) -> str:
     _bootstrap(page, base_url)
     page.navigate(base_url + "/jobs/new")
+    page.wait_js("!!document.querySelector('[data-testid=\"choice-input\"]')", timeout=10)
+    page.click('[data-testid="choice-input"]')
+    page.wait_js(
+        "!document.querySelector('[data-view=\"input\"]').classList.contains('is-hidden')",
+        timeout=5,
+    )
     sample = tmp_path / "sample.bin"
     sample.write_bytes(b"\x7fELF e2e sample bytes")
     page.set_file_input('[data-testid="binary-input"]', str(sample))
     page.set_value('[data-testid="defect-input"]', DEFECT)
     page.set_value('[data-testid="tests-input"]', "valid: hello\nboundary: 8 bytes")
     page.set_value('[data-testid="env-input"]', "Ubuntu x86-64 VM (demo: execution disabled)")
+    page.click('[data-testid="wizard-next"]')
+    page.wait_js(
+        "!document.querySelector('[data-view=\"contract\"]').classList.contains('is-hidden')",
+        timeout=5,
+    )
     page.click('[data-testid="create-job"]')
     location = _wait_job_location(page)
     return location.rstrip("/").rsplit("/", 1)[-1]
+
+
+def test_setup_wizard_has_two_choice_pages(mock_server, page):
+    _bootstrap(page, mock_server)
+    page.navigate(mock_server + "/jobs/new")
+    page.wait_js("!!document.querySelector('[data-testid=\"choice-input\"]')", timeout=10)
+
+    cards = page.eval_js("document.querySelectorAll('.choice-card').length")
+    assert cards == 2, cards
+
+    # Validation: next without a file keeps the user on the sample page.
+    page.click('[data-testid="choice-input"]')
+    page.click('[data-testid="wizard-next"]')
+    page.wait_js("!document.querySelector('[data-wizard-error]').classList.contains('is-hidden')", timeout=5)
+    assert "请先选择二进制样本文件" in page.text('[data-wizard-error]')
+
+    page.click('[data-testid="wizard-back"]')
+    page.wait_js("!document.querySelector('[data-view=\"home\"]').classList.contains('is-hidden')", timeout=5)
+
+    page.click('[data-testid="choice-contract"]')
+    page.wait_js(
+        "!document.querySelector('[data-view=\"contract\"]').classList.contains('is-hidden')",
+        timeout=5,
+    )
+    page.click('[data-testid="wizard-back-contract"]')
+    page.wait_js(
+        "!document.querySelector('[data-view=\"input\"]').classList.contains('is-hidden')",
+        timeout=5,
+    )
 
 
 def _stage_states(page, route: str) -> list[str]:

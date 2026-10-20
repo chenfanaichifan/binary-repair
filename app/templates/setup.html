@@ -6,92 +6,145 @@
   <p class="eyebrow">BINARY REPAIR / SETUP</p>
   <h1>新建任务与契约复核</h1>
   <p class="lead">
-    上传二进制、说明缺陷、给出复现与有效输入测试，然后确认安全契约。
-    复核批准后，两条路线必须引用<strong>同一个</strong>输入哈希和契约。
+    先选择要填写的部分：样本与输入，或安全契约。两步都完成后登记任务，
+    复核批准后两条路线必须引用<strong>同一个</strong>输入哈希和契约。
   </p>
-  <div class="chip-row">
-    <span class="chip">PRD F1</span>
-    <span class="chip">SHA-256 身份</span>
-    <span class="chip">复核批准后方可启动</span>
-  </div>
 </header>
 
 <div class="note-strip" role="note">
   <strong>语言规范</strong>
   <span>界面中文；上传与导出的内容必须是英文 ASCII，非英文字符会被拦截。</span>
 </div>
+
 {% if backend_note %}
 <p class="data-source">数据来源 <span>{{ backend_note }}</span></p>
 {% endif %}
 
-<form class="panel" method="post" action="/jobs" enctype="multipart/form-data" data-testid="setup-form">
-  <input type="hidden" name="csrf" value="{{ csrf_token }}">
+<div class="wizard" data-wizard data-step="home">
+  <div class="wizard-view" data-view="home">
+    <div class="choice-grid">
+      <button type="button" class="choice-card" data-goto="input" data-testid="choice-input">
+        <span class="choice-top"><span class="choice-no">01</span><span class="choice-tag">必填</span></span>
+        <span class="choice-title">样本与输入</span>
+        <span class="choice-desc">上传 Linux x86-64 ELF 样本，说明缺陷，给出复现输入与有效输入测试。</span>
+        <span class="choice-meta">演示模式只计算 SHA-256，不解析、不执行</span>
+        <span class="choice-arrow">进入填写 →</span>
+      </button>
 
-  <section class="panel-section">
-    <div class="section-head"><span class="section-no">01</span><h2>样本与输入</h2></div>
-
-    <label class="field">
-      <span class="label">二进制样本（Linux x86-64 ELF）<em>必填</em></span>
-      <input type="file" name="binary" required data-testid="binary-input">
-      <small>演示模式只计算 SHA-256，不解析、不执行；文件名会转成 ASCII 安全名。</small>
-    </label>
-
-    <label class="field">
-      <span class="label">缺陷描述（英文）</span>
-      <textarea name="defect" rows="3" placeholder="e.g. strcpy in stack_buf does not check length; overlong input writes out of bounds" data-testid="defect-input"></textarea>
-    </label>
-
-    <div class="field-grid">
-      <label class="field">
-        <span class="label">复现输入 / 有效输入测试（英文，每行一条）</span>
-        <textarea name="valid_tests" rows="4" placeholder="valid: hello&#10;boundary: 8 bytes&#10;invalid: 64 bytes" data-testid="tests-input"></textarea>
-      </label>
-      <label class="field">
-        <span class="label">执行环境（英文）</span>
-        <input type="text" name="environment" placeholder="Ubuntu x86-64 VM (execution disabled in demo)" data-testid="env-input">
-      </label>
-    </div>
-  </section>
-
-  <section class="panel-section">
-    <div class="section-head"><span class="section-no">02</span><h2>安全契约</h2></div>
-
-    <div class="field-grid">
-      <label class="field">
-        <span class="label">有效输入域 Valid domain</span>
-        <input type="text" name="valid_domain" value="Input length 0-64 bytes; out-of-range lengths rejected" data-testid="contract-domain">
-      </label>
-      <label class="field">
-        <span class="label">禁止行为 Forbidden behavior</span>
-        <input type="text" name="forbidden" value="Out-of-bounds write to the target buffer (more than 8 bytes)" data-testid="contract-forbidden">
-      </label>
+      <button type="button" class="choice-card" data-goto="contract" data-testid="choice-contract">
+        <span class="choice-top"><span class="choice-no">02</span><span class="choice-tag">可编辑默认值</span></span>
+        <span class="choice-title">安全契约</span>
+        <span class="choice-desc">定义有效输入域、禁止行为、非法输入应有行为与假设；批准后才会启动修复。</span>
+        <span class="choice-meta">修改任意字段会生成新 revision 并清除批准</span>
+        <span class="choice-arrow">进入填写 →</span>
+      </button>
     </div>
 
-    <label class="field">
-      <span class="label">非法输入应有行为 Required invalid-input outcome</span>
-      <input type="text" name="invalid_outcome" value="Return error code 1 without out-of-bounds access or crash" data-testid="contract-invalid">
-    </label>
+    <section class="next-steps">
+      <div class="section-head"><span class="section-no">流程</span><h2>两步之后</h2></div>
+      <ol class="step-list">
+        <li><strong>登记任务</strong>：样本哈希与契约一起冻结为任务输入。</li>
+        <li><strong>复核批准</strong>：在进度页批准当前契约，才能启动修复。</li>
+        <li><strong>证据与导出</strong>：V0–V5 义务、产物哈希与 JSON 证据包。</li>
+      </ol>
+    </section>
+  </div>
 
-    <label class="field">
-      <span class="label">假设 Assumptions（英文，每行一条）</span>
-      <textarea name="assumptions" rows="3" data-testid="contract-assumptions">Single process
+  <form class="wizard-form" method="post" action="/jobs" enctype="multipart/form-data" data-testid="setup-form">
+    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+
+    <div class="wizard-view is-hidden" data-view="input">
+      <div class="wizard-bar" aria-label="步骤">
+        <span class="step-pill is-active">01 · 样本与输入</span>
+        <span class="step-sep" aria-hidden="true"></span>
+        <span class="step-pill">02 · 安全契约</span>
+      </div>
+
+      <div class="panel">
+        <section class="panel-section">
+          <div class="section-head"><span class="section-no">01</span><h2>样本与输入</h2></div>
+
+          <label class="field">
+            <span class="label">二进制样本（Linux x86-64 ELF）<em>必填</em></span>
+            <input type="file" name="binary" required data-testid="binary-input">
+            <small>演示模式只计算 SHA-256，不解析、不执行；文件名会转成 ASCII 安全名。</small>
+          </label>
+
+          <label class="field">
+            <span class="label">缺陷描述（英文）</span>
+            <textarea name="defect" rows="3" placeholder="e.g. strcpy in stack_buf does not check length; overlong input writes out of bounds" data-testid="defect-input"></textarea>
+          </label>
+
+          <div class="field-grid">
+            <label class="field">
+              <span class="label">复现输入 / 有效输入测试（英文，每行一条）</span>
+              <textarea name="valid_tests" rows="4" placeholder="valid: hello&#10;boundary: 8 bytes&#10;invalid: 64 bytes" data-testid="tests-input"></textarea>
+            </label>
+            <label class="field">
+              <span class="label">执行环境（英文）</span>
+              <input type="text" name="environment" placeholder="Ubuntu x86-64 VM (execution disabled in demo)" data-testid="env-input">
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <p class="wizard-error is-hidden" data-wizard-error role="alert"></p>
+
+      <div class="wizard-nav">
+        <button type="button" class="btn ghost" data-back="home" data-testid="wizard-back">← 返回选择</button>
+        <button type="button" class="btn primary" data-testid="wizard-next">下一步：安全契约 →</button>
+      </div>
+    </div>
+
+    <div class="wizard-view is-hidden" data-view="contract">
+      <div class="wizard-bar" aria-label="步骤">
+        <span class="step-pill is-done">01 · 样本与输入</span>
+        <span class="step-sep" aria-hidden="true"></span>
+        <span class="step-pill is-active">02 · 安全契约</span>
+      </div>
+
+      <div class="panel">
+        <section class="panel-section">
+          <div class="section-head"><span class="section-no">02</span><h2>安全契约</h2></div>
+          <p class="field-note">复核者会在这里确认安全契约；批准后才会启动修复。修改任意字段会生成新 revision 并清除批准。</p>
+
+          <div class="field-grid">
+            <label class="field">
+              <span class="label">有效输入域 Valid domain</span>
+              <input type="text" name="valid_domain" value="Input length 0-64 bytes; out-of-range lengths rejected" data-testid="contract-domain">
+            </label>
+            <label class="field">
+              <span class="label">禁止行为 Forbidden behavior</span>
+              <input type="text" name="forbidden" value="Out-of-bounds write to the target buffer (more than 8 bytes)" data-testid="contract-forbidden">
+            </label>
+          </div>
+
+          <label class="field">
+            <span class="label">非法输入应有行为 Required invalid-input outcome</span>
+            <input type="text" name="invalid_outcome" value="Return error code 1 without out-of-bounds access or crash" data-testid="contract-invalid">
+          </label>
+
+          <label class="field">
+            <span class="label">假设 Assumptions（英文，每行一条）</span>
+            <textarea name="assumptions" rows="3" data-testid="contract-assumptions">Single process
 Linux x86-64 ELF
 Stack protector disabled</textarea>
-    </label>
-  </section>
+          </label>
+        </section>
+      </div>
 
-  <div class="panel-actions">
-    <button class="btn primary" type="submit" data-testid="create-job">登记任务并进入复核</button>
-    <span class="hint">演示模式：不执行任何二进制，只登记哈希与契约。</span>
-  </div>
-</form>
+      <p class="wizard-error is-hidden" data-wizard-error role="alert"></p>
 
-<section class="next-steps">
-  <div class="section-head"><span class="section-no">下一步</span><h2>这个界面之后发生什么</h2></div>
-  <ol class="step-list">
-    <li><strong>进度与对比</strong>：两条路线并排推进，阶段未完成时保持可见。</li>
-    <li><strong>漏洞与修复视图</strong>：反汇编 / 恢复 C 高亮漏洞位置，可切换修复后与差异。</li>
-    <li><strong>证据与导出</strong>：V0–V5 义务、范围与假设、产物哈希与 JSON 证据包。</li>
-  </ol>
-</section>
+      <div class="wizard-nav">
+        <button type="button" class="btn ghost" data-back="input" data-testid="wizard-back-contract">← 上一步</button>
+        <button type="submit" class="btn primary" data-testid="create-job">登记任务并进入复核</button>
+      </div>
+      <p class="hint">提交后进入任务页；契约仍需复核者批准后才能启动修复。</p>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/setup-wizard.js" defer></script>
 {% endblock %}
