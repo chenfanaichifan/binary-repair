@@ -103,7 +103,7 @@ One successful route is never a successful run.
 | `app/domain/acceptance.py` | implemented — `Obligation`, `Verdict`, `decide_attempt_outcome`, `decide_run_outcome` |
 | `tests/unit/test_acceptance.py` | implemented — 29 passing tests, negative-first |
 | `tests/conftest.py` | implemented — shared synthetic ELF builders, project-root import path |
-| `tests/integration/test_identity_state.py` | implemented on `member1/jobs-minimal` @ `d7813d0` — 8 pass / 0 skip; `main` still carries the `6e8ce4b` minimal snapshot (5 pass / 3 skip) until the controller slice merges |
+| `tests/integration/test_identity_state.py` | implemented on `member1/jobs-minimal` @ `7f967bb` — 8 pass / 0 skip; `main` still carries the `6e8ce4b` minimal snapshot (5 pass / 3 skip) until the controller slice merges |
 | `tests/integration/test_ai_boundary.py` | **removed 2026-10-20** — superseded by `tests/test_ai_boundary_contract.py` (22 tests on member 5's branch `ea29e56`); do not restore it from git history |
 
 Reason codes are persisted and exported, so they are part of the evidence
@@ -171,6 +171,15 @@ labels.
   slice. Correctness of the value is owned by the contract/approval layer; a
   wrong but non-empty hash would not be detected here.
 
+**Caller implementation (2026-10-20).** Member 1 added
+`app/services/orchestration.py` on `member1/jobs-minimal` (`7f967bb`, not yet on
+`main`). It builds the V0–V5 obligations from persisted gate results (a missing
+gate becomes `not_run`, never dropped), calls `decide_attempt_outcome` exactly
+once per route, persists the four `Verdict` fields, and uses
+`decide_run_outcome` for the whole run. It imports the engine instead of
+re-implementing it, so there is no second success rule.
+`tests/integration/test_orchestration.py` covers it with 5 tests.
+
 ### 4.2 Job/run identity — what member 1 provides
 
 Consumed by `tests/integration/test_identity_state.py`. Exact names may change;
@@ -187,12 +196,15 @@ the behaviours may not.
 **Delivery status (2026-10-20).** Member 1 finished the controller on
 `member1/jobs-minimal`, not on `main`: `6e8ce4b` (minimal `create_job`/`get_job`)
 → `f41558a` (approval binding, idempotent start, `cancel_job`, restart recovery)
-→ `d7813d0` (controller HTTP API). A full-suite run on `d7813d0` gives 26 passed,
-0 skipped (8 identity + 7 controller API + 11 GUI smoke/language); the identity
-suite alone is **8 pass / 0 skip**. `main` still has the old `6e8ce4b` snapshot,
-so there the suite remains 5 pass / 3 skip until the controller-only slice lands
-at integration step ③. The requested re-run on `member1/controller-only` is still
-pending because that branch does not exist yet.
+→ `d7813d0` (controller HTTP API) → `7f967bb` (orchestration that routes V0–V5
+obligations into the acceptance engine). A full-suite run on `7f967bb` gives
+**31 passed, 0 skipped** (8 identity + 7 controller API + 11 GUI smoke/language +
+5 orchestration); the identity suite alone is **8 pass / 0 skip**. `main` still
+has the old `6e8ce4b` snapshot, so there the suite remains 5 pass / 3 skip.
+The requested `member1/controller-only` slice is not on `origin` yet: the branch
+still carries the GUI, `app/db/schema.sql`, and copies of the member-4 domain
+files (identical except a UTF-8 BOM), so the step-③ re-run on the controller-only
+slice is still pending.
 
 ### 4.3 Candidate schema and provider — what member 5 provides
 

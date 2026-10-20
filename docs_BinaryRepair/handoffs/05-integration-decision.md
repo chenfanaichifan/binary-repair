@@ -178,17 +178,25 @@ as still open unless member 1 reports otherwise.
 
 ## Status note (2026-10-20, updated after member 1's delivery message)
 
-- Member 1's full controller is on `member1/jobs-minimal`, not on `main`:
+- Member 1's latest work is on `member1/jobs-minimal` @ `7f967bb`, not on `main`:
   `6e8ce4b` (minimal) → `f41558a` (approval binding, idempotent start,
-  `cancel_job`, restart recovery) → `d7813d0` (controller HTTP API). A full-suite
-  run on a temporary worktree at `d7813d0` gives **26 passed, 0 skipped**, which
-  matches 8 identity + 7 controller-API + 11 GUI smoke/language tests.
+  `cancel_job`, restart recovery) → `d7813d0` (controller HTTP API) → `7f967bb`
+  (orchestration routing V0–V5 obligations into the acceptance engine). A
+  full-suite run at `7f967bb` gives **31 passed, 0 skipped** (8 identity + 7
+  controller API + 11 GUI smoke/language + 5 orchestration).
 - `main` is `453fe95`: it carries `app/`, `tests/`, and the `agent/` archive, but
   its `app/services/jobs.py` is the **old `6e8ce4b` minimal snapshot**, so a
   `main` checkout still shows the "deliberately not implemented yet" docstring.
   Member 1 described `main` as `29f2a6a` with only README + `agent/`; that is not
   the current `origin/main`.
-- Action item 1 (the `controller-only` branch) is therefore the unlock: action
-  item 4 (member 4 re-running the suites on it) is still pending. The `d7813d0`
-  result above is evidence on the full branch, not on the controller-only slice,
-  and does not replace that re-run.
+- The requested `member1/controller-only` slice is **not on `origin`**: action
+  item 1 is still open. The branch still carries the GUI, `app/db/schema.sql`
+  (member 1's two-table schema, not member 5's migrations), and copies of the
+  member-4 `app/domain/acceptance.py` / `outcomes.py` (identical except a UTF-8
+  BOM, so they would conflict noisily; our slice owns those files at step ②).
+- Action item 2 is also still open: the controller exposes `/start`,
+  `/obligations`, `/artifacts` but not the canonical `POST /api/jobs/{id}/runs`
+  or `GET /api/attempts/{id}/evidence` from Decision 5.
+- Action item 4 (member 4 re-running the suites on the controller-only slice) is
+  still pending that branch. The `7f967bb` result is evidence on the full branch,
+  not on the controller-only slice, and does not replace that re-run.

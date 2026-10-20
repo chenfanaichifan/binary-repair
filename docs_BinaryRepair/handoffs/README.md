@@ -4,7 +4,7 @@ These are "ready to send" confirmation requests derived from the interface contr
 
 | File | Recipient | Confirm | Status | Unblocks after confirmation |
 |---|---|---|---|---|
-| `01-member-1-obligation-interface.md` | Member 1 | §4.1 Obligation / Verdict call interface + owner of `reviewed_scope_sha256` | Confirmed 2026-10-18; delivered 2026-10-20 on `member1/jobs-minimal` (`d7813d0`: approval, idempotent start, cancel, restart recovery, controller API). `main` still has the old `6e8ce4b` minimal snapshot | Identity suite: **8 pass / 0 skip** on the branch (main: 5 pass / 3 skip). Action item 4 (re-run on `member1/controller-only`) still pending |
+| `01-member-1-obligation-interface.md` | Member 1 | §4.1 Obligation / Verdict call interface + owner of `reviewed_scope_sha256` | Confirmed 2026-10-18; delivered 2026-10-20 on `member1/jobs-minimal` (`7f967bb`: approval, idempotent start, cancel, restart recovery, controller API, orchestration). `main` still has the old `6e8ce4b` minimal snapshot | Identity suite: **8 pass / 0 skip** on the branch (main: 5 pass / 3 skip). Still open: `member1/controller-only` slice, canonical `/runs` + `/attempts/{id}/evidence`, member 5 schema adoption |
 | `02-member-5-candidate-provider.md` | Member 5 | §4.3 candidate schema, data boundary, provider failure type | Confirmed 2026-10-18; contract in `verification-design.md` §4.3. Merge deferred: `main` layout is being reorganized by the owner | Implemented on `member-5-deepseek-schema` `ea29e56`: `app/domain/candidates.py`, `app/services/provider.py`, `tests/test_ai_boundary_contract.py` (22 tests) |
 | `03-member-3-fixture-vm.md` | Member 3 | §5 fixture profile, frozen test manifest, VM or explicit blocker | To send | A real ELF and frozen input manifest unlock V1–V4 checks; a recorded blocker also unblocks planning |
 | `04-member-3-oracle-freeze.md` | Member 3 | §4.4 behavioural oracle: `DEST_CAPACITY`, measured original behaviour, exact `ERROR_STDERR`, harness call shape | To send (blocking the fixture freeze) | Freezing the oracle lets Route A and Route B implement one shared V3 assertion set |
@@ -14,6 +14,17 @@ These are "ready to send" confirmation requests derived from the interface contr
 
 ## Confirmation log
 
+- 2026-10-20 — Member 1 added `app/services/orchestration.py` on
+  `member1/jobs-minimal` (`7f967bb`): it builds V0–V5 obligations (missing gate =
+  `not_run`, never dropped), calls `decide_attempt_outcome` once per route,
+  persists the `Verdict` fields, and uses `decide_run_outcome` for the run. It
+  imports the engine and adds no second success rule; 5 orchestration tests.
+  Full-suite run at `7f967bb` (temporary worktree): **31 passed, 0 skipped**
+  (8 identity + 7 controller API + 11 GUI + 5 orchestration). Still open: no
+  `member1/controller-only` branch on `origin`; canonical `/runs` and
+  `/attempts/{id}/evidence` routes absent; `app/db/schema.sql` not replaced by
+  member 5's migrations; the copied member-4 domain files differ only by a UTF-8
+  BOM (our slice owns those files at step ②).
 - 2026-10-20 — Member 1's full controller is on `member1/jobs-minimal`, not
   `main`: `f41558a` adds approval binding, idempotent start, `cancel_job`, and
   restart recovery; `d7813d0` adds the controller HTTP API. A full-suite run at
@@ -83,7 +94,7 @@ These are "ready to send" confirmation requests derived from the interface contr
 
 - `python -m pytest tests -q -p no:cacheprovider` on the member-4 branch -> **40 passed, 1 skipped** (the skip is the identity/state suite without `app.services.jobs`; skip is not a pass)
 - `origin/main` at `453fe95` (temporary worktree) -> **16 passed, 3 skipped** (the identity skips are the unimplemented `approve_contract` / `start_run` entry points in the old snapshot)
-- `member1/jobs-minimal` at `d7813d0` (temporary worktree) -> **26 passed, 0 skipped** (8 identity + 7 controller API + 11 GUI smoke/language)
+- `member1/jobs-minimal` at `7f967bb` (temporary worktree) -> **31 passed, 0 skipped** (8 identity + 7 controller API + 11 GUI smoke/language + 5 orchestration)
 - Member 5's branch `ea29e56` -> `tests/test_ai_boundary_contract.py` has **22 tests**; the full branch suite is reported at **107 passed** (reported by member 5, not independently re-run here: remote fetch from this sandbox fails on a TLS CA-bundle path error)
 - The stale `var/wt-member5` worktree from 2026-10-18 was removed on 2026-10-20 so it no longer breaks pytest collection
 
