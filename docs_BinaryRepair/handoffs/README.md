@@ -5,11 +5,22 @@ These are "ready to send" confirmation requests derived from the interface contr
 | File | Recipient | Confirm | Status | Unblocks after confirmation |
 |---|---|---|---|---|
 | `01-member-1-obligation-interface.md` | Member 1 | §4.1 Obligation / Verdict call interface + owner of `reviewed_scope_sha256` | Confirmed 2026-10-18 (contract in `verification-design.md` §4.1) | Write `app.services.jobs` without guessing the shape; once the module lands, `tests/integration/test_identity_state.py` moves from skip to run |
-| `02-member-5-candidate-provider.md` | Member 5 | §4.3 candidate schema, data boundary, provider failure type | Confirmed 2026-10-18; merged to `main` 2026-10-20 (contract in `verification-design.md` §4.3) | Implemented: `app/domain/candidates.py`, `app/services/provider.py`, `tests/test_ai_boundary_contract.py` (19 tests) |
+| `02-member-5-candidate-provider.md` | Member 5 | §4.3 candidate schema, data boundary, provider failure type | Confirmed 2026-10-18; contract in `verification-design.md` §4.3. Merge deferred: `main` layout is being reorganized by the owner | Implemented on `member-5-deepseek-schema` `ea29e56`: `app/domain/candidates.py`, `app/services/provider.py`, `tests/test_ai_boundary_contract.py` (22 tests) |
 | `03-member-3-fixture-vm.md` | Member 3 | §5 fixture profile, frozen test manifest, VM or explicit blocker | To send | A real ELF and frozen input manifest unlock V1–V4 checks; a recorded blocker also unblocks planning |
 
 ## Confirmation log
 
+- 2026-10-20 — Duplicate AI-boundary tests are settled as **deleted, not
+  restored from git history**. Member 5 migrated the four boundary assertions
+  that were unique to the member-4 suite (512 accepted / 513 rejected, 33-entry
+  list rejected, 20,001-char `replacement_c` rejected, `allowed_targets`
+  override) into `tests/test_ai_boundary_contract.py`; it now has 22 tests and
+  the full branch suite reports 107 passed on `ea29e56`. Drift is prevented by
+  the generated schema (`schemas/generated/candidate.v1.json`) plus
+  `python schemas/generate.py --check`, not by keeping a second assertion copy.
+  `main` is being reorganized by the owner (only `agent/`, `run.bat`,
+  `start.ps1` remained at the time of writing), so the acceptance engine is not
+  merged there until the layout is confirmed.
 - 2026-10-18 — Member 5 accepted §4.3 with these details:
   `validate_candidate(payload, allowed_targets=None)`; Route A is 12 top-level
   fields and Route B adds `recovered_function_sha256` and `replacement_c`
@@ -21,8 +32,8 @@ These are "ready to send" confirmation requests derived from the interface contr
   `app.services.provider.ProviderFailure(reason: FailureReason)` with
   `TIMEOUT`, `QUOTA`, `BUDGET`, `EMPTY`, `MALFORMED_JSON`, `SCHEMA`.
   Tests for the limits, the Route B shape, the allowlist override, and the
-  provider reason enum now live in `tests/test_ai_boundary_contract.py` and
-  `tests/test_provider_failures.py` on `main`; the member-4 skeleton
+  provider reason enum now live in `tests/test_ai_boundary_contract.py`; provider
+  failures are covered by `tests/test_provider.py`. The member-4 skeleton
   `tests/integration/test_ai_boundary.py` was removed on 2026-10-20 as
   superseded.
 - 2026-10-18 — Member 5's branch moved everything to the shared root in commit
@@ -45,11 +56,11 @@ These are "ready to send" confirmation requests derived from the interface contr
     checks presence, so verification imposes no format. The contract/approval
     layer owns correctness; the engine would not detect a wrong non-empty hash.
 
-## Measured state (2026-10-18)
+## Measured state (2026-10-20)
 
-- `python -m pytest tests/unit -q -p no:cacheprovider` -> **29 passed**
-- `python -m pytest tests/integration -q -p no:cacheprovider` on the member-4 branch -> **2 skipped** (`app.services.jobs` and `app.domain.candidates` are not on this branch; skip is not a pass)
-- Contract suite against member 5's branch (`e175436`, isolated worktree `var/wt-member5`) -> **17 passed, 0 skipped, 0 failed**
+- `python -m pytest tests -q -p no:cacheprovider` on the member-4 branch -> **40 passed, 1 skipped** (the skip is the identity/state suite without `app.services.jobs`; skip is not a pass)
+- Member 5's branch `ea29e56` -> `tests/test_ai_boundary_contract.py` has **22 tests**; the full branch suite is reported at **107 passed** (reported by member 5, not independently re-run here: remote fetch from this sandbox fails on a TLS CA-bundle path error)
+- The stale `var/wt-member5` worktree from 2026-10-18 was removed on 2026-10-20 so it no longer breaks pytest collection
 
 ## After a reply arrives
 

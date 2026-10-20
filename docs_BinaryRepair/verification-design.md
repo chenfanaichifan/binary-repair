@@ -104,7 +104,7 @@ One successful route is never a successful run.
 | `tests/unit/test_acceptance.py` | implemented — 29 passing tests, negative-first |
 | `tests/conftest.py` | implemented — shared synthetic ELF builders, project-root import path |
 | `tests/integration/test_identity_state.py` | contract skeleton — activates when `app.services.jobs` exists |
-| `tests/integration/test_ai_boundary.py` | **removed 2026-10-20** — superseded by `tests/test_ai_boundary_contract.py` on `main` (19 tests, member 5's implementation) |
+| `tests/integration/test_ai_boundary.py` | **removed 2026-10-20** — superseded by `tests/test_ai_boundary_contract.py` (22 tests on member 5's branch `ea29e56`); do not restore it from git history |
 
 Reason codes are persisted and exported, so they are part of the evidence
 contract: **add values, do not rename existing ones.**
@@ -186,7 +186,11 @@ the behaviours may not.
 
 ### 4.3 Candidate schema and provider — what member 5 provides
 
-Consumed by `tests/test_ai_boundary_contract.py` and `tests/test_provider_failures.py` on `main`. The member-4 skeleton `tests/integration/test_ai_boundary.py` was removed on 2026-10-20 because member 5's implementation and tests supersede it.
+Consumed by `tests/test_ai_boundary_contract.py` (22 tests on member 5's branch
+`ea29e56`) plus the provider tests shipped with it. The member-4 skeleton
+`tests/integration/test_ai_boundary.py` was removed on 2026-10-20 because member
+5's implementation and tests supersede it; it must not be restored from git
+history.
 
 | Need | Behaviour it must support |
 |---|---|
@@ -235,13 +239,22 @@ Consumed by `tests/test_ai_boundary_contract.py` and `tests/test_provider_failur
   `require_candidate(result)` raises the typed failure and never fabricates a
   candidate.
 
-**Integration status (2026-10-18).** Member 5 moved the code to the shared
-repository root in commit `e175436` (`app/domain/candidates.py`,
-`app/services/provider.py`, `binaryrepair_ai/`, `schemas/`). Running the
-contract suite in an isolated worktree of that branch
-(`origin/member-5-deepseek-schema`) gives **17 passed, 0 skipped, 0 failed**.
-The member-4 working branch still lacks those files, so its own integration run
-keeps skipping until the branch is merged; that skip is not a pass.
+**Schema drift is checked at the contract level, not with duplicate tests.**
+`schemas/generated/candidate.v1.json` is generated from the pydantic models, and
+`python schemas/generate.py --check` fails CI when the generated contract drifts.
+The route values, the 14 fields, and the 512 / 32 / 20,000 limits are defined in
+the schema and in the tests, each once.
+
+**Integration status (2026-10-20).** Member 5's complete branch is
+`member-5-deepseek-schema` at `ea29e56`: the shared root carries
+`app/domain/candidates.py`, `app/services/provider.py`, `binaryrepair_ai/`,
+`schemas/`, and `tests/test_ai_boundary_contract.py`. That contract file has 22
+tests (the four boundary assertions the member-4 suite had are now part of it),
+and member 5 reports the full branch suite at 107 passed. Those numbers were
+reported by member 5 and are not independently re-run here, because remote
+fetch from this sandbox currently fails on a TLS CA-bundle path error. `main` is
+being reorganized by the owner and is not a stable integration point yet, so the
+member-4 acceptance engine is not merged there.
 
 The boundary tests deliberately do **not** call the real API: a test suite must
 never spend money or require a key. They test the local validation layer, which
@@ -300,11 +313,12 @@ Honest list of what is **not** verified yet.
 3. **Python 3.14.6 on Windows** locally; the target is Python 3.12 on Ubuntu.
    The modules avoid version-specific syntax, but they have not run on the
    target interpreter.
-4. **The AI-boundary contract suite is verified against member 5's branch**
-   (17 passed on `e175436` in an isolated worktree), but it still skips on the
-   member-4 branch because the owning module lives on `member-5-deepseek-schema`.
-   The identity/state suite is still unrun: `app.services.jobs` has not landed
-   on any checked branch. A skip is never reported as passing.
+4. **The AI-boundary contract suite now lives on member 5's branch**
+   (`tests/test_ai_boundary_contract.py`, 22 tests; the member-4 skeleton was
+   deleted on purpose and must not be restored). It cannot run on the member-4
+   branch because the owning modules are not merged here. The identity/state
+   suite is still unrun: `app.services.jobs` has not landed on any checked
+   branch. A skip is never reported as passing.
 5. **No fixture, no VM, no symbolic tool** in this environment, so V1–V4
    cannot be exercised at all yet.
 
