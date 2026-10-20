@@ -50,7 +50,7 @@ def _run(conn: sqlite3.Connection, run_id: str = "r1", key: str = "k1") -> None:
 def test_init_creates_baseline_and_ai_tables(tmp_path: Path) -> None:
     conn = init_db(tmp_path)
     versions = [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")]
-    assert versions == [1, 2]
+    assert versions == [1, 2, 3]
     tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     assert {"jobs", "artifacts", "contracts", "runs", "attempts",
             "obligations", "events", "model_calls"} <= tables
@@ -64,7 +64,7 @@ def test_init_creates_baseline_and_ai_tables(tmp_path: Path) -> None:
 def test_reinit_is_idempotent(tmp_path: Path) -> None:
     init_db(tmp_path).close()
     conn = init_db(tmp_path)
-    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == [1, 2]
+    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == [1, 2, 3]
     conn.close()
 
 
@@ -170,4 +170,34 @@ def test_artifact_media_type_default(tmp_path: Path) -> None:
     )
     got = conn.execute("SELECT media_type FROM artifacts WHERE id='a1'").fetchone()[0]
     assert got == "application/octet-stream"
+    conn.close()
+
+
+def test_acceptance_verdict_fields_persist_verbatim(tmp_path: Path) -> None:
+    conn = init_db(tmp_path)
+    _job(conn)
+    _contract(conn)
+    _run(conn)
+    conn.execute(
+        "INSERT INTO attempts (id, run_id, route, sequence) VALUES ('a1', 'r1', 'route_a', 1)"
+    )
+    conn.execute(
+        "UPDATE attempts SET outcome='rejected', reason='counterexample', "
+        "failing_obligation='behaviour', detail='invalid input still crashes' "
+        "WHERE id='a1'"
+    )
+    conn.execute(
+        "UPDATE runs SET outcome='rejected', reason='counterexample', "
+        "failing_obligation='behaviour', detail='attempt a1 failed' WHERE id='r1'"
+    )
+    attempt = conn.execute(
+        "SELECT outcome, reason, failing_obligation, detail FROM attempts WHERE id='a1'"
+    ).fetchone()
+    run = conn.execute(
+        "SELECT outcome, reason, failing_obligation, detail FROM runs WHERE id='r1'"
+    ).fetchone()
+    assert tuple(attempt) == ("rejected", "counterexample", "behaviour", "invalid input still crashes")
+    assert tuple(run) == ("rejected", "counterexample", "behaviour", "attempt a1 failed")
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(attempts)")}
+    assert "reason" in cols and "reason_code" not in cols
     conn.close()

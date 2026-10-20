@@ -14,7 +14,7 @@
 | `app/domain/manifests.py` | 成员5 | `manifest_sha256` 的 canonical 索引与文件哈希 |
 | `app/services/provider.py` | 成员5 | `DeepSeekProvider`、`ProviderFailure(FailureReason)`、`require_candidate` |
 | `app/db/connection.py`、`schema.sql` | 成员1 | v1 baseline（jobs + artifacts）；启动时初始化 |
-| `app/db/migrate.py`、`migrations/002_ai_tables.sql` | 成员5 + 成员1 | v1 baseline + 002；旧 001 退役，检测到即报错 |
+| `app/db/migrate.py`、`migrations/002_ai_tables.sql`、`003_acceptance_verdict.sql` | 成员5 + 成员1 | v1 baseline + 002/003；旧 001 退役，检测到即报错 |
 | `binaryrepair_ai/` | 成员5 | 实现细节：client / prompts / pricing / Pydantic schema；外部不要直接依赖 |
 | `schemas/` | 成员5 | candidate/context JSON Schema v1、示例、drift 检查 |
 | `routeb/` | 成员5 | Route B 合成 fixture、oracle、Ghidra 导出、Patcherex2 实验 |
@@ -126,7 +126,7 @@ python -c "from app.db.connection import connect; connect('var')"
 python scripts/smoke.py --mock             # 无 key 的管线自检
 ```
 
-当前共享树：**131 passed, 5 skipped**；`schema up to date (4 files)`。
+当前共享树：**132 passed, 5 skipped**；`schema up to date (4 files)`。
 3 个 skip 是成员1 尚未实现的 `approve_contract` / `start_run`（identity suite）；
 2 个 skip 是 V3 运行时测试（需要 Linux + candidate ELF），不是 pass。
 

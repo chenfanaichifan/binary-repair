@@ -1,6 +1,6 @@
 # DB v2（002）接口决定
 
-**状态：** 2026-10-20，002 已实现并合入共享树（`member-5/db-v2`）。
+**状态：** 2026-10-20，002 + 003 已实现并合入共享树（`member-5/acceptance-verdict`）。
 **基线：** main 的 `app/db/schema.sql`（jobs + artifacts）记为 v1；002 记为 v2。
 **原则：** 只支持 v1 baseline 新建库；检测到旧 001 直接失败；不静默混用、不自动删数据。
 
@@ -270,3 +270,37 @@ manifest 单独绑定，不塞进 contract body，避免循环 hash。
 `attempts` 在 run 启动时预建 route_a/route_b 两行，`sequence=1`、`phase='queued'`、
 `outcome=NULL`；retry 端点再追加。这样 `/api/attempts/{id}/evidence` 在生成期间
 就有 id。
+
+
+---
+
+## 9. 验收 Verdict 原样落库（003）
+
+001 的 obligations/outcomes 列**不能**承载验收引擎的四个字段；001 已退役，不使用。
+002 建了 outcome，但 reason 仍叫 `reason_code`，且缺 `failing_obligation`/`detail`。
+003 补齐，保证 `Verdict` 原样持久化，不需要 controller 再做一套映射：
+
+```sql
+ALTER TABLE attempts RENAME COLUMN reason_code TO reason;
+ALTER TABLE attempts ADD COLUMN failing_obligation TEXT;
+ALTER TABLE attempts ADD COLUMN detail TEXT;
+
+ALTER TABLE runs ADD COLUMN reason TEXT;
+ALTER TABLE runs ADD COLUMN failing_obligation TEXT;
+ALTER TABLE runs ADD COLUMN detail TEXT;
+```
+
+映射：
+
+| `Verdict` | `runs` / `attempts` |
+|---|---|
+| `outcome` | `outcome` |
+| `reason` | `reason` |
+| `failing_obligation` | `failing_obligation`（存 obligations.id 或 kind，verbatim） |
+| `detail` | `detail` |
+
+单个检查结果仍存 `obligations.result`（passed/failed/not_run/unknown/timed_out）+
+`obligations.detail`。不要把这四个字段拆成另一套 reason 枚举。
+
+迁移版本：`(1,'base') → (2,'ai_tables') → (3,'acceptance_verdict')`；升级由
+`app/db/migrate.py` 自动应用，不需要删库（001 仍然拒绝）。

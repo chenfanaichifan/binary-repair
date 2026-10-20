@@ -163,7 +163,7 @@ cat out/copy_name.c.meta.txt
 | 时间 | 任务 | 产出 |
 |---|---|---|
 | 1 h | **schema 契约冻结**：candidate/context JSON Schema + 示例 + drift 检查，交给 2 号/4 号评审 | `schemas/README.md` + `generated/*.json` + 64 个测试全绿 |
-| 1 h | **DB 迁移**：002_ai_tables.sql 在 v1 baseline 上跑通，确认约束（幂等键、复合外键、pass 必须有证据） | `app/db/migrate.py` 可重复执行，`app/db/README.md` |
+| 1 h | **DB 迁移**：002_ai_tables.sql 在 v1 baseline 上跑通，确认约束（幂等键、复合外键、pass 必须有证据） | `app/db/migrate.py` 可重复执行，`app/db/README.md`（002 + 003） |
 | 1 h | 把 `binaryrepair_ai` 接进主应用（1 号提供 job/contract/analysis 的 hash 与 evidence id） | `app/services/provider.py` 一层薄封装 + 一条真实 candidate 记录 |
 | 1 h | Route B：归一化 → round trip（失败也要记录） | 一份 PASS/FAIL/UNSUPPORTED 记录（含 hash 与命令） |
 | 0.5 h | 模型修复 → 回填 → `verify.py --mode fixed`（若 round trip 已通过） | 6/6 结果或明确 blocker |
