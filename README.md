@@ -1,12 +1,12 @@
 # BinaryRepair
 
-**AI-driven automated binary vulnerability repair and correctness verification — MVP.**
+**AI-driven automated binary vulnerability repair and correctness verification 鈥?MVP.**
 
 BinaryRepair repairs one known vulnerability in a Linux x86-64 ELF **without original source code**, using two independent AI-assisted routes, and decides the result with one shared **deterministic acceptance engine**. A patch is never accepted because a model says it is fixed: it counts only when every required check passes on the final executable bytes.
 
 - **Target defect:** one public stack-buffer-overflow case (CWE-121), Linux x86-64 ELF.
-- **Route A — direct instruction repair:** candidate machine-instruction changes applied to a copy of the binary.
-- **Route B — recovered C repair:** recover C-like code for a local region, repair it, compile it, reintegrate it into a copy.
+- **Route A 鈥?direct instruction repair:** candidate machine-instruction changes applied to a copy of the binary.
+- **Route B 鈥?recovered C repair:** recover C-like code for a local region, repair it, compile it, reintegrate it into a copy.
 - **Same input for both routes:** one original ELF, one reviewed security contract, one frozen test set.
 - **Verification first:** structural, compatibility, behavioural, and bounded symbolic checks on the actual final patched executables.
 
@@ -22,14 +22,14 @@ BinaryRepair repairs one known vulnerability in a Linux x86-64 ELF **without ori
 
 | Slice | Where on `main` | State | Tests |
 |---|---|---|---|
-| GUI — setup / comparison / evidence screens | `agent/member2-gui`, `agent/member2-backend-adapter` | demo data, banner-labelled | 6 + 5 (language policy, smoke) plus adapter contract tests |
+| GUI 鈥?setup / comparison / evidence screens | `agent/member2-gui`, `agent/member2-backend-adapter` | demo data, banner-labelled | 6 + 5 (language policy, smoke) plus adapter contract tests |
 | AI candidate schema + provider failure typing | `agent/member-5-deepseek-schema` | complete slice | 18 + 15 + 11 + 11 + 8 + 3 |
 | Acceptance engine (outcomes, decision rules) | `agent/member-4-verification` | complete slice; integration depends on the candidate/job slices | 29 unit |
-| Job controller, SQLite schema | `agent/member-1-interface-reply` (identity tests only) | not on `main` yet; the identity suite skips | — |
-| Route A analysis kit | `agent/member-3-route-a` | docs and scripts | — |
-| Route B feasibility kit | `agent/member-5-deepseek-schema` | provider, schema, kit | — |
-| Public fixture + test manifest | not delivered | — | — |
-| Disposable Ubuntu VM + broker | not built | — | — |
+| Job controller, SQLite schema | `agent/member-1-interface-reply` (identity tests only) | not on `main` yet; the identity suite skips | 鈥?|
+| Route A analysis kit | `agent/member-3-route-a` | docs and scripts | 鈥?|
+| Route B feasibility kit | `agent/member-5-deepseek-schema` | provider, schema, kit | 鈥?|
+| Public fixture + test manifest | not delivered | 鈥?| 鈥?|
+| Disposable Ubuntu VM + broker | not built | 鈥?| 鈥?|
 
 `main` itself has no root test runner. Each subfolder is a full branch tree; run its suite from that
 folder. A skip is not a pass.
@@ -41,16 +41,16 @@ folder. A skip is not a pass.
 Two trust boundaries. The trusted host never executes an uploaded or repaired binary.
 
 ```
-┌────────────────────────────────────┐          ┌────────────────────────────────────┐
-│ Trusted host                       │          │ Disposable Ubuntu x86-64 VM        │
-│                                    │          │ (untrusted work)                   │
-│  Browser GUI (FastAPI + Jinja2)    │◄────────►│  Ghidra / Capstone / LIEF          │
-│  SQLite + immutable artifacts      │  broker  │  LLVM/Clang / binutils / angr      │
-│  Review approval + acceptance      │  typed   │                                    │
-│  DeepSeek provider adapter         │  tasks   │  no network, no credentials,       │
-│                                    │          │  snapshot reset between runs       │
-│  never runs uploaded binaries      │          │  runs analysis, patching, checks   │
-└────────────────────────────────────┘          └────────────────────────────────────┘
+鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?         鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?
+鈹?Trusted host                       鈹?         鈹?Disposable Ubuntu x86-64 VM        鈹?
+鈹?                                   鈹?         鈹?(untrusted work)                   鈹?
+鈹? Browser GUI (FastAPI + Jinja2)    鈹傗梽鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈻衡攤  Ghidra / Capstone / LIEF          鈹?
+鈹? SQLite + immutable artifacts      鈹? broker  鈹? LLVM/Clang / binutils / angr      鈹?
+鈹? Review approval + acceptance      鈹? typed   鈹?                                   鈹?
+鈹? DeepSeek provider adapter         鈹? tasks   鈹? no network, no credentials,       鈹?
+鈹?                                   鈹?         鈹? snapshot reset between runs       鈹?
+鈹? never runs uploaded binaries      鈹?         鈹? runs analysis, patching, checks   鈹?
+鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?         鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?
 ```
 
 - **Host:** serves the GUI, records approvals, schedules jobs, calls the provider, imports artifacts, computes acceptance.
@@ -97,7 +97,7 @@ cd agent\member2-backend-adapter
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
 ```
 
-### Quick start (Ubuntu) — planned
+### Quick start (Ubuntu) 鈥?planned
 
 The target platform is Ubuntu 24.04 with Python 3.12. From `agent/member2-gui/`:
 
@@ -113,9 +113,9 @@ python3 -m venv .venv
 
 The GUI runs entirely on **labelled demo data**; a banner says so on every screen.
 
-1. **Setup / review** — pick a file (demo hashes it), enter a defect description, view and edit the security contract.
-2. **Progress / comparison** — both routes side by side; stages advance on demo data; Route A shows *rejected* (valid-input regression failure) and Route B shows *inconclusive* (symbolic budget exhausted) on purpose, to demonstrate that unfinished or failed work is never displayed as success.
-3. **Evidence / export** — V0–V5 obligations, scope, artifact hashes, diagnostic-candidate labels, and an export JSON that carries `demo: true` and "export is not production approval".
+1. **Setup / review** 鈥?pick a file (demo hashes it), enter a defect description, view and edit the security contract.
+2. **Progress / comparison** 鈥?both routes side by side; stages advance on demo data; Route A shows *rejected* (valid-input regression failure) and Route B shows *inconclusive* (symbolic budget exhausted) on purpose, to demonstrate that unfinished or failed work is never displayed as success.
+3. **Evidence / export** 鈥?V0鈥揤5 obligations, scope, artifact hashes, diagnostic-candidate labels, and an export JSON that carries `demo: true` and "export is not production approval".
 
 The real controller replaces the demo data; the banner disappears only when real evidence exists.
 
@@ -124,7 +124,7 @@ The real controller replaces the demo data; the banner disappears only when real
 ## Language policy
 
 - **UI may use Chinese** (titles, buttons, status badges, explanations).
-- **Uploaded data, API payloads, and exports are English ASCII** — defect description, reproduction input, environment, contract fields, obligations, outcome reasons, changed regions, artifact roles, export JSON.
+- **Uploaded data, API payloads, and exports are English ASCII** 鈥?defect description, reproduction input, environment, contract fields, obligations, outcome reasons, changed regions, artifact roles, export JSON.
 - Server-side non-ASCII form content returns `422`; the browser also blocks it.
 - Uploaded filenames are converted to ASCII-safe names.
 - Guarded by `tests/test_language_policy.py` in the GUI slice.
@@ -143,13 +143,13 @@ agent/
   member-3-route-a/route-a/       Route A analysis docs and scripts
   member-4-verification/          acceptance engine, verification design, handoffs
   member-5-deepseek-schema/       candidate schema, DeepSeek provider, SQLite, Route B kit
-  member-1-interface-reply/       identity tests and §4.1 reply (job controller not on main yet)
+  member-1-interface-reply/       identity tests and 搂4.1 reply (job controller not on main yet)
 ```
 
 Each folder is a full branch tree with its own layout, tests, and README where applicable. Work in the
 folder that owns the slice (or on a feature branch); do not edit another slice's folder in place.
 
-The target end-to-end structure — once the slices are integrated into one runnable tree — is:
+The target end-to-end structure 鈥?once the slices are integrated into one runnable tree 鈥?is:
 
 ```text
 app/
@@ -215,12 +215,12 @@ through pull requests; commit messages start with the branch tag (for example
 
 ## Documentation
 
-- [`agent/member-4-verification/docs_BinaryRepair/verification-design.md`](agent/member-4-verification/docs_BinaryRepair/verification-design.md) — acceptance semantics, decision precedence, interface contracts, coverage matrix.
-- [`agent/member-4-verification/docs_BinaryRepair/handoffs/`](agent/member-4-verification/docs_BinaryRepair/handoffs/) — interface confirmations sent between slices.
-- [`agent/member-4-verification/AGENTS.md`](agent/member-4-verification/AGENTS.md) — project instructions for coding agents (constraints, gotchas, safety rules).
-- [`agent/member-4-verification/MEMORY.md`](agent/member-4-verification/MEMORY.md) — current state, decisions, known issues.
-- [`agent/member2-gui/docs/member2-notes.md`](agent/member2-gui/docs/member2-notes.md) — GUI role notes.
-- [`agent/member-5-deepseek-schema/docs/route-b/README.md`](agent/member-5-deepseek-schema/docs/route-b/README.md) — Route B / AI candidate provider guide.
+- [`agent/member-4-verification/docs_BinaryRepair/verification-design.md`](agent/member-4-verification/docs_BinaryRepair/verification-design.md) 鈥?acceptance semantics, decision precedence, interface contracts, coverage matrix.
+- [`agent/member-4-verification/docs_BinaryRepair/handoffs/`](agent/member-4-verification/docs_BinaryRepair/handoffs/) 鈥?interface confirmations sent between slices.
+- [`agent/member-4-verification/AGENTS.md`](agent/member-4-verification/AGENTS.md) 鈥?project instructions for coding agents (constraints, gotchas, safety rules).
+- [`agent/member-4-verification/MEMORY.md`](agent/member-4-verification/MEMORY.md) 鈥?current state, decisions, known issues.
+- [`agent/member2-gui/docs/member2-notes.md`](agent/member2-gui/docs/member2-notes.md) 鈥?GUI role notes.
+- [`agent/member-5-deepseek-schema/docs/route-b/README.md`](agent/member-5-deepseek-schema/docs/route-b/README.md) 鈥?Route B / AI candidate provider guide.
 
 The PRD, technical design, and research register are maintained locally and are not tracked in this
 repository yet.
@@ -251,3 +251,114 @@ These are not optional.
 5. Shared acceptance over both final candidates, then export and independent replay.
 
 No completed-MVP date is established; estimates follow the feasibility gates in the technical design.
+
+---
+
+# BinaryRepair MVP 鈥?GUI + data-source adapter (Member 2)
+
+Graphical interface for Project 11: AI-driven automated binary vulnerability repair and
+correctness verification. The three screens are unchanged; data now comes through an
+adapter layer that can read either the synthetic demo store (`mock`) or Member 1's
+controller API (`http`).
+
+Real execution (VM, Route A/B, angr verification) is provided by the other members;
+the GUI only consumes the agreed English JSON contract.
+
+> Default `mock` mode is clearly labeled demo fixture data, not a repair result, and must
+> never be treated as evidence that a patch is verified. In `http` mode the banner follows
+> the snapshot's `demo` field: it disappears only when the controller reports `demo: false`.
+
+## Quick start (mock mode, default)
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+```
+
+Open <http://127.0.0.1:8123>.
+
+## Data-source modes (mock / http)
+
+`mock` uses `app/demo.py` (synthetic data, no execution, banner shown).
+
+`http` calls Member 1's controller. Until the real controller exists, a local stub can be
+used for integration:
+
+```powershell
+# Terminal 1: local stub controller (synthetic data; snapshot keeps demo=true)
+.\.venv\Scripts\python.exe -m uvicorn tools.stub_backend:app --host 127.0.0.1 --port 8000
+
+# Terminal 2: GUI in http mode
+$env:BINARYREPAIR_BACKEND = "http"
+$env:BINARYREPAIR_API_BASE = "http://127.0.0.1:8000"
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+```
+
+Configuration:
+
+- `BINARYREPAIR_BACKEND` 鈥?`mock` (default) or `http`
+- `BINARYREPAIR_API_BASE` 鈥?controller base URL (default `http://127.0.0.1:8000`)
+- `BINARYREPAIR_API_TIMEOUT` 鈥?request timeout in seconds (default 5)
+
+### Controller contract consumed by the GUI
+
+```
+POST /api/jobs                        multipart -> {"id": str, ...}
+GET  /api/jobs/{id}                   snapshot JSON (phase, routes, contract, ...)
+POST /api/jobs/{id}/start             start
+POST /api/jobs/{id}/cancel            cancel
+GET  /api/jobs/{id}/obligations       {"A": [...], "B": [...]}
+GET  /api/jobs/{id}/artifacts         {"A": [...], "B": [...]}
+```
+
+Details are documented at the top of `app/backend.py`; the surface follows Technical
+Design 搂7. HTTP mode checks responses: CJK characters, missing `id`/`phase`/`routes`, and
+network failures become explicit English errors instead of 500 tracebacks.
+
+## Structure
+
+```
+app/
+鈹溾攢 main.py            FastAPI entry, three-screen routes, status API, export
+鈹溾攢 backend.py         mock/http data-source adapter, error mapping, language checks
+鈹溾攢 demo.py            Synthetic demo data (phases, V0鈥揤5 obligations, artifacts)
+鈹溾攢 i18n.py            Chinese display labels (UI only; never enters API or exports)
+鈹溾攢 templates/         base + three screens (Jinja2)
+鈹斺攢 static/            css/app.css, js/poll.js
+tools/stub_backend.py Local stub controller (synthetic data) for http-mode integration
+tests/
+鈹溾攢 test_smoke.py            Three screens, host check, export
+鈹溾攢 test_language_policy.py  API/exports have no CJK; UI stays Chinese
+鈹斺攢 test_backend_contract.py HTTP mapping, error mapping, CJK rejection, stub shape
+fixtures/public/      Public samples only
+```
+
+## Tests
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+Covers the three screens, host validation, export attachment and `demo: true`, cancel
+state, API/export language policy, HTTP adapter request paths and multipart forwarding,
+error mapping (404, network failure, non-English payload), and the stub controller's
+JSON shape.
+
+## Language policy
+
+The GUI displays Chinese; uploaded, API, and exported data must be English ASCII.
+Non-ASCII form content is rejected with `422` and uploaded filenames are sanitized to ASCII.
+
+## Known limitations
+
+- Stub and demo data are synthetic; no binary is executed.
+- Contract revision and `409 stale approval` handling are not implemented yet.
+- The GUI assembles exports locally; the controller export endpoint is future work.
+- HTTP mode calls the controller synchronously; fine for a local single-operator demo.
+
+## Sources
+
+- PRD v1.0 (2026-10-15): F1, F4, F5, UI/UX direction, success metrics
+- Technical Design v1.0 (2026-10-15): 搂6, 搂7, 搂9, 搂11, 搂12, 搂13, 搂14
+- `docs/member2-notes.md`: role notes with sources

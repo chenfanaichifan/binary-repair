@@ -1,9 +1,19 @@
 """BinaryRepair MVP —— 图形界面第一步（三屏骨架）。
 
-怎么运行：
+怎么运行（演示数据模式，默认）：
     cd "C:\\Users\\linyz\\Desktop\\项目文件的系统\\binaryrepair-mvp"
     .\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
 然后浏览器打开 http://127.0.0.1:8123
+
+怎么运行（真实数据模式，接成员 1 的 controller）：
+    $env:BINARYREPAIR_BACKEND = "http"
+    $env:BINARYREPAIR_API_BASE = "http://127.0.0.1:8000"
+    .\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+（controller 还没出来时，可以用 tools/stub_backend.py 这个本地假服务先联调。）
+
+数据来源：
+- mock 模式：app/demo.py 的合成数据，页面顶部有"演示数据"横幅，不执行真实二进制；
+- http 模式：通过 app/backend.py 调用 controller；页面模板与轮询逻辑完全不变。
 
 语言规范（2026-10-18，团队决定）：
 - 界面（UI）可以中文：模板里的标题、按钮、状态徽章、说明都是中文；
@@ -13,16 +23,12 @@
   上传文件名会转成 ASCII 安全名（避免中文名进入导出数据）。
 
 重要说明（先读这一段）：
-- 这是 GUI-only 开发模式：阶段推进和结论都是演示数据（fixture），页面顶部有明确标注；
-  它不是真实修复结果，不能当作"补丁已验证"的证据。
-- 真实链路（VM 内筛查、Route A/B、angr 校验）由其他成员实现后再接入。这里的字段
-  按 PRD F1/F4/F5 与 TechDesign §6/§7 设计，之后替换数据源，页面结构不用大改。
+- 演示数据模式不是真实修复结果，不能当作"补丁已验证"的证据。
 - 阶段（phase）与结论（outcome）是两条独立的轴，界面上必须分开显示。
 """
 
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 from pathlib import Path
@@ -32,12 +38,15 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Resp
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app import demo, i18n
+from app import i18n
+from app.backend import (
+    BackendError,
+    backend_description,
+    backend_mode,
+    get_backend,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
-
-# GUI-only 开发模式开关。接真实后端时把它关掉，并让 demo 数据来源换成真实的 job 存储。
-DEMO = True
 
 # 上传大小上限（对应技术设计里的 20 MiB 默认值）
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
@@ -58,6 +67,10 @@ templates.env.globals.update(
     value_labels_zh=i18n.VALUE_LABELS_ZH,
     route_names_zh=i18n.ROUTE_NAMES_ZH,
 )
+
+# 数据来源（测试里默认 mock；接真实 controller 时只需换环境变量）
+BACKEND = get_backend()
+BACKEND_MODE = backend_mode()
 
 
 def _ascii_filename(name: str) -> str:
@@ -82,6 +95,12 @@ def _require_english(field: str, value: str) -> None:
         )
 
 
+@app.exception_handler(BackendError)
+async def backend_error_handler(request: Request, exc: BackendError) -> JSONResponse:
+    """让 controller 的错误以英文 JSON 返回给浏览器，而不是 500 traceback。"""
+    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+
+
 @app.middleware("http")
 async def local_only(request: Request, call_next):
     """只接受本机访问：Host 必须是 127.0.0.1 / localhost。
@@ -96,13 +115,6 @@ async def local_only(request: Request, call_next):
     return await call_next(request)
 
 
-def _job_or_404(job_id: str) -> dict:
-    job = demo.get_job(job_id)
-    if job is None:
-        raise HTTPException(status_code=404, detail="Job not found.")
-    return job
-
-
 @app.get("/", response_class=HTMLResponse)
 async def index():
     return RedirectResponse(url="/jobs/new", status_code=303)
@@ -114,7 +126,7 @@ async def setup_page(request: Request):
     return templates.TemplateResponse(
         request,
         "setup.html",
-        {"demo": DEMO, "job": None},
+        {"demo": BACKEND_MODE == "mock", "job": None},
     )
 
 
@@ -131,7 +143,7 @@ async def create_job(
 ):
     """接收上传并登记输入哈希（F1：输入身份用哈希记录）。
 
-    演示模式：只保存哈希和元数据，不解析 ELF、不执行任何二进制。
+    演示模式只保存哈希和元数据；http 模式把文件转给 controller。
     所有文本字段必须是英文 ASCII（语言规范）。
     """
     raw = await binary.read()
@@ -140,7 +152,6 @@ async def create_job(
     if not raw:
         raise HTTPException(status_code=422, detail="Uploaded file is empty.")
 
-    # 上传的数据必须英文 ASCII（界面可以中文，但数据不行）
     for field_name, field_value in (
         ("defect", defect),
         ("valid_tests", valid_tests),
@@ -152,9 +163,8 @@ async def create_job(
     ):
         _require_english(field_name, field_value)
 
-    original_sha256 = hashlib.sha256(raw).hexdigest()
-    job = demo.create_job(
-        original_sha256=original_sha256,
+    job_id = BACKEND.create_job(
+        binary_bytes=raw,
         filename=_ascii_filename(binary.filename or "sample.bin"),
         defect=defect,
         valid_tests=valid_tests,
@@ -164,50 +174,46 @@ async def create_job(
         invalid_outcome=invalid_outcome,
         assumptions=assumptions,
     )
-    return RedirectResponse(url=f"/jobs/{job['id']}", status_code=303)
+    return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
 @app.get("/jobs/{job_id}", response_class=HTMLResponse)
 async def comparison_page(request: Request, job_id: str):
     """② Progress / Comparison 屏：双路线阶段 + 结论（F5）。"""
-    job = _job_or_404(job_id)
-    snapshot = demo.snapshot(job)
+    snapshot = BACKEND.get_snapshot(job_id)
     return templates.TemplateResponse(
         request,
         "comparison.html",
-        {"demo": DEMO, "job": snapshot},
+        {"demo": bool(snapshot.get("demo")), "job": snapshot},
     )
 
 
 @app.post("/jobs/{job_id}/start")
 async def start_run(job_id: str):
-    """演示用"批准并启动"：真实版本应由成员 1 的 controller 提供。"""
-    job = _job_or_404(job_id)
-    demo.start(job)
+    """批准并启动：mock 模式是演示推进，http 模式转给 controller。"""
+    BACKEND.start(job_id)
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
 @app.post("/jobs/{job_id}/cancel")
 async def cancel_run(job_id: str):
     """取消：真实版本要等进程树确认终止后才能记录 cancelled。"""
-    job = _job_or_404(job_id)
-    demo.cancel(job)
+    BACKEND.cancel(job_id)
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
 @app.get("/jobs/{job_id}/evidence", response_class=HTMLResponse)
 async def evidence_page(request: Request, job_id: str):
     """③ Evidence / Export 屏：义务(V0-V5)、范围、哈希、导出（F4/F5）。"""
-    job = _job_or_404(job_id)
-    snapshot = demo.snapshot(job)
+    snapshot = BACKEND.get_snapshot(job_id)
     return templates.TemplateResponse(
         request,
         "evidence.html",
         {
-            "demo": DEMO,
+            "demo": bool(snapshot.get("demo")),
             "job": snapshot,
-            "obligations": demo.obligations(job),
-            "artifacts": demo.artifacts(job),
+            "obligations": BACKEND.get_obligations(job_id),
+            "artifacts": BACKEND.get_artifacts(job_id),
         },
     )
 
@@ -218,41 +224,33 @@ async def job_status(job_id: str):
 
     返回内容全部英文 ASCII（语言规范）；中文显示标签由前端 JS 映射。
     """
-    job = _job_or_404(job_id)
-    return JSONResponse(demo.snapshot(job))
+    return JSONResponse(BACKEND.get_snapshot(job_id))
 
 
 @app.get("/api/jobs/{job_id}/export")
 async def export_bundle(job_id: str):
-    """导出证据包（演示版：英文 JSON）。
+    """导出证据包（英文 JSON）。
 
     真实版本要包含：原始/候选哈希、契约与测试清单、edit manifest、
     obligations、solver/exploration 记录、工具版本等；并且"导出不代表生产批准"。
     """
-    job = _job_or_404(job_id)
-    snapshot = demo.snapshot(job)
-    bundle = {
-        "schema_version": 1,
-        "demo": True,
-        "content_language": "en",
-        "note": (
-            "GUI development mode: synthetic data; no real repair was executed. "
-            "This export is not production approval."
-        ),
-        "job": snapshot,
-        "obligations": demo.obligations(job),
-        "artifacts": demo.artifacts(job),
-    }
+    bundle = BACKEND.export_bundle(job_id)
+    job_id_for_file = str(bundle.get("job", {}).get("id") or job_id)
     body = json.dumps(bundle, ensure_ascii=False, indent=2)
     return Response(
         content=body,
         media_type="application/json",
         headers={
-            "Content-Disposition": f'attachment; filename="{job["id"]}-evidence.json"',
+            "Content-Disposition": f'attachment; filename="{job_id_for_file}-evidence.json"',
         },
     )
 
 
 @app.get("/healthz")
 async def healthz():
-    return {"ok": True, "demo": DEMO}
+    return {
+        "ok": True,
+        "backend": BACKEND_MODE,
+        "backend_detail": backend_description(BACKEND),
+        "demo": BACKEND_MODE == "mock",
+    }
