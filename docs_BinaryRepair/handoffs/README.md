@@ -10,6 +10,7 @@ These are "ready to send" confirmation requests derived from the interface contr
 | `04-member-3-oracle-freeze.md` | Member 3 | §4.4 behavioural oracle: `DEST_CAPACITY`, measured original behaviour, exact `ERROR_STDERR`, harness call shape | To send (blocking the fixture freeze) | Freezing the oracle lets Route A and Route B implement one shared V3 assertion set |
 | `05-integration-decision.md` | Team (author: Member 1) | Root integration order and `agent/` archive rules | Decided 2026-10-20; binding for merges | Tells every slice what merges where, in which order, and what not to touch |
 | `06-member-3-oracle-confirmation.md` | Member 3 | Oracle confirmation + gate 6 definition + V4/isolation escalation | Sent 2026-10-20 | Tells member 3 exactly what V3 will assert and what gate 6 evidence is accepted |
+| `07-v4-isolation-decision.md` | Lead and team | Install the V4 toolchain (A) or record `unsupported` (B); fix guest isolation before any candidate run | To send (blocking F4 and candidate execution) | Resolves the two project-level risks member 3 disclosed; unblocks gate 6 symbolic detection and safe candidate execution |
 
 **Read `05-integration-decision.md` before merging anything into `main`:** `agent/` is a read-only archive; merge order is ① member 5 → ② member 4 → ③ member 1 (controller slice only) → ④ member 2; archives are frozen snapshots.
 
