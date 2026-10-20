@@ -1,0 +1,10 @@
+# Repository default: text files are LF in the index and in checkouts.
+* text=auto eol=lf
+
+# Binary artifacts must never be converted.
+*.pdf binary
+*.zip binary
+*.elf binary
+*.vmdk binary
+*.png binary
+*.jpg binary
