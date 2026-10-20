@@ -10,11 +10,13 @@ BinaryRepair repairs one known vulnerability in a Linux x86-64 ELF **without ori
 - **Same input for both routes:** one original ELF, one reviewed security contract, one frozen test set.
 - **Verification first:** structural, compatibility, behavioural, and bounded symbolic checks on the actual final patched executables.
 
-> **Status: MVP in progress; `main` is currently the per-branch archive.** The runnable slices live under
-> `agent/<member>/`; the root `app/` tree was removed in the 2026-10-20 cleanup. The GUI skeleton and the
-> AI candidate layer run from their folders. The job controller is not on `main` yet; the identity suite
-> skips. The public fixture, the two real repair routes, and the VM broker are not implemented yet. No
-> binary has been repaired or verified. Do not present demo data as repair evidence.
+> **Status: MVP in progress; root integration is in progress.** The root `app/` tree now
+> contains the GUI skeleton and the minimal job controller; the member-5 AI slice
+> (`app/domain`, `app/services/provider.py`, `schemas/`, Route B docs) is merged and its
+> AI boundary tests run in the shared tree. The acceptance engine, the VM broker, the
+> public fixture, and the two real repair routes are not integrated yet. The identity
+> suite skips two functions that are not implemented. No binary has been repaired or
+> verified. Do not present demo data as repair evidence.
 
 ---
 
