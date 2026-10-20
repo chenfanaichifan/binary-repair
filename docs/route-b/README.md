@@ -7,6 +7,10 @@
 
 ---
 
+> **真实样本：** 成员 3 冻结 ELF 后，按
+> [03-feasibility-checklist.md](03-feasibility-checklist.md) 的 G0–G9 执行；
+> 本文档的 fixture 只用于流程预演。
+
 ## 0. 先把边界说清楚
 
 你负责：
