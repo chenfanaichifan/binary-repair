@@ -1,15 +1,15 @@
-# fixtures/public — 公开样本目录
+# fixtures/public — public sample directory
 
-只允许放：
+Allowed:
 
-- 团队自己编译/构造的测试样本；
-- 公开 CTF / 教学 / 已公开 CVE 的历史版本二进制；
-- 每个样本的来源、构建方式、SHA-256（provenance）。
+- Test samples compiled or built by the team.
+- Public CTF / teaching / previously disclosed CVE historical binaries.
+- Provenance for each sample: source, build method, SHA-256.
 
-禁止放：
+Forbidden:
 
-- 客户提供的二进制或任何机密派生内容；
-- 未授权的第三方二进制。
+- Client-provided binaries or any confidential derived content.
+- Unauthorized third-party binaries.
 
-约定：真实样本文件体积可能较大，入库前与团队确认是否用 Git LFS；
-来源与哈希记录写在同目录的 `PROVENANCE.md` 里（待成员 3 提供模板）。
+Convention: real sample files may be large; confirm with the team whether to use Git LFS before committing.
+Record source and hashes in `PROVENANCE.md` in this directory (template to be provided by Member 3).

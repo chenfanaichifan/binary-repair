@@ -147,4 +147,4 @@ Chinese filenames are converted to ASCII, and the UI stays Chinese.
 - PRD (v1.0, 2026-10-15): F1, F4, F5, UI/UX Direction, Success Metrics
 - TechDesign (v1.0, 2026-10-15): §6 state and lifecycle, §7 three views and API, §9 verification ladder,
   §11 local service security, §12 directory and dev mode, §13 tests, §14 roles
-- Roles and collaboration boundaries: `docs/member2-须知.md` (2026-10-18 team division version)
+- Roles and collaboration boundaries: `docs/member2-notes.md` (2026-10-18 team division version)
