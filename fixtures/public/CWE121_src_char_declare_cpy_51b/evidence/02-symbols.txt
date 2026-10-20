@@ -1,0 +1,4 @@
+$ nm -S -C original.elf | grep -E "badSink| main$|printLine"
+00000000004012b0 0000000000000068 T CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink
+0000000000401256 000000000000005a T main
+0000000000401380 0000000000000026 T printLine

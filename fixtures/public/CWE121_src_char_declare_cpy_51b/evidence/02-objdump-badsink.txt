@@ -1,0 +1,45 @@
+$ objdump -d --disassemble=CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink original.elf
+
+./original.elf:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.sec:
+
+Disassembly of section .text:
+
+00000000004012b0 <CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink>:
+  4012b0:	f3 0f 1e fa          	endbr64
+  4012b4:	55                   	push   %rbp
+  4012b5:	48 89 e5             	mov    %rsp,%rbp
+  4012b8:	48 83 ec 50          	sub    $0x50,%rsp
+  4012bc:	48 89 7d b8          	mov    %rdi,-0x48(%rbp)
+  4012c0:	48 c7 45 c0 00 00 00 	movq   $0x0,-0x40(%rbp)
+  4012c7:	00 
+  4012c8:	48 c7 45 c8 00 00 00 	movq   $0x0,-0x38(%rbp)
+  4012cf:	00 
+  4012d0:	48 c7 45 d0 00 00 00 	movq   $0x0,-0x30(%rbp)
+  4012d7:	00 
+  4012d8:	48 c7 45 d8 00 00 00 	movq   $0x0,-0x28(%rbp)
+  4012df:	00 
+  4012e0:	48 c7 45 e0 00 00 00 	movq   $0x0,-0x20(%rbp)
+  4012e7:	00 
+  4012e8:	48 c7 45 e8 00 00 00 	movq   $0x0,-0x18(%rbp)
+  4012ef:	00 
+  4012f0:	66 c7 45 f0 00 00    	movw   $0x0,-0x10(%rbp)
+  4012f6:	48 8b 55 b8          	mov    -0x48(%rbp),%rdx
+  4012fa:	48 8d 45 c0          	lea    -0x40(%rbp),%rax
+  4012fe:	48 89 d6             	mov    %rdx,%rsi
+  401301:	48 89 c7             	mov    %rax,%rdi
+  401304:	e8 c7 fd ff ff       	call   4010d0 <strcpy@plt>
+  401309:	48 8b 45 b8          	mov    -0x48(%rbp),%rax
+  40130d:	48 89 c7             	mov    %rax,%rdi
+  401310:	e8 6b 00 00 00       	call   401380 <printLine>
+  401315:	90                   	nop
+  401316:	c9                   	leave
+  401317:	c3                   	ret
+
+Disassembly of section .fini:

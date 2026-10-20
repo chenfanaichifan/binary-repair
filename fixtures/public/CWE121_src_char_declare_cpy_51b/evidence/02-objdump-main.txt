@@ -1,0 +1,41 @@
+$ objdump -d --disassemble=main original.elf
+
+./original.elf:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.sec:
+
+Disassembly of section .text:
+
+0000000000401256 <main>:
+  401256:	f3 0f 1e fa          	endbr64
+  40125a:	55                   	push   %rbp
+  40125b:	48 89 e5             	mov    %rsp,%rbp
+  40125e:	48 83 ec 10          	sub    $0x10,%rsp
+  401262:	89 7d fc             	mov    %edi,-0x4(%rbp)
+  401265:	48 89 75 f0          	mov    %rsi,-0x10(%rbp)
+  401269:	83 7d fc 02          	cmpl   $0x2,-0x4(%rbp)
+  40126d:	74 27                	je     401296 <main+0x40>
+  40126f:	48 8b 45 f0          	mov    -0x10(%rbp),%rax
+  401273:	48 8b 10             	mov    (%rax),%rdx
+  401276:	48 8b 05 03 2e 00 00 	mov    0x2e03(%rip),%rax        # 404080 <stderr@GLIBC_2.2.5>
+  40127d:	be 04 20 40 00       	mov    $0x402004,%esi
+  401282:	48 89 c7             	mov    %rax,%rdi
+  401285:	b8 00 00 00 00       	mov    $0x0,%eax
+  40128a:	e8 91 fe ff ff       	call   401120 <fprintf@plt>
+  40128f:	b8 02 00 00 00       	mov    $0x2,%eax
+  401294:	eb 18                	jmp    4012ae <main+0x58>
+  401296:	48 8b 45 f0          	mov    -0x10(%rbp),%rax
+  40129a:	48 83 c0 08          	add    $0x8,%rax
+  40129e:	48 8b 00             	mov    (%rax),%rax
+  4012a1:	48 89 c7             	mov    %rax,%rdi
+  4012a4:	e8 07 00 00 00       	call   4012b0 <CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink>
+  4012a9:	b8 00 00 00 00       	mov    $0x0,%eax
+  4012ae:	c9                   	leave
+  4012af:	c3                   	ret
+
+Disassembly of section .fini:

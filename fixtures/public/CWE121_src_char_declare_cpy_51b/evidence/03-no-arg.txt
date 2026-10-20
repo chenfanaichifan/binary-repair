@@ -1,0 +1,3 @@
+$ ./original.elf   # no argument
+rc=2
+usage: ./original.elf <input>
