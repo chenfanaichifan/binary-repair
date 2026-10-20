@@ -423,12 +423,20 @@ Honest list of what is **not** verified yet.
    (`tests/test_ai_boundary_contract.py`, 22 tests; the member-4 skeleton was
    deleted on purpose and must not be restored). It cannot run on the member-4
    branch because the owning modules are not merged here. The identity/state
-   suite is **8 pass / 0 skip** on `member1/jobs-minimal` @ `d7813d0` (approval
-   binding, idempotent start, cancel, restart recovery); `main` still carries the
-   old `6e8ce4b` minimal snapshot (5 pass / 3 skip) until the controller-only
-   slice merges. A skip is never reported as passing.
-5. **No fixture, no VM, no symbolic tool** in this environment, so V1–V4
-   cannot be exercised at all yet.
+   suite is **8 pass / 0 skip** on `member1/jobs-minimal` @ `7f967bb` (approval
+   binding, idempotent start, cancel, restart recovery, orchestration); `main`
+   still carries the old `6e8ce4b` minimal snapshot (5 pass / 3 skip) until the
+   controller-only slice merges. A skip is never reported as passing.
+5. **V4 toolchain and a compliant guest are missing.** There is no
+   angr/Claripy/Z3/LIEF and no compliant disposable guest, so V1–V4 cannot run
+   yet. The public CWE121 candidate ELF exists, and gate 6's concrete
+   counterexample is now verified in
+   `fixtures/public/CWE121_src_char_declare_cpy_51b/evidence/`: `100 x 'A'` ->
+   SIGSEGV 5/5, exit 139, saved RBP and return address overwritten with
+   `0x4141414141414141`, faulting `ret` @ `0x401317` (evidence sha256
+   `4bab2214e5a17272bb32c20972e3d9ccc422c93e9853cbf89346dbbdf5eb16d9`). That is
+   gate 6 criterion (a) only; symbolic detection and therefore gate 6 completion
+   remain pending V4.
 
 ---
 

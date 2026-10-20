@@ -49,16 +49,19 @@ I can supply **(a)** now. **(b) depends on V4 tooling and is currently blocked**
 I will label gate 6 as "concrete evidence provided, symbolic detection pending V4". I will not
 present the manifest 4/6 result as gate 6 passing.
 
-**Update (2026-10-20): concrete evidence supplied by member 3.** Member 3 reported the crash
-run from the guest: `100 x 'A' -> SIGSEGV` reproduced **5/5** with exit code **139**; after
-`strcpy`, `[rbp] = [rbp+8] = 0x4141414141414141`; the faulting instruction is `ret` at
-`0x401317`; backtrace #1 is `0x4141414141414141`. The record is in
-`evidence/07-gate6-crash-evidence.txt` (sha256 prefix `4bab2214`). This satisfies gate 6
-criterion (a), but two things remain open: the file and its **full** sha256 are not in this
-repository yet (searched all refs and the working tree), so M4 cannot recompute the hash or
-attach the artifact to the evidence bundle; and symbolic detection (b) still depends on V4
-tooling (§3). The report line is therefore "concrete counterexample PASS (guest run, member 3),
-symbolic detection pending V4 — gate 6 partial", never "gate 6 complete".
+**Update (2026-10-20): concrete evidence received and verified.** Member 3 supplied the crash
+record, the GDB command log, a summary, and `SHA256SUMS`. M4 recomputed the hashes from the
+delivered archive and they match: raw record `07-gate6-crash-evidence.txt` (3,750 bytes) =
+`4bab2214e5a17272bb32c20972e3d9ccc422c93e9853cbf89346dbbdf5eb16d9`; command log =
+`b2fc52f7f5964b13ef2d0375c04b474acd55075b75ae631e8a12402ca3612242`; summary =
+`a398821ee1e162edf5837eec62b534d9d1bfdc8f1612dbdc4cef92c96382d8ab`. The files are stored at
+`fixtures/public/CWE121_src_char_declare_cpy_51b/evidence/`. Content check: `100 x 'A'` ->
+SIGSEGV reproduced **5/5**, exit **139**; after `strcpy`, `[rbp] = [rbp+8] =
+0x4141414141414141`; faulting instruction `ret` @ `0x401317`; backtrace #1
+`0x4141414141414141`; guest Ubuntu 24.04.5, kernel 6.8.0-147, ASLR on. Original ELF sha256:
+`aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`. This satisfies gate 6
+criterion (a), the concrete counterexample. Symbolic detection (b) still depends on V4 tooling
+(§3). Report gate 6 as **partial**, never complete.
 
 ## 3. Two project-level risks I am escalating to the lead
 
