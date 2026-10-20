@@ -1,0 +1,3 @@
+# Byte-exact fixture bundle: disable EOL conversion so SHA256SUMS stays valid
+# on every checkout (the hashes cover the exact bytes, not a normalized form).
+* -text
