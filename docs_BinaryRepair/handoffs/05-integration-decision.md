@@ -88,24 +88,107 @@ it up.
 
 ---
 
+## Decision 4: member 5's schema and `SecurityContract` are the single authority
+
+**Decision: `app/db/migrations/001_init.sql` + `app/db/migrate.py` are the only
+schema; `app/domain/contracts.py`'s `SecurityContract` is the only contract
+model.**
+
+Two competing schema sets were found:
+
+- Member 5 (`member-5-deepseek-schema`): `app/domain/contracts.py`
+  (`SecurityContract`), `app/db/migrate.py`, and
+  `app/db/migrations/001_init.sql` with 8 tables (`jobs`, `contracts`, `runs`,
+  `attempts`, `artifacts`, `obligations`, `events`, `model_calls`).
+- Member 1 (`member1/jobs-minimal`): `app/db/schema.sql` with two tables
+  (`jobs`, `artifacts`) plus `app/db/connection.py`.
+
+They cannot coexist: job/contract/run fields and constraints would conflict.
+
+**Ownership:**
+
+- Member 5: schema, migrations, `SecurityContract` model.
+- Member 1: job-controller behaviour, state transitions, HTTP API,
+  idempotency/restart recovery. It consumes the schema and does not define a
+  second one.
+- Member 4: semantic review of the acceptance fields (`outcome`, `obligation`).
+
+**Retirement:** member 1's `app/db/schema.sql` is retired. Do not add tables to
+it; at integration delete it or leave a note that it migrated to member 5's
+schema.
+
+**Adaptation points for step ③:**
+
+- `jobs` has no `filename` / `defect_description`: these are display fields, so
+  keep them in a sidecar `var/jobs/<id>/meta.json` rather than expanding the
+  schema. If the team insists on columns, member 5 issues `002_*.sql`.
+- Approval is written to `contracts.body_json` (serialized `SecurityContract`)
+  plus `sha256`; manifest/scope hashes go inside the body, not into new columns.
+- `runs.idempotency_key` is globally `UNIQUE`: the controller uses a
+  `job_id:key` prefix or the schema is adjusted.
+- The `attempts` table backs the canonical evidence endpoint; implement it on
+  member 5's schema.
+
+The integration order is unchanged: ① member 5 → ② member 4 → ③ member 1
+(controller-only, on member 5's schema) → ④ member 2.
+
+---
+
+## Decision 5: API paths follow Tech Design §7; member 2's paths become aliases
+
+**Decision: Tech Design §7 paths are canonical; member 2's adapter paths are
+kept as GUI-compatible aliases.**
+
+Canonical (external contract):
+
+- `POST /api/jobs/{id}/runs` — approved revision + idempotency key; `202` + run id
+- `GET /api/attempts/{id}/evidence` — obligations / scope / counts / artifacts
+- plus the §7 endpoints: `POST /api/jobs`, `GET /api/jobs/{id}`,
+  `POST /api/jobs/{id}/approve`, and the rest.
+
+Member 2's adapter paths (`/start`, `/obligations`, `/artifacts`) remain as GUI
+aliases that call the same implementation; they must not duplicate decision
+logic.
+
+`/runs` requires an existing approval for that revision (looked up in
+`contracts`) and returns `409` otherwise. The `/start` alias may auto-approve
+from stored contract metadata during development, only for GUI integration, and
+must be documented as such.
+
+Migration cadence: step ③ adds the canonical routes and keeps the aliases; at
+step ④, after the GUI is connected, the adapter gradually switches to the
+canonical names.
+
+---
+
 ## Action items
 
 | # | Who | What | Done when |
 |---|---|---|---|
-| 1 | Member 1 | Split `member1/controller-only` (only `app/services/jobs.py` + `app/db/`) | It can merge alone at step ③ |
-| 2 | Member 1 | Add the snapshot table (source branch / commit / date / read-only statement) to `agent/README.md` | Archive status is visible at a glance |
-| 3 | Member 4 | Re-run `pytest tests/integration/test_identity_state.py -rs` on `member1/jobs-minimal` | Real pass/skip counts; a skip is not a pass |
-| 4 | Member 2 | Keep `app/main.py` as-is until step ④ | The controller leaves the GUI entry point alone |
-| 5 | Members 3/5 | Fill the evidence per proposal skeleton §5 | Each entry has a path, command, and four-level label |
+| 1 | Member 1 | Prepare `member1/controller-only` on member 5's schema (no `app/db/schema.sql`) | Identity suite is 8 passed / 0 skipped |
+| 2 | Member 1 | Add canonical `/runs` and `/attempts/{id}/evidence`; keep `/start` etc. as aliases | Both path sets hit the same logic; no duplicated decision |
+| 3 | Member 5 | Confirm the `SecurityContract` serialization/fields satisfy the controller | Approval body can be written to `contracts.body_json` |
+| 4 | Member 4 | Re-run identity/integration on `member1/controller-only` | Real pass/skip counts; a skip is not a pass |
+| 5 | Member 1 | Fill member 1's evidence in proposal §5; other members fill their rows | Each entry has a path, command, and four-level label |
+
+The earlier `agent/README.md` snapshot-table item is not in this list; treat it
+as still open unless member 1 reports otherwise.
 
 ---
 
-## Status note (2026-10-20)
+## Status note (2026-10-20, updated after member 1's delivery message)
 
-- **Action item 3 is done.** `tests/integration/test_identity_state.py` on
-  `member1/jobs-minimal` (`6e8ce4b`) gives **5 passed, 3 skipped**; the skips
-  name the missing `approve_contract` and `start_run` entry points. `main`'s
-  `app/services/jobs.py` is byte-identical to that commit.
-- `main` at `453fe95` already contains the GUI and the minimal job controller but
-  not member 5's or member 4's `app/domain/` code. That is not yet the order in
-  Decision 2; confirm with member 1 before starting the official merge.
+- Member 1's full controller is on `member1/jobs-minimal`, not on `main`:
+  `6e8ce4b` (minimal) → `f41558a` (approval binding, idempotent start,
+  `cancel_job`, restart recovery) → `d7813d0` (controller HTTP API). A full-suite
+  run on a temporary worktree at `d7813d0` gives **26 passed, 0 skipped**, which
+  matches 8 identity + 7 controller-API + 11 GUI smoke/language tests.
+- `main` is `453fe95`: it carries `app/`, `tests/`, and the `agent/` archive, but
+  its `app/services/jobs.py` is the **old `6e8ce4b` minimal snapshot**, so a
+  `main` checkout still shows the "deliberately not implemented yet" docstring.
+  Member 1 described `main` as `29f2a6a` with only README + `agent/`; that is not
+  the current `origin/main`.
+- Action item 1 (the `controller-only` branch) is therefore the unlock: action
+  item 4 (member 4 re-running the suites on it) is still pending. The `d7813d0`
+  result above is evidence on the full branch, not on the controller-only slice,
+  and does not replace that re-run.

@@ -103,7 +103,7 @@ One successful route is never a successful run.
 | `app/domain/acceptance.py` | implemented — `Obligation`, `Verdict`, `decide_attempt_outcome`, `decide_run_outcome` |
 | `tests/unit/test_acceptance.py` | implemented — 29 passing tests, negative-first |
 | `tests/conftest.py` | implemented — shared synthetic ELF builders, project-root import path |
-| `tests/integration/test_identity_state.py` | partially implemented — 5 pass / 3 skip against `origin/main` (member 1's minimal `create_job`, `get_job`; `approve_contract` and `start_run` pending) |
+| `tests/integration/test_identity_state.py` | implemented on `member1/jobs-minimal` @ `d7813d0` — 8 pass / 0 skip; `main` still carries the `6e8ce4b` minimal snapshot (5 pass / 3 skip) until the controller slice merges |
 | `tests/integration/test_ai_boundary.py` | **removed 2026-10-20** — superseded by `tests/test_ai_boundary_contract.py` (22 tests on member 5's branch `ea29e56`); do not restore it from git history |
 
 Reason codes are persisted and exported, so they are part of the evidence
@@ -184,14 +184,15 @@ the behaviours may not.
 | start a run | idempotency key; a duplicate start does not create a second charged attempt |
 | restart recovery | an interrupted run cannot accept partial output as evidence |
 
-**Delivery status (2026-10-20).** Member 1 landed a minimal `app/services/jobs.py`
-on `member1/jobs-minimal` (`6e8ce4b`, merged to `main` via PR #5). `create_job`
-and `get_job` exist and satisfy the first four identity tests, plus the
-"fresh job is not finished" guard. `approve_contract`, `start_run`, and restart
-recovery are explicitly not implemented yet, so those three tests skip. Verified
-by running `tests/integration/test_identity_state.py` on the branch
-(5 passed, 3 skipped); `main`'s `app/services/jobs.py` is byte-identical to that
-commit.
+**Delivery status (2026-10-20).** Member 1 finished the controller on
+`member1/jobs-minimal`, not on `main`: `6e8ce4b` (minimal `create_job`/`get_job`)
+→ `f41558a` (approval binding, idempotent start, `cancel_job`, restart recovery)
+→ `d7813d0` (controller HTTP API). A full-suite run on `d7813d0` gives 26 passed,
+0 skipped (8 identity + 7 controller API + 11 GUI smoke/language); the identity
+suite alone is **8 pass / 0 skip**. `main` still has the old `6e8ce4b` snapshot,
+so there the suite remains 5 pass / 3 skip until the controller-only slice lands
+at integration step ③. The requested re-run on `member1/controller-only` is still
+pending because that branch does not exist yet.
 
 ### 4.3 Candidate schema and provider — what member 5 provides
 
@@ -335,7 +336,7 @@ Maps the verification ladder (Tech Design §9) to where each gate is checked.
 
 | Gate | Covered by | Status |
 |---|---|---|
-| V0 identity / preconditions (hashes, approval, required inputs) | acceptance unit tests + identity/state suite | unit done, integration partial (5 pass / 3 skip; approval and run start pending) |
+| V0 identity / preconditions (hashes, approval, required inputs) | acceptance unit tests + identity/state suite | unit done; branch integration done (8 pass / 0 skip); `main` pending merge (5 pass / 3 skip) |
 | V1 structure / placement | repair-integration tests (member 3 + verification) | pending |
 | V2 interface / compatibility | repair-integration tests | pending |
 | V3 concrete behaviour | behaviour suite (valid/invalid domain) | pending fixture |
@@ -384,9 +385,10 @@ Honest list of what is **not** verified yet.
    (`tests/test_ai_boundary_contract.py`, 22 tests; the member-4 skeleton was
    deleted on purpose and must not be restored). It cannot run on the member-4
    branch because the owning modules are not merged here. The identity/state
-   suite now runs against `main`'s minimal job controller: 5 pass, 3 skip because
-   `approve_contract` and `start_run` are not implemented yet. A skip is never
-   reported as passing.
+   suite is **8 pass / 0 skip** on `member1/jobs-minimal` @ `d7813d0` (approval
+   binding, idempotent start, cancel, restart recovery); `main` still carries the
+   old `6e8ce4b` minimal snapshot (5 pass / 3 skip) until the controller-only
+   slice merges. A skip is never reported as passing.
 5. **No fixture, no VM, no symbolic tool** in this environment, so V1–V4
    cannot be exercised at all yet.
 
