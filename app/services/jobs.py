@@ -355,11 +355,41 @@ def start_run(
     )
 
 
+def cancel_job(job_id: str, *, data_dir: str | Path) -> JobRecord:
+    """Mark a job and its runs as cancelled; state is persisted for restart."""
+
+    connection = connect(data_dir)
+    try:
+        with connection:
+            row = connection.execute(
+                "SELECT id FROM jobs WHERE id = ?",
+                (job_id,),
+            ).fetchone()
+            if row is None:
+                raise ValueError(f"unknown job id: {job_id}")
+            connection.execute(
+                "UPDATE jobs SET phase = 'cancelled' WHERE id = ?",
+                (job_id,),
+            )
+            connection.execute(
+                "UPDATE runs SET phase = 'cancelled' WHERE job_id = ?",
+                (job_id,),
+            )
+    finally:
+        connection.close()
+
+    record = get_job(job_id, data_dir=data_dir)
+    if record is None:
+        raise ValueError(f"unknown job id: {job_id}")
+    return record
+
+
 __all__ = [
     "Approval",
     "JobRecord",
     "RunRecord",
     "approve_contract",
+    "cancel_job",
     "create_job",
     "get_job",
     "start_run",
