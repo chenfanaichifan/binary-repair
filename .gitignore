@@ -1,5 +1,6 @@
 # Python
 .venv/
+.venv-patcherex/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -15,6 +16,12 @@ __pycache__/
 # 运行时产物（技术设计 §12）：任务产物、pid、截图用的浏览器临时目录等
 var/
 *.log
+
+# Route B 实验产物
+routeb/out/
+routeb/fixture/vuln
+routeb/fixture/*.o
+*.core
 
 # 编辑器 / 系统
 .vscode/

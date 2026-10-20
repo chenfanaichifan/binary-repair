@@ -148,3 +148,19 @@ Chinese filenames are converted to ASCII, and the UI stays Chinese.
 - TechDesign (v1.0, 2026-10-15): §6 state and lifecycle, §7 three views and API, §9 verification ladder,
   §11 local service security, §12 directory and dev mode, §13 tests, §14 roles
 - Roles and collaboration boundaries: `docs/member2-notes.md` (2026-10-18 team division version)
+
+---
+
+## Route B / AI candidate provider (Member 5)
+
+A parallel workstream; the code is at the repository root:
+
+- [docs/route-b/README.md](docs/route-b/README.md) — DeepSeek adapter, candidate schema v1, SQLite schema, and the Route B feasibility kit.
+- [docs/route-b/02-member-5-candidate-provider.md](docs/route-b/02-member-5-candidate-provider.md) — `validate_candidate` / `may_leave_host` contract and typed provider failures.
+
+```bash
+pytest -q tests/test_ai_boundary_contract.py tests/test_provider_failures.py
+python schemas/generate.py --check
+python db/migrate.py --db var/app.db
+```
+
