@@ -103,7 +103,7 @@ One successful route is never a successful run.
 | `app/domain/acceptance.py` | implemented — `Obligation`, `Verdict`, `decide_attempt_outcome`, `decide_run_outcome` |
 | `tests/unit/test_acceptance.py` | implemented — 29 passing tests, negative-first |
 | `tests/conftest.py` | implemented — shared synthetic ELF builders, project-root import path |
-| `tests/integration/test_identity_state.py` | implemented on `member1/jobs-minimal` @ `7f967bb` — 8 pass / 0 skip; `main` still carries the `6e8ce4b` minimal snapshot (5 pass / 3 skip) until the controller slice merges |
+| `tests/integration/test_identity_state.py` | implemented — 8 pass / 0 skip on `member1/controller-only` @ `f4c7fa9` (15/0 for the whole slice) and on `main` @ `1596b4f` |
 | `tests/integration/test_ai_boundary.py` | **removed 2026-10-20** — superseded by `tests/test_ai_boundary_contract.py` (22 tests on member 5's branch `ea29e56`); do not restore it from git history |
 
 Reason codes are persisted and exported, so they are part of the evidence
@@ -201,10 +201,12 @@ obligations into the acceptance engine). A full-suite run on `7f967bb` gives
 **31 passed, 0 skipped** (8 identity + 7 controller API + 11 GUI smoke/language +
 5 orchestration); the identity suite alone is **8 pass / 0 skip**. `main` still
 has the old `6e8ce4b` snapshot, so there the suite remains 5 pass / 3 skip.
-The requested `member1/controller-only` slice is not on `origin` yet: the branch
-still carries the GUI, `app/db/schema.sql`, and copies of the member-4 domain
-files (identical except a UTF-8 BOM), so the step-③ re-run on the controller-only
-slice is still pending.
+`member1/controller-only` now exists at `f4c7fa9`: no GUI, no `app/db/schema.sql`,
+canonical `/approve` / `/runs` / `/attempts/{id}/evidence` plus the aliases. M4
+re-ran it: **15 passed, 0 skipped** (8 identity + 7 controller API). It is based
+on the old `453fe95` main and still ships the retired `001_init.sql`, so it needs
+a rebase/port before step ③. Separately, `main` at `1596b4f` is not green
+(5 failed, 2 skipped); see §7 item 6.
 
 ### 4.3 Candidate schema and provider — what member 5 provides
 
@@ -437,6 +439,13 @@ Honest list of what is **not** verified yet.
    `4bab2214e5a17272bb32c20972e3d9ccc422c93e9853cbf89346dbbdf5eb16d9`). That is
    gate 6 criterion (a) only; symbolic detection and therefore gate 6 completion
    remain pending V4.
+6. **`main` integration is not green (2026-10-20).** 5 failures: three db-v2
+   failures (`contracts.body_json` is missing because `002_ai_tables.sql` uses
+   `CREATE TABLE IF NOT EXISTS` on the table the baseline already created) and two
+   frozen V3-manifest hash mismatches (`valid.json` / `invalid.json` and the
+   manifest set; recheck on Linux/guest before touching the constants). Until
+   fixed, `main` must not be presented as a working integration or used for
+   acceptance claims.
 
 ---
 

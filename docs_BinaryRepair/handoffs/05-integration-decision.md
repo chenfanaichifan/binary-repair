@@ -200,3 +200,17 @@ as still open unless member 1 reports otherwise.
 - Action item 4 (member 4 re-running the suites on the controller-only slice) is
   still pending that branch. The `7f967bb` result is evidence on the full branch,
   not on the controller-only slice, and does not replace that re-run.
+- **Action item 1 + 4 are now done (2026-10-20).** `member1/controller-only` exists at
+  `f4c7fa9`; M4 re-ran it in a temporary worktree: **15 passed, 0 skipped** (8 identity +
+  7 controller API). It has no GUI, no `app/db/schema.sql`, and includes the canonical
+  `/approve`, `/runs`, `/attempts/{id}/evidence` routes alongside the aliases. **But** it is
+  based on the old `453fe95` main and still ships `app/db/migrations/001_init.sql`, while
+  current `main` (`1596b4f`) uses `app/db/schema.sql` + `002_ai_tables.sql` +
+  `003_acceptance_verdict.sql` and its `migrate.py` explicitly rejects the legacy 001 schema.
+  The branch must be rebased/ported before step ③.
+- **`origin/main` at `1596b4f` is not green: 5 failed, 2 skipped.** Three db-v2 failures are
+  real: the baseline `schema.sql` creates `contracts` without `body_json`, and
+  `002_ai_tables.sql` uses `CREATE TABLE IF NOT EXISTS contracts`, which is a no-op on the
+  existing table, so `body_json` never appears. The two V3-manifest failures are frozen-hash
+  mismatches for `valid.json` / `invalid.json` and the manifest set; recheck them on
+  Linux/guest (line endings or fixture drift), do not silently update the constants.
