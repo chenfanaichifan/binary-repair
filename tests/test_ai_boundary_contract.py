@@ -49,6 +49,25 @@ def valid_payload() -> dict:
     }
 
 
+def route_b_payload() -> dict:
+    """Route B payload: the 12 shared fields minus template fields, plus 2."""
+    payload = valid_payload()
+    payload.update(
+        {
+            "route": "route_b",
+            "target_entry": "copy_name",
+            "template_id": None,
+            "parameters": None,
+            "recovered_function_sha256": SHA,
+            "replacement_c": (
+                "int copy_name(char *dst, const char *src, unsigned int n)\n"
+                "{\n    if (n >= 16u) return -1;\n    return 0;\n}\n"
+            ),
+        }
+    )
+    return payload
+
+
 # 1. legal payload passes and returns a non-None validated object
 def test_valid_payload_returns_candidate() -> None:
     result = validate_candidate(valid_payload())
@@ -102,6 +121,36 @@ def test_overlong_text_is_rejected() -> None:
     payload["expected_effects"] = ["x" * 513]
     with pytest.raises(CandidateRejected):
         validate_candidate(payload)
+
+
+def test_maximum_free_text_length_is_accepted() -> None:
+    """512 is legal; 513 is rejected (first-invalid boundary)."""
+    payload = valid_payload()
+    payload["expected_effects"] = ["a" * 512]
+    assert validate_candidate(payload) is not None
+
+
+def test_too_many_list_entries_is_rejected() -> None:
+    payload = valid_payload()
+    payload["assumptions"] = ["an assumption"] * 33
+    with pytest.raises(CandidateRejected):
+        validate_candidate(payload)
+
+
+def test_oversized_replacement_c_is_rejected() -> None:
+    payload = route_b_payload()
+    payload["replacement_c"] = "x" * 20_001
+    with pytest.raises(CandidateRejected):
+        validate_candidate(payload)
+
+
+def test_allowed_targets_override_is_honoured() -> None:
+    """The server may widen the allowlist; a candidate cannot widen itself."""
+    payload = valid_payload()
+    payload["target_entry"] = "some_other_function"
+    with pytest.raises(CandidateRejected):
+        validate_candidate(payload)
+    assert validate_candidate(payload, allowed_targets=["some_other_function"]) is not None
 
 
 # 8. data boundary: public may leave, client never does by default
