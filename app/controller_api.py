@@ -29,6 +29,7 @@ from typing import Any
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 from app.services import jobs
 
@@ -327,6 +328,123 @@ def cancel(job_id: str) -> dict[str, Any]:
     except ValueError as exc:
         raise HTTPException(status_code=404, detail="Job not found.") from exc
     return {"id": record.id, "phase": record.phase}
+
+
+class ApproveRequest(BaseModel):
+    contract: dict[str, Any]
+    contract_revision: int = Field(default=1, ge=1)
+    manifest_sha256: str = Field(min_length=64, max_length=64)
+    reviewer_label: str = Field(min_length=1, max_length=128)
+
+
+class RunRequest(BaseModel):
+    contract_revision: int = Field(default=1, ge=1)
+    manifest_sha256: str = Field(min_length=64, max_length=64)
+    idempotency_key: str = Field(min_length=1, max_length=128)
+
+
+class RetryRequest(BaseModel):
+    route: str = Field(pattern="^route_[ab]$")
+
+
+@app.post("/api/jobs/{job_id}/approve")
+def approve(job_id: str, body: ApproveRequest) -> dict[str, Any]:
+    record = _job_or_404(job_id)
+    try:
+        approval = jobs.approve_contract(
+            job_id,
+            contract_revision=body.contract_revision,
+            reviewer_label=body.reviewer_label,
+            data_dir=_data_dir(),
+            contract_body=body.contract,
+            input_sha256=record.original_sha256,
+            manifest_sha256=body.manifest_sha256,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {
+        "contract_id": approval.contract_id,
+        "contract_revision": approval.contract_revision,
+        "sha256": approval.scope_sha256,
+        "manifest_sha256": approval.manifest_sha256,
+        "reviewer_label": approval.reviewer_label,
+        "approved_at": approval.approved_at,
+    }
+
+
+@app.post("/api/jobs/{job_id}/runs")
+def start_canonical(job_id: str, body: RunRequest) -> JSONResponse:
+    record = _job_or_404(job_id)
+    if record.phase == "cancelled":
+        raise HTTPException(status_code=409, detail="Job is cancelled; a new job is required.")
+    contract = jobs.get_contract(job_id, body.contract_revision, data_dir=_data_dir())
+    if contract is None:
+        raise HTTPException(status_code=409, detail="No approval for this contract revision.")
+    try:
+        approval = jobs.approval_from_contract(
+            contract, manifest_sha256=body.manifest_sha256
+        )
+        approval = jobs.Approval(
+            job_id=approval.job_id,
+            contract_id=approval.contract_id,
+            contract_revision=approval.contract_revision,
+            input_sha256=record.original_sha256,
+            manifest_sha256=approval.manifest_sha256,
+            scope_sha256=approval.scope_sha256,
+            reviewer_label=approval.reviewer_label,
+            approved_at=approval.approved_at,
+        )
+        run = jobs.start_run(
+            job_id,
+            approval=approval,
+            idempotency_key=body.idempotency_key,
+            data_dir=_data_dir(),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return JSONResponse(
+        {
+            "id": run.id,
+            "phase": run.phase,
+            "created": run.created,
+            "manifest_sha256": run.manifest_sha256,
+            "reviewed_scope_sha256": run.reviewed_scope_sha256,
+        },
+        status_code=202 if run.created else 200,
+    )
+
+
+@app.post("/api/runs/{run_id}/attempts/retry", status_code=202)
+def retry(run_id: str, body: RetryRequest) -> dict[str, Any]:
+    try:
+        attempt = jobs.retry_attempt(run_id, body.route, data_dir=_data_dir())
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {
+        "id": attempt.id,
+        "run_id": attempt.run_id,
+        "route": attempt.route,
+        "sequence": attempt.sequence,
+        "phase": attempt.phase,
+    }
+
+
+@app.get("/api/attempts/{attempt_id}/evidence")
+def attempt_evidence(attempt_id: str) -> dict[str, Any]:
+    attempt = jobs.get_attempt(attempt_id, data_dir=_data_dir())
+    if attempt is None:
+        raise HTTPException(status_code=404, detail="Attempt not found.")
+    return {
+        "attempt_id": attempt.id,
+        "run_id": attempt.run_id,
+        "route": attempt.route,
+        "sequence": attempt.sequence,
+        "outcome": attempt.outcome,
+        "reason": attempt.reason,
+        "failing_obligation": attempt.failing_obligation,
+        "detail": attempt.detail,
+        "obligations": _obligations(),
+    }
 
 
 @app.get("/api/jobs/{job_id}/obligations")
