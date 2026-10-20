@@ -103,7 +103,7 @@ One successful route is never a successful run.
 | `app/domain/acceptance.py` | implemented — `Obligation`, `Verdict`, `decide_attempt_outcome`, `decide_run_outcome` |
 | `tests/unit/test_acceptance.py` | implemented — 29 passing tests, negative-first |
 | `tests/conftest.py` | implemented — shared synthetic ELF builders, project-root import path |
-| `tests/integration/test_identity_state.py` | contract skeleton — activates when `app.services.jobs` exists |
+| `tests/integration/test_identity_state.py` | partially implemented — 5 pass / 3 skip against `origin/main` (member 1's minimal `create_job`, `get_job`; `approve_contract` and `start_run` pending) |
 | `tests/integration/test_ai_boundary.py` | **removed 2026-10-20** — superseded by `tests/test_ai_boundary_contract.py` (22 tests on member 5's branch `ea29e56`); do not restore it from git history |
 
 Reason codes are persisted and exported, so they are part of the evidence
@@ -183,6 +183,15 @@ the behaviours may not.
 | record a reviewer approval | binds input hash, contract revision, test-manifest hash, and scope hash |
 | start a run | idempotency key; a duplicate start does not create a second charged attempt |
 | restart recovery | an interrupted run cannot accept partial output as evidence |
+
+**Delivery status (2026-10-20).** Member 1 landed a minimal `app/services/jobs.py`
+on `member1/jobs-minimal` (`6e8ce4b`, merged to `main` via PR #5). `create_job`
+and `get_job` exist and satisfy the first four identity tests, plus the
+"fresh job is not finished" guard. `approve_contract`, `start_run`, and restart
+recovery are explicitly not implemented yet, so those three tests skip. Verified
+by running `tests/integration/test_identity_state.py` on the branch
+(5 passed, 3 skipped); `main`'s `app/services/jobs.py` is byte-identical to that
+commit.
 
 ### 4.3 Candidate schema and provider — what member 5 provides
 
@@ -326,7 +335,7 @@ Maps the verification ladder (Tech Design §9) to where each gate is checked.
 
 | Gate | Covered by | Status |
 |---|---|---|
-| V0 identity / preconditions (hashes, approval, required inputs) | acceptance unit tests + identity/state skeleton | unit done, integration pending |
+| V0 identity / preconditions (hashes, approval, required inputs) | acceptance unit tests + identity/state suite | unit done, integration partial (5 pass / 3 skip; approval and run start pending) |
 | V1 structure / placement | repair-integration tests (member 3 + verification) | pending |
 | V2 interface / compatibility | repair-integration tests | pending |
 | V3 concrete behaviour | behaviour suite (valid/invalid domain) | pending fixture |
@@ -375,8 +384,9 @@ Honest list of what is **not** verified yet.
    (`tests/test_ai_boundary_contract.py`, 22 tests; the member-4 skeleton was
    deleted on purpose and must not be restored). It cannot run on the member-4
    branch because the owning modules are not merged here. The identity/state
-   suite is still unrun: `app.services.jobs` has not landed on any checked
-   branch. A skip is never reported as passing.
+   suite now runs against `main`'s minimal job controller: 5 pass, 3 skip because
+   `approve_contract` and `start_run` are not implemented yet. A skip is never
+   reported as passing.
 5. **No fixture, no VM, no symbolic tool** in this environment, so V1–V4
    cannot be exercised at all yet.
 

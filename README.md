@@ -155,10 +155,11 @@ Run from the repository root:
 python -m pytest tests/ -q -p no:cacheprovider
 ```
 
-- Current `main`: **83 passed**.
-- The verification branch adds **29 acceptance tests**; expected total after merge: **112**.
-- One contract skeleton skips until `app.services.jobs` exists
-  (`tests/integration/test_identity_state.py`); a skip is not a pass.
+- Measured on `main` at `453fe95` (2026-10-20): **16 passed, 3 skipped**.
+- The verification branch adds **29 acceptance tests**; expected total after merge: **45**.
+- The identity/state suite runs against member 1's minimal job controller: 5 pass,
+  3 skip because `approve_contract` and `start_run` are not implemented yet.
+  A skip is not a pass.
 - The AI-boundary suite never calls the real provider, needs no API key, and spends no money.
 - No uploaded or repaired binary is executed on the host.
 
@@ -209,7 +210,7 @@ These are not optional.
 
 ## Roadmap and known gaps
 
-1. Job controller + SQLite + API on `main` (blocks the identity/state tests and all integration).
+1. Job controller + SQLite + API on `main`: minimal `create_job` / `get_job` landed 2026-10-20; approval binding, run start/idempotency, and the API are still pending.
 2. Public CWE-121 fixture with provenance and a frozen test manifest.
 3. Disposable Ubuntu VM, toolchain smoke tests, and the broker.
 4. Route A instruction-repair chain and Route B recovered-C round trip.

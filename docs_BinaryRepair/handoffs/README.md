@@ -4,13 +4,20 @@ These are "ready to send" confirmation requests derived from the interface contr
 
 | File | Recipient | Confirm | Status | Unblocks after confirmation |
 |---|---|---|---|---|
-| `01-member-1-obligation-interface.md` | Member 1 | §4.1 Obligation / Verdict call interface + owner of `reviewed_scope_sha256` | Confirmed 2026-10-18 (contract in `verification-design.md` §4.1) | Write `app.services.jobs` without guessing the shape; once the module lands, `tests/integration/test_identity_state.py` moves from skip to run |
+| `01-member-1-obligation-interface.md` | Member 1 | §4.1 Obligation / Verdict call interface + owner of `reviewed_scope_sha256` | Confirmed 2026-10-18; partially delivered 2026-10-20: minimal `create_job` / `get_job` on `main` | `approve_contract`, `start_run`, and restart recovery still pending; identity suite is 5 pass / 3 skip |
 | `02-member-5-candidate-provider.md` | Member 5 | §4.3 candidate schema, data boundary, provider failure type | Confirmed 2026-10-18; contract in `verification-design.md` §4.3. Merge deferred: `main` layout is being reorganized by the owner | Implemented on `member-5-deepseek-schema` `ea29e56`: `app/domain/candidates.py`, `app/services/provider.py`, `tests/test_ai_boundary_contract.py` (22 tests) |
 | `03-member-3-fixture-vm.md` | Member 3 | §5 fixture profile, frozen test manifest, VM or explicit blocker | To send | A real ELF and frozen input manifest unlock V1–V4 checks; a recorded blocker also unblocks planning |
 | `04-member-3-oracle-freeze.md` | Member 3 | §4.4 behavioural oracle: `DEST_CAPACITY`, measured original behaviour, exact `ERROR_STDERR`, harness call shape | To send (blocking the fixture freeze) | Freezing the oracle lets Route A and Route B implement one shared V3 assertion set |
 
 ## Confirmation log
 
+- 2026-10-20 — Member 1's minimal job controller landed: `app/services/jobs.py`
+  on `member1/jobs-minimal` (`6e8ce4b`), merged to `main` via PR #5. `create_job`
+  and `get_job` exist; `approve_contract`, `start_run`, and restart recovery are
+  explicitly pending. Running `tests/integration/test_identity_state.py` gives
+  **5 passed, 3 skipped** (the skips name the missing entry points); `main`'s
+  file is byte-identical to that commit, and the full `main` suite measures
+  **16 passed, 3 skipped**.
 - 2026-10-20 — Duplicate AI-boundary tests are settled as **deleted, not
   restored from git history**. Member 5 migrated the four boundary assertions
   that were unique to the member-4 suite (512 accepted / 513 rejected, 33-entry
@@ -60,6 +67,7 @@ These are "ready to send" confirmation requests derived from the interface contr
 ## Measured state (2026-10-20)
 
 - `python -m pytest tests -q -p no:cacheprovider` on the member-4 branch -> **40 passed, 1 skipped** (the skip is the identity/state suite without `app.services.jobs`; skip is not a pass)
+- `origin/main` at `453fe95` (temporary worktree) -> **16 passed, 3 skipped** (the identity skips are the unimplemented `approve_contract` / `start_run` entry points)
 - Member 5's branch `ea29e56` -> `tests/test_ai_boundary_contract.py` has **22 tests**; the full branch suite is reported at **107 passed** (reported by member 5, not independently re-run here: remote fetch from this sandbox fails on a TLS CA-bundle path error)
 - The stale `var/wt-member5` worktree from 2026-10-18 was removed on 2026-10-20 so it no longer breaks pytest collection
 
