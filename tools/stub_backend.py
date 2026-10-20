@@ -70,8 +70,55 @@ async def get_job(job_id: str):
 
 @app.post("/api/jobs/{job_id}/start")
 async def start_job(job_id: str):
-    demo.start(_job_or_404(job_id))
+    job = _job_or_404(job_id)
+    if not job["contract"].get("approved"):
+        raise HTTPException(status_code=409, detail="Contract is not approved for this job.")
+    demo.start(job)
     return JSONResponse({"ok": True}, status_code=202)
+
+
+@app.post("/api/jobs/{job_id}/contract")
+async def update_contract(
+    job_id: str,
+    expected_revision: str = Form(""),
+    valid_domain: str = Form(""),
+    forbidden: str = Form(""),
+    invalid_outcome: str = Form(""),
+    assumptions: str = Form(""),
+):
+    job = _job_or_404(job_id)
+    current = job["contract"]["revision"]
+    if str(expected_revision).strip() != str(current):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Contract revision is stale: presented "
+                f"{expected_revision}, current is {current}. "
+                "Reload and review the current contract."
+            ),
+        )
+    return demo.update_contract(
+        job,
+        valid_domain=valid_domain,
+        forbidden=forbidden,
+        invalid_outcome=invalid_outcome,
+        assumptions=assumptions,
+    )
+
+
+@app.post("/api/jobs/{job_id}/approve")
+async def approve_contract(
+    job_id: str,
+    expected_sha256: str = Form(""),
+    reviewer_label: str = Form(""),
+):
+    job = _job_or_404(job_id)
+    if expected_sha256.strip().lower() != job["contract"]["sha256"]:
+        raise HTTPException(
+            status_code=409,
+            detail="Contract approval is stale: the presented hash does not match the current revision.",
+        )
+    return demo.approve_contract(job, reviewer_label=reviewer_label)
 
 
 @app.post("/api/jobs/{job_id}/cancel")

@@ -322,11 +322,17 @@ Configuration:
 ```
 POST /api/jobs                        multipart -> {"id": str, ...}
 GET  /api/jobs/{id}                   snapshot JSON (phase, routes, contract, ...)
-POST /api/jobs/{id}/start             start
+POST /api/jobs/{id}/start             start (requires an approved contract)
 POST /api/jobs/{id}/cancel            cancel
+POST /api/jobs/{id}/contract          new contract revision (409 on stale expected_revision)
+POST /api/jobs/{id}/approve           approve the current contract hash (409 on stale hash)
 GET  /api/jobs/{id}/obligations       {"A": [...], "B": [...]}
 GET  /api/jobs/{id}/artifacts         {"A": [...], "B": [...]}
 ```
+
+Contract approval is bound to the current revision hash: editing any contract field creates
+a new revision, clears the approval, and a stale approval or stale revision returns `409`
+with an explicit conflict page. A run cannot start until the current contract is approved.
 
 Details are documented at the top of `app/backend.py`; the surface follows Technical
 Design section 7. HTTP mode checks responses: CJK characters, missing

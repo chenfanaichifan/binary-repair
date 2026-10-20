@@ -55,6 +55,99 @@ def get_job(job_id: str) -> dict[str, Any] | None:
     return JOBS.get(job_id)
 
 
+CONTRACT_DEFAULTS = {
+    "valid_domain": "Input length 0-64 bytes; out-of-range lengths rejected",
+    "forbidden": "Out-of-bounds write to the target buffer (more than 8 bytes)",
+    "invalid_outcome": "Return error code 1 without out-of-bounds access or crash",
+    "assumptions": "Single process\nLinux x86-64 ELF\nStack protector disabled",
+}
+
+
+def _contract_sha(body: dict[str, Any]) -> str:
+    return _sha(json.dumps(body, sort_keys=True, ensure_ascii=True))
+
+
+def contract_body(
+    *,
+    valid_domain: str = "",
+    forbidden: str = "",
+    invalid_outcome: str = "",
+    assumptions: str = "",
+) -> dict[str, Any]:
+    """Normalize the four contract fields (English ASCII, demo defaults when blank)."""
+
+    return {
+        "valid_domain": valid_domain.strip() or CONTRACT_DEFAULTS["valid_domain"],
+        "forbidden": forbidden.strip() or CONTRACT_DEFAULTS["forbidden"],
+        "invalid_outcome": invalid_outcome.strip() or CONTRACT_DEFAULTS["invalid_outcome"],
+        "assumptions": [
+            line.strip()
+            for line in (assumptions or CONTRACT_DEFAULTS["assumptions"]).splitlines()
+            if line.strip()
+        ],
+    }
+
+
+def build_contract(
+    *,
+    valid_domain: str = "",
+    forbidden: str = "",
+    invalid_outcome: str = "",
+    assumptions: str = "",
+) -> dict[str, Any]:
+    body = contract_body(
+        valid_domain=valid_domain,
+        forbidden=forbidden,
+        invalid_outcome=invalid_outcome,
+        assumptions=assumptions,
+    )
+    return {
+        "revision": 1,
+        "sha256": _contract_sha(body),
+        "approved": False,
+        "approved_at": None,
+        "reviewer_label": None,
+        **body,
+    }
+
+
+def update_contract(
+    job: dict[str, Any],
+    *,
+    valid_domain: str = "",
+    forbidden: str = "",
+    invalid_outcome: str = "",
+    assumptions: str = "",
+) -> dict[str, Any]:
+    """Create a new contract revision and invalidate the previous approval."""
+
+    body = contract_body(
+        valid_domain=valid_domain,
+        forbidden=forbidden,
+        invalid_outcome=invalid_outcome,
+        assumptions=assumptions,
+    )
+    job["contract"] = {
+        "revision": job["contract"]["revision"] + 1,
+        "sha256": _contract_sha(body),
+        "approved": False,
+        "approved_at": None,
+        "reviewer_label": None,
+        **body,
+    }
+    return job["contract"]
+
+
+def approve_contract(job: dict[str, Any], *, reviewer_label: str = "") -> dict[str, Any]:
+    """Record the reviewer approval for the current contract revision."""
+
+    contract = job["contract"]
+    contract["approved"] = True
+    contract["approved_at"] = _now_iso()
+    contract["reviewer_label"] = reviewer_label.strip() or "reviewer"
+    return contract
+
+
 def create_job(
     original_sha256: str,
     filename: str,
@@ -67,17 +160,6 @@ def create_job(
     assumptions: str,
 ) -> dict[str, Any]:
     """登记一个任务（演示版：所有数据在内存里，字段值一律英文）。"""
-    contract_body = {
-        "valid_domain": valid_domain.strip() or "Input length 0-64 bytes; out-of-range lengths rejected",
-        "forbidden": forbidden.strip() or "Out-of-bounds write to the target buffer (more than 8 bytes)",
-        "invalid_outcome": invalid_outcome.strip() or "Return error code 1 without out-of-bounds access or crash",
-        "assumptions": [
-            line.strip()
-            for line in (assumptions or "Single process\nLinux x86-64 ELF\nStack protector disabled").splitlines()
-            if line.strip()
-        ],
-    }
-    contract_sha256 = _sha(json.dumps(contract_body, sort_keys=True, ensure_ascii=False))
 
     job: dict[str, Any] = {
         "id": "job-" + uuid.uuid4().hex[:8],
@@ -92,7 +174,12 @@ def create_job(
         "cancelled": False,
         "frozen_elapsed": None,
         "phase": "draft",
-        "contract": {"revision": 1, "sha256": contract_sha256, **contract_body},
+        "contract": build_contract(
+            valid_domain=valid_domain,
+            forbidden=forbidden,
+            invalid_outcome=invalid_outcome,
+            assumptions=assumptions,
+        ),
         "routes": {
             "A": _route_state("A"),
             "B": _route_state("B"),

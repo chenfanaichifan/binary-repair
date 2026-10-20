@@ -48,6 +48,16 @@ def test_host_check_rejects_foreign_host():
     assert response.status_code == 403
 
 
+def _approve_current_contract(job_id: str) -> None:
+    contract = client.get(f"/api/jobs/{job_id}").json()["contract"]
+    response = client.post(
+        f"/jobs/{job_id}/approve",
+        data={"expected_sha256": contract["sha256"], "reviewer_label": "reviewer"},
+        follow_redirects=False,
+    )
+    assert response.status_code == 303, response.text
+
+
 def test_create_job_and_three_screens():
     job_id = _create_job()
 
@@ -61,7 +71,14 @@ def test_create_job_and_three_screens():
     assert data["demo"] is True
     assert data["phase"] == "draft"
     assert len(data["original_sha256"]) == 64
+    assert data["contract"]["approved"] is False
 
+    # Starting before approval must be rejected with the explicit 409 conflict page.
+    blocked = client.post(f"/jobs/{job_id}/start", follow_redirects=False)
+    assert blocked.status_code == 409
+    assert 'data-testid="job-error"' in blocked.text
+
+    _approve_current_contract(job_id)
     started = client.post(f"/jobs/{job_id}/start", follow_redirects=False)
     assert started.status_code == 303
     assert client.get(f"/api/jobs/{job_id}").json()["phase"] != "draft"
@@ -83,6 +100,7 @@ def test_missing_job_returns_404():
 
 def test_cancel_marks_cancelled():
     job_id = _create_job()
+    _approve_current_contract(job_id)
     client.post(f"/jobs/{job_id}/start", follow_redirects=False)
     client.post(f"/jobs/{job_id}/cancel", follow_redirects=False)
     data = client.get(f"/api/jobs/{job_id}").json()

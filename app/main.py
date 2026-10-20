@@ -185,9 +185,14 @@ async def create_job(
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
-@app.get("/jobs/{job_id}", response_class=HTMLResponse)
-async def comparison_page(request: Request, job_id: str):
-    """② Progress / Comparison 屏：双路线阶段 + 结论（F5）。"""
+def _comparison_response(
+    request: Request,
+    job_id: str,
+    *,
+    error: str | None = None,
+    status_code: int = 200,
+):
+    """Render the comparison screen (also used for explicit 409 conflict errors)."""
     snapshot = BACKEND.get_snapshot(job_id)
     return templates.TemplateResponse(
         request,
@@ -197,21 +202,93 @@ async def comparison_page(request: Request, job_id: str):
             "job": snapshot,
             "can_start": BACKEND.supports_start,
             "backend_note": backend_description(BACKEND),
+            "error": error,
         },
+        status_code=status_code,
     )
 
 
+@app.get("/jobs/{job_id}", response_class=HTMLResponse)
+async def comparison_page(request: Request, job_id: str):
+    """② Progress / Comparison 屏：双路线阶段 + 结论（F5）。"""
+    return _comparison_response(request, job_id)
+
+
+@app.post("/jobs/{job_id}/contract")
+async def update_contract(
+    request: Request,
+    job_id: str,
+    expected_revision: str = Form(""),
+    valid_domain: str = Form(""),
+    forbidden: str = Form(""),
+    invalid_outcome: str = Form(""),
+    assumptions: str = Form(""),
+):
+    """Create a new contract revision; a stale ``expected_revision`` returns 409."""
+
+    for field_name, field_value in (
+        ("valid_domain", valid_domain),
+        ("forbidden", forbidden),
+        ("invalid_outcome", invalid_outcome),
+        ("assumptions", assumptions),
+    ):
+        _require_english(field_name, field_value)
+    try:
+        BACKEND.update_contract(
+            job_id,
+            expected_revision=expected_revision,
+            valid_domain=valid_domain,
+            forbidden=forbidden,
+            invalid_outcome=invalid_outcome,
+            assumptions=assumptions,
+        )
+    except BackendError as exc:
+        return _comparison_response(request, job_id, error=exc.detail, status_code=exc.status_code)
+    return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
+
+
+@app.post("/jobs/{job_id}/approve")
+async def approve_contract(
+    request: Request,
+    job_id: str,
+    expected_sha256: str = Form(""),
+    reviewer_label: str = Form(""),
+):
+    """Approve the current contract revision; a stale hash returns 409."""
+
+    _require_english("reviewer_label", reviewer_label)
+    try:
+        BACKEND.approve_contract(
+            job_id,
+            expected_sha256=expected_sha256,
+            reviewer_label=reviewer_label,
+        )
+    except BackendError as exc:
+        return _comparison_response(request, job_id, error=exc.detail, status_code=exc.status_code)
+    return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
+
+
 @app.post("/jobs/{job_id}/start")
-async def start_run(job_id: str):
-    """批准并启动：mock 模式是演示推进，http 模式转给 controller。"""
-    BACKEND.start(job_id)
+async def start_run(request: Request, job_id: str):
+    """批准并启动：mock 模式是演示推进，http 模式转给 controller。
+
+    Unapproved contracts are rejected with an explicit 409 page instead of an
+    opaque JSON error.
+    """
+    try:
+        BACKEND.start(job_id)
+    except BackendError as exc:
+        return _comparison_response(request, job_id, error=exc.detail, status_code=exc.status_code)
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
 @app.post("/jobs/{job_id}/cancel")
-async def cancel_run(job_id: str):
+async def cancel_run(request: Request, job_id: str):
     """取消：真实版本要等进程树确认终止后才能记录 cancelled。"""
-    BACKEND.cancel(job_id)
+    try:
+        BACKEND.cancel(job_id)
+    except BackendError as exc:
+        return _comparison_response(request, job_id, error=exc.detail, status_code=exc.status_code)
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 

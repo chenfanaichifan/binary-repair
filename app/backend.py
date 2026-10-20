@@ -29,6 +29,7 @@ import hashlib
 import json
 import os
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -97,6 +98,19 @@ class Backend(Protocol):
     def get_snapshot(self, job_id: str) -> dict[str, Any]: ...
     def start(self, job_id: str) -> None: ...
     def cancel(self, job_id: str) -> None: ...
+    def update_contract(
+        self,
+        job_id: str,
+        *,
+        expected_revision: str,
+        valid_domain: str,
+        forbidden: str,
+        invalid_outcome: str,
+        assumptions: str,
+    ) -> dict[str, Any]: ...
+    def approve_contract(
+        self, job_id: str, *, expected_sha256: str, reviewer_label: str
+    ) -> dict[str, Any]: ...
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
     def export_bundle(self, job_id: str) -> dict[str, Any]: ...
@@ -134,10 +148,51 @@ class MockBackend:
         return demo.snapshot(self._job(job_id))
 
     def start(self, job_id: str) -> None:
-        demo.start(self._job(job_id))
+        job = self._job(job_id)
+        if not job["contract"].get("approved"):
+            raise BackendError(409, "Contract is not approved for this job.")
+        demo.start(job)
 
     def cancel(self, job_id: str) -> None:
         demo.cancel(self._job(job_id))
+
+    def update_contract(
+        self,
+        job_id: str,
+        *,
+        expected_revision: str,
+        valid_domain: str,
+        forbidden: str,
+        invalid_outcome: str,
+        assumptions: str,
+    ) -> dict[str, Any]:
+        job = self._job(job_id)
+        current = job["contract"]["revision"]
+        if str(expected_revision).strip() != str(current):
+            raise BackendError(
+                409,
+                "Contract revision is stale: presented "
+                f"{expected_revision}, current is {current}. Reload and review the current contract.",
+            )
+        return demo.update_contract(
+            job,
+            valid_domain=valid_domain,
+            forbidden=forbidden,
+            invalid_outcome=invalid_outcome,
+            assumptions=assumptions,
+        )
+
+    def approve_contract(
+        self, job_id: str, *, expected_sha256: str, reviewer_label: str
+    ) -> dict[str, Any]:
+        job = self._job(job_id)
+        current = job["contract"]["sha256"]
+        if expected_sha256.strip().lower() != current:
+            raise BackendError(
+                409,
+                "Contract approval is stale: the presented hash does not match the current revision.",
+            )
+        return demo.approve_contract(job, reviewer_label=reviewer_label)
 
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         return demo.obligations(self._job(job_id))
@@ -263,6 +318,45 @@ class HttpBackend:
             raise BackendError(502, "Backend obligations response must be an object.")
         return payload
 
+    def update_contract(
+        self,
+        job_id: str,
+        *,
+        expected_revision: str,
+        valid_domain: str,
+        forbidden: str,
+        invalid_outcome: str,
+        assumptions: str,
+    ) -> dict[str, Any]:
+        payload = self._request(
+            "POST",
+            f"/api/jobs/{job_id}/contract",
+            where="update_contract",
+            data={
+                "expected_revision": expected_revision,
+                "valid_domain": valid_domain,
+                "forbidden": forbidden,
+                "invalid_outcome": invalid_outcome,
+                "assumptions": assumptions,
+            },
+        )
+        if not isinstance(payload, dict) or "revision" not in payload:
+            raise BackendError(502, "Backend contract response is missing a revision.")
+        return payload
+
+    def approve_contract(
+        self, job_id: str, *, expected_sha256: str, reviewer_label: str
+    ) -> dict[str, Any]:
+        payload = self._request(
+            "POST",
+            f"/api/jobs/{job_id}/approve",
+            where="approve_contract",
+            data={"expected_sha256": expected_sha256, "reviewer_label": reviewer_label},
+        )
+        if not isinstance(payload, dict) or not payload.get("approved"):
+            raise BackendError(502, "Backend approval response is not approved.")
+        return payload
+
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         payload = self._request("GET", f"/api/jobs/{job_id}/artifacts", where="get_artifacts")
         if not isinstance(payload, dict):
@@ -329,14 +423,14 @@ class LocalBackend:
         return record
 
     @staticmethod
-    def _contract(
+    def _contract_body(
         *,
         valid_domain: str = "",
         forbidden: str = "",
         invalid_outcome: str = "",
         assumptions: str = "",
     ) -> dict[str, Any]:
-        body = {
+        return {
             "valid_domain": valid_domain.strip()
             or "Input length 0-64 bytes; out-of-range lengths rejected",
             "forbidden": forbidden.strip()
@@ -352,10 +446,36 @@ class LocalBackend:
                 if line.strip()
             ],
         }
-        sha256 = hashlib.sha256(
+
+    @staticmethod
+    def _contract_sha(body: dict[str, Any]) -> str:
+        return hashlib.sha256(
             json.dumps(body, sort_keys=True, ensure_ascii=True).encode("utf-8")
         ).hexdigest()
-        return {"revision": 1, "sha256": sha256, **body}
+
+    @classmethod
+    def _contract(
+        cls,
+        *,
+        valid_domain: str = "",
+        forbidden: str = "",
+        invalid_outcome: str = "",
+        assumptions: str = "",
+    ) -> dict[str, Any]:
+        body = cls._contract_body(
+            valid_domain=valid_domain,
+            forbidden=forbidden,
+            invalid_outcome=invalid_outcome,
+            assumptions=assumptions,
+        )
+        return {
+            "revision": 1,
+            "sha256": cls._contract_sha(body),
+            "approved": False,
+            "approved_at": None,
+            "reviewer_label": None,
+            **body,
+        }
 
     @staticmethod
     def _placeholder_routes(phase: str) -> dict[str, dict[str, Any]]:
@@ -435,6 +555,61 @@ class LocalBackend:
         raise BackendError(
             409, "Local controller mode does not implement run execution yet."
         )
+
+    def update_contract(
+        self,
+        job_id: str,
+        *,
+        expected_revision: str,
+        valid_domain: str,
+        forbidden: str,
+        invalid_outcome: str,
+        assumptions: str,
+    ) -> dict[str, Any]:
+        self._record(job_id)
+        meta = self._read_meta(job_id)
+        contract = meta.get("contract") or self._contract()
+        if str(expected_revision).strip() != str(contract["revision"]):
+            raise BackendError(
+                409,
+                "Contract revision is stale: presented "
+                f"{expected_revision}, current is {contract['revision']}. "
+                "Reload and review the current contract.",
+            )
+        body = self._contract_body(
+            valid_domain=valid_domain,
+            forbidden=forbidden,
+            invalid_outcome=invalid_outcome,
+            assumptions=assumptions,
+        )
+        meta["contract"] = {
+            "revision": contract["revision"] + 1,
+            "sha256": self._contract_sha(body),
+            "approved": False,
+            "approved_at": None,
+            "reviewer_label": None,
+            **body,
+        }
+        self._write_meta(job_id, meta)
+        return meta["contract"]
+
+    def approve_contract(
+        self, job_id: str, *, expected_sha256: str, reviewer_label: str
+    ) -> dict[str, Any]:
+        self._record(job_id)
+        meta = self._read_meta(job_id)
+        contract = meta.get("contract") or self._contract()
+        if expected_sha256.strip().lower() != contract["sha256"]:
+            raise BackendError(
+                409,
+                "Contract approval is stale: the presented hash does not match the current revision.",
+            )
+        contract["approved"] = True
+        contract["approved_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        contract["reviewer_label"] = reviewer_label.strip() or "reviewer"
+        meta["contract"] = contract
+        self._write_meta(job_id, meta)
+        return contract
 
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         self._record(job_id)

@@ -51,6 +51,17 @@ def _wait_job_location(page, timeout: float = 20.0) -> str:
     raise AssertionError(f"timed out waiting for a job page; current={page.location()!r}")
 
 
+def _approve_current_contract(page) -> None:
+    """Approve the visible contract revision and wait for the page to reload."""
+
+    page.click('[data-testid="approve-contract"]')
+    _wait_job_location(page)
+    page.wait_js(
+        "document.querySelector('[data-testid=\"contract-approval\"]')?.textContent?.includes('已批准')",
+        timeout=10,
+    )
+
+
 def _create_job_via_ui(page, base_url: str, tmp_path) -> str:
     page.navigate(base_url + "/jobs/new")
     sample = tmp_path / "sample.bin"
@@ -77,6 +88,7 @@ def test_full_journey_setup_to_export(mock_server, page, tmp_path):
     sha = page.text('[data-testid="original-sha256"]')
     assert SHA_PATTERN.match(sha), sha
 
+    _approve_current_contract(page)
     page.click('[data-testid="start-run"]')
     _wait_job_location(page)
 
@@ -111,6 +123,7 @@ def test_full_journey_setup_to_export(mock_server, page, tmp_path):
 
 def test_refresh_keeps_state_and_shows_unfinished_stages(mock_server, page, tmp_path):
     _create_job_via_ui(page, mock_server, tmp_path)
+    _approve_current_contract(page)
     page.click('[data-testid="start-run"]')
     _wait_job_location(page)
 
@@ -132,6 +145,7 @@ def test_refresh_keeps_state_and_shows_unfinished_stages(mock_server, page, tmp_
 
 def test_cancel_keeps_evidence(mock_server, page, tmp_path):
     job_id = _create_job_via_ui(page, mock_server, tmp_path)
+    _approve_current_contract(page)
     page.click('[data-testid="start-run"]')
     _wait_job_location(page)
 

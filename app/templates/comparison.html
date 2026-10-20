@@ -15,12 +15,14 @@
   </div>
   <div class="head-actions">
     {% if job.phase == "draft" %}
-      {% if can_start %}
+      {% if not can_start %}
+      <span class="hint" data-testid="start-unavailable">当前数据来源只登记任务，尚未提供修复执行接口。</span>
+      {% elif not job.contract.approved %}
+      <span class="hint" data-testid="start-needs-approval">契约尚未批准，请先批准当前契约再启动。</span>
+      {% else %}
       <form method="post" action="/jobs/{{ job.id }}/start">
         <button class="btn primary" type="submit" data-testid="start-run">批准并启动</button>
       </form>
-      {% else %}
-      <span class="hint" data-testid="start-unavailable">当前数据来源只登记任务，尚未提供修复执行接口。</span>
       {% endif %}
     {% elif job.phase != "finished" %}
     <form method="post" action="/jobs/{{ job.id }}/cancel">
@@ -30,6 +32,10 @@
     <a class="btn ghost" href="/jobs/{{ job.id }}/evidence" data-testid="open-evidence">查看证据</a>
   </div>
 </section>
+
+{% if error %}
+<p class="diagnostic" data-testid="job-error">{{ error }}</p>
+{% endif %}
 
 <div class="statusbar">
   <span class="status-item">任务阶段：<span class="badge" id="job-phase" data-testid="job-phase">{{ phase_labels_zh.get(job.phase, job.phase) }}</span></span>
@@ -43,13 +49,53 @@
 
 <div class="contract-strip">
   <details>
-    <summary>查看安全契约（r{{ job.contract.revision }}）</summary>
+    <summary>
+      安全契约（r{{ job.contract.revision }} ·
+      {% if job.contract.approved %}
+      <span class="badge outcome-success-within-scope" data-testid="contract-approval">已批准</span>
+      {% else %}
+      <span class="badge outcome-inconclusive" data-testid="contract-approval">待批准</span>
+      {% endif %}
+      · sha256 {{ job.contract.sha256[:16] }}…）
+    </summary>
     <dl class="facts">
       <div><dt>有效输入域</dt><dd>{{ job.contract.valid_domain }}</dd></div>
       <div><dt>禁止行为</dt><dd>{{ job.contract.forbidden }}</dd></div>
       <div><dt>非法输入应有行为</dt><dd>{{ job.contract.invalid_outcome }}</dd></div>
       <div><dt>假设</dt><dd>{{ job.contract.assumptions | join("; ") }}</dd></div>
     </dl>
+
+    <form class="card form" method="post" action="/jobs/{{ job.id }}/contract" data-testid="contract-form">
+      <h3>更新契约（会生成新 revision 并清除批准）</h3>
+      <input type="hidden" name="expected_revision" value="{{ job.contract.revision }}">
+      <label class="field">
+        <span class="label">有效输入域 Valid domain</span>
+        <input type="text" name="valid_domain" value="{{ job.contract.valid_domain }}" data-testid="edit-contract-domain">
+      </label>
+      <label class="field">
+        <span class="label">禁止行为 Forbidden behavior</span>
+        <input type="text" name="forbidden" value="{{ job.contract.forbidden }}" data-testid="edit-contract-forbidden">
+      </label>
+      <label class="field">
+        <span class="label">非法输入应有行为 Required invalid-input outcome</span>
+        <input type="text" name="invalid_outcome" value="{{ job.contract.invalid_outcome }}" data-testid="edit-contract-invalid">
+      </label>
+      <label class="field">
+        <span class="label">假设 Assumptions（每行一条）</span>
+        <textarea name="assumptions" rows="3" data-testid="edit-contract-assumptions">{{ job.contract.assumptions | join("\n") }}</textarea>
+      </label>
+      <button class="btn ghost" type="submit" data-testid="save-contract">保存契约（新 revision）</button>
+    </form>
+
+    <form class="card form" method="post" action="/jobs/{{ job.id }}/approve" data-testid="approve-form">
+      <h3>批准当前契约（复核者确认）</h3>
+      <input type="hidden" name="expected_sha256" value="{{ job.contract.sha256 }}">
+      <label class="field">
+        <span class="label">复核者 Reviewer</span>
+        <input type="text" name="reviewer_label" placeholder="reviewer" data-testid="reviewer-input">
+      </label>
+      <button class="btn primary" type="submit" data-testid="approve-contract">批准当前契约</button>
+    </form>
   </details>
 </div>
 

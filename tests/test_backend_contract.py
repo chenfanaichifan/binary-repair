@@ -125,6 +125,13 @@ def _controller_router(request: httpx.Request) -> httpx.Response:
         return httpx.Response(202, json={"ok": True})
     if request.method == "POST" and path == "/api/jobs/job-abc123/cancel":
         return httpx.Response(202, json={"ok": True})
+    if request.method == "POST" and path == "/api/jobs/job-abc123/contract":
+        return httpx.Response(200, json={**SNAPSHOT["contract"], "revision": 2, "approved": False})
+    if request.method == "POST" and path == "/api/jobs/job-abc123/approve":
+        return httpx.Response(
+            200,
+            json={**SNAPSHOT["contract"], "approved": True, "reviewer_label": "reviewer"},
+        )
     if request.method == "GET" and path == "/api/jobs/job-abc123/obligations":
         return httpx.Response(200, json=OBLIGATIONS)
     if request.method == "GET" and path == "/api/jobs/job-abc123/artifacts":
@@ -158,11 +165,29 @@ def test_http_backend_maps_controller_contract():
     assert backend.get_obligations(job_id)["A"][0]["id"] == "V0"
     assert backend.get_artifacts(job_id)["A"][0]["name"] == "candidate-A.elf"
 
+    updated = backend.update_contract(
+        job_id,
+        expected_revision="1",
+        valid_domain="Input length 0-32 bytes",
+        forbidden="Out-of-bounds write",
+        invalid_outcome="Return error code 1",
+        assumptions="Single process",
+    )
+    assert updated["revision"] == 2
+    approved = backend.approve_contract(
+        job_id,
+        expected_sha256=SNAPSHOT["contract"]["sha256"],
+        reviewer_label="reviewer",
+    )
+    assert approved["approved"] is True
+
     paths = [(request.method, request.url.path) for request in requests]
     assert ("POST", "/api/jobs") in paths
     assert ("GET", "/api/jobs/job-abc123") in paths
     assert ("POST", "/api/jobs/job-abc123/start") in paths
     assert ("POST", "/api/jobs/job-abc123/cancel") in paths
+    assert ("POST", "/api/jobs/job-abc123/contract") in paths
+    assert ("POST", "/api/jobs/job-abc123/approve") in paths
     assert ("GET", "/api/jobs/job-abc123/obligations") in paths
     assert ("GET", "/api/jobs/job-abc123/artifacts") in paths
 
@@ -233,6 +258,49 @@ def test_stub_controller_matches_gui_contract():
     for key in ("id", "phase", "routes", "contract", "original_sha256"):
         assert key in payload
     assert not _has_cjk_in_payload(payload)
+
+    blocked = client.post(f"/api/jobs/{job_id}/start")
+    assert blocked.status_code == 409
+
+    stale_contract = client.post(
+        f"/api/jobs/{job_id}/contract",
+        data={
+            "expected_revision": "9",
+            "valid_domain": "Input length 0-32 bytes",
+            "forbidden": "Out-of-bounds write",
+            "invalid_outcome": "Return error code 1",
+            "assumptions": "Single process",
+        },
+    )
+    assert stale_contract.status_code == 409
+
+    updated = client.post(
+        f"/api/jobs/{job_id}/contract",
+        data={
+            "expected_revision": "1",
+            "valid_domain": "Input length 0-32 bytes",
+            "forbidden": "Out-of-bounds write",
+            "invalid_outcome": "Return error code 1",
+            "assumptions": "Single process",
+        },
+    )
+    assert updated.status_code == 200
+    contract = updated.json()
+    assert contract["revision"] == 2
+    assert contract["approved"] is False
+
+    stale_approval = client.post(
+        f"/api/jobs/{job_id}/approve",
+        data={"expected_sha256": "0" * 64, "reviewer_label": "reviewer"},
+    )
+    assert stale_approval.status_code == 409
+
+    approved = client.post(
+        f"/api/jobs/{job_id}/approve",
+        data={"expected_sha256": contract["sha256"], "reviewer_label": "reviewer"},
+    )
+    assert approved.status_code == 200
+    assert approved.json()["approved"] is True
 
     started = client.post(f"/api/jobs/{job_id}/start")
     assert started.status_code == 202
