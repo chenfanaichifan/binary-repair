@@ -13,6 +13,7 @@
 >
 > **集成位置：** 根目录是唯一入口，模块边界与调用链见
 > [04-root-integration.md](04-root-integration.md)。
+> Gate 6 的 concrete 证据见 [06-gate6-evidence.md](06-gate6-evidence.md)。
 
 ## 0. 先把边界说清楚
 

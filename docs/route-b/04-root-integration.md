@@ -126,9 +126,9 @@ python -c "from app.db.connection import connect; connect('var')"
 python scripts/smoke.py --mock             # 无 key 的管线自检
 ```
 
-当前共享树：**118 passed, 3 skipped**；`schema up to date (4 files)`。
-3 个 skip 是成员1 尚未实现的 `approve_contract` / `start_run`（identity suite），
-不是 pass。
+当前共享树：**124 passed, 5 skipped**；`schema up to date (4 files)`。
+3 个 skip 是成员1 尚未实现的 `approve_contract` / `start_run`（identity suite）；
+2 个 skip 是 V3 运行时测试（需要 Linux + candidate ELF），不是 pass。
 
 ---
 
