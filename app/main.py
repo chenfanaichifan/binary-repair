@@ -154,6 +154,8 @@ async def security_gate(request: Request, call_next):
 
     session = request.cookies.get(SESSION_COOKIE)
     if not session or not secrets.compare_digest(session, SESSION_TOKEN):
+        if request.method == "GET" and "text/html" in (request.headers.get("accept") or ""):
+            return HTMLResponse(_auth_required_page(), status_code=401)
         return JSONResponse(
             {
                 "detail": (
@@ -181,6 +183,35 @@ def _require_csrf(token: str) -> None:
 
     if not token or not secrets.compare_digest(str(token), CSRF_TOKEN):
         raise HTTPException(status_code=403, detail="CSRF token missing or invalid.")
+
+
+def _auth_required_page() -> str:
+    """Friendly 401 page for humans (UI Chinese, no token is ever echoed)."""
+
+    return """<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>需要本地会话 · BinaryRepair</title>
+<style>
+ body{margin:0;background:#0f1720;color:#dbe6f0;font-family:"Segoe UI","Microsoft YaHei",sans-serif;
+      display:flex;align-items:center;justify-content:center;min-height:100vh}
+ .card{max-width:560px;padding:28px 32px;background:#16222c;border:1px solid #2b3b48;border-radius:12px}
+ h1{font-size:20px;margin:0 0 10px;color:#eaf2fa}
+ p{font-size:14px;line-height:1.7;color:#a9bccd;margin:8px 0}
+ code{background:#1b2a36;color:#9fd4ff;padding:2px 6px;border-radius:4px}
+ .steps{margin:14px 0 0;padding-left:18px;font-size:13.5px;color:#c7d6e4}
+ .steps li{margin:6px 0}
+ .hint{margin-top:16px;font-size:12.5px;color:#7f97ab}
+</style></head>
+<body><div class="card">
+<h1>需要本地会话</h1>
+<p>这是本机 GUI 的安全保护：第一次访问必须使用<strong>启动脚本打印的带 token 链接</strong>，
+浏览器随后会记住 HttpOnly 会话 cookie。</p>
+<ol class="steps">
+  <li>回到启动终端，找到形如 <code>http://127.0.0.1:8123/?token=...</code> 的地址；</li>
+  <li>用完整地址打开一次（token 会随即从地址栏消失）；</li>
+  <li>如果终端已关闭：重新运行 <code>.\\start.ps1</code>，它会生成新 token 并自动打开浏览器。</li>
+</ol>
+<p class="hint">会话 token 每次重启都会变化；不要把它粘贴到公开 Issue 或截图里。</p>
+</div></body></html>"""
 
 
 @app.get("/", response_class=HTMLResponse)

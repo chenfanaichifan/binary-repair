@@ -32,6 +32,14 @@ def test_healthz_is_public_but_pages_require_a_session():
     assert bootstrapped.get("/jobs/new").status_code == 200
 
 
+def test_unauthenticated_browser_gets_a_help_page():
+    client = _client()
+    response = client.get("/jobs/new", headers={"accept": "text/html"})
+    assert response.status_code == 401
+    assert "需要本地会话" in response.text
+    assert "?token=" in response.text
+
+
 def test_csrf_token_is_required_for_post_forms():
     client = _client()
     client.get("/?token=" + SESSION_TOKEN)

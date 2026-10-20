@@ -290,6 +290,9 @@ cookie returns `401`.
 - Every non-static request requires the session; missing or wrong sessions receive `401`.
 - POST forms include a `_csrf` token derived from the session; a missing or invalid token
   returns `403`, and cross-origin POSTs are rejected by Origin validation.
+- An unauthenticated browser visit shows a Chinese help page explaining how to reopen the
+  launcher URL; the token itself is never echoed back. `start.ps1` opens the browser
+  automatically.
 
 ## Data-source modes (mock / http / local)
 

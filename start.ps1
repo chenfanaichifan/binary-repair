@@ -11,11 +11,19 @@ $bytes = New-Object byte[] 24
 $rng.GetBytes($bytes)
 $token = [Convert]::ToBase64String($bytes).Replace("+", "-").Replace("/", "_").TrimEnd("=")
 $env:BINARYREPAIR_SESSION_TOKEN = $token
+$url = "http://127.0.0.1:8123/?token=$token"
 
 Write-Host ""
 Write-Host " BinaryRepair MVP - GUI (local session)" -ForegroundColor Cyan
-Write-Host " Open: http://127.0.0.1:8123/?token=$token" -ForegroundColor Green
+Write-Host " Open: $url" -ForegroundColor Green
 Write-Host " Press Ctrl+C to stop" -ForegroundColor DarkGray
 Write-Host ""
+
+# Open the browser once the server has had a moment to start.
+Start-Job -ScriptBlock {
+    param($target)
+    Start-Sleep -Seconds 2
+    Start-Process $target
+} -ArgumentList $url | Out-Null
 
 & "$project\.venv\Scripts\python.exe" -m uvicorn app.main:app --host 127.0.0.1 --port 8123
