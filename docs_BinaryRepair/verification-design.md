@@ -284,48 +284,65 @@ is where the data-boundary guarantees actually live.
 
 ---
 
-### 4.4 Fixture oracle for the public CWE-121 case (draft, pending member 3)
+### 4.4 Fixture oracle for the public CWE-121 case (confirmed by member 3, 2026-10-20)
 
-The public sample is still being selected (member 3 is deciding between the Juliet data-flow
-variant and a patched harness, options A and B). This section freezes the **shape** of the
-behavioural oracle so both repair routes can be written against one contract. Values marked
-TBD are confirmed by member 3 and then promoted from draft to frozen.
+Member 3 selected and built the fixture on 2026-10-20; the oracle below is confirmed. The
+fixture itself is **not frozen yet** (planned 2026-10-21, after feasibility gates 3-5), so the
+hashes are candidate values until the freeze.
 
-#### Contract constants
+**Fixture.**
+
+| Field | Value |
+|---|---|
+| Suite | NIST Juliet Test Suite for C/C++ v1.3 (2017-10-01) |
+| Case | `CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b` |
+| Case SHA-256 | `8387d64613192b47c30658153548d111366f232a0bf03714e26643dd16ad343b` |
+| Candidate ELF SHA-256 | `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393` |
+| Build | Ubuntu 24.04.5, gcc 13.3.0, 2026-10-20 02:27 UTC |
+| Harness | 90-byte `main` at `0x401256`-`0x4012af` calls the exported sink with `argv[1]` directly |
+
+#### Contract constants (confirmed)
 
 | Constant | Meaning | Value |
 |---|---|---|
-| `DEST_CAPACITY` | bytes in the destination buffer declared inside the target function | TBD — Juliet's `char dest[50]` suggests 50, but the real value comes from the selected fixture |
-| `MAX_VALID_LEN` | largest input length that must be accepted | `DEST_CAPACITY - 1` (reserve one byte for `strcpy`'s NUL terminator) |
-| `ERROR_STDERR` | exact stderr bytes on the invalid path | `"ERROR: input exceeds destination capacity\n"` — pending confirmation |
+| `DEST_CAPACITY` | bytes in the destination buffer declared inside the target function | **50** (`char dest[50]`, source line 28) |
+| `MAX_VALID_LEN` | largest input length that must be accepted | **49** (`DEST_CAPACITY - 1`) |
+| `ERROR_STDERR` | exact stderr bytes on the invalid path | `"ERROR: input exceeds destination capacity\n"` |
 
 **Off-by-one rule.** `strcpy(dest, data)` writes `strlen(data) + 1` bytes. With
 `DEST_CAPACITY = 50`, an input of length 50 writes the NUL terminator at index 50, one byte
-past the buffer. The largest valid input is therefore `49`, not `50`. The oracle uses
-`MAX_VALID_LEN = DEST_CAPACITY - 1`; the "first invalid" case is `MAX_VALID_LEN + 1`.
+past the buffer. The largest valid input is therefore `49`, not `50`; the "first invalid"
+input is `50`.
 
 #### Valid input oracle
 
-| argv[1] length | Expected |
+| argv[1] length | Expected on the repaired binary |
 |---|---|
-| 0 (empty) | `return_code = 0`, `stdout` = original behaviour, `stderr` = "" |
+| 0 (empty) | `return_code = 0`, reproduce the original's measured stdout, `stderr` = "" |
 | 1 (smallest) | same |
 | 10 (typical) | same |
-| `MAX_VALID_LEN` (largest valid) | same |
+| 49 (largest valid) | same |
 
-The original program's stdout and return code on valid inputs are **measured** on the original
-binary by member 3 and written into the frozen manifest; they must not be invented.
+The original's measured stdout and exit values live in `tests/valid.json`
+(SHA-256 `17b2ee399db5ef43ba14978c497d71dc45d28aaa685ff90a60baaabc6f221e76`); they are
+measured, not invented.
 
 #### Invalid input oracle
 
-| argv[1] length | Expected |
+| argv[1] length | Expected on the repaired binary |
 |---|---|
-| `MAX_VALID_LEN + 1` (first invalid) | `return_code = 1`, `stderr = ERROR_STDERR`, `stdout` = "" |
-| `MAX_VALID_LEN + 51` (much longer) | same |
+| 50 (first invalid) | `return_code = 1`, `stdout` = "", `stderr = ERROR_STDERR` |
+| 101 (much longer) | same |
 
-Invalid inputs must **not** crash: `return_code` must be 1, not `-11`/SIGSEGV, and V4 must show
-no out-of-bounds destination write. A crash is evidence the repair failed, not evidence of the
-invalid-input path.
+**Original vs repaired.** The original binary **crashes with SIGSEGV** on invalid input; it
+does not exit 1. A manifest run against the original therefore gives **4/6** (four valid cases
+pass, two invalid cases fail). That is the expected V0 shape for a vulnerable binary, not a
+manifest defect. Repaired candidates must score **6/6** with byte-identical stderr on both
+routes. The frozen invalid cases live in `tests/invalid.json`
+(SHA-256 `d493f370a37b25f910eb72cb6f9202856e46be0e42e76922db38a30769f8190d`).
+
+Invalid inputs must **not** crash: `return_code` must be 1, not `-11`/SIGSEGV. A crash is
+evidence the repair failed, not evidence of the invalid-input path.
 
 #### Both routes share this oracle
 
@@ -335,12 +352,21 @@ print different messages or exit with different codes, V3 cannot use one asserti
 F5 comparison becomes meaningless. The reviewer freezes `ERROR_STDERR` once, in the contract,
 **before** either route runs.
 
-#### Pending inputs from member 3
+#### Confirmed values, and what is still outstanding
 
-1. Actual `DEST_CAPACITY` and the source line it comes from.
-2. Measured stdout and return code of the original binary on the four valid inputs.
-3. Confirmation of `ERROR_STDERR` (exact bytes) or a replacement string.
-4. Harness invocation shape: does the harness `main` call the target with `argv[1]` directly?
+Confirmed by member 3 on 2026-10-20:
+
+- `DEST_CAPACITY = 50`, `MAX_VALID_LEN = 49`;
+- exact `ERROR_STDERR` bytes;
+- the harness calls the sink with `argv[1]` directly;
+- the original binary gives SIGSEGV on `100 x 'A'` and scores 4/6 against the manifest.
+
+Still outstanding before the fixture freezes (planned 2026-10-21):
+
+- gates 3-5 (Route A / Route B feasibility, safe placement) — member 5;
+- frozen manifest hashes (candidate hashes are recorded above);
+- guest image hash (requires a clean shutdown).
+
 
 ## 5. Test coverage matrix
 
