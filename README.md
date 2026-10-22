@@ -8,11 +8,11 @@ bytes; one shared acceptance engine decides whether the final executable is
 `success_within_scope`. A model's claim is never evidence: only checks on the final
 bytes count.
 
-> **Status: integration in progress; fixture NOT FROZEN; contract revision pending.**
+> **Status: integration in progress; fixture NOT FROZEN; contract `24bfe568…4e37` confirmed by M4/M5, Lead signature pending.**
 > The controller, GUI, acceptance engine, AI boundary, SQLite schema (v1 baseline +
 > 002/003), and the public CWE-121 candidate fixture are in `main`.
 > **Gate 3 (Route A): IN PROGRESS — CONDITIONALLY FEASIBLE (owner M4).**
-> **Gate 4 (Route B formal): NOT RUN (guest access + M5 routeb).** The GitHub Actions
+> **Gate 4 (Route B formal): NOT RUN (guest access + gate4-harness).** The GitHub Actions
 > 6/6 is supplementary evidence only, not a formal Gate 4 run.
 > No binary has been repaired and verified end to end. Do not present demo data as
 > repair evidence.
@@ -35,12 +35,12 @@ bytes count.
 
 - Gate 3 (Route A): **IN PROGRESS — CONDITIONALLY FEASIBLE (owner M4)**. The
   evidence branch must not merge before Lead approval; no pass claim yet.
-- Gate 4 (Route B formal): **NOT RUN (guest access + M5 routeb)**. The
+- Gate 4 (Route B formal): **NOT RUN (guest access + gate4-harness)**. The
   supplementary GitHub Actions run (6/6 unchanged round trip) is recorded in
   `docs/route-b/09-gate4-evidence.md`; it is not the formal run.
-- Contract revision: pending review; free-text fields are persisted in
-  `contracts.body_json` with no schema change, and approval binds the new
-  `reviewed_scope_sha256`.
+- Contract revision: `24bfe568…4e37` confirmed by M4/M5, Lead signature pending;
+  free-text fields are persisted in `contracts.body_json` with no schema change,
+  and approval binds the new `reviewed_scope_sha256`.
 - Real repair execution. The controller queues runs and stores evidence; it does
   not execute uploaded binaries on the host.
 - VM broker, symbolic (V4), and final V5 reproducibility evidence.
