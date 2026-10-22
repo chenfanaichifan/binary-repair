@@ -35,7 +35,7 @@ M4); the support package closes the only missing item-6 files. **No bundle rebui
 | 6 | raw outputs + `SHA256SUMS` + chain/harness manifest hashes | **PASS** (v1 bundle + this support package) |
 
 Canonical record hash after this update:
-`ee060441413379ff4ef69482be82dbd4a4bcad5c1c049c40489da983e3fd053b` (supersedes
+`62ed341b2b4416784f26ce342ffdf53689c37b5ce44a13730be1f256b2114d8b` (supersedes
 `810bb893…`, `01ecabd5…`, `94d7d314…`, `b6fedd2b…`, `bddccbfe…`, `3dcdc862…`).
 
 ## 3. Remaining before signature

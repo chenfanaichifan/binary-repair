@@ -79,7 +79,7 @@ changes: see §5. Six-item statuses and signature order are unchanged.
 |---|---|
 | path | `docs/route-a/gate3-record.md` on `origin/member-4-verification` |
 | state | DRAFT, unsigned; items 1–2 PASS, 3–6 NOT VERIFIED |
-| SHA-256 | `ee060441413379ff4ef69482be82dbd4a4bcad5c1c049c40489da983e3fd053b` (computed after the edit; old `bddccbfe…` and `3dcdc862…` are void and must not be cited) |
+| SHA-256 | `62ed341b2b4416784f26ce342ffdf53689c37b5ce44a13730be1f256b2114d8b` (computed after the edit; old `bddccbfe…` and `3dcdc862…` are void and must not be cited) |
 
 Everyone who adopted `bddccbfe…` must replace it with the new hash version (or send a diff
 against the new hash). No two records. The next hash change should be the one that fills

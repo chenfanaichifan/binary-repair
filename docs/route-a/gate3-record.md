@@ -10,12 +10,14 @@ SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`
 **Basis:** handoff 11 §3 (six required items), handoff 12 (M4 plan), handoff 16/17/18/19
 (M5 canonical contract, six-item matrix, build recipe, routea review), verification-design §4.4
 
-**Approval status:** **DRAFT — NOT SIGNED.** Items **1, 2, 4, 6 PASS; items 3 and 5 `NOT
-VERIFIED`**: the v1 bundle stays the raw evidence (no repack), and the item-6 support package
-closes the missing chain/harness manifests. Remaining: G1 LIEF field bugs (item 3) and the
-single-operator `revert.log` (item 5), then M5's build/hash replay; signature rows stay blank.
-**Overall status:** **CONDITIONALLY FEASIBLE — items 3 and 5 `NOT VERIFIED`; M5 replay pending.**
-Gate 3 is **not signed**.
+**Approval status:** **M4 VERIFIER SIGNED — M5 replay + Lead approval pending.** Items **1–6
+PASS** against the v2 bundle: `gate3-bundle-v2-2026-10-22.zip`, 18,318 B, 23 files, SHA-256
+`6151a80633fdde0d9b1ce87c126b01994a730625557d17297828468799710a65`, inner `SHA256SUMS` 22/22,
+evidence-manifest `4ba6ebad30a4035c6a16c62c1fbab53dda67bce60db2b87510b83aa97f876934`. The v1
+bundle `0ef65546…` is historical (superseded; not required). Signature table: M4 verifier row
+filled; M5 build/hash replay row and Lead approval row blank.
+**Overall status:** **ALL SIX ITEMS PASS — GATE 3 NOT YET APPROVED (M5 replay + Lead approval
+pending).**
 **Identity:** VMer is **M3 operating in a separate AI window** — one person, not two.
 
 ---
@@ -76,14 +78,15 @@ COPY-relocation writer based on the earlier `f3cb9cbb...` candidate. The contrac
 |---|---|---|---|
 | 1 | Separate candidate copy; original untouched | **PASS** | original hash still the frozen value; candidate is a separate file |
 | 2 | Candidate identity and reproducibility | **PASS** | candidate hash matches; schema-2 manifest complete (displaced/added/intervals/header/writer/termination/tool_versions); build recipe `18-build-recipe.md` with `regen_c4a159.py` (stdlib-only, fail-closed) |
-| 3 | Structural audit (cave R-X runtime probe, `p_filesz`/`p_memsz`, redirect; NX/RELRO/canary/import diff) | **NOT VERIFIED** | v1 bundle shows the expected `0x8e9→0x1000` extension and cave-probe hits; supplement `lief-diff.json` (`e1e27295…`) still parses `PT_LOAD[1]` `flags="R"`/`align="E"`, imports `"(2)"`, `interp:null`. Pending VMer fix per handoff 26 §2 / 27 |
-| 4 | Six-case run (4 valid + 2 invalid = 6/6 byte-exact) | **PASS** | v1 bundle raw evidence accepted (no repack): patched 6/6 (valid rc 0 / stdout 1,2,11,50 B; invalid rc 1 / stdout 0 / exact 42-byte stderr), original V0 4/6 (invalid-first rc 0/51 B, invalid-longer rc 139), candidate `c4a159…aa82` before = after; run from reverted `gate3-harness-v2` |
-| 5 | Isolation evidence for that run (snapshot, egress block, uid 1003, wrapper attestation) | **NOT VERIFIED** | v1 isolation fields and snapshot evidence usable, but the `revert.log` still contradicts the single-operator identity; pending corrected log (handoff 26 §5 / 27) |
-| 6 | Evidence with hashes (raw outputs + `SHA256SUMS` manifest; **no bundle package required** — handoff 21) | **PASS** | v1 bundle `0ef65546…` raw set 20/20 verified by M4; item-6 support package `3d49625c…` verified: `harness-v2-manifest.txt` `e53253cf…` (3,929 B) + `harness-manifest.json` `3bdbc339…` (1,641 B), inner `SHA256SUMS` verified; no bundle rebuild required |
+| 3 | Structural audit (cave R-X runtime probe, `p_filesz`/`p_memsz`, redirect; NX/RELRO/canary/import diff) | **PASS** | v2 bundle: LIEF `PT_LOAD[1]` `flags="R E"`, `align="0x1000"`, real import names, `interp=/lib64/ld-linux-x86-64.so.2`; single expected diff `p_filesz/memsz 0x8e9→0x1000`; GNU_STACK RW (NX enabled), GNU_RELRO partial, canary absent, imports/relocs 13/13; readelf/checksec agree; cave probe hits `0x401304 → 0x4018e9 → 0x401309`, page `0x401000-0x402000` r-xp, memory at `0x4018e9` = file at `0x18e9` (`4989f031c941803c0800740548ffc1eb`) |
+| 4 | Six-case run (4 valid + 2 invalid = 6/6 byte-exact) | **PASS** | v2 bundle: patched 6/6 (valid rc 0 / stdout 1,2,11,50 B; invalid rc 1 / stdout 0 / exact 42-byte stderr), original V0 4/6 (invalid-first rc 0/51 B, invalid-longer rc 139), candidate `c4a159…aa82` before = after; run from reverted `gate3-harness-v2` |
+| 5 | Isolation evidence for that run (snapshot, egress block, uid 1003, wrapper attestation) | **PASS** | v2 bundle: uid/gid 1003, `CapEff=0`, `NoNewPrivs=1`, `Seccomp: 0`, egress blocked, evaluator unreadable; `jobwrap b0371c10…` 0700 root; `revert.log` single operator **VMer (M3)** — manual VMware Snapshot Manager revert + post-hoc observation; snapshot/layer and harness manifest hashes recorded |
+| 6 | Evidence with hashes (raw outputs + `SHA256SUMS` manifest; **no bundle package required** — handoff 21) | **PASS** | v2 bundle `6151a806…0a65` (23 files, inner `SHA256SUMS` 22/22) with `evidence-manifest-sha256` **`4ba6ebad…6934`**; chain manifest `e53253cf…` (3,929 B) and harness manifest `3bdbc339…` (1,641 B) inside; v1 `0ef65546…` and support `3d49625c…` are historical/superseded |
 
-**Gate 3 verdict: NOT signed — CONDITIONALLY FEASIBLE.** Only `PASS` / `FAIL` / `NOT VERIFIED`
-are valid item labels; "partial" is not a gate label. Items 3–6 are hard requirements; a CI
-`6/6` does not substitute for them (handoff 13 §5.6).
+**Gate 3 verdict: all six items PASS; M4 verifier signed; M5 replay and Lead approval pending —
+not yet a gate pass.** Only `PASS` / `FAIL` / `NOT VERIFIED` are valid item labels; "partial" is
+not a gate label. Items 3–6 are hard requirements; a CI `6/6` does not substitute for them
+(handoff 13 §5.6).
 
 ## 5. Producer inputs used (read-only, not M4 evidence)
 
@@ -100,9 +103,12 @@ main tree / the `1826505` archive, not from the docs branch):
 | M5 six-item matrix | `docs/route-b/17-gate3-six-item-matrix.md` |
 | M5 build recipe | `docs/route-b/18-build-recipe.md` |
 | M5 routea review | `docs/route-b/19-routea-review.md` |
-| item-6 support zip | `gate3-item6-support-2026-10-22.zip`, 4,004 B, SHA-256 `3d49625c619c065e7942c8de7d433a58365f4ad616901f2de8b922cf962f72b0` |
+| item-6 support zip (historical) | `gate3-item6-support-2026-10-22.zip`, 4,004 B, SHA-256 `3d49625c619c065e7942c8de7d433a58365f4ad616901f2de8b922cf962f72b0` |
 | chain manifest | `harness-v2-manifest.txt`, 3,929 B, SHA-256 `e53253cf1c3408d832dd4c30b6e75afc4e8c2d621a2c0a3c0959131255878e7c` |
 | harness manifest | `harness-manifest.json`, 1,641 B, SHA-256 `3bdbc3396fd183ed8563e2d7b0648d02be3a3c55c1a52ccc08890614a97ed678` |
+| **v2 evidence bundle** | `gate3-bundle-v2-2026-10-22.zip`, 18,318 B, 23 files, SHA-256 `6151a80633fdde0d9b1ce87c126b01994a730625557d17297828468799710a65` |
+| **v2 evidence-manifest** | `SHA256SUMS` file bytes, 1,838 B, SHA-256 `4ba6ebad30a4035c6a16c62c1fbab53dda67bce60db2b87510b83aa97f876934` |
+| v1 evidence bundle (historical) | `gate3-bundle-2026-10-22.zip`, 13,530 B, SHA-256 `0ef655464459dd0597f8259b3784ee15389884c9a75b26afa1299af7f54bf8d5` — superseded by v2; not required for replay |
 
 ## 6. Deviations and open items
 
@@ -123,22 +129,16 @@ main tree / the `1826505` archive, not from the docs branch):
    (`b68aabcd…cab8`). M5 re-review is pending; the old `7977bac` / patch `0001` is superseded.
 5. **M4's earlier `f3cb9cbb` cross-check is void** and must not be cited.
 
-## 7. What must happen before this record can be signed
+## 7. What must happen before Gate 3 approval
 
-1. **G1 fix (item 3):** corrected LIEF diff with `PT_LOAD[1]` `flags="R E"`, `align="0x1000"`,
-   real import names, `interp` from `INTERP`; one expected difference =
-   `p_filesz`/`p_memsz 0x8e9→0x1000`; GNU_STACK RW(NX), GNU_RELRO `0x403df8/0x208/R`,
-   imports/relocs 13/13, canary absent (handoff 26 §2 / 27).
-2. **G4 fix (item 5):** `revert.log` with one operator identity (VMer = M3 in a separate AI
-   window), manual VMware Snapshot Manager revert + post-action observations only (handoff 26
-   §5 / 27).
-3. G2 is **done**: the item-6 support package `3d49625c…` carries the two manifests
-   (`e53253cf…`, `3bdbc339…`) and its inner `SHA256SUMS` verifies; no bundle rebuild required.
-4. **M5 replay (handoff 19/21):** reproduce candidate `c4a159…aa82` from the recorded recipe on
-   `original.elf` (`aa428157…`), verify contract `24bfe568…4e37`, recompute the
-   evidence-manifest/bundle `SHA256SUMS` hash over the delivered evidence set, and report the
-   observed hashes. Until that replay exists, this record stays DRAFT and the signature line
-   stays blank.
+1. G1/G4 are **done** (v2 bundle: fixed LIEF fields and single-operator `revert.log`); items 1–6
+   now PASS.
+2. **M5 replay (handoff 19/21):** reproduce candidate `c4a159…aa82` from the recorded recipe on
+   `original.elf` (`aa428157…`), verify contract `24bfe568…4e37`, then recompute and report:
+   v2 zip `6151a806…0a65`, v2 `evidence-manifest-sha256` `4ba6ebad…6934`. A mismatch voids the
+   record and returns the affected item to `NOT VERIFIED`.
+3. **Lead approval** fills the last signature row after 1–2. Until then the record is
+   M4-verifier-signed but **not a gate pass**.
 
 
 ## 8. M5 review status: RE-REVIEW PENDING
@@ -151,24 +151,26 @@ B1–B6. M4 resubmitted on base `ad1a1f8` (handoff 18): branch
 is **not accepted** and is not gate-3 evidence either way. M5's build/hash replay (handoff 19)
 is also still pending.
 
-## 9. Signature — BLANK (DRAFT)
+## 9. Signature — M4 VERIFIER SIGNED; M5 REPLAY + LEAD APPROVAL PENDING
 
 **Signing order (handoff 19 §5):**
 
-1. **M4 verifier row** — filled only after items 3–6 are independently verified as `PASS`
-   (runtime cave probe, six cases, isolation evidence, bundle). M4's signature covers the
-   verifier row; it is **not** an approval and **not** a gate pass.
+1. **M4 verifier row** — filled after items 1–6 were independently verified as `PASS` against the
+   v2 bundle (runtime cave probe, six cases, isolation evidence, complete evidence hashes). M4's
+   signature covers the verifier row; it is **not** an approval and **not** a gate pass.
 2. **M5 build/hash replay row** — M5 records the observed replay values (candidate
-   `c4a159…aa82`, contract `24bfe568…4e37`, recomputed bundle `SHA256SUMS`/bundle hash). A
-   mismatch voids the record and returns it to `NOT VERIFIED`; it does not edit the candidate.
+   `c4a159…aa82`, contract `24bfe568…4e37`, v2 zip `6151a806…0a65`, v2 evidence-manifest
+   `4ba6ebad…6934`). A mismatch voids the record and returns it to `NOT VERIFIED`; it does not
+   edit the candidate.
 3. **Lead approval row** — filled last, after 1 and 2, as the gate decision.
 
 | Role | Name | Date | Signature |
 |---|---|---|---|
-| M4 verifier | — | — | **blank until items 3–6 are PASS** |
-| M5 build/hash replay | — | — | pending (handoff 19) |
+| M4 verifier | M4 | 2026-10-22 | items 1–6 PASS against v2 bundle `6151a806…0a65` (evidence-manifest `4ba6ebad…6934`); verifier signature only — not a gate pass |
+| M5 build/hash replay | — | — | pending — record observed replay values in handoff 19/21 format |
 | Lead approval | — | — | pending |
 
-Do not fill these fields from a CI run, a static audit, or a verbal approval. A blank row is not
-a silent pass: it keeps the record DRAFT and the gate `CONDITIONALLY FEASIBLE`.
+Do not fill these fields from a CI run, a static audit, or a verbal approval. M4's row is a
+verifier signature, not a gate approval: until the M5 replay row and the Lead approval row are
+filled, Gate 3 is **not passed**.
 
