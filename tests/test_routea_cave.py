@@ -67,3 +67,18 @@ def test_cave_audit_rejects_unpatched() -> None:
     result = audit_cave_layout(ELF, ELF, plan)
     assert result["pass"] is False
     assert result["checks"]["redirect_bytes"] is False
+
+
+def test_cave_extends_rx_segment_and_audits(tmp_path) -> None:
+    plan = plan_route_a_cave(ELF, contract(), cave_addr=0x4018E9, cave_size=1815)
+    assert plan.rx_vaddr == 0x401000
+    assert plan.rx_new_size == 0x1000
+    assert plan.redirect == bytes.fromhex("e8e0050000")
+    assert plan.message_addr == 0x401931
+    out = tmp_path / "cave_probe.elf"
+    manifest = build_cave_patched(ELF, plan, out, scope_authorized=True)
+    assert manifest.audit["pass"] is True
+    assert manifest.audit["checks"]["rx_extended"] is True
+    assert manifest.audit["checks"]["no_new_segments"] is True
+    assert manifest.audit["checks"]["redirect_bytes"] is True
+    assert out.stat().st_size == ELF.stat().st_size

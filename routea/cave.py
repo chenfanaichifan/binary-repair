@@ -47,6 +47,8 @@ class CavePlan:
     call_site: int
     cave_addr: int
     cave_size: int
+    rx_vaddr: int
+    rx_new_size: int
     redirect: bytes
     code: bytes
     message: bytes
@@ -64,6 +66,8 @@ class CavePlan:
             "call_site": hex(self.call_site),
             "cave_addr": hex(self.cave_addr),
             "cave_size": self.cave_size,
+            "rx_vaddr": hex(self.rx_vaddr),
+            "rx_new_size": hex(self.rx_new_size),
             "redirect_hex": self.redirect.hex(),
             "code_hex": self.code.hex(),
             "message": self.message.decode("ascii"),
@@ -138,15 +142,23 @@ def _call_site_ok(elf_path: Path, call_site: int, strcpy_plt: int) -> bool:
     return len(raw) == 5 and raw[0] == 0xE8 and int.from_bytes(raw[1:], "little", signed=True) + call_site + 5 == strcpy_plt
 
 
-def _rx_segment(elf_path: Path, addr: int, size: int) -> bool:
+def _rx_cave_segment(elf_path: Path, addr: int, size: int) -> int:
+    """Return the RX LOAD vaddr when addr..addr+size is file-backed.
+
+    The cave may sit after p_filesz but still inside the file (zero padding);
+    extending p_filesz/p_memsz maps it without adding a segment.
+    """
+    file_size = elf_path.stat().st_size
     with elf_path.open("rb") as fh:
         elf = ELFFile(fh)
         for seg in elf.iter_segments():
             if seg["p_type"] != "PT_LOAD" or not (seg["p_flags"] & 1):
                 continue
-            if seg["p_vaddr"] <= addr and addr + size <= seg["p_vaddr"] + seg["p_filesz"]:
-                return True
-    return False
+            if seg["p_vaddr"] <= addr:
+                file_end = seg["p_offset"] + (addr + size - seg["p_vaddr"])
+                if file_end <= file_size:
+                    return seg["p_vaddr"]
+    raise RouteAError("cave must be inside an executable file-backed PT_LOAD")
 
 
 def plan_route_a_cave(
@@ -173,8 +185,10 @@ def plan_route_a_cave(
         fprintf_plt, strcpy_plt = by_name["fprintf"], by_name["strcpy"]
     if not _call_site_ok(elf_path, call_site, strcpy_plt):
         raise RouteAError("call site is not a 5-byte call to strcpy@plt")
-    if not _rx_segment(elf_path, cave_addr, cave_size):
-        raise RouteAError("cave must be inside an executable file-backed PT_LOAD")
+    rx_vaddr = _rx_cave_segment(elf_path, cave_addr, cave_size)
+    rx_new_size = cave_addr + cave_size - rx_vaddr
+    if rx_new_size <= 0:
+        raise RouteAError("cave range is invalid")
 
     # Place code first, then the message in the cave; compute message address.
     placeholder = _encode_cave(
@@ -197,22 +211,33 @@ def plan_route_a_cave(
     if len(code) + len(message) > cave_size:
         raise RouteAError("cave is too small for code + message")
     redirect = b"\xe8" + struct.pack("<i", cave_addr - (call_site + 5))
-    return CavePlan(target, call_site, cave_addr, cave_size, redirect, code,
-                    message, message_addr, stderr_vaddr, fprintf_plt,
-                    strcpy_plt, contract.max_valid_input_bytes)
+    return CavePlan(target, call_site, cave_addr, cave_size, rx_vaddr,
+                    rx_new_size, redirect, code, message, message_addr,
+                    stderr_vaddr, fprintf_plt, strcpy_plt,
+                    contract.max_valid_input_bytes)
+
+
+def _segment_at(loads: list[dict], vaddr: int) -> dict | None:
+    return next((s for s in loads if s["vaddr"] == vaddr), None)
 
 
 def audit_cave_layout(original: Path, patched: Path, plan: CavePlan) -> dict:
     before = _loads(original)
     after = _loads(patched)
+    rx = _segment_at(after, plan.rx_vaddr)
+    old_rx = _segment_at(before, plan.rx_vaddr)
     checks = {
         "redirect_bytes": _bytes_at(patched, plan.call_site, 5) == plan.redirect,
         "cave_code": _bytes_at(patched, plan.cave_addr, len(plan.code)) == plan.code,
         "message_bytes": _bytes_at(patched, plan.message_addr, len(plan.message)) == plan.message,
         "harness_unchanged": _bytes_at(original, 0x401256, 90) == _bytes_at(patched, 0x401256, 90),
-        "no_new_segments": before == after,
+        "no_new_segments": sorted((s["vaddr"], s["flags"]) for s in before) ==
+                           sorted((s["vaddr"], s["flags"]) for s in after),
         "relocations_unchanged": _reloc_counts(original) == _reloc_counts(patched),
         "no_wx": all(not (s["flags"] & 2 and s["flags"] & 1) for s in after),
+        "rx_extended": bool(rx and old_rx and rx["filesz"] == plan.rx_new_size
+                            and rx["memsz"] == plan.rx_new_size
+                            and rx["flags"] == old_rx["flags"] == 5),
     }
     return {
         "checks": checks,
@@ -235,6 +260,7 @@ def build_cave_patched(
             "pass scope_authorized=True only after the ruling"
         )
     data = bytearray(original.read_bytes())
+    _extend_load_filesz(original, data, plan.rx_vaddr, plan.rx_new_size)
     for addr, blob in ((plan.call_site, plan.redirect),
                        (plan.cave_addr, plan.code),
                        (plan.message_addr, plan.message)):
@@ -260,10 +286,45 @@ def build_cave_patched(
     )
 
 
+def _extend_load_filesz(original: Path, data: bytearray, vaddr: int, new_size: int) -> None:
+    import struct
+    with original.open("rb") as fh:
+        elf = ELFFile(fh)
+        if elf.elfclass != 64:
+            raise RouteAError("only ELF64 is supported")
+        phoff = elf.header["e_phoff"]
+        phentsize = elf.header["e_phentsize"]
+        phnum = elf.header["e_phnum"]
+        for i in range(phnum):
+            off = phoff + i * phentsize
+            p_type = struct.unpack_from("<I", data, off)[0]
+            p_vaddr = struct.unpack_from("<Q", data, off + 16)[0]
+            if p_type == 1 and p_vaddr == vaddr:
+                p_offset = struct.unpack_from("<Q", data, off + 8)[0]
+                if p_offset + new_size > len(data):
+                    raise RouteAError("extending p_filesz would run past EOF")
+                struct.pack_into("<Q", data, off + 32, new_size)
+                struct.pack_into("<Q", data, off + 40, new_size)
+                return
+    raise RouteAError("RX LOAD segment not found for extension")
+
+
+def _file_offset_ext(elf: ELFFile, addr: int) -> int:
+    for seg in elf.iter_segments():
+        if seg["p_type"] != "PT_LOAD":
+            continue
+        if seg["p_vaddr"] <= addr:
+            off = seg["p_offset"] + (addr - seg["p_vaddr"])
+            end = elf.stream.seek(0, 2)
+            if off < end:
+                return off
+    raise RouteAError(f"address {addr:#x} is not file-backed")
+
+
 def _write_at(original: Path, data: bytearray, addr: int, blob: bytes) -> None:
     with original.open("rb") as fh:
         elf = ELFFile(fh)
-        off = _file_offset(elf, addr)
+        off = _file_offset_ext(elf, addr)
     data[off:off + len(blob)] = blob
 
 
