@@ -337,15 +337,43 @@ def main(argv: Iterable[str] | None = None) -> int:
     pl.add_argument("--cave", required=True, help="cave start address, e.g. 0x401318")
     pl.add_argument("--cave-size", type=int, required=True)
     pl.add_argument("--out", type=Path)
+
+    bd = sub.add_parser("build")
+    bd.add_argument("--elf", type=Path, required=True)
+    bd.add_argument("--contract", type=Path, required=True)
+    bd.add_argument("--cave", required=True)
+    bd.add_argument("--cave-size", type=int, required=True)
+    bd.add_argument("--out", type=Path, required=True)
+    bd.add_argument("--manifest", type=Path, required=True)
+    bd.add_argument("--scope-authorized", action="store_true")
+
+    au = sub.add_parser("audit")
+    au.add_argument("--original", type=Path, required=True)
+    au.add_argument("--patched", type=Path, required=True)
+    au.add_argument("--contract", type=Path, required=True)
+    au.add_argument("--cave", required=True)
+    au.add_argument("--cave-size", type=int, required=True)
+    au.add_argument("--out", type=Path)
+
     args = ap.parse_args(list(argv) if argv is not None else None)
     contract = SecurityContract.from_dict(json.loads(args.contract.read_text()))
-    plan = plan_route_a_cave(args.elf, contract, cave_addr=int(args.cave, 16),
+    plan = plan_route_a_cave(args.elf if args.cmd != "audit" else args.original,
+                             contract, cave_addr=int(args.cave, 16),
                              cave_size=args.cave_size)
-    text = json.dumps(plan.to_dict(), indent=2)
-    if args.out:
+    if args.cmd == "plan":
+        data = plan.to_dict()
+    elif args.cmd == "build":
+        manifest = build_cave_patched(args.elf, plan, args.out,
+                                      scope_authorized=args.scope_authorized)
+        args.manifest.write_text(json.dumps(manifest.to_dict(), indent=2))
+        data = manifest.to_dict()
+    else:
+        data = audit_cave_layout(args.original, args.patched, plan)
+    text = json.dumps(data, indent=2)
+    if getattr(args, "out", None):
         args.out.write_text(text)
     print(text)
-    return 0
+    return 0 if data.get("pass", True) else 1
 
 
 if __name__ == "__main__":
