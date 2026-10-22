@@ -3,6 +3,22 @@
 The GUI never invents job state. It reads a controller through one adapter
 interface and renders whatever the controller reports.
 
+## Ready-to-run helpers
+
+- `.\start-controller.ps1` — creates/updates a fixed worktree of `origin/main`
+  at `..\binaryrepair-controller` and serves `app.controller_api:app` on
+  `127.0.0.1:8000`, with `BINARYREPAIR_DATA_DIR=var\controller`.
+- `tools\p0_acceptance.py` — one command checks session bootstrap, controller
+  health, real job creation, `demo:false`, no demo banner, contract edit,
+  approval, start → `queued`, cancel → `已取消`, and that cancel is not labelled
+  success. Exit code is non-zero on failure.
+
+```powershell
+.\start-controller.ps1          # terminal 1
+.\start.ps1                     # terminal 2 (http mode points at :8000)
+.\.venv\Scripts\python.exe tools\p0_acceptance.py
+```
+
 ## Data-source modes
 
 | `BINARYREPAIR_BACKEND` | Adapter | What it proves |
