@@ -1,10 +1,22 @@
 # Route A trampoline plan — CWE121 candidate (conditional)
 
-**Status:** **NEEDS SCOPE RULING**. This is a byte-level plan and layout audit,
-not an executed patch. It becomes valid only if `authorized_edits` allows a new
-R-- string segment, a new R-X code segment, a detour inside `badSink`, and a file
-length/layout change. Under a "no new section / no length change" policy, Route A
-is **UNSUPPORTED** for this fixture.
+**Status:** **CONDITIONALLY FEASIBLE** (scope ruled; cave load + 6 cases not yet
+measured). This is a byte-level plan and layout audit, not an executed patch.
+`authorized_edits` allows a new R-- string segment, a new R-X code segment, a
+detour inside `badSink`, and a file length/layout change. Under a "no new section /
+no length change" policy, Route A is **UNSUPPORTED** for this fixture.
+
+**Measurement update (2026-10-22):**
+
+- the usable window in `badSink` is **19 bytes, zero slack** — no room for guard + exact stderr;
+- the PLT has **no `strlen` / `strncpy`**, so the guard must be inline in the trampoline;
+- strategy C (detour + R-X trampoline + R-- string) is structurally feasible;
+- the **1815-byte cave** at `0x4018e9–0x401fff` is not yet proven to be file-loaded:
+  `p_filesz` currently ends at `0x18e9`;
+- next: runtime probe the cave; if it is not loaded, extend `p_filesz/p_memsz` to
+  `0x401fff` (header change, **no new segment**), then run the 6 frozen cases;
+- until the cave probe and the 6 cases pass, Gate 3 stays **CONDITIONALLY
+  FEASIBLE**, never `pass`.
 
 Input: `fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf`
 SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`.

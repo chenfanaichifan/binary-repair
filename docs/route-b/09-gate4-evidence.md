@@ -1,4 +1,4 @@
-# Gate 4 — Route B unchanged round trip: PASS (supplementary); formal VM: NOT RUN
+# Gate 4 — Route B unchanged round trip: PASS (supplementary); formal: BLOCKED / NOT RUN
 
 **Date:** 2026-10-22
 **Run:** GitHub Actions `gate4-routeb-roundtrip`, run `39752557610`
@@ -12,6 +12,11 @@ This is the unchanged round trip only — **not a repair**.
 > installation and it is not the team VM. Do not mark formal Gate 4 PASS until
 > member3 provides the VM or explicitly accepts this runner profile.
 > See [11-gate4-formal-checklist.md](11-gate4-formal-checklist.md).
+>
+> **Latest coordination (2026-10-22):** formal Gate 4 is **BLOCKED**: the
+> `toolchain-v4-ready` snapshot is ready, but M5's `routeb` scripts are missing
+> from the snapshot. The supplementary CI pass remains evidence, not a formal
+> pass; re-run only after the scripts are delivered.
 
 ## 1. Identity
 
@@ -105,7 +110,7 @@ force-pushes `gate4-results` with the evidence.
 | G1 contract + frozen manifest | PASS | `tests/test_fixture_v3_manifest.py`; contract v2 50/49; manifest-set hash `a564f039…` |
 | G2 Ghidra export | PASS | Ghidra 12.2 raw C + `.meta.txt` in `routeb/out/gate4/` |
 | G3 Route A | **BLOCKED** | needs scope ruling for new R--/R-X segments; plan in `07-route-a-trampoline-plan.md` |
-| G4 Route B unchanged round trip | **PASS (supplementary) / formal NOT RUN** | 6/6 on GitHub Actions; formal member3 VM pending |
+| G4 Route B unchanged round trip | **BLOCKED / formal NOT RUN (supplementary PASS)** | 6/6 on GitHub Actions; `toolchain-v4-ready` snapshot ready but M5 `routeb` scripts missing |
 | G5 placement | PARTIAL | Route B replaced a same-size function; Route A layout audit not run |
 | G6 concrete crash | PASS (partial) | `06-gate6-evidence.md`; 100 B → SIGSEGV at `ret 0x401317` |
 | G6 symbolic (V4) | **BLOCKED** | angr/Z3/V4 toolchain absent |
