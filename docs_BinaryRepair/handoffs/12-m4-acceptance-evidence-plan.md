@@ -27,7 +27,8 @@ produces the guest environment, the run path, and the isolation evidence; M4 ver
 independently, keeps its own copies and logs, and does not reuse the producers' outputs as its
 own measurement. Producer artifacts are read-only to M4. M4 never edits, re-runs into the same
 paths, or overwrites producer artifacts; M4's results live in M4's own evidence directory and are
-hashed.
+hashed. Handoff 13 (M5→M4 ownership transfer) was **ratified by the Lead on 2026-10-22**; M5
+replays the build/hash commands and the Lead approves, and M4 never approves its own evidence.
 
 **What this plan is not.** Gate 3 pass is feasibility evidence for fixture selection. It is
 not V0–V5 acceptance, not a V3 pass, not repair proof, and not a second success rule. The
@@ -82,7 +83,7 @@ No item proceeds on a partial delivery. Missing rows make the affected items `NO
 | I6 | Wrapper runbook | fixed invocation shape, root-owned path, hash/owner/mode, the attestation block it emits, and whether it can host M4's probe (§4.2) | items 1.2, 2.2, 3, 5 |
 | I7 | Image + revert evidence | snapshot name/id, chain manifest file and its SHA-256, raw revert command/output/timestamp, guest fingerprint after revert | item 3, item 5 |
 | I8 | Guest tool inventory | `readelf`, `objdump`, `gdb`, `python3` + `lief`, and the util-linux tools `unshare`/`runuser`/`setpriv` (versions, or exact absence report) | all execution/static items |
-| I9 | Import evidence | `readelf -dW`/`--dyn-syms`/PLT facts for `write`/`fputs`/`fwrite`/`exit`, and guest syscall policy (seccomp) | item 2/3 risk, writer mechanism |
+| I9 | Writer/import evidence | `readelf -dW`/`--dyn-syms`/PLT facts for the existing `fprintf` import and `stderr` COPY relocation, the absence of `write`/`fputs`/`fwrite`/`exit`/`strlen`/`strncpy`, and the guest seccomp result for the `exit_group` termination syscall | item 2/3 risk, writer mechanism |
 
 ### 2.1 Minimum edit-manifest fields M4 needs
 
@@ -96,9 +97,13 @@ measurements:
   intervals as **file offsets** and **vaddrs**, exact added bytes;
 - `header_changes`: segment index + old/new `p_filesz`, `p_memsz`; any section-header change;
 - `changed_file_intervals`: every edited file byte interval, inclusive offsets;
-- `template_id` + parameters, `allowed_calls`;
-- termination mechanism (`exit_group` / `exit@plt`) and writer mechanism (syscall / PLT);
-- guest facts: CET state, seccomp policy, original PLT/dynsym writer facts.
+- `template_id` + parameters, `allowed_calls` — for the approved revision this is exactly
+  `("strcpy","printLine","fprintf")`;
+- termination mechanism — the `exit_group` syscall with status 1;
+- writer mechanism — `fprintf@plt` plus the existing `stderr` COPY relocation (no new import,
+  relocation, GOT, or PLT edit);
+- guest facts: CET state, seccomp policy for the `exit_group` syscall, original
+  PLT/dynsym writer facts.
 
 If a claimed edit is not in `changed_file_intervals`, the candidate is rejected by the audit; if
 the manifest omits a field, the dependent item is `NOT VERIFIED`. The committed
@@ -126,10 +131,35 @@ before it counts.
 | imports | no `write`, `fputs`, `fwrite`, `exit`, `strlen`, or `strncpy` import (measured list in handoff 13 §3) |
 | CI status | the CI `6/6` and CI layout audit are supplementary only; CI cannot satisfy gate-3 items 4–5 (handoff 13 §5.6) |
 
-The contract writer authorization must match the measured mechanism: `fprintf` + `stderr` are
-existing imports/objects, but handoff 09 §4.1 lists `write`/`fputs`/`fwrite`; M5's revision (or
-a switch to a raw `write`/`exit_group`) is therefore an open contract dependency (handoff 13
-§5.4), not something M4 may assume.
+The contract writer authorization is **resolved, not open**. The Lead amended handoff 09 §4.1
+on 2026-10-22 after M5's measured probe: the ELF already imports `fprintf` and contains the
+`stderr` COPY relocation; it imports no `write`, `fputs`, `fwrite`, `exit`, `strlen`, or
+`strncpy`. The first persisted contract revision must therefore set
+`allowed_calls = ("strcpy","printLine","fprintf")` and authorize `fprintf@plt` plus the existing
+`stderr` object; termination is the `exit_group` syscall. A raw `write(2)` path is only an
+alternative if the candidate switches to it and the guest seccomp result is recorded. M5 still
+owns the contract revision, and it must exist before the candidate freezes; the probe's
+`allowed_calls=[fprintf,...]` is not an approved contract.
+
+### 2.3 Lead's independent artifact check (inputs/cross-checks only)
+
+On 2026-10-22 the Lead read the `origin/main` @ `33235f5` blobs with a **struct-only ELF parser**
+(no execution, no network) and observed the values below. These are inputs M4 must reproduce
+independently; they are **not gate-3 evidence**, and the CI `6/6` / CI `readelf-audit.txt` remain
+supplementary only.
+
+| Cross-check | Lead's observation |
+|---|---|
+| `original.elf` | 26,792 B, SHA-256 `aa428157...8393` |
+| candidate | 26,792 B, SHA-256 `f3cb9cbb...f9fa7` |
+| headers | 13 program headers both; `e_entry 0x401170` unchanged; file size `0x68a8` both |
+| changed segment | only `PT_LOAD[3]`: `p_filesz`/`p_memsz` `0x8e9` -> `0x1000`, `p_offset 0x1000`, `p_vaddr 0x401000`, flags `R E`, page congruence `0/0`, next `PT_LOAD` `0x402000` adjacent with no overlap |
+| redirect | `e8 c7 fd ff ff` -> `e8 e0 05 00 00`, rel32 `+0x5e0`, target `0x4018e9` |
+| cave head / message | cave head is the inline length loop; the 42-byte message sits at file offset `0x1931` |
+| byte diffs | only `0x108-0x109` / `0x110-0x111` (header fields), `0x1305-0x1308`, `0x18e9-0x195a` |
+
+M4's own measurement must match these before they count; a discrepancy is a finding to report,
+not a pass or a fail by itself.
 
 ---
 
@@ -829,7 +859,7 @@ independently measured would be fabricated and is prohibited.
 
 ---
 
-## 11. Open dependencies to resolve before the run
+## 11. Pre-run dependencies and resolved facts
 
 1. **Delivery path and hashes** (I1–I4): where M3 places the candidate, original, tests, edit
    manifest, and re-apply recipe, plus their hashes.
@@ -842,19 +872,24 @@ independently measured would be fabricated and is prohibited.
    cave observables (they become `NOT VERIFIED`, not pass).
 5. **Cave entry and call addresses** from the edit manifest (needed to instantiate the gdb
    scripts; not typed from prose).
-6. **Import/PLT facts** (I9) and guest seccomp policy, so a syscall-based writer is either
-   confirmed feasible or the limiting fact is recorded.
-7. **Contract writer authorization** (handoff 13 §5.4): the committed probe uses `fprintf@plt` +
-   the `stderr` COPY relocation, while handoff 09 §4.1 lists `write`/`fputs`/`fwrite`. M5's
-   contract revision must authorize the measured mechanism (or the repair must switch to a raw
-   `write`/`exit_group` with the guest seccomp result). M4 may not treat the probe's
-   `allowed_calls=[fprintf,...]` as an approved contract.
+6. **Writer/import facts to re-measure** (I9): `fprintf` import and the `stderr` COPY relocation
+   present; no `write`/`fputs`/`fwrite`/`exit`/`strlen`/`strncpy`; guest seccomp result for the
+   `exit_group` termination syscall. These are measured facts M4 must reproduce, not an open
+   writer choice.
+7. **Contract writer authorization — RESOLVED** (Lead amendment to handoff 09 §4.1,
+   2026-10-22): the first persisted contract revision must set
+   `allowed_calls = ("strcpy","printLine","fprintf")` and authorize `fprintf@plt` plus the
+   existing `stderr` object; termination is the `exit_group` syscall. Raw `write(2)` is an
+   alternative only if the candidate switches to it and the guest seccomp result is recorded.
+   The revision itself remains M5-owned and must exist before the candidate freezes; the probe's
+   `allowed_calls` is not an approved contract.
 8. **Contract text off-by-one** (handoff 13 §5.1): the redirect's valid-path return is
    `0x401309`, not `0x401308`; the contract revision and every record/script must use the
    corrected value before freeze (handoff 09 §4.1 entry 1 is already corrected).
-9. **Committed record and independent replay** (handoff 13 §7): the `gate3-record.md` +
-   `SHA256SUMS` bundle is committed for review; M5 replays the build/hash commands and the Lead
-   approves. M4 does not approve its own evidence.
+9. **Committed record, independent replay, and approval** (handoff 13 §7, ratified by the Lead on
+   2026-10-22): the `gate3-record.md` + `SHA256SUMS` bundle is committed for review; M5 replays
+   the build/hash commands and the Lead approves. M4 does not approve its own evidence; M4's
+   confirmation is evidence, not a second success rule.
 
 ---
 
@@ -866,5 +901,11 @@ independently measured would be fabricated and is prohibited.
   M3 isolation/guest delivery yet. No result, pass, or unsupported conclusion is claimed.
 - 2026-10-22 — revised against handoff 13 (ownership moved to M4; committed original and
   CI candidate on `origin/main` @ `33235f5` are inputs only; return point corrected to
-  `0x401309`; committed edit-manifest gaps and writer/contract dependency recorded). Nothing was
-  executed and no status changed.
+  `0x401309`; committed edit-manifest gaps recorded). Nothing was executed and no status
+  changed.
+- 2026-10-22 — Lead brief folded in: writer authorization is resolved (contract revision sets
+  `allowed_calls = ("strcpy","printLine","fprintf")` and authorizes `fprintf@plt` + existing
+  `stderr`; termination is `exit_group`; raw `write(2)` only if the candidate switches and the
+  guest seccomp result is recorded); handoff 13 ratified by the Lead; the Lead's struct-only
+  artifact cross-checks are recorded in §2.3 as inputs to reproduce, not evidence. Status
+  unchanged: plan only, all six items `not_run`, nothing executed.
