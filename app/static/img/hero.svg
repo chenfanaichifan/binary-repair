@@ -86,13 +86,13 @@
 
   <!-- highlighted vulnerable call -->
   <g opacity="0.9">
-    <rect x="40" y="420" width="470" height="42" rx="6" fill="#ef6f6f" opacity="0.10"/>
-    <rect x="40" y="420" width="3" height="42" fill="#ef6f6f"/>
-    <circle cx="40" cy="441" r="26" fill="url(#glow)"/>
-    <text x="58" y="448" font-family="'Cascadia Mono', Consolas, monospace" font-size="14" letter-spacing="2" fill="#ffb9b9">0x401136  call strcpy@plt  ; OOB write</text>
+    <rect x="40" y="292" width="470" height="42" rx="6" fill="#ef6f6f" opacity="0.10"/>
+    <rect x="40" y="292" width="3" height="42" fill="#ef6f6f"/>
+    <circle cx="40" cy="313" r="26" fill="url(#glow)"/>
+    <text x="58" y="320" font-family="'Cascadia Mono', Consolas, monospace" font-size="14" letter-spacing="2" fill="#ffb9b9">0x401136  call strcpy@plt  ; OOB write</text>
   </g>
   <g filter="url(#redglow)" opacity="0.55">
-    <rect x="40" y="420" width="470" height="42" rx="6" fill="none" stroke="#ef6f6f" stroke-opacity="0.55"/>
+    <rect x="40" y="292" width="470" height="42" rx="6" fill="none" stroke="#ef6f6f" stroke-opacity="0.55"/>
   </g>
 
   <!-- near ridge -->
