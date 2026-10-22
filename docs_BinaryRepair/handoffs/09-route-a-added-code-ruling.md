@@ -127,8 +127,8 @@ byte bounds below are review bounds, and gate 3 may report that a larger bound i
 2. `Allow up to 256 bytes of added x86-64 code in a gate-3-verified unused region of a loadable R-X segment reachable from 0x401304; zero bytes alone are not evidence.`
 3. `Allow up to 64 bytes of added read-only data holding exactly ERROR: input exceeds destination capacity plus LF, RIP-relative references only.`
 4. `Allow the invalid path to write that data to fd 2 and exit 1 without returning to main or writing stdout.`
-5. `Allow no new PT_LOAD, dynamic import, GOT/PLT/relocation/header edit or permission change without a later reviewed revision.`
-6. `Only if gate 3 rejects the cave: allow one new R-X PT_LOAD, page-congruent offset/vaddr, fixed non-PIE address, no overlap, recorded headers.`
+5. `Allow extending the existing R-X PT_LOAD's p_filesz/p_memsz to map the verified-unused tail ending at 0x401fff; record offset, vaddr, filesz, memsz, align; keep page congruence and no segment overlap.`
+6. `Allow no new segment, dynamic import, GOT/PLT/relocation edit or permission broadening; only if the tail extension is rejected, allow one new R-X PT_LOAD with recorded headers.`
 
 `allowed_calls` stays `("strcpy", "printLine")` for a syscall-based repair (syscalls are not
 "calls" and are covered by entry 4). Add a writer — exactly `write`, `fputs`, or `fwrite`,
@@ -259,7 +259,7 @@ Correct labels from now on:
 
 | Gate | Owner | Status after this ruling | Why |
 |---|---|---|---|
-| 3 — Route A patch feasibility | M5 | **NOT RUN** (scope blocker resolved) | The scope question is settled; no feasibility audit evidence exists yet, so `passed` / `failed` / `unsupported` are all invalid until it runs. `unsupported` needs the concrete placement/encoding fact, not an expectation |
+| 3 — Route A patch feasibility | M5 | **IN PROGRESS — CONDITIONALLY FEASIBLE** (work status; cave load probe + six-case run pending; see §11) | The scope question is settled and the strategy-C measurement is done; `passed` / `failed` / `unsupported` remain invalid until the cave probe and six-case run produce evidence. `unsupported` needs the concrete placement/encoding fact, not an expectation |
 | 4 — Route B unchanged round trip | M5 | **NOT RUN** (environment blocker) | Needs a disposable Ubuntu guest with JDK21 + Ghidra + Patcherex2 + clang and the isolation preconditions. It does **not** depend on gate 3 and can run in parallel once the environment exists. The environment work is approved in `10-v4-isolation-decision-record.md` (owner M3, 2026-10-23 18:00) |
 | 5 — safe placement for both routes | M5 + M3 | pending | Needs gate-3 and gate-4 artifacts |
 | 6 — verifier detects the original violation | M4 | partial | Concrete crash evidence accepted; symbolic half pending V4 |
@@ -268,4 +268,74 @@ Status-page rules: a gate is `passed` / `failed` / `not_run` / `unsupported` —
 pass"; a missing backend or audit is `not_run` (an implementation gap, not `unsupported`
 and not a pass); and no gate may be pre-labelled `passed` or `unsupported` before its
 evidence exists. The M1 README lines above should be rewritten to that effect.
+
+---
+
+## 11. Follow-up: gate 3 interim result and tail-cave mapping (2026-10-22)
+
+Member 3's measurement (condensed): the 19-byte interval between the redirected
+`call strcpy@plt` at `0x401304` and `ret` at `0x401317` has **zero spare bytes**; the PLT
+exposes **no `strlen`/`strncpy`**; an **1815-byte tail cave** exists at `0x4018e9`-`0x401fff`;
+strategy C is structurally feasible. However, the segment's file-backed end currently stops
+at `0x4018e9` (`p_filesz`), so those bytes are not loaded from the file today; a runtime
+probe must show whether the range is mapped and executable. If it is not, the fix is
+extending `p_filesz`/`p_memsz` to `0x401fff` — a header change, **not** a new segment.
+Until the cave check and the six-case run, gate 3 is `CONDITIONALLY FEASIBLE` only.
+
+### 11.1 Status ruling
+
+`CONDITIONALLY FEASIBLE` is accepted as a **work status, not a gate pass**. Gate 3 stays
+open until all three exist:
+
+1. the runtime cave probe (range mapped, R-X, file bytes present, an instruction there
+   executes);
+2. the six manifest cases actually run on the patched candidate and match the frozen oracle;
+3. the added/edited bytes, the header change, and the detour are recorded in the edit manifest.
+
+The fixture remains **NOT FROZEN**. "Conditionally feasible" must never be rendered as pass.
+
+### 11.2 Tail-cave mapping is in scope
+
+Extending the existing R-X `PT_LOAD`'s `p_filesz`/`p_memsz` so the verified-unused tail is
+file-backed is a "necessary metadata change through a tested backend" (Tech Design §8) and is
+**smaller than a new `PT_LOAD`**. It is authorized, subject to:
+
+- same segment only, no new segment and no new page: `p_offset ≡ p_vaddr (mod page)` stays
+  true, `p_filesz <= file size`, `p_memsz >= p_filesz`, end <= the next segment's start, no
+  overlap;
+- executable/read flags unchanged; NX, RELRO, canary, W^X preserved; no other header changed;
+- the cave bytes must be proven unused: beyond the original `p_filesz` they are not mapped
+  today, so verify that no section, symbol, relocation, unwind entry, or incoming edge
+  references them, and record the filler bytes;
+- record before/after program headers (`readelf -l` plus an independent LIEF view), the exact
+  header fields changed, and the runtime probe output (mapping, permissions, byte comparison,
+  executed instruction).
+
+`§4.1` entries 5-6 were rewritten to this effect on 2026-10-22; the §4.1 text is authoritative.
+
+### 11.3 Bounded-copy strategy is unavailable
+
+`strlen` and `strncpy` are not in the PLT, so the guard computes the input length with an
+inline loop and the repair stays strategy C. Do not add either function to `allowed_calls`
+and do not add a new import (Tech Design §5/§8).
+
+### 11.4 The six-case run is feasibility evidence, not acceptance
+
+The six-case run is gate-3 evidence that the patched candidate behaves as the frozen oracle.
+It is **not** V3 acceptance, not a V0/V3 pass, and not repair proof; the acceptance pipeline
+still runs later. Because it executes a candidate, handoff 10 Decision 2's three isolation
+preconditions apply (clean snapshot, job-time egress blocked, unprivileged user without
+passwordless sudo). Record them with the run; without them the run is not evidence.
+
+### 11.5 Gate 4
+
+The `toolchain-v4-ready` snapshot is reported ready by M3. The remaining gate-4 blocker is
+**M5's `routeb/` scripts**. Target: M5 delivers them, or reports the concrete missing item and
+blocker, by **2026-10-23 12:00**; gate 4 then runs under the same isolation preconditions.
+Gate 4 does not depend on gate 3.
+
+**Confirmation log (follow-up).** 2026-10-22 — gate 3 recorded as CONDITIONALLY FEASIBLE
+(work status, not pass); tail extension `p_filesz`/`p_memsz` to `0x401fff` authorized with
+recorded headers and a runtime probe; no `strlen`/`strncpy` import; six-case run counts only
+as gate-3 evidence; gate 4 blocker assigned to M5 (target 2026-10-23 12:00).
 

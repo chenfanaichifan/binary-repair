@@ -81,3 +81,12 @@ forbidden in every case.
 **Confirmation log.** 2026-10-22 — Decision 1 approved as Option A (time-boxed to
 2026-10-23 18:00); Decision 2 confirmed as a hard precondition for any candidate execution;
 fixture stays NOT FROZEN; the oracle and manifest are unchanged.
+
+---
+
+## 6. Status update — 2026-10-22 evening
+
+Member 3 reports the `toolchain-v4-ready` snapshot is ready. This is **not accepted yet**:
+Member 4 must still verify the version outputs, the smoke tests, and the image hash, and the
+three isolation preconditions must be confirmed before any candidate run. Deadline unchanged
+(2026-10-23 18:00). Gate 4 additionally waits on M5's `routeb/` scripts (handoff 09 §11.5).
