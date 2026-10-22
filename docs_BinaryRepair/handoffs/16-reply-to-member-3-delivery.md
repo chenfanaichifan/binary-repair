@@ -228,27 +228,36 @@ confirmed as VMer), and keeps M3's role as prepare/verify/evidence. No gate stat
 
 **Decision 1 — the GitHub archive is accepted as the main content source.** M3 downloaded the
 GitHub archive of commit `1826505` to `D:\BinRepair\.tmp\binrepair-main-1826505.zip`
-(471,658 B, SHA-256 `b0f4a1…`), verified `original.elf` `aa428157…`, candidate `c4a159…`, and
-contract `24bfe568…`. **Accepted.** Content identity plus commit provenance is what Gate 3
-needs, not a particular packaging hash: the archive's zip hash differs from our fallback
-`42658976…` only because GitHub repacks the tree. The fallback-hash requirement is **dropped**
-for M3; the bundle is no longer needed for the Gate 3 run. Record in the report:
+(471,658 B, SHA-256
+`b0f4a18414e3887581769dd010063e7860abc62c8359f4051c4367573c03f61f`), verified `original.elf`
+`aa428157…`, `routea/out/cave-probe.elf` `c4a159…`, and contract `24bfe568…`. **Accepted.**
+Content identity plus commit provenance is what Gate 3 needs, not a particular packaging hash:
+the archive's zip hash differs from our fallback `42658976…` only because GitHub repacks the
+tree. The fallback-hash requirement is **dropped** for M3; the bundle is no longer needed for the
+Gate 3 run. Recorded provenance:
 
-- source URL / GitHub archive of commit `1826505`, download timestamp;
-- **full** archive SHA-256 (M3 quoted `b0f4a1…`; the complete 64-hex value must be recorded),
-  archive size 471,658 B, extraction path;
-- the archive has no `.git` directory, so commit provenance is the archive source + commit id +
-  per-file hashes; per-file hashes (`original`, `candidate`, `contract`, manifests) are the
-  identity proof, already verified by M3.
+```text
+source:   GitHub archive, commit 1826505
+URL:      https://codeload.github.com/chenfanaichifan/binary-repair/zip/1826505
+path:     D:\BinRepair\.tmp\binrepair-main-1826505.zip
+download: 2026-10-22 18:30:24 +08
+size:     471,658 B
+SHA-256:  b0f4a18414e3887581769dd010063e7860abc62c8359f4051c4367573c03f61f
+```
+
+The archive has no `.git` directory, so commit provenance is the archive source + commit id +
+per-file hashes; per-file identity is `original aa428157…`, `candidate c4a159…`, `contract
+24bfe568…` (all re-verified by M3), plus the frozen test manifests.
 
 **Decision 2 — `delivery-docs` is optional.** Handoffs 09–16 are reviewer guidance, not Gate 3
 evidence; the run does not need them. The bundle (SHA-256 `fd35ae84…f52bf5`) remains valid for
 later transfer if someone needs the docs; it is not a blocker.
 
-**Decision 3 — VMer confirmed; M4 is not the operator.** M4 has stated that M4 is **not** VMer.
-The VM console belongs to an **independent VMer**; the snapshot record names VMer, never M4.
-M3 notifies **VMer** for the `gate3-harness` snapshot; M4 stays the independent verifier. This
-corrects the earlier "M4 operates the VMware UI" wording in §3.2, §5 and §7.
+**Decision 3 — VMer clarified; M4 is not the operator.** The VM console is operated by
+**VMer, a separate window of the same operator** — not M4 and not a fourth person. The snapshot
+record names **VMer**; M3 (guest preparation/evidence) notifies VMer for the `gate3-harness`
+snapshot; M4 stays the independent verifier only. This corrects the earlier "M4 operates the
+VMware UI" wording in §3.2, §5 and §7.
 
 **Run order after this reply:**
 
@@ -269,5 +278,37 @@ fixture `NOT FROZEN`.
 main content source (content hashes verified by M3), drops the packaging-hash requirement,
 keeps `delivery-docs` optional, and records VMer as the independent VM console operator with
 M4 as verifier only. No gate status changed.
+
+---
+
+## 9. M3 delivery confirmation (2026-10-22 18:30) and pending evidence
+
+M3 confirms the accepted archive and provides the complete provenance (recorded in §8
+Decision 1): codeload URL `…/zip/1826505`, downloaded 2026-10-22 18:30:24 +08, 471,658 B,
+SHA-256 `b0f4a18414e3887581769dd010063e7860abc62c8359f4051c4367573c03f61f`, no `.git`.
+Re-verified content: `original.elf` `aa428157…`, `routea/out/cave-probe.elf` `c4a159…`,
+contract `24bfe568…`. **No fallback-hash requirement; no bundle transfer for Gate 3.** The
+bundle remains only an optional docs carrier.
+
+**Division record:** VMer is **a separate window of the same operator** — not M4 and not a
+fourth person. Snapshot records name **VMer**; M4 performs independent verification only.
+
+**Pending from the VMer window (M3 will return after the run; do not pre-fill):**
+
+- actual `pytest` counts for `tests/test_routea_manifest.py`, `tests/test_routea_cave.py`,
+  `tests/test_fixture_contract.py` (actual counts only; never "should be 162");
+- the six frozen cases, per case rc / stdout / stderr bytes, candidate SHA-256 before and after;
+- the original V0 shape (documented 4/6, actual result recorded);
+- new `gate3-harness` chain manifest + its SHA-256, guest fingerprint, raw revert log;
+- isolation attestation: uid 1003, `CapEff=0`, `NoNewPrivs=1`, no egress, `sudo -n true`
+  fails, evaluator unreadable, wrapper hash/owner/mode/attestation; `Seccomp: 0`.
+
+M4 signs the gate-3 record only after all of the above exist. Gate 3 stays
+`CONDITIONALLY FEASIBLE`; gate 4 `NOT RUN`; fixture `NOT FROZEN`.
+
+**Confirmation log (delivery).** 2026-10-22 — archive provenance pinned; no bundle/fallback hash
+required; VMer division clarified as a separate window of the same operator; evidence list
+pending from the VMer window. No gate status changed.
+
 
 

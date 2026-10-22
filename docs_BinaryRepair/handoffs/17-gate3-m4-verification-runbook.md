@@ -9,9 +9,10 @@ missing hashes, or a missing isolation precondition is `NOT VERIFIED`, never a p
 **Canonical subject:** `origin/main` `1826505`; candidate `c4a159…aa82`; contract `24bfe568…4e37`;
 original `aa428157…8393`; `valid.json` `17b2ee39…e76`; `invalid.json` `d493f370…90d`; manifest
 set `a564f039…3a78`.
-**Role split:** VMer owns the VM console (snapshot/power-on); M3 prepares/executes inside the
-guest and collects raw evidence; M4 verifies independently with its own copies; M4 does not
-approve its own evidence (handoff 13/16). M4 is **not** VMer.
+**Role split:** VMer owns the VM console (snapshot/power-on) and is **a separate window of the
+same operator**, not M4 and not a fourth person; M3 prepares/executes inside the guest and
+collects raw evidence; M4 verifies independently with its own copies and does not approve its
+own evidence (handoff 13/16).
 
 Rules: never edit the oracle/manifests/frozen hashes; never reuse M3's conclusions as M4's own
 measurement; record the candidate SHA-256 before **and** after every execution; keep raw logs
@@ -66,9 +67,11 @@ PY
 ```
 
 Expected: `aa428157…`, `17b2ee39…`, `d493f370…`, `a564f039…`, candidate `c4a159…`, contract
-`24bfe568…`. Record archive provenance too: GitHub archive of `1826505`, full archive SHA-256
-(64 hex), download timestamp, extraction path; archive has no `.git`, so this + per-file hashes
-is the provenance.
+`24bfe568…`. Archive provenance is pinned (handoff 16 §8/§9): GitHub archive of commit `1826505`,
+`https://codeload.github.com/chenfanaichifan/binary-repair/zip/1826505`,
+`D:\BinRepair\.tmp\binrepair-main-1826505.zip`, downloaded 2026-10-22 18:30:24 +08, 471,658 B,
+SHA-256 `b0f4a18414e3887581769dd010063e7860abc62c8359f4051c4367573c03f61f`, no `.git`; commit id +
+archive hash + per-file hashes are the provenance. The fallback packaging hash is not required.
 
 ---
 
@@ -195,7 +198,10 @@ guest fingerprint after revert, raw revert command/output/timestamp; wrapper has
 attestation showing uid 1003, `CapEff=0`, `NoNewPrivs=1`, no usable egress, `sudo -n true`
 fails, evaluator unreadable, fixed `execv` argv (no shell), scrubbed env, rlimits/core=0;
 `Seccomp: 0` with no filter added. A run outside these controls is `NOT VERIFIED` even at 6/6.
-VMer's name goes in the snapshot record; M4 is not the operator.
+VMer is **a separate window of the same operator** (not M4, not a fourth person); the snapshot
+record names VMer, and M4 only verifies. Actual test counts, per-case rows, candidate
+before/after hashes and the chain-manifest/fingerprint/revert/uid-1003/no-egress evidence are
+**pending from the VMer window** — record actual values only, never a target count.
 
 ---
 

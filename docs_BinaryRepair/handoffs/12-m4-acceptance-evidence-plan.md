@@ -866,9 +866,13 @@ still missing. Any result reported before the guest run would be fabricated and 
 ## 11. Pre-run dependencies and resolved facts
 
 1. **Content source and hashes** (I1–I5): M3 uses the GitHub archive of `1826505`
-   (`D:\BinRepair\.tmp\binrepair-main-1826505.zip`, 471,658 B; full SHA-256 to be recorded in the
-   report). Content identity is `original aa428157…`, `candidate c4a159…`, `contract 24bfe568…`;
-   the archive has no `.git`, so provenance = archive source + commit id + per-file hashes.
+   (`https://codeload.github.com/chenfanaichifan/binary-repair/zip/1826505`,
+   `D:\BinRepair\.tmp\binrepair-main-1826505.zip`, downloaded 2026-10-22 18:30:24 +08,
+   471,658 B, SHA-256
+   `b0f4a18414e3887581769dd010063e7860abc62c8359f4051c4367573c03f61f`). Content identity is
+   `original aa428157…`, `candidate c4a159…`, `contract 24bfe568…`; the archive has no `.git`,
+   so provenance = archive source + commit id + archive hash + per-file hashes. The fallback
+   packaging hash is not required.
 2. **Wrapper runbook** (I6): exact fixed invocation
    (`sudo /usr/local/sbin/jobwrap gate3 original|patched <case-id|all>`), attestation block,
    and whether it can host a probe/gdb mode; otherwise Lead approval of the equivalent harness
