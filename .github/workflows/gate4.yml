@@ -20,7 +20,9 @@ jobs:
       - name: Install system and Python deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential binutils patchelf unzip curl
+          sudo apt-get install -y build-essential binutils patchelf unzip curl clang lld llvm
+          sudo ln -sf /usr/bin/clang /usr/local/bin/clang-15
+          clang-15 --version
           python3 -m pip install --upgrade pip
           python3 -m pip install patcherex2
       - name: Install Ghidra 12.2
