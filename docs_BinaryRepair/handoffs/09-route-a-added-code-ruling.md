@@ -260,7 +260,7 @@ Correct labels from now on:
 | Gate | Owner | Status after this ruling | Why |
 |---|---|---|---|
 | 3 — Route A patch feasibility | M5 | **NOT RUN** (scope blocker resolved) | The scope question is settled; no feasibility audit evidence exists yet, so `passed` / `failed` / `unsupported` are all invalid until it runs. `unsupported` needs the concrete placement/encoding fact, not an expectation |
-| 4 — Route B unchanged round trip | M5 | **NOT RUN** (environment blocker) | Needs a disposable Ubuntu guest with JDK21 + Ghidra + Patcherex2 + clang and the isolation preconditions of handoff 07. It does **not** depend on gate 3 and can run in parallel once the environment exists |
+| 4 — Route B unchanged round trip | M5 | **NOT RUN** (environment blocker) | Needs a disposable Ubuntu guest with JDK21 + Ghidra + Patcherex2 + clang and the isolation preconditions. It does **not** depend on gate 3 and can run in parallel once the environment exists. The environment work is approved in `10-v4-isolation-decision-record.md` (owner M3, 2026-10-23 18:00) |
 | 5 — safe placement for both routes | M5 + M3 | pending | Needs gate-3 and gate-4 artifacts |
 | 6 — verifier detects the original violation | M4 | partial | Concrete crash evidence accepted; symbolic half pending V4 |
 
