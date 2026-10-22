@@ -95,6 +95,20 @@ Required snapshot/contract shape is documented in
 `docs/controller-integration.md`. All payload strings must stay English ASCII;
 the GUI rejects non-ASCII controller payloads with `502`.
 
+### Route A interface v1 (host dry-run fixtures)
+
+- Contract: `docs/interfaces/route-a-worker-contract.md` — worker command/env,
+  outputs, `status.json` v1 (no `outcome`), and the `decision.json` boundary.
+- Fixtures: `app/interfaces/route-a/result-bundle-DRYRUN.json` and
+  `status-DRYRUN.json` are M3 host dry-run outputs, **not gate evidence**.
+- Preview: `/dryrun/route-a` renders the raw V0–V5 statuses, worker artifacts
+  and identity hashes. It never computes an outcome; without a `decision.json`
+  it explicitly shows "尚无 decision.json".
+- Adapter: `tools/routea_bundle_to_attempt.py` maps M3's result bundle to the
+  worker's per-attempt JSON (`pass -> passed`, missing evidence in `details`)
+  without inventing an outcome. This is the bridge Member 1's worker needs.
+- Candidate remains the fixed fixture `c4a159…` (not an arbitrary ELF repair).
+
 ### Member 5 — Route B executor (2026-10-22)
 
 `routeb/executor.py` on `main` (`16a326d`) now builds a static evidence bundle

@@ -431,6 +431,25 @@ async def cancel_run(request: Request, job_id: str, csrf: str = Form("")):
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
+@app.get("/dryrun/route-a", response_class=HTMLResponse)
+async def dryrun_route_a(request: Request):
+    """Route A interface preview: render host dry-run artifacts only.
+
+    The UI intentionally never derives an outcome here; it renders the raw
+    V0-V5 statuses and, when present, the acceptance engine's decision.json.
+    """
+    base = BASE_DIR / "interfaces" / "route-a"
+    bundle = json.loads((base / "result-bundle-DRYRUN.json").read_text(encoding="utf-8"))
+    status = json.loads((base / "status-DRYRUN.json").read_text(encoding="utf-8"))
+    decision_path = base / "decision.json"
+    decision = json.loads(decision_path.read_text(encoding="utf-8")) if decision_path.exists() else None
+    return templates.TemplateResponse(
+        request,
+        "dryrun.html",
+        {"demo": False, "backend_note": "host dry-run fixtures", "bundle": bundle, "status": status, "decision": decision},
+    )
+
+
 @app.get("/jobs/{job_id}/evidence", response_class=HTMLResponse)
 async def evidence_page(request: Request, job_id: str):
     """③ Evidence / Export 屏：义务(V0-V5)、范围、哈希、导出（F4/F5）。"""
