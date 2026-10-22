@@ -119,7 +119,7 @@ assert stored.sha256() == row["sha256"]   # 防止手改 body 后 hash 未更新
 ## 5. 验证命令
 
 ```bash
-pytest -q                                  # 全仓；当前 103 passed
+pytest -q                                  # 全仓；当前 149 passed, 2 skipped
 pytest -q tests/test_ai_boundary_contract.py tests/test_provider_failures.py
 pytest -q tests/test_contracts.py tests/test_db_schema.py
 python schemas/generate.py --check

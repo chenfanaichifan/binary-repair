@@ -13,6 +13,11 @@
 >
 > **集成位置：** 根目录是唯一入口，模块边界与调用链见
 > [04-root-integration.md](04-root-integration.md)。
+>
+> **Gate 4：** Route B unchanged round trip **PASS**，见
+> [09-gate4-evidence.md](09-gate4-evidence.md)。Route A 字节级计划见
+> [07-route-a-trampoline-plan.md](07-route-a-trampoline-plan.md)；候选质量见
+> [08-candidate-quality.md](08-candidate-quality.md)。
 > Gate 6 的 concrete 证据见 [06-gate6-evidence.md](06-gate6-evidence.md)。
 
 ## 0. 先把边界说清楚
