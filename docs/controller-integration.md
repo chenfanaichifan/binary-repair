@@ -49,6 +49,31 @@ Snapshot requirements:
 - All data strings are English ASCII; the GUI scans snapshot/obligations/artifacts
   and rejects non-ASCII payloads with `502` instead of rendering them.
 
+## Bridge service (current real controller)
+
+Until Member 1 exposes the final controller API, this repo ships a bridge that
+serves the same HTTP contract from the **real Member 1 job store**:
+
+```powershell
+$env:BINARYREPAIR_CONTROLLER_DATA = "var/controller"
+.\.venv\Scripts\python.exe -m uvicorn tools.controller_service:app --host 127.0.0.1 --port 8000
+```
+
+It persists jobs with `app/services/jobs.py` (SQLite + `original.bin`), reports
+`demo: false`, and stores contract revision/approval in a per-job `meta.json`
+bound to the revision hash. Run execution is not implemented yet, so `start`
+returns `409` with an explicit message; obligations/artifacts are empty and the
+code-view endpoint reports `available: false`. These are honest "not run" states,
+not fabricated successes.
+
+Switching the GUI (no page changes required):
+
+```powershell
+$env:BINARYREPAIR_BACKEND = "http"
+$env:BINARYREPAIR_API_BASE = "http://127.0.0.1:8000"
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+```
+
 ## P0 acceptance checklist
 
 1. `POST /jobs` with a real sample creates a job in the controller store
@@ -60,11 +85,12 @@ Snapshot requirements:
    revision/hash also returns `409` (never a silent overwrite).
 5. `cancel` is visible as `已取消`, not as success.
 
-Current status: `local` mode already passes 1, 2, 4, 5 against Member 1's real
-store. `http` mode is adapter-complete and covered by contract tests, but Member 1
-has not exposed the HTTP API yet, so the demo server currently points at
-`tools/stub_backend.py` (`demo: true`). Wire `BINARYREPAIR_API_BASE` to the real
-service to complete P0.
+Current status: the bridge service above satisfies P0 end-to-end for job creation,
+persistence, polling and approval (`demo: false`, no demo banner, stale
+revision/hash -> 409). It is covered by `tests/test_controller_service.py` and the
+`test_http_mode_uses_the_real_controller` browser test. Execution remains
+explicitly unimplemented (`start` -> 409) until the repair workers are connected;
+replace the bridge with the final controller service when Member 1 publishes it.
 
 ## P1 honesty rules enforced in tests
 
