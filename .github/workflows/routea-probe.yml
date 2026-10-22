@@ -30,6 +30,7 @@ jobs:
             --out routea/out/cave-probe.elf \
             --manifest routea/out/edit-manifest.json \
             --scope-authorized
+          chmod +x routea/out/cave-probe.elf
       - name: Independent readelf audit
         run: |
           {

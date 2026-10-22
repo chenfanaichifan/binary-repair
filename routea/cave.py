@@ -266,6 +266,7 @@ def build_cave_patched(
                        (plan.message_addr, plan.message)):
         _write_at(original, data, addr, blob)
     out.write_bytes(bytes(data))
+    out.chmod(0o755)
     audit = audit_cave_layout(original, out, plan)
     return EditManifest(
         original_sha256=_sha(original),
