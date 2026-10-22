@@ -16,17 +16,18 @@ Installed and smoke-tested in the guest:
 | OpenJDK | 21.0.12.1 |
 | LIEF | 1.0.0 |
 | angr | 10.0.4.post1 (bundles claripy as `angr.rustylib.claripy`) |
-| z3 | 5.1.0 (venv) / 5.3.1 (system python) |
+| z3 | z3-solver 5.1.0.0 — the **only** z3 in the guest; the system-python 5.3.1 copy was removed on purpose |
 | unicorn | 2.1.4 |
 | Patcherex2 | 0.2.14 (purseclab/Patcherex2) |
 | keystone-engine | 0.9.2 |
 | capstone | 5.0.9 |
 | intelhex | 2.3.0 |
 | pypcode | 4.0.1 |
+| requests | 2.34.2 (+ urllib3, certifi, idna, charset-normalizer) |
 | pyelftools (venv) | 0.33 |
-| z3-solver (venv) | 5.1.0.0 |
 
-Patcherex2 and its declared runtime set live in `/opt/angr-venv` (54 packages).
+Patcherex2 and its declared runtime set live in `/opt/angr-venv` (55 packages;
+full lock is `pip freeze` from that venv).
 
 **Interpreter split — the broker must pin one interpreter per operation.** The
 V4/Patcherex2 stack is in `/opt/angr-venv`; `pwntools 4.15.0` is installed only

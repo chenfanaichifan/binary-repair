@@ -38,7 +38,7 @@ inspected, and (later) executed, without touching the host.
 | vCPU / RAM | 4 / 7.8 GiB visible |
 | Disk | 30 GiB virtual disk; 29 GiB root filesystem, 26 GiB free |
 | Hostname | `binrepair-vm` |
-| Tools | gcc 13.3.0, binutils 2.42, gdb 15.1, python3 3.12.3; V4 set added 2026-10-22 in `/opt/angr-venv` (clang/lld 18.1.3, Ghidra 12.1.4, JDK 21.0.12.1, LIEF 1.0.0, angr 10.0.4.post1, z3 5.1.0, unicorn 2.1.4, Patcherex2 0.2.14, keystone-engine 0.9.2, pypcode 4.0.1) |
+| Tools | gcc 13.3.0, binutils 2.42, gdb 15.1, python3 3.12.3; V4 set added 2026-10-22 in `/opt/angr-venv` (55 packages: clang/lld 18.1.3, Ghidra 12.1.4, JDK 21.0.12.1, LIEF 1.0.0, angr 10.0.4.post1, z3-solver 5.1.0.0 — the only z3, unicorn 2.1.4, Patcherex2 0.2.14, keystone-engine 0.9.2, pypcode 4.0.1, requests 2.34.2) |
 
 Full values, commands and the host-side measurements:
 `docs_BinaryRepair/environment-baseline.md`.

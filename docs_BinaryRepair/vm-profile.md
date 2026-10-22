@@ -154,7 +154,7 @@ Present and versioned:
 | gdb | 15.1-1ubuntu1~24.04.1 | used for crash capture |
 | make | 4.3-4.1build2 | present |
 | python3 | 3.12.3-0ubuntu2.1 | used; system interpreter (99 packages) |
-| `/opt/angr-venv` | Python venv, 54 packages | V4/Patcherex2 stack |
+| `/opt/angr-venv` | Python venv, 55 packages | V4/Patcherex2 stack |
 | checksec | present | version not captured in this run |
 | capstone | **5.0.9** in the venv; system package 5.0.9 but module reports **5.0.7** | import smoke test only |
 | pyelftools | 0.33 (also in venv) | import smoke test only |
@@ -163,7 +163,8 @@ Present and versioned:
 | keystone-engine | 0.9.2 | in venv, declared runtime of Patcherex2 |
 | intelhex | 2.3.0 | in venv, declared runtime of Patcherex2 |
 | pypcode | 4.0.1 | in venv, declared runtime of Patcherex2 |
-| z3-solver | 5.1.0.0 (venv) / z3 5.3.1 (system python) | in venv |
+| z3-solver | 5.1.0.0 — the **only** z3 in the guest; the system-python 5.3.1 copy was removed on purpose | in venv |
+| requests | 2.34.2 (+ urllib3, certifi, idna, charset-normalizer) | in venv |
 | libc6 / libc6-dev | 2.39-0ubuntu8.9 | build dependency |
 
 **Two interpreters, and they are not interchangeable.** The V4/Patcherex2 stack
@@ -187,7 +188,8 @@ Absent (measured with `command -v` / import on 2026-10-20):
 smoke tests recorded in
 [`state-change-2026-10-22.md`](state-change-2026-10-22.md) §1 show the missing
 tools now installed: clang/lld 18.1.3, Ghidra 12.1.4, OpenJDK 21.0.12.1, LIEF
-1.0.0, angr 10.0.4.post1, z3 5.1.0/5.3.1, unicorn 2.1.4, Patcherex2 0.2.14. The
+1.0.0, angr 10.0.4.post1, z3-solver 5.1.0.0 (the only z3 in the guest), unicorn
+2.1.4, Patcherex2 0.2.14. The
 absence list above is kept as the measured state on 2026-10-20, not as current
 state.
 

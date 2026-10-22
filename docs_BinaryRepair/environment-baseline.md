@@ -43,8 +43,8 @@ Notes:
 | Compiler | gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0 |
 | binutils / ld | 2.42 |
 | GDB | 15.1 |
-| Python | system `python3` 3.12.3 (99 packages) and `/opt/angr-venv` (54 packages) |
-| V4 / Patcherex2 stack | Patcherex2 0.2.14, keystone-engine 0.9.2, capstone 5.0.9, intelhex 2.3.0, pypcode 4.0.1, LIEF 1.0.0, angr 10.0.4.post1, z3-solver 5.1.0.0 — all in `/opt/angr-venv` |
+| Python | system `python3` 3.12.3 (99 packages) and `/opt/angr-venv` (55 packages) |
+| V4 / Patcherex2 stack | Patcherex2 0.2.14, keystone-engine 0.9.2, capstone 5.0.9, intelhex 2.3.0, pypcode 4.0.1, requests 2.34.2, LIEF 1.0.0, angr 10.0.4.post1, z3-solver 5.1.0.0 (the only z3 in the guest), all in `/opt/angr-venv` |
 | Toolchain caveat | `pwntools 4.15.0` is installed only in the system python3 and is not importable from the venv; each operation must pin its interpreter |
 
 Full tool inventory and dependency lock: `docs_BinaryRepair/vm-profile.md`.
