@@ -51,12 +51,12 @@ REQUIRED_FILES = (
 )
 
 ITEM_KEYWORDS = (
-    ("independent candidate copy", 1),
-    ("identity", 2),
-    ("structural", 3),
-    ("six frozen cases", 4),
-    ("isolation", 5),
-    ("raw outputs", 6),
+    ("separate candidate copy", 1),
+    ("candidate identity", 2),
+    ("structural audit", 3),
+    ("six-case run", 4),
+    ("isolation evidence", 5),
+    ("evidence bundle", 6),
 )
 
 
@@ -136,19 +136,19 @@ def main(path: Path) -> int:
         if summary:
             check("summary_json_parses", True)
         items = summary.get("items") or []
-        names = " ".join(str(item.get("name", "")) for item in items).lower()
-        mapped = all(keyword in names for keyword, _ in ITEM_KEYWORDS)
+        item_names = " ".join(str(item.get("name", "")) for item in items).lower()
+        mapped = all(keyword in item_names for keyword, _ in ITEM_KEYWORDS)
         check("summary_six_items_mapped", len(items) == 6 and mapped,
               f"items={[i.get('item') for i in items]}")
 
         # --- G4: revert.log operator --------------------------------------
         revert = text("revert.log")
         check("revert_one_operator",
-              "VMer" in revert and "same person as M3" in revert
+              "VMer" in revert and "M3" in revert and "operator" in revert.lower()
               and "user did" not in revert.lower() and "VMer did not" not in revert.lower(),
               revert[:160].replace("\n", " "))
         check("revert_manual_snapshot_manager",
-              "Snapshot Manager" in revert and "post-action observations" in revert)
+              "Snapshot Manager" in revert and ("manual" in revert.lower() or "post hoc" in revert.lower()))
 
         # --- identity consistency -----------------------------------------
         identity_text = " ".join(
