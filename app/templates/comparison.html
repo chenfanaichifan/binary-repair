@@ -48,6 +48,22 @@
   <span class="status-item muted">每 2 秒自动刷新 · 未执行 = not_run · <span id="poll-status">轮询中…</span></span>
 </div>
 
+{% if job.run or (job.verdict and job.verdict.outcome) %}
+<div class="run-strip" data-testid="run-strip">
+  {% if job.run %}
+  <span class="run-item">run <code>{{ job.run.id }}</code> · 阶段 <span id="run-phase">{{ phase_labels_zh.get(job.run.phase, job.run.phase) }}</span></span>
+  {% endif %}
+  <span class="run-item">
+    Verdict：
+    {% if job.verdict and job.verdict.outcome %}
+    <span class="badge outcome-{{ job.verdict.outcome | replace('_', '-') }}" data-testid="run-verdict">{{ outcome_labels_zh.get(job.verdict.outcome, job.verdict.outcome) }}</span>
+    {% if job.verdict.failing_obligation %}<span class="muted" data-testid="run-failing">失败义务 {{ job.verdict.failing_obligation }}</span>{% endif %}
+    {% if job.verdict.detail %}<span class="muted">{{ job.verdict.detail }}</span>{% endif %}
+    {% else %}<span class="muted" data-testid="run-verdict">尚无 verdict</span>{% endif %}
+  </span>
+</div>
+{% endif %}
+
 <div class="contract-strip">
   <details>
     <summary>
@@ -188,6 +204,26 @@
     </header>
 
     <p class="route-phase">阶段：<span id="phase-{{ key }}">{{ phase_labels_zh.get(route.phase, route.phase) }}</span></p>
+
+    <p class="verdict is-empty" id="verdict-{{ key }}" data-testid="route-verdict-{{ key }}">
+      {% if route.verdict and route.verdict.outcome %}
+      Verdict：{{ outcome_labels_zh.get(route.verdict.outcome, route.verdict.outcome) }}
+      {% if route.verdict.reason %} · {{ route.verdict.reason }}{% endif %}
+      {% if route.verdict.failing_obligation %} · 失败义务 {{ route.verdict.failing_obligation }}{% endif %}
+      {% if route.verdict.detail %} · {{ route.verdict.detail }}{% endif %}
+      {% else %}Verdict：—{% endif %}
+    </p>
+
+    <div class="obligation-strip" id="obligations-{{ key }}" data-testid="route-obligations-{{ key }}">
+      {% if route.obligations %}
+      <span class="obligation-title">V0–V5 义务</span>
+      <ul class="obligation-list">
+        {% for item in route.obligations %}
+        <li><span class="result result-{{ item.result }}">{{ item.result }}</span> <code>{{ item.id }}</code> {{ item.kind }}{% if item.reason %} · {{ item.reason }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
 
     <ol class="stages" id="stages-{{ key }}">
       {% for stage in route.stages %}

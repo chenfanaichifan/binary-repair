@@ -90,6 +90,49 @@
       reason.textContent = route.outcome_reason ? "结论原因：" + route.outcome_reason : "";
     }
 
+    var verdict = $("verdict-" + key);
+    if (verdict) {
+      var value = route.verdict || null;
+      if (value && value.outcome) {
+        var text = "Verdict：" + (OUTCOME_LABELS[value.outcome] || value.outcome);
+        if (value.reason) text += " · " + value.reason;
+        if (value.failing_obligation) text += " · 失败义务 " + value.failing_obligation;
+        if (value.detail) text += " · " + value.detail;
+        verdict.textContent = text;
+        verdict.classList.remove("is-empty");
+      } else {
+        verdict.textContent = "Verdict：—";
+      }
+    }
+
+    var obligations = $("obligations-" + key);
+    if (obligations && route.obligations) {
+      obligations.textContent = "";
+      if (route.obligations.length) {
+        var title = document.createElement("span");
+        title.className = "obligation-title";
+        title.textContent = "V0–V5 义务";
+        obligations.appendChild(title);
+        var list = document.createElement("ul");
+        list.className = "obligation-list";
+        route.obligations.forEach(function (item) {
+          var li = document.createElement("li");
+          var result = document.createElement("span");
+          result.className = "result result-" + item.result;
+          result.textContent = item.result;
+          var code = document.createElement("code");
+          code.textContent = item.id;
+          li.appendChild(result);
+          li.appendChild(document.createTextNode(" "));
+          li.appendChild(code);
+          li.appendChild(document.createTextNode(" " + (item.kind || "")));
+          if (item.reason) li.appendChild(document.createTextNode(" · " + item.reason));
+          list.appendChild(li);
+        });
+        obligations.appendChild(list);
+      }
+    }
+
     var tbody = $("regions-" + key);
     if (tbody && route.changed_regions && route.changed_regions.length) {
       tbody.textContent = "";

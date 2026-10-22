@@ -19,6 +19,8 @@
   哈希只证明身份，不证明正确性。符号验证是"有界"验证，不是整体程序安全证明。
   证据内容为英文（符合语言规范），界面文案为中文。
   <br>数据来源：{{ backend_note }}
+  {% if job.run %}· run <code>{{ job.run.id }}</code> · {{ job.run.phase }}{% endif %}
+  {% if job.verdict and job.verdict.outcome %}· verdict {{ job.verdict.outcome }}{% if job.verdict.failing_obligation %}（失败义务 {{ job.verdict.failing_obligation }}）{% endif %}{% endif %}
 </p>
 
 {% for key, route in job.routes.items() %}
@@ -35,6 +37,14 @@
   {% endif %}
   {% if route.outcome_reason %}
   <p class="reason">结论原因：{{ route.outcome_reason }}</p>
+  {% endif %}
+  {% if route.verdict and route.verdict.outcome %}
+  <p class="verdict" data-testid="evidence-verdict-{{ key }}">
+    Verdict：{{ outcome_labels_zh.get(route.verdict.outcome, route.verdict.outcome) }}
+    {% if route.verdict.reason %} · reason: {{ route.verdict.reason }}{% endif %}
+    {% if route.verdict.failing_obligation %} · 失败义务: {{ route.verdict.failing_obligation }}{% endif %}
+    {% if route.verdict.detail %} · {{ route.verdict.detail }}{% endif %}
+  </p>
   {% endif %}
 
   <h3>验证义务（V0–V5）</h3>

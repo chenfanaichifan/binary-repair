@@ -156,17 +156,22 @@ def main() -> int:
             )
             return 2
 
-        obligations = controller.get(f"/api/jobs/{job_id}/obligations")
-        if obligations.status_code != 200:
-            print(f"FAIL  obligations HTTP {obligations.status_code}")
-            return 1
-        data = obligations.json()
-        results = [item.get("result") for route in ("A", "B") for item in data.get(route, [])]
+        obligations = [
+            item
+            for route in (snapshot.get("routes") or {}).values()
+            for item in (route.get("obligations") or [])
+        ]
+        results = [item.get("result") for item in obligations]
         if not results:
-            print("FAIL  obligations are empty after finished")
+            print("FAIL  snapshot has no obligations after finished")
             return 1
         if all(result == "not_run" for result in results):
             print("FAIL  finished job still has only not_run obligations (verdict not persisted)")
+            return 1
+
+        verdict = snapshot.get("verdict") or {}
+        if verdict.get("outcome") not in VALID_OUTCOMES:
+            print(f"FAIL  run verdict missing/invalid: {verdict}")
             return 1
 
         outcomes = [route.get("outcome") for route in snapshot.get("routes", {}).values()]
@@ -179,7 +184,7 @@ def main() -> int:
             print("FAIL  demo banner still visible for a real controller job")
             return 1
 
-        print(f"P2 ACCEPTANCE PASSED  phase={last_phase} outcomes={outcomes}")
+        print(f"P2 ACCEPTANCE PASSED  phase={last_phase} verdict={verdict.get('outcome')} outcomes={outcomes}")
         print(f"job={job_id}")
         return 0
 

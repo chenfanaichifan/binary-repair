@@ -435,13 +435,21 @@ async def cancel_run(request: Request, job_id: str, csrf: str = Form("")):
 async def evidence_page(request: Request, job_id: str):
     """③ Evidence / Export 屏：义务(V0-V5)、范围、哈希、导出（F4/F5）。"""
     snapshot = BACKEND.get_snapshot(job_id)
+    obligations: dict[str, list[dict]] = {}
+    for key, route in (snapshot.get("routes") or {}).items():
+        group = route.get("obligations")
+        if group:
+            obligations[key] = group
+    if len(obligations) < len(snapshot.get("routes") or {}):
+        for key, group in BACKEND.get_obligations(job_id).items():
+            obligations.setdefault(key, group)
     return templates.TemplateResponse(
         request,
         "evidence.html",
         {
             "demo": bool(snapshot.get("demo")),
             "job": snapshot,
-            "obligations": BACKEND.get_obligations(job_id),
+            "obligations": obligations,
             "artifacts": BACKEND.get_artifacts(job_id),
             "backend_note": backend_description(BACKEND),
         },

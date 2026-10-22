@@ -95,28 +95,28 @@ Required snapshot/contract shape is documented in
 `docs/controller-integration.md`. All payload strings must stay English ASCII;
 the GUI rejects non-ASCII controller payloads with `502`.
 
-## Member 1 status (2026-10-22, worker commit)
+## Member 1 status (2026-10-22, controller-worker tag)
 
-- Controller + worker live at `origin/main` commit `ad1a1f8`; the published tag
-  `controller-api-2026-10-22` (`1826505`) predates the worker, so
-  `start-controller.ps1` pins `ad1a1f8` until Member 1 tags the worker commit.
-- Worker command: `python -m app.services.worker --data-dir <abs> --once`.
-  Verified: it consumes queued runs, moves phases to `screening`/`analyzing`,
-  and **does not execute binaries**. It needs one result bundle per attempt at
-  `<data>/jobs/<job>/runs/<run>/attempts/<attempt>.json` (schema in the worker
-  docstring) or an executor command in `BINARYREPAIR_ATTEMPT_CMD`.
-- Without a bundle it prints `has no result bundle yet` and the run stays at
-  `screening`; no verdict is invented.
-- With bundles it persists V0–V5 obligations and calls
-  `orchestration.evaluate_attempt` / `evaluate_run`.
-- `app/controller_api.py` is unchanged in `ad1a1f8`: snapshot routes remain
-  placeholders and `/obligations` is still static, so the API cannot surface a
-  consumed bundle's verdict yet (controller TODO).
+- Controller + worker + obligations + snapshot verdicts are pinned to tag
+  `controller-worker-2026-10-22` (commit `b3c002f`);
+  `start-controller.ps1` checks out this tag.
+- Worker command: `python -m app.services.worker --data-dir <abs> --poll 2`
+  (one-shot with `--once`). Verified: it consumes queued runs, moves phases to
+  `screening`/`analyzing`, and **does not execute binaries**. It needs one
+  result bundle per attempt at
+  `<data>/jobs/<job>/runs/<run>/attempts/<attempt>.json` (or an executor in
+  `BINARYREPAIR_ATTEMPT_CMD`).
+- `GET /api/jobs/{id}` now returns `verdict` (run outcome/reason/failing
+  obligation/detail), `run` (id/phase/manifest/reviewed scope), and per-route
+  `outcome/verdict/obligations/stages`. The GUI renders these fields; the
+  `/obligations` endpoint itself is still static, so the GUI prefers the
+  snapshot.
+- Without a bundle the run stays at `screening`; no verdict is invented.
 - Same idempotency key with a different contract must return `409`; canonical
   check still pending.
 
-`tools/p2_acceptance.py` now supports a one-shot worker:
-`--worker-command "<python> -m app.services.worker --data-dir <abs> --once"`.
+`tools/p2_acceptance.py` now checks snapshot obligations and the run verdict;
+it supports `--worker-command "<python> -m app.services.worker --data-dir <abs> --once"`.
 Live result: `BLOCKED phase='screening'` (no result bundle), exit 2.
 
 ## Blockers and owners

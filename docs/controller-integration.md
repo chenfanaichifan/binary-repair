@@ -65,50 +65,50 @@ Snapshot requirements:
 - All data strings are English ASCII; the GUI scans snapshot/obligations/artifacts
   and rejects non-ASCII payloads with `502` instead of rendering them.
 
-## Final controller (Member 1, worker commit)
+## Final controller (Member 1, controller-worker tag)
 
-Member 1's controller + run worker live at `origin/main` commit `ad1a1f8`
-(`feat(worker): consume queued runs and persist verdicts and obligations`).
-The tag `controller-api-2026-10-22` (`1826505`) predates the worker, so the
-launcher currently pins `ad1a1f8`; ask Member 1 for an updated tag that includes
-the worker.
-
-```powershell
-.\start-controller.ps1   # worktree at ad1a1f8, serves app.controller_api on :8000
-```
-
-Run the worker once (from the controller worktree):
+Member 1 pins controller + worker + obligations + snapshot verdicts to tag
+`controller-worker-2026-10-22` (commit `b3c002f`). The earlier
+`controller-api-2026-10-22` tag predates the worker, so the launcher now pins the
+new tag:
 
 ```powershell
-python -m app.services.worker --data-dir <project>\var\controller --once
+.\start-controller.ps1   # worktree at controller-worker-2026-10-22, API on :8000
 ```
 
-Worker behaviour (verified live):
+Run the worker (independent process, one command):
 
-- consumes queued runs and moves phases to `screening` / `analyzing`;
-- does **not** execute binaries itself: it needs one result bundle per attempt at
-  `<data-dir>/jobs/<job>/runs/<run>/attempts/<attempt>.json` (schema in the
-  worker docstring) or an external executor command in
-  `BINARYREPAIR_ATTEMPT_CMD`;
-- without a bundle it prints `has no result bundle yet` and waits — the run stays
-  at `screening` (no fake verdict);
-- with bundles it persists V0–V5 obligations and calls
-  `orchestration.evaluate_attempt` / `evaluate_run`.
+```powershell
+python -m app.services.worker --data-dir <project>\var\controller --poll 2
+```
 
-Remaining gaps confirmed live:
+At this tag `GET /api/jobs/{id}` returns: `verdict` (run outcome/reason/failing
+obligation/detail), `run` (id/phase/manifest/reviewed scope), and
+`routes.A/B` with `phase/outcome/outcome_reason/verdict/obligations/stages`.
+The `/obligations` endpoint itself still returns static placeholders; the GUI
+therefore prefers the per-route `obligations` embedded in the snapshot.
 
-- No result-bundle producer / executor yet (Route A worker and `jobwrap routea`
-  are still to be implemented by M3 + VMer); this is what blocks `finished`.
-- `app/controller_api.py` did not change in `ad1a1f8`: its snapshot routes are
-  still placeholders and `/obligations` still returns static placeholders, so
-  even after a bundle is consumed the API needs to read attempts/obligations
-  (controller TODO, Member 1).
-- Same idempotency key with a different contract should return `409`; the
-  canonical check is still to be added.
+Worker behaviour: it does not execute binaries; it needs one result bundle per
+attempt at `<data>/jobs/<job>/runs/<run>/attempts/<attempt>.json` (or an
+executor in `BINARYREPAIR_ATTEMPT_CMD`). With bundles it persists V0–V5
+obligations and calls `orchestration.evaluate_attempt/evaluate_run`, which write
+`outcome/reason/failing_obligation/detail` plus `verdict.json` /
+`run-verdict.json`. Without a bundle the run stays at `screening`; no verdict is
+invented.
+
+Still needed for a real finished run:
+
+- Route A executor / `jobwrap routea` (M3 + VMer) producing the result bundle.
+- Route B/provider executor bundle adapter (M5's `routeb/executor.py` produces a
+  static bundle directory; it still has to be mapped to the per-attempt result
+  JSON consumed by the worker).
+- Same idempotency key with a different contract should return `409`; canonical
+  check still pending.
 
 `tools/p2_acceptance.py --worker-command "<python> -m app.services.worker --data-dir <abs> --once"`
-runs the worker once after start; today it exits `2 BLOCKED` with
-`phase='screening'` because no result bundle exists.
+runs the worker once after start and then checks `finished`, snapshot
+obligations, and the run verdict. Today it exits `2 BLOCKED` (no result bundle),
+which is the honest state.
 - Verdict write-back is library-only today (`orchestration.evaluate_attempt` /
   `evaluate_run` write `outcome/reason/failing_obligation/detail` and
   `verdict.json` / `run-verdict.json`), but the controller API is not wired and
