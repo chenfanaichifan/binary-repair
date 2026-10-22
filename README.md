@@ -8,11 +8,12 @@ bytes; one shared acceptance engine decides whether the final executable is
 `success_within_scope`. A model's claim is never evidence: only checks on the final
 bytes count.
 
-> **Status: integration complete; Route B round trip PASS on a disposable GitHub runner; formal Gate 4 NOT RUN pending the member3 offline VM; repair not yet demonstrated.**
+> **Status: integration in progress; fixture NOT FROZEN; contract revision pending.**
 > The controller, GUI, acceptance engine, AI boundary, SQLite schema (v1 baseline +
-> 002/003), and the public CWE-121 candidate fixture are in `main`. Gate 4 (unchanged
-> Route B round trip) is **PASS** on a disposable Ubuntu runner (6/6 behaviour-identical;
-> `docs/route-b/09-gate4-evidence.md`). Gate 3 (Route A) is **NEEDS SCOPE RULING**.
+> 002/003), and the public CWE-121 candidate fixture are in `main`.
+> **Gate 3 (Route A): IN PROGRESS — CONDITIONALLY FEASIBLE (owner M4).**
+> **Gate 4 (Route B formal): NOT RUN (guest access + M5 routeb).** The GitHub Actions
+> 6/6 is supplementary evidence only, not a formal Gate 4 run.
 > No binary has been repaired and verified end to end. Do not present demo data as
 > repair evidence.
 
@@ -28,17 +29,18 @@ bytes count.
 | AI candidate boundary + DeepSeek provider | `app/domain/candidates.py`, `app/services/provider.py`, `binaryrepair_ai/`, `schemas/` | typed failures, fake transport |
 | SQLite v1 baseline + 002/003 | `app/db/schema.sql`, `app/db/migrations/` | jobs+artifacts baseline; AI tables; verdict columns |
 | Route B kit | `routeb/`, `docs/route-b/` | feasibility scripts and notes |
-| Public candidate fixture | `fixtures/public/CWE121_src_char_declare_cpy_51b/` | NOT FROZEN; gates 3–5 pending |
+| Public candidate fixture | `fixtures/public/CWE121_src_char_declare_cpy_51b/` | NOT FROZEN; gates 3–5 in progress |
 
 ### Not yet done
 
-- Route A segment/trampoline backend. Gate 3 stays **UNSUPPORTED** until the
-  LIEF/Patcherex2 layout audit exists; after that it is **CONDITIONALLY FEASIBLE**.
-- Gate 4 round trip. **Supplementary PASS** (unchanged round trip, 6/6) on GitHub
-  Actions Ubuntu 24.04 with JDK21, Ghidra 12.2 and Patcherex2 0.2.14; evidence in
-  `docs/route-b/09-gate4-evidence.md`. **Formal Gate 4 is NOT RUN**: it requires the
-  member3-provided disposable VM/snapshot with network disabled. This does not
-  validate an edited candidate.
+- Gate 3 (Route A): **IN PROGRESS — CONDITIONALLY FEASIBLE (owner M4)**. The
+  evidence branch must not merge before Lead approval; no pass claim yet.
+- Gate 4 (Route B formal): **NOT RUN (guest access + M5 routeb)**. The
+  supplementary GitHub Actions run (6/6 unchanged round trip) is recorded in
+  `docs/route-b/09-gate4-evidence.md`; it is not the formal run.
+- Contract revision: pending review; free-text fields are persisted in
+  `contracts.body_json` with no schema change, and approval binds the new
+  `reviewed_scope_sha256`.
 - Real repair execution. The controller queues runs and stores evidence; it does
   not execute uploaded binaries on the host.
 - VM broker, symbolic (V4), and final V5 reproducibility evidence.
@@ -104,6 +106,17 @@ Expected on a clean checkout: all non-runtime tests pass; V3 runtime tests skip
 unless `BINARYREPAIR_CANDIDATE_ELF` (or the original ELF) is available. A skip is
 not a pass. The fixture manifests are hashed as raw bytes; `.gitattributes` pins
 them to LF/exact bytes so checkout line endings cannot change the reviewed hash.
+
+### Historical issues now closed or recorded
+
+- **DB v2 `contracts.body_json`**: v2 stores canonical SecurityContract text in
+  `body_json`; the old 001 schema is retired. Free-text contract fields need no
+  schema change; a new revision changes `contracts.sha256` /
+  `reviewed_scope_sha256`.
+- **V3 manifest line endings**: the fixture JSON is pinned as exact bytes; a fresh
+  checkout keeps `valid.json` `17b2ee39…`, `invalid.json` `d493f370…`, manifest-set
+  `a564f039…`. Older Windows checkouts that produced `7f984a…` are recorded as a
+  line-ending artifact, not an oracle change.
 
 ## Documentation
 

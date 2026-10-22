@@ -124,7 +124,7 @@ def test_canonical_runs_creates_attempts_and_evidence(client: TestClient) -> Non
         "schema_version": 2,
         "target_entry": "badSink",
         "target_signature": "void badSink(char *data)",
-        "valid_domain": "C strings of length 0..49",
+        "valid_domain": "C strings of length 0..49; free-text revision note: reviewer clarified NUL handling",
         "valid_behavior": "copy and print input",
         "forbidden_behavior": "write past dest[50]",
         "invalid_input_response": "exit 1 with exact stderr",
@@ -145,23 +145,26 @@ def test_canonical_runs_creates_attempts_and_evidence(client: TestClient) -> Non
         f"/api/jobs/{job_id}/approve",
         json={
             "contract": contract,
-            "contract_revision": 1,
+            "contract_revision": 2,
             "manifest_sha256": "1" * 64,
             "reviewer_label": "test",
         },
     )
     assert approved.status_code == 200, approved.text
+    assert approved.json()["revision"] == 2
+    reviewed_scope = approved.json()["sha256"]
 
     started = client.post(
         f"/api/jobs/{job_id}/runs",
         json={
-            "contract_revision": 1,
+            "contract_revision": 2,
             "manifest_sha256": "1" * 64,
             "idempotency_key": "e2e-1",
         },
     )
     assert started.status_code == 202, started.text
     run = started.json()
+    assert run["reviewed_scope_sha256"] == reviewed_scope
     assert {item["route"] for item in run["attempts"]} == {"route_a", "route_b"}
 
     attempt = run["attempts"][0]
