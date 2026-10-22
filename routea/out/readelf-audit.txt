@@ -1,8 +1,8 @@
-Linux runnervm8k3b6 6.17.0-1022-azure #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+Linux runnervmxehtw 7.0.0-1017-azure #17~24.04.1-Ubuntu SMP PREEMPT Thu Sep 24 18:46:57 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
 Python 3.12.15
 GNU readelf (GNU Binutils for Ubuntu) 2.42
 aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393  fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf
-f3cb9cbb503fb0d47ebebab7053fa2ed37b7876ffe5122157d31fefc783f9fa7  routea/out/cave-probe.elf
+c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82  routea/out/cave-probe.elf
 
 Elf file type is EXEC (Executable file)
 Entry point 0x401170
