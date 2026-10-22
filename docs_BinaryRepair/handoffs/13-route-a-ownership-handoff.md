@@ -270,7 +270,9 @@ No change requested now; flagged so the guest rebuild uses a segment-exact mappi
    candidate. Raw evidence stays under `var/jobs/` and the committed record cites hashes.
 3. **Independent replay:** M5 replays the build + hash commands from the record on a clean
    checkout/guest session and reports the observed hashes. A replay that does not match is
-   `NOT VERIFIED`, not a cosmetic difference.
+   `NOT VERIFIED`, not a cosmetic difference. Per handoff 19, only the **full rerun** of the six
+   cases is waived; the build/hash replay (candidate `c4a159…`, contract `24bfe568…`, bundle
+   `SHA256SUMS`/bundle hash) is required.
 4. **Lead approves** the final gate-3 record and the contract revision. Gate 3 may only be
    labelled `passed` after 1-3; `FAIL` and `NOT VERIFIED` are reported as such.
 5. **No self-approval:** the owner of the evidence (M4) does not approve it; M5 reviews, the

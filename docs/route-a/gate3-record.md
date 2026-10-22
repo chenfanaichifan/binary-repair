@@ -10,9 +10,13 @@ SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`
 **Basis:** handoff 11 §3 (six required items), handoff 12 (M4 plan), handoff 16/17/18/19
 (M5 canonical contract, six-item matrix, build recipe, routea review), verification-design §4.4
 
-**Approval status:** Lead approved the review process on 2026-10-22 and waived the M5 replay
-step. This approves the **process**, not a gate-3 pass: items 4–5 remain `not_run`.
-**Overall status:** **CONDITIONALLY FEASIBLE — runtime items `not_run`.** Gate 3 is **not signed**.
+**Approval status:** **DRAFT — NOT SIGNED.** The Lead approved the review process; the
+signature fields stay blank until items 3–6 are `PASS`. Replay ruling (handoff 19): the Lead
+waives **only the full independent rerun** of the six cases by M5; M5's **build/hash replay is
+still required** (`c4a159…` reproduced, contract `24bfe568…`, bundle `SHA256SUMS`/bundle hash
+recomputed and reported).
+**Overall status:** **CONDITIONALLY FEASIBLE — items 3–6 `NOT VERIFIED`.** Gate 3 is **not
+signed**; a CI `6/6` or a static audit is not a pass.
 
 ---
 
@@ -65,15 +69,16 @@ COPY-relocation writer based on the earlier `f3cb9cbb...` candidate. The contrac
 
 | # | Item | Status | Evidence / reason |
 |---|---|---|---|
-| 1 | Separate candidate copy; original untouched | **PASS (static)** | original hash still the frozen value; candidate is a separate file |
-| 2 | Candidate identity and reproducibility | **PASS** | candidate hash matches; schema-2 manifest complete (displaced/add/added/intervals/header/writer/termination/tool_versions); build recipe `18-build-recipe.md` with `regen_c4a159.py` (stdlib-only, fail-closed) |
-| 3 | Structural audit (cave R-X runtime probe, `p_filesz`/`p_memsz`, redirect) | **PARTIAL** | static structure re-measured PASS (this record §2–3); **runtime R-X map probe not executed**; LIEF/NX/RELRO/canary/dynamic-import view missing (M5 matrix item 3) |
-| 4 | Six-case run (4 valid + 2 invalid = 6/6 byte-exact) | **PARTIAL — GitHub CI 6/6 only** | CI result is supplementary; the required run is from a reverted snapshot on the isolation-ready guest, **not executed** |
-| 5 | Isolation evidence for that run (snapshot, egress block, uid 1003) | **MISSING** | no formal isolation evidence yet |
-| 6 | Evidence bundle (raw outputs + hashes) | **PARTIAL** | this record + `docs/route-a/SHA256SUMS`; the formal VM bundle is missing |
+| 1 | Separate candidate copy; original untouched | **PASS** | original hash still the frozen value; candidate is a separate file |
+| 2 | Candidate identity and reproducibility | **PASS** | candidate hash matches; schema-2 manifest complete (displaced/added/intervals/header/writer/termination/tool_versions); build recipe `18-build-recipe.md` with `regen_c4a159.py` (stdlib-only, fail-closed) |
+| 3 | Structural audit (cave R-X runtime probe, `p_filesz`/`p_memsz`, redirect; LIEF/NX/RELRO/canary/import diff) | **NOT VERIFIED** | static structure re-measured PASS (§2–3), but the runtime R-X map probe and the LIEF/NX/RELRO/canary/import diff have not been executed on the candidate |
+| 4 | Six-case run (4 valid + 2 invalid = 6/6 byte-exact) | **NOT VERIFIED** | GitHub CI 6/6 is supplementary only; the required reverted-snapshot run on the guest has not been executed |
+| 5 | Isolation evidence for that run (snapshot, egress block, uid 1003, wrapper attestation) | **NOT VERIFIED** | no formal isolation evidence yet |
+| 6 | Evidence bundle (raw outputs + hashes) | **NOT VERIFIED** | this record + `docs/route-a/SHA256SUMS` only; the formal VM bundle and its hashes are missing |
 
-**Gate 3 verdict: NOT signed — CONDITIONALLY FEASIBLE.** Items 4 and 5 are hard requirements and
-remain `not_run`. A CI `6/6` does not substitute for them (handoff 13 §5.6).
+**Gate 3 verdict: NOT signed — CONDITIONALLY FEASIBLE.** Only `PASS` / `FAIL` / `NOT VERIFIED`
+are valid item labels; "partial" is not a gate label. Items 3–6 are hard requirements; a CI
+`6/6` does not substitute for them (handoff 13 §5.6).
 
 ## 5. Producer inputs used (read-only, not M4 evidence)
 
@@ -100,9 +105,10 @@ remain `not_run`. A CI `6/6` does not substitute for them (handoff 13 §5.6).
    record must state the syscall path, not the stale PLT description.
 3. **Candidate hash history.** handoff 12 records `f3cb9cbb...`; the delivered candidate is
    `c4a159...`. handoff 12's value is superseded; `c4a159` is the single gate-3 subject.
-4. **M4's `member-4-routea-gate3` @ `7977bac` is not reachable from the remote** (M5 could not
-   fetch it). M4 must push that branch or provide the `routea/audit.py` / `cave.py` / tests as a
-   patch before the Lead can compare M4's audit implementation with M5's.
+4. **M4 audit branch resubmitted (handoff 18).** `origin/member-4-routea-gate3` @ `2ac0f66`
+   (base `ad1a1f8`) retargets the tooling to `c4a159…`/`24bfe568…` and fixes M5's B1–B6; patch
+   `docs/route-a/m4-patches/0002-member-4-routea-gate3-canonical-audit.patch`
+   (`b68aabcd…cab8`). M5 re-review is pending; the old `7977bac` / patch `0001` is superseded.
 5. **M4's earlier `f3cb9cbb` cross-check is void** and must not be cited.
 
 ## 7. What must happen before this record can be signed
@@ -113,26 +119,29 @@ remain `not_run`. A CI `6/6` does not substitute for them (handoff 13 §5.6).
 3. Run the runtime R-X cave probe (map `0x401000-0x401fff`, cave bytes == memory, instruction at
    cave entry executes).
 4. Re-measure `valid.json` / `invalid.json` / manifest-set hashes in the guest.
-5. M5 replay waived by Lead on 2026-10-22; the Lead approves the final record.
+5. **M5 replay (handoff 19):** the Lead waives only the **full independent rerun** of the six
+   frozen cases. **M5's build/hash replay is not waived:** reproduce candidate `c4a159…aa82`
+   from the recorded recipe on `original.elf` (`aa428157…`), verify contract `24bfe568…4e37`,
+   recompute the evidence bundle `SHA256SUMS`/bundle hash, and report the observed hashes. Until
+   that replay exists, this record stays DRAFT and the signature line stays blank.
 
-## 8. M5 review status: NOT REVIEWED
+## 8. M5 review status: RE-REVIEW PENDING
 
-M5 cannot fetch `member-4-routea-gate3` (it is not a remote ref and `7977bac` is not a
-reachable object from origin), so the M4 Route A implementation has **not been reviewed** by
-M5 and must not be treated as accepted.
+M5 reviewed the first patch (`docs/route-b/20-m4-patch-review.md`) and requested changes
+B1–B6. M4 resubmitted on base `ad1a1f8` (handoff 18): branch
+`origin/member-4-routea-gate3` @ `2ac0f66`, patch
+`docs/route-a/m4-patches/0002-member-4-routea-gate3-canonical-audit.patch`
+(`b68aabcd…cab8`), additive tooling only. Until M5 records a new review, the M4 implementation
+is **not accepted** and is not gate-3 evidence either way. M5's build/hash replay (handoff 19)
+is also still pending.
 
-To unblock review without pushing the branch, the complete change is attached as a patch:
+## 9. Signature — BLANK (DRAFT)
 
-```
-docs/route-a/m4-patches/0001-member-4-routea-gate3-feat-route-a-complete-Gate-3-e.patch
-```
+| Role | Name | Date | Signature |
+|---|---|---|---|
+| M4 verifier | — | — | **blank until items 3–6 are PASS** |
+| M5 build/hash replay | — | — | pending (handoff 19) |
+| Lead approval | — | — | pending |
 
-It contains exactly the files M5 asked to review: `routea/audit.py` (header invariants,
-cave-unused proof, NX/RELRO/W^X), `routea/cave.py` (schema-2 / verify / bundle), `routea/
-byteaudit.py`, `routea/evidence.py`, `routea/manifest.py`, `tests/test_routea_manifest.py`,
-`tests/test_routea_cave.py`, `scripts/routea_vm_check.sh` (static half only — it does not
-execute the candidate), and `fixtures/.../contract.route-a-v1.json` (the superseded M4 proposal,
-kept for diffing against the approved `24bfe568...`).
-
-Until M5 records a review, the M4 implementation stays **not accepted**.
+Do not fill these fields from a CI run, a static audit, or a verbal approval.
 
