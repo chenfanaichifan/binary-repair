@@ -5,6 +5,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from fastapi.testclient import TestClient
+
+from app.controller_api import app
 from app.db.connection import connect
 from app.services import jobs, worker
 
@@ -120,6 +123,29 @@ def test_worker_finishes_both_routes_and_persists_verdict(tmp_path: Path) -> Non
         assert (
             data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / attempt.id / "verdict.json"
         ).exists()
+
+
+def test_snapshot_exposes_attempts_obligations_and_verdict(
+    tmp_path: Path, monkeypatch
+) -> None:
+    data_dir, record, run = _started(tmp_path)
+    monkeypatch.setenv("BINARYREPAIR_DATA_DIR", str(data_dir))
+    attempts = jobs.list_attempts(run.id, data_dir=data_dir)
+    for attempt in attempts:
+        _write_bundle(data_dir, record.id, run.id, attempt, record)
+    worker.run_once(data_dir=data_dir)
+
+    client = TestClient(app, base_url="http://127.0.0.1")
+    response = client.get(f"/api/jobs/{record.id}")
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["verdict"]["outcome"] == "success_within_scope"
+    assert payload["run"]["id"] == run.id
+    assert payload["routes"]["A"]["outcome"] == "success_within_scope"
+    assert payload["routes"]["B"]["outcome"] == "success_within_scope"
+    assert payload["routes"]["A"]["verdict"]["outcome"] == "success_within_scope"
+    assert len(payload["routes"]["A"]["obligations"]) == 6
+    assert all(stage["state"] == "done" for stage in payload["routes"]["A"]["stages"])
 
 
 def test_worker_leaves_queued_when_no_bundle(tmp_path: Path) -> None:

@@ -459,6 +459,18 @@ def list_queued_runs(*, data_dir: str | Path) -> list[RunRecord]:
     return [_run_record(row, created=False) for row in rows]
 
 
+def latest_run(job_id: str, *, data_dir: str | Path) -> RunRecord | None:
+    connection = connect(data_dir)
+    try:
+        row = connection.execute(
+            "SELECT * FROM runs WHERE job_id = ? ORDER BY started_at DESC, rowid DESC LIMIT 1",
+            (job_id,),
+        ).fetchone()
+    finally:
+        connection.close()
+    return None if row is None else _run_record(row, created=False)
+
+
 def get_attempt(attempt_id: str, *, data_dir: str | Path) -> AttemptRecord | None:
     connection = connect(data_dir)
     try:
@@ -478,6 +490,28 @@ def get_attempt(attempt_id: str, *, data_dir: str | Path) -> AttemptRecord | Non
         failing_obligation=row["failing_obligation"],
         detail=row["detail"],
     )
+
+
+def list_obligations(attempt_id: str, *, data_dir: str | Path) -> list[dict[str, Any]]:
+    connection = connect(data_dir)
+    try:
+        rows = connection.execute(
+            "SELECT kind, required, result, evidence_artifact_id, detail "
+            "FROM obligations WHERE attempt_id = ? ORDER BY kind",
+            (attempt_id,),
+        ).fetchall()
+    finally:
+        connection.close()
+    return [
+        {
+            "kind": row["kind"],
+            "required": bool(row["required"]),
+            "result": row["result"],
+            "evidence_artifact_id": row["evidence_artifact_id"],
+            "detail": row["detail"],
+        }
+        for row in rows
+    ]
 
 
 def list_attempts(run_id: str, *, data_dir: str | Path) -> list[AttemptRecord]:
@@ -578,7 +612,9 @@ __all__ = [
     "get_contract",
     "get_job",
     "get_run",
+    "latest_run",
     "list_attempts",
+    "list_obligations",
     "list_queued_runs",
     "retry_attempt",
     "start_run",

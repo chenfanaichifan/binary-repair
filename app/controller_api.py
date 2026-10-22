@@ -31,6 +31,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from app.db.connection import connect
 from app.services import jobs
 
 APP_ENV = "BINARYREPAIR_DATA_DIR"
@@ -163,11 +164,91 @@ def _placeholder_routes(phase: str) -> dict[str, dict[str, Any]]:
     return routes
 
 
+def _stage_index(phase: str, stages: list[str]) -> int | None:
+    order = {
+        "screening": 0,
+        "analyzing": 1,
+        "generating": 2,
+        "applying": 3,
+        "roundtrip": stages.index("roundtrip") if "roundtrip" in stages else None,
+        "validating": 4,
+        "finished": len(stages),
+    }
+    return order.get(phase)
+
+
+def _stages_for(phase: str, stages: list[str]) -> list[dict[str, str]]:
+    index = _stage_index(phase, stages)
+    result = []
+    for position, name in enumerate(stages):
+        if index is None:
+            state = "pending"
+        elif position < index:
+            state = "done"
+        elif position == index:
+            state = "active"
+        else:
+            state = "pending"
+        result.append({"name": name, "state": state})
+    return result
+
+
+def _verdict_for_attempt(attempt: jobs.AttemptRecord) -> dict[str, Any]:
+    return {
+        "outcome": attempt.outcome,
+        "reason": attempt.reason,
+        "failing_obligation": attempt.failing_obligation,
+        "detail": attempt.detail,
+    }
+
+
 def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
     contract = dict(meta.get("contract") or _contract_body())
     contract.setdefault("revision", 1)
     contract.setdefault("sha256", _sha_json({k: v for k, v in contract.items() if k not in {"revision", "sha256", "approved", "approved_at", "reviewer_label"}}))
     contract.setdefault("approved", False)
+
+    routes = _placeholder_routes(record.phase)
+    run = jobs.latest_run(record.id, data_dir=_data_dir())
+    run_verdict: dict[str, Any] | None = None
+    if run is not None:
+        connection = connect(_data_dir())
+        try:
+            run_row = connection.execute("SELECT * FROM runs WHERE id = ?", (run.id,)).fetchone()
+        finally:
+            connection.close()
+        run_verdict = {
+            "outcome": run_row["outcome"] if run_row else None,
+            "reason": run_row["reason"] if run_row else None,
+            "failing_obligation": run_row["failing_obligation"] if run_row else None,
+            "detail": run_row["detail"] if run_row else None,
+        }
+        for attempt in jobs.list_attempts(run.id, data_dir=_data_dir()):
+            key = "A" if attempt.route == "route_a" else "B"
+            route = routes[key]
+            route["phase"] = attempt.phase
+            route["outcome"] = attempt.outcome
+            route["outcome_reason"] = attempt.reason or ""
+            route["verdict"] = _verdict_for_attempt(attempt)
+            group = jobs.list_obligations(attempt.id, data_dir=_data_dir())
+            route["obligations"] = group
+            route["stages"] = _stages_for(attempt.phase, ROUTE_STAGES[key])
+            if group:
+                results = {item["result"] for item in group}
+                if results == {"passed"}:
+                    route["verification"] = "passed"
+                elif results == {"not_run"}:
+                    route["verification"] = "not_run"
+                elif "failed" in results:
+                    route["verification"] = "failed"
+                else:
+                    route["verification"] = "unknown"
+                interface = next(
+                    (item for item in group if item["kind"] == "interface"), None
+                )
+                if interface is not None:
+                    route["compatibility"] = interface["result"]
+
     return {
         "id": record.id,
         "demo": False,
@@ -182,7 +263,14 @@ def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
         "phase": record.phase,
         "cancelled": record.phase == "cancelled",
         "contract": contract,
-        "routes": _placeholder_routes(record.phase),
+        "routes": routes,
+        "run": {
+            "id": run.id,
+            "phase": run.phase,
+            "manifest_sha256": run.manifest_sha256,
+            "reviewed_scope_sha256": run.reviewed_scope_sha256,
+        } if run is not None else None,
+        "verdict": run_verdict,
     }
 
 

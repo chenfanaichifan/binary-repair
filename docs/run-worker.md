@@ -70,3 +70,15 @@ Rules:
 
 `evaluate_run` is called only when both `route_a` and `route_b` verdicts exist.
 A cancelled job is not overwritten with `finished`.
+
+## Snapshot
+
+`GET /api/jobs/{id}` now reads the latest run's attempts and obligations:
+
+- `verdict`: run-level `outcome/reason/failing_obligation/detail`;
+- `run`: run id/phase/manifest/reviewed_scope;
+- `routes.A/B`: real `phase`, `outcome`, `outcome_reason`, `verdict`, `obligations`,
+  and stage states from the attempt phase.
+
+Before any run exists, `routes` remains the initial placeholder. After the worker
+finishes, the snapshot reflects the persisted attempt/run verdicts.
