@@ -95,6 +95,12 @@ Current controller behaviour (confirmed by Member 1, 2026-10-22):
   the snapshot is a controller TODO.
 - Same idempotency key with a different contract should return `409`; the
   canonical check is still to be added.
+- Verdict write-back is library-only today (`orchestration.evaluate_attempt` /
+  `evaluate_run` write `outcome/reason/failing_obligation/detail` and
+  `verdict.json` / `run-verdict.json`), but the controller API is not wired and
+  obligations have no write path, so a real run cannot produce a verdict yet.
+  `tools/p2_acceptance.py` is ready for when this lands (it exits `2 BLOCKED`
+  until the pipeline reaches `finished` with real obligations).
 
 Verified P0 run: GUI `http` mode → create job → contract edit → approve →
 start `202` → snapshot `demo:false`, `phase=queued`, routes `queued`; GUI shows
