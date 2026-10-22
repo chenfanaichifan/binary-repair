@@ -47,7 +47,7 @@ def _wait_until_ready(url: str, process: subprocess.Popen, timeout: float = 25.0
     raise RuntimeError("GUI server did not become ready in time")
 
 
-def start_gui(env_extra: dict[str, str]) -> tuple[subprocess.Popen, str]:
+def start_app(module: str, env_extra: dict[str, str]) -> tuple[subprocess.Popen, str]:
     port = _free_port()
     env = os.environ.copy()
     env.update(env_extra)
@@ -56,7 +56,7 @@ def start_gui(env_extra: dict[str, str]) -> tuple[subprocess.Popen, str]:
             sys.executable,
             "-m",
             "uvicorn",
-            "app.main:app",
+            module,
             "--host",
             "127.0.0.1",
             "--port",
@@ -70,6 +70,10 @@ def start_gui(env_extra: dict[str, str]) -> tuple[subprocess.Popen, str]:
     base_url = f"http://127.0.0.1:{port}"
     _wait_until_ready(base_url, process)
     return process, base_url
+
+
+def start_gui(env_extra: dict[str, str]) -> tuple[subprocess.Popen, str]:
+    return start_app("app.main:app", env_extra)
 
 
 def stop_gui(process: subprocess.Popen) -> None:
@@ -102,6 +106,37 @@ def local_server(tmp_path):
     )
     try:
         yield base_url, tmp_path
+    finally:
+        stop_gui(process)
+
+
+@pytest.fixture()
+def controller_server(tmp_path):
+    """Real-store controller bridge (demo:false, execution not implemented)."""
+    data_dir = tmp_path / "controller-data"
+    process, base_url = start_app(
+        "tools.controller_service:app",
+        {"BINARYREPAIR_CONTROLLER_DATA": str(data_dir)},
+    )
+    try:
+        yield base_url, data_dir
+    finally:
+        stop_gui(process)
+
+
+@pytest.fixture()
+def http_server(controller_server):
+    """GUI in http mode pointed at the real-store controller bridge."""
+    controller_url, _data_dir = controller_server
+    process, base_url = start_gui(
+        {
+            "BINARYREPAIR_BACKEND": "http",
+            "BINARYREPAIR_API_BASE": controller_url,
+            "BINARYREPAIR_SESSION_TOKEN": SESSION_TOKEN,
+        }
+    )
+    try:
+        yield base_url, controller_url
     finally:
         stop_gui(process)
 

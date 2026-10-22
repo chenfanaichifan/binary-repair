@@ -95,6 +95,31 @@ def _create_job_via_ui(page, base_url: str, tmp_path) -> str:
     return location.rstrip("/").rsplit("/", 1)[-1]
 
 
+def test_http_mode_uses_the_real_controller(http_server, page, tmp_path):
+    """P0: setup submits to the real controller store; snapshot is demo:false."""
+    base_url, controller_url = http_server
+    _bootstrap(page, base_url)
+    job_id = _create_job_via_ui(page, base_url, tmp_path)
+
+    page.wait_js("!!document.querySelector('[data-testid=\"contract-approval\"]')", timeout=10)
+    assert page.eval_js("!document.querySelector('.demo-banner')") is True
+
+    with httpx.Client(base_url=controller_url, timeout=20.0) as client:
+        snapshot = client.get(f"/api/jobs/{job_id}").json()
+    assert snapshot["demo"] is False
+    assert snapshot["execution"] == "not_started"
+    assert snapshot["phase"] == "draft"
+    assert snapshot["original_sha256"]
+
+    # Approval works, but execution is honestly reported as not implemented.
+    _approve_current_contract(page)
+    page.click('[data-testid="start-run"]')
+    page.wait_js(
+        "document.body.textContent.includes('Execution is not implemented')",
+        timeout=10,
+    )
+
+
 def test_landing_hero_leads_to_workbench(mock_server, page):
     _bootstrap(page, mock_server)
     page.navigate(mock_server + "/")
