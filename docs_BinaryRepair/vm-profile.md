@@ -181,22 +181,17 @@ tools and is **incomplete for angr / z3 / LIEF**; re-capture before freezing.
 ## 7. Backend / source revision
 
 `D:\BinRepair` is a Git repository (created 2026-10-20 from the working copy at
-`%USERPROFILE%\Desktop\binary-repair`, remote `origin` intact). As of
-2026-10-22 it is on branch `member-3-route-a`, HEAD **`627d9eb`**, three
-commits ahead of `e030cc2`:
+`%USERPROFILE%\Desktop\binary-repair`, remote `origin` intact). On 2026-10-22 it
+is on branch `member-3-route-a`, with local commits `d1e0741` (gate 6
+evidence), `baefea2` (byte-exact checkout attributes), `627d9eb` (manifest-set
+hash confirmed) and `5b60915` (2026-10-22 state change) on top of `e030cc2`.
 
-```text
-627d9eb docs(fixture): confirm manifest-set hash and pin LF checkouts
-baefea2 chore(fixture): keep checksum-listed bytes exact on checkout
-d1e0741 test(fixture): add gate 6 crash evidence and GDB command record
-```
-
-The working tree still has **23 uncommitted entries**, and `git fetch` /
-`git push` still fail with `SEC_E_NO_CREDENTIALS` (no credential for the HTTPS
-remote; re-probed 2026-10-22 with `GIT_TERMINAL_PROMPT=0`). Until the credential
-is fixed, **nothing has been pushed**, so a VM profile still cannot name a commit
-that another member can fetch. That remains an open reproducibility gap, and it
-is also why `627d9eb` is a local hash only.
+**Do not record HEAD as a stable identity.** Each commit moves it; the reference
+belongs to a *pushed* commit or tag. Nothing here has been pushed: `git fetch` /
+`git push` still fail with `SEC_E_NO_CREDENTIALS` (re-probed 2026-10-22 with
+`GIT_TERMINAL_PROMPT=0`). Until the credential is fixed, another member cannot
+fetch the state these documents describe, which remains an open reproducibility
+gap.
 
 ## 8. What a job may rely on today
 

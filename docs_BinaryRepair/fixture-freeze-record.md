@@ -128,11 +128,12 @@ baseline. They are not signed and must not be presented as the V5 image identity
 ### O4 — Backend commit
 
 Local commits exist on `member-3-route-a`: `d1e0741` (fixture + gate 6
-evidence), `baefea2` (byte-exact checkout attributes) and `627d9eb`
-(manifest-set hash confirmed). HEAD is `627d9eb`. They are **not pushed**:
-remote operations still fail with `SEC_E_NO_CREDENTIALS` (re-probed
-2026-10-22). No remote commit hash can be recorded yet, so another member
-cannot fetch the state this record describes.
+evidence), `baefea2` (byte-exact checkout attributes), `627d9eb` (manifest-set
+hash confirmed) and `5b60915` (2026-10-22 state change), all on top of
+`e030cc2`. They are **not pushed**: remote operations still fail with
+`SEC_E_NO_CREDENTIALS` (re-probed 2026-10-22). No remote commit hash can be
+recorded yet, so another member cannot fetch the state this record describes —
+and a local hash is not a stable identity, since every later commit moves HEAD.
 
 ## 5. Not frozen, not signed
 
