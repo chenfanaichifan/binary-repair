@@ -27,3 +27,6 @@ Thumbs.db
 
 # Local agent scratch file
 .write-probe.tmp
+
+# Local delivery artifacts (git bundles/archives for teammates)
+/delivery/

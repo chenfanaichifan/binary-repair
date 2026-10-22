@@ -1,5 +1,10 @@
 # 15 — To Member 3: run the Route A design's VM checks and deliver the guest evidence
 
+> **Superseded on artifact hashes (2026-10-22):** use `16-reply-to-member-3-delivery.md`. The
+> only gate-3 candidate is `c4a159…` on main `1826505` with contract `24bfe568…`; the M4
+> design branch's `f3cb9cbb…` is unreviewed and superseded. The run method, evidence format and
+> boundaries below still apply.
+
 **Recipients:** Member 3 (guest owner and executor), cc Member 4, Member 5, Lead
 **From:** Lead, at Member 4's request (2026-10-22)
 **Status:** **Request, not a result.** Gate 3 stays `CONDITIONALLY FEASIBLE`; gate 4
