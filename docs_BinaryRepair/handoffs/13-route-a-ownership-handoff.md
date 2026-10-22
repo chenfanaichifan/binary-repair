@@ -338,3 +338,30 @@ so the earlier note that it "still needs fixing" is stale.
 **Confirmation log (ratification).** 2026-10-22 — Lead ratifies the ownership transfer and
 records the independent identity/structure verification above; no gate status changed
 (gate 3 `CONDITIONALLY FEASIBLE`, gate 4 `NOT RUN`, fixture `NOT FROZEN`).
+
+---
+
+## 11. Route A design implementation (2026-10-22, M4)
+
+Branch **`member-4-routea-gate3`** @ `7977bac` (based on `origin/main` `33235f5`) implements
+the design half of this handoff. It is **not** merged and **not** gate-3 evidence by itself;
+all ELF-touching tests and commands must run in the guest.
+
+| Item | Implementation |
+|---|---|
+| edit manifest | schema 2: displaced 5 bytes, added code/data intervals with file offsets and hashes, header before/after values and file offsets, changed + intended intervals, writer, termination, tool versions |
+| static audit | `routea/audit.py`: header invariants (page congruence, no overlap, entry/other fields, `p_filesz` within file), section/dynamic byte identity, NX/GNU_STACK/RELRO/W^X, cave-unused proof (sections/symbols/relocations/incoming branches/RIP-relative refs, zero filler), added-code register rules, byte-diff residue, optional independent `readelf` cross-check |
+| reproducibility | `python -m routea.cave verify` builds twice and requires identical bytes |
+| evidence bundle | `python -m routea.cave bundle`: original/candidate, manifest, audit, reproducibility, environment fingerprint, independent `readelf`/`objdump` views, `gate3-record.md`, `SHA256SUMS`; items 4-5 stay `not_run` |
+| contract revision | `fixtures/public/CWE121_src_char_declare_cpy_51b/contract.route-a-v1.json`, reviewed-scope `ba33b4d070b8799b778a9ca1a257190079627bda72b5c42933edfebb0f5d8fc4`; exactly the six amended handoff 09 §4.1 `authorized_edits`, `allowed_calls = ("fprintf","printLine","strcpy")`; **proposed**, pending M5 confirmation and Lead approval |
+| tests | `tests/test_routea_cave.py` (extended, real ELF) and `tests/test_routea_manifest.py` (pure bytes). Golden candidate `f3cb9cbb…`; golden contract `ba33b4d0…` |
+| VM helper | `scripts/routea_vm_check.sh` runs the static half in the guest and stops before executing the candidate; unverified until the VM run |
+| design doc | `docs/route-a/gate3-evidence-design.md` on that branch |
+
+**Host status:** only `py_compile` and the pure-bytes helper were checked on the host. No ELF
+was parsed and no candidate was executed here. The VM run remains the required evidence
+(handoff 12); the tests and the bundle are the M4 deliverable, not a result.
+
+**Confirmation log (implementation).** 2026-10-22 — M4 writes the design branch listed above;
+no gate status changed; contract revision is a proposal, not an approval.
+
