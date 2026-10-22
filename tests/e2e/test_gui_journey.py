@@ -95,6 +95,20 @@ def _create_job_via_ui(page, base_url: str, tmp_path) -> str:
     return location.rstrip("/").rsplit("/", 1)[-1]
 
 
+def test_landing_hero_leads_to_workbench(mock_server, page):
+    _bootstrap(page, mock_server)
+    page.navigate(mock_server + "/")
+    page.wait_js("!!document.querySelector('.hero-h1')", timeout=10)
+    assert "二进制漏洞" in page.text(".hero-h1")
+    assert "修复不是补丁" in page.text(".hero-sub")
+
+    page.click("[data-slide-next]")
+    page.wait_js("document.body.textContent.includes('DISASSEMBLY')", timeout=5)
+
+    page.click('[data-testid="landing-cta"]')
+    page.wait_js("location.pathname.endsWith('/jobs/new')", timeout=10)
+
+
 def test_setup_wizard_has_two_choice_pages(mock_server, page):
     _bootstrap(page, mock_server)
     page.navigate(mock_server + "/jobs/new")

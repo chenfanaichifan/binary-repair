@@ -39,6 +39,14 @@ def _create_job() -> str:
     return response.headers["location"].rstrip("/").rsplit("/", 1)[-1]
 
 
+def test_landing_page():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "二进制漏洞修复" in response.text
+    assert 'data-testid="landing-cta"' in response.text
+    assert 'href="/jobs/new"' in response.text
+
+
 def test_setup_page():
     response = client.get("/jobs/new")
     assert response.status_code == 200

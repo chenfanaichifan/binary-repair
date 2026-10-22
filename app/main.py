@@ -237,9 +237,14 @@ def _auth_required_page() -> str:
 </div></body></html>"""
 
 
-@app.get("/", response_class=HTMLResponse)
-async def index():
-    return RedirectResponse(url="/jobs/new", status_code=303)
+@app.get("/", response_class=HTMLResponse, name="landing_page")
+async def index(request: Request):
+    """起始页：全屏 Hero 介绍（进入工作台前的第一屏）。"""
+    return templates.TemplateResponse(
+        request,
+        "landing.html",
+        {"backend_note": backend_description(BACKEND)},
+    )
 
 
 @app.get("/jobs/new", response_class=HTMLResponse, name="setup_page")

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>二进制漏洞修复 · BinaryRepair</title>
+  <link rel="stylesheet" href="/static/css/landing.css">
+</head>
+<body class="landing">
+  <div class="hero-bg" aria-hidden="true"></div>
+
+  <header class="landing-nav">
+    <nav class="pill-nav" aria-label="主导航">
+      <a href="/" class="is-active" aria-current="page"><span class="nav-dot"></span>首页</a>
+      <a href="/jobs/new">工作台</a>
+      <a href="#about" data-about>关于</a>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <p class="hero-eyebrow" data-slide="eyebrow">AI-DRIVEN BINARY VULNERABILITY REPAIR</p>
+    <h1 class="hero-h1">二进制漏洞修复</h1>
+    <p class="hero-sub">修复不是补丁，是证据。</p>
+
+    <div class="hero-info" aria-live="polite">
+      <p><span class="slide-line" data-slide="body">上传 ELF 样本、冻结安全契约；两条路线分别做直接指令修复与恢复 C 回填。漏洞位置高亮、AI 候选交互展示，结果由 V0–V5 确定性义务与可复核证据决定，而不是"看起来更安全"。</span></p>
+    </div>
+
+    <div class="hero-cta">
+      <a class="cta-pill" href="/jobs/new" data-testid="landing-cta">进入工作台 <span class="arrow" aria-hidden="true">→</span></a>
+    </div>
+
+    <div class="hero-slider" aria-label="切换介绍">
+      <button type="button" class="slide-arrow" data-slide-prev aria-label="上一屏">‹</button>
+      <div class="slide-dots" role="tablist" aria-label="介绍分页">
+        <button type="button" role="tab" aria-selected="true" aria-label="第 1 屏" data-slide-dot="0"></button>
+        <button type="button" role="tab" aria-selected="false" aria-label="第 2 屏" data-slide-dot="1"></button>
+        <button type="button" role="tab" aria-selected="false" aria-label="第 3 屏" data-slide-dot="2"></button>
+      </div>
+      <button type="button" class="slide-arrow" data-slide-next aria-label="下一屏">›</button>
+    </div>
+
+    <footer class="hero-meta">
+      <span>演示模式 · 未执行真实修复 · 不作为生产证据</span>
+      <span>{{ backend_note }} · 本地会话</span>
+    </footer>
+  </main>
+
+  <div class="about-sheet is-hidden" data-about-sheet role="dialog" aria-modal="true" aria-labelledby="about-title">
+    <div class="about-card">
+      <h2 id="about-title">关于这个工作台</h2>
+      <p>BinaryRepair 是一个"AI 驱动 + 确定性验证"的二进制漏洞修复工作台，演示双路线修复与证据链。</p>
+      <ul>
+        <li>输入身份：样本 SHA-256 + 安全契约（revision / 哈希 / 复核批准）</li>
+        <li>两条路线：直接指令修复（反汇编）与恢复 C 回填，必须各自成功</li>
+        <li>验证阶梯：V0–V5 义务，未执行显示 not_run，不能用"更小的补丁"代替验证</li>
+        <li>数据来源：mock / http / local 三种模式，接口与契约对齐 controller</li>
+      </ul>
+      <button type="button" class="about-close" data-about-close>关闭</button>
+    </div>
+  </div>
+
+  <script src="/static/js/landing.js" defer></script>
+</body>
+</html>
