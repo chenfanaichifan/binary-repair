@@ -54,7 +54,7 @@ evidence record). The single canonical draft lives on `origin/member-4-verificat
 |---|---|
 | path | `docs/route-a/gate3-record.md` (repo root on `member-4-verification`) |
 | state | DRAFT, unsigned; items 1–2 PASS, 3–6 NOT VERIFIED |
-| SHA-256 of the draft | `3dcdc862e292d67ad6d645294dfac2c4a311854ebd43caef9a5d70ad93fdd3ee` |
+| SHA-256 of the draft | `bddccbfee70733223a43bed0d0420c1ec130cb6fa07338c402a8355cc6a9e081` |
 
 Anyone holding another draft of the same file must replace it with this version (or send a diff
 against this SHA-256) rather than keeping two records. After a signed version exists it is the

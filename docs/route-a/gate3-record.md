@@ -137,11 +137,22 @@ is also still pending.
 
 ## 9. Signature — BLANK (DRAFT)
 
+**Signing order (handoff 19 §5):**
+
+1. **M4 verifier row** — filled only after items 3–6 are independently verified as `PASS`
+   (runtime cave probe, six cases, isolation evidence, bundle). M4's signature covers the
+   verifier row; it is **not** an approval and **not** a gate pass.
+2. **M5 build/hash replay row** — M5 records the observed replay values (candidate
+   `c4a159…aa82`, contract `24bfe568…4e37`, recomputed bundle `SHA256SUMS`/bundle hash). A
+   mismatch voids the record and returns it to `NOT VERIFIED`; it does not edit the candidate.
+3. **Lead approval row** — filled last, after 1 and 2, as the gate decision.
+
 | Role | Name | Date | Signature |
 |---|---|---|---|
 | M4 verifier | — | — | **blank until items 3–6 are PASS** |
 | M5 build/hash replay | — | — | pending (handoff 19) |
 | Lead approval | — | — | pending |
 
-Do not fill these fields from a CI run, a static audit, or a verbal approval.
+Do not fill these fields from a CI run, a static audit, or a verbal approval. A blank row is not
+a silent pass: it keeps the record DRAFT and the gate `CONDITIONALLY FEASIBLE`.
 
