@@ -94,6 +94,9 @@ A wrapper script can be used directly as
 `BINARYREPAIR_ATTEMPT_CMD=/path/to/write_attempt.sh`; the worker supplies the
 `BINARYREPAIR_JOB_ID/RUN_ID/ATTEMPT_ID/ROUTE/RESULT_PATH` environment.
 
+The full input schema and a minimal example are in
+[attempt-writer-schema.md](attempt-writer-schema.md).
+
 ## Idempotency
 
 `POST /api/jobs/{id}/runs` with an existing `(job_id, idempotency_key)` returns

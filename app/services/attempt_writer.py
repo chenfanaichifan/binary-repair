@@ -90,6 +90,9 @@ def _generic(
     *,
     route: str,
     candidate: str | None,
+    data_dir: Path | None,
+    job_id: str | None,
+    attempt_id: str | None,
 ) -> dict[str, Any]:
     try:
         payload = json.loads(input_path.read_text(encoding="utf-8"))
@@ -97,17 +100,44 @@ def _generic(
         raise SystemExit(f"cannot read input bundle {input_path}: {exc}") from exc
     if not isinstance(payload, dict):
         raise SystemExit("input bundle must be an object")
+    body_route = payload.get("route")
+    if body_route is not None and body_route != route:
+        raise SystemExit(f"input route {body_route!r} does not match --route {route!r}")
     results = payload.get("results")
     if not isinstance(results, dict):
         raise SystemExit("input bundle results must be an object")
     candidate_sha = candidate or payload.get("candidate_sha256")
     if not isinstance(candidate_sha, str) or len(candidate_sha) != 64:
         raise SystemExit("candidate_sha256 must be a 64-character hex digest")
+
+    evidence = dict(payload.get("evidence") or {})
+    evidence_files = payload.get("evidence_files") or {}
+    if not isinstance(evidence_files, dict):
+        raise SystemExit("evidence_files must be an object")
+    if evidence_files:
+        if data_dir is None or job_id is None or attempt_id is None:
+            raise SystemExit(
+                "evidence_files requires --data-dir, --job-id and --attempt-id"
+            )
+        for gate, raw_path in evidence_files.items():
+            if gate in evidence:
+                continue
+            path = Path(raw_path)
+            if not path.is_absolute():
+                path = input_path.parent / path
+            evidence[gate] = _register(
+                data_dir=data_dir,
+                job_id=job_id,
+                attempt_id=attempt_id,
+                source=path,
+                role=f"route_{route}_evidence",
+            )
+
     return {
         "route": route,
         "candidate_sha256": candidate_sha,
         "results": results,
-        "evidence": payload.get("evidence") or {},
+        "evidence": evidence,
         "details": payload.get("details") or {},
     }
 
@@ -204,7 +234,7 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit("missing --out / BINARYREPAIR_RESULT_PATH")
         args.out = Path(out)
 
-    route = args.route or "route_b" if args.routeb_bundle else args.route
+    route = args.route or ("route_b" if args.routeb_bundle else None)
     if route not in ROUTES:
         raise SystemExit("route must be route_a or route_b")
 
@@ -219,7 +249,15 @@ def main(argv: list[str] | None = None) -> int:
             attempt_id=attempt_id,
         )
     elif args.input:
-        payload = _generic(args.input, route=route, candidate=args.candidate_sha256)
+        data_dir = Path(args.data_dir) if args.data_dir else None
+        payload = _generic(
+            args.input,
+            route=route,
+            candidate=args.candidate_sha256,
+            data_dir=data_dir,
+            job_id=args.job_id,
+            attempt_id=args.attempt_id,
+        )
     else:
         raise SystemExit("provide --input or --routeb-bundle")
 
