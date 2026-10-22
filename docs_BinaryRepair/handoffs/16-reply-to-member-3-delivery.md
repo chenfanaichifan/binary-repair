@@ -222,3 +222,52 @@ arrives; seccomp recorded `0` with no filter added; `original.elf` from the repo
 delivery paths/hashes, assigns the snapshot to the named VMer (M4 verification only unless
 confirmed as VMer), and keeps M3's role as prepare/verify/evidence. No gate status changed.
 
+---
+
+## 8. M3 second reply (2026-10-22 18:32): archive accepted, VMer confirmed
+
+**Decision 1 — the GitHub archive is accepted as the main content source.** M3 downloaded the
+GitHub archive of commit `1826505` to `D:\BinRepair\.tmp\binrepair-main-1826505.zip`
+(471,658 B, SHA-256 `b0f4a1…`), verified `original.elf` `aa428157…`, candidate `c4a159…`, and
+contract `24bfe568…`. **Accepted.** Content identity plus commit provenance is what Gate 3
+needs, not a particular packaging hash: the archive's zip hash differs from our fallback
+`42658976…` only because GitHub repacks the tree. The fallback-hash requirement is **dropped**
+for M3; the bundle is no longer needed for the Gate 3 run. Record in the report:
+
+- source URL / GitHub archive of commit `1826505`, download timestamp;
+- **full** archive SHA-256 (M3 quoted `b0f4a1…`; the complete 64-hex value must be recorded),
+  archive size 471,658 B, extraction path;
+- the archive has no `.git` directory, so commit provenance is the archive source + commit id +
+  per-file hashes; per-file hashes (`original`, `candidate`, `contract`, manifests) are the
+  identity proof, already verified by M3.
+
+**Decision 2 — `delivery-docs` is optional.** Handoffs 09–16 are reviewer guidance, not Gate 3
+evidence; the run does not need them. The bundle (SHA-256 `fd35ae84…f52bf5`) remains valid for
+later transfer if someone needs the docs; it is not a blocker.
+
+**Decision 3 — VMer confirmed; M4 is not the operator.** M4 has stated that M4 is **not** VMer.
+The VM console belongs to an **independent VMer**; the snapshot record names VMer, never M4.
+M3 notifies **VMer** for the `gate3-harness` snapshot; M4 stays the independent verifier. This
+corrects the earlier "M4 operates the VMware UI" wording in §3.2, §5 and §7.
+
+**Run order after this reply:**
+
+1. extract the archive at a recorded path; confirm the three hashes above and the frozen test
+   manifests;
+2. §5 prep: tests, `regen_c4a159.py` rebuild, `patched` target, `gate3 original valid-empty`
+   sanity, worklog, then clean shutdown and notify **VMer** (not M4) for the `gate3-harness`
+   snapshot;
+3. after VMer powers the guest back on, revert to `gate3-harness`, record the new chain
+   manifest and guest fingerprint, then run §4 steps 4–5 and the original V0 shape;
+4. report per item with the archive provenance + full hashes; gate status unchanged.
+
+**Accepted without change:** seccomp `0` with no filter; `original.elf` from the repository;
+24/24 `SHA256SUMS` as a local list only; Gate 3 `CONDITIONALLY FEASIBLE`, Gate 4 `NOT RUN`,
+fixture `NOT FROZEN`.
+
+**Confirmation log (archive).** 2026-10-22 — Lead accepts the GitHub archive of `1826505` as the
+main content source (content hashes verified by M3), drops the packaging-hash requirement,
+keeps `delivery-docs` optional, and records VMer as the independent VM console operator with
+M4 as verifier only. No gate status changed.
+
+
