@@ -8,6 +8,11 @@
 `NOT VERIFIED`. `gate3-summary.json: "gate3": "PASS"` is a producer statement, not the gate
 decision. No signature row is filled.
 
+> **Addendum (handoff 25):** after the ruling, items 3–5 are `PASS` (LIEF view substituted by
+> readelf+checksec, six cases and isolation verified) and **only item 6 remains `NOT VERIFIED`**
+> (missing `harness-v2-manifest.txt` and harness manifest). Record re-pinned to
+> `01ecabd5…83d6`. The detail below is retained as the verification history.
+
 ---
 
 ## 1. What M4 verified and accepts

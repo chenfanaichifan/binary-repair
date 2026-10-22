@@ -54,7 +54,7 @@ evidence record). The single canonical draft lives on `origin/member-4-verificat
 |---|---|
 | path | `docs/route-a/gate3-record.md` (repo root on `member-4-verification`) |
 | state | DRAFT, unsigned; items 1–2 PASS, 3–6 NOT VERIFIED |
-| SHA-256 of the draft | `94d7d3148a1f8693fd26116e4f28f4d220f8c184b2cb39122367b7639a4cd1f0` |
+| SHA-256 of the draft | `01ecabd542b1b55b0822fc741523178f5d2760b153d58c8590bcea8128f083d6` |
 
 Anyone holding another draft of the same file must replace it with this version (or send a diff
 against this SHA-256) rather than keeping two records. After a signed version exists it is the
@@ -83,5 +83,5 @@ unchanged except for the hash object:
 - the "bundle `SHA256SUMS`/bundle hash" is replaced by the **SHA-256 of the sorted
   `SHA256SUMS` manifest over the delivered raw evidence set** (`evidence-manifest-sha256`);
 - the gate-3 record was updated to the bundle-free item-6 definition; its canonical hash is now
-  `94d7d3148a1f8693fd26116e4f28f4d220f8c184b2cb39122367b7639a4cd1f0`;
+  `01ecabd542b1b55b0822fc741523178f5d2760b153d58c8590bcea8128f083d6`;
   `bddccbfe…e081` and `3dcdc862…` are **void** and must not be cited.

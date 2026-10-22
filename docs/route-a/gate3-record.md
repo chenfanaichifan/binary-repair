@@ -10,13 +10,12 @@ SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`
 **Basis:** handoff 11 §3 (six required items), handoff 12 (M4 plan), handoff 16/17/18/19
 (M5 canonical contract, six-item matrix, build recipe, routea review), verification-design §4.4
 
-**Approval status:** **DRAFT — NOT SIGNED.** The Lead approved the review process; the
-signature fields stay blank until items 3–6 are `PASS`. Replay ruling (handoff 19): the Lead
-waives **only the full independent rerun** of the six cases by M5; M5's **build/hash replay is
-still required** (`c4a159…` reproduced, contract `24bfe568…`, bundle `SHA256SUMS`/bundle hash
-recomputed and reported).
-**Overall status:** **CONDITIONALLY FEASIBLE — items 3–6 `NOT VERIFIED`.** Gate 3 is **not
-signed**; a CI `6/6` or a static audit is not a pass.
+**Approval status:** **DRAFT — NOT SIGNED.** Items **1–5 PASS** on M4's verification of the
+Phase A bundle; **item 6 `NOT VERIFIED`** until `harness-v2-manifest.txt` (`e53253cf…`) and the
+harness manifest (`3bdbc339…`) or a hashed supplementary set are delivered (handoffs 24/25).
+M5's build/hash replay is still required; the signature rows stay blank.
+**Overall status:** **CONDITIONALLY FEASIBLE — item 6 `NOT VERIFIED`; M5 replay pending.**
+Gate 3 is **not signed**; a CI `6/6` or a producer summary is not a pass.
 
 ---
 
@@ -76,10 +75,10 @@ COPY-relocation writer based on the earlier `f3cb9cbb...` candidate. The contrac
 |---|---|---|---|
 | 1 | Separate candidate copy; original untouched | **PASS** | original hash still the frozen value; candidate is a separate file |
 | 2 | Candidate identity and reproducibility | **PASS** | candidate hash matches; schema-2 manifest complete (displaced/added/intervals/header/writer/termination/tool_versions); build recipe `18-build-recipe.md` with `regen_c4a159.py` (stdlib-only, fail-closed) |
-| 3 | Structural audit (cave R-X runtime probe, `p_filesz`/`p_memsz`, redirect; LIEF/NX/RELRO/canary/import diff) | **NOT VERIFIED** | static structure re-measured PASS (§2–3), but the runtime R-X map probe and the LIEF/NX/RELRO/canary/import diff have not been executed on the candidate |
-| 4 | Six-case run (4 valid + 2 invalid = 6/6 byte-exact) | **NOT VERIFIED** | GitHub CI 6/6 is supplementary only; the required reverted-snapshot run on the guest has not been executed |
-| 5 | Isolation evidence for that run (snapshot, egress block, uid 1003, wrapper attestation) | **NOT VERIFIED** | no formal isolation evidence yet |
-| 6 | Evidence with hashes (raw outputs + `SHA256SUMS` manifest; **no bundle package required** — handoff 21) | **NOT VERIFIED** | this record + `docs/route-a/SHA256SUMS` only; the raw VM outputs and their sorted `SHA256SUMS` manifest hash are missing |
+| 3 | Structural audit (cave R-X runtime probe, `p_filesz`/`p_memsz`, redirect; NX/RELRO/canary/import diff) | **PASS** | Phase A bundle `0ef65546…f54bf8d5` (M4 verified): readelf shows only `PT_LOAD[3]` `p_filesz`/`p_memsz` `0x8e9 → 0x1000` (offset/vaddr/flags/align/entry unchanged, page end `0x402000`, no overlap); checksec: RELRO partial, no Canary, NX enabled, no PIE, no RPATH/RUNPATH, symbols retained, imports/relocations 13 = 13; cave probe hits `0x401304 → 0x4018e9 → 0x401309`, page `0x401000-0x401fff` r-xp, memory at `0x4018e9` = file at `0x18e9`. LIEF extraction was empty (`nx:null`), substituted by readelf+checksec (handoff 25); LIEF gap recorded as tooling gap, not evidence |
+| 4 | Six-case run (4 valid + 2 invalid = 6/6 byte-exact) | **PASS** | Phase A bundle: patched 6/6; valid rc 0 / stdout 1,2,11,50 B / stderr 0; invalid rc 1 / stdout 0 / exact 42-byte stderr; candidate `c4a159…aa82` before = after; run from the reverted `gate3-harness-v2` snapshot (revert log + fingerprint in bundle; revert done in VMware Snapshot Manager, observation only) |
+| 5 | Isolation evidence for that run (snapshot, egress block, uid 1003, wrapper attestation) | **PASS** | Phase A bundle: uid/gid 1003, `CapEff=0`, `NoNewPrivs=1`, `Seccomp: 0`, egress blocked, evaluator unreadable; `jobwrap b0371c10…` 0700 root; guest fingerprint + snapshot layer hashes recorded (chain manifest hash `e53253cf…` reported) |
+| 6 | Evidence with hashes (raw outputs + `SHA256SUMS` manifest; **no bundle package required** — handoff 21) | **NOT VERIFIED** | bundle SHA `0ef65546…` and inner `SHA256SUMS` 20/20 verify, but `harness-v2-manifest.txt` (`e53253cf…`) and the harness manifest (`3bdbc339…`) are missing from the delivered set; add them or a hashed supplementary set, then re-verify (handoff 24/25) |
 
 **Gate 3 verdict: NOT signed — CONDITIONALLY FEASIBLE.** Only `PASS` / `FAIL` / `NOT VERIFIED`
 are valid item labels; "partial" is not a gate label. Items 3–6 are hard requirements; a CI
@@ -122,23 +121,18 @@ main tree / the `1826505` archive, not from the docs branch):
 
 ## 7. What must happen before this record can be signed
 
-1. Run item 4 on the isolation-ready guest from a reverted snapshot, recording byte-exact
-   results for the six frozen cases.
-2. Run item 5: snapshot revert log, no-egress attestation, uid-1003 execution evidence.
-3. Run the runtime R-X cave probe (map `0x401000-0x401fff`, cave bytes == memory, instruction at
-   cave entry executes).
-4. Re-measure `valid.json` / `invalid.json` / manifest-set hashes in the guest.
-5. **Evidence manifest (handoff 21):** deliver the raw outputs (per-case stdout/stderr/rc,
-   wrapper `summary.json`, runtime probe, chain manifest/revert log, isolation attestation,
-   test-count output) **without a bundle package**, plus a sorted `SHA256SUMS` over exactly
-   those files. M4 verifies every line and records the manifest hash; the package tooling is
-   not required.
-6. **M5 replay (handoff 19/21):** the Lead waives only the **full independent rerun** of the six
+1. ~~Item 4 six-case run~~ — **done** (Phase A bundle, `gate3-harness-v2`; §4 row 4).
+2. ~~Item 5 isolation evidence + runtime cave probe + guest hash re-measure~~ — **done**
+   (Phase A bundle; §4 rows 3/5).
+3. **Item 6 completion:** deliver `harness-v2-manifest.txt` (`e53253cf…`) and the harness
+   manifest (`3bdbc339…`), or a supplementary hashed set covering them; M4 verifies and records
+   the hash. No bundle rebuild is required (handoff 21/25).
+4. **M5 replay (handoff 19/21):** the Lead waives only the **full independent rerun** of the six
    frozen cases. **M5's build/hash replay is not waived:** reproduce candidate `c4a159…aa82`
    from the recorded recipe on `original.elf` (`aa428157…`), verify contract `24bfe568…4e37`,
-   recompute the **evidence-manifest `SHA256SUMS` hash** over the delivered evidence set (there
-   is no bundle hash), and report the observed hashes. Until that replay exists, this record
-   stays DRAFT and the signature line stays blank.
+   recompute the **evidence-manifest/bundle `SHA256SUMS` hash** over the delivered evidence set,
+   and report the observed hashes. Until that replay exists, this record stays DRAFT and the
+   signature line stays blank.
 
 ## 8. M5 review status: RE-REVIEW PENDING
 
