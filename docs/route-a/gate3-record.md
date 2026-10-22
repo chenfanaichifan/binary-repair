@@ -30,7 +30,12 @@ signed**; a CI `6/6` or a static audit is not a pass.
 | contract file SHA-256 | not claimed | `15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df` (1,998 B) | recorded |
 | original size | 26,792 B | 26,792 B | PASS |
 | candidate size | 26,792 B | 26,792 B | PASS |
-| `valid.json` / `invalid.json` / manifest-set hashes | `17b2ee...` / `d493f3...` / `a564f0...` | not re-measured here (files not in workspace) | NOT VERIFIED |
+| `valid.json` / `invalid.json` / manifest-set hashes | `17b2ee...` / `d493f3...` / `a564f0...` | recomputed from the `origin/main` `4107836` blobs: `17b2ee399db5ef43ba14978c497d71dc45d28aaa685ff90a60baaabc6f221e76` / `d493f370a37b25f910eb72cb6f9202856e46be0e42e76922db38a30769f8190d` / set `a564f0397a741b1a4fc386a3149d54550c1bfe7c02958309e021fb6f03333a78` | PASS (static blob identity; guest re-measure still required) |
+
+> **Revision 2026-10-22 19:30:** evidence-file hashes in §5 were recomputed from `origin/main`
+> `4107836`; the earlier `1b1c7321…` audit/manifest citation was wrong (not a repository object).
+> Item statuses and signing order are unchanged. This revision changes the record hash; the
+> previous `bddccbfe…` / `b6fedd2b…` hashes are superseded.
 
 ## 2. M4 independent structural measurements
 
@@ -82,11 +87,15 @@ are valid item labels; "partial" is not a gate label. Items 3–6 are hard requi
 
 ## 5. Producer inputs used (read-only, not M4 evidence)
 
-| File | SHA-256 |
+Hashes below were recomputed from `origin/main` `4107836` blobs (the paths resolve from the
+main tree / the `1826505` archive, not from the docs branch):
+
+| File | SHA-256 (size) |
 |---|---|
-| `routea/out/edit-manifest.json` (schema 2) | `1b1c7321...` (schema 1) — re-exported schema 2 recorded in §3 |
-| `routea/out/audit.json` | `1b1c73211f4953126f4e989cba4d5dcb68757d1b190ac4c8010776890cdb0af2` |
-| `routea/out/readelf-audit.txt` | `086ce7c87f535fbc5ed583da529a05ddfae0c75846c6a543bd4aaab1d02825c5` |
+| `routea/out/edit-manifest.json` (schema 2) | `710657bf9d21068444c4a2d85e05c1e57557625604c589d8f8268edfa1a10fc0` (2,658 B) |
+| `routea/out/audit.json` | `e915cb8bb211ed4305400ec02d0cb80847fe98bb1d27b264ac1032ade5165821` (305 B) |
+| `routea/out/readelf-audit.txt` | `086ce7c87f535fbc5ed583da529a05ddfae0c75846c6a543bd4aaab1d02825c5` (7,829 B) |
+| `fixtures/.../contract.json` (file hash) | `15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df` (1,998 B) |
 | M5 contract revision approval | `docs/route-b/16-contract-revision-approval.md` |
 | M5 six-item matrix | `docs/route-b/17-gate3-six-item-matrix.md` |
 | M5 build recipe | `docs/route-b/18-build-recipe.md` |
