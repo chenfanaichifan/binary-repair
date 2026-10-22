@@ -25,7 +25,7 @@ jobs:
           mkdir -p routea/out
           python -m routea.cave build \
             --elf fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf \
-            --contract fixtures/public/CWE121_src_char_declare_cpy_51b/contract.cave-probe.json \
+            --contract fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json \
             --cave 0x4018e9 --cave-size 1815 \
             --out routea/out/cave-probe.elf \
             --manifest routea/out/edit-manifest.json \
@@ -48,7 +48,7 @@ jobs:
           python -m routea.cave audit \
             --original fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf \
             --patched routea/out/cave-probe.elf \
-            --contract fixtures/public/CWE121_src_char_declare_cpy_51b/contract.cave-probe.json \
+            --contract fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json \
             --cave 0x4018e9 --cave-size 1815 \
             --out routea/out/audit.json
       - name: Six-case runtime probe

@@ -43,9 +43,10 @@ def test_cave_plan_redirects_call_and_builds_guard() -> None:
     assert plan.call_site == 0x401304
     assert plan.redirect == bytes.fromhex("e8f7030000")
     assert plan.cave_addr == 0x401700
-    assert plan.message_addr == 0x401748
+    assert plan.message_addr == 0x401747
     insns = list(Cs(CS_ARCH_X86, CS_MODE_64).disasm(plan.code, plan.cave_addr))
-    assert any(i.mnemonic == "call" and i.op_str == "0x401120" for i in insns)
+    assert sum(1 for i in insns if i.mnemonic == "syscall") == 2
+    assert not any(i.mnemonic == "call" for i in insns)
     valid_jmp = next(i for i in insns if i.mnemonic == "jmp" and i.op_str == "0x4010d0")
     assert valid_jmp is not None
     assert b"\x0f\x05" in plan.code
@@ -74,7 +75,7 @@ def test_cave_extends_rx_segment_and_audits(tmp_path) -> None:
     assert plan.rx_vaddr == 0x401000
     assert plan.rx_new_size == 0x1000
     assert plan.redirect == bytes.fromhex("e8e0050000")
-    assert plan.message_addr == 0x401931
+    assert plan.message_addr == 0x401930
     out = tmp_path / "cave_probe.elf"
     manifest = build_cave_patched(ELF, plan, out, scope_authorized=True)
     assert manifest.audit["pass"] is True

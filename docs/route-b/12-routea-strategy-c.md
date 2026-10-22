@@ -21,7 +21,7 @@ existing `call strcpy@plt` at `0x401304` to a code cave. The cave owns the guard
 | message | 42 bytes immediately after the code in the cave |
 | new segment | none (strategy C) |
 | new relocation | none |
-| new PLT | **none needed**: `fprintf@0x401120` and `stderr@0x404080` already exist |
+| new PLT | **none**: invalid path uses `write(2, msg, 42)` syscall; no `fprintf`/`stderr` |
 
 Cave entry state: `rdi = dest`, `rsi = data` (set by the original sequence at
 `0x4012f6`–`0x401304`). The cave uses `r8`/`rcx` for the scan and preserves
@@ -42,10 +42,10 @@ done:
   cmp rcx, 49
   jbe valid
   sub rsp, 8                 ; align before call (cave entry rsp%16=8)
-  mov rdi, [stderr]
+  mov eax, 1; mov edi, 2        ; write
   lea rsi, [msg]
-  xor eax, eax
-  call fprintf@plt
+  mov edx, 42
+  syscall
   mov eax, 231; mov edi, 1; syscall   ; exit_group(1)
 valid:
   jmp strcpy@plt             ; rsp%16=8 at entry, strcpy returns to 0x401309
@@ -65,8 +65,8 @@ No return address is rewritten; the original return address on the stack is
 3. **Call replacement.** Earlier constraint said `strcpy@0x401304–0x401308`
    "不得切開". Strategy C replaces the 5-byte call **as a whole** (not split).
    This must be explicitly allowed; otherwise C is not valid.
-4. **New PLT.** Not needed for this binary; `fprintf` and `stderr` are already
-   imported. If a future fixture lacks them, that is a new scope item.
+4. **New PLT.** Not needed: the invalid path uses a `write` syscall, and
+   `allowed_calls` stays `("strcpy", "printLine")`. No `fprintf`/`stderr` is used.
 
 ## 5. Commands
 

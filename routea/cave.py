@@ -53,8 +53,6 @@ class CavePlan:
     code: bytes
     message: bytes
     message_addr: int
-    stderr_vaddr: int
-    fprintf_plt: int
     strcpy_plt: int
     max_valid_input: int
 
@@ -73,8 +71,6 @@ class CavePlan:
             "message": self.message.decode("ascii"),
             "message_hex": self.message.hex(),
             "message_addr": hex(self.message_addr),
-            "stderr_vaddr": hex(self.stderr_vaddr),
-            "fprintf_plt": hex(self.fprintf_plt),
             "strcpy_plt": hex(self.strcpy_plt),
             "max_valid_input": self.max_valid_input,
         }
@@ -84,10 +80,9 @@ def _encode_cave(
     *,
     cave_addr: int,
     message_addr: int,
-    stderr_vaddr: int,
-    fprintf_plt: int,
     strcpy_plt: int,
     max_valid: int,
+    message_len: int,
 ) -> bytes:
     # entry: rdi = dest, rsi = data (from the original call site)
     code = bytearray(b"\x49\x89\xf0")              # mov r8, rsi
@@ -99,17 +94,15 @@ def _encode_cave(
     code += b"\x48\x81\xf9" + struct.pack("<I", max_valid)
     jbe_at = len(code)
     code += b"\x0f\x86\x00\x00\x00\x00"            # jbe valid
-    code += b"\x48\x83\xec\x08"                    # sub rsp, 8 (align before call)
-    mov_rdi_at = len(code)
-    code += b"\x48\x8b\x3d\x00\x00\x00\x00"        # mov rdi, [rip+stderr]
+    code += b"\xb8\x01\x00\x00\x00"                # mov eax, 1 (write)
+    code += b"\xbf\x02\x00\x00\x00"                # mov edi, 2 (stderr fd)
     lea_rsi_at = len(code)
     code += b"\x48\x8d\x35\x00\x00\x00\x00"        # lea rsi, [rip+msg]
-    code += b"\x31\xc0"                            # xor eax, eax
-    call_at = len(code)
-    code += b"\xe8\x00\x00\x00\x00"                # call fprintf@plt
+    code += b"\xba" + struct.pack("<I", message_len)  # mov edx, len
+    code += b"\x0f\x05"                            # syscall write
     code += b"\xb8\xe7\x00\x00\x00"                # mov eax, 231
     code += b"\xbf\x01\x00\x00\x00"                # mov edi, 1
-    code += b"\x0f\x05"                            # syscall
+    code += b"\x0f\x05"                            # syscall exit_group
     valid_at = len(code)
     jmp_at = len(code)
     code += b"\xe9\x00\x00\x00\x00"                # jmp strcpy@plt
@@ -118,13 +111,9 @@ def _encode_cave(
         code[at:at + 4] = struct.pack("<i", target - end)
 
     rel32(jbe_at + 2, cave_addr + valid_at, cave_addr + jbe_at + 6)
-    code[mov_rdi_at + 3:mov_rdi_at + 7] = struct.pack(
-        "<i", stderr_vaddr - (cave_addr + mov_rdi_at + 7)
-    )
     code[lea_rsi_at + 3:lea_rsi_at + 7] = struct.pack(
         "<i", message_addr - (cave_addr + lea_rsi_at + 7)
     )
-    rel32(call_at + 1, fprintf_plt, cave_addr + call_at + 5)
     rel32(jmp_at + 1, strcpy_plt, cave_addr + jmp_at + 5)
     return bytes(code)
 
@@ -177,12 +166,11 @@ def plan_route_a_cave(
     message = contract.invalid_stderr.encode("ascii")
     with elf_path.open("rb") as fh:
         elf = ELFFile(fh)
-        stderr_vaddr = _sym(elf, "stderr")
         plts = _plt_map(elf)
         by_name = {name: addr for addr, name in plts.items()}
-        if "fprintf" not in by_name or "strcpy" not in by_name:
-            raise RouteAError("fprintf/strcpy PLT entries are required")
-        fprintf_plt, strcpy_plt = by_name["fprintf"], by_name["strcpy"]
+        if "strcpy" not in by_name:
+            raise RouteAError("strcpy PLT entry is required")
+        strcpy_plt = by_name["strcpy"]
     if not _call_site_ok(elf_path, call_site, strcpy_plt):
         raise RouteAError("call site is not a 5-byte call to strcpy@plt")
     rx_vaddr = _rx_cave_segment(elf_path, cave_addr, cave_size)
@@ -194,27 +182,24 @@ def plan_route_a_cave(
     placeholder = _encode_cave(
         cave_addr=cave_addr,
         message_addr=cave_addr,
-        stderr_vaddr=stderr_vaddr,
-        fprintf_plt=fprintf_plt,
         strcpy_plt=strcpy_plt,
         max_valid=contract.max_valid_input_bytes,
+        message_len=len(message),
     )
     message_addr = cave_addr + len(placeholder)
     code = _encode_cave(
         cave_addr=cave_addr,
         message_addr=message_addr,
-        stderr_vaddr=stderr_vaddr,
-        fprintf_plt=fprintf_plt,
         strcpy_plt=strcpy_plt,
         max_valid=contract.max_valid_input_bytes,
+        message_len=len(message),
     )
     if len(code) + len(message) > cave_size:
         raise RouteAError("cave is too small for code + message")
     redirect = b"\xe8" + struct.pack("<i", cave_addr - (call_site + 5))
     return CavePlan(target, call_site, cave_addr, cave_size, rx_vaddr,
                     rx_new_size, redirect, code, message, message_addr,
-                    stderr_vaddr, fprintf_plt, strcpy_plt,
-                    contract.max_valid_input_bytes)
+                    strcpy_plt, contract.max_valid_input_bytes)
 
 
 def _segment_at(loads: list[dict], vaddr: int) -> dict | None:
