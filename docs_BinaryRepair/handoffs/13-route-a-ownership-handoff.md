@@ -298,3 +298,43 @@ No change requested now; flagged so the guest rebuild uses a segment-exact mappi
   hashes of the original, both manifests, the manifest set, the probe contract, and the
   CI-built candidate verified in this checkout; review findings §5.1-§5.7 recorded for the
   evidence package. No oracle, manifest, contract constant, or frozen hash changed.
+
+---
+
+## 10. Lead ratification (2026-10-22)
+
+The Lead reviewed this handoff and **ratifies it** as the team record: gate 3 formal evidence
+and the Route A half of gate 5 move from M5 to M4; M5 keeps `routea/`, the contract revision,
+gate 4 and the distribution kit; M3 keeps the guest and the isolation evidence; no
+self-approval (M5 replays, the Lead approves).
+
+**Independent read-only check of the artifact inventory in §3** (Lead: `git cat-file` blobs
+plus a struct-only ELF parser; no execution, no network):
+
+| Check | Observed |
+|---|---|
+| `original.elf` | 26,792 B, SHA-256 `aa428157...8393` |
+| `valid.json` / `invalid.json` | `17b2ee39...1e76` / `d493f370...190d` |
+| CI candidate `routea/out/cave-probe.elf` | 26,792 B, SHA-256 `f3cb9cbb...f9fa7` |
+| ELF headers | 13 program headers each; `e_entry` `0x401170` unchanged; file size `0x68a8` both |
+| RX `PT_LOAD` (index 3) | `p_offset` `0x1000`, `p_vaddr` `0x401000`, `p_align` `0x1000`, flags `0x5` (R E); `p_filesz`/`p_memsz` `0x8e9` -> `0x1000`; page congruence `0x0`/`0x0`; next `PT_LOAD` at `0x402000` (adjacent, no overlap) |
+| redirect | file offset `0x1304`: `e8 c7 fd ff ff` -> `e8 e0 05 00 00`, rel32 `+0x5e0` -> target `0x4018e9` |
+| cave | head at file offset `0x18e9` is the inline length loop; message at `0x1931` is exactly the 42 frozen bytes; the original bytes in the range are zero |
+| byte diffs | only `0x108-0x109` / `0x110-0x111` (PT_LOAD[3] `p_filesz`/`p_memsz`), `0x1305-0x1308` (redirect), `0x18e9-0x195a` (added code/data); file size unchanged |
+| committed audit/evidence | the 8-boolean `audit.json` and the incomplete `edit-manifest.json` described in §5.2-§5.3; CI `runtime.log` 6/6 with the same candidate hash; `readelf-audit.txt` from a GitHub-hosted runner, not the guest |
+
+These checks establish artifact identity and structure only. They are **not** gate-3 evidence:
+the runtime cave probe, the liveness traces, the guest rebuild/reproducibility, the six-case
+run under the three isolation preconditions, and the evidence bundle remain M4's to produce
+in the guest (handoff 12). The CI 6/6 is supplementary only (§5.6).
+
+**Corrections the Lead applied to `09-route-a-added-code-ruling.md` on 2026-10-22:** the
+valid-path return is `0x401309`; the writer amendment now authorizes the measured
+`fprintf@plt` + existing `stderr` COPY relocation, with
+`allowed_calls = ("strcpy", "printLine", "fprintf")` and no new import; gate 3 ownership and
+the reply section point to M4. The M4 plan's after-copy breakpoint already uses `0x401309`,
+so the earlier note that it "still needs fixing" is stale.
+
+**Confirmation log (ratification).** 2026-10-22 — Lead ratifies the ownership transfer and
+records the independent identity/structure verification above; no gate status changed
+(gate 3 `CONDITIONALLY FEASIBLE`, gate 4 `NOT RUN`, fixture `NOT FROZEN`).

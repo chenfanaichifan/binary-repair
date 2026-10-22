@@ -125,16 +125,20 @@ byte bounds below are review bounds, and gate 3 may report that a larger bound i
 
 1. `Allow a 5-byte relative redirect of call strcpy@plt at 0x401304 to reviewed added code and a branch back to 0x401309 (the instruction after the 5-byte call) on the valid path.`
 2. `Allow up to 256 bytes of added x86-64 code in a gate-3-verified unused region of a loadable R-X segment reachable from 0x401304; zero bytes alone are not evidence.`
-3. `Allow up to 64 bytes of added read-only data holding exactly ERROR: input exceeds destination capacity plus LF, RIP-relative references only.`
-4. `Allow the invalid path to write that data to fd 2 and exit 1 without returning to main or writing stdout.`
-5. `Allow extending the existing R-X PT_LOAD's p_filesz/p_memsz to map the verified-unused tail ending at 0x401fff; record offset, vaddr, filesz, memsz, align; keep page congruence and no segment overlap.`
+3. `Allow up to 64 bytes of added constant data holding exactly ERROR: input exceeds destination capacity plus LF inside the added-code region; RIP-relative references only.`
+4. `Allow the invalid path to emit that data on fd 2 through the existing fprintf@plt and the existing stderr object, then exit 1 via exit_group without returning to main or writing stdout.`
+5. `Allow extending the existing R-X PT_LOAD's p_filesz/p_memsz from 0x8e9 to 0x1000 (mapped end 0x402000) to cover the verified-unused tail ending at 0x401fff; record offset, vaddr, filesz, memsz, align; keep page congruence and no segment overlap.`
 6. `Allow no new segment, dynamic import, GOT/PLT/relocation edit or permission broadening; only if the tail extension is rejected, allow one new R-X PT_LOAD with recorded headers.`
 
-`allowed_calls` stays `("strcpy", "printLine")` for a syscall-based repair (syscalls are not
-"calls" and are covered by entry 4). Add a writer — exactly `write`, `fputs`, or `fwrite`,
-plus `exit` if used — **only if gate 3 confirms that import already exists**; never list a
-function the ELF cannot reach. Note that `allowed_calls` is consumed only by Route B
-validation; for Route A it is reviewed scope plus V1 evidence, not validator enforcement.
+**Writer amendment (2026-10-22, after M5's measured CI probe).** The ELF already imports
+`fprintf` and has the `stderr` COPY relocation; it imports **no** `write`, `fputs`, `fwrite`,
+`exit`, `strlen`, or `strncpy`. The first persisted contract revision therefore sets
+`allowed_calls = ("strcpy", "printLine", "fprintf")` for the measured mechanism. The raw
+`write(2)` + `exit_group` pair remains an acceptable alternative only if the candidate
+switches to it and the guest seccomp result is recorded. Never list a function the ELF
+cannot reach; adding a new import is out of this profile. Note that `allowed_calls` is
+consumed only by Route B validation; for Route A it is reviewed scope plus V1 evidence, not
+validator enforcement.
 
 Effects of the revision: it changes the canonical contract payload and therefore
 `reviewed_scope_sha256` — a new contract revision and a new approval are required, which is
@@ -153,7 +157,7 @@ does not accept arbitrary machine-code plans" rule intact.
 
 ---
 
-## 5. What gate 3 must test and record (Member 5)
+## 5. What gate 3 must test and record (Member 4 since handoff 13; M3 supplies the guest)
 
 Gate 3 answers feasibility, not acceptance. Record each item with a command and an
 evidence file:
@@ -175,10 +179,12 @@ evidence file:
 6. **Termination** — invalid path writes the exact 42 bytes to fd 2, exits 1 via
    `exit_group` (or `exit` import), never returns to `main`; stdout empty; no crash. A
    direct syscall may be blocked by guest seccomp — record the guest policy.
-7. **Writer/import evidence** — inspect `dynsym`/PLT for `write`/`fputs`/`fwrite`; no ELF,
-   dynsym, or PLT evidence is committed on any ref today, so this must be measured. Adding
-   a new import means editing `.dynsym`/`.dynstr`/`.rela.plt`/`.got.plt`/`.dynamic` plus
-   versioning/RELRO: treat as out of this profile.
+7. **Writer/import evidence** — the committed ELF imports `fprintf` and has the `stderr`
+   COPY relocation; it imports no `write`/`fputs`/`fwrite`/`exit`/`strlen`/`strncpy`
+   (measured from `readelf --dyn-syms`/PLT, handoff 13 §3). Re-measure in the guest before
+   relying on it. Adding a new import means editing
+   `.dynsym`/`.dynstr`/`.rela.plt`/`.got.plt`/`.dynamic` plus versioning/RELRO: treat as out
+   of this profile.
 8. **CET** — "CET enabled" is an unverified assumption; record compile-time `ENDBR64`
    separately from runtime IBT and shadow-stack enforcement. A direct rel32 branch needs no
    landing pad; an indirect entry does; a mismatched `ret` breaks under shadow stack.
@@ -222,18 +228,27 @@ recorded.
 
 ## 8. Reply requested
 
-- **Member 5:** gate 3 result as `FEASIBLE` (with placement and writer recorded) or
-  `UNSUPPORTED` (with the concrete fact) — no `NEEDS SCOPE RULING` for scope, since this
-  ruling settles it.
-- **Member 3:** append the measured constraints and the chosen strategy to
-  `route-a/docs/06-instruction-repair.md` §Investigation log, and confirm the instruction
-  interval and added-byte plan to Member 5.
+- **Member 4 (gate 3 evidence owner since handoff 13):** the evidence package result per
+  handoff 11 §3 — `GATE 3 PASS` (all six items), `FAIL` (concrete failing fact), or
+  `NOT VERIFIED` (missing evidence / missing isolation precondition). No `NEEDS SCOPE
+  RULING` for scope, since this ruling settles it.
+- **Member 5:** the contract revision with the six `authorized_edits` above (including the
+  `fprintf` writer amendment) and a complete edit manifest, or approval of M4's
+  supplementary manifest from the recorded recipe; keep gate 4 moving.
+- **Member 3:** the guest and isolation evidence, guest access for M4, the canonical
+  `original.elf` source confirmation, and the measured constraints appended to
+  `route-a/docs/06-instruction-repair.md` §Investigation log.
 
 ---
 
 ## 9. Sign-off
 
 - Lead: 2026-10-22, Option A.
+- Corrections 2026-10-22 (after M5's measured CI probe): the valid-path return is
+  **`0x401309`** (the 5-byte call occupies `0x401304`-`0x401308` inclusive); the measured
+  writer is `fprintf@plt` + the existing `stderr` COPY relocation, so the contract revision
+  authorizes `fprintf` in `allowed_calls`; gate 3 evidence ownership moved to M4
+  (`handoffs/13-route-a-ownership-handoff.md`, ratified by the Lead).
 - Member 4 (verification): reviewed 2026-10-22 — **agrees with Option A, rejects Option B**;
   amendments incorporated here: the oracle mirror is not an approved contract, the invalid
   path must terminate the process, syscall writes avoid a new dependency, `allowed_calls` is
@@ -331,10 +346,11 @@ passwordless sudo). Record them with the run; without them the run is not eviden
 
 ### 11.5 Gate 4
 
-The `toolchain-v4-ready` snapshot is reported ready by M3. The remaining gate-4 blocker is
-**M5's `routeb/` scripts**. Target: M5 delivers them, or reports the concrete missing item and
-blocker, by **2026-10-23 12:00**; gate 4 then runs under the same isolation preconditions.
-Gate 4 does not depend on gate 3.
+The `toolchain-v4-ready` snapshot is reported ready by M3. Remaining gate-4 blockers:
+**M5's `routeb/` scripts** and team-guest access for a formal run (M5's gate 4 checklist
+records no VM/snapshot/offline access). Target: M5 delivers the scripts or reports the
+concrete blocker by **2026-10-23 12:00**; gate 4 then runs under the same isolation
+preconditions. Gate 4 does not depend on gate 3.
 
 **Confirmation log (follow-up).** 2026-10-22 — gate 3 recorded as CONDITIONALLY FEASIBLE
 (work status, not pass); tail extension `p_filesz`/`p_memsz` to `0x401fff` authorized with

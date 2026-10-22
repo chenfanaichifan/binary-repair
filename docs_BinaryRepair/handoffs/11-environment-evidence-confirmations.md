@@ -105,6 +105,42 @@ it as a pass; 50 steps is far below any meaningful bound.
 Any item failing is reported before the deadline; V4 stays `inconclusive`; no after-the-fact
 backfill.
 
+---
+
+## 6. Verification ownership (M1's reply, 2026-10-22)
+
+M1 assigned the acceptance evidence to **Member 4** and named three items to confirm: cave
+loading, register liveness, and the six-case oracle. This section makes that assignment
+precise so it does not become "M3 self-checks, M4 signs".
+
+- **Producer/verifier separation.** M3 produces the candidate and its evidence; M4 verifies
+  independently. M4 must not reuse M3's conclusions or raw outputs and must keep its own
+  copies and logs.
+- **M4's plan:** `docs_BinaryRepair/handoffs/12-m4-acceptance-evidence-plan.md`.
+- **Ownership record:** `docs_BinaryRepair/handoffs/13-route-a-ownership-handoff.md` — gate 3
+  formal evidence and the Route A half of gate 5 moved from M5 to M4 on 2026-10-22 (ratified
+  by the Lead); M5 keeps `routea/`, the contract revision, gate 4 and the kit; M3 supplies
+  the guest and isolation evidence.
+- **M4 confirms all six gate-3 items (§3)**, with the three named ones as critical:
+  1. **Cave loading** — own runtime probe on the final candidate: the range is mapped R-X,
+     the file bytes match, an instruction at the cave entry executes; own header diff audit
+     with `readelf -l` plus an independent LIEF/parse view.
+  2. **Register liveness** — own dynamic trace plus static decode at `0x401304`: the live set
+     across the redirect, which callee-saved registers (`rbx`, `rbp`, `r12`-`r15`) the cave
+     must preserve, stack alignment at the added `strcpy` call, and flag liveness. The
+     verdict must be "provable and preserved" or "unknown" (unknown ⇒ `unsupported`, Tech
+     Design §8). A single observed register snapshot is not liveness proof.
+  3. **Six-case oracle** — own run of the frozen manifest on the final candidate (SHA-256
+     recorded before the run) from a reverted snapshot under the three isolation
+     preconditions: per-case byte-exact stdout/stderr and exit code, no crash; separately
+     confirm the original's hash and its 4/6 V0 shape.
+- **Not a second success rule.** M4's confirmation is evidence; the acceptance engine still
+  decides outcomes from evidence. Missing evidence or a missing isolation precondition is
+  **not verified**, never pass.
+
+**Confirmation log (ownership).** 2026-10-22 — M1 assigned acceptance evidence to M4; Lead
+fixed the producer/verifier separation and the three confirmed items above.
+
 **Confirmation log.** 2026-10-22 — chained image manifest accepted with canonical format and
 guest fingerprint; root wrapper + setuid 1003 accepted as the unprivileged execution user with
 the listed conditions; gate 3 pass criteria defined as six required items; V4 smoke stays
