@@ -448,6 +448,17 @@ def get_run(run_id: str, *, data_dir: str | Path) -> RunRecord | None:
     return None if row is None else _run_record(row, created=False)
 
 
+def list_queued_runs(*, data_dir: str | Path) -> list[RunRecord]:
+    connection = connect(data_dir)
+    try:
+        rows = connection.execute(
+            "SELECT * FROM runs WHERE phase = 'queued' ORDER BY started_at, rowid"
+        ).fetchall()
+    finally:
+        connection.close()
+    return [_run_record(row, created=False) for row in rows]
+
+
 def get_attempt(attempt_id: str, *, data_dir: str | Path) -> AttemptRecord | None:
     connection = connect(data_dir)
     try:
@@ -568,6 +579,7 @@ __all__ = [
     "get_job",
     "get_run",
     "list_attempts",
+    "list_queued_runs",
     "retry_attempt",
     "start_run",
 ]

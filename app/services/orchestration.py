@@ -171,26 +171,29 @@ def evaluate_attempt(
         unsupported_reason=unsupported_reason,
         unsupported_detail=unsupported_detail,
     )
-    _write_json(
-        Path(data_dir) / "jobs" / job_id / "runs" / run_id / "verdict.json",
-        {
-            "job_id": job_id,
-            "run_id": run_id,
-            "candidate_sha256": candidate_sha256,
-            "expected_sha256": body.get("input_sha256"),
-            "reviewed_scope_sha256": body.get("scope_sha256"),
-            "obligations": [
-                {
-                    "kind": item.kind,
-                    "required": item.required,
-                    "result": item.result.value,
-                    "detail": item.detail,
-                }
-                for item in obligations
-            ],
-            "verdict": _verdict_payload(verdict),
-        },
-    )
+    payload = {
+        "job_id": job_id,
+        "run_id": run_id,
+        "candidate_sha256": candidate_sha256,
+        "expected_sha256": body.get("input_sha256"),
+        "reviewed_scope_sha256": body.get("scope_sha256"),
+        "obligations": [
+            {
+                "kind": item.kind,
+                "required": item.required,
+                "result": item.result.value,
+                "detail": item.detail,
+            }
+            for item in obligations
+        ],
+        "verdict": _verdict_payload(verdict),
+    }
+    if attempt_id is None and route is None:
+        _write_json(
+            Path(data_dir) / "jobs" / job_id / "runs" / run_id / "verdict.json",
+            payload,
+        )
+
     outcome, reason, failing, detail = _verdict_values(verdict)
     connection = connect(data_dir)
     try:
@@ -206,6 +209,17 @@ def evaluate_attempt(
                     "UPDATE attempts SET phase = 'finished', outcome = ?, reason = ?, "
                     "failing_obligation = ?, detail = ? WHERE id = ?",
                     (outcome, reason, failing, detail, attempt["id"]),
+                )
+                _write_json(
+                    Path(data_dir)
+                    / "jobs"
+                    / job_id
+                    / "runs"
+                    / run_id
+                    / "attempts"
+                    / str(attempt["id"])
+                    / "verdict.json",
+                    payload,
                 )
     finally:
         connection.close()
