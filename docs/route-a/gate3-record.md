@@ -135,7 +135,42 @@ B1–B6. M4 resubmitted on base `ad1a1f8` (handoff 18): branch
 is **not accepted** and is not gate-3 evidence either way. M5's build/hash replay (handoff 19)
 is also still pending.
 
-## 9. Signature — BLANK (DRAFT)
+## 9. M5 build/hash replay — recorded, not a gate pass
+
+**Scope:** M5 replayed the delivered handoff bundle, not the formal VM evidence
+bundle. The formal VM bundle (items 3–6) remains `NOT VERIFIED`.
+
+```text
+bundle:       dist/m5-routea-c4a159-2026-10-22.zip
+bundle sha:   957d73d4284a4e5ced27de451bacdfe8956751232bd4a1fa5aa6454dccdc108e
+original:     aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393
+candidate:    c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
+contract file:15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df
+contract canon:24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
+regen script: 56331eedb4d72c55eec4e0f105fb20207576e6e6860b79ca4cedb175ed54e843
+SHA256SUMS:   640b448228ea8e16d15930c5c81a1478a11a82a1feddb122f6262157a87788dd
+bundle hash:  640b448228ea8e16d15930c5c81a1478a11a82a1feddb122f6262157a87788dd
+```
+
+Commands used:
+
+```bash
+unzip -q dist/m5-routea-c4a159-2026-10-22.zip -d /tmp/m5replay
+cd /tmp/m5replay
+python3 regen_c4a159.py original.elf replayed.elf
+sha256sum replayed.elf
+sha256sum -c SHA256SUMS
+sha256sum SHA256SUMS
+```
+
+Result: `replayed.elf` is byte-identical to `candidate.elf`; all `SHA256SUMS`
+entries `OK`; `contract_sha256()` reproduces `24bfe568…4e37`; candidate and
+contract match the record. **M5 replay = PASS for the handoff bundle.**
+
+This row does not fill the M4 verifier row and does not approve Gate 3. The formal
+VM bundle and items 3–6 are still required before M4 signs.
+
+## 10. Signature — BLANK (DRAFT)
 
 **Signing order (handoff 19 §5):**
 
@@ -150,7 +185,7 @@ is also still pending.
 | Role | Name | Date | Signature |
 |---|---|---|---|
 | M4 verifier | — | — | **blank until items 3–6 are PASS** |
-| M5 build/hash replay | — | — | pending (handoff 19) |
+| M5 build/hash replay | Member 5 | 2026-10-22 | REPLAYED — `c4a159…aa82` / `24bfe568…4e37` / `SHA256SUMS 640b…`; handoff bundle only |
 | Lead approval | — | — | pending |
 
 Do not fill these fields from a CI run, a static audit, or a verbal approval. A blank row is not
