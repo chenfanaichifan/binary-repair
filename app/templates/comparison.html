@@ -42,9 +42,8 @@
 <div class="statusbar">
   <span class="status-item">任务阶段：<span class="badge" id="job-phase" data-testid="job-phase">{{ phase_labels_zh.get(job.phase, job.phase) }}</span></span>
   <span class="status-item">整体结论：
-    <span class="badge outcome-none" id="job-outcome" data-testid="job-outcome">
-      {% if job.phase == "finished" and not job.cancelled %}未达成（需两条路线各自成功）{% else %}—{% endif %}
-    </span>
+    {% set overall = overall_result(job) %}
+    <span class="badge outcome-{{ overall.key | replace('_', '-') }}" id="job-outcome" data-testid="job-outcome">{{ overall.label_zh }}</span>
   </span>
   <span class="status-item muted">每 2 秒自动刷新 · 未执行 = not_run · <span id="poll-status">轮询中…</span></span>
 </div>

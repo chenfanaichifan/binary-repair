@@ -51,7 +51,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Resp
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app import i18n
+from app import i18n, status
 from app.backend import (
     BackendError,
     backend_description,
@@ -110,6 +110,7 @@ templates.env.globals.update(
     value_labels_zh=i18n.VALUE_LABELS_ZH,
     route_names_zh=i18n.ROUTE_NAMES_ZH,
     csrf_token=CSRF_TOKEN,
+    overall_result=status.overall_result,
 )
 
 # 数据来源（测试里默认 mock；接真实 controller 时只需换环境变量）
@@ -475,9 +476,12 @@ async def export_bundle(job_id: str):
 
 @app.get("/healthz")
 async def healthz():
+    # mock is synthetic; local is the real controller store; http trusts the
+    # controller snapshot, so the demo flag is unknown until a job is fetched.
+    demo = {"mock": True, "local": False}.get(BACKEND_MODE)
     return {
         "ok": True,
         "backend": BACKEND_MODE,
         "backend_detail": backend_description(BACKEND),
-        "demo": BACKEND_MODE == "mock",
+        "demo": demo,
     }

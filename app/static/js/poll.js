@@ -109,25 +109,31 @@
     }
   }
 
+  function overallResult(data) {
+    var finished = data.phase === "finished" || data.cancelled;
+    if (!finished) return { key: "none", label: "—" };
+    var outcomes = Object.keys(data.routes || {}).map(function (key) {
+      return data.routes[key].outcome;
+    });
+    if (outcomes.indexOf("cancelled") !== -1) return { key: "cancelled", label: "已取消" };
+    if (outcomes.indexOf("error") !== -1) return { key: "error", label: "失败（执行错误）" };
+    if (outcomes.length && outcomes.every(function (value) { return value === "success_within_scope"; })) {
+      return { key: "success-within-scope", label: "成功（声明范围内）" };
+    }
+    return { key: "rejected", label: "未达成（需两条路线各自成功）" };
+  }
+
   function updateJob(data) {
     setText("job-phase", PHASE_LABELS[data.phase] || data.phase);
 
-    var finished = data.phase === "finished" || data.cancelled;
-    var outcomes = Object.keys(data.routes).map(function (key) {
-      return data.routes[key].outcome;
-    });
-    var overall = "—";
-    if (finished) {
-      if (outcomes.length === 2 && outcomes.every(function (v) { return v === "success_within_scope"; })) {
-        overall = "成功（声明范围内）";
-      } else if (outcomes.indexOf("cancelled") !== -1) {
-        overall = "已取消";
-      } else {
-        overall = "未达成（需两条路线各自成功）";
-      }
+    var overall = overallResult(data);
+    var overallBadge = $("job-outcome");
+    if (overallBadge) {
+      overallBadge.textContent = overall.label;
+      overallBadge.className = "badge outcome-" + overall.key;
     }
-    setText("job-outcome", overall);
 
+    var finished = data.phase === "finished" || data.cancelled;
     Object.keys(data.routes).forEach(function (key) {
       updateRoute(key, data.routes[key]);
     });
