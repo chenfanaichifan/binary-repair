@@ -123,9 +123,9 @@ def test_http_mode_uses_the_real_controller(http_server, page, tmp_path):
 def test_landing_hero_leads_to_workbench(mock_server, page):
     _bootstrap(page, mock_server)
     page.navigate(mock_server + "/")
-    page.wait_js("!!document.querySelector('.landing-title')", timeout=10)
-    assert "二进制漏洞" in page.text(".landing-title")
-    assert page.eval_js("!!document.querySelector('[data-testid=\"landing-cta\"]')") is True
+    page.wait_js("!!document.querySelector('.hero-h1')", timeout=10)
+    assert "二进制漏洞" in page.text(".hero-h1")
+    assert "修复不是补丁" in page.text(".hero-sub")
 
     page.click('[data-testid="landing-cta"]')
     page.wait_js("location.pathname.endsWith('/jobs/new')", timeout=10)

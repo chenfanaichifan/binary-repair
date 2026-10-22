@@ -215,21 +215,19 @@ def _auth_required_page(session_token: str) -> str:
     return """<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><title>需要本地会话 · BinaryRepair</title>
 <style>
- body{margin:0;background:#f3ede1;color:#2c2925;font-family:"Trebuchet MS","Segoe UI","Microsoft YaHei",sans-serif;
-      background-image:radial-gradient(900px 520px at 15% -5%,rgba(168,100,47,.08),transparent 60%);
+ body{margin:0;background:#0f1720;color:#dbe6f0;font-family:"Segoe UI","Microsoft YaHei",sans-serif;
       display:flex;align-items:center;justify-content:center;min-height:100vh}
- .card{max-width:600px;padding:30px 34px;background:#faf6ec;border:1.5px dashed #2c2925;border-radius:24px 18px 26px 16px;
-       box-shadow:6px 7px 0 rgba(44,41,37,.12)}
- h1{font-family:Georgia,"Songti SC","SimSun",serif;font-size:24px;margin:0 0 10px;color:#2c2925}
- p{font-size:14px;line-height:1.75;color:#4a453d;margin:8px 0}
- code{font-family:"Cascadia Mono",Consolas,monospace;background:#eee6d6;color:#6b4a2c;padding:2px 6px;border-radius:4px}
+ .card{max-width:600px;padding:30px 34px;background:#16222c;border:1px solid #2b3b48;border-radius:14px}
+ h1{font-size:21px;margin:0 0 10px;color:#eaf2fa}
+ p{font-size:14px;line-height:1.75;color:#a9bccd;margin:8px 0}
+ code{background:#1b2a36;color:#9fd4ff;padding:2px 6px;border-radius:4px}
  .btn{display:inline-flex;align-items:center;justify-content:center;margin:18px 0 6px;padding:12px 26px;
-      border-radius:999px;background:#2c2925;color:#faf6ec;border:1.5px solid #2c2925;
-      box-shadow:4px 5px 0 rgba(44,41,37,.18);font-weight:700;font-size:14px;text-decoration:none}
- .btn:hover{transform:translateY(-2px)}
- .steps{margin:16px 0 0;padding-left:18px;font-size:13px;color:#4a453d}
+      border-radius:10px;background:linear-gradient(180deg,#ffd27a,#f0b03f);color:#161005;
+      font-weight:700;font-size:14px;text-decoration:none}
+ .btn:hover{filter:brightness(1.05)}
+ .steps{margin:16px 0 0;padding-left:18px;font-size:13px;color:#c7d6e4}
  .steps li{margin:6px 0}
- .hint{margin-top:14px;font-size:12px;color:#8a7f6e}
+ .hint{margin-top:14px;font-size:12px;color:#7f97ab}
 </style></head>
 <body><div class="card">
 <h1>需要本地会话</h1>
