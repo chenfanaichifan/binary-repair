@@ -14,13 +14,14 @@ and 5, what the GUI will consume, and what is still blocked.
 |---|---|
 | Sample ELF | `fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf` (26,792 B) |
 | Sample SHA-256 | `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393` |
-| Candidate SHA-256 | `c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82` (M5 handoff; local dist not yet committed) |
+| Candidate path | `routea/out/cave-probe.elf` in tag `controller-api-2026-10-22` (commit `1826505`); 26,792 B, verified SHA-256 `c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82` |
+| Candidate artifacts in tag | `routea/out/audit.json`, `edit-manifest.json`, `manifest-repaired.json`, `readelf-audit.txt`, `runtime.log` (bundle not available locally) |
 | Candidate rebuild | `python3 regen_c4a159.py original.elf out.elf` (hash-gated) |
 | Contract hash | `24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37` |
 | Expected result | original 4/6 valid; candidate 6/6 (invalid 50/100 exit 1, stdout empty, exact stderr) |
 | Execution environment | Guest Ubuntu 24.04.5, `/opt/angr-venv/bin/python`, JDK 21, GHIDRA_HOME, clang 18.1.3, no network |
 | Current entry point | `jobwrap gate3 patched all` (verification harness, not a general worker) |
-| Proposed worker (NOT implemented) | `workers/route_a/worker.py --original ... --contract ... --out ... --candidate-name candidate.elf` |
+| Proposed worker (NOT implemented) | `workers/route_a/worker.py` — ownership: **Member 3 + Member 1**; `jobwrap routea` op — ownership: **VMer + Member 3** |
 
 Proposed output contract for `<job_dir>/route_a/`:
 
@@ -32,7 +33,8 @@ Proposed output contract for `<job_dir>/route_a/`:
 - `readelf-audit.txt` — raw `readelf -l/-S/-d`
 - `route_a.log` — commands, exit codes, tool versions
 - `status.json` — phase / reason_code / candidate_sha256 / evidence[];
-  **no final outcome** (the acceptance engine decides)
+  **v1 has no `outcome` field**; the final outcome lives in `decision.json`
+  produced by the acceptance step.
 
 ### Member 5 — Provider, candidate schema, Route B artifacts
 
@@ -111,7 +113,7 @@ the GUI rejects non-ASCII controller payloads with `502`.
 | # | Blocker | Owner | What is needed |
 |---|---|---|---|
 | 1 | No worker consumes `queued` runs (confirmed by Member 1: worker does not exist) | Member 1 | implement/own the external worker entry point, run timeout/cancel, phase writes (`queued -> screening -> ... -> finished`) |
-| 2 | No Route A worker (`workers/route_a/worker.py` is proposed only) | Member 3 (+ Member 1 for jobwrap op) | implement worker + a fixed `jobwrap routea` op; publish the candidate binary or commit the dist |
+| 2 | No Route A worker (`workers/route_a/worker.py` is proposed only) | Member 3 + Member 1 | implement worker; VMer + Member 3 implement the fixed `jobwrap routea` op; publish the candidate bundle (candidate itself is already in tag `1826505` under `routea/out/`) |
 | 3 | No broker/jobwrap integration for the general route-a op | Member 1 | broker API, fixed op/argv, guest path conventions; never pass shell strings |
 | 4 | Acceptance engine not invoked by orchestration | Member 4 (+ Member 1) | `evaluate_attempt` / `evaluate_run` entry, verdict schema, who persists Verdict and how obligations/artifacts are imported |
 | 5 | Provider not called by any worker | Member 1 (+ Member 5) | host-side provider step in orchestration; which env/process; where candidate/attempt evidence is stored; timeout budget alignment |
@@ -144,11 +146,13 @@ the GUI rejects non-ASCII controller payloads with `502`.
 
 ### Member 3
 
-1. Commit or publish the candidate binary (c4a159) and the proposed worker
-   output contract; confirm `status.json` schema.
-2. Confirm who implements `workers/route_a/worker.py` and the `jobwrap routea`
-   op (Member 3 or Member 1).
-3. Confirm fixture/hash pin for the demo (already present in `origin/main`).
+1. Confirm the `workers/route_a/worker.py` + `jobwrap routea` implementation plan
+   (ownership: Member 3 + Member 1; VMer + Member 3) and the target date.
+2. Confirm `status.json` v1 (no `outcome`) and the `decision.json` handoff to the
+   acceptance step; who writes each file.
+3. Candidate is verified in tag `1826505` at `routea/out/cave-probe.elf`
+   (SHA-256 `c4a159…aa82`); confirm whether the full bundle (routea/out/*) should
+   be imported into job artifacts by the worker.
 
 ### Member 5
 
