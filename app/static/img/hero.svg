@@ -84,17 +84,6 @@
     <text x="1120" y="748">01110011 01110100 01100001 01100011 01101011</text>
   </g>
 
-  <!-- highlighted vulnerable call -->
-  <g opacity="0.9">
-    <rect x="300" y="292" width="470" height="42" rx="6" fill="#ef6f6f" opacity="0.10"/>
-    <rect x="300" y="292" width="3" height="42" fill="#ef6f6f"/>
-    <circle cx="300" cy="313" r="26" fill="url(#glow)"/>
-    <text x="318" y="320" font-family="'Cascadia Mono', Consolas, monospace" font-size="14" letter-spacing="2" fill="#ffb9b9">0x401136  call strcpy@plt  ; OOB write</text>
-  </g>
-  <g filter="url(#redglow)" opacity="0.55">
-    <rect x="300" y="292" width="470" height="42" rx="6" fill="none" stroke="#ef6f6f" stroke-opacity="0.55"/>
-  </g>
-
   <!-- near ridge -->
   <path d="M0 640 L110 590 L220 625 L330 575 L450 630 L560 585 L680 640 L800 595 L920 645 L1040 600 L1160 650 L1280 605 L1400 648 L1510 610 L1600 650 L1600 900 L0 900 Z" fill="url(#ridgeA)"/>
   <path d="M0 740 L140 700 L260 735 L390 690 L520 742 L650 700 L780 748 L910 705 L1040 752 L1170 710 L1300 756 L1430 718 L1600 760 L1600 900 L0 900 Z" fill="url(#ridgeB)"/>

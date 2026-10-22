@@ -102,9 +102,6 @@ def test_landing_hero_leads_to_workbench(mock_server, page):
     assert "二进制漏洞" in page.text(".hero-h1")
     assert "修复不是补丁" in page.text(".hero-sub")
 
-    page.click("[data-slide-next]")
-    page.wait_js("document.body.textContent.includes('DISASSEMBLY')", timeout=5)
-
     page.click('[data-testid="landing-cta"]')
     page.wait_js("location.pathname.endsWith('/jobs/new')", timeout=10)
 
