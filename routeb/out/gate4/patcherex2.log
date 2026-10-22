@@ -1,0 +1,3 @@
+ERROR    | 2026-10-22 09:05:56,932 | angr.state_plugins.unicorn_engine | failed loading "unicornlib.so", unicorn support disabled ('NoneType' object has no attribute 'unicorn_py3')
+wrote routeb/out/gate4/roundtrip.elf (26792 bytes)
+skipped the fixture oracle; run the team's test manifest on this binary

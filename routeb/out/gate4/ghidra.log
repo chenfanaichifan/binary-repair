@@ -1,0 +1,196 @@
+openjdk version "21.0.12.1" 2026-08-18 LTS
+openjdk version "25.0.4.1" 2026-08-18 LTS
+OpenJDK Runtime Environment Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS)
+OpenJDK 64-Bit Server VM Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS, mixed mode)
+INFO  Using log config file: jar:file:/opt/ghidra_12.2_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /home/runner/.config/ghidra/ghidra_12.2_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /home/runner/.config/ghidra/ghidra_12.2_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (1118 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Loaded 121 trusted CA certificate(s) from /etc/ssl/certs/ca-certificates.crt (UnixSystemTrustKeyStoreUtil)  
+INFO  Loaded 121 trusted CA certificates from the OS trust store. (DefaultTrustManagerFactory)  
+INFO  Loaded 121 trusted CA certificates from the Java default trust store. (DefaultTrustManagerFactory)  
+INFO  Starting cache cleanup: /var/tmp/runner-ghidra/fscache2 (FileCacheMaintenanceDaemon)  
+INFO  Finished cache cleanup, estimated storage used: 0 (FileCacheMaintenanceDaemon)  
+INFO  Headless startup complete (9211 ms) (AnalyzeHeadless)  
+INFO  Class searcher loaded 60 extension points (19 false positives) (ClassSearcher)  
+INFO  HEADLESS Script Paths:
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /home/runner/work/binary-repair/binary-repair/routeb/ghidra
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/Swift/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra_12.2_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts (HeadlessAnalyzer)  
+INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
+INFO  Creating temporary project: /tmp/br-ghidra.XBxRpg/brproj (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/br-ghidra.XBxRpg/brproj (DefaultProject)  
+INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
+INFO       project: /tmp/br-ghidra.XBxRpg/brproj (HeadlessAnalyzer)  
+INFO  IMPORTING: file:///home/runner/work/binary-repair/binary-repair/fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf (HeadlessAnalyzer)  
+INFO  Using Loader: Executable and Linking Format (ELF) (ProgramLoader)  
+INFO  Using Language/Compiler: x86:LE:64:default:gcc (ProgramLoader)  
+INFO  Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib64] (ProgramLoader)  
+INFO  Additional info:
+Loading file:///home/runner/work/binary-repair/binary-repair/fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf?MD5=5459e75140463173bc7a1352d1892378...
+ELF Relocation Failure: R_X86_64_COPY (5, 0x5) at 00404080 (Symbol = stderr) - Runtime copy not supported (8-bytes)
+Setting block .init_array to read-only
+Setting block .fini_array to read-only
+Setting block .dynamic to read-only
+------------------------------------------------
+
+Linking the External Programs of 'original.elf' to imported libraries...
+  [libc.so.6] -> not found in project
+------------------------------------------------
+
+Resolving External Symbols of [/original.elf] - 11 unresolved symbols, no external libraries configured - skipping
+ (ProgramLoader)  
+INFO  IMPORTING: Loaded 0 additional files (HeadlessAnalyzer)  
+INFO  ANALYZING all memory and code: file:///home/runner/work/binary-repair/binary-repair/fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf (HeadlessAnalyzer)  
+INFO  Added 157 source map entries (DWARFImporter)  
+INFO  DWARF ver[5], 3 compUnits, 265 DIES, import - total elapsed: 142ms (DWARFImportSummary)  
+INFO  DWARF data type import - elapsed: 29ms (DWARFImportSummary)  
+INFO  DWARF func & symbol import - elapsed: 78ms (DWARFImportSummary)  
+INFO  DWARF types imported: 48 (DWARFImportSummary)  
+INFO  DWARF enums from macros - elapsed: 1ms (DWARFImportSummary)  
+INFO  DWARF compile dirs: [/home/lab/evaluator/build/CWE121_src_char_declare_cpy_51b] (DWARFImportSummary)  
+INFO  DWARF producers: [GNU C17 13.3.0 -mtune=generic -march=x86-64 -g -O0 -fno-stack-protector -fno-pie -fasynchronous-unwind-tables -fstack-clash-protection -fcf-protection] (DWARFImportSummary)  
+INFO  DWARF source languages: [DW_LANG_C11] (DWARFImportSummary)  
+INFO  DWARF compUnit: harness.c (DWARFImportSummary)  
+INFO  DWARF compUnit: /home/lab/evaluator/src/juliet-v1.3/C/testcases/CWE121_Stack_Based_Buffer_Overflow/s09/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b.c (DWARFImportSummary)  
+INFO  DWARF compUnit: /home/lab/evaluator/src/juliet-v1.3/C/testcasesupport/io.c (DWARFImportSummary)  
+ERROR DWARF data type remappings (DWARF data type definitions that changed meaning in different compile units): (DWARFImportSummary)  
+ERROR   Data type -> changed to -> Data Type (DWARFImportSummary)  
+ERROR   /int -> /wchar_t (DWARFImportSummary)  
+INFO  Packed database cache: /var/tmp/runner-ghidra/packed-db-cache (PackedDatabaseCache)  
+INFO  Applied data type archive: generic_clib_64 (ApplyDataArchiveAnalyzer)  
+INFO  -----------------------------------------------------
+    ASCII Strings                              0.364 secs
+    Apply Data Archives                        0.240 secs
+    Call Convention ID                         1.304 secs
+    Call-Fixup Installer                       0.003 secs
+    Create Address Tables                      0.004 secs
+    Create Function                            0.007 secs
+    DWARF                                      0.198 secs
+    Data Reference                             0.016 secs
+    Decompiler Switch Analysis                 0.857 secs
+    Demangler GNU                              0.030 secs
+    Disassemble                                0.001 secs
+    Disassemble Entry Points                   0.156 secs
+    ELF Scalar Operand References              0.020 secs
+    Embedded Media                             0.003 secs
+    External Entry References                  0.001 secs
+    Function ID                                0.022 secs
+    Function Start Pre Search                  0.003 secs
+    Function Start Search                      0.053 secs
+    Function Start Search After Code           0.005 secs
+    Function Start Search After Data           0.004 secs
+    GCC Exception Handlers                     0.093 secs
+    Non-Returning Functions - Discovered       0.006 secs
+    Non-Returning Functions - Known            0.002 secs
+    Reference                                  0.022 secs
+    Shared Return Calls                        0.012 secs
+    Source Language Support                    0.002 secs
+    Stack                                      0.049 secs
+    Subroutine References                      0.006 secs
+    Subroutine References - One Time           0.000 secs
+    Variadic Function Signature Override       2.513 secs
+    x86 Constant Reference Analyzer            0.094 secs
+-----------------------------------------------------
+     Total Time   6 secs
+-----------------------------------------------------
+ (AutoAnalysisManager)  
+INFO  REPORT: Analysis succeeded for file: file:///home/runner/work/binary-repair/binary-repair/fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf (HeadlessAnalyzer)  
+INFO  REPORT: Execute script: ExportFunction.java 'CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink' '/home/runner/work/binary-repair/binary-repair/routeb/out/gate4/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink.c'  (HeadlessAnalyzer)  
+INFO  SCRIPT: /home/runner/work/binary-repair/binary-repair/routeb/ghidra/ExportFunction.java (HeadlessAnalyzer)  
+INFO  ExportFunction.java> WROTE /home/runner/work/binary-repair/binary-repair/routeb/out/gate4/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink.c (1197 chars) (GhidraScript)  
+INFO  ExportFunction.java> WROTE /home/runner/work/binary-repair/binary-repair/routeb/out/gate4/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink.c.meta.txt (GhidraScript)  
+INFO  ExportFunction.java> SIZE 104 bytes at 004012b0 (GhidraScript)  
+INFO  ANALYZING changes made by post scripts: file:///home/runner/work/binary-repair/binary-repair/fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf (HeadlessAnalyzer)  
+INFO  REPORT: Post-analysis succeeded for file: file:///home/runner/work/binary-repair/binary-repair/fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf (HeadlessAnalyzer)  
+INFO  /original.elf: file created (runner) (LocalFileSystem)  
+INFO  REPORT: Save succeeded for: /original.elf (brproj:/original.elf) (HeadlessAnalyzer)  
+INFO  REPORT: Import succeeded (HeadlessAnalyzer)  
+
+--- /home/runner/work/binary-repair/binary-repair/routeb/out/gate4/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink.c ---
+
+void CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink(char *data)
+
+{
+  char *data_local;
+  char dest [50];
+  
+  dest[0] = '\0';
+  dest[1] = '\0';
+  dest[2] = '\0';
+  dest[3] = '\0';
+  dest[4] = '\0';
+  dest[5] = '\0';
+  dest[6] = '\0';
+  dest[7] = '\0';
+  dest[8] = '\0';
+  dest[9] = '\0';
+  dest[10] = '\0';
+  dest[0xb] = '\0';
+  dest[0xc] = '\0';
+  dest[0xd] = '\0';
+  dest[0xe] = '\0';
+  dest[0xf] = '\0';
+  dest[0x10] = '\0';
+  dest[0x11] = '\0';
+  dest[0x12] = '\0';
+  dest[0x13] = '\0';
+  dest[0x14] = '\0';
+  dest[0x15] = '\0';
+  dest[0x16] = '\0';
+  dest[0x17] = '\0';
+  dest[0x18] = '\0';
+  dest[0x19] = '\0';
+  dest[0x1a] = '\0';
+  dest[0x1b] = '\0';
+  dest[0x1c] = '\0';
+  dest[0x1d] = '\0';
+  dest[0x1e] = '\0';
+  dest[0x1f] = '\0';
+  dest[0x20] = '\0';
+  dest[0x21] = '\0';
+  dest[0x22] = '\0';
+  dest[0x23] = '\0';
+  dest[0x24] = '\0';
+  dest[0x25] = '\0';
+  dest[0x26] = '\0';
+  dest[0x27] = '\0';
+  dest[0x28] = '\0';
+  dest[0x29] = '\0';
+  dest[0x2a] = '\0';
+  dest[0x2b] = '\0';
+  dest[0x2c] = '\0';
+  dest[0x2d] = '\0';
+  dest[0x2e] = '\0';
+  dest[0x2f] = '\0';
+  dest[0x30] = '\0';
+  dest[0x31] = '\0';
+  strcpy(dest,data);
+  printLine(data);
+  return;
+}
+

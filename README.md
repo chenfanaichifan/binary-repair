@@ -8,11 +8,13 @@ bytes; one shared acceptance engine decides whether the final executable is
 `success_within_scope`. A model's claim is never evidence: only checks on the final
 bytes count.
 
-> **Status: integration complete, repair not yet demonstrated.** The controller,
-> GUI, acceptance engine, AI boundary, SQLite schema (v1 baseline + 002/003), and
-> the public CWE-121 candidate fixture are in `main`. Gate 3 (Route A) is
-> **NEEDS SCOPE RULING**; gate 4 (Route B round trip) is **NOT RUN**. No binary has
-> been repaired and verified end to end. Do not present demo data as repair evidence.
+> **Status: integration complete; Route B round trip PASS; repair not yet demonstrated.**
+> The controller, GUI, acceptance engine, AI boundary, SQLite schema (v1 baseline +
+> 002/003), and the public CWE-121 candidate fixture are in `main`. Gate 4 (unchanged
+> Route B round trip) is **PASS** on a disposable Ubuntu runner (6/6 behaviour-identical;
+> `docs/route-b/09-gate4-evidence.md`). Gate 3 (Route A) is **NEEDS SCOPE RULING**.
+> No binary has been repaired and verified end to end. Do not present demo data as
+> repair evidence.
 
 ## What is in `main`
 
@@ -32,8 +34,9 @@ bytes count.
 
 - Route A segment/trampoline backend. Gate 3 stays **UNSUPPORTED** until the
   LIEF/Patcherex2 layout audit exists; after that it is **CONDITIONALLY FEASIBLE**.
-- Gate 4 round trip. Requires a disposable Ubuntu + JDK21 + Ghidra + Patcherex2
-  environment; the team guest is not suitable. Status: **NOT RUN**.
+- Gate 4 round trip. **PASS** (unchanged round trip, 6/6) on GitHub Actions
+  Ubuntu 24.04 with JDK21, Ghidra 12.2 and Patcherex2 0.2.14; evidence in
+  `docs/route-b/09-gate4-evidence.md`. This does not validate an edited candidate.
 - Real repair execution. The controller queues runs and stores evidence; it does
   not execute uploaded binaries on the host.
 - VM broker, symbolic (V4), and final V5 reproducibility evidence.

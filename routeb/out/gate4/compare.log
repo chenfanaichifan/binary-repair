@@ -1,0 +1,7 @@
+{
+  "same_count": 6,
+  "total": 6,
+  "gate4_pass": true,
+  "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "patched_sha256": "decdcdb821bfe4c41a070b0a23a2f6497f46a92f439cb02a1e4139a82cde954b"
+}
