@@ -148,7 +148,7 @@ B1–B6. M4 resubmitted on base `ad1a1f8` (handoff 18): branch
 `origin/member-4-routea-gate3` @ `2ac0f66`, patch
 `docs/route-a/m4-patches/0002-member-4-routea-gate3-canonical-audit.patch`
 (`b68aabcd…cab8`), additive tooling only. Until M5 records a new review, the M4 implementation
-is **not accepted** and is not gate-3 evidence either way. M5's build/hash replay is recorded in §8.1 (handoff) and §8.2 (formal v2, NOT VERIFIED).
+is **not accepted** and is not gate-3 evidence either way. M5's build/hash replay is recorded in §8.1 (handoff) and §8.2 (formal v3, build/hash PASS).
 
 ### 8.1 M5 build/hash replay — recorded, not a gate pass
 
@@ -184,36 +184,44 @@ contract match the record. **M5 replay = PASS for the handoff bundle.**
 This row does not fill the M4 verifier row and does not approve Gate 3. The formal
 VM bundle and items 3–6 are still required before M4 signs.
 
-### 8.2 Formal v2 bundle replay — NOT VERIFIED (inputs missing)
+### 8.2 Formal v3 bundle replay — build/hash PASS
 
-**Bundle:** `gate3-bundle-v2-2026-10-22.zip`, 18,318 B,
-SHA-256 `6151a80633fdde0d9b1ce87c126b01994a730625557d17297828468799710a65`.
+**Bundle:** `gate3-bundle-v3-2026-10-22.zip`, 35,887 B, 26 files,
+SHA-256 `1d0e5441925de0fc3cc814d8c36d6443d8c1a65b87e05a4d6d008beaac44271f`.
 
 ```text
-SHA256SUMS file sha256: 4ba6ebad30a4035c6a16c62c1fbab53dda67bce60db2b87510b83aa97f876934
-sha256sum -c:           22/22 OK
-candidate-before:       c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
-candidate-after:        c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
+SHA256SUMS file sha256: faf30b6acb6918ad0d01f2c6a9ac35084a10e3d8cd3cca91120e8f37eee9bb52
+sha256sum -c:           25/25 OK
+candidate:              c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
+original:               aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393
+regen_c4a159.py:        56331eedb4d72c55eec4e0f105fb20207576e6e6860b79ca4cedb175ed54e843
+replayed:               c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
+cmp candidate/replayed: byte-identical
 contract canonical:     24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
 contract file:          15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df
 ```
 
-**Missing inputs:** the formal v2 bundle is a raw-evidence set; it does **not**
-contain `candidate.elf`, `original.elf`, or `regen_c4a159.py`. Therefore these
-required replay steps cannot be run against the formal bundle:
+Commands actually run:
 
-```text
+```bash
+unzip -q gate3-bundle-v3-2026-10-22.zip -d /tmp/g3v3
+cd /tmp/g3v3
+sha256sum -c SHA256SUMS       # 25/25 OK
+sha256sum SHA256SUMS          # faf30b6a…bb52
 python3 regen_c4a159.py original.elf replayed.elf
-sha256sum replayed.elf
-cmp candidate.elf replayed.elf
+sha256sum replayed.elf        # c4a159…aa82
+cmp candidate.elf replayed.elf # identical
 ```
 
-The handoff bundle replay in §8.1 reproduces `c4a159…` from the recorded
-`original.elf` + `regen_c4a159.py`, but that is **not** formal-bundle evidence.
-The formal bundle does bind the candidate hash via `candidate-before/after` and
-`gate3-summary.json`, and its 22/22 `SHA256SUMS` verify.
+No candidate/contract/regen mismatch. **Formal v3 build/hash replay = PASS.**
+The contract bytes are not packaged in v3; the file hash is bound by
+`gate3-summary.json` / `guest-fingerprint.json`, and M5 separately verified the
+canonical contract file in the delivery set. This is a coverage note, not a
+binary-replay mismatch.
 
-**Formal v2 replay verdict: NOT VERIFIED** — no candidate change, no pass claim.
+This is still not a Gate 3 pass: M4 verifier row and Lead approval remain blank;
+items 3/5 remain NOT VERIFIED (M4 owns those checks).
+
 ### 8.3 Support evidence manifest — separate from v1
 
 **Support package:** `gate3-item6-support-2026-10-22.zip`, 4,004 B,
@@ -260,7 +268,7 @@ the formal v2 build replay row or the M4 verifier row.
 | Role | Name | Date | Signature |
 |---|---|---|---|
 | M4 verifier | — | — | **blank until items 3–6 are PASS** |
-| M5 build/hash replay | Member 5 | 2026-10-22 | NOT VERIFIED — formal v2 bundle `6151…`; `SHA256SUMS 4ba6…` / 22/22; missing candidate.elf/original.elf/regen; handoff-only regen c4a159 |
+| M5 build/hash replay | Member 5 | 2026-10-22 | REPLAYED — formal v3 bundle `1d0e…`; `SHA256SUMS faf3…` / 25/25; candidate/replayed `c4a159…`; contract `24bfe568…` / `15f6b492…` |
 | Lead approval | — | — | pending |
 
 Do not fill these fields from a CI run, a static audit, or a verbal approval. A blank row is not
