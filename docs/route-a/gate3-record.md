@@ -132,10 +132,9 @@ B1–B6. M4 resubmitted on base `ad1a1f8` (handoff 18): branch
 `origin/member-4-routea-gate3` @ `2ac0f66`, patch
 `docs/route-a/m4-patches/0002-member-4-routea-gate3-canonical-audit.patch`
 (`b68aabcd…cab8`), additive tooling only. Until M5 records a new review, the M4 implementation
-is **not accepted** and is not gate-3 evidence either way. M5's build/hash replay (handoff 19)
-is also still pending.
+is **not accepted** and is not gate-3 evidence either way. M5's build/hash replay is recorded in §8.1.
 
-## 9. M5 build/hash replay — recorded, not a gate pass
+### 8.1 M5 build/hash replay — recorded, not a gate pass
 
 **Scope:** M5 replayed the delivered handoff bundle, not the formal VM evidence
 bundle. The formal VM bundle (items 3–6) remains `NOT VERIFIED`.
@@ -170,7 +169,7 @@ contract match the record. **M5 replay = PASS for the handoff bundle.**
 This row does not fill the M4 verifier row and does not approve Gate 3. The formal
 VM bundle and items 3–6 are still required before M4 signs.
 
-## 10. Signature — BLANK (DRAFT)
+## 9. Signature — BLANK (DRAFT)
 
 **Signing order (handoff 19 §5):**
 
