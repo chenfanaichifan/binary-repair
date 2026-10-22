@@ -12,11 +12,23 @@ These are "ready to send" confirmation requests derived from the interface contr
 | `06-member-3-oracle-confirmation.md` | Member 3 | Oracle confirmation + gate 6 definition + V4/isolation escalation | Sent 2026-10-20; concrete gate 6 crash evidence received and verified 2026-10-20 (files + `SHA256SUMS` in `fixtures/public/CWE121_src_char_declare_cpy_51b/evidence/`) | Tells member 3 exactly what V3 will assert and what gate 6 evidence is accepted. Gate 6 stays **partial**: concrete counterexample PASS (5/5, exit 139, `ret` @ `0x401317`), symbolic detection pending V4 |
 | `07-v4-isolation-decision.md` | Lead and team | Install the V4 toolchain (A) or record `unsupported` (B); fix guest isolation before any candidate run | To send (blocking F4 and candidate execution) | Resolves the two project-level risks member 3 disclosed; unblocks gate 6 symbolic detection and safe candidate execution |
 | `08-manifest-freeze-answer.md` | Member 3 / team | Full value and rule behind `MANIFEST_SET_SHA256 = a564f039…`; per-file hashes and paths it covers; why local reproduction failed | Written 2026-10-20 (reply) | Lets member 3 finalize the freeze record with the correct rule; also flags that `main` lacks `.gitattributes`, so Windows checkouts break the frozen hashes |
+| `09-route-a-added-code-ruling.md` | Member 3, Member 5 | Route A scope: may a patch add data, call an existing libc writer, and place code in a cave/new region (strategy C)? | Decided 2026-10-22: **Option A**, strategy C is in Route A's range. The invalid-input oracle is unchanged; a contract revision (`authorized_edits`, `allowed_calls`) is required before a candidate freezes, not before gate 3 | Unblocks gate 3. Gate 3 then reports `FEASIBLE` with writer/placement recorded, or `UNSUPPORTED` with the concrete limiting fact |
 
 **Read `05-integration-decision.md` before merging anything into `main`:** `agent/` is a read-only archive; merge order is ① member 5 → ② member 4 → ③ member 1 (controller slice only) → ④ member 2; archives are frozen snapshots.
 
 ## Confirmation log
 
+- 2026-10-22 — **Route A added-code scope ruling (Option A)**, reviewed by Member 4:
+  strategy C (added data + call to an existing libc writer + added code in a cave or a new
+  RX region) is inside Route A's allowed range, per PRD F2 ("may use another suitable
+  location … records added code, necessary redirection") and Tech Design §8 "Added-code
+  policy". The invalid-input oracle is **unchanged**; option B (relaxing `stderr`) is
+  rejected because it would weaken a frozen gate and break the F5 cross-route comparison.
+  The frozen contract instance on `main` currently has `authorized_edits = ()` and
+  `allowed_calls = ("strcpy", "printLine")`, so a contract revision is required **before a
+  strategy-C candidate freezes**, not before gate 3; `valid.json` / `invalid.json` and the
+  manifest set hash do not change. Gate 3 reports `FEASIBLE` (with writer and placement
+  recorded) or `UNSUPPORTED` (with the concrete limiting fact) — never an oracle edit.
 - 2026-10-20 — Member 1 added `app/services/orchestration.py` on
   `member1/jobs-minimal` (`7f967bb`): it builds V0–V5 obligations (missing gate =
   `not_run`, never dropped), calls `decide_attempt_outcome` once per route,
