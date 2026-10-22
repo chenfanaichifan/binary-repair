@@ -214,6 +214,37 @@ The formal bundle does bind the candidate hash via `candidate-before/after` and
 `gate3-summary.json`, and its 22/22 `SHA256SUMS` verify.
 
 **Formal v2 replay verdict: NOT VERIFIED** — no candidate change, no pass claim.
+### 8.3 Support evidence manifest — separate from v1
+
+**Support package:** `gate3-item6-support-2026-10-22.zip`, 4,004 B,
+SHA-256 `3d49625c619c065e7942c8de7d433a58365f4ad616901f2de8b922cf962f72b0`.
+
+```text
+support SHA256SUMS file sha256: 7cf4b4f61d815aee5bc1aeb1f1acdb90ba341d7375bbce5014c71ebcf2bba938
+```
+
+This is the SHA-256 of the support package's `SHA256SUMS` file bytes, **not**
+the zip hash and **not** merged with the v1 evidence manifest.
+
+Observed entries (manual verification):
+
+```text
+e53253cf1c3408d832dd4c30b6e75afc4e8c2d621a2c0a3c0959131255878e7c  harness-v2-manifest.txt
+3bdbc3396fd183ed8563e2d7b0648d02be3a3c55c1a52ccc08890614a97ed678  harness-manifest.json
+```
+
+**Format issue:** the support `SHA256SUMS` lines are `filename  UPPERCASE_HASH`,
+so standard `sha256sum -c` reports "no properly formatted SHA checksum lines".
+The two hashes above verify manually; M5 records the manifest hash but flags the
+format as non-standard.
+
+**v1 evidence manifest:** **NOT COMPUTED** — the v1 raw bundle
+(`0ef65546…f54bf8d5`) has not been delivered to M5; it remains item-6 main
+evidence on the VMer/M3 side. Do not merge it with the support manifest.
+
+**M5 scope:** support manifest verification is supplementary; it does not fill
+the formal v2 build replay row or the M4 verifier row.
+
 ## 9. Signature — BLANK (DRAFT)
 
 **Signing order (handoff 19 §5):**
