@@ -363,9 +363,12 @@ Confirmed by member 3 on 2026-10-20:
 - the harness calls the sink with `argv[1]` directly;
 - the original binary gives SIGSEGV on `100 x 'A'` and scores 4/6 against the manifest.
 
-Still outstanding before the fixture freezes (planned 2026-10-21):
+Still outstanding before the fixture freezes (the 2026-10-21 plan slipped; no new date is
+promised until the gates 3-5 evidence exists):
 
-- gates 3-5 (Route A / Route B feasibility, safe placement) — member 5;
+- gates 3-5: gate 3 formal evidence and the Route A half of gate 5 — **Member 4**
+  (reassigned from Member 5 on 2026-10-22, `handoffs/13-route-a-ownership-handoff.md`); gate 4
+  and the Route B half of gate 5 — Member 5; the guest and isolation evidence — Member 3;
 - frozen manifest hashes (candidate hashes are recorded above);
 - guest image hash (requires a clean shutdown).
 

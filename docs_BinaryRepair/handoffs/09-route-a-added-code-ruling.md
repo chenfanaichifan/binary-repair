@@ -123,7 +123,7 @@ Only `authorized_edits` and `allowed_calls` are extended. Proposed `authorized_e
 entries (each <=300 printable ASCII characters, per `SecurityContract` validation; the
 byte bounds below are review bounds, and gate 3 may report that a larger bound is needed):
 
-1. `Allow a 5-byte relative redirect of call strcpy@plt at 0x401304 to reviewed added code and a branch back to 0x401308 on the valid path.`
+1. `Allow a 5-byte relative redirect of call strcpy@plt at 0x401304 to reviewed added code and a branch back to 0x401309 (the instruction after the 5-byte call) on the valid path.`
 2. `Allow up to 256 bytes of added x86-64 code in a gate-3-verified unused region of a loadable R-X segment reachable from 0x401304; zero bytes alone are not evidence.`
 3. `Allow up to 64 bytes of added read-only data holding exactly ERROR: input exceeds destination capacity plus LF, RIP-relative references only.`
 4. `Allow the invalid path to write that data to fd 2 and exit 1 without returning to main or writing stdout.`
@@ -259,9 +259,9 @@ Correct labels from now on:
 
 | Gate | Owner | Status after this ruling | Why |
 |---|---|---|---|
-| 3 — Route A patch feasibility | M5 | **IN PROGRESS — CONDITIONALLY FEASIBLE** (work status; cave load probe + six-case run pending; see §11) | The scope question is settled and the strategy-C measurement is done; `passed` / `failed` / `unsupported` remain invalid until the cave probe and six-case run produce evidence. `unsupported` needs the concrete placement/encoding fact, not an expectation |
+| 3 — Route A patch feasibility | M5 → **M4** (2026-10-22, handoff 13) | **IN PROGRESS — CONDITIONALLY FEASIBLE** (work status; independent cave probe + formal six-case run pending; see §11; M5's CI probe 6/6 is supplementary only, handoff 13 §5.6) | The scope question is settled and the strategy-C measurement is done; `passed` / `failed` / `unsupported` remain invalid until the cave probe and six-case run produce evidence. `unsupported` needs the concrete placement/encoding fact, not an expectation |
 | 4 — Route B unchanged round trip | M5 | **NOT RUN** (environment blocker) | Needs a disposable Ubuntu guest with JDK21 + Ghidra + Patcherex2 + clang and the isolation preconditions. It does **not** depend on gate 3 and can run in parallel once the environment exists. The environment work is approved in `10-v4-isolation-decision-record.md` (owner M3, 2026-10-23 18:00) |
-| 5 — safe placement for both routes | M5 + M3 | pending | Needs gate-3 and gate-4 artifacts |
+| 5 — safe placement for both routes | M4 (Route A) + M5 (Route B) + M3 (guest) | pending | Needs gate-3 and gate-4 artifacts |
 | 6 — verifier detects the original violation | M4 | partial | Concrete crash evidence accepted; symbolic half pending V4 |
 
 Status-page rules: a gate is `passed` / `failed` / `not_run` / `unsupported` — never "not
