@@ -2,6 +2,10 @@
 
 **Formal status: NOT RUN.** The GitHub Actions 6/6 run is supplementary only.
 
+Gate 4 has its own pass rule (`gate4-status.json=pass` + M4 environment
+confirmation). Do **not** use the Gate 3 six-item matrix for Gate 4; that matrix
+is only for Gate 3.
+
 ## Roles
 
 | Role | Action |

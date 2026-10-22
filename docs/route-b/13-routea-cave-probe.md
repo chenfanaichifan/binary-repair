@@ -3,9 +3,11 @@
 **Date:** 2026-10-22
 **Run:** GitHub Actions `routea-cave-probe`, run `39756691896`
 **Result:** **6/6 repaired cases pass** on disposable Ubuntu 24.04.
-**Gate 3 status:** all three technical items exist (cave runtime probe, six-case run,
-edit manifest); formal status is still **CONDITIONALLY FEASIBLE** until handoff-10
-isolation evidence and scope sign-off. Gate 4 remains formal **NOT RUN**.
+**Gate 3 status:** cave runtime, six-case run and edit manifest exist, but the
+handoff 11 §3 **six-item** pass matrix has items 2–4/6 partial and item 5
+(isolation) missing. Gate 3 is therefore **CONDITIONALLY FEASIBLE**, not pass.
+See [17-gate3-six-item-matrix.md](17-gate3-six-item-matrix.md). Gate 4 remains
+formal **NOT RUN**.
 
 ## 1. Identity
 
@@ -52,7 +54,7 @@ Static audit: all true (`rx_extended`, `no_new_segments`, `relocations_unchanged
 | cave mapped/executed | yes, measured |
 | six-case repaired behavior | pass, measured |
 | edit manifest | present (`routea/out/edit-manifest.json`) |
-| Gate 3 formal | **CONDITIONALLY FEASIBLE** until isolation + scope sign-off |
+| Gate 3 formal | **CONDITIONALLY FEASIBLE**; handoff 11 §3 six-item matrix incomplete |
 | Gate 4 formal | **NOT RUN** on member3 VM; supplementary GitHub PASS |
 | Gate 6 symbolic | **NOT RUN** (V4) |
 
