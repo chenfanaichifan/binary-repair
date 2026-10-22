@@ -15,6 +15,7 @@ FUNC=CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink
 EXPECTED_ELF=aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393
 EXPECTED_UID=${EXPECTED_UID:-1003}
 
+ORIG_HOME=${HOME:-}
 mkdir -p "$WORK" || { echo "cannot create $WORK" >&2; exit 2; }
 export HOME="$WORK/home"
 export TMPDIR="$WORK/tmp"
@@ -83,7 +84,7 @@ fi
 
 # Resolve Ghidra without network or sudo.
 if [[ -z "${GHIDRA_HOME:-}" ]]; then
-  for d in /opt/ghidra* /usr/local/ghidra* "$HOME"/ghidra*; do
+  for d in /opt/ghidra* /usr/local/ghidra* "${ORIG_HOME}"/ghidra*; do
     if [[ -x "$d/support/analyzeHeadless" ]]; then GHIDRA_HOME=$d; export GHIDRA_HOME; break; fi
   done
 fi
