@@ -127,7 +127,7 @@ python -c "from app.db.connection import connect; connect('var')"
 python scripts/smoke.py --mock             # 无 key 的管线自检
 ```
 
-当前共享树：**147 passed, 2 skipped**；`schema up to date (4 files)`。
+当前共享树：**149 passed, 2 skipped**；`schema up to date (4 files)`。
 2 个 skip 是 V3 运行时测试（需要 Linux + candidate ELF），不是 pass。
 旧的 3 个 identity skip 已随 controller-v2 合入消失。
 
