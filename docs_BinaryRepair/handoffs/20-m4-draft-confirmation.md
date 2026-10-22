@@ -10,7 +10,7 @@ replay), Lead
 
 > **Addendum 2026-10-22 (superseded hash):** after VMer declined the packaged bundle,
 > `docs/route-a/gate3-record.md` was updated to the bundle-free item-6 definition (handoff 21).
-> The new canonical hash is `810bb8936dd64c52722a0762cd65b5d2a03b1f82cd91e90e5ea902e54971378f`;
+> The new canonical hash is `ee060441413379ff4ef69482be82dbd4a4bcad5c1c049c40489da983e3fd053b`;
 > both `bddccbfe…e081` (adopted below) and `3dcdc862…` are **void** and must not be cited.
 > The adoption/verification-scope statements below remain historically true; only the file
 > hash is superseded.

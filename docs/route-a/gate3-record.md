@@ -10,13 +10,12 @@ SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`
 **Basis:** handoff 11 §3 (six required items), handoff 12 (M4 plan), handoff 16/17/18/19
 (M5 canonical contract, six-item matrix, build recipe, routea review), verification-design §4.4
 
-**Approval status:** **DRAFT — NOT SIGNED.** Items **1–2 PASS; 3–6 `NOT VERIFIED`** again: the
-v1 Phase A bundle is **superseded** and the supplement is not a v2 delivery (handoff 26). Items
-3–6 will be re-assessed only after a v2 bundle with the fixed LIEF fields, merged
-chain/harness manifests, remapped summary and single-operator revert log is independently
-re-verified. M5's build/hash replay is still required; signature rows stay blank.
-**Overall status:** **CONDITIONALLY FEASIBLE — items 3–6 `NOT VERIFIED`; v2 pending; M5 replay
-pending.** Gate 3 is **not signed**.
+**Approval status:** **DRAFT — NOT SIGNED.** Items **1, 2, 4, 6 PASS; items 3 and 5 `NOT
+VERIFIED`**: the v1 bundle stays the raw evidence (no repack), and the item-6 support package
+closes the missing chain/harness manifests. Remaining: G1 LIEF field bugs (item 3) and the
+single-operator `revert.log` (item 5), then M5's build/hash replay; signature rows stay blank.
+**Overall status:** **CONDITIONALLY FEASIBLE — items 3 and 5 `NOT VERIFIED`; M5 replay pending.**
+Gate 3 is **not signed**.
 **Identity:** VMer is **M3 operating in a separate AI window** — one person, not two.
 
 ---
@@ -77,10 +76,10 @@ COPY-relocation writer based on the earlier `f3cb9cbb...` candidate. The contrac
 |---|---|---|---|
 | 1 | Separate candidate copy; original untouched | **PASS** | original hash still the frozen value; candidate is a separate file |
 | 2 | Candidate identity and reproducibility | **PASS** | candidate hash matches; schema-2 manifest complete (displaced/added/intervals/header/writer/termination/tool_versions); build recipe `18-build-recipe.md` with `regen_c4a159.py` (stdlib-only, fail-closed) |
-| 3 | Structural audit (cave R-X runtime probe, `p_filesz`/`p_memsz`, redirect; NX/RELRO/canary/import diff) | **NOT VERIFIED** | v1 bundle showed the expected `0x8e9→0x1000` extension and cave-probe hits, but its LIEF diff is unusable (empty arrays in v1; supplement `e1e27295…` still parses `PT_LOAD[1]` `flags="R"`/`align="E"`, imports `"(2)"`, `interp:null`). Re-verify after v2 fixes the field-level LIEF bugs (handoff 26 §2) |
-| 4 | Six-case run (4 valid + 2 invalid = 6/6 byte-exact) | **NOT VERIFIED** | v1 reported 6/6 and original V0 4/6, but v1 is superseded; re-run/re-hash results must be carried into v2 and re-verified on the v2 artifact |
-| 5 | Isolation evidence for that run (snapshot, egress block, uid 1003, wrapper attestation) | **NOT VERIFIED** | v1 isolation fields looked right, but the revert log contradicts the single-operator identity and v2 must carry the corrected `revert.log` (handoff 26 §5) |
-| 6 | Evidence with hashes (raw outputs + `SHA256SUMS` manifest; **no bundle package required** — handoff 21) | **NOT VERIFIED** | v1 bundle `0ef65546…` is superseded; v2 must merge `harness-v2-manifest.txt` (`e53253cf…`) and `harness-manifest.json` (`3bdbc339…`), rebuild `SHA256SUMS`, and publish the new zip SHA-256 |
+| 3 | Structural audit (cave R-X runtime probe, `p_filesz`/`p_memsz`, redirect; NX/RELRO/canary/import diff) | **NOT VERIFIED** | v1 bundle shows the expected `0x8e9→0x1000` extension and cave-probe hits; supplement `lief-diff.json` (`e1e27295…`) still parses `PT_LOAD[1]` `flags="R"`/`align="E"`, imports `"(2)"`, `interp:null`. Pending VMer fix per handoff 26 §2 / 27 |
+| 4 | Six-case run (4 valid + 2 invalid = 6/6 byte-exact) | **PASS** | v1 bundle raw evidence accepted (no repack): patched 6/6 (valid rc 0 / stdout 1,2,11,50 B; invalid rc 1 / stdout 0 / exact 42-byte stderr), original V0 4/6 (invalid-first rc 0/51 B, invalid-longer rc 139), candidate `c4a159…aa82` before = after; run from reverted `gate3-harness-v2` |
+| 5 | Isolation evidence for that run (snapshot, egress block, uid 1003, wrapper attestation) | **NOT VERIFIED** | v1 isolation fields and snapshot evidence usable, but the `revert.log` still contradicts the single-operator identity; pending corrected log (handoff 26 §5 / 27) |
+| 6 | Evidence with hashes (raw outputs + `SHA256SUMS` manifest; **no bundle package required** — handoff 21) | **PASS** | v1 bundle `0ef65546…` raw set 20/20 verified by M4; item-6 support package `3d49625c…` verified: `harness-v2-manifest.txt` `e53253cf…` (3,929 B) + `harness-manifest.json` `3bdbc339…` (1,641 B), inner `SHA256SUMS` verified; no bundle rebuild required |
 
 **Gate 3 verdict: NOT signed — CONDITIONALLY FEASIBLE.** Only `PASS` / `FAIL` / `NOT VERIFIED`
 are valid item labels; "partial" is not a gate label. Items 3–6 are hard requirements; a CI
@@ -101,6 +100,9 @@ main tree / the `1826505` archive, not from the docs branch):
 | M5 six-item matrix | `docs/route-b/17-gate3-six-item-matrix.md` |
 | M5 build recipe | `docs/route-b/18-build-recipe.md` |
 | M5 routea review | `docs/route-b/19-routea-review.md` |
+| item-6 support zip | `gate3-item6-support-2026-10-22.zip`, 4,004 B, SHA-256 `3d49625c619c065e7942c8de7d433a58365f4ad616901f2de8b922cf962f72b0` |
+| chain manifest | `harness-v2-manifest.txt`, 3,929 B, SHA-256 `e53253cf1c3408d832dd4c30b6e75afc4e8c2d621a2c0a3c0959131255878e7c` |
+| harness manifest | `harness-manifest.json`, 1,641 B, SHA-256 `3bdbc3396fd183ed8563e2d7b0648d02be3a3c55c1a52ccc08890614a97ed678` |
 
 ## 6. Deviations and open items
 
@@ -123,21 +125,18 @@ main tree / the `1826505` archive, not from the docs branch):
 
 ## 7. What must happen before this record can be signed
 
-1. **v2 bundle must exist** (handoff 26): fixed LIEF fields (`PT_LOAD[1] flags "R E"`,
-   `align "0x1000"`, real import names, `interp` from `INTERP`; one expected difference =
-   `p_filesz`/`p_memsz 0x8e9→0x1000`), merged `harness-v2-manifest.txt` (`e53253cf…`) and
-   `harness-manifest.json` (`3bdbc339…`), rebuilt `SHA256SUMS`, new zip SHA-256; v1
-   `0ef65546…` marked superseded.
-2. **v2 summary mapping** to handoff 11 §3 (six item names as in handoff 26 §4), each item with
-   its evidence files; no "static tests" as item 2.
-3. **v2 `revert.log`** with one operator identity: VMer = M3 operating in a separate AI window;
-   manual VMware Snapshot Manager revert + post-action observations only; target
-   `gate3-harness-v2`, boot/fingerprint checks, candidate `c4a159…`.
-4. **M4 re-verification** of items 1–6 against the v2 artifact; only then items 3–6 become
-   `PASS`/`FAIL`/`NOT VERIFIED` and the record is re-hashed and re-notified.
-5. **M5 replay (handoff 19/21):** reproduce candidate `c4a159…aa82` from the recorded recipe on
+1. **G1 fix (item 3):** corrected LIEF diff with `PT_LOAD[1]` `flags="R E"`, `align="0x1000"`,
+   real import names, `interp` from `INTERP`; one expected difference =
+   `p_filesz`/`p_memsz 0x8e9→0x1000`; GNU_STACK RW(NX), GNU_RELRO `0x403df8/0x208/R`,
+   imports/relocs 13/13, canary absent (handoff 26 §2 / 27).
+2. **G4 fix (item 5):** `revert.log` with one operator identity (VMer = M3 in a separate AI
+   window), manual VMware Snapshot Manager revert + post-action observations only (handoff 26
+   §5 / 27).
+3. G2 is **done**: the item-6 support package `3d49625c…` carries the two manifests
+   (`e53253cf…`, `3bdbc339…`) and its inner `SHA256SUMS` verifies; no bundle rebuild required.
+4. **M5 replay (handoff 19/21):** reproduce candidate `c4a159…aa82` from the recorded recipe on
    `original.elf` (`aa428157…`), verify contract `24bfe568…4e37`, recompute the
-   evidence-manifest/bundle `SHA256SUMS` hash over the delivered v2 evidence set, and report the
+   evidence-manifest/bundle `SHA256SUMS` hash over the delivered evidence set, and report the
    observed hashes. Until that replay exists, this record stays DRAFT and the signature line
    stays blank.
 
