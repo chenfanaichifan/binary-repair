@@ -22,7 +22,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential binutils patchelf unzip curl clang lld llvm
           sudo ln -sf /usr/bin/clang /usr/local/bin/clang-15
+          sudo ln -sf /usr/bin/ld.lld /usr/local/bin/ld.lld-15
           clang-15 --version
+          ld.lld-15 --version | head -1
+          chmod +x fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf
           python3 -m pip install --upgrade pip
           python3 -m pip install patcherex2
       - name: Install Ghidra 12.2
