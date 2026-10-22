@@ -160,7 +160,7 @@ Report per item: command / observed / raw evidence file / SHA-256 / `PASS` / `FA
 `NOT VERIFIED`, per case, not aggregates. Missing isolation or a missing hash is
 `NOT VERIFIED`. M4 verifies independently (own copies), M5 replays the build/hash commands, the
 Lead approves. Per handoff 19 the Lead waives only the full independent rerun; M5's build/hash
-replay (`c4a159…`, `24bfe568…`, bundle `SHA256SUMS`/bundle hash) is required. Do not relabel, do
+replay (`c4a159…`, `24bfe568…`, evidence-manifest `SHA256SUMS` hash) is required. Do not relabel, do
 not edit the oracle, do not touch `original.elf`.
 
 **Confirmation log.** 2026-10-22 — Lead answers M3's seven confirmations: bundle delivery,

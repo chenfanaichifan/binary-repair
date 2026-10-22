@@ -71,3 +71,17 @@ record that gets merged to `main`; the draft is not gate evidence.
 required (`c4a159…`, `24bfe568…`, bundle `SHA256SUMS`/bundle hash); gate-3 record stays DRAFT,
 unsigned, items 3–6 `NOT VERIFIED`; canonical draft path/hash pinned to
 `docs/route-a/gate3-record.md` on `member-4-verification`. No gate status changed.
+
+---
+
+## 6. Addendum (2026-10-22): bundle declined — manifest hash replaces bundle hash
+
+VMer will not produce a packaged evidence bundle (handoff 21). The replay ruling above is
+unchanged except for the hash object:
+
+- candidate `c4a159…aa82` and contract `24bfe568…4e37` requirements are unchanged;
+- the "bundle `SHA256SUMS`/bundle hash" is replaced by the **SHA-256 of the sorted
+  `SHA256SUMS` manifest over the delivered raw evidence set** (`evidence-manifest-sha256`);
+- the gate-3 record was updated to the bundle-free item-6 definition; its canonical hash is now
+  `b6fedd2b0e82e8d553fd1e9321393c848438f54ce0abea058afa2fa90d66bf0b`;
+  `bddccbfe…e081` and `3dcdc862…` are **void** and must not be cited.

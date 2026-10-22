@@ -205,13 +205,18 @@ before/after hashes and the chain-manifest/fingerprint/revert/uid-1003/no-egress
 
 ---
 
-## 6. Item 6 — bundle, record, and hand-off
+## 6. Item 6 — evidence hash manifest, record, and hand-off
 
+- **No bundle package is required** (handoff 21): deliver the raw outputs plus a sorted
+  `SHA256SUMS` over exactly those files; record `evidence-manifest-sha256` (SHA-256 of the
+  manifest file) in the log/record.
 - Commit `docs/route-a/gate3-record.md` updated with per-item `PASS` / `FAIL` / `NOT VERIFIED`,
   the command actually run, observed values, and the raw-evidence filename + SHA-256;
-- `docs/route-a/SHA256SUMS` for the committed record files; bundle hash recorded in the log;
-- hand the record to M5 for the build/hash replay (unless the Lead has explicitly waived it) and
-  to the Lead for approval. M4 never signs its own evidence as approved.
+- `docs/route-a/SHA256SUMS` for the committed record files; the evidence-manifest hash is the
+  one M5 replays (no bundle hash exists).
+- Hand the record and the `SHA256SUMS` file to M5 for the build/hash replay (the full rerun is
+  waived by handoff 19) and to the Lead for approval. M4 never signs its own evidence as
+  approved.
 
 ---
 

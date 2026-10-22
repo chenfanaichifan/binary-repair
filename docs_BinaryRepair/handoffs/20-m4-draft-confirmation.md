@@ -8,6 +8,13 @@ replay), Lead
 `CONDITIONALLY FEASIBLE`, Gate 4 `NOT RUN`, fixture `NOT FROZEN`; six items remain
 `1 PASS / 2 PASS / 3–6 NOT VERIFIED`; the record stays **DRAFT, unsigned**.
 
+> **Addendum 2026-10-22 (superseded hash):** after VMer declined the packaged bundle,
+> `docs/route-a/gate3-record.md` was updated to the bundle-free item-6 definition (handoff 21).
+> The new canonical hash is `b6fedd2b0e82e8d553fd1e9321393c848438f54ce0abea058afa2fa90d66bf0b`;
+> both `bddccbfe…e081` (adopted below) and `3dcdc862…` are **void** and must not be cited.
+> The adoption/verification-scope statements below remain historically true; only the file
+> hash is superseded.
+
 ---
 
 ## 1. Draft adoption (M4 confirmed)

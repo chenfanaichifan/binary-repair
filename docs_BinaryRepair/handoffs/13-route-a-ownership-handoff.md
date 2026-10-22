@@ -252,7 +252,7 @@ No change requested now; flagged so the guest rebuild uses a segment-exact mappi
 | 3. Structural audit (cave R-X probe, header extension, no overlap, flags/NX/RELRO/canary/W^X, readelf + LIEF, no reloc/import edit) | **partial** — CI readelf + 8 static checks; independent audit not run | M4 (guest) |
 | 4. Six-case run 6/6 on hashed final bytes from a reverted snapshot | **not_run** — CI 6/6 is supplementary only | M4 + M3 guest |
 | 5. Isolation evidence for that run | **not_run** — M3 deadline 2026-10-23 18:00 | M3 |
-| 6. Evidence bundle with hashes | **not_run** | M4 |
+| 6. Evidence with hashes (raw outputs + `SHA256SUMS` manifest; no bundle) | **not_run** | M4 |
 
 **Gate 3 label stays `CONDITIONALLY FEASIBLE`** (work status, never a pass). Gate 4 stays
 `NOT RUN`. The fixture stays `NOT FROZEN`.
@@ -265,14 +265,15 @@ No change requested now; flagged so the guest rebuild uses a segment-exact mappi
    build recipe (`python -m routea.cave build ... --cave 0x4018e9 --cave-size 1815
    --scope-authorized`), the known deviations (§5), and confirmation that no competing
    gate-3 evidence will be pushed. M5 keeps reviewing `routea/` changes.
-2. **M4 produces:** the gate-3 record with per-item `PASS` / `FAIL` / `NOT VERIFIED`, the
-   evidence bundle and its `SHA256SUMS`, and its own copies of the original, tests, and
-   candidate. Raw evidence stays under `var/jobs/` and the committed record cites hashes.
+2. **M4 produces:** the gate-3 record with per-item `PASS` / `FAIL` / `NOT VERIFIED`, the raw
+   evidence files and a sorted `SHA256SUMS` manifest (no bundle package; handoff 21), and its own
+   copies of the original, tests, and candidate. Raw evidence stays under `var/jobs/` and the
+   committed record cites hashes.
 3. **Independent replay:** M5 replays the build + hash commands from the record on a clean
    checkout/guest session and reports the observed hashes. A replay that does not match is
-   `NOT VERIFIED`, not a cosmetic difference. Per handoff 19, only the **full rerun** of the six
-   cases is waived; the build/hash replay (candidate `c4a159…`, contract `24bfe568…`, bundle
-   `SHA256SUMS`/bundle hash) is required.
+   `NOT VERIFIED`, not a cosmetic difference. Per handoff 19/21, only the **full rerun** of the
+   six cases is waived; the build/hash replay (candidate `c4a159…`, contract `24bfe568…`,
+   evidence-manifest `SHA256SUMS` hash) is required.
 4. **Lead approves** the final gate-3 record and the contract revision. Gate 3 may only be
    labelled `passed` after 1-3; `FAIL` and `NOT VERIFIED` are reported as such.
 5. **No self-approval:** the owner of the evidence (M4) does not approve it; M5 reviews, the
@@ -327,7 +328,8 @@ plus a struct-only ELF parser; no execution, no network):
 
 These checks establish artifact identity and structure only. They are **not** gate-3 evidence:
 the runtime cave probe, the liveness traces, the guest rebuild/reproducibility, the six-case
-run under the three isolation preconditions, and the evidence bundle remain M4's to produce
+run under the three isolation preconditions, and the evidence with hashes (raw outputs +
+`SHA256SUMS` manifest) remain M4's to produce
 in the guest (handoff 12). The CI 6/6 is supplementary only (§5.6).
 
 **Corrections the Lead applied to `09-route-a-added-code-ruling.md` on 2026-10-22:** the
@@ -354,7 +356,7 @@ all ELF-touching tests and commands must run in the guest.
 | edit manifest | schema 2: displaced 5 bytes, added code/data intervals with file offsets and hashes, header before/after values and file offsets, changed + intended intervals, writer, termination, tool versions |
 | static audit | `routea/audit.py`: header invariants (page congruence, no overlap, entry/other fields, `p_filesz` within file), section/dynamic byte identity, NX/GNU_STACK/RELRO/W^X, cave-unused proof (sections/symbols/relocations/incoming branches/RIP-relative refs, zero filler), added-code register rules, byte-diff residue, optional independent `readelf` cross-check |
 | reproducibility | `python -m routea.cave verify` builds twice and requires identical bytes |
-| evidence bundle | `python -m routea.cave bundle`: original/candidate, manifest, audit, reproducibility, environment fingerprint, independent `readelf`/`objdump` views, `gate3-record.md`, `SHA256SUMS`; items 4-5 stay `not_run` |
+| evidence tooling (optional; no bundle package required — handoff 21) | `python -m routea.cave bundle`: original/candidate, manifest, audit, reproducibility, environment fingerprint, independent `readelf`/`objdump` views, `gate3-record.md`, `SHA256SUMS`; items 4-5 stay `not_run` |
 | contract revision | `fixtures/public/CWE121_src_char_declare_cpy_51b/contract.route-a-v1.json`, reviewed-scope `ba33b4d070b8799b778a9ca1a257190079627bda72b5c42933edfebb0f5d8fc4`; exactly the six amended handoff 09 §4.1 `authorized_edits`, `allowed_calls = ("fprintf","printLine","strcpy")`; **proposed**, pending M5 confirmation and Lead approval |
 | tests | `tests/test_routea_cave.py` (extended, real ELF) and `tests/test_routea_manifest.py` (pure bytes). Golden candidate `f3cb9cbb…`; golden contract `ba33b4d0…` |
 | VM helper | `scripts/routea_vm_check.sh` runs the static half in the guest and stops before executing the candidate; unverified until the VM run |
@@ -362,7 +364,7 @@ all ELF-touching tests and commands must run in the guest.
 
 **Host status:** only `py_compile` and the pure-bytes helper were checked on the host. No ELF
 was parsed and no candidate was executed here. The VM run remains the required evidence
-(handoff 12); the tests and the bundle are the M4 deliverable, not a result.
+(handoff 12); the tests and the evidence `SHA256SUMS` manifest are the M4 deliverable, not a result.
 
 **Confirmation log (implementation).** 2026-10-22 — M4 writes the design branch listed above;
 no gate status changed; contract revision is a proposal, not an approval.

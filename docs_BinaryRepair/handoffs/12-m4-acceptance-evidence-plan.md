@@ -199,7 +199,7 @@ Every evidence file below is created inside `$EV`. At the end:
 
 ```bash
 ( cd "$EV" && sha256sum ./* > SHA256SUMS )
-sha256sum "${EV}/SHA256SUMS" | tee "${EV}/12-evidence-bundle-hash.txt"
+sha256sum "${EV}/SHA256SUMS" | tee "${EV}/12-evidence-manifest-hash.txt"
 ```
 
 `12-session.log` is included; command arguments, working directory, guest fingerprint, UTC
@@ -810,7 +810,7 @@ All six are required; the three critical items above are necessary but not the w
 | 3 | Structural audit (cave mapped R-X, page-congruent header extension, no overlap, `< file size`, no other header change, flags/NX/RELRO/canary/W^X, `readelf` + LIEF, no relocation/import/GOT/PLT edit) | §4.1 + §4.2 | all §4.1/§4.2 criteria pass | `not_run` |
 | 4 | Six-case run 6/6, byte-exact, rc 0/1, no crash, exact 42-byte stderr, candidate hash recorded before run, reverted snapshot | §6 | all six rows match; hash stable; snapshot evidence | `not_run` |
 | 5 | Isolation evidence for that run | §7 | all §7.1 conditions evidenced for the same session | `not_run` |
-| 6 | Evidence bundle: raw outputs + hashes for every item | §3 | `SHA256SUMS` verified; session log included; every claimed result traces to a raw file | `not_run` |
+| 6 | Evidence with hashes: raw outputs + sorted `SHA256SUMS` manifest (no bundle package; handoff 21) | §3 | every line verifies; `evidence-manifest-sha256` recorded; every claimed result traces to a raw file | `not_run` |
 
 **Gate-3 recommendation labels (M4 issues exactly one):**
 
@@ -838,7 +838,7 @@ cross-check (`docs/route-a/gate3-record.md`); no runtime item has been executed.
 | 3b. runtime cave probe | guest + isolation + debugger | `not_run` |
 | 4. six-case run | guest + snapshot + wrapper + I1–I3 | `not_run` |
 | 5. isolation evidence | guest + hypervisor/revert raw logs + VMer | `not_run` |
-| 6. evidence bundle | results of items 1–5 | `not_run` |
+| 6. evidence with hashes (raw outputs + `SHA256SUMS` manifest; no bundle) | results of items 1–5 | `not_run` |
 | Critical liveness (static + dynamic) | candidate/original bytes + guest + debugger | `not_run` |
 | Original V0 shape (4/6) | `original.elf` + guest | `not_run` |
 
@@ -859,7 +859,7 @@ still missing. Any result reported before the guest run would be fabricated and 
 - Acceptance outcomes remain the acceptance engine's decision; M4's confirmation is evidence,
   not a second success rule (handoff 11 §6).
 - Raw evidence stays under `var/jobs/m4-gate3/<run-id>/`; the committed record cites hashes and
-  the evidence-bundle hash. `var/jobs/` is excluded from source control.
+  the evidence-manifest hash. `var/jobs/` is excluded from source control.
 
 ---
 
