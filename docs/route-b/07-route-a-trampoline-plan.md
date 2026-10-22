@@ -10,13 +10,20 @@ no length change" policy, Route A is **UNSUPPORTED** for this fixture.
 
 - the usable window in `badSink` is **19 bytes, zero slack** — no room for guard + exact stderr;
 - the PLT has **no `strlen` / `strncpy`**, so the guard must be inline in the trampoline;
-- strategy C (detour + R-X trampoline + R-- string) is structurally feasible;
-- the **1815-byte cave** at `0x4018e9–0x401fff` is not yet proven to be file-loaded:
-  `p_filesz` currently ends at `0x18e9`;
-- next: runtime probe the cave; if it is not loaded, extend `p_filesz/p_memsz` to
-  `0x401fff` (header change, **no new segment**), then run the 6 frozen cases;
-- until the cave probe and the 6 cases pass, Gate 3 stays **CONDITIONALLY
-  FEASIBLE**, never `pass`.
+- strategy C (detour + R-X trampoline + cave string) is structurally feasible;
+- **cave probe PASS**: `0x4018e9–0x401fff`, 1815 B, `r-xp`, runtime read of written
+  bytes; **no header change needed**; delivery will include the probe command + output;
+- patch point: `0x401304` (`call strcpy@plt`), not the `endbr64 + push rbp` at
+  `0x4012b0`;
+- the exact error string is currently placed **inside the cave**, not in a new R--
+  segment; this requires `authorized_edits` to allow “exact error message inside the
+  existing executable cave”, with offset/size/permissions recorded in the audit.
+  A dedicated R-- segment remains the fallback and would need LIEF/Patcherex2;
+- 6 cases are **candidate execution**: snapshot revert + network cut + unprivileged
+  user are required; snapshot revert is **not yet measured**, so the 6 cases are not run;
+- plan: revert test → trampoline → patch copy → audit → 6 cases;
+- until 6/6 runs, Gate 3 stays **CONDITIONALLY FEASIBLE**, never `pass`;
+- failures must be reported before **2026-10-23 18:00**, no retroactive edits.
 
 Input: `fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf`
 SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`.
