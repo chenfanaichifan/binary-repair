@@ -178,7 +178,7 @@ async def security_gate(request: Request, call_next):
     session = request.cookies.get(SESSION_COOKIE)
     if not session or not secrets.compare_digest(session, SESSION_TOKEN):
         if request.method == "GET" and "text/html" in (request.headers.get("accept") or ""):
-            return HTMLResponse(_auth_required_page(), status_code=401)
+            return HTMLResponse(_auth_required_page(SESSION_TOKEN), status_code=401)
         return JSONResponse(
             {
                 "detail": (
@@ -208,33 +208,37 @@ def _require_csrf(token: str) -> None:
         raise HTTPException(status_code=403, detail="CSRF token missing or invalid.")
 
 
-def _auth_required_page() -> str:
-    """Friendly 401 page for humans (UI Chinese, no token is ever echoed)."""
+def _auth_required_page(session_token: str) -> str:
+    """Friendly 401 page for humans: one click restores the local session."""
 
     return """<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><title>需要本地会话 · BinaryRepair</title>
 <style>
  body{margin:0;background:#0f1720;color:#dbe6f0;font-family:"Segoe UI","Microsoft YaHei",sans-serif;
       display:flex;align-items:center;justify-content:center;min-height:100vh}
- .card{max-width:560px;padding:28px 32px;background:#16222c;border:1px solid #2b3b48;border-radius:12px}
- h1{font-size:20px;margin:0 0 10px;color:#eaf2fa}
- p{font-size:14px;line-height:1.7;color:#a9bccd;margin:8px 0}
+ .card{max-width:600px;padding:30px 34px;background:#16222c;border:1px solid #2b3b48;border-radius:14px}
+ h1{font-size:21px;margin:0 0 10px;color:#eaf2fa}
+ p{font-size:14px;line-height:1.75;color:#a9bccd;margin:8px 0}
  code{background:#1b2a36;color:#9fd4ff;padding:2px 6px;border-radius:4px}
- .steps{margin:14px 0 0;padding-left:18px;font-size:13.5px;color:#c7d6e4}
+ .btn{display:inline-flex;align-items:center;justify-content:center;margin:18px 0 6px;padding:12px 26px;
+      border-radius:10px;background:linear-gradient(180deg,#ffd27a,#f0b03f);color:#161005;
+      font-weight:700;font-size:14px;text-decoration:none}
+ .btn:hover{filter:brightness(1.05)}
+ .steps{margin:16px 0 0;padding-left:18px;font-size:13px;color:#c7d6e4}
  .steps li{margin:6px 0}
- .hint{margin-top:16px;font-size:12.5px;color:#7f97ab}
+ .hint{margin-top:14px;font-size:12px;color:#7f97ab}
 </style></head>
 <body><div class="card">
 <h1>需要本地会话</h1>
-<p>这是本机 GUI 的安全保护：第一次访问必须使用<strong>启动脚本打印的带 token 链接</strong>，
-浏览器随后会记住 HttpOnly 会话 cookie。</p>
+<p>这是本机工作台的访问保护。<strong>点下面的按钮即可登录</strong>，或者双击项目里的 <code>open.bat</code>。</p>
+<a class="btn" href="/?token=__TOKEN__">一键登录本机工作台 →</a>
 <ol class="steps">
-  <li>回到启动终端，找到形如 <code>http://127.0.0.1:8123/?token=...</code> 的地址；</li>
-  <li>用完整地址打开一次（token 会随即从地址栏消失）；</li>
-  <li>如果终端已关闭：重新运行 <code>.\\start.ps1</code>，它会生成新 token 并自动打开浏览器。</li>
+  <li>登录后 token 会从地址栏消失，浏览器会记住会话；</li>
+  <li>token 保存在 <code>var/session.token</code>，重启服务不会改变；</li>
+  <li>也可以从启动脚本打印的 <code>/?token=...</code> 地址进入。</li>
 </ol>
-<p class="hint">token 首次启动后保存在 <code>var/session.token</code>，重启服务不会改变，所以只需登录一次；不要把带 token 的链接发到公开位置。</p>
-</div></body></html>"""
+<p class="hint">不要把带 token 的地址发到公开位置；本页面只在本机可访问。</p>
+</div></body></html>""".replace("__TOKEN__", session_token)
 
 
 @app.get("/", response_class=HTMLResponse, name="landing_page")
