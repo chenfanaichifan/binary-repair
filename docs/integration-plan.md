@@ -165,6 +165,22 @@ An adapter (or `BINARYREPAIR_ATTEMPT_CMD` wrapper) is still needed to map it int
 the worker contract. Gate 4 remains NOT RUN; the static bundle is not a Gate 4
 pass, and Gate 3 is still CONDITIONALLY FEASIBLE (M4 patch review outstanding).
 
+## Verified: real Route A attempt + MVP finished (2026-10-22)
+
+- Route A real evidence: VMer `routea-c4a159-attempt-REAL-2026-10-22.zip`
+  (per-attempt JSON + `lief-diff.json` + `v3-cases.json`; V0/V1/V3 passed,
+  V2/V4/V5 not_run). It is not a signed Gate 3 decision.
+- M2 registered the two evidence files as controller artifacts and mapped them
+  to `evidence_artifact_id`, then wrote the Route A attempt via M1
+  `attempt_writer --input`.
+- Combined with the Route B static attempt, the worker finished the run:
+  job `f81300cb…`, verdict `inconclusive / required_check_not_run / interface`,
+  both routes `inconclusive`.
+- `tools/p2_acceptance.py --job-id …` → P2 ACCEPTANCE PASSED.
+- GUI renders the run/route verdicts and obligations; no success label.
+
+This satisfies the accepted MVP definition (honest inconclusive).
+
 ## Verified: Route B static attempt chain (2026-10-22)
 
 One real job was taken through the full chain without fabricating success:

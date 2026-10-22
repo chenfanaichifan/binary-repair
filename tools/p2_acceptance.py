@@ -69,6 +69,11 @@ def main() -> int:
         help="optional one-shot worker command (e.g. python -m app.services.worker --data-dir ... --once)",
     )
     parser.add_argument("--worker-cwd", default="", help="working directory for the worker command")
+    parser.add_argument(
+        "--job-id",
+        default="",
+        help="verify an existing started job instead of creating/approving/starting a new one",
+    )
     args = parser.parse_args()
 
     token = args.token.strip()
@@ -90,36 +95,41 @@ def main() -> int:
             print("FAIL  controller health check failed")
             return 1
 
-        created = gui.post(
-            "/jobs",
-            data={**FORM, "csrf": csrf},
-            files={"binary": ("p2-acceptance.bin", PAYLOAD, "application/octet-stream")},
-            follow_redirects=False,
-        )
-        if created.status_code != 303:
-            print(f"FAIL  create job HTTP {created.status_code}")
-            return 1
-        job_id = _job_id(created.headers["location"])
-        print(f"job={job_id}")
+        if args.job_id:
+            job_id = args.job_id
+            snapshot = controller.get(f"/api/jobs/{job_id}").json()
+            print(f"job={job_id} (existing)")
+        else:
+            created = gui.post(
+                "/jobs",
+                data={**FORM, "csrf": csrf},
+                files={"binary": ("p2-acceptance.bin", PAYLOAD, "application/octet-stream")},
+                follow_redirects=False,
+            )
+            if created.status_code != 303:
+                print(f"FAIL  create job HTTP {created.status_code}")
+                return 1
+            job_id = _job_id(created.headers["location"])
+            print(f"job={job_id}")
 
-        snapshot = controller.get(f"/api/jobs/{job_id}").json()
-        approved = gui.post(
-            f"/jobs/{job_id}/approve",
-            data={
-                "expected_sha256": snapshot["contract"]["sha256"],
-                "reviewer_label": "p2-acceptance",
-                "csrf": csrf,
-            },
-            follow_redirects=False,
-        )
-        if approved.status_code != 303:
-            print(f"FAIL  approval HTTP {approved.status_code}")
-            return 1
+            snapshot = controller.get(f"/api/jobs/{job_id}").json()
+            approved = gui.post(
+                f"/jobs/{job_id}/approve",
+                data={
+                    "expected_sha256": snapshot["contract"]["sha256"],
+                    "reviewer_label": "p2-acceptance",
+                    "csrf": csrf,
+                },
+                follow_redirects=False,
+            )
+            if approved.status_code != 303:
+                print(f"FAIL  approval HTTP {approved.status_code}")
+                return 1
 
-        started = gui.post(f"/jobs/{job_id}/start", data={"csrf": csrf}, follow_redirects=False)
-        if started.status_code != 303:
-            print(f"FAIL  start HTTP {started.status_code}")
-            return 1
+            started = gui.post(f"/jobs/{job_id}/start", data={"csrf": csrf}, follow_redirects=False)
+            if started.status_code != 303:
+                print(f"FAIL  start HTTP {started.status_code}")
+                return 1
 
         if args.worker_command:
             command = shlex.split(args.worker_command, posix=True)

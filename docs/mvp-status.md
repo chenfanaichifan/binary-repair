@@ -33,19 +33,37 @@ formal Gate 4 + V4/V5 (M3/VMer/M4).
   (snapshot/file/DB/GUI), lossless `unsupported→not_run` mapping.
 - Tests: 57 unit passed / 3 skipped; 7 browser e2e passed.
 
-## Remaining for MVP completion
+## MVP run completed (2026-10-22)
+
+Real Route A attempt + Route B static attempt were integrated into one job:
+
+- job `f81300cbfad64c72b15988cede6fba2c`, run
+  `d99bc20f8d1d423b8c7e61abb12e4917`
+- Route A: real gate3-harness-v2 attempt JSON (V0/V1/V3 passed, V2/V4/V5
+  not_run); the two evidence files were registered as controller artifacts so
+  passed obligations carry an `evidence_artifact_id`.
+- Route B: static executor bundle (V0/V1 passed, V2/V3/V4/V5 not_run).
+- Worker: both attempts terminal → `evaluate_run` → job `finished`.
+- Run verdict: **`inconclusive`**, reason `required_check_not_run`, failing
+  obligation `interface`; both routes `inconclusive`. This is the accepted MVP
+  outcome (honest, not a success claim).
+- `tools/p2_acceptance.py --job-id …` → **P2 ACCEPTANCE PASSED**
+  (`phase=finished`, verdict/obligations consistent).
+- GUI renders the run verdict, per-route verdicts and V0–V5 obligations; no
+  success label.
+- Screenshot: `docs/screenshots/09-mvp-finished.png`.
+
+Caveats: M4 verifier and M5 formal-bundle replay are still pending; this is
+**not** a signed Gate 3/Gate 4 decision. Route B remains static.
+
+## Remaining after MVP completion
 
 | Item | Owner | Status |
 |---|---|---|
-| Provide the real `gate3-bundle-2026-10-22.zip` on this machine (path `D:\BinRepair\...` is not accessible here) | M3/VMer | blocked |
-| Map the real Route A evidence to `routea-attempt-input.json` | M2 | schema ready (`docs/interfaces/route-a-attempt-input.md`) |
-| Write Route A attempt, run worker, reach `finished` | M2 | waiting on the bundle |
-| P2 acceptance: verdict + obligations consistent across snapshot/file/DB/GUI | M2 | script ready; waiting on the run |
-| Final screenshots / demo script / docs update | M2 | after P2 |
+| Independent M4/M5 verification of the real Gate 3 evidence | M4/M5 | pending (out of M2 scope) |
+| Merge `member2-backend-adapter` into `main` | Lead | pending (branch-only rule) |
+| Optional final proposal/screenshot pass | M2 | available |
 
-Expected real verdict with the current evidence: `inconclusive`
-(V0 passed, V3 passed, V1 unknown, V2/V4/V5 not_run) — this satisfies the
-accepted MVP definition, never `success_within_scope`.
 
 ## How to unblock (one action)
 
