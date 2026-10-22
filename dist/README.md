@@ -10,3 +10,7 @@
   original ELF, corrected six-entry contract, edit manifest, audit, 6/6 result,
   readelf audit, stdlib-only `regen_c4a159.py`. SHA-256 in
   `...c4a159...zip.sha256` (current `957d73d4…c108e`).
+
+- `m5-delivery-2026-10-22.zip` — M5 handoff with c4a159 candidate/contract,
+  schema-2 manifest, gate3-record M5 replay row, both distribution zips and
+  verifier-facing docs. SHA-256 in `...delivery...zip.sha256`.
