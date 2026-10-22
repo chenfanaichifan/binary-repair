@@ -8,7 +8,7 @@ bytes; one shared acceptance engine decides whether the final executable is
 `success_within_scope`. A model's claim is never evidence: only checks on the final
 bytes count.
 
-> **Status: integration complete; Route B round trip PASS; repair not yet demonstrated.**
+> **Status: integration complete; Route B round trip PASS on a disposable GitHub runner; formal Gate 4 NOT RUN pending the member3 offline VM; repair not yet demonstrated.**
 > The controller, GUI, acceptance engine, AI boundary, SQLite schema (v1 baseline +
 > 002/003), and the public CWE-121 candidate fixture are in `main`. Gate 4 (unchanged
 > Route B round trip) is **PASS** on a disposable Ubuntu runner (6/6 behaviour-identical;
@@ -34,9 +34,11 @@ bytes count.
 
 - Route A segment/trampoline backend. Gate 3 stays **UNSUPPORTED** until the
   LIEF/Patcherex2 layout audit exists; after that it is **CONDITIONALLY FEASIBLE**.
-- Gate 4 round trip. **PASS** (unchanged round trip, 6/6) on GitHub Actions
-  Ubuntu 24.04 with JDK21, Ghidra 12.2 and Patcherex2 0.2.14; evidence in
-  `docs/route-b/09-gate4-evidence.md`. This does not validate an edited candidate.
+- Gate 4 round trip. **Supplementary PASS** (unchanged round trip, 6/6) on GitHub
+  Actions Ubuntu 24.04 with JDK21, Ghidra 12.2 and Patcherex2 0.2.14; evidence in
+  `docs/route-b/09-gate4-evidence.md`. **Formal Gate 4 is NOT RUN**: it requires the
+  member3-provided disposable VM/snapshot with network disabled. This does not
+  validate an edited candidate.
 - Real repair execution. The controller queues runs and stores evidence; it does
   not execute uploaded binaries on the host.
 - VM broker, symbolic (V4), and final V5 reproducibility evidence.

@@ -1,10 +1,17 @@
-# Gate 4 — Route B unchanged round trip: PASS
+# Gate 4 — Route B unchanged round trip: PASS (supplementary); formal VM: NOT RUN
 
 **Date:** 2026-10-22
 **Run:** GitHub Actions `gate4-routeb-roundtrip`, run `39752557610`
 (`https://github.com/chenfanaichifan/binary-repair/actions/runs/39752557610`)
-**Result:** **6/6 behaviour-identical; gate4_pass = true.**
+**Result (supplementary):** **6/6 behaviour-identical; gate4_pass = true.**
 This is the unchanged round trip only — **not a repair**.
+
+> **Formal acceptance status: NOT RUN** on the member3-provided disposable
+> Ubuntu VM/snapshot with network disabled. The run below is a supplementary run
+> on GitHub Actions `ubuntu-24.04`: disposable, but network is available during
+> installation and it is not the team VM. Do not mark formal Gate 4 PASS until
+> member3 provides the VM or explicitly accepts this runner profile.
+> See [11-gate4-formal-checklist.md](11-gate4-formal-checklist.md).
 
 ## 1. Identity
 
@@ -98,7 +105,7 @@ force-pushes `gate4-results` with the evidence.
 | G1 contract + frozen manifest | PASS | `tests/test_fixture_v3_manifest.py`; contract v2 50/49; manifest-set hash `a564f039…` |
 | G2 Ghidra export | PASS | Ghidra 12.2 raw C + `.meta.txt` in `routeb/out/gate4/` |
 | G3 Route A | **BLOCKED** | needs scope ruling for new R--/R-X segments; plan in `07-route-a-trampoline-plan.md` |
-| G4 Route B unchanged round trip | **PASS** | 6/6 behaviour-identical; this document |
+| G4 Route B unchanged round trip | **PASS (supplementary) / formal NOT RUN** | 6/6 on GitHub Actions; formal member3 VM pending |
 | G5 placement | PARTIAL | Route B replaced a same-size function; Route A layout audit not run |
 | G6 concrete crash | PASS (partial) | `06-gate6-evidence.md`; 100 B → SIGSEGV at `ret 0x401317` |
 | G6 symbolic (V4) | **BLOCKED** | angr/Z3/V4 toolchain absent |
