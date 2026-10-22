@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from app.domain.contracts import SecurityContract
+from app.domain.contracts import SecurityContract, contract_sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json"
@@ -12,6 +12,7 @@ CONTRACT = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json
 def test_first_persisted_contract_has_six_authorized_edits() -> None:
     data = json.loads(CONTRACT.read_text(encoding="utf-8"))
     contract = SecurityContract.from_dict(data)
+    assert contract_sha256(data) == "1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c"
     assert len(contract.authorized_edits) == 6
     assert contract.allowed_calls == ("printLine", "strcpy")
     assert contract.dest_capacity_bytes == 50

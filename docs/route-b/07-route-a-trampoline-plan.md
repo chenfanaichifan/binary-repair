@@ -41,11 +41,10 @@ The six `authorized_edits` entries are:
 6. up to 64 bytes of added read-only data with exactly
    `ERROR: input exceeds destination capacity\n`, RIP-relative references only.
 
-> **Blocking correction:** entry 1 says “branch back to `0x401308`”. The call at
-> `0x401304` is 5 bytes, so the next instruction is `0x401309`; `0x401308` is the
-> last byte of the displaced call. The return target must be `0x401309`. Fixing
-> this changes the canonical contract hash and requires re-review before any patch.
-> Do not patch until the contract says `0x401309`.
+> **Resolved 2026-10-22:** entry 1 now says branch back to **`0x401309`**,
+> the instruction after the 5-byte call at `0x401304`. Canonical hash is
+> `1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c`.
+> The other five entries, oracle, harness and `original.elf` are unchanged.
 
 Input: `fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf`
 SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`.
@@ -61,7 +60,7 @@ SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`.
 | new R-X segment at `0x406000` | 66-byte guard/error trampoline |
 | ELF program headers | add two `PT_LOAD`; file length grows |
 | `main` `0x401256`–`0x4012af` | **untouched** |
-| `strcpy@plt` call `0x401304`–`0x401308` | **untouched** |
+| 5-byte call at `0x401304` | **Strategy C redirects it as a whole; see 12** |
 | other functions/data | untouched |
 
 Original detour site bytes (8-byte `mov qword [rbp-0x40],0`):
@@ -237,7 +236,7 @@ Pass criteria:
 - [ ] no segment overlaps; `vaddr % 0x1000 == offset % 0x1000`;
 - [ ] `readelf -lW` shows no `W|E` segment;
 - [ ] harness bytes `0x401256`–`0x4012af` unchanged;
-- [ ] `strcpy` call bytes `0x401304`–`0x401308` unchanged.
+- [ ] Strategy C call-redirect bytes at `0x401304` recorded; see `12`.
 
 Then run the frozen manifest on the patched ELF; expected 6/6:
 

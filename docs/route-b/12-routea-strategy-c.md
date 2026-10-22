@@ -62,7 +62,7 @@ No return address is rewritten; the original return address on the stack is
 2. **Exact stderr data.** The cave places the 42-byte string in the same R-X
    region. If data-in-executable-region is not allowed, it needs an R-- segment
    (layout change), or Route A is unsupported.
-3. **Call replacement.** Earlier constraint said `strcpy@0x401304–0x401308`
+3. **Call replacement.** Earlier constraint said the 5-byte call at `0x401304`
    "不得切開". Strategy C replaces the 5-byte call **as a whole** (not split).
    This must be explicitly allowed; otherwise C is not valid.
 4. **New PLT.** Not needed: the invalid path uses a `write` syscall, and

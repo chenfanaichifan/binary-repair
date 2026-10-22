@@ -20,8 +20,8 @@ Contents: candidate ELF, original ELF, corrected contract, edit manifest, audit,
 ## Determinism
 
 `regen_c4a159.py original.elf out.elf` reproduces `c4a159…` with stdlib only.
-It rejects a wrong original or output hash. The contract change from `0x401308`
-to `0x401309` is text-only; the cave code already returns to `0x401309`, so the
+It rejects a wrong original or output hash. The contract branch target was
+corrected to `0x401309` (text-only; the cave code already returns there), so the
 candidate hash does not change.
 
 ## Formal VM run
@@ -34,4 +34,4 @@ formal run rebuilds the ELF, record the new hash and do not reuse `c4a159…`.
 
 Main `8199eca` and this handoff say `0x401309`; canonical hash
 `1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c`.
-A checkout showing `0x401308` is stale.
+A checkout showing the old branch target is stale; use main `666a5dc` or newer.

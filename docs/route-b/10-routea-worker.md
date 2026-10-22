@@ -18,7 +18,7 @@ Capstone:
 ```
 
 For the candidate: 23 instructions from `0x4012b0` to `0x401317` (last `ret`).
-The `call strcpy@plt` at `0x401304`–`0x401308` is present in the boundary list
+The 5-byte `call strcpy@plt` at `0x401304` is present in the boundary list
 and is not a patch point.
 
 ## 2. Trampoline plan (P0)
@@ -33,7 +33,7 @@ and is not a patch point.
   then `exit_group(1)` (syscall 231);
 - no new relocations: existing `fprintf@plt` (`0x401120`) and `stderr`
   (`0x404080`) are reused;
-- `strcpy@0x401304–0x401308` and harness `0x401256–0x4012af` untouched.
+- 5-byte call at `0x401304` and harness `0x401256–0x4012af` recorded.
 
 The plan JSON includes `detour`, `code_hex`, message hex, segment addresses and
 the resolved symbols. `routeb/audit_route_a_layout.py` is an independent static
