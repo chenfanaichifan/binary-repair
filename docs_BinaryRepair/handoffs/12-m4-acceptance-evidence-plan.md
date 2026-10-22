@@ -3,16 +3,16 @@
 **From:** Member 4 (verification slice)
 **To:** Lead (reviewer/committer), Member 3 (candidate/guest producer), Member 5 (gate 3 owner)
 **Date:** 2026-10-22
-**Status:** **PLAN ONLY — ALL ITEMS `not_run`.** No guest is available to this workspace and no
-command in this plan has been executed. The committed original and the CI-built candidate now
-exist on `origin/main` @ `33235f5` (handoff 13 §3) as **inputs only**; they are not gate-3
-evidence, and nothing below has been measured by M4 yet. Nothing here is a result, a pass, or a
-prediction of one.
-**Basis:** handoff 13 (ownership handoff; Route A artifacts; review findings §5.1–§5.7),
-handoff 11 §3 (six gate-3 pass items) and §6 (M1's assignment), handoff 09 §11 (tail-cave ruling
-and interim status), handoff 10 §2 (three isolation preconditions),
-`verification-design.md` §4.4 (frozen oracle), §5 (gate matrix), §6 (negative scenarios),
-Tech Design §8 ("Added-code policy") and §9 (V1, V2, V3, V5).
+**Status:** **PLAN — canonical sync 2026-10-22.** No guest run has been executed by M4 yet, so
+every gate-3 item stays `not_run` / `NOT VERIFIED` until M3's isolated run and M4's independent
+checks exist. The canonical subject is now `origin/main` `1826505`: candidate
+`c4a159…aa82`, contract `24bfe568…4e37`, original/manifests unchanged. The earlier
+`f3cb9cbb…`/`fprintf` candidate and `ba33b4d0…` proposal are **superseded** and appear below only
+as corrections/history. Nothing here is a result, a pass, or a prediction of one.
+**Basis:** handoff 16 §8 (archive acceptance, VMer split), handoff 13 (ownership), handoff 11 §3
+(six gate-3 items) and §6, handoff 09 §11, handoff 10 §2,
+`verification-design.md` §4.4/§5/§6, and `main` docs `route-b/15–19`.
+
 
 ---
 
@@ -61,8 +61,9 @@ acceptance engine still decides outcomes from evidence (handoff 11 §3, §6).
 | `MAX_VALID_LEN` | 49 | verification-design §4.4 |
 | invalid path | rc 1, stdout empty, stderr exactly `ERROR: input exceeds destination capacity\n` (42 bytes), no crash | verification-design §4.4 |
 | valid path | rc 0, stdout = `argv[1] + "\n"`, stderr empty | frozen `valid.json` |
-| committed CI candidate SHA-256 | `f3cb9cbb503fb0d47ebebab7053fa2ed37b7876ffe5122157d31fefc783f9fa7` | handoff 13 §3; cross-check input only, never gate-3 evidence |
-| gate-3 candidate SHA-256 | `<recorded at delivery/guest rebuild; never retyped from prose>` | I1 + I5 |
+| canonical candidate SHA-256 | `c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82` | `origin/main` `1826505`; input to reproduce, never gate-3 evidence by itself |
+| canonical contract SHA-256 | `24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37` | `docs/route-b/16-contract-revision-approval.md` (M5 amended M4's `ba33b4d0…` proposal) |
+| gate-3 candidate SHA-256 | `<reproduced from the recorded recipe and hashed before/after the run; never retyped from prose>` | I1 + I5 |
 
 If any of the file hashes does not match, stop: the item is `NOT VERIFIED` under an identity
 mismatch, and the run is not gate-3 evidence.
@@ -75,15 +76,15 @@ No item proceeds on a partial delivery. Missing rows make the affected items `NO
 
 | # | Input | Required content | Affects |
 |---|---|---|---|
-| I1 | Final candidate ELF | path; SHA-256; delivered or guest-rebuilt byte-for-byte; the committed CI candidate `f3cb9cbb...` is a cross-check only and must be reproduced or the deviation recorded | all items |
+| I1 | Final candidate ELF | path; SHA-256 must equal `c4a159…aa82`; rebuilt byte-for-byte from I2 + I5 (or the deviation recorded). The archive copy `routea/out/cave-probe.elf` and the `regen_c4a159.py` output are two independent reproductions of the same bytes | all items |
 | I2 | `original.elf` | path; SHA-256 must equal the frozen value | V0 shape; header/byte diffs |
 | I3 | `tests/valid.json`, `tests/invalid.json` | delivered bytes; per-file hashes; manifest set hash | item 3 |
-| I4 | Edit manifest | machine-readable; minimum fields in §2.1 | items 1, 2, six-item 2 |
-| I5 | Re-apply recipe + tool versions | command/script that turns I2 into I1; hash of each tool/script; recorded deviation if byte-identical reproduction is not achieved | six-item 2 |
+| I4 | Edit manifest | machine-readable schema-2 manifest (`routea/out/edit-manifest.json`): displaced bytes, added code/data offsets+hashes, changed/added intervals, header before/after, writer, termination, tool versions | items 1, 2, six-item 2 |
+| I5 | Re-apply recipe + tool versions | primary: `regen_c4a159.py` (stdlib-only, from `dist/m5-routea-c4a159-2026-10-22.zip`); secondary: `python -m routea.cave build … --contract contract.json`; record tool versions and any deviation if byte-identical reproduction fails | six-item 2 |
 | I6 | Wrapper runbook | fixed invocation shape, root-owned path, hash/owner/mode, the attestation block it emits, and whether it can host M4's probe (§4.2) | items 1.2, 2.2, 3, 5 |
 | I7 | Image + revert evidence | snapshot name/id, chain manifest file and its SHA-256, raw revert command/output/timestamp, guest fingerprint after revert | item 3, item 5 |
 | I8 | Guest tool inventory | `readelf`, `objdump`, `gdb`, `python3` + `lief`, and the util-linux tools `unshare`/`runuser`/`setpriv` (versions, or exact absence report) | all execution/static items |
-| I9 | Writer/import evidence | `readelf -dW`/`--dyn-syms`/PLT facts for the existing `fprintf` import and `stderr` COPY relocation, the absence of `write`/`fputs`/`fwrite`/`exit`/`strlen`/`strncpy`, and the guest seccomp result for the `exit_group` termination syscall | item 2/3 risk, writer mechanism |
+| I9 | Writer/import evidence | candidate uses raw `write(2)` for the 42-byte stderr and `exit_group(1)`; the ELF imports no `write`/`fputs`/`fwrite`/`exit`/`strlen`/`strncpy`; `fprintf@plt`/`stderr` exist but are not used by `c4a159…`; record `Seccomp: 0` (no filter) for the syscalls | item 2/3 risk, writer mechanism |
 
 ### 2.1 Minimum edit-manifest fields M4 needs
 
@@ -97,69 +98,74 @@ measurements:
   intervals as **file offsets** and **vaddrs**, exact added bytes;
 - `header_changes`: segment index + old/new `p_filesz`, `p_memsz`; any section-header change;
 - `changed_file_intervals`: every edited file byte interval, inclusive offsets;
-- `template_id` + parameters, `allowed_calls` — for the approved revision this is exactly
-  `("strcpy","printLine","fprintf")`;
-- termination mechanism — the `exit_group` syscall with status 1;
-- writer mechanism — `fprintf@plt` plus the existing `stderr` COPY relocation (no new import,
-  relocation, GOT, or PLT edit);
-- guest facts: CET state, seccomp policy for the `exit_group` syscall, original
-  PLT/dynsym writer facts.
+- `template_id` + parameters and `allowed_calls` — canonical contract `24bfe568…` has
+  `("fprintf","printLine","strcpy")`; `fprintf` is a **scope allowance**, not the mechanism the
+  candidate uses;
+- termination mechanism — `exit_group(1)` syscall;
+- writer mechanism — raw `write(2, msg, 42)` syscall (no `fprintf@plt` call in `c4a159…`, no new
+  import, relocation, GOT, or PLT edit);
+- guest facts: CET state, `Seccomp: 0`, original PLT/dynsym facts.
 
 If a claimed edit is not in `changed_file_intervals`, the candidate is rejected by the audit; if
-the manifest omits a field, the dependent item is `NOT VERIFIED`. The committed
-`routea/out/edit-manifest.json` is known to miss several of these fields (handoff 13 §5.2: the
-displaced 5 bytes, the header before/after values with the program-header index, the complete
-changed/added file intervals, the exact added bytes, writer/termination mechanism, tool
-versions); the gate-3 record must cite a manifest that contains them, whether M5 extends it or
-M4 emits a supplementary one from the recorded recipe.
+the manifest omits a field, the dependent item is `NOT VERIFIED`. The canonical schema-2
+manifest on main (`routea/out/edit-manifest.json`) now contains these fields:
+`displaced` (`original_hex` `e8c7fdffff` → `new_hex` `e8e0050000`), `added` (code 71 B,
+sha256 `cd032694…`, and data 42 B at vaddr `0x401930`, sha256 `083d3bfb…`), `intervals.changed` /
+`intervals.added`, `header_changes.rx_load` (`0x8e9` → `0x1000`, phdr file offset `0xe8`,
+page-congruent/no-overlap), `writer`, `termination`, `tool_versions`, `edits`, `mappings`, and the
+8-boolean audit. M4 still re-derives the changed file intervals from its own byte diff; the
+committed CI `audit.json` is not M4 evidence.
 
-### 2.2 Committed inputs M4 must re-measure (handoff 13 §3; inputs, not evidence)
+### 2.2 Committed inputs M4 must re-measure (main `1826505`; inputs, not evidence)
 
 These are cross-check values, not results. Each must be reproduced by M4's own measurement
 before it counts.
 
-| Committed fact | Value (source: handoff 13 §3, §5.1) |
+| Committed fact | Value (source: `main` `1826505`, docs `route-b/15–19`) |
 |---|---|
 | original ELF | 26,792 B, SHA-256 `aa428157...8393` |
-| CI-built candidate | 26,792 B, SHA-256 `f3cb9cbb...f9fa7` (cross-check only) |
+| canonical candidate | 26,792 B, SHA-256 `c4a159...aa82` (`routea/out/cave-probe.elf`; reproduced by `regen_c4a159.py`) |
+| contract | canonical `24bfe568...4e37` (`fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json`) |
 | redirect | 5 bytes at `0x401304`: `e8 c7 fd ff ff` -> `e8 e0 05 00 00`, target `0x4018e9` |
 | return point | instruction after the 5-byte call begins at `0x401309` (the call occupies `0x401304`–`0x401308` inclusive; handoff 13 §5.1) |
 | layout | patched R-X `PT_LOAD`: vaddr `0x401000`, offset `0x1000`, `p_filesz = p_memsz` `0x8e9` -> `0x1000`, flags `R E`; next `PT_LOAD` at vaddr/offset `0x402000`; file size `0x68a8 > 0x2000`; 13 program headers |
 | cave | `0x4018e9`–`0x401fff`, 1,815 B, immediately after `.fini`; `.text` ends `0x4018dc`; no section covers it |
-| added bytes | 72 bytes guard + 42-byte message = 114 added bytes at the cave |
-| writer | `fprintf@plt` at `0x401120` and the `stderr` COPY relocation at `0x404080` already exist; no new import/relocation/GOT/PLT edit |
-| imports | no `write`, `fputs`, `fwrite`, `exit`, `strlen`, or `strncpy` import (measured list in handoff 13 §3) |
-| CI status | the CI `6/6` and CI layout audit are supplementary only; CI cannot satisfy gate-3 items 4–5 (handoff 13 §5.6) |
+| added bytes | 71-byte guard (sha256 `cd032694…`) + 42-byte message at `0x401930` (sha256 `083d3bfb…`) = 113 added bytes |
+| writer / termination | raw `write(2, msg, 42)` syscall, then `exit_group(1)`; no `fprintf@plt` call; no new import/relocation/GOT/PLT edit |
+| imports | no `write`, `fputs`, `fwrite`, `exit`, `strlen`, or `strncpy` import; `fprintf`/`stderr` exist but are unused by this candidate |
+| guest syscall policy | `Seccomp: 0` (no filter) measured by M3; record it with the run |
+| CI status | GitHub Actions run `39756691896` 6/6 on `c4a159…` and the CI layout audit are supplementary only; CI cannot satisfy gate-3 items 4–5 (handoff 13 §5.6) |
 
-The contract writer authorization is **resolved, not open**. The Lead amended handoff 09 §4.1
-on 2026-10-22 after M5's measured probe: the ELF already imports `fprintf` and contains the
-`stderr` COPY relocation; it imports no `write`, `fputs`, `fwrite`, `exit`, `strlen`, or
-`strncpy`. The first persisted contract revision must therefore set
-`allowed_calls = ("strcpy","printLine","fprintf")` and authorize `fprintf@plt` plus the existing
-`stderr` object; termination is the `exit_group` syscall. A raw `write(2)` path is only an
-alternative if the candidate switches to it and the guest seccomp result is recorded. M5 still
-owns the contract revision, and it must exist before the candidate freezes; the probe's
-`allowed_calls=[fprintf,...]` is not an approved contract.
+The contract writer question is **resolved**. The Lead amended handoff 09 §4.1 on 2026-10-22
+after M5's measured probe, and M5 then issued the canonical contract `24bfe568…`
+(`docs/route-b/16-contract-revision-approval.md`): six `authorized_edits` unchanged, entry 4
+authorizes the fd-2 write + `exit_group` termination, `allowed_calls` keeps the existing
+`fprintf` option as a scope allowance, and `environment_assumptions` now state CET is
+compile-time only and that the guest seccomp policy is recorded separately (`Seccomp: 0`).
+`c4a159…` uses the raw syscall, so the record must describe that mechanism, not the stale
+`fprintf@plt` description. M5 owns the persisted contract; M4 only re-measures its hash.
 
-### 2.3 Lead's independent artifact check (inputs/cross-checks only)
+### 2.3 M4 static cross-check already committed (inputs only)
 
-On 2026-10-22 the Lead read the `origin/main` @ `33235f5` blobs with a **struct-only ELF parser**
-(no execution, no network) and observed the values below. These are inputs M4 must reproduce
-independently; they are **not gate-3 evidence**, and the CI `6/6` / CI `readelf-audit.txt` remain
-supplementary only.
+On 2026-10-22 M4 re-read `origin/main` `1826505` blobs and the committed candidate with a
+struct-only parser (`docs/route-a/gate3-record.md`; no execution, no network). The values below
+are inputs M4 must reproduce again in the guest where required; they are **not** the runtime
+gate-3 evidence, and the CI `6/6` / CI `readelf-audit.txt` remain supplementary only.
 
-| Cross-check | Lead's observation |
+| Cross-check | M4 observation (static) |
 |---|---|
 | `original.elf` | 26,792 B, SHA-256 `aa428157...8393` |
-| candidate | 26,792 B, SHA-256 `f3cb9cbb...f9fa7` |
+| candidate | 26,792 B, SHA-256 `c4a159...aa82` |
+| contract | canonical `24bfe568...4e37` |
 | headers | 13 program headers both; `e_entry 0x401170` unchanged; file size `0x68a8` both |
 | changed segment | only `PT_LOAD[3]`: `p_filesz`/`p_memsz` `0x8e9` -> `0x1000`, `p_offset 0x1000`, `p_vaddr 0x401000`, flags `R E`, page congruence `0/0`, next `PT_LOAD` `0x402000` adjacent with no overlap |
 | redirect | `e8 c7 fd ff ff` -> `e8 e0 05 00 00`, rel32 `+0x5e0`, target `0x4018e9` |
-| cave head / message | cave head is the inline length loop; the 42-byte message sits at file offset `0x1931` |
-| byte diffs | only `0x108-0x109` / `0x110-0x111` (header fields), `0x1305-0x1308`, `0x18e9-0x195a` |
+| cave head / message | cave head is the inline length loop; 71-byte guard at file offset `0x18e9`; the 42-byte message sits at file offset `0x1930` |
+| byte diffs | 13 merged intervals, all inside `0x108-0x109`, `0x110-0x111`, `0x1305-0x1308`, `0x18e9-0x1959`; file size unchanged |
 
-M4's own measurement must match these before they count; a discrepancy is a finding to report,
-not a pass or a fail by itself.
+The runtime half (cave mapping/execution, six cases, isolation) is still `not_run`; see
+`docs/route-a/gate3-record.md` §4 and §7.
+
 
 ---
 
@@ -820,26 +826,24 @@ the acceptance engine decides outcomes from evidence.
 
 ## 9. What cannot be verified in this environment (and now)
 
-No guest is available to this workspace; the committed `original.elf` and CI candidate exist on
-`origin/main` @ `33235f5` but are inputs only, no M3 isolation/guest delivery has arrived, and no
-command in this plan has been run by M4. Static items could be executed later on own copies of
-the committed blobs, but nothing here is measured yet. Therefore:
+No guest console is available to this workspace or to M4's verification role; M3 uses the
+GitHub archive of `1826505` and VMer operates the VM snapshot. M4 has committed only a **static**
+cross-check (`docs/route-a/gate3-record.md`); no runtime item has been executed. Therefore:
 
 | Item | Requires | Status now |
 |---|---|---|
-| 1. separate copy / identity hashes | committed blobs on `origin/main`@`33235f5` + own copies | `not_run` |
-| 2. reproducibility (re-apply recipe) | committed candidate + I5 recipe + toolchain | `not_run` |
-| 3. structural header/byte audit | committed candidate/original + `readelf` + LIEF | `not_run` |
+| 1. separate copy / identity hashes | archive blobs + own copies; guest re-hash | static `PASS`; guest `not_run` |
+| 2. reproducibility (re-apply recipe) | candidate + I5 recipe + toolchain | static `PASS` (manifest/recipe present); guest rebuild `not_run` |
+| 3. structural header/byte audit | candidate/original + `readelf` + LIEF 1.0.0 | static `PARTIAL` (structure re-measured; LIEF/NX/RELRO/canary/import view missing); runtime `not_run` |
 | 3b. runtime cave probe | guest + isolation + debugger | `not_run` |
 | 4. six-case run | guest + snapshot + wrapper + I1–I3 | `not_run` |
-| 5. isolation evidence | guest + hypervisor/revert raw logs | `not_run` |
+| 5. isolation evidence | guest + hypervisor/revert raw logs + VMer | `not_run` |
 | 6. evidence bundle | results of items 1–5 | `not_run` |
 | Critical liveness (static + dynamic) | candidate/original bytes + guest + debugger | `not_run` |
 | Original V0 shape (4/6) | `original.elf` + guest | `not_run` |
 
-Only frozen values from documents are quoted above; none is a measurement of the delivered
-candidate. Any result reported before the guest exists and the committed artifacts have been
-independently measured would be fabricated and is prohibited.
+Only frozen values from documents and the static record are quoted above; the runtime half is
+still missing. Any result reported before the guest run would be fabricated and is prohibited.
 
 ---
 
@@ -861,35 +865,42 @@ independently measured would be fabricated and is prohibited.
 
 ## 11. Pre-run dependencies and resolved facts
 
-1. **Delivery path and hashes** (I1–I4): where M3 places the candidate, original, tests, edit
-   manifest, and re-apply recipe, plus their hashes.
-2. **Wrapper runbook** (I6): exact fixed invocation, attestation block, and whether a probe/gdb
-   mode exists; otherwise Lead approval of the equivalent harness in §7.3.
+1. **Content source and hashes** (I1–I5): M3 uses the GitHub archive of `1826505`
+   (`D:\BinRepair\.tmp\binrepair-main-1826505.zip`, 471,658 B; full SHA-256 to be recorded in the
+   report). Content identity is `original aa428157…`, `candidate c4a159…`, `contract 24bfe568…`;
+   the archive has no `.git`, so provenance = archive source + commit id + per-file hashes.
+2. **Wrapper runbook** (I6): exact fixed invocation
+   (`sudo /usr/local/sbin/jobwrap gate3 original|patched <case-id|all>`), attestation block,
+   and whether it can host a probe/gdb mode; otherwise Lead approval of the equivalent harness
+   in §7.3.
 3. **Image/revert evidence** (I7): chain manifest, snapshot id, raw revert log; M4's guest
-   fingerprint comparison.
-4. **Guest and tool access** (I8): account/SSH method; `readelf`, `objdump`, `gdb`, `python3` +
-   `lief` availability and versions. A missing debugger blocks the dynamic liveness and runtime
-   cave observables (they become `NOT VERIFIED`, not pass).
+   fingerprint comparison. New `gate3-harness` snapshot = new image record (recompute the chain
+   manifest powered off).
+4. **Guest and tool access** (I8): M3's guest `lab@192.168.30.128` (key not in git);
+   `readelf`/`objdump`/`gdb 15.1`/`python3` + `lief 1.0.0`, `pyelftools 0.33`,
+   `capstone 5.0.9`, `binutils 2.42`. A missing debugger blocks the dynamic liveness and
+   runtime cave observables (they become `NOT VERIFIED`, not pass).
 5. **Cave entry and call addresses** from the edit manifest (needed to instantiate the gdb
-   scripts; not typed from prose).
-6. **Writer/import facts to re-measure** (I9): `fprintf` import and the `stderr` COPY relocation
-   present; no `write`/`fputs`/`fwrite`/`exit`/`strlen`/`strncpy`; guest seccomp result for the
-   `exit_group` termination syscall. These are measured facts M4 must reproduce, not an open
-   writer choice.
-7. **Contract writer authorization — RESOLVED** (Lead amendment to handoff 09 §4.1,
-   2026-10-22): the first persisted contract revision must set
-   `allowed_calls = ("strcpy","printLine","fprintf")` and authorize `fprintf@plt` plus the
-   existing `stderr` object; termination is the `exit_group` syscall. Raw `write(2)` is an
-   alternative only if the candidate switches to it and the guest seccomp result is recorded.
-   The revision itself remains M5-owned and must exist before the candidate freezes; the probe's
-   `allowed_calls` is not an approved contract.
-8. **Contract text off-by-one** (handoff 13 §5.1): the redirect's valid-path return is
-   `0x401309`, not `0x401308`; the contract revision and every record/script must use the
-   corrected value before freeze (handoff 09 §4.1 entry 1 is already corrected).
-9. **Committed record, independent replay, and approval** (handoff 13 §7, ratified by the Lead on
-   2026-10-22): the `gate3-record.md` + `SHA256SUMS` bundle is committed for review; M5 replays
-   the build/hash commands and the Lead approves. M4 does not approve its own evidence; M4's
-   confirmation is evidence, not a second success rule.
+   scripts; not typed from prose): call site `0x401304`, cave `0x4018e9`, message `0x401930`,
+   return `0x401309`.
+6. **Writer/import facts to re-measure** (I9): candidate uses raw `write(2)` + `exit_group(1)`;
+   `fprintf`/`stderr` exist but are unused by `c4a159…`; no `write`/`fputs`/`fwrite`/`exit`/
+   `strlen`/`strncpy` import; record `Seccomp: 0`. These are measured facts M4 must reproduce.
+7. **Contract — RESOLVED and canonical.** M5's `24bfe568…` is the persisted reviewed scope
+   (`docs/route-b/16-contract-revision-approval.md`): six `authorized_edits` unchanged, entry 4
+   authorizes the fd-2 write + `exit_group`, `allowed_calls = ("fprintf","printLine","strcpy")`
+   as a scope allowance, and `environment_assumptions` say CET is compile-time only and the guest
+   seccomp policy is recorded separately. M4 re-measures the hash; it does not author or freeze it.
+   The earlier `ba33b4d0…` proposal is superseded and must not be cited.
+8. **Return-point correction** (handoff 13 §5.1): the redirect's valid-path return is
+   `0x401309`, not `0x401308`; every record/script uses `0x401309` (handoff 09 §4.1 entry 1 and
+   main's contract are already corrected).
+9. **Committed record, replay, and approval.** `docs/route-a/gate3-record.md` +
+   `docs/route-a/SHA256SUMS` are the committed static cross-check; they are not the signed
+   gate-3 record. After M3's isolated run, M4 signs the six-item record and the Lead approves.
+   The gate3-record §7 notes "M5 replay waived by Lead on 2026-10-22"; handoff 13/16 still say M5
+   replays the build/hash commands. The Lead must state one rule explicitly before the record is
+   signed; the recommended default is to keep the M5 replay of build/hashes only.
 
 ---
 
@@ -909,3 +920,12 @@ independently measured would be fabricated and is prohibited.
   guest seccomp result is recorded); handoff 13 ratified by the Lead; the Lead's struct-only
   artifact cross-checks are recorded in §2.3 as inputs to reproduce, not evidence. Status
   unchanged: plan only, all six items `not_run`, nothing executed.
+- 2026-10-22 (canonical sync) — `origin/main` is `1826505`: candidate `c4a159…aa82` (raw
+  `write(2)` + `exit_group`, 71-byte guard, 42-byte message at `0x401930`), contract
+  `24bfe568…4e37`, schema-2 manifest complete, stdlib `regen_c4a159.py`; `f3cb9cbb…`/`fprintf`
+  and `ba33b4d0…` are superseded. M3 accepted the GitHub archive of `1826505` as content source
+  (handoff 16 §8), and VMer (not M4) operates the snapshot. Status: all six gate-3 items still
+  `not_run`; no result or pass claimed.
+- 2026-10-22 (delivery resolved) — M3 proceeds on the archive tree: §5 prep, then VMer takes
+  `gate3-harness`, then §4 runtime probe + six cases + original V0. M4 has executed nothing;
+  this entry records the canonical values only.
