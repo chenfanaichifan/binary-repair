@@ -148,9 +148,72 @@ B1–B6. M4 resubmitted on base `ad1a1f8` (handoff 18): branch
 `origin/member-4-routea-gate3` @ `2ac0f66`, patch
 `docs/route-a/m4-patches/0002-member-4-routea-gate3-canonical-audit.patch`
 (`b68aabcd…cab8`), additive tooling only. Until M5 records a new review, the M4 implementation
-is **not accepted** and is not gate-3 evidence either way. M5's build/hash replay (handoff 19)
-is also still pending.
+is **not accepted** and is not gate-3 evidence either way. M5's build/hash replay is recorded in §8.1 (handoff) and §8.2 (formal v2, NOT VERIFIED).
 
+### 8.1 M5 build/hash replay — recorded, not a gate pass
+
+**Scope:** M5 replayed the delivered handoff bundle, not the formal VM evidence
+bundle. The formal VM bundle (items 3–6) remains `NOT VERIFIED`.
+
+```text
+bundle_zip:   dist/m5-routea-c4a159-2026-10-22.zip
+bundle_zip_sha256:         957d73d4284a4e5ced27de451bacdfe8956751232bd4a1fa5aa6454dccdc108e
+original:     aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393
+candidate:    c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
+contract file:15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df
+contract canon:24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
+regen script: 56331eedb4d72c55eec4e0f105fb20207576e6e6860b79ca4cedb175ed54e843
+sha256sums_file_sha256:   640b448228ea8e16d15930c5c81a1478a11a82a1feddb122f6262157a87788dd
+```
+
+Commands used:
+
+```bash
+unzip -q dist/m5-routea-c4a159-2026-10-22.zip -d /tmp/m5replay
+cd /tmp/m5replay
+python3 regen_c4a159.py original.elf replayed.elf
+sha256sum replayed.elf
+sha256sum -c SHA256SUMS
+sha256sum SHA256SUMS
+```
+
+Result: `replayed.elf` is byte-identical to `candidate.elf`; all `SHA256SUMS`
+entries `OK`; `contract_sha256()` reproduces `24bfe568…4e37`; candidate and
+contract match the record. **M5 replay = PASS for the handoff bundle.**
+
+This row does not fill the M4 verifier row and does not approve Gate 3. The formal
+VM bundle and items 3–6 are still required before M4 signs.
+
+### 8.2 Formal v2 bundle replay — NOT VERIFIED (inputs missing)
+
+**Bundle:** `gate3-bundle-v2-2026-10-22.zip`, 18,318 B,
+SHA-256 `6151a80633fdde0d9b1ce87c126b01994a730625557d17297828468799710a65`.
+
+```text
+SHA256SUMS file sha256: 4ba6ebad30a4035c6a16c62c1fbab53dda67bce60db2b87510b83aa97f876934
+sha256sum -c:           22/22 OK
+candidate-before:       c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
+candidate-after:        c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
+contract canonical:     24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
+contract file:          15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df
+```
+
+**Missing inputs:** the formal v2 bundle is a raw-evidence set; it does **not**
+contain `candidate.elf`, `original.elf`, or `regen_c4a159.py`. Therefore these
+required replay steps cannot be run against the formal bundle:
+
+```text
+python3 regen_c4a159.py original.elf replayed.elf
+sha256sum replayed.elf
+cmp candidate.elf replayed.elf
+```
+
+The handoff bundle replay in §8.1 reproduces `c4a159…` from the recorded
+`original.elf` + `regen_c4a159.py`, but that is **not** formal-bundle evidence.
+The formal bundle does bind the candidate hash via `candidate-before/after` and
+`gate3-summary.json`, and its 22/22 `SHA256SUMS` verify.
+
+**Formal v2 replay verdict: NOT VERIFIED** — no candidate change, no pass claim.
 ## 9. Signature — BLANK (DRAFT)
 
 **Signing order (handoff 19 §5):**
@@ -166,7 +229,7 @@ is also still pending.
 | Role | Name | Date | Signature |
 |---|---|---|---|
 | M4 verifier | — | — | **blank until items 3–6 are PASS** |
-| M5 build/hash replay | — | — | pending (handoff 19) |
+| M5 build/hash replay | Member 5 | 2026-10-22 | NOT VERIFIED — formal v2 bundle `6151…`; `SHA256SUMS 4ba6…` / 22/22; missing candidate.elf/original.elf/regen; handoff-only regen c4a159 |
 | Lead approval | — | — | pending |
 
 Do not fill these fields from a CI run, a static audit, or a verbal approval. A blank row is not
