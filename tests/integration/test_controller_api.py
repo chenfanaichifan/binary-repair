@@ -51,12 +51,29 @@ def test_create_and_snapshot_contract(client: TestClient) -> None:
     assert set(payload["routes"]) == {"A", "B"}
     assert payload["phase"] == "draft"
     assert payload["demo"] is False
+    assert payload["contract"]["approved"] is False
+    assert payload["contract"]["revision"] == 1
+    assert len(payload["contract"]["sha256"]) == 64
     assert not CJK.search(snapshot.text)
 
 
-def test_start_is_idempotent(client: TestClient) -> None:
+def _approve_current(client: TestClient, job_id: str) -> dict:
+    contract = client.get(f"/api/jobs/{job_id}").json()["contract"]
+    response = client.post(
+        f"/api/jobs/{job_id}/approve",
+        data={"expected_sha256": contract["sha256"], "reviewer_label": "reviewer"},
+    )
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
+def test_start_requires_approval_and_is_idempotent(client: TestClient) -> None:
     job_id = _create(client)["id"]
 
+    blocked = client.post(f"/api/jobs/{job_id}/start")
+    assert blocked.status_code == 409
+
+    _approve_current(client, job_id)
     first = client.post(f"/api/jobs/{job_id}/start")
     second = client.post(f"/api/jobs/{job_id}/start")
     assert first.status_code == second.status_code == 202
@@ -65,6 +82,39 @@ def test_start_is_idempotent(client: TestClient) -> None:
     snapshot = client.get(f"/api/jobs/{job_id}").json()
     assert snapshot["phase"] == "queued"
     assert snapshot["execution"] == "queued"
+
+
+def test_contract_edit_invalidates_approval(client: TestClient) -> None:
+    job_id = _create(client)["id"]
+    _approve_current(client, job_id)
+
+    stale = client.post(
+        f"/api/jobs/{job_id}/contract",
+        data={"expected_revision": 0, "valid_domain": "changed"},
+    )
+    assert stale.status_code == 409
+
+    updated = client.post(
+        f"/api/jobs/{job_id}/contract",
+        data={"expected_revision": 1, "valid_domain": "Input length 0-49 bytes"},
+    )
+    assert updated.status_code == 200, updated.text
+    assert updated.json()["contract"]["revision"] == 2
+    assert updated.json()["contract"]["approved"] is False
+    assert client.post(f"/api/jobs/{job_id}/start").status_code == 409
+
+    stale_hash = client.post(
+        f"/api/jobs/{job_id}/approve",
+        data={"expected_sha256": "0" * 64, "reviewer_label": "reviewer"},
+    )
+    assert stale_hash.status_code == 409
+
+
+def test_visuals_endpoint(client: TestClient) -> None:
+    job_id = _create(client)["id"]
+    response = client.get(f"/api/jobs/{job_id}/visuals")
+    assert response.status_code == 200
+    assert response.json()["available"] is False
 
 
 def test_canonical_runs_creates_attempts_and_evidence(client: TestClient) -> None:
@@ -141,6 +191,7 @@ def test_obligations_and_artifacts(client: TestClient) -> None:
 
 def test_cancel_and_restart_state(client: TestClient, tmp_path, monkeypatch) -> None:
     job_id = _create(client)["id"]
+    _approve_current(client, job_id)
     started = client.post(f"/api/jobs/{job_id}/start")
     assert started.status_code == 202
 

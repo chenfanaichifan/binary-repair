@@ -102,7 +102,14 @@ def _contract_body(
             if line.strip()
         ],
     }
-    return {"revision": 1, "sha256": _sha_json(body), **body}
+    return {
+        "revision": 1,
+        "sha256": _sha_json(body),
+        "approved": False,
+        "approved_at": None,
+        "reviewer_label": None,
+        **body,
+    }
 
 
 def _meta_path(job_id: str) -> Path:
@@ -157,9 +164,10 @@ def _placeholder_routes(phase: str) -> dict[str, dict[str, Any]]:
 
 
 def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
-    contract = meta.get("contract")
-    if not isinstance(contract, dict):
-        contract = _contract_body()
+    contract = dict(meta.get("contract") or _contract_body())
+    contract.setdefault("revision", 1)
+    contract.setdefault("sha256", _sha_json({k: v for k, v in contract.items() if k not in {"revision", "sha256", "approved", "approved_at", "reviewer_label"}}))
+    contract.setdefault("approved", False)
     return {
         "id": record.id,
         "demo": False,
@@ -226,7 +234,7 @@ async def local_only(request: Request, call_next):
 
 @app.get("/healthz")
 def healthz() -> dict[str, Any]:
-    return {"ok": True, "service": "binaryrepair-controller"}
+    return {"ok": True, "service": "binaryrepair-controller", "backend": "http", "demo": None}
 
 
 @app.post("/api/jobs", status_code=201)
@@ -296,18 +304,33 @@ def start(job_id: str) -> dict[str, Any]:
         raise HTTPException(status_code=409, detail="Job is cancelled; a new job is required.")
     meta = _read_meta(job_id)
     contract = meta.get("contract")
-    if not isinstance(contract, dict) or not meta.get("manifest_sha256") or not meta.get("scope_sha256"):
-        raise HTTPException(status_code=409, detail="Job has no reviewed contract metadata.")
+    approval_meta = meta.get("approval")
+    if not isinstance(contract, dict):
+        raise HTTPException(status_code=409, detail="Job has no contract.")
+    if not contract.get("approved") or not isinstance(approval_meta, dict):
+        raise HTTPException(status_code=409, detail="Contract is not approved.")
+    revision = int(contract.get("revision", 1))
+    if (
+        int(approval_meta.get("revision", -1)) != revision
+        or str(approval_meta.get("sha256", "")) != str(contract.get("sha256", ""))
+    ):
+        raise HTTPException(status_code=409, detail="Approval is stale.")
 
+    row = jobs.get_contract(job_id, revision, data_dir=_data_dir())
+    if row is None:
+        raise HTTPException(status_code=409, detail="No persisted approval for this revision.")
+    manifest = str(meta.get("manifest_sha256") or "0" * 64)
     try:
-        approval = jobs.approve_contract(
-            job_id,
+        approval = jobs.approval_from_contract(row, manifest_sha256=manifest)
+        approval = jobs.Approval(
+            job_id=approval.job_id,
+            contract_id=approval.contract_id,
+            contract_revision=approval.contract_revision,
             input_sha256=record.original_sha256,
-            contract_revision=int(contract["revision"]),
-            manifest_sha256=str(meta["manifest_sha256"]),
-            scope_sha256=str(meta["scope_sha256"]),
-            reviewer_label="controller-http",
-            data_dir=_data_dir(),
+            manifest_sha256=approval.manifest_sha256,
+            scope_sha256=approval.scope_sha256,
+            reviewer_label=approval.reviewer_label,
+            approved_at=approval.approved_at,
         )
         run = jobs.start_run(
             job_id,
@@ -347,27 +370,118 @@ class RetryRequest(BaseModel):
     route: str = Field(pattern="^route_[ab]$")
 
 
+@app.post("/api/jobs/{job_id}/contract")
+def update_contract(
+    job_id: str,
+    expected_revision: int = Form(...),
+    valid_domain: str = Form(""),
+    forbidden: str = Form(""),
+    invalid_outcome: str = Form(""),
+    assumptions: str = Form(""),
+) -> dict[str, Any]:
+    _job_or_404(job_id)
+    meta = _read_meta(job_id)
+    contract = dict(meta.get("contract") or _contract_body())
+    current = int(contract.get("revision", 1))
+    if expected_revision != current:
+        raise HTTPException(status_code=409, detail="Stale contract revision.")
+
+    updated = _contract_body(
+        valid_domain=valid_domain,
+        forbidden=forbidden,
+        invalid_outcome=invalid_outcome,
+        assumptions=assumptions,
+    )
+    updated["revision"] = current + 1
+    updated["approved"] = False
+    updated["approved_at"] = None
+    updated["reviewer_label"] = None
+    meta["contract"] = updated
+    meta.pop("approval", None)
+    _write_meta(job_id, meta)
+    return {"id": job_id, "contract": updated}
+
+
 @app.post("/api/jobs/{job_id}/approve")
-def approve(job_id: str, body: ApproveRequest) -> dict[str, Any]:
+async def approve(job_id: str, request: Request) -> dict[str, Any]:
     record = _job_or_404(job_id)
-    try:
-        approval = jobs.approve_contract(
-            job_id,
-            contract_revision=body.contract_revision,
-            reviewer_label=body.reviewer_label,
-            data_dir=_data_dir(),
-            contract_body=body.contract,
-            input_sha256=record.original_sha256,
-            manifest_sha256=body.manifest_sha256,
+    meta = _read_meta(job_id)
+    content_type = (request.headers.get("content-type") or "").lower()
+
+    if "application/json" in content_type:
+        raw = await request.json()
+        body = ApproveRequest.model_validate(raw)
+        try:
+            approval = jobs.approve_contract(
+                job_id,
+                contract_revision=body.contract_revision,
+                reviewer_label=body.reviewer_label,
+                data_dir=_data_dir(),
+                contract_body=body.contract,
+                input_sha256=record.original_sha256,
+                manifest_sha256=body.manifest_sha256,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        contract = dict(body.contract)
+        contract.update(
+            {
+                "revision": body.contract_revision,
+                "sha256": approval.scope_sha256,
+                "approved": True,
+                "approved_at": approval.approved_at,
+                "reviewer_label": body.reviewer_label,
+            }
         )
-    except ValueError as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
+        meta["contract"] = contract
+        meta["manifest_sha256"] = body.manifest_sha256
+    else:
+        form = await request.form()
+        expected = str(form.get("expected_sha256", ""))
+        reviewer = str(form.get("reviewer_label", ""))
+        contract = dict(meta.get("contract") or _contract_body())
+        if not expected or expected != contract.get("sha256"):
+            raise HTTPException(status_code=409, detail="Stale contract hash.")
+        if not reviewer:
+            raise HTTPException(status_code=422, detail="reviewer_label is required.")
+        revision = int(contract.get("revision", 1))
+        manifest = str(meta.get("manifest_sha256") or "0" * 64)
+        try:
+            approval = jobs.approve_contract(
+                job_id,
+                contract_revision=revision,
+                reviewer_label=reviewer,
+                data_dir=_data_dir(),
+                input_sha256=record.original_sha256,
+                manifest_sha256=manifest,
+                scope_sha256=str(contract.get("sha256") or ""),
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        contract.update(
+            {
+                "approved": True,
+                "approved_at": approval.approved_at,
+                "reviewer_label": reviewer,
+            }
+        )
+        meta["contract"] = contract
+
+    meta["approval"] = {
+        "revision": int(meta["contract"]["revision"]),
+        "sha256": str(meta["contract"]["sha256"]),
+        "reviewer_label": str(meta["contract"].get("reviewer_label") or ""),
+        "approved_at": str(meta["contract"].get("approved_at") or ""),
+    }
+    _write_meta(job_id, meta)
     return {
         "contract_id": approval.contract_id,
         "contract_revision": approval.contract_revision,
-        "sha256": approval.scope_sha256,
-        "manifest_sha256": approval.manifest_sha256,
-        "reviewer_label": approval.reviewer_label,
+        "revision": int(meta["contract"]["revision"]),
+        "sha256": str(meta["contract"]["sha256"]),
+        "manifest_sha256": meta["manifest_sha256"] if "manifest_sha256" in meta else approval.manifest_sha256,
+        "reviewer_label": str(meta["contract"].get("reviewer_label") or ""),
+        "approved": True,
         "approved_at": approval.approved_at,
     }
 
@@ -460,6 +574,15 @@ def attempt_evidence(attempt_id: str) -> dict[str, Any]:
 def obligations(job_id: str) -> dict[str, list[dict[str, Any]]]:
     _job_or_404(job_id)
     return _obligations()
+
+
+@app.get("/api/jobs/{job_id}/visuals")
+def visuals(job_id: str) -> dict[str, Any]:
+    _job_or_404(job_id)
+    return {
+        "available": False,
+        "note": "Repair execution is not implemented by the controller yet.",
+    }
 
 
 @app.get("/api/jobs/{job_id}/artifacts")
