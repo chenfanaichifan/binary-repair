@@ -154,29 +154,26 @@
     }
   }
 
-  function overallResult(data) {
-    if (data.cancelled) return { key: "cancelled", label: "已取消" };
-    var finished = data.phase === "finished";
-    if (!finished) return { key: "none", label: "—" };
-    var outcomes = Object.keys(data.routes || {}).map(function (key) {
-      return data.routes[key].outcome;
-    });
-    if (outcomes.indexOf("cancelled") !== -1) return { key: "cancelled", label: "已取消" };
-    if (outcomes.indexOf("error") !== -1) return { key: "error", label: "失败（执行错误）" };
-    if (outcomes.length && outcomes.every(function (value) { return value === "success_within_scope"; })) {
-      return { key: "success-within-scope", label: "成功（声明范围内）" };
-    }
-    return { key: "rejected", label: "未达成（需两条路线各自成功）" };
-  }
-
   function updateJob(data) {
     setText("job-phase", PHASE_LABELS[data.phase] || data.phase);
 
-    var overall = overallResult(data);
+    // Render the controller/acceptance verdict only. Never aggregate routes here.
     var overallBadge = $("job-outcome");
     if (overallBadge) {
-      overallBadge.textContent = overall.label;
-      overallBadge.className = "badge outcome-" + overall.key;
+      var verdict = data.verdict || null;
+      if (verdict && verdict.outcome) {
+        overallBadge.textContent = OUTCOME_LABELS[verdict.outcome] || verdict.outcome;
+        overallBadge.className = "badge outcome-" + verdict.outcome.replace(/_/g, "-");
+      } else if (data.cancelled) {
+        overallBadge.textContent = "已取消";
+        overallBadge.className = "badge outcome-cancelled";
+      } else if (data.phase === "finished") {
+        overallBadge.textContent = "尚无 verdict（等待 acceptance engine）";
+        overallBadge.className = "badge outcome-none";
+      } else {
+        overallBadge.textContent = "—";
+        overallBadge.className = "badge outcome-none";
+      }
     }
 
     var finished = data.phase === "finished" || data.cancelled;

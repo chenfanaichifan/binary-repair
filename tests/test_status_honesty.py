@@ -1,54 +1,56 @@
-"""Overall-result honesty tests (P1 acceptance: no misread as success)."""
+"""Verdict rendering tests: the GUI only renders the snapshot verdict.
+
+The GUI must never aggregate route outcomes into a conclusion; M4's acceptance
+engine is the only place that decides an outcome.
+"""
 
 from __future__ import annotations
 
-from app.status import overall_result
+from app.status import display_verdict
 
 
-def _snapshot(phase: str = "finished", cancelled: bool = False, a=None, b=None):
-    return {
-        "phase": phase,
-        "cancelled": cancelled,
-        "routes": {"A": {"outcome": a}, "B": {"outcome": b}},
+def _snapshot(**overrides):
+    base = {
+        "phase": "finished",
+        "cancelled": False,
+        "verdict": None,
+        "routes": {
+            "A": {"outcome": "success_within_scope"},
+            "B": {"outcome": "success_within_scope"},
+        },
     }
+    base.update(overrides)
+    return base
 
 
-def test_unfinished_job_has_no_verdict():
-    assert overall_result(_snapshot(phase="validating", a=None, b=None))["key"] == "none"
+def test_no_verdict_means_no_computed_success():
+    result = display_verdict(_snapshot())
+    assert result["key"] == "none"
+    assert "尚无 verdict" in result["label_zh"]
+    # Even with both routes successful, the GUI must not invent a success.
+    assert "成功" not in result["label_zh"]
 
 
-def test_success_requires_both_routes_within_scope():
-    result = overall_result(_snapshot(a="success_within_scope", b="success_within_scope"))
-    assert result["key"] == "success_within_scope"
-    assert "成功" in result["label_zh"]
-
-
-def test_one_success_and_one_missing_is_not_success():
-    result = overall_result(_snapshot(a="success_within_scope", b=None))
+def test_renders_controller_verdict_outcome():
+    result = display_verdict(
+        _snapshot(
+            verdict={
+                "outcome": "rejected",
+                "reason": "regression_failed",
+                "failing_obligation": "behaviour",
+                "detail": "required obligation failed",
+            }
+        )
+    )
     assert result["key"] == "rejected"
-    assert "未达成" in result["label_zh"]
+    assert result["label_zh"] == "被拒"
 
 
-def test_rejected_and_inconclusive_are_not_success():
-    for outcome in ("rejected", "inconclusive", "unsupported"):
-        result = overall_result(_snapshot(a=outcome, b="success_within_scope"))
-        assert result["key"] == "rejected"
-        assert "未达成" in result["label_zh"]
-
-
-def test_cancelled_is_shown_as_cancelled_not_failure_or_success():
-    result = overall_result(_snapshot(phase="validating", cancelled=True, a="cancelled", b=None))
+def test_cancelled_state_is_rendered_directly():
+    result = display_verdict(_snapshot(phase="screening", cancelled=True))
     assert result["key"] == "cancelled"
     assert result["label_zh"] == "已取消"
 
 
-def test_cancelled_flag_wins_even_when_routes_are_still_placeholders():
-    result = overall_result(_snapshot(phase="queued", cancelled=True, a=None, b=None))
-    assert result["key"] == "cancelled"
-    assert result["label_zh"] == "已取消"
-
-
-def test_error_is_shown_as_failure():
-    result = overall_result(_snapshot(a="error", b="success_within_scope"))
-    assert result["key"] == "error"
-    assert "失败" in result["label_zh"]
+def test_unfinished_job_has_no_verdict_label():
+    assert display_verdict(_snapshot(phase="analyzing"))["label_zh"] == "—"

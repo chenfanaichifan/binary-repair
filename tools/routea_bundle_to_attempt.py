@@ -8,9 +8,14 @@ M3's `result-bundle-DRYRUN.json` is a rich host-side collector output with
      "evidence": {"V0": "...", ...},
      "details": {"V0": "...", ...}}
 
-This adapter never computes an outcome. It only maps raw gate statuses:
-pass -> passed, fail -> failed, not_run -> not_run, inconclusive -> inconclusive,
-unsupported -> unsupported. Missing evidence is recorded in `details`.
+This adapter never computes an outcome. It only maps raw gate statuses using
+M4's ruling (CheckResult vocabulary):
+
+    pass -> passed            fail -> failed
+    inconclusive -> unknown   unsupported -> not_run
+    not_run -> not_run        timed_out -> timed_out
+
+Missing evidence is recorded in `details`.
 
 Usage:
     python tools/routea_bundle_to_attempt.py \
@@ -31,8 +36,10 @@ STATUS_MAP = {
     "fail": "failed",
     "failed": "failed",
     "not_run": "not_run",
-    "inconclusive": "inconclusive",
-    "unsupported": "unsupported",
+    "inconclusive": "unknown",
+    "unsupported": "not_run",
+    "unknown": "unknown",
+    "timed_out": "timed_out",
 }
 
 

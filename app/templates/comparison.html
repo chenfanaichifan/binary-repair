@@ -42,7 +42,7 @@
 <div class="statusbar">
   <span class="status-item">任务阶段：<span class="badge" id="job-phase" data-testid="job-phase">{{ phase_labels_zh.get(job.phase, job.phase) }}</span></span>
   <span class="status-item">整体结论：
-    {% set overall = overall_result(job) %}
+    {% set overall = display_verdict(job) %}
     <span class="badge outcome-{{ overall.key | replace('_', '-') }}" id="job-outcome" data-testid="job-outcome">{{ overall.label_zh }}</span>
   </span>
   <span class="status-item muted">每 2 秒自动刷新 · 未执行 = not_run · <span id="poll-status">轮询中…</span></span>

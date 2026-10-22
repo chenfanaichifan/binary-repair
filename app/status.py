@@ -1,37 +1,31 @@
-"""Honest overall-result derivation shared by the server-rendered page.
+"""Display helper for the controller-provided run verdict.
 
-Rules (mirror of ``static/js/poll.js``):
+The GUI must **not** compute an outcome. It only renders the verdict that the
+acceptance engine already persisted (``snapshot["verdict"]``), or a direct
+controller state (cancelled / not finished).
 
-- not finished (and not cancelled) -> "—"
-- any route cancelled            -> "已取消"
-- any route error                -> "失败（执行错误）"
-- every route success_within_scope -> "成功（声明范围内）"
-- otherwise                      -> "未达成（需两条路线各自成功）"
-
-The overall result must never claim success unless *both* routes succeeded
-within their declared scope. "finished" is a phase, not a verdict.
+All success/failure decisions live on the server side (M1 worker + M4 engine).
 """
 
 from __future__ import annotations
 
 from typing import Any
 
+from app.i18n import OUTCOME_LABELS_ZH
 
-def overall_result(snapshot: dict[str, Any]) -> dict[str, str]:
-    """Return ``{"key": ..., "label_zh": ...}`` for the job header badge."""
 
-    routes = snapshot.get("routes") or {}
-    outcomes = [route.get("outcome") for route in routes.values()]
-    finished = snapshot.get("phase") == "finished" or bool(snapshot.get("cancelled"))
+def display_verdict(snapshot: dict[str, Any]) -> dict[str, str]:
+    """Map the snapshot verdict to a label; never infer an outcome."""
 
+    verdict = snapshot.get("verdict") or {}
+    outcome = verdict.get("outcome")
+    if outcome:
+        return {"key": str(outcome), "label_zh": OUTCOME_LABELS_ZH.get(str(outcome), str(outcome))}
     if snapshot.get("cancelled"):
         return {"key": "cancelled", "label_zh": "已取消"}
-    if not finished:
-        return {"key": "none", "label_zh": "—"}
-    if any(outcome == "cancelled" for outcome in outcomes):
-        return {"key": "cancelled", "label_zh": "已取消"}
-    if any(outcome == "error" for outcome in outcomes):
-        return {"key": "error", "label_zh": "失败（执行错误）"}
-    if outcomes and all(outcome == "success_within_scope" for outcome in outcomes):
-        return {"key": "success_within_scope", "label_zh": "成功（声明范围内）"}
-    return {"key": "rejected", "label_zh": "未达成（需两条路线各自成功）"}
+    if snapshot.get("phase") == "finished":
+        return {
+            "key": "none",
+            "label_zh": "尚无 verdict（等待 acceptance engine）",
+        }
+    return {"key": "none", "label_zh": "—"}

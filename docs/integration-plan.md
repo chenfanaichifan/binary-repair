@@ -95,6 +95,26 @@ Required snapshot/contract shape is documented in
 `docs/controller-integration.md`. All payload strings must stay English ASCII;
 the GUI rejects non-ASCII controller payloads with `502`.
 
+### M4 ruling (2026-10-22)
+
+- `decision.json` does **not** exist on `main`; the authoritative files are
+  `jobs/<job>/runs/<run>/verdict.json` (attempt) and
+  `jobs/<job>/run-verdict.json` (run). Reuse that schema; do not create a second
+  decision format.
+- The GUI renders only the controller/acceptance verdict
+  (`snapshot.verdict` / `routes.*.verdict`). It must not aggregate route
+  outcomes; `app/status.py` is a label pass-through and `poll.js` only renders
+  the snapshot verdict (tests guard this).
+- `status.json` v1 structure is approved, but `evidence[].result` must use M4's
+  CheckResult values `passed / failed / not_run / unknown / timed_out`;
+  `inconclusive`/`unsupported` are outcomes, not per-check results.
+- The explicit mapping used by the adapter (no silent conversion):
+  `pass→passed`, `fail→failed`, `inconclusive→unknown`,
+  `unsupported→not_run`, `timed_out→timed_out`.
+- M4 fixtures: success = c4a159 with six passed; failure = unfixed/guard-off
+  candidate, `failing_obligation=behaviour`, `reason=regression_failed`;
+  unknown = c4a159 with V4 not run, outcome `inconclusive`.
+
 ### Route A interface v1 (host dry-run fixtures)
 
 - Contract: `docs/interfaces/route-a-worker-contract.md` — worker command/env,
@@ -105,8 +125,11 @@ the GUI rejects non-ASCII controller payloads with `502`.
   and identity hashes. It never computes an outcome; without a `decision.json`
   it explicitly shows "尚无 decision.json".
 - Adapter: `tools/routea_bundle_to_attempt.py` maps M3's result bundle to the
-  worker's per-attempt JSON (`pass -> passed`, missing evidence in `details`)
-  without inventing an outcome. This is the bridge Member 1's worker needs.
+  worker's per-attempt JSON using M4's explicit mapping
+  (`pass→passed`, `fail→failed`, `inconclusive→unknown`,
+  `unsupported→not_run`, `timed_out→timed_out`), with missing evidence in
+  `details`. It never invents an outcome. This is the bridge Member 1's worker
+  needs.
 - Candidate remains the fixed fixture `c4a159…` (not an arbitrary ELF repair).
 
 ### Member 5 — Route B executor (2026-10-22)

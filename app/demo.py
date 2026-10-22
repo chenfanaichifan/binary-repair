@@ -412,6 +412,13 @@ def snapshot(job: dict[str, Any]) -> dict[str, Any]:
             route["phase"] = "draft"
 
         route["stages"] = stages
+        if route.get("outcome"):
+            route["verdict"] = {
+                "outcome": route["outcome"],
+                "reason": route.get("outcome_reason") or None,
+                "failing_obligation": "V3" if key == "A" else "V4",
+                "detail": route.get("outcome_reason") or "",
+            }
         routes[key] = route
 
     # Job 级阶段取"两条路线里更靠后的那个"，两条都结束才算 finished
@@ -426,6 +433,24 @@ def snapshot(job: dict[str, Any]) -> dict[str, Any]:
         phases = [routes["A"]["phase"], routes["B"]["phase"]]
         job_phase = min(phases, key=lambda p: order.index(p) if p in order else 99)
 
+    if cancelled:
+        demo_verdict = {
+            "outcome": "cancelled",
+            "reason": "operator_cancelled",
+            "failing_obligation": None,
+            "detail": "Operator cancelled (demo data)",
+        }
+    elif job_phase == "finished":
+        # Demo fixture verdict; the GUI never computes this itself.
+        demo_verdict = {
+            "outcome": "rejected",
+            "reason": "valid_input_regression_failed",
+            "failing_obligation": "V3",
+            "detail": "Demo fixture: required behaviour obligation failed",
+        }
+    else:
+        demo_verdict = None
+
     snapshot = {
         "id": job["id"],
         "demo": True,
@@ -439,6 +464,7 @@ def snapshot(job: dict[str, Any]) -> dict[str, Any]:
         "cancelled": cancelled,
         "contract": job["contract"],
         "routes": routes,
+        "verdict": demo_verdict,
     }
     return snapshot
 

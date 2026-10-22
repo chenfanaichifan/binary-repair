@@ -110,7 +110,7 @@ templates.env.globals.update(
     value_labels_zh=i18n.VALUE_LABELS_ZH,
     route_names_zh=i18n.ROUTE_NAMES_ZH,
     csrf_token=CSRF_TOKEN,
-    overall_result=status.overall_result,
+    display_verdict=status.display_verdict,
 )
 
 # 数据来源（测试里默认 mock；接真实 controller 时只需换环境变量）

@@ -209,7 +209,7 @@ def test_full_journey_setup_to_export(mock_server, page, tmp_path):
         "document.querySelector('[data-testid=\"outcome-B\"]')?.textContent?.includes('不确定')",
         timeout=30,
     )
-    assert "未达成" in page.text('[data-testid="job-outcome"]')
+    assert "被拒" in page.text('[data-testid="job-outcome"]')
 
     page.click('[data-testid="open-evidence"]')
     _wait_location(page, f"/jobs/{job_id}/evidence")
