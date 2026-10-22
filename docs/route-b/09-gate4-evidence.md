@@ -89,3 +89,21 @@ Does not prove:
 Push to `member-5/gate4-ci` (workflow trigger) or run the steps manually on a
 disposable Ubuntu 24.04 VM with JDK21 + Ghidra 12.2 + Patcherex2. The workflow
 force-pushes `gate4-results` with the evidence.
+
+## 8. G0–G9 coverage (as of 2026-10-22)
+
+| Gate | Status | Evidence / blocker |
+|---|---|---|
+| G0 identity | PASS | original SHA-256, size 26,792, ELF x86-64; recorded in `manifest-compare.json` |
+| G1 contract + frozen manifest | PASS | `tests/test_fixture_v3_manifest.py`; contract v2 50/49; manifest-set hash `a564f039…` |
+| G2 Ghidra export | PASS | Ghidra 12.2 raw C + `.meta.txt` in `routeb/out/gate4/` |
+| G3 Route A | **BLOCKED** | needs scope ruling for new R--/R-X segments; plan in `07-route-a-trampoline-plan.md` |
+| G4 Route B unchanged round trip | **PASS** | 6/6 behaviour-identical; this document |
+| G5 placement | PARTIAL | Route B replaced a same-size function; Route A layout audit not run |
+| G6 concrete crash | PASS (partial) | `06-gate6-evidence.md`; 100 B → SIGSEGV at `ret 0x401317` |
+| G6 symbolic (V4) | **BLOCKED** | angr/Z3/V4 toolchain absent |
+| G7 fixed repair | NOT RUN | depends on G3/G4 fixed candidate |
+| G8 acceptance | NOT RUN | depends on G7 |
+| G9 report | this document | — |
+
+Gate 4 is therefore a real round-trip pass, not a full G0–G9 repair claim.
