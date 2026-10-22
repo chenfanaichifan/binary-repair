@@ -1,64 +1,70 @@
-# Route A strategy C — cave probe result
+# Route A strategy C — cave probe result (six-entry contract)
 
 **Date:** 2026-10-22
-**Run:** GitHub Actions `routea-cave-probe`, run `39756078737`
-**Result:** **6/6 repaired cases pass** on a disposable Ubuntu 24.04 runner.
-This is a **probe**, not a formal Gate 3 pass: the scope ruling for the 5-byte call
-replacement, p_filesz extension and exact-stderr data is still required.
+**Run:** GitHub Actions `routea-cave-probe`, run `39756691896`
+**Result:** **6/6 repaired cases pass** on disposable Ubuntu 24.04.
+**Gate 3 status:** all three technical items exist (cave runtime probe, six-case run,
+edit manifest); formal status is still **CONDITIONALLY FEASIBLE** until handoff-10
+isolation evidence and scope sign-off. Gate 4 remains formal **NOT RUN**.
 
 ## 1. Identity
 
 | Item | Value |
 |---|---|
-| Original | `original.elf`, 26,792 B, SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393` |
-| Patched | `routea/out/cave-probe.elf`, 26,792 B, SHA-256 `f3cb9cbb503fb0d47ebebab7053fa2ed37b7876ffe5122157d31fefc783f9fa7` |
+| Original | 26,792 B, SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393` |
+| Patched | 26,792 B, SHA-256 `c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82` |
+| Contract | `fixtures/.../contract.json`, six `authorized_edits`, SHA-256 `363f3575…8889` |
 | Function | `..._badSink` @ `0x4012b0`, 104 B |
-| Call site | `0x401304`, 5-byte `call strcpy@plt 0x4010d0` |
-| Cave | `0x4018e9`–`0x401fff`, 1,815 zero bytes already in the file |
+| Call site | `0x401304`, `e8 c7 fd ff ff` → `strcpy@plt 0x4010d0` |
+| Cave | `0x4018e9`–`0x401fff`, 1,815 zero bytes |
 
 ## 2. Edits
 
-- redirect the whole 5-byte call: `e8 e0 05 00 00` → cave `0x4018e9`;
-- place 72-byte guard + 42-byte exact stderr at `0x4018e9`;
-- extend the RX `PT_LOAD` (`0x401000`, offset `0x1000`) `p_filesz`/`p_memsz`
-  from `0x8e9` to `0x1000`; no new segment;
-- no new relocation, no new PLT (`fprintf@0x401120`, `stderr@0x404080` already there);
-- harness `0x401256–0x4012af` unchanged; no W+X segment.
+- whole 5-byte call redirect: `e8 e0 05 00 00` → `0x4018e9`;
+- 71-byte guard + 42-byte exact stderr at `0x4018e9` (message at `0x401930`);
+- RX `PT_LOAD` at `0x401000`: `p_filesz`/`p_memsz` **0x8e9 → 0x1000**; same
+  segment/page, no new `PT_LOAD`, no overlap;
+- no new import/PLT/GOT/relocation; invalid path uses `write(2, msg, 42)` syscall
+  and `exit_group(1)`; `allowed_calls` stays `("strcpy", "printLine")`;
+- harness `0x401256–0x4012af` unchanged; no W+X.
 
-Static audit: all checks true (`rx_extended`, `no_new_segments`, `relocations_unchanged`,
+Static audit: all true (`rx_extended`, `no_new_segments`, `relocations_unchanged`,
 `no_wx`, `redirect_bytes`, `cave_code`, `message_bytes`, `harness_unchanged`).
+`readelf -lW`: `LOAD 0x401000 filesz=0x1000 memsz=0x1000 R E`.
 
 ## 3. Runtime (6/6)
 
 | Case | Input | Result |
 |---|---:|---|
-| valid-empty | 0 B | exit 0, `\n`, stderr empty |
+| valid-empty | 0 B | exit 0, `\n` |
 | valid-smallest | 1 B | exit 0, `A\n` |
 | valid-typical | 10 B | exit 0, `A…\n` |
 | valid-maximum | 49 B | exit 0, `A…\n` |
-| invalid-first | 50 B | **exit 1, stdout empty, exact 42-byte stderr** |
-| invalid-longer | 100 B | **exit 1, stdout empty, exact 42-byte stderr** |
+| invalid-first | 50 B | exit 1, stdout empty, exact 42-byte stderr |
+| invalid-longer | 100 B | exit 1, stdout empty, exact 42-byte stderr |
 
 `manifest-repaired.json`: `passed=6, total=6, repaired_pass=true`.
 
-## 4. Status
+## 4. Gate status
 
 | Item | Status |
 |---|---|
-| Cave is actually file-loaded after p_filesz extension | **measured yes** |
-| 6-case repaired behaviour | **measured PASS** |
-| Gate 3 formal | **CONDITIONALLY FEASIBLE → measured PASS; awaiting scope sign-off** |
-| Gate 4 formal | **NOT RUN** on member3 VM; supplementary GitHub run PASS |
+| cave mapped/executed | yes, measured |
+| six-case repaired behavior | pass, measured |
+| edit manifest | present (`routea/out/edit-manifest.json`) |
+| Gate 3 formal | **CONDITIONALLY FEASIBLE** until isolation + scope sign-off |
+| Gate 4 formal | **NOT RUN** on member3 VM; supplementary GitHub PASS |
 | Gate 6 symbolic | **NOT RUN** (V4) |
 
-If the scope ruling rejects the 5-byte call replacement, p_filesz extension or
-exact-stderr data in the cave, this probe is **UNSUPPORTED**, not a pass.
+The six-case run is gate-3 feasibility evidence, not V3 acceptance or repair proof.
+`fprintf`/`stderr` are not used by the final cave; `write` syscall keeps
+`allowed_calls` unchanged.
 
 ## 5. Evidence
 
-- `routea/out/cave-probe.elf` — patched binary
-- `routea/out/edit-manifest.json` — edits/mappings/header changes
-- `routea/out/audit.json` — static checks
-- `routea/out/manifest-repaired.json` — 6/6 runtime
-- `routea/out/readelf-audit.txt` — independent readelf (LOAD RX size `0x1000`, no W+X)
-- `.github/workflows/routea-probe.yml` — reproducible run
+- `routea/out/cave-probe.elf`
+- `routea/out/edit-manifest.json`
+- `routea/out/audit.json`
+- `routea/out/manifest-repaired.json`
+- `routea/out/readelf-audit.txt`
+- `.github/workflows/routea-probe.yml`

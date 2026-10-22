@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
-  "patched_sha256": "f3cb9cbb503fb0d47ebebab7053fa2ed37b7876ffe5122157d31fefc783f9fa7",
+  "patched_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
   "function": {
     "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
     "entry": "0x4012b0",
@@ -20,7 +20,7 @@
     {
       "vaddr": "0x4018e9",
       "perm": "R-X",
-      "size": 114,
+      "size": 113,
       "purpose": "guard + exact stderr in existing cave"
     }
   ],
