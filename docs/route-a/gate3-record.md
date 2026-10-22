@@ -167,7 +167,7 @@ is also still pending.
 | Role | Name | Date | Signature |
 |---|---|---|---|
 | M4 verifier | M4 | 2026-10-22 | items 1–6 PASS against v2 bundle `6151a806…0a65` (evidence-manifest `4ba6ebad…6934`); verifier signature only — not a gate pass |
-| M5 build/hash replay | — | — | pending — record observed replay values in handoff 19/21 format |
+| M5 build/hash replay | M5 | 2026-10-22 | REPLAYED (cross-input, hash-bound) — v2 bundle `6151…0a65`, `SHA256SUMS 4ba6…6934` (22/22); candidate/replayed `c4a159…aa82`; contract `24bfe568…4e37` / `15f6b492…`; build inputs original `aa428157…` + regen `56331e…`; support `3d49625c…` historical (nonstandard SHA256SUMS `7cf4b4f6…`), v1 not required |
 | Lead approval | — | — | pending |
 
 Do not fill these fields from a CI run, a static audit, or a verbal approval. M4's row is a
