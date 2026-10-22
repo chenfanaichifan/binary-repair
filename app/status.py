@@ -24,6 +24,8 @@ def overall_result(snapshot: dict[str, Any]) -> dict[str, str]:
     outcomes = [route.get("outcome") for route in routes.values()]
     finished = snapshot.get("phase") == "finished" or bool(snapshot.get("cancelled"))
 
+    if snapshot.get("cancelled"):
+        return {"key": "cancelled", "label_zh": "已取消"}
     if not finished:
         return {"key": "none", "label_zh": "—"}
     if any(outcome == "cancelled" for outcome in outcomes):

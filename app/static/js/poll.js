@@ -16,6 +16,8 @@
 
   var PHASE_LABELS = {
     draft: "草稿",
+    queued: "排队中",
+    running: "执行中",
     screening: "输入筛查",
     analyzing: "二进制分析",
     roundtrip: "C 往返校验",
@@ -110,7 +112,8 @@
   }
 
   function overallResult(data) {
-    var finished = data.phase === "finished" || data.cancelled;
+    if (data.cancelled) return { key: "cancelled", label: "已取消" };
+    var finished = data.phase === "finished";
     if (!finished) return { key: "none", label: "—" };
     var outcomes = Object.keys(data.routes || {}).map(function (key) {
       return data.routes[key].outcome;

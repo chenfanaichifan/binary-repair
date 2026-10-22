@@ -42,6 +42,12 @@ def test_cancelled_is_shown_as_cancelled_not_failure_or_success():
     assert result["label_zh"] == "已取消"
 
 
+def test_cancelled_flag_wins_even_when_routes_are_still_placeholders():
+    result = overall_result(_snapshot(phase="queued", cancelled=True, a=None, b=None))
+    assert result["key"] == "cancelled"
+    assert result["label_zh"] == "已取消"
+
+
 def test_error_is_shown_as_failure():
     result = overall_result(_snapshot(a="error", b="success_within_scope"))
     assert result["key"] == "error"

@@ -49,22 +49,38 @@ Snapshot requirements:
 - All data strings are English ASCII; the GUI scans snapshot/obligations/artifacts
   and rejects non-ASCII payloads with `502` instead of rendering them.
 
-## Bridge service (current real controller)
+## Final controller (Member 1, origin/main)
 
-Until Member 1 exposes the final controller API, this repo ships a bridge that
-serves the same HTTP contract from the **real Member 1 job store**:
+Member 1's controller HTTP service now lives on `origin/main` at
+`app/controller_api.py`. Run it from a checkout of `main` (the GUI branch does not
+merge `main`):
+
+```powershell
+git worktree add ..\binaryrepair-main origin/main
+cd ..\binaryrepair-main
+$env:BINARYREPAIR_DATA_DIR = "<absolute path>\var\controller"
+..\binaryrepair-mvp\.venv\Scripts\python.exe -m uvicorn app.controller_api:app --host 127.0.0.1 --port 8000
+```
+
+Verified P0 run: GUI `http` mode → create job → approve contract → start returns
+`202`; snapshot reports `demo: false`, `phase: queued`, both routes `queued`.
+The GUI shows the real job, hides the demo banner, and displays `排队中` while
+the execution workers are still pending. `start` really goes through the
+controller's persisted approval (`contracts`/`runs` tables), not the GUI.
+
+## Bridge service (fallback)
+
+If the `main` checkout is unavailable, this branch also ships a bridge backed by
+the real Member 1 job store:
 
 ```powershell
 $env:BINARYREPAIR_CONTROLLER_DATA = "var/controller"
 .\.venv\Scripts\python.exe -m uvicorn tools.controller_service:app --host 127.0.0.1 --port 8000
 ```
 
-It persists jobs with `app/services/jobs.py` (SQLite + `original.bin`), reports
-`demo: false`, and stores contract revision/approval in a per-job `meta.json`
-bound to the revision hash. Run execution is not implemented yet, so `start`
-returns `409` with an explicit message; obligations/artifacts are empty and the
-code-view endpoint reports `available: false`. These are honest "not run" states,
-not fabricated successes.
+It persists jobs with `app/services/jobs.py` and reports `demo: false`, but its
+`start` returns `409` because execution is not implemented there. Use the final
+controller above for P0 acceptance.
 
 Switching the GUI (no page changes required):
 
@@ -85,12 +101,12 @@ $env:BINARYREPAIR_API_BASE = "http://127.0.0.1:8000"
    revision/hash also returns `409` (never a silent overwrite).
 5. `cancel` is visible as `已取消`, not as success.
 
-Current status: the bridge service above satisfies P0 end-to-end for job creation,
-persistence, polling and approval (`demo: false`, no demo banner, stale
-revision/hash -> 409). It is covered by `tests/test_controller_service.py` and the
-`test_http_mode_uses_the_real_controller` browser test. Execution remains
-explicitly unimplemented (`start` -> 409) until the repair workers are connected;
-replace the bridge with the final controller service when Member 1 publishes it.
+Current status: P0 passes against Member 1's final controller (job creation,
+persistence, polling, approval, start → `queued`, `demo: false`, no demo
+banner). Execution itself is still pending in the worker pipeline: the snapshot
+keeps placeholder routes/stages at `queued`, obligations report `not_run`, and
+the visualizations/artifacts stay empty until workers write them. This is the
+honest "queued, not verified" state.
 
 ## P1 honesty rules enforced in tests
 

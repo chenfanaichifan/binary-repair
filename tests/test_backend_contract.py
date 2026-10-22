@@ -211,6 +211,39 @@ def test_http_backend_maps_controller_contract():
     assert not _has_cjk_in_payload(bundle)
 
 
+def test_http_backend_unwraps_wrapped_contract_response():
+    """Member 1's final controller returns {"id": ..., "contract": {...}}."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST" and request.url.path == "/api/jobs/job-abc123/contract":
+            return httpx.Response(
+                200,
+                json={
+                    "id": "job-abc123",
+                    "contract": {
+                        "revision": 2,
+                        "sha256": "2" * 64,
+                        "approved": False,
+                    },
+                },
+            )
+        return httpx.Response(404, json={"detail": "Job not found."})
+
+    backend, _ = _make_http_backend(handler)
+    try:
+        contract = backend.update_contract(
+            "job-abc123",
+            expected_revision="1",
+            valid_domain="Input length 0-32 bytes",
+            forbidden="Out-of-bounds write",
+            invalid_outcome="Return error code 1",
+            assumptions="Single process",
+        )
+        assert contract["revision"] == 2
+    except BackendError as exc:
+        raise AssertionError(f"unexpected BackendError: {exc}") from exc
+
+
 def test_http_backend_maps_errors():
     def not_found(request: httpx.Request) -> httpx.Response:
         return httpx.Response(404, json={"detail": "Job not found."})

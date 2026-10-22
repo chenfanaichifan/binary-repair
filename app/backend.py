@@ -344,6 +344,9 @@ class HttpBackend:
                 "assumptions": assumptions,
             },
         )
+        contract_payload = payload.get("contract") if isinstance(payload, dict) else None
+        if isinstance(contract_payload, dict):
+            payload = contract_payload
         if not isinstance(payload, dict) or "revision" not in payload:
             raise BackendError(502, "Backend contract response is missing a revision.")
         return payload
