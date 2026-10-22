@@ -84,8 +84,10 @@ zip or the bundle, not that local copy.
    reset basis. Your `gate3-harness` plan is approved, but a new snapshot is a **new image
    record** (handoff 11 §1): recompute the chain manifest **powered off**, record the guest
    fingerprint, and update the image record before the run. Who does what: M3 prepares and
-   shuts down cleanly; **M4 operates the VMware UI** (snapshot + power on), because the Lead's
-   workspace host cannot see `D:\VMs`; M3 reverts to `gate3-harness` and continues.
+   shuts down cleanly; the **named VM console operator** ("VMer") takes the snapshot and powers
+   the guest on (see §7 — the Lead's workspace host cannot see `D:\VMs`; M4 verifies
+   independently unless M4 is explicitly confirmed as that operator); M3 reverts to
+   `gate3-harness` and continues.
 3. **`jobwrap` shape: accepted** (`sudo /usr/local/sbin/jobwrap gate3 original|patched
    <case-id|all>`, `probe`), subject to handoff 11 §2: root-only 0700, fixed validated
    `execv` array, netns before the uid drop, setuid 1003 with no passwordless sudo,
@@ -135,7 +137,7 @@ zip or the bundle, not that local copy.
 
 ## 5. Snapshot answer: "要我现在关机吗？"
 
-**Not yet.** Do these first, then ask M4 for the snapshot:
+**Not yet.** Do these first, then ask the VM console operator (see §7) for the snapshot:
 
 1. verify the bundle main checkout and the six frozen inputs;
 2. regenerate `c4a159…` and run the static tests;
@@ -143,11 +145,12 @@ zip or the bundle, not that local copy.
    valid-empty` sanity case;
 4. write the worklog (wrapper version/hash, `targets.conf` hash, evidence directory, tool
    versions, image chain `142849c7…d628e` for the current basis);
-5. then clean shutdown and tell M4 "ready for `gate3-harness` snapshot".
+5. then clean shutdown and tell the VM console operator "ready for `gate3-harness` snapshot"
+   (see §7).
 
-M4 takes the snapshot and powers the guest on; you revert to `gate3-harness`, record the new
-chain manifest (powered off) and guest fingerprint, then continue with the runtime probe and
-the six cases.
+The VM console operator takes the snapshot and powers the guest on; you revert to
+`gate3-harness`, record the new chain manifest (powered off) and guest fingerprint, then
+continue with the runtime probe and the six cases.
 
 ---
 
@@ -159,7 +162,63 @@ Report per item: command / observed / raw evidence file / SHA-256 / `PASS` / `FA
 Lead approves. Do not relabel, do not edit the oracle, do not touch `original.elf`.
 
 **Confirmation log.** 2026-10-22 — Lead answers M3's seven confirmations: bundle delivery,
-canonical `c4a159…`/`24bfe568…` on main `1826505`, `gate3-harness` snapshot protocol with M4
-operating the VMware UI, seccomp not required (record `Seccomp: 0`), `original.elf`
+canonical `c4a159…`/`24bfe568…` on main `1826505`, `gate3-harness` snapshot protocol with a
+named VM console operator, seccomp not required (record `Seccomp: 0`), `original.elf`
 authoritative, 24/24 file located, M4 design branch recorded as superseded. No gate status
 changed.
+
+---
+
+## 7. M3's reply (2026-10-22) and Lead confirmation
+
+M3 confirms the §4 order and the §5 prep rule, reports that the bundle is **not yet on
+`D:\BinRepair`**, and asks for the two files with absolute path + SHA-256. It also asks who
+actually operates the VMware UI, and confirms M3's own role is prepare/verify/evidence only.
+
+**Delivery files and hashes** (source paths on the Lead/VM host):
+
+| File | Absolute path | Size | SHA-256 |
+|---|---|---|---|
+| bundle (primary) | `D:\BinaryRepair_Project\delivery\routea-gate3-delivery.bundle` | 1,509,265 B | `fd35ae84ca42e15600128da00e24ce76094a886d19a35a2016eaea1371f52bf5` |
+| tree archive (fallback) | `D:\BinaryRepair_Project\delivery\binrepair-main-1826505.zip` | 472,197 B | `42658976e574a77d42fb2b814c0992c15e6a65b9c1b65da52c9b5d844b2bc021` |
+
+**Transfer is the missing step, not a fetch problem.** M3's machine and the Lead/VM host are
+different hosts; the bundle can only reach `D:\BinRepair` when M4/the VM host operator copies
+it there. The Lead agent cannot write to M3's `D:\BinRepair`. Copy both files to
+`D:\BinRepair\` (keep the names) and verify:
+
+```powershell
+Get-FileHash D:\BinRepair\routea-gate3-delivery.bundle -Algorithm SHA256
+# fd35ae84ca42e15600128da00e24ce76094a886d19a35a2016eaea1371f52bf5
+Get-FileHash D:\BinRepair\binrepair-main-1826505.zip -Algorithm SHA256
+# 42658976e574a77d42fb2b814c0992c15e6a65b9c1b65da52c9b5d844b2bc021
+git bundle verify D:\BinRepair\routea-gate3-delivery.bundle
+```
+
+Then §4 step 1 uses the absolute bundle path in the `git fetch` command. If the two hosts
+share a network path, use that path instead and record it in the report.
+
+**Division of labor, corrected.** The VM console is not in M3's workspace and not in the Lead
+agent's `D:\VMs` view; it belongs to the **named VM operator ("VMer")**. Effective split:
+
+- **VMer:** takes the `gate3-harness` snapshot, powers the guest on, and keeps the console
+  access; the operator's name is recorded with the snapshot.
+- **M3:** prepares and verifies inside the guest, runs the §4 steps, collects evidence; does
+  not operate the VM console.
+- **M4:** independent verification of all six gate-3 items and the record; M4 takes the
+  snapshot **only if** M4 is explicitly confirmed as the VMer. If M4 is not the VMer, do not
+  record M4 as the snapshot operator.
+- **Lead:** approval.
+
+**Accepted without change:** bundle first then §4; no shutdown/snapshot before the package
+arrives; seccomp recorded `0` with no filter added; `original.elf` from the repository;
+24/24 `SHA256SUMS` as a local list with path + hash, not a gate-3 blocker; gate 3
+`CONDITIONALLY FEASIBLE`, gate 4 `NOT RUN`, fixture `NOT FROZEN`.
+
+**Action for M3 after transfer:** reply with `Get-FileHash` outputs, `git bundle verify` output,
+`HEAD=1826505`, and the six frozen hashes; then start §4. Gate status unchanged.
+
+**Confirmation log (M3 reply).** 2026-10-22 — Lead confirms M3's §4/§5 reading, supplies the
+delivery paths/hashes, assigns the snapshot to the named VMer (M4 verification only unless
+confirmed as VMer), and keeps M3's role as prepare/verify/evidence. No gate status changed.
+
