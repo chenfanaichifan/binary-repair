@@ -18,12 +18,8 @@
       <stop offset="0" stop-color="#0a1d25"/>
       <stop offset="1" stop-color="#04070a"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#ef6f6f" stop-opacity="0.34"/>
-      <stop offset="1" stop-color="#ef6f6f" stop-opacity="0"/>
-    </radialGradient>
     <radialGradient id="warm" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#f0b03f" stop-opacity="0.16"/>
+      <stop offset="0" stop-color="#f0b03f" stop-opacity="0.10"/>
       <stop offset="1" stop-color="#f0b03f" stop-opacity="0"/>
     </radialGradient>
     <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
@@ -31,9 +27,6 @@
     </filter>
     <filter id="soft2" x="-30%" y="-30%" width="160%" height="160%">
       <feGaussianBlur stdDeviation="16"/>
-    </filter>
-    <filter id="redglow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="6"/>
     </filter>
     <filter id="grain">
       <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>

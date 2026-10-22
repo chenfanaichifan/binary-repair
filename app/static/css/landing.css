@@ -24,7 +24,7 @@ body.landing {
 .hero-bg {
   position: fixed;
   inset: -2%;
-  background: url("/static/img/hero.svg") center 42% / cover no-repeat, #05090d;
+  background: url("/static/img/hero.svg?v=20261022b") center 42% / cover no-repeat, #05090d;
   transform: scale(1.02);
   animation: heroDrift 18s ease-out both;
 }
@@ -153,7 +153,7 @@ body.landing {
   z-index: 3;
   display: flex;
   justify-content: center;
-  margin-top: clamp(38px, 7vh, 76px);
+  margin-top: clamp(100px, 18vh, 190px);
   animation: riseIn 1000ms 320ms ease-out both;
 }
 .cta-pill {
@@ -299,11 +299,8 @@ body.landing {
   .hero { padding: 96px 22px 88px; }
   .hero-h1 { font-size: clamp(52px, 17vw, 120px); letter-spacing: -0.05em; }
   .hero-eyebrow { letter-spacing: 0.28em; }
-  .hero-info { bottom: 23vh; width: 88vw; }
-  .hero-cta { bottom: 12vh; }
+  .hero-cta { margin-top: clamp(72px, 14vh, 130px); }
   .cta-pill { min-width: 240px; padding: 14px 26px; }
-  .slide-arrow { width: 38px; height: 38px; font-size: 18px; }
-  .hero-meta { flex-direction: column; gap: 4px; align-items: center; text-align: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-bg, .landing-nav, .hero-eyebrow, .hero-h1, .hero-info, .hero-cta, .hero-slider { animation: none !important; }
