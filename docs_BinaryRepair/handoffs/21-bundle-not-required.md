@@ -43,6 +43,20 @@ every item** — not a particular packaging. The gate is unchanged:
 file itself recorded as `evidence-manifest-sha256`. M4 verifies every line before signing;
 M5 replays the candidate/contract and the manifest hash.
 
+**Manifest rules (no weakening):**
+
+1. `LC_ALL=C` sort, paths relative to the evidence root, no `./` prefix, `SHA256SUMS` itself
+   excluded (so the manifest can be regenerated without self-reference); the exact generation
+   command is quoted in the record, e.g.
+   `find . -type f ! -name SHA256SUMS -print0 | LC_ALL=C sort -z | xargs -0 sha256sum`.
+2. `evidence-manifest-sha256` = SHA-256 of the `SHA256SUMS` file bytes.
+3. **Two manifests, never merged:** the VMer/M3 session set (items 3–5) and M4's independent
+   copy set. M4 may build a manifest from its own copies but must not rewrite VMer's bytes; a
+   manifest over partial files is `NOT VERIFIED`.
+4. Item 6 binds to the **same session** as items 3–5; cross-session hashes void item 6.
+5. The `SHA256SUMS` file is small and must be transferred through the same human copy channel
+   as the archive; otherwise M5 cannot replay the manifest hash. No zip/package is needed.
+
 ## 3. Effect on the replay ruling (handoff 19)
 
 Handoff 19 said "recompute the evidence bundle's `SHA256SUMS` and bundle hash". Read it as:

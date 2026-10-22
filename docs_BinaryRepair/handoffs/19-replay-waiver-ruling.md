@@ -39,7 +39,7 @@ evidence bundle hash must be independently reproducible by the second owner befo
 |---|---|
 | candidate | reproduce `c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82` from `original.elf` + the recorded recipe (`regen_c4a159.py` / `routea.cave`) |
 | contract | `24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37` recomputed with `contract_sha256` |
-| bundle | recompute `SHA256SUMS` and the bundle hash of the formal evidence bundle; report both |
+| evidence manifest | recompute the sorted `SHA256SUMS` hash over the delivered raw evidence set (no bundle package — handoff 21); report candidate, contract and manifest hashes |
 | mismatch | stop and report the concrete difference; no signature, no "close enough" |
 
 M5's replay does not replace M4's independent verification and does not create a second
@@ -54,7 +54,7 @@ evidence record). The single canonical draft lives on `origin/member-4-verificat
 |---|---|
 | path | `docs/route-a/gate3-record.md` (repo root on `member-4-verification`) |
 | state | DRAFT, unsigned; items 1–2 PASS, 3–6 NOT VERIFIED |
-| SHA-256 of the draft | `bddccbfee70733223a43bed0d0420c1ec130cb6fa07338c402a8355cc6a9e081` |
+| SHA-256 of the draft | `b6fedd2b0e82e8d553fd1e9321393c848438f54ce0abea058afa2fa90d66bf0b` |
 
 Anyone holding another draft of the same file must replace it with this version (or send a diff
 against this SHA-256) rather than keeping two records. After a signed version exists it is the
