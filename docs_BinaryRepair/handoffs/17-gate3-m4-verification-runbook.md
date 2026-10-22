@@ -230,3 +230,27 @@ item=<1..6> status=<PASS|FAIL|NOT VERIFIED> command=<...>
 observed=<hash|rc|bytes> evidence=<file> sha256=<...>
 reason=<only for FAIL/NOT VERIFIED>
 ```
+
+---
+
+## 7. M5 patch review — status and scope (2026-10-22)
+
+M5 reviewed M4's implementation patch in `docs/route-b/20-m4-patch-review.md`
+(main `766499e`): **CHANGES REQUESTED — not approved, not canonical, not gate-3 evidence.**
+The reviewed patch targets the superseded `f3cb9cbb…`/`ba33b4d0…` values and has six blocking
+findings: (B1) old contract instead of `24bfe568…`; (B2) old candidate/code shape instead of
+`c4a159…`; (B3) `manifest.py` enum extraction crashes on pyelftools 0.33 strings; (B4)
+`inside_rx_load`/`cave_within_memsz` reject the authorized page-tail cave; (B5) the unpatched-
+binary test asserts the wrong byte-audit result; (B6) `routea_vm_check.sh` hardcodes the old
+identity. On the review host `tests/test_routea_manifest.py` passed 9/9 and
+`tests/test_routea_cave.py` failed 7 tests, consistent with M4's "no ELF tests ran on the host"
+caveat.
+
+**This runbook does not depend on that patch.** It verifies main's canonical `c4a159…` /
+`24bfe568…` tooling, which is the only Gate 3 subject. The M4 branch
+`member-4-routea-gate3` stays superseded unless M4 either (a) retargets it to main
+`1826505`/`ad1a1f8` with `24bfe568…`/`c4a159…`, fixes B1–B6, reruns both test files in the
+guest and resubmits the new patch hash/base for M5 re-review, or (b) formally withdraws it as
+superseded and keeps only the independent-verification role. **Decision pending with the Lead.**
+Nothing here claims the patch is approved, and no second candidate or contract is admitted.
+
