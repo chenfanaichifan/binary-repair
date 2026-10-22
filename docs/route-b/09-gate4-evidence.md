@@ -21,7 +21,7 @@ This is the unchanged round trip only — **not a repair**.
 >
 > | Script | SHA-256 |
 > |---|---|
-> | `routeb/gate4_runner.sh` | `e49a88799e4daaff22832f59ca82d2fa3d41dd7bce1910db3312cade813adfb3` |
+> | `routeb/gate4_runner.sh` | `515c4d609495dea723c6fe6ff9e55b34fca078a3bf450770ebb3c744f07bd357` |
 > | `routeb/probe_patcherex2.py` | `35751f6ea8a53724721d06d7a16127aa3e87bc7e88cc0eae9b5b61067d82a379` |
 > | `routeb/verify.py` | `851d3ff4c80f6cbbbc766d43d1d838dd991b0f802e0bb8de09f73132f44bd0df` |
 > | `routeb/run_manifest_compare.py` | `c0bc45e39b0b74ca7815ac623c2784d4105caf0f5a44f2076b42b11854b8c427` |
