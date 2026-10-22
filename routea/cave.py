@@ -370,7 +370,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     else:
         data = audit_cave_layout(args.original, args.patched, plan)
     text = json.dumps(data, indent=2)
-    if getattr(args, "out", None):
+    if getattr(args, "out", None) and args.cmd in ("plan", "audit"):
         args.out.write_text(text)
     print(text)
     return 0 if data.get("pass", True) else 1
