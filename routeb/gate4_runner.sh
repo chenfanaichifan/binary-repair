@@ -15,6 +15,8 @@ FUNC=CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink
 EXPECTED_ELF=aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393
 EXPECTED_UID=${EXPECTED_UID:-1003}
 PYTHON=${PYTHON:-/opt/angr-venv/bin/python}
+CLANG=${CLANG:-clang}
+LLD=${LLD:-ld.lld}
 
 ORIG_HOME=${HOME:-}
 mkdir -p "$WORK" || { echo "cannot create $WORK" >&2; exit 2; }
@@ -56,6 +58,10 @@ record_env() {
     echo "ghidra_home: ${GHIDRA_HOME:-unset}"
     echo "ghidra_version: $(grep -h '^application.version=' "${GHIDRA_HOME:-/nonexistent}"/Ghidra/application.properties 2>/dev/null || echo unknown)"
     echo "python: $PYTHON $("$PYTHON" --version 2>&1)"
+    echo "clang: $(command -v "$CLANG" || echo missing) $("$CLANG" --version 2>&1 | head -1)"
+    echo "ld.lld: $(command -v "$LLD" || echo missing) $("$LLD" --version 2>&1 | head -1)"
+    echo "shim clang-15: $(readlink -f "$WORK/toolchain-shims/clang-15" 2>/dev/null || echo missing)"
+    echo "shim ld.lld-15: $(readlink -f "$WORK/toolchain-shims/ld.lld-15" 2>/dev/null || echo missing)"
     "$PYTHON" - <<'PY' 2>/dev/null || true
 import importlib.metadata as m
 for p in ("patcherex2", "angr", "z3-solver", "lief"):
@@ -64,8 +70,8 @@ for p in ("patcherex2", "angr", "z3-solver", "lief"):
     except Exception as e:
         print(f"{p}: missing ({e})")
 PY
-    echo "clang-15: $(command -v clang-15 || echo missing)"
-    echo "ld.lld-15: $(command -v ld.lld-15 || echo missing)"
+    echo "clang-15 resolved: $(command -v clang-15 || echo missing)"
+    echo "ld.lld-15 resolved: $(command -v ld.lld-15 || echo missing)"
   } > "$WORK/environment.txt" 2>&1
 }
 
@@ -95,9 +101,20 @@ fi
 if [[ -z "${GHIDRA_HOME:-}" || ! -x "$GHIDRA_HOME/support/analyzeHeadless" ]]; then
   RESULT=not_run; REASON="Ghidra analyzeHeadless not found (set GHIDRA_HOME)"; write_status; exit 2
 fi
-if ! command -v clang-15 >/dev/null || ! command -v ld.lld-15 >/dev/null; then
-  RESULT=not_run; REASON="clang-15/ld.lld-15 missing (Patcherex2 backend)"; write_status; exit 2
+CLANG_BIN=$(command -v "$CLANG" || true)
+LLD_BIN=$(command -v "$LLD" || true)
+if [[ -z "$CLANG_BIN" || -z "$LLD_BIN" ]]; then
+  RESULT=not_run; REASON="clang/ld.lld missing (set CLANG/LLD)"; write_status; exit 2
 fi
+# Patcherex2 0.2.14 invokes the literal names clang-15 and ld.lld-15.  Provide
+# per-job shims to the snapshot's actual clang/ld.lld (clang 18 is supported);
+# no sudo and no system-wide install is required.
+SHIMDIR="$WORK/toolchain-shims"
+mkdir -p "$SHIMDIR"
+ln -sf "$CLANG_BIN" "$SHIMDIR/clang-15"
+ln -sf "$LLD_BIN" "$SHIMDIR/ld.lld-15"
+export PATH="$SHIMDIR:$PATH"
+record_env
 
 echo "== Ghidra export =="
 "$ROOT/routeb/ghidra/export.sh" "$WORK/original.elf" "$FUNC" "$WORK/ghidra" > "$WORK/ghidra.log" 2>&1 || {

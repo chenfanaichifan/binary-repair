@@ -16,13 +16,25 @@ root-started and drops to uid 1003 itself.
 ## Interpreter and Ghidra
 
 ```bash
-export PYTHON=/opt/angr-venv/bin/python     # default in the runner
+export PYTHON=/opt/angr-venv/bin/python          # default
 export GHIDRA_HOME=/opt/ghidra_12.1.4_PUBLIC
 export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export CLANG=clang                               # default; snapshot has 18.1.3
+export LLD=ld.lld                                # default
 ```
 
 Expected versions: JDK 21.0.12.1, Ghidra 12.1.4, Patcherex2 0.2.14,
-angr 10.0.4, z3 5.1.0, LIEF 1.0.0, `clang-15`, `ld.lld-15`.
+angr 10.0.4, z3 5.1.0, LIEF 1.0.0, clang 18.1.3, ld.lld 18.
+
+Patcherex2 0.2.14 invokes the literal names `clang-15` and `ld.lld-15`. The
+runner does **not** require those packages: it creates per-job symlinks
+`$WORK/toolchain-shims/clang-15 -> $(command -v "$CLANG")` and
+`ld.lld-15 -> $(command -v "$LLD")`, prepends that directory to `PATH`, and
+records the real versions in `environment.txt`. No sudo/system install.
+
+The previous GitHub Actions Gate 4 run used the same shim approach (Ubuntu
+24.04 `clang` 18.1.3 symlinked as `clang-15`) and Patcherex2 0.2.14 completed
+the unchanged round trip; the formal VM run records the exact versions.
 
 ## Entry point
 
