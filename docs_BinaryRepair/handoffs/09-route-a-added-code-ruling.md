@@ -293,6 +293,8 @@ open until all three exist:
 3. the added/edited bytes, the header change, and the detour are recorded in the edit manifest.
 
 The fixture remains **NOT FROZEN**. "Conditionally feasible" must never be rendered as pass.
+The full pass criteria are in `11-environment-evidence-confirmations.md` §3 (six required
+items); this section only sets the interim status.
 
 ### 11.2 Tail-cave mapping is in scope
 

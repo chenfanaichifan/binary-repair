@@ -86,7 +86,13 @@ fixture stays NOT FROZEN; the oracle and manifest are unchanged.
 
 ## 6. Status update — 2026-10-22 evening
 
-Member 3 reports the `toolchain-v4-ready` snapshot is ready. This is **not accepted yet**:
-Member 4 must still verify the version outputs, the smoke tests, and the image hash, and the
-three isolation preconditions must be confirmed before any candidate run. Deadline unchanged
-(2026-10-23 18:00). Gate 4 additionally waits on M5's `routeb/` scripts (handoff 09 §11.5).
+Member 3 reports the Option A toolchain installed in the guest on 2026-10-22 17:14 (JDK
+21.0.12.1, Ghidra 12.1.4, patcherex2 0.2.14, angr 10.0.4.post1, z3 5.1.0, LIEF 1.0.0,
+clang 18.1.3; 55 pip packages) and a `toolchain-v4-ready` snapshot taken. This is **not
+accepted yet**: Member 4 must verify the version outputs, smoke output, image chain manifest,
+and guest fingerprint. Isolation is **partial**: runner uid 1003 exists and cannot read the
+evaluator, the netns must be created by a root `jobwrap` before dropping to 1003, and
+snapshot revert has not been tested. Candidate execution stays blocked until the three
+preconditions are evidenced (handoff 11 §2-§3). Deadline unchanged (2026-10-23 18:00);
+gate 4 additionally waits on M5's `routeb/` scripts (handoff 09 §11.5). The V4 smoke
+(angr load + 50-step exploration, `active = 0`, `deadend = 1`) is `inconclusive`, not a pass.
