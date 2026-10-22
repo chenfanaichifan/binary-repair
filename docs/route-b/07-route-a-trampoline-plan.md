@@ -1,10 +1,12 @@
 # Route A trampoline plan — CWE121 candidate (conditional)
 
-**Status:** **CONDITIONALLY FEASIBLE** (scope ruled; cave load + 6 cases not yet
+**Status:** **CONDITIONALLY FEASIBLE** (scope ruled; cave load PASS; 6 cases not yet
 measured). This is a byte-level plan and layout audit, not an executed patch.
-`authorized_edits` allows a new R-- string segment, a new R-X code segment, a
-detour inside `badSink`, and a file length/layout change. Under a "no new section /
-no length change" policy, Route A is **UNSUPPORTED** for this fixture.
+The reviewed six-entry `authorized_edits` allows a 5-byte redirect at `0x401304`,
+the existing R-X tail extension to `0x401fff` (no new segment), up to 256 bytes of
+added code and 64 bytes of read-only data, and an fd-2/exit-1 invalid path.
+Under a "no new section / no length change" policy, Route A is **UNSUPPORTED**
+for this fixture.
 
 **Measurement update (2026-10-22):**
 
@@ -15,15 +17,35 @@ no length change" policy, Route A is **UNSUPPORTED** for this fixture.
   bytes; **no header change needed**; delivery will include the probe command + output;
 - patch point: `0x401304` (`call strcpy@plt`), not the `endbr64 + push rbp` at
   `0x4012b0`;
-- the exact error string is currently placed **inside the cave**, not in a new R--
-  segment; this requires `authorized_edits` to allow “exact error message inside the
-  existing executable cave”, with offset/size/permissions recorded in the audit.
-  A dedicated R-- segment remains the fallback and would need LIEF/Patcherex2;
+- the exact error string is placed **inside the existing R-X cave** (read-only
+  data, no W+X), not in a new R-- segment; no new segment is required;
 - 6 cases are **candidate execution**: snapshot revert + network cut + unprivileged
   user are required; snapshot revert is **not yet measured**, so the 6 cases are not run;
 - plan: revert test → trampoline → patch copy → audit → 6 cases;
 - until 6/6 runs, Gate 3 stays **CONDITIONALLY FEASIBLE**, never `pass`;
 - failures must be reported before **2026-10-23 18:00**, no retroactive edits.
+
+**Reviewed contract (2026-10-22):**
+
+`fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json`,
+canonical hash `363f357524967af9370941c788b83cdaed007d0e2bc0f39c1530c44744f28889`.
+The six `authorized_edits` entries are:
+
+1. 5-byte relative redirect of `call strcpy@plt` at `0x401304`, branch back on the valid path;
+2. extend the existing R-X `PT_LOAD` `p_filesz/p_memsz` to `0x401fff` if needed
+   (record offset/vaddr/filesz/memsz/align; no overlap);
+3. no new segment/dynamic import/GOT/PLT/relocation edit or permission broadening;
+   only as a fallback, one new R-X `PT_LOAD`;
+4. invalid path writes fd 2 and exits 1 without returning to `main` or writing stdout;
+5. up to 256 bytes of added x86-64 code in the verified-unused R-X tail;
+6. up to 64 bytes of added read-only data with exactly
+   `ERROR: input exceeds destination capacity\n`, RIP-relative references only.
+
+> **Blocking correction:** entry 1 says “branch back to `0x401308`”. The call at
+> `0x401304` is 5 bytes, so the next instruction is `0x401309`; `0x401308` is the
+> last byte of the displaced call. The return target must be `0x401309`. Fixing
+> this changes the canonical contract hash and requires re-review before any patch.
+> Do not patch until the contract says `0x401309`.
 
 Input: `fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf`
 SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`.

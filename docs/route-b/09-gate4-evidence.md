@@ -1,4 +1,4 @@
-# Gate 4 — Route B unchanged round trip: PASS (supplementary); formal: BLOCKED / NOT RUN
+# Gate 4 — Route B unchanged round trip: PASS (supplementary); formal: NOT RUN (scripts ready)
 
 **Date:** 2026-10-22
 **Run:** GitHub Actions `gate4-routeb-roundtrip`, run `39752557610`
@@ -13,10 +13,23 @@ This is the unchanged round trip only — **not a repair**.
 > member3 provides the VM or explicitly accepts this runner profile.
 > See [11-gate4-formal-checklist.md](11-gate4-formal-checklist.md).
 >
-> **Latest coordination (2026-10-22):** formal Gate 4 is **BLOCKED**: the
-> `toolchain-v4-ready` snapshot is ready, but M5's `routeb` scripts are missing
-> from the snapshot. The supplementary CI pass remains evidence, not a formal
-> pass; re-run only after the scripts are delivered.
+> **Latest coordination (2026-10-22):** the scripts are now on `main` @ `3d6e703`
+> and the `toolchain-v4-ready` snapshot is ready; the earlier “missing scripts”
+> blocker is cleared. Formal Gate 4 is still **NOT RUN**: it must be executed on
+> the snapshot with the v3 kit, and M4 must confirm image hash/version/smoke.
+> The supplementary CI pass remains evidence, not a formal pass.
+>
+> | Script | SHA-256 |
+> |---|---|
+> | `routeb/gate4_runner.sh` | `e49a88799e4daaff22832f59ca82d2fa3d41dd7bce1910db3312cade813adfb3` |
+> | `routeb/probe_patcherex2.py` | `35751f6ea8a53724721d06d7a16127aa3e87bc7e88cc0eae9b5b61067d82a379` |
+> | `routeb/verify.py` | `851d3ff4c80f6cbbbc766d43d1d838dd991b0f802e0bb8de09f73132f44bd0df` |
+> | `routeb/run_manifest_compare.py` | `c0bc45e39b0b74ca7815ac623c2784d4105caf0f5a44f2076b42b11854b8c427` |
+>
+> Kit: `dist/m5-routeb-kit-2026-10-22-v3.zip`,
+> SHA-256 `34a59c42b48161b126105e13c099a6a599a0472bc11a1b28ee97c08c81032506`.
+> Invocation: `jobwrap ... -- /path/to/repo/routeb/gate4_runner.sh /path/to/repo /var/tmp/gate4-work`
+> (no `sudo -u runner jobwrap`).
 
 ## 1. Identity
 
@@ -110,7 +123,7 @@ force-pushes `gate4-results` with the evidence.
 | G1 contract + frozen manifest | PASS | `tests/test_fixture_v3_manifest.py`; contract v2 50/49; manifest-set hash `a564f039…` |
 | G2 Ghidra export | PASS | Ghidra 12.2 raw C + `.meta.txt` in `routeb/out/gate4/` |
 | G3 Route A | **BLOCKED** | needs scope ruling for new R--/R-X segments; plan in `07-route-a-trampoline-plan.md` |
-| G4 Route B unchanged round trip | **BLOCKED / formal NOT RUN (supplementary PASS)** | 6/6 on GitHub Actions; `toolchain-v4-ready` snapshot ready but M5 `routeb` scripts missing |
+| G4 Route B unchanged round trip | **formal NOT RUN (supplementary PASS)** | scripts on main `3d6e703`; 6/6 on GitHub Actions; execute on `toolchain-v4-ready` + M4 image check |
 | G5 placement | PARTIAL | Route B replaced a same-size function; Route A layout audit not run |
 | G6 concrete crash | PASS (partial) | `06-gate6-evidence.md`; 100 B → SIGSEGV at `ret 0x401317` |
 | G6 symbolic (V4) | **BLOCKED** | angr/Z3/V4 toolchain absent |
