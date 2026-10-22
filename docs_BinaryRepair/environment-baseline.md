@@ -43,7 +43,9 @@ Notes:
 | Compiler | gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0 |
 | binutils / ld | 2.42 |
 | GDB | 15.1 |
-| Python | 3.12.3 |
+| Python | system `python3` 3.12.3 (99 packages) and `/opt/angr-venv` (54 packages) |
+| V4 / Patcherex2 stack | Patcherex2 0.2.14, keystone-engine 0.9.2, capstone 5.0.9, intelhex 2.3.0, pypcode 4.0.1, LIEF 1.0.0, angr 10.0.4.post1, z3-solver 5.1.0.0 — all in `/opt/angr-venv` |
+| Toolchain caveat | `pwntools 4.15.0` is installed only in the system python3 and is not importable from the venv; each operation must pin its interpreter |
 
 Full tool inventory and dependency lock: `docs_BinaryRepair/vm-profile.md`.
 
@@ -61,14 +63,15 @@ The guest was resized on 2026-10-20 from 2 vCPU / 4 GiB / 10 GiB to
 4 vCPU / 8 GiB / 30 GiB. Two facts from that operation matter and are not
 cosmetic:
 
-1. **The snapshot chain was rebuilt twice.** The resize deleted the 2026-10-18
-   `clean-toolchain`; it was recreated on 2026-10-20 and two more snapshots were
-   added on 2026-10-22 (`job-isolation`, then `clean-baseline`). The reset point
-   is now `clean-baseline` (uid 6, 16:54, shut down), and because the fixture
-   was built on 2026-10-20 it is **not** a pre-sample baseline.
+1. **The snapshot chain was rebuilt.** The resize deleted the 2026-10-18
+   `clean-toolchain`; it was recreated on 2026-10-20 and three more snapshots
+   were added on 2026-10-22 (`job-isolation`, `clean-baseline`,
+   `toolchain-v4-ready`). The current V4 baseline is `toolchain-v4-ready`
+   (uid 7, 17:14, shut down); because the fixture was built on 2026-10-20, none
+   of them is a pre-sample baseline.
 2. **The disk identity changed, and it is now a chain.** The old SHA-256 no
-   longer applies. The current three-layer set and the active
-   `disk-000003.vmdk` are recorded in `vm-profile.md` §2 and
+   longer applies. The four snapshot layers, the `.vmsd` tree definition and the
+   active `disk-000004.vmdk` are recorded in `vm-profile.md` §2 and
    `state-change-2026-10-22.md` §4; a VMDK file hash identifies bytes at a
    timestamp, not reproducible guest content.
 
@@ -85,17 +88,19 @@ allowance, and the V4 toolchain is installed (see
 
 ## 5. What this baseline does not establish
 
-- It does not establish that the guest is disposable: `clean-baseline` (uid 6,
-  2026-10-22 16:54) is a shut-down reset point, but no revert has been tested
-  (see `vm-profile.md` §3).
+- It does not establish that the guest is disposable: `toolchain-v4-ready`
+  (uid 7, 2026-10-22 17:14) is a shut-down reset point, but no revert has been
+  tested, and the test wrapper `jobwrap` (created 17:17) is in no snapshot and
+  would be lost by a revert (see `vm-profile.md` §3–§4).
 - It does not establish job-time network isolation: `/opt/binrepair/run-isolated.sh`
-  gives a command an empty network namespace as `runner`, but the broker does
-  not invoke it and there is no hypervisor-level egress block
+  and `/usr/local/bin/jobwrap` give a command an empty network namespace as
+  `runner`, but both are test scaffolding, nothing in the product calls them,
+  and there is no hypervisor-level egress block
   (`state-change-2026-10-22.md` §3).
 - It does not establish an unprivileged execution path by default: `lab` keeps
   passwordless sudo, and only the wrapper drops to `runner` (uid 1003).
-- It does not establish the toolchain as verified end to end: the V4 tools are
-  installed and smoke-tested, but V4 has not been run
+- It does not establish the toolchain as verified end to end: the V4 tools and
+  Patcherex2 0.2.14 are installed and smoke-tested, but V4 has not been run
   (`state-change-2026-10-22.md` §1).
 
 ## 6. Reproduce

@@ -19,23 +19,23 @@ claim that the property holds.
 
 ## 2. Image identity (SHA-256)
 
-The current disk state is a **chain**, not a single file (2026-10-22):
+The current disk state is a **chain**, not a single file (2026-10-22, guest shut
+down):
 
-| Layer | Size (bytes) | SHA-256 |
-|---|---:|---|
-| `disk.vmdk` | 6,792,544,256 | `7dec112509c833a66b44c2e1aebdc607d33b323ca61351d7cfe0c83886101468` |
-| `disk-000001.vmdk` | 33,882,112 | `28451ed9fcf8f54f6fbe0c337c9fe8f6e4823dba08e242daae52855b4647bd92` |
-| `disk-000002.vmdk` | 12,320,768 | `b501715b37e954e1ea509ab138d03bb34e45d5672a5b5192dc28dc72bd37100c` |
+| Layer | Size (bytes) | SHA-256 | Snapshot it belongs to |
+|---|---:|---|---|
+| `disk.vmdk` | 6,792,544,256 | `7dec112509c833a66b44c2e1aebdc607d33b323ca61351d7cfe0c83886101468` | `clean-toolchain` (uid 4) |
+| `disk-000001.vmdk` | 33,882,112 | `28451ed9fcf8f54f6fbe0c337c9fe8f6e4823dba08e242daae52855b4647bd92` | `job-isolation` (uid 5, memory) |
+| `disk-000002.vmdk` | 12,320,768 | `b501715b37e954e1ea509ab138d03bb34e45d5672a5b5192dc28dc72bd37100c` | `clean-baseline` (uid 6) |
+| `disk-000003.vmdk` | 75,890,688 | `1759a66ffd0a0d7eda06e2f676b0e9134682d1fb670099de6ffb98675c2fb300` | `toolchain-v4-ready` (uid 7) |
+| `BinRepair-Lab.vmsd` | 1,609 | `ba9b9bee8397ddd20d2d5e50eaf8bd550e59d7ebed35bad02b0b6febb50dfd97` | tree definition |
 
-New writes go to `disk-000003.vmdk` (3,997,696 B,
-`b94aa009ea4de3d2087ef1df95ee0f4a45de50fe4966a61f9668c415918b7323`, at the time
-of this record). It is **not** part of the baseline: reverting to
-`clean-baseline` discards it.
+`disk-000004.vmdk` is the **active write layer** and belongs to no snapshot. It
+is held open while the guest runs, so it has no stable hash.
 
-**No single-file hash identifies `clean-baseline`.** Either record the whole
-three-layer set above, or consolidate the chain, before publishing an image
-hash. A hash of `disk-000003.vmdk` alone identifies only the post-baseline
-layer.
+**No single-file hash identifies a baseline.** Record the chain set above (plus
+the `.vmsd` tree definition), or consolidate the chain, before publishing an
+image hash. A hash of the active layer alone identifies nothing.
 
 Base image and seed, unchanged by the chain:
 
@@ -61,30 +61,35 @@ present a hash taken while the guest runs.
 
 ## 3. Snapshots
 
-Three snapshots exist (2026-10-22). `BinRepair-Lab.vmsd` carries
-`snapshot.numSnapshots = "3"`, current uid `6`, and the chain
-`4 → 5 → 6`.
+Four snapshots exist (2026-10-22). `BinRepair-Lab.vmsd` carries
+`snapshot.numSnapshots = "4"`, current uid `7`, and the chain
+`4 → 5 → 6 → 7`.
 
 | # | Name | uid | Created | Taken | Adds | Disk layer |
 |---|---|---|---:|---|---|---|
 | 1 | `clean-toolchain` | 4 | 2026-10-20 11:57 | powered off | completed toolchain | `disk.vmdk` |
 | 2 | `job-isolation` | 5 | 2026-10-22 16:50 | **while running, includes memory** | `/opt/binrepair/run-isolated.sh` | `disk-000001.vmdk` |
-| 3 | `clean-baseline` | 6 | 2026-10-22 16:54 | powered off (28,061-byte `.vmsn`) | the intended repeatable baseline | `disk-000002.vmdk` |
+| 3 | `clean-baseline` | 6 | 2026-10-22 16:54 | powered off (28,061-byte `.vmsn`) | a clean baseline without the V4 tools | `disk-000002.vmdk` |
+| 4 | `toolchain-v4-ready` | 7 | 2026-10-22 17:14 | powered off (28,062-byte `.vmsn`) | Patcherex2/keystone/pypcode/LIEF set in `/opt/angr-venv` | `disk-000003.vmdk` |
 
-`BinRepair-Lab-Snapshot6.vmsn` is 28,061 bytes; `Snapshot5.vmsn` is 5,329,606
+`BinRepair-Lab-Snapshot7.vmsn` is 28,062 bytes; `Snapshot5.vmsn` is 5,329,606
 bytes, which is the memory image that makes `job-isolation` a running-state
 snapshot.
 
-**Reverting to `clean-baseline`** returns a shut-down VM at the state of
-2026-10-22 16:54 and **discards everything in `disk-000003.vmdk`**.
+**Reverting to `toolchain-v4-ready`** returns a shut-down VM at the state of
+2026-10-22 17:14 and **discards everything in `disk-000004.vmdk`** — including
+`/usr/local/bin/jobwrap`, which was created at 17:17 and is in no snapshot.
 
-What `clean-baseline` is and is not:
+What the powered-off snapshots are and are not:
 
-- **is** the intended repeatable baseline for candidate runs — shut down, so a
-  revert starts from a defined state;
-- **is not** a pre-sample baseline. The fixture was built on 2026-10-20, before
-  all three snapshots, so reverting does not return the guest to a state before
-  the sample entered;
+- `toolchain-v4-ready` (uid 7) **is** the current baseline for V4 work — shut
+  down, with the Patcherex2/angr stack in `/opt/angr-venv`, so a revert starts
+  from a defined state;
+- `clean-baseline` (uid 6) is a shut-down baseline **without** the V4 tools; a
+  revert to it removes them, and it is not interchangeable with uid 7;
+- none of them is a pre-sample baseline. The fixture was built on 2026-10-20,
+  before all four snapshots, so reverting does not return the guest to a state
+  before the sample entered;
 - `job-isolation` is a running snapshot: reverting to it resumes a powered-on
   VM rather than producing a shut-down one.
 
@@ -95,7 +100,7 @@ longer applies — the guest powered on, and new snapshots were created on
 The 2026-10-18 `clean-toolchain` snapshot was deleted by the 2026-10-20 disk
 resize (VMware does not resize a chain that still has snapshots). It was
 recreated once on 2026-10-20 (uid 4), which is why the uid is 4 and not 3; the
-two later snapshots were added on top of it on 2026-10-22.
+three later snapshots were added on top of it on 2026-10-22.
 
 Before candidate binaries run through the broker, the remaining work is wiring
 the isolated wrapper into the broker, a hypervisor-level egress block, and a
@@ -114,22 +119,24 @@ read-only tool mount (section 4).
 
 Measured gaps against the requested disposable-VM profile:
 
-1. **Direct execution as `lab` is unprivileged-unsafe.** `lab` is in the
-   `sudo` group (and has passwordless sudo from the cloud-init seed), so a
-   binary invoked directly as `lab` can become root inside the guest. The
-   isolated wrapper (item 2) avoids this by running the candidate as `runner`
-   (uid 1003, no sudo), but the broker does not invoke the wrapper yet.
-2. **Job-time network (2026-10-22).** Each candidate runs through
-   `/opt/binrepair/run-isolated.sh`, which executes it as `runner` (uid 1003, no
-   sudo) inside an empty network namespace: `ip addr` shows only `lo` and DNS
-   resolution fails after a 15 s timeout. The guest itself keeps NAT for
-   administration; SSH from the host is unaffected. Remaining gap: no verified
-   egress block at the hypervisor level, and the wrapper is not yet invoked by
-   the broker.
-3. **The reset point post-dates the fixture build.** `clean-baseline` exists
-   (section 3) but was taken on 2026-10-22, after the 2026-10-20 fixture build,
-   so reverting to it does not return the guest to a pre-sample state.
-4. **No trusted-tool read-only mount.** Tools live in the same writable
+1. **User isolation — built, not wired.** `runner` (uid 1003) exists, has no
+   sudo, and cannot read `~/evaluator`; `jobwrap`/`run-isolated.sh` drop to it
+   before `exec`. But `lab` keeps passwordless sudo, and a binary invoked
+   directly as `lab` can still become root — only the wrapper path is
+   unprivileged, and the broker does not invoke it.
+2. **Job-time network — verified for the wrapper, not enforced.** Inside the
+   wrapper's namespace `ip -brief addr` shows only `lo DOWN` and DNS resolution
+   fails after a 15 s timeout; the guest itself keeps NAT for administration and
+   the host's SSH session is unaffected. Remaining gap: no verified egress block
+   at the hypervisor level, and nothing in the product calls the wrapper.
+3. **`jobwrap` is test scaffolding and is in no snapshot.** It is a 91-byte
+   script (created 17:17, after `toolchain-v4-ready` at 17:14), so it lives only
+   in `disk-000004.vmdk` and disappears on rollback. It validates no arguments,
+   writes no evidence, and applies no resource limit.
+4. **The reset points post-date the fixture build.** The powered-off baselines
+   were taken on 2026-10-22, after the 2026-10-20 fixture build, so reverting
+   does not return the guest to a pre-sample state.
+5. **No trusted-tool read-only mount.** Tools live in the same writable
    filesystem as the job workspace.
 
 These are reported as gaps, not silently accepted. They block a claim of
@@ -146,12 +153,28 @@ Present and versioned:
 | binutils (ld, as, objdump, readelf, nm) | 2.42-4ubuntu2.10 | used |
 | gdb | 15.1-1ubuntu1~24.04.1 | used for crash capture |
 | make | 4.3-4.1build2 | present |
-| python3 | 3.12.3-0ubuntu2.1 | used |
+| python3 | 3.12.3-0ubuntu2.1 | used; system interpreter (99 packages) |
+| `/opt/angr-venv` | Python venv, 54 packages | V4/Patcherex2 stack |
 | checksec | present | version not captured in this run |
-| capstone | pip 5.0.9; imported module reports 5.0.7 | import smoke test only |
-| pyelftools | 0.33 | import smoke test only |
-| pwntools | 4.15.0 | installed; not exercised |
+| capstone | **5.0.9** in the venv; system package 5.0.9 but module reports **5.0.7** | import smoke test only |
+| pyelftools | 0.33 (also in venv) | import smoke test only |
+| pwntools | 4.15.0 | **system python3 only — not importable from the venv** |
+| Patcherex2 | 0.2.14 (purseclab/Patcherex2) | installed in `/opt/angr-venv`; not yet exercised |
+| keystone-engine | 0.9.2 | in venv, declared runtime of Patcherex2 |
+| intelhex | 2.3.0 | in venv, declared runtime of Patcherex2 |
+| pypcode | 4.0.1 | in venv, declared runtime of Patcherex2 |
+| z3-solver | 5.1.0.0 (venv) / z3 5.3.1 (system python) | in venv |
 | libc6 / libc6-dev | 2.39-0ubuntu8.9 | build dependency |
+
+**Two interpreters, and they are not interchangeable.** The V4/Patcherex2 stack
+lives in `/opt/angr-venv`; `pwntools` exists only in the system `python3` and
+raises `ModuleNotFoundError` under the venv. Every operation must pin and record
+which interpreter it used, or a replay that picks the other one fails for a
+reason unrelated to the sample.
+
+**capstone cannot be recorded with one number.** The system package is 5.0.9
+while its module reports `__version__ = 5.0.7`; the venv copy reports 5.0.9
+consistently. Recording either alone makes a correct install look wrong.
 
 Absent (measured with `command -v` / import on 2026-10-20):
 
@@ -164,8 +187,9 @@ Absent (measured with `command -v` / import on 2026-10-20):
 smoke tests recorded in
 [`state-change-2026-10-22.md`](state-change-2026-10-22.md) §1 show the missing
 tools now installed: clang/lld 18.1.3, Ghidra 12.1.4, OpenJDK 21.0.12.1, LIEF
-1.0.0, angr 10.0.4.post1, z3 5.1.0/5.3.1, unicorn 2.1.4. The absence list above
-is kept as the measured state on 2026-10-20, not as current state.
+1.0.0, angr 10.0.4.post1, z3 5.1.0/5.3.1, unicorn 2.1.4, Patcherex2 0.2.14. The
+absence list above is kept as the measured state on 2026-10-20, not as current
+state.
 
 Consequence: the toolchain is no longer the reason V4 cannot run. **V4 is still
 unrun**, and its verdict belongs to Member 4 — tool availability is not a V4

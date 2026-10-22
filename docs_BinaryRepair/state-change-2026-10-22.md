@@ -18,6 +18,28 @@ Installed and smoke-tested in the guest:
 | angr | 10.0.4.post1 (bundles claripy as `angr.rustylib.claripy`) |
 | z3 | 5.1.0 (venv) / 5.3.1 (system python) |
 | unicorn | 2.1.4 |
+| Patcherex2 | 0.2.14 (purseclab/Patcherex2) |
+| keystone-engine | 0.9.2 |
+| capstone | 5.0.9 |
+| intelhex | 2.3.0 |
+| pypcode | 4.0.1 |
+| pyelftools (venv) | 0.33 |
+| z3-solver (venv) | 5.1.0.0 |
+
+Patcherex2 and its declared runtime set live in `/opt/angr-venv` (54 packages).
+
+**Interpreter split — the broker must pin one interpreter per operation.** The
+V4/Patcherex2 stack is in `/opt/angr-venv`; `pwntools 4.15.0` is installed only
+in the system `python3` (99 packages) and is **not importable from the venv**.
+Calling `pwntools` through `/opt/angr-venv/bin/python` raises
+`ModuleNotFoundError`. Either install it into the venv or record "pwntools only
+via system python3"; whichever is chosen, each operation must name the
+interpreter it used.
+
+**capstone version discrepancy.** The system-python `capstone` package is 5.0.9
+while its module reports `__version__ = 5.0.7`; the venv copy reports 5.0.9
+consistently. Record both numbers, not one — otherwise a replay that reads the
+other number looks like a misinstall.
 
 Smoke tests: angr loads `original.elf` (AMD64, entry 0x401170); Ghidra
 `analyzeHeadless` completes an import and full analysis; `python3 -c "import
@@ -43,21 +65,61 @@ network namespace. Measured 2026-10-22:
 
 Not yet wired into any broker path, so this is a capability, not an enforced rule.
 
+### Test-only wrapper: `/usr/local/bin/jobwrap`
+
+`/usr/local/bin/jobwrap` is a test-only isolation wrapper (91-byte shell
+script, `root:root 0755`, sha256 `877dd4c4…a1d3`, identical content and hash to
+`/opt/binrepair/run-isolated.sh`, which was created at 16:44). Invoked by the
+operator as root; it creates an empty network namespace and drops to uid 1003
+before `exec`'ing the target. It performs no argument validation, writes no
+evidence, enforces no whitelist or resource limit, and is **not** the product
+broker.
+
+```sh
+#!/bin/sh
+exec unshare --net --fork --pid --mount-proc --setuid=1003 --setgid=1003 -- "$@"
+```
+
+Provenance and status, stated plainly so the record is not read as more than it
+is:
+
+| Item | Fact |
+|---|---|
+| Created | 2026-10-22 17:17, by the operator, for this isolation check |
+| Origin | copied from `/opt/binrepair/run-isolated.sh` (created 16:44, same hash) |
+| Does | empty netns → `setuid`/`setgid` 1003 → `exec` the passed argv |
+| Does not | write logs or evidence, validate argv, apply a whitelist, or cap resources |
+| Ownership | test scaffolding, not a product component; the product counterpart is the broker |
+| Snapshot status | **in no snapshot** — created 17:17, after `toolchain-v4-ready` (17:14), so it exists only in the active layer `disk-000004` and disappears on rollback |
+
 ## 4. Snapshots
+
+Four snapshots exist (2026-10-22). `BinRepair-Lab.vmsd` carries
+`snapshot.numSnapshots = "4"`, current uid `7`, chain `4 → 5 → 6 → 7`.
 
 | uid | name | taken | power state |
 |---|---|---|---|
 | 4 | `clean-toolchain` | 2026-10-20 11:57 | off |
 | 5 | `job-isolation` | 2026-10-22 16:50 | running (includes memory) |
 | 6 | `clean-baseline` | 2026-10-22 16:54 | off |
+| 7 | `toolchain-v4-ready` | 2026-10-22 17:14 | off (28,062-byte `.vmsn`) |
 
-Disk state is a chain, no single-file identity:
+### Snapshot chain (2026-10-22, VM shut down)
 
-| file | bytes | SHA-256 |
-|---|---:|---|
-| `disk.vmdk` | 6,792,544,256 | `7dec112509c833a66b44c2e1aebdc607d33b323ca61351d7cfe0c83886101468` |
-| `disk-000001.vmdk` | 33,882,112 | `28451ed9fcf8f54f6fbe0c337c9fe8f6e4823dba08e242daae52855b4647bd92` |
-| `disk-000002.vmdk` | 12,320,768 | `b501715b37e954e1ea509ab138d03bb34e45d5672a5b5192dc28dc72bd37100c` |
+| layer | bytes | SHA-256 | snapshot |
+|---|---:|---|---|
+| `disk.vmdk` | 6,792,544,256 | `7dec112509c833a66b44c2e1aebdc607d33b323ca61351d7cfe0c83886101468` | clean-toolchain (uid 4) |
+| `disk-000001.vmdk` | 33,882,112 | `28451ed9fcf8f54f6fbe0c337c9fe8f6e4823dba08e242daae52855b4647bd92` | job-isolation (uid 5, memory) |
+| `disk-000002.vmdk` | 12,320,768 | `b501715b37e954e1ea509ab138d03bb34e45d5672a5b5192dc28dc72bd37100c` | clean-baseline (uid 6) |
+| `disk-000003.vmdk` | 75,890,688 | `1759a66ffd0a0d7eda06e2f676b0e9134682d1fb670099de6ffb98675c2fb300` | toolchain-v4-ready (uid 7) |
+| `BinRepair-Lab.vmsd` | 1,609 | `ba9b9bee8397ddd20d2d5e50eaf8bd550e59d7ebed35bad02b0b6febb50dfd97` | tree definition |
+
+`disk-000004.vmdk` is the active write layer and belongs to no snapshot; it is
+held open while the guest runs, so it has no stable hash.
+
+`job-isolation` was taken while running and includes memory; it is not a reset
+baseline. A reset to `toolchain-v4-ready` discards `disk-000004.vmdk`, which is
+where `jobwrap` (17:17) lives.
 
 `provenance.md` §13.2 item 1 ("zero snapshots") is **superseded** by this table.
 

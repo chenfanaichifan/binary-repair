@@ -81,26 +81,29 @@ freeze. Handoff note for Member 5:
 
 ## 4. Open items (explicit, not implied)
 
-### O1 — V4 is unrun (the toolchain is no longer the blocker)
+### O1 — toolchain complete; V4 still unrun
 
 The tools that were missing on 2026-10-20 (angr/Claripy/Z3, LIEF, clang,
-Ghidra/JDK) are now installed and smoke-tested — see
-[`state-change-2026-10-22.md`](state-change-2026-10-22.md) §1. Installation was
-assigned to another team member on 2026-10-20; the Lead does not modify the VM.
+Ghidra/JDK) are installed and smoke-tested, together with Patcherex2 0.2.14 and
+its runtime set — see [`state-change-2026-10-22.md`](state-change-2026-10-22.md)
+§1. Installation was assigned to another team member on 2026-10-20.
 
-**V4 itself has not been run.** A toolchain is not a V4 result: the verdict is
-Member 4's, and until it runs this item stays open as "V4 unrun", not "V4
-blocked for lack of tools".
+The only remaining tooling gap on this item is the **Gate 4 script**; the
+toolchain itself is no longer the blocker. **V4 has still not been run**: a
+toolchain is not a V4 result, the verdict is Member 4's, and until it runs the
+item stays open as "V4 unrun".
 
 ### O2 — Candidate execution is not yet isolated
 
-1. the reset point is now `clean-baseline` (uid 6, 2026-10-22 16:54, shut down),
-   but its **revert has not been tested**;
-2. `lab` still has passwordless sudo — a binary invoked directly as `lab` can
-   become root;
-3. the isolated wrapper exists (`/opt/binrepair/run-isolated.sh`: `runner`
-   uid 1003, empty network namespace) but **the broker does not invoke it**, and
-   there is no hypervisor-level egress block;
+1. **snapshot — done.** `toolchain-v4-ready` (uid 7, 2026-10-22 17:14, shut
+   down) is the V4 reset baseline; its **revert has not been tested**, and
+   `jobwrap` (created 17:17) is in no snapshot and would be lost by a revert;
+2. **network — verified, not enforced.** Inside the wrapper's namespace only
+   `lo` is up (DOWN) and DNS fails after a 15 s timeout; the guest keeps NAT for
+   administration. There is still no hypervisor-level egress block;
+3. **unprivileged user — done, not wired.** `runner` (uid 1003) exists, has no
+   sudo and cannot read `~/evaluator`; `lab` keeps passwordless sudo, so only
+   the wrapper path is unprivileged, and nothing in the product calls it;
 4. tools are not read-only to the execution user.
 
 At minimum the wrapper must be wired into the broker, tools mounted read-only,
@@ -114,11 +117,15 @@ The disk is a **chain** (2026-10-22); there is no single-file identity.
 Hashes were taken with the VM powered off (no `vmware-vmx` process):
 
 ```text
-7dec112509c833a66b44c2e1aebdc607d33b323ca61351d7cfe0c83886101468  disk.vmdk           (6,792,544,256 B)
-28451ed9fcf8f54f6fbe0c337c9fe8f6e4823dba08e242daae52855b4647bd92  disk-000001.vmdk    (33,882,112 B)
-b501715b37e954e1ea509ab138d03bb34e45d5672a5b5192dc28dc72bd37100c  disk-000002.vmdk    (12,320,768 B)
-b94aa009ea4de3d2087ef1df95ee0f4a45de50fe4966a61f9668c415918b7323  disk-000003.vmdk    (3,997,696 B, active layer, not part of clean-baseline)
+7dec112509c833a66b44c2e1aebdc607d33b323ca61351d7cfe0c83886101468  disk.vmdk           (6,792,544,256 B)  clean-toolchain (uid 4)
+28451ed9fcf8f54f6fbe0c337c9fe8f6e4823dba08e242daae52855b4647bd92  disk-000001.vmdk    (33,882,112 B)     job-isolation (uid 5, memory)
+b501715b37e954e1ea509ab138d03bb34e45d5672a5b5192dc28dc72bd37100c  disk-000002.vmdk    (12,320,768 B)     clean-baseline (uid 6)
+1759a66ffd0a0d7eda06e2f676b0e9134682d1fb670099de6ffb98675c2fb300  disk-000003.vmdk    (75,890,688 B)     toolchain-v4-ready (uid 7)
+ba9b9bee8397ddd20d2d5e50eaf8bd550e59d7ebed35bad02b0b6febb50dfd97  BinRepair-Lab.vmsd  (1,609 B)          tree definition
 ```
+
+`disk-000004.vmdk` is the active write layer and belongs to no snapshot; it is
+held open while the guest runs, so it has no stable hash and no row here.
 
 These are **provisional**: no clean-shutdown cycle has been recorded for the
 current chain, and the lead requires one before the guest image hash is frozen.
@@ -127,13 +134,15 @@ baseline. They are not signed and must not be presented as the V5 image identity
 
 ### O4 — Backend commit
 
-Local commits exist on `member-3-route-a`: `d1e0741` (fixture + gate 6
-evidence), `baefea2` (byte-exact checkout attributes), `627d9eb` (manifest-set
-hash confirmed) and `5b60915` (2026-10-22 state change), all on top of
-`e030cc2`. They are **not pushed**: remote operations still fail with
-`SEC_E_NO_CREDENTIALS` (re-probed 2026-10-22). No remote commit hash can be
-recorded yet, so another member cannot fetch the state this record describes —
-and a local hash is not a stable identity, since every later commit moves HEAD.
+Local commits exist on `member-3-route-a`, none of them pushed: remote
+operations still fail with `SEC_E_NO_CREDENTIALS` (re-probed 2026-10-22). No
+remote commit hash can be recorded, so another member cannot fetch the state
+this record describes.
+
+Specific local hashes are deliberately **not** enumerated here — every commit
+moves HEAD and a document that chases it is stale on the next commit. Read them
+from `git log` on the working copy. Until something is pushed, a local hash is
+not a reproducibility reference in the first place.
 
 ## 5. Not frozen, not signed
 
