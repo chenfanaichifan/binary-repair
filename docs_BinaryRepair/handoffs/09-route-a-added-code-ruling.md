@@ -243,3 +243,29 @@ recorded.
 **Confirmation log.** 2026-10-22 — ruling issued; strategy C is in Route A's range; oracle
 unchanged; the first persisted contract revision must authorize the additions; gate 3
 unblocked.
+
+---
+
+## 10. Gate-board status after this ruling (for M1's `main` README / any status page)
+
+`origin/main` at `d493f74` (2026-10-22 16:48, written before this ruling) reports:
+
+- Gate 3 (Route A) **NEEDS SCOPE RULING**;
+- Gate 4 (Route B round trip) **NOT RUN**;
+- "Gate 3 stays **UNSUPPORTED** until the LIEF/Patcherex2 layout audit exists; after that
+  it is **CONDITIONALLY FEASIBLE**".
+
+Correct labels from now on:
+
+| Gate | Owner | Status after this ruling | Why |
+|---|---|---|---|
+| 3 — Route A patch feasibility | M5 | **NOT RUN** (scope blocker resolved) | The scope question is settled; no feasibility audit evidence exists yet, so `passed` / `failed` / `unsupported` are all invalid until it runs. `unsupported` needs the concrete placement/encoding fact, not an expectation |
+| 4 — Route B unchanged round trip | M5 | **NOT RUN** (environment blocker) | Needs a disposable Ubuntu guest with JDK21 + Ghidra + Patcherex2 + clang and the isolation preconditions of handoff 07. It does **not** depend on gate 3 and can run in parallel once the environment exists |
+| 5 — safe placement for both routes | M5 + M3 | pending | Needs gate-3 and gate-4 artifacts |
+| 6 — verifier detects the original violation | M4 | partial | Concrete crash evidence accepted; symbolic half pending V4 |
+
+Status-page rules: a gate is `passed` / `failed` / `not_run` / `unsupported` — never "not
+pass"; a missing backend or audit is `not_run` (an implementation gap, not `unsupported`
+and not a pass); and no gate may be pre-labelled `passed` or `unsupported` before its
+evidence exists. The M1 README lines above should be rewritten to that effect.
+
