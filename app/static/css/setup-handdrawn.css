@@ -101,7 +101,7 @@ a { color: var(--ink); }
 .paper-tip-text p { margin: 4px 0 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 .paper-tip-text code { font-family: var(--font-mono); font-size: 0.9em; background: #efe9dc; padding: 1px 5px; border-radius: 4px; }
 .doodle-heart { width: 54px; flex: 0 0 54px; color: var(--accent); transform: rotate(6deg); }
-.doodle-bug { position: absolute; right: max(2vw, 12px); top: 78px; width: 230px; color: var(--ink); opacity: 0.85; pointer-events: none; }
+.doodle-bug { display: block; width: 220px; margin: 14px auto 0; color: var(--ink); opacity: 0.8; pointer-events: none; }
 
 /* wizard views */
 .wizard { position: relative; }
