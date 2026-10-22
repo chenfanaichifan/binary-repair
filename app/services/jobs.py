@@ -469,6 +469,31 @@ def get_attempt(attempt_id: str, *, data_dir: str | Path) -> AttemptRecord | Non
     )
 
 
+def list_attempts(run_id: str, *, data_dir: str | Path) -> list[AttemptRecord]:
+    connection = connect(data_dir)
+    try:
+        rows = connection.execute(
+            "SELECT * FROM attempts WHERE run_id = ? ORDER BY route, sequence",
+            (run_id,),
+        ).fetchall()
+    finally:
+        connection.close()
+    return [
+        AttemptRecord(
+            id=row["id"],
+            run_id=row["run_id"],
+            route=row["route"],
+            sequence=int(row["sequence"]),
+            phase=row["phase"],
+            outcome=row["outcome"],
+            reason=row["reason"],
+            failing_obligation=row["failing_obligation"],
+            detail=row["detail"],
+        )
+        for row in rows
+    ]
+
+
 def retry_attempt(run_id: str, route: str, *, data_dir: str | Path) -> AttemptRecord:
     if route not in ROUTES:
         raise ValueError("route must be route_a or route_b")
@@ -542,6 +567,7 @@ __all__ = [
     "get_contract",
     "get_job",
     "get_run",
+    "list_attempts",
     "retry_attempt",
     "start_run",
 ]

@@ -67,6 +67,60 @@ def test_start_is_idempotent(client: TestClient) -> None:
     assert snapshot["execution"] == "queued"
 
 
+def test_canonical_runs_creates_attempts_and_evidence(client: TestClient) -> None:
+    created = _create(client)
+    job_id = created["id"]
+    contract = {
+        "schema_version": 2,
+        "target_entry": "badSink",
+        "target_signature": "void badSink(char *data)",
+        "valid_domain": "C strings of length 0..49",
+        "valid_behavior": "copy and print input",
+        "forbidden_behavior": "write past dest[50]",
+        "invalid_input_response": "exit 1 with exact stderr",
+        "dest_capacity_bytes": 50,
+        "max_valid_input_bytes": 49,
+        "capacity_includes_terminator": True,
+        "invalid_exit_code": 1,
+        "invalid_stdout": "",
+        "invalid_stderr": "ERROR: input exceeds destination capacity\n",
+        "authorized_edits": ["add a capacity guard"],
+        "allowed_calls": ["fprintf", "strcpy"],
+        "environment_assumptions": ["Linux x86-64"],
+        "required_obligations": [
+            "identity", "structure", "interface", "behaviour", "symbolic", "reproducibility"
+        ],
+    }
+    approved = client.post(
+        f"/api/jobs/{job_id}/approve",
+        json={
+            "contract": contract,
+            "contract_revision": 1,
+            "manifest_sha256": "1" * 64,
+            "reviewer_label": "test",
+        },
+    )
+    assert approved.status_code == 200, approved.text
+
+    started = client.post(
+        f"/api/jobs/{job_id}/runs",
+        json={
+            "contract_revision": 1,
+            "manifest_sha256": "1" * 64,
+            "idempotency_key": "e2e-1",
+        },
+    )
+    assert started.status_code == 202, started.text
+    run = started.json()
+    assert {item["route"] for item in run["attempts"]} == {"route_a", "route_b"}
+
+    attempt = run["attempts"][0]
+    evidence = client.get(f"/api/attempts/{attempt['id']}/evidence")
+    assert evidence.status_code == 200, evidence.text
+    assert evidence.json()["attempt_id"] == attempt["id"]
+    assert evidence.json()["outcome"] is None
+
+
 def test_obligations_and_artifacts(client: TestClient) -> None:
     created = _create(client)
     job_id = created["id"]

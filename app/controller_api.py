@@ -409,6 +409,15 @@ def start_canonical(job_id: str, body: RunRequest) -> JSONResponse:
             "created": run.created,
             "manifest_sha256": run.manifest_sha256,
             "reviewed_scope_sha256": run.reviewed_scope_sha256,
+            "attempts": [
+                {
+                    "id": attempt.id,
+                    "route": attempt.route,
+                    "sequence": attempt.sequence,
+                    "phase": attempt.phase,
+                }
+                for attempt in jobs.list_attempts(run.id, data_dir=_data_dir())
+            ],
         },
         status_code=202 if run.created else 200,
     )

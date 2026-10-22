@@ -15,6 +15,7 @@ Sequence:
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -79,6 +80,46 @@ def _write_json(path: Path, payload: Any) -> None:
     tmp.replace(path)
 
 
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _verdict_values(verdict: Any) -> tuple[str, str | None, str | None, str | None]:
+    return (
+        verdict.outcome.value,
+        verdict.reason.value if verdict.reason is not None else None,
+        verdict.failing_obligation,
+        verdict.detail,
+    )
+
+
+def _select_attempt(
+    connection: Any,
+    *,
+    run_id: str,
+    attempt_id: str | None,
+    route: str | None,
+) -> Any:
+    if attempt_id is not None:
+        row = connection.execute(
+            "SELECT * FROM attempts WHERE id = ? AND run_id = ?",
+            (attempt_id, run_id),
+        ).fetchone()
+        if row is None:
+            raise ValueError(f"unknown attempt id for run {run_id}: {attempt_id}")
+        return row
+    if route is not None:
+        row = connection.execute(
+            "SELECT * FROM attempts WHERE run_id = ? AND route = ? "
+            "ORDER BY sequence DESC LIMIT 1",
+            (run_id, route),
+        ).fetchone()
+        if row is None:
+            raise ValueError(f"no attempt for route {route!r} in run {run_id}")
+        return row
+    return None
+
+
 def _run_context(job_id: str, run_id: str, data_dir: str | Path) -> tuple[Any, dict[str, Any]]:
     connection = connect(data_dir)
     try:
@@ -106,6 +147,8 @@ def evaluate_attempt(
     results: Mapping[str, str | Any],
     data_dir: str | Path,
     candidate_sha256: str,
+    attempt_id: str | None = None,
+    route: str | None = None,
     required: Mapping[str, bool] | None = None,
     cancelled: bool = False,
     error_reason: Any = None,
@@ -148,13 +191,22 @@ def evaluate_attempt(
             "verdict": _verdict_payload(verdict),
         },
     )
+    outcome, reason, failing, detail = _verdict_values(verdict)
     connection = connect(data_dir)
     try:
         with connection:
-            connection.execute(
-                "UPDATE runs SET phase = 'finished' WHERE id = ? AND job_id = ?",
-                (run_id, job_id),
+            attempt = _select_attempt(
+                connection,
+                run_id=run_id,
+                attempt_id=attempt_id,
+                route=route,
             )
+            if attempt is not None:
+                connection.execute(
+                    "UPDATE attempts SET phase = 'finished', outcome = ?, reason = ?, "
+                    "failing_obligation = ?, detail = ? WHERE id = ?",
+                    (outcome, reason, failing, detail, attempt["id"]),
+                )
     finally:
         connection.close()
     return verdict
@@ -166,6 +218,7 @@ def evaluate_run(
     route_a: Any,
     route_b: Any,
     data_dir: str | Path,
+    run_id: str | None = None,
 ) -> Any:
     from app.domain.acceptance import decide_run_outcome
 
@@ -179,9 +232,25 @@ def evaluate_run(
             "verdict": _verdict_payload(verdict),
         },
     )
+    outcome, reason, failing, detail = _verdict_values(verdict)
     connection = connect(data_dir)
     try:
         with connection:
+            if run_id is not None:
+                connection.execute(
+                    "UPDATE runs SET phase = 'finished', outcome = ?, reason = ?, "
+                    "failing_obligation = ?, detail = ?, finished_at = ? "
+                    "WHERE id = ? AND job_id = ?",
+                    (outcome, reason, failing, detail, _now(), run_id, job_id),
+                )
+            else:
+                connection.execute(
+                    "UPDATE runs SET phase = 'finished', outcome = ?, reason = ?, "
+                    "failing_obligation = ?, detail = ?, finished_at = ? "
+                    "WHERE id = (SELECT id FROM runs WHERE job_id = ? "
+                    "ORDER BY started_at DESC, rowid DESC LIMIT 1) AND job_id = ?",
+                    (outcome, reason, failing, detail, _now(), job_id, job_id),
+                )
             connection.execute("UPDATE jobs SET phase = 'finished' WHERE id = ?", (job_id,))
     finally:
         connection.close()

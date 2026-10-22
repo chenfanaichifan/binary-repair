@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from app.db.connection import connect
 from app.services import jobs, orchestration
 
 
@@ -128,6 +129,58 @@ def test_run_requires_both_routes(tmp_path: Path) -> None:
 
     path = data_dir / "jobs" / record.id / "run-verdict.json"
     assert path.exists()
+
+
+def test_verdict_is_persisted_field_by_field(tmp_path: Path) -> None:
+    data_dir, record, run = _started(tmp_path)
+    attempts = jobs.list_attempts(run.id, data_dir=data_dir)
+    assert {attempt.route for attempt in attempts} == {"route_a", "route_b"}
+
+    results = {gate: "passed" for gate, _, _ in orchestration.GATES}
+    route_a = orchestration.evaluate_attempt(
+        record.id,
+        run.id,
+        attempt_id=next(a.id for a in attempts if a.route == "route_a"),
+        results=results,
+        data_dir=data_dir,
+        candidate_sha256=record.original_sha256,
+    )
+    route_b = orchestration.evaluate_attempt(
+        record.id,
+        run.id,
+        attempt_id=next(a.id for a in attempts if a.route == "route_b"),
+        results=results,
+        data_dir=data_dir,
+        candidate_sha256=record.original_sha256,
+    )
+    assert route_a.outcome.value == route_b.outcome.value == "success_within_scope"
+
+    for attempt in jobs.list_attempts(run.id, data_dir=data_dir):
+        assert attempt.phase == "finished"
+        assert attempt.outcome == "success_within_scope"
+        assert attempt.reason is None
+        assert attempt.failing_obligation is None
+
+    run_verdict = orchestration.evaluate_run(
+        record.id,
+        run_id=run.id,
+        route_a=route_a,
+        route_b=route_b,
+        data_dir=data_dir,
+    )
+    assert run_verdict.outcome.value == "success_within_scope"
+
+    connection = connect(data_dir)
+    try:
+        row = connection.execute("SELECT * FROM runs WHERE id = ?", (run.id,)).fetchone()
+    finally:
+        connection.close()
+    assert row["phase"] == "finished"
+    assert row["outcome"] == "success_within_scope"
+    assert row["reason"] is None
+    assert row["failing_obligation"] is None
+    assert row["detail"] == run_verdict.detail
+    assert row["finished_at"] is not None
 
 
 def test_unknown_run_is_rejected(tmp_path: Path) -> None:
