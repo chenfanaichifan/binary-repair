@@ -37,6 +37,13 @@ This is the unchanged round trip only — **not a repair**.
 > judging only**; M4 independently verifies image hash, tool versions, and
 > isolation. M5's GitHub Actions 6/6 remains supplementary.
 >
+> **Contract pin / kit warning:** current main `b5e0d92` has canonical contract
+> `24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37`
+> (six edits; allowed_calls/env updated after `6ce8b99`). The v5 kit embeds the
+> earlier `1a0ad101…c10c`, so **do not run v5 as-is**. Rebuild the kit with
+> `24bfe568…4e37` (v6) or get an explicit freeze decision; M4 signs `24bfe568…4e37`,
+> not `1a0ad101…`.
+>
 > Required raw artifacts (M3 pushes them to branch `member-3/gate4-evidence`,
 > path `routeb/out/gate4/`; M5 reads, M4 verifies):
 > `gate4-status.json`, `readelf.txt`, `manifest-compare.json`, `environment.txt`,
