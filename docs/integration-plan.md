@@ -95,6 +95,22 @@ Required snapshot/contract shape is documented in
 `docs/controller-integration.md`. All payload strings must stay English ASCII;
 the GUI rejects non-ASCII controller payloads with `502`.
 
+### Member 5 — Route B executor (2026-10-22)
+
+`routeb/executor.py` on `main` (`16a326d`) now builds a static evidence bundle
+directory: `candidate.elf`, `original.elf`, schema-2 `edit-manifest.json`,
+`audit.json`, `environment.json`, independent readelf/objdump views,
+`SHA256SUMS`, optional `reproducibility.json` (`--build-twice`) and
+`manifest-compare.json` / `manifest-repaired.json` only with `--run-manifest`
+(guest-only). It runs without provider key/network; provider and executor are
+separate.
+
+Important: this is a **static bundle directory**, not the worker's per-attempt
+result JSON (`{"route","candidate_sha256","results","evidence","details"}`).
+An adapter (or `BINARYREPAIR_ATTEMPT_CMD` wrapper) is still needed to map it into
+the worker contract. Gate 4 remains NOT RUN; the static bundle is not a Gate 4
+pass, and Gate 3 is still CONDITIONALLY FEASIBLE (M4 patch review outstanding).
+
 ## Member 1 status (2026-10-22, controller-worker tag)
 
 - Controller + worker + obligations + snapshot verdicts are pinned to tag
