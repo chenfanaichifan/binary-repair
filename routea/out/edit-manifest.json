@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "patched_sha256": "f3cb9cbb503fb0d47ebebab7053fa2ed37b7876ffe5122157d31fefc783f9fa7",
+  "function": {
+    "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+    "entry": "0x4012b0",
+    "size": 104
+  },
+  "edits": [
+    {
+      "kind": "call_redirect",
+      "vaddr": "0x401304",
+      "size": 5,
+      "new_hex": "e8e0050000",
+      "purpose": "redirect strcpy call to cave"
+    }
+  ],
+  "mappings": [
+    {
+      "vaddr": "0x4018e9",
+      "perm": "R-X",
+      "size": 114,
+      "purpose": "guard + exact stderr in existing cave"
+    }
+  ],
+  "relocations_added": [],
+  "header_changes": {
+    "original_size": 26792,
+    "patched_size": 26792
+  },
+  "scope_authorized": true,
+  "audit": {
+    "checks": {
+      "redirect_bytes": true,
+      "cave_code": true,
+      "message_bytes": true,
+      "harness_unchanged": true,
+      "no_new_segments": true,
+      "relocations_unchanged": true,
+      "no_wx": true,
+      "rx_extended": true
+    },
+    "pass": true,
+    "original_size": 26792,
+    "patched_size": 26792
+  }
+}
