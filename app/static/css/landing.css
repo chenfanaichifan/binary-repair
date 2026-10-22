@@ -122,13 +122,7 @@ body.landing {
 }
 .hero-h1 .accent-dot { color: var(--accent); }
 .hero-sub {
-  margin: 18px 0 0;
-  font-family: var(--font-mono);
-  font-size: clamp(11px, 1vw, 14px);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: rgba(240, 176, 63, 0.92);
-  animation: riseIn 1000ms 320ms ease-out both;
+  display: none;
 }
 
 .hero-info {
@@ -155,12 +149,12 @@ body.landing {
 .hero-info.is-changing .slide-line { opacity: 0; transform: translateY(6px); }
 
 .hero-cta {
-  position: absolute;
-  left: 50%;
-  bottom: 9.5vh;
-  transform: translateX(-50%);
+  position: relative;
   z-index: 3;
-  animation: riseIn 1100ms 520ms ease-out both;
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(38px, 7vh, 76px);
+  animation: riseIn 1000ms 320ms ease-out both;
 }
 .cta-pill {
   display: inline-flex;
