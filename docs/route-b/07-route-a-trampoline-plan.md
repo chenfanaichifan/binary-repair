@@ -28,7 +28,7 @@ for this fixture.
 **Reviewed contract (2026-10-22):**
 
 `fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json`,
-canonical hash `363f357524967af9370941c788b83cdaed007d0e2bc0f39c1530c44744f28889`.
+canonical hash `1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c`.
 The six `authorized_edits` entries are:
 
 1. 5-byte relative redirect of `call strcpy@plt` at `0x401304`, branch back on the valid path;

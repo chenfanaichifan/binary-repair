@@ -14,6 +14,7 @@ WORK=${2:-$PWD/gate4-evidence}
 FUNC=CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink
 EXPECTED_ELF=aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393
 EXPECTED_UID=${EXPECTED_UID:-1003}
+PYTHON=${PYTHON:-/opt/angr-venv/bin/python}
 
 ORIG_HOME=${HOME:-}
 mkdir -p "$WORK" || { echo "cannot create $WORK" >&2; exit 2; }
@@ -26,7 +27,7 @@ STATUS="$WORK/gate4-status.json"
 RESULT=fail
 REASON=""
 
-json_escape() { python3 -c 'import json,sys; print(json.dumps(sys.argv[1]))' "$1"; }
+json_escape() { "$PYTHON" -c 'import json,sys; print(json.dumps(sys.argv[1]))' "$1"; }
 
 write_status() {
   cat > "$STATUS" <<EOF
@@ -54,8 +55,8 @@ record_env() {
     echo "java: $(java -version 2>&1 | head -1)"
     echo "ghidra_home: ${GHIDRA_HOME:-unset}"
     echo "ghidra_version: $(grep -h '^application.version=' "${GHIDRA_HOME:-/nonexistent}"/Ghidra/application.properties 2>/dev/null || echo unknown)"
-    echo "python: $(python3 --version 2>&1)"
-    python3 - <<'PY' 2>/dev/null || true
+    echo "python: $PYTHON $("$PYTHON" --version 2>&1)"
+    "$PYTHON" - <<'PY' 2>/dev/null || true
 import importlib.metadata as m
 for p in ("patcherex2", "angr", "z3-solver", "lief"):
     try:
@@ -83,6 +84,9 @@ if [[ "$(id -u)" != "$EXPECTED_UID" ]]; then
 fi
 
 # Resolve Ghidra without network or sudo.
+if [[ ! -x "$PYTHON" ]]; then
+  RESULT=not_run; REASON="python interpreter not found: $PYTHON (set PYTHON)"; write_status; exit 2
+fi
 if [[ -z "${GHIDRA_HOME:-}" ]]; then
   for d in /opt/ghidra* /usr/local/ghidra* "${ORIG_HOME}"/ghidra*; do
     if [[ -x "$d/support/analyzeHeadless" ]]; then GHIDRA_HOME=$d; export GHIDRA_HOME; break; fi
@@ -100,7 +104,7 @@ echo "== Ghidra export =="
   RESULT=fail; REASON="Ghidra export failed; see ghidra.log"; write_status; exit 3; }
 
 echo "== Patcherex2 unchanged round trip =="
-python3 "$ROOT/routeb/probe_patcherex2.py" --mode roundtrip \
+"$PYTHON" "$ROOT/routeb/probe_patcherex2.py" --mode roundtrip \
   --binary "$WORK/original.elf" --func "$FUNC" \
   --c-source "$ROOT/routeb/experiment/samples/juliet_badSink.normalized.c" \
   --out "$WORK/roundtrip.elf" --skip-verify > "$WORK/patcherex2.log" 2>&1 || {
@@ -108,7 +112,7 @@ python3 "$ROOT/routeb/probe_patcherex2.py" --mode roundtrip \
 chmod +x "$WORK/roundtrip.elf" 2>/dev/null || true
 
 echo "== six-case manifest compare =="
-python3 "$ROOT/routeb/run_manifest_compare.py" \
+"$PYTHON" "$ROOT/routeb/run_manifest_compare.py" \
   --original "$WORK/original.elf" --patched "$WORK/roundtrip.elf" \
   --tests "$ROOT/fixtures/public/CWE121_src_char_declare_cpy_51b/tests" \
   --out "$WORK/manifest-compare.json" > "$WORK/compare.log" 2>&1 || true
@@ -117,7 +121,7 @@ readelf -lW "$WORK/roundtrip.elf" > "$WORK/readelf.txt" 2>&1 || true
 if [[ ! -s "$WORK/manifest-compare.json" ]]; then
   RESULT=fail; REASON="manifest comparator produced no JSON"; write_status; exit 3
 fi
-PASS=$(python3 -c 'import json,sys; print(str(json.load(open(sys.argv[1]))["gate4_pass"]).lower())' "$WORK/manifest-compare.json" 2>/dev/null || echo false)
+PASS=$("$PYTHON" -c 'import json,sys; print(str(json.load(open(sys.argv[1]))["gate4_pass"]).lower())' "$WORK/manifest-compare.json" 2>/dev/null || echo false)
 if [[ "$PASS" == "true" ]]; then
   RESULT=pass; REASON="6/6 behaviour-identical"
 else

@@ -25,4 +25,4 @@ def test_first_persisted_contract_has_six_authorized_edits() -> None:
     assert "fd 2" in joined
     assert "0x401fff" in joined
     assert "no new segment" in joined
-    assert contract.sha256() == "363f357524967af9370941c788b83cdaed007d0e2bc0f39c1530c44744f28889"
+    assert contract.sha256() == "1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c"

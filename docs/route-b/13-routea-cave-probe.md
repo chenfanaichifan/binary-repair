@@ -13,7 +13,7 @@ isolation evidence and scope sign-off. Gate 4 remains formal **NOT RUN**.
 |---|---|
 | Original | 26,792 B, SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393` |
 | Patched | 26,792 B, SHA-256 `c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82` |
-| Contract | `fixtures/.../contract.json`, six `authorized_edits`, SHA-256 `363f3575…8889` |
+| Contract | `fixtures/.../contract.json`, six `authorized_edits`, SHA-256 `1a0ad101…c10c` |
 | Function | `..._badSink` @ `0x4012b0`, 104 B |
 | Call site | `0x401304`, `e8 c7 fd ff ff` → `strcpy@plt 0x4010d0` |
 | Cave | `0x4018e9`–`0x401fff`, 1,815 zero bytes |
