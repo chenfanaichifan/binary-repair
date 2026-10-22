@@ -365,3 +365,10 @@ was parsed and no candidate was executed here. The VM run remains the required e
 **Confirmation log (implementation).** 2026-10-22 — M4 writes the design branch listed above;
 no gate status changed; contract revision is a proposal, not an approval.
 
+**VM execution request (2026-10-22).** At M4's request the Lead handed the guest-side runs to
+Member 3 in `15-member-3-route-a-vm-run.md`: fetch `member-4-routea-gate3` @ `7977bac`, run
+`scripts/routea_vm_check.sh`, the runtime cave probe (break at `0x401304`/`0x4018e9`/`0x401309`,
+never `0x401308`), the six frozen cases and the original V0 shape under the isolation
+preconditions, and deliver the hashed evidence for M4 to verify, M5 to replay, and the Lead to
+approve. M3 owns the guest; nothing in that request changes a gate label.
+
