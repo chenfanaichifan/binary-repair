@@ -154,7 +154,6 @@ def create_app(data_dir: str | Path | None = None) -> FastAPI:
             "backend": "controller",
             "demo": False,
             "execution": "not_started",
-            "data_dir": str(_dir(request)),
         }
 
     @app.post("/api/jobs", status_code=201)
