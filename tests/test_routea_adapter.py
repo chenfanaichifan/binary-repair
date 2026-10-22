@@ -45,13 +45,13 @@ def test_dry_run_bundle_maps_to_worker_contract_without_outcome():
     assert "formal reverted-snapshot run missing" in attempt["details"]["V3"]
 
 
-def test_unsupported_maps_to_not_run_and_pass_spelling_is_explicit():
+def test_unsupported_maps_to_not_run_and_preserves_reason_in_details():
     bundle = {
         "route": "A",
         "identity": {"candidate_sha256": "a" * 64},
         "gates": {
             "V0": {"status": "pass"},
-            "V1": {"status": "unsupported"},
+            "V1": {"status": "unsupported", "missing": ["V1 interface evidence missing"]},
             "V2": {"status": "inconclusive"},
             "V3": {"status": "fail"},
             "V4": {"status": "not_run"},
@@ -67,3 +67,5 @@ def test_unsupported_maps_to_not_run_and_pass_spelling_is_explicit():
         "V4": "not_run",
         "V5": "timed_out",
     }
+    # The unsupported -> not_run mapping is lossy; the reason must survive.
+    assert "V1 interface evidence missing" in attempt["details"]["V1"]

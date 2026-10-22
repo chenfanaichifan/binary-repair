@@ -32,7 +32,7 @@ OUTCOME_LABELS_ZH: dict[str, str] = {
     "unsupported": "不支持",
     "rejected": "被拒",
     "inconclusive": "不确定",
-    "error": "错误",
+    "error": "失败（执行错误）",
     "cancelled": "已取消",
 }
 

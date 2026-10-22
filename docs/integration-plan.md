@@ -95,6 +95,23 @@ Required snapshot/contract shape is documented in
 `docs/controller-integration.md`. All payload strings must stay English ASCII;
 the GUI rejects non-ASCII controller payloads with `502`.
 
+### M4 sign-off (2026-10-22)
+
+M4 approved the honesty direction (`status.py` render-only, adapter mapping,
+integration plan M4 ruling) and required three additions, all implemented:
+
+- six-outcome parametrized labels in `tests/test_status_honesty.py`
+  (`success/unsupported/rejected/inconclusive/error/cancelled`);
+- three-way consistency in `tests/test_verdict_consistency.py` using M4's
+  authoritative fixtures `tests/fixtures/verdicts/{success,failure,unknown}.json`:
+  verdict.json file == DB `attempts.outcome` == controller snapshot == GUI label;
+- adapter `unsupported → not_run` keeps the original reason in `details`
+  (asserted in `tests/test_routea_adapter.py`), including all five mappings and
+  explicit "no outcome in adapter output".
+
+Branch policy note: these files live on `member2-backend-adapter`; we do not push
+`main` (team rule). The Lead can merge the branch.
+
 ### M4 ruling (2026-10-22)
 
 - `decision.json` does **not** exist on `main`; the authoritative files are

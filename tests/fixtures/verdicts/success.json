@@ -1,0 +1,21 @@
+{
+  "job_id": "job-verdict-success",
+  "run_id": "run-success",
+  "candidate_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+  "expected_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "reviewed_scope_sha256": "24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37",
+  "obligations": [
+    {"kind": "identity", "required": true, "result": "passed", "detail": "V0"},
+    {"kind": "structure", "required": true, "result": "passed", "detail": "V1"},
+    {"kind": "interface", "required": true, "result": "passed", "detail": "V2"},
+    {"kind": "behaviour", "required": true, "result": "passed", "detail": "V3 6/6"},
+    {"kind": "symbolic", "required": true, "result": "passed", "detail": "V4"},
+    {"kind": "reproducibility", "required": true, "result": "passed", "detail": "V5"}
+  ],
+  "verdict": {
+    "outcome": "success_within_scope",
+    "reason": null,
+    "failing_obligation": null,
+    "detail": "6 required obligations passed"
+  }
+}

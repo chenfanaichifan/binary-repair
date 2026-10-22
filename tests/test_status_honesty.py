@@ -6,6 +6,8 @@ engine is the only place that decides an outcome.
 
 from __future__ import annotations
 
+import pytest
+
 from app.status import display_verdict
 
 
@@ -54,3 +56,29 @@ def test_cancelled_state_is_rendered_directly():
 
 def test_unfinished_job_has_no_verdict_label():
     assert display_verdict(_snapshot(phase="analyzing"))["label_zh"] == "—"
+
+
+@pytest.mark.parametrize(
+    "outcome,label",
+    [
+        ("success_within_scope", "成功"),
+        ("unsupported", "不支持"),
+        ("rejected", "被拒"),
+        ("inconclusive", "不确定"),
+        ("error", "失败（执行错误）"),
+        ("cancelled", "已取消"),
+    ],
+)
+def test_each_outcome_renders_its_own_label(outcome: str, label: str):
+    result = display_verdict(
+        _snapshot(
+            verdict={
+                "outcome": outcome,
+                "reason": None,
+                "failing_obligation": None,
+                "detail": "",
+            }
+        )
+    )
+    assert result["key"] == outcome
+    assert label in result["label_zh"]
