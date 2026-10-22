@@ -9,3 +9,7 @@ pytest>=9
 httpx>=0.28,<1
 pydantic>=2.7,<3
 jsonschema>=4.21,<5
+pyelftools>=0.31
+capstone>=5.0
+# Route A build (optional; tests skip when absent)
+lief>=0.15
