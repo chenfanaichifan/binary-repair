@@ -73,7 +73,7 @@ M4 verifies them, item 6 becomes PASS.
 Still required before signature: item 6 files + M5 build/hash replay. The verifier row stays
 blank until both exist; Lead approval last.
 Canonical record hash after this ruling:
-`62ed341b2b4416784f26ce342ffdf53689c37b5ce44a13730be1f256b2114d8b` (supersedes
+`0b3b51e49f24c5759ff5d37a0569d44149af989dd4e72af6e51b279f0901f2da` (supersedes
 `94d7d314…`, `b6fedd2b…`, `bddccbfe…`, `3dcdc862…`).
 
 **Confirmation log.** 2026-10-22 — Lead closes G3/G4, allows the readelf+checksec substitution

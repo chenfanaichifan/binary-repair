@@ -10,14 +10,15 @@ SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`
 **Basis:** handoff 11 §3 (six required items), handoff 12 (M4 plan), handoff 16/17/18/19
 (M5 canonical contract, six-item matrix, build recipe, routea review), verification-design §4.4
 
-**Approval status:** **M4 VERIFIER SIGNED — M5 replay + Lead approval pending.** Items **1–6
-PASS** against the v2 bundle: `gate3-bundle-v2-2026-10-22.zip`, 18,318 B, 23 files, SHA-256
+**Approval status:** **SIGNED — GATE 3 APPROVED (2026-10-22).** Items **1–6 PASS** against the
+v2 bundle: `gate3-bundle-v2-2026-10-22.zip`, 18,318 B, SHA-256
 `6151a80633fdde0d9b1ce87c126b01994a730625557d17297828468799710a65`, inner `SHA256SUMS` 22/22,
-evidence-manifest `4ba6ebad30a4035c6a16c62c1fbab53dda67bce60db2b87510b83aa97f876934`. The v1
-bundle `0ef65546…` is historical (superseded; not required). Signature table: M4 verifier row
-filled; M5 build/hash replay row and Lead approval row blank.
-**Overall status:** **ALL SIX ITEMS PASS — GATE 3 NOT YET APPROVED (M5 replay + Lead approval
-pending).**
+evidence-manifest `4ba6ebad30a4035c6a16c62c1fbab53dda67bce60db2b87510b83aa97f876934`. M4 verifier
+row signed; M5 replay recorded as **cross-input, hash-bound** (handoff replay: original
+`aa428157…` → replayed `c4a159…`, bound to v2 candidate-before/after and v2 hashes); Lead
+approval row signed. Signature order complete.
+**Scope:** this approval covers **Gate 3 only**. **Gate 4 is NOT RUN** (formal), Gate 5 Route A
+runtime remains guest-scoped, Gate 6 remains partial; fixture `NOT FROZEN`.
 **Identity:** VMer is **M3 operating in a separate AI window** — one person, not two.
 
 ---
@@ -83,10 +84,11 @@ COPY-relocation writer based on the earlier `f3cb9cbb...` candidate. The contrac
 | 5 | Isolation evidence for that run (snapshot, egress block, uid 1003, wrapper attestation) | **PASS** | v2 bundle: uid/gid 1003, `CapEff=0`, `NoNewPrivs=1`, `Seccomp: 0`, egress blocked, evaluator unreadable; `jobwrap b0371c10…` 0700 root; `revert.log` single operator **VMer (M3)** — manual VMware Snapshot Manager revert + post-hoc observation; snapshot/layer and harness manifest hashes recorded |
 | 6 | Evidence with hashes (raw outputs + `SHA256SUMS` manifest; **no bundle package required** — handoff 21) | **PASS** | v2 bundle `6151a806…0a65` (23 files, inner `SHA256SUMS` 22/22) with `evidence-manifest-sha256` **`4ba6ebad…6934`**; chain manifest `e53253cf…` (3,929 B) and harness manifest `3bdbc339…` (1,641 B) inside; v1 `0ef65546…` and support `3d49625c…` are historical/superseded |
 
-**Gate 3 verdict: all six items PASS; M4 verifier signed; M5 replay and Lead approval pending —
-not yet a gate pass.** Only `PASS` / `FAIL` / `NOT VERIFIED` are valid item labels; "partial" is
-not a gate label. Items 3–6 are hard requirements; a CI `6/6` does not substitute for them
-(handoff 13 §5.6).
+**Gate 3 verdict: PASS — APPROVED 2026-10-22.** All six items are `PASS`; M4 verifier, M5
+replay (cross-input, hash-bound) and Lead approval rows are signed. Only `PASS` / `FAIL` /
+`NOT VERIFIED` are valid item labels; "partial" is not a gate label. This verdict covers Gate 3
+only — **Gate 4 is NOT RUN**, Gate 5 Route A runtime remains guest-scoped, Gate 6 remains
+partial, fixture `NOT FROZEN`.
 
 ## 5. Producer inputs used (read-only, not M4 evidence)
 
@@ -129,16 +131,22 @@ main tree / the `1826505` archive, not from the docs branch):
    (`b68aabcd…cab8`). M5 re-review is pending; the old `7977bac` / patch `0001` is superseded.
 5. **M4's earlier `f3cb9cbb` cross-check is void** and must not be cited.
 
-## 7. What must happen before Gate 3 approval
+## 7. Gate 3 closure and follow-ups
 
-1. G1/G4 are **done** (v2 bundle: fixed LIEF fields and single-operator `revert.log`); items 1–6
-   now PASS.
-2. **M5 replay (handoff 19/21):** reproduce candidate `c4a159…aa82` from the recorded recipe on
-   `original.elf` (`aa428157…`), verify contract `24bfe568…4e37`, then recompute and report:
-   v2 zip `6151a806…0a65`, v2 `evidence-manifest-sha256` `4ba6ebad…6934`. A mismatch voids the
-   record and returns the affected item to `NOT VERIFIED`.
-3. **Lead approval** fills the last signature row after 1–2. Until then the record is
-   M4-verifier-signed but **not a gate pass**.
+Gate 3 is **closed/approved on 2026-10-22** with the v2 evidence bundle:
+
+- six items PASS; M4 verifier signed; M5 replay recorded as cross-input, hash-bound
+  (`aa428157…` → `c4a159…`; v2 `6151a806…` / manifest `4ba6ebad…`); Lead approval signed.
+
+Outside this gate (do not read them as passed here):
+
+1. **Gate 4: NOT RUN (formal)** — v6 kit + actual isolation run; CI `6/6` is supplementary only.
+2. **Gate 5 Route A runtime half:** static placement proof recorded; runtime/guest checks and
+   independent LIEF view remain scope work.
+3. **Gate 6:** partial — concrete crash counterexample accepted, V4 symbolic pending.
+4. **Fixture freeze:** `NOT FROZEN`.
+5. **M4 patch re-review:** `member-4-routea-gate3` @ `2ac0f66` / patch `b68aabcd…cab8` is still
+   pending with M5; base `ad1a1f8` is behind `main`, rebase only if M5 asks.
 
 
 ## 8. M5 review status: RE-REVIEW PENDING
@@ -151,26 +159,23 @@ B1–B6. M4 resubmitted on base `ad1a1f8` (handoff 18): branch
 is **not accepted** and is not gate-3 evidence either way. M5's build/hash replay (handoff 19)
 is also still pending.
 
-## 9. Signature — M4 VERIFIER SIGNED; M5 REPLAY + LEAD APPROVAL PENDING
+## 9. Signature — SIGNED: GATE 3 APPROVED
 
-**Signing order (handoff 19 §5):**
+**Signing order (handoff 19 §5) — completed:**
 
 1. **M4 verifier row** — filled after items 1–6 were independently verified as `PASS` against the
-   v2 bundle (runtime cave probe, six cases, isolation evidence, complete evidence hashes). M4's
-   signature covers the verifier row; it is **not** an approval and **not** a gate pass.
-2. **M5 build/hash replay row** — M5 records the observed replay values (candidate
-   `c4a159…aa82`, contract `24bfe568…4e37`, v2 zip `6151a806…0a65`, v2 evidence-manifest
-   `4ba6ebad…6934`). A mismatch voids the record and returns it to `NOT VERIFIED`; it does not
-   edit the candidate.
-3. **Lead approval row** — filled last, after 1 and 2, as the gate decision.
+   v2 bundle. M4's signature covers the verifier row; it is **not** a gate approval by itself.
+2. **M5 build/hash replay row** — recorded as **cross-input, hash-bound**: handoff replay
+   (`original aa428157…` → replayed `c4a159…`) bound to the v2 `candidate-before/after` and v2
+   hashes; accepted by Lead under handoff 32.
+3. **Lead approval row** — filled last as the Gate 3 decision (Gate 3 only; Gate 4 NOT RUN).
 
 | Role | Name | Date | Signature |
 |---|---|---|---|
-| M4 verifier | M4 | 2026-10-22 | items 1–6 PASS against v2 bundle `6151a806…0a65` (evidence-manifest `4ba6ebad…6934`); verifier signature only — not a gate pass |
-| M5 build/hash replay | — | — | pending — record observed replay values in handoff 19/21 format |
-| Lead approval | — | — | pending |
+| M4 verifier | M4 | 2026-10-22 | items 1–6 PASS against v2 bundle `6151a806…0a65` (evidence-manifest `4ba6ebad…6934`); verifier signature only |
+| M5 build/hash replay | M5 | 2026-10-22 | REPLAYED (cross-input, hash-bound): original `aa428157…` → replayed `c4a159…`, cmp candidate OK; v2 zip `6151a806…0a65`; v2 evidence-manifest `4ba6ebad…6934`; candidate-before/after in v2 match |
+| Lead approval | Lead | 2026-10-22 | **Gate 3 APPROVED** — items 1–6 PASS, M4 verifier signed, M5 cross-input replay accepted (handoff 32); Gate 4 remains NOT RUN; no other gate claimed |
 
-Do not fill these fields from a CI run, a static audit, or a verbal approval. M4's row is a
-verifier signature, not a gate approval: until the M5 replay row and the Lead approval row are
-filled, Gate 3 is **not passed**.
+This closes Gate 3. Do not extend this approval to Gate 4, Gate 5 runtime, Gate 6, or the fixture
+freeze — each has its own gate and evidence.
 

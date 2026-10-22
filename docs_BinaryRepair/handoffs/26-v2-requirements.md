@@ -99,7 +99,7 @@ hash) remains required before signature. Until v2 passes, the record keeps 3–6
 reads DRAFT and the signature rows blank.
 
 Canonical record hash after this ruling:
-`62ed341b2b4416784f26ce342ffdf53689c37b5ce44a13730be1f256b2114d8b` (supersedes
+`0b3b51e49f24c5759ff5d37a0569d44149af989dd4e72af6e51b279f0901f2da` (supersedes
 `01ecabd5…`, `94d7d314…`, `b6fedd2b…`, `bddccbfe…`, `3dcdc862…`).
 
 **Confirmation log.** 2026-10-22 — v1 bundle superseded; supplement accepted as direction only;

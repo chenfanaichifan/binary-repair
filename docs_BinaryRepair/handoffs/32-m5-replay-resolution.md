@@ -6,9 +6,13 @@
 **Status:** v2 remains the sole accepted evidence bundle. Support is historical (its manifest
 format is non-standard, noted below). **v1 is not required.** The formal v2 replay is resolved
 by a **cross-input, hash-bound authorization** (option B) unless M5 prefers a self-contained
-re-issue. Canonical record is M4's `62ed341b…4d8b`; M5's `73b5e824…` record must not be
+re-issue. Canonical record is M4's `0b3b51e4…8f2da`; M5's `73b5e824…` record must not be
 maintained as a competing version. Gate 3: items 1–6 PASS, M4 verifier signed, **M5 replay row
 and Lead approval row still blank**.
+
+> **Addendum (handoff 33):** this resolution was executed — the cross-input replay produced
+> `c4a159…` from `aa428157…`, bound to v2; **Gate 3 is now APPROVED** with all three signature
+> rows filled (record hash `0b3b51e4…8f2da`).
 
 ---
 
