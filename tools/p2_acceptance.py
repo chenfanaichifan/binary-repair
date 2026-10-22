@@ -1,4 +1,4 @@
-"""P2 acceptance: verify the real execution/verdict pipeline when it exists.
+r"""P2 acceptance: verify the real execution/verdict pipeline when it exists.
 
 This is the next gate after `tools/p0_acceptance.py`. It creates a job, approves
 it, starts it, and then waits for the controller to advance beyond `queued` and
