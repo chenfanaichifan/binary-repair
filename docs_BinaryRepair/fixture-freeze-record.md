@@ -23,6 +23,10 @@ passed the route gates or that V4 is ready.
 part of the freeze key. They can be regenerated or corrected without
 re-freezing the inputs; changing the rows above cannot.
 
+Post-freeze changes are recorded in
+[`state-change-2026-10-22.md`](state-change-2026-10-22.md); the frozen
+`provenance.md` is left unedited and its hash is unchanged.
+
 ### Manifest-set hash — confirmed
 
 Rule: SHA-256 (UTF-8) of the canonical JSON below, with `sort_keys=True`,
@@ -77,55 +81,66 @@ freeze. Handoff note for Member 5:
 
 ## 4. Open items (explicit, not implied)
 
-### O1 — V4 is blocked
+### O1 — V4 is unrun (the toolchain is no longer the blocker)
 
-Missing in the guest: angr/Claripy/Z3, LIEF, clang, Ghidra/JDK. V4 cannot run;
-it must be reported `unsupported`/deferred with this reason. Installation was
+The tools that were missing on 2026-10-20 (angr/Claripy/Z3, LIEF, clang,
+Ghidra/JDK) are now installed and smoke-tested — see
+[`state-change-2026-10-22.md`](state-change-2026-10-22.md) §1. Installation was
 assigned to another team member on 2026-10-20; the Lead does not modify the VM.
-Member 4 owns the V4 verdict. Exit condition: all five installed and
-smoke-tested on a **new** clean snapshot.
+
+**V4 itself has not been run.** A toolchain is not a V4 result: the verdict is
+Member 4's, and until it runs this item stays open as "V4 unrun", not "V4
+blocked for lack of tools".
 
 ### O2 — Candidate execution is not yet isolated
 
-1. `clean-toolchain` (uid 3) exists as a powered-off reset point, but it was
-   taken **after** the 10:27 fixture build and its **revert has not been
-   tested**;
-2. `lab` has passwordless sudo;
-3. NAT is reachable, no per-job egress block;
+1. the reset point is now `clean-baseline` (uid 6, 2026-10-22 16:54, shut down),
+   but its **revert has not been tested**;
+2. `lab` still has passwordless sudo — a binary invoked directly as `lab` can
+   become root;
+3. the isolated wrapper exists (`/opt/binrepair/run-isolated.sh`: `runner`
+   uid 1003, empty network namespace) but **the broker does not invoke it**, and
+   there is no hypervisor-level egress block;
 4. tools are not read-only to the execution user.
 
-At minimum network cut + unprivileged user + read-only tools must be fixed
-**before any candidate binary runs**. Owner: not yet assigned (the Lead does
-not modify the VM). Blocks "run candidates", not the input freeze.
+At minimum the wrapper must be wired into the broker, tools mounted read-only,
+and the egress gap either closed or accepted in writing **before a candidate
+binary runs through the product**. Owner: not yet assigned (the Lead does not
+modify the VM). Blocks "run candidates", not the input freeze.
 
 ### O3 — Guest image hash is not frozen
 
-Hashes captured on 2026-10-20 while the VM was powered off:
+The disk is a **chain** (2026-10-22); there is no single-file identity.
+Hashes were taken with the VM powered off (no `vmware-vmx` process):
 
 ```text
-30068de303b2a9a9c187a3c2980f1b988b8d6b433c32402fe911eadc1899b0d2  disk.vmdk
-8521f4e854d7cac4f607d0208ccd08b9d8121fe68015c7392badb3474d38ce89  disk-000001.vmdk
-9a1e3959c9f4ad9d4752101fd4ff9a43191fb7d72e61fa20e033f9fd235ce794  noble-cloudimg.vmdk
+7dec112509c833a66b44c2e1aebdc607d33b323ca61351d7cfe0c83886101468  disk.vmdk           (6,792,544,256 B)
+28451ed9fcf8f54f6fbe0c337c9fe8f6e4823dba08e242daae52855b4647bd92  disk-000001.vmdk    (33,882,112 B)
+b501715b37e954e1ea509ab138d03bb34e45d5672a5b5192dc28dc72bd37100c  disk-000002.vmdk    (12,320,768 B)
+b94aa009ea4de3d2087ef1df95ee0f4a45de50fe4966a61f9668c415918b7323  disk-000003.vmdk    (3,997,696 B, active layer, not part of clean-baseline)
 ```
 
-These are **provisional**: `cleanShutdown` was `FALSE` and no clean-shutdown
-cycle has been recorded. The lead requires a clean shutdown before the guest
-image hash is frozen. They are not signed and must not be presented as the V5
-image identity.
+These are **provisional**: no clean-shutdown cycle has been recorded for the
+current chain, and the lead requires one before the guest image hash is frozen.
+Record the whole set or consolidate the chain; a single-file hash identifies no
+baseline. They are not signed and must not be presented as the V5 image identity.
 
 ### O4 — Backend commit
 
 Local commits exist on `member-3-route-a`: `d1e0741` (fixture + gate 6
-evidence) and `baefea2` (byte-exact checkout attributes). They are **not
-pushed**: remote operations fail with `SEC_E_NO_CREDENTIALS`. No remote commit
-hash can be recorded yet.
+evidence), `baefea2` (byte-exact checkout attributes) and `627d9eb`
+(manifest-set hash confirmed). HEAD is `627d9eb`. They are **not pushed**:
+remote operations still fail with `SEC_E_NO_CREDENTIALS` (re-probed
+2026-10-22). No remote commit hash can be recorded yet, so another member
+cannot fetch the state this record describes.
 
 ## 5. Not frozen, not signed
 
 - **Gates 3–5** — no sign-off. Route A feasibility, Route B unchanged round
   trip and safe placement are still pending.
-- **V4 symbolic detection** — not run; angr/Claripy/Z3/LIEF/clang/Ghidra absent;
-  recorded as pending/`unsupported`.
+- **V4 symbolic detection** — not run. The toolchain is now present (see
+  `state-change-2026-10-22.md` §1), so "tools absent" is no longer the reason;
+  the item stays pending until Member 4 runs it and reports a verdict.
 - **Guest image hash** — not frozen; requires a clean shutdown (O3).
 - **Sign-off** — none. No role has signed this record. It freezes inputs, not
   gate conclusions.

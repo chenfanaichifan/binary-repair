@@ -3,11 +3,12 @@
 Branch: `member-3-route-a`
 Owner: **He-Xinwei** — Member 3 (binary / sample)
 Lab item: **3 — Binary analysis and Route A**
-Status: **skeleton only — work not started** (2026-10-15)
+Status: **work items 1–4 done, 5–7 in progress** (2026-10-20). The fixture is a
+candidate, not frozen; gates 3–5 belong to Member 5.
 
 > This branch records the Route A feasibility work (binary inspection, sample
 > analysis, instruction-repair investigation). It does not contain any repair
-> result yet. Empty tables and unchecked boxes are intentional.
+> result yet.
 
 ## My division of work
 
@@ -57,13 +58,13 @@ not run the sample on the host to make the picture look complete.
 
 | # | Work item | Deliverable | Status |
 |---|-----------|-------------|--------|
-| 1 | Isolated Ubuntu execution environment | reproducible setup notes + evidence | ☐ not started |
-| 2 | Basic binary-inspection tools checked | tool inventory with versions | ☐ not started |
-| 3 | Architecture identified | `file` / `readelf` findings for the sample | ☐ not started |
-| 4 | Instructions inspected | annotated disassembly of the vulnerable function | ☐ not started |
-| 5 | Shared public sample selected | sample ID, SHA-256, build provenance | ☐ not started |
-| 6 | Vulnerable function analysed | root cause + valid/invalid input contract | ☐ not started |
-| 7 | Instruction repair investigated | candidate strategies + feasibility notes | ☐ not started |
+| 1 | Isolated Ubuntu execution environment | reproducible setup notes + evidence | ✅ done, with recorded gaps |
+| 2 | Basic binary-inspection tools checked | tool inventory with versions | ✅ done, with recorded gaps |
+| 3 | Architecture identified | `file` / `readelf` findings for the sample | ✅ done |
+| 4 | Instructions inspected | annotated disassembly of the vulnerable function | ✅ done |
+| 5 | Shared public sample selected | sample ID, SHA-256, build provenance | 🟡 candidate selected; frozen after gates 3–5 |
+| 6 | Vulnerable function analysed | root cause + valid/invalid input contract | ✅ done; gate 6 is `partial` (concrete accepted, symbolic pending V4) |
+| 7 | Instruction repair investigated | candidate strategies + feasibility notes | 🟡 constraints recorded; no verdict (gates 3/5 pending) |
 
 ## Layout
 

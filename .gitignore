@@ -1,0 +1,16 @@
+# Local-only records and runtime artifacts. Never committed.
+worklogs/
+.tmp/
+.dsh-acl-recovery/
+dist/
+vm/
+HANDOFF.md
+*.lck
+
+# Rehearsal build output. Its source is a local rehearsal fixture, not the
+# frozen fixture under fixtures/public/.
+route-a/build/
+
+# Python bytecode from running the fixture's assertion tests.
+__pycache__/
+*.pyc
