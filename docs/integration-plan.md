@@ -93,11 +93,24 @@ Required snapshot/contract shape is documented in
 `docs/controller-integration.md`. All payload strings must stay English ASCII;
 the GUI rejects non-ASCII controller payloads with `502`.
 
+## Member 1 status (2026-10-22)
+
+- Controller API is pinned to tag `controller-api-2026-10-22` (commit `1826505`);
+  `start-controller.ps1` now checks out that tag.
+- **No worker exists.** `POST /start` returns `202` and only enqueues the run;
+  nothing consumes it, so `queued` does not advance.
+- Phase sequence is `queued -> screening -> analyzing -> ... -> finished`;
+  there is no `running` phase.
+- The snapshot's `routes` are still placeholders; reading attempts for the
+  snapshot is a controller TODO.
+- Same idempotency key with a different contract must return `409`; the
+  canonical check is still to be added.
+
 ## Blockers and owners
 
 | # | Blocker | Owner | What is needed |
 |---|---|---|---|
-| 1 | No worker consumes `queued` runs | Member 1 | orchestration worker entry point, run timeout/cancel, phase writes (`queued → screening → ... → finished`) |
+| 1 | No worker consumes `queued` runs (confirmed by Member 1: worker does not exist) | Member 1 | implement/own the external worker entry point, run timeout/cancel, phase writes (`queued -> screening -> ... -> finished`) |
 | 2 | No Route A worker (`workers/route_a/worker.py` is proposed only) | Member 3 (+ Member 1 for jobwrap op) | implement worker + a fixed `jobwrap routea` op; publish the candidate binary or commit the dist |
 | 3 | No broker/jobwrap integration for the general route-a op | Member 1 | broker API, fixed op/argv, guest path conventions; never pass shell strings |
 | 4 | Acceptance engine not invoked by orchestration | Member 4 (+ Member 1) | `evaluate_attempt` / `evaluate_run` entry, verdict schema, who persists Verdict and how obligations/artifacts are imported |

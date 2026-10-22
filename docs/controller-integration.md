@@ -65,24 +65,41 @@ Snapshot requirements:
 - All data strings are English ASCII; the GUI scans snapshot/obligations/artifacts
   and rejects non-ASCII payloads with `502` instead of rendering them.
 
-## Final controller (Member 1, origin/main)
+## Final controller (Member 1, pinned)
 
-Member 1's controller HTTP service now lives on `origin/main` at
-`app/controller_api.py`. Run it from a checkout of `main` (the GUI branch does not
+Member 1 pins the controller API to tag `controller-api-2026-10-22`
+(commit `1826505`). Run it from a checkout of that tag (the GUI branch does not
 merge `main`):
 
 ```powershell
-git worktree add ..\binaryrepair-main origin/main
-cd ..\binaryrepair-main
+.\start-controller.ps1   # creates/updates ..\binaryrepair-controller at the pinned tag
+```
+
+Equivalent manual form:
+
+```powershell
+git worktree add --detach ..\binaryrepair-controller controller-api-2026-10-22
+cd ..\binaryrepair-controller
 $env:BINARYREPAIR_DATA_DIR = "<absolute path>\var\controller"
 ..\binaryrepair-mvp\.venv\Scripts\python.exe -m uvicorn app.controller_api:app --host 127.0.0.1 --port 8000
 ```
 
-Verified P0 run: GUI `http` mode → create job → approve contract → start returns
-`202`; snapshot reports `demo: false`, `phase: queued`, both routes `queued`.
-The GUI shows the real job, hides the demo banner, and displays `排队中` while
-the execution workers are still pending. `start` really goes through the
-controller's persisted approval (`contracts`/`runs` tables), not the GUI.
+Current controller behaviour (confirmed by Member 1, 2026-10-22):
+
+- `POST /api/jobs/{id}/start` returns `202` and only **enqueues** the run; the
+  consumer is an **external worker** that does not exist yet, so `queued` does
+  not advance.
+- Phase sequence is `queued -> screening -> analyzing -> ... -> finished`;
+  there is no `running` phase.
+- `GET /api/jobs/{id}` still returns placeholder `routes`; reading attempts for
+  the snapshot is a controller TODO.
+- Same idempotency key with a different contract should return `409`; the
+  canonical check is still to be added.
+
+Verified P0 run: GUI `http` mode → create job → contract edit → approve →
+start `202` → snapshot `demo:false`, `phase=queued`, routes `queued`; GUI shows
+`排队中` and never claims success. `start` really goes through persisted
+approval; the missing part is execution, not the GUI/controller contract.
 
 ## Bridge service (fallback)
 

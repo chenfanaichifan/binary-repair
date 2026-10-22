@@ -19,21 +19,25 @@ if (-not (Test-Path $git)) {
 
 $worktree = Join-Path (Split-Path -Parent $project) "binaryrepair-controller"
 $dataDir = Join-Path $project "var\controller"
+$controllerRef = "controller-api-2026-10-22"
+$controllerCommit = "1826505"
 New-Item -ItemType Directory -Force $dataDir | Out-Null
 
+Write-Host "Pinned controller ref: $controllerRef ($controllerCommit)" -ForegroundColor DarkGray
 if (Test-Path (Join-Path $worktree ".git")) {
     Write-Host "Updating controller worktree ..." -ForegroundColor DarkGray
-    & $git -C $worktree fetch origin main
-    & $git -C $worktree -c advice.detachedHead=false checkout --detach origin/main
+    & $git -C $worktree fetch origin --tags
+    & $git -C $worktree -c advice.detachedHead=false checkout --detach $controllerRef
 } else {
     Write-Host "Creating controller worktree at $worktree ..." -ForegroundColor DarkGray
-    & $git fetch origin main
-    & $git worktree add --detach $worktree origin/main
+    & $git fetch origin --tags
+    & $git worktree add --detach $worktree $controllerRef
 }
+& $git -C $worktree rev-parse --short HEAD
 
 $env:BINARYREPAIR_DATA_DIR = $dataDir
 Write-Host ""
-Write-Host " BinaryRepair Controller (Member 1, origin/main)" -ForegroundColor Cyan
+Write-Host " BinaryRepair Controller (Member 1, $controllerRef)" -ForegroundColor Cyan
 Write-Host " Health: http://127.0.0.1:8000/healthz" -ForegroundColor Green
 Write-Host " Data:   $dataDir" -ForegroundColor DarkGray
 Write-Host " Press Ctrl+C to stop" -ForegroundColor DarkGray
