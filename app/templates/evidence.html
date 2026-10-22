@@ -53,14 +53,14 @@
       <tr><th>编号</th><th>类别</th><th>要求</th><th>结果</th><th>范围 / 依据</th><th>说明</th></tr>
     </thead>
     <tbody>
-      {% for item in obligations[key] %}
+      {% for item in order_obligations(obligations[key]) %}
       <tr>
-        <td><code>{{ item.id }}</code></td>
+        <td><code>{{ item.id or item.kind }}</code></td>
         <td>{{ item.kind }}</td>
-        <td>{{ item.description }}</td>
+        <td>{{ item.description or "" }}</td>
         <td><span class="result result-{{ item.result }}">{{ item.result }}</span></td>
-        <td>{{ item.scope }}</td>
-        <td>{{ item.reason }}</td>
+        <td>{{ item.scope or item.evidence_artifact_id or "" }}</td>
+        <td>{{ item.reason or item.detail or "" }}</td>
       </tr>
       {% endfor %}
     </tbody>

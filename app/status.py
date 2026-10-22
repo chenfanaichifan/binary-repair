@@ -29,3 +29,19 @@ def display_verdict(snapshot: dict[str, Any]) -> dict[str, str]:
             "label_zh": "尚无 verdict（等待 acceptance engine）",
         }
     return {"key": "none", "label_zh": "—"}
+
+
+OBLIGATION_ORDER = {
+    "identity": 0,
+    "structure": 1,
+    "interface": 2,
+    "behaviour": 3,
+    "symbolic": 4,
+    "reproducibility": 5,
+}
+
+
+def order_obligations(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Order controller obligation rows (kind/required/result/detail) V0-V5."""
+
+    return sorted(items or [], key=lambda item: OBLIGATION_ORDER.get(str(item.get("kind")), 99))

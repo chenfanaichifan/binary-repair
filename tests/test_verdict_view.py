@@ -61,22 +61,18 @@ SNAPSHOT = {
             },
             "obligations": [
                 {
-                    "id": "V0",
                     "kind": "identity",
-                    "description": "Hashes match",
                     "required": True,
                     "result": "passed",
-                    "scope": "frozen inputs",
-                    "reason": "OK",
+                    "detail": "V0 identity: passed",
+                    "evidence_artifact_id": None,
                 },
                 {
-                    "id": "V3",
                     "kind": "behaviour",
-                    "description": "Valid-input regression",
                     "required": True,
                     "result": "failed",
-                    "scope": "test manifest",
-                    "reason": "return value mismatch",
+                    "detail": "return value mismatch",
+                    "evidence_artifact_id": "artifact-v3",
                 },
             ],
         },
@@ -101,13 +97,11 @@ SNAPSHOT = {
             },
             "obligations": [
                 {
-                    "id": "V4",
                     "kind": "symbolic",
-                    "description": "Bounded symbolic check",
                     "required": True,
                     "result": "inconclusive",
-                    "scope": "bounded",
-                    "reason": "budget exhausted",
+                    "detail": "budget exhausted",
+                    "evidence_artifact_id": None,
                 }
             ],
         },

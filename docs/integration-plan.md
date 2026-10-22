@@ -148,6 +148,28 @@ An adapter (or `BINARYREPAIR_ATTEMPT_CMD` wrapper) is still needed to map it int
 the worker contract. Gate 4 remains NOT RUN; the static bundle is not a Gate 4
 pass, and Gate 3 is still CONDITIONALLY FEASIBLE (M4 patch review outstanding).
 
+## Verified: Route B static attempt chain (2026-10-22)
+
+One real job was taken through the full chain without fabricating success:
+
+- job `11bab8b1…`, run `53f8e0df…`, Route B attempt `dc1ea9f4…`
+- M5 `routeb/executor.py` produced a **static bundle** (7 files, static audit
+  true, runtime `not_run`, Gate 4 NOT RUN)
+- M1 `app/services/attempt_writer.py --routeb-bundle ...` wrote the worker's
+  per-attempt JSON
+- M1 worker consumed it and persisted:
+  - route B outcome `inconclusive`, reason `required_check_not_run`,
+    failing obligation `interface`
+  - obligations: identity/structure `passed`; interface/behaviour/symbolic/
+    reproducibility `not_run`
+- GUI renders the route B verdict and V0–V5 obligations; it never shows
+  "verified/success". The run stays at `screening` because Route A has no
+  result bundle yet (expected).
+
+This proves the M5 → M1 → GUI chain for one route. Remaining for `finished`:
+Route A executor + bundle, so both attempts become terminal and
+`orchestration.evaluate_run` writes the run verdict.
+
 ## Member 1 status (2026-10-22, controller-worker tag)
 
 - Controller + worker + obligations + snapshot verdicts are pinned to tag

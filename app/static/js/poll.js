@@ -45,7 +45,17 @@
     passed: "通过",
     failed: "失败",
     inconclusive: "不确定",
+    unknown: "未知",
+    timed_out: "超时",
     unavailable: "不可用"
+  };
+  var KIND_ORDER = {
+    identity: 0,
+    structure: 1,
+    interface: 2,
+    behaviour: 3,
+    symbolic: 4,
+    reproducibility: 5
   };
 
   function $(id) { return document.getElementById(id); }
@@ -115,18 +125,22 @@
         obligations.appendChild(title);
         var list = document.createElement("ul");
         list.className = "obligation-list";
-        route.obligations.forEach(function (item) {
+        var ordered = route.obligations.slice().sort(function (left, right) {
+          return (KIND_ORDER[left.kind] || 99) - (KIND_ORDER[right.kind] || 99);
+        });
+        ordered.forEach(function (item) {
           var li = document.createElement("li");
           var result = document.createElement("span");
           result.className = "result result-" + item.result;
           result.textContent = item.result;
           var code = document.createElement("code");
-          code.textContent = item.id;
+          code.textContent = item.id || item.kind || "?";
           li.appendChild(result);
           li.appendChild(document.createTextNode(" "));
           li.appendChild(code);
-          li.appendChild(document.createTextNode(" " + (item.kind || "")));
-          if (item.reason) li.appendChild(document.createTextNode(" · " + item.reason));
+          if (item.id && item.kind) li.appendChild(document.createTextNode(" " + item.kind));
+          var detail = item.reason || item.detail;
+          if (detail) li.appendChild(document.createTextNode(" · " + detail));
           list.appendChild(li);
         });
         obligations.appendChild(list);

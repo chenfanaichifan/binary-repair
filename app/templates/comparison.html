@@ -218,8 +218,13 @@
       {% if route.obligations %}
       <span class="obligation-title">V0–V5 义务</span>
       <ul class="obligation-list">
-        {% for item in route.obligations %}
-        <li><span class="result result-{{ item.result }}">{{ item.result }}</span> <code>{{ item.id }}</code> {{ item.kind }}{% if item.reason %} · {{ item.reason }}{% endif %}</li>
+        {% for item in order_obligations(route.obligations) %}
+        <li>
+          <span class="result result-{{ item.result }}">{{ item.result }}</span>
+          <code>{{ item.id or item.kind }}</code>
+          {% if item.id and item.kind %}{{ item.kind }}{% endif %}
+          {% if item.reason or item.detail %} · {{ item.reason or item.detail }}{% endif %}
+        </li>
         {% endfor %}
       </ul>
       {% endif %}
