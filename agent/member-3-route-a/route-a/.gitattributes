@@ -1,6 +1,0 @@
-# Shell scripts must keep LF endings on every machine.
-*.sh text eol=lf
-
-# Generated/binary artifacts are never diffed as text.
-*.o binary
-*.elf binary

@@ -1,7 +1,8 @@
 # Root 集成说明（成员5 切片）
 
 **状态：** 2026-10-20，成员5 切片已合入共享树（`member-5/integration`）。
-**规则：** 仓库根目录是唯一集成点；`agent/` 只读，不再在那里开发。
+**规则：** 仓库根目录是唯一集成点；旧的 `agent/` 快照已归档到 tag
+`archive/2026-10-22/pre-cleanup`，main 不再包含这些副本。
 
 ---
 
@@ -22,7 +23,7 @@
 | `tests/test_provider_failures.py` | 成员5 | 6 种 typed failure |
 | `tests/test_contracts.py` | 成员5 | SecurityContract v2、容量字段、哈希稳定性 |
 | `tests/test_manifests.py` | 成员5 | manifest 索引 canonical hash |
-| `agent/` | 团队 | **只读历史归档**，不要修改 |
+| `archive/2026-10-22/pre-cleanup`（tag） | 团队 | 旧分支快照；只在需要查历史时 checkout，不在 main 中维护 |
 
 外部代码只应 import `app.*`；`binaryrepair_ai.*` 是实现细节，重构时不保证稳定。
 
@@ -126,15 +127,15 @@ python -c "from app.db.connection import connect; connect('var')"
 python scripts/smoke.py --mock             # 无 key 的管线自检
 ```
 
-当前共享树：**132 passed, 5 skipped**；`schema up to date (4 files)`。
-3 个 skip 是成员1 尚未实现的 `approve_contract` / `start_run`（identity suite）；
+当前共享树：**147 passed, 2 skipped**；`schema up to date (4 files)`。
 2 个 skip 是 V3 运行时测试（需要 Linux + candidate ELF），不是 pass。
+旧的 3 个 identity skip 已随 controller-v2 合入消失。
 
 ---
 
 ## 6. 不做什么
 
-- 不在 `agent/` 里改代码；那里是历史快照。
+- 不在旧快照 tag 里改代码；需要历史时 checkout `archive/2026-10-22/pre-cleanup`。
 - 不让 GUI 计算成功/失败；只渲染 `Verdict`。
 - 不在 host 上执行上传的二进制；执行属于 disposable VM + broker（成员1 落地）。
 - 不把真实 DeepSeek 调用写进 CI；provider 测试全部用假 transport。

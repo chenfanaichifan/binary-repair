@@ -1,255 +1,128 @@
 # BinaryRepair
 
-**AI-driven automated binary vulnerability repair and correctness verification — MVP.**
+**AI-assisted binary vulnerability repair with deterministic acceptance.**
 
-BinaryRepair repairs one known vulnerability in a Linux x86-64 ELF **without original source code**, using two independent AI-assisted routes, and decides the result with one shared **deterministic acceptance engine**. A patch is never accepted because a model says it is fixed: it counts only when every required check passes on the final executable bytes.
+BinaryRepair is a course project for repairing one known vulnerability in a Linux
+x86-64 ELF without rebuilding from source. Two independent routes produce candidate
+bytes; one shared acceptance engine decides whether the final executable is
+`success_within_scope`. A model's claim is never evidence: only checks on the final
+bytes count.
 
-- **Target defect:** one public stack-buffer-overflow case (CWE-121), Linux x86-64 ELF.
-- **Route A — direct instruction repair:** candidate machine-instruction changes applied to a copy of the binary.
-- **Route B — recovered C repair:** recover C-like code for a local region, repair it, compile it, reintegrate it into a copy.
-- **Same input for both routes:** one original ELF, one reviewed security contract, one frozen test set.
-- **Verification first:** structural, compatibility, behavioural, and bounded symbolic checks on the actual final patched executables.
+> **Status: integration complete, repair not yet demonstrated.** The controller,
+> GUI, acceptance engine, AI boundary, SQLite schema (v1 baseline + 002/003), and
+> the public CWE-121 candidate fixture are in `main`. Gate 3 (Route A) is
+> **NEEDS SCOPE RULING**; gate 4 (Route B round trip) is **NOT RUN**. No binary has
+> been repaired and verified end to end. Do not present demo data as repair evidence.
 
-> **Status: MVP in progress; root integration is in progress.** The root `app/` tree now
-> contains the GUI skeleton and the minimal job controller; the member-5 AI slice
-> (`app/domain`, `app/services/provider.py`, `schemas/`, Route B docs) is merged and its
-> AI boundary tests run in the shared tree. The acceptance engine, the VM broker, the
-> public fixture, and the two real repair routes are not integrated yet. The identity
-> suite skips two functions that are not implemented. No binary has been repaired or
-> verified. Do not present demo data as repair evidence.
+## What is in `main`
 
----
+| Slice | Location | State |
+|---|---|---|
+| FastAPI + Jinja GUI (setup / comparison / evidence) | `app/main.py`, `app/templates/`, `app/static/` | demo-data UI, labelled |
+| Job controller: create / get / approve / start / cancel / retry | `app/services/jobs.py` | identity + state tests pass |
+| HTTP controller API + canonical routes | `app/controller_api.py` | `/api/jobs/{id}/runs`, `/api/attempts/{id}/evidence`; `/start` aliases |
+| Acceptance engine and V0–V5 decision rules | `app/domain/acceptance.py`, `outcomes.py` | unit tests |
+| Security contract v2 + canonical manifest hash | `app/domain/contracts.py`, `manifests.py` | schema_version=2, shared suite |
+| AI candidate boundary + DeepSeek provider | `app/domain/candidates.py`, `app/services/provider.py`, `binaryrepair_ai/`, `schemas/` | typed failures, fake transport |
+| SQLite v1 baseline + 002/003 | `app/db/schema.sql`, `app/db/migrations/` | jobs+artifacts baseline; AI tables; verdict columns |
+| Route B kit | `routeb/`, `docs/route-b/` | feasibility scripts and notes |
+| Public candidate fixture | `fixtures/public/CWE121_src_char_declare_cpy_51b/` | NOT FROZEN; gates 3–5 pending |
 
-## Current status (2026-10-20)
+### Not yet done
 
-| Slice | Where on `main` | State | Tests |
-|---|---|---|---|
-| GUI — setup / comparison / evidence screens | `agent/member2-gui`, `agent/member2-backend-adapter` | demo data, banner-labelled | 6 + 5 (language policy, smoke) plus adapter contract tests |
-| AI candidate schema + provider failure typing | `agent/member-5-deepseek-schema` | complete slice | 18 + 15 + 11 + 11 + 8 + 3 |
-| Acceptance engine (outcomes, decision rules) | `agent/member-4-verification` | complete slice; integration depends on the candidate/job slices | 29 unit |
-| Job controller, SQLite schema | `agent/member-1-interface-reply` (identity tests only) | not on `main` yet; the identity suite skips | — |
-| Route A analysis kit | `agent/member-3-route-a` | docs and scripts | — |
-| Route B feasibility kit | `agent/member-5-deepseek-schema` | provider, schema, kit | — |
-| Public fixture + test manifest | not delivered | — | — |
-| Disposable Ubuntu VM + broker | not built | — | — |
-
-`main` itself has no root test runner. Each subfolder is a full branch tree; run its suite from that
-folder. A skip is not a pass.
-
----
-
-## Architecture
-
-Two trust boundaries. The trusted host never executes an uploaded or repaired binary.
-
-```
-┌────────────────────────────────────┐          ┌────────────────────────────────────┐
-│ Trusted host                       │          │ Disposable Ubuntu x86-64 VM        │
-│                                    │          │ (untrusted work)                   │
-│  Browser GUI (FastAPI + Jinja2)    │◄────────►│  Ghidra / Capstone / LIEF          │
-│  SQLite + immutable artifacts      │  broker  │  LLVM/Clang / binutils / angr      │
-│  Review approval + acceptance      │  typed   │                                    │
-│  DeepSeek provider adapter         │  tasks   │  no network, no credentials,       │
-│                                    │          │  snapshot reset between runs       │
-│  never runs uploaded binaries      │          │  runs analysis, patching, checks   │
-└────────────────────────────────────┘          └────────────────────────────────────┘
-```
-
-- **Host:** serves the GUI, records approvals, schedules jobs, calls the provider, imports artifacts, computes acceptance.
-- **Guest:** performs parsing, compilation, execution, and symbolic analysis for a fixed list of operations. Guest output is untrusted data.
-- **Browser:** may be on the host; the execution environment may differ from the browser host.
-
----
-
-## Quick start (Windows)
-
-The GUI slice is a complete branch tree under `agent/member2-gui/`.
-
-```powershell
-cd agent\member2-gui
-.\start.ps1          # PowerShell one-command start
-```
-
-```bat
-cd agent\member2-gui
-run.bat              :: double-click also works
-```
-
-Or manually:
-
-```powershell
-cd agent\member2-gui
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
-```
-
-Open <http://127.0.0.1:8123>. The service binds to loopback only.
-
-If `.venv` does not exist:
-
-```powershell
-cd agent\member2-gui
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-For the mock/http data adapter (the backend-adapter slice):
-
-```powershell
-cd agent\member2-backend-adapter
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
-```
-
-### Quick start (Ubuntu) — planned
-
-The target platform is Ubuntu 24.04 with Python 3.12. From `agent/member2-gui/`:
-
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8123
-```
-
----
-
-## What the demo shows
-
-The GUI runs entirely on **labelled demo data**; a banner says so on every screen.
-
-1. **Setup / review** — pick a file (demo hashes it), enter a defect description, view and edit the security contract.
-2. **Progress / comparison** — both routes side by side; stages advance on demo data; Route A shows *rejected* (valid-input regression failure) and Route B shows *inconclusive* (symbolic budget exhausted) on purpose, to demonstrate that unfinished or failed work is never displayed as success.
-3. **Evidence / export** — V0–V5 obligations, scope, artifact hashes, diagnostic-candidate labels, and an export JSON that carries `demo: true` and "export is not production approval".
-
-The real controller replaces the demo data; the banner disappears only when real evidence exists.
-
----
-
-## Language policy
-
-- **UI may use Chinese** (titles, buttons, status badges, explanations).
-- **Uploaded data, API payloads, and exports are English ASCII** — defect description, reproduction input, environment, contract fields, obligations, outcome reasons, changed regions, artifact roles, export JSON.
-- Server-side non-ASCII form content returns `422`; the browser also blocks it.
-- Uploaded filenames are converted to ASCII-safe names.
-- Guarded by `tests/test_language_policy.py` in the GUI slice.
-
----
+- Route A segment/trampoline backend. Gate 3 stays **UNSUPPORTED** until the
+  LIEF/Patcherex2 layout audit exists; after that it is **CONDITIONALLY FEASIBLE**.
+- Gate 4 round trip. Requires a disposable Ubuntu + JDK21 + Ghidra + Patcherex2
+  environment; the team guest is not suitable. Status: **NOT RUN**.
+- Real repair execution. The controller queues runs and stores evidence; it does
+  not execute uploaded binaries on the host.
+- VM broker, symbolic (V4), and final V5 reproducibility evidence.
 
 ## Repository layout
 
-`main` currently contains only the `agent/` archive and this README:
-
 ```text
-agent/
-  README.md                       index of the per-branch archive
-  member2-gui/                    three-screen GUI, demo data, start.ps1 / run.bat
-  member2-backend-adapter/        mock/http data adapter, stub controller, contract tests
-  member-3-route-a/route-a/       Route A analysis docs and scripts
-  member-4-verification/          acceptance engine, verification design, handoffs
-  member-5-deepseek-schema/       candidate schema, DeepSeek provider, SQLite, Route B kit
-  member-1-interface-reply/       identity tests and §4.1 reply (job controller not on main yet)
+app/                 GUI + controller + domain + SQLite layer
+  domain/            acceptance engine, contracts, manifests, candidate boundary
+  services/          jobs, orchestration, DeepSeek provider
+  db/                connection, migrate, schema.sql, migrations/002-003
+binaryrepair_ai/     provider implementation (internal; import app.* instead)
+schemas/             candidate/context JSON Schema + examples
+routeb/              Route B fixture, Ghidra export, Patcherex2 probes
+fixtures/public/     candidate ELF + frozen test manifests + SHA256SUMS
+tests/               unit + integration + fixture contract tests
+docs/route-b/        Route B design, DB v2, gate 6 notes
 ```
 
-Each folder is a full branch tree with its own layout, tests, and README where applicable. Work in the
-folder that owns the slice (or on a feature branch); do not edit another slice's folder in place.
+Historical branch snapshots were removed from `main`; the pre-cleanup tree is
+preserved by the tag `archive/2026-10-22/pre-cleanup`.
 
-The target end-to-end structure — once the slices are integrated into one runnable tree — is:
+## Quick start (Windows)
 
-```text
-app/
-  main.py, api/            FastAPI entry, typed routes, local-session checks
-  templates/, static/      three screens, local CSS, status polling
-  domain/                  contracts, candidate schema, phases/outcomes, acceptance rules
-  services/                job controller, provider adapter, artifact/export
-  db/, migrations/         parameterized SQLite and schema migrations
-workers/
-  analysis/                headless Ghidra and ELF metadata
-  route_a/, route_b/       route adapters and the Route B round-trip gate
-  verification/            structural, concrete, symbolic checks
-  broker/                  narrow VM task protocol
-tests/
-  unit/ integration/ e2e/ evals/
-fixtures/public/           public binary inputs and provenance (no evaluator source)
-docs_BinaryRepair/         PRD, technical design, research, verification design, handoffs
-var/                       runtime artifacts (gitignored)
-requirements.txt
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# GUI on http://127.0.0.1:8123
+.\start.ps1
 ```
 
----
+Controller service (separate process, loopback only):
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app.controller_api:app --host 127.0.0.1 --port 8000
+```
+
+GUI in http-adapter mode:
+
+```powershell
+$env:BINARYREPAIR_BACKEND = "http"
+$env:BINARYREPAIR_API_BASE = "http://127.0.0.1:8000"
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+```
+
+### Ubuntu (target runtime)
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python -m pytest -q
+.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8123
+```
 
 ## Tests
 
-Run each suite from its own folder:
-
 ```bash
-cd agent/member2-gui
-python -m pytest -q
-
-cd ../member-4-verification
-python -m pytest tests/unit -q
-
-cd ../member-1-interface-reply
-python -m pytest tests/integration/test_identity_state.py -q
+pytest -q
 ```
 
-- GUI slice: 6 + 5 tests (smoke and language policy), plus adapter contract tests.
-- Acceptance slice: 29 unit tests; the AI-boundary and identity integration suites need the candidate
-  and job slices in the same tree, so they skip in the isolated folder.
-- Job-controller slice: the identity suite skips until `app.services.jobs` is added; a skip is not a pass.
-- The AI-boundary suite never calls the real provider, needs no API key, and spends no money.
-- No uploaded or repaired binary is executed on the host.
-
----
-
-## Team and branches
-
-| Member | Responsibility | Branch |
-|---|---|---|
-| 1 | Job controller, security contract, SQLite, API, proposal | `member-1-*` |
-| 2 | Three-screen GUI, data adapter, language policy | `member2-*` |
-| 3 | Public fixture, isolated Ubuntu VM, Route A analysis | `member-3-route-a` |
-| 4 | Acceptance engine, verification design, test infrastructure | `member-4-verification` |
-| 5 | AI candidate schema, DeepSeek provider, Route B feasibility | `member-5-deepseek-schema` |
-
-Conventions: `main` is the integration branch; work happens on `member-<N>-<scope>` branches and merges
-through pull requests; commit messages start with the branch tag (for example
-`[member-4-verification] feat: ...`).
-
----
+Expected on a clean checkout: all non-runtime tests pass; V3 runtime tests skip
+unless `BINARYREPAIR_CANDIDATE_ELF` (or the original ELF) is available. A skip is
+not a pass. The fixture manifests are hashed as raw bytes; `.gitattributes` pins
+them to LF/exact bytes so checkout line endings cannot change the reviewed hash.
 
 ## Documentation
 
-- [`agent/member-4-verification/docs_BinaryRepair/verification-design.md`](agent/member-4-verification/docs_BinaryRepair/verification-design.md) — acceptance semantics, decision precedence, interface contracts, coverage matrix.
-- [`agent/member-4-verification/docs_BinaryRepair/handoffs/`](agent/member-4-verification/docs_BinaryRepair/handoffs/) — interface confirmations sent between slices.
-- [`agent/member-4-verification/AGENTS.md`](agent/member-4-verification/AGENTS.md) — project instructions for coding agents (constraints, gotchas, safety rules).
-- [`agent/member-4-verification/MEMORY.md`](agent/member-4-verification/MEMORY.md) — current state, decisions, known issues.
-- [`agent/member2-gui/docs/member2-notes.md`](agent/member2-gui/docs/member2-notes.md) — GUI role notes.
-- [`agent/member-5-deepseek-schema/docs/route-b/README.md`](agent/member-5-deepseek-schema/docs/route-b/README.md) — Route B / AI candidate provider guide.
+- [Route B overview](docs/route-b/README.md)
+- [Root integration map](docs/route-b/04-root-integration.md)
+- [DB v2 decisions](docs/route-b/05-db-v2-spec.md)
+- [Gate 6 evidence notes](docs/route-b/06-gate6-evidence.md)
+- [Candidate handoff / gate status](docs/route-b/03-feasibility-checklist.md)
 
-The PRD, technical design, and research register are maintained locally and are not tracked in this
-repository yet.
+## Ground rules
 
----
+- The host never executes uploaded or repaired binaries. Execution belongs to a
+  disposable VM with no network, no credentials, and a snapshot reset.
+- A patch is accepted only by `app/domain/acceptance.py`; the GUI and controller
+  never invent a second success rule.
+- `not_run` / `unknown` / `timed_out` are not `passed`. `skip` is not `pass`.
+- Conclusions say "this PoC no longer triggers", never "the program is unexploitable".
+- Do not modify `original.elf`, its manifest, provenance, oracle, or harness to make
+  a gate pass.
+- Keep changes small and tested; do not commit `var/`, `.env`, or model keys.
 
-## Safety boundaries
+## Branch policy
 
-These are not optional.
-
-- **Never execute an uploaded or repaired binary, or compile model-generated C, on the host.** Parsing, compilation, execution, and symbolic analysis belong to the disposable guest under the broker. When the guest is unavailable, those checks are unavailable.
-- **Acceptance is computed once.** The GUI renders outcomes; it never derives them.
-- **Missing is not passing.** A check that did not run is `not_run`, never `passed`. Timeouts, solver `unknown`, incomplete exploration, and crashes never read as success.
-- **Never weaken a test, oracle, or verification gate to get a green result.**
-- **Source separation:** original source, debug info, reference fixes, and evaluator annotations never enter the repair pipeline or a model prompt.
-- **Provider data boundary:** client binaries and confidential derived content stay local unless an explicit client authorization covers a specific transfer. The API key reaches only the trusted provider process.
-- **Evidence honesty:** exports are review material, not production approval.
-
----
-
-## Roadmap and known gaps
-
-1. Add the job controller and SQLite schema on `main` (not there yet), then integrate it with the
-   acceptance engine (`agent/member-4-verification`) and GUI (`agent/member2-gui`) in one runnable tree.
-2. Public CWE-121 fixture with provenance and a frozen test manifest.
-3. Disposable Ubuntu VM, toolchain smoke tests, and the broker.
-4. Route A instruction-repair chain and Route B recovered-C round trip.
-5. Shared acceptance over both final candidates, then export and independent replay.
-
-No completed-MVP date is established; estimates follow the feasibility gates in the technical design.
+`main` is the only integration target. Feature work goes through a short-lived
+branch and a PR. Stale or merged branches should be deleted after their tip is
+tagged under `archive/<date>/<name>`; `main` should stay free of full branch-tree
+copies.
