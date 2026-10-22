@@ -19,8 +19,8 @@ if (-not (Test-Path $git)) {
 
 $worktree = Join-Path (Split-Path -Parent $project) "binaryrepair-controller"
 $dataDir = Join-Path $project "var\controller"
-$controllerRef = "controller-api-2026-10-22"
-$controllerCommit = "1826505"
+$controllerRef = "ad1a1f8"
+$controllerCommit = "ad1a1f8 (origin/main: worker + controller; tag controller-api-2026-10-22 lacks the worker)"
 New-Item -ItemType Directory -Force $dataDir | Out-Null
 
 Write-Host "Pinned controller ref: $controllerRef ($controllerCommit)" -ForegroundColor DarkGray

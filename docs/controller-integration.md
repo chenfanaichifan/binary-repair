@@ -65,36 +65,50 @@ Snapshot requirements:
 - All data strings are English ASCII; the GUI scans snapshot/obligations/artifacts
   and rejects non-ASCII payloads with `502` instead of rendering them.
 
-## Final controller (Member 1, pinned)
+## Final controller (Member 1, worker commit)
 
-Member 1 pins the controller API to tag `controller-api-2026-10-22`
-(commit `1826505`). Run it from a checkout of that tag (the GUI branch does not
-merge `main`):
-
-```powershell
-.\start-controller.ps1   # creates/updates ..\binaryrepair-controller at the pinned tag
-```
-
-Equivalent manual form:
+Member 1's controller + run worker live at `origin/main` commit `ad1a1f8`
+(`feat(worker): consume queued runs and persist verdicts and obligations`).
+The tag `controller-api-2026-10-22` (`1826505`) predates the worker, so the
+launcher currently pins `ad1a1f8`; ask Member 1 for an updated tag that includes
+the worker.
 
 ```powershell
-git worktree add --detach ..\binaryrepair-controller controller-api-2026-10-22
-cd ..\binaryrepair-controller
-$env:BINARYREPAIR_DATA_DIR = "<absolute path>\var\controller"
-..\binaryrepair-mvp\.venv\Scripts\python.exe -m uvicorn app.controller_api:app --host 127.0.0.1 --port 8000
+.\start-controller.ps1   # worktree at ad1a1f8, serves app.controller_api on :8000
 ```
 
-Current controller behaviour (confirmed by Member 1, 2026-10-22):
+Run the worker once (from the controller worktree):
 
-- `POST /api/jobs/{id}/start` returns `202` and only **enqueues** the run; the
-  consumer is an **external worker** that does not exist yet, so `queued` does
-  not advance.
-- Phase sequence is `queued -> screening -> analyzing -> ... -> finished`;
-  there is no `running` phase.
-- `GET /api/jobs/{id}` still returns placeholder `routes`; reading attempts for
-  the snapshot is a controller TODO.
+```powershell
+python -m app.services.worker --data-dir <project>\var\controller --once
+```
+
+Worker behaviour (verified live):
+
+- consumes queued runs and moves phases to `screening` / `analyzing`;
+- does **not** execute binaries itself: it needs one result bundle per attempt at
+  `<data-dir>/jobs/<job>/runs/<run>/attempts/<attempt>.json` (schema in the
+  worker docstring) or an external executor command in
+  `BINARYREPAIR_ATTEMPT_CMD`;
+- without a bundle it prints `has no result bundle yet` and waits — the run stays
+  at `screening` (no fake verdict);
+- with bundles it persists V0–V5 obligations and calls
+  `orchestration.evaluate_attempt` / `evaluate_run`.
+
+Remaining gaps confirmed live:
+
+- No result-bundle producer / executor yet (Route A worker and `jobwrap routea`
+  are still to be implemented by M3 + VMer); this is what blocks `finished`.
+- `app/controller_api.py` did not change in `ad1a1f8`: its snapshot routes are
+  still placeholders and `/obligations` still returns static placeholders, so
+  even after a bundle is consumed the API needs to read attempts/obligations
+  (controller TODO, Member 1).
 - Same idempotency key with a different contract should return `409`; the
   canonical check is still to be added.
+
+`tools/p2_acceptance.py --worker-command "<python> -m app.services.worker --data-dir <abs> --once"`
+runs the worker once after start; today it exits `2 BLOCKED` with
+`phase='screening'` because no result bundle exists.
 - Verdict write-back is library-only today (`orchestration.evaluate_attempt` /
   `evaluate_run` write `outcome/reason/failing_obligation/detail` and
   `verdict.json` / `run-verdict.json`), but the controller API is not wired and

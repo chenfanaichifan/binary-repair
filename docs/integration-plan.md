@@ -95,37 +95,38 @@ Required snapshot/contract shape is documented in
 `docs/controller-integration.md`. All payload strings must stay English ASCII;
 the GUI rejects non-ASCII controller payloads with `502`.
 
-## Member 1 status (2026-10-22)
+## Member 1 status (2026-10-22, worker commit)
 
-- Controller API is pinned to tag `controller-api-2026-10-22` (commit `1826505`);
-  `start-controller.ps1` now checks out that tag.
-- **No worker exists.** `POST /start` returns `202` and only enqueues the run;
-  nothing consumes it, so `queued` does not advance. There is no runnable
-  worker command: `app/services/orchestration.py` is a library, not a worker.
-- Phase sequence is `queued -> screening -> analyzing -> ... -> finished`;
-  there is no `running` phase.
-- The snapshot's `routes` are still placeholders; reading attempts for the
-  snapshot is a controller TODO.
-- Same idempotency key with a different contract must return `409`; the
-  canonical check is still to be added.
-- Verdict write-back exists as library code (`orchestration.evaluate_attempt` /
-  `evaluate_run`): DB columns `outcome/reason/failing_obligation/detail`
-  (migration 003) and files `verdict.json` / `run-verdict.json`
-  (obligations + verdict). **But the controller API is not wired to these
-  functions and there is no obligations write path**, so a real run currently
-  cannot produce a verdict.
-- `tools/p2_acceptance.py` is ready for the day this is wired: it creates,
-  approves, starts, waits for `finished`, and requires real (non-`not_run`)
-  obligations plus valid route outcomes; until then it exits `2 (BLOCKED)`.
+- Controller + worker live at `origin/main` commit `ad1a1f8`; the published tag
+  `controller-api-2026-10-22` (`1826505`) predates the worker, so
+  `start-controller.ps1` pins `ad1a1f8` until Member 1 tags the worker commit.
+- Worker command: `python -m app.services.worker --data-dir <abs> --once`.
+  Verified: it consumes queued runs, moves phases to `screening`/`analyzing`,
+  and **does not execute binaries**. It needs one result bundle per attempt at
+  `<data>/jobs/<job>/runs/<run>/attempts/<attempt>.json` (schema in the worker
+  docstring) or an executor command in `BINARYREPAIR_ATTEMPT_CMD`.
+- Without a bundle it prints `has no result bundle yet` and the run stays at
+  `screening`; no verdict is invented.
+- With bundles it persists V0–V5 obligations and calls
+  `orchestration.evaluate_attempt` / `evaluate_run`.
+- `app/controller_api.py` is unchanged in `ad1a1f8`: snapshot routes remain
+  placeholders and `/obligations` is still static, so the API cannot surface a
+  consumed bundle's verdict yet (controller TODO).
+- Same idempotency key with a different contract must return `409`; canonical
+  check still pending.
+
+`tools/p2_acceptance.py` now supports a one-shot worker:
+`--worker-command "<python> -m app.services.worker --data-dir <abs> --once"`.
+Live result: `BLOCKED phase='screening'` (no result bundle), exit 2.
 
 ## Blockers and owners
 
 | # | Blocker | Owner | What is needed |
 |---|---|---|---|
-| 1 | No worker consumes `queued` runs (confirmed by Member 1: worker does not exist; orchestration is only a library) | Member 1 | implement/own the external worker entry point, run timeout/cancel, phase writes (`queued -> screening -> ... -> finished`) |
+| 1 | Worker exists but nothing produces attempt result bundles (no Route A/B executor) | Member 3 + VMer (+ Member 5) | implement `jobwrap routea`/Route A worker and Route B/provider executor that write the per-attempt result bundle; worker then persists verdicts |
 | 2 | No Route A worker (`workers/route_a/worker.py` is proposed only) | Member 3 + Member 1 | implement worker; VMer + Member 3 implement the fixed `jobwrap routea` op; publish the candidate bundle (candidate itself is already in tag `1826505` under `routea/out/`) |
 | 3 | No broker/jobwrap integration for the general route-a op | Member 1 | broker API, fixed op/argv, guest path conventions; never pass shell strings |
-| 4 | Acceptance engine not invoked by orchestration; no obligations write path (verdict library exists, API not wired) | Member 1 (+ Member 4) | wire `evaluate_attempt`/`evaluate_run` into the run consumer, persist `outcome/reason/failing_obligation/detail` and `verdict.json`/`run-verdict.json`, expose obligations |
+| 4 | Controller API does not expose attempts/obligations/verdicts (unchanged in `ad1a1f8`) | Member 1 | snapshot routes from attempts, obligations endpoint from persisted rows, verdict fields (`outcome/reason/failing_obligation/detail`) |
 | 5 | Provider not called by any worker | Member 1 (+ Member 5) | host-side provider step in orchestration; which env/process; where candidate/attempt evidence is stored; timeout budget alignment |
 | 6 | Route B artifacts not imported into job artifacts | Member 1 / Member 5 | artifact import paths + hashes; Gate 4 manifest-compare fields exposed to evidence page |
 

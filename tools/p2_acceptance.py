@@ -19,6 +19,8 @@ import argparse
 import hashlib
 import hmac
 import pathlib
+import shlex
+import subprocess
 import sys
 import time
 
@@ -61,6 +63,12 @@ def main() -> int:
     parser.add_argument("--controller", default="http://127.0.0.1:8000")
     parser.add_argument("--token", default="")
     parser.add_argument("--timeout", type=int, default=180, help="seconds to wait for finished")
+    parser.add_argument(
+        "--worker-command",
+        default="",
+        help="optional one-shot worker command (e.g. python -m app.services.worker --data-dir ... --once)",
+    )
+    parser.add_argument("--worker-cwd", default="", help="working directory for the worker command")
     args = parser.parse_args()
 
     token = args.token.strip()
@@ -113,6 +121,23 @@ def main() -> int:
             print(f"FAIL  start HTTP {started.status_code}")
             return 1
 
+        if args.worker_command:
+            command = shlex.split(args.worker_command, posix=True)
+            print(f"worker: {' '.join(command)}")
+            completed = subprocess.run(
+                command,
+                cwd=args.worker_cwd or None,
+                capture_output=True,
+                text=True,
+            )
+            if completed.stdout.strip():
+                print(completed.stdout.strip())
+            if completed.stderr.strip():
+                print(completed.stderr.strip())
+            if completed.returncode != 0:
+                print(f"FAIL  worker exited {completed.returncode}")
+                return 1
+
         deadline = time.time() + args.timeout
         last_phase = None
         while time.time() < deadline:
@@ -125,9 +150,9 @@ def main() -> int:
         if last_phase not in FINAL_PHASES:
             print(
                 "BLOCKED  pipeline did not finish: "
-                f"phase={last_phase!r}. Member 1 integration gaps: "
-                "no worker entry (orchestration is a library), controller API not wired to "
-                "evaluate_attempt/evaluate_run, no obligations write path."
+                f"phase={last_phase!r}. The worker may be running, but it needs a result "
+                "bundle per attempt (written by the external executor / BINARYREPAIR_ATTEMPT_CMD), "
+                "and the controller API still has to expose persisted obligations/verdicts."
             )
             return 2
 
