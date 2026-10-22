@@ -1,7 +1,7 @@
 name: routea-cave-probe
 on:
   push:
-    branches: [member-5/routea-probe]
+    branches: [member-5/routea-probe2]
 permissions:
   contents: write
 jobs:
