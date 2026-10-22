@@ -71,6 +71,35 @@ Rules:
 `evaluate_run` is called only when both `route_a` and `route_b` verdicts exist.
 A cancelled job is not overwritten with `finished`.
 
+## Attempt writer / executor adapter
+
+`python -m app.services.attempt_writer` writes the worker bundle from an executor
+result:
+
+```bash
+# generic Route A adapter result
+python -m app.services.attempt_writer \
+  --input routea-result.json --route route_a \
+  --out "$BINARYREPAIR_RESULT_PATH"
+
+# Route B static bundle (V0/V1 from static audit; V3 only with manifest-compare)
+python -m app.services.attempt_writer \
+  --routeb-bundle /path/to/routeb-bundle \
+  --data-dir var --job-id "$BINARYREPAIR_JOB_ID" \
+  --attempt-id "$BINARYREPAIR_ATTEMPT_ID" \
+  --out "$BINARYREPAIR_RESULT_PATH"
+```
+
+A wrapper script can be used directly as
+`BINARYREPAIR_ATTEMPT_CMD=/path/to/write_attempt.sh`; the worker supplies the
+`BINARYREPAIR_JOB_ID/RUN_ID/ATTEMPT_ID/ROUTE/RESULT_PATH` environment.
+
+## Idempotency
+
+`POST /api/jobs/{id}/runs` with an existing `(job_id, idempotency_key)` returns
+the existing run only when `contract_id` and `manifest_sha256` match. A different
+contract/manifest with the same key returns **409**.
+
 ## Snapshot
 
 `GET /api/jobs/{id}` now reads the latest run's attempts and obligations:

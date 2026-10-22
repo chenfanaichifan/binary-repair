@@ -382,6 +382,15 @@ def start_run(
                 (job_id, idempotency_key),
             ).fetchone()
             if existing is not None:
+                requested_contract = _approval_field(approval, "contract_id")
+                requested_manifest = _approval_field(approval, "manifest_sha256") or "0" * 64
+                if (
+                    existing["contract_id"] != requested_contract
+                    or existing["manifest_sha256"] != requested_manifest
+                ):
+                    raise ValueError(
+                        "idempotency key already used with a different contract or manifest"
+                    )
                 connection.commit()
                 return _run_record(existing, created=False)
 

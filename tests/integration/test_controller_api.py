@@ -110,6 +110,36 @@ def test_contract_edit_invalidates_approval(client: TestClient) -> None:
     assert stale_hash.status_code == 409
 
 
+def test_same_key_with_new_contract_returns_409(client: TestClient) -> None:
+    job_id = _create(client)["id"]
+    _approve_current(client, job_id)
+    first = client.post(
+        f"/api/jobs/{job_id}/runs",
+        json={
+            "contract_revision": 1,
+            "manifest_sha256": "1" * 64,
+            "idempotency_key": "same-key",
+        },
+    )
+    assert first.status_code == 202, first.text
+
+    updated = client.post(
+        f"/api/jobs/{job_id}/contract",
+        data={"expected_revision": 1, "valid_domain": "revised contract"},
+    )
+    assert updated.status_code == 200, updated.text
+    _approve_current(client, job_id)
+    conflict = client.post(
+        f"/api/jobs/{job_id}/runs",
+        json={
+            "contract_revision": 2,
+            "manifest_sha256": "1" * 64,
+            "idempotency_key": "same-key",
+        },
+    )
+    assert conflict.status_code == 409
+
+
 def test_visuals_endpoint(client: TestClient) -> None:
     job_id = _create(client)["id"]
     response = client.get(f"/api/jobs/{job_id}/visuals")
