@@ -114,3 +114,25 @@ remain `not_run`. A CI `6/6` does not substitute for them (handoff 13 §5.6).
    cave entry executes).
 4. Re-measure `valid.json` / `invalid.json` / manifest-set hashes in the guest.
 5. M5 replay waived by Lead on 2026-10-22; the Lead approves the final record.
+
+## 8. M5 review status: NOT REVIEWED
+
+M5 cannot fetch `member-4-routea-gate3` (it is not a remote ref and `7977bac` is not a
+reachable object from origin), so the M4 Route A implementation has **not been reviewed** by
+M5 and must not be treated as accepted.
+
+To unblock review without pushing the branch, the complete change is attached as a patch:
+
+```
+docs/route-a/m4-patches/0001-member-4-routea-gate3-feat-route-a-complete-Gate-3-e.patch
+```
+
+It contains exactly the files M5 asked to review: `routea/audit.py` (header invariants,
+cave-unused proof, NX/RELRO/W^X), `routea/cave.py` (schema-2 / verify / bundle), `routea/
+byteaudit.py`, `routea/evidence.py`, `routea/manifest.py`, `tests/test_routea_manifest.py`,
+`tests/test_routea_cave.py`, `scripts/routea_vm_check.sh` (static half only — it does not
+execute the candidate), and `fixtures/.../contract.route-a-v1.json` (the superseded M4 proposal,
+kept for diffing against the approved `24bfe568...`).
+
+Until M5 records a review, the M4 implementation stays **not accepted**.
+

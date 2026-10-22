@@ -1,0 +1,3041 @@
+From 7977bac1d8143afb68da6590ca2e4559fde9439f Mon Sep 17 00:00:00 2001
+From: leesirleesirlee-star <leesirleesirlee@gmail.com>
+Date: Thu, 22 Oct 2026 17:51:25 +0800
+Subject: [PATCH] [member-4-routea-gate3] feat(route-a): complete Gate 3
+ evidence design, audit, and VM test plan
+
+---
+ docs/route-a/gate3-evidence-design.md         | 208 ++++++
+ .../contract.route-a-v1.json                  |  42 ++
+ routea/README.md                              |  77 ++-
+ routea/audit.py                               | 610 ++++++++++++++++++
+ routea/byteaudit.py                           | 135 ++++
+ routea/cave.py                                | 535 ++++++++++-----
+ routea/evidence.py                            | 309 +++++++++
+ routea/manifest.py                            | 406 ++++++++++++
+ scripts/routea_vm_check.sh                    |  70 ++
+ tests/test_routea_cave.py                     | 316 +++++++--
+ tests/test_routea_manifest.py                 |  82 +++
+ 11 files changed, 2561 insertions(+), 229 deletions(-)
+ create mode 100644 docs/route-a/gate3-evidence-design.md
+ create mode 100644 fixtures/public/CWE121_src_char_declare_cpy_51b/contract.route-a-v1.json
+ create mode 100644 routea/audit.py
+ create mode 100644 routea/byteaudit.py
+ create mode 100644 routea/evidence.py
+ create mode 100644 routea/manifest.py
+ create mode 100644 scripts/routea_vm_check.sh
+ create mode 100644 tests/test_routea_manifest.py
+
+diff --git a/docs/route-a/gate3-evidence-design.md b/docs/route-a/gate3-evidence-design.md
+new file mode 100644
+index 0000000..475f7df
+--- /dev/null
++++ b/docs/route-a/gate3-evidence-design.md
+@@ -0,0 +1,208 @@
++# Route A Gate 3 evidence design (cave strategy) — 2026-10-22
++
++**Owner:** Member 4 (verification), after the ownership handoff in
++`docs_BinaryRepair/handoffs/13-route-a-ownership-handoff.md`.
++**Scope:** complete the Route A design and make the Gate 3 evidence package
++producible; **every test and every binary-touching command runs in the
++disposable guest**, never on the Windows host (`AGENTS.md`).
++**Status:** design + code + tests written; **tests not executed on the host**.
++Gate 3 remains `CONDITIONALLY FEASIBLE` until the guest run and an independent
++replay exist. Gate 4 is out of scope here.
++
++---
++
++## 1. Accepted repair design (unchanged behaviour)
++
++Strategy C, cave call redirect:
++
++| Item | Value |
++|---|---|
++| patch site | `0x401304`, 5-byte `call strcpy@plt` (`e8 c7 fd ff ff`) |
++| redirect | `call` cave at `0x4018e9` (`e8 e0 05 00 00`), displaces the call as a unit |
++| valid path | cave tail-jumps to `strcpy@plt` and returns to **`0x401309`** |
++| invalid path | `fprintf(stderr, msg)` then `exit_group(1)`, never returns to `main` |
++| added code | 72 bytes at `0x4018e9` (inline NUL scan, bound `max_valid_input_bytes`) |
++| added data | 42-byte exact stderr immediately after the code (RIP-relative only) |
++| header change | extend the existing R-X `PT_LOAD` `p_filesz`/`p_memsz` `0x8e9` -> `0x1000` |
++| new segments/imports/relocations | none; `fprintf@0x401120` and `stderr@0x404080` already exist |
++
++The candidate is reproducible: the same original + plan must produce byte-identical
++output, whose recorded SHA-256 is
++`f3cb9cbb503fb0d47ebebab7053fa2ed37b7876ffe5122157d31fefc783f9fa7`.
++
++**Correction to earlier text:** the instruction after the 5-byte call is `0x401309`,
++not `0x401308`. Handoff 09 §4.1 entry 1 is corrected; any gdb breakpoint on
++`0x401308` is mid-instruction and must be changed to `0x401309`.
++
++---
++
++## 2. What this design adds over the probe
++
++The 2026-10-22 probe proved the repair works on a GitHub Actions runner. It did
++**not** produce Gate 3 evidence (network during install, not the team guest, no
++isolation). This design closes the static half and defines the runtime half.
++
++1. **Complete edit manifest (schema 2)** — `edit-manifest.json` now lists the
++   displaced 5 original bytes, the exact 114 added bytes with file offsets and
++   hashes, the two changed header fields with before/after values and file
++   offsets, every changed file interval, the intended interval set, the writer,
++   the termination mechanism, and the tool versions.
++2. **Extended static audit** — program-header invariants (page congruence, no
++   overlap, entry/other fields unchanged, `p_filesz` within file), section and
++   dynamic byte identity (`.dynamic`, `.dynsym`, `.dynstr`, `.rela.*`, `.got*`,
++   `.plt*`), NX/GNU_STACK/RELRO, no W+X, no section/symbol/relocation in the
++   cave, no incoming branch or RIP-relative reference into the cave, all-zero
++   original filler, added-code register rules (no callee-saved writes, no `ret`,
++   no indirect transfer, single `sub rsp,8` alignment, `exit_group(1)` setup),
++   and a byte-diff/residue audit against the declared intervals.
++3. **Second parser view** — the bundle captures `readelf -lW` and the audit
++   cross-checks it field-by-field against the pyelftools view; missing `readelf`
++   is recorded as `not_run`, never assumed.
++4. **Reproducibility command** — `verify` builds twice and requires identical
++   bytes; the bundle embeds the result.
++5. **Evidence bundle** — one directory with original/candidate, manifest, audit,
++   reproducibility, environment fingerprint, independent views, a per-item
++   record, and a verifiable `SHA256SUMS`.
++6. **Contract revision** — a proposed frozen contract carrying the authorized
++   edits and the measured writer (see §3).
++
++---
++
++## 3. Contract revision (proposed; M5 confirms, Lead approves)
++
++File: `fixtures/public/CWE121_src_char_declare_cpy_51b/contract.route-a-v1.json`
++Reviewed-scope hash: `ba33b4d070b8799b778a9ca1a257190079627bda72b5c42933edfebb0f5d8fc4`
++
++The oracle constants are byte-identical to the frozen values (`dest=50`,
++`max_valid=49`, exit 1, empty stdout, 42-byte stderr). Only scope is extended:
++
++- six `authorized_edits`: exactly the amended handoff 09 §4.1 entries, including the
++  corrected `0x401309` resumption and the measured writer mechanism in entry 4;
++- `allowed_calls = ("fprintf", "printLine", "strcpy")` — `fprintf` is imported
++  in the ELF (`0x401120`) and `stderr` exists (`0x404080`); `fputs`/`fwrite`/
++  `write`/`exit` are **not** imported, so authorizing `fprintf` avoids a new
++  dependency and avoids an unmeasured seccomp-dependent syscall writer;
++- `environment_assumptions` record that the CET note is compile-time only and
++  that guest seccomp policy must be recorded.
++
++The file is **not** an approved contract until Member 5 (owner) confirms the
++writer amendment and the Lead approves. The probe contract
++(`contract.cave-probe.json`) remains a probe value, not the approved revision.
++
++---
++
++## 4. Evidence model — which artifact answers which Gate 3 item
++
++Handoff 11 §3 defines six required items. The bundle produces the static half;
++the guest run produces the runtime half.
++
++| # | Item | Produced by | In the bundle? |
++|---|---|---|---|
++| 1 | separate copy; original + manifests unchanged | bundle hashes; guest re-hash | yes (hashes) |
++| 2 | candidate identity, reproducibility, complete manifest | `edit-manifest.json`, `reproducibility.json` | yes |
++| 3 | structural audit: cave R-X, header extension, no overlap, flags/NX/RELRO/canary/W^X, readelf + ELF view, no relocation/import edit | `audit.json`, `readelf-*`, `objdump-*` | yes (static) |
++| 3b | cave mapped R-X at runtime, bytes match file, entry executes | gdb/runtime probe in guest | **no — guest step** |
++| 4 | six-case run, byte-exact, candidate hash before run, reverted snapshot | `routeb/run_manifest_repaired.py` under isolation | **no — guest step** |
++| 5 | isolation evidence for that run | snapshot revert, egress block, uid 1003 wrapper | **no — guest step** |
++| 6 | evidence bundle with hashes | `SHA256SUMS`, `bundle-sha256.txt` | yes |
++
++`gate3-record.md` is generated with items 4-5 explicitly `not_run`. It must not
++be upgraded to a gate pass from static evidence alone.
++
++---
++
++## 5. VM runbook (the only place these commands run)
++
++Prerequisites in the guest: repository at the design branch, Python 3.12,
++`pyelftools`, `capstone`, `binutils` (`readelf`, `objdump`); `lief` is not
++needed for the cave strategy. The candidate must be run only after the three
++isolation preconditions (clean snapshot, no egress, unprivileged user without
++passwordless sudo) hold.
++
++The static half (environment check, frozen hashes, tests, build, audit,
++reproducibility, bundle) is wrapped by `scripts/routea_vm_check.sh`. It is
++**unverified until the VM run** and deliberately stops before executing the
++candidate; the script prints the manual runtime steps.
++
++```bash
++CASE=fixtures/public/CWE121_src_char_declare_cpy_51b
++CONTRACT=$CASE/contract.route-a-v1.json
++
++# 0. tests (VM/CI only)
++python -m pytest tests/test_routea_cave.py tests/test_routea_manifest.py \
++  -q -p no:cacheprovider
++
++# 1. build, audit, reproducibility, static bundle
++python -m routea.cave bundle \
++  --elf $CASE/original.elf --contract $CONTRACT \
++  --cave 0x4018e9 --cave-size 1815 \
++  --out-dir var/jobs/m4-gate3/<run-id>/static --scope-authorized
++
++# 2. runtime cave probe (gdb, inside the isolation harness)
++#    - break at 0x401304 and 0x4018e9
++#    - `info proc mappings` must show r-xp covering 0x401000-0x401fff
++#    - memory at 0x4018e9 must equal the candidate file bytes
++#    - an instruction at the cave entry must decode and execute
++
++# 3. six frozen cases on the candidate, under the wrapper, from a reverted snapshot
++python routeb/run_manifest_repaired.py \
++  --binary <job>/candidate.elf --tests $CASE/tests \
++  --out var/jobs/m4-gate3/<run-id>/manifest-repaired.json
++
++# 4. original V0 shape for comparison (same session, documented 4/6)
++python routeb/run_manifest_repaired.py \
++  --binary $CASE/original.elf --tests $CASE/tests \
++  --out var/jobs/m4-gate3/<run-id>/manifest-original.json
++```
++
++Record for every run: candidate SHA-256 before and after, guest fingerprint, tool
++versions, wrapper attestation, snapshot revert log, and the raw stdout/stderr/rc
++of each case. Hashes and the per-item record are committed; large raw logs stay
++under `var/jobs/` and are cited by hash (handoff 12 §3).
++
++### Expected values
++
++| Check | Expected |
++|---|---|
++| candidate SHA-256 | `f3cb9cbb503fb0d47ebebab7053fa2ed37b7876ffe5122157d31fefc783f9fa7` |
++| contract hash | `ba33b4d070b8799b778a9ca1a257190079627bda72b5c42933edfebb0f5d8fc4` |
++| six cases | 4 valid: rc 0, stdout = input + LF; 2 invalid: rc 1, stdout empty, exactly 42-byte stderr; no crash |
++| original V0 | 4/6 (invalid cases fail by design: SIGSEGV on the original) |
++| mapping | `0x401000`-`0x401fff` mapped r-xp; cave bytes file-backed |
++
++A mismatch is a `FAIL`: report the case, the expected and actual bytes in hex, and
++the root cause. Never edit the oracle, the manifests, or the frozen hashes.
++
++---
++
++## 6. Test plan (not run on the host)
++
++| File | Needs ELF? | Run where | Covers |
++|---|---|---|---|
++| `tests/test_routea_manifest.py` | no | anywhere | interval merge, residue, declared-interval audit, inclusive ranges |
++| `tests/test_routea_cave.py` | yes | guest/CI | plan bytes, manifest completeness, full audit, golden candidate hash, reproducibility, tamper rejection, readelf cross-view, CLI `verify`, CLI `bundle`, record item states |
++
++Golden hashes in the tests are drift detectors, not evidence: a mismatch means
++the design changed and must be re-reviewed. The suite is deliberately
++negative-first: an unpatched binary, an undeclared byte flip, and a tampered
++header must all fail the audit.
++
++**Host status:** `python -m py_compile` was run on every changed Python file.
++No ELF test, no `readelf`, no candidate execution was performed on the host. The
++suite must be run in the guest before any result is reported.
++
++---
++
++## 7. Open items
++
++1. **M5 confirms** the writer amendment in `contract.route-a-v1.json` and the
++   Lead approves the revision hash before the candidate freezes.
++2. **Guest run** produces items 3b, 4, 5 (runtime cave probe, six cases,
++   isolation evidence) under the M4 plan `12-m4-acceptance-evidence-plan.md`;
++   the plan's gdb breakpoints must use `0x401309`, not `0x401308`.
++3. **M3 isolation evidence** (deadline 2026-10-23 18:00) is a prerequisite for
++   item 4/5; missing isolation means `NOT VERIFIED`.
++4. **Independent replay** by M5 from the recorded commands before the Lead
++   approves the Gate 3 label.
++5. Fixture freeze stays blocked until gates 3-5 evidence exists; no new freeze
++   date is promised here.
+diff --git a/fixtures/public/CWE121_src_char_declare_cpy_51b/contract.route-a-v1.json b/fixtures/public/CWE121_src_char_declare_cpy_51b/contract.route-a-v1.json
+new file mode 100644
+index 0000000..d1d831d
+--- /dev/null
++++ b/fixtures/public/CWE121_src_char_declare_cpy_51b/contract.route-a-v1.json
+@@ -0,0 +1,42 @@
++{
++  "schema_version": 2,
++  "target_entry": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
++  "target_signature": "void badSink(char *data)",
++  "valid_domain": "C string inputs of length 0..49 bytes; the terminating NUL is copied",
++  "valid_behavior": "strcpy into dest[50] and printLine(data); exit 0",
++  "forbidden_behavior": "write past dest[50] for inputs of length 50 or more",
++  "invalid_input_response": "print the exact stderr line and exit 1 without printing stdout",
++  "dest_capacity_bytes": 50,
++  "max_valid_input_bytes": 49,
++  "capacity_includes_terminator": true,
++  "invalid_exit_code": 1,
++  "invalid_stdout": "",
++  "invalid_stderr": "ERROR: input exceeds destination capacity\n",
++  "authorized_edits": [
++    "Allow a 5-byte relative redirect of call strcpy@plt at 0x401304 to reviewed added code and a branch back to 0x401309 (the instruction after the 5-byte call) on the valid path.",
++    "Allow up to 256 bytes of added x86-64 code in a gate-3-verified unused region of a loadable R-X segment reachable from 0x401304; zero bytes alone are not evidence.",
++    "Allow up to 64 bytes of added constant data holding exactly ERROR: input exceeds destination capacity plus LF inside the added-code region; RIP-relative references only.",
++    "Allow the invalid path to emit that data on fd 2 through the existing fprintf@plt and the existing stderr object, then exit 1 via exit_group without returning to main or writing stdout.",
++    "Allow extending the existing R-X PT_LOAD's p_filesz/p_memsz from 0x8e9 to 0x1000 (mapped end 0x402000) to cover the verified-unused tail ending at 0x401fff; record offset, vaddr, filesz, memsz, align; keep page congruence and no segment overlap.",
++    "Allow no new segment, dynamic import, GOT/PLT/relocation edit or permission broadening; only if the tail extension is rejected, allow one new R-X PT_LOAD with recorded headers."
++  ],
++  "allowed_calls": [
++    "fprintf",
++    "printLine",
++    "strcpy"
++  ],
++  "environment_assumptions": [
++    "Linux x86-64",
++    "Non-PIE ET_EXEC",
++    "CET note is compile-time only; runtime IBT and shadow-stack enforcement are unverified",
++    "Guest seccomp policy for raw syscalls must be recorded by gate 3"
++  ],
++  "required_obligations": [
++    "identity",
++    "structure",
++    "interface",
++    "behaviour",
++    "symbolic",
++    "reproducibility"
++  ]
++}
+diff --git a/routea/README.md b/routea/README.md
+index 83cb34b..bcace7f 100644
+--- a/routea/README.md
++++ b/routea/README.md
+@@ -1,24 +1,69 @@
+-# routea
++﻿# routea — Route A cave repair (strategy C) and Gate 3 evidence
+ 
+-Route A worker: Capstone decode, trampoline plan, gated LIEF build, layout audit.
++The accepted Route A design is the **cave call redirect**: replace the 5-byte
++`call strcpy@plt` at `0x401304` with a `call` to a verified-unused tail cave at
++`0x4018e9`, guard the input length inline, and either tail-jump to the original
++`strcpy@plt` (valid path, returns to `0x401309`) or write the exact contract
++stderr through the existing `fprintf@plt` and `exit_group(1)` (invalid path).
++The existing R-X `PT_LOAD` `p_filesz`/`p_memsz` is extended to `0x1000` so the
++cave bytes are file-backed; no new segment, import, relocation or permission
++change.
++
++`routea/worker.py` keeps the superseded new-segment trampoline plan for
++reference; `routea/cave.py` is the accepted path.
++
++## Commands (run in the disposable guest / CI, never on the host)
+ 
+ ```bash
+-# 1. instruction boundaries for the frozen function
+-python -m routea.worker decode \
+-  --elf fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf \
+-  --target CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink
++CASE=fixtures/public/CWE121_src_char_declare_cpy_51b
++CONTRACT=$CASE/contract.route-a-v1.json
++
++# 1. plan only (never writes the candidate)
++python -m routea.cave plan --elf $CASE/original.elf --contract $CONTRACT \
++  --cave 0x4018e9 --cave-size 1815 --out plan.json
++
++# 2. build the candidate + complete edit manifest (schema 2)
++python -m routea.cave build --elf $CASE/original.elf --contract $CONTRACT \
++  --cave 0x4018e9 --cave-size 1815 --out candidate.elf \
++  --manifest edit-manifest.json --scope-authorized
++
++# 3. independent static audit (add a captured `readelf -lW` for the second view)
++readelf -lW candidate.elf > raw/readelf-program-headers.txt
++python -m routea.cave audit --original $CASE/original.elf --patched candidate.elf \
++  --contract $CONTRACT --cave 0x4018e9 --cave-size 1815 \
++  --readelf raw/readelf-program-headers.txt --out audit.json
+ 
+-# 2. plan only (never writes the candidate)
+-python -m routea.worker plan --elf ... --contract contract.json --out plan.json
++# 4. reproducibility: build twice, require identical candidate bytes
++python -m routea.cave verify --elf $CASE/original.elf --contract $CONTRACT \
++  --cave 0x4018e9 --cave-size 1815
+ 
+-# 3. build (only after the Gate 3 scope ruling)
+-python -m routea.worker build --elf ... --contract contract.json \
+-  --out patched.elf --manifest edit-manifest.json --scope-authorized
++# 5. static Gate 3 evidence bundle (items 1-3 and 6; items 4-5 run separately)
++python -m routea.cave bundle --elf $CASE/original.elf --contract $CONTRACT \
++  --cave 0x4018e9 --cave-size 1815 --out-dir routea/out/gate3 --scope-authorized
++```
++
++The bundle writes `candidate.elf`, `original.elf`, `edit-manifest.json`,
++`audit.json`, `reproducibility.json`, `environment.json`, the independent
++`readelf`/`objdump` captures, `gate3-record.md`, `SHA256SUMS` and
++`bundle-sha256.txt`. It **never executes the candidate**: the six frozen cases
++and the isolation evidence are produced separately in the guest
++(`routeb/run_manifest_repaired.py` under the handoff-10/11 isolation controls).
++
++## Tests (guest/CI only)
++
++```bash
++# one-shot static half: env check, hashes, tests, build, audit, bundle
++bash scripts/routea_vm_check.sh
+ 
+-# 4. static layout audit
+-python -m routea.worker audit --original ... --patched ... --contract contract.json
++# or the pieces
++python -m pytest tests/test_routea_cave.py tests/test_routea_manifest.py -q -p no:cacheprovider
+ ```
+ 
+-`build` is gated by `--scope-authorized` because adding an R-- message segment,
+-an R-X trampoline segment and changing the file layout is a Gate 3 scope
+-decision. Until the ruling, no exact-stderr patch is applied to the candidate.
++`tests/test_routea_manifest.py` is pure byte math and may run anywhere;
++`tests/test_routea_cave.py` parses the real ELF and must run in the guest or the
++pinned CI runner. The golden candidate SHA-256 is
++`f3cb9cbb503fb0d47ebebab7053fa2ed37b7876ffe5122157d31fefc783f9fa7` and the
++reviewed contract hash is
++`ba33b4d070b8799b778a9ca1a257190079627bda72b5c42933edfebb0f5d8fc4`; a mismatch
++means the design changed and must be re-reviewed, not that the constant should
++be updated.
+diff --git a/routea/audit.py b/routea/audit.py
+new file mode 100644
+index 0000000..7d2583a
+--- /dev/null
++++ b/routea/audit.py
+@@ -0,0 +1,610 @@
++"""Complete static Gate 3 audit for the Route A cave candidate.
++
++Every check here is a *static* fact about the original and the candidate. Runtime
++facts (cave mapping, six-case behaviour, isolation) are separate evidence and are
++never inferred from this module (handoff 11 §3 items 3-5; handoff 13 §5).
++
++The audit returns a single JSON-serialisable dict::
++
++    {"checks": {"<name>": bool, ...},
++     "details": {...},
++     "pass": bool,
++     "failed": ["<name>", ...]}
++
++``pass`` means every *required* check is ``True``. A check that could not be
++evaluated is recorded as ``False`` with a reason, never silently dropped.
++"""
++
++from __future__ import annotations
++
++from pathlib import Path
++from typing import Any
++
++from capstone import CS_ARCH_X86, CS_GRP_CALL, CS_GRP_JUMP, CS_MODE_64, Cs
++from capstone.x86 import X86_OP_IMM, X86_OP_MEM, X86_REG_RIP
++from elftools.elf.elffile import ELFFile
++
++from routea.byteaudit import audit_changed_bytes
++from routea.manifest import (
++    elf_facts,
++    program_headers,
++    sha256_bytes,
++    sha256_file,
++)
++
++MD = Cs(CS_ARCH_X86, CS_MODE_64)
++MD.detail = True
++
++CALLEE_SAVED = frozenset({"rbx", "rbp", "r12", "r13", "r14", "r15"})
++PAGE = 0x1000
++SHF_ALLOC = 0x2
++SHF_EXECINSTR = 0x4
++
++
++class AuditError(RuntimeError):
++    pass
++
++
++# ---------------------------------------------------------------------------
++# Small helpers
++
++
++def _diff_dicts(before: dict[str, Any], after: dict[str, Any], ignore: tuple[str, ...] = ()) -> list[dict]:
++    out = []
++    for key in sorted(set(before) | set(after)):
++        if key in ignore:
++            continue
++        if before.get(key) != after.get(key):
++            out.append({"field": key, "before": before.get(key), "after": after.get(key)})
++    return out
++
++
++def _segment_index(phdrs: list[dict], vaddr: int) -> int | None:
++    for seg in phdrs:
++        if seg["type"] != "PT_LOAD":
++            continue
++        if seg["vaddr"] <= vaddr < seg["vaddr"] + max(seg["filesz"], seg["memsz"]):
++            return seg["index"]
++    return None
++
++
++def _loads(phdrs: list[dict]) -> list[dict]:
++    return [seg for seg in phdrs if seg["type"] == "PT_LOAD"]
++
++
++def _make_check(checks: dict[str, bool], details: dict[str, Any], name: str, value: bool, **extra) -> None:
++    checks[name] = bool(value)
++    if extra:
++        details[name] = extra
++
++
++# ---------------------------------------------------------------------------
++# Header audit
++
++
++def header_audit(original: Path, patched: Path, *, expected_vaddr: int, expected_new_size: int) -> dict:
++    before_facts = elf_facts(original)
++    after_facts = elf_facts(patched)
++    before = before_facts["program_headers"]
++    after = after_facts["program_headers"]
++    before_loads = _loads(before)
++    after_loads = _loads(after)
++    checks: dict[str, bool] = {}
++    details: dict[str, Any] = {}
++
++    _make_check(checks, details, "phdr_same_count", len(before) == len(after),
++                before=len(before), after=len(after))
++    _make_check(checks, details, "load_same_count", len(before_loads) == len(after_loads),
++                before=len(before_loads), after=len(after_loads))
++
++    changed = [i for i, (a, b) in enumerate(zip(before, after)) if a != b]
++    expected_index = _segment_index(after, expected_vaddr)
++    _make_check(checks, details, "exactly_one_header_changed",
++                len(changed) == 1 and changed[0] == expected_index,
++                changed_indices=changed, expected_index=expected_index)
++    details["header_changes"] = [
++        {"index": idx, "fields": _diff_dicts(before[idx], after[idx])}
++        for idx in changed
++    ]
++
++    if expected_index is None:
++        _make_check(checks, details, "expected_segment_present", False, vaddr=hex(expected_vaddr))
++        return {"checks": checks, "details": details, "pass": False, "failed": _failed(checks)}
++
++    old = before[expected_index]
++    new = after[expected_index]
++    _make_check(checks, details, "expected_segment_is_rx_load",
++                new["type"] == "PT_LOAD" and new["flags"] == 5,
++                type=new["type"], flags=new["flags"])
++    for field in ("offset", "vaddr", "paddr", "flags", "align"):
++        _make_check(checks, details, f"header_{field}_unchanged",
++                    old[field] == new[field], before=old[field], after=new[field])
++    _make_check(checks, details, "rx_end_file_backed",
++                new["filesz"] == expected_new_size and new["memsz"] == expected_new_size,
++                filesz=hex(new["filesz"]), memsz=hex(new["memsz"]),
++                expected=hex(expected_new_size))
++    _make_check(checks, details, "memsz_ge_filesz", new["memsz"] >= new["filesz"])
++    align = new["align"] or PAGE
++    _make_check(checks, details, "page_congruent",
++                new["offset"] % align == new["vaddr"] % align,
++                offset=hex(new["offset"]), vaddr=hex(new["vaddr"]), align=hex(align))
++    _make_check(checks, details, "filesz_within_file",
++                new["offset"] + new["filesz"] <= after_facts["size"],
++                end_file=hex(new["offset"] + new["filesz"]), file_size=hex(after_facts["size"]))
++    _make_check(checks, details, "entry_unchanged",
++                before_facts["header"]["e_entry"] == after_facts["header"]["e_entry"],
++                before=hex(before_facts["header"]["e_entry"]),
++                after=hex(after_facts["header"]["e_entry"]))
++    header_changes = _diff_dicts(
++        before_facts["header"], after_facts["header"],
++    )
++    _make_check(checks, details, "elf_header_unchanged", not header_changes,
++                changed=header_changes)
++
++    # no overlap with the next loadable segment (virtual and file views)
++    next_load = None
++    for seg in after_loads:
++        if seg["vaddr"] > new["vaddr"]:
++            next_load = seg if next_load is None or seg["vaddr"] < next_load["vaddr"] else next_load
++    overlap_ok = True
++    if next_load is not None:
++        overlap_ok = (
++            new["vaddr"] + new["memsz"] <= next_load["vaddr"]
++            and new["offset"] + new["filesz"] <= next_load["offset"]
++        )
++    _make_check(checks, details, "no_overlap_with_next_load", overlap_ok,
++                segment_vaddr_end=hex(new["vaddr"] + new["memsz"]),
++                next_vaddr=hex(next_load["vaddr"]) if next_load else None,
++                segment_file_end=hex(new["offset"] + new["filesz"]),
++                next_offset=hex(next_load["offset"]) if next_load else None)
++    return {"checks": checks, "details": details, "pass": all(checks.values()), "failed": _failed(checks)}
++
++
++# ---------------------------------------------------------------------------
++# Section / dynamic / protection audit
++
++
++def section_and_dynamic_audit(original: Path, patched: Path, *, cave_addr: int, cave_size: int) -> dict:
++    checks: dict[str, bool] = {}
++    details: dict[str, Any] = {}
++    before = elf_facts(original)
++    after = elf_facts(patched)
++
++    _make_check(checks, details, "section_header_table_unchanged",
++                before["section_header_table_sha256"] == after["section_header_table_sha256"])
++    _make_check(checks, details, "sections_unchanged",
++                before["section_headers"] == after["section_headers"])
++
++    for name in (".dynamic", ".dynsym", ".dynstr", ".rela.dyn", ".rela.plt",
++                 ".rel.dyn", ".rel.plt", ".got", ".got.plt", ".plt", ".plt.sec"):
++        left = before["section_content_sha256"][name]
++        right = after["section_content_sha256"][name]
++        _make_check(checks, details, f"section_identical_{name.lstrip('.')}", left == right,
++                    before=left, after=right)
++    _make_check(checks, details, "dynamic_entries_unchanged",
++                before["dynamic"] == after["dynamic"])
++    _make_check(checks, details, "relocations_unchanged",
++                before["relocations"] == after["relocations"],
++                before_count=len(before["relocations"]), after_count=len(after["relocations"]))
++    _make_check(checks, details, "symbols_unchanged_except_none",
++                before["symbols"] == after["symbols"])
++
++    # nothing may cover the cave range: no alloc section, no symbol, no relocation
++    cave_end = cave_addr + cave_size
++    sections_in_cave = [
++        sec["name"] for sec in before["section_headers"]
++        if sec["alloc"] and sec["addr"] and sec["addr"] < cave_end and sec["addr"] + sec["size"] > cave_addr
++    ]
++    _make_check(checks, details, "no_section_covers_cave", not sections_in_cave,
++                sections=sections_in_cave)
++    file_offset = _file_offset(original, cave_addr)
++    sections_in_cave_file = [
++        sec["name"] for sec in before["section_headers"]
++        if sec["size"] and sec["offset"] < file_offset + cave_size
++        and sec["offset"] + sec["size"] > file_offset
++    ]
++    _make_check(checks, details, "no_section_file_range_covers_cave",
++                not sections_in_cave_file, sections=sections_in_cave_file,
++                cave_file_offset=hex(file_offset))
++    symbols_in_cave = [
++        sym["name"] for sym in before["symbols"]
++        if cave_addr <= sym["value"] < cave_end
++        or (sym["value"] and sym["value"] + sym["size"] > cave_addr and sym["value"] < cave_end)
++    ]
++    _make_check(checks, details, "no_symbol_in_cave", not symbols_in_cave, symbols=symbols_in_cave)
++    relocs_in_cave = [
++        rel for rel in before["relocations"]
++        if cave_addr <= rel["offset"] < cave_end
++    ]
++    _make_check(checks, details, "no_relocation_targets_cave", not relocs_in_cave,
++                relocations=relocs_in_cave)
++
++    # protections
++    _make_check(checks, details, "no_wx_segment",
++                all(not (seg["flags"] & 2 and seg["flags"] & 1) for seg in after["program_headers"]))
++    gnu_stack_before = [s for s in before["program_headers"] if s["type"] == "GNU_STACK"]
++    gnu_stack_after = [s for s in after["program_headers"] if s["type"] == "GNU_STACK"]
++    _make_check(checks, details, "gnu_stack_unchanged_no_nx_loss",
++                gnu_stack_before == gnu_stack_after
++                and all(not (seg["flags"] & 1) for seg in gnu_stack_after))
++    relro_before = [s for s in before["program_headers"] if s["type"] == "GNU_RELRO"]
++    relro_after = [s for s in after["program_headers"] if s["type"] == "GNU_RELRO"]
++    _make_check(checks, details, "gnu_relro_unchanged", relro_before == relro_after)
++    bits_before = [entry["tag"] for entry in before["dynamic"]]
++    bits_after = [entry["tag"] for entry in after["dynamic"]]
++    _make_check(checks, details, "dynamic_tags_unchanged", bits_before == bits_after)
++    _make_check(checks, details, "cet_note_unchanged",
++                before["cet"] == after["cet"], before=before["cet"], after=after["cet"])
++    return {"checks": checks, "details": details, "pass": all(checks.values()), "failed": _failed(checks)}
++
++
++# ---------------------------------------------------------------------------
++# Redirect / displaced bytes
++
++
++def redirect_audit(original: Path, patched: Path, *, call_site: int, expected_redirect: bytes,
++                   expected_original: bytes, cave_addr: int, strcpy_plt: int,
++                   resume_at: int) -> dict:
++    checks: dict[str, bool] = {}
++    details: dict[str, Any] = {}
++    original_site = _bytes_at(original, call_site, 5)
++    patched_site = _bytes_at(patched, call_site, 5)
++    _make_check(checks, details, "original_call_is_strcpy_plt",
++                original_site == expected_original
++                and original_site[:1] == b"\xe8"
++                and call_site + 5 + int.from_bytes(original_site[1:5], "little", signed=True) == strcpy_plt,
++                original_hex=original_site.hex(), strcpy_plt=hex(strcpy_plt))
++    _make_check(checks, details, "redirect_bytes_written",
++                patched_site == expected_redirect,
++                expected=expected_redirect.hex(), actual=patched_site.hex())
++    _make_check(checks, details, "redirect_target_is_cave",
++                patched_site[:1] == b"\xe8"
++                and call_site + 5 + int.from_bytes(patched_site[1:5], "little", signed=True) == cave_addr,
++                cave=hex(cave_addr))
++    _make_check(checks, details, "resume_address_after_call",
++                resume_at == call_site + 5, resume_at=hex(resume_at), call_site=hex(call_site))
++    displacement = int.from_bytes(patched_site[1:5], "little", signed=True)
++    _make_check(checks, details, "redirect_rel32_in_range", -(2**31) <= displacement < 2**31,
++                displacement=hex(displacement & 0xFFFFFFFF))
++    details["displaced"] = {
++        "file_offset": hex(_file_offset(original, call_site)),
++        "vaddr": hex(call_site),
++        "size": 5,
++        "original_hex": original_site.hex(),
++        "new_hex": patched_site.hex(),
++        "resume_at": hex(resume_at),
++    }
++    return {"checks": checks, "details": details, "pass": all(checks.values()), "failed": _failed(checks)}
++
++
++# ---------------------------------------------------------------------------
++# Cave unused proof (static)
++
++
++def cave_unused_audit(original: Path, *, cave_addr: int, cave_size: int) -> dict:
++    checks: dict[str, bool] = {}
++    details: dict[str, Any] = {}
++    cave_end = cave_addr + cave_size
++    phdrs = program_headers(original)
++    segment = None
++    for seg in phdrs:
++        if seg["type"] == "PT_LOAD" and seg["vaddr"] <= cave_addr < seg["vaddr"] + seg["memsz"]:
++            segment = seg
++    _make_check(checks, details, "inside_rx_load",
++                segment is not None and (segment["flags"] & 4) and (segment["flags"] & 1)
++                if segment else False,
++                segment_flags=segment["flags"] if segment else None)
++    if segment is None:
++        return {"checks": checks, "details": details, "pass": False, "failed": _failed(checks)}
++
++    _make_check(checks, details, "cave_within_memsz",
++                cave_end <= segment["vaddr"] + segment["memsz"])
++    file_backed_end = segment["vaddr"] + segment["filesz"]
++    _make_check(checks, details, "cave_not_file_backed_before_extension",
++                cave_addr >= file_backed_end,
++                original_filesz=hex(segment["filesz"]),
++                original_file_backed_end=hex(file_backed_end),
++                note="bytes beyond p_filesz are loader-zero-filled, not file bytes; "
++                     "the manifest must record the original filler")
++    cave_file_offset = segment["offset"] + (cave_addr - segment["vaddr"])
++    filler = _bytes_at_file(original, cave_file_offset, cave_size)
++    details["original_filler"] = {
++        "file_offset": hex(cave_file_offset),
++        "size": cave_size,
++        "all_zero": filler == b"\x00" * cave_size,
++        "sha256": sha256_bytes(filler),
++    }
++    _make_check(checks, details, "original_filler_zero",
++                details["original_filler"]["all_zero"])
++
++    # no branch or RIP-relative reference into the cave from any executable section
++    incoming: list[dict[str, Any]] = []
++    with original.open("rb") as fh:
++        elf = ELFFile(fh)
++        for sec in elf.iter_sections():
++            flags = sec["sh_flags"]
++            if not (flags & SHF_ALLOC and flags & SHF_EXECINSTR):
++                continue
++            for insn in MD.disasm(sec.data(), sec["sh_addr"]):
++                targets: list[int] = []
++                if insn.group(CS_GRP_JUMP) or insn.group(CS_GRP_CALL):
++                    for op in insn.operands:
++                        if op.type == X86_OP_IMM:
++                            targets.append(op.imm)
++                for op in insn.operands:
++                    if op.type == X86_OP_MEM and op.mem.base == X86_REG_RIP:
++                        targets.append(insn.address + insn.size + op.mem.disp)
++                for target in targets:
++                    if cave_addr <= target < cave_end:
++                        incoming.append(
++                            {"section": sec.name, "address": hex(insn.address),
++                             "mnemonic": insn.mnemonic, "target": hex(target)}
++                        )
++    _make_check(checks, details, "no_incoming_reference", not incoming, references=incoming[:40])
++    return {"checks": checks, "details": details, "pass": all(checks.values()), "failed": _failed(checks)}
++
++
++# ---------------------------------------------------------------------------
++# Added-code static safety (register / stack / control transfer)
++
++
++def code_audit(code: bytes, code_vaddr: int, *, strcpy_plt: int, fprintf_plt: int,
++               exit_group_number: int = 231) -> dict:
++    checks: dict[str, bool] = {}
++    details: dict[str, Any] = {}
++    insns = list(MD.disasm(code, code_vaddr))
++    if not insns or insns[-1].address + insns[-1].size != code_vaddr + len(code):
++        return {"checks": {"code_decodes_fully": False}, "details": {},
++                "pass": False, "failed": ["code_decodes_fully"]}
++    checks["code_decodes_fully"] = True
++
++    writes: list[dict[str, Any]] = []
++    forbidden: list[dict[str, Any]] = []
++    indirect: list[dict[str, Any]] = []
++    rets: list[dict[str, Any]] = []
++    syscalls: list[dict[str, Any]] = []
++    branch_targets: list[dict[str, Any]] = []
++    for insn in insns:
++        read, written = insn.regs_access()
++        for reg in written:
++            name = insn.reg_name(reg)
++            record = {"address": hex(insn.address), "instruction": f"{insn.mnemonic} {insn.op_str}",
++                      "register": name, "mnemonic": insn.mnemonic}
++            writes.append(record)
++            if name in CALLEE_SAVED:
++                forbidden.append(record)
++        if insn.mnemonic == "ret":
++            rets.append({"address": hex(insn.address)})
++        if insn.mnemonic in ("syscall", "sysenter"):
++            syscalls.append({"address": hex(insn.address), "mnemonic": insn.mnemonic})
++        if (insn.group(CS_GRP_JUMP) or insn.group(CS_GRP_CALL)) and insn.operands:
++            op = insn.operands[0]
++            if op.type != X86_OP_IMM:
++                indirect.append({"address": hex(insn.address),
++                                 "instruction": f"{insn.mnemonic} {insn.op_str}"})
++            else:
++                branch_targets.append({"address": hex(insn.address), "target": hex(op.imm),
++                                       "external": not (code_vaddr <= op.imm < code_vaddr + len(code))})
++
++    _make_check(checks, details, "no_callee_saved_write", not forbidden, writes=forbidden)
++    _make_check(checks, details, "no_return_instruction", not rets, instructions=rets)
++    _make_check(checks, details, "no_indirect_transfer", not indirect, instructions=indirect)
++
++    # A `call` writes rsp implicitly (the return-address push). The alignment
++    # adjustment is the only explicit rsp write the added code may make.
++    rsp_writes = [w for w in writes
++                  if w["register"] == "rsp" and w.get("mnemonic") != "call"]
++    _make_check(checks, details, "rsp_write_is_alignment_only",
++                len(rsp_writes) == 1
++                and rsp_writes[0]["instruction"].replace("  ", " ") == "sub rsp, 8",
++                writes=rsp_writes)
++    details["writes"] = writes
++    details["branch_targets"] = branch_targets
++
++    # exit path: exactly one syscall, and exit_group(1) is set up before it
++    _make_check(checks, details, "single_syscall", len(syscalls) == 1, syscalls=syscalls)
++    text = [(insn.address, f"{insn.mnemonic} {insn.op_str}") for insn in insns]
++    has_exit_group = any(
++        mnemonic == "mov eax, 0xe7" or (mnemonic == "mov eax, 231") or
++        mnemonic == f"mov eax, {exit_group_number}"
++        for _addr, mnemonic in text
++    )
++    has_status_one = any(mnemonic in ("mov edi, 1", "mov edi, 0x1") for _addr, mnemonic in text)
++    _make_check(checks, details, "exit_group_status_1_setup", has_exit_group and has_status_one,
++                instructions=[m for _a, m in text])
++    _make_check(checks, details, "writer_target_imported",
++                any(t["target"] == hex(fprintf_plt) for t in branch_targets),
++                fprintf_plt=hex(fprintf_plt))
++    _make_check(checks, details, "valid_path_reuses_strcpy",
++                any(t["target"] == hex(strcpy_plt) for t in branch_targets),
++                strcpy_plt=hex(strcpy_plt))
++    return {"checks": checks, "details": details, "pass": all(checks.values()), "failed": _failed(checks)}
++
++
++# ---------------------------------------------------------------------------
++# Independent readelf view
++
++
++def parse_readelf_program_headers(text: str) -> list[dict]:
++    """Parse ``readelf -lW`` program-header rows into the elftools field names.
++
++    The independent view exists so the audit cannot rely on a single parser
++    (handoff 11 §3 item 3). Rows look like::
++
++          LOAD           0x001000 0x...401000 0x...401000 0x001000 0x001000 R E 0x1000
++    """
++    out = []
++    for line in text.splitlines():
++        tokens = line.split()
++        if len(tokens) < 8:
++            continue
++        kind = tokens[0]
++        if not kind.isupper() or not tokens[1].startswith("0x"):
++            continue
++        try:
++            offset = int(tokens[1], 16)
++            vaddr = int(tokens[2], 16)
++            paddr = int(tokens[3], 16)
++            filesz = int(tokens[4], 16)
++            memsz = int(tokens[5], 16)
++            align = int(tokens[-1], 16)
++        except ValueError:
++            continue
++        flags_text = "".join(tokens[6:-1])
++        if not flags_text or any(ch not in "RWE" for ch in flags_text):
++            continue
++        numeric = (4 if "R" in flags_text else 0) | (2 if "W" in flags_text else 0) \
++            | (1 if "E" in flags_text else 0)
++        out.append(
++            {
++                "type": kind,
++                "offset": offset,
++                "vaddr": vaddr,
++                "paddr": paddr,
++                "filesz": filesz,
++                "memsz": memsz,
++                "flags": numeric,
++                "align": align,
++            }
++        )
++    return out
++
++
++def independent_readelf_audit(patched: Path, readelf_text: str) -> dict:
++    checks: dict[str, bool] = {}
++    details: dict[str, Any] = {}
++    parsed = parse_readelf_program_headers(readelf_text)
++    _make_check(checks, details, "readelf_parsed", bool(parsed), segments=len(parsed))
++    if not parsed:
++        return {"checks": checks, "details": details, "pass": False, "failed": _failed(checks)}
++    facts = program_headers(patched)
++    _make_check(checks, details, "readelf_matches_elftools_count", len(parsed) == len(facts),
++                readelf=len(parsed), elftools=len(facts))
++    mismatches = []
++    for left, right in zip(parsed, facts):
++        for field in ("offset", "vaddr", "paddr", "filesz", "memsz", "flags", "align"):
++            if left[field] != right[field]:
++                mismatches.append({"index": right["index"], "field": field,
++                                   "readelf": left[field], "elftools": right[field]})
++    _make_check(checks, details, "readelf_matches_elftools_values", not mismatches,
++                mismatches=mismatches)
++    return {"checks": checks, "details": details, "pass": all(checks.values()), "failed": _failed(checks)}
++
++
++# ---------------------------------------------------------------------------
++# Combined audit
++
++
++def audit_cave_candidate(
++    original: Path,
++    patched: Path,
++    *,
++    call_site: int,
++    redirect: bytes,
++    displaced: bytes,
++    cave_addr: int,
++    cave_size: int,
++    code: bytes,
++    code_vaddr: int,
++    message: bytes,
++    message_vaddr: int,
++    strcpy_plt: int,
++    fprintf_plt: int,
++    resume_at: int,
++    expected_new_size: int,
++    declared_intervals,
++    readelf_text: str | None = None,
++) -> dict:
++    checks: dict[str, bool] = {}
++    details: dict[str, Any] = {}
++    sections = [
++        redirect_audit(original, patched, call_site=call_site, expected_redirect=redirect,
++                       expected_original=displaced, cave_addr=cave_addr, strcpy_plt=strcpy_plt,
++                       resume_at=resume_at),
++        header_audit(original, patched, expected_vaddr=_rx_vaddr(original, cave_addr),
++                     expected_new_size=expected_new_size),
++        cave_unused_audit(original, cave_addr=cave_addr, cave_size=cave_size),
++        section_and_dynamic_audit(original, patched, cave_addr=cave_addr, cave_size=cave_size),
++        code_audit(code, code_vaddr, strcpy_plt=strcpy_plt, fprintf_plt=fprintf_plt),
++    ]
++    if readelf_text is not None:
++        sections.append(independent_readelf_audit(patched, readelf_text))
++
++    for part in sections:
++        for name, value in part["checks"].items():
++            checks[name] = checks.get(name, True) and bool(value)
++            if not value:
++                details[name] = part["details"].get(name, {"value": value})
++
++    # bytes: written locations and declared intervals must match exactly
++    original_bytes = original.read_bytes()
++    patched_bytes = patched.read_bytes()
++    byte_result = audit_changed_bytes(original_bytes, patched_bytes, declared_intervals)
++    checks["changed_bytes_inside_declared_intervals"] = byte_result["pass"]
++    details["changed_bytes"] = byte_result
++    if not byte_result["pass"]:
++        details["changed_bytes_outside"] = byte_result["outside_declared"]
++
++    # expected content at the declared locations
++    _make_check(checks, details, "cave_code_at_address",
++                _bytes_at(patched, cave_addr, len(code)) == code,
++                cave=hex(cave_addr), size=len(code))
++    _make_check(checks, details, "message_at_address",
++                _bytes_at(patched, message_vaddr, len(message)) == message,
++                message_vaddr=hex(message_vaddr), size=len(message))
++    _make_check(checks, details, "original_hash_recorded",
++                sha256_bytes(original_bytes) == sha256_file(original))
++    return {
++        "checks": checks,
++        "details": details,
++        "pass": all(checks.values()),
++        "failed": _failed(checks),
++    }
++
++
++def _failed(checks: dict[str, bool]) -> list[str]:
++    return [name for name, value in checks.items() if not value]
++
++
++# ---------------------------------------------------------------------------
++# Low-level file helpers
++
++
++def _file_offset(path: Path, vaddr: int) -> int:
++    segments = program_headers(path)
++    file_size = path.stat().st_size
++    for seg in segments:
++        if seg["type"] != "PT_LOAD":
++            continue
++        if seg["vaddr"] <= vaddr < seg["vaddr"] + seg["filesz"]:
++            return seg["offset"] + vaddr - seg["vaddr"]
++    # Addresses in the loader-zero tail or file padding are not inside p_filesz,
++    # but their file byte position is still well defined when it is inside EOF.
++    candidates = [seg for seg in segments
++                  if seg["type"] == "PT_LOAD" and seg["vaddr"] <= vaddr]
++    if candidates:
++        segment = max(candidates, key=lambda seg: seg["vaddr"])
++        offset = segment["offset"] + (vaddr - segment["vaddr"])
++        if offset < file_size:
++            return offset
++    raise AuditError(f"address {vaddr:#x} has no file offset")
++
++
++def _bytes_at(path: Path, vaddr: int, size: int) -> bytes:
++    try:
++        offset = _file_offset(path, vaddr)
++    except AuditError:
++        return b""
++    raw = path.read_bytes()
++    return raw[offset : offset + size]
++
++
++def _bytes_at_file(path: Path, offset: int, size: int) -> bytes:
++    return path.read_bytes()[offset : offset + size]
++
++
++def _rx_vaddr(path: Path, cave_addr: int) -> int:
++    for seg in program_headers(path):
++        if seg["type"] == "PT_LOAD" and (seg["flags"] & 1) and seg["vaddr"] <= cave_addr:
++            return seg["vaddr"]
++    raise AuditError("RX segment not found")
+diff --git a/routea/byteaudit.py b/routea/byteaudit.py
+new file mode 100644
+index 0000000..5b44e13
+--- /dev/null
++++ b/routea/byteaudit.py
+@@ -0,0 +1,135 @@
++"""Dependency-free byte-audit primitives for Route A evidence.
++
++These helpers compare the original and patched files at the byte level and are
++used by the audit and the evidence bundle. They deliberately import nothing from
++``pyelftools``/``capstone`` so they can be unit-tested without opening an ELF.
++
++Rules (Gate 3, handoff 11 §3 item 2/3):
++
++* every differing file byte must fall inside a declared interval;
++* the bytes outside the declared intervals ("residue") must be identical in the
++  original and the candidate;
++* intervals are inclusive ``[start, end]`` pairs of zero-based file offsets and
++  are merged when they touch, so a manifest cannot hide a gap.
++"""
++
++from __future__ import annotations
++
++import hashlib
++
++
++class ByteAuditError(ValueError):
++    """Raised when a byte-level audit cannot be evaluated."""
++
++
++def sha256_bytes(data: bytes) -> str:
++    return hashlib.sha256(data).hexdigest()
++
++
++def changed_intervals(original: bytes, patched: bytes) -> list[tuple[int, int]]:
++    """Return merged inclusive intervals of differing file offsets.
++
++    ``ValueError`` when the files differ in length: a length change would move
++    every following byte and cannot be expressed as a small edit set.
++    """
++    if len(original) != len(patched):
++        raise ByteAuditError(
++            f"length differs: original={len(original)} patched={len(patched)}"
++        )
++    intervals: list[tuple[int, int]] = []
++    for offset, (a, b) in enumerate(zip(original, patched)):
++        if a == b:
++            continue
++        if intervals and intervals[-1][1] + 1 == offset:
++            intervals[-1] = (intervals[-1][0], offset)
++        else:
++            intervals.append((offset, offset))
++    return intervals
++
++
++def normalize_intervals(intervals) -> list[tuple[int, int]]:
++    """Validate and merge a manifest's inclusive intervals."""
++    parsed: list[tuple[int, int]] = []
++    for item in intervals:
++        if isinstance(item, dict):
++            start, end = int(item["start"]), int(item["end"])
++        else:
++            start, end = int(item[0]), int(item[1])
++        if start < 0 or end < start:
++            raise ByteAuditError(f"invalid interval: {item!r}")
++        parsed.append((start, end))
++    parsed.sort()
++    merged: list[tuple[int, int]] = []
++    for start, end in parsed:
++        if merged and start <= merged[-1][1] + 1:
++            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
++        else:
++            merged.append((start, end))
++    return merged
++
++
++def intervals_as_dicts(intervals) -> list[dict]:
++    return [
++        {"start": start, "end": end, "size": end - start + 1}
++        for start, end in normalize_intervals(intervals)
++    ]
++
++
++def off_interval_offsets(intervals, allowed: list[tuple[int, int]]) -> list[int]:
++    """Return differing offsets outside the allowed set (sorted)."""
++    allowed = normalize_intervals(allowed)
++    outside: list[int] = []
++    for start, end in intervals:
++        for offset in range(start, end + 1):
++            if not any(a <= offset <= b for a, b in allowed):
++                outside.append(offset)
++    return outside
++
++
++def residue_sha256(original: bytes, patched: bytes, allowed) -> dict:
++    """SHA-256 of the bytes that the edit claims not to touch.
++
++    Returns both hashes and a ``match`` flag. Length differences are an error.
++    """
++    if len(original) != len(patched):
++        raise ByteAuditError("cannot compare residue of differently sized files")
++    allowed = normalize_intervals(allowed)
++    keep_original = bytearray()
++    keep_patched = bytearray()
++    index = 0
++    for start, end in allowed:
++        keep_original += original[index:start]
++        keep_patched += patched[index:start]
++        index = end + 1
++    keep_original += original[index:]
++    keep_patched += patched[index:]
++    left = sha256_bytes(bytes(keep_original))
++    right = sha256_bytes(bytes(keep_patched))
++    return {
++        "original_residue_sha256": left,
++        "patched_residue_sha256": right,
++        "residue_bytes": len(keep_original),
++        "match": left == right,
++    }
++
++
++def audit_changed_bytes(
++    original: bytes,
++    patched: bytes,
++    declared_intervals,
++) -> dict:
++    """Full byte-level audit result for the edit manifest."""
++    diffs = changed_intervals(original, patched)
++    declared = normalize_intervals(declared_intervals)
++    outside = off_interval_offsets(diffs, declared)
++    residue = residue_sha256(original, patched, declared)
++    return {
++        "original_size": len(original),
++        "patched_size": len(patched),
++        "changed_intervals": intervals_as_dicts(diffs),
++        "declared_intervals": intervals_as_dicts(declared),
++        "changed_byte_count": sum(end - start + 1 for start, end in diffs),
++        "outside_declared": [hex(offset) for offset in outside],
++        "residue": residue,
++        "pass": not outside and residue["match"] and len(original) == len(patched),
++    }
+diff --git a/routea/cave.py b/routea/cave.py
+index a3ff42e..4a84966 100644
+--- a/routea/cave.py
++++ b/routea/cave.py
+@@ -1,13 +1,29 @@
+-"""Route A strategy C: redirect the strcpy call into a code cave.
+-
+-The cave owns the guard: scan NUL, compare with ``max_valid_input_bytes``, then
+-either jump to the existing ``strcpy@plt`` (which returns to ``0x401309``) or
+-print the exact stderr and ``exit_group(1)``.
+-
+-No new PLT entry is needed: this binary already imports ``fprintf`` and has the
+-``stderr`` object. The exact stderr string still needs a data home; the worker
+-places it after the code in the same cave. Whether that is allowed is part of the
+-pending Gate 3 scope ruling, so ``build`` is gated.
++"""Route A strategy C: redirect the ``strcpy`` call into a verified-unused cave.
++
++Design (settled by handoffs 09 and 13):
++
++* patch the 5-byte ``call strcpy@plt`` at ``0x401304`` as a unit -> ``call cave``;
++* the cave scans the input for its NUL terminator, compares the length with
++  ``max_valid_input_bytes``, then either tail-jumps to the existing
++  ``strcpy@plt`` (which returns to ``0x401309``) or writes the exact contract
++  stderr with the existing ``fprintf@plt``/``stderr`` and terminates with
++  ``exit_group(1)``;
++* extend the existing R-X ``PT_LOAD`` ``p_filesz``/``p_memsz`` so the cave bytes
++  at ``0x4018e9``-``0x401fff`` become file-backed (same segment, no new segment);
++* no new import, relocation, GOT/PLT or permission change.
++
++This module is **static**: it never executes the candidate. Gate 3's six-case run
++and isolation evidence are produced separately in the guest (handoff 11 §3).
++
++Commands::
++
++    python -m routea.cave build   --elf ... --contract ... --cave 0x4018e9 \
++        --cave-size 1815 --out candidate.elf --manifest edit-manifest.json --scope-authorized
++    python -m routea.cave audit   --original ... --patched ... --contract ... \
++        --cave 0x4018e9 --cave-size 1815 --readelf raw/readelf-program-headers.txt
++    python -m routea.cave verify  --elf ... --contract ... --cave 0x4018e9 --cave-size 1815
++    python -m routea.cave bundle  --elf ... --contract ... --cave 0x4018e9 \
++        --cave-size 1815 --out-dir routea/out/gate3 --scope-authorized
+ """
+ 
+ from __future__ import annotations
+@@ -15,25 +31,36 @@ from __future__ import annotations
+ import argparse
+ import json
+ import struct
++import tempfile
+ from dataclasses import dataclass
+ from pathlib import Path
+ from typing import Iterable
+ 
+-from capstone import Cs, CS_ARCH_X86, CS_MODE_64
++from capstone import CS_ARCH_X86, CS_MODE_64, Cs
+ from elftools.elf.elffile import ELFFile
+ 
+ from app.domain.contracts import SecurityContract
++from routea.audit import audit_cave_candidate
++from routea.byteaudit import changed_intervals, intervals_as_dicts
++from routea.evidence import (
++    capture_environment,
++    capture_independent_views,
++    reproducibility_report,
++    write_evidence_bundle,
++)
++from routea.manifest import (
++    CaveManifest,
++    header_fields,
++    program_headers,
++    sha256_bytes,
++    tools_report,
++)
+ from routea.worker import (
+-    EditManifest,
+     FunctionInfo,
+     RouteAError,
+     ScopeNotAuthorized,
+     _bytes_at,
+-    _file_offset,
+-    _loads,
+     _plt_map,
+-    _reloc_counts,
+-    _sha,
+     _sym,
+     decode_function,
+ )
+@@ -50,6 +77,7 @@ class CavePlan:
+     rx_vaddr: int
+     rx_new_size: int
+     redirect: bytes
++    displaced: bytes
+     code: bytes
+     message: bytes
+     message_addr: int
+@@ -58,17 +86,24 @@ class CavePlan:
+     strcpy_plt: int
+     max_valid_input: int
+ 
++    @property
++    def resume_at(self) -> int:
++        """Address the original call returns to (instruction after the 5-byte call)."""
++        return self.call_site + 5
++
+     def to_dict(self) -> dict:
+         return {
+-            "schema_version": 1,
++            "schema_version": 2,
+             "strategy": "cave_call_redirect",
+             "target": self.target.to_dict(),
+             "call_site": hex(self.call_site),
++            "resume_at": hex(self.resume_at),
+             "cave_addr": hex(self.cave_addr),
+             "cave_size": self.cave_size,
+             "rx_vaddr": hex(self.rx_vaddr),
+             "rx_new_size": hex(self.rx_new_size),
+             "redirect_hex": self.redirect.hex(),
++            "displaced_hex": self.displaced.hex(),
+             "code_hex": self.code.hex(),
+             "message": self.message.decode("ascii"),
+             "message_hex": self.message.hex(),
+@@ -129,36 +164,11 @@ def _encode_cave(
+     return bytes(code)
+ 
+ 
+-def _call_site_ok(elf_path: Path, call_site: int, strcpy_plt: int) -> bool:
+-    with elf_path.open("rb") as fh:
+-        elf = ELFFile(fh)
+-        off = _file_offset(elf, call_site)
+-    fh = elf_path.open("rb")
+-    try:
+-        fh.seek(off)
+-        raw = fh.read(5)
+-    finally:
+-        fh.close()
+-    return len(raw) == 5 and raw[0] == 0xE8 and int.from_bytes(raw[1:], "little", signed=True) + call_site + 5 == strcpy_plt
+-
+-
+-def _rx_cave_segment(elf_path: Path, addr: int, size: int) -> int:
+-    """Return the RX LOAD vaddr when addr..addr+size is file-backed.
+-
+-    The cave may sit after p_filesz but still inside the file (zero padding);
+-    extending p_filesz/p_memsz maps it without adding a segment.
+-    """
+-    file_size = elf_path.stat().st_size
+-    with elf_path.open("rb") as fh:
+-        elf = ELFFile(fh)
+-        for seg in elf.iter_segments():
+-            if seg["p_type"] != "PT_LOAD" or not (seg["p_flags"] & 1):
+-                continue
+-            if seg["p_vaddr"] <= addr:
+-                file_end = seg["p_offset"] + (addr + size - seg["p_vaddr"])
+-                if file_end <= file_size:
+-                    return seg["p_vaddr"]
+-    raise RouteAError("cave must be inside an executable file-backed PT_LOAD")
++def _read_call_site(elf_path: Path, call_site: int) -> bytes:
++    raw = _bytes_at(elf_path, call_site, 5)
++    if len(raw) != 5:
++        raise RouteAError(f"call site 0x{call_site:x} is not file-backed")
++    return raw
+ 
+ 
+ def plan_route_a_cave(
+@@ -175,6 +185,9 @@ def plan_route_a_cave(
+     if not contract.invalid_stderr:
+         raise RouteAError("contract has no invalid_stderr")
+     message = contract.invalid_stderr.encode("ascii")
++    displaced = _read_call_site(elf_path, call_site)
++    if displaced[0] != 0xE8:
++        raise RouteAError("call site is not a 5-byte relative call")
+     with elf_path.open("rb") as fh:
+         elf = ELFFile(fh)
+         stderr_vaddr = _sym(elf, "stderr")
+@@ -183,14 +196,13 @@ def plan_route_a_cave(
+         if "fprintf" not in by_name or "strcpy" not in by_name:
+             raise RouteAError("fprintf/strcpy PLT entries are required")
+         fprintf_plt, strcpy_plt = by_name["fprintf"], by_name["strcpy"]
+-    if not _call_site_ok(elf_path, call_site, strcpy_plt):
+-        raise RouteAError("call site is not a 5-byte call to strcpy@plt")
++    if call_site + 5 + int.from_bytes(displaced[1:], "little", signed=True) != strcpy_plt:
++        raise RouteAError("call site is not a call to strcpy@plt")
+     rx_vaddr = _rx_cave_segment(elf_path, cave_addr, cave_size)
+     rx_new_size = cave_addr + cave_size - rx_vaddr
+     if rx_new_size <= 0:
+         raise RouteAError("cave range is invalid")
+ 
+-    # Place code first, then the message in the cave; compute message address.
+     placeholder = _encode_cave(
+         cave_addr=cave_addr,
+         message_addr=cave_addr,
+@@ -212,53 +224,75 @@ def plan_route_a_cave(
+         raise RouteAError("cave is too small for code + message")
+     redirect = b"\xe8" + struct.pack("<i", cave_addr - (call_site + 5))
+     return CavePlan(target, call_site, cave_addr, cave_size, rx_vaddr,
+-                    rx_new_size, redirect, code, message, message_addr,
++                    rx_new_size, redirect, displaced, code, message, message_addr,
+                     stderr_vaddr, fprintf_plt, strcpy_plt,
+                     contract.max_valid_input_bytes)
+ 
+ 
+-def _segment_at(loads: list[dict], vaddr: int) -> dict | None:
+-    return next((s for s in loads if s["vaddr"] == vaddr), None)
+-
+-
+-def audit_cave_layout(original: Path, patched: Path, plan: CavePlan) -> dict:
+-    before = _loads(original)
+-    after = _loads(patched)
+-    rx = _segment_at(after, plan.rx_vaddr)
+-    old_rx = _segment_at(before, plan.rx_vaddr)
+-    checks = {
+-        "redirect_bytes": _bytes_at(patched, plan.call_site, 5) == plan.redirect,
+-        "cave_code": _bytes_at(patched, plan.cave_addr, len(plan.code)) == plan.code,
+-        "message_bytes": _bytes_at(patched, plan.message_addr, len(plan.message)) == plan.message,
+-        "harness_unchanged": _bytes_at(original, 0x401256, 90) == _bytes_at(patched, 0x401256, 90),
+-        "no_new_segments": sorted((s["vaddr"], s["flags"]) for s in before) ==
+-                           sorted((s["vaddr"], s["flags"]) for s in after),
+-        "relocations_unchanged": _reloc_counts(original) == _reloc_counts(patched),
+-        "no_wx": all(not (s["flags"] & 2 and s["flags"] & 1) for s in after),
+-        "rx_extended": bool(rx and old_rx and rx["filesz"] == plan.rx_new_size
+-                            and rx["memsz"] == plan.rx_new_size
+-                            and rx["flags"] == old_rx["flags"] == 5),
+-    }
+-    return {
+-        "checks": checks,
+-        "pass": all(checks.values()),
+-        "original_size": original.stat().st_size,
+-        "patched_size": patched.stat().st_size,
+-    }
++def _rx_cave_segment(elf_path: Path, addr: int, size: int) -> int:
++    file_size = elf_path.stat().st_size
++    with elf_path.open("rb") as fh:
++        elf = ELFFile(fh)
++        for seg in elf.iter_segments():
++            if seg["p_type"] != "PT_LOAD" or not (seg["p_flags"] & 1):
++                continue
++            if seg["p_vaddr"] <= addr:
++                file_end = seg["p_offset"] + (addr + size - seg["p_vaddr"])
++                if file_end <= file_size:
++                    return seg["p_vaddr"]
++    raise RouteAError("cave must be inside an executable file-backed PT_LOAD")
+ 
+ 
+-def build_cave_patched(
+-    original: Path,
+-    plan: CavePlan,
+-    out: Path,
+-    *,
+-    scope_authorized: bool = False,
+-) -> EditManifest:
+-    if not scope_authorized:
+-        raise ScopeNotAuthorized(
+-            "cave call redirection plus exact-stderr data is a Gate 3 scope decision; "
+-            "pass scope_authorized=True only after the ruling"
+-        )
++def _file_offset_segment(elf_path: Path, vaddr: int) -> int:
++    """File offset for an address inside a loadable segment (filesz or padding).
++
++    The cave sits past the original ``p_memsz``/``p_filesz`` end, so a plain
++    "inside p_filesz" lookup is not enough. Pick the closest PT_LOAD whose
++    ``p_vaddr <= vaddr`` and whose computed file offset is still inside the file.
++    """
++    file_size = elf_path.stat().st_size
++    with elf_path.open("rb") as fh:
++        elf = ELFFile(fh)
++        candidates = [seg for seg in elf.iter_segments()
++                      if seg["p_type"] == "PT_LOAD" and seg["p_vaddr"] <= vaddr]
++    if not candidates:
++        raise RouteAError(f"vaddr {vaddr:#x} is not inside a PT_LOAD")
++    segment = max(candidates, key=lambda seg: seg["p_vaddr"])
++    offset = segment["p_offset"] + (vaddr - segment["p_vaddr"])
++    if offset >= file_size:
++        raise RouteAError(f"vaddr {vaddr:#x} is past EOF")
++    return offset
++
++
++def _rx_phdr_index(elf_path: Path, rx_vaddr: int) -> int:
++    for seg in program_headers(elf_path):
++        if seg["type"] == "PT_LOAD" and seg["vaddr"] == rx_vaddr:
++            return int(seg["index"])
++    raise RouteAError("RX PT_LOAD not found for interval declaration")
++
++
++def declared_intervals(original: Path, plan: CavePlan) -> list[dict]:
++    """Every file interval the manifest promises to change, inclusive."""
++    call_offset = _file_offset_segment(original, plan.call_site)
++    cave_offset = _file_offset_segment(original, plan.cave_addr)
++    cave_len = len(plan.code) + len(plan.message)
++    fields = header_fields(original)
++    entry_offset = fields["e_phoff"] + _rx_phdr_index(original, plan.rx_vaddr) * fields["e_phentsize"]
++    return intervals_as_dicts(
++        [
++            (call_offset, call_offset + 4),
++            (cave_offset, cave_offset + cave_len - 1),
++            # ELF64 program header: p_filesz at +32, p_memsz at +40
++            (entry_offset + 32, entry_offset + 47),
++        ]
++    )
++
++
++# ---------------------------------------------------------------------------
++# Build / audit / verify / bundle
++
++
++def _write_candidate(original: Path, plan: CavePlan, out: Path) -> None:
+     data = bytearray(original.read_bytes())
+     _extend_load_filesz(original, data, plan.rx_vaddr, plan.rx_new_size)
+     for addr, blob in ((plan.call_site, plan.redirect),
+@@ -266,29 +300,146 @@ def build_cave_patched(
+                        (plan.message_addr, plan.message)):
+         _write_at(original, data, addr, blob)
+     out.write_bytes(bytes(data))
+-    out.chmod(0o755)
+-    audit = audit_cave_layout(original, out, plan)
+-    return EditManifest(
+-        original_sha256=_sha(original),
+-        patched_sha256=_sha(out),
++    try:
++        out.chmod(0o755)
++    except OSError:  # pragma: no cover - Windows checkout
++        pass
++
++
++def audit_cave_layout(
++    original: Path,
++    patched: Path,
++    plan: CavePlan,
++    *,
++    readelf_text: str | None = None,
++) -> dict:
++    return audit_cave_candidate(
++        original,
++        patched,
++        call_site=plan.call_site,
++        redirect=plan.redirect,
++        displaced=plan.displaced,
++        cave_addr=plan.cave_addr,
++        cave_size=plan.cave_size,
++        code=plan.code,
++        code_vaddr=plan.cave_addr,
++        message=plan.message,
++        message_vaddr=plan.message_addr,
++        strcpy_plt=plan.strcpy_plt,
++        fprintf_plt=plan.fprintf_plt,
++        resume_at=plan.resume_at,
++        expected_new_size=plan.rx_new_size,
++        declared_intervals=declared_intervals(original, plan),
++        readelf_text=readelf_text,
++    )
++
++
++def _build_manifest(
++    original: Path,
++    patched: Path,
++    plan: CavePlan,
++    audit: dict,
++) -> CaveManifest:
++    original_bytes = original.read_bytes()
++    patched_bytes = patched.read_bytes()
++    actual = intervals_as_dicts(changed_intervals(original_bytes, patched_bytes))
++    intended = declared_intervals(original, plan)
++    call_offset = _file_offset_segment(original, plan.call_site)
++    cave_offset = _file_offset_segment(original, plan.cave_addr)
++    fields = header_fields(original)
++    entry_offset = fields["e_phoff"] + _rx_phdr_index(original, plan.rx_vaddr) * fields["e_phentsize"]
++    before = {seg["vaddr"]: seg for seg in program_headers(original)}
++    after = {seg["vaddr"]: seg for seg in program_headers(patched)}
++    old_rx, new_rx = before[plan.rx_vaddr], after[plan.rx_vaddr]
++    return CaveManifest(
++        original_sha256=sha256_bytes(original_bytes),
++        patched_sha256=sha256_bytes(patched_bytes),
++        original_size=len(original_bytes),
++        patched_size=len(patched_bytes),
+         function={"name": plan.target.name, "entry": hex(plan.target.entry),
+                   "size": plan.target.size},
+-        edits=[{"kind": "call_redirect", "vaddr": hex(plan.call_site),
+-                "size": 5, "new_hex": plan.redirect.hex(),
+-                "purpose": "redirect strcpy call to cave"}],
+-        mappings=[{"vaddr": hex(plan.cave_addr), "perm": "R-X",
+-                   "size": len(plan.code) + len(plan.message),
+-                   "purpose": "guard + exact stderr in existing cave"}],
++        redirect={
++            "vaddr": hex(plan.call_site),
++            "file_offset": hex(call_offset),
++            "size": 5,
++            "original_hex": plan.displaced.hex(),
++            "new_hex": plan.redirect.hex(),
++            "target_vaddr": hex(plan.cave_addr),
++            "resume_at": hex(plan.resume_at),
++            "rel32": hex(int.from_bytes(plan.redirect[1:], "little", signed=True) & 0xFFFFFFFF),
++        },
++        cave={
++            "start": hex(plan.cave_addr),
++            "end": hex(plan.cave_addr + plan.cave_size - 1),
++            "entry": hex(plan.cave_addr),
++            "size": plan.cave_size,
++            "file_offset": hex(cave_offset),
++            "perm": "R-X (inside the extended PT_LOAD)",
++            "original_filler_sha256": sha256_bytes(
++                original_bytes[cave_offset:cave_offset + plan.cave_size]),
++            "original_filler_all_zero": (
++                original_bytes[cave_offset:cave_offset + plan.cave_size]
++                == b"\x00" * plan.cave_size
++            ),
++        },
++        added=[
++            {"kind": "code", "vaddr": hex(plan.cave_addr), "file_offset": hex(cave_offset),
++             "size": len(plan.code), "sha256": sha256_bytes(plan.code),
++             "hex": plan.code.hex(), "perm": "R-X",
++             "purpose": "guard + writer + exit_group"},
++            {"kind": "data", "vaddr": hex(plan.message_addr),
++             "file_offset": hex(cave_offset + len(plan.code)),
++             "size": len(plan.message), "sha256": sha256_bytes(plan.message),
++             "hex": plan.message.hex(),
++             "perm": "read-only by segment flags (R-X page, never written)",
++             "purpose": "exact invalid-path stderr, RIP-relative only"},
++        ],
++        header_changes=[
++            {"index": _rx_phdr_index(original, plan.rx_vaddr), "field": "p_filesz",
++             "old": hex(old_rx["filesz"]), "new": hex(new_rx["filesz"]),
++             "file_offset": hex(entry_offset + 32)},
++            {"index": _rx_phdr_index(original, plan.rx_vaddr), "field": "p_memsz",
++             "old": hex(old_rx["memsz"]), "new": hex(new_rx["memsz"]),
++             "file_offset": hex(entry_offset + 40)},
++        ],
++        changed_file_intervals=actual,
++        intended_intervals=intended,
+         relocations_added=[],
+-        header_changes={"original_size": original.stat().st_size,
+-                        "patched_size": out.stat().st_size},
++        writer={"mechanism": "plt", "symbol": "fprintf",
++                "plt_vaddr": hex(plan.fprintf_plt),
++                "object": "stderr", "object_vaddr": hex(plan.stderr_vaddr),
++                "note": "existing import and COPY relocation; no new import/relocation"},
++        termination={"mechanism": "syscall", "syscall": "exit_group", "number": 231,
++                     "status": 1, "note": "never returns to main; stdout untouched"},
++        tools=tools_report(),
+         scope_authorized=True,
+-        audit=audit,
++        audit={
++            "checks": audit["checks"],
++            "pass": audit["pass"],
++            "failed": audit["failed"],
++        },
+     )
+ 
+ 
++def build_cave_patched(
++    original: Path,
++    plan: CavePlan,
++    out: Path,
++    *,
++    scope_authorized: bool = False,
++    readelf_text: str | None = None,
++) -> CaveManifest:
++    if not scope_authorized:
++        raise ScopeNotAuthorized(
++            "cave call redirection plus exact-stderr data is a Gate 3 scope decision; "
++            "pass scope_authorized=True only after the ruling"
++        )
++    _write_candidate(original, plan, out)
++    audit = audit_cave_layout(original, out, plan, readelf_text=readelf_text)
++    return _build_manifest(original, out, plan, audit)
++
++
+ def _extend_load_filesz(original: Path, data: bytearray, vaddr: int, new_size: int) -> None:
+-    import struct
+     with original.open("rb") as fh:
+         elf = ELFFile(fh)
+         if elf.elfclass != 64:
+@@ -310,71 +461,131 @@ def _extend_load_filesz(original: Path, data: bytearray, vaddr: int, new_size: i
+     raise RouteAError("RX LOAD segment not found for extension")
+ 
+ 
+-def _file_offset_ext(elf: ELFFile, addr: int) -> int:
+-    for seg in elf.iter_segments():
+-        if seg["p_type"] != "PT_LOAD":
+-            continue
+-        if seg["p_vaddr"] <= addr:
+-            off = seg["p_offset"] + (addr - seg["p_vaddr"])
+-            end = elf.stream.seek(0, 2)
+-            if off < end:
+-                return off
+-    raise RouteAError(f"address {addr:#x} is not file-backed")
+-
+-
+ def _write_at(original: Path, data: bytearray, addr: int, blob: bytes) -> None:
+-    with original.open("rb") as fh:
+-        elf = ELFFile(fh)
+-        off = _file_offset_ext(elf, addr)
++    off = _file_offset_segment(original, addr)
+     data[off:off + len(blob)] = blob
+ 
+ 
+-def main(argv: Iterable[str] | None = None) -> int:
++# ---------------------------------------------------------------------------
++# CLI
++
++
++def _load_contract(path: Path) -> SecurityContract:
++    return SecurityContract.from_dict(json.loads(path.read_text(encoding="utf-8")))
++
++
++def _parse_args(argv: Iterable[str] | None) -> argparse.Namespace:
+     ap = argparse.ArgumentParser(prog="python -m routea.cave")
+     sub = ap.add_subparsers(dest="cmd", required=True)
+-    pl = sub.add_parser("plan")
+-    pl.add_argument("--elf", type=Path, required=True)
+-    pl.add_argument("--contract", type=Path, required=True)
+-    pl.add_argument("--cave", required=True, help="cave start address, e.g. 0x401318")
+-    pl.add_argument("--cave-size", type=int, required=True)
+-    pl.add_argument("--out", type=Path)
+-
+-    bd = sub.add_parser("build")
+-    bd.add_argument("--elf", type=Path, required=True)
+-    bd.add_argument("--contract", type=Path, required=True)
+-    bd.add_argument("--cave", required=True)
+-    bd.add_argument("--cave-size", type=int, required=True)
+-    bd.add_argument("--out", type=Path, required=True)
+-    bd.add_argument("--manifest", type=Path, required=True)
+-    bd.add_argument("--scope-authorized", action="store_true")
+-
+-    au = sub.add_parser("audit")
+-    au.add_argument("--original", type=Path, required=True)
+-    au.add_argument("--patched", type=Path, required=True)
+-    au.add_argument("--contract", type=Path, required=True)
+-    au.add_argument("--cave", required=True)
+-    au.add_argument("--cave-size", type=int, required=True)
+-    au.add_argument("--out", type=Path)
+-
+-    args = ap.parse_args(list(argv) if argv is not None else None)
+-    contract = SecurityContract.from_dict(json.loads(args.contract.read_text()))
+-    plan = plan_route_a_cave(args.elf if args.cmd != "audit" else args.original,
+-                             contract, cave_addr=int(args.cave, 16),
++
++    for name in ("plan", "build", "audit", "verify", "bundle"):
++        parser = sub.add_parser(name)
++        parser.add_argument("--elf", type=Path, required=name != "audit")
++        parser.add_argument("--original", type=Path)
++        parser.add_argument("--patched", type=Path)
++        parser.add_argument("--contract", type=Path, required=True)
++        parser.add_argument("--cave", required=True, help="cave start address, e.g. 0x4018e9")
++        parser.add_argument("--cave-size", type=int, required=True)
++        parser.add_argument("--readelf", type=Path,
++                            help="captured `readelf -lW` output for the independent view")
++        if name in ("plan", "build", "audit", "bundle"):
++            parser.add_argument("--out", type=Path)
++        if name == "build":
++            parser.add_argument("--manifest", type=Path, required=True)
++            parser.add_argument("--scope-authorized", action="store_true")
++        if name == "bundle":
++            parser.add_argument("--out-dir", type=Path, required=True)
++            parser.add_argument("--scope-authorized", action="store_true")
++    return ap.parse_args(list(argv) if argv is not None else None)
++
++
++def _read_readelf(path: Path | None) -> str | None:
++    if path is None:
++        return None
++    if not path.exists():
++        raise RouteAError(f"readelf capture not found: {path}")
++    return path.read_text(encoding="utf-8", errors="replace")
++
++
++def _build_once(elf: Path, plan: CavePlan, dest: Path) -> Path:
++    _write_candidate(elf, plan, dest)
++    return dest
++
++
++def main(argv: Iterable[str] | None = None) -> int:
++    args = _parse_args(argv)
++    elf = args.elf if args.elf is not None else args.original
++    if elf is None:
++        raise RouteAError("--elf or --original is required")
++    contract = _load_contract(args.contract)
++    plan = plan_route_a_cave(elf, contract, cave_addr=int(args.cave, 16),
+                              cave_size=args.cave_size)
++
+     if args.cmd == "plan":
+         data = plan.to_dict()
+-    elif args.cmd == "build":
+-        manifest = build_cave_patched(args.elf, plan, args.out,
+-                                      scope_authorized=args.scope_authorized)
+-        args.manifest.write_text(json.dumps(manifest.to_dict(), indent=2))
+-        data = manifest.to_dict()
+-    else:
+-        data = audit_cave_layout(args.original, args.patched, plan)
+-    text = json.dumps(data, indent=2)
+-    if getattr(args, "out", None) and args.cmd in ("plan", "audit"):
+-        args.out.write_text(text)
+-    print(text)
+-    return 0 if data.get("pass", True) else 1
++        if args.out:
++            args.out.write_text(json.dumps(data, indent=2), encoding="utf-8")
++        print(json.dumps(data, indent=2))
++        return 0
++
++    if args.cmd == "build":
++        manifest = build_cave_patched(elf, plan, args.out,
++                                      scope_authorized=args.scope_authorized,
++                                      readelf_text=_read_readelf(args.readelf))
++        payload = manifest.to_dict()
++        args.manifest.write_text(json.dumps(payload, indent=2), encoding="utf-8")
++        print(json.dumps({"candidate": str(args.out),
++                          "sha256": payload["patched_sha256"],
++                          "audit_pass": payload["audit"]["pass"],
++                          "manifest": str(args.manifest)}, indent=2))
++        return 0 if payload["audit"]["pass"] else 1
++
++    if args.cmd == "audit":
++        if args.patched is None or args.original is None:
++            raise RouteAError("audit needs --original and --patched")
++        audit = audit_cave_layout(args.original, args.patched, plan,
++                                  readelf_text=_read_readelf(args.readelf))
++        text = json.dumps(audit, indent=2)
++        if args.out:
++            args.out.write_text(text, encoding="utf-8")
++        print(text)
++        return 0 if audit["pass"] else 1
++
++    if args.cmd == "verify":
++        with tempfile.TemporaryDirectory(prefix="routea-verify-") as tmp:
++            report = reproducibility_report(elf, lambda dest: _build_once(elf, plan, dest),
++                                            Path(tmp))
++        print(json.dumps(report, indent=2))
++        return 0 if report["pass"] else 1
++
++    # bundle: static evidence only; the six-case run and isolation are separate
++    outdir = args.out_dir
++    outdir.mkdir(parents=True, exist_ok=True)
++    candidate = outdir / "candidate.elf"
++    manifest = build_cave_patched(elf, plan, candidate,
++                                  scope_authorized=args.scope_authorized)
++    views = capture_independent_views(candidate, outdir / "independent-view")
++    readelf_text = views.get("program_headers_text")
++    audit = audit_cave_layout(elf, candidate, plan, readelf_text=readelf_text)
++    with tempfile.TemporaryDirectory(prefix="routea-bundle-") as tmp:
++        report = reproducibility_report(elf, lambda dest: _build_once(elf, plan, dest),
++                                        Path(tmp))
++    environment = capture_environment()
++    payload = manifest.to_dict()
++    payload["audit"] = {"checks": audit["checks"], "pass": audit["pass"],
++                        "failed": audit["failed"]}
++    info = write_evidence_bundle(
++        outdir,
++        original=elf,
++        candidate=candidate,
++        manifest=payload,
++        audit=audit,
++        reproducibility=report,
++        environment=environment,
++        independent_views=views,
++    )
++    print(json.dumps(info, indent=2))
++    return 0 if audit["pass"] and report["pass"] else 1
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/routea/evidence.py b/routea/evidence.py
+new file mode 100644
+index 0000000..5aadcee
+--- /dev/null
++++ b/routea/evidence.py
+@@ -0,0 +1,309 @@
++"""Gate 3 evidence bundle for the Route A cave candidate.
++
++The bundle is written **inside the guest** (or the CI runner) and contains only
++static artefacts plus reproducibility checks. It never executes the candidate:
++the six-case run and the isolation evidence are separate, explicit steps
++(handoff 11 §3 items 4-5; handoff 12 §6-§7).
++
++A bundle is honest by construction: a tool that is missing, or a check that did
++not run, is recorded as ``not_run`` with the reason, never as a pass.
++"""
++
++from __future__ import annotations
++
++import json
++import platform
++import shutil
++import subprocess
++from pathlib import Path
++from typing import Any, Callable
++
++from routea.byteaudit import sha256_bytes
++from routea.manifest import manifest_sha256, tools_report
++
++REQUIRED_TOOLS = ("readelf", "objdump")
++
++
++def sha256_file(path: Path) -> str:
++    return sha256_bytes(path.read_bytes())
++
++
++def run_tool(argv: list[str], *, timeout: int = 30) -> dict[str, Any]:
++    executable = shutil.which(argv[0])
++    if executable is None:
++        return {
++            "command": argv,
++            "available": False,
++            "returncode": None,
++            "stdout": "",
++            "stderr": f"{argv[0]} not found on PATH",
++        }
++    try:
++        proc = subprocess.run(
++            [executable, *argv[1:]],
++            stdout=subprocess.PIPE,
++            stderr=subprocess.PIPE,
++            timeout=timeout,
++            check=False,
++        )
++    except subprocess.TimeoutExpired:
++        return {"command": argv, "available": True, "returncode": None,
++                "stdout": "", "stderr": f"timeout after {timeout}s"}
++    return {
++        "command": argv,
++        "available": True,
++        "returncode": proc.returncode,
++        "stdout": proc.stdout.decode("utf-8", "replace"),
++        "stderr": proc.stderr.decode("utf-8", "replace"),
++    }
++
++
++def capture_environment() -> dict[str, Any]:
++    """Guest fingerprint and tool versions, for the record (V5/replay)."""
++    env: dict[str, Any] = {
++        "platform": platform.platform(),
++        "machine": platform.machine(),
++        "python": platform.python_version(),
++        "kernel": platform.release(),
++        "libraries": tools_report(),
++        "hostname": platform.node(),
++    }
++    os_release = Path("/etc/os-release")
++    if os_release.exists():
++        env["os_release"] = os_release.read_text(encoding="utf-8", errors="replace")
++    for tool in REQUIRED_TOOLS:
++        result = run_tool([tool, "--version"])
++        env[f"{tool}_version"] = (
++            result["stdout"].splitlines()[0] if result["stdout"].strip() else
++            (result["stderr"].splitlines()[0] if result["stderr"].strip() else "unavailable")
++        )
++        env[f"{tool}_available"] = result["available"]
++    seccomp = Path("/proc/self/status")
++    if seccomp.exists():
++        for line in seccomp.read_text(encoding="utf-8", errors="replace").splitlines():
++            if line.startswith("Seccomp:"):
++                env["process_seccomp"] = line.split(":", 1)[1].strip()
++    return env
++
++
++def reproducibility_report(
++    original: Path,
++    build_to: Callable[[Path], Path],
++    workdir: Path,
++) -> dict[str, Any]:
++    """Build the candidate twice and require identical bytes.
++
++    ``build_to`` receives a destination path and must write the candidate there.
++    The two builds are compared by SHA-256 and byte equality; a difference is a
++    ``REJECT`` for Gate 3 item 2, not a cosmetic warning.
++    """
++    workdir.mkdir(parents=True, exist_ok=True)
++    first = build_to(workdir / "candidate-run1.elf")
++    second = build_to(workdir / "candidate-run2.elf")
++    left = first.read_bytes()
++    right = second.read_bytes()
++    report = {
++        "original_sha256": sha256_file(original),
++        "runs": 2,
++        "candidate_sha256": [sha256_bytes(left), sha256_bytes(right)],
++        "candidate_sizes": [len(left), len(right)],
++        "byte_identical": left == right,
++    }
++    report["pass"] = report["byte_identical"] and report["candidate_sha256"][0] != ""
++    return report
++
++
++def capture_independent_views(patched: Path, outdir: Path) -> dict[str, Any]:
++    """Run readelf/objdump as an independent view of the candidate."""
++    outdir.mkdir(parents=True, exist_ok=True)
++    commands = {
++        "readelf-program-headers.txt": ["readelf", "-lW", str(patched)],
++        "readelf-section-headers.txt": ["readelf", "-SW", str(patched)],
++        "readelf-relocations.txt": ["readelf", "-rW", str(patched)],
++        "readelf-header.txt": ["readelf", "-hW", str(patched)],
++        "readelf-dynamic.txt": ["readelf", "-dW", str(patched)],
++        "readelf-dynsyms.txt": ["readelf", "--dyn-syms", "-W", str(patched)],
++        "readelf-notes.txt": ["readelf", "-nW", str(patched)],
++        "objdump-disassembly.txt": ["objdump", "-d", "-M", "intel", str(patched)],
++    }
++    status: dict[str, Any] = {"files": {}, "missing_tools": []}
++    unavailable: set[str] = set()
++    for name, argv in commands.items():
++        if argv[0] in unavailable:
++            status["files"][name] = "not_run"
++            continue
++        result = run_tool(argv, timeout=120)
++        if not result["available"]:
++            unavailable.add(argv[0])
++            status["files"][name] = "not_run"
++            status["missing_tools"].append(argv[0])
++            continue
++        (outdir / name).write_text(
++            f"$ {' '.join(argv)}\n\n{result['stdout']}\n--- stderr ---\n{result['stderr']}",
++            encoding="utf-8",
++        )
++        status["files"][name] = "captured"
++    # the independent readelf view is an input to the audit, expose the first one
++    program_headers_path = outdir / "readelf-program-headers.txt"
++    status["program_headers_text"] = (
++        program_headers_path.read_text(encoding="utf-8")
++        if program_headers_path.exists() else None
++    )
++    return status
++
++
++def write_evidence_bundle(
++    outdir: Path,
++    *,
++    original: Path,
++    candidate: Path,
++    manifest: dict[str, Any],
++    audit: dict[str, Any],
++    reproducibility: dict[str, Any],
++    environment: dict[str, Any],
++    independent_views: dict[str, Any],
++    extra_files: dict[str, bytes] | None = None,
++) -> dict[str, Any]:
++    """Write the bundle, hash every file, and emit the Gate 3 record skeleton."""
++    outdir.mkdir(parents=True, exist_ok=True)
++    (outdir / "candidate.elf").write_bytes(candidate.read_bytes())
++    (outdir / "original.elf").write_bytes(original.read_bytes())
++    (outdir / "edit-manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
++    (outdir / "audit.json").write_text(json.dumps(audit, indent=2), encoding="utf-8")
++    (outdir / "reproducibility.json").write_text(
++        json.dumps(reproducibility, indent=2), encoding="utf-8")
++    (outdir / "environment.json").write_text(json.dumps(environment, indent=2), encoding="utf-8")
++    (outdir / "independent-views.json").write_text(
++        json.dumps({key: value for key, value in independent_views.items()
++                    if key != "program_headers_text"}, indent=2), encoding="utf-8")
++    (outdir / "manifest-sha256.txt").write_text(
++        f"{manifest_sha256(manifest)}  edit-manifest.json\n", encoding="utf-8")
++
++    for name, data in (extra_files or {}).items():
++        (outdir / name).write_bytes(data)
++
++    item_states = gate3_item_states(manifest, audit, reproducibility, independent_views)
++    record = render_record(item_states, environment, manifest)
++    (outdir / "gate3-record.md").write_text(record, encoding="utf-8")
++
++    hashes = []
++    for path in sorted(p for p in outdir.rglob("*") if p.is_file()):
++        relative = path.relative_to(outdir).as_posix()
++        if relative in ("SHA256SUMS", "bundle-sha256.txt"):
++            continue
++        hashes.append(f"{sha256_file(path)}  {relative}")
++    sums_text = "\n".join(hashes) + "\n"
++    (outdir / "SHA256SUMS").write_text(sums_text, encoding="utf-8")
++    bundle_hash = sha256_bytes(sums_text.encode("utf-8"))
++    (outdir / "bundle-sha256.txt").write_text(bundle_hash + "\n", encoding="utf-8")
++    return {
++        "outdir": str(outdir),
++        "bundle_sha256": bundle_hash,
++        "file_count": len(hashes),
++        "item_states": item_states,
++        "sha256sums_ok": verify_sha256sums(outdir),
++    }
++
++
++def verify_sha256sums(bundle_dir: Path) -> bool:
++    sums = bundle_dir / "SHA256SUMS"
++    if not sums.exists():
++        return False
++    for line in sums.read_text(encoding="utf-8").splitlines():
++        if not line.strip():
++            continue
++        digest, name = line.split(None, 1)
++        path = bundle_dir / name.strip()
++        if not path.exists() or sha256_file(path) != digest:
++            return False
++    return True
++
++
++def gate3_item_states(
++    manifest: dict[str, Any],
++    audit: dict[str, Any],
++    reproducibility: dict[str, Any],
++    independent_views: dict[str, Any],
++) -> dict[str, dict[str, str]]:
++    """Map the six handoff-11 Gate 3 items to what this bundle measured.
++
++    This is deliberately conservative: items that require executing the candidate
++    or proving isolation are ``not_run`` here even when CI once passed them,
++    because a static bundle cannot produce execution evidence.
++    """
++    static_audit = "measured" if audit.get("pass") else "fail"
++    repro = "measured" if reproducibility.get("pass") else "fail"
++    readelf = "measured" if independent_views.get("program_headers_text") else "not_run"
++    return {
++        "1_separate_copy_and_hashes": {
++            "state": "measured",
++            "evidence": "original.elf, candidate.elf, SHA256SUMS; guest-side original hash still required",
++        },
++        "2_reproducibility_and_manifest": {
++            "state": repro if (manifest.get("header_changes")
++                               and manifest.get("changed_file_intervals")
++                               and manifest.get("added")) else "fail",
++            "evidence": "reproducibility.json, edit-manifest.json",
++        },
++        "3_structural_audit": {
++            "state": static_audit if readelf == "measured" else "partial",
++            "evidence": "audit.json, environment.json, readelf-*.txt",
++        },
++        "4_six_case_run": {
++            "state": "not_run",
++            "evidence": "run routeb/run_manifest_repaired.py inside the guest under the isolation controls",
++        },
++        "5_isolation_evidence": {
++            "state": "not_run",
++            "evidence": "snapshot revert + egress block + uid 1003 wrapper attestation",
++        },
++        "6_evidence_bundle": {
++            "state": "measured",
++            "evidence": "SHA256SUMS, bundle-sha256.txt",
++        },
++    }
++
++
++def render_record(
++    item_states: dict[str, dict[str, str]],
++    environment: dict[str, Any],
++    manifest: dict[str, Any],
++) -> str:
++    lines = [
++        "# Gate 3 evidence record - Route A cave candidate",
++        "",
++        "**Status:** generated by `python -m routea.cave bundle`. It is static",
++        "evidence only: items 4-5 (six-case run, isolation) are `not_run` until the",
++        "guest run is recorded separately. Do not upgrade this to a gate pass from",
++        "this file alone.",
++        "",
++        "## Candidate identity",
++        "",
++        f"- original SHA-256: `{manifest.get('original_sha256')}`",
++        f"- candidate SHA-256: `{manifest.get('patched_sha256')}`",
++        f"- candidate size: {manifest.get('patched_size')} bytes",
++        f"- guest/kernel: {environment.get('kernel')} / {environment.get('platform')}",
++        f"- python: {environment.get('python')}",
++        "",
++        "## Six required items (handoff 11 §3)",
++        "",
++        "| # | Item | State | Evidence |",
++        "|---|---|---|---|",
++    ]
++    for key, value in item_states.items():
++        lines.append(f"| {key.split('_', 1)[0]} | {key.split('_', 1)[1].replace('_', ' ')} | "
++                     f"`{value['state']}` | {value['evidence']} |")
++    lines += [
++        "",
++        "## Labels",
++        "",
++        "- `measured` = the evidence exists in this bundle; it is not a gate label.",
++        "- `fail` = a concrete check failed; report the failing fact, do not adjust the oracle.",
++        "- `not_run` = execution/isolation evidence has not been produced yet.",
++        "",
++        "Re-run the six frozen cases under the isolation controls, record per-case",
++        "stdout/stderr/return code, then update this record. The Lead approves the",
++        "final gate label after an independent replay.",
++        "",
++    ]
++    return "\n".join(lines)
+diff --git a/routea/manifest.py b/routea/manifest.py
+new file mode 100644
+index 0000000..5ec80f8
+--- /dev/null
++++ b/routea/manifest.py
+@@ -0,0 +1,406 @@
++"""Complete edit manifest (schema 2) and ELF fact extraction for Route A.
++
++Why this module exists
++----------------------
++Gate 3 (``docs_BinaryRepair/handoffs/11-environment-evidence-confirmations.md`` §3
++item 2) requires the edit manifest to list **every** changed and added interval,
++the header fields that changed, the detour, and the displaced bytes. The original
++probe manifest only listed a redirect and a mapping size, which is not enough for
++an independent reviewer.
++
++This module provides:
++
++* :class:`CaveManifest` — the complete, reviewable manifest for the strategy-C
++  cave repair;
++* :func:`elf_facts` / :func:`program_headers` / :func:`section_headers` /
++  :func:`symbols` / :func:`relocations` / :func:`dynamic_entries` /
++  :func:`cet_report` — one structured view of the ELF used by the audit;
++* :func:`tools_report` — the library/tool versions that must be recorded.
++
++Nothing here executes or modifies a binary; it only reads bytes and ELF metadata.
++The actual patch is written by :mod:`routea.cave`.
++"""
++
++from __future__ import annotations
++
++import hashlib
++import importlib.metadata
++import platform
++import struct
++from dataclasses import dataclass, field
++from pathlib import Path
++from typing import Any
++
++from elftools.elf.elffile import ELFFile
++from elftools.elf.sections import SymbolTableSection
++
++MANIFEST_SCHEMA_VERSION = 2
++PT_LOAD = 1
++
++
++def sha256_bytes(data: bytes) -> str:
++    return hashlib.sha256(data).hexdigest()
++
++
++def sha256_file(path: Path) -> str:
++    return sha256_bytes(path.read_bytes())
++
++
++def _rel32(value: int) -> str:
++    return hex(value & 0xFFFFFFFFFFFFFFFF)
++
++
++# ---------------------------------------------------------------------------
++# ELF facts
++
++
++def program_headers(path: Path) -> list[dict[str, Any]]:
++    """Every program header, indexed exactly like the file table."""
++    out: list[dict[str, Any]] = []
++    with path.open("rb") as fh:
++        elf = ELFFile(fh)
++        for index in range(elf.num_segments()):
++            seg = elf.get_segment(index)
++            out.append(
++                {
++                    "index": index,
++                    "type": seg["p_type"],
++                    "flags": int(seg["p_flags"]),
++                    "offset": int(seg["p_offset"]),
++                    "vaddr": int(seg["p_vaddr"]),
++                    "paddr": int(seg["p_paddr"]),
++                    "filesz": int(seg["p_filesz"]),
++                    "memsz": int(seg["p_memsz"]),
++                    "align": int(seg["p_align"]),
++                }
++            )
++    return out
++
++
++def header_fields(path: Path) -> dict[str, Any]:
++    with path.open("rb") as fh:
++        elf = ELFFile(fh)
++        header = elf.header
++        return {
++            "e_ident_class": int(header["e_ident"]["EI_CLASS"]),
++            "e_ident_data": int(header["e_ident"]["EI_DATA"]),
++            "e_type": header["e_type"],
++            "e_machine": header["e_machine"],
++            "e_version": int(header["e_version"]),
++            "e_entry": int(header["e_entry"]),
++            "e_phoff": int(header["e_phoff"]),
++            "e_shoff": int(header["e_shoff"]),
++            "e_flags": int(header["e_flags"]),
++            "e_ehsize": int(header["e_ehsize"]),
++            "e_phentsize": int(header["e_phentsize"]),
++            "e_phnum": int(header["e_phnum"]),
++            "e_shentsize": int(header["e_shentsize"]),
++            "e_shnum": int(header["e_shnum"]),
++            "e_shstrndx": int(header["e_shstrndx"]),
++        }
++
++
++def table_bytes(path: Path, *, kind: str) -> bytes:
++    """Raw bytes of the program-header or section-header table."""
++    raw = path.read_bytes()
++    fields = header_fields(path)
++    if kind == "program":
++        start, count, size = fields["e_phoff"], fields["e_phnum"], fields["e_phentsize"]
++    elif kind == "section":
++        start, count, size = fields["e_shoff"], fields["e_shnum"], fields["e_shentsize"]
++    else:  # pragma: no cover - programmer error
++        raise ValueError(f"unknown table kind: {kind!r}")
++    return raw[start : start + count * size]
++
++
++def section_headers(path: Path) -> list[dict[str, Any]]:
++    out: list[dict[str, Any]] = []
++    with path.open("rb") as fh:
++        elf = ELFFile(fh)
++        for index, sec in enumerate(elf.iter_sections()):
++            flags = sec["sh_flags"]
++            out.append(
++                {
++                    "index": index,
++                    "name": sec.name,
++                    "type": sec["sh_type"],
++                    "flags": int(flags),
++                    "alloc": bool(flags & 0x2),
++                    "exec": bool(flags & 0x4),
++                    "writable": bool(flags & 0x1),
++                    "addr": int(sec["sh_addr"]),
++                    "offset": int(sec["sh_offset"]),
++                    "size": int(sec["sh_size"]),
++                }
++            )
++    return out
++
++
++def symbols(path: Path) -> list[dict[str, Any]]:
++    out: list[dict[str, Any]] = []
++    with path.open("rb") as fh:
++        elf = ELFFile(fh)
++        for sec in elf.iter_sections():
++            if not isinstance(sec, SymbolTableSection):
++                continue
++            for sym in sec.iter_symbols():
++                if not sym.name:
++                    continue
++                out.append(
++                    {
++                        "name": sym.name,
++                        "value": int(sym["st_value"]),
++                        "size": int(sym["st_size"]),
++                        "type": sym["st_info"]["type"],
++                        "bind": sym["st_info"]["bind"],
++                        "section": sec.name,
++                    }
++                )
++    return out
++
++
++def relocations(path: Path) -> list[dict[str, Any]]:
++    out: list[dict[str, Any]] = []
++    with path.open("rb") as fh:
++        elf = ELFFile(fh)
++        for sec in elf.iter_sections():
++            if sec["sh_type"] not in ("SHT_RELA", "SHT_REL"):
++                continue
++            for rel in sec.iter_relocations():
++                out.append(
++                    {
++                        "section": sec.name,
++                        "offset": int(rel["r_offset"]),
++                        "type": int(rel["r_info_type"]),
++                    }
++                )
++    return out
++
++
++def dynamic_entries(path: Path) -> list[dict[str, Any]]:
++    out: list[dict[str, Any]] = []
++    with path.open("rb") as fh:
++        elf = ELFFile(fh)
++        sec = elf.get_section_by_name(".dynamic")
++        if sec is None:
++            return out
++        for tag in sec.iter_tags():
++            raw = tag.entry.get("d_val", tag.entry.get("d_ptr", 0))
++            out.append({"tag": str(tag.entry["d_tag"]),
++                        "value": raw if isinstance(raw, int) else str(raw)})
++    return out
++
++
++def section_content_sha256(path: Path, name: str) -> str | None:
++    with path.open("rb") as fh:
++        elf = ELFFile(fh)
++        sec = elf.get_section_by_name(name)
++        if sec is None:
++            return None
++        return sha256_bytes(sec.data())
++
++
++CET_PROPERTY_NOTE = "NT_GNU_PROPERTY_TYPE_0"
++X86_FEATURE_PROPERTY = 0xC0000002
++
++
++def cet_report(path: Path) -> dict[str, Any]:
++    """Report the compile-time CET property note, not a runtime guarantee.
++
++    Bit 0 is IBT, bit 1 is SHSTK in the x86 feature property. "CET enabled" in
++    the contract is an assumption to be confirmed, not proof of runtime
++    enforcement (handoff 09 §5 item 8).
++    """
++    try:
++        with path.open("rb") as fh:
++            elf = ELFFile(fh)
++            for seg in elf.iter_segments():
++                if seg["p_type"] != "PT_NOTE":
++                    continue
++                for note in seg.iter_notes():
++                    if note["n_type"] != CET_PROPERTY_NOTE:
++                        continue
++                    desc = note["n_desc"]
++                    if not isinstance(desc, (bytes, bytearray)):
++                        continue
++                    offset = 0
++                    while offset + 8 <= len(desc):
++                        prop_type, prop_size = struct.unpack_from("<II", desc, offset)
++                        offset += 8
++                        data = bytes(desc[offset : offset + prop_size])
++                        offset += prop_size
++                        if prop_type == X86_FEATURE_PROPERTY and len(data) >= 4:
++                            bits = struct.unpack_from("<I", data, 0)[0]
++                            return {
++                                "available": True,
++                                "ibt": bool(bits & 1),
++                                "shstk": bool(bits & 2),
++                                "raw_feature_bits": hex(bits),
++                                "note": "compile-time GNU property; runtime enforcement unverified",
++                            }
++        return {"available": False, "reason": "no x86 feature property note"}
++    except Exception as exc:  # pragma: no cover - defensive
++        return {"available": False, "reason": f"note parse failed: {exc}"}
++
++
++def tools_report() -> dict[str, str]:
++    def version(dist: str) -> str:
++        try:
++            return importlib.metadata.version(dist)
++        except importlib.metadata.PackageNotFoundError:
++            return "not_installed"
++
++    return {
++        "python": platform.python_version(),
++        "pyelftools": version("pyelftools"),
++        "capstone": version("capstone"),
++        "lief": version("lief"),
++        "platform": platform.platform(),
++    }
++
++
++def elf_facts(path: Path) -> dict[str, Any]:
++    """One structured, hashable view of every ELF fact the audit compares."""
++    phdrs = program_headers(path)
++    sections = section_headers(path)
++    return {
++        "sha256": sha256_file(path),
++        "size": path.stat().st_size,
++        "header": header_fields(path),
++        "program_headers": phdrs,
++        "program_header_table_sha256": sha256_bytes(table_bytes(path, kind="program")),
++        "section_headers": sections,
++        "section_header_table_sha256": sha256_bytes(table_bytes(path, kind="section")),
++        "symbols": symbols(path),
++        "relocations": relocations(path),
++        "dynamic": dynamic_entries(path),
++        "cet": cet_report(path),
++        "section_content_sha256": {
++            name: section_content_sha256(path, name)
++            for name in (
++                ".dynamic",
++                ".dynsym",
++                ".dynstr",
++                ".rela.dyn",
++                ".rela.plt",
++                ".rel.dyn",
++                ".rel.plt",
++                ".got",
++                ".got.plt",
++                ".plt",
++                ".plt.sec",
++                ".init",
++                ".fini",
++                ".rodata",
++                ".data",
++                ".bss",
++            )
++        },
++    }
++
++
++# ---------------------------------------------------------------------------
++# Manifest
++
++
++@dataclass
++class CaveManifest:
++    """Complete Gate 3 edit manifest for the cave strategy (schema 2)."""
++
++    original_sha256: str
++    patched_sha256: str
++    original_size: int
++    patched_size: int
++    function: dict[str, Any]
++    redirect: dict[str, Any]
++    cave: dict[str, Any]
++    added: list[dict[str, Any]]
++    header_changes: list[dict[str, Any]]
++    changed_file_intervals: list[dict[str, int]]
++    intended_intervals: list[dict[str, int]]
++    relocations_added: list[dict[str, Any]]
++    writer: dict[str, Any]
++    termination: dict[str, Any]
++    tools: dict[str, str] = field(default_factory=dict)
++    scope_authorized: bool = False
++    audit: dict[str, Any] = field(default_factory=dict)
++    strategy: str = "cave_call_redirect"
++    schema_version: int = MANIFEST_SCHEMA_VERSION
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "schema_version": self.schema_version,
++            "strategy": self.strategy,
++            "original_sha256": self.original_sha256,
++            "patched_sha256": self.patched_sha256,
++            "original_size": self.original_size,
++            "patched_size": self.patched_size,
++            "function": self.function,
++            "redirect": self.redirect,
++            "cave": self.cave,
++            "added": self.added,
++            "header_changes": self.header_changes,
++            "changed_file_intervals": self.changed_file_intervals,
++            "intended_intervals": self.intended_intervals,
++            "relocations_added": self.relocations_added,
++            "writer": self.writer,
++            "termination": self.termination,
++            "tools": self.tools,
++            "scope_authorized": self.scope_authorized,
++            "audit": self.audit,
++        }
++
++    # Fields a reviewer must be able to read for Gate 3 item 2. Kept as a class
++    # attribute so tests can assert the manifest is complete instead of trusting
++    # a hand-written comment.
++    REQUIRED_KEYS = (
++        "schema_version",
++        "strategy",
++        "original_sha256",
++        "patched_sha256",
++        "original_size",
++        "patched_size",
++        "function",
++        "redirect",
++        "cave",
++        "added",
++        "header_changes",
++        "changed_file_intervals",
++        "intended_intervals",
++        "relocations_added",
++        "writer",
++        "termination",
++        "tools",
++        "scope_authorized",
++        "audit",
++    )
++
++    def missing_keys(self) -> list[str]:
++        data = self.to_dict()
++        return [key for key in self.REQUIRED_KEYS if key not in data]
++
++    def empty_required_keys(self) -> list[str]:
++        """Keys whose value is empty but must carry evidence."""
++        data = self.to_dict()
++        must = (
++            "original_sha256",
++            "patched_sha256",
++            "function",
++            "redirect",
++            "cave",
++            "added",
++            "header_changes",
++            "changed_file_intervals",
++            "intended_intervals",
++            "writer",
++            "termination",
++        )
++        return [key for key in must if not data.get(key)]
++
++
++def manifest_sha256(manifest: dict[str, Any]) -> str:
++    import json
++
++    return sha256_bytes(
++        json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
++    )
+diff --git a/scripts/routea_vm_check.sh b/scripts/routea_vm_check.sh
+new file mode 100644
+index 0000000..0b7710a
+--- /dev/null
++++ b/scripts/routea_vm_check.sh
+@@ -0,0 +1,70 @@
++﻿#!/usr/bin/env bash
++# Route A Gate 3 VM check — run inside the disposable guest, never on the host.
++#
++# Purpose: run the Route A tests, build the candidate, audit it, and write the
++# static evidence bundle. It does NOT execute the candidate: the six frozen
++# cases and the isolation evidence are separate, manual steps (handoff 11 §3
++# items 4-5) because they require the snapshot/egress/uid-1003 controls.
++#
++# This script is unverified: it has not been run on the host. Its first real run
++# is the VM acceptance run. A missing dependency is an error, not a pass.
++set -euo pipefail
++
++ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$ROOT"
++CASE="$ROOT/fixtures/public/CWE121_src_char_declare_cpy_51b"
++CONTRACT="$CASE/contract.route-a-v1.json"
++RUN_ID="${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)}"
++OUT="${OUT:-$ROOT/var/jobs/m4-gate3/$RUN_ID/static}"
++
++EXPECTED_CANDIDATE="f3cb9cbb503fb0d47ebebab7053fa2ed37b7876ffe5122157d31fefc783f9fa7"
++EXPECTED_CONTRACT="ba33b4d070b8799b778a9ca1a257190079627bda72b5c42933edfebb0f5d8fc4"
++
++echo "== environment =="
++uname -a
++python3 --version
++python3 -c "import elftools, capstone; print('pyelftools', elftools.__version__); print('capstone', capstone.__version__)"
++command -v readelf >/dev/null || { echo "ERROR: readelf missing" >&2; exit 2; }
++command -v objdump >/dev/null || { echo "ERROR: objdump missing" >&2; exit 2; }
++readelf --version | head -1
++objdump --version | head -1
++
++echo "== frozen inputs =="
++sha256sum "$CASE/original.elf"
++echo "expected original: aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393"
++echo "expected contract: $EXPECTED_CONTRACT"
++python3 - "$CONTRACT" <<'PY'
++import json, sys
++sys.path.insert(0, ".")
++from app.domain.contracts import SecurityContract
++contract = SecurityContract.from_dict(json.load(open(sys.argv[1], encoding="utf-8")))
++print("contract_sha256=", contract.sha256())
++PY
++
++echo "== tests (guest/CI only) =="
++python3 -m pytest tests/test_routea_manifest.py tests/test_routea_cave.py -q -p no:cacheprovider
++
++echo "== build + audit + reproducibility + static bundle =="
++mkdir -p "$OUT"
++python3 -m routea.cave bundle \
++  --elf "$CASE/original.elf" --contract "$CONTRACT" \
++  --cave 0x4018e9 --cave-size 1815 \
++  --out-dir "$OUT" --scope-authorized
++
++echo "== candidate identity =="
++sha256sum "$OUT/candidate.elf"
++echo "expected candidate: $EXPECTED_CANDIDATE"
++
++cat <<'NEXT'
++== still manual: the runtime half of Gate 3 ==
++1. Runtime cave probe under the isolation wrapper: map 0x401000-0x401fff r-xp,
++   candidate file bytes == memory at 0x4018e9, an instruction at the cave entry
++   executes. Breakpoints: 0x401304 (site), 0x4018e9 (cave), 0x401309 (resume).
++2. Six frozen cases on the candidate from a reverted snapshot, no egress, uid 1003:
++   python3 routeb/run_manifest_repaired.py --binary <candidate> \
++     --tests fixtures/public/CWE121_src_char_declare_cpy_51b/tests \
++     --out var/jobs/m4-gate3/<run-id>/manifest-repaired.json
++3. Original V0 shape (documented 4/6) on the same session.
++4. Record candidate SHA-256 before and after each run, wrapper attestation, and
++   the snapshot revert log. Items 4-5 stay not_run until this exists.
++NEXT
+diff --git a/tests/test_routea_cave.py b/tests/test_routea_cave.py
+index 0a82a7b..54975a1 100644
+--- a/tests/test_routea_cave.py
++++ b/tests/test_routea_cave.py
+@@ -1,54 +1,87 @@
++﻿"""Route A cave tests. These parse/compare the real fixture ELF.
++
++Run them in the disposable guest / CI runner, never on the Windows host
++(handoff 13 §5; ``AGENTS.md`` host-execution prohibition). The suite is static:
++it builds a candidate copy and audits it, and it never executes the candidate.
++
++Golden values come from the 2026-10-22 cave probe
++(``docs/route-b/13-routea-cave-probe.md``); a mismatch means the added code
++changed and the design must be re-reviewed rather than the constant updated.
++"""
++
+ from __future__ import annotations
+ 
+ import json
+ from pathlib import Path
+ 
+ import pytest
+-from capstone import Cs, CS_ARCH_X86, CS_MODE_64
++from capstone import CS_ARCH_X86, CS_MODE_64, Cs
+ 
+ from app.domain.contracts import SecurityContract
++from routea.audit import parse_readelf_program_headers
+ from routea.cave import (
+     ScopeNotAuthorized,
+     audit_cave_layout,
+     build_cave_patched,
++    main as cave_main,
+     plan_route_a_cave,
+ )
++from routea.evidence import reproducibility_report, run_tool, verify_sha256sums
++from routea.manifest import CaveManifest, header_fields
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+-ELF = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf"
++CASE = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b"
++ELF = CASE / "original.elf"
++CONTRACT_PATH = CASE / "contract.route-a-v1.json"
+ FUNC = "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
++CAVE_ADDR = 0x4018E9
++CAVE_SIZE = 1815
++GOLDEN_CANDIDATE_SHA256 = "f3cb9cbb503fb0d47ebebab7053fa2ed37b7876ffe5122157d31fefc783f9fa7"
++GOLDEN_CONTRACT_SHA256 = "ba33b4d070b8799b778a9ca1a257190079627bda72b5c42933edfebb0f5d8fc4"
+ 
+ 
+ def contract() -> SecurityContract:
+-    return SecurityContract(
+-        target_entry=FUNC,
+-        target_signature="void badSink(char *data)",
+-        valid_domain="C string inputs of length 0..49 bytes; the terminating NUL is copied",
+-        valid_behavior="strcpy into dest[50] and printLine(data); exit 0",
+-        forbidden_behavior="write past dest[50] for inputs of length 50 or more",
+-        invalid_input_response="print the exact stderr line and exit 1 without printing stdout",
+-        dest_capacity_bytes=50,
+-        max_valid_input_bytes=49,
+-        capacity_includes_terminator=True,
+-        invalid_exit_code=1,
+-        invalid_stdout="",
+-        invalid_stderr="ERROR: input exceeds destination capacity\n",
+-        allowed_calls=("strcpy", "printLine"),
+-        environment_assumptions=("Linux x86-64", "non-PIE", "CET enabled"),
+-    )
++    return SecurityContract.from_dict(json.loads(CONTRACT_PATH.read_text(encoding="utf-8")))
++
++
++def plan():
++    return plan_route_a_cave(ELF, contract(), cave_addr=CAVE_ADDR, cave_size=CAVE_SIZE)
++
++
++def build(tmp_path: Path) -> tuple[Path, CaveManifest]:
++    candidate = tmp_path / "candidate.elf"
++    manifest = build_cave_patched(ELF, plan(), candidate, scope_authorized=True)
++    return candidate, manifest
++
++
++# ---------------------------------------------------------------------------
++# Design identity
++
++
++def test_contract_revision_hash_and_writer() -> None:
++    reviewed = contract()
++    assert reviewed.sha256() == GOLDEN_CONTRACT_SHA256
++    assert "fprintf" in reviewed.allowed_calls
++    assert reviewed.authorized_edits
++    assert reviewed.max_valid_input_bytes == 49
++    assert reviewed.dest_capacity_bytes == 50
++    assert reviewed.invalid_stderr == "ERROR: input exceeds destination capacity\n"
+ 
+ 
+ def test_cave_plan_redirects_call_and_builds_guard() -> None:
+-    plan = plan_route_a_cave(ELF, contract(), cave_addr=0x401700, cave_size=0x100)
+-    assert plan.call_site == 0x401304
+-    assert plan.redirect == bytes.fromhex("e8f7030000")
+-    assert plan.cave_addr == 0x401700
+-    assert plan.message_addr == 0x401748
+-    insns = list(Cs(CS_ARCH_X86, CS_MODE_64).disasm(plan.code, plan.cave_addr))
++    result = plan_route_a_cave(ELF, contract(), cave_addr=0x401700, cave_size=0x100)
++    assert result.call_site == 0x401304
++    assert result.resume_at == 0x401309
++    assert result.displaced == bytes.fromhex("e8c7fdffff")
++    assert result.redirect == bytes.fromhex("e8f7030000")
++    assert result.cave_addr == 0x401700
++    assert result.message_addr == 0x401748
++    assert len(result.code) == 72
++    assert len(result.message) == 42
++    insns = list(Cs(CS_ARCH_X86, CS_MODE_64).disasm(result.code, result.cave_addr))
+     assert any(i.mnemonic == "call" and i.op_str == "0x401120" for i in insns)
+-    valid_jmp = next(i for i in insns if i.mnemonic == "jmp" and i.op_str == "0x4010d0")
+-    assert valid_jmp is not None
+-    assert b"\x0f\x05" in plan.code
++    assert any(i.mnemonic == "jmp" and i.op_str == "0x4010d0" for i in insns)
++    assert b"\x0f\x05" in result.code
+ 
+ 
+ def test_cave_too_small_is_rejected() -> None:
+@@ -57,28 +90,209 @@ def test_cave_too_small_is_rejected() -> None:
+ 
+ 
+ def test_cave_build_requires_scope() -> None:
+-    plan = plan_route_a_cave(ELF, contract(), cave_addr=0x401700, cave_size=0x100)
+     with pytest.raises(ScopeNotAuthorized):
+-        build_cave_patched(ELF, plan, Path("/tmp/never-cave.elf"))
+-
+-
+-def test_cave_audit_rejects_unpatched() -> None:
+-    plan = plan_route_a_cave(ELF, contract(), cave_addr=0x401700, cave_size=0x100)
+-    result = audit_cave_layout(ELF, ELF, plan)
+-    assert result["pass"] is False
+-    assert result["checks"]["redirect_bytes"] is False
+-
+-
+-def test_cave_extends_rx_segment_and_audits(tmp_path) -> None:
+-    plan = plan_route_a_cave(ELF, contract(), cave_addr=0x4018E9, cave_size=1815)
+-    assert plan.rx_vaddr == 0x401000
+-    assert plan.rx_new_size == 0x1000
+-    assert plan.redirect == bytes.fromhex("e8e0050000")
+-    assert plan.message_addr == 0x401931
+-    out = tmp_path / "cave_probe.elf"
+-    manifest = build_cave_patched(ELF, plan, out, scope_authorized=True)
+-    assert manifest.audit["pass"] is True
+-    assert manifest.audit["checks"]["rx_extended"] is True
+-    assert manifest.audit["checks"]["no_new_segments"] is True
+-    assert manifest.audit["checks"]["redirect_bytes"] is True
+-    assert out.stat().st_size == ELF.stat().st_size
++        build_cave_patched(ELF, plan(), Path("/tmp/never.elf"))
++
++
++# ---------------------------------------------------------------------------
++# Manifest completeness (handoff 11 §3 item 2)
++
++
++def test_manifest_is_complete(tmp_path: Path) -> None:
++    _candidate, manifest = build(tmp_path)
++    payload = manifest.to_dict()
++    assert manifest.missing_keys() == []
++    assert manifest.empty_required_keys() == []
++    assert payload["schema_version"] == 2
++    assert payload["original_sha256"] == "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393"
++    assert payload["patched_sha256"] == GOLDEN_CANDIDATE_SHA256
++
++    redirect = payload["redirect"]
++    assert redirect["vaddr"] == "0x401304"
++    assert redirect["original_hex"] == "e8c7fdffff"
++    assert redirect["new_hex"] == "e8e0050000"
++    assert redirect["target_vaddr"] == hex(CAVE_ADDR)
++    assert redirect["resume_at"] == "0x401309"
++
++    assert [entry["kind"] for entry in payload["added"]] == ["code", "data"]
++    assert payload["added"][0]["size"] == 72
++    assert payload["added"][1]["size"] == 42
++    assert payload["added"][1]["hex"] == "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a"
++
++    fields = {change["field"]: change for change in payload["header_changes"]}
++    assert fields["p_filesz"]["old"] == "0x8e9"
++    assert fields["p_filesz"]["new"] == "0x1000"
++    assert fields["p_memsz"]["new"] == "0x1000"
++
++    assert payload["writer"]["symbol"] == "fprintf"
++    assert payload["writer"]["plt_vaddr"] == "0x401120"
++    assert payload["termination"]["syscall"] == "exit_group"
++    assert payload["termination"]["number"] == 231
++    assert payload["relocations_added"] == []
++    assert payload["changed_file_intervals"]
++    assert payload["intended_intervals"]
++    # every changed byte is promised by the manifest's intended intervals
++    assert payload["tools"]["python"]
++    assert payload["audit"]["pass"] is True
++
++
++def test_cave_and_register_static_checks(tmp_path: Path) -> None:
++    candidate, _manifest = build(tmp_path)
++    audit = audit_cave_layout(ELF, candidate, plan())
++    checks = audit["checks"]
++    assert audit["pass"] is True, audit["failed"]
++    for name in (
++        "original_call_is_strcpy_plt",
++        "redirect_bytes_written",
++        "redirect_target_is_cave",
++        "resume_address_after_call",
++        "exactly_one_header_changed",
++        "header_offset_unchanged",
++        "header_vaddr_unchanged",
++        "header_flags_unchanged",
++        "header_align_unchanged",
++        "page_congruent",
++        "filesz_within_file",
++        "no_overlap_with_next_load",
++        "entry_unchanged",
++        "no_section_covers_cave",
++        "no_symbol_in_cave",
++        "no_relocation_targets_cave",
++        "no_incoming_reference",
++        "no_callee_saved_write",
++        "no_return_instruction",
++        "no_indirect_transfer",
++        "rsp_write_is_alignment_only",
++        "single_syscall",
++        "exit_group_status_1_setup",
++        "writer_target_imported",
++        "valid_path_reuses_strcpy",
++        "changed_bytes_inside_declared_intervals",
++    ):
++        assert checks.get(name) is True, name
++    assert "no_wx_segment" in checks and checks["no_wx_segment"] is True
++    assert "gnu_stack_unchanged_no_nx_loss" in checks
++    assert "gnu_relro_unchanged" in checks
++
++
++# ---------------------------------------------------------------------------
++# Candidate identity / reproducibility
++
++
++def test_candidate_is_golden_and_reproducible(tmp_path: Path) -> None:
++    _candidate, manifest = build(tmp_path)
++    assert manifest.patched_sha256 == GOLDEN_CANDIDATE_SHA256
++    report = reproducibility_report(ELF, lambda dest: build_cave_patched(
++        ELF, plan(), dest, scope_authorized=True) and dest, tmp_path / "repro")
++    assert report["pass"] is True
++    assert report["candidate_sha256"][0] == report["candidate_sha256"][1]
++
++
++# ---------------------------------------------------------------------------
++# Negative tests: the audit must reject tampering, not average it away
++
++
++def test_audit_rejects_unpatched_binary() -> None:
++    audit = audit_cave_layout(ELF, ELF, plan())
++    assert audit["pass"] is False
++    assert audit["checks"]["redirect_bytes_written"] is False
++    assert audit["checks"]["changed_bytes_inside_declared_intervals"] is False
++
++
++def test_audit_rejects_byte_outside_declared_intervals(tmp_path: Path) -> None:
++    candidate, _manifest = build(tmp_path)
++    data = bytearray(candidate.read_bytes())
++    # 0x401200 maps to file offset 0x1200 for this non-PIE ELF; it is untouched .text
++    data[0x1200] ^= 0xFF
++    tampered = tmp_path / "tampered-text.elf"
++    tampered.write_bytes(bytes(data))
++    audit = audit_cave_layout(ELF, tampered, plan())
++    assert audit["pass"] is False
++    assert audit["checks"]["changed_bytes_inside_declared_intervals"] is False
++
++
++def test_audit_rejects_header_tamper(tmp_path: Path) -> None:
++    candidate, _manifest = build(tmp_path)
++    data = bytearray(candidate.read_bytes())
++    fields = header_fields(candidate)
++    change_index = _manifest.header_changes[0]["index"]
++    entry = fields["e_phoff"] + change_index * fields["e_phentsize"]
++    data[entry + 40:entry + 48] = (0x8E9).to_bytes(8, "little")  # shrink p_memsz
++    tampered = tmp_path / "tampered-header.elf"
++    tampered.write_bytes(bytes(data))
++    audit = audit_cave_layout(ELF, tampered, plan())
++    assert audit["pass"] is False
++    assert audit["checks"]["rx_end_file_backed"] is False
++
++
++def test_readelf_parser_accepts_a_real_row() -> None:
++    text = (
++        "Program Headers:\n"
++        "  LOAD           0x001000 0x0000000000401000 0x0000000000401000"
++        " 0x001000 0x001000 R E 0x1000\n"
++    )
++    rows = parse_readelf_program_headers(text)
++    assert rows == [
++        {
++            "type": "LOAD",
++            "offset": 0x1000,
++            "vaddr": 0x401000,
++            "paddr": 0x401000,
++            "filesz": 0x1000,
++            "memsz": 0x1000,
++            "flags": 5,
++            "align": 0x1000,
++        }
++    ]
++
++
++def test_independent_readelf_view_matches(tmp_path: Path) -> None:
++    if run_tool(["readelf", "--version"])["available"] is False:
++        pytest.skip("readelf unavailable: independent view is a VM/CI requirement")
++    candidate, _manifest = build(tmp_path)
++    result = run_tool(["readelf", "-lW", str(candidate)])
++    assert result["returncode"] == 0
++    audit = audit_cave_layout(ELF, candidate, plan(), readelf_text=result["stdout"])
++    assert audit["pass"] is True, audit["failed"]
++    assert audit["checks"]["readelf_matches_elftools_values"] is True
++
++
++# ---------------------------------------------------------------------------
++# CLI: verify + bundle
++
++
++def test_cli_verify(tmp_path: Path, capsys) -> None:
++    code = cave_main([
++        "verify", "--elf", str(ELF), "--contract", str(CONTRACT_PATH),
++        "--cave", hex(CAVE_ADDR), "--cave-size", str(CAVE_SIZE),
++    ])
++    payload = json.loads(capsys.readouterr().out)
++    assert code == 0
++    assert payload["pass"] is True
++    assert payload["candidate_sha256"][0] == GOLDEN_CANDIDATE_SHA256
++
++
++def test_bundle_writes_hashed_static_evidence(tmp_path: Path, capsys) -> None:
++    outdir = tmp_path / "gate3"
++    code = cave_main([
++        "bundle", "--elf", str(ELF), "--contract", str(CONTRACT_PATH),
++        "--cave", hex(CAVE_ADDR), "--cave-size", str(CAVE_SIZE),
++        "--out-dir", str(outdir), "--scope-authorized",
++    ])
++    payload = json.loads(capsys.readouterr().out)
++    assert code == 0
++    assert payload["sha256sums_ok"] is True
++    assert verify_sha256sums(outdir) is True
++    for name in ("candidate.elf", "original.elf", "edit-manifest.json", "audit.json",
++                 "reproducibility.json", "environment.json", "gate3-record.md",
++                 "SHA256SUMS", "bundle-sha256.txt"):
++        assert (outdir / name).exists(), name
++    states = payload["item_states"]
++    assert states["1_separate_copy_and_hashes"]["state"] == "measured"
++    assert states["2_reproducibility_and_manifest"]["state"] == "measured"
++    assert states["4_six_case_run"]["state"] == "not_run"
++    assert states["5_isolation_evidence"]["state"] == "not_run"
++    record = (outdir / "gate3-record.md").read_text(encoding="utf-8")
++    assert "not_run" in record
++    manifest = json.loads((outdir / "edit-manifest.json").read_text(encoding="utf-8"))
++    assert manifest["patched_sha256"] == GOLDEN_CANDIDATE_SHA256
+diff --git a/tests/test_routea_manifest.py b/tests/test_routea_manifest.py
+new file mode 100644
+index 0000000..d6f2c55
+--- /dev/null
++++ b/tests/test_routea_manifest.py
+@@ -0,0 +1,82 @@
++"""Dependency-free tests for the Route A byte-audit primitives.
++
++These tests use synthetic bytes only: they never open, parse, or execute the
++fixture ELF, so they can run wherever Python runs. The ELF-dependent Route A
++tests live in ``test_routea_cave.py`` and must run in the guest (handoff 13 §5).
++"""
++
++from __future__ import annotations
++
++import pytest
++
++from routea.byteaudit import (
++    ByteAuditError,
++    audit_changed_bytes,
++    changed_intervals,
++    intervals_as_dicts,
++    off_interval_offsets,
++    residue_sha256,
++    sha256_bytes,
++)
++
++
++def test_changed_intervals_merge_adjacent_offsets() -> None:
++    original = bytes(range(16))
++    patched = bytearray(original)
++    patched[3] = 0xFF
++    patched[4] = 0xEE
++    patched[10] = 0x00
++    assert changed_intervals(original, bytes(patched)) == [(3, 4), (10, 10)]
++
++
++def test_changed_intervals_rejects_length_change() -> None:
++    with pytest.raises(ByteAuditError):
++        changed_intervals(b"abc", b"abcd")
++
++
++def test_intervals_are_inclusive_and_merged() -> None:
++    assert intervals_as_dicts([(0, 1), (2, 3), (9, 9)]) == [
++        {"start": 0, "end": 3, "size": 4},
++        {"start": 9, "end": 9, "size": 1},
++    ]
++
++
++def test_off_interval_offsets_finds_undeclared_byte() -> None:
++    outside = off_interval_offsets([(0, 1), (8, 8)], [(0, 1)])
++    assert outside == [8]
++
++
++def test_residue_matches_when_edits_are_declared() -> None:
++    original = b"abcdefgh"
++    patched = b"abcXefgh"
++    result = residue_sha256(original, patched, [(3, 3)])
++    assert result["match"] is True
++    assert result["original_residue_sha256"] == result["patched_residue_sha256"]
++
++
++def test_residue_rejects_length_change() -> None:
++    with pytest.raises(ByteAuditError):
++        residue_sha256(b"abc", b"ab", [])
++
++
++def test_audit_changed_bytes_passes_inside_declared_intervals() -> None:
++    original = b"0123456789"
++    patched = b"012345678X"
++    result = audit_changed_bytes(original, patched, [(9, 9)])
++    assert result["pass"] is True
++    assert result["outside_declared"] == []
++    assert result["changed_intervals"] == [{"start": 9, "end": 9, "size": 1}]
++
++
++def test_audit_changed_bytes_fails_outside_declared_intervals() -> None:
++    original = b"0123456789"
++    patched = b"01X345678X"
++    result = audit_changed_bytes(original, patched, [(9, 9)])
++    assert result["pass"] is False
++    assert result["outside_declared"] == ["0x2"]
++
++
++def test_sha256_bytes_is_stable() -> None:
++    assert sha256_bytes(b"") == (
++        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
++    )
+-- 
+2.56.0.windows.2
+
