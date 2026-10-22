@@ -7,6 +7,12 @@
 moves to items **1–5 PASS / 6 NOT VERIFIED**, stays DRAFT/unsigned, and Gate 3 remains
 `CONDITIONALLY FEASIBLE` (Gate 4 `NOT RUN`, Gate 6 partial, fixture `NOT FROZEN`).
 
+> **Addendum (handoff 26):** the v1 bundle is superseded and the supplement is not a v2
+> delivery. The v1-based `PASS` for items 3–5 is **withdrawn**; the record is back to
+> **1–2 PASS / 3–6 `NOT VERIFIED`** until a v2 bundle with fixed LIEF fields, merged
+> chain/harness manifests, remapped summary and single-operator `revert.log` is re-verified.
+> Canonical record hash from handoff 26: `810bb893…378f`.
+
 Basis: M4's independent bundle check (`SHA-256 0ef65546…f54bf8d5`, 13,530 B, 21 files, inner
 `SHA256SUMS` 20/20), the reported six-case/V0/isolation fields, and the readelf/checksec outputs
 in the bundle. The bundle itself was not readable from the Lead agent workspace, so this ruling
@@ -38,7 +44,7 @@ This substitutes an independent second parser, it does not drop the structural r
 
 ## 3. G4 — operator wording: closed
 
-VMer is a separate window of the same operator (not two people). The record notes the revert was
+VMer is **M3 operating in a separate AI window** (one person, not two people). The record notes the revert was
 done in VMware Snapshot Manager and that the revert log is post-revert observation; no fake
 automated command log. Closed.
 
@@ -67,7 +73,7 @@ M4 verifies them, item 6 becomes PASS.
 Still required before signature: item 6 files + M5 build/hash replay. The verifier row stays
 blank until both exist; Lead approval last.
 Canonical record hash after this ruling:
-`01ecabd542b1b55b0822fc741523178f5d2760b153d58c8590bcea8128f083d6` (supersedes
+`810bb8936dd64c52722a0762cd65b5d2a03b1f82cd91e90e5ea902e54971378f` (supersedes
 `94d7d314…`, `b6fedd2b…`, `bddccbfe…`, `3dcdc862…`).
 
 **Confirmation log.** 2026-10-22 — Lead closes G3/G4, allows the readelf+checksec substitution
