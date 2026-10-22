@@ -26,8 +26,8 @@ This is the unchanged round trip only — **not a repair**.
 > | `routeb/verify.py` | `851d3ff4c80f6cbbbc766d43d1d838dd991b0f802e0bb8de09f73132f44bd0df` |
 > | `routeb/run_manifest_compare.py` | `c0bc45e39b0b74ca7815ac623c2784d4105caf0f5a44f2076b42b11854b8c427` |
 >
-> Kit: `dist/m5-routeb-kit-2026-10-22-v5.zip`,
-> SHA-256 `bc5b0dbcc56ea4d5d920cf72a23cfdef895771004b324c50e4f78c15fd04a6d8`.
+> Kit: `dist/m5-routeb-kit-2026-10-22-v6.zip`,
+> SHA-256 `499f510c9fda660826ea6b7f5b1969839334ba7cd63cc0c975a1e4ca951e4b1d`.
 > Invocation: `jobwrap ... -- /path/to/repo/routeb/gate4_runner.sh /path/to/repo /var/tmp/gate4-work`
 > (no `sudo -u runner jobwrap`).
 >
@@ -37,12 +37,10 @@ This is the unchanged round trip only — **not a repair**.
 > judging only**; M4 independently verifies image hash, tool versions, and
 > isolation. M5's GitHub Actions 6/6 remains supplementary.
 >
-> **Contract pin / kit warning:** current main `b5e0d92` has canonical contract
-> `24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37`
-> (six edits; allowed_calls/env updated after `6ce8b99`). The v5 kit embeds the
-> earlier `1a0ad101…c10c`, so **do not run v5 as-is**. Rebuild the kit with
-> `24bfe568…4e37` (v6) or get an explicit freeze decision; M4 signs `24bfe568…4e37`,
-> not `1a0ad101…`.
+> **Contract pin:** canonical contract is
+> `24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37` (six edits;
+> CET/seccomp assumptions explicit). v6 embeds this contract; v5 is withdrawn.
+> M4 signs `24bfe568…4e37`.
 >
 > Required raw artifacts (M3 pushes them to branch `member-3/gate4-evidence`,
 > path `routeb/out/gate4/`; M5 reads, M4 verifies):
@@ -142,7 +140,7 @@ force-pushes `gate4-results` with the evidence.
 | G1 contract + frozen manifest | PASS | `tests/test_fixture_v3_manifest.py`; contract v2 50/49; manifest-set hash `a564f039…` |
 | G2 Ghidra export | PASS | Ghidra 12.2 raw C + `.meta.txt` in `routeb/out/gate4/` |
 | G3 Route A | **BLOCKED** | needs scope ruling for new R--/R-X segments; plan in `07-route-a-trampoline-plan.md` |
-| G4 Route B unchanged round trip | **formal NOT RUN (supplementary PASS)** | decision A: M3 executes, M5 judges, M4 verifies; v5 kit + raw artifacts pending on `member-3/gate4-evidence` |
+| G4 Route B unchanged round trip | **formal NOT RUN (supplementary PASS)** | decision A: M3 executes, M5 judges, M4 verifies; v6 kit + raw artifacts pending on `member-3/gate4-evidence` |
 | G5 placement | PARTIAL | Route B replaced a same-size function; Route A layout audit not run |
 | G6 concrete crash | PASS (partial) | `06-gate6-evidence.md`; 100 B → SIGSEGV at `ret 0x401317` |
 | G6 symbolic (V4) | **BLOCKED** | angr/Z3/V4 toolchain absent |
