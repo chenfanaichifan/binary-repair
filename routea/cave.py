@@ -13,7 +13,10 @@ pending Gate 3 scope ruling, so ``build`` is gated.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import importlib.metadata as _md
 import json
+import platform
 import struct
 from dataclasses import dataclass
 from pathlib import Path
@@ -253,11 +256,68 @@ def build_cave_patched(
     out.write_bytes(bytes(data))
     out.chmod(0o755)
     audit = audit_cave_layout(original, out, plan)
+    loads_before = _loads(original)
+    rx_before = next(s for s in loads_before if s["vaddr"] == plan.rx_vaddr)
+    next_after = [s for s in loads_before if s["vaddr"] > plan.rx_vaddr]
+    no_overlap = all(s["vaddr"] >= plan.rx_vaddr + plan.rx_new_size for s in next_after)
+    with original.open("rb") as fh:
+        elf = ELFFile(fh)
+        call_off = _file_offset_ext(elf, plan.call_site)
+        cave_off = _file_offset_ext(elf, plan.cave_addr)
+        msg_off = _file_offset_ext(elf, plan.message_addr)
+        phdr_off = _phdr_offset(elf, plan.rx_vaddr)
+
+    def pkg(name: str) -> str:
+        try:
+            return _md.version(name)
+        except Exception:
+            return "missing"
+
     return EditManifest(
         original_sha256=_sha(original),
         patched_sha256=_sha(out),
         function={"name": plan.target.name, "entry": hex(plan.target.entry),
                   "size": plan.target.size},
+        displaced=[{"vaddr": hex(plan.call_site), "file_offset": hex(call_off),
+                    "size": 5,
+                    "original_hex": _bytes_at(original, plan.call_site, 5).hex(),
+                    "new_hex": plan.redirect.hex(),
+                    "purpose": "displaced strcpy call"}],
+        added=[
+            {"kind": "code", "vaddr": hex(plan.cave_addr), "file_offset": hex(cave_off),
+             "size": len(plan.code), "sha256": hashlib.sha256(plan.code).hexdigest(),
+             "purpose": "guard length and branch"},
+            {"kind": "data", "vaddr": hex(plan.message_addr), "file_offset": hex(msg_off),
+             "size": len(plan.message), "sha256": hashlib.sha256(plan.message).hexdigest(),
+             "purpose": "exact invalid stderr"},
+        ],
+        intervals={"changed": [[hex(plan.call_site), hex(plan.call_site + 5)]],
+                   "added": [[hex(plan.cave_addr),
+                              hex(plan.cave_addr + len(plan.code) + len(plan.message))]]},
+        header_changes={
+            "rx_load": {
+                "phdr_file_offset": hex(phdr_off),
+                "vaddr": hex(plan.rx_vaddr),
+                "p_offset": hex(rx_before["offset"]),
+                "old_filesz": hex(rx_before["filesz"]),
+                "new_filesz": hex(plan.rx_new_size),
+                "old_memsz": hex(rx_before["memsz"]),
+                "new_memsz": hex(plan.rx_new_size),
+                "align": "0x1000",
+                "page_congruent": (plan.rx_vaddr % 0x1000) == (rx_before["offset"] % 0x1000),
+                "no_overlap": no_overlap,
+                "beyond_original_p_filesz": plan.rx_new_size > rx_before["filesz"],
+            },
+            "original_size": original.stat().st_size,
+            "patched_size": out.stat().st_size,
+        },
+        writer="write(2, msg, 42) syscall",
+        termination="exit_group(1)",
+        tool_versions={"python": platform.python_version(),
+                       "pyelftools": pkg("pyelftools"),
+                       "capstone": pkg("capstone"),
+                       "build_script": "regen_c4a159.py",
+                       "build_script_kind": "stdlib-only"},
         edits=[{"kind": "call_redirect", "vaddr": hex(plan.call_site),
                 "size": 5, "new_hex": plan.redirect.hex(),
                 "purpose": "redirect strcpy call to cave"}],
@@ -265,11 +325,21 @@ def build_cave_patched(
                    "size": len(plan.code) + len(plan.message),
                    "purpose": "guard + exact stderr in existing cave"}],
         relocations_added=[],
-        header_changes={"original_size": original.stat().st_size,
-                        "patched_size": out.stat().st_size},
         scope_authorized=True,
         audit=audit,
     )
+
+
+def _phdr_offset(elf: ELFFile, vaddr: int) -> int:
+    phoff = elf.header["e_phoff"]
+    phentsize = elf.header["e_phentsize"]
+    for i in range(elf.header["e_phnum"]):
+        off = phoff + i * phentsize
+        elf.stream.seek(off)
+        raw = elf.stream.read(phentsize)
+        if struct.unpack_from("<I", raw, 0)[0] == 1 and struct.unpack_from("<Q", raw, 16)[0] == vaddr:
+            return off
+    raise RouteAError("RX PT_LOAD program header not found")
 
 
 def _extend_load_filesz(original: Path, data: bytearray, vaddr: int, new_size: int) -> None:

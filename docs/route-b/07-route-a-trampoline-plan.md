@@ -28,7 +28,7 @@ for this fixture.
 **Reviewed contract (2026-10-22):**
 
 `fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json`,
-canonical hash `1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c`.
+canonical hash `24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37`.
 The six `authorized_edits` entries are:
 
 1. 5-byte relative redirect of `call strcpy@plt` at `0x401304`, branch back on the valid path;
@@ -43,7 +43,7 @@ The six `authorized_edits` entries are:
 
 > **Resolved 2026-10-22:** entry 1 now says branch back to **`0x401309`**,
 > the instruction after the 5-byte call at `0x401304`. Canonical hash is
-> `1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c`.
+> `24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37`.
 > The other five entries, oracle, harness and `original.elf` are unchanged.
 
 Input: `fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf`

@@ -12,9 +12,11 @@ CONTRACT = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json
 def test_first_persisted_contract_has_six_authorized_edits() -> None:
     data = json.loads(CONTRACT.read_text(encoding="utf-8"))
     contract = SecurityContract.from_dict(data)
-    assert contract_sha256(data) == "1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c"
+    assert contract_sha256(data) == "24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37"
     assert len(contract.authorized_edits) == 6
-    assert contract.allowed_calls == ("printLine", "strcpy")
+    assert contract.allowed_calls == ("fprintf", "printLine", "strcpy")
+    assert any("compile-time only" in a for a in contract.environment_assumptions)
+    assert any("seccomp" in a for a in contract.environment_assumptions)
     assert contract.dest_capacity_bytes == 50
     assert contract.max_valid_input_bytes == 49
     assert contract.invalid_exit_code == 1
@@ -26,4 +28,4 @@ def test_first_persisted_contract_has_six_authorized_edits() -> None:
     assert "fd 2" in joined
     assert "0x401fff" in joined
     assert "no new segment" in joined
-    assert contract.sha256() == "1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c"
+    assert contract.sha256() == "24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37"

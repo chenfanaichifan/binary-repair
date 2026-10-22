@@ -120,17 +120,29 @@ class EditManifest:
     header_changes: dict = field(default_factory=dict)
     scope_authorized: bool = False
     audit: dict = field(default_factory=dict)
+    displaced: list[dict] = field(default_factory=list)
+    added: list[dict] = field(default_factory=list)
+    intervals: dict = field(default_factory=dict)
+    writer: str = ""
+    termination: str = ""
+    tool_versions: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
-            "schema_version": 1,
+            "schema_version": 2,
             "original_sha256": self.original_sha256,
             "patched_sha256": self.patched_sha256,
             "function": self.function,
+            "displaced": self.displaced,
+            "added": self.added,
+            "intervals": self.intervals,
+            "header_changes": self.header_changes,
+            "writer": self.writer,
+            "termination": self.termination,
+            "tool_versions": self.tool_versions,
             "edits": self.edits,
             "mappings": self.mappings,
             "relocations_added": self.relocations_added,
-            "header_changes": self.header_changes,
             "scope_authorized": self.scope_authorized,
             "audit": self.audit,
         }

@@ -11,8 +11,8 @@ formal Gate 3 remains **CONDITIONALLY FEASIBLE** until M3's isolated run.
 |---|---|
 | original.elf | `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393` |
 | candidate.elf | `c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82` |
-| contract.json canonical | `1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c` |
-| handoff zip | `dist/m5-routea-c4a159-2026-10-22.zip`, SHA-256 `ecb9df57…10020` |
+| contract.json canonical | `24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37` |
+| handoff zip | `dist/m5-routea-c4a159-2026-10-22.zip`, SHA-256 `957d73d4…c108e` |
 
 Contents: candidate ELF, original ELF, corrected contract, edit manifest, audit,
 6/6 manifest result, readelf audit, standalone `regen_c4a159.py`, SHA256SUMS.
@@ -33,5 +33,5 @@ formal run rebuilds the ELF, record the new hash and do not reuse `c4a159…`.
 ## Contract
 
 Main `8199eca` and this handoff say `0x401309`; canonical hash
-`1a0ad101097461b207e3ea07e264d8d6eb03bc57d1f54c7b9e41c2955015c10c`.
+`24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37`.
 A checkout showing the old branch target is stale; use main `666a5dc` or newer.
