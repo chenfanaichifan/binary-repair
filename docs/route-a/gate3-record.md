@@ -140,15 +140,14 @@ is **not accepted** and is not gate-3 evidence either way. M5's build/hash repla
 bundle. The formal VM bundle (items 3–6) remains `NOT VERIFIED`.
 
 ```text
-bundle:       dist/m5-routea-c4a159-2026-10-22.zip
-bundle sha:   957d73d4284a4e5ced27de451bacdfe8956751232bd4a1fa5aa6454dccdc108e
+bundle_zip:   dist/m5-routea-c4a159-2026-10-22.zip
+bundle_zip_sha256:         957d73d4284a4e5ced27de451bacdfe8956751232bd4a1fa5aa6454dccdc108e
 original:     aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393
 candidate:    c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
 contract file:15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df
 contract canon:24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
 regen script: 56331eedb4d72c55eec4e0f105fb20207576e6e6860b79ca4cedb175ed54e843
-SHA256SUMS:   640b448228ea8e16d15930c5c81a1478a11a82a1feddb122f6262157a87788dd
-bundle hash:  640b448228ea8e16d15930c5c81a1478a11a82a1feddb122f6262157a87788dd
+sha256sums_file_sha256:   640b448228ea8e16d15930c5c81a1478a11a82a1feddb122f6262157a87788dd
 ```
 
 Commands used:
@@ -184,7 +183,7 @@ VM bundle and items 3–6 are still required before M4 signs.
 | Role | Name | Date | Signature |
 |---|---|---|---|
 | M4 verifier | — | — | **blank until items 3–6 are PASS** |
-| M5 build/hash replay | Member 5 | 2026-10-22 | REPLAYED — `c4a159…aa82` / `24bfe568…4e37` / `SHA256SUMS 640b…`; handoff bundle only |
+| M5 build/hash replay | Member 5 | 2026-10-22 | REPLAYED — `c4a159…aa82` / `24bfe568…4e37` / `bundle_zip 957d… / SHA256SUMS 640b…; handoff bundle only |
 | Lead approval | — | — | pending |
 
 Do not fill these fields from a CI run, a static audit, or a verbal approval. A blank row is not
