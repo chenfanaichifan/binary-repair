@@ -8,3 +8,5 @@ jinja2>=3.1
 python-multipart>=0.0.20
 pytest>=9
 httpx>=0.28
+# Optional tooling: generate/inspect Route B static bundles locally (M5 executor).
+pyelftools>=0.33
