@@ -45,7 +45,7 @@ The evidence screen now offers JSON download, HTML view and HTML download.
   -p no:cacheprovider
 ```
 
-Observed: `22 passed` (exit 0).
+Observed: `23 passed` (exit 0).
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest tests/test_export_bundle.py -q
