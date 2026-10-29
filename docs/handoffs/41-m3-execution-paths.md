@@ -41,6 +41,7 @@ Decision B wrapper (added with this handoff):
 | wrapper | `routeb/jobwrap_routeb.sh` |
 | wrapper SHA-256 | `70b50f927a41694fdfaabf0c515ec15ca77f4302bf0ce8a95acc134fa7b64621` |
 | invocation | `jobwrap routeb -- <repo>/routeb/jobwrap_routeb.sh <repo> /var/tmp/routeb-work` |
+| M3 jobwrap routeb artifact | `5cabf25a…` (M3-reported harness; not a candidate repair) |
 
 Wrapper behavior:
 
@@ -70,3 +71,11 @@ P3B files: `candidate.elf`, `edit-manifest.json`, `manifest-compare.json`,
 
 Until those exist: **P4 NOT RUN, P3B NOT RUN, Gate 4 NOT RUN.** No static-only
 or kit-only pass.
+
+
+## Fixed C requirement
+
+The run must use a real fixed C that checks capacity. `juliet_badSink.normalized.c`
+is the unmodified source; `--mode fixed` on it only reproduces original behavior.
+Use the full function name `CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink`;
+do not use the `<badSink>` placeholder.

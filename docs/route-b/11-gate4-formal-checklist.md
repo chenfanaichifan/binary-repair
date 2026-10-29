@@ -32,9 +32,10 @@ Do **not** use the shared guest with 0 snapshots, passwordless sudo and NAT.
 ```bash
 sha256sum original.elf                 # must be aa428157...8393
 java -version; ghidra --version; python3 -m pip show patcherex2
-./routeb/ghidra/export.sh original.elf <badSink> routeb/out/gate4
+./routeb/ghidra/export.sh original.elf CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink routeb/out/gate4
 python3 routeb/probe_patcherex2.py --mode roundtrip --binary original.elf \
-  --func <badSink> --c-source routeb/experiment/samples/juliet_badSink.normalized.c \
+  --func CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink \
+  --c-source routeb/experiment/samples/juliet_badSink.normalized.c \
   --out routeb/out/gate4/roundtrip.elf --skip-verify
 # disable network here, then:
 python3 routeb/run_manifest_compare.py --original original.elf \
