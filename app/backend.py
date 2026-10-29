@@ -94,6 +94,7 @@ class Backend(Protocol):
     ) -> dict[str, Any]: ...
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
+    def get_artifact(self, artifact_id: str) -> dict[str, Any]: ...
     def get_visuals(self, job_id: str) -> dict[str, Any]: ...
     def export_bundle(self, job_id: str) -> dict[str, Any]: ...
 
@@ -181,6 +182,15 @@ class MockBackend:
 
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         return demo.artifacts(self._job(job_id))
+
+    def get_artifact(self, artifact_id: str) -> dict[str, Any]:
+        return {
+            "id": artifact_id,
+            "name": "demo-artifact",
+            "role": "synthetic demo artifact",
+            "sha256": "0" * 64,
+            "size_bytes": 0,
+        }
 
     def get_visuals(self, job_id: str) -> dict[str, Any]:
         return visuals.build(self._job(job_id))
@@ -344,6 +354,12 @@ class HttpBackend:
         payload = self._request("GET", f"/api/jobs/{job_id}/artifacts", where="get_artifacts")
         if not isinstance(payload, dict):
             raise BackendError(502, "Backend artifacts response must be an object.")
+        return payload
+
+    def get_artifact(self, artifact_id: str) -> dict[str, Any]:
+        payload = self._request("GET", f"/api/artifacts/{artifact_id}", where="get_artifact")
+        if not isinstance(payload, dict):
+            raise BackendError(502, "Backend artifact response must be an object.")
         return payload
 
     def get_visuals(self, job_id: str) -> dict[str, Any]:
@@ -656,6 +672,9 @@ class LocalBackend:
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         self._record(job_id)
         return {"A": [], "B": []}
+
+    def get_artifact(self, artifact_id: str) -> dict[str, Any]:
+        raise BackendError(404, "Local backend does not expose artifact bytes yet.")
 
     def get_visuals(self, job_id: str) -> dict[str, Any]:
         self._record(job_id)

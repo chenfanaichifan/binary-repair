@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Artifact{% endblock %}
+
+{% block content %}
+<section class="job-head">
+  <div class="job-head-main">
+    <h1>证据产物（artifact）</h1>
+    <p class="hash">Artifact ID <code>{{ artifact_id }}</code></p>
+  </div>
+  <div class="head-actions">
+    <a class="btn ghost" href="javascript:history.back()">返回</a>
+  </div>
+</section>
+
+{% if error %}
+<p class="limits" data-testid="artifact-error">
+  无法读取 artifact 内容：{{ error }}。页面只显示 artifact id；路径字符串不能作为 worker 主键。
+</p>
+{% else %}
+<div class="card">
+  <dl class="facts">
+    <div><dt>artifact id</dt><dd><code>{{ artifact.id }}</code></dd></div>
+    <div><dt>name</dt><dd>{{ artifact.name or "-" }}</dd></div>
+    <div><dt>role</dt><dd>{{ artifact.role or "-" }}</dd></div>
+    <div><dt>sha256</dt><dd><code>{{ artifact.sha256 or "-" }}</code></dd></div>
+    <div><dt>size</dt><dd>{{ artifact.size_bytes if artifact.size_bytes is not none else "-" }} B</dd></div>
+  </dl>
+  <p class="muted">查看/下载必须使用 artifact id；evidence 路径只用于显示。</p>
+</div>
+{% endif %}
+{% endblock %}

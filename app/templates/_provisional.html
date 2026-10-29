@@ -1,0 +1,7 @@
+{% if provisional %}
+<div class="limits provisional-warning" data-testid="provisional-warning">
+  <strong>PROVISIONAL</strong> · 来源 <code>{{ provisional.source_sha256[:16] }}…</code>
+  （{{ provisional.label }}）或旧 attempt。此结果<strong>不覆盖 Gate 3 approved</strong>，
+  不能作为 success / verified 证据；等 P3A checker PASS + M5 worker JSON 后再接真实数据。
+</div>
+{% endif %}

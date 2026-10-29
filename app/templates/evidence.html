@@ -23,6 +23,8 @@
   {% if job.verdict and job.verdict.outcome %}· verdict {{ job.verdict.outcome }}{% if job.verdict.failing_obligation %}（失败义务 {{ job.verdict.failing_obligation }}）{% endif %}{% endif %}
 </p>
 
+{% include "_provisional.html" %}
+
 {% for key, route in job.routes.items() %}
 <article class="card evidence-card" data-testid="evidence-{{ key }}">
   <header class="route-head">
@@ -59,7 +61,14 @@
         <td>{{ item.kind }}</td>
         <td>{{ item.description or "" }}</td>
         <td><span class="result result-{{ item.result }}">{{ item.result }}</span></td>
-        <td>{{ item.scope or item.evidence_artifact_id or "" }}</td>
+        <td>
+          {% if item.evidence_artifact_id %}
+            <a href="/artifacts/{{ item.evidence_artifact_id }}" data-testid="artifact-link-{{ item.id or item.kind }}"><code>{{ item.evidence_artifact_id[:12] }}…</code></a>
+          {% elif item.evidence_path %}
+            <span class="muted" data-testid="evidence-path-{{ item.id or item.kind }}">{{ item.evidence_path }}</span>
+            <span class="muted">（路径仅显示）</span>
+          {% elif item.scope %}{{ item.scope }}{% endif %}
+        </td>
         <td>{{ item.reason or item.detail or "" }}</td>
       </tr>
       {% endfor %}
@@ -80,7 +89,7 @@
   <ul class="artifacts">
     {% for art in artifacts[key] %}
     <li>
-      <code>{{ art.name }}</code>
+      {% if art.id %}<a href="/artifacts/{{ art.id }}" data-testid="artifact-list-{{ key }}-{{ loop.index }}"><code>{{ art.name }}</code></a>{% else %}<code>{{ art.name }}</code>{% endif %}
       <span class="muted">{{ art.role }}</span>
       <span class="hash-mini">sha256 {{ art.sha256[:16] }}…</span>
       <span class="muted">（演示：未生成真实文件）</span>

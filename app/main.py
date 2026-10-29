@@ -21,7 +21,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Resp
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app import i18n, status
+from app import i18n, provisional, status
 from app.backend import (
     BackendError,
     backend_description,
@@ -290,6 +290,7 @@ def _comparison_response(
             "can_start": BACKEND.supports_start,
             "backend_note": backend_description(BACKEND),
             "error": error,
+            "provisional": provisional.provisional_notice(snapshot),
         },
         status_code=status_code,
     )
@@ -420,6 +421,31 @@ async def evidence_page(request: Request, job_id: str):
             "job": snapshot,
             "obligations": obligations,
             "artifacts": BACKEND.get_artifacts(job_id),
+            "backend_note": backend_description(BACKEND),
+            "provisional": provisional.provisional_notice(snapshot),
+        },
+    )
+
+
+@app.get("/artifacts/{artifact_id}", response_class=HTMLResponse)
+async def artifact_view(request: Request, artifact_id: str):
+    """View artifact metadata by artifact id; paths are display-only."""
+    artifact = None
+    error = None
+    try:
+        artifact = BACKEND.get_artifact(artifact_id)
+    except BackendError as exc:
+        error = exc.detail
+    except Exception as exc:  # defensive: never render a traceback
+        error = str(exc)
+    return templates.TemplateResponse(
+        request,
+        "artifact.html",
+        {
+            "demo": False,
+            "artifact_id": artifact_id,
+            "artifact": artifact,
+            "error": error,
             "backend_note": backend_description(BACKEND),
         },
     )
