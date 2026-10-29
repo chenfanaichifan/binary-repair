@@ -2,15 +2,14 @@
 
 **Status: DRAFT / NOT RUN.** This is a record skeleton, not a pass claim.
 
-## Inputs required
+## Inputs
 
 | Input | Required | Observed |
 |---|---|---|
-| M3 P4 package (`gate4-status.json`, six-case raw rows, isolation attestation) | yes | missing |
-| M3 P3B Route B runtime bundle (`candidate.elf`, `edit-manifest.json`, `manifest-compare.json`) | yes | missing |
-| checker PASS | yes | not run |
-| real `tools/p2_acceptance.py` exit 0 | yes | not run |
-| M4 independent verifier | yes | blank |
+| P4 native `manifest-compare.json` + raw package | yes | missing |
+| P3B successful runtime package | yes | checker PASS, **NOT ACCEPTED** |
+| real p2 exit 0 | yes | not run |
+| M4 verifier | yes | blank |
 | Lead approval | yes | blank |
 
 ## V0–V5
@@ -24,14 +23,14 @@
 | V4 symbolic | `not_run` | — |
 | V5 reproducibility | `not_run` | — |
 
-## Signatures
+## Signatures / witness
 
-| Role | Name | Date | Signature |
+| Role | Name | Date | Observation |
 |---|---|---|---|
+| Independent witness | M5 | 2026-10-29 | P3A v4 checker PASS/hash; P3B f46a checker PASS but not accepted; P4/Gate5 blocked; witness only, not a gate pass |
 | M5 Gate 4 record | — | — | wait for real p2 exit 0 |
 | M4 verifier | — | — | blank |
 | Lead approval | — | — | blank |
 
-Do not fill any row from a synthetic run, a static bundle, a CI-only 6/6, or a
-verbal approval. Synthetic p2 is labelled `synthetic: true` and is not Gate 4
-evidence.
+Do not fill any row from a checker-only observation, synthetic p2, static bundle,
+or verbal approval. P4/P3B/Gate5 remain NOT RUN.
