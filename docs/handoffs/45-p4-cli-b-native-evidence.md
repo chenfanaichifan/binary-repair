@@ -41,3 +41,20 @@ GATE5_SCRIPT=/path/M4-gate5-fixed.sh \
 ```
 
 P4 must not add a second parameter entry point.
+
+## P4 CLI B artifacts still missing
+
+The CLI is accepted, but these are not in any fetched ref/workspace:
+
+```text
+wrapper b232d60b… original + full SHA-256     missing
+gate4.conf full text/hash/root/perms/fixed     missing
+new runner hash                               missing
+jobwrap version/build hash                    missing
+no-arg behavior/output paths observed          missing
+```
+
+Old references only: `gate4.conf f240c2f8…`, `jobwrap b0371c10…`,
+`routeb/gate4_runner.sh 515c4d60…`. These are not proof of the new wrapper.
+Therefore P4 is **NOT EXECUTABLE / NOT RUN** until M3/VMer publishes the
+artifacts; no `gate4_pass` is written.
