@@ -78,7 +78,7 @@ def normalize(package: Path, out: Path) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="normalize_handoff.py")
+    parser = argparse.ArgumentParser(prog=Path(sys.argv[0]).name)
     parser.add_argument("package", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
