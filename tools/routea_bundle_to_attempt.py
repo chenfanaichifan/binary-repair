@@ -12,7 +12,9 @@ import argparse
 import hashlib
 import json
 import shutil
+import tempfile
 import uuid
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -101,17 +103,26 @@ def convert(
                 paths.append(Path(rel))
         if result == "passed" and not paths:
             raise ValueError(f"{gate} passed without evidence; refusing false pass")
-        ids = []
+        sources = []
         for rel in paths:
             source = (evidence_root / rel).resolve()
             if not source.is_file():
                 raise ValueError(f"{gate} evidence missing: {source}")
+            sources.append(source)
+        if sources:
             if data_dir is None or job_id is None or attempt_id is None:
                 raise ValueError("--data-dir/--job-id/--attempt-id required to register evidence")
-            ids.append(_register(data_dir=data_dir, job_id=job_id,
-                                 attempt_id=attempt_id, source=source))
-        if ids:
-            evidence[gate] = ",".join(ids)
+            if len(sources) == 1:
+                evidence[gate] = _register(data_dir=data_dir, job_id=job_id,
+                                           attempt_id=attempt_id, source=sources[0])
+            else:
+                with tempfile.TemporaryDirectory(prefix=f"routea-{gate}-") as tmp:
+                    archive = Path(tmp) / f"{gate}-evidence.zip"
+                    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
+                        for source in sources:
+                            zf.write(source, source.name)
+                    evidence[gate] = _register(data_dir=data_dir, job_id=job_id,
+                                               attempt_id=attempt_id, source=archive)
         missing = entry.get("missing") or []
         if missing:
             details[gate] = "; ".join(str(x) for x in missing)
