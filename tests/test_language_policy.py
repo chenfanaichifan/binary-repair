@@ -1,12 +1,6 @@
-"""语言规范测试（2026-10-18）。
+"""Language-policy tests (2026-10-18).
 
-规则：界面（UI）可以是中文；但**上传 / API / 导出数据必须全英文 ASCII**。
-
-本文件守护三件事：
-1. `/api/jobs/{id}` 与 `/api/jobs/{id}/export` 里没有任何中日韩字符（CJK）；
-2. 非 ASCII 的表单内容会被服务端 422 拒绝；
-3. UI 页面仍然是中文（不能因为翻译把界面也变英文）。
-"""
+The UI may be Chinese; upload/API/export data must be English ASCII."""
 
 from __future__ import annotations
 
@@ -19,7 +13,6 @@ from app.main import CSRF_TOKEN, SESSION_TOKEN, app
 client = TestClient(app, base_url="http://127.0.0.1")
 assert client.get("/?token=" + SESSION_TOKEN).status_code == 200
 
-# 中日韩字符 + 全角标点（覆盖中文、日文、韩文与全角符号）
 CJK_PATTERN = re.compile(
     r"[\u2e80-\u2fff\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]"
 )
@@ -51,7 +44,7 @@ def _create_job(filename: str = "sample.bin", overrides: dict | None = None) -> 
 
 
 def test_api_and_export_are_english_only():
-    """API 与导出 JSON 里不允许出现中文（数据语言规范）。"""
+    """API and export JSON must contain no CJK characters."""
     job_id = _create_job()
     client.post(
         f"/jobs/{job_id}/start", data={"csrf": CSRF_TOKEN}, follow_redirects=False
@@ -72,15 +65,13 @@ def test_evidence_page_data_is_english_while_ui_is_chinese():
     job_id = _create_job()
     page = client.get(f"/jobs/{job_id}/evidence")
     assert page.status_code == 200
-    # UI 中文
     assert "证据与导出" in page.text
-    # 义务数据英文
     assert "Identity and preconditions" in page.text
     assert "Bounded symbolic security" in page.text
 
 
 def test_chinese_form_content_is_rejected():
-    """上传内容必须英文；中文（非 ASCII）应返回 422。"""
+    """Non-ASCII upload text is rejected with 422."""
     response = client.post(
         "/jobs",
         data={**FORM, "defect": "栈缓冲区越界写"},
@@ -103,7 +94,7 @@ def test_contract_field_rejected_when_chinese():
 
 
 def test_uploaded_filename_is_sanitized_to_ascii():
-    """中文文件名不能进入任务数据/导出数据，应被转成 ASCII 安全名。"""
+    """Uploaded filenames are sanitized to ASCII."""
     job_id = _create_job(filename="样本.bin")
     data = client.get(f"/api/jobs/{job_id}").json()
     assert data["filename"].isascii()
