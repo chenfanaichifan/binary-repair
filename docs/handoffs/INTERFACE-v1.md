@@ -84,7 +84,7 @@ A package with `package_id` instead of `id`, no `files`, or unsorted
 `SHA256SUMS` is not accepted directly. Convert mechanically:
 
 ```bash
-python scripts/normalize_handoff.py <provisional-package> --out <new-package>
+python scripts/handoff_to_interface_v1.py <provisional-package> --out <new-package>
 ```
 
 The converter:
