@@ -23,6 +23,15 @@ failing_obligation: interface
 
 P3B v3 is structurally accepted; V2/V4 remain not_run, so this is not success.
 
+Worker log (locatable/verifiable):
+
+```text
+docs/handoffs/logs/P3B-v3-worker-rerun-2026-10-29.log
+SHA-256 f1c7c6dc79f2a34e42ae0864b8568d8ef90bf5c4ca07e7d9d57a752646122a14
+```
+
+Observation only; no gate pass.
+
 ## V0–V5
 
 | Gate | Result | Evidence |
