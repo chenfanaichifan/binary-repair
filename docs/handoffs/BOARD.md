@@ -7,7 +7,8 @@
 
 - **M3** holds the ball for **T3.0 access confirmation** (must be an artifact or a blocked package by **2026-10-30 12:00**).
 - **M5** holds the ball for **T5.1 interface v1** and **T5.2 adapter + synthetic end-to-end** (no dependency on M3; deadline **2026-10-30 18:00**).
-- **M4** preparation is ready but JOIN-1 is **not started**: checklist `docs/handoffs/42` and Gate 5/6 plan `docs/handoffs/43` are published; JOIN-1 begins only when M5's record + real p2 and M3's packages exist (2026-10-31 12:00).
+- **M4** preparation is ready but JOIN-1 is **not started**: checklist `docs/handoffs/42` and Gate 5/6 plan `docs/handoffs/43` are published; JOIN-1 begins only when M5's record + real p2 and M3's packages exist (2026-10-31 12:00). Gate 5 Route A probe requested from M3/VMer (`docs/handoffs/50`, probe `scripts/m4_gate5_probe.py`); record `51` is **unsigned/NOT VERIFIED** until the window runs.
+- **M3/VMer** holds the Gate 5 probe-execution ball: run the M4 script under jobwrap for the requested window (candidate `c4a159…`, six cases, r-xp/mem=file/breakpoints, isolation attestation) and return raw outputs + `SHA256SUMS`; do not summarise a verdict.
 - **M1** holds the branch-transfer/PR ball: import the published bundle (tip named in `docs/handoffs/47` + `delivery/TRANSFER-integration-2026-10-29.md`), confirm `d969e6d` ancestry/presence, then publish the PR head + branch-tip measured block by **2026-10-30 12:00**. Rebuild from member branches is not authorized as equivalent (`47` §2).
 - The two tracks run **in parallel**. Neither may start by waiting for the other.
 
@@ -31,7 +32,7 @@
 |---|---|---|
 | Gate 3 (Route A) | **CLOSED / APPROVED** 2026-10-22 | record `0b3b51e4…f2da`; do not reopen |
 | Gate 4 (Route B formal) | **NOT RUN** | no guest run + no signed record yet; this board is the path to close it |
-| Gate 5 (placement) | pending Route A runtime (M4/M3) | Gate 3 design closed; runtime proof still `not_run` |
+| Gate 5 (placement) | pending — Route A runtime probe requested (M4/M3) | `docs/handoffs/50` request + `scripts/m4_gate5_probe.py`; record `docs/handoffs/51` **unsigned / NOT VERIFIED**; Route B half M5 pending; Gate 5 cannot be signed before the probe |
 | Gate 6 (violation detection) | partial | concrete crash accepted; symbolic half pending V4 |
 | Fixture | **NOT FROZEN** | Gate 4 NOT RUN, Gate 5 pending → freeze deferred; Lead record `docs/handoffs/48` (item 16: DEFERRED, F1–F7 checklist); re-open only after gates 4–5 |
 | Real pipeline (`tools/p2_acceptance.py`) | **BLOCKED (exit 2)** | measured 2026-10-29; no real result bundle reached the worker |
@@ -49,3 +50,4 @@
 | 2026-10-29 | M1 reported the remote lacks `integration/consolidation-2026-10-29` (their `main` is `d969e6d`, not visible here). Lead/M4 published `47` (branch transfer + merge conditions) and a full-history git bundle + transfer note under `delivery/`; branch tip and bundle SHA-256 are named there. Merge needs the M4 **PR-head integration row** (not the Gate 4 JOIN-1 row); Lead approval is written, PR `Approve` is only mechanical; "reported" numbers must stay labelled and cannot be merge evidence. **No gate status changed.** | Lead/M4 |
 | 2026-10-29 | Fixture item 16: Lead published `docs/handoffs/48` — fixture **NOT FROZEN / deferred** (Gate 3 closed; Gate 4 NOT RUN; Gate 5 pending; freeze-readiness F1–F7 recorded); fixture values re-hashed (original `aa428157…`, manifests `17b2ee39…`/`d493f370…`, set `a564f039…`, contract `24bfe568…`). M2 boundary published (`docs/handoffs/49`): no fixture/oracle edits; audit found `origin/member2/i18n-cleanup` modifies `tests/test_fixture_v3_manifest.py` (docstring only) → must be reverted before merge. **No gate status changed.** | Lead |
 | 2026-10-29 | Transfer resolution: verified branch pushed to GitHub as `lead/consolidation-verified-64c6f3eb` @ `64c6f3e` (unique new branch; existing `integration/consolidation-2026-10-29` = `604d49d` untouched; `main` = `2c57057c`); M1 fetches that branch instead of receiving files. **No gate status changed.** | Lead |
+| 2026-10-29 | Gate 5 Route A evidence reportedly ready (candidate `c4a159…`, mapping r-xp, mem=file, breakpoints, six cases). M4 published `docs/handoffs/50` (one guest window request; independent M4-defined probe, not M3's logs) + guest-only `scripts/m4_gate5_probe.py` + unsigned record `docs/handoffs/51`; M4 cannot reach the guest from its host, so execution is requested from M3/VMer. Results will be **PASS / FAIL / NOT VERIFIED only**; Gate 5 stays unsigned/pending. **Gate 4 JOIN-1 unchanged** (waiting P4 + M5 record + real p2 exit 0). | M4 |
