@@ -33,7 +33,7 @@
 | Gate 4 (Route B formal) | **NOT RUN** | no guest run + no signed record yet; this board is the path to close it |
 | Gate 5 (placement) | pending Route A runtime (M4/M3) | Gate 3 design closed; runtime proof still `not_run` |
 | Gate 6 (violation detection) | partial | concrete crash accepted; symbolic half pending V4 |
-| Fixture | **NOT FROZEN** | freeze decision only after gates 3–5 |
+| Fixture | **NOT FROZEN** | Gate 4 NOT RUN, Gate 5 pending → freeze deferred; Lead record `docs/handoffs/48` (item 16: DEFERRED, F1–F7 checklist); re-open only after gates 4–5 |
 | Real pipeline (`tools/p2_acceptance.py`) | **BLOCKED (exit 2)** | measured 2026-10-29; no real result bundle reached the worker |
 
 ## Status vocabulary
@@ -47,3 +47,5 @@
 | 2026-10-29 | Board created; M3/M5 split and protocol published (`34`–`37`) | Lead |
 | 2026-10-29 | M4 published Gate 4 independent-verification checklist (`42`) + Gate 5/6 plan (`43`); host-side helper `scripts/m4_verify_gate4.py` self-tested only on synthetic packages; evidence store still has no P4/P3A/P3B, no record, no real p2 job; **no gate status changed (Gate 4 NOT RUN, Gate 5 pending, Gate 6 partial)** | M4 |
 | 2026-10-29 | M1 reported the remote lacks `integration/consolidation-2026-10-29` (their `main` is `d969e6d`, not visible here). Lead/M4 published `47` (branch transfer + merge conditions) and a full-history git bundle + transfer note under `delivery/`; branch tip and bundle SHA-256 are named there. Merge needs the M4 **PR-head integration row** (not the Gate 4 JOIN-1 row); Lead approval is written, PR `Approve` is only mechanical; "reported" numbers must stay labelled and cannot be merge evidence. **No gate status changed.** | Lead/M4 |
+| 2026-10-29 | Fixture item 16: Lead published `docs/handoffs/48` — fixture **NOT FROZEN / deferred** (Gate 3 closed; Gate 4 NOT RUN; Gate 5 pending; freeze-readiness F1–F7 recorded); fixture values re-hashed (original `aa428157…`, manifests `17b2ee39…`/`d493f370…`, set `a564f039…`, contract `24bfe568…`). M2 boundary published (`docs/handoffs/49`): no fixture/oracle edits; audit found `origin/member2/i18n-cleanup` modifies `tests/test_fixture_v3_manifest.py` (docstring only) → must be reverted before merge. **No gate status changed.** | Lead |
+| 2026-10-29 | Transfer resolution: verified branch pushed to GitHub as `lead/consolidation-verified-64c6f3eb` @ `64c6f3e` (unique new branch; existing `integration/consolidation-2026-10-29` = `604d49d` untouched; `main` = `2c57057c`); M1 fetches that branch instead of receiving files. **No gate status changed.** | Lead |
