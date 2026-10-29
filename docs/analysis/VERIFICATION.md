@@ -4,6 +4,7 @@
 **Date:** 2026-10-29 (Asia/Hong_Kong)
 **Branch:** `integration/consolidation-2026-10-29`, HEAD `7b294ba`
 **History verified:** `cc29158` (consolidation) + `381e4ef` (member-2 GUI merge) + `7b294ba` (merge of `merge/m2-main`)
+**Follow-up re-verification:** HEAD `986a49f` (parent `7b294ba`) — see §7. The initial measurements below are from `7b294ba`; §1 items 6/7/16 and §6 carry the current `986a49f` counts.
 **Environment:** Windows 11, Python 3.14.6, pytest 9.1.1, FastAPI 0.141.1, Starlette TestClient
 **Write scope:** this file only (`docs/analysis/VERIFICATION.md`); no product code, test, or acceptance rule was edited.
 **Scratch evidence:** commands log, JSON reports and helper scripts under `_scratch/verifier/` (git-ignored).
@@ -24,8 +25,8 @@ on this host is **NOT RUN**, never PASS.
 | 3 | No file from `origin/main` deleted or lost in `app tests routea routeb binaryrepair_ai schemas fixtures` | **PASS** | `git diff --name-status origin/main -- <paths>` = 45 entries, **0 deletions**; `git ls-tree` comparison lists no main file missing at HEAD; full `git diff --name-status origin/main -- .` also has no `D` entry |
 | 4 | No committed/pushed secrets (`.env`, API keys, tokens) | **PASS** | `git ls-files` has no `.env`/credential/key file; HEAD-tree grep for `sk-…`/`BEGIN … PRIVATE KEY` finds nothing; full `git diff origin/main -- .` scan for key/token patterns finds nothing. `.env.example` is a placeholder only, `var/` is untracked (0 tracked files) |
 | 5 | Acceptance unit suite: 29 passed | **PASS** | `python -m pytest tests/unit/test_acceptance.py -p pytest_rt_report -p no:cacheprovider -q` → `collected=29 passed=29` exit 0; plain run with pre-created `--basetemp` also 29 passed exit 0 |
-| 6 | Full suite measured state: **236 collected / 227 passed / 2 skipped / 7 errors / 5 uncollectable** | **PASS** | helper run → `collected=236 passed=227 error=7 skipped=2 collection_errors=5 pytest_exitstatus=1`; the 7 errors are exactly `tests/e2e/test_gui_journey.py`; the 2 skips are the V3-manifest tests; 5 collection errors are `capstone`×3 / `elftools`×2 and contain **13** test functions (verified by counting `def test_`) |
-| 7 | The Windows `tmp_path` failure is reported honestly, not hidden | **PASS** | plain `python -m pytest tests/ --basetemp=<pre-created> -p no:cacheprovider -q` → `Interrupted: 5 errors during collection` exit 2, 0 tests; with `--continue-on-collection-errors` (no helper) the progress line shows **236 markers: 167 passed / 67 err / 2 skip / 0 failed**. Of those 67 errors, 60 are `PermissionError [WinError 5]` at `tmp_path` fixture setup and the other 7 are the known browser-e2e environment errors; pytest also still crashes in `_pytest.tmpdir.cleanup_dead_symlinks` at session finish (no summary, exit 1). No `F` marker anywhere |
+| 6 | Full suite measured state: **238 collected / 229 passed / 2 skipped / 7 errors / 5 uncollectable** (at follow-up HEAD `986a49f`; the initial `7b294ba` measurement was 236/227 — delta = the 2 new attempt-writer identity tests, see §7) | **PASS** | helper run → `collected=238 passed=229 error=7 skipped=2 collection_errors=5 pytest_exitstatus=1`; the 7 errors are exactly `tests/e2e/test_gui_journey.py`; the 2 skips are the V3-manifest tests; 5 collection errors are `capstone`×3 / `elftools`×2 and contain **13** test functions (verified by counting `def test_`) |
+| 7 | The Windows `tmp_path` failure is reported honestly, not hidden | **PASS** | plain `python -m pytest tests/ --basetemp=<pre-created> -p no:cacheprovider -q` → `Interrupted: 5 errors during collection` exit 2, 0 tests (re-measured at `986a49f`); with `--continue-on-collection-errors` (no helper) the progress line shows **238 markers: 167 passed / 69 err / 2 skip / 0 failed**. Of those 69 errors, 62 are `PermissionError [WinError 5]` at `tmp_path` fixture setup and the other 7 are the known browser-e2e environment errors; pytest also still crashes in `_pytest.tmpdir.cleanup_dead_symlinks` at session finish (no summary, exit 1). No `F` marker anywhere. (Initial `7b294ba`: 236 markers, 167/67/2.) |
 | 8 | Tests not weakened; no skip/xfail hides a failure; no second success rule | **PASS** | see §3. The only changed existing test (`tests/integration/test_controller_api.py::test_obligations_and_artifacts`) replaces the old *placeholder-asserting* lines with stricter "empty groups, no `passed`" assertions; the other modified tests (M2 merge) only add session/CSRF plumbing and more assertions; repository-wide grep finds **no** `xfail`; the two skips are real V3 environment skips; the acceptance decision exists only in `app/domain/acceptance.py` (byte-identical to the member-4 branch), templates/`app/status.py` only render persisted verdicts |
 | 9 | Demo `python scripts/demo_e2e.py` exits 0 with the expected printed evidence | **PASS** | exit 0; fixture sha256 `aa428157…8393`; scope sha256 `24bfe568…4e37`; scenario 1 `inconclusive / required_check_not_run`, scenario 2 `rejected / regression_failed`; only obligation reported `passed` is V0 `identity`, supplied by the clearly labelled synthetic bundle; every V1–V5 absent check prints `not_run` (or the deliberate synthetic `failed` control); 12 persisted obligation rows per scenario; synthetic label present in every attempt bundle and in the printed "REAL vs SYNTHETIC" section |
 | 10 | Fixture bytes and contract scope hash match the documented values | **PASS** | independent recomputation (own canonical JSON implementation) → contract `24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37`; fixture ELF 26,792 B `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393`; both equal the demo/README values |
@@ -34,12 +35,12 @@ on this host is **NOT RUN**, never PASS.
 | 13 | App boots under uvicorn on a free port (not 8123); `/healthz` and the three screens render | **PASS** | GUI `app.main:app` on `127.0.0.1:8802` (http backend, controller on `127.0.0.1:8801`): `/healthz` 200 `{"ok":true,"backend":"http",…}`; authenticated `/jobs/new`, `/jobs/{id}`, `/jobs/{id}/evidence` all 200, no demo banner, token not echoed; unknown job 404; unauthenticated requests 401. Servers stopped and ports confirmed released (no LISTENING sockets) |
 | 14 | M2 merge claim: `tools/p0_acceptance.py` 17/17 against live GUI `http` mode + canonical controller | **PASS** | live run → 17/17 `PASS`, `P0 ACCEPTANCE PASSED`, exit 0 (`job=7497c7f8…`, phase queued→cancelled, cancelled page shows the Chinese "cancelled" label and is not labelled success) |
 | 15 | README claim: `tools/p2_acceptance.py` exits `2 BLOCKED` while no result bundle reaches the worker | **PASS** | live run → `BLOCKED  pipeline did not finish: phase='queued'`, exit 2 |
-| 16 | README's measured full-suite numbers (236/227/2/7/5) | **PASS** | reproduced exactly (§1 item 6) |
-| 17 | README attribution: "These are the only verified test numbers; they come from `docs/analysis/RUNTIME-VERIFICATION.md` and `docs/analysis/CONTROLLER-FIXES.md`" | **FAIL** | neither document contains 236/227. They report `189/187/2/5` and `197/195/2/5` respectively (details §4, D1). The README numbers are correct, the cited provenance is false |
-| 18 | `docs/analysis/RUNTIME-VERIFICATION.md`: 189/187 attributed to commit `4107836`, and current-defect claims | **FAIL** | a clean archive of `origin/main` `4107836` collects **160** tests (158 passed / 2 skipped with the helper; 117/2/41 plain). The 189 figure includes 29 acceptance tests that were only *staged* at measurement time; the document never says so. Its §7/§8 claims that GUI `http` mode and the persisted-evidence endpoint do not exist are false at HEAD (details §4, D2/D3) |
-| 19 | `docs/analysis/CONTROLLER-FIXES.md`: endpoint fix content and its own measured counts | **PASS for the fix / FAIL for HEAD-current wording** | the fix is real and verified (§1 item 11); its 19/19 combined run reproduces; but its §5.2 "GUI HTTP-backend mode does not exist in this worktree" and its 197/195 total are stale at HEAD (details §4, D4) |
+| 16 | README's measured full-suite numbers (238/229/2/7/5 at follow-up HEAD `986a49f`) | **PASS** | reproduced exactly (§1 item 6; §7 re-measured the same command at `986a49f`) |
+| 17 | README attribution: "These are the only verified test numbers; they come from `docs/analysis/RUNTIME-VERIFICATION.md` and `docs/analysis/CONTROLLER-FIXES.md`" | **FAIL at `7b294ba`; FIXED in `986a49f`** | neither document contains 236/227. They report `189/187/2/5` and `197/195/2/5` respectively (details §4, D1). The README numbers were correct, the cited provenance false. **Follow-up:** the README now points at this file (§7) |
+| 18 | `docs/analysis/RUNTIME-VERIFICATION.md`: 189/187 attributed to commit `4107836`, and current-defect claims | **FAIL at `7b294ba`; FIXED in `986a49f`** | a clean archive of `origin/main` `4107836` collects **160** tests (158 passed / 2 skipped with the helper; 117/2/41 plain). The 189 figure includes 29 acceptance tests that were only *staged* at measurement time; the document never said so. Its §7/§8 claims that GUI `http` mode and the persisted-evidence endpoint do not exist were false at HEAD (details §4, D2/D3). **Follow-up:** a dated pre-merge note was added at the top of the document (§7) |
+| 19 | `docs/analysis/CONTROLLER-FIXES.md`: endpoint fix content and its own measured counts | **PASS for the fix / FAIL for HEAD-current wording — FIXED in `986a49f`** | the fix is real and verified (§1 item 11); its 19/19 combined run reproduces; but its §5.2 "GUI HTTP-backend mode does not exist in this worktree" and its 197/195 total were stale at HEAD (details §4, D4). **Follow-up:** a dated note marks both superseded (§7) |
 | 20 | `docs/analysis/M2-MERGE-REPORT.md` measured numbers | **PASS (as the merge-commit measurement)** | its 192-item subset at HEAD → `collected=192 passed=190 skipped=2` exit 0 (reproduced by excluding the three suites added after `381e4ef`); merge commit parents `036328d`+`4107836` confirmed; 17/17 P0, P2 `2 BLOCKED`, 7 e2e errors all confirmed |
-| 21 | `docs/analysis/ROOT-CAUSE-ANALYSIS.md` verifiable facts | **PASS (historical facts) / stale for HEAD totals** | "0 commits 2026-10-23…10-28" confirmed (0); missing tools/modules confirmed; "clean main 160 executed / 117 passed / 2 skipped / 41 errored" reproduced exactly on an archive of `4107836`; its consolidated-tree totals (189/146/41) are historical (analysis window 12:34–12:55) and are stale at HEAD (details §4, D6) |
+| 21 | `docs/analysis/ROOT-CAUSE-ANALYSIS.md` verifiable facts | **PASS (historical facts) / stale for HEAD totals — FIXED in `986a49f`** | "0 commits 2026-10-23…10-28" confirmed (0); missing tools/modules confirmed; "clean main 160 executed / 117 passed / 2 skipped / 41 errored" reproduced exactly on an archive of `4107836`; its consolidated-tree totals (189/146/41) were historical (analysis window 12:34–12:55) and stale at HEAD (details §4, D6). **Follow-up:** a dated later-status note was added (§7) |
 | 22 | `MEMORY.md` byte-identity claims (acceptance engine, `docs_BinaryRepair/` 41 files, `agent_docs/` copies) | **PASS** | `git diff member-4-verification -- app/domain/acceptance.py app/domain/outcomes.py tests/unit/test_acceptance.py` = 0 lines; `docs_BinaryRepair` = 41 files and 0-line diff vs `member-4-verification`; all four `agent_docs/*.md` SHA-256 equal their `agent/` counterparts |
 | 23 | README fixture-manifest hash claims (`valid.json 17b2ee39…`, `invalid.json d493f370…`) and `.gitattributes` byte pinning | **PASS** | measured hashes match exactly; `.gitattributes` marks `fixtures/public/**/tests/*.json` as `-text`; the 6 passing `test_fixture_v3_manifest` tests confirm the manifest-set hash |
 | 24 | README tag/layout claims (`docs_BinaryRepair/` 41 files, `agent/` frozen archive, tag `archive/2026-10-22/pre-cleanup`) | **PASS** | tag resolves (`e9091b0e…`); files/directories present; `agent/` untouched by this task |
@@ -55,7 +56,8 @@ on this host is **NOT RUN**, never PASS.
 ## 2. Exact commands and observed results
 
 All commands ran from `D:\BinaryRepair_Project` unless stated. Full logs are under
-`_scratch/verifier/`.
+`_scratch/verifier/`. The §2.1 numbers are the initial `7b294ba` run; §7 re-ran the same commands
+at follow-up HEAD `986a49f` (full suite 238/229 — the delta is the 2 new attempt-writer tests).
 
 ### 2.1 Tests
 
@@ -77,9 +79,12 @@ python -m pytest tests/ -p pytest_rt_report -p no:cacheprovider -q --continue-on
 #    5 collection errors = test_routea_cave/test_routea_manifest/test_routea_worker (capstone),
 #                          test_routeb_attempt_writer/test_routeb_executor (elftools); 13 functions
 
+# follow-up HEAD 986a49f, same command:
+# -> collected=238 passed=229 error=7 skipped=2 collection_errors=5 pytest_exitstatus=1  (see §7)
+
 # 3) plain pytest with a pre-created basetemp (no helper): honest environment failure
 python -m pytest tests/ --basetemp=_scratch\verifier\basetemp_plain4 -p no:cacheprovider -q
-# -> "Interrupted: 5 errors during collection", exit 2, 0 tests run
+# -> "Interrupted: 5 errors during collection", exit 2, 0 tests run  (re-measured at 986a49f: same)
 
 python -m pytest tests/ --basetemp=_scratch\verifier\basetemp_plain3 `
   -p no:cacheprovider -q --continue-on-collection-errors
@@ -87,6 +92,7 @@ python -m pytest tests/ --basetemp=_scratch\verifier\basetemp_plain3 `
 #    (of the 67 errors: 60 PermissionError [WinError 5] inside pytest tmp_path setup,
 #    7 the known browser-e2e environment errors); then a crash in
 #    _pytest.tmpdir.cleanup_dead_symlinks at session finish (no summary line, exit 1)
+# follow-up HEAD 986a49f, same command: 238 markers -> 167 passed / 69 error / 2 skip / 0 failed
 ```
 
 Cross-checks used to attribute the numbers in the other documents (all run by me):
@@ -117,8 +123,9 @@ Note on the `pytest_rt_report` helper: it is a measurement-only plugin
 (`scripts/pytest_rt_report.py`). It provides a per-test writable `tmp_path` and tolerates the
 sandbox teardown error. It does not skip, reorder, xfail, or rewrite any test and it never
 turns a failure into a pass: the plain runs above show the same tests either pass or fail with
-`PermissionError`, never with an assertion failure. The 60 additional passes (227 vs 167) are
-exactly the tests whose only problem was the broken temporary directory.
+`PermissionError`, never with an assertion failure. The additional passes (60 at `7b294ba`:
+227 vs 167; 62 at `986a49f`: 229 vs 167) are exactly the tests whose only problem was the broken
+temporary directory.
 
 ### 2.2 Demo
 
@@ -243,6 +250,10 @@ contains only placeholders (`sk-your-key-here`).
 
 ## 4. Discrepancies found (expected vs observed)
 
+Follow-up status: all nine items (D1-D9) were addressed in commit `986a49f`; the per-item
+classification and evidence are in §7. The paragraphs below preserve the initial `7b294ba`
+findings.
+
 **D1 — README attributes its numbers to documents that do not contain them.**
 Expected (README lines 175–176): "These are the only verified test numbers; they come from
 `docs/analysis/RUNTIME-VERIFICATION.md` and `docs/analysis/CONTROLLER-FIXES.md`."
@@ -312,13 +323,17 @@ is `passed` only when the bundle's original hash matches the job record (as
 `routeb/attempt_writer.py` does: `identity = manifest.get("original_sha256") == job.original_sha256`).
 Observed: `app/services/attempt_writer.py::_routeb` sets `"V0": "passed"` unconditionally
 (line 129) whenever `candidate.elf` exists; it computes and records the candidate hash but does
-not compare the original hash to the job/original, and the passing test
-`tests/integration/test_attempt_writer.py::test_routeb_bundle_maps_static_audit_without_runtime_pass`
-asserts only V1/V3, not V0. This is an evidence-producer, not the acceptance engine (the engine
+not compare the original hash to the job/original, and at the time of this finding the passing
+test `tests/integration/test_attempt_writer.py::test_routeb_bundle_maps_static_audit_without_runtime_pass`
+asserted only V1/V3, not V0. This is an evidence-producer, not the acceptance engine (the engine
 still aggregates, and V1–V5 real checks are `not_run`), so it does not invalidate the demo or
 the tests, but an executor adapter could hand a `passed` V0 to the worker for an unverified
 candidate. **Severity: medium — recommend a follow-up (compare the original hash or leave V0
-`not_run`).**
+`not_run`).** **Follow-up `986a49f`: FIXED** — `_routeb` now sets `V0: passed` only when the
+bundle declares an original hash matching the job record (and, when declared, a candidate hash
+matching `candidate.elf`); no identity evidence → `not_run`, mismatch → `failed`. The
+static-bundle test now also asserts `V0 == not_run` and two identity tests were added.
+Before/after evidence: §7.
 
 **D9 — `M2-MERGE-REPORT.md` misstates the acceptance-tool payload size.**
 Expected: `tools/p0_acceptance.py` and `tools/p2_acceptance.py` each define
@@ -366,16 +381,157 @@ engine, the demo, P0 (17/17) and the test suite (236 items: 227 passed / 2 genui
 7 environment errors / 13 uncollectable functions) all behave as the README's measured section
 describes. No product-code change, test weakening, deleted `main` file or committed secret was
 found. The acceptance suite (29 tests) passes, and the one Lead-approved assertion change is a
-strengthening, not a relaxation.
+strengthening, not a relaxation. Re-measured at follow-up `986a49f`: **238 items / 229 passed**
+(the +2 are the new attempt-writer identity tests) — see §7.
 
-The main verification failures are **documentation freshness**, not product behaviour:
-README's provenance sentence is false (D1); `RUNTIME-VERIFICATION.md` attributes a
-staged-worktree count to a clean commit and lists two already-fixed defects as current
-(D2/D3); `CONTROLLER-FIXES.md` and `ROOT-CAUSE-ANALYSIS.md`/`MEMORY.md` carry pre-M2/pre-commit
-numbers as if current (D4/D6/D7); and one demo-script comment is stale (D5). One residual code
-risk is recorded for follow-up: the unconditional V0 `passed` in
-`app/services/attempt_writer.py` (D8).
+At the initial HEAD the main verification failures were **documentation freshness**, not product
+behaviour: README's provenance sentence was false (D1); `RUNTIME-VERIFICATION.md` attributed a
+staged-worktree count to a clean commit and listed two already-fixed defects as current
+(D2/D3); `CONTROLLER-FIXES.md` and `ROOT-CAUSE-ANALYSIS.md`/`MEMORY.md` carried pre-M2/pre-commit
+numbers as if current (D4/D6/D7); one demo-script comment was stale (D5); and one residual code
+risk was recorded (D8). All nine (D1-D9) were addressed in follow-up commit `986a49f`; two
+low-severity labelling nits remain (N1 commit labels, N2 MEMORY plain-run error count — §7.5), and
+neither changes a product claim or a measured result.
 
 **Real repair verification remains `not_run`.** Nothing in this tree is evidence that the
 CWE-121 stack overflow has been fixed; the demo and all passing tests exercise synthetic or
 static data only.
+
+---
+
+## 7. Follow-up verification (commit `986a49f`)
+
+**Re-measured 2026-10-29 (Asia/Hong_Kong), after the Lead's follow-up commit.**
+HEAD `986a49f8328b3ee63e8bfb8e20a25368fdb89948`, parent `7b294ba` (verified with
+`git rev-parse 986a49f^`). This section supersedes §1 items 6/7/16 and §6 where they quote the
+initial `7b294ba` numbers.
+
+### 7.1 What the commit contains (inspected, not trusted)
+
+`git show 986a49f --stat` → 10 files changed, +537/−8:
+
+| File | Change |
+|---|---|
+| `app/services/attempt_writer.py` | the only product-code change: `_routeb` V0 identity gating |
+| `tests/integration/test_attempt_writer.py` | +69 lines: 2 new identity tests + a `V0 == not_run` assertion in the static-bundle test |
+| `README.md`, `MEMORY.md` | D1 provenance and D7 current totals |
+| `docs/analysis/RUNTIME-VERIFICATION.md`, `CONTROLLER-FIXES.md`, `ROOT-CAUSE-ANALYSIS.md` | D2/D3/D4/D6 dated later-status notes |
+| `docs/analysis/M2-MERGE-REPORT.md` | D9 payload size 19 → 25 bytes |
+| `scripts/demo_e2e.py` | D5 stale comment corrected |
+| `docs/analysis/VERIFICATION.md` | this initial report committed (381 lines) |
+
+No controller/GUI/acceptance/domain code changed, so the GUI/API/P0/P2/evidence-endpoint
+results in §1 are not invalidated by this commit (the diff proves those paths are untouched);
+their code paths were additionally exercised again by the re-run demo (§7.3).
+
+### 7.2 D8 fix: before/after measured behaviour
+
+**Before (`7b294ba`):** `app/services/attempt_writer.py::_routeb` initialised `"V0": "passed"`
+for every bundle that contained `candidate.elf` (old line 129), with no comparison to the job
+record.
+
+**After (`986a49f`):** `_routeb` reads `edit-manifest.json` (`original_sha256`,
+`candidate_sha256`) or a bundled `original.elf`, looks up the job's recorded `original_sha256`,
+and maps V0 as follows (all rows measured by me):
+
+| Bundle condition | V0 result | `details.V0` |
+|---|---|---|
+| no identity evidence (static bundle: `candidate.elf` + `audit.json` only) | `not_run` | "identity not confirmed: bundle provides no original hash" |
+| declared original == job original, declared candidate == `candidate.elf` | `passed` | "original … matches the job record" |
+| declared original != job original | `failed` | "original … does not match job …" |
+| declared candidate hash != `candidate.elf` bytes | `failed` | "candidate.elf hash does not match edit-manifest.json" |
+| bundled `original.elf` == job original (no manifest) | `passed` | original-match detail |
+| bundled `original.elf` != job original | `failed` | original-mismatch detail |
+| invalid `edit-manifest.json` + matching `original.elf` | `not_run` (conservative) | missing identity |
+
+Commands and evidence:
+
+```powershell
+$env:PYTHONPATH="scripts"
+$env:RT_REPORT_PATH="_scratch\verifier\followup_attempt_writer.json"
+$env:RT_TMP_ROOT="_scratch\verifier\followup_tmp_aw"
+python -m pytest tests/integration/test_attempt_writer.py -p pytest_rt_report `
+  -p no:cacheprovider -q --continue-on-collection-errors
+# -> collected=4 passed=4 collection_errors=0 pytest_exitstatus=0   (exit 0)
+
+python _scratch\verifier\probe_d8_v0.py
+# -> 9/9 checks PASS: the three V0 cases above plus the candidate-mismatch, bundled-original,
+#    invalid-manifest and V1-unchanged checks; own jobs/bundles, not the repository tests
+```
+
+Real `routeb/executor.py` manifests contain both `original_sha256` and `candidate_sha256`
+(lines 236-237), so the candidate-hash binding is live for real bundles, not only for tests.
+
+### 7.3 Re-measured tests and demo at `986a49f`
+
+| Measurement | Initial `7b294ba` | Follow-up `986a49f` | Delta |
+|---|---|---|---|
+| `tests/unit/test_acceptance.py` | 29 passed | **29 passed** | 0 |
+| full suite (helper) | 236 collected / 227 passed / 2 skipped / 7 errors / 5 uncollectable | **238 collected / 229 passed / 2 skipped / 7 errors / 5 uncollectable** | +2 collected / +2 passed = exactly the two new attempt-writer identity tests (confirmed in the report JSON) |
+| plain full run (no helper, `--continue-on-collection-errors`) | 236 markers: 167 passed / 67 err / 2 skip / 0 failed | **238 markers: 167 passed / 69 err / 2 skip / 0 failed** (62 `tmp_path` + 7 e2e errors) | +2 errors: the new tests also hit the sandbox `tmp_path` defect |
+| plain full run (`--basetemp`, no continue) | Interrupted: 5 collection errors, exit 2, 0 tests | **same: 5 collection errors, exit 2, 0 tests** | 0 |
+| `python scripts/demo_e2e.py` | exit 0 | **exit 0** — same fixture `aa428157…8393`, scope `24bfe568…4e37`, `inconclusive/required_check_not_run` + `rejected/regression_failed`, 12 obligation rows/scenario | 0 |
+
+Helper summary at `986a49f`: `collected=238 passed=229 error=7 skipped=2 collection_errors=5
+pytest_exitstatus=1`. The 7 errors are the 7 `tests/e2e/test_gui_journey.py` journeys; the 2
+skips are the V3-manifest tests; the 5 collection errors are unchanged (`capstone`×3,
+`elftools`×2, 13 functions).
+
+Artifacts: `_scratch/verifier/followup_full.json`, `followup_full.log`,
+`followup_plain_continue.log`, `followup_unit.json`, `followup_attempt_writer.json`,
+`probe_d8_v0.py` + `.log`, `demo_followup.log`.
+
+### 7.4 Per-discrepancy status at `986a49f`
+
+| Item | Status | Evidence |
+|---|---|---|
+| D1 README provenance | **FIXED** | README:175-177 now says the numbers were measured on this tree and independently re-measured in `docs/analysis/VERIFICATION.md` (§1 items 6-7); no attribution to RUNTIME-VERIFICATION/CONTROLLER-FIXES remains (the §1 item 17 row quotes the historical wording only) |
+| D2 RUNTIME 189/187 attributed to `4107836` | **FIXED (annotated)** | dated "Later status" note at the top of the document states the 189/187 run included staged `tests/unit/test_acceptance.py` and is not reproducible from `4107836` alone — exactly the initial finding |
+| D3 RUNTIME current-defect claims | **FIXED (annotated)** | same note says the §7/§8 defects (no GUI `http` mode, static evidence placeholder) were fixed later by `381e4ef`/`cc29158`; the body stays as the labelled historical snapshot |
+| D4 CONTROLLER-FIXES pre-merge status | **FIXED (annotated)** | dated note marks 197/195 superseded by 238/229 and the GUI-`http` gap closed by `381e4ef`; the DEFECT A/B fix itself remains independently verified |
+| D5 demo-script comment | **FIXED** | `scripts/demo_e2e.py` note now says the endpoint "serves the persisted per-attempt obligation rows (`evidence: persisted`) and returns an empty group with `evidence: not_persisted`" — matches the measured behaviour |
+| D6 ROOT-CAUSE historical totals | **FIXED (annotated)** | dated note labels 189/146/41 historical and states the current totals 238/229/2/7/5 |
+| D7 MEMORY stale totals | **FIXED** | new "Final consolidation state" entry quotes 238/229/2/7/5 and explicitly marks the 189/146/41 entry **superseded** (verified text), with two low-severity nits below (N1, N2) |
+| D8 attempt-writer V0 | **FIXED (verified)** | code + 4/4 tests + independent 9/9 probe (§7.2) |
+| D9 M2 report 19-byte payload | **FIXED** | line now says 25-byte payload; both tool constants measure 25 bytes |
+
+### 7.5 New (low-severity) issues found while re-verifying
+
+**N1 — the commit label is one commit behind the quoted counts.** README:175-176,
+`MEMORY.md:7`, and the "Later status (HEAD `7b294ba`)" notes in `RUNTIME-VERIFICATION.md`,
+`CONTROLLER-FIXES.md` and `ROOT-CAUSE-ANALYSIS.md` label the 238/229 totals as HEAD `7b294ba`.
+Those totals require the two new tests from `986a49f`: I measured **236/227 at `7b294ba`** and
+**238/229 at `986a49f`**. The numbers are correct for the current tree; only the commit label
+should say `986a49f` (or "follow-up commit"). This is the same class of commit-attribution issue
+as D2 — worth a one-line correction, not a product problem.
+
+**N2 — MEMORY's plain-run figures are stale at `986a49f`.** `MEMORY.md:7` says the plain
+`--basetemp` run "yields 167 pass / 67 environment errors / 2 skip". At `986a49f` I measure
+**167 passed / 69 environment errors / 2 skip / 0 failed** (the two new tests also error on the
+sandbox `tmp_path` defect; 238 markers). The helper-run totals and the "0 failures" conclusion
+are correct.
+
+**Residual observations (not failures).** (a) The D3/D4/D6 notes correctly make the bodies
+honest-as-historical but do not remove the old text; that is acceptable while the notes stay at
+the top. (b) `_routeb`'s candidate-hash cross-check is applied only when `edit-manifest.json`
+declares `candidate_sha256`; a manifest without it can still pass V0 on the original-hash match
+alone — conservative (it can never turn a mismatch into a pass), and real executor manifests do
+declare it. (c) A missing job record maps V0 to `not_run` rather than an error; honest, but an
+executor adapter would report identity as `not_run` for a nonexistent job.
+
+### 7.6 Updated conclusion at `986a49f`
+
+The tree remains **runnable and honest on labelled synthetic data**, and the follow-up fixed the
+one product-code honesty risk (D8) without weakening any test: the suite moved exactly by the two
+added tests (**238 collected / 229 passed / 2 skipped / 7 environment errors / 5 uncollectable**),
+the unit acceptance suite is still **29/29**, the demo still exits 0 with the same evidence, and
+`app.services.attempt_writer` now requires bundle-declared identity matching the job record before
+it can write `V0: passed` (no evidence → `not_run`, mismatch → `failed`).
+
+All nine initial discrepancies (D1-D9) are addressed. Two low-severity labelling/figure nits
+remain (N1 commit labels, N2 MEMORY plain-run error count); neither changes a product claim, a
+test result, or a verdict. The PASS/FAIL status of the original 30 items is otherwise unchanged,
+and all **NOT RUN** items in §5 remain not run: guest execution, real Route A/B builds,
+V1-V5/V4/V5 real checks, formal Gate 4/5/6, Gate 3 raw-evidence re-verification, browser e2e,
+quick-start launcher, real DeepSeek call. **No repaired binary exists or was verified anywhere in
+this tree.**

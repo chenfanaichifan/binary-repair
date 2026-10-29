@@ -1,6 +1,6 @@
 # Root-Cause Analysis: Why BinaryRepair Had No End-to-End Result After Two Weeks
 
-> **Later status (HEAD `7b294ba`):** this diagnosis was written at the start of the
+> **Later status (HEAD `986a49f`):** this diagnosis was written at the start of the
 > consolidation window (12:34-12:55). Its tree totals (189 executed / 146 passed /
 > 41 errored) are historical: after the member-4 acceptance merge, the controller
 > evidence fix and the member-2 GUI merge the current measured totals are 238
