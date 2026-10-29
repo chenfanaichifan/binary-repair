@@ -65,6 +65,25 @@ and record the **exact** command; the script itself refuses to run unless euid=1
 5. Do not edit the script, the results, or the hashes; do not add a pass/fail conclusion of your
    own. Raw output + hashes only.
 
+### 3a. Invocation status — BLOCKED pending M5 (2026-10-29 18:15)
+
+M3 reports that the current `jobwrap` has **no mode for a fixed M4 script**, and that running
+`scripts/m4_gate5_probe.py` directly would violate W5/isolation. That is correct: **do not run it
+directly, and do not use `sudo -u 1003`/an ad-hoc shell as a substitute.**
+
+Per Lead ruling `docs/handoffs/52` §3, M5 must provide one of these by **2026-10-30 10:00**:
+
+- a fixed-argv `jobwrap probe m4-gate5` mode that `execv`s exactly
+  `python3 <repo-root>/scripts/m4_gate5_probe.py <repo-root> <work-dir>` after netns setup and the
+  uid-1003 drop (no shell string, no caller-supplied command); or
+- a documented existing fixed-argv invocation of the same jobwrap version with exact syntax,
+  jobwrap SHA-256 and the isolation attestation it emits.
+
+If that mode is not available by the deadline, publish a **blocked package** naming M5 as the
+unblocker and stop. Gate 5 Route A stays `NOT VERIFIED` (record `51` unsigned); do not write
+PASS/FAIL from an unisolated run. This subsection supersedes the plain invocation in step 3 only
+for the launch mechanism; the evidence requirements W1–W8 and §4 stay unchanged.
+
 ## 4. What M4 will check and report
 
 M4 will independently re-hash the returned files and check (record `51`):
