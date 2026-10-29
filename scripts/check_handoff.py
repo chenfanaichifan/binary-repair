@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import platform
 import re
 import sys
 import tempfile
@@ -106,10 +107,10 @@ def validate(package: Path) -> tuple[list[str], dict]:
     }
 
 
-def _self_test() -> int:
-    with tempfile.TemporaryDirectory(prefix="handoff-self-test-") as tmp:
-        root = Path(tmp)
-        (root / "raw").mkdir()
+def _self_test(root: Path | None = None) -> int:
+    if root is not None:
+        root.mkdir(parents=True, exist_ok=True)
+        (root / "raw").mkdir(exist_ok=True)
         (root / "raw" / "case-01.txt").write_text("ok\n", encoding="utf-8")
         (root / "handoff.json").write_text(json.dumps({
             "id": "SELFTEST",
@@ -123,6 +124,7 @@ def _self_test() -> int:
         digest = _sha(root / "raw" / "case-01.txt")
         (root / "SHA256SUMS").write_text(f"{digest}  raw/case-01.txt\n", encoding="utf-8")
         errors, info = validate(root)
+        print(f"env: {platform.platform()} python={sys.version.split()[0]} root={root}")
         if errors:
             print("FAIL: self-test")
             for error in errors:
@@ -130,6 +132,8 @@ def _self_test() -> int:
             return 1
         print(f"PASS: self-test {json.dumps(info, sort_keys=True)}")
         return 0
+    with tempfile.TemporaryDirectory(prefix="handoff-self-test-") as tmp:
+        return _self_test(Path(tmp))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -138,9 +142,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--expect-from", default=None)
     parser.add_argument("--expect-to", default=None)
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--self-test-dir", type=Path, default=None)
     args = parser.parse_args(argv)
     if args.self_test:
-        return _self_test()
+        return _self_test(args.self_test_dir)
     if args.package is None:
         parser.error("package is required (or use --self-test)")
     errors, info = validate(args.package)
