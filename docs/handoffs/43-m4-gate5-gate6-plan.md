@@ -67,15 +67,16 @@ from M3's logs?
    **not** "pass with a note".
 
 **Evidence custody:** raw outputs under `var/jobs/m4-gate5/<run-id>/` (git-ignored); a committed
-record (path `docs/handoffs/44-m4-gate5-runtime-record.md`, created only when the run exists)
+record (path `docs/handoffs/51-m4-gate5-runtime-record.md`, created only when the run exists)
 citing filenames + SHA-256 and the evidence-manifest hash. M4 fills the verifier row; the Lead
 approves; M4 never approves its own run.
 
 **Coordination with M3:** when P4/P3A exist, publish an envelope
-`docs/handoffs/45-m4-to-m3-guest-session.md` (same 10-line shape as `35`) requesting one bounded
-guest window and naming: snapshot/chain manifest, revert requirement, uid/caps/egress controls,
-gdb/readelf paths, writable work dir, expected duration, and "no host execution". No chat-only
-request; if the window is unavailable, publish the blocked record and keep Gate 5 pending.
+`docs/handoffs/50-m4-to-m3-gate5-guest-window.md` (same 10-line shape as `35`) requesting one
+bounded guest window and naming: snapshot/chain manifest, revert requirement, uid/caps/egress
+controls, gdb/readelf paths, writable work dir, expected duration, and "no host execution". No
+chat-only request; if the window is unavailable, publish the blocked record and keep Gate 5
+pending.
 
 ## 3. Gate 6 / V4 — bounded symbolic calibration (guest with angr/Claripy/Z3)
 
