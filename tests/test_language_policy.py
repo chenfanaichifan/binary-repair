@@ -14,9 +14,10 @@ import re
 
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app.main import CSRF_TOKEN, SESSION_TOKEN, app
 
 client = TestClient(app, base_url="http://127.0.0.1")
+assert client.get("/?token=" + SESSION_TOKEN).status_code == 200
 
 # 中日韩字符 + 全角标点（覆盖中文、日文、韩文与全角符号）
 CJK_PATTERN = re.compile(
@@ -31,6 +32,7 @@ FORM = {
     "forbidden": "Out-of-bounds write to the target buffer",
     "invalid_outcome": "Return error code 1 without out-of-bounds access",
     "assumptions": "Single process\nStack protector disabled",
+    "csrf": CSRF_TOKEN,
 }
 
 
@@ -51,7 +53,9 @@ def _create_job(filename: str = "sample.bin", overrides: dict | None = None) -> 
 def test_api_and_export_are_english_only():
     """API 与导出 JSON 里不允许出现中文（数据语言规范）。"""
     job_id = _create_job()
-    client.post(f"/jobs/{job_id}/start", follow_redirects=False)
+    client.post(
+        f"/jobs/{job_id}/start", data={"csrf": CSRF_TOKEN}, follow_redirects=False
+    )
 
     api = client.get(f"/api/jobs/{job_id}")
     assert api.status_code == 200

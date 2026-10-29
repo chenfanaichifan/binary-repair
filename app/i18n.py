@@ -12,6 +12,8 @@ from __future__ import annotations
 # 阶段 code -> 中文显示
 PHASE_LABELS_ZH: dict[str, str] = {
     "draft": "草稿",
+    "queued": "排队中",
+    "running": "执行中",
     "screening": "输入筛查",
     "analyzing": "二进制分析",
     "roundtrip": "C 往返校验",

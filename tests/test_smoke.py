@@ -9,10 +9,12 @@
 
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app.main import CSRF_TOKEN, SESSION_TOKEN, app
 
-# base_url 用 127.0.0.1，否则会被 local_only 中间件拦成 403
+# base_url 用 127.0.0.1，否则会被 host 校验拦成 403
 client = TestClient(app, base_url="http://127.0.0.1")
+# 用一次性 token 引导本地会话（HttpOnly cookie）。
+assert client.get("/?token=" + SESSION_TOKEN).status_code == 200
 
 CONTRACT_FORM = {
     "defect": "strcpy in stack_buf does not check length; overlong input writes out of bounds",
@@ -22,6 +24,7 @@ CONTRACT_FORM = {
     "forbidden": "Out-of-bounds write to the target buffer",
     "invalid_outcome": "Return error code 1 without out-of-bounds access",
     "assumptions": "Single process\nStack protector disabled",
+    "csrf": CSRF_TOKEN,
 }
 
 
@@ -36,6 +39,14 @@ def _create_job() -> str:
     return response.headers["location"].rstrip("/").rsplit("/", 1)[-1]
 
 
+def test_landing_page():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "二进制漏洞修复" in response.text
+    assert 'data-testid="landing-cta"' in response.text
+    assert 'href="/jobs/new"' in response.text
+
+
 def test_setup_page():
     response = client.get("/jobs/new")
     assert response.status_code == 200
@@ -46,6 +57,20 @@ def test_setup_page():
 def test_host_check_rejects_foreign_host():
     response = client.get("/jobs/new", headers={"host": "evil.example"})
     assert response.status_code == 403
+
+
+def _approve_current_contract(job_id: str) -> None:
+    contract = client.get(f"/api/jobs/{job_id}").json()["contract"]
+    response = client.post(
+        f"/jobs/{job_id}/approve",
+        data={
+            "expected_sha256": contract["sha256"],
+            "reviewer_label": "reviewer",
+            "csrf": CSRF_TOKEN,
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303, response.text
 
 
 def test_create_job_and_three_screens():
@@ -61,8 +86,19 @@ def test_create_job_and_three_screens():
     assert data["demo"] is True
     assert data["phase"] == "draft"
     assert len(data["original_sha256"]) == 64
+    assert data["contract"]["approved"] is False
 
-    started = client.post(f"/jobs/{job_id}/start", follow_redirects=False)
+    # Starting before approval must be rejected with the explicit 409 conflict page.
+    blocked = client.post(
+        f"/jobs/{job_id}/start", data={"csrf": CSRF_TOKEN}, follow_redirects=False
+    )
+    assert blocked.status_code == 409
+    assert 'data-testid="job-error"' in blocked.text
+
+    _approve_current_contract(job_id)
+    started = client.post(
+        f"/jobs/{job_id}/start", data={"csrf": CSRF_TOKEN}, follow_redirects=False
+    )
     assert started.status_code == 303
     assert client.get(f"/api/jobs/{job_id}").json()["phase"] != "draft"
 
@@ -83,8 +119,13 @@ def test_missing_job_returns_404():
 
 def test_cancel_marks_cancelled():
     job_id = _create_job()
-    client.post(f"/jobs/{job_id}/start", follow_redirects=False)
-    client.post(f"/jobs/{job_id}/cancel", follow_redirects=False)
+    _approve_current_contract(job_id)
+    client.post(
+        f"/jobs/{job_id}/start", data={"csrf": CSRF_TOKEN}, follow_redirects=False
+    )
+    client.post(
+        f"/jobs/{job_id}/cancel", data={"csrf": CSRF_TOKEN}, follow_redirects=False
+    )
     data = client.get(f"/api/jobs/{job_id}").json()
     assert data["cancelled"] is True
     assert data["routes"]["A"]["outcome"] == "cancelled"

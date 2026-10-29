@@ -16,6 +16,8 @@
 
   var PHASE_LABELS = {
     draft: "草稿",
+    queued: "排队中",
+    running: "执行中",
     screening: "输入筛查",
     analyzing: "二进制分析",
     roundtrip: "C 往返校验",
@@ -43,7 +45,17 @@
     passed: "通过",
     failed: "失败",
     inconclusive: "不确定",
+    unknown: "未知",
+    timed_out: "超时",
     unavailable: "不可用"
+  };
+  var KIND_ORDER = {
+    identity: 0,
+    structure: 1,
+    interface: 2,
+    behaviour: 3,
+    symbolic: 4,
+    reproducibility: 5
   };
 
   function $(id) { return document.getElementById(id); }
@@ -88,6 +100,53 @@
       reason.textContent = route.outcome_reason ? "结论原因：" + route.outcome_reason : "";
     }
 
+    var verdict = $("verdict-" + key);
+    if (verdict) {
+      var value = route.verdict || null;
+      if (value && value.outcome) {
+        var text = "Verdict：" + (OUTCOME_LABELS[value.outcome] || value.outcome);
+        if (value.reason) text += " · " + value.reason;
+        if (value.failing_obligation) text += " · 失败义务 " + value.failing_obligation;
+        if (value.detail) text += " · " + value.detail;
+        verdict.textContent = text;
+        verdict.classList.remove("is-empty");
+      } else {
+        verdict.textContent = "Verdict：—";
+      }
+    }
+
+    var obligations = $("obligations-" + key);
+    if (obligations && route.obligations) {
+      obligations.textContent = "";
+      if (route.obligations.length) {
+        var title = document.createElement("span");
+        title.className = "obligation-title";
+        title.textContent = "V0–V5 义务";
+        obligations.appendChild(title);
+        var list = document.createElement("ul");
+        list.className = "obligation-list";
+        var ordered = route.obligations.slice().sort(function (left, right) {
+          return (KIND_ORDER[left.kind] || 99) - (KIND_ORDER[right.kind] || 99);
+        });
+        ordered.forEach(function (item) {
+          var li = document.createElement("li");
+          var result = document.createElement("span");
+          result.className = "result result-" + item.result;
+          result.textContent = item.result;
+          var code = document.createElement("code");
+          code.textContent = item.id || item.kind || "?";
+          li.appendChild(result);
+          li.appendChild(document.createTextNode(" "));
+          li.appendChild(code);
+          if (item.id && item.kind) li.appendChild(document.createTextNode(" " + item.kind));
+          var detail = item.reason || item.detail;
+          if (detail) li.appendChild(document.createTextNode(" · " + detail));
+          list.appendChild(li);
+        });
+        obligations.appendChild(list);
+      }
+    }
+
     var tbody = $("regions-" + key);
     if (tbody && route.changed_regions && route.changed_regions.length) {
       tbody.textContent = "";
@@ -112,22 +171,26 @@
   function updateJob(data) {
     setText("job-phase", PHASE_LABELS[data.phase] || data.phase);
 
-    var finished = data.phase === "finished" || data.cancelled;
-    var outcomes = Object.keys(data.routes).map(function (key) {
-      return data.routes[key].outcome;
-    });
-    var overall = "—";
-    if (finished) {
-      if (outcomes.length === 2 && outcomes.every(function (v) { return v === "success_within_scope"; })) {
-        overall = "成功（声明范围内）";
-      } else if (outcomes.indexOf("cancelled") !== -1) {
-        overall = "已取消";
+    // Render the controller/acceptance verdict only. Never aggregate routes here.
+    var overallBadge = $("job-outcome");
+    if (overallBadge) {
+      var verdict = data.verdict || null;
+      if (verdict && verdict.outcome) {
+        overallBadge.textContent = OUTCOME_LABELS[verdict.outcome] || verdict.outcome;
+        overallBadge.className = "badge outcome-" + verdict.outcome.replace(/_/g, "-");
+      } else if (data.cancelled) {
+        overallBadge.textContent = "已取消";
+        overallBadge.className = "badge outcome-cancelled";
+      } else if (data.phase === "finished") {
+        overallBadge.textContent = "尚无 verdict（等待 acceptance engine）";
+        overallBadge.className = "badge outcome-none";
       } else {
-        overall = "未达成（需两条路线各自成功）";
+        overallBadge.textContent = "—";
+        overallBadge.className = "badge outcome-none";
       }
     }
-    setText("job-outcome", overall);
 
+    var finished = data.phase === "finished" || data.cancelled;
     Object.keys(data.routes).forEach(function (key) {
       updateRoute(key, data.routes[key]);
     });

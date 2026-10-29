@@ -1,4 +1,4 @@
-# Runtime and test dependencies for the integrated main tree.
+# Runtime and test dependencies for the integrated tree (GUI + controller + tests).
 # A pyproject.toml + lock file is a later packaging step.
 
 fastapi>=0.143
@@ -9,7 +9,9 @@ pytest>=9
 httpx>=0.28,<1
 pydantic>=2.7,<3
 jsonschema>=4.21,<5
-pyelftools>=0.31
+# ELF analysis tooling for the GUI code view and Route B bundle tools.
+# Tests that need it are expected to be uncollectable when it is absent.
+pyelftools>=0.33
 capstone>=5.0
 # Route A build (optional; tests skip when absent)
 lief>=0.15
