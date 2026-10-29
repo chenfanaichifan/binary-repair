@@ -9,6 +9,8 @@ adapter calls these endpoints:
     POST /api/jobs/{id}/cancel             cancel
     GET  /api/jobs/{id}/obligations        V0-V5 placeholders
     GET  /api/jobs/{id}/artifacts          artifact list
+    GET  /api/artifacts/{id}               artifact metadata by id
+    GET  /api/artifacts/{id}/download      registered artifact bytes
 
 Run:
 
@@ -28,7 +30,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from app.db.connection import connect
@@ -142,6 +144,37 @@ def _job_or_404(job_id: str) -> jobs.JobRecord:
     if record is None:
         raise HTTPException(status_code=404, detail="Job not found.")
     return record
+
+
+def _artifact_file(row: dict[str, Any]) -> Path | None:
+    data_dir = _data_dir().resolve()
+    relative = Path(str(row.get("relative_path") or ""))
+    candidates = [
+        data_dir / relative,
+        data_dir / "jobs" / str(row.get("job_id") or "") / "artifacts" / relative,
+    ]
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve()
+        except OSError:
+            continue
+        if resolved.is_file() and resolved.is_relative_to(data_dir):
+            return resolved
+    return None
+
+
+def _artifact_metadata(row: dict[str, Any]) -> dict[str, Any]:
+    path = _artifact_file(row)
+    return {
+        "id": row["id"],
+        "name": path.name if path else Path(str(row["relative_path"])).name,
+        "role": row["role"],
+        "sha256": row["sha256"],
+        "size_bytes": row["size_bytes"],
+        "media_type": row["media_type"],
+        "available": path is not None,
+        "content_url": f"/api/artifacts/{row['id']}/download",
+    }
 
 
 def _placeholder_routes(phase: str) -> dict[str, dict[str, Any]]:
@@ -675,15 +708,52 @@ def visuals(job_id: str) -> dict[str, Any]:
 
 @app.get("/api/jobs/{job_id}/artifacts")
 def artifacts(job_id: str) -> dict[str, list[dict[str, Any]]]:
-    record = _job_or_404(job_id)
-    return {
-        "A": [
-            {
-                "name": record.filename,
-                "role": "original binary",
-                "sha256": record.original_sha256,
-                "size_bytes": len(record.original_bytes),
-            }
-        ],
-        "B": [],
-    }
+    _job_or_404(job_id)
+    rows = jobs.list_artifacts(job_id, data_dir=_data_dir())
+    if not rows:
+        record = _job_or_404(job_id)
+        return {
+            "A": [
+                {
+                    "id": "",
+                    "name": record.filename,
+                    "role": "original binary",
+                    "sha256": record.original_sha256,
+                    "size_bytes": len(record.original_bytes),
+                    "available": False,
+                }
+            ],
+            "B": [],
+        }
+
+    groups: dict[str, list[dict[str, Any]]] = {"A": [], "B": []}
+    for row in rows:
+        meta = _artifact_metadata(row)
+        route = row.get("route")
+        key = "B" if route == "route_b" else "A"
+        groups[key].append(meta)
+    return groups
+
+
+@app.get("/api/artifacts/{artifact_id}")
+def get_artifact(artifact_id: str) -> dict[str, Any]:
+    row = jobs.get_artifact(artifact_id, data_dir=_data_dir())
+    if row is None:
+        raise HTTPException(status_code=404, detail="Artifact not found.")
+    return _artifact_metadata(row)
+
+
+@app.get("/api/artifacts/{artifact_id}/download")
+def download_artifact(artifact_id: str) -> FileResponse:
+    row = jobs.get_artifact(artifact_id, data_dir=_data_dir())
+    if row is None:
+        raise HTTPException(status_code=404, detail="Artifact not found.")
+    path = _artifact_file(row)
+    if path is None:
+        raise HTTPException(status_code=404, detail="Artifact content is unavailable.")
+    return FileResponse(
+        path,
+        media_type=row.get("media_type") or "application/octet-stream",
+        filename=path.name,
+        content_disposition_type="attachment",
+    )

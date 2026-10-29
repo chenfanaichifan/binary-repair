@@ -501,6 +501,58 @@ def get_attempt(attempt_id: str, *, data_dir: str | Path) -> AttemptRecord | Non
     )
 
 
+def get_artifact(artifact_id: str, *, data_dir: str | Path) -> dict[str, Any] | None:
+    connection = connect(data_dir)
+    try:
+        row = connection.execute(
+            "SELECT * FROM artifacts WHERE id = ?",
+            (artifact_id,),
+        ).fetchone()
+    finally:
+        connection.close()
+    if row is None:
+        return None
+    return {
+        "id": row["id"],
+        "job_id": row["job_id"],
+        "attempt_id": row["attempt_id"],
+        "relative_path": row["relative_path"],
+        "sha256": row["sha256"],
+        "size_bytes": row["size_bytes"],
+        "media_type": row["media_type"],
+        "role": row["role"],
+        "created_at": row["created_at"],
+    }
+
+
+def list_artifacts(job_id: str, *, data_dir: str | Path) -> list[dict[str, Any]]:
+    connection = connect(data_dir)
+    try:
+        rows = connection.execute(
+            "SELECT a.*, t.route FROM artifacts a "
+            "LEFT JOIN attempts t ON t.id = a.attempt_id "
+            "WHERE a.job_id = ? ORDER BY a.created_at, a.id",
+            (job_id,),
+        ).fetchall()
+    finally:
+        connection.close()
+    return [
+        {
+            "id": row["id"],
+            "job_id": row["job_id"],
+            "attempt_id": row["attempt_id"],
+            "route": row["route"],
+            "relative_path": row["relative_path"],
+            "sha256": row["sha256"],
+            "size_bytes": row["size_bytes"],
+            "media_type": row["media_type"],
+            "role": row["role"],
+            "created_at": row["created_at"],
+        }
+        for row in rows
+    ]
+
+
 def list_obligations(attempt_id: str, *, data_dir: str | Path) -> list[dict[str, Any]]:
     connection = connect(data_dir)
     try:
@@ -617,11 +669,13 @@ __all__ = [
     "cancel_job",
     "contract_body",
     "create_job",
+    "get_artifact",
     "get_attempt",
     "get_contract",
     "get_job",
     "get_run",
     "latest_run",
+    "list_artifacts",
     "list_attempts",
     "list_obligations",
     "list_queued_runs",

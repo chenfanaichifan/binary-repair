@@ -140,6 +140,27 @@ def test_same_key_with_new_contract_returns_409(client: TestClient) -> None:
     assert conflict.status_code == 409
 
 
+def test_artifact_metadata_and_download(client: TestClient) -> None:
+    job_id = _create(client)["id"]
+    listing = client.get(f"/api/jobs/{job_id}/artifacts")
+    assert listing.status_code == 200
+    artifact = listing.json()["A"][0]
+    assert artifact["id"]
+    meta = client.get(f"/api/artifacts/{artifact['id']}")
+    assert meta.status_code == 200, meta.text
+    payload = meta.json()
+    assert payload["id"] == artifact["id"]
+    assert payload["available"] is True
+    assert payload["sha256"] == artifact["sha256"]
+
+    download = client.get(f"/api/artifacts/{artifact['id']}/download")
+    assert download.status_code == 200
+    assert download.content == b"\x7fELF demo bytes"
+    assert "attachment" in download.headers.get("content-disposition", "")
+
+    assert client.get("/api/artifacts/does-not-exist").status_code == 404
+
+
 def test_visuals_endpoint(client: TestClient) -> None:
     job_id = _create(client)["id"]
     response = client.get(f"/api/jobs/{job_id}/visuals")
