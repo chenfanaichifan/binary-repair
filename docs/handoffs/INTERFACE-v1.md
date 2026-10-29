@@ -78,7 +78,27 @@ Rules:
 - Never merge two evidence sets. v1/support/v2/v3 are separate historical sets.
 - Never rename or re-hash a delivered file; a corrected package gets a new id/hash.
 
-## 4. Adapters
+## 4. Provisional handoff converter
+
+A package with `package_id` instead of `id`, no `files`, or unsorted
+`SHA256SUMS` is not accepted directly. Convert mechanically:
+
+```bash
+python scripts/normalize_handoff.py <provisional-package> --out <new-package>
+```
+
+The converter:
+
+- requires `from`, `to`, `route`, `created_at`, and `id` or `package_id`;
+- refuses missing/declared-but-absent files;
+- sets `schema_version=1`, `id`, and `files` over the actual payload;
+- regenerates `SHA256SUMS` sorted by path;
+- runs `check_handoff.py`; success requires checker PASS.
+
+It does **not** relax the checker or add evidence bytes. Missing evidence still
+fails the checker/adapter.
+
+## 5. Adapters
 
 ```bash
 # checker first
@@ -95,13 +115,13 @@ python -m routeb.attempt_writer \
   --bundle <routeb-bundle> --data-dir var --job <job> --run <run> --attempt <attempt>
 ```
 
-## 5. Versioning
+## 6. Versioning
 
 Any schema/naming/hash-rule change = `INTERFACE-v2` plus a one-line changelog
 entry in this file and a notification to M3/M4/Lead. Adapters must reject
 unknown schema versions rather than silently coerce.
 
-## 6. Self-test
+## 7. Self-test
 
 ```bash
 python scripts/check_handoff.py --self-test
