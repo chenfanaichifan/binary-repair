@@ -9,7 +9,7 @@ from app.db.connection import connect
 from app.services import attempt_writer, jobs
 
 
-def _job(tmp_path: Path):
+def _job(tmp_path: Path, route: str = "route_a"):
     data_dir = tmp_path / "var"
     record = jobs.create_job(
         original_bytes=b"\x7fELF attempt writer",
@@ -31,7 +31,7 @@ def _job(tmp_path: Path):
         idempotency_key="writer-1",
         data_dir=data_dir,
     )
-    attempt = next(a for a in jobs.list_attempts(run.id, data_dir=data_dir) if a.route == "route_a")
+    attempt = next(a for a in jobs.list_attempts(run.id, data_dir=data_dir) if a.route == route)
     return data_dir, record, run, attempt
 
 
@@ -92,6 +92,7 @@ def test_routeb_bundle_maps_static_audit_without_runtime_pass(tmp_path: Path) ->
     assert code == 0
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert payload["route"] == "route_b"
+    assert payload["results"]["V0"] == "not_run"
     assert payload["results"]["V1"] == "passed"
     assert payload["results"]["V3"] == "not_run"
     assert "V1" in payload["evidence"]
@@ -151,3 +152,51 @@ def test_routea_bundle_rejects_passed_without_evidence(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="V0 passed without evidence"):
         convert(bundle, evidence_root=tmp_path, data_dir=data_dir,
                 job_id=record.id, attempt_id=attempt.id)
+
+
+def _routeb_identity_bundle(tmp_path: Path, *, original_sha256: str) -> tuple[Path, Path]:
+    bundle = tmp_path / "routeb-identity"
+    bundle.mkdir()
+    candidate = bundle / "candidate.elf"
+    candidate.write_bytes(b"\x7fELF identity candidate")
+    (bundle / "audit.json").write_text('{"pass": true}', encoding="utf-8")
+    (bundle / "edit-manifest.json").write_text(
+        json.dumps({
+            "original_sha256": original_sha256,
+            "candidate_sha256": __import__("hashlib").sha256(candidate.read_bytes()).hexdigest(),
+        }),
+        encoding="utf-8",
+    )
+    return bundle, candidate
+
+
+def test_routeb_identity_passes_only_with_matching_original(tmp_path: Path) -> None:
+    data_dir, record, run, attempt = _job(tmp_path, route="route_b")
+    bundle, _ = _routeb_identity_bundle(tmp_path, original_sha256=record.original_sha256)
+    out = data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json"
+    code = attempt_writer.main([
+        "--routeb-bundle", str(bundle),
+        "--data-dir", str(data_dir),
+        "--job-id", record.id,
+        "--attempt-id", attempt.id,
+        "--out", str(out),
+    ])
+    assert code == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["results"]["V0"] == "passed"
+
+
+def test_routeb_identity_fails_on_original_mismatch(tmp_path: Path) -> None:
+    data_dir, record, run, attempt = _job(tmp_path, route="route_b")
+    bundle, _ = _routeb_identity_bundle(tmp_path, original_sha256="f" * 64)
+    out = data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json"
+    code = attempt_writer.main([
+        "--routeb-bundle", str(bundle),
+        "--data-dir", str(data_dir),
+        "--job-id", record.id,
+        "--attempt-id", attempt.id,
+        "--out", str(out),
+    ])
+    assert code == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["results"]["V0"] == "failed"
