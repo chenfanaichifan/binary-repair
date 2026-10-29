@@ -7,6 +7,9 @@ __pycache__/
 .mypy_cache/
 *.egg-info/
 pytest-of-*/
+pytest-cache-files-*/
+pytest_tmp*/
+pytest_cache*/
 
 # Local config and secrets (never commit)
 .env
@@ -17,9 +20,21 @@ pytest-of-*/
 var/
 *.log
 
+# Local scratch (agent work areas, vendored test deps, pip and pytest temp dirs)
+_scratch/
+pip_tmp/
+pip_cache/
+pytest_deps/
+.write-probe.tmp
+
+# Local delivery artifacts (git bundles/archives for teammates)
+/delivery/
+
 # Editors / OS
 .vscode/
 .idea/
 *.swp
 .DS_Store
 Thumbs.db
+
+binaryrepair-synthetic-*/

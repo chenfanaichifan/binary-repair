@@ -3,21 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}BinaryRepair{% endblock %} · GUI 骨架</title>
-  <link rel="stylesheet" href="/static/css/app.css">
+  <title>{% block title %}BinaryRepair{% endblock %} · BinaryRepair</title>
+  <link rel="stylesheet" href="/static/css/app.css?v=20261022b">
 </head>
 <body data-job-id="{{ job.id if job else '' }}" data-demo="{{ '1' if demo else '0' }}">
+  <div class="app-bg" aria-hidden="true"></div>
+
   <header class="topbar">
-    <div class="brand"><span class="logo">BR</span> BinaryRepair <span class="tag">GUI 骨架</span></div>
-    <nav class="topnav">
-      <a href="/jobs/new">新建任务</a>
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">BR</span>
+      <span class="brand-text">
+        <strong>BinaryRepair</strong>
+        <small>AI 二进制漏洞修复 · 证据工作台</small>
+      </span>
+    </a>
+    <nav class="topnav" aria-label="主导航">
+      <a href="/jobs/new" class="topnav-link">新建任务</a>
+      <span class="env-chip"><span class="env-dot" aria-hidden="true"></span> LOCAL · 127.0.0.1</span>
     </nav>
   </header>
 
   {% if demo %}
   <div class="demo-banner" role="status">
-    <strong>GUI-only 开发模式</strong>：页面数据为合成演示 fixture，<strong>未执行真实修复</strong>；
-    不能作为“补丁已验证”的证据。真实链路接入后此横幅会消失。
+    <strong>演示数据</strong>：页面使用合成 fixture，<strong>未执行真实修复</strong>，不能作为"补丁已验证"的证据。
   </div>
   {% endif %}
 
@@ -26,7 +34,7 @@
   </main>
 
   <footer class="footer">
-    <p>阶段（phase）与结论（outcome）分开显示 · 未执行显示 not_run · 只有两条路线都成功才算整体成功 · 导出不代表生产批准</p>
+    <span>阶段与结论是两条独立的轴 · 未执行显示 <code>not_run</code> · 两条路线都成功才算整体成功 · 导出不代表生产批准</span>
   </footer>
 
   {% block scripts %}{% endblock %}

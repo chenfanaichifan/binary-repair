@@ -1,8 +1,4 @@
-"""Contract tests mirroring verification-design §4.3 / tests/integration/test_ai_boundary.py.
-
-These are locally runnable now; when the verification skeleton lands, its version
-should pass against the same public names without edits.
-"""
+"""Module documentation."""
 
 from __future__ import annotations
 
