@@ -52,6 +52,8 @@ POST /api/jobs/{id}/contract          form: expected_revision, contract fields; 
 POST /api/jobs/{id}/approve           form: expected_sha256, reviewer_label; 409 on stale hash
 GET  /api/jobs/{id}/obligations       {"A": [...], "B": [...]}
 GET  /api/jobs/{id}/artifacts         {"A": [...], "B": [...]}
+GET  /api/artifacts/{id}              artifact metadata by id (id/name/role/sha256/size)
+GET  /api/artifacts/{id}/download     registered artifact bytes (attachment)
 GET  /api/jobs/{id}/visuals           code-view payload (synthetic demo data today)
 ```
 

@@ -16,6 +16,18 @@ Polling worker (independent process, not a controller background task):
 python -m app.services.worker --data-dir var --poll 2
 ```
 
+Windows wrapper:
+
+```powershell
+.\start-worker.ps1
+```
+
+Linux wrapper:
+
+```bash
+./start-worker.sh
+```
+
 Environment:
 
 ```text
@@ -93,6 +105,9 @@ python -m app.services.attempt_writer \
 A wrapper script can be used directly as
 `BINARYREPAIR_ATTEMPT_CMD=/path/to/write_attempt.sh`; the worker supplies the
 `BINARYREPAIR_JOB_ID/RUN_ID/ATTEMPT_ID/ROUTE/RESULT_PATH` environment.
+
+The full input schema and a minimal example are in
+[attempt-writer-schema.md](attempt-writer-schema.md).
 
 ## Idempotency
 

@@ -108,6 +108,12 @@ Controller service (separate process, loopback only):
 .\start-controller.ps1      # canonical app.controller_api:app on 127.0.0.1:8000
 ```
 
+Queued-run worker (separate process; consumes result bundles):
+
+```powershell
+.\start-worker.ps1
+```
+
 GUI in http-adapter mode (same controller, real job store):
 
 ```powershell
