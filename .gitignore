@@ -36,3 +36,5 @@ pytest_deps/
 *.swp
 .DS_Store
 Thumbs.db
+
+binaryrepair-synthetic-*/
