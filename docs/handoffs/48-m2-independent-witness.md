@@ -142,6 +142,16 @@ Witness pack root `SHA256SUMS`: 7/7 OK; pack zip hash matches the value above.
 **No gate pass is signed.** P3B remains not accepted, P4 and Gate 5 remain
 blocked; Gate 4 record is still DRAFT / NOT RUN.
 
+## Gate 4 record witness row (M2, proposed for M5 to insert)
+
+| Witness | Name | Date | Observation |
+|---|---|---|---|
+| Independent witness | M2 | 2026-10-29 | `check_handoff.py <pkg> --expect-from M3 --expect-to M5` (main checker `caeffc2e…`): P3A v4 PASS 25 files/25 sums, sums `d9c33b42…`, zip `347e7d22…`; P3B f46a PASS 15/15, sums `9fec168f…`, zip `f46a3c8a…`, but content HOLD/not accepted (old jobwrap `c9609f32…`/exit 1, `audit.pass=false`, bundle hash mismatch, fixed C absent); P4 blocked zip `6ad80422…` (2/2 sums, non-handoff); Gate5 A blocked zip `74952fc4…` (1/1 sums, non-handoff); witness only, no gate pass |
+
+M2 does not edit `docs/route-b/23-gate4-record.md` (M5-owned). This row is the
+M2 observation; M5 may insert it verbatim, but it must not be used as a gate
+signature or as a substitute for the M5/M4/Lead rows.
+
 ## Re-check trigger
 
 Re-run this witness when M3/VMer/M5 publish:
