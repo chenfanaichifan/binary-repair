@@ -1,27 +1,8 @@
-"""数据来源适配器：GUI 不直接依赖 demo.py，而是通过这一层取数据。
+"""Data-source abstraction for the GUI.
 
-三种模式（环境变量 BINARYREPAIR_BACKEND 切换）：
-
-- ``mock``（默认）：使用 ``app/demo.py`` 的合成数据，用于演示 / 离线开发；
-  页面顶部会显示"演示数据"横幅，不执行真实二进制。
-- ``http``：调用成员 1 的 controller API（真实数据）。真实 controller 没出来之前，
-  可以用 ``tools/stub_backend.py`` 这个本地假服务联调。
-- ``local``：直接调用仓库里的成员 1 controller（``app/services/jobs.py`` 的
-  SQLite job store）。任务身份、输入哈希、原始字节都是**真实持久化**的；
-  修复执行（Route A/B）尚未实现，页面会如实显示"未执行"。
-
-约定（2026-10-18 团队决定）：
-- GUI 只消费下面这组接口；页面模板与轮询逻辑不关心数据来自哪里。
-- 传输的数据一律英文 ASCII；HTTP 模式会扫描响应，发现中日韩字符直接报错
-  （语言规范由 tests/test_language_policy.py 与 tests/test_backend_contract.py 守护）。
-- 契约（要与成员 1 对齐的最小集合）：
-    POST /api/jobs                          multipart -> {"id": str, ...}
-    GET  /api/jobs/{id}                     快照 -> snapshot JSON（见 get_snapshot）
-    POST /api/jobs/{id}/start               启动
-    POST /api/jobs/{id}/cancel              取消
-    GET  /api/jobs/{id}/obligations         {"A": [...], "B": [...]}
-    GET  /api/jobs/{id}/artifacts           {"A": [...], "B": [...]}
-"""
+Modes are selected with BINARYREPAIR_BACKEND: mock (app/demo.py), http
+(controller API), and local (controller SQLite store). The GUI only
+queries this interface; pages never decide results."""
 
 from __future__ import annotations
 
@@ -66,7 +47,7 @@ def _has_cjk(text: str) -> bool:
 
 
 def _has_cjk_in_payload(payload: Any) -> bool:
-    """递归扫描 JSON，确认没有中日韩字符（语言规范）。"""
+    """Recursively reject CJK characters in JSON payloads."""
     if isinstance(payload, str):
         return _has_cjk(payload)
     if isinstance(payload, dict):
@@ -79,7 +60,7 @@ def _has_cjk_in_payload(payload: Any) -> bool:
 
 
 class BackendError(RuntimeError):
-    """数据来源出错：由 main.py 转成浏览器可见的英文错误。"""
+    """Raised when a backend data source cannot fulfil a request."""
 
     def __init__(self, status_code: int, detail: str) -> None:
         super().__init__(detail)
@@ -118,7 +99,7 @@ class Backend(Protocol):
 
 
 class MockBackend:
-    """演示数据模式：包装 app/demo.py（合成数据，页面会明确标注）。"""
+    """Synthetic data source backed by app/demo.py."""
 
     mode = "mock"
     supports_start = True
@@ -221,10 +202,7 @@ class MockBackend:
 
 
 class HttpBackend:
-    """真实数据模式：调用成员 1 的 controller API。
-
-    ``transport`` 参数只给测试用（httpx.MockTransport），生产运行不要传。
-    """
+    """Data source backed by the controller HTTP API."""
 
     mode = "http"
     supports_start = True
@@ -242,7 +220,6 @@ class HttpBackend:
     def close(self) -> None:
         self._client.close()
 
-    # ---------- 内部工具 ----------
 
     def _decode(self, response: httpx.Response, where: str) -> Any:
         try:
@@ -279,7 +256,6 @@ class HttpBackend:
             return None
         return self._decode(response, where)
 
-    # ---------- Backend 接口 ----------
 
     def create_job(self, *, binary_bytes: bytes, filename: str, defect: str, valid_tests: str,
                    environment: str, valid_domain: str, forbidden: str, invalid_outcome: str,
@@ -377,10 +353,7 @@ class HttpBackend:
         return payload
 
     def export_bundle(self, job_id: str) -> dict[str, Any]:
-        """控制器暂时没有导出端点，先在 GUI 侧组装英文证据包。
-
-        等成员 1 提供 POST /api/runs/{id}/exports 之后，改成调用它即可。
-        """
+        """Export helper; the controller endpoint is not implemented yet."""
         snapshot = self.get_snapshot(job_id)
         return {
             "schema_version": 1,
@@ -394,12 +367,7 @@ class HttpBackend:
 
 
 class LocalBackend:
-    """本地 controller 模式：直接调用 ``app/services/jobs.py`` 的 SQLite job store。
-
-    真实的：任务 id、输入哈希、原始字节、创建时间都由成员 1 的 controller 持久化；
-    未实现的：Route A/B 执行与验收，所以路线状态如实显示为 not started / not_run。
-    ``supports_start = False``，GUI 不会给出"启动"按钮。
-    """
+    """Data source backed by the local controller SQLite store."""
 
     mode = "local"
     supports_start = False
@@ -409,7 +377,6 @@ class LocalBackend:
             data_dir or os.environ.get(DATA_DIR_ENV, DEFAULT_DATA_DIR)
         ).resolve()
 
-    # ---------- 内部工具 ----------
 
     def _meta_path(self, job_id: str) -> Path:
         return self.data_dir / "jobs" / job_id / "gui_meta.json"
@@ -510,7 +477,6 @@ class LocalBackend:
             }
         return routes
 
-    # ---------- Backend 接口 ----------
 
     def create_job(self, *, binary_bytes: bytes, filename: str, defect: str, valid_tests: str,
                    environment: str, valid_domain: str, forbidden: str, invalid_outcome: str,
@@ -722,7 +688,7 @@ def backend_mode() -> str:
 
 
 def get_backend() -> Backend:
-    """按环境变量创建数据来源。main.py 在启动时调用一次。"""
+    """Return the configured backend singleton."""
     mode = backend_mode()
     if mode == "http":
         return HttpBackend()
@@ -732,7 +698,7 @@ def get_backend() -> Backend:
 
 
 def backend_description(backend: Backend) -> str:
-    """给页面/健康检查显示的数据来源说明（英文，可进入 API）。"""
+    """Describe the active data source for pages and healthz."""
     if backend.mode == "http":
         return f"controller API at {backend.base_url}"  # type: ignore[attr-defined]
     if backend.mode == "local":

@@ -1,15 +1,9 @@
-"""界面文案（仅用于浏览器显示）。
+"""Chinese UI labels.
 
-语言规范（2026-10-18）：
-- 界面（UI）可以中文：按钮、标题、状态徽章、说明文字。
-- **上传 / API / 导出数据一律英文 ASCII**：任务字段、契约、obligations、
-  结论原因、变更区域、产物角色、导出 JSON 等，都在 demo.py 里用英文定义。
-  本文件只放"显示用"的中文标签，不会进入 API 响应或导出文件。
-"""
+Only presentation text lives here; upload/API/export data stays English ASCII."""
 
 from __future__ import annotations
 
-# 阶段 code -> 中文显示
 PHASE_LABELS_ZH: dict[str, str] = {
     "draft": "草稿",
     "queued": "排队中",

@@ -1,19 +1,7 @@
-"""演示数据（GUI-only 开发模式）。
+"""Synthetic demo data for GUI-only mode.
 
-语言规范（2026-10-18，团队决定）：
-- 界面可以中文，但**上传 / API / 导出数据一律英文 ASCII**。
-- 因此本文件里的所有数据字符串（契约、义务、原因、变更区域、产物角色、
-  路线规范名等）都用英文；中文显示文案在 app/i18n.py 里，只给模板用。
-- 测试会扫描 /api/jobs/{id} 和导出 JSON，确保没有中日韩字符。
-
-这里所有内容都是合成的：阶段按"运行开始后的秒数"推进，结论是写死的预设值。
-页面必须明确标注"演示数据 / 未执行真实工具"，不能当作修复证据
-（对应技术设计 §12：GUI-only development mode using stored or synthetic results,
-clearly labeled; it must never emit accepted-patch evidence）。
-
-接真实后端时：把 create_job / snapshot / obligations / artifacts 换成
-成员 1 的 controller / API 调用即可，页面与轮询逻辑不用改。
-"""
+All upload/API/export data is English ASCII; Chinese UI labels live in
+app/i18n.py. Demo data must never be presented as accepted-patch evidence."""
 
 from __future__ import annotations
 
@@ -24,22 +12,18 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-# 每个阶段的"演示推进速度"（秒）。仅用于让页面动起来，不是真实耗时。
 STAGE_SECONDS = 1.2
 
-# Route A 没有 roundtrip；Route B 多一步"语义不变往返"
 ROUTE_STAGES: dict[str, list[str]] = {
     "A": ["screening", "analyzing", "generating", "applying", "validating"],
     "B": ["screening", "analyzing", "roundtrip", "generating", "applying", "validating"],
 }
 
-# 规范名（英文，会进入 API/导出；中文显示名在 i18n.py）
 ROUTE_NAMES_EN: dict[str, str] = {
     "A": "Route A - Direct instruction repair",
     "B": "Route B - Recovered C reintegration",
 }
 
-# 内存里的"数据库"。真实版本是 SQLite（技术设计 §6）。
 JOBS: dict[str, dict[str, Any]] = {}
 
 
@@ -159,7 +143,7 @@ def create_job(
     invalid_outcome: str,
     assumptions: str,
 ) -> dict[str, Any]:
-    """登记一个任务（演示版：所有数据在内存里，字段值一律英文）。"""
+    """Register a synthetic demo job."""
 
     job: dict[str, Any] = {
         "id": "job-" + uuid.uuid4().hex[:8],
@@ -207,14 +191,14 @@ def _route_state(key: str) -> dict[str, Any]:
 
 
 def start(job: dict[str, Any]) -> None:
-    """演示用启动：记录开始时间，阶段会随时间推进。真实版本由 controller 负责。"""
+    """Advance the demo job through time-based phases."""
     if job["run_started_at"] is None:
         job["run_started_at"] = time.time()
         job["phase"] = "screening"
 
 
 def cancel(job: dict[str, Any]) -> None:
-    """演示用取消：冻结当前进度并标记 cancelled。"""
+    """Mark the demo job as cancelled."""
     if job["run_started_at"] is None:
         return
     job["cancelled"] = True
@@ -230,14 +214,7 @@ def _elapsed(job: dict[str, Any]) -> float:
 
 
 def _obligations_for(route: str) -> list[dict[str, Any]]:
-    """演示用的 V0-V5 义务清单（对应技术设计 §9 的验证阶梯）。
-
-    注意：结论是写死的演示值。Route A 在 V3 有效输入回归失败 -> rejected；
-    Route B 的 V4 有界符号验证预算用尽 -> inconclusive。
-    这样的组合恰好演示"不能把未完成当成功"。
-
-    数据字段全部英文 ASCII（会进入证据页与导出 JSON）。
-    """
+    """Return deterministic V0-V5 demo obligations."""
     passed = [
         {
             "id": "V0",
@@ -325,7 +302,7 @@ def _obligations_for(route: str) -> list[dict[str, Any]]:
 
 
 def _apply_finished(route: dict[str, Any], key: str) -> None:
-    """两条路线都结束时，写入演示用的最终数据（字段值英文）。"""
+    """Fill the final synthetic route data."""
     if key == "A":
         route.update(
             {
@@ -371,7 +348,7 @@ def _apply_finished(route: dict[str, Any], key: str) -> None:
 
 
 def snapshot(job: dict[str, Any]) -> dict[str, Any]:
-    """生成页面/接口用的只读快照（只含英文数据，不含中文显示标签）。"""
+    """Return the read-only demo snapshot used by pages and the API."""
     elapsed = _elapsed(job)
     cancelled = job["cancelled"]
     started = job["run_started_at"] is not None
@@ -421,7 +398,6 @@ def snapshot(job: dict[str, Any]) -> dict[str, Any]:
             }
         routes[key] = route
 
-    # Job 级阶段取"两条路线里更靠后的那个"，两条都结束才算 finished
     if cancelled:
         job_phase = "finished"
     elif not started:
@@ -474,7 +450,7 @@ def obligations(job: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
 
 
 def artifacts(job: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
-    """演示用产物清单（真实版本来自 artifacts 表，且下载必须是注册过的文件）。"""
+    """Return synthetic artifact metadata."""
     base = _sha(job["id"] + job["original_sha256"])[:16]
     return {
         "A": [

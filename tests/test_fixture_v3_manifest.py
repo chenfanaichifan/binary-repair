@@ -1,13 +1,4 @@
-"""V3 concrete-behaviour assertions for the frozen CWE121 fixture.
-
-V3 is the valid/invalid behaviour suite (verification-design §3): valid inputs must
-keep their original output, invalid inputs must take the reviewed error path. These
-assertions pin the manifest to the reviewed contract so a later edit to either one
-cannot silently change what "V3 passed" means.
-
-No binary is executed unless BINARYREPAIR_CANDIDATE_ELF is set (V3 on a repaired
-candidate) or original.elf is placed next to the tests (V0 on the original).
-"""
+"""Module documentation."""
 
 from __future__ import annotations
 
