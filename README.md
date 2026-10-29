@@ -172,8 +172,9 @@ them to LF/exact bytes so checkout line endings cannot change the reviewed hash.
 
 ### Measured test state on this Windows host (2026-10-29)
 
-These are the only verified test numbers; they were measured on this tree at HEAD
-`986a49f` and independently re-measured in `docs/analysis/VERIFICATION.md`
+These are the only verified test numbers; they were measured at `986a49f` (the
+docs-only commit `497a689` changed no code) and independently re-measured in
+`docs/analysis/VERIFICATION.md`
 (§1 items 6-7). The environment is Windows 11 with Python
 3.14.6; `capstone` and `pyelftools` are not installed.
 
