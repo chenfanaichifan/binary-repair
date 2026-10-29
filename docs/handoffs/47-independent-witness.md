@@ -47,3 +47,11 @@ unlock; no PASS/FAIL observation exists.
 
 M5 records only observed command/exit/hash. It does not sign the M4 verifier row
 or Lead approval, and does not convert a checker PASS into a gate pass.
+
+## Update — P3B v3 / P4 package
+
+- P3B v3 `72d789c6…`: checker PASS 18/18; adapter outcome `inconclusive`
+  (V2/V4 not_run); partial Route B evidence, no gate pass.
+- P4 `427dd71d…`: checker PASS 15/15; native `manifest-compare.json` present,
+  derived six marked `runner_native=false`; runner-native raw absent. M4 decides;
+  no `gate4_pass`.

@@ -27,7 +27,7 @@
 
 | Role | Name | Date | Observation |
 |---|---|---|---|
-| Independent witness | M5 | 2026-10-29 | P3A v4 checker PASS/hash; P3B f46a checker PASS but not accepted; P4/Gate5 blocked; witness only, not a gate pass |
+| Independent witness | M5 | 2026-10-29 | P3A v4 checker PASS/hash; P3B v3 checker PASS (V0/V1/V3/V5, V2/V4 not_run); P4 checker PASS, native manifest, no runner raw; Gate5 blocked; witness only, not a gate pass |
 | M5 Gate 4 record | — | — | wait for real p2 exit 0 |
 | M4 verifier | — | — | blank |
 | Lead approval | — | — | blank |
