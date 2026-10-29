@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from app.db.connection import connect
 from app.services import attempt_writer, jobs
 
 
@@ -94,3 +95,59 @@ def test_routeb_bundle_maps_static_audit_without_runtime_pass(tmp_path: Path) ->
     assert payload["results"]["V1"] == "passed"
     assert payload["results"]["V3"] == "not_run"
     assert "V1" in payload["evidence"]
+
+
+def test_routea_bundle_maps_gates_and_registers_evidence(tmp_path: Path) -> None:
+    from tools.routea_bundle_to_attempt import convert
+
+    data_dir, record, run, attempt = _job(tmp_path)
+    evidence = tmp_path / "routea" / "evidence.txt"
+    evidence.parent.mkdir(parents=True)
+    evidence.write_text("route-a evidence\n", encoding="utf-8")
+    bundle = {
+        "route": "route_a",
+        "identity": {"candidate_sha256": record.original_sha256},
+        "gates": {
+            "V0": {"status": "pass", "evidence": [
+                {"relative_path": "routea/evidence.txt"}]},
+            "V1": {"status": "inconclusive", "evidence": []},
+            "V2": {"status": "not_run", "evidence": []},
+            "V3": {"status": "not_run", "evidence": []},
+            "V4": {"status": "not_run", "evidence": []},
+            "V5": {"status": "not_run", "evidence": []},
+        },
+    }
+    payload = convert(
+        bundle, evidence_root=tmp_path, data_dir=data_dir,
+        job_id=record.id, attempt_id=attempt.id,
+    )
+    assert payload["results"] == {
+        "V0": "passed", "V1": "unknown", "V2": "not_run",
+        "V3": "not_run", "V4": "not_run", "V5": "not_run",
+    }
+    artifact_id = payload["evidence"]["V0"]
+    connection = connect(data_dir)
+    try:
+        row = connection.execute(
+            "SELECT sha256, relative_path FROM artifacts WHERE id = ?", (artifact_id,)
+        ).fetchone()
+    finally:
+        connection.close()
+    assert row is not None
+    assert row["sha256"] == __import__("hashlib").sha256(evidence.read_bytes()).hexdigest()
+    assert row["relative_path"].startswith(f"attempts/{attempt.id}/")
+
+
+def test_routea_bundle_rejects_passed_without_evidence(tmp_path: Path) -> None:
+    import pytest
+    from tools.routea_bundle_to_attempt import convert
+
+    data_dir, record, run, attempt = _job(tmp_path)
+    bundle = {
+        "route": "route_a",
+        "identity": {"candidate_sha256": record.original_sha256},
+        "gates": {"V0": {"status": "pass", "evidence": []}},
+    }
+    with pytest.raises(ValueError, match="V0 passed without evidence"):
+        convert(bundle, evidence_root=tmp_path, data_dir=data_dir,
+                job_id=record.id, attempt_id=attempt.id)
