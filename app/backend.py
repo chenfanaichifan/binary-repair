@@ -61,6 +61,157 @@ _CJK_PATTERN = re.compile(
 )
 
 
+def _canonical_rows(rows: Any) -> list[dict[str, Any]]:
+    return [dict(row) for row in (rows or []) if isinstance(row, dict)]
+
+
+def _route_candidate_sha256(route: dict[str, Any], route_artifacts: list[dict[str, Any]]) -> str | None:
+    value = route.get("candidate_sha256")
+    if isinstance(value, str) and value:
+        return value
+    for item in route_artifacts:
+        if "candidate" in str(item.get("role", "")).lower():
+            sha = item.get("sha256")
+            if isinstance(sha, str) and sha:
+                return sha
+    return None
+
+
+def _route_outcome(route: dict[str, Any]) -> Any:
+    verdict = route.get("verdict")
+    if isinstance(verdict, dict) and verdict.get("outcome"):
+        return verdict.get("outcome")
+    return route.get("outcome")
+
+
+def _route_verdict_field(route: dict[str, Any], field: str) -> Any:
+    verdict = route.get("verdict")
+    if isinstance(verdict, dict):
+        return verdict.get(field)
+    return None
+
+
+def _artifact_entry(route_key: str, item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "route": route_key,
+        "name": item.get("name"),
+        "role": item.get("role"),
+        "sha256": item.get("sha256"),
+        "size_bytes": item.get("size_bytes"),
+        "download": bool(item.get("id") and item.get("available", True)),
+    }
+
+
+def _manifest_sha256(artifacts: list[dict[str, Any]], obligations: dict[str, list[dict[str, Any]]]) -> str:
+    payload = {"artifacts": artifacts, "obligations": obligations}
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(canonical.encode("ascii")).hexdigest()
+
+
+def build_export_bundle(
+    snapshot: dict[str, Any],
+    obligations: dict[str, list[dict[str, Any]]],
+    artifacts: dict[str, list[dict[str, Any]]],
+    *,
+    demo: bool,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    """Assemble the F5 JSON v2 evidence bundle from controller data only."""
+    route_artifacts: dict[str, list[dict[str, Any]]] = {}
+    for key, items in (artifacts or {}).items():
+        route_artifacts[key] = [item for item in (items or []) if isinstance(item, dict)]
+
+    flat_artifacts: list[dict[str, Any]] = []
+    for key, items in route_artifacts.items():
+        for item in items:
+            flat_artifacts.append(_artifact_entry(key, item))
+
+    routes_out: dict[str, dict[str, Any]] = {}
+    not_run: list[dict[str, Any]] = []
+    for key, route in (snapshot.get("routes") or {}).items():
+        route_rows = _canonical_rows(route.get("obligations") or (obligations or {}).get(key))
+        route_items = route_artifacts.get(key, [])
+        evidence: list[dict[str, Any]] = []
+        for row in route_rows:
+            artifact_id = row.get("evidence_artifact_id")
+            if not artifact_id:
+                continue
+            matched = next((item for item in route_items if item.get("id") == artifact_id), None)
+            evidence.append(
+                {
+                    "artifact_id": artifact_id,
+                    "name": matched.get("name") if matched else None,
+                    "sha256": matched.get("sha256") if matched else None,
+                    "available": bool(matched and matched.get("available", True)),
+                }
+            )
+        candidate = _route_candidate_sha256(route, route_items)
+        outcome = _route_outcome(route)
+        verdict = route.get("verdict") if isinstance(route.get("verdict"), dict) else {}
+        routes_out[key] = {
+            "candidate_sha256": candidate,
+            "outcome": outcome,
+            "reason": verdict.get("reason") or route.get("outcome_reason"),
+            "failing_obligation": verdict.get("failing_obligation"),
+            "verification": route.get("verification"),
+            "obligations": route_rows,
+            "evidence": evidence,
+        }
+        for row in route_rows:
+            if row.get("result") != "passed":
+                not_run.append(
+                    {
+                        "route": key,
+                        "obligation": row.get("id") or row.get("kind"),
+                        "result": row.get("result"),
+                        "reason": row.get("reason") or row.get("detail"),
+                    }
+                )
+
+    limitations: list[str] = []
+    if demo:
+        limitations.append("Synthetic demo data; no repair was executed on a real binary.")
+    for key, route in routes_out.items():
+        if route["candidate_sha256"] is None:
+            limitations.append(f"Route {key}: no candidate binary is available.")
+        if route["verification"] in (None, "not_run", "not_run"):
+            limitations.append(f"Route {key}: verification is not_run.")
+    if not flat_artifacts:
+        limitations.append("No evidence artifacts are available for download.")
+
+    contract = snapshot.get("contract") or {}
+    run = snapshot.get("run") or {}
+    obligations_for_manifest = {
+        key: _canonical_rows((snapshot.get("routes", {}).get(key) or {}).get("obligations") or (obligations or {}).get(key))
+        for key in ("A", "B")
+    }
+    manifest = _manifest_sha256(flat_artifacts, obligations_for_manifest)
+    return {
+        "schema_version": 2,
+        "generated_at": generated_at or datetime.now(timezone.utc).isoformat(),
+        "demo": bool(demo),
+        "content_language": "en",
+        "disclaimer": "Not production approval",
+        "note": "This export is not production approval.",
+        "job": {
+            "id": snapshot.get("id"),
+            "filename": snapshot.get("filename"),
+            "original_sha256": snapshot.get("original_sha256"),
+            "phase": snapshot.get("phase"),
+        },
+        "contract": {
+            "revision": contract.get("revision"),
+            "sha256": contract.get("sha256"),
+            "reviewed_scope_sha256": run.get("reviewed_scope_sha256") or contract.get("sha256"),
+        },
+        "routes": routes_out,
+        "artifacts": flat_artifacts,
+        "limitations": limitations,
+        "not_run": not_run,
+        "manifest_sha256": manifest,
+    }
+
+
 def _has_cjk(text: str) -> bool:
     return bool(_CJK_PATTERN.search(text))
 
@@ -206,18 +357,12 @@ class MockBackend:
 
     def export_bundle(self, job_id: str) -> dict[str, Any]:
         snapshot = self.get_snapshot(job_id)
-        return {
-            "schema_version": 1,
-            "demo": bool(snapshot.get("demo")),
-            "content_language": "en",
-            "note": (
-                "GUI development mode: synthetic data; no real repair was executed. "
-                "This export is not production approval."
-            ),
-            "job": snapshot,
-            "obligations": self.get_obligations(job_id),
-            "artifacts": self.get_artifacts(job_id),
-        }
+        return build_export_bundle(
+            snapshot,
+            self.get_obligations(job_id),
+            self.get_artifacts(job_id),
+            demo=bool(snapshot.get("demo")),
+        )
 
 
 class HttpBackend:
@@ -377,20 +522,14 @@ class HttpBackend:
         return payload
 
     def export_bundle(self, job_id: str) -> dict[str, Any]:
-        """控制器暂时没有导出端点，先在 GUI 侧组装英文证据包。
-
-        等成员 1 提供 POST /api/runs/{id}/exports 之后，改成调用它即可。
-        """
+        """Assemble the F5 v2 bundle from the controller snapshot."""
         snapshot = self.get_snapshot(job_id)
-        return {
-            "schema_version": 1,
-            "demo": bool(snapshot.get("demo")),
-            "content_language": "en",
-            "note": "Export assembled by the GUI from controller data. This export is not production approval.",
-            "job": snapshot,
-            "obligations": self.get_obligations(job_id),
-            "artifacts": self.get_artifacts(job_id),
-        }
+        return build_export_bundle(
+            snapshot,
+            self.get_obligations(job_id),
+            self.get_artifacts(job_id),
+            demo=bool(snapshot.get("demo")),
+        )
 
 
 class LocalBackend:
@@ -700,18 +839,12 @@ class LocalBackend:
 
     def export_bundle(self, job_id: str) -> dict[str, Any]:
         snapshot = self.get_snapshot(job_id)
-        return {
-            "schema_version": 1,
-            "demo": False,
-            "content_language": "en",
-            "note": (
-                "Local controller mode: job identity and original bytes are real; "
-                "repair execution is not implemented. This export is not production approval."
-            ),
-            "job": snapshot,
-            "obligations": self.get_obligations(job_id),
-            "artifacts": self.get_artifacts(job_id),
-        }
+        return build_export_bundle(
+            snapshot,
+            self.get_obligations(job_id),
+            self.get_artifacts(job_id),
+            demo=False,
+        )
 
 
 def backend_mode() -> str:

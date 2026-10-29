@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import html
 import json
 import os
 import re
@@ -487,20 +488,44 @@ async def job_status(job_id: str):
 
 @app.get("/api/jobs/{job_id}/export")
 async def export_bundle(job_id: str):
-    """导出证据包（英文 JSON）。
-
-    真实版本要包含：原始/候选哈希、契约与测试清单、edit manifest、
-    obligations、solver/exploration 记录、工具版本等；并且"导出不代表生产批准"。
-    """
-    bundle = BACKEND.export_bundle(job_id)
+    """Export JSON v2 evidence (English ASCII; not production approval)."""
+    try:
+        bundle = BACKEND.export_bundle(job_id)
+    except BackendError as exc:
+        return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
     job_id_for_file = str(bundle.get("job", {}).get("id") or job_id)
-    body = json.dumps(bundle, ensure_ascii=False, indent=2)
+    body = json.dumps(bundle, ensure_ascii=True, indent=2)
     return Response(
         content=body,
         media_type="application/json",
         headers={
             "Content-Disposition": f'attachment; filename="{job_id_for_file}-evidence.json"',
         },
+    )
+
+
+@app.get("/jobs/{job_id}/report", response_class=HTMLResponse)
+async def evidence_report(request: Request, job_id: str, download: int = 0):
+    """Render the printable English evidence report (same data as JSON v2)."""
+    try:
+        bundle = BACKEND.export_bundle(job_id)
+    except BackendError as exc:
+        return HTMLResponse(
+            f"<h1>Report unavailable</h1><p>{html.escape(exc.detail)}</p>",
+            status_code=exc.status_code,
+        )
+    sha_lines = [f"{bundle['manifest_sha256']}  manifest.json"]
+    for artifact in bundle.get("artifacts", []):
+        if artifact.get("sha256"):
+            sha_lines.append(f"{artifact['sha256']}  {artifact.get('name')}")
+    headers = None
+    if download:
+        headers = {"Content-Disposition": f'attachment; filename="{job_id}-evidence.html"'}
+    return templates.TemplateResponse(
+        request,
+        "report.html",
+        {"bundle": bundle, "sha_lines": sha_lines},
+        headers=headers,
     )
 
 
