@@ -65,14 +65,52 @@ Caveats: M4 verifier and M5 formal-bundle replay are still pending; this is
 | Optional final proposal/screenshot pass | M2 | available |
 
 
-## How to unblock (one action)
+## M2 verification pass (2026-10-29, ahead of 10-30/10-31 schedule)
 
-Copy the evidence bundle to:
+### Source-language cleanup (10-30 12:00 item)
 
-```
-C:\Users\linyz\Desktop\项目文件的系统\binaryrepair-mvp\var\gate3-bundle-2026-10-22.zip
-```
+- Scanned the M2 slice (`app/`, `tools/`, `tests/`): 10 Python files actually
+  contained Chinese comments/docstrings; all were rewritten in English.
+- Result: **0 CJK comments/docstrings** remain; UI Chinese string literals are
+  unchanged. `python -m compileall app tools tests` passes.
+- Behaviour guard: 26 selected tests passed (`test_language_policy`,
+  `test_status_honesty`, `test_verdict_view`, `test_backend_contract`,
+  `test_security`); full unit suite 57 passed / 3 skipped.
 
-or attach/send the file. M2 will verify SHA-256
-`0ef655464459dd0597f8259b3784ee15389884c9a75b26afa1299af7f54bf8d5`, map it and
-finish the MVP run.
+### Browser e2e on Edge (10-30 18:00 item)
+
+- This machine actually has Edge
+  (`C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`), so the runs
+  were real, not recorded as environment `not_run`.
+- First run: 6 passed / 1 failed due to a `codeview.js` load/click race; fixed
+  with a `codeviewReady` marker and an explicit wait.
+- After the fix: **7/7 passed twice** (35.2 s and 32.2 s).
+
+### Real http-mode walkthrough (10-31 item)
+
+- Controller tag `controller-worker-executor-2026-10-22` on :8000, GUI http mode
+  on :8123, real job store (`demo:false`).
+- `tools/p0_acceptance.py` → **17/17 PASS**.
+- `tools/p2_acceptance.py --timeout 5` → **exit 2, BLOCKED**
+  (`phase='queued'`, no result bundle/executor). This is the expected honest
+  result without an external executor; it is not recorded as a pass.
+- Screenshots refreshed: `00-landing.png`, `01-setup.png`,
+  `02-comparison.png`, `03-evidence.png`.
+
+### `tools/controller_service.py` keep/delete recommendation
+
+**Keep, but mark as dev/test-only; do not use it as the production controller.**
+
+Reasons:
+
+- It is still used by `tests/test_controller_service.py` and the e2e
+  `controller_server`/`http_server` fixtures; deleting it breaks 7 e2e journeys.
+- It is an honest fallback bridge (`demo:false`, real SQLite store, start
+  returns 409 because execution is not implemented), useful for offline GUI
+  development when the real controller is unavailable.
+- Production uses Member 1's `app.controller_api:app` via
+  `start-controller.ps1`; the bridge must not be presented as that service.
+
+Delete only after the e2e fixtures are repointed at the real controller and the
+offline fallback is no longer needed.
+

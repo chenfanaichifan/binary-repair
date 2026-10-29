@@ -174,6 +174,8 @@ def test_full_journey_setup_to_export(mock_server, page, tmp_path):
     assert SHA_PATTERN.match(sha), sha
 
     # Interactive security visualization: vulnerability highlighting and AI candidate.
+    # Wait for codeview.js to attach its handlers before clicking a line.
+    page.wait_js("document.documentElement.dataset.codeviewReady === '1'", timeout=10)
     page.wait_js("!!document.querySelector('[data-testid=\"code-view\"]')", timeout=10)
     page.click('[data-code-route="A"] .code-tab[data-view="original"]')
     page.click('[data-code-route="A"] .code-line.is-vulnerable')

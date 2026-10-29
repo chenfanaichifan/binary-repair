@@ -23,7 +23,7 @@
       });
     });
 
-    card.querySelectorAll(".code-line[data-detail]").forEach(function (line) {
+    document.querySelectorAll(".code-line[data-detail]").forEach(function (line) {
       function reveal() {
         if (!detail) return;
         var addr = line.dataset.addr ? line.dataset.addr + " · " : "";
@@ -38,4 +38,6 @@
       });
     });
   });
+
+  document.documentElement.dataset.codeviewReady = "1";
 })();
