@@ -6,13 +6,15 @@
 **Re:** M1's six questions about `integration/consolidation-2026-10-29`
 **Status:** all six answered below with commands and observed output. This is the only handoff M1 needs; do not ask M4 for branch contents — M4 does not own the transfer.
 
+**Read together with:** `docs/handoffs/47-branch-transfer-and-merge-conditions-2026-10-29.md` (merge conditions, fallback rules, PR-head measurement wording). Doc 47 defines *when/how to merge*; this doc answers M1's six questions with the measured evidence. Both point to the **same single transfer artifact**, named and hash-pinned in `delivery/TRANSFER-integration-2026-10-29.md`. If any two documents name different bundle tips/hashes, **stop and use the transfer note** — never merge a mismatch, and never accept a second bundle.
+
 ## 0. Why M1 cannot see the branch
 
 The branch **was never pushed**. It exists only in the Lead's local clone at
 `D:\BinaryRepair_Project`; this environment has no working push credentials
-(`git remote -v` points at `https://github.com/chenfanaichifan/binary-repair.git`,
-but no push was attempted, and an external push needs the Lead's explicit
-approval). So "remote and local both absent" is expected, not a failure.
+(`git remote -v` points at `https://github.com/chenfanaichifan/binary-repair.git`;
+`git fetch` fails with `SEC_E_NO_CREDENTIALS`, and an external push needs the Lead's
+explicit approval). So "remote and local both absent" is expected, not a failure.
 
 The fix is the **transfer package** described in §1: a full git bundle + a tree zip,
 with SHA-256 sums. M1 imports the bundle, pushes, and opens the PR.
@@ -23,30 +25,30 @@ with SHA-256 sums. M1 imports the bundle, pushes, and opens the PR.
 |---|---|
 | Local repo | `D:\BinaryRepair_Project` (Lead's checkout) |
 | Branch | `integration/consolidation-2026-10-29` |
-| HEAD at final measurement | see `git log -1` after import; the verified test state is `86f78af` and the only later commits are docs-only (`e0d70be`, `2c0e3c4`, `86f78af` is M4 docs+helper, `079a917` Gate 3 record restore, plus this document) |
-| Remote | none — never pushed |
-| Transfer bundle | `delivery/integration-consolidation-2026-10-29-<head>.bundle` (full history, self-contained) |
-| Tree zip fallback | `delivery/integration-consolidation-2026-10-29-<head>-tree.zip` |
+| Upstream / remote ref | **none** — never pushed; `git branch -r` has no `origin/integration/…` |
+| Verified code state | `986a49f` (independently verified); test/demo evidence below measured at `86f78af`, after which every commit is docs/scripts only (`git diff 986a49f..HEAD -- app tests routea routeb binaryrepair_ai schemas fixtures` is empty) |
+| `origin/main` here | `4107836` (last fetched 2026-10-22); M1 reports remote main `d969e6d`, which is **not an object in this checkout** and cannot be fetched from this host — doc 47 §1 defines the four ancestry/presence checks M1 must run before the PR |
+| Transfer artifact | `delivery/TRANSFER-integration-2026-10-29.md` pins the **tip commit, bundle filename, size and SHA-256**; the bundle is `delivery/integration-consolidation-2026-10-29-<tip>.bundle` (full history, self-contained) |
+| Tree zip fallback | `delivery/integration-consolidation-2026-10-29-<tip>-tree.zip` (read-only inspection only) |
 | Evidence/log package | `delivery/m1-evidence/` |
 | One-file transfer | `delivery/m1-transfer-2026-10-29.zip` + `.sha256` |
 
 Import (exact commands; run in M1's clone):
 
 ```powershell
-git bundle verify D:\path\to\integration-consolidation-2026-10-29-<head>.bundle
-git fetch D:\path\to\integration-consolidation-2026-10-29-<head>.bundle `
+git bundle verify D:\path\to\integration-consolidation-2026-10-29-<tip>.bundle
+git fetch D:\path\to\integration-consolidation-2026-10-29-<tip>.bundle `
   refs/heads/integration/consolidation-2026-10-29:refs/heads/integration/consolidation-2026-10-29
 git switch integration/consolidation-2026-10-29
-git log --oneline -1
+git rev-parse integration/consolidation-2026-10-29   # must equal the tip in the transfer note
 git push -u origin integration/consolidation-2026-10-29
 ```
 
-If the bundle path fetch is awkward on M1's host, use the tree zip: extract it
-outside the repo, then `git add`/commit is **not** the right path — the zip is only a
-read-only fallback for inspection. The bundle is the transfer format for git history.
+If the bundle path fetch is awkward on M1's host, use the tree zip only for inspection;
+the bundle is the transfer format for git history. If the bundle genuinely cannot cross
+the host boundary, doc 47 §2 defines the only authorized fallback and its preconditions;
+do not rebuild the branch by merging member branches without that authorization.
 
-**Hash of each artifact:** `delivery/m1-evidence/SHA256SUMS` (also copied into the
-transfer zip). Compare with `Get-FileHash <file> -Algorithm SHA256` before use.
 
 ## 2. Q2 — Where do 238 / 229 / 2 / 7 / 5 come from?
 
