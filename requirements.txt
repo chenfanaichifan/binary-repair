@@ -1,12 +1,17 @@
-# BinaryRepair MVP - GUI slice dependencies
-# The team plans to move to pyproject.toml + a lock file (Technical Design section 12).
-# This file stays intentionally simple for the local demo and tests.
+# Runtime and test dependencies for the integrated tree (GUI + controller + tests).
+# A pyproject.toml + lock file is a later packaging step.
 
 fastapi>=0.143
 uvicorn[standard]>=0.54
 jinja2>=3.1
 python-multipart>=0.0.20
 pytest>=9
-httpx>=0.28
-# Optional tooling: generate/inspect Route B static bundles locally (M5 executor).
+httpx>=0.28,<1
+pydantic>=2.7,<3
+jsonschema>=4.21,<5
+# ELF analysis tooling for the GUI code view and Route B bundle tools.
+# Tests that need it are expected to be uncollectable when it is absent.
 pyelftools>=0.33
+capstone>=5.0
+# Route A build (optional; tests skip when absent)
+lief>=0.15

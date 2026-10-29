@@ -5,9 +5,11 @@ interface and renders whatever the controller reports.
 
 ## Ready-to-run helpers
 
-- `.\start-controller.ps1` — creates/updates a fixed worktree of `origin/main`
-  at `..\binaryrepair-controller` and serves `app.controller_api:app` on
-  `127.0.0.1:8000`, with `BINARYREPAIR_DATA_DIR=var\controller`.
+- `.\start-controller.ps1` — serves the canonical controller `app.controller_api:app`
+  from this checkout on `127.0.0.1:8000`, with
+  `BINARYREPAIR_DATA_DIR=var\controller`. Before the 2026-10-29 merge this script
+  created a separate worktree of `origin/main`; the canonical controller now lives
+  in the same tree as the GUI, so both run from one commit.
 - `tools\p0_acceptance.py` — one command checks session bootstrap, controller
   health, real job creation, `demo:false`, no demo banner, contract edit,
   approval, start → `queued`, cancel → `已取消`, and that cancel is not labelled
@@ -65,16 +67,18 @@ Snapshot requirements:
 - All data strings are English ASCII; the GUI scans snapshot/obligations/artifacts
   and rejects non-ASCII payloads with `502` instead of rendering them.
 
-## Final controller (Member 1, controller-worker tag)
+## Final controller (canonical, `app/controller_api.py`)
 
-Member 1 pins controller + worker + obligations + snapshot verdicts to tag
-`controller-worker-2026-10-22` (commit `b3c002f`). The earlier
-`controller-api-2026-10-22` tag predates the worker, so the launcher now pins the
-new tag:
+The canonical controller (controller API + worker + attempt writer + canonical 409
+semantics) is `app/controller_api.py`, merged from `main` @4107836. The launcher
+serves that module directly:
 
 ```powershell
-.\start-controller.ps1   # worktree at controller-worker-2026-10-22, API on :8000
+.\start-controller.ps1   # serves app.controller_api:app on 127.0.0.1:8000
 ```
+
+Do not wire P0 acceptance to the legacy bridge described at the end of this
+document; it exists only as a fallback.
 
 Run the worker (independent process, one command):
 
@@ -116,15 +120,18 @@ which is the honest state.
   `tools/p2_acceptance.py` is ready for when this lands (it exits `2 BLOCKED`
   until the pipeline reaches `finished` with real obligations).
 
-Verified P0 run: GUI `http` mode → create job → contract edit → approve →
-start `202` → snapshot `demo:false`, `phase=queued`, routes `queued`; GUI shows
-`排队中` and never claims success. `start` really goes through persisted
-approval; the missing part is execution, not the GUI/controller contract.
+Verified P0 run (2026-10-29, merged tree, `app/controller_api.py` in this
+checkout): GUI `http` mode → create job → contract edit → approve → start `202` →
+snapshot `demo:false`, `phase=queued`, routes `queued`; GUI shows `排队中` and
+never claims success; cancel shows `已取消` and is not labelled success.
+`python tools/p0_acceptance.py` passes all 17 checks against this pair. `start`
+really goes through persisted approval; the missing part is execution, not the
+GUI/controller contract.
 
-## Bridge service (fallback)
+## Bridge service (legacy fallback)
 
-If the `main` checkout is unavailable, this branch also ships a bridge backed by
-the real Member 1 job store:
+If a checkout has no `app/controller_api.py`, this tree also ships a bridge backed
+by the real job store. It is a development fallback, not the integration target:
 
 ```powershell
 $env:BINARYREPAIR_CONTROLLER_DATA = "var/controller"
@@ -154,12 +161,15 @@ $env:BINARYREPAIR_API_BASE = "http://127.0.0.1:8000"
    revision/hash also returns `409` (never a silent overwrite).
 5. `cancel` is visible as `已取消`, not as success.
 
-Current status: P0 passes against Member 1's final controller (job creation,
-persistence, polling, approval, start → `queued`, `demo: false`, no demo
-banner). Execution itself is still pending in the worker pipeline: the snapshot
-keeps placeholder routes/stages at `queued`, obligations report `not_run`, and
-the visualizations/artifacts stay empty until workers write them. This is the
-honest "queued, not verified" state.
+Current status: P0 passes against the canonical controller in this tree (job
+creation, persistence, polling, approval, start → `queued`, `demo: false`, no
+demo banner; 17/17 checks in `tools/p0_acceptance.py`, measured 2026-10-29).
+Execution itself is still pending in the worker pipeline: the snapshot keeps
+placeholder routes/stages at `queued`, obligations report `not_run`, and the
+visualizations/artifacts stay empty until workers write them. This is the honest
+"queued, not verified" state. `tools/p2_acceptance.py` exits `2 BLOCKED` for the
+same reason; it never reports a pass without a finished run and persisted
+verdict/obligation evidence.
 
 ## P1 honesty rules enforced in tests
 

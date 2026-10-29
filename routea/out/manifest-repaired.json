@@ -1,0 +1,117 @@
+{
+  "binary": "routea/out/cave-probe.elf",
+  "binary_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+  "cases": [
+    {
+      "manifest": "valid.json",
+      "id": "valid-empty",
+      "kind": "valid",
+      "input_len": 0,
+      "expected": {
+        "return_code": 0,
+        "stdout": "\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
+      "got": {
+        "returncode": 0,
+        "stdout_hex": "0a",
+        "stderr_hex": ""
+      },
+      "ok": true
+    },
+    {
+      "manifest": "valid.json",
+      "id": "valid-smallest",
+      "kind": "valid",
+      "input_len": 1,
+      "expected": {
+        "return_code": 0,
+        "stdout": "A\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
+      "got": {
+        "returncode": 0,
+        "stdout_hex": "410a",
+        "stderr_hex": ""
+      },
+      "ok": true
+    },
+    {
+      "manifest": "valid.json",
+      "id": "valid-typical",
+      "kind": "valid",
+      "input_len": 10,
+      "expected": {
+        "return_code": 0,
+        "stdout": "AAAAAAAAAA\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
+      "got": {
+        "returncode": 0,
+        "stdout_hex": "414141414141414141410a",
+        "stderr_hex": ""
+      },
+      "ok": true
+    },
+    {
+      "manifest": "valid.json",
+      "id": "valid-maximum",
+      "kind": "valid",
+      "input_len": 49,
+      "expected": {
+        "return_code": 0,
+        "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
+      "got": {
+        "returncode": 0,
+        "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+        "stderr_hex": ""
+      },
+      "ok": true
+    },
+    {
+      "manifest": "invalid.json",
+      "id": "invalid-first",
+      "kind": "invalid",
+      "input_len": 50,
+      "expected": {
+        "return_code": 1,
+        "stdout": "",
+        "stderr": "ERROR: input exceeds destination capacity\n",
+        "allowed_output_files": []
+      },
+      "got": {
+        "returncode": 1,
+        "stdout_hex": "",
+        "stderr_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a"
+      },
+      "ok": true
+    },
+    {
+      "manifest": "invalid.json",
+      "id": "invalid-longer",
+      "kind": "invalid",
+      "input_len": 100,
+      "expected": {
+        "return_code": 1,
+        "stdout": "",
+        "stderr": "ERROR: input exceeds destination capacity\n",
+        "allowed_output_files": []
+      },
+      "got": {
+        "returncode": 1,
+        "stdout_hex": "",
+        "stderr_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a"
+      },
+      "ok": true
+    }
+  ],
+  "passed": 6,
+  "total": 6,
+  "repaired_pass": true
+}

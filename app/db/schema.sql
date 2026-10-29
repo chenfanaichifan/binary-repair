@@ -1,5 +1,6 @@
--- Minimal job store for the member-1 controller (first delivery).
--- Only the two tables the identity contract needs right now: jobs + artifacts.
+-- v1 baseline for the controller schema: jobs + artifacts only.
+-- AI tables (contracts/runs/attempts/obligations/events/model_calls) are created
+-- by migrations/002_ai_tables.sql; verdict columns are added by 003.
 
 PRAGMA foreign_keys = ON;
 

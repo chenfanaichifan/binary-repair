@@ -1,0 +1,98 @@
+name: gate4-routeb-roundtrip
+on:
+  push:
+    branches: [member-5/gate4-ci]
+permissions:
+  contents: write
+jobs:
+  gate4:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GHIDRA_HOME: /opt/ghidra_12.2_PUBLIC
+      FUNC: CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install system and Python deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential binutils patchelf unzip curl clang lld llvm
+          sudo ln -sf /usr/bin/clang /usr/local/bin/clang-15
+          sudo ln -sf /usr/bin/ld.lld /usr/local/bin/ld.lld-15
+          clang-15 --version
+          ld.lld-15 --version | head -1
+          chmod +x fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf
+          python3 -m pip install --upgrade pip
+          python3 -m pip install patcherex2
+      - name: Install Ghidra 12.2
+        run: |
+          curl -L --retry 3 -o /tmp/ghidra.zip \
+            https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.2_build/ghidra_12.2_PUBLIC_20261016.zip
+          sudo unzip -q /tmp/ghidra.zip -d /opt
+          test -x "$GHIDRA_HOME/support/analyzeHeadless"
+      - name: Record environment
+        run: |
+          mkdir -p routeb/out/gate4
+          {
+            uname -a
+            java -version 2>&1
+            gcc --version | head -1
+            python3 --version
+            python3 -m pip show patcherex2 | sed -n '1,3p'
+            "$GHIDRA_HOME/support/analyzeHeadless" 2>&1 | head -3
+          } > routeb/out/gate4/environment.txt 2>&1 || true
+      - name: Ghidra export (recovered C)
+        run: |
+          ./routeb/ghidra/export.sh \
+            fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf \
+            "$FUNC" routeb/out/gate4 2>&1 | tee routeb/out/gate4/ghidra.log
+      - name: Patcherex2 unchanged round trip
+        run: |
+          python3 routeb/probe_patcherex2.py \
+            --mode roundtrip \
+            --binary fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf \
+            --func "$FUNC" \
+            --c-source routeb/experiment/samples/juliet_badSink.normalized.c \
+            --out routeb/out/gate4/roundtrip.elf \
+            --skip-verify 2>&1 | tee routeb/out/gate4/patcherex2.log
+      - name: Compare frozen manifest
+        id: compare
+        continue-on-error: true
+        run: |
+          python3 routeb/run_manifest_compare.py \
+            --original fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf \
+            --patched routeb/out/gate4/roundtrip.elf \
+            --tests fixtures/public/CWE121_src_char_declare_cpy_51b/tests \
+            --out routeb/out/gate4/manifest-compare.json 2>&1 | tee routeb/out/gate4/compare.log
+      - name: Commit evidence branch
+        if: always()
+        run: |
+          git config user.name "gate4-ci"
+          git config user.email "gate4-ci@users.noreply.github.com"
+          git checkout -B gate4-results
+          git add -f routeb/out/gate4 fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf
+          git commit -m "gate4: run ${GITHUB_RUN_ID}" || echo "no changes"
+          git push --force origin HEAD:gate4-results
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate4-evidence
+          path: routeb/out/gate4
+      - name: Gate 4 result
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("routeb/out/gate4/manifest-compare.json")
+          if not p.exists():
+              raise SystemExit("gate4: no manifest-compare.json (patch/compare failed)")
+          data = json.loads(p.read_text())
+          print(f"gate4 same={data['same_count']}/{data['total']} pass={data['gate4_pass']}")
+          raise SystemExit(0 if data["gate4_pass"] else 1)
+          PY
