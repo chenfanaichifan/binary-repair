@@ -25,9 +25,11 @@ GHIDRA_HOME=/opt/ghidra
 EXPECTED_UID=1003
 ```
 
-No `sudo -u runner jobwrap`; no `unshare` inside the runner. `gate4_runner.sh`
-writes `gate4-status.json`, six case rows, `environment.txt`, and
-`manifest-compare.json` under the work dir.
+No `sudo -u runner jobwrap`; no `unshare` inside the runner. The runner writes
+`gate4-status.json`, `environment.txt`, and the native
+`manifest-compare.json` under the work dir. It does not emit native
+`case-01..06.json`; any six-case rows are derived
+(`runner_native=false`, `derived_from=manifest-compare.json`).
 
 **Missing:** the `gate4-harness` snapshot itself and its chain/manifest hash are
 M3/VMer-side. M5 cannot supply or hash them.
