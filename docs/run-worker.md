@@ -16,6 +16,18 @@ Polling worker (independent process, not a controller background task):
 python -m app.services.worker --data-dir var --poll 2
 ```
 
+Windows wrapper:
+
+```powershell
+.\start-worker.ps1
+```
+
+Linux wrapper:
+
+```bash
+./start-worker.sh
+```
+
 Environment:
 
 ```text
