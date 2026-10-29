@@ -1,4 +1,4 @@
-# Gate 4 record — Route B formal
+﻿# Gate 4 record — Route B formal
 
 **Status: DRAFT / NOT RUN.** This is a record skeleton, not a pass claim.
 
@@ -39,6 +39,7 @@ P3B v3 is structurally accepted; V2/V4 remain not_run, so this is not success.
 | Role | Name | Date | Observation |
 |---|---|---|---|
 | Independent witness | M5 | 2026-10-29 | P3A v4 checker PASS/hash; P3B v3 checker PASS (V0/V1/V3/V5, V2/V4 not_run); P4 checker PASS, native manifest 6/6 but incomplete; Gate5 blocked; witness only, not a gate pass |
+| Independent witness | M2 | 2026-10-29 | Cross-person rerun on `for-M5-v5` with main checker `caeffc2e…`: P3A v4 PASS 25/25 (`d9c33b42…`); P3B v3 PASS 18/18 (`8bec86e0…`, candidate `63fcafa6…`, jobwrap exit 0/audit pass, source `a2e4ff8f…`); P4 PASS 15/15 (`5c7ab9aa…`, native manifest 6/6 but incomplete); Gate5 A blocked 1/1; witness only, no gate pass; commands in `docs/handoffs/49-m2-independent-witness.md` |
 | M5 Gate 4 record | — | — | wait for real p2 exit 0 |
 | M4 verifier | — | — | blank |
 | Lead approval | — | — | blank |
