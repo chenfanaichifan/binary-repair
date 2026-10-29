@@ -8,7 +8,8 @@
 
 | Item | Value |
 |---|---|
-| `fixed_badSink.c` | `c9609f32e4e49619265af4a7a6a7997947efa953ac15f94320913fd8cfc558b7` |
+| failing `fixed_badSink.c` | `c9609f32e4e49619265af4a7a6a7997947efa953ac15f94320913fd8cfc558b7` (link failure; do not rerun) |
+| passing fixed C | `a2e4ff8f5071c20328f977153775c8dc7d8bf8a9f867278a5de2d48b81ccc90e` |
 | old normalized C | `0e5da0423d68518933f0fb910e8732d58f73ca9cc8323b1dae7bc82694753990` |
 | ZIP inner sums | 3/3 OK |
 | syntax check | `cc -fsyntax-only fixed_badSink.c` rc 0 |
@@ -55,3 +56,6 @@ M5 will run adapter/worker and real p2 only after that.
 
 Old `p3b-2026-10-29.zip` defects remain confirmed: no `handoff.json`,
 backslash sums, and `bundle-sha256` mismatch.
+
+
+**Update:** c9609f32 is the failed source; the passing package f46a3c8a uses a2e4ff8f. See 39-m5-to-m3-P3B-v2.md.
