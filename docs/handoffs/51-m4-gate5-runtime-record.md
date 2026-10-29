@@ -14,6 +14,23 @@ guest under jobwrap (uid 1003, CapEff=0, NoNewPrivs=1, no egress).
 **Scope:** Gate 5 Route A runtime placement only. Not Gate 4, not V3/V4 acceptance, not a repair
 claim; fixture remains `NOT FROZEN`.
 
+**Identity/independence limitation (recorded per Lead instruction, 2026-10-29):** the M4
+independent verifier and the Lead are the **same person/operator** (two AI windows of one person,
+analogous to the already-recorded VMer = M3 in a separate AI window). The M4 verifier row and the
+Lead approval row are therefore **not independent two-person signatures**; this record must not
+be presented as independent human review. If the client requires a genuinely independent second
+person for approval, that requirement is **not satisfied** by the current setup.
+
+**Invocation status:** M5's `routeb/jobwrap_gate5.sh` (reported SHA-256 `859ac8fe…`) and M4's
+fixed launcher `scripts/m4_gate5_fixed.sh` (SHA-256
+`B751BB7FB0A03596C750E8BFD8F43EF4B87FB68A96E2A65F62B2BB8F66E313C5`) are available, but **no
+guest run has happened**. The wrapper's caller-supplied `GATE5_SCRIPT` must be hard-coded or
+hash-validated by M5; until then the invocation is not fully fixed. Direct execution is
+forbidden; a missing controlled invocation is `NOT VERIFIED`.
+
+**P3B note:** the P3B provenance hold (`docs/handoffs/53` §1) does not change this Gate 5 record;
+Gate 4 P3B rows stay `NOT VERIFIED`/not accepted, and no P3B pass is written here.
+
 ## 1. Result rows (fill only after the probe; only PASS / FAIL / NOT VERIFIED)
 
 | ID | Check | Expected | Observed | Verdict | Evidence (file + SHA-256) |

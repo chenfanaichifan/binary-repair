@@ -65,24 +65,28 @@ and record the **exact** command; the script itself refuses to run unless euid=1
 5. Do not edit the script, the results, or the hashes; do not add a pass/fail conclusion of your
    own. Raw output + hashes only.
 
-### 3a. Invocation status — BLOCKED pending M5 (2026-10-29 18:15)
+### 3a. Invocation status — M5 wrapper delivered, M4 fixed launcher provided (2026-10-29 18:30)
 
-M3 reports that the current `jobwrap` has **no mode for a fixed M4 script**, and that running
-`scripts/m4_gate5_probe.py` directly would violate W5/isolation. That is correct: **do not run it
-directly, and do not use `sudo -u 1003`/an ad-hoc shell as a substitute.**
+M5 published the Gate 5 wrapper on `origin/main` (`docs/handoffs/44-t5.1-ratified-execution-invocations.md`);
+the reported wrapper hash is `routeb/jobwrap_gate5.sh` SHA-256 `859ac8fe…`. M4 provides the fixed
+launcher `scripts/m4_gate5_fixed.sh`, SHA-256
+`B751BB7FB0A03596C750E8BFD8F43EF4B87FB68A96E2A65F62B2BB8F66E313C5` (it `exec`s the M4 probe).
+Exact invocation:
 
-Per Lead ruling `docs/handoffs/52` §3, M5 must provide one of these by **2026-10-30 10:00**:
+```bash
+GATE5_SCRIPT=/path/to/repo/scripts/m4_gate5_fixed.sh \
+  jobwrap gate5 -- <repo>/routeb/jobwrap_gate5.sh <repo> /var/tmp/gate5-work
+```
 
-- a fixed-argv `jobwrap probe m4-gate5` mode that `execv`s exactly
-  `python3 <repo-root>/scripts/m4_gate5_probe.py <repo-root> <work-dir>` after netns setup and the
-  uid-1003 drop (no shell string, no caller-supplied command); or
-- a documented existing fixed-argv invocation of the same jobwrap version with exact syntax,
-  jobwrap SHA-256 and the isolation attestation it emits.
+Preconditions before running: verify both hashes against this file/`51`; `chmod +x` the launcher
+in the guest copy; M3/VMer confirms `jobwrap gate5` has the same uid 1003 / netns / no_new_privs /
+caps / rlimit controls (otherwise use the documented equivalent and record it). **Residual
+fixed-argv risk:** the wrapper takes `GATE5_SCRIPT` from the environment; M5 must hard-code or
+hash-validate it before the run, otherwise do not treat the run as fully fixed.
 
-If that mode is not available by the deadline, publish a **blocked package** naming M5 as the
-unblocker and stop. Gate 5 Route A stays `NOT VERIFIED` (record `51` unsigned); do not write
-PASS/FAIL from an unisolated run. This subsection supersedes the plain invocation in step 3 only
-for the launch mechanism; the evidence requirements W1–W8 and §4 stay unchanged.
+**Do not run the probe directly or via `sudo -u 1003`/an ad-hoc shell.** If no `gate5` mode or
+equivalent controlled invocation exists, publish a blocked package naming M5 and keep Gate 5
+Route A `NOT VERIFIED` (`51` unsigned); never write PASS/FAIL from an unisolated run.
 
 ## 4. What M4 will check and report
 

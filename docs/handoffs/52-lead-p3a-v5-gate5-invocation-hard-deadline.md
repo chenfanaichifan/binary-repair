@@ -9,6 +9,12 @@ stays closed/approved; Gate 4 `NOT RUN`; Gate 5 `pending/unsigned`; Gate 6 parti
 **Basis:** M3's completion relay (P3A v5, Gate 5 suite, P4/P3B blockers); `docs/handoffs/34`,
 `35`, `41`, `47`, `50`, `51`; `docs/route-b/23-gate4-record.md` (DRAFT/NOT RUN).
 
+> **Amendment 2026-10-29 18:30:** M5 reports D1–D4 delivered on `origin/main` (handoff 44:
+> T5.1 ratified; gate4 kit `499f510c…`/runner `515c4d60…`, routeb wrapper `70b50f92…`, gate5
+> wrapper `859ac8fe…`) — pending independent hash verification. The hard deadline in §4 now
+> covers verification/merge, not authoring; the Gate 4/5/P3B/identity status is in
+> `docs/handoffs/53` and `BOARD.md`.
+
 > **Provenance note:** M3's message reached the Lead as a chat relay with abbreviated hashes
 > (`f5b56359…`, `005be610…`, `8b5594cf…`). Full 64-hex values must be read from the delivered
 > package's `handoff.json`/`SHA256SUMS`, never from prose. Nothing in this ruling verifies
