@@ -67,8 +67,8 @@ SHA256SUMS sha256=<sha256> (evidence-manifest hash)
 
 | Role | Name | Date | Signature |
 |---|---|---|---|
-| M4 verifier | M4 | — | — (blank; not signed) |
-| Lead approval (Gate 5) | Lead | — | — (blank) |
+| M4 verifier | M4 — same person/operator as Lead (limitation above) | — | — (blank; not signed) |
+| Lead approval (Gate 5) | Lead — same person/operator as M4 (limitation above) | — | — (blank) |
 | M5 (Route B half of Gate 5) | M5 | — | — (separate record; does not sign this one) |
 
 Gate 5 may be called `PASS` only when this record has all rows PASS, M4's verifier row is signed,

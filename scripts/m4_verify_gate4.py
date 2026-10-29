@@ -370,6 +370,11 @@ def check_gate4_identity(package: Path, handoff: dict[str, Any] | None, rows: Ro
 
 
 def check_six_cases(package: Path, handoff: dict[str, Any] | None, rows: Rows) -> None:
+    """Gate 4 native six-case evidence is manifest-compare.json.
+
+    Per-case raw stdout/stderr files are supplementary only; their absence is not a
+    reason to mark a complete package NOT VERIFIED.
+    """
     manifest_path = find_file(package, handoff, ("manifest-compare", "manifest_compare"), ("manifest", "compare"))
     if manifest_path is None:
         add(rows, "NOT VERIFIED", "C1-manifest", "manifest-compare.json missing")

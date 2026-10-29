@@ -121,7 +121,14 @@ Gate 4 evidence and must never be cited as such.
 | G4-C4 | original-vs-round-trip identity | same | per case `original == patched` (rc, stdout hex, stderr hex) — this is the Gate 4 rule, independent of expected repaired behaviour |
 | G4-C5 | frozen original's measured shape | compare rows to the frozen facts | valid cases rc 0 / stdout = input + `0a` / empty stderr; `invalid-first` rc 0, 50×`A`+`0a` (silent overflow, **no crash**); `invalid-longer` rc **-11** (SIGSEGV), empty output. A different original shape means wrong bytes or wrong harness → FAIL |
 | G4-C6 | no timeout / no hidden skip | same | no `timeout:true` row, no missing rc, no aggregate-only claim |
-| G4-C7 | rows bind to the run | envelope + record + logs | the six rows come from the same session/hashes as B2/B3 and the isolation attestation (D) |
+| G4-C7 | rows bind to the run | `manifest-compare.json` + candidate/original hashes + record | the six rows come from the same session/hashes as B2/B3 and the isolation attestation (D); per-case raw stdout/stderr files are **not required** for this criterion |
+
+> **Native six-case evidence policy (Lead decision, 2026-10-29):** `manifest-compare.json`
+> **is** the native Gate 4 six-case evidence. Do not ask M3 to add native per-case raw
+> stdout/stderr files to `P4`; the comparator JSON (with its per-case rc/stdout_hex/stderr_hex
+> and `same` flags) plus the candidate/original hashes is the evidence to verify. If raw case
+> files happen to be present they are supplementary only, never a pass condition and never a
+> reason to mark a complete package `NOT VERIFIED`.
 
 > **Documentation trap (recorded):** `docs/route-b/14-gate4-runner.md` §"Six cases" lists
 > `invalid-first` as rc 1 + 42-byte stderr. That is the **repaired** oracle shape, not the Gate 4
@@ -160,6 +167,12 @@ works, 1003 can invoke the wrapper) is `FAIL`.
 | G4-E6 | no pre-approval | grep record | no `GATE 4 APPROVED` / `closed` before the Lead row is actually signed |
 | G4-E7 | scope honesty | read conclusion | Gate 4 only; explicitly no repair/V3/V4 claim; fixture still `NOT FROZEN`; Gate 5 runtime still pending |
 | G4-E8 | record hash pinned | hash the record before and after my row | hash reported; if I edited only my row, the new hash is pinned and reported; any unrecorded edit invalidates M5's signature |
+
+> **Identity/independence note (required before any signature):** the M4 verifier and the Lead
+> are the **same person/operator** (two AI windows of one person, analogous to VMer = M3). The
+> Gate 4 record must annotate **both** the M4 verifier row and the Lead approval row with this
+> same-person limitation before either is signed; the two rows are not independent two-person
+> signatures. A record that presents them as independent is incomplete → `NOT VERIFIED`.
 
 ### F. Real p2 run (pipeline already finished on real data)
 

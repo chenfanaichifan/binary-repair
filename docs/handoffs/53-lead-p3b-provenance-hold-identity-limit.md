@@ -85,6 +85,11 @@ been amended; the Gate 4 record must be amended before any signature):
 This does not weaken the deterministic checks: the tests/hashes/evidence remain the authority;
 it only prevents overstating the independence of the human/role sign-off.
 
+**Where the annotation must appear:** `docs/handoffs/51` annotates **both** the M4 verifier row
+and the Lead approval row with this limitation. The Gate 4 record must do the same for **both**
+rows before either signature; a Gate 4/5 record that omits it, or that presents M4+Lead as two
+independent people, is incomplete and must stay `NOT VERIFIED`.
+
 ## 5. Status (unchanged by this record)
 
 | Gate/artifact | Status |
