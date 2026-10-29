@@ -181,3 +181,14 @@ verdict/obligation evidence.
 - `cancelled` shows `已取消`; `error` shows `失败（执行错误）`.
 - `not_run` never counts as passed; evidence tables render `not_run` verbatim.
 - Contract approval is bound to `revision + sha256`; edits clear approval.
+
+﻿## F5 export v2 (2026-10-29, M2)
+
+- `GET /api/jobs/{id}/export` returns schema v2 with job, contract, per-route
+  candidate/outcome/verification, verbatim V0-V5 obligations, artifacts with
+  download availability, limitations/not_run, and `manifest_sha256`.
+- `GET /jobs/{id}/report` renders the same data as a printable English HTML
+  report with a SHA256SUMS block; `?download=1` returns it as an attachment.
+- Evidence screen offers JSON download, HTML view and HTML download.
+- The export renders controller data only; it does not compute an outcome and
+  does not use `not_run` evidence as passed.
