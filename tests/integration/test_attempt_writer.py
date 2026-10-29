@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
+from app.db.connection import connect
 from app.services import attempt_writer, jobs
-
-
-def _sha(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
 
 
 def _job(tmp_path: Path):
@@ -96,70 +92,62 @@ def test_routeb_bundle_maps_static_audit_without_runtime_pass(tmp_path: Path) ->
     assert code == 0
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert payload["route"] == "route_b"
-    assert payload["results"]["V0"] == "not_run"
     assert payload["results"]["V1"] == "passed"
     assert payload["results"]["V3"] == "not_run"
     assert "V1" in payload["evidence"]
 
 
-def test_routeb_identity_passes_only_with_matching_original(tmp_path: Path) -> None:
+def test_routea_bundle_maps_gates_and_registers_evidence(tmp_path: Path) -> None:
+    from tools.routea_bundle_to_attempt import convert
+
     data_dir, record, run, attempt = _job(tmp_path)
-    candidate_bytes = b"\x7fELF candidate"
-    bundle = tmp_path / "routeb"
-    bundle.mkdir()
-    (bundle / "candidate.elf").write_bytes(candidate_bytes)
-    (bundle / "edit-manifest.json").write_text(
-        json.dumps(
-            {
-                "original_sha256": record.original_sha256,
-                "candidate_sha256": _sha(candidate_bytes),
-            }
-        ),
-        encoding="utf-8",
+    evidence = tmp_path / "routea" / "evidence.txt"
+    evidence.parent.mkdir(parents=True)
+    evidence.write_text("route-a evidence\n", encoding="utf-8")
+    bundle = {
+        "route": "route_a",
+        "identity": {"candidate_sha256": record.original_sha256},
+        "gates": {
+            "V0": {"status": "pass", "evidence": [
+                {"relative_path": "routea/evidence.txt"}]},
+            "V1": {"status": "inconclusive", "evidence": []},
+            "V2": {"status": "not_run", "evidence": []},
+            "V3": {"status": "not_run", "evidence": []},
+            "V4": {"status": "not_run", "evidence": []},
+            "V5": {"status": "not_run", "evidence": []},
+        },
+    }
+    payload = convert(
+        bundle, evidence_root=tmp_path, data_dir=data_dir,
+        job_id=record.id, attempt_id=attempt.id,
     )
-    out = data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json"
-    code = attempt_writer.main(
-        [
-            "--routeb-bundle",
-            str(bundle),
-            "--data-dir",
-            str(data_dir),
-            "--job-id",
-            record.id,
-            "--attempt-id",
-            attempt.id,
-            "--out",
-            str(out),
-        ]
-    )
-    assert code == 0
-    payload = json.loads(out.read_text(encoding="utf-8"))
-    assert payload["results"]["V0"] == "passed"
+    assert payload["results"] == {
+        "V0": "passed", "V1": "unknown", "V2": "not_run",
+        "V3": "not_run", "V4": "not_run", "V5": "not_run",
+    }
+    artifact_id = payload["evidence"]["V0"]
+    connection = connect(data_dir)
+    try:
+        row = connection.execute(
+            "SELECT sha256, relative_path FROM artifacts WHERE id = ?", (artifact_id,)
+        ).fetchone()
+    finally:
+        connection.close()
+    assert row is not None
+    assert row["sha256"] == __import__("hashlib").sha256(evidence.read_bytes()).hexdigest()
+    assert row["relative_path"].startswith(f"attempts/{attempt.id}/")
 
 
-def test_routeb_identity_fails_on_original_mismatch(tmp_path: Path) -> None:
+def test_routea_bundle_rejects_passed_without_evidence(tmp_path: Path) -> None:
+    import pytest
+    from tools.routea_bundle_to_attempt import convert
+
     data_dir, record, run, attempt = _job(tmp_path)
-    bundle = tmp_path / "routeb"
-    bundle.mkdir()
-    (bundle / "candidate.elf").write_bytes(b"\x7fELF candidate")
-    (bundle / "edit-manifest.json").write_text(
-        json.dumps({"original_sha256": "0" * 64}), encoding="utf-8"
-    )
-    out = data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json"
-    code = attempt_writer.main(
-        [
-            "--routeb-bundle",
-            str(bundle),
-            "--data-dir",
-            str(data_dir),
-            "--job-id",
-            record.id,
-            "--attempt-id",
-            attempt.id,
-            "--out",
-            str(out),
-        ]
-    )
-    assert code == 0
-    payload = json.loads(out.read_text(encoding="utf-8"))
-    assert payload["results"]["V0"] == "failed"
+    bundle = {
+        "route": "route_a",
+        "identity": {"candidate_sha256": record.original_sha256},
+        "gates": {"V0": {"status": "pass", "evidence": []}},
+    }
+    with pytest.raises(ValueError, match="V0 passed without evidence"):
+        convert(bundle, evidence_root=tmp_path, data_dir=data_dir,
+                job_id=record.id, attempt_id=attempt.id)

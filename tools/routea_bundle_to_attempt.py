@@ -1,34 +1,29 @@
-"""Convert Member 3's Route A result bundle into the worker attempt bundle.
+#!/usr/bin/env python3
+"""Route A result-bundle (gates.V0..V5) -> worker attempt JSON.
 
-M3's `result-bundle-DRYRUN.json` is a rich host-side collector output with
-`gates.V0..V5`. Member 1's worker consumes a smaller per-attempt JSON:
-
-    {"route": "route_a", "candidate_sha256": "...",
-     "results": {"V0": "passed", ...},
-     "evidence": {"V0": "...", ...},
-     "details": {"V0": "...", ...}}
-
-This adapter never computes an outcome. It only maps raw gate statuses using
-M4's ruling (CheckResult vocabulary):
-
-    pass -> passed            fail -> failed
-    inconclusive -> unknown   unsupported -> not_run
-    not_run -> not_run        timed_out -> timed_out
-
-Missing evidence is recorded in `details`.
-
-Usage:
-    python tools/routea_bundle_to_attempt.py \
-        app/interfaces/route-a/result-bundle-DRYRUN.json out.json
+Evidence files are copied into the job artifact store and replaced by artifact
+ids. A `passed` gate without evidence is rejected rather than written as a
+false pass.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
-import pathlib
-import sys
+import shutil
+import tempfile
+import uuid
+import zipfile
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in __import__("sys").path:
+    __import__("sys").path.insert(0, str(ROOT))
+
+from app.db.connection import connect
 
 STATUS_MAP = {
     "pass": "passed",
@@ -43,48 +38,96 @@ STATUS_MAP = {
 }
 
 
-def _evidence_paths(entries: list[dict[str, Any]]) -> list[str]:
-    paths = []
-    for entry in entries:
-        role = entry.get("role")
-        path = entry.get("relative_path")
-        if path:
-            paths.append(f"{role}:{path}" if role else str(path))
-    return paths
+def _sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def convert(bundle: dict[str, Any]) -> dict[str, Any]:
+def _register(*, data_dir: Path, job_id: str, attempt_id: str, source: Path) -> str:
+    if not source.is_file():
+        raise ValueError(f"evidence file missing: {source}")
+    artifact_id = uuid.uuid4().hex
+    relative = f"attempts/{attempt_id}/{artifact_id}-{source.name}"
+    target = data_dir / "jobs" / job_id / "artifacts" / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, target)
+    connection = connect(data_dir)
+    try:
+        with connection:
+            connection.execute(
+                "INSERT INTO artifacts "
+                "(id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, 'application/octet-stream', 'route_a_evidence', ?)",
+                (artifact_id, job_id, attempt_id, relative, _sha(target),
+                 target.stat().st_size, datetime.now(timezone.utc).isoformat(timespec="seconds")),
+            )
+    finally:
+        connection.close()
+    return artifact_id
+
+
+def convert(
+    bundle: dict[str, Any],
+    *,
+    evidence_root: Path,
+    data_dir: Path | None = None,
+    job_id: str | None = None,
+    attempt_id: str | None = None,
+) -> dict[str, Any]:
     if not isinstance(bundle, dict):
         raise ValueError("bundle must be an object")
-    route = bundle.get("route")
-    if route not in ("A", "a", "route_a"):
-        raise ValueError(f"expected a Route A bundle, got route={route!r}")
+    if bundle.get("route") not in ("A", "a", "route_a"):
+        raise ValueError("not a Route A bundle")
     identity = bundle.get("identity") or {}
     candidate = identity.get("candidate_sha256")
     if not isinstance(candidate, str) or len(candidate) != 64:
-        raise ValueError("bundle identity.candidate_sha256 must be 64 hex characters")
+        raise ValueError("identity.candidate_sha256 must be 64 hex characters")
     int(candidate, 16)
-
     gates = bundle.get("gates")
     if not isinstance(gates, dict):
-        raise ValueError("bundle gates must be an object")
+        raise ValueError("gates must be an object")
 
     results: dict[str, str] = {}
     evidence: dict[str, str] = {}
     details: dict[str, str] = {}
-    for gate_id in ("V0", "V1", "V2", "V3", "V4", "V5"):
-        gate = gates.get(gate_id) or {}
-        raw = str(gate.get("status") or "not_run").lower()
+    for gate in ("V0", "V1", "V2", "V3", "V4", "V5"):
+        entry = gates.get(gate) or {}
+        raw = str(entry.get("status") or "not_run").lower()
         if raw not in STATUS_MAP:
-            raise ValueError(f"unknown {gate_id} status: {raw!r}")
-        results[gate_id] = STATUS_MAP[raw]
-        paths = _evidence_paths(gate.get("evidence") or [])
-        if paths:
-            evidence[gate_id] = "; ".join(paths)
-        missing = gate.get("missing") or []
+            raise ValueError(f"unknown {gate} status {raw!r}")
+        result = STATUS_MAP[raw]
+        results[gate] = result
+        paths = []
+        for item in entry.get("evidence") or []:
+            rel = item.get("relative_path") if isinstance(item, dict) else None
+            if rel:
+                paths.append(Path(rel))
+        if result == "passed" and not paths:
+            raise ValueError(f"{gate} passed without evidence; refusing false pass")
+        sources = []
+        for rel in paths:
+            source = (evidence_root / rel).resolve()
+            if not source.is_file():
+                raise ValueError(f"{gate} evidence missing: {source}")
+            sources.append(source)
+        if sources:
+            if data_dir is None or job_id is None or attempt_id is None:
+                raise ValueError("--data-dir/--job-id/--attempt-id required to register evidence")
+            if len(sources) == 1:
+                evidence[gate] = _register(data_dir=data_dir, job_id=job_id,
+                                           attempt_id=attempt_id, source=sources[0])
+            else:
+                with tempfile.TemporaryDirectory(prefix=f"routea-{gate}-") as tmp:
+                    archive = Path(tmp) / f"{gate}-evidence.zip"
+                    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
+                        for source in sources:
+                            zf.write(source, source.name)
+                    evidence[gate] = _register(data_dir=data_dir, job_id=job_id,
+                                               attempt_id=attempt_id, source=archive)
+        missing = entry.get("missing") or []
         if missing:
-            details[gate_id] = "; ".join(str(item) for item in missing)
-
+            details[gate] = "; ".join(str(x) for x in missing)
+        elif entry.get("details"):
+            details[gate] = json.dumps(entry["details"], sort_keys=True)
     return {
         "route": "route_a",
         "candidate_sha256": candidate,
@@ -95,26 +138,28 @@ def convert(bundle: dict[str, Any]) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Route A result bundle -> worker attempt bundle")
-    parser.add_argument("bundle", type=pathlib.Path, help="M3 result-bundle JSON")
-    parser.add_argument("out", type=pathlib.Path, help="worker per-attempt JSON to write")
-    parser.add_argument("--status", type=pathlib.Path, default=None, help="optional status.json (unused for outcome)")
+    parser = argparse.ArgumentParser(prog="tools/routea_bundle_to_attempt.py")
+    parser.add_argument("bundle", type=Path)
+    parser.add_argument("--evidence-root", type=Path)
+    parser.add_argument("--data-dir", type=Path)
+    parser.add_argument("--job-id")
+    parser.add_argument("--attempt-id")
+    parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
-
-    payload = json.loads(args.bundle.read_text(encoding="utf-8"))
-    if args.status is not None:
-        # Read it to make the caller's intent explicit; it intentionally has no outcome.
-        json.loads(args.status.read_text(encoding="utf-8"))
-    converted = convert(payload)
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(converted, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
-    print(
-        "mapped host dry-run bundle -> worker attempt bundle "
-        f"(candidate {converted['candidate_sha256'][:12]}..., "
-        f"{sum(1 for value in converted['results'].values() if value == 'passed')} passed)"
+    root = args.evidence_root or args.bundle.parent
+    payload = convert(
+        json.loads(args.bundle.read_text(encoding="utf-8")),
+        evidence_root=root,
+        data_dir=args.data_dir,
+        job_id=args.job_id,
+        attempt_id=args.attempt_id,
     )
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps({"out": str(args.out), "results": payload["results"],
+                      "evidence": sorted(payload["evidence"])}, indent=2))
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
