@@ -78,6 +78,34 @@ a real fixed-P3B package, P4 evidence, and the Gate 5 package are missing. M2
 signs no gate pass and changes no gate status. Gate 3/4/5 statuses remain as
 recorded by their owners.
 
+## Addendum — sync with main `ffca9a0` / M5 witness (2026-10-29)
+
+Main `ffca9a0` adds `docs/handoffs/47-independent-witness.md` (M5) and
+`docs/route-b/23-gate4-record.md`. M5's witness reports:
+
+- **P3A v4**: `check_handoff.py --expect-from M3 --expect-to M5` **PASS**,
+  25 files / 25 sums, `sha256sums_sha256 =
+  d9c33b42ec537346caa339c052deb21f6589ce59af9ca07cd71405953f7e0bcb`,
+  candidate `c4a159…aa82`. Worker outcome remains
+  `inconclusive / required_check_not_run / interface`.
+- **P3B f46a**: checker **PASS**, 15 files / 15 sums,
+  `sha256sums_sha256 = 9fec168f96d2772c6caf8c3bbb86482ff72fedc467591532bdd3a8290b783543`,
+  candidate `63fcafa6…616d01`; **NOT ACCEPTED**: jobwrap log `c9609f32…`/exit 1
+  vs manifest `a2e4ff8f…`, `audit.pass=false`, whole-file change, bundle hash
+  vs SHA256SUMS mismatch, and V3 6/6 is not an isolation pass.
+- **P4**: no package; no native manifest-compare; no `gate4_pass`.
+- **Gate 5**: no M4 fixed script / fixed-entry run; D3 remains the only unlock.
+
+M2 independence note: the v4 and f46a packages were **not present in M2's local
+transfer directory** during the first check (only v3/plain/real and
+`P3B-fixed-C` were). The v4/f46a results above are therefore recorded as
+**M5-witnessed on main**, not M2-replayed. M2's local observations from the first
+check (interface-v1 checker failures, SHA256SUMS results) remain historical and
+still must not be read as gate evidence.
+
+Gate 4 record is still **DRAFT / NOT RUN**; the M5 Gate 4 row, M4 verifier and
+Lead approval are blank. **No gate pass is signed by M2.**
+
 ## Re-check trigger
 
 Re-run this witness when M3/VMer/M5 publish:
