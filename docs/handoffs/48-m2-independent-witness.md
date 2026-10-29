@@ -106,6 +106,42 @@ still must not be read as gate evidence.
 Gate 4 record is still **DRAFT / NOT RUN**; the M5 Gate 4 row, M4 verifier and
 Lead approval are blank. **No gate pass is signed by M2.**
 
+## WIT-2 — M2 independent rerun on the witness pack (2026-10-29)
+
+M2 received `M2-witness-pack-2026-10-29.zip`
+(SHA-256 `3188b9536757da883f69a38aeeabb3400889c74098bfdc6c38804c02b232a969`)
+and reran the checker/hashing itself; it did **not** copy the M3 or M5 rows.
+
+Checker identity observed:
+
+- main `scripts/check_handoff.py` raw blob SHA-256
+  `caeffc2e7342796c3323e629c0e5ff29ba131032ac635b78697b876c8d85afab`
+- M3 witness used the kit checker
+  `5bbf9a38cba47e47547a5938be23977c2f3ff2feb7909cc485429cfc89666649`
+- M2's demo-branch checker was stale (`9a75a3…`) and was **not** used for the
+  verdict below; the earlier FAILs from it are superseded.
+
+Command:
+
+```bash
+python <main>/scripts/check_handoff.py <pkg> --expect-from M3 --expect-to M5
+sha256sum -c SHA256SUMS
+sha256sum <package>.zip
+```
+
+Observed:
+
+| Package | Zip SHA-256 | Checker | Internal SHA256SUMS | Observation |
+|---|---|---|---|---|
+| P3A v4 | `347e7d22cc741e2da539e756761afa28d09c739751a33ca5b9a6b22d2b6efa15` | **PASS**, 25 files / 25 sums, sums `d9c33b42ec537346caa339c052deb21f6589ce59af9ca07cd71405953f7e0bcb` | 25/25 OK | candidate `c4a159…aa82`; gates V0/V1/V3 passed, V2/V4/V5 not_run; worker remains `inconclusive` per the main record (M2 did not re-run the worker) |
+| P3B f46a | `f46a3c8ac3c5cfbea646ea5b08e2fb03ce12ec535fcb6fd1d966ecdcf182f639` | **PASS**, 15 files / 15 sums, sums `9fec168f96d2772c6caf8c3bbb86482ff72fedc467591532bdd3a8290b783543` | 15/15 OK | candidate `63fcafa6…616d01`; **NOT ACCEPTED**: `audit.pass=false`, jobwrap `exit_code=1` with `c_source_sha256=c9609f32…`, `bundle-sha256.txt=34ee1d85…` vs SHA256SUMS `9fec168f…`, no fixed C in the package; V3 6/6 is not an isolation pass |
+| P4 blocked | `6ad80422e84677b10acfafa32935142f942054e882657a568aad46fe787c6aa2` | not a handoff package | 2/2 OK | inner `gate4-2026-10-29.zip` SHA-256 `9aa863206a52057de5d515d7af3ae9be213c47de10922dca4f1caeb2fc9cda36`; `gate4-status.json` says `gate4: pass`, but native six-case rows, isolation, revert, harness manifests and interface-v1 handoff are missing → BLOCKED, no Gate 4 pass |
+| Gate 5 A blocked | `74952fc4e4349992cae47835bbb2fd1851201cd5dde076f4accc334c5682b0a4` | not a handoff package | 1/1 OK | no jobwrap fixed-script mode; no PASS/FAIL; Gate 5 unsigned |
+
+Witness pack root `SHA256SUMS`: 7/7 OK; pack zip hash matches the value above.
+**No gate pass is signed.** P3B remains not accepted, P4 and Gate 5 remain
+blocked; Gate 4 record is still DRAFT / NOT RUN.
+
 ## Re-check trigger
 
 Re-run this witness when M3/VMer/M5 publish:
