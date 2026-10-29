@@ -13,9 +13,9 @@
 | v6 kit SHA-256 | `499f510c9fda660826ea6b7f5b1969839334ba7cd63cc0c975a1e4ca951e4b1d` |
 | runner | `routeb/gate4_runner.sh` |
 | runner SHA-256 | `515c4d609495dea723c6fe6ff9e55b34fca078a3bf450770ebb3c744f07bd357` |
-| invocation | `jobwrap gate4 -- <repo>/routeb/gate4_runner.sh <repo> /var/tmp/gate4-work` |
+| invocation | `jobwrap gate4` (no arguments; root-owned `gate4.conf` supplies runner/repo/work) |
 
-Runner environment:
+Wrapper: `b232d60b…` (M3/VMer-owned). Runner environment:
 
 ```bash
 PYTHON=/opt/angr-venv/bin/python
@@ -61,9 +61,19 @@ Both packages must use `handoff.json` (INTERFACE v1), sorted `SHA256SUMS`, and:
 python scripts/check_handoff.py <pkg> --expect-from M3 --expect-to M5
 ```
 
-P4 files: `gate4-status.json`, `case-01..06.json`, `candidate.elf`,
+P4 native files: `gate4-status.json`, `manifest-compare.json`, `candidate.elf`,
 `original.elf`, `environment.txt`, `isolation.json`, `revert.log`,
 `harness-v2-manifest.txt`, `harness-manifest.json`.
+
+The runner does **not** emit native `case-01..06.json`. If the package includes
+six cases, they are derived:
+
+```json
+{"derived_from":"manifest-compare.json","runner_native":false}
+```
+
+Native evidence is only `manifest-compare.json`. Missing native case raw is
+recorded as a missing item; do **not** write `gate4_pass`.
 
 P3B files: `candidate.elf`, `edit-manifest.json`, `manifest-compare.json`,
 `logs/executor.log`.
