@@ -7,8 +7,13 @@ adapter calls these endpoints:
     GET  /api/jobs/{id}                    snapshot
     POST /api/jobs/{id}/start              approve + idempotent run start
     POST /api/jobs/{id}/cancel             cancel
-    GET  /api/jobs/{id}/obligations        V0-V5 placeholders
+    GET  /api/jobs/{id}/obligations        persisted V0-V5 rows of the latest attempt per route
+    GET  /api/attempts/{id}/evidence       persisted per-attempt evidence
     GET  /api/jobs/{id}/artifacts          artifact list
+
+Evidence honesty rule: this module only *renders* what the worker persisted. It
+never invents a ``passed`` obligation, and an attempt whose checks never ran has
+no evidence rows at all.
 
 Run:
 
@@ -155,6 +160,7 @@ def _placeholder_routes(phase: str) -> dict[str, dict[str, Any]]:
             "stages": [{"name": name, "state": "pending"} for name in stages],
             "tests": {"passed": 0, "total": 0},
             "verification": "not_run",
+            "evidence": "not_persisted",
             "compatibility": "not_run",
             "changed_regions": [],
             "manual_interventions": 0,
@@ -202,6 +208,73 @@ def _verdict_for_attempt(attempt: jobs.AttemptRecord) -> dict[str, Any]:
     }
 
 
+def _route_key(route: str) -> str:
+    """Map a stored route name (``route_a``/``route_b``) to the GUI key."""
+    return "A" if route == "route_a" else "B"
+
+
+def _evidence_state(rows: list[dict[str, Any]]) -> str:
+    """Machine-readable marker for whether this payload is backed by stored rows.
+
+    ``not_persisted`` means the worker never wrote obligation rows for this
+    attempt. Consumers must treat that as "no evidence", not as "checks passed".
+    """
+    return "persisted" if rows else "not_persisted"
+
+
+def _obligation_groups(
+    rows: list[dict[str, Any]], route_key: str
+) -> dict[str, list[dict[str, Any]]]:
+    """Keep the historical route-keyed payload shape while serving real rows.
+
+    Older consumers (``scripts/demo_e2e.py``) read ``obligations`` as a mapping
+    keyed by route. For a single attempt only its own route group carries the
+    persisted rows; the other group is empty rather than a placeholder.
+    """
+    return {"A": rows if route_key == "A" else [], "B": rows if route_key == "B" else []}
+
+
+def _verification_label(results: set[str]) -> str:
+    """Display label for one route's persisted obligation results.
+
+    Display vocabulary only: the acceptance decision stays in
+    ``app/domain/acceptance.py``. A definite failure outranks missing evidence,
+    so any ``failed`` row is shown as ``failed``. Mixed or incomplete evidence
+    (for example V0 passed with V1-V5 not_run) is ``inconclusive`` - the engine's
+    honest word for "not every required check was demonstrated" - never
+    ``unknown`` and never ``passed``.
+    """
+    if "failed" in results:
+        return "failed"
+    if results == {"passed"}:
+        return "passed"
+    if results == {"not_run"}:
+        return "not_run"
+    return "inconclusive"
+
+
+def _job_obligation_groups(job_id: str) -> dict[str, list[dict[str, Any]]]:
+    """Persisted V0-V5 rows of the latest attempt per route.
+
+    No run or no persisted rows means empty groups: the payload never falls back
+    to a placeholder that claims an identity check passed.
+    """
+    groups: dict[str, list[dict[str, Any]]] = {"A": [], "B": []}
+    run = jobs.latest_run(job_id, data_dir=_data_dir())
+    if run is None:
+        return groups
+    latest: dict[str, jobs.AttemptRecord] = {}
+    for attempt in jobs.list_attempts(run.id, data_dir=_data_dir()):
+        previous = latest.get(attempt.route)
+        if previous is None or attempt.sequence > previous.sequence:
+            latest[attempt.route] = attempt
+    for route, attempt in latest.items():
+        groups[_route_key(route)] = jobs.list_obligations(
+            attempt.id, data_dir=_data_dir()
+        )
+    return groups
+
+
 def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
     contract = dict(meta.get("contract") or _contract_body())
     contract.setdefault("revision", 1)
@@ -224,7 +297,7 @@ def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
             "detail": run_row["detail"] if run_row else None,
         }
         for attempt in jobs.list_attempts(run.id, data_dir=_data_dir()):
-            key = "A" if attempt.route == "route_a" else "B"
+            key = _route_key(attempt.route)
             route = routes[key]
             route["phase"] = attempt.phase
             route["outcome"] = attempt.outcome
@@ -232,17 +305,11 @@ def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
             route["verdict"] = _verdict_for_attempt(attempt)
             group = jobs.list_obligations(attempt.id, data_dir=_data_dir())
             route["obligations"] = group
+            route["evidence"] = _evidence_state(group)
             route["stages"] = _stages_for(attempt.phase, ROUTE_STAGES[key])
             if group:
                 results = {item["result"] for item in group}
-                if results == {"passed"}:
-                    route["verification"] = "passed"
-                elif results == {"not_run"}:
-                    route["verification"] = "not_run"
-                elif "failed" in results:
-                    route["verification"] = "failed"
-                else:
-                    route["verification"] = "unknown"
+                route["verification"] = _verification_label(results)
                 interface = next(
                     (item for item in group if item["kind"] == "interface"), None
                 )
@@ -272,38 +339,6 @@ def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
         } if run is not None else None,
         "verdict": run_verdict,
     }
-
-
-def _obligations() -> dict[str, list[dict[str, Any]]]:
-    identity = {
-        "id": "V0",
-        "kind": "Identity and preconditions",
-        "description": "Job record exists and the original hash matches the stored bytes",
-        "required": True,
-        "result": "passed",
-        "scope": "controller job store",
-        "reason": "Job record and original hash verified.",
-    }
-    pending = [
-        {
-            "id": f"V{index}",
-            "kind": label,
-            "description": description,
-            "required": True,
-            "result": "not_run",
-            "scope": "n/a",
-            "reason": "Repair execution is not implemented by the controller yet.",
-        }
-        for index, label, description in (
-            (1, "Structure and placement", "Instruction boundaries, changed intervals, and branch targets are auditable"),
-            (2, "Interface and compatibility", "Signature, stack/register conventions, and loader execution checks"),
-            (3, "Concrete behavior", "Reproducer, invalid-input oracle, valid-input regression"),
-            (4, "Bounded symbolic security", "Candidate-specific model, input domain, out-of-bounds access predicate"),
-            (5, "Reproducibility", "Final hashes, versions, replay inputs, independent replay"),
-        )
-    ]
-    return {"A": [dict(identity), *[dict(item) for item in pending]],
-            "B": [dict(identity), *[dict(item) for item in pending]]}
 
 
 app = FastAPI(title="BinaryRepair Controller API", version="0.1.0")
@@ -645,6 +680,7 @@ def attempt_evidence(attempt_id: str) -> dict[str, Any]:
     attempt = jobs.get_attempt(attempt_id, data_dir=_data_dir())
     if attempt is None:
         raise HTTPException(status_code=404, detail="Attempt not found.")
+    rows = jobs.list_obligations(attempt.id, data_dir=_data_dir())
     return {
         "attempt_id": attempt.id,
         "run_id": attempt.run_id,
@@ -654,14 +690,15 @@ def attempt_evidence(attempt_id: str) -> dict[str, Any]:
         "reason": attempt.reason,
         "failing_obligation": attempt.failing_obligation,
         "detail": attempt.detail,
-        "obligations": _obligations(),
+        "evidence": _evidence_state(rows),
+        "obligations": _obligation_groups(rows, _route_key(attempt.route)),
     }
 
 
 @app.get("/api/jobs/{job_id}/obligations")
 def obligations(job_id: str) -> dict[str, list[dict[str, Any]]]:
     _job_or_404(job_id)
-    return _obligations()
+    return _job_obligation_groups(job_id)
 
 
 @app.get("/api/jobs/{job_id}/visuals")

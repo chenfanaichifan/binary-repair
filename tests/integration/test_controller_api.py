@@ -212,10 +212,21 @@ def test_obligations_and_artifacts(client: TestClient) -> None:
     assert obligations.status_code == 200
     data = obligations.json()
     assert set(data) == {"A", "B"}
-    assert data["A"][0]["id"] == "V0"
-    assert data["A"][0]["result"] == "passed"
-    assert data["A"][1]["result"] == "not_run"
+    # DEFECT-A fix, not a relaxation: the controller serves only persisted
+    # obligation rows, so a job with no attempts gets empty groups and must never
+    # invent a V0 "passed" placeholder.
+    assert data == {"A": [], "B": []}
+    assert "passed" not in obligations.text
     assert not CJK.search(obligations.text)
+
+    # The same holds once attempts exist but the worker has persisted no rows.
+    _approve_current(client, job_id)
+    started = client.post(f"/api/jobs/{job_id}/start")
+    assert started.status_code == 202
+    queued = client.get(f"/api/jobs/{job_id}/obligations")
+    assert queued.status_code == 200
+    assert queued.json() == {"A": [], "B": []}
+    assert "passed" not in queued.text
 
     artifacts = client.get(f"/api/jobs/{job_id}/artifacts")
     assert artifacts.status_code == 200
