@@ -95,6 +95,7 @@ class Backend(Protocol):
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
     def get_artifact(self, artifact_id: str) -> dict[str, Any]: ...
+    def get_artifact_bytes(self, artifact_id: str) -> tuple[bytes, str, str]: ...
     def get_visuals(self, job_id: str) -> dict[str, Any]: ...
     def export_bundle(self, job_id: str) -> dict[str, Any]: ...
 
@@ -190,7 +191,11 @@ class MockBackend:
             "role": "synthetic demo artifact",
             "sha256": "0" * 64,
             "size_bytes": 0,
+            "available": True,
         }
+
+    def get_artifact_bytes(self, artifact_id: str) -> tuple[bytes, str, str]:
+        return b"demo-artifact\n", "application/octet-stream", "demo-artifact.bin"
 
     def get_visuals(self, job_id: str) -> dict[str, Any]:
         return visuals.build(self._job(job_id))
@@ -361,6 +366,25 @@ class HttpBackend:
         if not isinstance(payload, dict):
             raise BackendError(502, "Backend artifact response must be an object.")
         return payload
+
+    def get_artifact_bytes(self, artifact_id: str) -> tuple[bytes, str, str]:
+        path = f"/api/artifacts/{artifact_id}/download"
+        try:
+            response = self._client.get(path)
+        except httpx.HTTPError as exc:
+            raise BackendError(502, f"Backend artifact download failed: {exc.__class__.__name__}.") from exc
+        if response.status_code >= 400:
+            status = response.status_code if response.status_code in (400, 404, 409, 422) else 502
+            try:
+                detail = response.json().get("detail", "Artifact download failed.")
+            except ValueError:
+                detail = "Artifact download failed."
+            raise BackendError(status, str(detail))
+        filename = "artifact.bin"
+        disposition = response.headers.get("content-disposition", "")
+        if "filename=" in disposition:
+            filename = disposition.split("filename=", 1)[1].strip().strip('"')
+        return response.content, response.headers.get("content-type", "application/octet-stream"), filename
 
     def get_visuals(self, job_id: str) -> dict[str, Any]:
         payload = self._request("GET", f"/api/jobs/{job_id}/visuals", where="get_visuals")
@@ -674,6 +698,9 @@ class LocalBackend:
         return {"A": [], "B": []}
 
     def get_artifact(self, artifact_id: str) -> dict[str, Any]:
+        raise BackendError(404, "Local backend does not expose artifact bytes yet.")
+
+    def get_artifact_bytes(self, artifact_id: str) -> tuple[bytes, str, str]:
         raise BackendError(404, "Local backend does not expose artifact bytes yet.")
 
     def get_visuals(self, job_id: str) -> dict[str, Any]:

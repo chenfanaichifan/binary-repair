@@ -9,6 +9,9 @@
   </div>
   <div class="head-actions">
     <a class="btn ghost" href="javascript:history.back()">返回</a>
+    {% if artifact and artifact.available %}
+    <a class="btn primary" href="/artifacts/{{ artifact_id }}/download" data-testid="artifact-download">下载字节</a>
+    {% endif %}
   </div>
 </section>
 
@@ -26,6 +29,7 @@
     <div><dt>size</dt><dd>{{ artifact.size_bytes if artifact.size_bytes is not none else "-" }} B</dd></div>
   </dl>
   <p class="muted">查看/下载必须使用 artifact id；evidence 路径只用于显示。</p>
+  {% if artifact.media_type %}<p class="muted">media type：<code>{{ artifact.media_type }}</code></p>{% endif %}
 </div>
 {% endif %}
 {% endblock %}

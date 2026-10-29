@@ -97,7 +97,12 @@ class _FakeBackend:
             "role": "route_a_audit",
             "sha256": "e" * 64,
             "size_bytes": 123,
+            "media_type": "application/json",
+            "available": True,
         }
+
+    def get_artifact_bytes(self, artifact_id: str):
+        return b'{"audit": true}\n', "application/json", "audit.json"
 
 
 def _client() -> TestClient:
@@ -149,3 +154,12 @@ def test_artifact_view_uses_artifact_id(monkeypatch):
     assert "abc123def456" in page.text
     assert "audit.json" in page.text
     assert "route_a/audit.json" not in page.text
+    assert 'href="/artifacts/abc123def456/download"' in page.text
+
+
+def test_artifact_download_uses_artifact_id(monkeypatch):
+    monkeypatch.setattr(main, "BACKEND", _FakeBackend(_snapshot()))
+    page = _client().get("/artifacts/abc123def456/download")
+    assert page.status_code == 200
+    assert page.content == b'{"audit": true}\n'
+    assert "attachment" in page.headers["content-disposition"]

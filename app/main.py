@@ -451,6 +451,21 @@ async def artifact_view(request: Request, artifact_id: str):
     )
 
 
+@app.get("/artifacts/{artifact_id}/download")
+async def artifact_download(artifact_id: str):
+    """Download registered artifact bytes by artifact id."""
+    try:
+        content, media_type, filename = BACKEND.get_artifact_bytes(artifact_id)
+    except BackendError as exc:
+        return Response(content=exc.detail, status_code=exc.status_code, media_type="text/plain")
+    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", filename) or "artifact.bin"
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{safe_name}"'},
+    )
+
+
 @app.get("/api/jobs/{job_id}")
 async def job_status(job_id: str):
     """Return the polling status JSON."""

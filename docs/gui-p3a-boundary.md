@@ -47,8 +47,14 @@ read-only signals; the GUI does not decide approval itself.
   `/artifacts/<artifact_id>`.
 - A file path (for example `route_a/audit.json`) is **display-only**.
 - `evidence_files` from the attempt metadata is not a worker primary key and
-  must not be used as an artifact id. If bytes are not exposed by the controller
-  yet, `/artifacts/<id>` shows an explicit "无法读取 artifact 内容" state.
+  must not be used as an artifact id.
+- Controller tag `controller-artifacts-2026-10-29` (`7d8396c`) now exposes
+  `GET /api/artifacts/{id}` (metadata) and `GET /api/artifacts/{id}/download`
+  (bytes). The GUI proxies these as `/artifacts/<id>` and
+  `/artifacts/<id>/download`; the download is keyed by artifact id only.
+- Verified live: artifact `5004e901e8c942538a11c310c59a72fa` returns 1,362
+  bytes with SHA-256
+  `47951be5a1b54a228d149012ce5d65149b030e9c214eafc317d1022a7c58c5b8`.
 - The adapter/mapping step must register real evidence files and pass artifact
   ids as `evidence`; paths remain in `details` for humans.
 
