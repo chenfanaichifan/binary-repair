@@ -1,5 +1,12 @@
 # Controller Evidence Endpoint Fixes (DEFECT A and DEFECT B)
 
+> **Later status (HEAD `7b294ba`):** this record was measured before the member-2
+> GUI merge. Its 197/195 full-suite total is superseded by the current
+> 238/229 result, and the "GUI HTTP-backend mode does not exist" gap noted in
+> §5.2 was closed by the member-2 merge (`381e4ef`; live P0 17/17). The DEFECT A/B
+> fixes themselves are present and independently verified in
+> `docs/analysis/VERIFICATION.md`.
+
 Measured record for task-6 on branch `integration/consolidation-2026-10-29`
 (worktree `D:\BinaryRepair_Project`, not committed by this workstream).
 Author: controller-fixer. All statements below are measured on this host unless

@@ -222,7 +222,7 @@ python -m pytest -q tests/e2e --basetemp=... -p no:cacheprovider
 ```
 
 No uploaded or repaired ELF and no model-generated C was executed. P0/P2 only
-post a 19-byte synthetic payload to the controller; the controller has no
+post a 25-byte synthetic payload to the controller; the controller has no
 executor, and the worker was never started with a result bundle.
 
 ## 6. Remaining work

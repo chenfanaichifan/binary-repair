@@ -172,8 +172,9 @@ them to LF/exact bytes so checkout line endings cannot change the reviewed hash.
 
 ### Measured test state on this Windows host (2026-10-29)
 
-These are the only verified test numbers; they come from `docs/analysis/RUNTIME-VERIFICATION.md`
-and `docs/analysis/CONTROLLER-FIXES.md`. The environment is Windows 11 with Python
+These are the only verified test numbers; they were measured on this tree at HEAD
+`7b294ba` and independently re-measured in `docs/analysis/VERIFICATION.md`
+(§1 items 6-7). The environment is Windows 11 with Python
 3.14.6; `capstone` and `pyelftools` are not installed.
 
 ```powershell
@@ -183,7 +184,7 @@ python -m pytest tests/                          # -> stops at collection: 5 mod
 ```
 
 With `--continue-on-collection-errors` and the measurement helper
-(`scripts/pytest_rt_report.py`) the merged tree yields **236 collected, 227
+(`scripts/pytest_rt_report.py`) the merged tree yields **238 collected, 229
 passed, 2 skipped, 7 environment errors, 5 uncollectable modules**. The 7 errors
 are the browser e2e journeys (`tests/e2e/`): the sandbox cannot start headless
 Edge/DevTools, so those journeys are `not_run`. The two skips are guest-dependent

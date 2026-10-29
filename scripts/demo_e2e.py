@@ -399,9 +399,9 @@ def drive_scenario(
                 for item in group
             },
             "note": (
-                "The canonical /api/attempts/{id}/evidence endpoint currently returns "
-                "static placeholder V0-V5 rows from controller_api._obligations(); the "
-                "persisted per-attempt rows are visible in GET /api/jobs/{id}."
+                "The canonical /api/attempts/{id}/evidence endpoint serves the persisted "
+                "per-attempt obligation rows (evidence: persisted) and returns an empty "
+                "group with evidence: not_persisted when the worker has not written any."
             ),
         }
 

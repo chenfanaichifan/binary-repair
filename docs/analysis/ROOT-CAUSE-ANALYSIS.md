@@ -1,5 +1,13 @@
 # Root-Cause Analysis: Why BinaryRepair Had No End-to-End Result After Two Weeks
 
+> **Later status (HEAD `7b294ba`):** this diagnosis was written at the start of the
+> consolidation window (12:34-12:55). Its tree totals (189 executed / 146 passed /
+> 41 errored) are historical: after the member-4 acceptance merge, the controller
+> evidence fix and the member-2 GUI merge the current measured totals are 238
+> collected / 229 passed / 2 skipped / 7 environment errors / 5 uncollectable
+> modules. See `docs/analysis/VERIFICATION.md` and `MEMORY.md`. The root-cause
+> findings themselves remain the reference analysis.
+
 | Field | Value |
 |---|---|
 | Date of analysis | 2026-10-29 (Asia/Hong_Kong) |

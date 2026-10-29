@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 from app.services import attempt_writer, jobs
+
+
+def _sha(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
 def _job(tmp_path: Path):
@@ -91,6 +96,70 @@ def test_routeb_bundle_maps_static_audit_without_runtime_pass(tmp_path: Path) ->
     assert code == 0
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert payload["route"] == "route_b"
+    assert payload["results"]["V0"] == "not_run"
     assert payload["results"]["V1"] == "passed"
     assert payload["results"]["V3"] == "not_run"
     assert "V1" in payload["evidence"]
+
+
+def test_routeb_identity_passes_only_with_matching_original(tmp_path: Path) -> None:
+    data_dir, record, run, attempt = _job(tmp_path)
+    candidate_bytes = b"\x7fELF candidate"
+    bundle = tmp_path / "routeb"
+    bundle.mkdir()
+    (bundle / "candidate.elf").write_bytes(candidate_bytes)
+    (bundle / "edit-manifest.json").write_text(
+        json.dumps(
+            {
+                "original_sha256": record.original_sha256,
+                "candidate_sha256": _sha(candidate_bytes),
+            }
+        ),
+        encoding="utf-8",
+    )
+    out = data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json"
+    code = attempt_writer.main(
+        [
+            "--routeb-bundle",
+            str(bundle),
+            "--data-dir",
+            str(data_dir),
+            "--job-id",
+            record.id,
+            "--attempt-id",
+            attempt.id,
+            "--out",
+            str(out),
+        ]
+    )
+    assert code == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["results"]["V0"] == "passed"
+
+
+def test_routeb_identity_fails_on_original_mismatch(tmp_path: Path) -> None:
+    data_dir, record, run, attempt = _job(tmp_path)
+    bundle = tmp_path / "routeb"
+    bundle.mkdir()
+    (bundle / "candidate.elf").write_bytes(b"\x7fELF candidate")
+    (bundle / "edit-manifest.json").write_text(
+        json.dumps({"original_sha256": "0" * 64}), encoding="utf-8"
+    )
+    out = data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json"
+    code = attempt_writer.main(
+        [
+            "--routeb-bundle",
+            str(bundle),
+            "--data-dir",
+            str(data_dir),
+            "--job-id",
+            record.id,
+            "--attempt-id",
+            attempt.id,
+            "--out",
+            str(out),
+        ]
+    )
+    assert code == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["results"]["V0"] == "failed"
