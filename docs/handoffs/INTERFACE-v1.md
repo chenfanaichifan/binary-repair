@@ -84,7 +84,7 @@ A package with `package_id` instead of `id`, no `files`, or unsorted
 `SHA256SUMS` is not accepted directly. Convert mechanically:
 
 ```bash
-python scripts/handoff_to_interface_v1.py <provisional-package> --out <new-package>
+python scripts/normalize_handoff.py <provisional-package> --out <new-package>
 ```
 
 The converter:
@@ -125,6 +125,9 @@ unknown schema versions rather than silently coerce.
 
 ```bash
 python scripts/check_handoff.py --self-test
+# Windows/DSH sandbox: use a pre-created writable dir
+python scripts/check_handoff.py --self-test --self-test-dir C:\tmp\handoff-selftest
 ```
 
-must print `PASS: self-test` and exit 0.
+must print `env: ...` and `PASS: self-test` and exit 0. A caller-supplied
+directory avoids tempfile ACL failures; it is not a checker bypass.
