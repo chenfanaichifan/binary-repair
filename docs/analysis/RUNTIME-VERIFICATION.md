@@ -5,7 +5,7 @@ This document records what was actually run on this Windows host, what the outpu
 was, and what still has not run. It replaces "should work" with commands and
 observed results.
 
-> **Later status (verified at `986a49f`, current HEAD `497a689`):** this file is a pre-merge snapshot. Its test
+> **Later status (verified at `986a49f`; later commits are documentation-only):** this file is a pre-merge snapshot. Its test
 > count (189/187) was measured on a worktree where `tests/unit/test_acceptance.py`
 > was staged but not yet committed, so it is not reproducible from commit
 > `4107836` alone. Defects it lists in §7/§8 (no GUI `http` mode; static evidence

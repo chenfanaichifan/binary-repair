@@ -1,6 +1,6 @@
 # Controller Evidence Endpoint Fixes (DEFECT A and DEFECT B)
 
-> **Later status (verified at `986a49f`, current HEAD `497a689`):** this record was measured before the member-2
+> **Later status (verified at `986a49f`; later commits are documentation-only):** this record was measured before the member-2
 > GUI merge. Its 197/195 full-suite total is superseded by the current
 > 238/229 result, and the "GUI HTTP-backend mode does not exist" gap noted in
 > §5.2 was closed by the member-2 merge (`381e4ef`; live P0 17/17). The DEFECT A/B
