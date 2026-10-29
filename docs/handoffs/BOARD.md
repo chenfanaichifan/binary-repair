@@ -8,6 +8,7 @@
 - **M3** holds the ball for **T3.0 access confirmation** (must be an artifact or a blocked package by **2026-10-30 12:00**).
 - **M5** holds the ball for **T5.1 interface v1** and **T5.2 adapter + synthetic end-to-end** (no dependency on M3; deadline **2026-10-30 18:00**).
 - **M4** preparation is ready but JOIN-1 is **not started**: checklist `docs/handoffs/42` and Gate 5/6 plan `docs/handoffs/43` are published; JOIN-1 begins only when M5's record + real p2 and M3's packages exist (2026-10-31 12:00).
+- **M1** holds the branch-transfer/PR ball: import the published bundle (tip named in `docs/handoffs/47` + `delivery/TRANSFER-integration-2026-10-29.md`), confirm `d969e6d` ancestry/presence, then publish the PR head + branch-tip measured block by **2026-10-30 12:00**. Rebuild from member branches is not authorized as equivalent (`47` §2).
 - The two tracks run **in parallel**. Neither may start by waiting for the other.
 
 ## Tasks
@@ -45,3 +46,4 @@
 |---|---|---|
 | 2026-10-29 | Board created; M3/M5 split and protocol published (`34`–`37`) | Lead |
 | 2026-10-29 | M4 published Gate 4 independent-verification checklist (`42`) + Gate 5/6 plan (`43`); host-side helper `scripts/m4_verify_gate4.py` self-tested only on synthetic packages; evidence store still has no P4/P3A/P3B, no record, no real p2 job; **no gate status changed (Gate 4 NOT RUN, Gate 5 pending, Gate 6 partial)** | M4 |
+| 2026-10-29 | M1 reported the remote lacks `integration/consolidation-2026-10-29` (their `main` is `d969e6d`, not visible here). Lead/M4 published `47` (branch transfer + merge conditions) and a full-history git bundle + transfer note under `delivery/`; branch tip and bundle SHA-256 are named there. Merge needs the M4 **PR-head integration row** (not the Gate 4 JOIN-1 row); Lead approval is written, PR `Approve` is only mechanical; "reported" numbers must stay labelled and cannot be merge evidence. **No gate status changed.** | Lead/M4 |
