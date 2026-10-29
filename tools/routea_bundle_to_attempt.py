@@ -68,7 +68,7 @@ def _register(*, data_dir: Path, job_id: str, attempt_id: str, source: Path) -> 
 def convert(
     bundle: dict[str, Any],
     *,
-    evidence_root: Path,
+    evidence_root: Path | None = None,
     data_dir: Path | None = None,
     job_id: str | None = None,
     attempt_id: str | None = None,
@@ -101,17 +101,26 @@ def convert(
             rel = item.get("relative_path") if isinstance(item, dict) else None
             if rel:
                 paths.append(Path(rel))
-        if result == "passed" and not paths:
+        # Real worker conversion requires evidence for every passed gate
+        # (including V0); preview mode may show a V0 result without artifacts.
+        if result == "passed" and not paths and (gate != "V0" or data_dir is not None):
             raise ValueError(f"{gate} passed without evidence; refusing false pass")
+        if paths and data_dir is None:
+            # Preview mode: no DB registration was requested. Keep the relative
+            # paths so the caller can inspect the mapping; worker writes still
+            # require --data-dir/--job-id/--attempt-id to register artifacts.
+            evidence[gate] = ", ".join(str(rel) for rel in paths)
+            paths = []
         sources = []
+        root = evidence_root or Path(".")
         for rel in paths:
-            source = (evidence_root / rel).resolve()
+            source = (root / rel).resolve()
             if not source.is_file():
                 raise ValueError(f"{gate} evidence missing: {source}")
             sources.append(source)
         if sources:
-            if data_dir is None or job_id is None or attempt_id is None:
-                raise ValueError("--data-dir/--job-id/--attempt-id required to register evidence")
+            if job_id is None or attempt_id is None:
+                raise ValueError("--job-id/--attempt-id required to register evidence")
             if len(sources) == 1:
                 evidence[gate] = _register(data_dir=data_dir, job_id=job_id,
                                            attempt_id=attempt_id, source=sources[0])
