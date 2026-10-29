@@ -16,6 +16,7 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -59,7 +60,11 @@ def main(argv: list[str] | None = None) -> int:
     else:
         deadline = time.monotonic() + args.timeout
         while True:
-            snapshot = _get(args.base_url, f"/api/jobs/{args.job_id}")
+            try:
+                snapshot = _get(args.base_url, f"/api/jobs/{args.job_id}")
+            except (urllib.error.URLError, TimeoutError) as exc:
+                print(f"p2_acceptance: BLOCKED — controller unreachable: {exc}", file=sys.stderr)
+                return 2
             if snapshot.get("phase") == "finished":
                 break
             if time.monotonic() >= deadline:
