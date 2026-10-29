@@ -1,15 +1,6 @@
-"""数据来源契约测试（2026-10-18）。
+"""Backend contract tests (2026-10-18).
 
-两个层次：
-
-1. **HttpBackend**：用 httpx.MockTransport 模拟成员 1 的 controller，验证
-   - 请求路径/方法/表单转发正确；
-   - 响应被映射成页面需要的快照形状；
-   - 错误（404 / 网络失败 / 非英文响应）转成 BackendError。
-
-2. **stub controller**（tools/stub_backend.py）：用 TestClient 直接跑本地假服务，
-   验证它返回的 JSON 与 GUI 期望的形状一致、且没有中文（语言规范）。
-"""
+Covers HttpBackend against a mocked controller transport and the local stub controller."""
 
 from __future__ import annotations
 
@@ -197,13 +188,11 @@ def test_http_backend_maps_controller_contract():
     assert ("GET", "/api/jobs/job-abc123/obligations") in paths
     assert ("GET", "/api/jobs/job-abc123/artifacts") in paths
 
-    # create_job 必须把表单内容以 multipart 转给 controller
     create_request = requests[0]
     assert create_request.headers["content-type"].startswith("multipart/form-data")
     body = create_request.content
     assert b'name="defect"' in body
 
-    # 导出包在 GUI 侧组装，内容英文
     bundle = backend.export_bundle(job_id)
     assert bundle["demo"] is False
     assert bundle["content_language"] == "en"

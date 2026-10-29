@@ -1,19 +1,10 @@
-"""最小冒烟测试：确保三屏和状态接口能打开、Host 校验生效。
-
-运行（在项目根目录）：
-    .\\.venv\\Scripts\\python.exe -m pytest -q
-
-注意（2026-10-18 语言规范）：上传的表单内容必须英文 ASCII；本文件里的表单数据
-全部用英文，否则会被 422 拦截。
-"""
+"""Smoke test: pages and status endpoint open; Host check is enforced."""
 
 from fastapi.testclient import TestClient
 
 from app.main import CSRF_TOKEN, SESSION_TOKEN, app
 
-# base_url 用 127.0.0.1，否则会被 host 校验拦成 403
 client = TestClient(app, base_url="http://127.0.0.1")
-# 用一次性 token 引导本地会话（HttpOnly cookie）。
 assert client.get("/?token=" + SESSION_TOKEN).status_code == 200
 
 CONTRACT_FORM = {

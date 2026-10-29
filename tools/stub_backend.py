@@ -1,17 +1,7 @@
-"""本地 controller 假服务（stub）——在成员 1 的真实 controller 出来之前用于联调。
+"""Stub controller for local GUI development.
 
-用途：验证 GUI 的 http 模式（BINARYREPAIR_BACKEND=http）能跑通。
-它返回的是**合成数据**（来自 app/demo.py），所以快照里 demo=true，页面仍会显示
-"演示数据"横幅——这是如实标注，不是真实修复结果。
-
-运行（在项目根目录）：
-    .\\.venv\\Scripts\\python.exe -m uvicorn tools.stub_backend:app --host 127.0.0.1 --port 8000
-
-然后另开一个终端启动 GUI（http 模式）：
-    $env:BINARYREPAIR_BACKEND = "http"
-    $env:BINARYREPAIR_API_BASE = "http://127.0.0.1:8000"
-    .\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8123
-"""
+Serves synthetic data from app/demo.py so the GUI http mode can be used
+before the real controller is available. The GUI still shows demo=true."""
 
 from __future__ import annotations
 
