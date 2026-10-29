@@ -10,7 +10,9 @@
   </div>
   <div class="head-actions">
     <a class="btn ghost" href="/jobs/{{ job.id }}">返回对比</a>
-    <a class="btn primary" href="/api/jobs/{{ job.id }}/export" data-testid="export-evidence">导出证据 JSON</a>
+    <a class="btn primary" href="/api/jobs/{{ job.id }}/export" data-testid="export-evidence">下载 JSON</a>
+    <a class="btn ghost" href="/jobs/{{ job.id }}/report" target="_blank" rel="noopener" data-testid="view-report">查看 HTML 报告</a>
+    <a class="btn ghost" href="/jobs/{{ job.id }}/report?download=1" data-testid="download-report">下载 HTML</a>
   </div>
 </section>
 
@@ -83,7 +85,11 @@
       <code>{{ art.name }}</code>
       <span class="muted">{{ art.role }}</span>
       <span class="hash-mini">sha256 {{ art.sha256[:16] }}…</span>
-      <span class="muted">（演示：未生成真实文件）</span>
+      {% if art.id and art.available %}
+      <a href="/api/artifacts/{{ art.id }}/download" data-testid="artifact-download-{{ key }}-{{ loop.index }}">下载</a>
+      {% else %}
+      <span class="muted" data-testid="artifact-not-available-{{ key }}-{{ loop.index }}">not_available（{{ art.sha256[:16] }}…）</span>
+      {% endif %}
     </li>
     {% endfor %}
   </ul>
