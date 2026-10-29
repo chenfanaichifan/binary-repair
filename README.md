@@ -79,6 +79,12 @@ Controller service (separate process, loopback only):
 .\.venv\Scripts\python.exe -m uvicorn app.controller_api:app --host 127.0.0.1 --port 8000
 ```
 
+Queued-run worker (separate process; consumes result bundles):
+
+```powershell
+.\start-worker.ps1
+```
+
 GUI in http-adapter mode:
 
 ```powershell
