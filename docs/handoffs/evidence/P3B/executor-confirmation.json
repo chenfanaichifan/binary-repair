@@ -1,0 +1,15 @@
+{
+ "checked_at": "2026-10-30T19:30:14+08:00",
+ "method": "in-guest sha256sum /opt/binrepair/p3b-pack/routeb/executor.py over SSH (lab@192.168.30.128)",
+ "snapshot": {
+  "uid": 13,
+  "name": "routeb-harness"
+ },
+ "expected_sha256": "4f07217583c00c3a02ceaa8294eb330270a0ba7ba9ec03ce3aa4fbcfa831b05d",
+ "observed_sha256": "4f07217583c00c3a02ceaa8294eb330270a0ba7ba9ec03ce3aa4fbcfa831b05d",
+ "match": true,
+ "shipped_file": "executor/routeb_executor.py",
+ "shipped_equals_guest_bytes": true,
+ "consequence": "P3B v4 executor metadata stands; v4 is superseded by v5 only to add this confirmation and the wrapper bytes",
+ "operator": "M3+M5 merged agent (AI window of the human operator)"
+}

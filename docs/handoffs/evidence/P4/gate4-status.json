@@ -1,0 +1,8 @@
+{"gate4":"pass",
+ "reason":"6/6 behaviour-identical",
+ "uid":1003,
+ "expected_uid":1003,
+ "elf_sha256":"aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+ "patched_sha256":"decdcdb821bfe4c41a070b0a23a2f6497f46a92f439cb02a1e4139a82cde954b",
+ "manifest_compare":"/srv/binrepair/gate4-work/manifest-compare.json",
+ "environment":"/srv/binrepair/gate4-work/environment.txt"}

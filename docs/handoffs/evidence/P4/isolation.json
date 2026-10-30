@@ -1,0 +1,31 @@
+{
+ "probe_raw": [
+  "uid=1003",
+  "gid=1003",
+  "CapEff:\t0000000000000000",
+  "NoNewPrivs:\t1",
+  "Seccomp:\t0",
+  "lo               DOWN           ",
+  "evaluator=unreadable",
+  "egress=blocked"
+ ],
+ "wrapper_sha256": "b232d60b20b13dc696402112dd1d970c35b41a3ee720af32cfb2df396c621fa8",
+ "gate4_conf_sha256": "a912e6b0f7a852141476032dba55b954d7637e81d25d11578990dc2d82e5a8cd",
+ "snapshot": {
+  "name": "gate4-harness",
+  "uid": 11,
+  "created_at": "2026-10-29T17:21:47.858000+08:00",
+  "layer_file": "disk-000008.vmdk"
+ },
+ "chain_manifest": {
+  "file": "chain-manifest.json",
+  "sha256": "b7ded7003da55bf25248f1969506c18ac3455a084898d72f3f55142872f04188"
+ },
+ "revert_raw_log": "revert-raw.log",
+ "post_revert_fingerprint": {
+  "file": "post-revert-fingerprint.txt",
+  "taken_at": "2026-10-30T19:38:06+08:00"
+ },
+ "wrapper_sha256_source": "jobwrap (this package), exported from /usr/local/sbin/jobwrap after scripted revert",
+ "gate4_conf_sha256_source": "gate4.conf (this package), exported from /usr/local/etc/binrepair/gate4.conf"
+}

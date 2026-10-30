@@ -1,0 +1,13 @@
+{
+ "executor_path": "/opt/binrepair/p3b-pack/routeb/executor.py",
+ "executor_sha256": "4f07217583c00c3a02ceaa8294eb330270a0ba7ba9ec03ce3aa4fbcfa831b05d",
+ "executor_file": "executor/routeb_executor.py",
+ "audit_profile_default": "route_b_recompile",
+ "superseded_executor_sha256": "87fee2b7f28eee7b4e29422940cc93fc68f5a49e45e722e715b1622ef9301d91",
+ "why_actual_is_4f0721": [
+  "audit.json shows audit_profile=route_b_recompile and changed_inside_intervals=true; 87fee2b7 cannot emit either",
+  "87fee2b7 pass rule still required changed_inside_intervals, which is false when sizes differ, so it could not return exit_code=0",
+  "re-applying the documented second patch to 87fee2b7 reproduces 4f0721 byte-for-byte"
+ ],
+ "note": "default route_b because this executor only serves Route B; route_a audit not relaxed; future Route A reuse must pass --audit-profile explicitly"
+}

@@ -1,0 +1,86 @@
+{
+ "snapshot": {
+  "uid": 11,
+  "name": "gate4-harness",
+  "layer_file": "disk-000008.vmdk",
+  "created_at": "2026-10-29T17:21:47.858000+08:00",
+  "createTimeHigh": 417527,
+  "createTimeLow": 897661008,
+  "time_conversion": "((high<<32) | (low & 0xffffffff)) / 1e6 = Unix seconds"
+ },
+ "vmsd": {
+  "file": "BinRepair-Lab.vmsd",
+  "sha256": "e83ed55629072f8759cee4931635233e2f76df330e847cdc77253afe647af1fb",
+  "snapshot_current": "11",
+  "vm_dir": "D:\\VMs\\binrepair-u2404-x64-01"
+ },
+ "chain": [
+  {
+   "uid": 4,
+   "name": "clean-toolchain",
+   "layer_file": "disk.vmdk",
+   "size_bytes": 6792544256,
+   "sha256": "7dec112509c833a66b44c2e1aebdc607d33b323ca61351d7cfe0c83886101468",
+   "snapshot_created_at": "2026-10-20T11:57:45.518000+08:00"
+  },
+  {
+   "uid": 5,
+   "name": "job-isolation",
+   "layer_file": "disk-000001.vmdk",
+   "size_bytes": 33882112,
+   "sha256": "28451ed9fcf8f54f6fbe0c337c9fe8f6e4823dba08e242daae52855b4647bd92",
+   "snapshot_created_at": "2026-10-22T16:50:58.186000+08:00"
+  },
+  {
+   "uid": 6,
+   "name": "clean-baseline",
+   "layer_file": "disk-000002.vmdk",
+   "size_bytes": 12320768,
+   "sha256": "b501715b37e954e1ea509ab138d03bb34e45d5672a5b5192dc28dc72bd37100c",
+   "snapshot_created_at": "2026-10-22T16:54:06.675000+08:00"
+  },
+  {
+   "uid": 7,
+   "name": "toolchain-v4-ready",
+   "layer_file": "disk-000003.vmdk",
+   "size_bytes": 75890688,
+   "sha256": "1759a66ffd0a0d7eda06e2f676b0e9134682d1fb670099de6ffb98675c2fb300",
+   "snapshot_created_at": "2026-10-22T17:14:41.140000+08:00"
+  },
+  {
+   "uid": 8,
+   "name": "isolation-ready",
+   "layer_file": "disk-000004.vmdk",
+   "size_bytes": 31326208,
+   "sha256": "e21807fb86cef8a0d9fe51a75ab1ffa44296419cbd98003f8f9b382ef47577a1",
+   "snapshot_created_at": "2026-10-22T17:40:18.189000+08:00"
+  },
+  {
+   "uid": 9,
+   "name": "gate3-harness",
+   "layer_file": "disk-000006.vmdk",
+   "size_bytes": 39452672,
+   "sha256": "2a7ae3314237f758b853ad47d79cbc6d0cc15e93348a3ccf4110c3b9e23f2c87",
+   "snapshot_created_at": "2026-10-22T18:15:26.505000+08:00"
+  },
+  {
+   "uid": 10,
+   "name": "gate3-harness-v2",
+   "layer_file": "disk-000007.vmdk",
+   "size_bytes": 62193664,
+   "sha256": "c03843c91a888cc962caf7fba3fe31f48cf447b574f8a3bdb971ea72c562909a",
+   "snapshot_created_at": "2026-10-22T19:01:36.307000+08:00"
+  },
+  {
+   "uid": 11,
+   "name": "gate4-harness",
+   "layer_file": "disk-000008.vmdk",
+   "size_bytes": 95617024,
+   "sha256": "c2a790c814a7cc058f46f20592745c2ce95c0851c9c22a323d4c0b9b8b1ad4cf",
+   "snapshot_created_at": "2026-10-29T17:21:47.858000+08:00"
+  }
+ ],
+ "hash_method": "sha256sum on host with VM powered off, no vmware-vmx process, no .lck; no layer held open by a running guest was hashed",
+ "hashed_at": "2026-10-30T19:40:00+08:00",
+ "operator": "M3+M5 merged agent (AI window of the human operator)"
+}

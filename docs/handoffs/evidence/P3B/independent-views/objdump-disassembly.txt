@@ -1,0 +1,844 @@
+$ objdump -d -M intel /srv/binrepair/jobs/p3b/route_b/candidate.elf
+
+
+/srv/binrepair/jobs/p3b/route_b/candidate.elf:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+0000000000401000 <_init>:
+  401000:	f3 0f 1e fa          	endbr64
+  401004:	48 83 ec 08          	sub    rsp,0x8
+  401008:	48 8b 05 d1 2f 00 00 	mov    rax,QWORD PTR [rip+0x2fd1]        # 403fe0 <__gmon_start__@Base>
+  40100f:	48 85 c0             	test   rax,rax
+  401012:	74 02                	je     401016 <_init+0x16>
+  401014:	ff d0                	call   rax
+  401016:	48 83 c4 08          	add    rsp,0x8
+  40101a:	c3                   	ret
+
+Disassembly of section .plt:
+
+0000000000401020 <.plt>:
+  401020:	ff 35 ca 2f 00 00    	push   QWORD PTR [rip+0x2fca]        # 403ff0 <_GLOBAL_OFFSET_TABLE_+0x8>
+  401026:	ff 25 cc 2f 00 00    	jmp    QWORD PTR [rip+0x2fcc]        # 403ff8 <_GLOBAL_OFFSET_TABLE_+0x10>
+  40102c:	0f 1f 40 00          	nop    DWORD PTR [rax+0x0]
+  401030:	f3 0f 1e fa          	endbr64
+  401034:	68 00 00 00 00       	push   0x0
+  401039:	e9 e2 ff ff ff       	jmp    401020 <_init+0x20>
+  40103e:	66 90                	xchg   ax,ax
+  401040:	f3 0f 1e fa          	endbr64
+  401044:	68 01 00 00 00       	push   0x1
+  401049:	e9 d2 ff ff ff       	jmp    401020 <_init+0x20>
+  40104e:	66 90                	xchg   ax,ax
+  401050:	f3 0f 1e fa          	endbr64
+  401054:	68 02 00 00 00       	push   0x2
+  401059:	e9 c2 ff ff ff       	jmp    401020 <_init+0x20>
+  40105e:	66 90                	xchg   ax,ax
+  401060:	f3 0f 1e fa          	endbr64
+  401064:	68 03 00 00 00       	push   0x3
+  401069:	e9 b2 ff ff ff       	jmp    401020 <_init+0x20>
+  40106e:	66 90                	xchg   ax,ax
+  401070:	f3 0f 1e fa          	endbr64
+  401074:	68 04 00 00 00       	push   0x4
+  401079:	e9 a2 ff ff ff       	jmp    401020 <_init+0x20>
+  40107e:	66 90                	xchg   ax,ax
+  401080:	f3 0f 1e fa          	endbr64
+  401084:	68 05 00 00 00       	push   0x5
+  401089:	e9 92 ff ff ff       	jmp    401020 <_init+0x20>
+  40108e:	66 90                	xchg   ax,ax
+  401090:	f3 0f 1e fa          	endbr64
+  401094:	68 06 00 00 00       	push   0x6
+  401099:	e9 82 ff ff ff       	jmp    401020 <_init+0x20>
+  40109e:	66 90                	xchg   ax,ax
+  4010a0:	f3 0f 1e fa          	endbr64
+  4010a4:	68 07 00 00 00       	push   0x7
+  4010a9:	e9 72 ff ff ff       	jmp    401020 <_init+0x20>
+  4010ae:	66 90                	xchg   ax,ax
+  4010b0:	f3 0f 1e fa          	endbr64
+  4010b4:	68 08 00 00 00       	push   0x8
+  4010b9:	e9 62 ff ff ff       	jmp    401020 <_init+0x20>
+  4010be:	66 90                	xchg   ax,ax
+  4010c0:	f3 0f 1e fa          	endbr64
+  4010c4:	68 09 00 00 00       	push   0x9
+  4010c9:	e9 52 ff ff ff       	jmp    401020 <_init+0x20>
+  4010ce:	66 90                	xchg   ax,ax
+
+Disassembly of section .plt.sec:
+
+00000000004010d0 <strcpy@plt>:
+  4010d0:	f3 0f 1e fa          	endbr64
+  4010d4:	ff 25 26 2f 00 00    	jmp    QWORD PTR [rip+0x2f26]        # 404000 <strcpy@GLIBC_2.2.5>
+  4010da:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
+
+00000000004010e0 <puts@plt>:
+  4010e0:	f3 0f 1e fa          	endbr64
+  4010e4:	ff 25 1e 2f 00 00    	jmp    QWORD PTR [rip+0x2f1e]        # 404008 <puts@GLIBC_2.2.5>
+  4010ea:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
+
+00000000004010f0 <iswxdigit@plt>:
+  4010f0:	f3 0f 1e fa          	endbr64
+  4010f4:	ff 25 16 2f 00 00    	jmp    QWORD PTR [rip+0x2f16]        # 404010 <iswxdigit@GLIBC_2.2.5>
+  4010fa:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
+
+0000000000401100 <printf@plt>:
+  401100:	f3 0f 1e fa          	endbr64
+  401104:	ff 25 0e 2f 00 00    	jmp    QWORD PTR [rip+0x2f0e]        # 404018 <printf@GLIBC_2.2.5>
+  40110a:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
+
+0000000000401110 <__isoc99_swscanf@plt>:
+  401110:	f3 0f 1e fa          	endbr64
+  401114:	ff 25 06 2f 00 00    	jmp    QWORD PTR [rip+0x2f06]        # 404020 <__isoc99_swscanf@GLIBC_2.7>
+  40111a:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
+
+0000000000401120 <fprintf@plt>:
+  401120:	f3 0f 1e fa          	endbr64
+  401124:	ff 25 fe 2e 00 00    	jmp    QWORD PTR [rip+0x2efe]        # 404028 <fprintf@GLIBC_2.2.5>
+  40112a:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
+
+0000000000401130 <wprintf@plt>:
+  401130:	f3 0f 1e fa          	endbr64
+  401134:	ff 25 f6 2e 00 00    	jmp    QWORD PTR [rip+0x2ef6]        # 404030 <wprintf@GLIBC_2.2.5>
+  40113a:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
+
+0000000000401140 <__isoc99_sscanf@plt>:
+  401140:	f3 0f 1e fa          	endbr64
+  401144:	ff 25 ee 2e 00 00    	jmp    QWORD PTR [rip+0x2eee]        # 404038 <__isoc99_sscanf@GLIBC_2.7>
+  40114a:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
+
+0000000000401150 <rand@plt>:
+  401150:	f3 0f 1e fa          	endbr64
+  401154:	ff 25 e6 2e 00 00    	jmp    QWORD PTR [rip+0x2ee6]        # 404040 <rand@GLIBC_2.2.5>
+  40115a:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
+
+0000000000401160 <__ctype_b_loc@plt>:
+  401160:	f3 0f 1e fa          	endbr64
+  401164:	ff 25 de 2e 00 00    	jmp    QWORD PTR [rip+0x2ede]        # 404048 <__ctype_b_loc@GLIBC_2.3>
+  40116a:	66 0f 1f 44 00 00    	nop    WORD PTR [rax+rax*1+0x0]
+
+Disassembly of section .text:
+
+0000000000401170 <_start>:
+  401170:	f3 0f 1e fa          	endbr64
+  401174:	31 ed                	xor    ebp,ebp
+  401176:	49 89 d1             	mov    r9,rdx
+  401179:	5e                   	pop    rsi
+  40117a:	48 89 e2             	mov    rdx,rsp
+  40117d:	48 83 e4 f0          	and    rsp,0xfffffffffffffff0
+  401181:	50                   	push   rax
+  401182:	54                   	push   rsp
+  401183:	45 31 c0             	xor    r8d,r8d
+  401186:	31 c9                	xor    ecx,ecx
+  401188:	48 c7 c7 56 12 40 00 	mov    rdi,0x401256
+  40118f:	ff 15 43 2e 00 00    	call   QWORD PTR [rip+0x2e43]        # 403fd8 <__libc_start_main@GLIBC_2.34>
+  401195:	f4                   	hlt
+  401196:	66 2e 0f 1f 84 00 00 	cs nop WORD PTR [rax+rax*1+0x0]
+  40119d:	00 00 00 
+
+00000000004011a0 <_dl_relocate_static_pie>:
+  4011a0:	f3 0f 1e fa          	endbr64
+  4011a4:	c3                   	ret
+  4011a5:	66 2e 0f 1f 84 00 00 	cs nop WORD PTR [rax+rax*1+0x0]
+  4011ac:	00 00 00 
+  4011af:	90                   	nop
+
+00000000004011b0 <deregister_tm_clones>:
+  4011b0:	b8 68 40 40 00       	mov    eax,0x404068
+  4011b5:	48 3d 68 40 40 00    	cmp    rax,0x404068
+  4011bb:	74 13                	je     4011d0 <deregister_tm_clones+0x20>
+  4011bd:	b8 00 00 00 00       	mov    eax,0x0
+  4011c2:	48 85 c0             	test   rax,rax
+  4011c5:	74 09                	je     4011d0 <deregister_tm_clones+0x20>
+  4011c7:	bf 68 40 40 00       	mov    edi,0x404068
+  4011cc:	ff e0                	jmp    rax
+  4011ce:	66 90                	xchg   ax,ax
+  4011d0:	c3                   	ret
+  4011d1:	66 66 2e 0f 1f 84 00 	data16 cs nop WORD PTR [rax+rax*1+0x0]
+  4011d8:	00 00 00 00 
+  4011dc:	0f 1f 40 00          	nop    DWORD PTR [rax+0x0]
+
+00000000004011e0 <register_tm_clones>:
+  4011e0:	be 68 40 40 00       	mov    esi,0x404068
+  4011e5:	48 81 ee 68 40 40 00 	sub    rsi,0x404068
+  4011ec:	48 89 f0             	mov    rax,rsi
+  4011ef:	48 c1 ee 3f          	shr    rsi,0x3f
+  4011f3:	48 c1 f8 03          	sar    rax,0x3
+  4011f7:	48 01 c6             	add    rsi,rax
+  4011fa:	48 d1 fe             	sar    rsi,1
+  4011fd:	74 11                	je     401210 <register_tm_clones+0x30>
+  4011ff:	b8 00 00 00 00       	mov    eax,0x0
+  401204:	48 85 c0             	test   rax,rax
+  401207:	74 07                	je     401210 <register_tm_clones+0x30>
+  401209:	bf 68 40 40 00       	mov    edi,0x404068
+  40120e:	ff e0                	jmp    rax
+  401210:	c3                   	ret
+  401211:	66 66 2e 0f 1f 84 00 	data16 cs nop WORD PTR [rax+rax*1+0x0]
+  401218:	00 00 00 00 
+  40121c:	0f 1f 40 00          	nop    DWORD PTR [rax+0x0]
+
+0000000000401220 <__do_global_dtors_aux>:
+  401220:	f3 0f 1e fa          	endbr64
+  401224:	80 3d 5d 2e 00 00 00 	cmp    BYTE PTR [rip+0x2e5d],0x0        # 404088 <completed.0>
+  40122b:	75 13                	jne    401240 <__do_global_dtors_aux+0x20>
+  40122d:	55                   	push   rbp
+  40122e:	48 89 e5             	mov    rbp,rsp
+  401231:	e8 7a ff ff ff       	call   4011b0 <deregister_tm_clones>
+  401236:	c6 05 4b 2e 00 00 01 	mov    BYTE PTR [rip+0x2e4b],0x1        # 404088 <completed.0>
+  40123d:	5d                   	pop    rbp
+  40123e:	c3                   	ret
+  40123f:	90                   	nop
+  401240:	c3                   	ret
+  401241:	66 66 2e 0f 1f 84 00 	data16 cs nop WORD PTR [rax+rax*1+0x0]
+  401248:	00 00 00 00 
+  40124c:	0f 1f 40 00          	nop    DWORD PTR [rax+0x0]
+
+0000000000401250 <frame_dummy>:
+  401250:	f3 0f 1e fa          	endbr64
+  401254:	eb 8a                	jmp    4011e0 <register_tm_clones>
+
+0000000000401256 <main>:
+  401256:	f3 0f 1e fa          	endbr64
+  40125a:	55                   	push   rbp
+  40125b:	48 89 e5             	mov    rbp,rsp
+  40125e:	48 83 ec 10          	sub    rsp,0x10
+  401262:	89 7d fc             	mov    DWORD PTR [rbp-0x4],edi
+  401265:	48 89 75 f0          	mov    QWORD PTR [rbp-0x10],rsi
+  401269:	83 7d fc 02          	cmp    DWORD PTR [rbp-0x4],0x2
+  40126d:	74 27                	je     401296 <main+0x40>
+  40126f:	48 8b 45 f0          	mov    rax,QWORD PTR [rbp-0x10]
+  401273:	48 8b 10             	mov    rdx,QWORD PTR [rax]
+  401276:	48 8b 05 03 2e 00 00 	mov    rax,QWORD PTR [rip+0x2e03]        # 404080 <stderr@GLIBC_2.2.5>
+  40127d:	be 04 20 40 00       	mov    esi,0x402004
+  401282:	48 89 c7             	mov    rdi,rax
+  401285:	b8 00 00 00 00       	mov    eax,0x0
+  40128a:	e8 91 fe ff ff       	call   401120 <fprintf@plt>
+  40128f:	b8 02 00 00 00       	mov    eax,0x2
+  401294:	eb 18                	jmp    4012ae <main+0x58>
+  401296:	48 8b 45 f0          	mov    rax,QWORD PTR [rbp-0x10]
+  40129a:	48 83 c0 08          	add    rax,0x8
+  40129e:	48 8b 00             	mov    rax,QWORD PTR [rax]
+  4012a1:	48 89 c7             	mov    rdi,rax
+  4012a4:	e8 07 00 00 00       	call   4012b0 <CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink>
+  4012a9:	b8 00 00 00 00       	mov    eax,0x0
+  4012ae:	c9                   	leave
+  4012af:	c3                   	ret
+
+00000000004012b0 <CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink>:
+  4012b0:	e9 f3 45 00 00       	jmp    4058a8 <_end+0x1808>
+  4012b5:	48 89 e5             	mov    rbp,rsp
+  4012b8:	48 83 ec 50          	sub    rsp,0x50
+  4012bc:	48 89 7d b8          	mov    QWORD PTR [rbp-0x48],rdi
+  4012c0:	48 c7 45 c0 00 00 00 	mov    QWORD PTR [rbp-0x40],0x0
+  4012c7:	00 
+  4012c8:	48 c7 45 c8 00 00 00 	mov    QWORD PTR [rbp-0x38],0x0
+  4012cf:	00 
+  4012d0:	48 c7 45 d0 00 00 00 	mov    QWORD PTR [rbp-0x30],0x0
+  4012d7:	00 
+  4012d8:	48 c7 45 d8 00 00 00 	mov    QWORD PTR [rbp-0x28],0x0
+  4012df:	00 
+  4012e0:	48 c7 45 e0 00 00 00 	mov    QWORD PTR [rbp-0x20],0x0
+  4012e7:	00 
+  4012e8:	48 c7 45 e8 00 00 00 	mov    QWORD PTR [rbp-0x18],0x0
+  4012ef:	00 
+  4012f0:	66 c7 45 f0 00 00    	mov    WORD PTR [rbp-0x10],0x0
+  4012f6:	48 8b 55 b8          	mov    rdx,QWORD PTR [rbp-0x48]
+  4012fa:	48 8d 45 c0          	lea    rax,[rbp-0x40]
+  4012fe:	48 89 d6             	mov    rsi,rdx
+  401301:	48 89 c7             	mov    rdi,rax
+  401304:	e8 c7 fd ff ff       	call   4010d0 <strcpy@plt>
+  401309:	48 8b 45 b8          	mov    rax,QWORD PTR [rbp-0x48]
+  40130d:	48 89 c7             	mov    rdi,rax
+  401310:	e8 6b 00 00 00       	call   401380 <printLine>
+  401315:	90                   	nop
+  401316:	c9                   	leave
+  401317:	c3                   	ret
+
+0000000000401318 <CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_goodG2BSink>:
+  401318:	f3 0f 1e fa          	endbr64
+  40131c:	55                   	push   rbp
+  40131d:	48 89 e5             	mov    rbp,rsp
+  401320:	48 83 ec 50          	sub    rsp,0x50
+  401324:	48 89 7d b8          	mov    QWORD PTR [rbp-0x48],rdi
+  401328:	48 c7 45 c0 00 00 00 	mov    QWORD PTR [rbp-0x40],0x0
+  40132f:	00 
+  401330:	48 c7 45 c8 00 00 00 	mov    QWORD PTR [rbp-0x38],0x0
+  401337:	00 
+  401338:	48 c7 45 d0 00 00 00 	mov    QWORD PTR [rbp-0x30],0x0
+  40133f:	00 
+  401340:	48 c7 45 d8 00 00 00 	mov    QWORD PTR [rbp-0x28],0x0
+  401347:	00 
+  401348:	48 c7 45 e0 00 00 00 	mov    QWORD PTR [rbp-0x20],0x0
+  40134f:	00 
+  401350:	48 c7 45 e8 00 00 00 	mov    QWORD PTR [rbp-0x18],0x0
+  401357:	00 
+  401358:	66 c7 45 f0 00 00    	mov    WORD PTR [rbp-0x10],0x0
+  40135e:	48 8b 55 b8          	mov    rdx,QWORD PTR [rbp-0x48]
+  401362:	48 8d 45 c0          	lea    rax,[rbp-0x40]
+  401366:	48 89 d6             	mov    rsi,rdx
+  401369:	48 89 c7             	mov    rdi,rax
+  40136c:	e8 5f fd ff ff       	call   4010d0 <strcpy@plt>
+  401371:	48 8b 45 b8          	mov    rax,QWORD PTR [rbp-0x48]
+  401375:	48 89 c7             	mov    rdi,rax
+  401378:	e8 03 00 00 00       	call   401380 <printLine>
+  40137d:	90                   	nop
+  40137e:	c9                   	leave
+  40137f:	c3                   	ret
+
+0000000000401380 <printLine>:
+  401380:	f3 0f 1e fa          	endbr64
+  401384:	55                   	push   rbp
+  401385:	48 89 e5             	mov    rbp,rsp
+  401388:	48 83 ec 10          	sub    rsp,0x10
+  40138c:	48 89 7d f8          	mov    QWORD PTR [rbp-0x8],rdi
+  401390:	48 83 7d f8 00       	cmp    QWORD PTR [rbp-0x8],0x0
+  401395:	74 0c                	je     4013a3 <printLine+0x23>
+  401397:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  40139b:	48 89 c7             	mov    rdi,rax
+  40139e:	e8 3d fd ff ff       	call   4010e0 <puts@plt>
+  4013a3:	90                   	nop
+  4013a4:	c9                   	leave
+  4013a5:	c3                   	ret
+
+00000000004013a6 <printWLine>:
+  4013a6:	f3 0f 1e fa          	endbr64
+  4013aa:	55                   	push   rbp
+  4013ab:	48 89 e5             	mov    rbp,rsp
+  4013ae:	48 83 ec 10          	sub    rsp,0x10
+  4013b2:	48 89 7d f8          	mov    QWORD PTR [rbp-0x8],rdi
+  4013b6:	48 83 7d f8 00       	cmp    QWORD PTR [rbp-0x8],0x0
+  4013bb:	74 16                	je     4013d3 <printWLine+0x2d>
+  4013bd:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  4013c1:	48 89 c6             	mov    rsi,rax
+  4013c4:	bf 18 20 40 00       	mov    edi,0x402018
+  4013c9:	b8 00 00 00 00       	mov    eax,0x0
+  4013ce:	e8 5d fd ff ff       	call   401130 <wprintf@plt>
+  4013d3:	90                   	nop
+  4013d4:	c9                   	leave
+  4013d5:	c3                   	ret
+
+00000000004013d6 <printIntLine>:
+  4013d6:	f3 0f 1e fa          	endbr64
+  4013da:	55                   	push   rbp
+  4013db:	48 89 e5             	mov    rbp,rsp
+  4013de:	48 83 ec 10          	sub    rsp,0x10
+  4013e2:	89 7d fc             	mov    DWORD PTR [rbp-0x4],edi
+  4013e5:	8b 45 fc             	mov    eax,DWORD PTR [rbp-0x4]
+  4013e8:	89 c6                	mov    esi,eax
+  4013ea:	bf 2c 20 40 00       	mov    edi,0x40202c
+  4013ef:	b8 00 00 00 00       	mov    eax,0x0
+  4013f4:	e8 07 fd ff ff       	call   401100 <printf@plt>
+  4013f9:	90                   	nop
+  4013fa:	c9                   	leave
+  4013fb:	c3                   	ret
+
+00000000004013fc <printShortLine>:
+  4013fc:	f3 0f 1e fa          	endbr64
+  401400:	55                   	push   rbp
+  401401:	48 89 e5             	mov    rbp,rsp
+  401404:	48 83 ec 10          	sub    rsp,0x10
+  401408:	89 f8                	mov    eax,edi
+  40140a:	66 89 45 fc          	mov    WORD PTR [rbp-0x4],ax
+  40140e:	0f bf 45 fc          	movsx  eax,WORD PTR [rbp-0x4]
+  401412:	89 c6                	mov    esi,eax
+  401414:	bf 30 20 40 00       	mov    edi,0x402030
+  401419:	b8 00 00 00 00       	mov    eax,0x0
+  40141e:	e8 dd fc ff ff       	call   401100 <printf@plt>
+  401423:	90                   	nop
+  401424:	c9                   	leave
+  401425:	c3                   	ret
+
+0000000000401426 <printFloatLine>:
+  401426:	f3 0f 1e fa          	endbr64
+  40142a:	55                   	push   rbp
+  40142b:	48 89 e5             	mov    rbp,rsp
+  40142e:	48 83 ec 10          	sub    rsp,0x10
+  401432:	f3 0f 11 45 fc       	movss  DWORD PTR [rbp-0x4],xmm0
+  401437:	66 0f ef c9          	pxor   xmm1,xmm1
+  40143b:	f3 0f 5a 4d fc       	cvtss2sd xmm1,DWORD PTR [rbp-0x4]
+  401440:	66 48 0f 7e c8       	movq   rax,xmm1
+  401445:	66 48 0f 6e c0       	movq   xmm0,rax
+  40144a:	bf 35 20 40 00       	mov    edi,0x402035
+  40144f:	b8 01 00 00 00       	mov    eax,0x1
+  401454:	e8 a7 fc ff ff       	call   401100 <printf@plt>
+  401459:	90                   	nop
+  40145a:	c9                   	leave
+  40145b:	c3                   	ret
+
+000000000040145c <printLongLine>:
+  40145c:	f3 0f 1e fa          	endbr64
+  401460:	55                   	push   rbp
+  401461:	48 89 e5             	mov    rbp,rsp
+  401464:	48 83 ec 10          	sub    rsp,0x10
+  401468:	48 89 7d f8          	mov    QWORD PTR [rbp-0x8],rdi
+  40146c:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401470:	48 89 c6             	mov    rsi,rax
+  401473:	bf 39 20 40 00       	mov    edi,0x402039
+  401478:	b8 00 00 00 00       	mov    eax,0x0
+  40147d:	e8 7e fc ff ff       	call   401100 <printf@plt>
+  401482:	90                   	nop
+  401483:	c9                   	leave
+  401484:	c3                   	ret
+
+0000000000401485 <printLongLongLine>:
+  401485:	f3 0f 1e fa          	endbr64
+  401489:	55                   	push   rbp
+  40148a:	48 89 e5             	mov    rbp,rsp
+  40148d:	48 83 ec 10          	sub    rsp,0x10
+  401491:	48 89 7d f8          	mov    QWORD PTR [rbp-0x8],rdi
+  401495:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401499:	48 89 c6             	mov    rsi,rax
+  40149c:	bf 39 20 40 00       	mov    edi,0x402039
+  4014a1:	b8 00 00 00 00       	mov    eax,0x0
+  4014a6:	e8 55 fc ff ff       	call   401100 <printf@plt>
+  4014ab:	90                   	nop
+  4014ac:	c9                   	leave
+  4014ad:	c3                   	ret
+
+00000000004014ae <printSizeTLine>:
+  4014ae:	f3 0f 1e fa          	endbr64
+  4014b2:	55                   	push   rbp
+  4014b3:	48 89 e5             	mov    rbp,rsp
+  4014b6:	48 83 ec 10          	sub    rsp,0x10
+  4014ba:	48 89 7d f8          	mov    QWORD PTR [rbp-0x8],rdi
+  4014be:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  4014c2:	48 89 c6             	mov    rsi,rax
+  4014c5:	bf 3e 20 40 00       	mov    edi,0x40203e
+  4014ca:	b8 00 00 00 00       	mov    eax,0x0
+  4014cf:	e8 2c fc ff ff       	call   401100 <printf@plt>
+  4014d4:	90                   	nop
+  4014d5:	c9                   	leave
+  4014d6:	c3                   	ret
+
+00000000004014d7 <printHexCharLine>:
+  4014d7:	f3 0f 1e fa          	endbr64
+  4014db:	55                   	push   rbp
+  4014dc:	48 89 e5             	mov    rbp,rsp
+  4014df:	48 83 ec 10          	sub    rsp,0x10
+  4014e3:	89 f8                	mov    eax,edi
+  4014e5:	88 45 fc             	mov    BYTE PTR [rbp-0x4],al
+  4014e8:	0f be 45 fc          	movsx  eax,BYTE PTR [rbp-0x4]
+  4014ec:	89 c6                	mov    esi,eax
+  4014ee:	bf 43 20 40 00       	mov    edi,0x402043
+  4014f3:	b8 00 00 00 00       	mov    eax,0x0
+  4014f8:	e8 03 fc ff ff       	call   401100 <printf@plt>
+  4014fd:	90                   	nop
+  4014fe:	c9                   	leave
+  4014ff:	c3                   	ret
+
+0000000000401500 <printWcharLine>:
+  401500:	f3 0f 1e fa          	endbr64
+  401504:	55                   	push   rbp
+  401505:	48 89 e5             	mov    rbp,rsp
+  401508:	48 83 ec 20          	sub    rsp,0x20
+  40150c:	89 7d ec             	mov    DWORD PTR [rbp-0x14],edi
+  40150f:	8b 45 ec             	mov    eax,DWORD PTR [rbp-0x14]
+  401512:	89 45 f8             	mov    DWORD PTR [rbp-0x8],eax
+  401515:	c7 45 fc 00 00 00 00 	mov    DWORD PTR [rbp-0x4],0x0
+  40151c:	48 8d 45 f8          	lea    rax,[rbp-0x8]
+  401520:	48 89 c6             	mov    rsi,rax
+  401523:	bf 49 20 40 00       	mov    edi,0x402049
+  401528:	b8 00 00 00 00       	mov    eax,0x0
+  40152d:	e8 ce fb ff ff       	call   401100 <printf@plt>
+  401532:	90                   	nop
+  401533:	c9                   	leave
+  401534:	c3                   	ret
+
+0000000000401535 <printUnsignedLine>:
+  401535:	f3 0f 1e fa          	endbr64
+  401539:	55                   	push   rbp
+  40153a:	48 89 e5             	mov    rbp,rsp
+  40153d:	48 83 ec 10          	sub    rsp,0x10
+  401541:	89 7d fc             	mov    DWORD PTR [rbp-0x4],edi
+  401544:	8b 45 fc             	mov    eax,DWORD PTR [rbp-0x4]
+  401547:	89 c6                	mov    esi,eax
+  401549:	bf 4e 20 40 00       	mov    edi,0x40204e
+  40154e:	b8 00 00 00 00       	mov    eax,0x0
+  401553:	e8 a8 fb ff ff       	call   401100 <printf@plt>
+  401558:	90                   	nop
+  401559:	c9                   	leave
+  40155a:	c3                   	ret
+
+000000000040155b <printHexUnsignedCharLine>:
+  40155b:	f3 0f 1e fa          	endbr64
+  40155f:	55                   	push   rbp
+  401560:	48 89 e5             	mov    rbp,rsp
+  401563:	48 83 ec 10          	sub    rsp,0x10
+  401567:	89 f8                	mov    eax,edi
+  401569:	88 45 fc             	mov    BYTE PTR [rbp-0x4],al
+  40156c:	0f b6 45 fc          	movzx  eax,BYTE PTR [rbp-0x4]
+  401570:	89 c6                	mov    esi,eax
+  401572:	bf 43 20 40 00       	mov    edi,0x402043
+  401577:	b8 00 00 00 00       	mov    eax,0x0
+  40157c:	e8 7f fb ff ff       	call   401100 <printf@plt>
+  401581:	90                   	nop
+  401582:	c9                   	leave
+  401583:	c3                   	ret
+
+0000000000401584 <printDoubleLine>:
+  401584:	f3 0f 1e fa          	endbr64
+  401588:	55                   	push   rbp
+  401589:	48 89 e5             	mov    rbp,rsp
+  40158c:	48 83 ec 10          	sub    rsp,0x10
+  401590:	f2 0f 11 45 f8       	movsd  QWORD PTR [rbp-0x8],xmm0
+  401595:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401599:	66 48 0f 6e c0       	movq   xmm0,rax
+  40159e:	bf 52 20 40 00       	mov    edi,0x402052
+  4015a3:	b8 01 00 00 00       	mov    eax,0x1
+  4015a8:	e8 53 fb ff ff       	call   401100 <printf@plt>
+  4015ad:	90                   	nop
+  4015ae:	c9                   	leave
+  4015af:	c3                   	ret
+
+00000000004015b0 <printStructLine>:
+  4015b0:	f3 0f 1e fa          	endbr64
+  4015b4:	55                   	push   rbp
+  4015b5:	48 89 e5             	mov    rbp,rsp
+  4015b8:	48 83 ec 10          	sub    rsp,0x10
+  4015bc:	48 89 7d f8          	mov    QWORD PTR [rbp-0x8],rdi
+  4015c0:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  4015c4:	8b 50 04             	mov    edx,DWORD PTR [rax+0x4]
+  4015c7:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  4015cb:	8b 00                	mov    eax,DWORD PTR [rax]
+  4015cd:	89 c6                	mov    esi,eax
+  4015cf:	bf 56 20 40 00       	mov    edi,0x402056
+  4015d4:	b8 00 00 00 00       	mov    eax,0x0
+  4015d9:	e8 22 fb ff ff       	call   401100 <printf@plt>
+  4015de:	90                   	nop
+  4015df:	c9                   	leave
+  4015e0:	c3                   	ret
+
+00000000004015e1 <printBytesLine>:
+  4015e1:	f3 0f 1e fa          	endbr64
+  4015e5:	55                   	push   rbp
+  4015e6:	48 89 e5             	mov    rbp,rsp
+  4015e9:	48 83 ec 20          	sub    rsp,0x20
+  4015ed:	48 89 7d e8          	mov    QWORD PTR [rbp-0x18],rdi
+  4015f1:	48 89 75 e0          	mov    QWORD PTR [rbp-0x20],rsi
+  4015f5:	48 c7 45 f8 00 00 00 	mov    QWORD PTR [rbp-0x8],0x0
+  4015fc:	00 
+  4015fd:	eb 27                	jmp    401626 <printBytesLine+0x45>
+  4015ff:	48 8b 55 e8          	mov    rdx,QWORD PTR [rbp-0x18]
+  401603:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401607:	48 01 d0             	add    rax,rdx
+  40160a:	0f b6 00             	movzx  eax,BYTE PTR [rax]
+  40160d:	0f b6 c0             	movzx  eax,al
+  401610:	89 c6                	mov    esi,eax
+  401612:	bf 60 20 40 00       	mov    edi,0x402060
+  401617:	b8 00 00 00 00       	mov    eax,0x0
+  40161c:	e8 df fa ff ff       	call   401100 <printf@plt>
+  401621:	48 83 45 f8 01       	add    QWORD PTR [rbp-0x8],0x1
+  401626:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  40162a:	48 3b 45 e0          	cmp    rax,QWORD PTR [rbp-0x20]
+  40162e:	72 cf                	jb     4015ff <printBytesLine+0x1e>
+  401630:	bf 65 20 40 00       	mov    edi,0x402065
+  401635:	e8 a6 fa ff ff       	call   4010e0 <puts@plt>
+  40163a:	90                   	nop
+  40163b:	c9                   	leave
+  40163c:	c3                   	ret
+
+000000000040163d <decodeHexChars>:
+  40163d:	f3 0f 1e fa          	endbr64
+  401641:	55                   	push   rbp
+  401642:	48 89 e5             	mov    rbp,rsp
+  401645:	48 83 ec 30          	sub    rsp,0x30
+  401649:	48 89 7d e8          	mov    QWORD PTR [rbp-0x18],rdi
+  40164d:	48 89 75 e0          	mov    QWORD PTR [rbp-0x20],rsi
+  401651:	48 89 55 d8          	mov    QWORD PTR [rbp-0x28],rdx
+  401655:	48 c7 45 f8 00 00 00 	mov    QWORD PTR [rbp-0x8],0x0
+  40165c:	00 
+  40165d:	eb 40                	jmp    40169f <decodeHexChars+0x62>
+  40165f:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401663:	48 8d 14 00          	lea    rdx,[rax+rax*1]
+  401667:	48 8b 45 d8          	mov    rax,QWORD PTR [rbp-0x28]
+  40166b:	48 8d 0c 02          	lea    rcx,[rdx+rax*1]
+  40166f:	48 8d 45 f4          	lea    rax,[rbp-0xc]
+  401673:	48 89 c2             	mov    rdx,rax
+  401676:	be 60 20 40 00       	mov    esi,0x402060
+  40167b:	48 89 cf             	mov    rdi,rcx
+  40167e:	b8 00 00 00 00       	mov    eax,0x0
+  401683:	e8 b8 fa ff ff       	call   401140 <__isoc99_sscanf@plt>
+  401688:	8b 4d f4             	mov    ecx,DWORD PTR [rbp-0xc]
+  40168b:	48 8b 55 e8          	mov    rdx,QWORD PTR [rbp-0x18]
+  40168f:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401693:	48 01 d0             	add    rax,rdx
+  401696:	89 ca                	mov    edx,ecx
+  401698:	88 10                	mov    BYTE PTR [rax],dl
+  40169a:	48 83 45 f8 01       	add    QWORD PTR [rbp-0x8],0x1
+  40169f:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  4016a3:	48 3b 45 e0          	cmp    rax,QWORD PTR [rbp-0x20]
+  4016a7:	73 6d                	jae    401716 <decodeHexChars+0xd9>
+  4016a9:	e8 b2 fa ff ff       	call   401160 <__ctype_b_loc@plt>
+  4016ae:	48 8b 00             	mov    rax,QWORD PTR [rax]
+  4016b1:	48 8b 55 f8          	mov    rdx,QWORD PTR [rbp-0x8]
+  4016b5:	48 8d 0c 12          	lea    rcx,[rdx+rdx*1]
+  4016b9:	48 8b 55 d8          	mov    rdx,QWORD PTR [rbp-0x28]
+  4016bd:	48 01 ca             	add    rdx,rcx
+  4016c0:	0f b6 12             	movzx  edx,BYTE PTR [rdx]
+  4016c3:	48 0f be d2          	movsx  rdx,dl
+  4016c7:	48 01 d2             	add    rdx,rdx
+  4016ca:	48 01 d0             	add    rax,rdx
+  4016cd:	0f b7 00             	movzx  eax,WORD PTR [rax]
+  4016d0:	0f b7 c0             	movzx  eax,ax
+  4016d3:	25 00 10 00 00       	and    eax,0x1000
+  4016d8:	85 c0                	test   eax,eax
+  4016da:	74 3a                	je     401716 <decodeHexChars+0xd9>
+  4016dc:	e8 7f fa ff ff       	call   401160 <__ctype_b_loc@plt>
+  4016e1:	48 8b 00             	mov    rax,QWORD PTR [rax]
+  4016e4:	48 8b 55 f8          	mov    rdx,QWORD PTR [rbp-0x8]
+  4016e8:	48 01 d2             	add    rdx,rdx
+  4016eb:	48 8d 4a 01          	lea    rcx,[rdx+0x1]
+  4016ef:	48 8b 55 d8          	mov    rdx,QWORD PTR [rbp-0x28]
+  4016f3:	48 01 ca             	add    rdx,rcx
+  4016f6:	0f b6 12             	movzx  edx,BYTE PTR [rdx]
+  4016f9:	48 0f be d2          	movsx  rdx,dl
+  4016fd:	48 01 d2             	add    rdx,rdx
+  401700:	48 01 d0             	add    rax,rdx
+  401703:	0f b7 00             	movzx  eax,WORD PTR [rax]
+  401706:	0f b7 c0             	movzx  eax,ax
+  401709:	25 00 10 00 00       	and    eax,0x1000
+  40170e:	85 c0                	test   eax,eax
+  401710:	0f 85 49 ff ff ff    	jne    40165f <decodeHexChars+0x22>
+  401716:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  40171a:	c9                   	leave
+  40171b:	c3                   	ret
+
+000000000040171c <decodeHexWChars>:
+  40171c:	f3 0f 1e fa          	endbr64
+  401720:	55                   	push   rbp
+  401721:	48 89 e5             	mov    rbp,rsp
+  401724:	48 83 ec 30          	sub    rsp,0x30
+  401728:	48 89 7d e8          	mov    QWORD PTR [rbp-0x18],rdi
+  40172c:	48 89 75 e0          	mov    QWORD PTR [rbp-0x20],rsi
+  401730:	48 89 55 d8          	mov    QWORD PTR [rbp-0x28],rdx
+  401734:	48 c7 45 f8 00 00 00 	mov    QWORD PTR [rbp-0x8],0x0
+  40173b:	00 
+  40173c:	eb 44                	jmp    401782 <decodeHexWChars+0x66>
+  40173e:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401742:	48 8d 14 c5 00 00 00 	lea    rdx,[rax*8+0x0]
+  401749:	00 
+  40174a:	48 8b 45 d8          	mov    rax,QWORD PTR [rbp-0x28]
+  40174e:	48 8d 0c 02          	lea    rcx,[rdx+rax*1]
+  401752:	48 8d 45 f4          	lea    rax,[rbp-0xc]
+  401756:	48 89 c2             	mov    rdx,rax
+  401759:	be 68 20 40 00       	mov    esi,0x402068
+  40175e:	48 89 cf             	mov    rdi,rcx
+  401761:	b8 00 00 00 00       	mov    eax,0x0
+  401766:	e8 a5 f9 ff ff       	call   401110 <__isoc99_swscanf@plt>
+  40176b:	8b 4d f4             	mov    ecx,DWORD PTR [rbp-0xc]
+  40176e:	48 8b 55 e8          	mov    rdx,QWORD PTR [rbp-0x18]
+  401772:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401776:	48 01 d0             	add    rax,rdx
+  401779:	89 ca                	mov    edx,ecx
+  40177b:	88 10                	mov    BYTE PTR [rax],dl
+  40177d:	48 83 45 f8 01       	add    QWORD PTR [rbp-0x8],0x1
+  401782:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401786:	48 3b 45 e0          	cmp    rax,QWORD PTR [rbp-0x20]
+  40178a:	73 44                	jae    4017d0 <decodeHexWChars+0xb4>
+  40178c:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401790:	48 8d 14 c5 00 00 00 	lea    rdx,[rax*8+0x0]
+  401797:	00 
+  401798:	48 8b 45 d8          	mov    rax,QWORD PTR [rbp-0x28]
+  40179c:	48 01 d0             	add    rax,rdx
+  40179f:	8b 00                	mov    eax,DWORD PTR [rax]
+  4017a1:	89 c7                	mov    edi,eax
+  4017a3:	e8 48 f9 ff ff       	call   4010f0 <iswxdigit@plt>
+  4017a8:	85 c0                	test   eax,eax
+  4017aa:	74 24                	je     4017d0 <decodeHexWChars+0xb4>
+  4017ac:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  4017b0:	48 c1 e0 03          	shl    rax,0x3
+  4017b4:	48 8d 50 04          	lea    rdx,[rax+0x4]
+  4017b8:	48 8b 45 d8          	mov    rax,QWORD PTR [rbp-0x28]
+  4017bc:	48 01 d0             	add    rax,rdx
+  4017bf:	8b 00                	mov    eax,DWORD PTR [rax]
+  4017c1:	89 c7                	mov    edi,eax
+  4017c3:	e8 28 f9 ff ff       	call   4010f0 <iswxdigit@plt>
+  4017c8:	85 c0                	test   eax,eax
+  4017ca:	0f 85 6e ff ff ff    	jne    40173e <decodeHexWChars+0x22>
+  4017d0:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  4017d4:	c9                   	leave
+  4017d5:	c3                   	ret
+
+00000000004017d6 <globalReturnsTrue>:
+  4017d6:	f3 0f 1e fa          	endbr64
+  4017da:	55                   	push   rbp
+  4017db:	48 89 e5             	mov    rbp,rsp
+  4017de:	b8 01 00 00 00       	mov    eax,0x1
+  4017e3:	5d                   	pop    rbp
+  4017e4:	c3                   	ret
+
+00000000004017e5 <globalReturnsFalse>:
+  4017e5:	f3 0f 1e fa          	endbr64
+  4017e9:	55                   	push   rbp
+  4017ea:	48 89 e5             	mov    rbp,rsp
+  4017ed:	b8 00 00 00 00       	mov    eax,0x0
+  4017f2:	5d                   	pop    rbp
+  4017f3:	c3                   	ret
+
+00000000004017f4 <globalReturnsTrueOrFalse>:
+  4017f4:	f3 0f 1e fa          	endbr64
+  4017f8:	55                   	push   rbp
+  4017f9:	48 89 e5             	mov    rbp,rsp
+  4017fc:	e8 4f f9 ff ff       	call   401150 <rand@plt>
+  401801:	89 c2                	mov    edx,eax
+  401803:	89 d0                	mov    eax,edx
+  401805:	c1 f8 1f             	sar    eax,0x1f
+  401808:	c1 e8 1f             	shr    eax,0x1f
+  40180b:	01 c2                	add    edx,eax
+  40180d:	83 e2 01             	and    edx,0x1
+  401810:	29 c2                	sub    edx,eax
+  401812:	89 d0                	mov    eax,edx
+  401814:	5d                   	pop    rbp
+  401815:	c3                   	ret
+
+0000000000401816 <good1>:
+  401816:	f3 0f 1e fa          	endbr64
+  40181a:	55                   	push   rbp
+  40181b:	48 89 e5             	mov    rbp,rsp
+  40181e:	90                   	nop
+  40181f:	5d                   	pop    rbp
+  401820:	c3                   	ret
+
+0000000000401821 <good2>:
+  401821:	f3 0f 1e fa          	endbr64
+  401825:	55                   	push   rbp
+  401826:	48 89 e5             	mov    rbp,rsp
+  401829:	90                   	nop
+  40182a:	5d                   	pop    rbp
+  40182b:	c3                   	ret
+
+000000000040182c <good3>:
+  40182c:	f3 0f 1e fa          	endbr64
+  401830:	55                   	push   rbp
+  401831:	48 89 e5             	mov    rbp,rsp
+  401834:	90                   	nop
+  401835:	5d                   	pop    rbp
+  401836:	c3                   	ret
+
+0000000000401837 <good4>:
+  401837:	f3 0f 1e fa          	endbr64
+  40183b:	55                   	push   rbp
+  40183c:	48 89 e5             	mov    rbp,rsp
+  40183f:	90                   	nop
+  401840:	5d                   	pop    rbp
+  401841:	c3                   	ret
+
+0000000000401842 <good5>:
+  401842:	f3 0f 1e fa          	endbr64
+  401846:	55                   	push   rbp
+  401847:	48 89 e5             	mov    rbp,rsp
+  40184a:	90                   	nop
+  40184b:	5d                   	pop    rbp
+  40184c:	c3                   	ret
+
+000000000040184d <good6>:
+  40184d:	f3 0f 1e fa          	endbr64
+  401851:	55                   	push   rbp
+  401852:	48 89 e5             	mov    rbp,rsp
+  401855:	90                   	nop
+  401856:	5d                   	pop    rbp
+  401857:	c3                   	ret
+
+0000000000401858 <good7>:
+  401858:	f3 0f 1e fa          	endbr64
+  40185c:	55                   	push   rbp
+  40185d:	48 89 e5             	mov    rbp,rsp
+  401860:	90                   	nop
+  401861:	5d                   	pop    rbp
+  401862:	c3                   	ret
+
+0000000000401863 <good8>:
+  401863:	f3 0f 1e fa          	endbr64
+  401867:	55                   	push   rbp
+  401868:	48 89 e5             	mov    rbp,rsp
+  40186b:	90                   	nop
+  40186c:	5d                   	pop    rbp
+  40186d:	c3                   	ret
+
+000000000040186e <good9>:
+  40186e:	f3 0f 1e fa          	endbr64
+  401872:	55                   	push   rbp
+  401873:	48 89 e5             	mov    rbp,rsp
+  401876:	90                   	nop
+  401877:	5d                   	pop    rbp
+  401878:	c3                   	ret
+
+0000000000401879 <bad1>:
+  401879:	f3 0f 1e fa          	endbr64
+  40187d:	55                   	push   rbp
+  40187e:	48 89 e5             	mov    rbp,rsp
+  401881:	90                   	nop
+  401882:	5d                   	pop    rbp
+  401883:	c3                   	ret
+
+0000000000401884 <bad2>:
+  401884:	f3 0f 1e fa          	endbr64
+  401888:	55                   	push   rbp
+  401889:	48 89 e5             	mov    rbp,rsp
+  40188c:	90                   	nop
+  40188d:	5d                   	pop    rbp
+  40188e:	c3                   	ret
+
+000000000040188f <bad3>:
+  40188f:	f3 0f 1e fa          	endbr64
+  401893:	55                   	push   rbp
+  401894:	48 89 e5             	mov    rbp,rsp
+  401897:	90                   	nop
+  401898:	5d                   	pop    rbp
+  401899:	c3                   	ret
+
+000000000040189a <bad4>:
+  40189a:	f3 0f 1e fa          	endbr64
+  40189e:	55                   	push   rbp
+  40189f:	48 89 e5             	mov    rbp,rsp
+  4018a2:	90                   	nop
+  4018a3:	5d                   	pop    rbp
+  4018a4:	c3                   	ret
+
+00000000004018a5 <bad5>:
+  4018a5:	f3 0f 1e fa          	endbr64
+  4018a9:	55                   	push   rbp
+  4018aa:	48 89 e5             	mov    rbp,rsp
+  4018ad:	90                   	nop
+  4018ae:	5d                   	pop    rbp
+  4018af:	c3                   	ret
+
+00000000004018b0 <bad6>:
+  4018b0:	f3 0f 1e fa          	endbr64
+  4018b4:	55                   	push   rbp
+  4018b5:	48 89 e5             	mov    rbp,rsp
+  4018b8:	90                   	nop
+  4018b9:	5d                   	pop    rbp
+  4018ba:	c3                   	ret
+
+00000000004018bb <bad7>:
+  4018bb:	f3 0f 1e fa          	endbr64
+  4018bf:	55                   	push   rbp
+  4018c0:	48 89 e5             	mov    rbp,rsp
+  4018c3:	90                   	nop
+  4018c4:	5d                   	pop    rbp
+  4018c5:	c3                   	ret
+
+00000000004018c6 <bad8>:
+  4018c6:	f3 0f 1e fa          	endbr64
+  4018ca:	55                   	push   rbp
+  4018cb:	48 89 e5             	mov    rbp,rsp
+  4018ce:	90                   	nop
+  4018cf:	5d                   	pop    rbp
+  4018d0:	c3                   	ret
+
+00000000004018d1 <bad9>:
+  4018d1:	f3 0f 1e fa          	endbr64
+  4018d5:	55                   	push   rbp
+  4018d6:	48 89 e5             	mov    rbp,rsp
+  4018d9:	90                   	nop
+  4018da:	5d                   	pop    rbp
+  4018db:	c3                   	ret
+
+Disassembly of section .fini:
+
+00000000004018dc <_fini>:
+  4018dc:	f3 0f 1e fa          	endbr64
+  4018e0:	48 83 ec 08          	sub    rsp,0x8
+  4018e4:	48 83 c4 08          	add    rsp,0x8
+  4018e8:	c3                   	ret
+
+--- stderr ---

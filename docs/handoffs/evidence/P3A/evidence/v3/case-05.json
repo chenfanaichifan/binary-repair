@@ -1,0 +1,9 @@
+{
+ "case_id": "invalid-first",
+ "rc": 1,
+ "stdout_hex": "",
+ "stderr_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a",
+ "stdout_bytes": 0,
+ "stderr_bytes": 42,
+ "ok": true
+}

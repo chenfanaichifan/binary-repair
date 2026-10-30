@@ -1,0 +1,17 @@
+{
+ "derived_from": "manifest-compare.json",
+ "runner_native": false,
+ "id": "valid-empty",
+ "kind": "valid",
+ "original": {
+  "returncode": 0,
+  "stdout_hex": "0a",
+  "stderr_hex": ""
+ },
+ "patched": {
+  "returncode": 0,
+  "stdout_hex": "0a",
+  "stderr_hex": ""
+ },
+ "same": true
+}

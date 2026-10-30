@@ -1,0 +1,50 @@
+{
+  "reverted": true,
+  "snapshot": "gate3-harness-v2 uid 10",
+  "candidate_sha256_before": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+  "candidate_sha256_after": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+  "cases": [
+    {
+      "id": "valid-empty",
+      "ok": true,
+      "rc": 0,
+      "stdout_hex": "0a",
+      "stderr_hex": ""
+    },
+    {
+      "id": "valid-smallest",
+      "ok": true,
+      "rc": 0,
+      "stdout_hex": "410a",
+      "stderr_hex": ""
+    },
+    {
+      "id": "valid-typical",
+      "ok": true,
+      "rc": 0,
+      "stdout_hex": "414141414141414141410a",
+      "stderr_hex": ""
+    },
+    {
+      "id": "valid-maximum",
+      "ok": true,
+      "rc": 0,
+      "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+      "stderr_hex": ""
+    },
+    {
+      "id": "invalid-first",
+      "ok": true,
+      "rc": 1,
+      "stdout_hex": "",
+      "stderr_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a"
+    },
+    {
+      "id": "invalid-longer",
+      "ok": true,
+      "rc": 1,
+      "stdout_hex": "",
+      "stderr_hex": "4552524f523a20696e70757420657863656564732064657374696e6174696f6e2063617061636974790a"
+    }
+  ]
+}

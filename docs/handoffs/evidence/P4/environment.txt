@@ -1,0 +1,21 @@
+uname: Linux binrepair-vm 6.8.0-147-generic #147-Ubuntu SMP PREEMPT_DYNAMIC Thu Sep 24 11:33:16 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+uid: 1003 gid: 1003
+cap_eff: 0000000000000000
+no_new_privs: 1
+netns: net:[4026532218]
+route: 
+os: PRETTY_NAME="Ubuntu 24.04.5 LTS" NAME="Ubuntu" VERSION_ID="24.04" VERSION="24.04.5 LTS (Noble Numbat)" VERSION_CODENAME=noble ID=ubuntu ID_LIKE=debian HOME_URL="https://www.ubuntu.com/" SUPPORT_URL="https://help.ubuntu.com/" BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/" PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy" UBUNTU_CODENAME=noble LOGO=ubuntu-logo 
+java: openjdk version "21.0.12.1" 2026-08-18
+ghidra_home: /opt/ghidra/ghidra_12.1.4_PUBLIC
+ghidra_version: application.version=12.1.4
+python: /opt/angr-venv/bin/python Python 3.12.3
+clang: /usr/bin/clang Ubuntu clang version 18.1.3 (1ubuntu1)
+ld.lld: /usr/bin/ld.lld Ubuntu LLD 18.1.3 (compatible with GNU linkers)
+shim clang-15: /usr/lib/llvm-18/bin/clang
+shim ld.lld-15: /usr/lib/llvm-18/bin/lld
+patcherex2: 0.2.14
+angr: 10.0.4.post1
+z3-solver: 5.1.0.0
+lief: 1.0.0
+clang-15 resolved: /srv/binrepair/gate4-work/toolchain-shims/clang-15
+ld.lld-15 resolved: /srv/binrepair/gate4-work/toolchain-shims/ld.lld-15

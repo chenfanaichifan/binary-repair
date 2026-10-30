@@ -1,0 +1,82 @@
+{
+ "created_at": "2026-10-30T19:45:05.037322+08:00",
+ "regenerated_for": {
+  "snapshot_uid": 11,
+  "snapshot_name": "gate4-harness"
+ },
+ "regenerated_from": "exported bytes in this package (jobwrap, gate4.conf) plus in-guest sha256sum on 2026-10-30; supersedes the uid 10 manifest shipped in P4 v2",
+ "wrapper": {
+  "path": "/usr/local/sbin/jobwrap",
+  "perm": "0700",
+  "owner": "root:root",
+  "size_bytes": 22120,
+  "sha256": "b232d60b20b13dc696402112dd1d970c35b41a3ee720af32cfb2df396c621fa8",
+  "source": "jobwrap (this package), exported 2026-10-30",
+  "modes": [
+   "gate3",
+   "probe",
+   "gate4"
+  ],
+  "format": "ELF x86-64 executable (jobwrap_v3.c)"
+ },
+ "gate4_conf": {
+  "path": "/usr/local/etc/binrepair/gate4.conf",
+  "perm": "0600",
+  "owner": "root:root",
+  "size_bytes": 210,
+  "sha256": "a912e6b0f7a852141476032dba55b954d7637e81d25d11578990dc2d82e5a8cd",
+  "source": "gate4.conf (this package), exported 2026-10-30",
+  "content": {
+   "runner": "/opt/binrepair/m5-kit-v6/routeb/gate4_runner.sh",
+   "runner_sha256": "515c4d609495dea723c6fe6ff9e55b34fca078a3bf450770ebb3c744f07bd357",
+   "repo_root": "/opt/binrepair/m5-kit-v6",
+   "work_dir": "/srv/binrepair/gate4-work",
+   "as_bytes": 8589934592
+  }
+ },
+ "kit": {
+  "name": "m5-routeb-kit-2026-10-22-v6",
+  "zip_sha256": "499f510c9fda660826ea6b7f5b1969839334ba7cd63cc0c975a1e4ca951e4b1d",
+  "zip_source": "dist/m5-routeb-kit-2026-10-22-v6.zip (host sha256sum 2026-10-30)",
+  "runner_sha256": "515c4d609495dea723c6fe6ff9e55b34fca078a3bf450770ebb3c744f07bd357",
+  "runner_source": "/opt/binrepair/m5-kit-v6/routeb/gate4_runner.sh (in-guest sha256sum 2026-10-30)"
+ },
+ "binaries": {
+  "original": {
+   "sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+   "source": "original.elf (this package); in-guest /srv/binrepair/gate4-work/original.elf re-hashed 2026-10-30"
+  },
+  "roundtrip": {
+   "sha256": "decdcdb821bfe4c41a070b0a23a2f6497f46a92f439cb02a1e4139a82cde954b",
+   "source": "roundtrip.elf (this package); in-guest /srv/binrepair/gate4-work/roundtrip.elf re-hashed 2026-10-30"
+  }
+ },
+ "fixtures": {
+  "valid_json_sha256": "17b2ee399db5ef43ba14978c497d71dc45d28aaa685ff90a60baaabc6f221e76",
+  "invalid_json_sha256": "d493f370a37b25f910eb72cb6f9202856e46be0e42e76922db38a30769f8190d",
+  "tests_sha256sums_sha256": "ecfba7857ee05b658dd91ec16a9f56310a422449a585b394a6f752d62b60f136",
+  "contract_file_sha256": "15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df",
+  "source_dir": "/opt/binrepair/m5-kit-v6/fixtures/public/CWE121_src_char_declare_cpy_51b/ (in-guest sha256sum 2026-10-30)"
+ },
+ "helpers": {
+  "negcheck_sha256": "9ea00ff8478fce1cc5162318fc2e480c9cdfc5c065764c8b81d717c02157be5d",
+  "probe_sha256": "25287ec65fa6a6af394e773623bd9248a1aa6383c6f0a51b9bd9c2e6d7de9bc5",
+  "source": "/opt/binrepair/negcheck.sh, /opt/binrepair/probe.sh (in-guest sha256sum 2026-10-30)"
+ },
+ "guest": {
+  "hostname": "binrepair-vm",
+  "kernel": "6.8.0-147-generic",
+  "os": "Ubuntu 24.04.5 LTS"
+ },
+ "fixes": {
+  "mount_propagation": "MS_REC|MS_PRIVATE before proc mount (carried from uid 10 manifest, not re-verified)"
+ },
+ "quoted_legacy_not_recomputed": {
+  "note": "values present in the uid 10 manifest whose source was not re-derived on 2026-10-30; quoted for traceability only, not observed values",
+  "config.cases_sha256": "5bad3f20beb0b2ab1550d2e3d2c857f930e620392dcbadca2199795d336cbb96",
+  "config.gate4_sha256": "f240c2f87fb0ba84c97cfa7fb6b6bf29fada387799c1aa1a2726eaa185add7f9",
+  "config.targets_sha256": "ee42166c6d707fb635f689447a4bc2b60181698de65dc42141eea2d0d4e0fc9e",
+  "contract.canonical_sha256": "24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37",
+  "binaries.candidate": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82"
+ }
+}

@@ -1,0 +1,20 @@
+{
+  "job": "p3b",
+  "job_dir": "/srv/binrepair/jobs/p3b",
+  "func": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+  "c_source": "/opt/binrepair/p3b-pack/routeb/experiment/samples/fixed_badSink_existing_imports.c",
+  "c_source_sha256": "a2e4ff8f5071c20328f977153775c8dc7d8bf8a9f867278a5de2d48b81ccc90e",
+  "pack_root": "/opt/binrepair/p3b-pack",
+  "uid": 1003,
+  "cap_eff": "0",
+  "no_new_privs": 1,
+  "netns": "empty",
+  "rlimits": {
+    "CPU": 600,
+    "AS": 8589934592,
+    "NOFILE": 1024
+  },
+  "exit_code": 0,
+  "started_at": 1793271311,
+  "finished_at": 1793271319
+}

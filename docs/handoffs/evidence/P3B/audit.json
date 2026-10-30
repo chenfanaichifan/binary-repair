@@ -1,0 +1,313 @@
+{
+  "audit_profile": "route_b_recompile",
+  "size_change": true,
+  "same_file_size": false,
+  "checks": {
+    "same_file_size": false,
+    "entry_unchanged": true,
+    "relocations_recorded": true,
+    "no_wx_segment": true,
+    "changed_inside_intervals": true,
+    "readelf_available": true,
+    "size_change_recorded": true
+  },
+  "pass": true,
+  "size": {
+    "original": 26792,
+    "candidate": 29512
+  },
+  "entry": {
+    "original": "0x401170",
+    "candidate": "0x401170"
+  },
+  "segments": {
+    "original": [
+      {
+        "index": 0,
+        "type": "PT_PHDR",
+        "flags": 4,
+        "offset": 64,
+        "vaddr": 4194368,
+        "filesz": 728,
+        "memsz": 728,
+        "align": 8
+      },
+      {
+        "index": 1,
+        "type": "PT_INTERP",
+        "flags": 4,
+        "offset": 792,
+        "vaddr": 4195096,
+        "filesz": 28,
+        "memsz": 28,
+        "align": 1
+      },
+      {
+        "index": 2,
+        "type": "PT_LOAD",
+        "flags": 4,
+        "offset": 0,
+        "vaddr": 4194304,
+        "filesz": 1928,
+        "memsz": 1928,
+        "align": 4096
+      },
+      {
+        "index": 3,
+        "type": "PT_LOAD",
+        "flags": 5,
+        "offset": 4096,
+        "vaddr": 4198400,
+        "filesz": 2281,
+        "memsz": 2281,
+        "align": 4096
+      },
+      {
+        "index": 4,
+        "type": "PT_LOAD",
+        "flags": 4,
+        "offset": 8192,
+        "vaddr": 4202496,
+        "filesz": 1956,
+        "memsz": 1956,
+        "align": 4096
+      },
+      {
+        "index": 5,
+        "type": "PT_LOAD",
+        "flags": 6,
+        "offset": 11768,
+        "vaddr": 4210168,
+        "filesz": 624,
+        "memsz": 680,
+        "align": 4096
+      },
+      {
+        "index": 6,
+        "type": "PT_DYNAMIC",
+        "flags": 6,
+        "offset": 11784,
+        "vaddr": 4210184,
+        "filesz": 464,
+        "memsz": 464,
+        "align": 8
+      },
+      {
+        "index": 7,
+        "type": "PT_NOTE",
+        "flags": 4,
+        "offset": 824,
+        "vaddr": 4195128,
+        "filesz": 48,
+        "memsz": 48,
+        "align": 8
+      },
+      {
+        "index": 8,
+        "type": "PT_NOTE",
+        "flags": 4,
+        "offset": 872,
+        "vaddr": 4195176,
+        "filesz": 68,
+        "memsz": 68,
+        "align": 4
+      },
+      {
+        "index": 9,
+        "type": "PT_GNU_PROPERTY",
+        "flags": 4,
+        "offset": 824,
+        "vaddr": 4195128,
+        "filesz": 48,
+        "memsz": 48,
+        "align": 8
+      },
+      {
+        "index": 10,
+        "type": "PT_GNU_EH_FRAME",
+        "flags": 4,
+        "offset": 8328,
+        "vaddr": 4202632,
+        "filesz": 372,
+        "memsz": 372,
+        "align": 4
+      },
+      {
+        "index": 11,
+        "type": "PT_GNU_STACK",
+        "flags": 6,
+        "offset": 0,
+        "vaddr": 0,
+        "filesz": 0,
+        "memsz": 0,
+        "align": 16
+      },
+      {
+        "index": 12,
+        "type": "PT_GNU_RELRO",
+        "flags": 4,
+        "offset": 11768,
+        "vaddr": 4210168,
+        "filesz": 520,
+        "memsz": 520,
+        "align": 1
+      }
+    ],
+    "candidate": [
+      {
+        "index": 0,
+        "type": "PT_PHDR",
+        "flags": 4,
+        "offset": 28672,
+        "vaddr": 4222976,
+        "filesz": 840,
+        "memsz": 840,
+        "align": 8
+      },
+      {
+        "index": 1,
+        "type": "PT_INTERP",
+        "flags": 4,
+        "offset": 792,
+        "vaddr": 4195096,
+        "filesz": 28,
+        "memsz": 28,
+        "align": 1
+      },
+      {
+        "index": 2,
+        "type": "PT_LOAD",
+        "flags": 4,
+        "offset": 0,
+        "vaddr": 4194304,
+        "filesz": 1928,
+        "memsz": 1928,
+        "align": 4096
+      },
+      {
+        "index": 3,
+        "type": "PT_LOAD",
+        "flags": 5,
+        "offset": 4096,
+        "vaddr": 4198400,
+        "filesz": 2281,
+        "memsz": 2281,
+        "align": 4096
+      },
+      {
+        "index": 4,
+        "type": "PT_LOAD",
+        "flags": 4,
+        "offset": 8192,
+        "vaddr": 4202496,
+        "filesz": 1956,
+        "memsz": 1956,
+        "align": 4096
+      },
+      {
+        "index": 5,
+        "type": "PT_LOAD",
+        "flags": 6,
+        "offset": 11768,
+        "vaddr": 4210168,
+        "filesz": 624,
+        "memsz": 680,
+        "align": 4096
+      },
+      {
+        "index": 6,
+        "type": "PT_LOAD",
+        "flags": 5,
+        "offset": 26792,
+        "vaddr": 4217000,
+        "filesz": 267,
+        "memsz": 267,
+        "align": 4096
+      },
+      {
+        "index": 7,
+        "type": "PT_LOAD",
+        "flags": 4,
+        "offset": 28672,
+        "vaddr": 4222976,
+        "filesz": 840,
+        "memsz": 840,
+        "align": 4096
+      },
+      {
+        "index": 8,
+        "type": "PT_GNU_STACK",
+        "flags": 6,
+        "offset": 0,
+        "vaddr": 0,
+        "filesz": 0,
+        "memsz": 0,
+        "align": 16
+      },
+      {
+        "index": 9,
+        "type": "PT_NOTE",
+        "flags": 4,
+        "offset": 824,
+        "vaddr": 4195128,
+        "filesz": 48,
+        "memsz": 48,
+        "align": 8
+      },
+      {
+        "index": 10,
+        "type": "PT_GNU_PROPERTY",
+        "flags": 4,
+        "offset": 824,
+        "vaddr": 4195128,
+        "filesz": 48,
+        "memsz": 48,
+        "align": 8
+      },
+      {
+        "index": 11,
+        "type": "PT_NOTE",
+        "flags": 4,
+        "offset": 872,
+        "vaddr": 4195176,
+        "filesz": 68,
+        "memsz": 68,
+        "align": 4
+      },
+      {
+        "index": 12,
+        "type": "PT_GNU_EH_FRAME",
+        "flags": 4,
+        "offset": 8328,
+        "vaddr": 4202632,
+        "filesz": 372,
+        "memsz": 372,
+        "align": 4
+      },
+      {
+        "index": 13,
+        "type": "PT_GNU_RELRO",
+        "flags": 4,
+        "offset": 11768,
+        "vaddr": 4210168,
+        "filesz": 520,
+        "memsz": 520,
+        "align": 1
+      },
+      {
+        "index": 14,
+        "type": "PT_DYNAMIC",
+        "flags": 6,
+        "offset": 11784,
+        "vaddr": 4210184,
+        "filesz": 464,
+        "memsz": 464,
+        "align": 8
+      }
+    ]
+  },
+  "relocations": {
+    "original": 13,
+    "candidate": 13
+  }
+}

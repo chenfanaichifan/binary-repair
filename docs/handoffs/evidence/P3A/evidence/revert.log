@@ -1,0 +1,14 @@
+revert.log — gate3-harness-v2 restore
+
+operator        : VMer (M3) — an AI window of the same human operator (another
+                  window), not a different person and not an outside actor
+method          : manual action in VMware Workstation Snapshot Manager
+                  (selected gate3-harness-v2, clicked Restore, confirmed discard)
+snapshot        : gate3-harness-v2, uid 10, layer disk-000007.vmdk
+vm state        : the restore left the VM powered off; it was powered on manually
+observation     : all checks below were run by VMer after boot, post hoc
+boot check      : hostname, kernel, arch and the seven harness hashes re-read and
+                  compared against harness-v2-manifest.txt
+result          : all matched; candidate-before = c4a159…aa82
+note            : the restore itself is not automated. It is a UI action recorded
+                  as such; everything after it is scripted and reproducible.

@@ -1,0 +1,45 @@
+{
+ "binaries": {
+  "candidate": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+  "original": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393"
+ },
+ "config": {
+  "cases_sha256": "5bad3f20beb0b2ab1550d2e3d2c857f930e620392dcbadca2199795d336cbb96",
+  "gate4_sha256": "f240c2f87fb0ba84c97cfa7fb6b6bf29fada387799c1aa1a2726eaa185add7f9",
+  "targets_sha256": "ee42166c6d707fb635f689447a4bc2b60181698de65dc42141eea2d0d4e0fc9e"
+ },
+ "contract": {
+  "canonical_sha256": "24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37",
+  "file_sha256": "15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df"
+ },
+ "created_at": "2026-10-22T19:00:00+08:00",
+ "fixes": {
+  "mount_propagation": "MS_REC|MS_PRIVATE before proc mount; verified /proc/self/status + ps aux 132 lines after a gate3 run"
+ },
+ "guest": {
+  "hostname": "binrepair-vm",
+  "kernel": "6.8.0-147-generic",
+  "os": "Ubuntu 24.04.5 LTS"
+ },
+ "helpers": {
+  "negcheck_sha256": "9ea00ff8478fce1cc5162318fc2e480c9cdfc5c065764c8b81d717c02157be5d",
+  "probe_sha256": "25287ec65fa6a6af394e773623bd9248a1aa6383c6f0a51b9bd9c2e6d7de9bc5"
+ },
+ "kit": {
+  "name": "m5-routeb-kit-2026-10-22-v5",
+  "runner_sha256": "515c4d609495dea723c6fe6ff9e55b34fca078a3bf450770ebb3c744f07bd357",
+  "status": "withdrawn; v6 499f510c pending",
+  "zip_sha256": "bc5b0dbcc56ea4d5d920cf72a23cfdef895771004b324c50e4f78c15fd04a6d8"
+ },
+ "wrapper": {
+  "modes": [
+   "gate3",
+   "probe",
+   "gate4"
+  ],
+  "owner": "root:root",
+  "path": "/usr/local/sbin/jobwrap",
+  "perm": "0700",
+  "sha256": "b0371c1038a3f72b37314162d60a9f95543deadbaed86a026b09148f5983362b"
+ }
+}

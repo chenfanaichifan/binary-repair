@@ -1,0 +1,6 @@
+revert.log — gate4-harness restore for P4
+operator : VMer (M3), AI window of the same human operator
+method   : manual action in VMware Workstation Snapshot Manager
+snapshot : gate4-harness (uid 11, layer disk-000008.vmdk)
+verify   : wrapper b232d60b… and gate4.conf a912e6b0… matched before the run
+note     : restore is a UI action; everything after it is scripted
