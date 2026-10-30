@@ -1,0 +1,25 @@
+$ python tools/p2_acceptance.py --job-id e2fe0f46350648a284c785254c30ee67 --base-url http://127.0.0.1:8000
+# run at 2026-10-30T20:21:57+08:00 on host LAPTOP-AS90U4MB, controller: app.controller_api on 127.0.0.1:8000
+# data dir: D:/BinRepair/.tmp/p2-real-2026-10-30/var/controller
+{
+  "job_id": "e2fe0f46350648a284c785254c30ee67",
+  "synthetic": false,
+  "phase": "finished",
+  "verdict": {
+    "outcome": "inconclusive",
+    "reason": "required_check_not_run",
+    "failing_obligation": "interface",
+    "detail": "route_a: V2 interface: not_run"
+  },
+  "routes": {
+    "A": {
+      "outcome": "inconclusive",
+      "obligations": 6
+    },
+    "B": {
+      "outcome": "inconclusive",
+      "obligations": 6
+    }
+  }
+}
+exit_code=0

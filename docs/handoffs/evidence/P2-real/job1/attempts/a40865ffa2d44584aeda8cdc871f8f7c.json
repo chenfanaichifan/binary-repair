@@ -1,0 +1,26 @@
+{
+  "candidate_sha256": "63fcafa6ed01d2db7d5d8a1af460af994e65da853c0c250b05c3eb761f616d01",
+  "details": {
+    "V0": "original aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393 matches the job record; candidate 63fcafa6ed01d2db7d5d8a1af460af994e65da853c0c250b05c3eb761f616d01 matches manifest-repaired.binary_sha256",
+    "V1": "P3B routeb static audit (audit.json pass=true)",
+    "V2": "no interface/ABI/load check recorded in P3B v5",
+    "V3": "manifest-repaired.json: 6/6 cases ok on the repaired candidate",
+    "V4": "bounded symbolic verdict not_run; no solver output in P3B v5",
+    "V5": "reproducibility.json: 2 runs byte identical"
+  },
+  "evidence": {
+    "V0": "6dad3a7037e747cbb40e07428cbfbe01",
+    "V1": "eb851c2c8e72408380f56ab5febb8a7f",
+    "V3": "4a8c053fbc394d7c861f7cc05ca2ba37",
+    "V5": "5abc239b3a3743938142f493ed9357e3"
+  },
+  "results": {
+    "V0": "passed",
+    "V1": "passed",
+    "V2": "not_run",
+    "V3": "passed",
+    "V4": "not_run",
+    "V5": "passed"
+  },
+  "route": "route_b"
+}

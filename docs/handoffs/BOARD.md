@@ -16,20 +16,24 @@ is never signed by this agent; Lead approval rows stay blank.
 | M3+M5 | P3B v5 | DONE 2026-10-30, checker PASS 22/22 | `docs/handoffs/evidence/P3B/`, `dist/P3B-package-v5-2026-10-30.zip` `bfba4e51…29ce2` | `a312949cef45bbacc1324a66feb9f68fbdebe8bb55c6c278daebb87367f7dfd8` | M5 adapter/replay |
 | M3+M5 | P3A authoritative version | DECIDED 2026-10-30: **v6**, checker PASS 26/26 (re-run by this agent) | `docs/handoffs/evidence/P3A/`, `dist/P3A-routea-2026-10-29-v6.zip` `192492ee…870c1` | `023b94fac2ecc3d6e991901092c2c7c980002e875e2fe5e283524118e3b22115` | none on producer side |
 | M3+M5 | for-M4 / for-M5 bundles | v7 built 2026-10-30, carry P3A v6 + P3B v5 + P4 v3 | `dist/for-M5-2026-10-30-v7.zip` `fda47221…77a5`, `dist/for-M4-2026-10-30-v7.zip` `a408a1c4…6051` | per-zip SHA256SUMS inside | Lead personal check (M4 waived) |
-| M3+M5 | T5.2 adapter + synthetic p2 | **BLOCKED**: `app/` and `tools/` are not in this checkout | — | — | Lead/M1 transfer `app/services/attempt_writer.py`, `tools/routea_bundle_to_attempt.py`, `tools/p2_acceptance.py`; no synthetic "pass" will be fabricated |
-| M3+M5 | T5.3 real p2 + Gate 4 record | **BLOCKED** on same missing files; deadline 2026-10-31 12:00 | — | — | after transfer: checker → adapter → worker → `p2_acceptance.py --job-id <id>`; record observed values only, waiver line, M4 row "waived — not performed", Lead row blank |
+| M3+M5 | T5.2 adapter + synthetic p2 | **CLEARED** 2026-10-30 20:20 — integration head `aab162a` fetched into a worktree; `pytest tests/integration/test_p2_acceptance.py` 5 passed, `test_attempt_writer.py` 6 passed | `.tmp/integration` (worktree, not committed) | — | none; no synthetic pass was needed |
+| M3+M5 | T5.3 real p2 + Gate 4 record | **DONE** 2026-10-30 20:22 — two real jobs, both `p2_acceptance.py` exit 0 (job1 `inconclusive`, job2 `rejected`); observed values in the Gate 4 record | `docs/handoffs/evidence/P2-real/`, `docs/route-b/23-gate4-record.md`, `docs/handoffs/39-m3-v2-v5-p2-2026-10-30.md` | `fe41df8b9a49976b040a36072eadc2cda489fcbf4fb3109d8484b9e3765106a6` | Lead personal check; `gate4_pass` still absent |
+| M3+M5 | V2 interface | **DONE** 2026-10-30 20:20, measured in guest — Route A 16/16 **passed**; Route B 15/16 **failed** (`extra_load_segments_within_contract`: 2 added PT_LOAD, contract allows 1) | `docs/handoffs/evidence/P2-real/v2-routea.json`, `v2-routeb.json`, `readelf/` | in `P2-real/SHA256SUMS` | M4/Lead to adjudicate the Route B reading against `authorized_edits[2]` |
+| M3+M5 | V5 reproducibility | **DONE** 2026-10-30 20:20 — Route A fresh replay ×2 byte-identical; Route B record re-verified (executor not re-run, stated in payload) | `docs/handoffs/evidence/P2-real/v5-reproducibility.json` | in `P2-real/SHA256SUMS` | none |
 | M4 | independent verification | WAIVED by Lead 2026-10-30 — not performed | — | — | Lead verifies personally |
 | Lead | Gate 4 approval | NOT RUN | — | — | after real p2 exit 0 + Gate 4 record |
-| M3+M5 | V4 symbolic verdict | BLOCKED: raw solver output not in this checkout | — | — | obtain raw bounded-explore stdout; verdict stays `inconclusive`, self-verified label when written |
+| M3+M5 | V4 symbolic verdict | **BLOCKED (unchanged)**: raw solver output not in this checkout. Now the *only* thing keeping Route A from 6/6 | — | — | obtain raw bounded-explore stdout; verdict stays `inconclusive`, self-verified label when written |
 | M3+M5 | Gate 5A | BLOCKED (unchanged): jobwrap has no fixed-script mode | `dist/Gate5A-blocked-2026-10-29.zip` | — | fixed-script mode or written equivalent invocation; no PASS/FAIL until then |
 | M3+M5 | Gate 3 local draft | ANNOTATED 2026-10-30: superseded by signed record `0b3b51e4…f2da`; Gate 3 stays closed | `docs/route-a/gate3-record.md` header | — | replace with signed record when Lead supplies it; never re-verify |
 
 ## Guest state after this window
 
-- VM `D:\VMs\binrepair-u2404-x64-01` is **powered off** at snapshot `gate4-harness`
-  (uid 11, `.vmsd snapshot.current = "11"`); no `vmware-vmx`, no `.lck`.
-- Snapshots uid 12 (`routeb-harness-wip`) and uid 13 (`routeb-harness`) are intact;
-  revert to uid 13 to resume Route B work.
+- VM `D:\VMs\binrepair-u2404-x64-01` was booted to uid 11 (`gate4-harness`) at
+  20:19 for the V2/V5 probes and is **still running** at the time of this note;
+  the V2/V5 scripts and the three binaries are staged in `lab@…:~/v2/`.
+- Re-run of the V2/V5 probes needs only that directory; no package rebuild.
+- Snapshots uid 12 (`routeb-harness-wip`) and uid 13 (`routeb-harness`) are
+  untouched; revert to uid 13 to resume Route B execution work.
 - Chain manifest (uid 4..11 + `.vmsd`, hashed powered off):
   `docs/handoffs/evidence/P4/chain-manifest.json`.
 
