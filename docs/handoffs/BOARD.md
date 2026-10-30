@@ -24,7 +24,7 @@ is never signed by this agent; Lead approval rows stay blank.
 | M4 | independent verification | WAIVED by Lead 2026-10-30 — not performed | — | — | Lead verifies personally |
 | Lead | Gate 4 approval | NOT RUN | — | — | after real p2 exit 0 + Gate 4 record |
 | M3+M5 | V4 symbolic verdict | **BLOCKED (unchanged)**: raw solver output not in this checkout. Now the *only* thing keeping Route A from 6/6 | — | — | obtain raw bounded-explore stdout; verdict stays `inconclusive`, self-verified label when written |
-| M3+M5 | Gate 5A | BLOCKED (unchanged): jobwrap has no fixed-script mode | `dist/Gate5A-blocked-2026-10-29.zip` | — | fixed-script mode or written equivalent invocation; no PASS/FAIL until then |
+| M3+M5 | Gate 5A | **BLOCKED, confirmed at byte level 2026-10-30**: the exported `jobwrap` (22120 bytes, uid 11) carries `usage: jobwrap gate3 original\|patched <case-id\|all> \| jobwrap probe \| jobwrap gate4` — no `gate5` mode, so `jobwrap gate5` hits `unsupported mode`. `routeb/jobwrap_gate5.sh` does exist at integration head with fixed argv, but it has no `GATE5_SCRIPT` hash pinning, which D3 also required | `dist/Gate5A-blocked-2026-10-29.zip` | — | need a `jobwrap` build with a `gate5` mode **and** a `GATE5_SCRIPT_SHA256` check; no PASS/FAIL until then |
 | M3+M5 | Gate 3 local draft | ANNOTATED 2026-10-30: superseded by signed record `0b3b51e4…f2da`; Gate 3 stays closed | `docs/route-a/gate3-record.md` header | — | replace with signed record when Lead supplies it; never re-verify |
 
 ## Guest state after this window
