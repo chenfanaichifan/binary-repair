@@ -1,0 +1,32 @@
+job 482df6e9027b4ef9bc202571828ad106 run 572488f9ba9b45288c6fe8910d09d906 attempt b689d11c93294f47a4b04e7420b8cab0
+payload {
+  "candidate_sha256": "63fcafa6ed01d2db7d5d8a1af460af994e65da853c0c250b05c3eb761f616d01",
+  "details": {
+    "V0": "original aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393 vs job aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+    "V1": "static ELF audit passed",
+    "V2": "interface check not implemented in Route B executor",
+    "V3": "runtime manifest passed",
+    "V4": "symbolic check not run",
+    "V5": "build-twice passed"
+  },
+  "evidence": {
+    "V0": "9dfed69068064f32bb3874ab48d59066",
+    "V1": "fd16b9f628844e7690b1412cf65b15a5",
+    "V3": "f1d4ed5396754fa1abd89e79fba7bc1e",
+    "V5": "cb24354fff244a9687aa255c5cd05782"
+  },
+  "results": {
+    "V0": "passed",
+    "V1": "passed",
+    "V2": "not_run",
+    "V3": "passed",
+    "V4": "not_run",
+    "V5": "passed"
+  },
+  "route": "route_b"
+}
+worker: attempt b8e98154f1764705a327e3e72808fd13 has no result bundle yet
+worker: run 572488f9ba9b45288c6fe8910d09d906 waiting for both routes
+worker 1
+attempt AttemptRecord(id='b689d11c93294f47a4b04e7420b8cab0', run_id='572488f9ba9b45288c6fe8910d09d906', route='route_b', sequence=1, phase='finished', outcome='inconclusive', reason='required_check_not_run', failing_obligation='interface', detail='V2 interface: not_run')
+obligations [('behaviour', 'passed'), ('identity', 'passed'), ('interface', 'not_run'), ('reproducibility', 'passed'), ('structure', 'passed'), ('symbolic', 'not_run')]
