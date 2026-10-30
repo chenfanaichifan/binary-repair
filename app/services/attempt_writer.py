@@ -142,6 +142,20 @@ def _generic(
     }
 
 
+def _job_original_sha256(data_dir: Path, job_id: str) -> str | None:
+    """Return the job's recorded original hash, or None when the job is absent."""
+    connection = connect(data_dir)
+    try:
+        row = connection.execute(
+            "SELECT original_sha256 FROM jobs WHERE id = ?", (job_id,)
+        ).fetchone()
+    finally:
+        connection.close()
+    if row is None:
+        return None
+    return row["original_sha256"]
+
+
 def _routeb(
     bundle: Path,
     *,
@@ -152,11 +166,13 @@ def _routeb(
     candidate = bundle / "candidate.elf"
     audit = bundle / "audit.json"
     compare = bundle / "manifest-compare.json"
+    manifest_path = bundle / "edit-manifest.json"
+    original = bundle / "original.elf"
     if not candidate.is_file():
         raise SystemExit(f"routeb bundle has no candidate.elf: {bundle}")
 
     results: dict[str, str] = {
-        "V0": "passed",
+        "V0": "not_run",
         "V1": "not_run",
         "V2": "not_run",
         "V3": "not_run",
@@ -165,6 +181,43 @@ def _routeb(
     }
     details: dict[str, str] = {}
     evidence: dict[str, str] = {}
+    candidate_sha = _sha256(candidate)
+    job_original = _job_original_sha256(data_dir, job_id)
+
+    # V0 identity: pass only when the bundle declares an original hash that
+    # matches the job record and the candidate bytes match the declared candidate.
+    # A bundle that does not carry that evidence stays `not_run`; existence of a
+    # candidate.elf is not identity proof (missing is not passing).
+    declared_original: str | None = None
+    declared_candidate: str | None = None
+    if manifest_path.is_file():
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except ValueError:
+            manifest = None
+        if isinstance(manifest, dict):
+            value = manifest.get("original_sha256")
+            if isinstance(value, str) and len(value) == 64:
+                declared_original = value
+            value = manifest.get("candidate_sha256")
+            if isinstance(value, str) and len(value) == 64:
+                declared_candidate = value
+    elif original.is_file():
+        declared_original = _sha256(original)
+
+    if declared_original is None:
+        details["V0"] = "identity not confirmed: bundle provides no original hash"
+    elif declared_candidate is not None and declared_candidate != candidate_sha:
+        results["V0"] = "failed"
+        details["V0"] = "candidate.elf hash does not match edit-manifest.json"
+    elif job_original is None:
+        details["V0"] = "identity not confirmed: job record not found"
+    elif declared_original != job_original:
+        results["V0"] = "failed"
+        details["V0"] = f"original {declared_original} does not match job {job_original}"
+    else:
+        results["V0"] = "passed"
+        details["V0"] = f"original {declared_original} matches the job record"
 
     if audit.is_file():
         try:

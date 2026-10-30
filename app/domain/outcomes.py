@@ -1,4 +1,4 @@
-﻿"""Outcome and check-result semantics for BinaryRepair.
+"""Outcome and check-result semantics for BinaryRepair.
 
 This module is the single source of truth for the labels the product uses to
 describe a repair attempt. It performs no I/O and imports no framework.

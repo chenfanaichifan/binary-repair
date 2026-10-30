@@ -1,19 +1,7 @@
-"""演示数据（GUI-only 开发模式）。
+"""Synthetic demo data for GUI-only mode.
 
-语言规范（2026-10-18，团队决定）：
-- 界面可以中文，但**上传 / API / 导出数据一律英文 ASCII**。
-- 因此本文件里的所有数据字符串（契约、义务、原因、变更区域、产物角色、
-  路线规范名等）都用英文；中文显示文案在 app/i18n.py 里，只给模板用。
-- 测试会扫描 /api/jobs/{id} 和导出 JSON，确保没有中日韩字符。
-
-这里所有内容都是合成的：阶段按"运行开始后的秒数"推进，结论是写死的预设值。
-页面必须明确标注"演示数据 / 未执行真实工具"，不能当作修复证据
-（对应技术设计 §12：GUI-only development mode using stored or synthetic results,
-clearly labeled; it must never emit accepted-patch evidence）。
-
-接真实后端时：把 create_job / snapshot / obligations / artifacts 换成
-成员 1 的 controller / API 调用即可，页面与轮询逻辑不用改。
-"""
+All upload/API/export data is English ASCII; Chinese UI labels live in
+app/i18n.py. Demo data must never be presented as accepted-patch evidence."""
 
 from __future__ import annotations
 
@@ -24,22 +12,18 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-# 每个阶段的"演示推进速度"（秒）。仅用于让页面动起来，不是真实耗时。
 STAGE_SECONDS = 1.2
 
-# Route A 没有 roundtrip；Route B 多一步"语义不变往返"
 ROUTE_STAGES: dict[str, list[str]] = {
     "A": ["screening", "analyzing", "generating", "applying", "validating"],
     "B": ["screening", "analyzing", "roundtrip", "generating", "applying", "validating"],
 }
 
-# 规范名（英文，会进入 API/导出；中文显示名在 i18n.py）
 ROUTE_NAMES_EN: dict[str, str] = {
     "A": "Route A - Direct instruction repair",
     "B": "Route B - Recovered C reintegration",
 }
 
-# 内存里的"数据库"。真实版本是 SQLite（技术设计 §6）。
 JOBS: dict[str, dict[str, Any]] = {}
 
 
@@ -55,6 +39,99 @@ def get_job(job_id: str) -> dict[str, Any] | None:
     return JOBS.get(job_id)
 
 
+CONTRACT_DEFAULTS = {
+    "valid_domain": "Input length 0-64 bytes; out-of-range lengths rejected",
+    "forbidden": "Out-of-bounds write to the target buffer (more than 8 bytes)",
+    "invalid_outcome": "Return error code 1 without out-of-bounds access or crash",
+    "assumptions": "Single process\nLinux x86-64 ELF\nStack protector disabled",
+}
+
+
+def _contract_sha(body: dict[str, Any]) -> str:
+    return _sha(json.dumps(body, sort_keys=True, ensure_ascii=True))
+
+
+def contract_body(
+    *,
+    valid_domain: str = "",
+    forbidden: str = "",
+    invalid_outcome: str = "",
+    assumptions: str = "",
+) -> dict[str, Any]:
+    """Normalize the four contract fields (English ASCII, demo defaults when blank)."""
+
+    return {
+        "valid_domain": valid_domain.strip() or CONTRACT_DEFAULTS["valid_domain"],
+        "forbidden": forbidden.strip() or CONTRACT_DEFAULTS["forbidden"],
+        "invalid_outcome": invalid_outcome.strip() or CONTRACT_DEFAULTS["invalid_outcome"],
+        "assumptions": [
+            line.strip()
+            for line in (assumptions or CONTRACT_DEFAULTS["assumptions"]).splitlines()
+            if line.strip()
+        ],
+    }
+
+
+def build_contract(
+    *,
+    valid_domain: str = "",
+    forbidden: str = "",
+    invalid_outcome: str = "",
+    assumptions: str = "",
+) -> dict[str, Any]:
+    body = contract_body(
+        valid_domain=valid_domain,
+        forbidden=forbidden,
+        invalid_outcome=invalid_outcome,
+        assumptions=assumptions,
+    )
+    return {
+        "revision": 1,
+        "sha256": _contract_sha(body),
+        "approved": False,
+        "approved_at": None,
+        "reviewer_label": None,
+        **body,
+    }
+
+
+def update_contract(
+    job: dict[str, Any],
+    *,
+    valid_domain: str = "",
+    forbidden: str = "",
+    invalid_outcome: str = "",
+    assumptions: str = "",
+) -> dict[str, Any]:
+    """Create a new contract revision and invalidate the previous approval."""
+
+    body = contract_body(
+        valid_domain=valid_domain,
+        forbidden=forbidden,
+        invalid_outcome=invalid_outcome,
+        assumptions=assumptions,
+    )
+    job["contract"] = {
+        "revision": job["contract"]["revision"] + 1,
+        "sha256": _contract_sha(body),
+        "approved": False,
+        "approved_at": None,
+        "reviewer_label": None,
+        **body,
+    }
+    return job["contract"]
+
+
+def approve_contract(job: dict[str, Any], *, reviewer_label: str = "") -> dict[str, Any]:
+    """Record the reviewer approval for the current contract revision."""
+
+    contract = job["contract"]
+    contract["approved"] = True
+    contract["approved_at"] = _now_iso()
+    contract["reviewer_label"] = reviewer_label.strip() or "reviewer"
+    return contract
+
+
 def create_job(
     original_sha256: str,
     filename: str,
@@ -66,18 +143,7 @@ def create_job(
     invalid_outcome: str,
     assumptions: str,
 ) -> dict[str, Any]:
-    """登记一个任务（演示版：所有数据在内存里，字段值一律英文）。"""
-    contract_body = {
-        "valid_domain": valid_domain.strip() or "Input length 0-64 bytes; out-of-range lengths rejected",
-        "forbidden": forbidden.strip() or "Out-of-bounds write to the target buffer (more than 8 bytes)",
-        "invalid_outcome": invalid_outcome.strip() or "Return error code 1 without out-of-bounds access or crash",
-        "assumptions": [
-            line.strip()
-            for line in (assumptions or "Single process\nLinux x86-64 ELF\nStack protector disabled").splitlines()
-            if line.strip()
-        ],
-    }
-    contract_sha256 = _sha(json.dumps(contract_body, sort_keys=True, ensure_ascii=False))
+    """Register a synthetic demo job."""
 
     job: dict[str, Any] = {
         "id": "job-" + uuid.uuid4().hex[:8],
@@ -92,7 +158,12 @@ def create_job(
         "cancelled": False,
         "frozen_elapsed": None,
         "phase": "draft",
-        "contract": {"revision": 1, "sha256": contract_sha256, **contract_body},
+        "contract": build_contract(
+            valid_domain=valid_domain,
+            forbidden=forbidden,
+            invalid_outcome=invalid_outcome,
+            assumptions=assumptions,
+        ),
         "routes": {
             "A": _route_state("A"),
             "B": _route_state("B"),
@@ -120,14 +191,14 @@ def _route_state(key: str) -> dict[str, Any]:
 
 
 def start(job: dict[str, Any]) -> None:
-    """演示用启动：记录开始时间，阶段会随时间推进。真实版本由 controller 负责。"""
+    """Advance the demo job through time-based phases."""
     if job["run_started_at"] is None:
         job["run_started_at"] = time.time()
         job["phase"] = "screening"
 
 
 def cancel(job: dict[str, Any]) -> None:
-    """演示用取消：冻结当前进度并标记 cancelled。"""
+    """Mark the demo job as cancelled."""
     if job["run_started_at"] is None:
         return
     job["cancelled"] = True
@@ -143,14 +214,7 @@ def _elapsed(job: dict[str, Any]) -> float:
 
 
 def _obligations_for(route: str) -> list[dict[str, Any]]:
-    """演示用的 V0-V5 义务清单（对应技术设计 §9 的验证阶梯）。
-
-    注意：结论是写死的演示值。Route A 在 V3 有效输入回归失败 -> rejected；
-    Route B 的 V4 有界符号验证预算用尽 -> inconclusive。
-    这样的组合恰好演示"不能把未完成当成功"。
-
-    数据字段全部英文 ASCII（会进入证据页与导出 JSON）。
-    """
+    """Return deterministic V0-V5 demo obligations."""
     passed = [
         {
             "id": "V0",
@@ -238,7 +302,7 @@ def _obligations_for(route: str) -> list[dict[str, Any]]:
 
 
 def _apply_finished(route: dict[str, Any], key: str) -> None:
-    """两条路线都结束时，写入演示用的最终数据（字段值英文）。"""
+    """Fill the final synthetic route data."""
     if key == "A":
         route.update(
             {
@@ -284,7 +348,7 @@ def _apply_finished(route: dict[str, Any], key: str) -> None:
 
 
 def snapshot(job: dict[str, Any]) -> dict[str, Any]:
-    """生成页面/接口用的只读快照（只含英文数据，不含中文显示标签）。"""
+    """Return the read-only demo snapshot used by pages and the API."""
     elapsed = _elapsed(job)
     cancelled = job["cancelled"]
     started = job["run_started_at"] is not None
@@ -325,9 +389,15 @@ def snapshot(job: dict[str, Any]) -> dict[str, Any]:
             route["phase"] = "draft"
 
         route["stages"] = stages
+        if route.get("outcome"):
+            route["verdict"] = {
+                "outcome": route["outcome"],
+                "reason": route.get("outcome_reason") or None,
+                "failing_obligation": "V3" if key == "A" else "V4",
+                "detail": route.get("outcome_reason") or "",
+            }
         routes[key] = route
 
-    # Job 级阶段取"两条路线里更靠后的那个"，两条都结束才算 finished
     if cancelled:
         job_phase = "finished"
     elif not started:
@@ -338,6 +408,24 @@ def snapshot(job: dict[str, Any]) -> dict[str, Any]:
         order = ["screening", "analyzing", "roundtrip", "generating", "applying", "validating"]
         phases = [routes["A"]["phase"], routes["B"]["phase"]]
         job_phase = min(phases, key=lambda p: order.index(p) if p in order else 99)
+
+    if cancelled:
+        demo_verdict = {
+            "outcome": "cancelled",
+            "reason": "operator_cancelled",
+            "failing_obligation": None,
+            "detail": "Operator cancelled (demo data)",
+        }
+    elif job_phase == "finished":
+        # Demo fixture verdict; the GUI never computes this itself.
+        demo_verdict = {
+            "outcome": "rejected",
+            "reason": "valid_input_regression_failed",
+            "failing_obligation": "V3",
+            "detail": "Demo fixture: required behaviour obligation failed",
+        }
+    else:
+        demo_verdict = None
 
     snapshot = {
         "id": job["id"],
@@ -352,6 +440,7 @@ def snapshot(job: dict[str, Any]) -> dict[str, Any]:
         "cancelled": cancelled,
         "contract": job["contract"],
         "routes": routes,
+        "verdict": demo_verdict,
     }
     return snapshot
 
@@ -361,7 +450,7 @@ def obligations(job: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
 
 
 def artifacts(job: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
-    """演示用产物清单（真实版本来自 artifacts 表，且下载必须是注册过的文件）。"""
+    """Return synthetic artifact metadata."""
     base = _sha(job["id"] + job["original_sha256"])[:16]
     return {
         "A": [

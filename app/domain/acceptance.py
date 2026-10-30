@@ -1,4 +1,4 @@
-﻿"""Deterministic acceptance rules for BinaryRepair.
+"""Deterministic acceptance rules for BinaryRepair.
 
 Pure functions: obligations in, verdict out. No I/O, no logging, no framework.
 This is the only place that decides whether a repair attempt may be called a
