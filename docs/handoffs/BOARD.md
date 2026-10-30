@@ -39,3 +39,13 @@ The 2026-10-30 12:00 and 18:00 milestones were missed (this window started
 16:45; packages completed 19:30–20:10). All timestamps in the packages are the
 actual observed times. Nothing was backdated and no gate was marked passed to
 compensate.
+
+## Delivery state
+
+- `git push origin member-3-route-a` **succeeded 2026-10-30 20:20**
+  (`222f7e3..beea6c2`); the earlier `SEC_E_NO_CREDENTIALS` condition no longer
+  holds. Remote commits now include the byte-exact evidence packages
+  (`docs/handoffs/evidence/**` stored with `-text`; index bytes == working-tree
+  bytes, verified on six files).
+- Local tool files (`.opencode/`, `.probe-dir/`, `opencode.jsonc*`) remain
+  untracked by choice; `dist/` and `worklogs/` stay out of git.
