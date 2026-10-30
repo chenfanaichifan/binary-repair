@@ -8,3 +8,7 @@
 *.vmdk binary
 *.png binary
 *.jpg binary
+
+# Evidence packages are hash-bound: every byte (including CRLF) must survive
+# clone/checkout exactly, or SHA256SUMS verification fails on a fresh clone.
+docs/handoffs/evidence/** -text
