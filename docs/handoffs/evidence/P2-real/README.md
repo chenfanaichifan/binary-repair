@@ -48,6 +48,24 @@ be re-judged; nothing else in the package depends on that reading.
   executed again in this window, and `v5-reproducibility.json` says so in its
   `limitation` field. This is a re-verification of a record, not a third run.
 
+## Test suite at the same pinned head
+
+`suite/host-suite-no-e2e.txt` — `pytest --ignore=tests/e2e` on the Windows host:
+257 tests, 254 passed, 1 failed, 2 skipped, exit 1. The single failure is
+`tests/test_routeb_executor.py::test_static_routeb_bundle` (`assert 7 >= 8`):
+the bundle writes five `independent-views/` files only when `readelf` and
+`objdump` exist, and this host has neither.
+
+`suite/guest-routeb-executor.txt` — the same test file, copied to the guest
+which does have binutils: 2 passed. So the failure is a host-tooling gap, not a
+product regression, and the fix belongs to whoever owns that assertion (run the
+suite where binutils exist, or gate the `>= 8` assertion on tool availability).
+
+`suite/host-e2e-attempt.txt` — `pytest tests/e2e` on this host: exit 124 after a
+90 s timeout with no output. Edge is installed and found by `cdp.find_edge()`,
+the proxy variables were cleared, and the single journey still never returned.
+The browser suite is therefore **unverified** here, not skipped and not passed.
+
 ## What is still not measured
 
 V4 (bounded symbolic) is `not_run` for both routes, so neither route can reach

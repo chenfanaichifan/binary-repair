@@ -26,6 +26,9 @@
     "readelf/original.readelf.txt",
     "readelf/routea-candidate.readelf.txt",
     "readelf/routeb-candidate.readelf.txt",
+    "suite/guest-routeb-executor.txt",
+    "suite/host-e2e-attempt.txt",
+    "suite/host-suite-no-e2e.txt",
     "v2-routea.json",
     "v2-routeb.json",
     "v5-reproducibility.json"

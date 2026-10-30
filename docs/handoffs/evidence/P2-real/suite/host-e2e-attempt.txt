@@ -1,0 +1,5 @@
+# single e2e test at integration head aab162a, Windows host, Edge present
+# edge: C://Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+# proxy vars cleared, NO_PROXY=127.0.0.1,localhost
+$ timeout 90 python -m pytest tests/e2e -q --tb=short
+exit_code=124  # 124 = timeout(90s), the journey never returned
