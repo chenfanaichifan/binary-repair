@@ -86,11 +86,15 @@ revert + post-revert fingerprint matching. That scope is met.
 ## Overall MVP: NOT APPROVED (2026-10-31)
 
 - Route A is 5/6; V4 symbolic remains `not_run`.
-- Route B fails V2 (`failed`): 2 extra PT_LOAD where the contract allows one
-  R-X fallback.
+- Route B V2 was `failed` on the 10-30 candidate 63fcafa6 (2 extra PT_LOAD where
+  the contract allows one R-X fallback); the fixed candidate 208574ab reuses the
+  R-X PT_LOAD tail (0 new segments) and passes V2 16/16. See
+  `docs/handoffs/evidence/P2-real/v2-routeb-fixed.json`. Route B V4 still
+  `not_run`.
 - Gate 5 remains BLOCKED.
 - real p2 twice exit 0 is pipeline-only; verdicts `inconclusive`/`rejected` are
-  not repair success.
+  not repair success (those runs used the 10-30 candidate 63fcafa6; the fixed
+  candidate has not yet been driven through a fresh real p2).
 - fixture remains NOT FROZEN.
 
 ## Open decisions from the Lead (2026-10-31)
@@ -98,6 +102,9 @@ revert + post-revert fingerprint matching. That scope is met.
 1. **Route B V2**: do **not** change `authorized_edits[2]`. Fix the Route B
    candidate to remove the extra segment(s); otherwise Route B is formally
    recorded `rejected on V2`, with no `success` written.
+   → **Actioned 2026-10-31**: candidate fixed to 208574ab (0 new segments,
+   V2 16/16) without changing the contract. A fresh real p2 run with this
+   candidate is the remaining step before Route B can claim V2 success.
 2. **Gate 5**: still BLOCKED. Needs a `jobwrap` build with a `gate5` mode **and**
    `jobwrap_gate5.sh` `GATE5_SCRIPT_SHA256` verification — both, not one.
 3. **tag**: `mvp-integration-2026-10-31` is an M2 integration snapshot only; it

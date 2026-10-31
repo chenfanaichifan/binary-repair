@@ -3,7 +3,7 @@
  "from": "M3",
  "to": "M5",
  "route": "route_b",
- "created_at": "2026-10-30T19:47:14.899930+08:00",
+ "created_at": "2026-10-31T15:04:50.144481+08:00",
  "files": [
   "CHANGELOG-AUDIT-PROFILE.md",
   "audit.json",
@@ -13,6 +13,7 @@
   "environment.json",
   "executor-confirmation.json",
   "executor.json",
+  "executor/probe_patcherex2.py",
   "executor/routeb_executor.py",
   "fixed_badSink_existing_imports.c",
   "independent-views/objdump-disassembly.txt",
@@ -28,6 +29,6 @@
   "wrapper-export.json",
   "handoff.json"
  ],
- "notes": "P3B v5 = v4 + executor in-guest confirmation (match) + routeb wrapper bytes; supersedes v4 zip 078d0f222fe5d11586b2e0abe202e67d99dbec5bfe5b02408b46e87ae8f1543c; candidate 63fcafa6; V3 6/6 repaired_pass=true; v3 72d789c6 remains superseded",
+ "notes": "P3B v6 = v5 + Route B candidate fix (reuse R-X PT_LOAD tail, 0 new segments); supersedes v5 zip bfba4e51af496ac13559396518803afd72db71926c5aa21c04fde2b814729ce2; candidate 208574ab (was 63fcafa6); V2 now 16/16 (was 15/16 failed on extra_load_segments_within_contract); V3 6/6 repaired_pass=true; V5 byte-identical; v3 72d789c6 remains superseded",
  "schema_version": 1
 }

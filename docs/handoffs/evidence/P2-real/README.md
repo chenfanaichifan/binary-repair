@@ -33,6 +33,12 @@ execution, and stdout equality with the original on the valid path.
   allows at most one new R-X PT_LOAD and only as the fallback when the R-X tail
   extension is rejected. Raw `readelf` output for all three binaries is under
   `readelf/`.
+* Route B **fixed** (`208574ab…6717`, 2026-10-31): 16/16 — **passed**. The fixed
+  candidate reuses the verified-unused tail of the existing R-X PT_LOAD
+  (p_filesz/p_memsz `0x8e9 → 0x1000`) instead of adding segments, so
+  `extra_load_segment_count = 0` and `same_program_header_count = true`. Full
+  measurement is `v2-routeb-fixed.json`; binary is `candidate-routeb-fixed.elf`;
+  raw `readelf` is `readelf/routeb-candidate-fixed.readelf.txt`.
 
 This is a measurement, not an adjudication. If the reviewers read
 `authorized_edits[2]` differently, the check name and the raw dumps are here to

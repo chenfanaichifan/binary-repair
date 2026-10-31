@@ -2,8 +2,8 @@
   "state": "measured",
   "runs": 2,
   "candidate_sha256": [
-    "63fcafa6ed01d2db7d5d8a1af460af994e65da853c0c250b05c3eb761f616d01",
-    "63fcafa6ed01d2db7d5d8a1af460af994e65da853c0c250b05c3eb761f616d01"
+    "208574ab5b7753fab6f28860830069770622fb7b1fcb8d181fa50453f8656717",
+    "208574ab5b7753fab6f28860830069770622fb7b1fcb8d181fa50453f8656717"
   ],
   "byte_identical": true,
   "pass": true

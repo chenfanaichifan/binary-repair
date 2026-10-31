@@ -1,6 +1,6 @@
 {
-  "binary": "/srv/binrepair/jobs/p3b/route_b/candidate.elf",
-  "binary_sha256": "63fcafa6ed01d2db7d5d8a1af460af994e65da853c0c250b05c3eb761f616d01",
+  "binary": "/home/lab/routeb-fix/bundle-fixed-v5/candidate.elf",
+  "binary_sha256": "208574ab5b7753fab6f28860830069770622fb7b1fcb8d181fa50453f8656717",
   "cases": [
     {
       "manifest": "valid.json",

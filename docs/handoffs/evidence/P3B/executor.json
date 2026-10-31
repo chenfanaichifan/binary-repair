@@ -9,5 +9,12 @@
   "87fee2b7 pass rule still required changed_inside_intervals, which is false when sizes differ, so it could not return exit_code=0",
   "re-applying the documented second patch to 87fee2b7 reproduces 4f0721 byte-for-byte"
  ],
+ "v6_probe_fix": {
+  "file": "executor/probe_patcherex2.py",
+  "sha256": "d6e65427d3ee9d09050b92249e0a0e63a09f83ff9178a809588ecdafb5cfb96b",
+  "change": "patch_function now reuses the existing R-X PT_LOAD tail (LIEF extend + add_free_space) instead of carving new PT_LOAD segments",
+  "effect": "candidate PT_LOAD count == original (4); same_program_header_count=true; extra_load_segments_within_contract passes with 0 added",
+  "candidate_sha256": "208574ab5b7753fab6f28860830069770622fb7b1fcb8d181fa50453f8656717"
+ },
  "note": "default route_b because this executor only serves Route B; route_a audit not relaxed; future Route A reuse must pass --audit-profile explicitly"
 }
