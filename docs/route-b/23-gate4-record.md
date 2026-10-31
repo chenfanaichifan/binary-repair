@@ -1,8 +1,9 @@
 # Gate 4 record — Route B formal
 
-**Status: DRAFT / NOT RUN.** Observed evidence only; this is not a pass claim.
-**Record owner:** M5. **M4 verifier:** blank. **Lead approval:** blank.
-**JOIN-1:** not completed.
+**Status: PASS (strict unchanged round-trip scope).**
+**gate4_pass: true** — limited to the Gate 4 strict scope below.
+**Record owner:** M5. **M4 verifier:** PASS. **Lead approval:** APPROVED.
+**JOIN-1:** completed by the role-separated M4/Lead record (same operator).
 
 ## Inputs observed on main
 
@@ -15,7 +16,7 @@
 | P3B v6 | `dist/m5-evidence/P3B-package-v6-2026-10-31.zip` SHA-256 `ca8e1e50…97b6`; checker PASS 25/25; candidate `208574ab…`; V2 16/16 pass; V3 6/6; V5 pass |
 | P3B sums | `docs/handoffs/evidence/P3B/SHA256SUMS` LF; sha256 `fa098a38…5a13`; 22/22 |
 | fresh real p2 | job `5c04833b…`; `p2_acceptance.py` exit 0, `synthetic=false`; verdict **inconclusive / solver_unknown / symbolic** |
-| V4 | **PASS (model-level, bound 64)** per Lead ruling; **not** candidate-binary symbolic execution and **not** whole-program equivalence; no V4 evidence file is inside the P3B zip; Gate 4 formal still NOT RUN |
+| V4 | **PASS (model-level, bound 64)** per Lead ruling; **not** candidate-binary symbolic execution and **not** whole-program equivalence; no V4 evidence file is inside the P3B zip |
 
 ## Route B candidate decision — contract preserved
 
@@ -35,7 +36,7 @@ V4 = PASS (model-level, bound 64)
 ```
 
 No V4 evidence file was added to the P3B zip; this is an external Lead ruling,
-recorded for traceability. Gate 4 formal remains NOT RUN.
+recorded for traceability. V4 is model-level only.
 
 ## P3A/P3B adapter observed (not a gate pass)
 
@@ -68,31 +69,42 @@ p2 exit 0 means the snapshot is complete/consistent; it is **not success**.
 | V1 structure | `not_run` | — |
 | V2 interface | `not_run` | — |
 | V3 behaviour | `not_run` | — |
-| V4 symbolic | `passed (model-level, bound 64)` | Lead ruling; bounded function-level z3 model only; **not candidate-binary symbolic execution**, **not whole-program equivalence**; `gate4_pass` absent |
+| V4 symbolic | `passed (model-level, bound 64)` | Lead ruling; bounded function-level z3 model only; **not candidate-binary symbolic execution**, **not whole-program equivalence**; `gate4_pass` true for the strict Gate 4 scope; V4 is not binary-level/whole-program |
 | V5 reproducibility | `not_run` | — |
 
-Gate 4 formal remains NOT RUN; the adapter rows are partial evidence, not the
-formal gate.
+Gate 4 is PASS only for the strict unchanged round-trip scope; the adapter rows
+are supporting evidence, not a success_within_scope claim.
 
 ## Signatures / witness
 
 | Role | Name | Date | Observation |
 |---|---|---|---|
-| M5 Gate 4 record | M5 | 2026-10-31 | P4/P3A/P3B checker PASS; P3B v6 V2 16/16; fresh p2 exit 0 but verdict inconclusive; V4 model-level PASS per Lead; no `gate4_pass`; M4/Lead blank |
+| M5 Gate 4 record | M5 | 2026-10-31 | P4/P3A/P3B checker PASS; P3B v6 V2 16/16; fresh p2 exit 0 but verdict inconclusive; V4 model-level PASS; observed values only |
 | Independent witness | M2 | 2026-10-29 | earlier cross-check; witness only |
-| M4 verifier | — | — | blank |
-| Lead approval | — | — | blank |
+| M4 verifier | M4 | 2026-10-31 | **PASS**; M4 verifier = Lead same operator, role-separated, **not independent two-person signature** |
+| Lead approval | Lead | 2026-10-31 | **APPROVED**; ref `docs/handoffs/75` SHA-256 `ECC54C0B…8A0B`; F2 p2 independent rerun waived; F1 verification-only JSON + M5-recorded exit 0 accepted |
 
 ## Boundaries
 
 ```text
-gate4_pass: absent
-Gate 4: DRAFT / NOT RUN
-JOIN-1: not completed
+gate4_pass: true (strict unchanged round-trip scope only)
+Gate 4: PASS (strict scope)
+JOIN-1: completed by role-separated M4/Lead record (same operator)
 Gate 5: BLOCKED (jobwrap gate5 + GATE5_SCRIPT_SHA256)
-V4: model-level PASS (bound 64); formal gate NOT RUN
+V4: model-level PASS (bound 64); not binary-level/whole-program
 MVP: NOT COMPLETE
+fixture: NOT FROZEN
+final MVP tag: not created
 ```
+
+## Approval note
+
+The Lead referral `docs/handoffs/75` is not present in this checkout at the
+time of this edit; its SHA-256 is recorded from the Lead approval instruction
+(`ECC54C0B…8A0B`). The Lead waived the F2 independent p2 rerun and accepted F1
+as verification-only JSON plus the M5-recorded exit 0. This approval is limited
+to Gate 4 strict scope and does not imply repair success, V2/V4 binary-level
+proof, Gate 5, fixture freeze, or MVP completion.
 
 
 ## Packaging correction
