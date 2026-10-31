@@ -1,0 +1,12 @@
+Gate 5 Route A probe invocation recorded in handoff 67:
+sudo /usr/local/sbin/jobwrap-gate5 probe m4-gate5 -- /srv/gate5-build /var/tmp/gate5-work
+
+Fixed execv after isolation:
+/usr/bin/python3 /srv/gate5-build/scripts/m4_gate5_probe.py /srv/gate5-build /var/tmp/gate5-work
+
+repo_root=/srv/gate5-build
+work_dir=/var/tmp/gate5-work
+probe=/srv/gate5-build/scripts/m4_gate5_probe.py
+candidate=/srv/gate5-build/routea/out/cave-probe.elf
+original=/srv/gate5-build/fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf
+raw_environment=evidence/environment.txt

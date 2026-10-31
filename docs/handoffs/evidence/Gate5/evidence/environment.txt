@@ -1,0 +1,14 @@
+date_utc=2026-10-31T13:53:19.116635+00:00
+uname=Linux-6.8.0-147-generic-x86_64-with-glibc2.39
+python=3.12.3
+script_sha256=f39a0302dd1aa42635da80fa4e9160d37a221f5ac383270add3eaedcffd146cb
+source_candidate=/srv/gate5-build/routea/out/cave-probe.elf
+Uid:	1003	1003	1003	1003
+Gid:	1003	1003	1003	1003
+CapEff:	0000000000000000
+CapBnd:	000001ffffffffff
+NoNewPrivs:	1
+Seccomp:	2
+default_route_rc=1 default_route=''
+netns=net:[4026532222]
+gdb=/usr/bin/gdb

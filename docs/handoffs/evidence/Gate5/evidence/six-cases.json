@@ -1,0 +1,62 @@
+[
+  {
+    "expected_rc": 0,
+    "id": "valid-empty",
+    "input_len": 0,
+    "kind": "valid",
+    "ok": true,
+    "rc": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  },
+  {
+    "expected_rc": 0,
+    "id": "valid-smallest",
+    "input_len": 1,
+    "kind": "valid",
+    "ok": true,
+    "rc": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "06f961b802bc46ee168555f066d28f4f0e9afdf3f88174c1ee6f9de004fc30a0"
+  },
+  {
+    "expected_rc": 0,
+    "id": "valid-typical",
+    "input_len": 10,
+    "kind": "valid",
+    "ok": true,
+    "rc": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "705d290c12895901f809f6c2fe772a94db5181d726464d840682106f4a934b87"
+  },
+  {
+    "expected_rc": 0,
+    "id": "valid-maximum",
+    "input_len": 49,
+    "kind": "valid",
+    "ok": true,
+    "rc": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "4a2cc35d0c0a06ee211d0d8bc49a1208caf43d3de57e13867c9333610e544199"
+  },
+  {
+    "expected_rc": 1,
+    "id": "invalid-first",
+    "input_len": 50,
+    "kind": "invalid",
+    "ok": true,
+    "rc": 1,
+    "stderr_sha256": "083d3bfb2d9e1fa4978aabdd2318d60c67bd54f2a34d0086b0a9d11f6f84f69b",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "expected_rc": 1,
+    "id": "invalid-longer",
+    "input_len": 100,
+    "kind": "invalid",
+    "ok": true,
+    "rc": 1,
+    "stderr_sha256": "083d3bfb2d9e1fa4978aabdd2318d60c67bd54f2a34d0086b0a9d11f6f84f69b",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]
