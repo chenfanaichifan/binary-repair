@@ -38,8 +38,8 @@ recorded for traceability. Gate 4 formal remains NOT RUN.
 ## P3A/P3B adapter observed (not a gate pass)
 
 ```text
-Route A: V0/V1/V2/V3/V5 passed; V4 unknown
-Route B: V0/V1/V2/V3/V5 passed; V4 unknown
+Route A: V0/V1/V2/V3/V5 passed; V4 passed (model-level, bound 64)
+Route B: V0/V1/V2/V3/V5 passed; V4 passed (model-level, bound 64)
 ```
 
 ## P3B worker log
@@ -66,7 +66,7 @@ p2 exit 0 means the snapshot is complete/consistent; it is **not success**.
 | V1 structure | `not_run` | — |
 | V2 interface | `not_run` | — |
 | V3 behaviour | `not_run` | — |
-| V4 symbolic | `not_run` (formal gate) | model-level PASS recorded separately above; not a formal gate pass |
+| V4 symbolic | `passed (model-level, bound 64)` | Lead ruling; bounded function-level z3 model only; **not candidate-binary symbolic execution**, **not whole-program equivalence**; `gate4_pass` absent |
 | V5 reproducibility | `not_run` | — |
 
 Gate 4 formal remains NOT RUN; the adapter rows are partial evidence, not the
