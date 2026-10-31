@@ -65,6 +65,37 @@ def _register(*, data_dir: Path, job_id: str, attempt_id: str, source: Path) -> 
     return artifact_id
 
 
+def _supplement_state(
+    root: Path,
+    gate: str,
+    candidate: str,
+) -> tuple[str, Path | None, str]:
+    """Read M3's optional V2/V5 supplement; fail closed on identity mismatch."""
+    name = {"V2": "v2-routea-supplement.json", "V5": "v5-routea-supplement.json"}[gate]
+    path = root / name
+    if not path.is_file():
+        return "not_run", None, "supplement missing"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        raise ValueError(f"invalid {name}: {exc}") from exc
+    if not isinstance(data, dict):
+        raise ValueError(f"{name} must be an object")
+    hashes = data.get("hashes") or {}
+    declared = hashes.get("candidate_sha256") or data.get("candidate_sha256")
+    if declared and declared != candidate:
+        raise ValueError(f"{name} candidate {declared} does not match bundle {candidate}")
+    if gate == "V2":
+        checks = data.get("checks") or {}
+        failures = data.get("failures") or []
+        passed = bool(checks) and all(value is True for value in checks.values()) and not failures
+        detail = "supplement V2 passed" if passed else f"supplement V2 failures: {failures}"
+        return ("passed" if passed else "failed"), path, detail
+    passed = data.get("result") == "passed" and data.get("byte_identical") is True
+    detail = "supplement V5 byte-identical" if passed else "supplement V5 not passed"
+    return ("passed" if passed else "failed"), path, detail
+
+
 def convert(
     bundle: dict[str, Any],
     *,
@@ -101,6 +132,15 @@ def convert(
             rel = item.get("relative_path") if isinstance(item, dict) else None
             if rel:
                 paths.append(Path(rel))
+        if gate in ("V2", "V5") and result != "passed":
+            root = evidence_root or Path(".")
+            supp_result, supp_path, supp_detail = _supplement_state(root, gate, candidate)
+            if supp_result != "not_run":
+                result = supp_result
+                results[gate] = result
+                details[gate] = supp_detail
+                if supp_path is not None:
+                    paths.append(supp_path.relative_to(root) if supp_path.is_relative_to(root) else supp_path)
         # Real worker conversion requires evidence for every passed gate
         # (including V0); preview mode may show a V0 result without artifacts.
         if result == "passed" and not paths and (gate != "V0" or data_dir is not None):
@@ -135,7 +175,7 @@ def convert(
         missing = entry.get("missing") or []
         if missing:
             details[gate] = "; ".join(str(x) for x in missing)
-        elif entry.get("details"):
+        elif entry.get("details") and gate not in details:
             details[gate] = json.dumps(entry["details"], sort_keys=True)
     return {
         "route": "route_a",

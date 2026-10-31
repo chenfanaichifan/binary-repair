@@ -126,6 +126,25 @@ def _runtime_state(bundle: Path) -> tuple[str, Path | None]:
     return "not_run", None
 
 
+def _interface_state(bundle: Path, manifest: dict[str, Any]) -> tuple[str, Path | None, str]:
+    """Read M3's optional v2-routeb-fixed.json; fail closed on identity mismatch."""
+    path = bundle / "v2-routeb-fixed.json"
+    if not path.exists():
+        return "not_run", None, "interface evidence missing"
+    data = _read_json(path)
+    hashes = data.get("hashes") or {}
+    declared = hashes.get("candidate_sha256")
+    candidate = manifest.get("candidate_sha256")
+    if declared and declared != candidate:
+        raise ValueError(f"v2-routeb-fixed candidate {declared} does not match {candidate}")
+    checks = data.get("checks") or {}
+    failures = data.get("failures") or []
+    passed = bool(checks) and all(value is True for value in checks.values()) and not failures
+    return ("passed" if passed else "failed"), path, (
+        "V2 interface passed" if passed else f"V2 interface failures: {failures}"
+    )
+
+
 def _repro_state(bundle: Path) -> tuple[str, Path | None]:
     path = bundle / "reproducibility.json"
     if not path.exists():
@@ -158,13 +177,14 @@ def write_attempt(
     audit = _read_json(bundle / "audit.json") if (bundle / "audit.json").exists() else {"pass": False}
     runtime_state, runtime_path = _runtime_state(bundle)
     repro_state, repro_path = _repro_state(bundle)
+    interface_state, interface_path, interface_detail = _interface_state(bundle, manifest)
     identity = manifest.get("original_sha256") == job.original_sha256
     structure = audit.get("pass") is True
 
     results = {
         "V0": "passed" if identity else "failed",
         "V1": "passed" if structure else "failed" if (bundle / "audit.json").exists() else "not_run",
-        "V2": "not_run",
+        "V2": interface_state,
         "V3": runtime_state,
         "V4": "not_run",
         "V5": repro_state,
@@ -173,7 +193,7 @@ def write_attempt(
     details: dict[str, str] = {
         "V0": f"original {manifest.get('original_sha256')} vs job {job.original_sha256}",
         "V1": "static ELF audit passed" if structure else "static ELF audit not passed",
-        "V2": "interface check not implemented in Route B executor",
+        "V2": interface_detail,
         "V3": ("runtime manifest " + runtime_state) if runtime_path else "no runtime manifest in bundle",
         "V4": "symbolic check not run",
         "V5": ("build-twice " + repro_state) if repro_path else "build-twice not run",
@@ -185,6 +205,9 @@ def write_attempt(
     if results["V1"] == "passed":
         evidence["V1"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                                    bundle=bundle, filename="audit.json")
+    if results["V2"] == "passed" and interface_path is not None:
+        evidence["V2"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                                   bundle=bundle, filename=interface_path.name)
     if results["V3"] == "passed" and runtime_path is not None:
         evidence["V3"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                                    bundle=bundle, filename=runtime_path.name)
