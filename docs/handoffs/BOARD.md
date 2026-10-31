@@ -14,8 +14,8 @@ is never signed by this agent; Lead approval rows stay blank.
 | M3+M5 | P3B executor question | DONE 2026-10-30 19:30 — in-guest `4f072175…b05d` MATCH | `docs/handoffs/evidence/P3B/executor-confirmation.json` | `a312949cef45bbacc1324a66feb9f68fbdebe8bb55c6c278daebb87367f7dfd8` | M5 adapter/replay once `app/`+`tools/` arrive |
 | M3+M5 | P4 v3 (guest-boot evidence) | DONE 2026-10-30 20:00 (late vs 18:00), checker PASS 26/26 | `docs/handoffs/evidence/P4/`, `dist/P4-package-v3-2026-10-30.zip` `a8f335a3…6cae` | `e4b81b34df9b2707542fe2158f9f76ce5760a675e6494d82df85994f669e6c5e` | Gate 4 record input; acceptance still NOT RUN |
 | M3+M5 | P3B v5 | DONE 2026-10-30, checker PASS 22/22 | `docs/handoffs/evidence/P3B/`, `dist/P3B-package-v5-2026-10-30.zip` `bfba4e51…29ce2` | `a312949cef45bbacc1324a66feb9f68fbdebe8bb55c6c278daebb87367f7dfd8` | superseded by v6 below |
-| M3+M5 | P3B v6 | **DONE 2026-10-31** — Route B candidate fix (reuse R-X PT_LOAD tail, 0 new segments); candidate 208574ab (was 63fcafa6); **fixed 16:11** per M5 consume feedback: bundle-record.md corrected, V2 raw evidence (`v2-routeb-fixed.json` + readelf) added, SHA256SUMS consistent (zip==disk==git). checker PASS 25/25; zip `dist/P3B-package-v6-2026-10-31.zip` `1fe4326c…8e63` | `docs/handoffs/evidence/P3B/`, `executor/probe_patcherex2.py` | SHA256SUMS `df58f968…91ba` | M5 adapter/replay with new candidate |
-| M3+M5 | P3A v7 | v6 (26 files, checker PASS 26/26) was the 10-29 authoritative job; **v7 2026-10-31 16:11** = v6 + V2/V5 supplements (`v2-routea-supplement.json`, `v5-routea-supplement.json`, readelf), checker PASS 29/29; zip `dist/P3A-routea-2026-10-31-v7.zip` `d8c6bdaa…5eedd` | `docs/handoffs/evidence/P3A/` | SHA256SUMS `2580c232…5ec0` | M5 adapter reads supplement files for Route A V2/V5; V4 not_run |
+| M3+M5 | P3B v6 | **DONE 2026-10-31** — Route B candidate fix (reuse R-X PT_LOAD tail, 0 new segments); candidate 208574ab (was 63fcafa6); **fixed 16:11** per M5 consume feedback: bundle-record.md corrected, V2 raw evidence (`v2-routeb-fixed.json` + readelf) added, SHA256SUMS consistent (zip==disk==git). checker PASS 25/25; zip `dist/P3B-package-v6-2026-10-31.zip` `b5ddbb48…03a4` | `docs/handoffs/evidence/P3B/`, `executor/probe_patcherex2.py` | SHA256SUMS `5370f2bb…82db` | M5 adapter/replay with new candidate |
+| M3+M5 | P3A v7 | v6 (26 files, checker PASS 26/26) was the 10-29 authoritative job; **v7 2026-10-31 16:11** = v6 + V2/V5 supplements (`v2-routea-supplement.json`, `v5-routea-supplement.json`, readelf), checker PASS 29/29; zip `dist/P3A-routea-2026-10-31-v7.zip` `0d013a28…b2cf` | `docs/handoffs/evidence/P3A/` | SHA256SUMS `45367710…a23f` | M5 adapter reads supplement files for Route A V2/V5; V4 evidence in P2-real/v4 (see v11) |
 | M3+M5 | for-M4 / for-M5 bundles | **v11 built 2026-10-31 16:38** — v10 + P2-real package (fixes v10's omission: V4 evidence `P2-real/v4/` now actually ships); carry P2-real + P3A v7 + P3B v6 (fixed) + P4 v3 | `dist/for-M5-2026-10-31-v11.zip` `e1e5af8c…f0f2`, `dist/for-M4-2026-10-31-v11.zip` `a17e254c…a641` | per-zip SHA256SUMS inside | Lead personal check (M4 waived) |
 | M3+M5 | T5.2 adapter + synthetic p2 | **CLEARED** 2026-10-30 20:20 — integration head `aab162a` fetched into a worktree; `pytest tests/integration/test_p2_acceptance.py` 5 passed, `test_attempt_writer.py` 6 passed | `.tmp/integration` (worktree, not committed) | — | none; no synthetic pass was needed |
 | M3+M5 | T5.3 real p2 + Gate 4 record | **DONE** 2026-10-30 20:22 — two real jobs, both `p2_acceptance.py` exit 0 (job1 `inconclusive`, job2 `rejected`); observed values in the Gate 4 record | `docs/handoffs/evidence/P2-real/`, `docs/route-b/23-gate4-record.md`, `docs/handoffs/39-m3-v2-v5-p2-2026-10-30.md` | `a3c3fdf429dcfcf2ed1615c4e8114d4e5c8d784ea933afdb95c9056c1c8cec74` | Lead personal check; `gate4_pass` still absent |
@@ -57,14 +57,16 @@ compensate.
   byte-exact evidence packages (`docs/handoffs/evidence/**` stored with `-text`;
   index bytes == working-tree bytes, verified on six files).
 - Delivery zips are in `dist/` (not in git). Authoritative set as of 2026-10-31
-  16:30: `P3A-routea-2026-10-31-v7.zip` (`0d013a28…b2cf`),
+  16:38: `P2-real-2026-10-31.zip` (`a9db726a…b71a`),
+  `P3A-routea-2026-10-31-v7.zip` (`0d013a28…b2cf`),
   `P3B-package-v6-2026-10-31.zip` (`b5ddbb48…03a4`),
   `P4-package-v3-2026-10-30.zip`, bundled as
-  `for-M5-2026-10-31-v10.zip` (`aeb0c739…bcca`) /
-  `for-M4-2026-10-31-v10.zip` (`517c8974…7d7c2`). Each zip carries its own
+  `for-M5-2026-10-31-v11.zip` (`e1e5af8c…f0f2`) /
+  `for-M4-2026-10-31-v11.zip` (`a17e254c…a641`). Each zip carries its own
   `MESSAGE.md` README + `SHA256SUMS`; SHA256SUMS are packed verbatim so
-  zip-internal == disk == git. v10 adds the V4 bounded-symbolic self-verified
-  evidence (`P2-real/v4/`); the P3A/P3B zip hashes changed vs v9 only because
-  their `handoff.json` notes now reference V4 instead of `not_run`.
+  zip-internal == disk == git. v11 carries the P2-real package (which v10
+  omitted), so the V4 bounded-symbolic self-verified evidence (`P2-real/v4/`)
+  actually ships; the P3A/P3B zip hashes changed vs v9 only because their
+  `handoff.json` notes now reference V4 instead of `not_run`.
 - Local tool files (`.opencode/`, `.probe-dir/`, `opencode.jsonc*`) remain
   untracked by choice; `dist/` and `worklogs/` stay out of git.
