@@ -93,6 +93,7 @@ def test_candidate_differing_from_original_can_succeed(tmp_path: Path) -> None:
     path = data_dir / "jobs" / record.id / "runs" / run.id / "verdict.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
     assert payload["expected_sha256"] is None
+    assert payload["original_sha256"] == record.original_sha256
 
 
 def test_run_requires_both_routes(tmp_path: Path) -> None:

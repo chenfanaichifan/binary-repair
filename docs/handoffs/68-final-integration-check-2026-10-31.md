@@ -3,8 +3,9 @@
 ## Baseline
 
 ```text
-main: af7dc349a0f8b944af2873ec6d9f4298fa5d6229
-merged fix: 1406f11 (Lead-approved expected_sha256 change)
+main: 0d12d00af6ae6dabf3fe9b99a3211692884fd427
+merged fix: 1406f11 (approved-candidate semantics)
+merged reporting-only: 9407dfc (original_sha256 payload field)
 snapshot tag: mvp-integration-2026-10-31 -> bcf2537
 final acceptance tag: NOT CREATED
 ```
@@ -57,5 +58,6 @@ This is an integration candidate, not a complete MVP acceptance:
 
 ## Branch note
 
-`9407dfc` is not merged. It contains an additional `original_sha256` payload
-field and a rebase onto `48e8f55`; the Lead approved and merged `1406f11` only.
+`9407dfc` is merged as a **reporting-only** change: it adds
+`original_sha256` to the verdict payload, while `expected_sha256` stays
+`null` and no success path changes. The Lead approved this scope explicitly.
