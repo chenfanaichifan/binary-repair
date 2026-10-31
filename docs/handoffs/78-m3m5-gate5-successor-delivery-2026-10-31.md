@@ -84,11 +84,18 @@ package. This is expected and is the point of the request:
 | File | Before | After |
 |---|---|---|
 | `evidence/gdb-probe.log` | `261f4cce…26b8e` | `e4305d0f…86440` |
-| `evidence/SHA256SUMS` (self-hash) | `05438764…73ec8` | `fb6bc4a9…3f2060` |
-| top-level `SHA256SUMS` (self-hash) | — | `af5c5c12…b922b` |
+| `evidence/SHA256SUMS` (self-hash) | `05438764…73ec8` | `7aa79202…189e07c` |
+| top-level `SHA256SUMS` (self-hash) | — | `02669336…4d1a71` |
 
 The 29-line manifest self-hash M4 quoted earlier (`05438764…73ec8`) was the
-pre-sanitize value. The sanitized manifest self-hash is `fb6bc4a9…3f2060`.
+pre-sanitize value. The sanitized manifest self-hash is `7aa79202…189e07c`.
+
+> Note (LF fix): the first shipping of this package wrote the two `SHA256SUMS`
+> with CRLF line endings, which breaks `sha256sum -c` (filenames gain a trailing
+> `\r`). Both manifests were normalized to LF and the cross-reference line
+> updated, so `sha256sum -c SHA256SUMS` now verifies 43/43 (top) and 29/29
+> (inner) with zero FAILED. The two self-hashes above reflect the LF-normalized
+> manifests.
 
 ## 8. Verification performed this round (self-verified, single agent)
 
