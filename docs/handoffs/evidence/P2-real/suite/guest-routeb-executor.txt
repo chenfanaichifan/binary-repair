@@ -1,0 +1,8 @@
+# same single test that fails on the Windows host, run in the guest
+# guest: binrepair-vm 6.8.0-147-generic 
+# tree copied from integration head aab162a (routeb/, fixture, test file)
+$ python3 -m pytest tests/test_routeb_executor.py -q
+..                                                                       [100%]
+
+readelf /usr/bin/readelf
+objdump /usr/bin/objdump

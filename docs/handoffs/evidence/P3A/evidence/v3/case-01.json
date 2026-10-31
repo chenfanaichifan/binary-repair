@@ -1,0 +1,9 @@
+{
+ "case_id": "valid-empty",
+ "rc": 0,
+ "stdout_hex": "0a",
+ "stderr_hex": "",
+ "stdout_bytes": 1,
+ "stderr_bytes": 0,
+ "ok": true
+}

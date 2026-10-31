@@ -1,0 +1,9 @@
+{
+ "case_id": "valid-smallest",
+ "rc": 0,
+ "stdout_hex": "410a",
+ "stderr_hex": "",
+ "stdout_bytes": 2,
+ "stderr_bytes": 0,
+ "ok": true
+}

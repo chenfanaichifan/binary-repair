@@ -21,3 +21,10 @@ fixtures/public/**/tests/*.json -text
 *.elf  binary
 *.bin  binary
 *.zip  binary
+# Evidence packages are hash-bound: every byte (including CRLF) must survive
+# clone/checkout exactly, or SHA256SUMS verification fails on a fresh clone.
+docs/handoffs/evidence/** -text
+*.pdf binary
+*.vmdk binary
+*.png binary
+*.jpg binary

@@ -1,0 +1,9 @@
+{
+ "case_id": "valid-typical",
+ "rc": 0,
+ "stdout_hex": "414141414141414141410a",
+ "stderr_hex": "",
+ "stdout_bytes": 11,
+ "stderr_bytes": 0,
+ "ok": true
+}

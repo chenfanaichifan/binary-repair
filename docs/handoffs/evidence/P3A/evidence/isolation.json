@@ -1,0 +1,15 @@
+{
+ "probe_raw": [
+  "uid=1003",
+  "gid=1003",
+  "CapEff:\t0000000000000000",
+  "NoNewPrivs:\t1",
+  "Seccomp:\t0",
+  "lo               DOWN           ",
+  "evaluator=unreadable",
+  "egress=blocked"
+ ],
+ "evidence_dir": "/var/lib/binrepair/evidence/20261022T111419-probe",
+ "wrapper_sha256": "b0371c1038a3f72b37314162d60a9f95543deadbaed86a026b09148f5983362b",
+ "cases_sha256": "5bad3f20beb0b2ab1550d2e3d2c857f930e620392dcbadca2199795d336cbb96"
+}

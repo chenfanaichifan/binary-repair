@@ -1,0 +1,27 @@
+{
+  "candidate_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+  "details": {
+    "V0": "P3A v6 result-bundle.json gates.V0.status = pass",
+    "V1": "P3A v6 result-bundle.json gates.V1.status = pass",
+    "V2": "v2_interface.py: 16/16 interface checks passed in the guest",
+    "V3": "P3A v6 result-bundle.json gates.V3.status = pass",
+    "V4": "bounded symbolic verdict not_run; no solver output in P3A v6",
+    "V5": "fresh replay: 2 runs byte identical to the shipped candidate"
+  },
+  "evidence": {
+    "V0": "4afe25ea5bb349ad98690c36293c9d0f",
+    "V1": "e93fa8d907384918b4fc967fabde5766",
+    "V2": "1651078aa2b44bcda71991bd43e62aac",
+    "V3": "8ecf51b8f6b24092add9b5c8e4ef551e",
+    "V5": "584932deae3449809bee06b045cfd245"
+  },
+  "results": {
+    "V0": "passed",
+    "V1": "passed",
+    "V2": "passed",
+    "V3": "passed",
+    "V4": "not_run",
+    "V5": "passed"
+  },
+  "route": "route_a"
+}

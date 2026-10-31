@@ -1,0 +1,15 @@
+# revert-raw.log — scripted revert to gate4-harness (uid 11) for P4 v3
+# operator: M3+M5 merged agent (AI window of the human operator)
+# host: Windows, vmrun D://VMware//vmrun.exe (VMware Workstation 17.5)
+
+## host date before: 2026-10-30T19:33:31+08:00
+
+$ vmrun -T ws stop "D:/VMs/binrepair-u2404-x64-01/BinRepair-Lab.vmx" soft
+exit_code=0
+
+## host date after stop: 2026-10-30T19:33:36+08:00
+
+$ vmrun -T ws revertToSnapshot "D:/VMs/binrepair-u2404-x64-01/BinRepair-Lab.vmx" gate4-harness
+exit_code=0
+
+## host date after revert: 2026-10-30T19:33:37+08:00

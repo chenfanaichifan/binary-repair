@@ -1,0 +1,62 @@
+# Canonical disk manifest — gate3-harness-v2
+
+VM directory : D:\VMs\binrepair-u2404-x64-01
+Snapshot     : gate3-harness-v2 (uid 10), taken 2026-10-22 19:0x +08, guest powered off
+Captured     : 2026-10-22, host side, guest shut down (18:59:19)
+Predecessor  : isolation-manifest.txt (142849c7…d628e) — superseded
+
+## Chain (base first)
+
+7dec112509c833a66b44c2e1aebdc607d33b323ca61351d7cfe0c83886101468    6,792,544,256  disk.vmdk            clean-toolchain       uid 4
+28451ed9fcf8f54f6fbe0c337c9fe8f6e4823dba08e242daae52855b4647bd92      33,882,112  disk-000001.vmdk     job-isolation         uid 5 (memory)
+b501715b37e954e1ea509ab138d03bb34e45d5672a5b5192dc28dc72bd37100c      12,320,768  disk-000002.vmdk     clean-baseline        uid 6
+1759a66ffd0a0d7eda06e2f676b0e9134682d1fb670099de6ffb98675c2fb300      75,890,688  disk-000003.vmdk     toolchain-v4-ready    uid 7
+e21807fb86cef8a0d9fe51a75ab1ffa44296419cbd98003f8f9b382ef47577a1      31,326,208  disk-000004.vmdk     isolation-ready       uid 8
+2a7ae3314237f758b853ad47d79cbc6d0cc15e93348a3ccf4110c3b9e23f2c87      39,452,672  disk-000006.vmdk     gate3-harness         uid 9
+c03843c91a888cc962caf7fba3fe31f48cf447b574f8a3bdb971ea72c562909a      62,193,664  disk-000007.vmdk     gate3-harness-v2      uid 10
+36879de0e04a145a7399d24abd7250b2d202dd3b147a5d1c4d7b38ba6dccdfcc           3,125  BinRepair-Lab.vmsd
+
+Not part of any snapshot: the delta created after the snapshot (observed as
+`disk-000008.vmdk` after the restore on 2026-10-22 19:0x). A stray
+`disk-000005.vmdk` seen earlier was an orphan layer, never referenced by any
+snapshot in `vmsd`, and is not part of this chain.
+
+## Snapshot tree
+
+uid  name                parent  power
+ 4   clean-toolchain       -      off
+ 5   job-isolation         4      ON (memory image — not a reset baseline)
+ 6   clean-baseline        5      off
+ 7   toolchain-v4-ready    6      off
+ 8   isolation-ready       7      off
+ 9   gate3-harness         8      off
+10   gate3-harness-v2      9      off   <-- current reset baseline
+snapshot.numSnapshots = 7 (vmsd keeps 7 entries; uid 9's layer is 000006)
+
+## Guest fingerprint inside gate3-harness-v2
+
+/usr/local/sbin/jobwrap             b0371c1038a3f72b37314162d60a9f95543deadbaed86a026b09148f5983362b   0700 root  (gate3|probe|gate4, MS_PRIVATE fix)
+/usr/local/etc/binrepair/cases.conf  5bad3f20beb0b2ab1550d2e3d2c857f930e620392dcbadca2199795d336cbb96   0600 root
+/usr/local/etc/binrepair/targets.conf ee42166c6d707fb635f689447a4bc2b60181698de65dc42141eea2d0d4e0fc9e 0600 root
+/usr/local/etc/binrepair/gate4.conf  f240c2f87fb0ba84c97cfa7fb6b6bf29fada387799c1aa1a2726eaa185add7f9   0600 root
+/opt/binrepair/probe.sh             25287ec65fa6a6af394e773623bd9248a1aa6383c6f0a51b9bd9c2e6d7de9bc5   0755 root
+/opt/binrepair/negcheck.sh          9ea00ff8478fce1cc5162318fc2e480c9cdfc5c065764c8b81d717c02157be5d   0755 root
+/var/lib/binrepair/harness-manifest.json 3bdbc3396fd183ed8563e2d7b0648d02be3a3c55c1a52ccc08890614a97ed678  0600 root
+
+/original.elf  (authoritative)      aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393
+/candidate.elf (c4a159)             c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
+/contract.json file hash            15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df
+/contract.json canonical hash       24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
+
+## Known defects
+
+- mount propagation: fixed in b0371c10 (MS_REC|MS_PRIVATE before proc mount).
+  Verified after a gate3 run: /proc/self/status readable, ps aux 132 lines.
+- Gate 4 kit v5 (bc5b0dbc…) is withdrawn; v6 (499f510c…) not yet applied.
+- routea mode not yet merged into jobwrap (spec: workers/route_a/JOBWRAP_ROUTEA.md).
+
+## Verification rules
+
+- A layer whose hash differs means the chain was modified; do not treat the
+  restore as reproducing gate3-harness-v2.
+- Restore = apply base + 000001 … + 000007 in order.

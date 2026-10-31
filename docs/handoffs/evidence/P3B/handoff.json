@@ -1,0 +1,33 @@
+{
+ "id": "P3B",
+ "from": "M3",
+ "to": "M5",
+ "route": "route_b",
+ "created_at": "2026-10-30T19:47:14.899930+08:00",
+ "files": [
+  "CHANGELOG-AUDIT-PROFILE.md",
+  "audit.json",
+  "bundle-record.md",
+  "candidate.elf",
+  "edit-manifest.json",
+  "environment.json",
+  "executor-confirmation.json",
+  "executor.json",
+  "executor/routeb_executor.py",
+  "fixed_badSink_existing_imports.c",
+  "independent-views/objdump-disassembly.txt",
+  "independent-views/readelf-dynamic.txt",
+  "independent-views/readelf-program-headers.txt",
+  "independent-views/readelf-relocations.txt",
+  "independent-views/readelf-section-headers.txt",
+  "jobwrap-routeb",
+  "jobwrap-routeb.json",
+  "manifest-repaired.json",
+  "original.elf",
+  "reproducibility.json",
+  "wrapper-export.json",
+  "handoff.json"
+ ],
+ "notes": "P3B v5 = v4 + executor in-guest confirmation (match) + routeb wrapper bytes; supersedes v4 zip 078d0f222fe5d11586b2e0abe202e67d99dbec5bfe5b02408b46e87ae8f1543c; candidate 63fcafa6; V3 6/6 repaired_pass=true; v3 72d789c6 remains superseded",
+ "schema_version": 1
+}

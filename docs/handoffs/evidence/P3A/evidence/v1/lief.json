@@ -1,0 +1,311 @@
+{
+ "sources": [
+  "readelf -l -W",
+  "readelf -d -W",
+  "readelf -r -W",
+  "readelf --dyn-syms -W",
+  "checksec (checksec.sh 2.6.0)"
+ ],
+ "note": "LIEF 1.0 returned empty segment lists for these ELFs. All segment fields below are parsed from readelf -l -W and are authoritative; LIEF is not used for structure.",
+ "program_headers": {
+  "original": {
+   "load": [
+    {
+     "offset": "0x000000",
+     "vaddr": "0x0000000000400000",
+     "paddr": "0x0000000000400000",
+     "filesz": "0x000788",
+     "memsz": "0x000788",
+     "flags": "R",
+     "align": "0x1000"
+    },
+    {
+     "offset": "0x001000",
+     "vaddr": "0x0000000000401000",
+     "paddr": "0x0000000000401000",
+     "filesz": "0x0008e9",
+     "memsz": "0x0008e9",
+     "flags": "R E",
+     "align": "0x1000"
+    },
+    {
+     "offset": "0x002000",
+     "vaddr": "0x0000000000402000",
+     "paddr": "0x0000000000402000",
+     "filesz": "0x0007a4",
+     "memsz": "0x0007a4",
+     "flags": "R",
+     "align": "0x1000"
+    },
+    {
+     "offset": "0x002df8",
+     "vaddr": "0x0000000000403df8",
+     "paddr": "0x0000000000403df8",
+     "filesz": "0x000270",
+     "memsz": "0x0002a8",
+     "flags": "RW",
+     "align": "0x1000"
+    }
+   ],
+   "gnu_stack": {
+    "filesz": "0x000000",
+    "memsz": "0x000000",
+    "flags": "RW",
+    "align": "0x10"
+   },
+   "gnu_relro": {
+    "vaddr": "0x0000000000403df8",
+    "filesz": "0x000208",
+    "memsz": "0x000208"
+   },
+   "interp": "/lib64/ld-linux-x86-64.so.2"
+  },
+  "candidate": {
+   "load": [
+    {
+     "offset": "0x000000",
+     "vaddr": "0x0000000000400000",
+     "paddr": "0x0000000000400000",
+     "filesz": "0x000788",
+     "memsz": "0x000788",
+     "flags": "R",
+     "align": "0x1000"
+    },
+    {
+     "offset": "0x001000",
+     "vaddr": "0x0000000000401000",
+     "paddr": "0x0000000000401000",
+     "filesz": "0x001000",
+     "memsz": "0x001000",
+     "flags": "R E",
+     "align": "0x1000"
+    },
+    {
+     "offset": "0x002000",
+     "vaddr": "0x0000000000402000",
+     "paddr": "0x0000000000402000",
+     "filesz": "0x0007a4",
+     "memsz": "0x0007a4",
+     "flags": "R",
+     "align": "0x1000"
+    },
+    {
+     "offset": "0x002df8",
+     "vaddr": "0x0000000000403df8",
+     "paddr": "0x0000000000403df8",
+     "filesz": "0x000270",
+     "memsz": "0x0002a8",
+     "flags": "RW",
+     "align": "0x1000"
+    }
+   ],
+   "gnu_stack": {
+    "filesz": "0x000000",
+    "memsz": "0x000000",
+    "flags": "RW",
+    "align": "0x10"
+   },
+   "gnu_relro": {
+    "vaddr": "0x0000000000403df8",
+    "filesz": "0x000208",
+    "memsz": "0x000208"
+   },
+   "interp": "/lib64/ld-linux-x86-64.so.2"
+  }
+ },
+ "interp": {
+  "original": "/lib64/ld-linux-x86-64.so.2",
+  "candidate": "/lib64/ld-linux-x86-64.so.2",
+  "same": true
+ },
+ "load_segment_diff": [
+  {
+   "index": 0,
+   "vaddr": "0x0000000000400000",
+   "original": {
+    "offset": "0x000000",
+    "vaddr": "0x0000000000400000",
+    "paddr": "0x0000000000400000",
+    "filesz": "0x000788",
+    "memsz": "0x000788",
+    "flags": "R",
+    "align": "0x1000"
+   },
+   "candidate": {
+    "offset": "0x000000",
+    "vaddr": "0x0000000000400000",
+    "paddr": "0x0000000000400000",
+    "filesz": "0x000788",
+    "memsz": "0x000788",
+    "flags": "R",
+    "align": "0x1000"
+   },
+   "changed": []
+  },
+  {
+   "index": 1,
+   "vaddr": "0x0000000000401000",
+   "original": {
+    "offset": "0x001000",
+    "vaddr": "0x0000000000401000",
+    "paddr": "0x0000000000401000",
+    "filesz": "0x0008e9",
+    "memsz": "0x0008e9",
+    "flags": "R E",
+    "align": "0x1000"
+   },
+   "candidate": {
+    "offset": "0x001000",
+    "vaddr": "0x0000000000401000",
+    "paddr": "0x0000000000401000",
+    "filesz": "0x001000",
+    "memsz": "0x001000",
+    "flags": "R E",
+    "align": "0x1000"
+   },
+   "changed": [
+    "filesz",
+    "memsz"
+   ]
+  },
+  {
+   "index": 2,
+   "vaddr": "0x0000000000402000",
+   "original": {
+    "offset": "0x002000",
+    "vaddr": "0x0000000000402000",
+    "paddr": "0x0000000000402000",
+    "filesz": "0x0007a4",
+    "memsz": "0x0007a4",
+    "flags": "R",
+    "align": "0x1000"
+   },
+   "candidate": {
+    "offset": "0x002000",
+    "vaddr": "0x0000000000402000",
+    "paddr": "0x0000000000402000",
+    "filesz": "0x0007a4",
+    "memsz": "0x0007a4",
+    "flags": "R",
+    "align": "0x1000"
+   },
+   "changed": []
+  },
+  {
+   "index": 3,
+   "vaddr": "0x0000000000403df8",
+   "original": {
+    "offset": "0x002df8",
+    "vaddr": "0x0000000000403df8",
+    "paddr": "0x0000000000403df8",
+    "filesz": "0x000270",
+    "memsz": "0x0002a8",
+    "flags": "RW",
+    "align": "0x1000"
+   },
+   "candidate": {
+    "offset": "0x002df8",
+    "vaddr": "0x0000000000403df8",
+    "paddr": "0x0000000000403df8",
+    "filesz": "0x000270",
+    "memsz": "0x0002a8",
+    "flags": "RW",
+    "align": "0x1000"
+   },
+   "changed": []
+  }
+ ],
+ "nx": {
+  "original": "RW",
+  "candidate": "RW",
+  "enabled": true,
+  "same": true
+ },
+ "canary": {
+  "original": false,
+  "candidate": false,
+  "same": true
+ },
+ "relro": {
+  "original": {
+   "vaddr": "0x0000000000403df8",
+   "filesz": "0x000208",
+   "memsz": "0x000208"
+  },
+  "candidate": {
+   "vaddr": "0x0000000000403df8",
+   "filesz": "0x000208",
+   "memsz": "0x000208"
+  },
+  "same": true,
+  "bind_now": {
+   "original": false,
+   "candidate": false
+  }
+ },
+ "imports": {
+  "original": [
+   "__ctype_b_loc",
+   "__gmon_start__",
+   "__isoc99_sscanf",
+   "__isoc99_swscanf",
+   "__libc_start_main",
+   "fprintf",
+   "iswxdigit",
+   "printf",
+   "puts",
+   "rand",
+   "strcpy",
+   "wprintf"
+  ],
+  "candidate": [
+   "__ctype_b_loc",
+   "__gmon_start__",
+   "__isoc99_sscanf",
+   "__isoc99_swscanf",
+   "__libc_start_main",
+   "fprintf",
+   "iswxdigit",
+   "printf",
+   "puts",
+   "rand",
+   "strcpy",
+   "wprintf"
+  ],
+  "same": true,
+  "added": [],
+  "removed": []
+ },
+ "relocations": {
+  "original": {
+   "sections": {
+    ".rela.dyn": 3,
+    ".rela.plt": 10
+   },
+   "total": 13
+  },
+  "candidate": {
+   "sections": {
+    ".rela.dyn": 3,
+    ".rela.plt": 10
+   },
+   "total": 13
+  },
+  "same": true
+ },
+ "needed": {
+  "original": [
+   "libc.so.6"
+  ],
+  "candidate": [
+   "libc.so.6"
+  ],
+  "same": true
+ },
+ "conclusion": {
+  "unique_expected_difference": "p_filesz/memsz of PT_LOAD[1] 0x8e9 -> 0x1000",
+  "method": "the candidate extends the RX segment to the page end so the injected trampoline at 0x4018e9 is covered by p_filesz",
+  "everything_else": "entry, other PT_LOADs (filesz/memsz/flags/align), INTERP, GNU_STACK, GNU_RELRO, BIND_NOW, NEEDED, imports, relocations, canary are identical"
+ },
+ "flags_format": "readelf style: R/W/E separated by a space, e.g. 'R E'"
+}

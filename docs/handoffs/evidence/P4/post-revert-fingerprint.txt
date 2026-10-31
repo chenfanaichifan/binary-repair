@@ -1,0 +1,27 @@
+# post-revert-fingerprint.txt — gate4-harness uid 11, taken live over SSH after scripted revert
+# operator: M3+M5 merged agent; method: ssh lab@192.168.30.128 (key id_ed25519)
+
+$ date -Is; hostname; uname -r
+2026-10-30T19:38:06+08:00
+binrepair-vm
+6.8.0-147-generic
+
+$ id runner
+uid=1003(runner) gid=1003(runner) groups=1003(runner)
+
+$ sudo sha256sum /usr/local/sbin/jobwrap /usr/local/etc/binrepair/gate4.conf
+b232d60b20b13dc696402112dd1d970c35b41a3ee720af32cfb2df396c621fa8  /usr/local/sbin/jobwrap
+a912e6b0f7a852141476032dba55b954d7637e81d25d11578990dc2d82e5a8cd  /usr/local/etc/binrepair/gate4.conf
+
+$ sudo stat -c "%a %U:%G %s %n" /usr/local/sbin/jobwrap /usr/local/etc/binrepair/gate4.conf
+700 root:root 22120 /usr/local/sbin/jobwrap
+600 root:root 210 /usr/local/etc/binrepair/gate4.conf
+
+$ sha256sum /opt/binrepair/m5-kit-v6/routeb/gate4_runner.sh /opt/binrepair/negcheck.sh /opt/binrepair/probe.sh
+515c4d609495dea723c6fe6ff9e55b34fca078a3bf450770ebb3c744f07bd357  /opt/binrepair/m5-kit-v6/routeb/gate4_runner.sh
+9ea00ff8478fce1cc5162318fc2e480c9cdfc5c065764c8b81d717c02157be5d  /opt/binrepair/negcheck.sh
+25287ec65fa6a6af394e773623bd9248a1aa6383c6f0a51b9bd9c2e6d7de9bc5  /opt/binrepair/probe.sh
+
+$ sudo sha256sum /srv/binrepair/gate4-work/original.elf /srv/binrepair/gate4-work/roundtrip.elf
+aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393  /srv/binrepair/gate4-work/original.elf
+decdcdb821bfe4c41a070b0a23a2f6497f46a92f439cb02a1e4139a82cde954b  /srv/binrepair/gate4-work/roundtrip.elf

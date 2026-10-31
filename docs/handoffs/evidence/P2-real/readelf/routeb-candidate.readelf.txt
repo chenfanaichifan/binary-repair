@@ -1,0 +1,120 @@
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x401170
+  Start of program headers:          28672 (bytes into file)
+  Start of section headers:          24424 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         15
+  Size of section headers:           64 (bytes)
+  Number of section headers:         37
+  Section header string table index: 36
+
+Program Headers:
+  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align
+  PHDR           0x007000 0x0000000000407000 0x0000000000407000 0x000348 0x000348 R   0x8
+  INTERP         0x000318 0x0000000000400318 0x0000000000400318 0x00001c 0x00001c R   0x1
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+  LOAD           0x000000 0x0000000000400000 0x0000000000400000 0x000788 0x000788 R   0x1000
+  LOAD           0x001000 0x0000000000401000 0x0000000000401000 0x0008e9 0x0008e9 R E 0x1000
+  LOAD           0x002000 0x0000000000402000 0x0000000000402000 0x0007a4 0x0007a4 R   0x1000
+  LOAD           0x002df8 0x0000000000403df8 0x0000000000403df8 0x000270 0x0002a8 RW  0x1000
+  LOAD           0x0068a8 0x00000000004058a8 0x00000000004058a8 0x00010b 0x00010b R E 0x1000
+  LOAD           0x007000 0x0000000000407000 0x0000000000407000 0x000348 0x000348 R   0x1000
+  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x10
+  NOTE           0x000338 0x0000000000400338 0x0000000000400338 0x000030 0x000030 R   0x8
+  GNU_PROPERTY   0x000338 0x0000000000400338 0x0000000000400338 0x000030 0x000030 R   0x8
+  NOTE           0x000368 0x0000000000400368 0x0000000000400368 0x000044 0x000044 R   0x4
+  GNU_EH_FRAME   0x002088 0x0000000000402088 0x0000000000402088 0x000174 0x000174 R   0x4
+  GNU_RELRO      0x002df8 0x0000000000403df8 0x0000000000403df8 0x000208 0x000208 R   0x1
+  DYNAMIC        0x002e08 0x0000000000403e08 0x0000000000403e08 0x0001d0 0x0001d0 RW  0x8
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .interp .note.gnu.property .note.gnu.build-id .note.ABI-tag .gnu.hash .dynsym .dynstr .gnu.version .gnu.version_r .rela.dyn .rela.plt 
+   03     .init .plt .plt.sec .text .fini 
+   04     .rodata .eh_frame_hdr .eh_frame 
+   05     .init_array .fini_array .dynamic .got .got.plt .data .bss 
+   06     
+   07     
+   08     
+   09     .note.gnu.property 
+   10     .note.gnu.property 
+   11     .note.gnu.build-id .note.ABI-tag 
+   12     .eh_frame_hdr 
+   13     .init_array .fini_array .dynamic .got 
+   14     .dynamic 
+
+Dynamic section at offset 0x2e08 contains 24 entries:
+  Tag        Type                         Name/Value
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x000000000000000c (INIT)               0x401000
+ 0x000000000000000d (FINI)               0x4018dc
+ 0x0000000000000019 (INIT_ARRAY)         0x403df8
+ 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)
+ 0x000000000000001a (FINI_ARRAY)         0x403e00
+ 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)
+ 0x000000006ffffef5 (GNU_HASH)           0x4003b0
+ 0x0000000000000005 (STRTAB)             0x400528
+ 0x0000000000000006 (SYMTAB)             0x4003d8
+ 0x000000000000000a (STRSZ)              184 (bytes)
+ 0x000000000000000b (SYMENT)             24 (bytes)
+ 0x0000000000000015 (DEBUG)              0x0
+ 0x0000000000000003 (PLTGOT)             0x403fe8
+ 0x0000000000000002 (PLTRELSZ)           240 (bytes)
+ 0x0000000000000014 (PLTREL)             RELA
+ 0x0000000000000017 (JMPREL)             0x400698
+ 0x0000000000000007 (RELA)               0x400650
+ 0x0000000000000008 (RELASZ)             72 (bytes)
+ 0x0000000000000009 (RELAENT)            24 (bytes)
+ 0x000000006ffffffe (VERNEED)            0x400600
+ 0x000000006fffffff (VERNEEDNUM)         1
+ 0x000000006ffffff0 (VERSYM)             0x4005e0
+ 0x0000000000000000 (NULL)               0x0
+
+Relocation section '.rela.dyn' at offset 0x650 contains 3 entries:
+    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+0000000000403fd8  0000000100000006 R_X86_64_GLOB_DAT      0000000000000000 __libc_start_main@GLIBC_2.34 + 0
+0000000000403fe0  0000000800000006 R_X86_64_GLOB_DAT      0000000000000000 __gmon_start__ + 0
+0000000000404080  0000000d00000005 R_X86_64_COPY          0000000000404080 stderr@GLIBC_2.2.5 + 0
+
+Relocation section '.rela.plt' at offset 0x698 contains 10 entries:
+    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+0000000000404000  0000000200000007 R_X86_64_JUMP_SLOT     0000000000000000 strcpy@GLIBC_2.2.5 + 0
+0000000000404008  0000000300000007 R_X86_64_JUMP_SLOT     0000000000000000 puts@GLIBC_2.2.5 + 0
+0000000000404010  0000000400000007 R_X86_64_JUMP_SLOT     0000000000000000 iswxdigit@GLIBC_2.2.5 + 0
+0000000000404018  0000000500000007 R_X86_64_JUMP_SLOT     0000000000000000 printf@GLIBC_2.2.5 + 0
+0000000000404020  0000000600000007 R_X86_64_JUMP_SLOT     0000000000000000 __isoc99_swscanf@GLIBC_2.7 + 0
+0000000000404028  0000000700000007 R_X86_64_JUMP_SLOT     0000000000000000 fprintf@GLIBC_2.2.5 + 0
+0000000000404030  0000000900000007 R_X86_64_JUMP_SLOT     0000000000000000 wprintf@GLIBC_2.2.5 + 0
+0000000000404038  0000000a00000007 R_X86_64_JUMP_SLOT     0000000000000000 __isoc99_sscanf@GLIBC_2.7 + 0
+0000000000404040  0000000b00000007 R_X86_64_JUMP_SLOT     0000000000000000 rand@GLIBC_2.2.5 + 0
+0000000000404048  0000000c00000007 R_X86_64_JUMP_SLOT     0000000000000000 __ctype_b_loc@GLIBC_2.3 + 0
+
+Symbol table '.dynsym' contains 14 entries:
+   Num:    Value          Size Type    Bind   Vis      Ndx Name
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND 
+     1: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND __libc_start_main@GLIBC_2.34 (2)
+     2: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND strcpy@GLIBC_2.2.5 (3)
+     3: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND puts@GLIBC_2.2.5 (3)
+     4: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND iswxdigit@GLIBC_2.2.5 (3)
+     5: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND printf@GLIBC_2.2.5 (3)
+     6: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND __isoc99_swscanf@GLIBC_2.7 (4)
+     7: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND fprintf@GLIBC_2.2.5 (3)
+     8: 0000000000000000     0 NOTYPE  WEAK   DEFAULT  UND __gmon_start__
+     9: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND wprintf@GLIBC_2.2.5 (3)
+    10: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND __isoc99_sscanf@GLIBC_2.7 (4)
+    11: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND rand@GLIBC_2.2.5 (3)
+    12: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND __ctype_b_loc@GLIBC_2.3 (5)
+    13: 0000000000404080     8 OBJECT  GLOBAL DEFAULT   26 stderr@GLIBC_2.2.5 (3)

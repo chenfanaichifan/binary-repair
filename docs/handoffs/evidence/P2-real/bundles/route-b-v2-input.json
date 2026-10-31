@@ -1,0 +1,27 @@
+{
+  "candidate_sha256": "63fcafa6ed01d2db7d5d8a1af460af994e65da853c0c250b05c3eb761f616d01",
+  "details": {
+    "V0": "original aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393 matches the job record; candidate matches manifest-repaired.binary_sha256",
+    "V1": "P3B routeb static audit (audit.json pass=true)",
+    "V2": "v2_interface.py failed: extra_load_segments_within_contract \u2014 2 extra PT_LOAD segments, contract allows 1 (authorized_edits[2], fallback only)",
+    "V3": "manifest-repaired.json: 6/6 cases ok",
+    "V4": "bounded symbolic verdict not_run; no solver output in P3B v5",
+    "V5": "record re-verified: shipped bytes match the recorded two-run result"
+  },
+  "evidence_files": {
+    "V0": "D:\\BinRepair\\docs\\handoffs\\evidence\\P3B\\edit-manifest.json",
+    "V1": "D:\\BinRepair\\docs\\handoffs\\evidence\\P3B\\audit.json",
+    "V2": "D:\\BinRepair\\.tmp\\p2-real-2026-10-30\\v2-routeb.json",
+    "V3": "D:\\BinRepair\\docs\\handoffs\\evidence\\P3B\\manifest-repaired.json",
+    "V5": "D:\\BinRepair\\.tmp\\p2-real-2026-10-30\\v5-reproducibility.json"
+  },
+  "results": {
+    "V0": "passed",
+    "V1": "passed",
+    "V2": "failed",
+    "V3": "passed",
+    "V4": "not_run",
+    "V5": "passed"
+  },
+  "route": "route_b"
+}

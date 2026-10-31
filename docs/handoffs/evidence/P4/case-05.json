@@ -1,0 +1,17 @@
+{
+ "derived_from": "manifest-compare.json",
+ "runner_native": false,
+ "id": "invalid-first",
+ "kind": "invalid",
+ "original": {
+  "returncode": 0,
+  "stdout_hex": "41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+  "stderr_hex": ""
+ },
+ "patched": {
+  "returncode": 0,
+  "stdout_hex": "41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+  "stderr_hex": ""
+ },
+ "same": true
+}

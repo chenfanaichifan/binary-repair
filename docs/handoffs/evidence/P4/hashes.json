@@ -1,0 +1,19 @@
+{
+ "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+ "candidate_sha256": "decdcdb821bfe4c41a070b0a23a2f6497f46a92f439cb02a1e4139a82cde954b",
+ "gate4_status": {
+  "gate4": "pass",
+  "reason": "6/6 behaviour-identical",
+  "uid": 1003,
+  "expected_uid": 1003,
+  "elf_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "patched_sha256": "decdcdb821bfe4c41a070b0a23a2f6497f46a92f439cb02a1e4139a82cde954b",
+  "manifest_compare": "/srv/binrepair/gate4-work/manifest-compare.json",
+  "environment": "/srv/binrepair/gate4-work/environment.txt"
+ },
+ "sources": {
+  "original_sha256": "original.elf (this package); re-verified in-guest 2026-10-30",
+  "candidate_sha256": "roundtrip.elf (this package, unchanged round-trip candidate); re-verified in-guest 2026-10-30",
+  "gate4_status": "gate4-status.json, copied verbatim from /srv/binrepair/gate4-work/gate4-status.json (2026-10-29 run)"
+ }
+}

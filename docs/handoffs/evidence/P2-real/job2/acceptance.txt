@@ -1,0 +1,25 @@
+$ python tools/p2_acceptance.py --job-id 8b0f2856086c4fe69117374e09d376bf --base-url http://127.0.0.1:8000
+# run at 2026-10-30T20:21:58+08:00 on host LAPTOP-AS90U4MB, controller: app.controller_api on 127.0.0.1:8000
+# data dir: D:/BinRepair/.tmp/p2-real-2026-10-30/var/controller
+{
+  "job_id": "8b0f2856086c4fe69117374e09d376bf",
+  "synthetic": false,
+  "phase": "finished",
+  "verdict": {
+    "outcome": "rejected",
+    "reason": "regression_failed",
+    "failing_obligation": "interface",
+    "detail": "route_b: V2 interface: failed"
+  },
+  "routes": {
+    "A": {
+      "outcome": "inconclusive",
+      "obligations": 6
+    },
+    "B": {
+      "outcome": "rejected",
+      "obligations": 6
+    }
+  }
+}
+exit_code=0

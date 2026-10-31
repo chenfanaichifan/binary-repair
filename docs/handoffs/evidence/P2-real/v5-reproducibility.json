@@ -1,0 +1,63 @@
+{
+  "environment": {
+    "arch": "x86_64",
+    "date": "2026-10-30T20:20:52+08:00",
+    "hostname": "binrepair-vm",
+    "kernel": "6.8.0-147-generic",
+    "os": "PRETTY_NAME=\"Ubuntu 24.04.5 LTS\"",
+    "python": "Python 3.12.3",
+    "uid": "1000"
+  },
+  "gate": "V5",
+  "invoked_as": "v5_reproducibility.py (no arguments)",
+  "obligation": "reproducibility",
+  "routes": {
+    "route_a": {
+      "byte_identical": true,
+      "mode": "fresh replay in this guest (deterministic regenerator)",
+      "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "procedure": "python3 regen_c4a159.py ./original.elf ./replay-N.elf (twice)",
+      "regenerator": {
+        "path": "regen_c4a159.py",
+        "self_checks": "asserts original sha256 and patched sha256 before writing",
+        "sha256": "56331eedb4d72c55eec4e0f105fb20207576e6e6860b79ca4cedb175ed54e843"
+      },
+      "result": "passed",
+      "route": "route_a",
+      "runs": [
+        {
+          "output_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+          "output_size": 26792,
+          "returncode": 0,
+          "run": 1,
+          "stderr": "",
+          "stdout": "wrote /home/lab/v2/replay-1.elf sha256=c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82"
+        },
+        {
+          "output_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+          "output_size": 26792,
+          "returncode": 0,
+          "run": 2,
+          "stderr": "",
+          "stdout": "wrote /home/lab/v2/replay-2.elf sha256=c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82"
+        }
+      ],
+      "shipped_candidate_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82"
+    },
+    "route_b": {
+      "hash_consistent_now": true,
+      "limitation": "the Route B executor was not executed again in this window; this re-verifies the recorded two-run result against the shipped bytes, it is not a third run",
+      "mode": "record re-verified (executor not re-run here)",
+      "procedure": "sha256sum of the shipped candidate compared with P3B/reproducibility.json",
+      "recorded_byte_identical": true,
+      "recorded_candidate_sha256": [
+        "63fcafa6ed01d2db7d5d8a1af460af994e65da853c0c250b05c3eb761f616d01",
+        "63fcafa6ed01d2db7d5d8a1af460af994e65da853c0c250b05c3eb761f616d01"
+      ],
+      "recorded_runs": 2,
+      "result": "passed",
+      "route": "route_b",
+      "shipped_candidate_sha256": "63fcafa6ed01d2db7d5d8a1af460af994e65da853c0c250b05c3eb761f616d01"
+    }
+  }
+}

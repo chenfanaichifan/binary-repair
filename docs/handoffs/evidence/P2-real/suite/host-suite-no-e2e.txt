@@ -1,0 +1,8 @@
+# full suite at integration head aab162a on the Windows host, e2e excluded
+# host has no readelf/objdump/clang (checked with shutil.which) - see guest-routeb-executor.txt
+$ python -m pytest --ignore=tests/e2e -q --tb=no
+........................................................................ [ 28%]
+........................................................ss.............. [ 56%]
+......................................F................................. [ 84%]
+.........................................                                [100%][safe-delete][SAFE_DELETE_BULK_GUARD_ERROR] failed to acquire lock: EPERM: operation not permitted, mkdir 'C:\Users\何欣蔚\AppData\Local\Temp\codebuddy-safe-delete-bulk\4aa52578326d3349546cb2e9933df3140167fd803318ff1dc63771b4206fb0fd\.lock'
+exit_code=1

@@ -1,0 +1,25 @@
+{
+  "candidate_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+  "details": {
+    "V0": "P3A v6 result-bundle.json gates.V0.status = pass",
+    "V1": "P3A v6 result-bundle.json gates.V1.status = pass",
+    "V2": "no interface/ABI/load check recorded in P3A v6",
+    "V3": "P3A v6 result-bundle.json gates.V3.status = pass",
+    "V4": "bounded symbolic verdict not_run; no solver output in P3A v6",
+    "V5": "no independent replay recorded for Route A in P3A v6"
+  },
+  "evidence_files": {
+    "V0": "D:\\BinRepair\\docs\\handoffs\\evidence\\P3A\\result-bundle.json",
+    "V1": "D:\\BinRepair\\docs\\handoffs\\evidence\\P3A\\evidence\\v1\\lief.json",
+    "V3": "D:\\BinRepair\\docs\\handoffs\\evidence\\P3A\\evidence\\v3\\formal-run.json"
+  },
+  "results": {
+    "V0": "passed",
+    "V1": "passed",
+    "V2": "not_run",
+    "V3": "passed",
+    "V4": "not_run",
+    "V5": "not_run"
+  },
+  "route": "route_a"
+}

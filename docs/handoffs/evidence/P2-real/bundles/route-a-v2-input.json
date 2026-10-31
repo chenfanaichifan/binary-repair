@@ -1,0 +1,27 @@
+{
+  "candidate_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+  "details": {
+    "V0": "P3A v6 result-bundle.json gates.V0.status = pass",
+    "V1": "P3A v6 result-bundle.json gates.V1.status = pass",
+    "V2": "v2_interface.py: 16/16 interface checks passed in the guest",
+    "V3": "P3A v6 result-bundle.json gates.V3.status = pass",
+    "V4": "bounded symbolic verdict not_run; no solver output in P3A v6",
+    "V5": "fresh replay: 2 runs byte identical to the shipped candidate"
+  },
+  "evidence_files": {
+    "V0": "D:\\BinRepair\\docs\\handoffs\\evidence\\P3A\\result-bundle.json",
+    "V1": "D:\\BinRepair\\docs\\handoffs\\evidence\\P3A\\evidence\\v1\\lief.json",
+    "V2": "D:\\BinRepair\\.tmp\\p2-real-2026-10-30\\v2-routea.json",
+    "V3": "D:\\BinRepair\\docs\\handoffs\\evidence\\P3A\\evidence\\v3\\formal-run.json",
+    "V5": "D:\\BinRepair\\.tmp\\p2-real-2026-10-30\\v5-reproducibility.json"
+  },
+  "results": {
+    "V0": "passed",
+    "V1": "passed",
+    "V2": "passed",
+    "V3": "passed",
+    "V4": "not_run",
+    "V5": "passed"
+  },
+  "route": "route_a"
+}

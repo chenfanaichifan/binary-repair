@@ -1,0 +1,11 @@
+{
+ "file": "jobwrap-routeb",
+ "source_path": "/usr/local/sbin/jobwrap",
+ "snapshot": {
+  "uid": 13,
+  "name": "routeb-harness"
+ },
+ "sha256": "5cabf25a92ef90d4640efa7e1926d5799312246bfc23c0985bc7df8ea883ac49",
+ "exported_at": "2026-10-30T19:32:00+08:00",
+ "note": "routeb-mode wrapper that ran the P3B job (jobwrap-routeb.json, exit_code=0); distinct from the gate4 wrapper b232d60b at uid 11"
+}

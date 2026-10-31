@@ -1,0 +1,113 @@
+{
+  "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "patched_sha256": "decdcdb821bfe4c41a070b0a23a2f6497f46a92f439cb02a1e4139a82cde954b",
+  "original_size": 26792,
+  "patched_size": 26792,
+  "cases": [
+    {
+      "manifest": "valid.json",
+      "id": "valid-empty",
+      "kind": "valid",
+      "input_len": 0,
+      "original": {
+        "returncode": 0,
+        "stdout_hex": "0a",
+        "stderr_hex": ""
+      },
+      "patched": {
+        "returncode": 0,
+        "stdout_hex": "0a",
+        "stderr_hex": ""
+      },
+      "same": true
+    },
+    {
+      "manifest": "valid.json",
+      "id": "valid-smallest",
+      "kind": "valid",
+      "input_len": 1,
+      "original": {
+        "returncode": 0,
+        "stdout_hex": "410a",
+        "stderr_hex": ""
+      },
+      "patched": {
+        "returncode": 0,
+        "stdout_hex": "410a",
+        "stderr_hex": ""
+      },
+      "same": true
+    },
+    {
+      "manifest": "valid.json",
+      "id": "valid-typical",
+      "kind": "valid",
+      "input_len": 10,
+      "original": {
+        "returncode": 0,
+        "stdout_hex": "414141414141414141410a",
+        "stderr_hex": ""
+      },
+      "patched": {
+        "returncode": 0,
+        "stdout_hex": "414141414141414141410a",
+        "stderr_hex": ""
+      },
+      "same": true
+    },
+    {
+      "manifest": "valid.json",
+      "id": "valid-maximum",
+      "kind": "valid",
+      "input_len": 49,
+      "original": {
+        "returncode": 0,
+        "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+        "stderr_hex": ""
+      },
+      "patched": {
+        "returncode": 0,
+        "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+        "stderr_hex": ""
+      },
+      "same": true
+    },
+    {
+      "manifest": "invalid.json",
+      "id": "invalid-first",
+      "kind": "invalid",
+      "input_len": 50,
+      "original": {
+        "returncode": 0,
+        "stdout_hex": "41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+        "stderr_hex": ""
+      },
+      "patched": {
+        "returncode": 0,
+        "stdout_hex": "41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+        "stderr_hex": ""
+      },
+      "same": true
+    },
+    {
+      "manifest": "invalid.json",
+      "id": "invalid-longer",
+      "kind": "invalid",
+      "input_len": 100,
+      "original": {
+        "returncode": -11,
+        "stdout_hex": "",
+        "stderr_hex": ""
+      },
+      "patched": {
+        "returncode": -11,
+        "stdout_hex": "",
+        "stderr_hex": ""
+      },
+      "same": true
+    }
+  ],
+  "same_count": 6,
+  "total": 6,
+  "gate4_pass": true
+}
