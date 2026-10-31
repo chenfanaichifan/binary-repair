@@ -78,3 +78,22 @@ Logs: `delivery/M5-v11-adapter-worker.log`,
 
 This preserves the rule: a single-agent V4 self-check is evidence, not a Lead
 adjudication and not `success_within_scope`.
+
+## v12 addendum: raw V4 accounting is not a symbolic proof
+
+v12 P2-real checker: PASS 42/42, sums `80201e60…c869`.
+New `v4/REPLAY-README.md` + `v4-accounting.json` show, for every run:
+
+```text
+sat=0, unsat=0, unknown=0, eval=1
+```
+
+The valid domain is concrete `49 'A' + NUL`, and the free domain is concrete
+`57 'A' + NUL`; there are no SAT queries. Therefore the producer's `proven`
+label is a concrete worst-case execution, not a symbolic proof over the legal
+input domain. The package also lacks the Standard-B deliberately-defective
+second candidate.
+
+M5 keeps V4 at **unknown / NOT VERIFIED**; it does not map it to passed. The
+fresh p2 remains `inconclusive / solver_unknown / symbolic`, and Gate 4 remains
+NOT RUN. No gate4_pass.
