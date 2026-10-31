@@ -7,8 +7,9 @@ the post-build steps to bind the resulting hash to Gate 5.
 ## Source
 
 - `jobwrap_gate5.c` — the successor isolation executor (this directory).
-- Pinned probe blob (compile-time constant, fail-closed):
-  `scripts/m4_gate5_probe.py` = `f39a0302dd1aa42635da80fa4e9160d37a221f5ac383270add3eaedcffd146cb`
+- Pinned probe blobs (compile-time constants, fail-closed):
+  - Route A: `scripts/m4_gate5_probe.py` = `f39a0302dd1aa42635da80fa4e9160d37a221f5ac383270add3eaedcffd146cb`
+  - Route B: `scripts/m4_gate5b_probe.py` = `e635d646dcfba0a68e63e609ffb3df254bccb6d61a2e8e4bb238e5efe4080ed7`
 
 ## Build (run as root inside the guest)
 
@@ -36,6 +37,8 @@ sha256sum /usr/local/sbin/jobwrap-gate5
 # 2. record the isolation attestation it emits on a probe run
 #    (uid=1003, gid=1003, CapEff=0, NoNewPrivs=1, egress=blocked, ...)
 jobwrap-gate5 probe m4-gate5 -- /path/to/repo /var/tmp/gate5-work
+# Route B (fixed invocation):
+jobwrap-gate5 probe m4-gate5b -- /path/to/repo /var/tmp/gate5b-work
 ```
 
 The successor binary hash goes into the Gate 5 record (`51`), alongside the

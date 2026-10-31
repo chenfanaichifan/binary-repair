@@ -14,17 +14,20 @@ documented equivalent. Handoff 66 approves this successor path.
 ## What it runs
 
 ```
-jobwrap-gate5 probe m4-gate5 -- <repo-root> <work-dir>
+jobwrap-gate5 probe m4-gate5 -- <repo-root> <work-dir>     # Route A (c4a159…)
+jobwrap-gate5 probe m4-gate5b -- <repo-root> <work-dir>    # Route B (208574ab…)
 ```
 
 which, after isolation, `execv`s exactly:
 
 ```
-/usr/bin/python3 <repo-root>/scripts/m4_gate5_probe.py <repo-root> <work-dir>
+/usr/bin/python3 <repo-root>/scripts/m4_gate5_probe.py  <repo-root> <work-dir>   # Route A
+/usr/bin/python3 <repo-root>/scripts/m4_gate5b_probe.py <repo-root> <work-dir>   # Route B
 ```
 
 No shell string, no PATH lookup for python3, no `m4_gate5_fixed.sh`, no
-caller-supplied command.
+caller-supplied command. Each mode pins its own probe blob at compile time
+(fail-closed).
 
 ## Files
 
@@ -37,7 +40,8 @@ caller-supplied command.
 root-only · no-egress netns · `setgroups`→`setgid(1003)`→`setuid(1003)` ·
 `CapEff=0` · seccomp allow-list · `NoNewPrivs=1` · rlimits · `clearenv` +
 minimal whitelist · fixed argv · absolute paths · probe root-owned/non-writable ·
-fail-closed (probe blob `f39a0302…d146cb` pinned at compile time).
+fail-closed (probe blobs pinned at compile time: Route A `f39a0302…d146cb`,
+Route B `e635d646…80ed7`).
 
 Byte-equivalence to the lost source is **not** claimed; semantic equivalence +
 independent verifiability of each isolation item is the bar.

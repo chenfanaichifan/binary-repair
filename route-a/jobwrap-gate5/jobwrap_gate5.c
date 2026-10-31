@@ -79,7 +79,7 @@
 /* Absolute python3 (no PATH resolution). */
 #define PYTHON3_PATH "/usr/bin/python3"
 
-/* Relative location of the probe inside the repo root. */
+/* Relative location of the Route A probe inside the repo root. */
 #define PROBE_REL "scripts/m4_gate5_probe.py"
 
 /*
@@ -89,6 +89,17 @@
  */
 static const char PROBE_SHA256_HEX[] =
     "f39a0302dd1aa42635da80fa4e9160d37a221f5ac383270add3eaedcffd146cb";
+
+/* Relative location of the Route B probe inside the repo root. */
+#define PROBE_B_REL "scripts/m4_gate5b_probe.py"
+
+/*
+ * Pinned SHA-256 of scripts/m4_gate5b_probe.py (M4-authored Route B blob, frozen).
+ * Value: e635d646dcfba0a68e63e609ffb3df254bccb6d61a2e8e4bb238e5efe4080ed7
+ * Verified against .tmp/integration/scripts/m4_gate5b_probe.py on 2026-10-31.
+ */
+static const char PROBE_B_SHA256_HEX[] =
+    "e635d646dcfba0a68e63e609ffb3df254bccb6d61a2e8e4bb238e5efe4080ed7";
 
 /* ------------------------------------------------------------------ */
 /* Tiny SHA-256 (self-contained; no external sha256sum dependency).    */
@@ -539,7 +550,7 @@ static void enter_isolation(void) {
 /* ------------------------------------------------------------------ */
 
 static void usage(void) {
-    fputs("usage: jobwrap-gate5 probe m4-gate5 -- <repo-root> <work-dir>\n", stderr);
+    fputs("usage: jobwrap-gate5 probe (m4-gate5|m4-gate5b) -- <repo-root> <work-dir>\n", stderr);
     _exit(2);
 }
 
@@ -547,7 +558,17 @@ int main(int argc, char **argv) {
     /* Fixed argv parse: exactly 6 tokens after program name. */
     if (argc != 6) usage();
     if (strcmp(argv[1], "probe") != 0) usage();
-    if (strcmp(argv[2], "m4-gate5") != 0) usage();
+    const char *probe_rel;
+    const char *probe_sha256_hex;
+    if (strcmp(argv[2], "m4-gate5") == 0) {
+        probe_rel = PROBE_REL;
+        probe_sha256_hex = PROBE_SHA256_HEX;
+    } else if (strcmp(argv[2], "m4-gate5b") == 0) {
+        probe_rel = PROBE_B_REL;
+        probe_sha256_hex = PROBE_B_SHA256_HEX;
+    } else {
+        usage();
+    }
     if (strcmp(argv[3], "--") != 0) usage();
     const char *repo_root = argv[4];
     const char *work_dir = argv[5];
@@ -563,15 +584,15 @@ int main(int argc, char **argv) {
     /* Build the probe path and verify its blob BEFORE dropping privileges,
      * so the uid-1003 process can never skip the check due to unreadability. */
     char probe_path[PATH_MAX];
-    if (snprintf(probe_path, sizeof probe_path, "%s/%s", repo_root, PROBE_REL)
+    if (snprintf(probe_path, sizeof probe_path, "%s/%s", repo_root, probe_rel)
         >= (int)sizeof probe_path)
         die("repo-root too long");
 
     char actual[65];
     if (sha256_hex_of_file(probe_path, actual) != 0)
         die("cannot read probe %s: %s", probe_path, strerror(errno));
-    if (strcmp(actual, PROBE_SHA256_HEX) != 0)
-        die("probe blob mismatch: got %s, expected %s", actual, PROBE_SHA256_HEX);
+    if (strcmp(actual, probe_sha256_hex) != 0)
+        die("probe blob mismatch: got %s, expected %s", actual, probe_sha256_hex);
 
     /* The probe must be root-owned and not writable by group/other (defense in
      * depth; it is executed after drop, so it cannot be replaced by uid 1003). */
