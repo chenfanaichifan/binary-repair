@@ -28,6 +28,10 @@ Candidate consistency: P3A v7 uses `c4a159`, P3B v6 and P2-real fixed candidate 
 package candidates. The **P2-real controller jobs, however, still use the old Route B candidate
 `63fcafa6`**; no fresh real p2 has been run on `208574ab` (the bundle says so explicitly).
 
+Repo checker `scripts/check_handoff.py` (main `56a7447`) independently re-run on the extracted
+packages: **PASS, exit 0 for all four** — P2-real 38 sums (`a9502893…`), P3A 29 sums
+(`45367710…`), P3B 25 sums (`5370f2bb…`), P4 26 sums (`e4b81b34…`).
+
 ## 2. V4 evidence in P2-real — reviewed, and it is NOT sufficient
 
 Files: `v4/v4-evidence.json`, `v4/v4_symbolic.py`, `v4/v4_run_all.py`. Reported engine:
