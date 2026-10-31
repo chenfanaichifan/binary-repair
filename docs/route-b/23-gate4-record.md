@@ -11,7 +11,9 @@
 | P4 v3 `docs/handoffs/evidence/P4/` | checker PASS 26/26; `gate4-status=pass`, native `manifest-compare` 6/6; original `aa428157…8393`, patched `decdcdb8…954b` |
 | P4 isolation | uid 1003, `CapEff=0`, `NoNewPrivs=1`, netns empty/egress blocked; wrapper `b232d60b…`, `gate4.conf` `a912e6b0…`, chain `b7ded700…`, raw revert/fingerprint present |
 | P3A v7 | `dist/m5-evidence/P3A-routea-2026-10-31-v7.zip` SHA-256 `6f16a933…bf24e`; checker PASS 29/29; candidate `c4a159…`; V0/V1/V2/V3/V5 pass |
+| P3A sums | `docs/handoffs/evidence/P3A/SHA256SUMS` LF; sha256 `fa3e16b0…d48f`; 26/26 |
 | P3B v6 | `dist/m5-evidence/P3B-package-v6-2026-10-31.zip` SHA-256 `ca8e1e50…97b6`; checker PASS 25/25; candidate `208574ab…`; V2 16/16 pass; V3 6/6; V5 pass |
+| P3B sums | `docs/handoffs/evidence/P3B/SHA256SUMS` LF; sha256 `fa098a38…5a13`; 22/22 |
 | fresh real p2 | job `5c04833b…`; `p2_acceptance.py` exit 0, `synthetic=false`; verdict **inconclusive / solver_unknown / symbolic** |
 | V4 | **PASS (model-level, bound 64)** per Lead ruling; **not** candidate-binary symbolic execution and **not** whole-program equivalence; no V4 evidence file is inside the P3B zip; Gate 4 formal still NOT RUN |
 
