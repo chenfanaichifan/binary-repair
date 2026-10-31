@@ -180,3 +180,5 @@ Update this after major decisions, completed phases, or bugs that future agents 
 - [2026-10-31] Gate 5 Route A PASS (docs 51/77); Gate 5 Route B NOT RUN/open. Fixture frozen for candidate scope only (docs 78): Gate 4 PASS strict + Gate5A PASS + V4 model PASS. Candidate tag mvp-candidate-2026-10-31; no full-acceptance tag, no full MVP claim.
 
 - [2026-10-31] Full MVP acceptance approved with recorded limitations (docs 80/81, commit d6d06d4): Gate 5 Route B PASS (R1-R8), Gate 5 Route A PASS, Gate 4 PASS strict, V4 model-level PASS, fixture frozen candidate scope. Final tag mvp-2026-10-31; M4/Lead same-person limitation; full suite environment gaps recorded; not independent human approval.
+
+- [2026-10-31] Gate5B rehash accepted (docs 82): Route B 43/43, manifest 0eafc14b…; split-chain A=90af91ef/B=0066973d, no Route A rerun; Route A branch sanitized variant not authoritative; main Route A manifest 05438764…. Final tag mvp-2026-10-31.
