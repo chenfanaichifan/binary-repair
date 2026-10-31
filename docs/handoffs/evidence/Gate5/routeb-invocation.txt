@@ -1,0 +1,16 @@
+Gate 5 Route B probe invocation (successor rebuilt with m4-gate5b mode):
+sudo /usr/local/sbin/jobwrap-gate5 probe m4-gate5b -- /srv/gate5-build /var/tmp/gate5b-work
+
+Fixed execv after isolation:
+/usr/bin/python3 /srv/gate5-build/scripts/m4_gate5b_probe.py /srv/gate5-build /var/tmp/gate5b-work
+
+repo_root=/srv/gate5-build
+work_dir=/var/tmp/gate5b-work
+probe=/srv/gate5-build/scripts/m4_gate5b_probe.py
+candidate=/srv/gate5-build/routeb/out/candidate.elf
+original=/srv/gate5-build/fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf
+raw_environment=routeb-evidence/environment.txt
+
+Fail-closed negative test:
+sudo /usr/local/sbin/jobwrap-gate5 probe m4-gate5b -- /var/tmp/gate5b-negative /var/tmp/gate5b-negative-work
+  -> probe blob mismatch (expected 05d9a2cd…edb82, got tampered), exit 1

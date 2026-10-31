@@ -1,0 +1,14 @@
+date_utc=2026-10-31T14:44:10.009986+00:00
+uname=Linux-6.8.0-147-generic-x86_64-with-glibc2.39
+python=3.12.3
+script_sha256=05d9a2cd417880c9be51e1a4cd4608158d94b50da233b223c2f4a589850edb82
+source_candidate=/srv/gate5-build/routeb/out/candidate.elf
+Uid:	1003	1003	1003	1003
+Gid:	1003	1003	1003	1003
+CapEff:	0000000000000000
+CapBnd:	000001ffffffffff
+NoNewPrivs:	1
+Seccomp:	2
+default_route_rc=1 default_route=''
+netns=net:[4026532222]
+gdb=/usr/bin/gdb

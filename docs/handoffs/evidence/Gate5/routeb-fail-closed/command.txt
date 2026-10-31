@@ -1,0 +1,1 @@
+sudo /usr/local/sbin/jobwrap-gate5 probe m4-gate5b -- /var/tmp/gate5b-negative /var/tmp/gate5b-negative-work

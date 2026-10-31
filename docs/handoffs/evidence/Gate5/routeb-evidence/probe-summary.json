@@ -1,0 +1,82 @@
+[
+  {
+    "detail": "208574ab5b7753fab6f28860830069770622fb7b1fcb8d181fa50453f8656717",
+    "id": "R1-candidate-identity",
+    "status": "PASS"
+  },
+  {
+    "detail": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+    "id": "R1-original-identity",
+    "status": "PASS"
+  },
+  {
+    "detail": "uid=1003",
+    "id": "R6-isolation-uid",
+    "status": "PASS"
+  },
+  {
+    "detail": "CapEff=0000000000000000",
+    "id": "R6-isolation-caps",
+    "status": "PASS"
+  },
+  {
+    "detail": "NoNewPrivs=1",
+    "id": "R6-isolation-nnp",
+    "status": "PASS"
+  },
+  {
+    "detail": "0x401000           0x402000     0x1000     0x1000  r-xp   /var/tmp/gate5b-work/candidate.elf",
+    "id": "R2-runtime-mapping",
+    "status": "PASS"
+  },
+  {
+    "detail": "entry 0x4012b0 jmp -> 0x4018ec (inside tail)",
+    "id": "R4-entry-redirect",
+    "status": "PASS"
+  },
+  {
+    "detail": "file=e16ba161b15c4f1a509d76c8f973e5e4200c60f14738694731f172127db325f3 memory=e16ba161b15c4f1a509d76c8f973e5e4200c60f14738694731f172127db325f3 bytes=1815/1815",
+    "id": "R3-memory-equals-file",
+    "status": "PASS"
+  },
+  {
+    "detail": "rc=0 expected=0",
+    "id": "R5-case-valid-empty",
+    "status": "PASS"
+  },
+  {
+    "detail": "rc=0 expected=0",
+    "id": "R5-case-valid-smallest",
+    "status": "PASS"
+  },
+  {
+    "detail": "rc=0 expected=0",
+    "id": "R5-case-valid-typical",
+    "status": "PASS"
+  },
+  {
+    "detail": "rc=0 expected=0",
+    "id": "R5-case-valid-maximum",
+    "status": "PASS"
+  },
+  {
+    "detail": "rc=1 expected=1",
+    "id": "R5-case-invalid-first",
+    "status": "PASS"
+  },
+  {
+    "detail": "rc=1 expected=1",
+    "id": "R5-case-invalid-longer",
+    "status": "PASS"
+  },
+  {
+    "detail": "6/6",
+    "id": "R5-six-cases",
+    "status": "PASS"
+  },
+  {
+    "detail": "208574ab5b7753fab6f28860830069770622fb7b1fcb8d181fa50453f8656717",
+    "id": "R7-candidate-stable",
+    "status": "PASS"
+  }
+]
