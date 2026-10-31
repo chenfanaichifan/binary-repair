@@ -155,9 +155,17 @@ guest or angr is unavailable, the result is `NOT VERIFIED`, not waived.
 | `v4_symbolic.py` | the TRUE symbolic model + guard proof (producer) |
 | `v4_run_all.py` | full-matrix runner + byte-hash re-verification |
 | `v4-evidence.json` | the six-run verdict output with distinct_strlen |
+| `original.elf` | defective fixture — SHA-256 `aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393` |
+| `routea-candidate.elf` | Route A candidate — SHA-256 `c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82` |
+| `routeb-candidate.elf` | Route B fixed candidate — SHA-256 `208574ab5b7753fab6f28860830069770622fb7b1fcb8d181fa50453f8656717` |
 | `v4_accounting.py` | (legacy, v12) supplementary instrumentation — superseded |
 | `v4-accounting.json` | (legacy, v12) — superseded by v4-evidence.json |
 | `v4-accounting.log` | (legacy, v12) — superseded |
+
+The three `.elf` files are the frozen bytes the harness operates on; a verifier
+**must** confirm their SHA-256 matches §1 before trusting any replay output.
+`v4_run_all.py` re-verifies these hashes at start and refuses to run on a
+mismatch.
 
 The legacy `v4_accounting.*` files are retained for provenance only; the
 authoritative output of this rework is `v4-evidence.json`.

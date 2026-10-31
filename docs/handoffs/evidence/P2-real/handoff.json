@@ -1,5 +1,5 @@
 {
- "created_at": "2026-10-31T15:05:41.146305+08:00",
+ "created_at": "2026-10-31T19:26:39.216101+08:00",
  "files": [
   "README.md",
   "bundles/attempt-cmd-v2.bat",
@@ -34,19 +34,22 @@
   "v2-routea.json",
   "v2-routeb-fixed.json",
   "v2-routeb.json",
-  "v5-reproducibility.json",
-  "v4/v4-evidence.json",
-  "v4/v4_symbolic.py",
-  "v4/v4_run_all.py",
-  "v4/v4_accounting.py",
+  "v4/REPLAY-README.md",
+  "v4/original.elf",
+  "v4/routea-candidate.elf",
+  "v4/routeb-candidate.elf",
   "v4/v4-accounting.json",
   "v4/v4-accounting.log",
-  "v4/REPLAY-README.md",
+  "v4/v4-evidence.json",
+  "v4/v4_accounting.py",
+  "v4/v4_run_all.py",
+  "v4/v4_symbolic.py",
+  "v5-reproducibility.json",
   "handoff.json"
  ],
  "from": "M3",
- "id": "P2-real-2026-10-30",
- "notes": "Real controller jobs e2fe0f46 and 8b0f2856 plus the V2/V5 probes. Both p2_acceptance runs exited 0. Route B V2 failed (15/16) on the 10-30 candidate 63fcafa6; the fixed candidate 208574ab reuses the R-X PT_LOAD tail (0 new segments) and passes V2 16/16 (see v2-routeb-fixed.json). V4 bounded symbolic was run 2026-10-31 (v4/): original/free -> counterexample, routea/routeb (208574ab) -> no_counterexample. Per Lead Standard B (docs/handoffs/62), V4 is NOT VERIFIED: single-agent self-check only, and the exploration is concrete-worst-case (0 satisfiability queries) not a symbolic proof. v4/REPLAY-README.md + v4_accounting.py + v4-accounting.{json,log} are the raw replay package for independent verification.",
+ "id": "P2-real-2026-10-31-v13",
+ "notes": "Real controller jobs e2fe0f46 and 8b0f2856 plus the V2/V5 probes. Both p2_acceptance runs exited 0. Route B V2 failed (15/16) on the 10-30 candidate 63fcafa6; the fixed candidate 208574ab reuses the R-X PT_LOAD tail (0 new segments) and passes V2 16/16 (see v2-routeb-fixed.json). V4 was reworked to a TRUE symbolic proof (v4/): input kept as claripy.BVS (only 'a NUL occurs somewhere' constrained), the repair's own hand-written strlen+guard runs as real symbolic code (only libc boundaries hooked). Result: original/over-long -> counterexample (defect caught); routea/routeb valid -> proven with distinct_strlen 0..49 (50 symbolic states); over-long -> no_counterexample (strcpy unreachable). The three frozen .elf binaries are included inside v4/ so an independent verifier can replay from the bundle. Per Lead Standard B (docs/handoffs/62), V4 remains NOT VERIFIED until M4 replays independently and the Lead approves; M3 does not relabel it passed.",
  "route": "gate4",
  "to": "M5"
 }
