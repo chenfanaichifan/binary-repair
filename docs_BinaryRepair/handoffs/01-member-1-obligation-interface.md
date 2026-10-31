@@ -33,7 +33,7 @@ Call:
 decide_attempt_outcome(
     obligations=...,
     candidate_sha256=...,     # hash of the final candidate actually validated
-    expected_sha256=...,      # hash the approval was bound to
+    expected_sha256=...,      # approved candidate hash, NOT the original input hash
     reviewed_scope_sha256=...,# hash of the reviewed verification scope
     cancelled=...,            # operator stop
     error_reason=..., error_detail=...,
@@ -53,7 +53,7 @@ Two behaviours you must know:
 | # | Do | Where it goes wrong |
 |---|---|---|
 | 1 | Build `obligations` from persisted evidence | When evidence is missing, include the obligation as `NOT_RUN` rather than dropping it; an empty list yields `inconclusive`, which is deliberate (it stops checks from being silently dropped) |
-| 2 | Call with real hashes | Passing `None` as `expected_sha256` skips the hash check (the `candidate != expected` rule does not fire); either pass the real value or know exactly what you are skipping |
+| 2 | Call with the approved candidate hash, or `None` | `expected_sha256` is the **approved candidate hash**, never `job.original_sha256`. If approval does not bind a candidate, pass `None`; passing the original input hash would reject every real repair candidate as a hash mismatch. |
 | 3 | Store all four `Verdict` fields | Do not re-decide success in a task, route handler, or template; the GUI only renders `outcome` |
 
 ## 4. Four points to confirm

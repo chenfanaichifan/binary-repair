@@ -141,7 +141,8 @@ def test_definite_failure_outranks_not_run() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_hash_mismatch_blocks_success() -> None:
+def test_candidate_vs_explicit_approved_candidate_mismatch_blocks_success() -> None:
+    # expected_sha256 is an approved *candidate* hash, not original input.
     verdict = success(candidate_sha256="c" * 64)
     assert verdict.outcome is Outcome.INCONCLUSIVE
     assert verdict.reason is ReasonCode.HASH_MISMATCH
