@@ -69,18 +69,30 @@ def test_all_v0_v5_passed_is_success(tmp_path: Path) -> None:
     assert verdict.outcome.value == "success_within_scope"
 
 
-def test_candidate_hash_mismatch_is_inconclusive(tmp_path: Path) -> None:
+def test_candidate_differing_from_original_can_succeed(tmp_path: Path) -> None:
+    """Approval does not bind the original input hash.
+
+    A real repair candidate normally differs from the original binary. With
+    the approval currently binding only the reviewed scope, a candidate that
+    differs from ``job.original_sha256`` and passes V0-V5 is a success.
+    """
     data_dir, record, run = _started(tmp_path)
+    candidate = "9" * 64
+    assert candidate != record.original_sha256
     results = {gate: "passed" for gate, _, _ in orchestration.GATES}
     verdict = orchestration.evaluate_attempt(
         record.id,
         run.id,
         results=results,
         data_dir=data_dir,
-        candidate_sha256="9" * 64,
+        candidate_sha256=candidate,
     )
-    assert verdict.outcome.value == "inconclusive"
-    assert verdict.reason.value == "hash_mismatch"
+    assert verdict.outcome.value == "success_within_scope"
+    assert verdict.reason is None
+
+    path = data_dir / "jobs" / record.id / "runs" / run.id / "verdict.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["expected_sha256"] is None
 
 
 def test_run_requires_both_routes(tmp_path: Path) -> None:
