@@ -129,15 +129,16 @@ def _run_context(job_id: str, run_id: str, data_dir: str | Path) -> tuple[Any, d
         ).fetchone()
         if run is None:
             raise ValueError(f"unknown run id for job {job_id}: {run_id}")
-        _job = connection.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
-        if _job is None:
+        job = connection.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if job is None:
             raise ValueError(f"unknown job id: {job_id}")
     finally:
         connection.close()
     return run, {
-        # Approval currently binds the reviewed scope, not a candidate hash.
-        # expected_sha256 is therefore None here; never substitute the
-        # original input hash for the approved candidate hash.
+        # Original input is identity/reporting data only. Approval currently
+        # binds the reviewed scope, not a candidate hash, so expected_sha256
+        # is None; never substitute the original input hash for it.
+        "input_sha256": job["original_sha256"],
         "scope_sha256": run["reviewed_scope_sha256"],
     }
 
@@ -177,6 +178,7 @@ def evaluate_attempt(
         "job_id": job_id,
         "run_id": run_id,
         "candidate_sha256": candidate_sha256,
+        "original_sha256": body.get("input_sha256"),
         "expected_sha256": None,
         "reviewed_scope_sha256": body.get("scope_sha256"),
         "obligations": [
