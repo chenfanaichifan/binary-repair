@@ -176,3 +176,5 @@ Update this after major decisions, completed phases, or bugs that future agents 
 - [ ] Shared acceptance engine enforces V0–V5 and the six outcome labels.
 - [ ] Export bundle with HTML + JSON reports and matching hashes.
 - [ ] Independent teammate replay of both route results.
+
+- [2026-10-31] Gate 5 Route A PASS (docs 51/77); Gate 5 Route B NOT RUN/open. Fixture frozen for candidate scope only (docs 78): Gate 4 PASS strict + Gate5A PASS + V4 model PASS. Candidate tag mvp-candidate-2026-10-31; no full-acceptance tag, no full MVP claim.
