@@ -1,0 +1,21 @@
+{
+  "job_id": "5c04833b4b104461966650a965364f2b",
+  "synthetic": false,
+  "phase": "finished",
+  "verdict": {
+    "outcome": "inconclusive",
+    "reason": "solver_unknown",
+    "failing_obligation": "symbolic",
+    "detail": "route_a: V4 symbolic: unknown"
+  },
+  "routes": {
+    "A": {
+      "outcome": "inconclusive",
+      "obligations": 6
+    },
+    "B": {
+      "outcome": "inconclusive",
+      "obligations": 6
+    }
+  }
+}
