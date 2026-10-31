@@ -35,11 +35,14 @@
   "v2-routeb-fixed.json",
   "v2-routeb.json",
   "v5-reproducibility.json",
+  "v4/v4-evidence.json",
+  "v4/v4_symbolic.py",
+  "v4/v4_run_all.py",
   "handoff.json"
  ],
  "from": "M3",
  "id": "P2-real-2026-10-30",
- "notes": "Real controller jobs e2fe0f46 and 8b0f2856 plus the V2/V5 probes. Both p2_acceptance runs exited 0. Route B V2 failed (15/16) on the 10-30 candidate 63fcafa6; the fixed candidate 208574ab reuses the R-X PT_LOAD tail (0 new segments) and passes V2 16/16 (see v2-routeb-fixed.json). V4 stays not_run, so no success_within_scope is claimed.",
+ "notes": "Real controller jobs e2fe0f46 and 8b0f2856 plus the V2/V5 probes. Both p2_acceptance runs exited 0. Route B V2 failed (15/16) on the 10-30 candidate 63fcafa6; the fixed candidate 208574ab reuses the R-X PT_LOAD tail (0 new segments) and passes V2 16/16 (see v2-routeb-fixed.json). V4 bounded symbolic was run 2026-10-31 (v4/): original/free -> counterexample (model catches the defect), routea and routeb (208574ab) -> no_counterexample, so the repairs reject over-long input instead of copying. V4 is now self-verified evidence, not not_run.",
  "route": "gate4",
  "to": "M5"
 }

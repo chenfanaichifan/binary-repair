@@ -35,6 +35,6 @@
   "v2-routea-supplement.json",
   "v5-routea-supplement.json"
  ],
- "notes": "Route A real package; V0/V1/V3 passed in the 10-29 job; V2 and V5 were measured later on 2026-10-30 and are supplied as supplements: v2-routea-supplement.json (V2 16/16 passed), v5-routea-supplement.json (V5 byte-identical x2), routea-candidate.readelf.txt (raw readelf). V4 remains not_run. adapter should read these supplement files for V2/V5.",
+ "notes": "Route A real package; V0/V1/V3 passed in the 10-29 job; V2 and V5 were measured later on 2026-10-30 and are supplied as supplements: v2-routea-supplement.json (V2 16/16 passed), v5-routea-supplement.json (V5 byte-identical x2), routea-candidate.readelf.txt (raw readelf). V4 bounded symbolic was self-verified 2026-10-31 (see P2-real/v4/v4-evidence.json): routea c4a159 -> proven/no_counterexample. adapter should read these supplement files for V2/V5.",
  "schema_version": 1
 }

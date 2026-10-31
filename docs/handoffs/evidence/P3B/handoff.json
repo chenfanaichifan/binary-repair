@@ -31,6 +31,6 @@
   "v2-routeb-fixed.json",
   "wrapper-export.json"
  ],
- "notes": "P3B v6 = v5 + Route B candidate fix (reuse R-X PT_LOAD tail, 0 new segments); supersedes v5 zip bfba4e51\u202629ce2; candidate 208574ab (was 63fcafa6); V2 16/16 passed (raw output in v2-routeb-fixed.json, readelf in routeb-candidate-fixed.readelf.txt); V3 6/6 repaired_pass=true; V5 byte-identical; v3 72d789c6 remains superseded",
+ "notes": "P3B v6 = v5 + Route B candidate fix (reuse R-X PT_LOAD tail, 0 new segments); supersedes v5 zip bfba4e51\u202629ce2; candidate 208574ab (was 63fcafa6); V2 16/16 passed (raw output in v2-routeb-fixed.json, readelf in routeb-candidate-fixed.readelf.txt); V3 6/6 repaired_pass=true; V5 byte-identical; V4 bounded symbolic self-verified 2026-10-31 (see P2-real/v4/v4-evidence.json): routeb 208574ab -> proven/no_counterexample; v3 72d789c6 remains superseded",
  "schema_version": 1
 }

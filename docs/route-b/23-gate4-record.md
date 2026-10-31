@@ -55,7 +55,11 @@ revert + post-revert fingerprint matching. That scope is met.
    segments where `contract.json` `authorized_edits[2]` allows at most one new
    R-X PT_LOAD, as a fallback only. Raw `readelf` dumps are in
    `docs/handoffs/evidence/P2-real/readelf/`.
-3. V4 passed — bounded symbolic is `not_run` for both routes.
+3. V4 passed — bounded symbolic was `not_run` for both routes when this
+   record was written (2026-10-30). A self-verified symbolic run was added
+   2026-10-31 in `docs/handoffs/evidence/P2-real/v4/` (original/valid proven,
+   original/free counterexample, routea + routeb-208574ab proven /
+   no_counterexample); it is single-agent, not independently reviewed.
 4. Gate 5 passed — it remains **BLOCKED** (no fixed-script `jobwrap` mode).
 5. The fixture is frozen — it stays **NOT FROZEN** (gates 3–5 not all signed).
 6. The MVP is complete — the overall MVP verdict is **NOT APPROVED**.
@@ -85,12 +89,15 @@ revert + post-revert fingerprint matching. That scope is met.
 
 ## Overall MVP: NOT APPROVED (2026-10-31)
 
-- Route A is 5/6; V4 symbolic remains `not_run`.
+- Route A is 5/6 measured obligations; V4 symbolic has a self-verified run now
+  (`docs/handoffs/evidence/P2-real/v4/`), but it is single-agent, not
+  independently reviewed, and no fresh real p2 has exercised the fixed
+  candidates end-to-end.
 - Route B V2 was `failed` on the 10-30 candidate 63fcafa6 (2 extra PT_LOAD where
   the contract allows one R-X fallback); the fixed candidate 208574ab reuses the
   R-X PT_LOAD tail (0 new segments) and passes V2 16/16. See
-  `docs/handoffs/evidence/P2-real/v2-routeb-fixed.json`. Route B V4 still
-  `not_run`.
+  `docs/handoffs/evidence/P2-real/v2-routeb-fixed.json`. Route B V4 now has a
+  self-verified run too (`no_counterexample` on 208574ab), same caveat.
 - Gate 5 remains BLOCKED.
 - real p2 twice exit 0 is pipeline-only; verdicts `inconclusive`/`rejected` are
   not repair success (those runs used the 10-30 candidate 63fcafa6; the fixed

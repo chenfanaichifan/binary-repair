@@ -72,11 +72,36 @@ suite where binutils exist, or gate the `>= 8` assertion on tool availability).
 the proxy variables were cleared, and the single journey still never returned.
 The browser suite is therefore **unverified** here, not skipped and not passed.
 
+## What V4 measured (2026-10-31)
+
+`v4/v4_symbolic.py` runs a bounded symbolic exploration of `badSink` inside the
+guest with angr 10.0.4.post1 + z3-solver 5.1.0.0. The model hooks `strcpy@plt`
+and `printLine@plt` with explicit length-aware procedures, tracks every byte
+`strcpy` writes, and flags any write past `dest[50]`.
+
+* Calibration (`original`, free/arbitrary-length domain): **counterexample** —
+  the model finds the overflow (57 bytes written at `0x7ffffffeffb0`), proving
+  the model can catch the defect.
+* `original`, valid domain (49 payload + NUL worst case): **proven** — no
+  out-of-bounds write for the contract's valid domain.
+* Route A (`c4a159…aa82`), valid domain: **proven**; free domain:
+  **no_counterexample** — the repair rejects over-long input instead of copying.
+* Route B fixed (`208574ab…6717`), valid domain: **proven**; free domain:
+  **no_counterexample** — same reasoning; the recompiled `badSink` now sits in
+  the R-X tail (entry observed at `0x4018ec`).
+
+Raw results are in `v4/v4-evidence.json`; the runner and model are
+`v4/v4_run_all.py` and `v4/v4_symbolic.py`. A timeout is recorded as
+`inconclusive`, never a pass.
+
 ## What is still not measured
 
-V4 (bounded symbolic) is `not_run` for both routes, so neither route can reach
-`success_within_scope` and job2's verdict is genuinely `rejected`, not a pass
-that was withheld. No `gate4_pass` is claimed by this package.
+V4 is now self-verified evidence (see above), but it is a **single-agent
+self-check**: no independent V4 review has occurred, and the two real p2 jobs
+(job1/job2) predate both the V2 fix and this V4 run, so their `inconclusive` /
+`rejected` verdicts reflect the 10-30 candidate 63fcafa6, not the fixed
+208574ab. No `success_within_scope` is claimed by this package until a fresh
+real p2 drives the fixed candidate end-to-end.
 
 Environment: Windows host, controller `app.controller_api` on 127.0.0.1:8000,
 data dir `p2-real-2026-10-30/var/controller`; guest `binrepair-vm`,
