@@ -10,8 +10,8 @@
 |---|---|
 | P4 v3 `docs/handoffs/evidence/P4/` | checker PASS 26/26; `gate4-status=pass`, native `manifest-compare` 6/6; original `aa428157…8393`, patched `decdcdb8…954b` |
 | P4 isolation | uid 1003, `CapEff=0`, `NoNewPrivs=1`, netns empty/egress blocked; wrapper `b232d60b…`, `gate4.conf` `a912e6b0…`, chain `b7ded700…`, raw revert/fingerprint present |
-| P3A v7 | checker PASS 29/29; candidate `c4a159…`; V0/V1/V2/V3/V5 pass; V4 `unknown` |
-| P3B v6 | checker PASS 25/25; candidate `208574ab…`; V2 16/16 pass; V3 6/6; V5 pass; V4 `unknown` |
+| P3A v7 | `dist/m5-evidence/P3A-routea-2026-10-31-v7.zip`; checker PASS 29/29; candidate `c4a159…`; V0/V1/V2/V3/V5 pass; V4 `unknown` |
+| P3B v6 | `dist/m5-evidence/P3B-package-v6-2026-10-31.zip`; checker PASS 25/25; candidate `208574ab…`; V2 16/16 pass; V3 6/6; V5 pass; V4 `unknown` |
 | fresh real p2 | job `5c04833b…`; `p2_acceptance.py` exit 0, `synthetic=false`; verdict **inconclusive / solver_unknown / symbolic** |
 | V4 | `not_run`/NOT VERIFIED; v12 accounting `sat=0, unsat=0, unknown=0, eval=1`; concrete worst-case bytes, not symbolic proof |
 
