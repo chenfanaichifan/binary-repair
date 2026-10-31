@@ -1,0 +1,269 @@
+{
+  "candidate": {
+    "exported_symbols": [
+      "__ctype_b_loc@GLIBC_2.3",
+      "__gmon_start__",
+      "__isoc99_sscanf@GLIBC_2.7",
+      "__isoc99_swscanf@GLIBC_2.7",
+      "__libc_start_main@GLIBC_2.34",
+      "fprintf@GLIBC_2.2.5",
+      "iswxdigit@GLIBC_2.2.5",
+      "printf@GLIBC_2.2.5",
+      "puts@GLIBC_2.2.5",
+      "rand@GLIBC_2.2.5",
+      "stderr@GLIBC_2.2.5",
+      "strcpy@GLIBC_2.2.5",
+      "wprintf@GLIBC_2.2.5"
+    ],
+    "header": {
+      "ABI Version": "0",
+      "Class": "ELF64",
+      "Data": "2's complement, little endian",
+      "Entry point address": "0x401170",
+      "Machine": "Advanced Micro Devices X86-64",
+      "OS/ABI": "UNIX - System V",
+      "Type": "EXEC (Executable file)"
+    },
+    "interp": "/lib64/ld-linux-x86-64.so.2",
+    "load_segments": [
+      {
+        "align": "0x1000",
+        "filesz": "0x000788",
+        "flags": "R",
+        "memsz": "0x000788",
+        "offset": "0x000000",
+        "type": "LOAD",
+        "vaddr": "0x0000000000400000"
+      },
+      {
+        "align": "E",
+        "filesz": "0x001000",
+        "flags": "R",
+        "memsz": "0x001000",
+        "offset": "0x001000",
+        "type": "LOAD",
+        "vaddr": "0x0000000000401000"
+      },
+      {
+        "align": "0x1000",
+        "filesz": "0x0007a4",
+        "flags": "R",
+        "memsz": "0x0007a4",
+        "offset": "0x002000",
+        "type": "LOAD",
+        "vaddr": "0x0000000000402000"
+      },
+      {
+        "align": "0x1000",
+        "filesz": "0x000270",
+        "flags": "RW",
+        "memsz": "0x0002a8",
+        "offset": "0x002df8",
+        "type": "LOAD",
+        "vaddr": "0x0000000000403df8"
+      }
+    ],
+    "needed": [
+      "libc.so.6"
+    ],
+    "probe_run": {
+      "returncode": 0,
+      "stderr_hex": "",
+      "stdout_hex": "0a"
+    },
+    "relocations": {
+      "by_type": {
+        "R_X86_64_COPY": 1,
+        "R_X86_64_GLOB_DAT": 2,
+        "R_X86_64_JUMP_SLOT": 10
+      },
+      "total": 13
+    },
+    "segment_types": [
+      "PHDR",
+      "INTERP",
+      "LOAD",
+      "LOAD",
+      "LOAD",
+      "LOAD",
+      "DYNAMIC",
+      "NOTE",
+      "NOTE",
+      "GNU_PROPERTY",
+      "GNU_STACK",
+      "GNU_RELRO"
+    ],
+    "stack": "GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x10"
+  },
+  "checks": {
+    "candidate_loads_and_runs": true,
+    "entry_unchanged": true,
+    "exported_symbols_unchanged": true,
+    "extra_load_segments_not_writable": true,
+    "extra_load_segments_within_contract": true,
+    "interp_unchanged": true,
+    "needed_set_unchanged": true,
+    "no_writable_executable_segment": true,
+    "original_load_segments_preserved": true,
+    "relocation_types_subset": true,
+    "same_elf_class": true,
+    "same_elf_type": true,
+    "same_machine": true,
+    "same_os_abi": true,
+    "stack_nx_preserved": true,
+    "valid_path_stdout_matches_original": true
+  },
+  "contract_reference": "authorized_edits[2]: allow no new segment ... only if the tail extension is rejected, allow one new R-X PT_LOAD with recorded headers",
+  "environment": {
+    "arch": "x86_64",
+    "hostname": "binrepair-vm",
+    "kernel": "6.8.0-147-generic",
+    "readelf": "GNU readelf (GNU Binutils for Ubuntu) 2.42",
+    "uid": "1000"
+  },
+  "failures": [],
+  "gate": "V2",
+  "hashes": {
+    "candidate_sha256": "208574ab5b7753fab6f28860830069770622fb7b1fcb8d181fa50453f8656717",
+    "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393"
+  },
+  "informational": {
+    "allowed_extra_load_segments": 1,
+    "candidate_segment_types": [
+      "PHDR",
+      "INTERP",
+      "LOAD",
+      "LOAD",
+      "LOAD",
+      "LOAD",
+      "DYNAMIC",
+      "NOTE",
+      "NOTE",
+      "GNU_PROPERTY",
+      "GNU_STACK",
+      "GNU_RELRO"
+    ],
+    "extra_load_segment_count": 0,
+    "extra_load_segments": [],
+    "original_segment_types": [
+      "PHDR",
+      "INTERP",
+      "LOAD",
+      "LOAD",
+      "LOAD",
+      "LOAD",
+      "DYNAMIC",
+      "NOTE",
+      "NOTE",
+      "GNU_PROPERTY",
+      "GNU_STACK",
+      "GNU_RELRO"
+    ],
+    "program_header_order_changed": false,
+    "size_change": {
+      "candidate": 26792,
+      "original": 26792
+    }
+  },
+  "invoked_as": "v2_interface.py ./original.elf ./candidate.elf <label>",
+  "label": "routeb-fixed",
+  "mode": "invoked by name",
+  "obligation": "interface",
+  "original": {
+    "exported_symbols": [
+      "__ctype_b_loc@GLIBC_2.3",
+      "__gmon_start__",
+      "__isoc99_sscanf@GLIBC_2.7",
+      "__isoc99_swscanf@GLIBC_2.7",
+      "__libc_start_main@GLIBC_2.34",
+      "fprintf@GLIBC_2.2.5",
+      "iswxdigit@GLIBC_2.2.5",
+      "printf@GLIBC_2.2.5",
+      "puts@GLIBC_2.2.5",
+      "rand@GLIBC_2.2.5",
+      "stderr@GLIBC_2.2.5",
+      "strcpy@GLIBC_2.2.5",
+      "wprintf@GLIBC_2.2.5"
+    ],
+    "header": {
+      "ABI Version": "0",
+      "Class": "ELF64",
+      "Data": "2's complement, little endian",
+      "Entry point address": "0x401170",
+      "Machine": "Advanced Micro Devices X86-64",
+      "OS/ABI": "UNIX - System V",
+      "Type": "EXEC (Executable file)"
+    },
+    "interp": "/lib64/ld-linux-x86-64.so.2",
+    "load_segments": [
+      {
+        "align": "0x1000",
+        "filesz": "0x000788",
+        "flags": "R",
+        "memsz": "0x000788",
+        "offset": "0x000000",
+        "type": "LOAD",
+        "vaddr": "0x0000000000400000"
+      },
+      {
+        "align": "E",
+        "filesz": "0x0008e9",
+        "flags": "R",
+        "memsz": "0x0008e9",
+        "offset": "0x001000",
+        "type": "LOAD",
+        "vaddr": "0x0000000000401000"
+      },
+      {
+        "align": "0x1000",
+        "filesz": "0x0007a4",
+        "flags": "R",
+        "memsz": "0x0007a4",
+        "offset": "0x002000",
+        "type": "LOAD",
+        "vaddr": "0x0000000000402000"
+      },
+      {
+        "align": "0x1000",
+        "filesz": "0x000270",
+        "flags": "RW",
+        "memsz": "0x0002a8",
+        "offset": "0x002df8",
+        "type": "LOAD",
+        "vaddr": "0x0000000000403df8"
+      }
+    ],
+    "needed": [
+      "libc.so.6"
+    ],
+    "probe_run": {
+      "returncode": 0,
+      "stderr_hex": "",
+      "stdout_hex": "0a"
+    },
+    "relocations": {
+      "by_type": {
+        "R_X86_64_COPY": 1,
+        "R_X86_64_GLOB_DAT": 2,
+        "R_X86_64_JUMP_SLOT": 10
+      },
+      "total": 13
+    },
+    "segment_types": [
+      "PHDR",
+      "INTERP",
+      "LOAD",
+      "LOAD",
+      "LOAD",
+      "LOAD",
+      "DYNAMIC",
+      "NOTE",
+      "NOTE",
+      "GNU_PROPERTY",
+      "GNU_STACK",
+      "GNU_RELRO"
+    ],
+    "stack": "GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x10"
+  },
+  "result": "passed"
+}

@@ -1,0 +1,45 @@
+{
+ "schema_version": 1,
+ "gate": "V5",
+ "route": "route_a",
+ "obligation": "reproducibility",
+ "source": "P2-real/v5-reproducibility.json (route_a section), measured 2026-10-30",
+ "environment": {
+  "arch": "x86_64",
+  "date": "2026-10-30T20:20:52+08:00",
+  "hostname": "binrepair-vm",
+  "kernel": "6.8.0-147-generic",
+  "os": "PRETTY_NAME=\"Ubuntu 24.04.5 LTS\"",
+  "python": "Python 3.12.3",
+  "uid": "1000"
+ },
+ "result": "passed",
+ "byte_identical": true,
+ "candidate_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+ "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+ "runs": [
+  {
+   "output_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+   "output_size": 26792,
+   "returncode": 0,
+   "run": 1,
+   "stderr": "",
+   "stdout": "wrote /home/lab/v2/replay-1.elf sha256=c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82"
+  },
+  {
+   "output_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+   "output_size": 26792,
+   "returncode": 0,
+   "run": 2,
+   "stderr": "",
+   "stdout": "wrote /home/lab/v2/replay-2.elf sha256=c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82"
+  }
+ ],
+ "regenerator": {
+  "path": "regen_c4a159.py",
+  "self_checks": "asserts original sha256 and patched sha256 before writing",
+  "sha256": "56331eedb4d72c55eec4e0f105fb20207576e6e6860b79ca4cedb175ed54e843"
+ },
+ "procedure": "python3 regen_c4a159.py ./original.elf ./replay-N.elf (twice)",
+ "mode": "fresh replay in this guest (deterministic regenerator)"
+}

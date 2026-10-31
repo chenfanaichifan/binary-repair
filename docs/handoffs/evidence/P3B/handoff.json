@@ -16,6 +16,7 @@
   "executor/probe_patcherex2.py",
   "executor/routeb_executor.py",
   "fixed_badSink_existing_imports.c",
+  "handoff.json",
   "independent-views/objdump-disassembly.txt",
   "independent-views/readelf-dynamic.txt",
   "independent-views/readelf-program-headers.txt",
@@ -26,9 +27,10 @@
   "manifest-repaired.json",
   "original.elf",
   "reproducibility.json",
-  "wrapper-export.json",
-  "handoff.json"
+  "routeb-candidate-fixed.readelf.txt",
+  "v2-routeb-fixed.json",
+  "wrapper-export.json"
  ],
- "notes": "P3B v6 = v5 + Route B candidate fix (reuse R-X PT_LOAD tail, 0 new segments); supersedes v5 zip bfba4e51af496ac13559396518803afd72db71926c5aa21c04fde2b814729ce2; candidate 208574ab (was 63fcafa6); V2 now 16/16 (was 15/16 failed on extra_load_segments_within_contract); V3 6/6 repaired_pass=true; V5 byte-identical; v3 72d789c6 remains superseded",
+ "notes": "P3B v6 = v5 + Route B candidate fix (reuse R-X PT_LOAD tail, 0 new segments); supersedes v5 zip bfba4e51\u202629ce2; candidate 208574ab (was 63fcafa6); V2 16/16 passed (raw output in v2-routeb-fixed.json, readelf in routeb-candidate-fixed.readelf.txt); V3 6/6 repaired_pass=true; V5 byte-identical; v3 72d789c6 remains superseded",
  "schema_version": 1
 }
