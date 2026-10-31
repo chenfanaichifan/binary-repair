@@ -1,0 +1,126 @@
+{
+  "generated_at": "2026-10-31T17:14:13+0800",
+  "engine": "angr 10.0.4.post1 + z3-solver 5.1.0 (claripy is angr's bundled rustylib)",
+  "runs": [
+    {
+      "label": "original",
+      "valid_domain": true,
+      "state_accounting": {
+        "active": 0,
+        "deadended": 1,
+        "errored": 0,
+        "unconstrained": 0,
+        "deferred": 0,
+        "steps": 6,
+        "timed_out": false
+      },
+      "solver_accounting": {
+        "sat": 0,
+        "unsat": 0,
+        "unknown": 0,
+        "eval": 1
+      },
+      "steps": 6
+    },
+    {
+      "label": "original",
+      "valid_domain": false,
+      "state_accounting": {
+        "active": 0,
+        "deadended": 1,
+        "errored": 0,
+        "unconstrained": 0,
+        "deferred": 0,
+        "steps": 6,
+        "timed_out": false
+      },
+      "solver_accounting": {
+        "sat": 0,
+        "unsat": 0,
+        "unknown": 0,
+        "eval": 1
+      },
+      "steps": 6
+    },
+    {
+      "label": "routea",
+      "valid_domain": true,
+      "state_accounting": {
+        "active": 0,
+        "deadended": 1,
+        "errored": 0,
+        "unconstrained": 0,
+        "deferred": 0,
+        "steps": 107,
+        "timed_out": false
+      },
+      "solver_accounting": {
+        "sat": 0,
+        "unsat": 0,
+        "unknown": 0,
+        "eval": 1
+      },
+      "steps": 107
+    },
+    {
+      "label": "routea",
+      "valid_domain": false,
+      "state_accounting": {
+        "active": 0,
+        "deadended": 1,
+        "errored": 0,
+        "unconstrained": 0,
+        "deferred": 0,
+        "steps": 122,
+        "timed_out": false
+      },
+      "solver_accounting": {
+        "sat": 0,
+        "unsat": 0,
+        "unknown": 0,
+        "eval": 1
+      },
+      "steps": 122
+    },
+    {
+      "label": "routeb",
+      "valid_domain": true,
+      "state_accounting": {
+        "active": 0,
+        "deadended": 1,
+        "errored": 0,
+        "unconstrained": 0,
+        "deferred": 0,
+        "steps": 259,
+        "timed_out": false
+      },
+      "solver_accounting": {
+        "sat": 0,
+        "unsat": 0,
+        "unknown": 0,
+        "eval": 1
+      },
+      "steps": 259
+    },
+    {
+      "label": "routeb",
+      "valid_domain": false,
+      "state_accounting": {
+        "active": 0,
+        "deadended": 1,
+        "errored": 0,
+        "unconstrained": 0,
+        "deferred": 0,
+        "steps": 162,
+        "timed_out": false
+      },
+      "solver_accounting": {
+        "sat": 0,
+        "unsat": 0,
+        "unknown": 0,
+        "eval": 1
+      },
+      "steps": 162
+    }
+  ]
+}
