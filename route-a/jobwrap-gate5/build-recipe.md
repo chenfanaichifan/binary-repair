@@ -9,7 +9,7 @@ the post-build steps to bind the resulting hash to Gate 5.
 - `jobwrap_gate5.c` — the successor isolation executor (this directory).
 - Pinned probe blobs (compile-time constants, fail-closed):
   - Route A: `scripts/m4_gate5_probe.py` = `f39a0302dd1aa42635da80fa4e9160d37a221f5ac383270add3eaedcffd146cb`
-  - Route B: `scripts/m4_gate5b_probe.py` = `e635d646dcfba0a68e63e609ffb3df254bccb6d61a2e8e4bb238e5efe4080ed7`
+  - Route B: `scripts/m4_gate5b_probe.py` = `05d9a2cd417880c9be51e1a4cd4608158d94b50da233b223c2f4a589850edb82`
 
 ## Build (run as root inside the guest)
 

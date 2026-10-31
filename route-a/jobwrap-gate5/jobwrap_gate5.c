@@ -95,11 +95,13 @@ static const char PROBE_SHA256_HEX[] =
 
 /*
  * Pinned SHA-256 of scripts/m4_gate5b_probe.py (M4-authored Route B blob, frozen).
- * Value: e635d646dcfba0a68e63e609ffb3df254bccb6d61a2e8e4bb238e5efe4080ed7
+ * Value: 05d9a2cd417880c9be51e1a4cd4608158d94b50da233b223c2f4a589850edb82
  * Verified against .tmp/integration/scripts/m4_gate5b_probe.py on 2026-10-31.
+ * (Updated after fixing the R4 gdb `x/2i` redirect-regex to match gdb's
+ *  `=> 0x4012b0 <sym>:\tjmp 0x<target>` output format.)
  */
 static const char PROBE_B_SHA256_HEX[] =
-    "e635d646dcfba0a68e63e609ffb3df254bccb6d61a2e8e4bb238e5efe4080ed7";
+    "05d9a2cd417880c9be51e1a4cd4608158d94b50da233b223c2f4a589850edb82";
 
 /* ------------------------------------------------------------------ */
 /* Tiny SHA-256 (self-contained; no external sha256sum dependency).    */
