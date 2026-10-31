@@ -53,3 +53,28 @@ MVP: NOT COMPLETE
 
 Gate 4 record may record observed values only; no M4/Lead signature and no
 gate4_pass.
+
+
+## v11 addendum: P2-real V4 evidence
+
+v11 adds `P2-real/v4/v4-evidence.json` and runners. M5 adapter accepts an
+explicit `--v4-evidence` path:
+
+- candidate-matching valid/free runs are required;
+- the result is recorded as `unknown` (detail: self-verified, Lead adjudication
+  pending), **not passed**;
+- counterexample => failed; timeout => unknown; missing mismatch => not_run.
+
+Fresh real p2 (job `22b49d494fbb4b3784d9adcf05401261`):
+
+```text
+Route A/B: V0/V1/V2/V3/V5 passed; V4 unknown
+p2 exit 0, synthetic=false
+verdict: inconclusive / solver_unknown / symbolic
+```
+
+Logs: `delivery/M5-v11-adapter-worker.log`,
+`delivery/M5-v11-real-p2.log`.
+
+This preserves the rule: a single-agent V4 self-check is evidence, not a Lead
+adjudication and not `success_within_scope`.

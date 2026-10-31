@@ -62,3 +62,43 @@ def test_routeb_v2_supplement_maps_passed(tmp_path: Path) -> None:
                            run_id=run.id, attempt_id=attempt.id)
     assert result["payload"]["results"]["V2"] == "passed"
     assert "V2" in result["payload"]["evidence"]
+
+
+def test_v4_evidence_is_unknown_not_pass(tmp_path: Path) -> None:
+    data, record, run, attempt = _job(tmp_path, "route_a")
+    root = tmp_path / "pkg"; root.mkdir()
+    candidate = "b" * 64
+    v4 = root / "v4-evidence.json"
+    v4.write_text(json.dumps({"runs": [
+        {"sha256": candidate, "valid_domain": True, "verdict": "proven", "timed_out": False},
+        {"sha256": candidate, "valid_domain": False, "verdict": "no_counterexample", "timed_out": False},
+    ]}))
+    payload = convert({"route": "route_a", "identity": {"candidate_sha256": candidate},
+                       "gates": {gate: {"status": "not_run"} for gate in ("V0","V1","V2","V3","V4","V5")}},
+                      evidence_root=root, data_dir=data, job_id=record.id,
+                      attempt_id=attempt.id, v4_evidence=v4)
+    assert payload["results"]["V4"] == "unknown"
+    assert payload["evidence"]["V4"]
+
+
+def test_v4_counterexample_fails(tmp_path: Path) -> None:
+    data, record, run, attempt = _job(tmp_path, "route_b")
+    bundle = tmp_path / "bundle"; bundle.mkdir()
+    candidate = b"\x7fELF candidate"; (bundle / "candidate.elf").write_bytes(candidate)
+    (bundle / "original.elf").write_bytes(b"\x7fELF original")
+    (bundle / "audit.json").write_text('{"pass": true}')
+    (bundle / "edit-manifest.json").write_text(json.dumps({
+        "route": "route_b",
+        "original_sha256": hashlib.sha256(b"\x7fELF original").hexdigest(),
+        "candidate_sha256": hashlib.sha256(candidate).hexdigest(),
+    }))
+    v4 = tmp_path / "v4-evidence.json"
+    v4.write_text(json.dumps({"runs": [
+        {"sha256": hashlib.sha256(candidate).hexdigest(), "valid_domain": True,
+         "verdict": "proven", "timed_out": False},
+        {"sha256": hashlib.sha256(candidate).hexdigest(), "valid_domain": False,
+         "verdict": "counterexample", "timed_out": False},
+    ]}))
+    result = write_attempt(bundle=bundle, data_dir=data, job_id=record.id,
+                           run_id=run.id, attempt_id=attempt.id, v4_evidence=v4)
+    assert result["payload"]["results"]["V4"] == "failed"

@@ -96,6 +96,34 @@ def _supplement_state(
     return ("passed" if passed else "failed"), path, detail
 
 
+def _v4_review(path: Path, candidate: str) -> tuple[str, str]:
+    """Read a supplied V4 evidence file; never converts self-check into pass."""
+    if not path.is_file():
+        return "not_run", "V4 evidence file missing"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        raise ValueError(f"invalid V4 evidence: {exc}") from exc
+    runs = data.get("runs") if isinstance(data, dict) else None
+    if not isinstance(runs, list):
+        return "not_run", "V4 evidence has no runs"
+    matching = [r for r in runs if isinstance(r, dict) and r.get("sha256") == candidate]
+    if not matching:
+        return "not_run", "V4 evidence has no run for this candidate"
+    valid = [r for r in matching if r.get("valid_domain") is True]
+    free = [r for r in matching if r.get("valid_domain") is False]
+    if not valid or not free:
+        return "not_run", "V4 evidence lacks valid/free-domain runs"
+    if any(r.get("timed_out") is True for r in matching):
+        return "unknown", "V4 timed out; pending adjudication"
+    if any(r.get("verdict") == "counterexample" for r in matching):
+        return "failed", "V4 counterexample"
+    if all(r.get("verdict") == "proven" for r in valid) and all(
+            r.get("verdict") == "no_counterexample" for r in free):
+        return "unknown", "V4 self-verified; Lead adjudication pending (not a pass)"
+    return "unknown", "V4 verdict not conclusive"
+
+
 def convert(
     bundle: dict[str, Any],
     *,
@@ -103,6 +131,7 @@ def convert(
     data_dir: Path | None = None,
     job_id: str | None = None,
     attempt_id: str | None = None,
+    v4_evidence: Path | None = None,
 ) -> dict[str, Any]:
     if not isinstance(bundle, dict):
         raise ValueError("bundle must be an object")
@@ -141,6 +170,13 @@ def convert(
                 details[gate] = supp_detail
                 if supp_path is not None:
                     paths.append(supp_path.relative_to(root) if supp_path.is_relative_to(root) else supp_path)
+        if gate == "V4" and v4_evidence is not None:
+            v4_result, v4_detail = _v4_review(v4_evidence, candidate)
+            if v4_result != "not_run":
+                results[gate] = v4_result
+                details[gate] = v4_detail
+                root = evidence_root or Path(".")
+                paths.append(v4_evidence.relative_to(root) if v4_evidence.is_relative_to(root) else v4_evidence)
         # Real worker conversion requires evidence for every passed gate
         # (including V0); preview mode may show a V0 result without artifacts.
         if result == "passed" and not paths and (gate != "V0" or data_dir is not None):
@@ -193,6 +229,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--data-dir", type=Path)
     parser.add_argument("--job-id")
     parser.add_argument("--attempt-id")
+    parser.add_argument("--v4-evidence", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
     root = args.evidence_root or args.bundle.parent
@@ -202,6 +239,7 @@ def main(argv: list[str] | None = None) -> int:
         data_dir=args.data_dir,
         job_id=args.job_id,
         attempt_id=args.attempt_id,
+        v4_evidence=args.v4_evidence,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

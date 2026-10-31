@@ -126,6 +126,30 @@ def _runtime_state(bundle: Path) -> tuple[str, Path | None]:
     return "not_run", None
 
 
+def _v4_review(path: Path | None, candidate: str) -> tuple[str, str]:
+    if path is None or not path.exists():
+        return "not_run", "symbolic check not run"
+    data = _read_json(path)
+    runs = data.get("runs") if isinstance(data, dict) else None
+    if not isinstance(runs, list):
+        return "not_run", "V4 evidence has no runs"
+    matching = [r for r in runs if isinstance(r, dict) and r.get("sha256") == candidate]
+    if not matching:
+        return "not_run", "V4 evidence has no run for this candidate"
+    valid = [r for r in matching if r.get("valid_domain") is True]
+    free = [r for r in matching if r.get("valid_domain") is False]
+    if not valid or not free:
+        return "not_run", "V4 evidence lacks valid/free-domain runs"
+    if any(r.get("timed_out") is True for r in matching):
+        return "unknown", "V4 timed out; pending adjudication"
+    if any(r.get("verdict") == "counterexample" for r in matching):
+        return "failed", "V4 counterexample"
+    if all(r.get("verdict") == "proven" for r in valid) and all(
+            r.get("verdict") == "no_counterexample" for r in free):
+        return "unknown", "V4 self-verified; Lead adjudication pending (not a pass)"
+    return "unknown", "V4 verdict not conclusive"
+
+
 def _interface_state(bundle: Path, manifest: dict[str, Any]) -> tuple[str, Path | None, str]:
     """Read M3's optional v2-routeb-fixed.json; fail closed on identity mismatch."""
     path = bundle / "v2-routeb-fixed.json"
@@ -162,6 +186,7 @@ def write_attempt(
     job_id: str,
     run_id: str,
     attempt_id: str,
+    v4_evidence: Path | None = None,
 ) -> dict[str, Any]:
     manifest = _verify_bundle(bundle)
     job = jobs.get_job(job_id, data_dir=data_dir)
@@ -178,6 +203,7 @@ def write_attempt(
     runtime_state, runtime_path = _runtime_state(bundle)
     repro_state, repro_path = _repro_state(bundle)
     interface_state, interface_path, interface_detail = _interface_state(bundle, manifest)
+    v4_state, v4_detail = _v4_review(v4_evidence, manifest.get("candidate_sha256", ""))
     identity = manifest.get("original_sha256") == job.original_sha256
     structure = audit.get("pass") is True
 
@@ -186,7 +212,7 @@ def write_attempt(
         "V1": "passed" if structure else "failed" if (bundle / "audit.json").exists() else "not_run",
         "V2": interface_state,
         "V3": runtime_state,
-        "V4": "not_run",
+        "V4": v4_state,
         "V5": repro_state,
     }
     evidence: dict[str, str] = {}
@@ -195,7 +221,7 @@ def write_attempt(
         "V1": "static ELF audit passed" if structure else "static ELF audit not passed",
         "V2": interface_detail,
         "V3": ("runtime manifest " + runtime_state) if runtime_path else "no runtime manifest in bundle",
-        "V4": "symbolic check not run",
+        "V4": v4_detail,
         "V5": ("build-twice " + repro_state) if repro_path else "build-twice not run",
     }
 
@@ -208,6 +234,9 @@ def write_attempt(
     if results["V2"] == "passed" and interface_path is not None:
         evidence["V2"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                                    bundle=bundle, filename=interface_path.name)
+    if v4_evidence is not None and v4_evidence.exists() and results["V4"] != "not_run":
+        evidence["V4"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                                   bundle=v4_evidence.parent, filename=v4_evidence.name)
     if results["V3"] == "passed" and runtime_path is not None:
         evidence["V3"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                                    bundle=bundle, filename=runtime_path.name)
@@ -263,7 +292,7 @@ def main(argv: list[str] | None = None) -> int:
             attempt_id = args.attempt_id
 
     result = write_attempt(bundle=bundle, data_dir=data_dir, job_id=job_id,
-                           run_id=run_id, attempt_id=attempt_id)
+                           run_id=run_id, attempt_id=attempt_id, v4_evidence=args.v4_evidence)
     print(json.dumps({"path": result["path"], "results": result["payload"]["results"],
                       "evidence": result["payload"]["evidence"]}, indent=2))
     return 0
