@@ -1,27 +1,31 @@
-﻿# Gate 4 record — Route B formal
+# Gate 4 record — Route B formal
 
-**Status: DRAFT / NOT RUN.** This is a record skeleton, not a pass claim.
+**Status: DRAFT / NOT RUN.** Observed evidence only; this is not a pass claim.
+**Record owner:** M5. **M4 verifier:** blank. **Lead approval:** blank.
+**JOIN-1:** not completed.
 
-## Inputs
+## Inputs observed on main `d804474`
 
-| Input | Required | Observed |
-|---|---|---|
-| P4 package `427dd71d…` | yes | received; checker PASS 15/15; native `manifest-compare.json` 6/6; **incomplete** (missing original/candidate ELF, before/after, snapshot/chain/timestamp, raw revert, refreshed harness manifest; `hashes.json.original_sha256=null`; harness/isolation contradiction) |
-| P3B v3 `72d789c6…` | yes | checker PASS 18/18; candidate `63fcafa6…`; source `a2e4ff8f…`; jobwrap exit 0; audit pass; V3 6/6 |
-| real p2 exit 0 | yes | not run |
-| M4 verifier | yes | blank |
-| Lead approval | yes | blank |
+| Input | Observed value |
+|---|---|
+| P4 v3 `docs/handoffs/evidence/P4/` | checker PASS 26/26; `gate4-status=pass`, native `manifest-compare` 6/6; original `aa428157…8393`, patched `decdcdb8…954b` |
+| P4 isolation | uid 1003, `CapEff=0`, `NoNewPrivs=1`, netns empty/egress blocked; wrapper `b232d60b…`; `gate4.conf` `a912e6b0…`; chain manifest `b7ded700…`; raw revert/fingerprint present |
+| P3A v6 | checker PASS 26/26; candidate `c4a159…`; V0/V1/V3 pass; V2/V4/V5 `not_run` |
+| P3B v5 | checker PASS 22/22; candidate `63fcafa6…`; V0/V1/V3/V5 pass; V2/V4 `not_run` |
+| P2-real jobs | job1 `e2fe0f46…`: A/B `inconclusive` (V2 `not_run`); job2 `8b0f2856…`: A `inconclusive` (V4 `not_run`), B `rejected` (V2 failed, `extra_load_segments_within_contract`) |
+| real p2 | `p2_acceptance.py` exit 0, `synthetic=false`; verdict is **not success** |
+| V4 | `not_run` / NOT VERIFIED (v12 raw accounting: concrete bytes; `sat=0, unsat=0, unknown=0, eval=1`; Standard B not satisfied) |
 
-## P3B adapter observed (not a gate pass)
+## P3A/P3B adapter observed (not a gate pass)
 
 ```text
-V0 passed; V1 passed; V2 not_run; V3 passed; V4 not_run; V5 passed
-outcome: inconclusive
-reason: required_check_not_run
-failing_obligation: interface
+Route A: V0/V1/V3 passed; V2/V4/V5 not_run
+Route B: V0/V1/V3/V5 passed; V2/V4 not_run
 ```
 
-P3B v3 is structurally accepted; V2/V4 remain not_run, so this is not success.
+The newer v6 candidate `208574ab` (V2 fixed) and its fresh p2 are **not on this
+main baseline**; they must be treated as a separate package/record, not folded
+into this row.
 
 ## V0–V5
 
@@ -34,32 +38,28 @@ P3B v3 is structurally accepted; V2/V4 remain not_run, so this is not success.
 | V4 symbolic | `not_run` | — |
 | V5 reproducibility | `not_run` | — |
 
+Gate 4 formal remains NOT RUN: the table is for the formal gate record, not a
+summary of partial adapter rows.
+
 ## Signatures / witness
 
 | Role | Name | Date | Observation |
 |---|---|---|---|
-| Independent witness | M5 | 2026-10-29 | P3A v4 checker PASS/hash; P3B v3 checker PASS (V0/V1/V3/V5, V2/V4 not_run); P4 checker PASS, native manifest 6/6 but incomplete; Gate5 blocked; witness only, not a gate pass |
-| Independent witness | M2 | 2026-10-29 | Cross-person rerun on `for-M5-v5` with main checker `caeffc2e…`: P3A v4 PASS 25/25 (`d9c33b42…`); P3B v3 PASS 18/18 (`8bec86e0…`, candidate `63fcafa6…`, jobwrap exit 0/audit pass, source `a2e4ff8f…`); P4 PASS 15/15 (`5c7ab9aa…`, native manifest 6/6 but incomplete); Gate5 A blocked 1/1; witness only, no gate pass; commands in `docs/handoffs/49-m2-independent-witness.md` |
-| M5 Gate 4 record | — | — | wait for real p2 exit 0 |
+| M5 Gate 4 record | M5 | 2026-10-31 | Checker/isolation/P2-real observed; P4 v3 complete; V4 `not_run`; no `gate4_pass`; M4/Lead rows blank |
+| Independent witness | M2 | 2026-10-29 | P3A/P3B/P4 checker PASS on `for-M5-v5`; witness only |
 | M4 verifier | — | — | blank |
 | Lead approval | — | — | blank |
 
-Do not fill any row from a checker-only observation, synthetic p2, static bundle,
-or verbal approval. P4/P3B/Gate5 remain NOT RUN.
-
-## Lead sign-off observed-values section (D1–D6)
+## Boundaries
 
 ```text
-P4 received: 427dd71d…, checker PASS, 15/15, sums 5c7ab9aa…
-native manifest-compare: gate4_pass=true, 6/6 same,
-  original aa428157…8393, patched decdcdb8…954b
-derived cases: runner_native=false, derived_from=manifest-compare.json
-MISSING: original.elf, candidate/roundtrip.elf, before/after,
-  snapshot/chain/timestamp, raw revert, refreshed harness manifest;
-  hashes.json.original_sha256=null;
-  harness-manifest contradicts isolation (b037 vs b232; f240 vs a912)
-Gate 4 status: DRAFT / NOT RUN (no pass)
+gate4_pass: absent
+Gate 4: DRAFT / NOT RUN
+JOIN-1: not completed
+Gate 5: BLOCKED (jobwrap gate5 + GATE5_SCRIPT_SHA256)
+V4: NOT VERIFIED
+MVP: NOT COMPLETE
 ```
 
-The D6 permission is to record observed values only. No `gate4_pass` is written;
-M4 verifier and Lead approval remain blank.
+No row above is a gate pass. P2 exit 0 means the snapshot is consistent, not
+that a repair succeeded. V4 is not to be pointed at v4 evidence as `passed`.
