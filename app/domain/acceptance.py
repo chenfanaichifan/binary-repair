@@ -116,8 +116,11 @@ def decide_attempt_outcome(
     candidate_sha256:
         Hash of the final candidate ELF that was actually validated.
     expected_sha256:
-        Hash the approval was bound to. ``candidate_sha256 != expected_sha256``
-        means the evidence does not describe the approved artifact.
+        Approved candidate hash (not the original input hash). When the
+        approval binds a candidate, ``candidate_sha256 != expected_sha256``
+        means the evidence does not describe the approved artifact. When the
+        approval does not bind a candidate, pass ``None``; never substitute
+        ``job.original_sha256``.
     reviewed_scope_sha256:
         Hash of the reviewed verification scope. Empty/``None`` means no scope
         was reviewed, so success is not claimable.
