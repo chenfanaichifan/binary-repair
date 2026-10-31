@@ -1,13 +1,15 @@
-# 75 — Lead: Gate 4 批准为 PASS（F2 waiver）
+# 75 — Lead: Gate 4 PASS（strict unchanged round-trip scope）
 
 **From:** Lead
 **To:** M3+M5, M4, M5
 **Date:** 2026-10-31 (Asia/Hong_Kong)
-**Status:** APPROVED — Gate 4 PASS under F2 waiver
+**Status:** APPROVED — Gate 4 PASS under **strict unchanged round-trip scope**
 
 ## 1. 裁定
 
-Gate 4 已按本记录批准为 **PASS**，依据 **F2 waiver**。
+Gate 4 已按 **strict unchanged round-trip scope** 通过。
+
+- **Record hash: `abed788e…499a`**
 
 ## 2. 对 M3+M5 的直接影响
 
@@ -16,7 +18,7 @@ Gate 4 已按本记录批准为 **PASS**，依据 **F2 waiver**。
 
 ## 3. 与 V4 的边界（重要）
 
-- **V4 已按 model-level PASS 记录，不得再写成 binary-level**。V4 是 bounded function-level model obligation（见 65 号裁定），不是对 candidate binary 的符号执行，不是 whole-program / binary-level 等价证明。
+- **V4 只按 model-level PASS 记录，不要写成 binary-level / whole-program**。V4 是 bounded function-level model obligation（见 65 号裁定），不是对 candidate binary 的符号执行，不是 whole-program / binary-level 等价证明。
 
 ## 4. 仍保持的状态（不因本次 PASS 改变）
 

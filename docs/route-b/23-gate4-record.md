@@ -74,6 +74,8 @@ revert + post-revert fingerprint matching. That scope is met.
 
 `gate4_pass`: **true — Gate 4 strict unchanged round-trip scope only.**
 
+Record hash (Lead-signed, 2026-10-31): **`abed788e…499a`**
+
 ## Lead approval note (2026-10-31)
 
 - Package integrity APPROVED: `SHA256SUMS` 118/118 match; checker P3A 26/26,
