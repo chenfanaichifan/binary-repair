@@ -17,6 +17,17 @@
 | R7 | candidate stable | `reproducibility.json`: 2 runs, byte-identical, candidate `208574ab…6717` | **PASS** |
 | R8 | manifest | P3B `SHA256SUMS` LF, checker PASS 25/25; but manifest contains the stale independent readelf above | **PASS (manifest integrity only)** |
 
+## Probe separation (non-negotiable)
+
+- P3B's `executor/probe_patcherex2.py` / `jobwrap-routeb` is **V2/interface
+  evidence** for the repair bundle. It is **not** Gate 5 Route B placement
+  evidence and cannot fill R1–R8.
+- The Route A probe `scripts/m4_gate5_probe.py` (`f39a0302…46cb`) is bound to
+  candidate `c4a159…aa82`; it cannot be reused to run Route B candidate
+  `208574ab…6717`.
+- Gate 5 Route B requires its own M4/M3-defined probe (candidate `208574ab…`,
+  mode `m4-gate5b`, probe hash frozen before successor build).
+
 ## Missing items
 
 ```text
