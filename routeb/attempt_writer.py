@@ -46,7 +46,24 @@ def _read_json(path: Path) -> dict[str, Any]:
     return data
 
 
-def _verify_bundle(bundle: Path) -> dict[str, Any]:
+def _verify_original(path: Path, expected_sha256: str) -> None:
+    if not path.is_file() or not os.access(path, os.R_OK):
+        raise ValueError(f"BINARYREPAIR_ORIGINAL is not readable: {path}")
+    if _sha(path) != expected_sha256:
+        raise ValueError("BINARYREPAIR_ORIGINAL hash does not match edit-manifest.json")
+
+
+def _verify_contract(path: Path, expected_sha256: str) -> None:
+    if not path.is_file() or not os.access(path, os.R_OK):
+        raise ValueError(f"BINARYREPAIR_CONTRACT is not readable: {path}")
+    payload = _read_json(path)
+    if not isinstance(payload, dict):
+        raise ValueError("BINARYREPAIR_CONTRACT must be a JSON object")
+    if not expected_sha256 or _sha(path) != expected_sha256:
+        raise ValueError("BINARYREPAIR_CONTRACT hash does not match the run-bound contract")
+
+
+def _verify_bundle(bundle: Path, *, original_path: Path | None = None) -> dict[str, Any]:
     manifest_path = bundle / "edit-manifest.json"
     if not manifest_path.exists():
         raise ValueError(f"missing {manifest_path}")
@@ -55,11 +72,17 @@ def _verify_bundle(bundle: Path) -> dict[str, Any]:
         raise ValueError("bundle edit-manifest.json is not route_b")
     candidate = bundle / "candidate.elf"
     original = bundle / "original.elf"
-    if not candidate.exists() or not original.exists():
+    if not candidate.exists():
+        raise ValueError("bundle must contain candidate.elf")
+    if original_path is not None:
+        _verify_original(original_path, str(manifest.get("original_sha256") or ""))
+        if original.exists() and _sha(original) != _sha(original_path):
+            raise ValueError("bundle original.elf differs from BINARYREPAIR_ORIGINAL")
+    elif not original.exists():
         raise ValueError("bundle must contain candidate.elf and original.elf")
     if _sha(candidate) != manifest.get("candidate_sha256"):
         raise ValueError("candidate.elf hash does not match edit-manifest.json")
-    if _sha(original) != manifest.get("original_sha256"):
+    if original_path is None and _sha(original) != manifest.get("original_sha256"):
         raise ValueError("original.elf hash does not match edit-manifest.json")
     return manifest
 
@@ -143,8 +166,10 @@ def write_attempt(
     job_id: str,
     run_id: str,
     attempt_id: str,
+    original_path: Path | None = None,
+    contract_path: Path | None = None,
+    out_path: Path | None = None,
 ) -> dict[str, Any]:
-    manifest = _verify_bundle(bundle)
     job = jobs.get_job(job_id, data_dir=data_dir)
     run = jobs.get_run(run_id, data_dir=data_dir)
     attempt = jobs.get_attempt(attempt_id, data_dir=data_dir)
@@ -154,6 +179,9 @@ def write_attempt(
         raise ValueError("job/run/attempt do not belong together")
     if attempt.route != "route_b":
         raise ValueError(f"attempt {attempt_id} is {attempt.route}, not route_b")
+    manifest = _verify_bundle(bundle, original_path=original_path)
+    if contract_path is not None:
+        _verify_contract(contract_path, str(run.reviewed_scope_sha256 or ""))
 
     audit = _read_json(bundle / "audit.json") if (bundle / "audit.json").exists() else {"pass": False}
     runtime_state, runtime_path = _runtime_state(bundle)
@@ -199,7 +227,7 @@ def write_attempt(
         "evidence": evidence,
         "details": details,
     }
-    path = data_dir / "jobs" / job_id / "runs" / run_id / "attempts" / f"{attempt_id}.json"
+    path = out_path or (data_dir / "jobs" / job_id / "runs" / run_id / "attempts" / f"{attempt_id}.json")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return {"path": str(path), "payload": payload}
@@ -214,8 +242,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--job", dest="job_id")
     ap.add_argument("--run", dest="run_id")
     ap.add_argument("--attempt", dest="attempt_id")
+    ap.add_argument("--original", type=Path)
+    ap.add_argument("--contract", type=Path)
     args = ap.parse_args(argv)
 
+    original_path = None
+    contract_path = None
+    out_path = None
     if args.from_env:
         data_dir = Path(os.environ["BINARYREPAIR_DATA_DIR"])
         job_id = os.environ["BINARYREPAIR_JOB_ID"]
@@ -225,6 +258,10 @@ def main(argv: list[str] | None = None) -> int:
         if not bundle_raw:
             raise SystemExit("BINARYREPAIR_ROUTEB_BUNDLE is required")
         bundle = Path(bundle_raw)
+        original_path = Path(os.environ["BINARYREPAIR_ORIGINAL"])
+        contract_path = Path(os.environ["BINARYREPAIR_CONTRACT"])
+        raw_out = os.environ.get("BINARYREPAIR_RESULT_PATH")
+        out_path = Path(raw_out) if raw_out else None
     else:
         if not (args.bundle and args.data_dir and args.job_id and args.run_id):
             ap.error("--bundle --data-dir --job --run are required")
@@ -240,7 +277,10 @@ def main(argv: list[str] | None = None) -> int:
             attempt_id = args.attempt_id
 
     result = write_attempt(bundle=bundle, data_dir=data_dir, job_id=job_id,
-                           run_id=run_id, attempt_id=attempt_id)
+                           run_id=run_id, attempt_id=attempt_id,
+                           original_path=original_path if args.from_env else args.original,
+                           contract_path=contract_path if args.from_env else args.contract,
+                           out_path=out_path if args.from_env else None)
     print(json.dumps({"path": result["path"], "results": result["payload"]["results"],
                       "evidence": result["payload"]["evidence"]}, indent=2))
     return 0

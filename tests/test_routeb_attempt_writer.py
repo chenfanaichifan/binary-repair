@@ -64,3 +64,51 @@ def test_routeb_static_bundle_maps_to_not_run_attempt(tmp_path: Path) -> None:
     assert by_kind["behaviour"]["result"] == "not_run"
     assert by_kind["symbolic"]["result"] == "not_run"
     assert by_kind["reproducibility"]["result"] == "not_run"
+
+
+def _contract_file(tmp_path: Path, data: Path, job_id: str, run) -> Path:
+    from app.db.connection import connect
+    connection = connect(data)
+    try:
+        row = connection.execute(
+            "SELECT body_json FROM contracts WHERE id = ? AND job_id = ?",
+            (run.contract_id, job_id),
+        ).fetchone()
+    finally:
+        connection.close()
+    path = tmp_path / "run-contract.json"
+    path.write_bytes(row["body_json"].encode("utf-8"))
+    assert run.reviewed_scope_sha256 == __import__("hashlib").sha256(path.read_bytes()).hexdigest()
+    return path
+
+
+def test_routeb_uses_worker_original_and_contract_paths(tmp_path: Path) -> None:
+    data, job, run, attempt = _setup(tmp_path)
+    bundle = tmp_path / "bundle"
+    make_bundle(original=ORIGINAL, candidate=CANDIDATE, outdir=bundle,
+                func=FUNC, mode="roundtrip")
+    # The adapter must use the worker-provided original, not require a second
+    # copy inside the executor bundle.
+    (bundle / "original.elf").unlink()
+    original = tmp_path / "original.elf"; original.write_bytes(ORIGINAL.read_bytes())
+    contract = _contract_file(tmp_path, data, job.id, run)
+    result = write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                           run_id=run.id, attempt_id=attempt.id,
+                           original_path=original, contract_path=contract)
+    assert result["payload"]["results"]["V0"] == "passed"
+    assert Path(result["path"]).exists()
+
+
+def test_routeb_fails_closed_on_bad_worker_contract(tmp_path: Path) -> None:
+    import pytest
+    data, job, run, attempt = _setup(tmp_path)
+    bundle = tmp_path / "bundle"
+    make_bundle(original=ORIGINAL, candidate=CANDIDATE, outdir=bundle,
+                func=FUNC, mode="roundtrip")
+    original = tmp_path / "original.elf"; original.write_bytes(ORIGINAL.read_bytes())
+    contract = _contract_file(tmp_path, data, job.id, run)
+    contract.write_text("{}\n")
+    with pytest.raises(ValueError, match="run-bound contract"):
+        write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                      run_id=run.id, attempt_id=attempt.id,
+                      original_path=original, contract_path=contract)
