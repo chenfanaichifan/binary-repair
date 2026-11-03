@@ -43,6 +43,20 @@ The product is a GUI + controller + worker for a single public CWE-121 fixture:
 The host never executes uploaded or repaired binaries. Execution, compilation
 and symbolic analysis belong to the disposable guest under the broker.
 
+## Frontend
+
+There is **no separate rontend/ directory and no Node/React build**. The UI is
+FastAPI + Jinja, served from the same Python process:
+
+- pages: pp/templates/ (landing.html, setup.html, comparison.html,
+  evidence.html, 
+eport.html, etc.)
+- CSS / JS / images: pp/static/
+- entry point: pp/main.py
+
+Start it with start.ps1 (Windows) or start.sh (Ubuntu); the terminal prints
+the local http://127.0.0.1:8123/?token=... URL.
+
 ## Quick start
 
 ### Windows
