@@ -144,6 +144,12 @@ Key evidence hashes and the final tag are listed in
 Read [`docs/acceptance/LIMITATIONS.md`](docs/acceptance/LIMITATIONS.md) before
 citing this repository. In short:
 
+- **No real pipeline run reached success_within_scope.** The last recorded real
+  p2 verdicts were inconclusive / 
+ejected; this is gate/evidence acceptance
+  with recorded limitations, not a live end-to-end repair success.
+- **Gate 4 is an unchanged round-trip PASS, not a repair-success proof.** It does
+  not by itself show that the vulnerability is fixed.
 - V4 is a model-level bounded result, not a binary-level proof.
 - The full test suite is not green on every environment; missing tools are
   recorded as `not_run`.
@@ -152,8 +158,8 @@ citing this repository. In short:
 - Gate 4 F2 independent p2 rerun was waived.
 - Gate 5 uses split successor binaries for Route A and Route B; Route A was not
   rerun under the Route B successor.
-- The repository is a curated snapshot of one MVP, not a general-purpose repair
-  product.
+- The repository is a curated snapshot of **one public CWE-121 fixture**, not a
+  general-purpose repair product.
 
 ## License
 
