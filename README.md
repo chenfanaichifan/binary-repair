@@ -8,22 +8,31 @@ bytes; one shared acceptance engine decides whether the final executable is
 `success_within_scope`. A model's claim is never evidence: only checks on the final
 bytes count.
 
-> **Status [2026-10-29, branch `integration/consolidation-2026-10-29`]: integrated demo state; no repair verified.**
-> This tree is the consolidated candidate for `main`: it carries the controller, the
-> member-2 controller-backed GUI (`app/backend.py` adapter in `mock` / `http` /
-> `local` modes), the acceptance engine, the AI boundary, SQLite v1 + 002/003,
-> Route A/B tooling, the public CWE-121 fixture, the member-4 acceptance unit suite,
-> and the governance documents (`AGENTS.md`, `MEMORY.md`, `agent_docs/`,
-> `docs_BinaryRepair/`).
+> **Status [2026-10-31, tag `mvp-2026-10-31`]: MVP acceptance approved with recorded limitations.**
+> This tree carries the controller, the member-2 controller-backed GUI
+> (`app/backend.py` adapter in `mock` / `http` / `local` modes), the acceptance
+> engine, the AI boundary, SQLite v1 + 002/003, Route A/B tooling, the public
+> CWE-121 fixture, the acceptance suite, and the governance/handoff records.
 >
-> No binary has been repaired and verified end to end. Guest execution, real
-> Route A/B candidate builds, V1-V5 real checks, V4 symbolic analysis and V5 replay
-> are all **not_run**. Do not present demo or synthetic data as repair evidence.
+> Gate status at this tag:
 >
-> Gate 3 (Route A) is recorded as **approved on 2026-10-22** in
-> `docs_BinaryRepair/handoffs/33-gate3-approved.md`. That record was **not
-> re-measured** in this consolidation, and it does not cover the fixture freeze,
-> Gate 4/5/6 or MVP acceptance. Gate 4 remains **NOT RUN**.
+> - Gate 3 (Route A): closed/approved 2026-10-22.
+> - Gate 4 (Route B formal): **PASS**, strict unchanged round-trip scope; F2
+>   independent p2 rerun waived and recorded in `docs/handoffs/75`.
+> - Gate 5 Route A / Route B: **PASS**; signed records `51`/`77` and `80`/`82`.
+> - Gate 6 / V4: **PASS at model level** (bounded 64); not binary-level symbolic
+>   execution and not a whole-program proof.
+> - Fixture: **FROZEN for candidate scope only** (`docs/handoffs/78`).
+>
+> Recorded limitations (not hidden): M4 and Lead are the same operator, so this is
+> not independent two-person review; the full suite still has environment gaps
+> (`capstone`/`elftools`/browser e2e); F2 p2 rerun is waived; V4 is model-level.
+> Gate 5B evidence uses a split successor chain (A `90af91ef`, B `0066973d`), with
+> no Route A rerun under the B successor.
+>
+> The final tag is `mvp-2026-10-31`; `mvp-integration-2026-10-31` and
+> `mvp-candidate-2026-10-31` are earlier snapshots and must not be used as the
+> final acceptance tag.
 
 ## What is in this tree
 
