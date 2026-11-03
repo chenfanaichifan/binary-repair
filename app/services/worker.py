@@ -27,10 +27,12 @@ No path in this module invents a ``passed`` result.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -89,6 +91,88 @@ def _load_bundle(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _executor_inputs(data_dir: str | Path, job_id: str, run_id: str) -> tuple[Path, Path]:
+    """Return verified original and contract paths for one executor spawn.
+
+    Fail closed if the original bytes or the approved contract cannot be
+    verified. The contract file is written atomically and idempotently under a
+    contract-id path, so it cannot overwrite another revision.
+    """
+
+    root = Path(data_dir)
+    connection = connect(data_dir)
+    try:
+        run = connection.execute(
+            "SELECT * FROM runs WHERE id = ? AND job_id = ?",
+            (run_id, job_id),
+        ).fetchone()
+        job = connection.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if run is None:
+            raise ValueError(f"unknown run id for job {job_id}: {run_id}")
+        if job is None:
+            raise ValueError(f"unknown job id: {job_id}")
+        contract = connection.execute(
+            "SELECT * FROM contracts WHERE id = ? AND job_id = ?",
+            (run["contract_id"], job_id),
+        ).fetchone()
+    finally:
+        connection.close()
+
+    if contract is None:
+        raise ValueError("run has no approved contract")
+    if not contract["approved_at"]:
+        raise ValueError("run contract is not approved")
+
+    original = root / "jobs" / job_id / "original.bin"
+    if not original.is_file() or not os.access(original, os.R_OK):
+        raise ValueError(f"original input is not readable: {original}")
+    if _sha256_file(original) != str(job["original_sha256"]):
+        raise ValueError("original input hash does not match the job record")
+
+    body = contract["body_json"]
+    if not isinstance(body, str):
+        raise ValueError("contract body is not text")
+    body_bytes = body.encode("utf-8")
+    contract_hash = hashlib.sha256(body_bytes).hexdigest()
+    bound_hash = str(run["reviewed_scope_sha256"] or "")
+    if contract_hash != str(contract["sha256"]) or contract_hash != bound_hash:
+        raise ValueError("contract bytes do not match the run-bound contract hash")
+
+    contracts_dir = root / "jobs" / job_id / "contracts"
+    contracts_dir.mkdir(parents=True, exist_ok=True)
+    contract_path = contracts_dir / f"{run['contract_id']}.json"
+    if contract_path.exists():
+        if _sha256_file(contract_path) != contract_hash:
+            raise ValueError(f"contract file exists with different bytes: {contract_path}")
+    else:
+        handle, temp_name = tempfile.mkstemp(
+            prefix=f".{run['contract_id']}-", suffix=".tmp", dir=contracts_dir
+        )
+        try:
+            with os.fdopen(handle, "wb") as temp:
+                temp.write(body_bytes)
+                temp.flush()
+                os.fsync(temp.fileno())
+            os.replace(temp_name, contract_path)
+        except BaseException:
+            try:
+                os.unlink(temp_name)
+            except OSError:
+                pass
+            raise
+    if not os.access(contract_path, os.R_OK):
+        raise ValueError(f"contract file is not readable: {contract_path}")
+    return original, contract_path
+
+
 def _run_executor(
     *,
     data_dir: str | Path,
@@ -101,6 +185,7 @@ def _run_executor(
     command = os.environ.get("BINARYREPAIR_ATTEMPT_CMD")
     if not command:
         return False
+    original, contract = _executor_inputs(data_dir, job_id, run_id)
     env = os.environ.copy()
     env.update(
         {
@@ -110,6 +195,8 @@ def _run_executor(
             "BINARYREPAIR_ATTEMPT_ID": attempt_id,
             "BINARYREPAIR_ROUTE": route,
             "BINARYREPAIR_RESULT_PATH": str(bundle),
+            "BINARYREPAIR_ORIGINAL": str(original),
+            "BINARYREPAIR_CONTRACT": str(contract),
         }
     )
     subprocess.run([command], env=env, check=True)

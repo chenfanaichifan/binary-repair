@@ -38,12 +38,32 @@ BINARYREPAIR_ATTEMPT_CMD=/path/to/executor   # optional; no shell expansion
 If `BINARYREPAIR_ATTEMPT_CMD` is set, the worker runs it with:
 
 ```text
-BINARYREPAIR_JOB_ID, BINARYREPAIR_RUN_ID, BINARYREPAIR_ATTEMPT_ID,
-BINARYREPAIR_ROUTE, BINARYREPAIR_RESULT_PATH
+BINARYREPAIR_DATA_DIR
+BINARYREPAIR_JOB_ID
+BINARYREPAIR_RUN_ID
+BINARYREPAIR_ATTEMPT_ID
+BINARYREPAIR_ROUTE
+BINARYREPAIR_RESULT_PATH
+BINARYREPAIR_ORIGINAL
+BINARYREPAIR_CONTRACT
 ```
 
 The command must write the result bundle to `BINARYREPAIR_RESULT_PATH`. If the
 bundle already exists, the command is not invoked.
+
+Before spawning, the worker verifies:
+
+- `BINARYREPAIR_ORIGINAL` is `<data>/jobs/<job_id>/original.bin`, readable, and
+  its SHA-256 matches the job record;
+- `BINARYREPAIR_CONTRACT` is `<data>/jobs/<job_id>/contracts/<contract_id>.json`,
+  readable, valid JSON, and its SHA-256 matches the run-bound contract hash;
+- the contract file is written atomically and idempotently; a different byte
+  sequence at the same path fails closed;
+- a missing original/contract or an unapproved run fails closed before the
+  executor is spawned.
+
+Existing executors that only use the original five variables remain compatible;
+the two new paths are additive.
 
 ## Result bundle
 

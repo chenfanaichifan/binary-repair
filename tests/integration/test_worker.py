@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import os
+import sys
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.controller_api import app
@@ -123,6 +127,163 @@ def test_worker_finishes_both_routes_and_persists_verdict(tmp_path: Path) -> Non
         assert (
             data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / attempt.id / "verdict.json"
         ).exists()
+
+
+def test_executor_receives_verified_original_and_contract(
+    tmp_path: Path, monkeypatch
+) -> None:
+    data_dir, record, run = _started(tmp_path)
+    attempts = jobs.list_attempts(run.id, data_dir=data_dir)
+    seen: list[dict[str, str]] = []
+
+    def fake_executor(args, env, check):
+        assert args == ["fake-executor"]
+        seen.append(dict(env))
+        attempt_id = env["BINARYREPAIR_ATTEMPT_ID"]
+        evidence = _add_evidence(data_dir, record.id, attempt_id)
+        payload = {
+            "route": env["BINARYREPAIR_ROUTE"],
+            "candidate_sha256": record.original_sha256,
+            "results": {f"V{i}": "passed" for i in range(6)},
+            "evidence": evidence,
+        }
+        path = Path(env["BINARYREPAIR_RESULT_PATH"])
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload), encoding="utf-8")
+
+    monkeypatch.setenv("BINARYREPAIR_ATTEMPT_CMD", "fake-executor")
+    monkeypatch.setattr(worker.subprocess, "run", fake_executor)
+
+    assert worker.run_once(data_dir=data_dir) == 2
+    assert len(seen) == 2
+    for env in seen:
+        assert {
+            "BINARYREPAIR_DATA_DIR",
+            "BINARYREPAIR_JOB_ID",
+            "BINARYREPAIR_RUN_ID",
+            "BINARYREPAIR_ATTEMPT_ID",
+            "BINARYREPAIR_ROUTE",
+            "BINARYREPAIR_RESULT_PATH",
+            "BINARYREPAIR_ORIGINAL",
+            "BINARYREPAIR_CONTRACT",
+        } <= set(env)
+
+        original = Path(env["BINARYREPAIR_ORIGINAL"])
+        assert original.is_file() and original.stat().st_size > 0
+        assert hashlib.sha256(original.read_bytes()).hexdigest() == record.original_sha256
+
+        contract = Path(env["BINARYREPAIR_CONTRACT"])
+        assert contract.is_file()
+        body = contract.read_bytes()
+        assert json.loads(body.decode("utf-8"))["valid_domain"]
+        assert hashlib.sha256(body).hexdigest() == run.reviewed_scope_sha256
+        # The contract path is stable and idempotent for the same run.
+        assert contract.parent.name == "contracts"
+        assert contract.name.endswith(".json")
+
+    finished = jobs.list_attempts(run.id, data_dir=data_dir)
+    assert {item.outcome for item in finished} == {"success_within_scope"}
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX executable wrapper")
+def test_executor_real_subprocess_receives_eight_env(
+    tmp_path: Path, monkeypatch
+) -> None:
+    data_dir, record, run = _started(tmp_path)
+    script = tmp_path / "fake-executor.py"
+    script.write_text(
+        f"""#!{sys.executable}
+import hashlib
+import json
+import os
+from pathlib import Path
+
+original = Path(os.environ["BINARYREPAIR_ORIGINAL"])
+candidate = hashlib.sha256(original.read_bytes()).hexdigest()
+payload = {{
+    "route": os.environ["BINARYREPAIR_ROUTE"],
+    "candidate_sha256": candidate,
+    "results": {{f"V{{i}}": "not_run" for i in range(6)}},
+}}
+result = Path(os.environ["BINARYREPAIR_RESULT_PATH"])
+result.parent.mkdir(parents=True, exist_ok=True)
+result.write_text(json.dumps(payload), encoding="utf-8")
+result.with_suffix(".env").write_text(
+    "\\n".join(sorted(k for k in os.environ if k.startswith("BINARYREPAIR_"))),
+    encoding="utf-8",
+)
+""",
+        encoding="utf-8",
+    )
+    script.chmod(0o755)
+    monkeypatch.setenv("BINARYREPAIR_ATTEMPT_CMD", str(script))
+
+    worker.run_once(data_dir=data_dir)
+    env_files = list(
+        (data_dir / "jobs" / record.id / "runs" / run.id / "attempts").glob("*.env")
+    )
+    assert len(env_files) == 2
+    required = {
+        "BINARYREPAIR_DATA_DIR",
+        "BINARYREPAIR_JOB_ID",
+        "BINARYREPAIR_RUN_ID",
+        "BINARYREPAIR_ATTEMPT_ID",
+        "BINARYREPAIR_ROUTE",
+        "BINARYREPAIR_RESULT_PATH",
+        "BINARYREPAIR_ORIGINAL",
+        "BINARYREPAIR_CONTRACT",
+    }
+    for env_file in env_files:
+        assert required <= set(env_file.read_text(encoding="utf-8").splitlines())
+
+
+def test_executor_fails_closed_when_original_is_missing(
+    tmp_path: Path, monkeypatch
+) -> None:
+    data_dir, record, run = _started(tmp_path)
+    (data_dir / "jobs" / record.id / "original.bin").unlink()
+    calls: list[dict[str, str]] = []
+
+    def fake_executor(args, env, check):
+        calls.append(dict(env))
+
+    monkeypatch.setenv("BINARYREPAIR_ATTEMPT_CMD", "fake-executor")
+    monkeypatch.setattr(worker.subprocess, "run", fake_executor)
+    worker.run_once(data_dir=data_dir)
+
+    assert calls == []
+    attempts = jobs.list_attempts(run.id, data_dir=data_dir)
+    assert attempts
+    assert all(item.outcome != "success_within_scope" for item in attempts)
+
+
+def test_executor_fails_closed_when_contract_is_unapproved(
+    tmp_path: Path, monkeypatch
+) -> None:
+    data_dir, record, run = _started(tmp_path)
+    connection = connect(data_dir)
+    try:
+        with connection:
+            connection.execute(
+                "UPDATE contracts SET approved_at = '' WHERE id = ?",
+                (run.contract_id,),
+            )
+    finally:
+        connection.close()
+
+    calls: list[dict[str, str]] = []
+
+    def fake_executor(args, env, check):
+        calls.append(dict(env))
+
+    monkeypatch.setenv("BINARYREPAIR_ATTEMPT_CMD", "fake-executor")
+    monkeypatch.setattr(worker.subprocess, "run", fake_executor)
+    worker.run_once(data_dir=data_dir)
+
+    assert calls == []
+    attempts = jobs.list_attempts(run.id, data_dir=data_dir)
+    assert attempts
+    assert all(item.outcome != "success_within_scope" for item in attempts)
 
 
 def test_snapshot_exposes_attempts_obligations_and_verdict(
