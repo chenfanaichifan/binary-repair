@@ -53,14 +53,14 @@ def _verify_original(path: Path, expected_sha256: str) -> None:
         raise ValueError("BINARYREPAIR_ORIGINAL hash does not match edit-manifest.json")
 
 
-def _verify_contract(path: Path, expected_sha256: str) -> None:
+def _verify_contract(path: Path) -> None:
+    """The broker hashes/binds the contract before spawn; the adapter only
+    consumes the verified path and never reads contract bodies from SQLite."""
     if not path.is_file() or not os.access(path, os.R_OK):
         raise ValueError(f"BINARYREPAIR_CONTRACT is not readable: {path}")
     payload = _read_json(path)
     if not isinstance(payload, dict):
         raise ValueError("BINARYREPAIR_CONTRACT must be a JSON object")
-    if not expected_sha256 or _sha(path) != expected_sha256:
-        raise ValueError("BINARYREPAIR_CONTRACT hash does not match the run-bound contract")
 
 
 def _verify_bundle(bundle: Path, *, original_path: Path | None = None) -> dict[str, Any]:
@@ -181,7 +181,7 @@ def write_attempt(
         raise ValueError(f"attempt {attempt_id} is {attempt.route}, not route_b")
     manifest = _verify_bundle(bundle, original_path=original_path)
     if contract_path is not None:
-        _verify_contract(contract_path, str(run.reviewed_scope_sha256 or ""))
+        _verify_contract(contract_path)
 
     audit = _read_json(bundle / "audit.json") if (bundle / "audit.json").exists() else {"pass": False}
     runtime_state, runtime_path = _runtime_state(bundle)

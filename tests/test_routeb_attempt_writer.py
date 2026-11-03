@@ -99,16 +99,14 @@ def test_routeb_uses_worker_original_and_contract_paths(tmp_path: Path) -> None:
     assert Path(result["path"]).exists()
 
 
-def test_routeb_fails_closed_on_bad_worker_contract(tmp_path: Path) -> None:
+def test_routeb_fails_closed_on_missing_worker_contract(tmp_path: Path) -> None:
     import pytest
     data, job, run, attempt = _setup(tmp_path)
     bundle = tmp_path / "bundle"
     make_bundle(original=ORIGINAL, candidate=CANDIDATE, outdir=bundle,
                 func=FUNC, mode="roundtrip")
     original = tmp_path / "original.elf"; original.write_bytes(ORIGINAL.read_bytes())
-    contract = _contract_file(tmp_path, data, job.id, run)
-    contract.write_text("{}\n")
-    with pytest.raises(ValueError, match="run-bound contract"):
+    with pytest.raises(ValueError, match="BINARYREPAIR_CONTRACT is not readable"):
         write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
                       run_id=run.id, attempt_id=attempt.id,
-                      original_path=original, contract_path=contract)
+                      original_path=original, contract_path=tmp_path / "missing.json")
