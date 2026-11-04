@@ -91,8 +91,12 @@ tests/               unit + integration + fixture contract + browser e2e tests
 tools/               controller launcher helpers and P0/P2 acceptance scripts
 docs/route-b/        Route B design, DB v2, gate 6 notes
 docs/screenshots/    GUI screenshots (mock mode; labelled synthetic data)
-docs/analysis/       root-cause analysis, runtime verification, controller fixes, M2 merge report, independent verification
-docs_BinaryRepair/   PRD, technical design, research, verification design, dated handoffs
+docs/handoffs/       handoff records 34-87 and the task board (01-33 are in docs_BinaryRepair/handoffs/)
+docs/analysis/       root-cause analysis, runtime verification, controller fixes, M2 merge report, member-2 notes
+docs/guides/         controller integration, GUI integration plan, worker runbook
+docs/interfaces/     execution bridge v1 and the Route A worker contract
+docs/prototype/      static agent-console prototype (mock data, no backend)
+docs_BinaryRepair/   PRD, technical design, research, verification design, handoffs 01-33
 agent_docs/          instruction documents referenced by AGENTS.md
 agent/               frozen per-document archive (read-only; not a development area)
 ```
@@ -242,13 +246,19 @@ installed the affected tests are uncollectable, which is `not_run`, not `passed`
 
 ## Documentation
 
+Start at the [documentation map](docs/README.md) for the full folder layout.
+
 - [Route B overview](docs/route-b/README.md)
 - [Root integration map](docs/route-b/04-root-integration.md)
 - [DB v2 decisions](docs/route-b/05-db-v2-spec.md)
 - [Gate 6 evidence notes](docs/route-b/06-gate6-evidence.md)
 - [Candidate handoff / gate status](docs/route-b/03-feasibility-checklist.md)
-- [Controller integration and P0 checklist](docs/controller-integration.md)
-- [GUI integration plan](docs/integration-plan.md)
+- [Controller integration and P0 checklist](docs/guides/controller-integration.md)
+- [GUI integration plan](docs/guides/integration-plan.md)
+- [Worker runbook](docs/guides/run-worker.md)
+- [Execution bridge v1](docs/interfaces/execution-bridge-v1.md)
+- [Handoff board](docs/handoffs/BOARD.md)
+- [Agent console prototype](docs/prototype/agent-console.html)
 - [GUI screenshots (mock mode)](docs/screenshots/)
 
 ## Ground rules

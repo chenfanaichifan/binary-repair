@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BinaryRepair · 修复助手（原型）</title>
+<!--
+  Static design prototype for the BinaryRepair agent console.
+  Look and feel mirrors a terminal coding agent (Claude Code / Codex style):
+  dark surface, monospace stream, tool-use blocks, bottom composer, status line.
+  There is no backend and there is no model call here; every value is mock data.
+  The `plan` model below is the reserved seam for the LLM upgrade: v1 renders a
+  deterministic plan; v2 may render a model-generated plan with the same schema.
+-->
+<style>
+  :root{
+    --bg:#141413; --bg-2:#1b1a18; --bg-3:#232220;
+    --fg:#e8e6e1; --dim:#94908a; --faint:#5f5c56;
+    --line:#2f2d28; --line-2:#3d3a34;
+    --accent:#d97757; --accent-2:#e9a184;
+    --ok:#8fbf7f; --warn:#d9b45b; --bad:#e07a5f;
+    --mono:"Cascadia Code","JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:13px;line-height:1.65;
+    display:flex;flex-direction:column}
+  ::selection{background:#4a3a30;color:#fff}
+  /* top bar */
+  .top{display:flex;align-items:center;gap:14px;padding:8px 16px;border-bottom:1px solid var(--line);
+    background:var(--bg-2);flex:0 0 auto;font-size:12px;color:var(--dim)}
+  .top .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px #d9775788}
+  .top b{color:var(--fg);font-weight:600}
+  .top .sep{color:var(--faint)}
+  .top .spacer{flex:1}
+  .mode{border:1px solid var(--line-2);border-radius:6px;padding:1px 8px;color:var(--dim);cursor:pointer}
+  .mode strong{color:var(--accent-2);font-weight:600}
+  .mode .soon{color:var(--faint);text-decoration:line-through}
+  /* prototype banner */
+  .proto{background:#2a2318;border-bottom:1px solid #4a3b28;color:#d8b98a;font-size:11.5px;
+    padding:4px 16px;flex:0 0 auto}
+  .proto b{color:#f0c98f}
+  /* layout */
+  .wrap{display:flex;flex:1 1 auto;min-height:0}
+  .stream{flex:1 1 auto;overflow:auto;padding:18px 0 24px}
+  .col{max-width:900px;margin:0 auto;padding:0 22px}
+  .status{width:310px;flex:0 0 auto;border-left:1px solid var(--line);background:var(--bg-2);
+    padding:14px 16px;font-size:12px;overflow:auto;display:none}
+  .status.open{display:block}
+  .status h4{margin:0 0 10px;font-size:11px;letter-spacing:.08em;color:var(--dim);font-weight:600}
+  .kv{display:grid;grid-template-columns:96px 1fr;gap:5px 10px}
+  .kv .k{color:var(--dim)}
+  .kv .v{color:var(--fg);word-break:break-all}
+  .mono-dim{color:var(--dim)}
+  /* message rows */
+  .msg{margin:0 0 14px;display:flex;gap:10px;align-items:flex-start}
+  .msg .gutter{flex:0 0 16px;color:var(--faint);font-size:12px;line-height:1.7}
+  .msg.user .gutter{color:var(--accent)}
+  .msg.user .body{color:#f3f1ec}
+  .msg.assistant .gutter{color:var(--accent-2)}
+  .msg .body{flex:1;min-width:0}
+  .dim{color:var(--dim)}
+  .faint{color:var(--faint)}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .accent{color:var(--accent-2)}
+  .rule{border:0;border-top:1px solid var(--line);margin:16px 0}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  /* tool blocks */
+  .tool{border:1px solid var(--line);border-left:2px solid var(--line-2);border-radius:6px;
+    background:var(--bg-2);margin:6px 0 12px;overflow:hidden}
+  .tool .head{display:flex;align-items:center;gap:8px;padding:6px 10px;font-size:12px;
+    background:var(--bg-2);border-bottom:1px dashed var(--line);cursor:pointer;user-select:none}
+  .tool .head .name{color:var(--fg)}
+  .tool .head .args{color:var(--dim);font-size:11.5px}
+  .tool .head .dur{margin-left:auto;color:var(--faint);font-size:11px}
+  .tool .head .tick{color:var(--ok)}
+  .tool .head .spin{color:var(--accent);animation:spin 1.4s linear infinite;display:inline-block}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .tool .out{padding:6px 10px 10px 22px;font-size:12px;color:var(--dim)}
+  .tool .out.collapsed{display:none}
+  .tool .out .line{margin:3px 0}
+  .tool .out .file{color:var(--fg)}
+  pre{margin:8px 0;background:#191817;border:1px solid var(--line);border-radius:6px;padding:10px 12px;
+    overflow:auto;font-family:var(--mono);font-size:11.5px;line-height:1.6;color:#d6d2c8;max-height:260px}
+  .hl{background:#3a2f24;color:#f0c98f;border-radius:2px;padding:0 2px}
+  .add{color:var(--ok)} .del{color:var(--bad)}
+  /* inline forms */
+  .card{border:1px solid var(--line-2);border-radius:8px;background:var(--bg-2);padding:12px 14px;margin:8px 0 12px}
+  .card h3{margin:0 0 8px;font-size:12.5px;color:var(--fg);font-weight:600}
+  .q{margin:10px 0;padding-left:10px;border-left:2px solid var(--accent)}
+  .q .ask{color:var(--fg)}
+  .q .ans{color:var(--dim);margin-top:2px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .chips span{font-size:11px;border:1px solid var(--line-2);border-radius:999px;padding:1px 9px;color:var(--dim)}
+  .chips span.on{border-color:var(--accent);color:var(--accent-2)}
+  label.f{display:block;font-size:11px;color:var(--dim);margin:8px 0 3px}
+  input[type=text]{width:100%;background:#191817;border:1px solid var(--line-2);border-radius:6px;
+    color:var(--fg);font-family:var(--mono);font-size:12px;padding:6px 9px}
+  .btn{border:1px solid var(--line-2);background:var(--bg-3);color:var(--fg);border-radius:6px;
+    padding:5px 12px;font-family:var(--mono);font-size:12px;cursor:pointer}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#1a130f;font-weight:600}
+  .btn.ghost{background:transparent}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:11.5px;margin:6px 0}
+  th,td{text-align:left;padding:4px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-weight:600;font-size:11px}
+  td.num{color:var(--dim)}
+  .badge{border:1px solid var(--line-2);border-radius:4px;padding:0 5px;font-size:10.5px}
+  .badge.pass{color:var(--ok);border-color:#3d4a36}
+  .badge.fail{color:var(--bad);border-color:#4a332c}
+  .badge.notrun{color:var(--warn);border-color:#4a422c}
+  .verdict{border:1px solid #4a422c;background:#221f18;border-radius:6px;padding:8px 10px;margin-top:10px;font-size:12px}
+  .verdict b{color:var(--warn)}
+  .progress{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;color:var(--dim)}
+  .progress .bar{flex:1;height:8px;border-radius:999px;background:#2a2823;overflow:hidden;display:flex}
+  .progress .bar i{display:block;height:100%}
+  /* reserved llm slot */
+  .slot{border:1px dashed #5a4a35;background:#1d1a15;border-radius:8px;padding:10px 12px;margin:8px 0 12px;font-size:12px}
+  .slot .tag{color:var(--warn);font-size:10.5px;letter-spacing:.06em}
+  .slot .hint{color:var(--dim);margin-top:4px}
+  /* composer */
+  .composer{flex:0 0 auto;border-top:1px solid var(--line);background:var(--bg-2);padding:10px 22px 12px}
+  .inputbox{max-width:900px;margin:0 auto;border:1px solid var(--line-2);border-radius:8px;background:#191817;
+    padding:8px 12px;display:flex;gap:10px;align-items:flex-start}
+  .inputbox .p{color:var(--accent);flex:0 0 auto}
+  .inputbox .ph{flex:1;color:var(--faint);min-height:20px}
+  .inputbox .ph .cursor{display:inline-block;width:7px;height:14px;background:var(--accent-2);
+    vertical-align:-2px;animation:blink 1.1s step-end infinite;margin-left:1px}
+  @keyframes blink{50%{opacity:0}}
+  .inputbox .send{border:1px solid var(--line-2);border-radius:5px;color:var(--dim);font-size:11px;padding:2px 8px}
+  .hints{max-width:900px;margin:6px auto 0;display:flex;gap:14px;color:var(--faint);font-size:11px}
+  .hints .grow{flex:1}
+  .hints kbd{border:1px solid var(--line-2);border-radius:4px;padding:0 5px;font-family:var(--mono);color:var(--dim)}
+  .hints .toggle{cursor:pointer;color:var(--dim)}
+  .hints .toggle:hover{color:var(--fg)}
+  @media (max-width:820px){.status{display:none !important}.col,.inputbox,.hints{padding-left:14px;padding-right:14px}}
+</style>
+</head>
+<body>
+<div class="top">
+  <span class="dot"></span><b>BinaryRepair</b>
+  <span class="sep">·</span><span>修复助手</span>
+  <span class="sep">·</span><span id="jobline">job 8f1c2e4a</span>
+  <span class="spacer"></span>
+  <span class="mono-dim">plan rev 3</span>
+  <span class="mode" title="升级位：由 LLM 生成同一份 AssistantPlan">模式 <strong>scripted v1</strong> <span class="soon">LLM</span></span>
+</div>
+<div class="proto">静态原型 · 虚构示例数据 · 不连接后端，也没有调用模型 · <b>不代表真实修复结果</b></div>
+
+<div class="wrap">
+  <div class="stream" id="stream">
+    <div class="col">
+
+      <div class="msg assistant"><div class="gutter">⏺</div><div class="body">
+        你好，我是修复助手。把要修复的 Linux x86-64 ELF 拖进来，我会先做静态检查——<span class="dim">不会在本机执行它</span>。
+        <div class="dim" style="margin-top:6px">我会根据你的修复需求生成后续问题；v1 用固定脚本，v2 由模型动态生成（界面和数据结构不变）。</div>
+      </div></div>
+
+      <div class="msg user"><div class="gutter">❯</div><div class="body">
+        修复这个程序的缓冲区溢出问题（sample.elf，26,792 B）
+      </div></div>
+
+      <div class="tool" data-collapsible>
+        <div class="head"><span class="tick">⏺</span><span class="name">Upload</span>
+          <span class="args">sample.elf · 26,792 B</span><span class="dur">0.2s</span></div>
+        <div class="out">
+          <div class="line">sha256 <span class="file">aa42815704d9ffc6…8393</span> <span class="dim">(lowercase 64-hex)</span></div>
+          <div class="line">ELF64 · x86-64 · ET_EXEC · 13 program headers</div>
+          <div class="line">识别为公版样本 CWE121_src_char_declare_cpy_51b <span class="ok">✓ 可自动填入默认契约</span></div>
+          <div class="line faint">提示：本机只做字节级检查；分析 / 修复 / 执行都在虚拟机的隔离环境里完成。</div>
+        </div>
+      </div>
+
+      <div class="msg assistant"><div class="gutter">⏺</div><div class="body">
+        下面 5 个问题用来写清楚修复范围。它们是 <span class="accent">AssistantPlan</span> 里的引导项：v1 由固定模板给出，
+        <span class="dim">v2 会由模型根据你的缺陷描述和分析结果生成</span>。
+      </div></div>
+
+      <div class="card">
+        <h3>引导式描述 · 修复需求</h3>
+        <div class="q"><div class="ask">1. 正常输入的范围是什么？</div>
+          <div class="ans">valid_domain: C string inputs of length 0..49 bytes; the terminating NUL is copied</div>
+          <div class="chips"><span class="on">0–49 字节字符串</span><span>使用公版默认值</span></div></div>
+        <div class="q"><div class="ask">2. 正常输入下应该发生什么？</div>
+          <div class="ans">valid_behavior: strcpy into dest[50] and printLine(data); exit 0</div></div>
+        <div class="q"><div class="ask">3. 什么行为必须禁止？</div>
+          <div class="ans">forbidden_behavior: write past dest[50] for inputs of length 50 or more</div></div>
+        <div class="q"><div class="ask">4. 无效输入时应该怎样？</div>
+          <div class="ans">invalid: exact stderr line and exit 1, no stdout</div></div>
+        <div class="q"><div class="ask">5. 有哪些环境假设？</div>
+          <div class="ans">Linux x86-64 non-PIE guest; single process; stack protector disabled</div></div>
+        <div class="btns"><button class="btn ghost">修改答案</button><button class="btn primary">确认并继续</button></div>
+      </div>
+
+      <div class="slot">
+        <div class="tag">升级位 · LLM 生成引导</div>
+        <div>当修复类型不是栈溢出时（例如格式化字符串、整数溢出、UAF），v1 的固定问题不适用。
+          v2 由模型读取"缺陷描述 + 虚拟机分析结果"，生成属于该漏洞类型的问答与修复计划，
+          仍使用同一份 <span class="accent">AssistantPlan</span> schema，写入数据库并可回放。
+          模型只生成"引导与解释"，不能审批、不能启动任务、不能声称修复成功。</div>
+      </div>
+
+      <div class="msg assistant"><div class="gutter">⏺</div><div class="body">在虚拟机里分析目标函数和漏洞位置。分析结果只用于展示和生成修复建议，不会直接判定修复成功。</div></div>
+
+      <div class="tool" data-collapsible>
+        <div class="head"><span class="tick">⏺</span><span class="name">Analyze</span>
+          <span class="args">vm · netns · uid 1003 · screen_id 0e5b2a10</span><span class="dur">3.4s</span></div>
+        <div class="out">
+          <div class="line">function <span class="file">CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink</span> @ <span class="file">0x4012b0</span></div>
+          <div class="line">漏洞：未检查长度的 <span class="file">strcpy</span> 写入 50 字节栈缓冲区（capacity_includes_terminator=true）</div>
+          <pre>4012b0  push rbp
+4012b1  mov  rbp, rsp
+4012f8  lea  rdi, [rbp-0x40]
+<span class="hl">401304  call strcpy@plt</span>     <span class="faint">; dest[50] 未检查长度</span>
+401309  mov  eax, 0</pre>
+          <div class="line dim">artifacts: analysis/recovered.c · analysis/disassembly.txt · analysis/vulnerability.json</div>
+        </div>
+      </div>
+
+      <div class="msg assistant"><div class="gutter">⏺</div><div class="body">
+        分析完成。修复建议（<span class="dim">计划内容，不是证据</span>）：在 <span class="file">0x401304</span> 前插入长度检查；
+        失效路径写 stderr 并 <span class="file">exit 1</span>；改动限定在 R-X PT_LOAD 尾部未使用区域，不新增导入。
+        <div class="dim" style="margin-top:4px">assumptions: NUL 结尾 · 单线程 · 栈布局不变</div>
+        <div class="dim">uncertainties: 入口跳转假设、CET 运行时未验证</div>
+      </div></div>
+
+      <div class="card">
+        <h3>确认契约 · 批准后才会在虚拟机执行</h3>
+        <label class="f">valid_domain</label><input type="text" value="C string inputs of length 0..49 bytes" readonly>
+        <label class="f">forbidden_behavior</label><input type="text" value="write past dest[50] for inputs of length 50 or more" readonly>
+        <label class="f">invalid_input_response</label><input type="text" value="exact stderr line and exit 1" readonly>
+        <div class="dim" style="margin-top:8px">revision 2 · sha256 24bfe568e162be57…4e37 · 批准绑定当前修订哈希</div>
+        <div class="btns"><button class="btn primary">我确认本次修复范围</button><button class="btn ghost">重新分析</button></div>
+      </div>
+
+      <div class="msg user"><div class="gutter">❯</div><div class="body">确认，开始执行</div></div>
+
+      <div class="tool" data-collapsible>
+        <div class="head"><span class="spin">✻</span><span class="name">Run repair</span>
+          <span class="args">vm · route A + route B · staging mounted · snapshot reset</span><span class="dur">00:41</span></div>
+        <div class="out">
+          <div class="line">route A · 直接指令修复　<span class="ok">分析 ✓</span> <span class="ok">生成 ✓</span> <span class="ok">应用 ✓</span> <span class="warn">验证…</span></div>
+          <div class="line">route B · 恢复 C 回填　<span class="ok">分析 ✓</span> <span class="ok">回填 ✓</span> <span class="ok">生成 ✓</span> <span class="ok">应用 ✓</span> <span class="warn">验证…</span></div>
+          <div class="line faint">本机不执行目标程序；进程在 guest job netns 内，uid 1003，caps 0，无外网。</div>
+        </div>
+      </div>
+
+      <div class="tool" data-collapsible>
+        <div class="head"><span class="tick">⏺</span><span class="name">Run six cases</span>
+          <span class="args">original vs repaired · same inputs · same isolation</span><span class="dur">2.1s</span></div>
+        <div class="out">
+          <table>
+            <tr><th>case</th><th>input</th><th>expected</th><th>original</th><th>repaired</th><th>verdict</th></tr>
+            <tr><td>valid-empty</td><td class="num">0a</td><td class="num">rc 0</td><td class="num">rc 0</td><td class="num">rc 0</td><td><span class="badge pass">unchanged</span></td></tr>
+            <tr><td>valid-49</td><td class="num">41×49</td><td class="num">rc 0</td><td class="num">rc 0</td><td class="num">rc 0</td><td><span class="badge pass">unchanged</span></td></tr>
+            <tr><td>invalid-64</td><td class="num">41×64</td><td class="num">rc 1 · stderr</td><td class="num">rc -11</td><td class="num">rc 1 · stderr</td><td><span class="badge pass">fixed</span></td></tr>
+            <tr><td>invalid-128</td><td class="num">41×128</td><td class="num">rc 1 · stderr</td><td class="num">rc -11</td><td class="num">rc 1 · stderr</td><td><span class="badge pass">fixed</span></td></tr>
+            <tr><td>boundary-50</td><td class="num">41×50</td><td class="num">rc 1 · stderr</td><td class="num">rc -11</td><td class="num">rc 1 · stderr</td><td><span class="badge pass">fixed</span></td></tr>
+            <tr><td>invalid-empty</td><td class="num">-</td><td class="num">rc 0</td><td class="num">rc 0</td><td class="num">rc 0</td><td><span class="badge pass">unchanged</span></td></tr>
+          </table>
+          <div class="progress"><span>样本用例符合率（不是修复结论）</span><span>修复前 1/6 → 修复后 6/6</span></div>
+          <div class="progress"><span class="faint">修复前</span><div class="bar"><i style="width:16.6%;background:#5a4a35"></i></div></div>
+          <div class="progress"><span class="faint">修复后</span><div class="bar"><i style="width:100%;background:#4c6b45"></i></div></div>
+          <div class="line faint">artifact: behavior-comparison.json（role behaviour_compare，SHA-256 已绑定）</div>
+        </div>
+      </div>
+
+      <div class="tool" data-collapsible>
+        <div class="head"><span class="tick">⏺</span><span class="name">Acceptance</span>
+          <span class="args">V0–V5 · host-side engine only</span><span class="dur">0.1s</span></div>
+        <div class="out">
+          <table>
+            <tr><th>义务</th><th>结果</th><th>范围</th><th>原因 / 证据</th></tr>
+            <tr><td>V0 identity</td><td><span class="badge pass">passed</span></td><td>job store</td><td class="dim">original sha256 匹配</td></tr>
+            <tr><td>V1 structure</td><td><span class="badge pass">passed</span></td><td>static audit</td><td class="dim">audit.json</td></tr>
+            <tr><td>V2 interface</td><td><span class="badge pass">passed</span></td><td>loader</td><td class="dim">readelf-audit.txt</td></tr>
+            <tr><td>V3 behaviour</td><td><span class="badge pass">passed</span></td><td>six frozen cases</td><td class="dim">manifest-compare.json</td></tr>
+            <tr><td>V4 symbolic</td><td><span class="badge notrun">not_run</span></td><td>n/a</td><td class="dim">no symbolic evidence for this candidate hash</td></tr>
+            <tr><td>V5 reproducibility</td><td><span class="badge notrun">not_run</span></td><td>n/a</td><td class="dim">no replay record</td></tr>
+          </table>
+          <div class="verdict"><b>inconclusive · required_check_not_run</b><br>
+            <span class="dim">V4 / V5 未执行，不能声称 success_within_scope。缺失不等于通过。</span></div>
+        </div>
+      </div>
+
+      <div class="msg assistant"><div class="gutter">⏺</div><div class="body">
+        修复完成的是"代码改动 + 已验证的行为范围"；总结论是 <span class="warn">inconclusive</span>，
+        因为 V4 符号验证和 V5 可复现性没有跑。你现在可以下载修复后的二进制和证据包。
+        <div style="margin-top:6px">
+          <a href="#">↓ 修复后的二进制 candidate.elf</a> · <a href="#">↓ 证据包 JSON</a> ·
+          <a href="#">↓ V3 证据</a> <span class="faint">· V4 证据（未产生）</span>
+        </div>
+      </div></div>
+
+      <div class="msg assistant"><div class="gutter">⏺</div><div class="body dim">
+        想再修一次，或换一个修复目标？直接告诉我，例如"这次要修格式化字符串"——v2 会据此生成新的问题与计划（v1 仅支持公版样本）。
+      </div></div>
+
+    </div>
+  </div>
+
+  <aside class="status" id="status">
+    <h4>STATUS</h4>
+    <div class="kv">
+      <div class="k">job</div><div class="v">8f1c2e4a…6a7b</div>
+      <div class="k">file</div><div class="v">sample.elf</div>
+      <div class="k">size</div><div class="v">26,792 B</div>
+      <div class="k">sha256</div><div class="v">aa428157…8393</div>
+      <div class="k">phase</div><div class="v">validating → finished</div>
+      <div class="k">contract</div><div class="v">rev 2 · approved</div>
+      <div class="k">executor</div><div class="v">vm connected · isolation OK</div>
+      <div class="k">mode</div><div class="v">scripted v1 (LLM 预留)</div>
+      <div class="k">plan</div><div class="v">rev 3 · deterministic</div>
+    </div>
+    <hr class="rule">
+    <div class="dim" style="font-size:11.5px">
+      本原型只评审外观与步骤。真实实现中：所有内容来自服务端持久化的 AssistantPlan /
+      artifacts / obligations；成功标签只由 acceptance engine 写入。
+    </div>
+    <hr class="rule">
+    <div class="dim" style="font-size:11.5px">
+      在 Claude Code / Codex 式布局中，状态栏可通过 <kbd>Ctrl</kbd>+<kbd>I</kbd> 或右下角“状态”切换。
+    </div>
+  </aside>
+</div>
+
+<div class="composer">
+  <div class="inputbox">
+    <span class="p">❯</span>
+    <span class="ph" id="composer-text">描述你的修复需求，或直接执行下一步<span class="cursor"></span></span>
+    <span class="send">⏎</span>
+  </div>
+  <div class="hints">
+    <span><kbd>Enter</kbd> 发送</span>
+    <span><kbd>Esc</kbd> 中断</span>
+    <span><kbd>/</kbd> 命令</span>
+    <span class="grow"></span>
+    <span class="toggle" id="toggle-status">状态</span>
+    <span class="faint">scripted v1 · deepseek-chat (预留)</span>
+  </div>
+</div>
+
+<script>
+// Prototype only: collapse/expand tool blocks and toggle the status panel.
+document.querySelectorAll('.tool .head').forEach(function (head) {
+  head.addEventListener('click', function () {
+    var out = head.parentElement.querySelector('.out');
+    out.classList.toggle('collapsed');
+  });
+});
+var status = document.getElementById('status');
+function toggleStatus() { status.classList.toggle('open'); }
+document.getElementById('toggle-status').addEventListener('click', toggleStatus);
+document.addEventListener('keydown', function (e) {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') { e.preventDefault(); toggleStatus(); }
+});
+// Composer is intentionally non-functional: make that explicit if someone clicks.
+document.querySelector('.inputbox').addEventListener('click', function () {
+  var el = document.getElementById('composer-text');
+  el.textContent = '原型：输入框不连接后端（真实实现中这里驱动 AssistantPlan 的下一步）';
+});
+</script>
+</body>
+</html>

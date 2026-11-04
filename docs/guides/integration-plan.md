@@ -92,7 +92,7 @@ Required env (host only; never in the guest, logs or browser):
 | AI candidate card | Candidate v1 fields (via attempt evidence) | synthetic demo card only |
 
 Required snapshot/contract shape is documented in
-`docs/controller-integration.md`. All payload strings must stay English ASCII;
+`docs/guides/controller-integration.md`. All payload strings must stay English ASCII;
 the GUI rejects non-ASCII controller payloads with `502`.
 
 ### M4 ruling (2026-10-22)
