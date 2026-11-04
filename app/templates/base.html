@@ -4,38 +4,60 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}BinaryRepair{% endblock %} · BinaryRepair</title>
-  <link rel="stylesheet" href="/static/css/app.css?v=20261022b">
+  <link rel="stylesheet" href="/static/css/ds.css?v=20261104a">
+  {% block head %}{% endblock %}
 </head>
-<body data-job-id="{{ job.id if job else '' }}" data-demo="{{ '1' if demo else '0' }}">
-  <div class="app-bg" aria-hidden="true"></div>
+<body class="ds-body" data-job-id="{{ job.id if job else '' }}" data-demo="{{ '1' if demo else '0' }}">
+  <div class="ds-app">
+    <aside class="ds-sidebar">
+      <a class="ds-brand" href="/">BinaryRepair <span class="ds-badge">预览版</span></a>
+      <a class="ds-new" href="/agent">＋ 新任务</a>
 
-  <header class="topbar">
-    <a class="brand" href="/">
-      <span class="brand-mark" aria-hidden="true">BR</span>
-      <span class="brand-text">
-        <strong>BinaryRepair</strong>
-        <small>AI 二进制漏洞修复 · 证据工作台</small>
-      </span>
-    </a>
-    <nav class="topnav" aria-label="主导航">
-      <a href="/jobs/new" class="topnav-link">新建任务</a>
-      <span class="env-chip"><span class="env-dot" aria-hidden="true"></span> LOCAL · 127.0.0.1</span>
-    </nav>
-  </header>
+      <nav class="ds-nav" aria-label="主导航">
+        <a href="/agent" class="{% if request.url.path == '/agent' %}is-active{% endif %}">修复控制台</a>
+        <a href="/jobs/new" class="{% if request.url.path == '/jobs/new' %}is-active{% endif %}">新建任务（表单）</a>
+        <a href="/">起始页</a>
+      </nav>
 
-  {% if demo %}
-  <div class="demo-banner" role="status">
-    <strong>演示数据</strong>：页面使用合成 fixture，<strong>未执行真实修复</strong>，不能作为"补丁已验证"的证据。
+      {% if job %}
+      <div class="ds-group">当前任务</div>
+      <nav class="ds-nav" aria-label="任务导航">
+        <a href="/jobs/{{ job.id }}" class="{% if request.url.path == '/jobs/' + job.id %}is-active{% endif %}">进度与对比</a>
+        <a href="/jobs/{{ job.id }}/evidence" class="{% if request.url.path.endswith('/evidence') %}is-active{% endif %}">证据与导出</a>
+        <a href="/agent?job={{ job.id }}">在控制台中打开</a>
+      </nav>
+      {% endif %}
+
+      <div class="ds-group">工作区</div>
+      <div class="ds-workspace">本地工作区 · 127.0.0.1</div>
+      {% if job %}
+      <div class="ds-session is-active">任务 {{ job.id[:8] }}<small>当前</small></div>
+      {% else %}
+      <div class="ds-session">尚未选择任务</div>
+      {% endif %}
+      <a class="ds-session" href="/agent?fixture=1">演示控制台<small>fixture</small></a>
+
+      <div class="ds-side-foot">
+        阶段与结论是两条独立的轴。<br>
+        未执行显示 <code>not_run</code>，未回传显示等待占位。<br>
+        页面不计算整体结论，导出不代表生产批准。
+      </div>
+    </aside>
+
+    <div class="ds-main">
+      {% if demo %}
+      <div class="ds-demo" role="status">
+        <strong>演示数据</strong>：页面使用合成 fixture，未执行真实修复，不能作为「补丁已验证」的证据。
+      </div>
+      {% endif %}
+
+      <main class="ds-content">
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="ds-footer">BinaryRepair · AI 二进制漏洞修复与正确性验证工作台</footer>
+    </div>
   </div>
-  {% endif %}
-
-  <main class="wrap">
-    {% block content %}{% endblock %}
-  </main>
-
-  <footer class="footer">
-    <span>阶段与结论是两条独立的轴 · 未执行显示 <code>not_run</code> · 两条路线都成功才算整体成功 · 导出不代表生产批准</span>
-  </footer>
 
   {% block scripts %}{% endblock %}
 </body>

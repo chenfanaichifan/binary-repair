@@ -1,28 +1,6 @@
-/* 修复控制台（/agent）
-   布局骨架：终端流 + 工具块 + composer + 右栏状态面板（agent console）。
-   视觉：复用项目纸感 token，不新造色板；工具块与代码用等宽字体形成控制台感。
-   本文件只属于 M2（GUI owner）。
-*/
+/* 修复控制台组件（DeepSeek 工作页风格）。设计令牌来自 ds.css，本文件只管控制台专属组件。 */
 
-.agent {
-  --agent-paper: #f3ede1;
-  --agent-paper-light: #faf6ec;
-  --agent-ink: #2c2925;
-  --agent-ink-soft: #4a453d;
-  --agent-muted: #8a7f6e;
-  --agent-line: #d8cdb8;
-  --agent-accent: #a8642f;
-  --agent-ok: #3f6b4f;
-  --agent-bad: #9b3b2e;
-  --agent-wait: #8a6a1f;
-  --agent-mono: "Cascadia Mono", Consolas, "Courier New", monospace;
-
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-height: 70vh;
-  color: var(--agent-ink);
-}
+[hidden] { display: none !important; }
 
 .visually-hidden {
   position: absolute;
@@ -36,189 +14,107 @@
   border: 0;
 }
 
-/* ---------- 顶栏 ---------- */
+.agent { display: flex; flex-direction: column; height: 100%; min-height: 0; }
 
 .agent-top {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  justify-content: space-between;
   gap: 12px;
+  padding-bottom: 14px;
 }
 
-.agent-title {
-  margin: 0;
-  font-family: Georgia, "Songti SC", "SimSun", serif;
-  font-size: 26px;
-  letter-spacing: 0.02em;
-}
+.agent-badges { margin-left: auto; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
-.agent-subtitle {
-  margin: 6px 0 0;
-  max-width: 62ch;
-  font-size: 13px;
-  line-height: 1.7;
-  color: var(--agent-ink-soft);
-}
-
-.agent-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.agent-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border: 1.5px dashed var(--agent-ink);
-  border-radius: 999px;
-  background: var(--agent-paper-light);
-  font-size: 12px;
-  color: var(--agent-ink-soft);
-}
-
-.agent-chip-mode {
-  border-style: solid;
-  font-weight: 700;
-  color: var(--agent-ink);
-}
-
-.agent-chip-poll {
-  font-family: var(--agent-mono);
-  font-size: 11px;
-}
+.agent-poll { font-family: var(--ds-mono); font-size: 11px; color: var(--ds-faint); }
 
 .agent-fallback {
-  padding: 12px 16px;
-  border: 1.5px solid var(--agent-wait);
-  border-radius: 18px 14px 20px 12px;
-  background: #f7efdc;
-  color: #6d5416;
+  margin-bottom: 12px;
+  padding: 11px 16px;
+  border: 1px solid #f0e2b8;
+  border-radius: 12px;
+  background: var(--ds-wait-soft);
+  color: var(--ds-wait);
   font-size: 13px;
-  line-height: 1.7;
 }
 
-/* ---------- 视图切换 ---------- */
-
-.agent-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
+/* 视图 tab：下划线式 */
+.agent-tabs { display: flex; gap: 20px; align-items: center; border-bottom: 1px solid var(--ds-border); }
 .agent-tab {
-  padding: 8px 18px;
-  border: 1.5px dashed var(--agent-ink);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--agent-ink-soft);
+  padding: 9px 2px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--ds-muted);
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
   cursor: pointer;
-  text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
-
-.agent-tab.is-active {
-  background: var(--agent-ink);
-  color: var(--agent-paper-light);
-  border-style: solid;
-  box-shadow: 3px 4px 0 rgba(44, 41, 37, 0.18);
-}
-
-.agent-tab-link {
-  margin-left: auto;
-  border-color: var(--agent-line);
-  color: var(--agent-muted);
-}
-
-/* ---------- 主体两栏 ---------- */
+.agent-tab:hover { color: var(--ds-text); text-decoration: none; }
+.agent-tab.is-active { color: var(--ds-text); border-bottom-color: var(--ds-accent); }
+.agent-tab-link { margin-left: auto; color: var(--ds-faint); }
 
 .agent-body {
+  flex: 1;
+  min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 18px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 264px;
+  gap: 22px;
+  padding-top: 16px;
 }
 
-@media (max-width: 980px) {
-  .agent-body {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
+.agent-main { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
 
-.agent-main {
-  min-width: 0;
-}
+#agent-view-chat { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+#agent-view-result { flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px; }
 
-/* ---------- 终端流 ---------- */
+/* ---------------- 对话流 ---------------- */
 
 .agent-stream {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex: 1;
+  min-height: 220px;
   margin: 0;
-  padding: 18px;
+  padding: 4px 6px 16px;
   list-style: none;
-  min-height: 320px;
-  max-height: 62vh;
   overflow-y: auto;
-  border: 1.5px dashed var(--agent-ink);
-  border-radius: 24px 18px 26px 16px;
-  background: var(--agent-paper-light);
-  box-shadow: 6px 7px 0 rgba(44, 41, 37, 0.12);
-}
-
-.agent-msg {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 100%;
+  gap: 20px;
 }
 
-.agent-msg-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--agent-muted);
-}
+.agent-msg { display: flex; flex-direction: column; gap: 6px; animation: ds-rise 0.25s ease both; }
 
-.agent-msg-role {
-  font-weight: 700;
-  color: var(--agent-ink-soft);
-}
-
-.agent-msg-user .agent-msg-role {
-  color: var(--agent-accent);
-}
+.agent-msg-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ds-faint); }
+.agent-msg-role { font-weight: 600; color: var(--ds-text-2); }
 
 .agent-msg-body {
   font-size: 14px;
   line-height: 1.85;
-  color: var(--agent-ink);
+  color: var(--ds-text);
   white-space: pre-wrap;
   word-break: break-word;
+  max-width: 78ch;
 }
 
+/* 用户消息：右侧浅灰气泡（DeepSeek 观感） */
+.agent-msg-user { align-items: flex-end; }
 .agent-msg-user .agent-msg-body {
-  padding: 10px 14px;
-  border: 1.5px solid var(--agent-line);
-  border-radius: 16px 12px 18px 10px;
-  background: #f6f0e3;
+  max-width: 62ch;
+  padding: 10px 16px;
+  border-radius: 16px 16px 4px 16px;
+  background: var(--ds-user);
+  color: var(--ds-text);
 }
 
-/* ---------- 工具块 ---------- */
+/* ---------------- 工具块 ---------------- */
 
 .agent-tool {
-  border: 1.5px solid var(--agent-line);
-  border-radius: 14px 10px 16px 8px;
-  background: #f4eee1;
-  font-family: var(--agent-mono);
-  font-size: 12px;
+  max-width: 78ch;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: #fafafc;
+  overflow: hidden;
 }
 
 .agent-tool-summary {
@@ -228,473 +124,185 @@
   width: 100%;
   padding: 10px 14px;
   border: 0;
-  background: transparent;
-  color: var(--agent-ink-soft);
+  background: none;
+  color: var(--ds-text-2);
   font: inherit;
+  font-size: 13px;
   text-align: left;
   cursor: pointer;
+  transition: background 0.12s ease;
 }
+.agent-tool-summary:hover { background: #f2f2f8; }
+.agent-tool-name { font-family: var(--ds-mono); font-size: 12.5px; color: var(--ds-accent-text); }
+.agent-tool-toggle { margin-left: auto; color: var(--ds-faint); font-size: 12px; }
 
-.agent-tool-summary:hover {
-  color: var(--agent-ink);
-}
-
-.agent-tool-name {
-  font-weight: 700;
-  color: var(--agent-ink);
-}
-
-.agent-tool-toggle {
-  margin-left: auto;
-  color: var(--agent-muted);
-}
-
-.agent-tool-detail {
-  padding: 0 14px 12px;
-  border-top: 1px dashed var(--agent-line);
-}
-
+.agent-tool-detail { padding: 0 14px 12px; border-top: 1px dashed var(--ds-border); }
 .agent-tool-detail pre {
   margin: 10px 0 0;
   max-height: 260px;
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
-  color: var(--agent-ink-soft);
+  font-size: 12px;
+  color: var(--ds-text-2);
 }
 
-.agent-tool-fields {
-  margin: 10px 0 0;
-  display: grid;
-  grid-template-columns: minmax(120px, max-content) 1fr;
-  gap: 4px 12px;
-}
+.agent-tool-fields { margin: 10px 0 0; display: grid; grid-template-columns: minmax(110px, max-content) 1fr; gap: 4px 12px; }
+.agent-tool-fields dt { color: var(--ds-muted); font-family: var(--ds-mono); font-size: 12px; }
+.agent-tool-fields dd { margin: 0; font-family: var(--ds-mono); font-size: 12px; word-break: break-all; }
 
-.agent-tool-fields dt {
-  color: var(--agent-muted);
-}
-
-.agent-tool-fields dd {
-  margin: 0;
-  word-break: break-all;
-}
-
-/* ---------- 问题卡 / 上传卡 ---------- */
+/* ---------------- 卡片（问题 / 上传 / 复核 / 原因 / 建议） ---------------- */
 
 .agent-card {
-  padding: 14px 16px;
-  border: 1.5px dashed var(--agent-ink);
-  border-radius: 18px 14px 20px 12px;
-  background: #fbf7ee;
-  font-size: 14px;
-  line-height: 1.8;
+  max-width: 78ch;
+  padding: 16px 18px;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  background: #fff;
+  box-shadow: var(--ds-shadow);
 }
 
-.agent-card-title {
-  margin: 0 0 8px;
-  font-weight: 700;
-}
+.agent-card-title { margin: 0 0 10px; font-size: 14px; font-weight: 600; }
 
-.agent-question {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 10px;
-}
+.agent-question { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.agent-question label { font-size: 13px; color: var(--ds-text-2); }
+.agent-field-error { min-height: 18px; margin: 0; font-size: 12px; color: var(--ds-bad); }
 
-.agent-question label {
-  font-size: 13px;
-  color: var(--agent-ink-soft);
-}
-
-.agent-question input,
-.agent-question textarea {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 9px 12px;
-  border: 1.5px solid var(--agent-line);
-  border-radius: 12px 9px 13px 8px;
-  background: #fffdf7;
-  color: var(--agent-ink);
-  font: inherit;
-  font-size: 13px;
-}
-
-.agent-question input:focus,
-.agent-question textarea:focus,
-.agent-composer textarea:focus {
-  outline: 2px solid var(--agent-accent);
-  outline-offset: 1px;
-}
-
-.agent-field-error {
-  min-height: 18px;
-  font-size: 12px;
-  color: var(--agent-bad);
-}
-
-.agent-card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
-}
-
+.agent-card-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 .agent-btn {
-  padding: 8px 16px;
-  border: 1.5px solid var(--agent-ink);
-  border-radius: 999px;
-  background: var(--agent-ink);
-  color: var(--agent-paper-light);
+  padding: 7px 15px;
+  border: 1px solid var(--ds-text);
+  border-radius: 10px;
+  background: var(--ds-text);
+  color: #fff;
   font: inherit;
   font-size: 13px;
   cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
-
-.agent-btn.ghost {
-  background: transparent;
-  color: var(--agent-ink-soft);
-  border-style: dashed;
-}
-
-.agent-btn[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.agent-btn:hover { background: #33383f; }
+.agent-btn.ghost { background: #fff; border-color: var(--ds-border-strong); color: var(--ds-text-2); }
+.agent-btn.ghost:hover { background: var(--ds-side-hover); }
+.agent-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 
 .agent-dropzone {
   margin-top: 10px;
-  padding: 22px;
-  border: 1.5px dashed var(--agent-ink);
-  border-radius: 18px 14px 20px 12px;
-  background: #f6f0e3;
+  padding: 26px 18px;
+  border: 1.5px dashed var(--ds-border-strong);
+  border-radius: 12px;
+  background: #fafafc;
   text-align: center;
-  color: var(--agent-ink-soft);
+  color: var(--ds-muted);
   font-size: 13px;
   cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
+.agent-dropzone:hover { border-color: #b9c6fb; background: #f6f7ff; }
+.agent-dropzone.is-over { border-color: var(--ds-accent); background: var(--ds-accent-soft); color: var(--ds-accent-text); }
 
-.agent-dropzone.is-over {
-  background: #efe4cd;
-  border-style: solid;
-}
+.agent-progress { margin-top: 12px; height: 6px; border-radius: 999px; background: #efeff4; overflow: hidden; }
+.agent-progress-bar { height: 100%; width: 0; background: var(--ds-accent); transition: width 0.15s linear; }
+.agent-progress-text { margin: 6px 0 0; font-family: var(--ds-mono); font-size: 11px; color: var(--ds-faint); }
+.agent-warning { margin: 8px 0 0; font-size: 12px; color: var(--ds-wait); }
 
-.agent-progress {
-  margin-top: 10px;
-  height: 8px;
-  border: 1px solid var(--agent-line);
-  border-radius: 999px;
-  background: #efe8d9;
-  overflow: hidden;
-}
+/* ---------------- composer ---------------- */
 
-.agent-progress-bar {
-  height: 100%;
-  width: 0;
-  background: var(--agent-accent);
-  transition: width 0.15s linear;
-}
+.agent-composer { width: 100%; margin-top: 6px; animation: none; }
+.agent-composer-note { color: var(--ds-faint); font-size: 12px; }
 
-.agent-progress-text {
-  margin-top: 6px;
-  font-family: var(--agent-mono);
-  font-size: 11px;
-  color: var(--agent-muted);
-}
+.agent-hint { margin: 8px 2px 0; font-size: 12px; color: var(--ds-faint); }
+.agent-hint code { background: #f4f4f8; }
 
-.agent-warning {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--agent-wait);
-}
-
-/* ---------- composer ---------- */
-
-.agent-composer {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-  margin-top: 14px;
-}
-
-.agent-composer textarea {
-  flex: 1;
-  resize: vertical;
-  min-height: 52px;
-  padding: 12px 14px;
-  border: 1.5px solid var(--agent-ink);
-  border-radius: 18px 14px 20px 12px;
-  background: var(--agent-paper-light);
-  color: var(--agent-ink);
-  font: inherit;
-  font-size: 14px;
-}
-
-.agent-send {
-  padding: 12px 22px;
-  border: 1.5px solid var(--agent-ink);
-  border-radius: 999px;
-  background: var(--agent-ink);
-  color: var(--agent-paper-light);
-  box-shadow: 4px 5px 0 rgba(44, 41, 37, 0.18);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.agent-hint {
-  margin: 8px 0 0;
-  font-size: 12px;
-  color: var(--agent-muted);
-  line-height: 1.8;
-}
-
-.agent-hint code {
-  font-family: var(--agent-mono);
-  background: #eee6d6;
-  padding: 1px 5px;
-  border-radius: 4px;
-}
-
-/* ---------- 右栏状态面板 ---------- */
+/* ---------------- 右栏状态面板 ---------------- */
 
 .agent-side {
-  padding: 16px 18px;
-  border: 1.5px dashed var(--agent-ink);
-  border-radius: 20px 16px 22px 14px;
-  background: var(--agent-paper-light);
-  box-shadow: 5px 6px 0 rgba(44, 41, 37, 0.1);
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  background: #fafafc;
 }
 
-.agent-side-title {
-  margin: 0 0 10px;
-  font-family: Georgia, "Songti SC", "SimSun", serif;
-  font-size: 17px;
-}
+.agent-side-title { margin: 0 0 12px; font-size: 14px; font-weight: 600; }
+.agent-side-subtitle { margin: 16px 0 6px; font-size: 12px; font-weight: 600; color: var(--ds-text-2); }
 
-.agent-side-subtitle {
-  margin: 16px 0 6px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--agent-ink-soft);
-}
+.agent-side-list { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.agent-side-row { display: flex; justify-content: space-between; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--ds-border); font-size: 12px; }
+.agent-side-row dt { color: var(--ds-muted); }
+.agent-side-row dd { margin: 0; text-align: right; font-family: var(--ds-mono); font-size: 11.5px; word-break: break-all; }
 
-.agent-side-list {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+.agent-model-meta, .agent-side-note { margin: 0; font-size: 12px; line-height: 1.8; color: var(--ds-text-2); }
+.agent-side-note { margin-top: 14px; color: var(--ds-faint); }
 
-.agent-side-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px dashed var(--agent-line);
-  font-size: 12px;
-}
+.agent-side-artifacts { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.9; word-break: break-all; }
+.agent-muted { color: var(--ds-faint); }
 
-.agent-side-row dt {
-  color: var(--agent-muted);
-}
+/* ---------------- 结果屏 ---------------- */
 
-.agent-side-row dd {
-  margin: 0;
-  text-align: right;
-  font-family: var(--agent-mono);
-  word-break: break-all;
-}
+.agent-panel-title { margin: 0 0 12px; font-size: 15px; font-weight: 600; }
 
-.agent-model-meta,
-.agent-side-note {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.8;
-  color: var(--agent-ink-soft);
-}
-
-.agent-side-note {
-  margin-top: 14px;
-  color: var(--agent-muted);
-}
-
-.agent-side-artifacts {
-  margin: 0;
-  padding-left: 16px;
-  font-size: 12px;
-  line-height: 1.9;
-  word-break: break-all;
-}
-
-.agent-muted {
-  color: var(--agent-muted);
-}
-
-/* ---------- 结果屏 ---------- */
-
-.agent-panel {
-  margin-bottom: 16px;
-  padding: 16px 18px;
-  border: 1.5px dashed var(--agent-ink);
-  border-radius: 22px 16px 24px 14px;
-  background: var(--agent-paper-light);
-}
-
-.agent-panel-title {
-  margin: 0 0 12px;
-  font-family: Georgia, "Songti SC", "SimSun", serif;
-  font-size: 18px;
-}
-
-.agent-timeline {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
+.agent-timeline { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
 .agent-timeline-item {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: baseline;
   padding: 8px 12px;
-  border-left: 3px solid var(--agent-line);
+  border-left: 2px solid var(--ds-border-strong);
   font-size: 13px;
 }
+.agent-timeline-item.is-done { border-left-color: var(--ds-ok); }
+.agent-timeline-item.is-active { border-left-color: var(--ds-accent); }
+.agent-timeline-item.is-failed { border-left-color: var(--ds-bad); }
+.agent-timeline-name { font-weight: 600; }
+.agent-timeline-meta { font-family: var(--ds-mono); font-size: 11px; color: var(--ds-faint); }
 
-.agent-timeline-item.is-done {
-  border-left-color: var(--agent-ok);
-}
+.agent-hashline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; }
+.agent-hashline code { word-break: break-all; }
 
-.agent-timeline-item.is-active {
-  border-left-color: var(--agent-accent);
-}
-
-.agent-timeline-item.is-failed {
-  border-left-color: var(--agent-bad);
-}
-
-.agent-timeline-name {
-  font-weight: 700;
-}
-
-.agent-timeline-meta {
-  font-family: var(--agent-mono);
-  font-size: 11px;
-  color: var(--agent-muted);
-}
-
-.agent-hashline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  font-size: 12px;
-}
-
-.agent-hashline code {
-  font-family: var(--agent-mono);
-  word-break: break-all;
-}
-
-.agent-verdict {
-  font-size: 14px;
-  font-weight: 700;
-}
+.agent-verdict { font-size: 14px; font-weight: 600; }
 
 .agent-receipt {
   padding: 14px 16px;
-  border: 1.5px dashed var(--agent-wait);
-  border-radius: 16px 12px 18px 10px;
-  background: #f7efdc;
-  color: #6d5416;
-  font-size: 13px;
-  line-height: 1.8;
-}
-
-.agent-card-reason {
-  border-color: var(--agent-bad);
-  margin-bottom: 12px;
-}
-
-.agent-card-advice {
-  border-color: var(--agent-accent);
-  margin-bottom: 12px;
-}
-
-.agent-table {
-  width: 100%;
-  border-collapse: collapse;
+  border: 1px dashed #e6d49a;
+  border-radius: 12px;
+  background: var(--ds-wait-soft);
+  color: var(--ds-wait);
   font-size: 13px;
 }
 
-.agent-table th,
-.agent-table td {
-  padding: 7px 9px;
-  border-bottom: 1px dashed var(--agent-line);
-  text-align: left;
-  vertical-align: top;
-}
+.agent-card-reason { border-color: #f2cfc6; background: #fffafa; margin-bottom: 12px; }
+.agent-card-advice { border-color: #ccd6fb; background: #fbfbff; margin-bottom: 12px; }
 
-.agent-table th {
-  color: var(--agent-muted);
-  font-weight: 700;
-}
+.agent-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.agent-table th, .agent-table td { padding: 7px 9px; border-bottom: 1px solid var(--ds-border); text-align: left; vertical-align: top; }
+.agent-table th { color: var(--ds-muted); font-weight: 500; }
+.agent-table code { word-break: break-all; }
 
-.agent-table code {
-  font-family: var(--agent-mono);
-  font-size: 12px;
-  word-break: break-all;
-}
+.agent-obligations { margin: 12px 0 0; padding: 0; list-style: none; font-size: 13px; line-height: 2; }
+.agent-result-value { font-family: var(--ds-mono); font-weight: 600; }
 
-.agent-obligations {
-  margin: 12px 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 13px;
-  line-height: 2;
-}
-
-.agent-obligations code {
-  font-family: var(--agent-mono);
-  font-size: 12px;
-}
-
-.agent-result-value {
-  font-family: var(--agent-mono);
-  font-weight: 700;
-}
-
-.agent-downloads {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 13px;
-  line-height: 2.1;
-}
-
-.agent-downloads a {
-  color: var(--agent-accent);
-}
+.agent-downloads { margin: 0; padding-left: 18px; font-size: 13px; line-height: 2.1; }
 
 .agent-diff {
   max-height: 320px;
   overflow: auto;
   padding: 12px;
-  border: 1px solid var(--agent-line);
-  border-radius: 12px;
-  background: #f6f1e6;
-  font-family: var(--agent-mono);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  background: #fafafc;
+  font-family: var(--ds-mono);
   font-size: 12px;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
+@media (max-width: 1100px) {
+  .agent-body { grid-template-columns: minmax(0, 1fr); }
+  .agent-side { order: -1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .agent-progress-bar {
-    transition: none;
-  }
+  .agent-progress-bar { transition: none; }
 }

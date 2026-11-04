@@ -1,37 +1,12 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>修复控制台 · BinaryRepair</title>
-  <link rel="stylesheet" href="/static/css/app.css?v=20261022b">
-  <link rel="stylesheet" href="/static/css/agent.css?v=20261104a">
-</head>
-<body class="agent-page" data-demo="{{ '1' if demo else '0' }}">
-  <div class="app-bg" aria-hidden="true"></div>
+{% extends "base.html" %}
 
-  <header class="topbar">
-    <a class="brand" href="/">
-      <span class="brand-mark" aria-hidden="true">BR</span>
-      <span class="brand-text">
-        <strong>BinaryRepair</strong>
-        <small>AI 二进制漏洞修复 · 证据工作台</small>
-      </span>
-    </a>
-    <nav class="topnav" aria-label="主导航">
-      <a href="/agent" class="topnav-link">修复控制台</a>
-      <a href="/jobs/new" class="topnav-link">新建任务</a>
-      <span class="env-chip"><span class="env-dot" aria-hidden="true"></span> LOCAL · 127.0.0.1</span>
-    </nav>
-  </header>
+{% block title %}修复控制台{% endblock %}
 
-  {% if demo %}
-  <div class="demo-banner" role="status">
-    <strong>演示数据</strong>：页面使用合成 fixture，<strong>未执行真实修复</strong>，不能作为"补丁已验证"的证据。
-  </div>
-  {% endif %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/agent.css?v=20261104b">
+{% endblock %}
 
-  <main class="wrap">
+{% block content %}
 <div
   id="agent-root"
   class="agent"
@@ -43,13 +18,13 @@
 >
   <div class="agent-top">
     <div class="agent-heading">
-      <h1 class="agent-title">修复控制台</h1>
-      <p class="agent-subtitle">助手只做引导与解释；创建任务、开始执行都由你点击确认，结论由验收引擎给出。</p>
+      <h1 class="ds-page-title">修复控制台</h1>
+      <p class="ds-page-sub">助手只做引导与解释；创建任务、开始执行由你点击确认，结论由验收引擎给出。</p>
     </div>
     <div class="agent-badges">
-      <span id="agent-mode-badge" class="agent-chip agent-chip-mode" data-testid="agent-mode-badge">助手模式：读取中…</span>
-      <span id="agent-job-chip" class="agent-chip" data-testid="agent-job-chip">未选择任务</span>
-      <span id="agent-poll" class="agent-chip agent-chip-poll" data-testid="agent-poll">待连接</span>
+      <span id="agent-mode-badge" class="ds-chip accent" data-testid="agent-mode-badge">助手模式：读取中…</span>
+      <span id="agent-job-chip" class="ds-chip" data-testid="agent-job-chip">未选择任务</span>
+      <span id="agent-poll" class="agent-poll" data-testid="agent-poll">待连接</span>
     </div>
   </div>
 
@@ -68,18 +43,25 @@
       <div id="agent-view-chat" data-testid="agent-view-chat">
         <ol id="agent-stream" class="agent-stream" data-testid="agent-stream" aria-live="polite"></ol>
 
-        <form id="agent-composer" class="agent-composer" data-testid="agent-composer">
+        <form id="agent-composer" class="ds-composer agent-composer" data-testid="agent-composer">
           <label class="visually-hidden" for="agent-input">输入回答</label>
           <textarea
             id="agent-input"
             data-testid="agent-input"
             rows="2"
-            placeholder="输入回答；Enter 发送，Shift+Enter 换行"
+            placeholder="输入回答；Enter 发送，Shift+Enter 换行，/ 调用指令"
           ></textarea>
-          <button type="submit" class="agent-send" data-testid="agent-send">发送</button>
+          <div class="ds-composer-bar">
+            <button type="button" class="ds-icon-btn" id="agent-attach" title="上传样本" aria-label="上传样本">＋</button>
+            <span class="ds-chip">本地工作区</span>
+            <div class="ds-composer-meta">
+              <span class="agent-composer-note">助手不发起执行</span>
+              <button class="ds-send" type="submit" aria-label="发送" data-testid="agent-send">↑</button>
+            </div>
+          </div>
         </form>
         <p class="agent-hint">
-          快捷指令：<code>/skip</code> 使用默认答案 · <code>/status</code> 查看当前状态 · <code>/restart</code> 重新开始引导
+          <code>/skip</code> 默认答案 · <code>/status</code> 当前状态 · <code>/restart</code> 重新引导
           <span id="agent-fixture-hint" hidden> · <code>/fixture fresh|pending|success|failure</code> 切换演示场景</span>
         </p>
       </div>
@@ -158,13 +140,9 @@
     </aside>
   </div>
 </div>
-  </main>
+{% endblock %}
 
-  <footer class="footer">
-    <span>阶段与结论是两条独立的轴 · 未执行显示 <code>not_run</code> · 两条路线都成功才算整体成功 · 导出不代表生产批准</span>
-  </footer>
-
-  <script src="/static/js/agent.fixtures.js?v=20261104a"></script>
-  <script src="/static/js/agent.js?v=20261104a"></script>
-</body>
-</html>
+{% block scripts %}
+<script src="/static/js/agent.fixtures.js?v=20261104a"></script>
+<script src="/static/js/agent.js?v=20261104b"></script>
+{% endblock %}

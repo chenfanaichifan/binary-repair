@@ -3,20 +3,94 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>二进制漏洞修复 · BinaryRepair</title>
-  <link rel="stylesheet" href="/static/css/landing.css?v=20261022b">
+  <title>BinaryRepair · AI 二进制漏洞修复工作台</title>
+  <link rel="stylesheet" href="/static/css/ds.css?v=20261104a">
 </head>
-<body class="landing">
-  <div class="hero-bg" aria-hidden="true"></div>
+<body>
+  <main class="ds-home">
+    <h1 class="ds-home-brand hero-h1" style="margin:0">二进制漏洞修复 <span class="ds-badge">预览版</span></h1>
+    <p class="ds-home-sub">BinaryRepair · AI 驱动的自动修复与正确性验证工作台</p>
 
-  <main class="hero">
-    <p class="hero-eyebrow">AI-DRIVEN BINARY VULNERABILITY REPAIR</p>
-    <h1 class="hero-h1">二进制漏洞修复</h1>
+    <div class="ds-home-selectors">
+      <div class="ds-select" data-select>
+        <button type="button" class="ds-select" aria-haspopup="true" aria-expanded="false">
+          默认工作区 <span class="caret">▾</span>
+        </button>
+        <div class="ds-menu" hidden>
+          <button type="button" data-value="默认工作区">默认工作区</button>
+          <button type="button" data-value="本地工作区 · 127.0.0.1">本地工作区 · 127.0.0.1</button>
+          <p class="ds-menu-note">仅绑定本机回环地址，不对外暴露。</p>
+        </div>
+      </div>
 
-    <div class="hero-cta">
-      <a class="cta-pill" href="/jobs/new" data-testid="landing-cta">进入工作台 <span class="arrow" aria-hidden="true">→</span></a>
-      <a class="cta-pill" href="/agent" data-testid="landing-agent-cta">修复控制台（预览） <span class="arrow" aria-hidden="true">→</span></a>
+      <div class="ds-select" data-select>
+        <button type="button" class="ds-select" aria-haspopup="true" aria-expanded="false">
+          标准模式 <span class="caret">▾</span>
+        </button>
+        <div class="ds-menu" hidden>
+          <button type="button" data-value="标准模式">标准模式（表单 + 控制台）</button>
+          <button type="button" data-value="演示模式">演示模式（fixture 数据）</button>
+          <p class="ds-menu-note">助手只做引导，结论由验收引擎给出。</p>
+        </div>
+      </div>
     </div>
+
+    <form class="ds-composer" action="/agent" method="get" data-testid="home-composer">
+      <input type="hidden" name="plan" value="fixture">
+      <label class="visually-hidden" for="home-q" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">缺陷描述</label>
+      <textarea id="home-q" name="q" rows="3" placeholder="描述你要修复的二进制缺陷，/ 调用指令，@ 选择样本"></textarea>
+      <div class="ds-composer-bar">
+        <a class="ds-icon-btn" href="/jobs/new" title="上传样本并填写表单" aria-label="上传样本">＋</a>
+        <span class="ds-chip">本地工作区</span>
+        <div class="ds-composer-meta">
+          <span>对话式引导</span>
+          <span class="ds-chip accent">ASCII 提交</span>
+          <button class="ds-send" type="submit" aria-label="开始引导" data-testid="home-send">↑</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="ds-home-links">
+      <a href="/jobs/new" data-testid="landing-cta">进入工作台（表单） →</a>
+      <a href="/agent" data-testid="landing-agent-cta">打开修复控制台 →</a>
+      <a href="/agent?fixture=1">查看演示数据</a>
+    </div>
+
+    <p class="ds-home-note">
+      界面文案为中文，提交与导出的数据为英文 ASCII。<br>
+      未执行的项目显示 <code>not_run</code>；测试机结果未回传时显示等待占位，不会被当成已执行或已失败。<br>
+      阶段与结论是两条独立的轴，导出不代表生产批准。
+    </p>
   </main>
+
+  <script>
+    (function () {
+      "use strict";
+      var selects = document.querySelectorAll("[data-select]");
+      Array.prototype.forEach.call(selects, function (wrap) {
+        var trigger = wrap.querySelector("button.ds-select");
+        var menu = wrap.querySelector(".ds-menu");
+        trigger.addEventListener("click", function (event) {
+          event.stopPropagation();
+          var open = !menu.hidden;
+          document.querySelectorAll(".ds-menu").forEach(function (m) { m.hidden = true; });
+          menu.hidden = open;
+          trigger.setAttribute("aria-expanded", String(!open));
+        });
+        menu.querySelectorAll("button[data-value]").forEach(function (item) {
+          item.addEventListener("click", function () {
+            trigger.innerHTML = item.dataset.value + ' <span class="caret">▾</span>';
+            menu.hidden = true;
+            if (item.dataset.value === "演示模式") {
+              window.location.href = "/agent?fixture=1";
+            }
+          });
+        });
+      });
+      document.addEventListener("click", function () {
+        document.querySelectorAll(".ds-menu").forEach(function (m) { m.hidden = true; });
+      });
+    })();
+  </script>
 </body>
 </html>

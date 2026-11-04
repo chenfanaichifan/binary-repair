@@ -973,6 +973,19 @@
     }
   });
 
+  // 起始页大输入卡片带来的描述，预填进 composer，由用户决定是否发送。
+  var preset = QUERY.get("q");
+  if (preset) { $("agent-input").value = preset; }
+
+  // composer 左侧 ＋：优先触发引导里的上传控件，否则回退到表单页。
+  $("agent-attach").addEventListener("click", function () {
+    var fileInput = document.querySelector('[data-testid="agent-file-input"]');
+    if (fileInput) { fileInput.click(); return; }
+    var zone = document.querySelector('[data-testid="agent-dropzone"]');
+    if (zone) { zone.click(); return; }
+    window.location.href = "/jobs/new";
+  });
+
   /* ---------- 场景与初始化 ---------- */
 
   function loadScenario(name) {
