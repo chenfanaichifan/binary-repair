@@ -158,10 +158,26 @@ def main() -> int:
             shot("09-setup-home.png", full=True)
             session.click('[data-testid="choice-input"]')
             session.set_file_input('[data-testid="binary-input"]', str(sample))
+            session.eval_js(
+                "(() => {"
+                "var d=document.querySelector('[data-testid=\"defect-input\"]');"
+                "d.value='strcpy in stack_buf does not check length; overlong input writes out of bounds';"
+                "d.dispatchEvent(new Event('input',{bubbles:true}));"
+                "var t=document.querySelector('[data-testid=\"tests-input\"]');"
+                "t.value='valid: hello\\nboundary: 8 bytes\\ninvalid: 64 bytes';"
+                "t.dispatchEvent(new Event('input',{bubbles:true}));"
+                "var e=document.querySelector('[data-testid=\"env-input\"]');"
+                "e.value='Ubuntu x86-64 VM (execution disabled in demo)';"
+                "e.dispatchEvent(new Event('input',{bubbles:true}));"
+                "return true;})()"
+            )
             time.sleep(0.3)
             shot("10-setup-input.png", full=True)
             session.click('[data-testid="wizard-next"]')
-            time.sleep(0.4)
+            session.wait_js(
+                '!document.querySelector(\'[data-testid="contract-domain"]\').closest(".wizard-view").hidden'
+            )
+            time.sleep(0.3)
             shot("11-setup-contract.png", full=True)
 
             # 12-13 原有进度 / 证据页
