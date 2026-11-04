@@ -213,6 +213,28 @@ async def index(request: Request):
     )
 
 
+@app.get("/agent", response_class=HTMLResponse, name="agent_console")
+async def agent_console(request: Request, job: str = "", fixture: int = 0):
+    """Render the M2 agent console shell (Lead record 86 / task T7.4).
+
+    UI only: no planner, no model calls, no new write endpoints. Until M1's
+    agent/execution fields and M5's assistant plan land, ?fixture=1 drives the
+    shell with clearly labelled placeholder data, and the demo banner stays on.
+    """
+    fixture_mode = bool(fixture)
+    return templates.TemplateResponse(
+        request,
+        "agent.html",
+        {
+            "demo": BACKEND_MODE == "mock" or fixture_mode,
+            "job": None,
+            "job_id": job,
+            "fixture": fixture_mode,
+            "backend_note": backend_description(BACKEND),
+        },
+    )
+
+
 @app.get("/jobs/new", response_class=HTMLResponse, name="setup_page")
 async def setup_page(request: Request):
     """Render setup/review (upload + contract)."""
