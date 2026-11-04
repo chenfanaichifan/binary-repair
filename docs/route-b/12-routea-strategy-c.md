@@ -63,7 +63,7 @@ No return address is rewritten; the original return address on the stack is
    region. If data-in-executable-region is not allowed, it needs an R-- segment
    (layout change), or Route A is unsupported.
 3. **Call replacement.** Earlier constraint said the 5-byte call at `0x401304`
-   "不得切開". Strategy C replaces the 5-byte call **as a whole** (not split).
+   "must not be split". Strategy C replaces the 5-byte call **as a whole** (not split).
    This must be explicitly allowed; otherwise C is not valid.
 4. **New PLT.** Not needed: the invalid path uses a `write` syscall, and
    `allowed_calls` stays `("strcpy", "printLine")`. No `fprintf`/`stderr` is used.

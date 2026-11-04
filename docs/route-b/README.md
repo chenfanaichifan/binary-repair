@@ -1,56 +1,56 @@
-# Role 5 启动包：DeepSeek API 接入 + Route B（recovered C）
+# Role 5 kickoff pack: DeepSeek API integration + Route B (recovered C)
 
-> 对应 PRD **F3**、技术设计 **§10（DeepSeek integration）** 与 **§14（第五人分工）**。
-> 本周你要交的两件东西：
-> **① 一次真实、可复现、有成本记录的模型调用；② Route B 可行性记录（round trip 通过或明确失败）。**
-> 不是"装好环境"，也不是"模型说修好了"。
+> Corresponds to PRD **F3**, Technical Design **§10 (DeepSeek integration)** and **§14 (fifth member's split of work)**.
+> Two things you must deliver this week:
+> **① one real, reproducible model call with a cost record; ② a Route B feasibility record (round trip passes or fails explicitly).**
+> Not "the environment is installed", and not "the model says it is fixed".
 
 ---
 
-> **真实样本：** 成员 3 冻结 ELF 后，按
-> [03-feasibility-checklist.md](03-feasibility-checklist.md) 的 G0–G9 执行；
-> 本文档的 fixture 只用于流程预演。
+> **Real sample:** after member 3 freezes the ELF, run G0–G9 from
+> [03-feasibility-checklist.md](03-feasibility-checklist.md);
+> the fixtures in this document are only for rehearsing the flow.
 >
-> **集成位置：** 根目录是唯一入口，模块边界与调用链见
-> [04-root-integration.md](04-root-integration.md)。
+> **Integration point:** the repository root is the only entry point; for module boundaries and the call chain see
+> [04-root-integration.md](04-root-integration.md).
 >
-> **Gate 4：** Route B unchanged round trip **PASS**，见
-> [09-gate4-evidence.md](09-gate4-evidence.md)。Route A 字节级计划见
-> [07-route-a-trampoline-plan.md](07-route-a-trampoline-plan.md)；候选质量见
-> [08-candidate-quality.md](08-candidate-quality.md)。
-> Gate 6 的 concrete 证据见 [06-gate6-evidence.md](06-gate6-evidence.md)。
+> **Gate 4:** Route B unchanged round trip **PASS**, see
+> [09-gate4-evidence.md](09-gate4-evidence.md). For the Route A byte-level plan see
+> [07-route-a-trampoline-plan.md](07-route-a-trampoline-plan.md); for candidate quality see
+> [08-candidate-quality.md](08-candidate-quality.md).
+> Concrete Gate 6 evidence is in [06-gate6-evidence.md](06-gate6-evidence.md).
 
-## 0. 先把边界说清楚
+## 0. Let us be clear about the boundary first
 
-你负责：
+You are responsible for:
 
-| 范围 | 具体内容 |
+| Scope | Details |
 |---|---|
-| DeepSeek 适配器 | `request_candidate(context, route, limits)`，JSON 模式 + 严格本地校验 + 类型化失败 |
-| 提示词与上下文 | 只发送已审核的公开证据；二进制字符串一律当数据，不当指令 |
-| 成本与用量 | 每次调用记录 model / tokens / 估算费用；预算上限可配置 |
-| Route B | Ghidra 导出 → 归一化 → **unchanged round trip** → 模型修复 → 回填 → 用同一个 oracle 验证 |
+| DeepSeek adapter | `request_candidate(context, route, limits)`, JSON mode + strict local validation + typed failures |
+| Prompts and context | send only reviewed public evidence; binary strings are always data, never instructions |
+| Cost and usage | record model / tokens / estimated cost on every call; the budget cap is configurable |
+| Route B | Ghidra export → normalization → **unchanged round trip** → model repair → back-fill → verify with the same oracle |
 
-你不负责（但必须能解释）：
+You are not responsible for (but must be able to explain):
 
-- GUI 三个页面（2 号）
-- 契约/job 状态机/验收引擎（1 号、4 号）
-- Route A 的指令模板与编码（3 号）
-- 符号执行（4 号）
+- the three GUI pages (member 2)
+- the contract / job state machine / acceptance engine (members 1 and 4)
+- Route A instruction templates and encoding (member 3)
+- symbolic execution (member 4)
 
-一个硬规则：**模型只"提案"，验收永远由确定性检查决定。** 你写的任何输出里都不能出现
-"AI 已修复 / 已验证 / 安全" 这种话；能说的是 "candidate accepted for validation"。
+One hard rule: **the model only "proposes"; acceptance is always decided by deterministic checks.** No output you write may contain
+"AI has fixed / verified / made it safe"; what you may say is "candidate accepted for validation".
 
 ---
 
-## 1. 今天（10/18）四小时怎么用
+## 1. How to use the four hours today (10/18)
 
-会议安排是 0–20 复盘、20–35 查环境、35–80 各自装工具、80–105 每人讲、105–120 定范围。
-你的时间对应如下。
+The meeting schedule is 0–20 retrospective, 20–35 environment check, 35–80 install tools individually, 80–105 each person presents, 105–120 decide scope.
+Your time maps as follows.
 
-### 1.1 环境与一次无害调用（约 40 分钟，对应会议 20–80 分钟）
+### 1.1 Environment and one harmless call (about 40 minutes, meeting minutes 20–80)
 
-**在 Mac 上就能做完**，不需要等 Ubuntu。
+**You can finish this on a Mac**; you do not need to wait for Ubuntu.
 
 ```bash
 cd binary-repair
@@ -59,31 +59,31 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 cp .env.example .env
-# 编辑 .env，填入 DEEPSEEK_API_KEY（只填在这一台机器，不要进 Git）
+# Edit .env and fill in DEEPSEEK_API_KEY (this machine only, never into Git)
 ```
 
-先用假响应把管线跑通（不花钱、不需要 key）：
+First run the pipeline with fake responses (costs nothing, needs no key):
 
 ```bash
 python scripts/smoke.py --mock
 ```
 
-预期最后一行：`OK: endpoint, model, json mode and usage reporting are working.`
+Expected last line: `OK: endpoint, model, json mode and usage reporting are working.`
 
-再发一次**真实**的无害请求（公开的合成文本，不含任何二进制/客户数据）：
+Then send one **real** harmless request (public synthetic text, containing no binary or client data):
 
 ```bash
 python scripts/smoke.py
 ```
 
-你会看到并需要记录这 8 个数：
+You will see, and need to record, these 8 numbers:
 
 ```
 http_status / model_returned / latency / attempts
 prompt_tokens / completion_tokens / cache hit / estimated_cost_usd
 ```
 
-预期形态（数字会不同）：
+Expected shape (numbers will differ):
 
 ```
 == configuration ==
@@ -103,334 +103,334 @@ prompt_tokens / completion_tokens / cache hit / estimated_cost_usd
 OK: endpoint, model, json mode and usage reporting are working.
 ```
 
-如果 401：key 复制错了/多了空格。402：余额不足。429：等几秒再试。
-这三种都要原样记录，不要换号重试到"看起来成功"。
+If 401: the key was copied wrong / has extra spaces. 402: insufficient balance. 429: wait a few seconds and retry.
+Record all three as they are; do not retry with another account until it "looks successful".
 
-> 为什么默认关掉 thinking：DeepSeek 的 thinking 模式**默认开启、effort=high**，会先输出
-> 推理再给答案，token 和延迟都更高。结构化候选生成先关掉，等 baseline 稳定后，
-> 用同一批样例开/关各跑一次再决定。`DEEPSEEK_THINKING=enabled` 可切换。
+> Why thinking is off by default: DeepSeek's thinking mode is **on by default with effort=high**; it emits
+> reasoning before the answer, so both tokens and latency are higher. Turn it off for structured candidate generation; once the baseline is stable,
+> run with it on and off on the same sample batch before deciding. `DEEPSEEK_THINKING=enabled` switches it on.
 
-### 1.2 Ghidra 与 recovered C（约 60 分钟，对应 35–80 分钟）
+### 1.2 Ghidra and recovered C (about 60 minutes, minutes 35–80)
 
-这一段到 Ubuntu 上做（Ghidra 需要 JDK 21；macOS 也能装，但最终目标是 ELF）。
+Do this part on Ubuntu (Ghidra needs JDK 21; it also installs on macOS, but the final target is ELF).
 
 ```bash
 sudo apt update
 sudo apt install -y openjdk-21-jdk unzip
-java -version        # 必须是 21.x
+java -version        # must be 21.x
 
-# 从 Ghidra 官方 release 下载 11.x PUBLIC zip，解压到 ~/
+# Download the 11.x PUBLIC zip from the official Ghidra release, unzip it into ~/
 export GHIDRA_HOME=$HOME/ghidra_11.4_PUBLIC
 $GHIDRA_HOME/support/analyzeHeadless 2>&1 | head -3
 ```
 
-然后跑我们自己的小样本（没有客户数据，纯合成）：
+Then run our own small sample (no client data, purely synthetic):
 
 ```bash
 cd routeb
 ./fixture/build.sh
 
-# 先确认漏洞真的存在：4 个有效输入正常，2 个超长输入 guard=CORRUPT
+# First confirm the vulnerability really exists: 4 valid inputs behave normally, 2 overlong inputs give guard=CORRUPT
 python3 verify.py --binary fixture/vuln --mode vulnerable
 
-# 导出 copy_name 的反编译 C
+# Export the decompiled C of copy_name
 ./ghidra/export.sh fixture/vuln copy_name
 cat out/copy_name.c
 cat out/copy_name.c.meta.txt
 ```
 
-**今天要交的不是"装好了"，而是这张观察表：**
+**What you must deliver today is not "it is installed" but this observation table:**
 
-| 问题 | 你的记录 |
+| Question | Your record |
 |---|---|
-| 原始反编译输出能直接编译吗？报哪几类错？ | |
-| 参数类型/名字与 `nm`/meta 里的签名一致吗？ | |
-| 出现 `undefined4/undefined8`、`goto`、地址常量、`code *` 了吗？ | |
-| 函数体多少字节？原函数多少字节？（决定能否原地替换） | |
-| `callees=` 是什么？（空 = 重定位简单；有 libc 调用 = 需要 PLT 解析） | |
-| 你为"能编译"改了哪几处？每处一句话理由 | |
+| Can the raw decompiler output be compiled directly? Which classes of error appear? | |
+| Do the parameter types/names match the signature in `nm`/meta? | |
+| Do `undefined4/undefined8`, `goto`, address constants, `code *` appear? | |
+| How many bytes is the function body? How many bytes was the original function? (decides whether in-place replacement is possible) | |
+| What is `callees=`? (empty = simple relocation; libc calls = PLT resolution needed) | |
+| Which places did you change to make it compile? One sentence of reason per change | |
 
-参考归一化结果在 `routeb/experiment/samples/normalized_reference.c`，**先自己做再对照**。
-本样本的 Ghidra 输出通常只需改类型名和变量名，这正是我们选它的原因。
+The reference normalization result is in `routeb/experiment/samples/normalized_reference.c`; **do your own first, then compare**.
+For this sample the Ghidra output usually only needs the type names and variable names changed, which is exactly why we chose it.
 
-### 1.3 记录 blocker（10 分钟）
+### 1.3 Record blockers (10 minutes)
 
-在会议 105–120 分钟环节，你只需要说三句话：
+In the 105–120 minute slot of the meeting you only need to say three sentences:
 
-1. 真实调用成功/失败，失败在哪一步（key、余额、网络、模型名）。
-2. Ghidra 是否导出成功，recovered C 的"可编译度"如何。
-3. 本周 round trip 的最大风险是什么（例如 Patcherex2 装不上、ELF 段权限、重定位）。
+1. The real call succeeded/failed, and at which step it failed (key, balance, network, model name).
+2. Whether Ghidra exported successfully, and how "compilable" the recovered C is.
+3. What the biggest risk to this week's round trip is (e.g. Patcherex2 will not install, ELF segment permissions, relocations).
 
 ---
 
-## 2. 本周 5 小时计划
+## 2. This week's 5-hour plan
 
-| 时间 | 任务 | 产出 |
+| Time | Task | Output |
 |---|---|---|
-| 1 h | **schema 契约冻结**：candidate/context JSON Schema + 示例 + drift 检查，交给 2 号/4 号评审 | `schemas/README.md` + `generated/*.json` + 64 个测试全绿 |
-| 1 h | **DB 迁移**：002_ai_tables.sql 在 v1 baseline 上跑通，确认约束（幂等键、复合外键、pass 必须有证据） | `app/db/migrate.py` 可重复执行，`app/db/README.md`（002 + 003） |
-| 1 h | 把 `binaryrepair_ai` 接进主应用（1 号提供 job/contract/analysis 的 hash 与 evidence id） | `app/services/provider.py` 一层薄封装 + 一条真实 candidate 记录 |
-| 1 h | Route B：归一化 → round trip（失败也要记录） | 一份 PASS/FAIL/UNSUPPORTED 记录（含 hash 与命令） |
-| 0.5 h | 模型修复 → 回填 → `verify.py --mode fixed`（若 round trip 已通过） | 6/6 结果或明确 blocker |
-| 0.5 h | 成本/延迟测量 + 汇报材料 | 一页数字 + 3 分钟演示脚本 |
+| 1 h | **schema contract freeze**: candidate/context JSON Schema + examples + drift check, handed to member 2/member 4 for review | `schemas/README.md` + `generated/*.json` + all 64 tests green |
+| 1 h | **DB migration**: 002_ai_tables.sql runs through on the v1 baseline; confirm the constraints (idempotency key, composite foreign key, a pass must have evidence) | `app/db/migrate.py` re-runnable, `app/db/README.md` (002 + 003) |
+| 1 h | wire `binaryrepair_ai` into the main application (member 1 supplies the job/contract/analysis hashes and evidence ids) | one thin wrapper at `app/services/provider.py` + one real candidate record |
+| 1 h | Route B: normalization → round trip (record failures too) | a PASS/FAIL/UNSUPPORTED record (with hashes and commands) |
+| 0.5 h | model repair → back-fill → `verify.py --mode fixed` (if the round trip has already passed) | 6/6 results or an explicit blocker |
+| 0.5 h | cost/latency measurement + reporting material | one page of numbers + a 3-minute demo script |
 
-完成标准（可检查）：
+Completion criteria (checkable):
 
-- [ ] `scripts/smoke.py` 在 Ubuntu 上真实跑通，输出被保存为证据文件
-- [ ] `pytest` 64+ 用例通过（含 schema drift、JSON Schema 示例、DB 约束、AI 边界契约）
-- [ ] 一次真实 `request_candidate` 产生 `model_calls` 记录，字段与 TechDesign §6 对齐
-- [ ] Route B round trip 有明确结论：PASS / FAIL / UNSUPPORTED，且带 6 个用例的实际输出
-- [ ] 汇报里每个数字都有来源，没有"应该可以"
+- [ ] `scripts/smoke.py` really runs on Ubuntu and its output is saved as an evidence file
+- [ ] `pytest` 64+ cases pass (including schema drift, JSON Schema examples, DB constraints, AI boundary contract)
+- [ ] one real `request_candidate` produces a `model_calls` record whose fields align with TechDesign §6
+- [ ] the Route B round trip has an explicit conclusion: PASS / FAIL / UNSUPPORTED, with the actual output of the 6 cases
+- [ ] every number in the report has a source; no "should work"
 
 ---
 
-## 3. 代码地图
+## 3. Code map
 
 ```
 .
 ├── binaryrepair_ai/
-│   ├── settings.py     环境变量与 .env；key 只进这个进程
-│   ├── pricing.py      官方价格表 + peak/off-peak + 最坏情况预估
-│   ├── schemas.py      Candidate v1、RepairContext、语义校验（scope/identity）
-│   ├── prompts.py      system/user 提示词；<untrusted_...> 数据围栏
-│   ├── client.py       HTTP、JSON 模式、超时、一次瞬态重试、usage 解析
-│   ├── provider.py     request_candidate：预算 → 调用 → 解析 → 校验 → 记录
-│   └── errors.py       稳定的 reason_code（GUI/验收引擎按它分支）
+│   ├── settings.py     environment variables and .env; the key only enters this process
+│   ├── pricing.py      official price table + peak/off-peak + worst-case estimate
+│   ├── schemas.py      Candidate v1, RepairContext, semantic validation (scope/identity)
+│   ├── prompts.py      system/user prompts; <untrusted_...> data fence
+│   ├── client.py       HTTP, JSON mode, timeouts, one transient retry, usage parsing
+│   ├── provider.py     request_candidate: budget → call → parse → validate → record
+│   └── errors.py       stable reason_code (the GUI/acceptance engine branches on it)
 ├── scripts/
-│   ├── smoke.py        今天的无害调用（--mock 可离线）
-│   └── demo_candidate.py  审核上下文 → 模型 → 校验后的 candidate（可写出 C）
-├── schemas/            candidate/context JSON Schema（生成物 + 契约说明 + 示例）
-├── app/db/             v1 schema.sql + 002 迁移 + 连接/说明
-├── app/                公共入口：domain/candidates、domain/contracts、services/provider
-├── tests/              64 个离线用例：provider、schema 契约、数据库约束、AI 边界
+│   ├── smoke.py        today's harmless call (--mock works offline)
+│   └── demo_candidate.py  reviewed context → model → validated candidate (can write out C)
+├── schemas/            candidate/context JSON Schema (generated artifacts + contract notes + examples)
+├── app/db/             v1 schema.sql + 002 migration + connection/notes
+├── app/                public entry points: domain/candidates, domain/contracts, services/provider
+├── tests/              64 offline cases: provider, schema contract, database constraints, AI boundary
 ├── routeb/
-│   ├── fixture/        合成漏洞样本 + 构建脚本
+│   ├── fixture/        synthetic vulnerable sample + build script
 │   ├── ghidra/         ExportFunction.java + export.sh
-│   ├── verify.py       行为 oracle（vulnerable / fixed / roundtrip）
-│   ├── probe_patcherex2.py  文档示例 + round trip + fixed 三个实验
-│   └── experiment/     归一化/修复参考实现
+│   ├── verify.py       behavioral oracle (vulnerable / fixed / roundtrip)
+│   ├── probe_patcherex2.py  three experiments: doc example + round trip + fixed
+│   └── experiment/     normalization/repair reference implementation
 └── docs/route-b/
-    ├── README.md       本文件
-    ├── 02-member-5-candidate-provider.md   给成员4的接口回复
-    ├── 03-feasibility-checklist.md         真实样本 G0–G9
-    └── 04-root-integration.md             根集成与契约哈希
+    ├── README.md       this file
+    ├── 02-member-5-candidate-provider.md   interface reply for member 4
+    ├── 03-feasibility-checklist.md         real-sample G0–G9
+    └── 04-root-integration.md              root integration and contract hashes
 ```
 
-### 3.1 给 1 号（集成）的接口
+### 3.1 Interface for member 1 (integration)
 
 ```python
 from binaryrepair_ai import DeepSeekProvider, RepairContext
-from binaryrepair_ai.schemas import RepairContext  # 同物
+from binaryrepair_ai.schemas import RepairContext  # same object
 
 provider = DeepSeekProvider.from_env()
-result = provider.request_candidate(ctx)     # 不抛异常（预期失败都是值）
+result = provider.request_candidate(ctx)     # does not raise (expected failures are values)
 
 if result.ok:
     candidate = result.candidate             # CandidateV1
-    record = result.record                   # 写 model_calls 表
+    record = result.record                   # write to the model_calls table
 else:
     failure = result.failure                 # reason_code / message / retryable
 ```
 
-`model_calls` 建议字段（与 TechDesign §6 一致）：
+`model_calls` suggested fields (consistent with TechDesign §6):
 
-| 列 | 来源 |
+| Column | Source |
 |---|---|
-| `provider_model` | `record.model`（配置名）；实际返回的版本用 `record.model_returned` |
+| `provider_model` | `record.model` (configured name); use `record.model_returned` for the version actually returned |
 | `prompt_sha256` | `record.prompt_sha256` |
 | `status` | `record.status` |
-| `usage_json` | `json.dumps(record.usage)`；未知就写 `null`，**不要写 0** |
-| `estimated_cost_usd` | `record.estimated_cost_usd`，未知 `NULL` |
+| `usage_json` | `json.dumps(record.usage)`; write `null` when unknown, **do not write 0** |
+| `estimated_cost_usd` | `record.estimated_cost_usd`, `NULL` when unknown |
 
-### 3.2 给 2 号（GUI）的显示字段
+### 3.2 Display fields for member 2 (GUI)
 
-每个 route 的 AI 卡片至少显示：
+Each route's AI card should show at least:
 
-- 状态：`not_run / running / accepted_for_validation / rejected / error`
-- 模型名、耗时、tokens、估算费用（缺失显示 "unavailable"）
-- 失败原因：`reason_code` + 一句人话（`Failure.message`）
-- **不要**显示 "AI 修复成功"；只显示 "candidate 已提交验证"
+- status: `not_run / running / accepted_for_validation / rejected / error`
+- model name, elapsed time, tokens, estimated cost (show "unavailable" when missing)
+- failure reason: `reason_code` + one plain-language sentence (`Failure.message`)
+- **do not** show "AI repair succeeded"; show only "candidate submitted for validation"
 
-`reason_code` → 文案建议：
+`reason_code` → suggested copy:
 
-| reason_code | 显示 | 验收语义 |
+| reason_code | Display | Acceptance semantics |
 |---|---|---|
-| `provider_auth_failed` | API key 无效 | error（配置问题） |
-| `provider_insufficient_balance` | 账户余额不足 | error |
-| `provider_rate_limited` | 限流，已重试 | error（可再试） |
-| `empty_content` | 模型返回空内容 | error（不是"没有漏洞"） |
-| `invalid_json` / `schema_invalid` | 提案格式不合法 | rejected（保留诊断） |
-| `identity_mismatch` / `scope_violation` | 提案越界/对不上输入 | rejected |
-| `budget_exceeded` | 超出本 job 预算 | error（未发送） |
-| `provider_timeout` | 调用超时 | error（不自动重发计费请求） |
+| `provider_auth_failed` | invalid API key | error (configuration problem) |
+| `provider_insufficient_balance` | insufficient account balance | error |
+| `provider_rate_limited` | rate limited, already retried | error (can retry) |
+| `empty_content` | model returned empty content | error (not "no vulnerability") |
+| `invalid_json` / `schema_invalid` | proposal format invalid | rejected (keep diagnostics) |
+| `identity_mismatch` / `scope_violation` | proposal out of bounds / does not match the input | rejected |
+| `budget_exceeded` | over this job's budget | error (not sent) |
+| `provider_timeout` | call timed out | error (never automatically resend a billable request) |
 
-### 3.3 Schema 的边界（你独立负责的部分）
+### 3.3 Schema boundaries (the part you own independently)
 
-两层，别混：
+Two layers; do not mix them:
 
-| 层 | 文件 | 回答什么 | 谁消费 |
+| Layer | File | Answers | Consumed by |
 |---|---|---|---|
-| 候选契约 | `schemas/generated/candidate.v1.json` | 模型能返回什么字段、什么类型 | GUI、验证、文档 |
-| 请求上下文 | `schemas/generated/context.v1.json` | 服务端允许发什么 | 集成、评审 |
-| 持久化 | `app/db/migrations/002_ai_tables.sql` | job/run/attempt/证据/成本怎么落库 | 1 号控制器 |
+| Candidate contract | `schemas/generated/candidate.v1.json` | which fields and types the model may return | GUI, validation, docs |
+| Request context | `schemas/generated/context.v1.json` | what the server is allowed to send | integration, review |
+| Persistence | `app/db/migrations/002_ai_tables.sql` | how job/run/attempt/evidence/cost are stored | member 1's controller |
 
-三条规则：
+Three rules:
 
-1. **Pydantic 是源头**，`generated/*.json` 只能由 `python schemas/generate.py` 生成；
-   CI 用 `python schemas/generate.py --check` 抓 drift。
-2. v1 是封闭契约（`additionalProperties: false`），**加字段 = 升 v2**，不能偷偷放宽。
-3. JSON Schema 只管结构；"Route A 不能带 replacement_c" 这类规则在
-   `check_candidate()` 里，测试 `test_json_schema_does_not_encode_route_semantics`
-   就是在记录这个分层。
+1. **Pydantic is the source**; `generated/*.json` may only be produced by `python schemas/generate.py`;
+   CI catches drift with `python schemas/generate.py --check`.
+2. v1 is a closed contract (`additionalProperties: false`); **adding a field = bump to v2**; it cannot be widened quietly.
+3. JSON Schema only covers structure; rules such as "Route A must not carry replacement_c" live in
+   `check_candidate()`, and the test `test_json_schema_does_not_encode_route_semantics`
+   records that layering.
 
-数据库侧把产品语义写进约束，而不是只写在 Python 里：
+On the database side, product semantics are written into constraints rather than only into Python:
 
 ```sql
--- 一个幂等键只能启动一次 run
+-- one idempotency key can start a run only once
 idempotency_key TEXT NOT NULL UNIQUE
--- run 的 contract 必须属于同一个 job
+-- the run's contract must belong to the same job
 FOREIGN KEY (job_id, contract_id) REFERENCES contracts(job_id, id)
--- pass 必须有证据
+-- a pass must have evidence
 CHECK (result <> 'pass' OR evidence_artifact_id IS NOT NULL)
--- 成本未知是 NULL，不是 0
+-- unknown cost is NULL, not 0
 estimated_cost_usd REAL CHECK (estimated_cost_usd IS NULL OR estimated_cost_usd >= 0)
 ```
 
-### 3.4 给 4 号（验证）的交接物
+### 3.4 Handover for member 4 (verification)
 
-模型产出只有一样东西可以进入验证：`candidate.replacement_c`（Route B）或
-`candidate.template_id + parameters`（Route A）。验证方要用**最终 ELF**跑
-`verify.py` 那类 oracle，不能拿"编译通过"当证据。
+Only one thing the model produces may enter verification: `candidate.replacement_c` (Route B) or
+`candidate.template_id + parameters` (Route A). The verifier must run an oracle like
+`verify.py` on the **final ELF**; "it compiles" is not evidence.
 
 ---
 
-### 3.5 与 verification 的接口（`02-member-5-candidate-provider.md` 的实现侧）
+### 3.5 Interface with verification (implementation side of `02-member-5-candidate-provider.md`)
 
 ```python
-# app/domain/candidates.py —— 验证骨架 import 的就是这个模块
-validate_candidate(payload) -> CandidateV1      # 结构 + 语义；失败抛 CandidateRejected
-may_leave_host(classification, derived=False) -> bool   # 默认拒绝
-validate_candidate_for_context(payload, ctx) -> CandidateV1  # 带 job 绑定的版本
+# app/domain/candidates.py — this is the module the verification skeleton imports
+validate_candidate(payload) -> CandidateV1      # structure + semantics; raises CandidateRejected on failure
+may_leave_host(classification, derived=False) -> bool   # deny by default
+validate_candidate_for_context(payload, ctx) -> CandidateV1  # job-bound version
 
-# app/services/provider.py —— typed failure
-require_candidate(result) -> CandidateV1        # 失败抛 ProviderFailure(FailureReason)
+# app/services/provider.py — typed failure
+require_candidate(result) -> CandidateV1        # raises ProviderFailure(FailureReason) on failure
 ```
 
-四类失败映射：`provider_timeout` → `TIMEOUT`，`provider_insufficient_balance` / `budget_exceeded`
-→ `QUOTA` / `BUDGET`，`empty_content` → `EMPTY`，`invalid_json` → `MALFORMED_JSON`。
+Four failure mappings: `provider_timeout` → `TIMEOUT`, `provider_insufficient_balance` / `budget_exceeded`
+→ `QUOTA` / `BUDGET`, `empty_content` → `EMPTY`, `invalid_json` → `MALFORMED_JSON`.
 
-### 3.6 给 2 号（GUI）的 schema 用法
+### 3.6 Schema usage for member 2 (GUI)
 
-不需要 import Python。直接读 `schemas/generated/candidate.v1.json`：
+No need to import Python. Read `schemas/generated/candidate.v1.json` directly:
 
-- 字段名来自 `properties`，枚举来自 `enum`，必填来自 `required`；
-- 展示时把 `expected_effects / assumptions / uncertainties` 分开，不要合并成"AI 结论"；
-- 任何 `additionalProperties` 之外的字段都不该出现——出现就是上游 bug。
+- field names come from `properties`, enums from `enum`, required fields from `required`;
+- when displaying, keep `expected_effects / assumptions / uncertainties` separate; do not merge them into an "AI conclusion";
+- any field outside `additionalProperties` should not appear — if it does, it is an upstream bug.
 
-`schemas/examples/` 里有 A/B 两条路线的真实形状，可以直接拿去做模板。
-
----
-
-## 4. 安全与数据边界（会被评审问）
-
-- 只有公开样本可以发给托管 API。客户二进制、反编译全文、测试 oracle 一律不出本机。
-- key 只存在于 host 的 provider 进程：不进 VM、不进日志、不进报告、不进浏览器。
-- 日志里只有 `prompt_sha256`；原始响应默认不落盘（`BINARYREPAIR_STORE_RAW=1` 才存）。
-- 提示词把二进制文本放进 `<untrusted_recovered_c>`，并明确"只当数据"；即便如此，
-  最终防线是 `check_candidate()` 的结构校验（模板白名单、参数范围、调用白名单、禁用构造）。
-- 模型不能改 scope：模板列表、evidence id、target entry、容量全部由服务端给。
+`schemas/examples/` contains the real shapes for both routes A/B; use them directly as templates.
 
 ---
 
-## 5. 成本（2026-10-18 官方价，USD / 1M tokens）
+## 4. Security and data boundaries (you will be asked about these in review)
 
-| 模型 | 输入 cache miss（off-peak / peak） | 输出（off-peak / peak） |
+- Only public samples may be sent to the hosted API. Client binaries, full decompiler output, and test oracles never leave the host machine.
+- The key exists only in the host's provider process: not in the VM, not in logs, not in reports, not in the browser.
+- Logs contain only `prompt_sha256`; raw responses are not persisted by default (only with `BINARYREPAIR_STORE_RAW=1`).
+- Prompts put binary text inside `<untrusted_recovered_c>` and state explicitly "treat as data only"; even so,
+  the final line of defense is `check_candidate()`'s structural validation (template whitelist, parameter ranges, call whitelist, forbidden constructs).
+- The model cannot change scope: the template list, evidence ids, target entry, and capacities are all supplied by the server.
+
+---
+
+## 5. Cost (official prices 2026-10-18, USD / 1M tokens)
+
+| Model | Input cache miss (off-peak / peak) | Output (off-peak / peak) |
 |---|---|---|
 | `deepseek-flash` | 0.15 / 0.30 | 0.60 / 1.20 |
 | `deepseek-v4-pro` | 0.66 / 1.32 | 1.98 / 3.96 |
 
-- peak：UTC 周一至周五 01:00–04:00、06:00–10:00；其余半价。
-- 例：10k 输入 + 4k 输出，flash peak = `0.01*0.30 + 0.004*1.20 = $0.0078`。
-- 我们的默认上限：单 job $2，实验期总额 $20；超预算**在发送前**拦截。
-- 计费是估算，不是账单；usage 缺失时显示 "unavailable"，不要当 0。
+- peak: UTC Monday–Friday 01:00–04:00 and 06:00–10:00; half price the rest of the time.
+- Example: 10k input + 4k output, flash peak = `0.01*0.30 + 0.004*1.20 = $0.0078`.
+- Our default caps: $2 per job, $20 total during the experiment period; over-budget requests are blocked **before sending**.
+- Billing figures are estimates, not an invoice; when usage is missing show "unavailable", never treat it as 0.
 
-省钱做法：关 thinking、只发必要上下文、同一 context 复用、失败不盲目重试。
-
----
-
-## 6. 会议演示（3 分钟，按这个顺序讲）
-
-1. **一句话**：我负责 DeepSeek 适配器和 Route B 的可行性，今天验证到"真实调用 + 反编译输出"。
-2. **屏幕 1**：`scripts/smoke.py` 的真实输出，指出 model、latency、tokens、cost 四个数。
-3. **屏幕 2**：`out/copy_name.c` 与 `meta.txt`，指出函数大小、callees、需要归一化的 3 处。
-4. **屏幕 3**：`verify.py --mode vulnerable` 的 6/6，说明"漏洞可复现"是后面一切的前提。
-5. **风险**：round trip 依赖 Patcherex2；若装不上或回填后行为变化，按 unsupported 记录，
-   不偷偷换成"手工改字节"。
-6. **下一步**：本周给出一份 PASS/FAIL 记录，并接进 1 号的 job 流程。
+How to save money: turn thinking off, send only the necessary context, reuse the same context, and do not retry blindly after a failure.
 
 ---
 
-## 7. 常见问题
+## 6. Meeting demo (3 minutes, follow this order)
 
-**Q: `--mock` 和真实调用的差别？**
-A: 只差 transport。schema 校验、预算、日志、失败映射完全相同；mock 用来在没有 key 时
-证明代码路径，不产生费用，也不能当作"API 已验证"。
-
-**Q: 为什么 JSON 模式还会返回空/带 Markdown？**
-A: 官方明确说 JSON 模式偶尔返回空内容，且要求 prompt 里出现 "json" 并给示例。我们已加：
-`response_format`、示例、"json" 关键词、空内容重试一次、fence/花括号容错解析。
-
-**Q: 模型名写哪个？**
-A: 用 `deepseek-flash`（当前文档名，V4.1-Flash）。旧别名可能还能用但会被路由到新模型，
-计费/行为不可控，不要写死旧名。
-
-**Q: 为什么 temperature=0 有时"没效果"？**
-A: thinking 模式不支持 temperature/presence/frequency，传了也不报错但被忽略。我们在
-thinking 模式下干脆不传。
-
-**Q: Ghidra 报 `JAVA_HOME` 错？**
-A: 装 JDK 21 并 `export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64`；Ghidra 11.3+ 不接受 JDK 17。
-
-**Q: Patcherex2 装不上？**
-A: 它依赖 angr/LIEF，建议单独 venv。装不上就记录版本、报错、Python 版本，结论写
-"backend unavailable — unsupported"，这是合法结果，不是失败。
-
-**Q: 我能直接在 Mac 上做 Route B 吗？**
-A: 行为 oracle 可以（`verify.py` 已通过），但回填目标是 ELF，最终必须在 Ubuntu 上做。
-Mac 产物是 Mach-O，不能作为交付证据。
+1. **One sentence**: I own the DeepSeek adapter and Route B feasibility; today I verified up to "real call + decompiled output".
+2. **Screen 1**: the real output of `scripts/smoke.py`; point out the four numbers: model, latency, tokens, cost.
+3. **Screen 2**: `out/copy_name.c` and `meta.txt`; point out the function size, callees, and the 3 places needing normalization.
+4. **Screen 3**: 6/6 from `verify.py --mode vulnerable`, explaining that "the vulnerability is reproducible" is the premise for everything after it.
+5. **Risk**: the round trip depends on Patcherex2; if it cannot be installed or behavior changes after back-fill, record it as unsupported,
+   do not quietly switch to "hand-editing bytes".
+6. **Next step**: deliver a PASS/FAIL record this week and wire it into member 1's job flow.
 
 ---
 
-## 8. 评审可能问你的 5 个问题
+## 7. FAQ
 
-1. **"JSON 模式了，为什么还要本地校验？"**
-   JSON 只保证"能被解析"，不保证字段、哈希、范围、路由字段正确。模型可以返回合法
-   JSON 但把 capacity 写成 4096。`CandidateV1` + `check_candidate()` 才是门槛。
+**Q: What is the difference between `--mock` and a real call?**
+A: Only the transport. Schema validation, budget, logging, and failure mapping are identical; mock exists to
+prove the code path when there is no key, costs nothing, and must not be treated as "API verified".
 
-2. **"模型能不能自己换修复位置/改容量？"**
-   不能。模板列表、参数范围、target_entry、evidence id 都由服务端给；越界直接
-   `scope_violation`，不会进入验证。
+**Q: Why does JSON mode still return empty or Markdown-wrapped content?**
+A: The official docs state explicitly that JSON mode occasionally returns empty content, and require the prompt to contain "json" plus an example. We have added:
+`response_format`, an example, the "json" keyword, one retry on empty content, and tolerant parsing of fences/braces.
 
-3. **"空输出、超时、402 分别怎么处理？"**
-   空输出：重试一次（官方已知问题），仍空则 `empty_content`；
-   超时/5xx/429：一次有界重试，之后报 error，不无限重发计费请求；
-   402/401：不重试，直接报配置/余额问题。
+**Q: Which model name should be written?**
+A: Use `deepseek-flash` (the current documented name, V4.1-Flash). Old aliases may still work but get routed to the new model,
+so billing/behavior are not controllable; do not hard-code old names.
 
-4. **"你怎么证明这个候选是安全的？"**
-   我不证明。我只产出"通过 schema 与 scope 校验的候选"，安全性由 4 号的
-   oracle + 符号执行在最终 ELF 上判定。模型的话不是证据。
+**Q: Why does temperature=0 sometimes "have no effect"?**
+A: Thinking mode does not support temperature/presence/frequency; passing them raises no error but they are ignored. We
+simply do not pass them in thinking mode.
 
-5. **"为什么默认关 thinking？"**
-   默认开启且 effort=high，token 与延迟更高；结构化输出先要稳定和便宜。等 baseline
-   稳定后，用同一批样例做 A/B，再决定是否对难样本开启。
+**Q: Ghidra reports a `JAVA_HOME` error?**
+A: Install JDK 21 and `export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64`; Ghidra 11.3+ does not accept JDK 17.
+
+**Q: Patcherex2 will not install?**
+A: It depends on angr/LIEF; a separate venv is recommended. If it will not install, record the version, the error, and the Python version, and write the conclusion
+"backend unavailable — unsupported"; that is a legitimate result, not a failure.
+
+**Q: Can I do Route B directly on a Mac?**
+A: The behavioral oracle can be done there (`verify.py` already passes), but the back-fill target is ELF, so the final work must happen on Ubuntu.
+Mac artifacts are Mach-O and cannot serve as delivery evidence.
 
 ---
 
-## 9. 参考
+## 8. Five questions review may ask you
 
-- DeepSeek JSON Output：https://api-docs.deepseek.com/guides/json_mode/
-- DeepSeek Models & Pricing：https://api-docs.deepseek.com/quick_start/pricing/
-- DeepSeek Thinking Mode：https://api-docs.deepseek.com/guides/thinking_mode
-- DeepSeek Error Codes：https://api-docs.deepseek.com/quick_start/error_codes
-- Ghidra AnalyzeHeadless：https://ghidra.re/ghidra_docs/api/ghidra/app/util/headless/AnalyzeHeadless.html
-- Patcherex2 ModifyFunctionPatch：https://purseclab.github.io/Patcherex2/examples/modify_function_patch/
+1. **"JSON mode is on, so why local validation too?"**
+   JSON only guarantees "it can be parsed", not that fields, hashes, ranges, and routing fields are correct. The model can return valid
+   JSON but write capacity as 4096. `CandidateV1` + `check_candidate()` are the gate.
+
+2. **"Can the model change the repair location or capacity itself?"**
+   No. The template list, parameter ranges, target_entry, and evidence ids all come from the server; anything out of bounds goes straight to
+   `scope_violation` and never enters verification.
+
+3. **"How are empty output, timeout, and 402 handled respectively?"**
+   Empty output: retry once (a known official issue); if still empty then `empty_content`;
+   timeout/5xx/429: one bounded retry, then report error; never resend billable requests indefinitely;
+   402/401: no retry, report the configuration/balance problem directly.
+
+4. **"How do you prove this candidate is safe?"**
+   I do not prove it. I only produce "a candidate that passed schema and scope validation"; safety is judged by member 4's
+   oracle + symbolic execution on the final ELF. The model's words are not evidence.
+
+5. **"Why is thinking off by default?"**
+   It is on by default with effort=high, which costs more tokens and latency; structured output first needs stability and low cost. Once the baseline
+   is stable, run an A/B on the same sample batch, then decide whether to enable it for hard samples.
+
+---
+
+## 9. References
+
+- DeepSeek JSON Output: https://api-docs.deepseek.com/guides/json_mode/
+- DeepSeek Models & Pricing: https://api-docs.deepseek.com/quick_start/pricing/
+- DeepSeek Thinking Mode: https://api-docs.deepseek.com/guides/thinking_mode
+- DeepSeek Error Codes: https://api-docs.deepseek.com/quick_start/error_codes
+- Ghidra AnalyzeHeadless: https://ghidra.re/ghidra_docs/api/ghidra/app/util/headless/AnalyzeHeadless.html
+- Patcherex2 ModifyFunctionPatch: https://purseclab.github.io/Patcherex2/examples/modify_function_patch/

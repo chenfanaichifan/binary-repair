@@ -1,123 +1,128 @@
-# Schema 契约（candidate v1）
+# Schema contract (candidate v1)
 
-这一层回答三个问题：
+This layer answers three questions:
 
-1. **模型可以返回什么？** —— `candidate.v1.json`
-2. **服务端允许发什么？** —— `context.v1.json`
-3. **GUI / 验证 / 数据库怎么对齐？** —— 同一份字段与枚举
+1. **What may the model return?** — `candidate.v1.json`
+2. **What is the server allowed to send?** — `context.v1.json`
+3. **How do the GUI / verification / database stay aligned?** — through the same fields and enums
 
-源头只有一个：`binaryrepair_ai/schemas.py` 里的 Pydantic 模型。JSON Schema 是它的导出物，
-不允许手改 `schemas/generated/*.json`。
+There is only one source: the Pydantic models in `binaryrepair_ai/schemas.py`. The JSON Schema is
+its export; hand-editing `schemas/generated/*.json` is not allowed.
 
 ```
-schemas.py (Pydantic, 源头)
+schemas.py (Pydantic, the source)
       │  python schemas/generate.py
       ▼
-generated/*.json (JSON Schema, 给非 Python 消费者/文档/CI)
+generated/*.json (JSON Schema, for non-Python consumers/docs/CI)
       │
-      ├── GUI：字段名、类型、枚举，不用 import Python
-      ├── 验证：candidate 的结构检查
-      └── DB：model_calls / 候选字段映射
+      ├── GUI: field names, types, enums, without importing Python
+      ├── verification: structural checks on the candidate
+      └── DB: model_calls / candidate field mapping
 ```
 
-为什么不是"JSON 模式就够了"：JSON 只保证可解析；身份、路由字段、参数范围、调用白名单
-是**语义**，必须由 `check_candidate()` 检查。JSON Schema 能表达结构，表达不了
-"Route A 不能带 replacement_c" 这种跨字段规则——测试
-`test_json_schema_does_not_encode_route_semantics` 就是在记录这个边界。
+Why "JSON mode is enough" does not hold: JSON only guarantees parseability; identity, route fields,
+parameter ranges, and the call allowlist are **semantics** and must be checked by `check_candidate()`.
+JSON Schema can express structure but cannot express cross-field rules such as
+"Route A must not carry replacement_c" — the test
+`test_json_schema_does_not_encode_route_semantics` exists to record that boundary.
 
 ---
 
-## 1. Candidate v1 字段
+## 1. Candidate v1 fields
 
-| 字段 | 类型 | 必填 | 说明 | 语义校验 |
+| Field | Type | Required | Description | Semantic validation |
 |---|---|---|---|---|
-| `schema_version` | `1`（const） | 是 | 契约版本；改字段就要升版本 | — |
-| `original_sha256` | 64-hex | 是 | 冻结的原始 ELF | 必须等于 job 的输入 hash |
-| `contract_sha256` | 64-hex | 是 | 已审核契约 revision | 必须等于本次 run 的契约 |
-| `analysis_sha256` | 64-hex | 是 | 二进制分析 bundle | 必须等于服务端发出的分析 |
-| `route` | `"route_a"` / `"route_b"` | 是 | 修复路线 | 必须等于请求的 route |
-| `target_entry` | 标识符或 `0x…` | 是 | 允许修改的函数 | 必须等于审核过的目标 |
-| `evidence_ids` | string[]，1–16 | 是 | 引用的证据 | 必须是服务端发过的 id |
-| `template_id` | string? | Route A 必填 | 模板 id | 必须在 `templates` 列表里 |
-| `parameters` | object<string,int>? | Route A 必填 | 模板参数 | key 必须完全匹配、值在区间内 |
-| `recovered_function_sha256` | 64-hex? | Route B 必填 | 恢复出的 C 的 hash | 必须等于请求里的 recovered hash |
-| `replacement_c` | string? | Route B 必填 | 完整函数定义 | 长度、目标函数名、禁用构造、调用白名单 |
-| `expected_effects` | string[]，1–32，每条 ≤512 | 是 | 声称的效果 | 只给人看，**不作为证据** |
-| `assumptions` | string[]，0–32，每条 ≤512 | 否 | 依赖条件 | 展示用 |
-| `uncertainties` | string[]，0–32，每条 ≤512 | 否 | 已知不确定 | 展示用；本身不阻止验证 |
+| `schema_version` | `1` (const) | yes | contract version; changing a field requires a version bump | — |
+| `original_sha256` | 64-hex | yes | the frozen original ELF | must equal the job's input hash |
+| `contract_sha256` | 64-hex | yes | the reviewed contract revision | must equal this run's contract |
+| `analysis_sha256` | 64-hex | yes | the binary analysis bundle | must equal the analysis the server sent |
+| `route` | `"route_a"` / `"route_b"` | yes | repair route | must equal the requested route |
+| `target_entry` | identifier or `0x…` | yes | the function that may be modified | must equal the reviewed target |
+| `evidence_ids` | string[], 1–16 | yes | the evidence referenced | must be an id the server has sent |
+| `template_id` | string? | required for Route A | template id | must be in the `templates` list |
+| `parameters` | object<string,int>? | required for Route A | template parameters | keys must match exactly, values within range |
+| `recovered_function_sha256` | 64-hex? | required for Route B | hash of the recovered C | must equal the recovered hash in the request |
+| `replacement_c` | string? | required for Route B | complete function definition | length, target function name, forbidden constructs, call allowlist |
+| `expected_effects` | string[], 1–32, each ≤512 | yes | claimed effects | shown to humans only, **never used as evidence** |
+| `assumptions` | string[], 0–32, each ≤512 | no | conditions relied on | for display |
+| `uncertainties` | string[], 0–32, each ≤512 | no | known uncertainties | for display; they do not block verification by themselves |
 
-`additionalProperties: false`。多一个字段就整份拒绝——这是防止"悄悄扩权"的核心。
+`additionalProperties: false`. One extra field rejects the whole document — this is the core of the
+protection against "quietly widening scope".
 
-自由文本字段（三个列表）另有两条规则：单条 ≤ **512 字符**、列表 ≤ **32 条**；
-出现"ignore previous instructions / run: / rm -rf / URL"等指令样文本时，**整份候选拒绝**，
-不是过滤后接受。这是兜底，不是安全边界——真正的边界是候选永远不能改权限、工具、范围。
+The free-text fields (the three lists) have two more rules: each entry ≤ **512 characters**, each list
+≤ **32 entries**; if instruction-like text such as "ignore previous instructions / run: / rm -rf / URL"
+appears, **the whole candidate is rejected**, not filtered and then accepted. This is a backstop, not a
+security boundary — the real boundary is that a candidate can never change permissions, tools, or scope.
 
-公共入口（验证骨架绑定这个名字）：
+Public entry points (the verification skeleton binds to these names):
 
 ```python
 from app.domain.candidates import validate_candidate, may_leave_host
 
-cand = validate_candidate(payload)       # 合法返回 CandidateV1；不合法抛 CandidateRejected
+cand = validate_candidate(payload)       # valid returns CandidateV1; invalid raises CandidateRejected
 may_leave_host("public")                 # True
-may_leave_host("client", derived=True)   # False（默认拒绝）
+may_leave_host("client", derived=True)   # False (deny by default)
 ```
 
-## 2. Context v1 字段（服务端 → 模型）
+## 2. Context v1 fields (server → model)
 
-| 字段 | 说明 |
+| Field | Description |
 |---|---|
-| `route` | 本次请求的路线，模型不能改 |
-| `original_sha256` / `contract_sha256` / `analysis_sha256` | 身份三元组，要求模型原样回显 |
-| `target_entry` / `target_signature` | 唯一允许修改的函数与签名 |
-| `contract_summary` | 审核过的契约摘录，是范围的唯一权威 |
-| `allowed_evidence_ids` | 闭集，模型只能引用其中的 id |
-| `templates` | Route A 的模板与参数区间（闭集） |
-| `recovered_c` / `recovered_function_sha256` | Route B 的输入函数（**不可信数据**） |
-| `allowed_calls` | Route B 允许调用的外部函数；其余一律 scope violation |
-| `max_replacement_chars` | 输出长度上限 |
+| `route` | the route of this request; the model cannot change it |
+| `original_sha256` / `contract_sha256` / `analysis_sha256` | the identity triple, which the model must echo back verbatim |
+| `target_entry` / `target_signature` | the only function that may be modified, plus its signature |
+| `contract_summary` | excerpt of the reviewed contract; the sole authority on scope |
+| `allowed_evidence_ids` | a closed set; the model may only reference ids from it |
+| `templates` | Route A templates and parameter ranges (closed set) |
+| `recovered_c` / `recovered_function_sha256` | the Route B input function (**untrusted data**) |
+| `allowed_calls` | external functions Route B may call; anything else is a scope violation |
+| `max_replacement_chars` | upper bound on output length |
 
-## 3. 版本与变更流程
+## 3. Versioning and change process
 
-v1 是**封闭**契约（`additionalProperties: false`），所以：
+v1 is a **closed** contract (`additionalProperties: false`), therefore:
 
-- 加字段 = 破坏性变更 → 新文件 `candidate.v2.json`，旧代码继续读 v1；
-- 改语义（如 `evidence_ids` 上限）= 新版本；
-- 只改描述/标题 = 可直接改，但也要重新生成并跑 drift 测试；
-- 任何变更必须同时通知 **GUI（2 号）** 和 **验证（4 号）**，并在 `CHANGELOG.md` 记一行；
-- 不允许"线上偷偷放宽"：校验失败就是失败。
+- adding a field = breaking change → a new file `candidate.v2.json`; old code keeps reading v1;
+- changing semantics (e.g. the `evidence_ids` limit) = new version;
+- changing only descriptions/titles = allowed directly, but regenerate and run the drift test anyway;
+- every change must notify both **GUI (member 2)** and **verification (member 4)**, and log one line in `CHANGELOG.md`;
+- "quietly loosening it in production" is not allowed: a failed validation is a failure.
 
-流程：
+Process:
 
 ```bash
-# 1. 改 binaryrepair_ai/schemas.py
-# 2. 重新生成
+# 1. edit binaryrepair_ai/schemas.py
+# 2. regenerate
 python schemas/generate.py
-# 3. 确认没有手改 generated/
+# 3. confirm that nothing in generated/ was hand-edited
 git diff --stat schemas/
-# 4. 跑契约测试（CI 里也是这一条）
+# 4. run the contract tests (this is also the CI command)
 pytest tests/test_schema_contract.py
 python schemas/generate.py --check
 ```
 
-`--check` 在 CI 中失败 = 有人改了模型但没提交生成物，或者手改了生成物。
+A `--check` failure in CI means someone changed the models without committing the generated output, or
+hand-edited the generated output.
 
-## 4. 与数据库的映射
+## 4. Mapping to the database
 
-| Candidate 字段 | 落库位置 |
+| Candidate field | Where it lands |
 |---|---|
-| `original_sha256` | `jobs.original_sha256`（创建 job 时已写） |
+| `original_sha256` | `jobs.original_sha256` (already written when the job was created) |
 | `route` | `attempts.route` |
-| `replacement_c` / `template_id` + `parameters` | 作为 artifact 存文件（`artifacts.role='proposal'`），hash 进 `attempts.candidate_sha256` |
-| `expected_effects` / `assumptions` / `uncertainties` | 完整 candidate JSON 存 artifact，便于 replay |
-| 模型调用元数据 | `model_calls`（见 `db/README.md`） |
+| `replacement_c` / `template_id` + `parameters` | stored as a file artifact (`artifacts.role='proposal'`), hash into `attempts.candidate_sha256` |
+| `expected_effects` / `assumptions` / `uncertainties` | the full candidate JSON is stored as an artifact, for replay |
+| model call metadata | `model_calls` (see `db/README.md`) |
 
-**不要把 candidate 正文塞进 SQLite 行**：大文本进文件，行里只留 hash 和相对路径
-（技术设计 §6 的要求）。
+**Do not stuff the candidate body into a SQLite row**: large text goes to a file, and the row keeps only
+the hash and the relative path (a requirement of technical design §6).
 
-## 5. 示例
+## 5. Examples
 
-- `examples/candidate.routeA.json` —— 模板 + 参数
-- `examples/candidate.routeB.json` —— recovered C + 修复后的完整函数
-- `examples/context.routeB.json` —— 服务端发给模型的上下文
+- `examples/candidate.routeA.json` — template + parameters
+- `examples/candidate.routeB.json` — recovered C + the complete repaired function
+- `examples/context.routeB.json` — the context the server sends to the model
 
-这些示例同时被 JSON Schema 和 Pydantic 测试覆盖，改 schema 时会一起失败，提醒你更新示例。
+These examples are covered by both the JSON Schema and the Pydantic tests, so a schema change makes them
+fail together, reminding you to update the examples.

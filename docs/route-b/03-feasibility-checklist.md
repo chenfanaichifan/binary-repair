@@ -1,32 +1,32 @@
-# Route B 真实样本可行性检查清单
+# Route B real-sample feasibility checklist
 
-**状态：** 等待成员 3 冻结公共样本（`route-a/docs/05-sample-analysis.md` 当前全部为 TBD）。
-**用途：** 样本到位后，按 G0–G9 在 1–2 小时内给出 **PASS / FAIL / UNSUPPORTED** 结论，
-而不是"感觉能跑"。
+**Status:** waiting for Member 3 to freeze the public sample (`route-a/docs/05-sample-analysis.md` is currently all TBD).
+**Purpose:** once the sample arrives, reach a **PASS / FAIL / UNSUPPORTED** verdict across G0–G9 within 1–2 hours,
+instead of going by "it feels like it runs".
 
-> 现在能做的只有预演：用 `routeb/fixture/vuln` 跑通流程本身（已 6/6）。
-> 真实样本的 round trip 在 G0 未通过前一律记 `not_run`，不能写成"已验证"。
+> Right now all we can do is rehearse: run the flow itself against `routeb/fixture/vuln` (currently 6/6).
+> For the real sample, the round trip is recorded as `not_run` until G0 passes; it must not be written up as "verified".
 
 ---
 
-## 0. 需要成员 3 提供的输入
+## 0. Inputs required from Member 3
 
-缺任何一项，对应 gate 记 `not_run`，不要用猜测值补。
+If any item is missing, record the corresponding gate as `not_run`; do not fill it in with a guessed value.
 
-| # | 输入 | 从哪里拿 | 缺失后果 |
+| # | Input | Where to get it | Consequence if missing |
 |---|---|---|---|
-| 1 | ELF 路径 + SHA-256 | `route-a/docs/05-sample-analysis.md` | 无法绑定身份，全部 gate 阻塞 |
-| 2 | 构建命令、编译器/版本、日期、构建人 | 同上 | 无法判断"重编译差异"来源 |
-| 3 | 漏洞函数名、入口地址、函数字节数 | Ghidra / `nm` | 无法导出与替换 |
-| 4 | 有效/无效输入域、期望返回值/输出 | 契约（成员 4 复核） | 无法判定 round trip 是否保持行为 |
-| 5 | 已知触发输入（长度/内容） | 复现记录 | 无法证明缺陷仍可复现（G5） |
-| 6 | 二进制级可观察效果（崩溃/覆盖/退出码） | 复现记录 | 无法建立基线 |
-| 7 | 允许的修改范围与禁用项 | 契约 | 无法判定候选是否越界 |
-| 8 | 谁复核了上述内容 | 评审记录 | 结论不可用于验收 |
+| 1 | ELF path + SHA-256 | `route-a/docs/05-sample-analysis.md` | Cannot bind identity; every gate is blocked |
+| 2 | Build command, compiler/version, date, builder | same as above | Cannot tell where the "recompile difference" comes from |
+| 3 | Vulnerable function name, entry address, function byte size | Ghidra / `nm` | Cannot export and replace |
+| 4 | Valid/invalid input domains, expected return value/output | contract (reviewed by Member 4) | Cannot judge whether the round trip preserves behavior |
+| 5 | Known trigger input (length/content) | reproduction record | Cannot prove the defect still reproduces (G5) |
+| 6 | Binary-level observable effect (crash/overwrite/exit code) | reproduction record | Cannot establish a baseline |
+| 7 | Allowed edit scope and forbidden items | contract | Cannot judge whether a candidate goes out of scope |
+| 8 | Who reviewed the above | review record | The conclusion cannot be used for acceptance |
 
 ---
 
-## 1. G0 — 身份与 provenance（最先做）
+## 1. G0 — identity and provenance (do this first)
 
 ```bash
 SAMPLE=fixtures/public/<sample>
@@ -36,49 +36,49 @@ file "$SAMPLE"
 readelf -h "$SAMPLE" | sed -n '1,20p'
 ```
 
-- [ ] hash 与成员 3 记录的完全一致（写进实验记录）
-- [ ] `ELF 64-bit LSB executable, x86-64`，`ET_EXEC`（非 PIE），非 stripped 或符号可用
-- [ ] 函数名能在符号表里找到：`nm "$SAMPLE" | grep " $FUNC$"`
-- [ ] 样本不在客户数据范围（公开/合成），可外发
+- [ ] hash matches what Member 3 recorded exactly (write it into the experiment log)
+- [ ] `ELF 64-bit LSB executable, x86-64`, `ET_EXEC` (non-PIE), not stripped or symbols available
+- [ ] the function name can be found in the symbol table: `nm "$SAMPLE" | grep " $FUNC$"`
+- [ ] the sample is outside the client data scope (public/synthetic) and may be sent externally
 
-失败：`UNSUPPORTED`（画像不符）或 `ERROR`（身份对不上，停止）。
+Failure: `UNSUPPORTED` (profile mismatch) or `ERROR` (identity does not match, stop).
 
-## 2. G1 — 支持画像
+## 2. G1 — supported profile
 
-- [ ] 单进程、单线程
-- [ ] 无 packed / 自修改代码
-- [ ] 修复区域不依赖 TLS、C++ 异常、特殊 unwind
-- [ ] 没有未解析的间接跳转进入将被覆盖的字节
-- [ ] 不新增外部库依赖
+- [ ] single process, single thread
+- [ ] no packed / self-modifying code
+- [ ] the repair region does not depend on TLS, C++ exceptions, or special unwinding
+- [ ] no unresolved indirect jump enters the bytes that will be overwritten
+- [ ] no new external library dependencies
 
-任何一项不满足：`UNSUPPORTED`，并写清哪一条。
+If any item fails: `UNSUPPORTED`, and state which one.
 
-## 3. G2 — Ghidra 导出
+## 3. G2 — Ghidra export
 
 ```bash
 ./routeb/ghidra/export.sh "$SAMPLE" "$FUNC"
 cat routeb/out/$FUNC.c.meta.txt
 ```
 
-- [ ] 函数找到，`size_bytes` 合理（几十到几百字节）
-- [ ] 记录 `callees=`：空 = 重定位简单；有 libc 调用 = 需 PLT 解析，风险升级
-- [ ] 原始输出保存，未修改
-- [ ] 记录 Ghidra 版本、JDK 版本
+- [ ] function found, `size_bytes` reasonable (tens to a few hundred bytes)
+- [ ] record `callees=`: empty = simple relocation; libc calls present = PLT resolution needed, risk goes up
+- [ ] raw output saved unmodified
+- [ ] record Ghidra version, JDK version
 
-失败：`UNSUPPORTED`（函数过大/间接调用/无符号），保留日志。
+Failure: `UNSUPPORTED` (function too large/indirect calls/no symbols); keep the logs.
 
-## 4. G3 — 归一化
+## 4. G3 — normalization
 
-新建 `routeb/out/$FUNC.normalized.c`，只改类型和名字：
+Create `routeb/out/$FUNC.normalized.c`, changing only types and names:
 
-- [ ] 每次修改都有一行理由（diff 列表）
-- [ ] 控制流、数组下标、检查逻辑**未改**
-- [ ] 能独立编译：`cc -O0 -g0 -fno-stack-protector -fno-builtin -c routeb/out/$FUNC.normalized.c -o /tmp/$FUNC.o`
-- [ ] 签名与二进制一致（参数个数/宽度/返回类型）
+- [ ] every edit has a one-line reason (diff list)
+- [ ] control flow, array indices, and check logic **unchanged**
+- [ ] compiles standalone: `cc -O0 -g0 -fno-stack-protector -fno-builtin -c routeb/out/$FUNC.normalized.c -o /tmp/$FUNC.o`
+- [ ] signature matches the binary (argument count/width/return type)
 
-失败：回到 G2 或 `UNSUPPORTED`（例如出现 `code *`、结构体返回）。
+Failure: go back to G2 or `UNSUPPORTED` (for example `code *` or struct return appears).
 
-## 5. G4 — unchanged round trip（核心 gate）
+## 5. G4 — unchanged round trip (core gate)
 
 ```bash
 python routeb/probe_patcherex2.py \
@@ -89,24 +89,24 @@ python routeb/probe_patcherex2.py \
   --skip-verify
 ```
 
-> 真实样本不能用 `routeb/verify.py`：它是为本仓库合成 fixture 写的 oracle。
-> 回填后请用团队冻结的测试清单（成员 4/1）验证，命令记入实验记录。
+> A real sample cannot use `routeb/verify.py`: that is the oracle written for this repository's synthetic fixture.
+> After backfilling, validate with the team's frozen test checklist (Members 4/1), and record the command in the experiment log.
 
-- [ ] 回填后的 ELF 能启动
-- [ ] 团队有效输入用例全部通过，输出/返回值与原始一致
-- [ ] 已知触发输入仍然触发（缺陷没有被"顺手修好"）
-- [ ] `readelf -lW` 段数量/权限无意外变化；有新增段则记录
-- [ ] 改动字节范围可解释（函数体 ± 重定位）
-- [ ] Patcherex2 版本、编译器版本、命令记录
+- [ ] the backfilled ELF starts
+- [ ] all team valid-input cases pass, output/return values identical to the original
+- [ ] the known trigger input still triggers (the defect was not "fixed by the way")
+- [ ] `readelf -lW` shows no unexpected change in segment count/permissions; record any added segment
+- [ ] the changed byte range is explainable (function body ± relocations)
+- [ ] Patcherex2 version, compiler version, command recorded
 
-失败处置见 §10。
+Failure handling: see §10.
 
-## 6. G5 — 缺陷仍可复现
+## 6. G5 — defect still reproducible
 
-- [ ] 用成员 3 给的触发输入，在 round-trip 二进制上得到与原始相同的可观察效果
-- [ ] 如果缺陷消失：**不是修复成功**，是行为变化；记 round-trip FAIL
+- [ ] with the trigger input from Member 3, the round-trip binary shows the same observable effect as the original
+- [ ] if the defect disappears: that is **not a successful repair**, it is a behavior change; record round-trip FAIL
 
-## 7. G6 — 布局与兼容性审计
+## 7. G6 — layout and compatibility audit
 
 ```bash
 readelf -lW "$SAMPLE" > /tmp/before.segments
@@ -114,39 +114,39 @@ readelf -lW "routeb/out/${FUNC}_roundtrip" > /tmp/after.segments
 diff -u /tmp/before.segments /tmp/after.segments
 ```
 
-- [ ] 入口地址、load 段、权限符合契约
-- [ ] 无重叠写入、无未解析重定位
-- [ ] 不静默关闭 NX/RELRO/栈保护
-- [ ] 记录 changed / added bytes 两个数字
+- [ ] entry address, load segments, permissions conform to the contract
+- [ ] no overlapping writes, no unresolved relocations
+- [ ] does not silently disable NX/RELRO/stack protection
+- [ ] record the two numbers, changed / added bytes
 
-## 8. G7 — 模型候选（DeepSeek）
+## 8. G7 — model candidate (DeepSeek)
 
-前提：G4/G5 通过。
+Prerequisite: G4/G5 pass.
 
 ```bash
-# CONTRACT = 成员4 复核过的契约文本文件（不是 PRD 摘录）
+# CONTRACT = the contract text file reviewed by Member 4 (not a PRD excerpt)
 CONTRACT=docs/route-b/contracts/<sample>.txt
 
 python scripts/demo_candidate.py \
   --binary "$SAMPLE" \
   --function "$FUNC" \
   --recovered "routeb/out/$FUNC.normalized.c" \
-  --signature "<从 meta 抄的签名>" \
+  --signature "<signature copied from the meta file>" \
   --contract "$CONTRACT" \
-  --allowed-calls "<逗号分隔，没有就留空>" \
+  --allowed-calls "<comma-separated, leave empty if none>" \
   --out-c "routeb/out/$FUNC.model.c"
 ```
 
-`--allowed-calls` 取 G2 的 `callees=` 与契约的交集；为空表示只允许纯函数。
+`--allowed-calls` is the intersection of G2's `callees=` and the contract; empty means only pure functions are allowed.
 
-- [ ] 候选通过 schema + scope 校验（`accepted_for_validation`）
-- [ ] 只改了允许的范围；`expected_effects` 与契约一致
-- [ ] 没有新增调用/头文件/属性
-- [ ] 记录 prompt hash、model、tokens、费用
+- [ ] candidate passes schema + scope validation (`accepted_for_validation`)
+- [ ] only the allowed scope was changed; `expected_effects` match the contract
+- [ ] no added calls/headers/attributes
+- [ ] record prompt hash, model, tokens, cost
 
-失败：`REJECTED`（格式/越界）或 `ERROR`（provider），保留诊断。
+Failure: `REJECTED` (format/out of scope) or `ERROR` (provider); keep the diagnostics.
 
-## 9. G8 — 修复候选验证
+## 9. G8 — repair-candidate validation
 
 ```bash
 python routeb/probe_patcherex2.py \
@@ -155,53 +155,53 @@ python routeb/probe_patcherex2.py \
   --c-source "routeb/out/$FUNC.model.c" \
   --out "routeb/out/${FUNC}_fixed" \
   --skip-verify
-# 然后用团队测试清单跑最终 ELF
+# then run the team test checklist against the final ELF
 ```
 
-- [ ] 修复后的 ELF 上，触发输入不再越界/崩溃
-- [ ] 无效输入走契约规定的错误路径
-- [ ] 有效输入 100% 通过
-- [ ] 有界符号检查（成员 4）在最终 ELF 上完成，且不是 unknown/timeout
-- [ ] 改动区域与 G6 审计一致
+- [ ] on the repaired ELF, the trigger input no longer goes out of bounds/crashes
+- [ ] invalid input follows the error path specified by the contract
+- [ ] valid input passes 100%
+- [ ] the bounded symbolic check (Member 4) completed on the final ELF, and is not unknown/timeout
+- [ ] the changed region matches the G6 audit
 
-## 10. G9 — 证据与复现
+## 10. G9 — evidence and reproduction
 
-- [ ] 原始/候选 hash、契约 hash、测试清单 hash
-- [ ] raw / normalized / model C 三份文件与 diff
-- [ ] 工具版本、命令、环境
-- [ ] 失败/未跑的项显式标注，不用"应该"补
-- [ ] 另一位成员能按记录复跑
+- [ ] original/candidate hash, contract hash, test-checklist hash
+- [ ] the three C files raw / normalized / model, plus their diffs
+- [ ] tool versions, commands, environment
+- [ ] failed/not-run items explicitly marked, not filled in with "should"
+- [ ] another member can re-run it following the record
 
 ---
 
-## 11. 失败处置矩阵
+## 11. Failure handling matrix
 
-| 现象 | 结论 | 动作 |
+| Symptom | Conclusion | Action |
 |---|---|---|
-| hash/画像不符 | `UNSUPPORTED` | 停止，退回成员 3 换样本或补信息 |
-| Ghidra 导出失败/函数过大 | `UNSUPPORTED` | 记录原因，不硬改 |
-| 归一化后编译失败 | `UNSUPPORTED` / `ERROR` | 保留 diff，评估是否换函数 |
-| 回填后不启动 | `ERROR` | 查重定位/段权限；未定位前不继续 |
-| 有效输入行为变化 | `REJECTED`（round trip） | 回 G3 逐行 diff |
-| 触发输入不再越界 | `REJECTED`（行为变化） | 不是修复；查编译器差异 |
-| 模型候选格式/越界 | `REJECTED` | 保留候选与 reason_code |
-| provider 超时/配额/空 | `ERROR` | 按 typed failure 记录，不伪造候选 |
-| 符号检查 unknown/timeout | `INCONCLUSIVE` | 不能显示成功 |
+| hash/profile mismatch | `UNSUPPORTED` | stop; go back to Member 3 for another sample or more information |
+| Ghidra export fails/function too large | `UNSUPPORTED` | record the reason, do not force edits |
+| normalization does not compile | `UNSUPPORTED` / `ERROR` | keep the diff, assess whether to switch functions |
+| does not start after backfill | `ERROR` | check relocations/segment permissions; do not continue before locating it |
+| valid-input behavior changes | `REJECTED` (round trip) | go back to G3 and diff line by line |
+| trigger input no longer goes out of bounds | `REJECTED` (behavior change) | not a repair; investigate compiler differences |
+| model candidate format/out of scope | `REJECTED` | keep the candidate and reason_code |
+| provider timeout/quota/empty | `ERROR` | record as a typed failure, do not fabricate a candidate |
+| symbolic check unknown/timeout | `INCONCLUSIVE` | must not be displayed as success |
 
 ---
 
-## 12. 时间盒（样本到位后）
+## 12. Time box (after the sample arrives)
 
-| 阶段 | 上限 | 超时动作 |
+| Stage | Limit | Action on timeout |
 |---|---|---|
-| G0–G2 | 30 min | 记 blocker，先问成员 3 |
-| G3 | 30 min | 超过 2 小时仍未编译通过 → `UNSUPPORTED` |
-| G4–G6 | 45 min | 失败即记录，不在当天死磕 |
-| G7–G8 | 45 min | 只跑一次候选，不无限重试 |
+| G0–G2 | 30 min | record the blocker, ask Member 3 first |
+| G3 | 30 min | still not compiling after 2 hours → `UNSUPPORTED` |
+| G4–G6 | 45 min | record the failure, do not grind on it the same day |
+| G7–G8 | 45 min | run the candidate only once, no unbounded retries |
 
 ---
 
-## 13. 记录模板
+## 13. Record template
 
 ```markdown
 ### Route B feasibility — <sample> — <date>

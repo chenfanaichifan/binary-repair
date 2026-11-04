@@ -1,78 +1,80 @@
-# Route B：recovered C 与 unchanged round trip 实验手册
+# Route B: recovered C and unchanged round trip experiment manual
 
-本目录只做一件事：回答技术设计里的待验证问题 **"Can the unchanged recovered-C round trip
-and added-code mapping pass their required checks?"**（TechDesign 第 16 节，问题 7）。
+This directory does exactly one thing: answer the open question in the technical design,
+**"Can the unchanged recovered-C round trip
+and added-code mapping pass their required checks?"** (TechDesign section 16, question 7).
 
-答案必须是实验记录，不是判断。每条结论都要带上：二进制 hash、Ghidra 版本、编译命令、
-Patcherex2 版本、6 个 oracle 用例的实际输出。
+The answer must be an experiment record, not a judgement. Every conclusion has to carry:
+the binary hash, the Ghidra version, the compile command,
+the Patcherex2 version, and the actual output of the 6 oracle cases.
 
 ---
 
-## 0. 固定样本与契约（先冻结，再动手）
+## 0. Fixed sample and contract (freeze first, then act)
 
-| 项 | 值 |
+| Item | Value |
 |---|---|
-| 二进制 | `fixture/vuln`，由 `fixture/build.sh` 从 `vuln.c` 编译 |
-| 编译 | `-O0 -g0 -fno-stack-protector -fno-builtin -fno-pie -no-pie` |
-| 目标函数 | `copy_name(char *dst, const char *src, unsigned int n)` |
-| 有效输入 | 0–15 字节，原样复制，`guard=ok`，退出码 0 |
-| 无效输入 | ≥16 字节，必须 `return -1` 且完全不写目标缓冲区 |
-| 溢出检测 | `struct record` 里 `name[16]` 后紧跟 `guard` canary（0xDEADBEEF） |
-| 判定工具 | `verify.py`（vulnerable / fixed / roundtrip 三种模式） |
+| Binary | `fixture/vuln`, built from `vuln.c` by `fixture/build.sh` |
+| Compile | `-O0 -g0 -fno-stack-protector -fno-builtin -fno-pie -no-pie` |
+| Target function | `copy_name(char *dst, const char *src, unsigned int n)` |
+| Valid input | 0–15 bytes, copied as-is, `guard=ok`, exit code 0 |
+| Invalid input | ≥16 bytes, must `return -1` and write nothing at all to the destination buffer |
+| Overflow detection | in `struct record`, a `guard` canary (0xDEADBEEF) directly follows `name[16]` |
+| Verdict tool | `verify.py` (three modes: vulnerable / fixed / roundtrip) |
 
-先跑一遍原始二进制，确认漏洞真的可复现：
+Run the original binary once first to confirm that the vulnerability really reproduces:
 
 ```bash
 cd routeb
 ./fixture/build.sh
 python3 verify.py --binary fixture/vuln --mode vulnerable
-# 6/6 passed：4 个有效输入正常，2 个超长输入 guard=CORRUPT
+# 6/6 passed: 4 valid inputs normal, 2 oversized inputs guard=CORRUPT
 ```
 
-这一步失败（例如 16 字节没有触发 CORRUPT），先修 fixture，不要继续。
+If this step fails (for example, 16 bytes does not trigger CORRUPT), fix the fixture first, do not continue.
 
 ---
 
-## 1. 用 Ghidra 导出函数
+## 1. Export the function with Ghidra
 
 ```bash
-export GHIDRA_HOME=$HOME/ghidra_11.4_PUBLIC   # 按实际目录改
+export GHIDRA_HOME=$HOME/ghidra_11.4_PUBLIC   # change to the actual directory
 ./ghidra/export.sh fixture/vuln copy_name
 ```
 
-产物：
+Outputs:
 
-- `out/copy_name.c`：**原始反编译输出，只读证据，不要直接改**
-- `out/copy_name.c.meta.txt`：入口地址、字节数、签名、调用约定、被调函数
+- `out/copy_name.c`: **raw decompiler output, read-only evidence, do not edit it directly**
+- `out/copy_name.c.meta.txt`: entry address, byte size, signature, calling convention, callees
 
-检查 meta：`size_bytes` 应为一个很小的数（几十字节），`callees=` 应为空。
-若 `NOT FOUND`，说明符号被 strip 或名字不同；用 Ghidra GUI 打开确认函数名，
-或先用 `nm fixture/vuln | grep copy_name` 查符号。
+Check the meta: `size_bytes` should be a small number (a few dozen bytes), and `callees=` should be empty.
+If it says `NOT FOUND`, the symbol was stripped or has a different name; open it in the Ghidra GUI to
+confirm the function name, or look the symbol up first with `nm fixture/vuln | grep copy_name`.
 
-**今天要交的观察**：把原始输出贴进实验记录，并列出"为了能编译，我改了哪几处"。
+**Observation due today**: paste the raw output into the experiment record and list "which places I changed to make it compile".
 
 ---
 
-## 2. 归一化（normalize），不改语义
+## 2. Normalize, without changing semantics
 
-新建 `out/copy_name.normalized.c`，只做类型/名字层面的修改：
+Create `out/copy_name.normalized.c` and make only type/name level changes:
 
-| Ghidra 常见输出 | 归一化后 | 为什么安全 |
+| Common Ghidra output | After normalization | Why it is safe |
 |---|---|---|
-| `undefined4` / `undefined8` | `int` / `unsigned int` | 只是宽度明确的类型名 |
-| `param_1, param_2, param_3` | `dst, src, n` | 名字，必须与二进制签名一致 |
-| `uVar1`, `local_10` | `i` | 局部变量重命名 |
-| `(char *)0x...` | 不动或改为具名常量 | 地址常量不要凭空改 |
-| `code *`、`__return_storage_ptr__` | 本样本不应出现；出现则记为 blocker | 结构体返回/间接调用超出 MVP 范围 |
+| `undefined4` / `undefined8` | `int` / `unsigned int` | just type names with an explicit width |
+| `param_1, param_2, param_3` | `dst, src, n` | names, which must match the binary signature |
+| `uVar1`, `local_10` | `i` | local variable renaming |
+| `(char *)0x...` | leave as-is or change to a named constant | do not change address constants out of thin air |
+| `code *`, `__return_storage_ptr__` | should not appear in this sample; if they do, record it as a blocker | struct returns / indirect calls are outside MVP scope |
 
-规则：
+Rules:
 
-1. **只改类型和名字，不改控制流、不改数组下标、不加检查。**
-2. 每改一处，在实验记录里写一行原因。
-3. 归一化后的文件单独保存，不要覆盖原始输出。
-4. 参考实现放在 `experiment/samples/normalized_reference.c`，**先自己做，再对照**。
+1. **Change only types and names; do not change control flow, do not change array indices, do not add checks.**
+2. For every change, write one line of reason in the experiment record.
+3. Save the normalized file separately; do not overwrite the raw output.
+4. The reference implementation is in `experiment/samples/normalized_reference.c`; **do it yourself first, then compare**.
 
-编译自检（这一步只证明 C 语法和接口成立，不证明回填成功）：
+Compile self-check (this step only proves that the C syntax and the interface hold, not that the patch-back succeeded):
 
 ```bash
 cc -O0 -g0 -fno-stack-protector -fno-builtin -c out/copy_name.normalized.c -o /tmp/copy_name.o
@@ -80,53 +82,55 @@ cc -O0 -g0 -fno-stack-protector -fno-builtin -c out/copy_name.normalized.c -o /t
 
 ---
 
-## 3. unchanged round trip（关键 gate）
+## 3. unchanged round trip (the key gate)
 
-把**未修复**的归一化 C 重新编译并回填到原 ELF 的副本，然后要求它和原二进制行为完全一致。
+Recompile the **unfixed** normalized C and patch it back into a copy of the original ELF, then require it to behave
+exactly like the original binary.
 
-使用 Patcherex2（先按文档复现它的 add 示例）：
+Use Patcherex2 (first reproduce its add example as described in the docs):
 
 ```bash
 python3 -m venv .venv-patcherex
 .venv-patcherex/bin/pip install patcherex2
 
-# 3a. 先证明工具链本身能用（文档示例：加法变乘法，5 -> 6）
+# 3a. first prove that the toolchain itself works (docs example: addition becomes multiplication, 5 -> 6)
 .venv-patcherex/bin/python probe_patcherex2.py --demo
 
-# 3b. 未修改的 recovered C 回填
+# 3b. patch back the unmodified recovered C
 .venv-patcherex/bin/python probe_patcherex2.py \
     --mode roundtrip \
     --c-source out/copy_name.normalized.c \
     --out out/vuln_roundtrip
 
-# 3c. 与原始二进制逐用例比较（stdout + 退出码）
+# 3c. compare with the original binary case by case (stdout + exit code)
 python3 verify.py --binary out/vuln_roundtrip --reference fixture/vuln --mode roundtrip
 ```
 
-**通过标准（全部满足才算 round trip 成立）：**
+**Pass criteria (round trip only holds when all of them are met):**
 
-- [ ] 6/6 用例的 stdout 与退出码和原二进制逐字节相同
-- [ ] 16/17 字节输入仍然 `guard=CORRUPT`（缺陷没有被"顺手修好"）
-- [ ] `readelf -lW` 的段数量/权限没有意外变化；若有新增段，记录它
-- [ ] 改动字节范围可解释（函数体 ± 重定位），并写入 edit manifest
-- [ ] Patcherex2 版本、编译器版本、命令都记录
+- [ ] stdout and exit code of 6/6 cases are byte-identical to the original binary
+- [ ] 16/17-byte inputs still give `guard=CORRUPT` (the defect was not "fixed along the way")
+- [ ] the segment count/permissions from `readelf -lW` did not change unexpectedly; if a segment was added, record it
+- [ ] the changed byte range is explainable (function body ± relocations) and written into the edit manifest
+- [ ] Patcherex2 version, compiler version, and commands are all recorded
 
-**失败时的处理：**
+**What to do on failure:**
 
-| 现象 | 含义 | 动作 |
+| Symptom | Meaning | Action |
 |---|---|---|
-| 回填后程序崩溃/不启动 | 重定位、入口、段权限有问题 | 记 `unsupported`，保留候选与日志，换方案前先定位 |
-| 有效输入输出不同 | 归一化改变了语义 | 回到第 2 步，逐行 diff |
-| 16 字节不再 CORRUPT | 重编译改变了循环/写入 | **不是修复成功**，是行为变化；记为 round-trip failure |
-| Patcherex2 装不上/不支持该 ELF | 后端不可用 | 记录版本与报错；这是"unsupported"，不是"没做" |
+| program crashes / does not start after patch-back | problem with relocations, entry point, or segment permissions | record `unsupported`, keep the candidate and the logs, locate the cause before switching approach |
+| valid input output differs | normalization changed semantics | go back to step 2 and diff line by line |
+| 16 bytes no longer CORRUPT | recompiling changed the loop/write | **not a successful repair**, it is a behaviour change; record as round-trip failure |
+| Patcherex2 will not install / does not support this ELF | backend unavailable | record the version and the error; this is "unsupported", not "not done" |
 
-> round trip 通过只证明"在这个测试域内行为一致"，不证明函数等价。汇报时必须带这句限定。
+> A passing round trip only proves "behaviour is consistent within this test domain"; it does not prove function
+> equivalence. Every report must carry this caveat.
 
 ---
 
-## 4. 结构化修复提案（DeepSeek）
+## 4. Structured repair proposal (DeepSeek)
 
-round trip 通过后，才允许让模型改这个函数。
+Only after the round trip passes is the model allowed to modify this function.
 
 ```bash
 cd ..
@@ -135,9 +139,9 @@ cd ..
     --out-c routeb/out/copy_name.model.c
 ```
 
-输出是一个通过 schema 校验的 candidate（`replacement_c` 为完整函数）。
+The output is a candidate that passes schema validation (`replacement_c` is the complete function).
 
-然后：
+Then:
 
 ```bash
 .venv-patcherex/bin/python routeb/probe_patcherex2.py \
@@ -146,12 +150,12 @@ cd ..
 python3 routeb/verify.py --binary routeb/out/vuln_fixed --mode fixed
 ```
 
-只有 `verify.py --mode fixed` 6/6 通过，才能说"这个候选在测试域内修复了缺陷"。
-**编译成功、模型说"已修复"、Patcherex2 没报错，都不算。**
+Only when `verify.py --mode fixed` passes 6/6 may you say "this candidate fixed the defect within the test domain".
+**A successful compile, the model saying "fixed", and Patcherex2 not erroring do not count.**
 
 ---
 
-## 5. 实验记录模板（直接抄进汇报）
+## 5. Experiment record template (copy straight into the report)
 
 ```markdown
 ### Route B feasibility — <date>
@@ -173,9 +177,9 @@ python3 routeb/verify.py --binary routeb/out/vuln_fixed --mode fixed
 
 ---
 
-## 6. 明确不做的事（MVP 边界）
+## 6. What is explicitly out of scope (MVP boundary)
 
-- 不恢复整个程序，只恢复被修复的那个函数。
-- 不支持 PIE/共享库/异常/C++/多线程/TLS 的样本。
-- 不手写重定位引擎；Patcherex2 不成就记 unsupported，等团队决定。
-- 不把"编译通过"或"没崩溃"写进证据。
+- Do not recover the whole program; recover only the one function being repaired.
+- Samples with PIE / shared libraries / exceptions / C++ / multi-threading / TLS are not supported.
+- Do not hand-write a relocation engine; if Patcherex2 cannot do it, record unsupported and wait for the team's decision.
+- Do not put "it compiles" or "it did not crash" into the evidence.
