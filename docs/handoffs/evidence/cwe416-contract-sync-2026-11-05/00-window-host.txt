@@ -1,0 +1,40 @@
+# host side of the window — 2026-11-05 23:40 +08:00
+
+$ date +%Y-%m-%dT%H:%M:%S%z
+2026-11-05T23:40:17+0800
+
+$ git branch --show-current && git rev-parse --short HEAD
+m3/cwe416-v3-noinput 5b186cb
+
+$ git log --oneline -3
+  5b186cb docs(m3): measure the ASLR claim instead of asserting it
+  d193ec2 feat(m3): add the CWE416 no-input repair candidate with V0-V5 evidence
+  584b912 chore(m3): package record 121 with the fixture as it now stands
+
+$ git status --short fixtures
+  (empty: fixtures/ has no uncommitted change in this window)
+
+$ git diff --stat 584b912 HEAD -- fixtures
+  (empty: fixtures/ untouched since record 121)
+
+$ sha256sum fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json
+  8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b *fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json
+
+$ grep -a "snapshot.current" "D:/VMs/binrepair-u2404-x64-01/BinRepair-Lab.vmsd"
+  snapshot.current = "11"
+
+$ "D:/VMware/vmrun.exe" -T ws list
+  Total running VMs: 1
+  D:\VMs\binrepair-u2404-x64-01\BinRepair-Lab.vmx
+
+$ ls -d "D:/VMs/binrepair-u2404-x64-01/"*.lck 2>/dev/null | wc -l
+  11
+  (non-zero because the guest is running in this window: VMware holds one lock
+   directory per attached disk. The 118 window measured 0 with the VM powered
+   off. This line is here to say which state the window was in, not to repeat
+   that number.)
+
+$ SSH="ssh -i .tmp/ssh/id_ed25519 lab@192.168.30.128"; $SSH "id -u; who -b; cat /proc/sys/kernel/randomize_va_space"
+  uid=1000
+           system boot  2026-11-05 23:15
+  randomize_va_space=2

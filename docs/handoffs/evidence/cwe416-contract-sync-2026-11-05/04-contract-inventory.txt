@@ -1,0 +1,44 @@
+$ # every CWE416 contract.json reachable from this host, and its version
+
+  v2  7b61bdd120ee  input_mode=None  .tmp/cwe416-build/fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/contract.json
+  v3  8a2b408c9b14  input_mode=none  .tmp/fresh-cand/fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json
+  v3  8a2b408c9b14  input_mode=none  fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json
+
+  packages:
+  v3  8a2b408c9b14  input_mode=none  dist/M3-120-cwe416-v3-handoff-2026-11-05.zip :: CWE416_Use_After_Free__malloc_free_char_01_noinput
+  v3  8a2b408c9b14  input_mode=none  dist/M3-121-cwe416-closeout-2026-11-05.zip :: CWE416_Use_After_Free__malloc_free_char_01_noinput
+
+$ ls -d _m3-run _m1-work _m1-work/m3   # the directories this pass was asked to clean
+  ls: cannot access '_m3-run': No such file or directory
+  ls: cannot access '_m1-work': No such file or directory
+  ls: cannot access '_m1-work/m3': No such file or directory
+
+$ find /d -maxdepth 6 -type d \( -name "_m3-run" -o -name "_m1-work" -o -name "V3-no-input*" \)
+  (no output)
+
+$ git ls-files | grep -E "_m3-run|_m1-work|V3-no-input"
+  (no tracked path matches)
+
+$ # inside the guest (ssh lab@192.168.30.128):
+  $ find / -maxdepth 6 -type d \( -name "_m3-run" -o -name "_m1-work" \) 2>/dev/null
+  (end — nothing above)
+  
+  $ ls -d /opt/binrepair/m5-kit-v5 /opt/binrepair/m5-kit-v6
+  /opt/binrepair/m5-kit-v5
+  /opt/binrepair/m5-kit-v6
+
+Conclusion: there is nothing in either directory to delete or replace here —
+neither `_m3-run`, `_m1-work/m3`, nor the `V3-no-input-2026-11-05` demo exists
+on this host, on the guest, or as a tracked path.
+
+The only v2 CWE416 contract on this host is in scratch:
+  .tmp/cwe416-build/fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/contract.json
+It belongs to the retired synthetic fixture (…_char_01, without _noinput). No
+package carries it: the 120 and 121 packages hold only the v3 no-input contract.
+It was left alone rather than deleted, because it is the only surviving copy of
+that retired fixture's contract and deleting it would remove history for a path
+nobody reads. If the intent is that no v2 file can ever be picked up by a glob,
+say so and it gets renamed to contract.v2-retired.json instead of removed.
+
+The V3-no-input demo was not touched. It is a demo, not a CWE416 fixture, and
+this pass has no reason to write to it.

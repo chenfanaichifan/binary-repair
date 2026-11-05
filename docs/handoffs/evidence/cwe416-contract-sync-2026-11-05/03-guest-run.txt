@@ -1,0 +1,104 @@
+## guest
+$ uname -sr                -> Linux 6.8.0-147-generic
+$ id -u                    -> 1000
+$ gcc --version | head -1  -> gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+$ date -u                  -> 2026-11-05T15:39:06Z
+
+## the fixture as it came out of the tree tarball
+$ find $FIX -type f | sort
+PROVENANCE.md
+build.json
+build.sh
+contract.json
+defect.json
+harness.c
+original.c
+original.elf
+src.c
+support/io.c
+support/std_testcase.h
+support/std_testcase_io.h
+tests/SHA256SUMS
+tests/valid.json
+
+$ sha256sum contract.json
+8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b  contract.json
+
+$ python3 - <<'PY'  (SecurityContract.from_dict -> canonical hash)
+  schema_version  : 3
+  input_mode      : none
+  canonical sha256: c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c
+  field count     : 13
+  fields          : allowed_calls,authorized_edits,capacity_includes_terminator,dest_capacity_bytes,environment_assumptions,forbidden_behavior,input_mode,required_obligations,schema_version,target_entry,target_signature,valid_behavior,valid_domain
+  v2 reject fields present: none
+
+## V3 — the runner resolves the mode from that contract
+$ python3 routeb/run_manifest_repaired.py --binary $R/candidate.elf \
+      --tests $FIX/tests --contract $FIX/contract.json --out $R/v3-candidate.json
+{
+  "input_mode": "none",
+  "invalid": "not_applicable",
+  "passed": 1,
+  "total": 1,
+  "repaired_pass": true,
+  "binary_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0"
+}
+runner exit=0
+  input_mode     : none
+  invalid        : not_applicable
+  valid          : 1/1
+  passed/total   : 1/1
+  repaired_pass  : True
+  binary_sha256  : 46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0
+  case           : valid-no-input ok = True
+  stdout_hex     : 414141414141414141414141414141414141414141414141...
+
+## control — same runner, same manifest, the unrepaired original
+{
+  "input_mode": "none",
+  "invalid": "not_applicable",
+  "passed": 0,
+  "total": 1,
+  "repaired_pass": false,
+  "binary_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9"
+}
+runner exit=1  (non-zero is the expected answer for the unrepaired binary)
+  valid          : 0/1
+  passed/total   : 0/1
+  repaired_pass  : False
+  stdout_hex     : ca5f0a (allocator residue, not the 100-byte block)
+
+## V5 — rebuild the original twice, replay the patch twice
+$ SUPPORT=$FIX/support sh $FIX/build.sh /tmp/rb-1.elf   (twice)
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  rb-1.elf
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  rb-2.elf
+
+$ python3 tools/patch_candidate.py --original $FIX/original.elf --out /tmp/pc-1.elf  (twice)
+{
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "bytes_changed": 5,
+  "size_delta": 0
+}
+{
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "bytes_changed": 5,
+  "size_delta": 0
+}
+46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0  pc-1.elf
+46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0  pc-2.elf
+
+$ sha256sum $FIX/original.elf $R/candidate.elf
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  /home/lab/cwe416-sync/kit/fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf
+46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0  /home/lab/cwe416-sync/candidate.elf
+
+## V4 — an engine is present, and it was not run
+$ command -v z3                                   -> absent
+$ /opt/angr-venv/bin/python -c 'import angr, z3'  -> angr 10.0.4.post1 z3 5.1.0
+
+So this is not "no engine available" — angr is installed. The reason V4 is
+not_run is that a real V4 needs a symbolic harness with exact solver
+accounting (sat/unsat/unknown/eval per run) and a bound that cannot hide a
+timeout behind "proven"; earlier V4 submissions were rejected for concrete
+inputs and silent max_steps (docs/handoffs/63, 64, 66, 67). Writing a quick
+one here would produce a claim with no accounting behind it, which is worse
+than not_run. So: V4 stays not_run, claimed_scope null, no binary-level claim.

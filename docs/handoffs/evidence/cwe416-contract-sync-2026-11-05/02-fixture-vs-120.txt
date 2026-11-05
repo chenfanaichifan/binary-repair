@@ -1,0 +1,46 @@
+$ python3  # compare the 120 package's fixture against the tree fixture
+  package : dist/M3-120-cwe416-v3-handoff-2026-11-05.zip
+  tree    : fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/
+
+  files in the package : 14
+  files in the tree    : 14
+  only in the package  : none
+  only in the tree     : none
+
+  path                          package        tree           verdict
+  --------------------------------------------------------------------------
+  PROVENANCE.md                 ab659810d3ad   ab659810d3ad   identical
+  build.json                    e8b00c6442f6   e8b00c6442f6   identical
+  build.sh                      6bb322b841d3   6bb322b841d3   identical
+  contract.json                 8a2b408c9b14   8a2b408c9b14   identical
+  defect.json                   aff4afba4b69   1016ffd6c53f   DIFFERS
+  harness.c                     cef8f533765f   cef8f533765f   identical
+  original.c                    fa84a6bb9df3   fa84a6bb9df3   identical
+  original.elf                  c9c2632e792c   c9c2632e792c   identical
+  src.c                         fa84a6bb9df3   fa84a6bb9df3   identical
+  support/io.c                  50ace91d0f9c   50ace91d0f9c   identical
+  support/std_testcase.h        a78aaf3a54a6   a78aaf3a54a6   identical
+  support/std_testcase_io.h    6459df50d226   6459df50d226   identical
+  tests/SHA256SUMS              1e574f9aab93   6df0a0635b14   DIFFERS
+  tests/valid.json              33be1edf0572   33be1edf0572   identical
+
+  identical: 12   differing: 2
+
+Why the two differences were kept, not reverted:
+
+  contract.json is NOT one of them — it is byte-identical (8a2b408c…), so the
+  version this pass was asked to sync is already the tree's version.
+
+  defect.json and tests/SHA256SUMS are the two files record 121 changed on
+  purpose, after the 120 package was built:
+    - defect.json#trigger_note was rewritten to start with 'not_applicable:
+      input_mode is none …', because the old wording ('no invalid trigger case
+      exists') read like a missing case and invited an invalid-first reading.
+    - tests/SHA256SUMS was rebuilt for that one changed row.
+  Copying 120's copies over the tree would restore the wording 121 removed,
+  i.e. it would undo the previous pass. The 120 package is a snapshot; the
+  tree is the later state. Syncing the contract and reverting defect.json are
+  not the same request, so only the contract was checked, not overwritten.
+
+  If a strict 'tree == 120 snapshot' is ever wanted, it can be produced — but
+  it would have to be a new package built from the tree, not an overwrite.

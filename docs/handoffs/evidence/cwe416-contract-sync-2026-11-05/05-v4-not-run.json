@@ -1,0 +1,20 @@
+{
+  "gate": "V4",
+  "kind": "symbolic",
+  "scope": "model",
+  "state": "not_run",
+  "ran": false,
+  "engine_available": {
+    "path": "/opt/angr-venv",
+    "angr": "10.0.4.post1",
+    "z3": "5.1.0",
+    "note": "z3 is not on PATH; angr and z3 are installed inside /opt/angr-venv. This is not a case of no engine being available."
+  },
+  "reason": "No symbolic or bounded-model run was performed in this pass. A usable V4 needs a symbolic harness with exact solver accounting (sat/unsat/unknown/eval per run) and a bound that cannot hide a timeout behind 'proven'; earlier V4 submissions were rejected for concrete 'A'-byte inputs and silent max_steps (docs/handoffs/63, 64, 66, 67). Running an ad-hoc query here would produce a claim with no accounting behind it, which is worse than not_run.",
+  "claimed_scope": null,
+  "not_claimed": [
+    "binary-level proof of the repair",
+    "memory safety for any path other than the single no-input observation",
+    "absence of the defect elsewhere in the program"
+  ]
+}

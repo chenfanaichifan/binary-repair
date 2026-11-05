@@ -1,0 +1,19 @@
+$ git rev-parse --short HEAD && git branch --show-current
+5b186cb m3/cwe416-v3-noinput
+
+$ python3 - <<PY  (tree contract: file hash, then canonical hash through app.domain.contracts)
+file sha256      : 8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b
+size             : 1654 bytes
+line endings     : LF
+schema_version   : 3
+input_mode       : none
+canonical sha256 : c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c
+canonical fields : 13
+v2-only fields   : none
+required_obligations: behaviour,identity,interface,reproducibility,structure,symbolic
+
+$ sha256sum -c tests/SHA256SUMS  (fixture self-check, run inside the fixture)
+support/std_testcase.h: OK
+support/std_testcase_io.h: OK
+tests/valid.json: OK
+rows in tests/SHA256SUMS: 13
