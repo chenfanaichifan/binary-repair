@@ -95,7 +95,7 @@ def aggregate_usage(
     }
 
 
-__all__ = ["aggregate_usage", "record_call", "record_provider_result"]
+__all__ = ["aggregate_job_usage", "aggregate_usage", "record_call", "record_provider_result"]
 
 
 def record_provider_result(
@@ -122,3 +122,27 @@ def record_provider_result(
         latency_ms=getattr(record, "latency_ms", None),
         request_id=getattr(record, "request_id", None),
     )
+
+
+def aggregate_job_usage(*, data_dir: str | Path, job_id: str) -> dict[str, int] | None:
+    """Aggregate token usage for all model calls bound to one job.
+
+    Rows without real token counts make the aggregate unavailable (None);
+    missing usage is never reported as zero.
+    """
+    connection = connect(data_dir)
+    try:
+        rows = connection.execute(
+            "SELECT prompt_tokens, completion_tokens FROM model_calls WHERE job_id = ?",
+            (job_id,),
+        ).fetchall()
+    finally:
+        connection.close()
+    if not rows:
+        return None
+    if any(row["prompt_tokens"] is None or row["completion_tokens"] is None for row in rows):
+        return None
+    return {
+        "input_tokens": sum(int(row["prompt_tokens"]) for row in rows),
+        "output_tokens": sum(int(row["completion_tokens"]) for row in rows),
+    }

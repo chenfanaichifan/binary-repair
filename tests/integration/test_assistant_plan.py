@@ -117,3 +117,16 @@ def test_generate_plan_context_contains_data_dir(tmp_path: Path) -> None:
     assistant.generate_plan("x", job_id=job.id, data_dir=data, planner=planner)
     assert seen["data_dir"] == str(data)
     assert seen["job_id"] == job.id
+
+
+def test_aggregate_job_usage(tmp_path: Path) -> None:
+    from app.services import model_calls
+    data, job = _job(tmp_path)
+    assert model_calls.aggregate_job_usage(data_dir=data, job_id=job.id) is None
+    model_calls.record_call(data_dir=data, model_requested="m", status="ok",
+                            job_id=job.id, usage={"prompt_tokens": 2, "completion_tokens": 3})
+    model_calls.record_call(data_dir=data, model_requested="m", status="ok",
+                            job_id=job.id, usage={"prompt_tokens": 4, "completion_tokens": 5})
+    assert model_calls.aggregate_job_usage(data_dir=data, job_id=job.id) == {
+        "input_tokens": 6, "output_tokens": 8,
+    }
