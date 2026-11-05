@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+"""Synthetic no-input candidate; one execution, no argv and no stdin."""
+import sys
+
+sys.stdout.write("NO_INPUT_OK\n")
+sys.stderr.write("")
+raise SystemExit(0)

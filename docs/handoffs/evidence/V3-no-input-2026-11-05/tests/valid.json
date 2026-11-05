@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "case_id": "V3-no-input-demo",
+  "original_sha256": null,
+  "tests": [
+    {
+      "id": "valid-only",
+      "kind": "valid",
+      "argv": ["./candidate"],
+      "stdin_literal": null,
+      "stdin_artifact": null,
+      "expected": {
+        "return_code": 0,
+        "stdout": "NO_INPUT_OK\n",
+        "stderr": ""
+      },
+      "rationale": "The program takes no input; one valid case is the whole V3 behaviour set."
+    }
+  ]
+}
