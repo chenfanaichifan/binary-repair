@@ -30,6 +30,7 @@ import argparse
 import hashlib
 import json
 import os
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -41,6 +42,7 @@ from app.db.connection import connect
 from app.domain.acceptance import Verdict
 from app.domain.outcomes import Outcome, ReasonCode
 from app.services import jobs, obligations, orchestration
+from app.services.attempt_driver import routeb_bundle_dir
 
 TERMINAL = {"finished", "cancelled"}
 
@@ -173,6 +175,22 @@ def _executor_inputs(data_dir: str | Path, job_id: str, run_id: str) -> tuple[Pa
     return original, contract_path
 
 
+def _executor_argv(command: str) -> list[str]:
+    """Turn ``BINARYREPAIR_ATTEMPT_CMD`` into an argv list.
+
+    A value that names an existing file is executed as-is, which keeps the
+    original single-executable contract for wrappers with spaces in their path.
+    Otherwise the value is a command line and is split, so ``python -m
+    app.services.attempt_driver`` works without a shell wrapper.
+    """
+    if Path(command).exists():
+        return [command]
+    argv = shlex.split(command)
+    if not argv:
+        raise ValueError("BINARYREPAIR_ATTEMPT_CMD is empty")
+    return argv
+
+
 def _run_executor(
     *,
     data_dir: str | Path,
@@ -197,9 +215,28 @@ def _run_executor(
             "BINARYREPAIR_RESULT_PATH": str(bundle),
             "BINARYREPAIR_ORIGINAL": str(original),
             "BINARYREPAIR_CONTRACT": str(contract),
+            # Host-side driver contract: where the guest leaves the Route B
+            # static bundle. Always set so a wrapper needs no extra flags; the
+            # driver fails closed when the directory is absent.
+            "BINARYREPAIR_ROUTEB_BUNDLE": str(
+                routeb_bundle_dir(data_dir, job_id, run_id, attempt_id)
+            ),
         }
     )
-    subprocess.run([command], env=env, check=True)
+    completed = subprocess.run(
+        _executor_argv(command),
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        stderr = (completed.stderr or "").strip().splitlines()
+        tail = stderr[-1] if stderr else ""
+        raise RuntimeError(
+            f"executor exited with status {completed.returncode}"
+            + (f": {tail}" if tail else "")
+        )
     return bundle.exists()
 
 

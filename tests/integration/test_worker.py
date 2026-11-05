@@ -136,8 +136,9 @@ def test_executor_receives_verified_original_and_contract(
     attempts = jobs.list_attempts(run.id, data_dir=data_dir)
     seen: list[dict[str, str]] = []
 
-    def fake_executor(args, env, check):
+    def fake_executor(args, env, **kwargs):
         assert args == ["fake-executor"]
+        assert kwargs["check"] is False
         seen.append(dict(env))
         attempt_id = env["BINARYREPAIR_ATTEMPT_ID"]
         evidence = _add_evidence(data_dir, record.id, attempt_id)
@@ -150,6 +151,9 @@ def test_executor_receives_verified_original_and_contract(
         path = Path(env["BINARYREPAIR_RESULT_PATH"])
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload), encoding="utf-8")
+        return worker.subprocess.CompletedProcess(
+            args=args, returncode=0, stdout="", stderr=""
+        )
 
     monkeypatch.setenv("BINARYREPAIR_ATTEMPT_CMD", "fake-executor")
     monkeypatch.setattr(worker.subprocess, "run", fake_executor)
@@ -167,6 +171,14 @@ def test_executor_receives_verified_original_and_contract(
             "BINARYREPAIR_ORIGINAL",
             "BINARYREPAIR_CONTRACT",
         } <= set(env)
+
+        # The host driver contract: the Route B staging path is derived, not
+        # configured, so a wrapper needs no extra flags.
+        assert env["BINARYREPAIR_ROUTEB_BUNDLE"] == str(
+            worker.routeb_bundle_dir(
+                data_dir, record.id, run.id, env["BINARYREPAIR_ATTEMPT_ID"]
+            )
+        )
 
         original = Path(env["BINARYREPAIR_ORIGINAL"])
         assert original.is_file() and original.stat().st_size > 0
@@ -186,7 +198,7 @@ def test_executor_receives_verified_original_and_contract(
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX executable wrapper")
-def test_executor_real_subprocess_receives_eight_env(
+def test_executor_real_subprocess_receives_host_contract(
     tmp_path: Path, monkeypatch
 ) -> None:
     data_dir, record, run = _started(tmp_path)
@@ -232,6 +244,7 @@ result.with_suffix(".env").write_text(
         "BINARYREPAIR_RESULT_PATH",
         "BINARYREPAIR_ORIGINAL",
         "BINARYREPAIR_CONTRACT",
+        "BINARYREPAIR_ROUTEB_BUNDLE",
     }
     for env_file in env_files:
         assert required <= set(env_file.read_text(encoding="utf-8").splitlines())
@@ -244,7 +257,7 @@ def test_executor_fails_closed_when_original_is_missing(
     (data_dir / "jobs" / record.id / "original.bin").unlink()
     calls: list[dict[str, str]] = []
 
-    def fake_executor(args, env, check):
+    def fake_executor(args, env, **kwargs):
         calls.append(dict(env))
 
     monkeypatch.setenv("BINARYREPAIR_ATTEMPT_CMD", "fake-executor")
@@ -273,7 +286,7 @@ def test_executor_fails_closed_when_contract_is_unapproved(
 
     calls: list[dict[str, str]] = []
 
-    def fake_executor(args, env, check):
+    def fake_executor(args, env, **kwargs):
         calls.append(dict(env))
 
     monkeypatch.setenv("BINARYREPAIR_ATTEMPT_CMD", "fake-executor")
