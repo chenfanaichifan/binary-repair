@@ -36,6 +36,61 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def compare(original: Path, patched: Path, tests: Path) -> dict:
+    cases = []
+    for name in ("valid.json", "invalid.json"):
+        data = json.loads((tests / name).read_text(encoding="utf-8"))
+        rows = data.get("tests") or []
+        if not rows:
+            raise ValueError(f"{name} contains no frozen cases")
+        for case in rows:
+            cases.append((name, case))
+    if not cases:
+        raise ValueError("no frozen cases")
+
+    rows = []
+    original_ok = True
+    for name, case in cases:
+        arg = case["argv"][1]
+        before = run(original, arg)
+        after = run(patched, arg)
+        expected = case["expected"]
+        # A timeout/None exit is inconclusive, never "same".
+        complete = (
+            before.get("timeout") is not True and after.get("timeout") is not True
+            and before.get("returncode") is not None and after.get("returncode") is not None
+        )
+        # The original must exhibit the frozen pre-repair behaviour.  In
+        # particular the invalid cases must NOT already match the repaired
+        # expected result; otherwise a matching crash could pass a round trip.
+        if case.get("kind") == "valid":
+            case_original_ok = (
+                before.get("returncode") == expected["return_code"]
+                and before.get("stdout_hex") == expected["stdout"].encode().hex()
+            )
+        else:
+            case_original_ok = not (
+                before.get("returncode") == expected["return_code"]
+                and before.get("stdout_hex") == expected["stdout"].encode().hex()
+                and before.get("stderr_hex") == expected["stderr"].encode().hex()
+            )
+        original_ok = original_ok and case_original_ok
+        same = complete and before == after
+        rows.append({
+            "manifest": name, "id": case["id"], "kind": case["kind"],
+            "input_len": len(arg.encode()), "original": before, "patched": after,
+            "complete": complete, "original_ok": case_original_ok, "same": same,
+        })
+    passed = sum(1 for row in rows if row["same"] and row["complete"] and row["original_ok"])
+    return {
+        "original_sha256": sha256(original), "patched_sha256": sha256(patched),
+        "original_size": original.stat().st_size, "patched_size": patched.stat().st_size,
+        "cases": rows, "same_count": passed, "total": len(rows),
+        "original_ok": original_ok,
+        "gate4_pass": bool(rows) and original_ok and passed == len(rows),
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--original", type=Path, required=True)
@@ -44,39 +99,11 @@ def main() -> int:
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
 
-    cases = []
-    for name in ("valid.json", "invalid.json"):
-        data = json.loads((args.tests / name).read_text(encoding="utf-8"))
-        for case in data["tests"]:
-            cases.append((name, case))
-
-    rows = []
-    for name, case in cases:
-        arg = case["argv"][1]
-        before = run(args.original, arg)
-        after = run(args.patched, arg)
-        same = before == after
-        rows.append({
-            "manifest": name,
-            "id": case["id"],
-            "kind": case["kind"],
-            "input_len": len(arg.encode()),
-            "original": before,
-            "patched": after,
-            "same": same,
-        })
-
-    passed = sum(1 for row in rows if row["same"])
-    result = {
-        "original_sha256": sha256(args.original),
-        "patched_sha256": sha256(args.patched),
-        "original_size": args.original.stat().st_size,
-        "patched_size": args.patched.stat().st_size,
-        "cases": rows,
-        "same_count": passed,
-        "total": len(rows),
-        "gate4_pass": passed == len(rows),
-    }
+    try:
+        result = compare(args.original, args.patched, args.tests)
+    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+        print(f"run_manifest_compare: {exc}", file=sys.stderr)
+        return 2
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps({k: result[k] for k in
