@@ -78,3 +78,17 @@ attempt bundle is rejected, never overwritten.
 - M5: validates, registers artifacts, maps gates to artifact ids.
 - M1: worker/controller transport.
 - M4: independent re-hash and verdict review.
+
+## Legacy INTERFACE-v1 compatibility
+
+The ingest adapter also accepts the frozen 2026-10-29 package shape:
+
+```text
+handoff.json + SHA256SUMS + relative files
+```
+
+It validates that package with `scripts/check_handoff.py`, reads an optional
+`result-bundle.json` for gate status/evidence, and registers all listed files.
+If no `result-bundle.json` is present, gates default to `not_run`; the worker
+then reports `inconclusive`, never success. This lets M3 continue producing the
+old contract while the new `bundle.json` schema is adopted.

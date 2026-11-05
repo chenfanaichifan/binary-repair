@@ -49,6 +49,9 @@ from tools.host_importer import import_bundle
 
 GATES = ("V0", "V1", "V2", "V3", "V4", "V5")
 STATUS = {"passed", "failed", "not_run", "unknown", "timed_out"}
+LEGACY_STATUS = {"pass": "passed", "passed": "passed", "fail": "failed",
+                 "failed": "failed", "not_run": "not_run", "unknown": "unknown",
+                 "timed_out": "timed_out"}
 MAX_FILE_BYTES = 64 * 1024 * 1024
 MAX_TOTAL_BYTES = 256 * 1024 * 1024
 
@@ -80,6 +83,54 @@ def _safe_file(root: Path, relative: str) -> Path:
     if not candidate.is_file():
         raise IngestError(f"artifact is missing: {relative!r}")
     return candidate
+
+
+def _read_handoff(bundle: Path) -> dict[str, Any]:
+    from scripts.check_handoff import validate
+    errors, meta = validate(bundle)
+    if errors:
+        raise IngestError("legacy handoff rejected: " + "; ".join(errors))
+    return meta
+
+
+def _legacy_payload(bundle: Path, route: str) -> tuple[dict[str, Any], list[str]]:
+    """Accept INTERFACE-v1 handoff.json + SHA256SUMS as a compatibility path.
+
+    The old package has no bundle.json, so gates are read from an optional
+    result-bundle.json (the same shape used by Route A) or default to not_run.
+    Artifact paths are still validated by _register_file.
+    """
+    meta = _read_handoff(bundle)
+    if meta.get("route") != route:
+        raise IngestError(f"legacy handoff route {meta.get('route')!r} != {route!r}")
+    raw_meta = json.loads((bundle / "handoff.json").read_text(encoding="utf-8"))
+    files = [str(x) for x in raw_meta.get("files") or []]
+    result_path = bundle / "result-bundle.json"
+    result = json.loads(result_path.read_text(encoding="utf-8")) if result_path.is_file() else {}
+    identity = result.get("identity") or {}
+    candidate = identity.get("candidate_sha256")
+    if not candidate and (bundle / "candidate.elf").is_file():
+        candidate = _sha256(bundle / "candidate.elf")
+    if not isinstance(candidate, str) or len(candidate) != 64:
+        raise IngestError("legacy package has no candidate_sha256/candidate.elf")
+    gate_entries = result.get("gates") or {}
+    results = {}
+    evidence_specs = {}
+    for gate in GATES:
+        entry = gate_entries.get(gate) or {}
+        status = LEGACY_STATUS.get(str(entry.get("status", "not_run")), str(entry.get("status", "not_run")))
+        if status not in STATUS:
+            raise IngestError(f"legacy gate {gate} has unknown status")
+        results[gate] = status
+        evidence_specs[gate] = [
+            str(item.get("relative_path")) for item in entry.get("evidence") or []
+            if isinstance(item, dict) and item.get("relative_path")
+        ]
+    return (
+        {"schema_version": 1, "route": route, "candidate_sha256": candidate,
+         "gates": {g: {"status": results[g], "artifacts": evidence_specs[g]} for g in GATES}},
+        files,
+    )
 
 
 def _read_manifest(bundle: Path) -> dict[str, Any]:
@@ -180,7 +231,11 @@ def ingest(
         raise IngestError("run does not belong to job")
     if not bundle.is_dir():
         raise IngestError("bundle must be a directory")
-    manifest = _read_manifest(bundle)
+    if not (bundle / "bundle.json").is_file() and (bundle / "handoff.json").is_file():
+        manifest, legacy_files = _legacy_payload(bundle, route)
+    else:
+        manifest = _read_manifest(bundle)
+        legacy_files = []
     if manifest.get("route") not in (None, route):
         raise IngestError("bundle route does not match attempt")
 
@@ -231,6 +286,12 @@ def ingest(
         _register_file(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                        bundle=bundle, relative=str(manifest["comparison"]),
                        role="behavior_comparison")
+
+    for name in legacy_files:
+        if name in ("handoff.json", "SHA256SUMS"):
+            continue
+        _register_file(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                       bundle=bundle, relative=name, role="legacy_artifact")
 
     payload = {
         "route": route,

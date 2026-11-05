@@ -123,3 +123,27 @@ def test_ingest_validates_expected_effects_analysis_schema(tmp_path: Path) -> No
     result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
                     route="route_a", bundle=bundle, trigger=False)
     assert result["analysis_artifact_ids"]
+
+
+def test_ingest_accepts_legacy_interface_v1(tmp_path: Path) -> None:
+    import hashlib
+    data, job, run, attempt = _job(tmp_path)
+    bundle = tmp_path / "legacy"; bundle.mkdir()
+    candidate = bundle / "candidate.elf"; candidate.write_bytes(b"\x7fELF legacy")
+    (bundle / "result-bundle.json").write_text(json.dumps({
+        "route": "route_a",
+        "identity": {"candidate_sha256": hashlib.sha256(candidate.read_bytes()).hexdigest()},
+        "gates": {"V0": {"status": "pass", "evidence": [{"relative_path": "candidate.elf"}]}},
+    }))
+    files = ["result-bundle.json", "candidate.elf"]
+    (bundle / "handoff.json").write_text(json.dumps({
+        "id": "LEGACY", "from": "M3", "to": "M5", "route": "route_a",
+        "created_at": "2026-11-05T00:00:00+08:00", "files": files,
+    }))
+    lines = []
+    for name in sorted(files):
+        lines.append(f"{hashlib.sha256((bundle/name).read_bytes()).hexdigest()}  {name}")
+    (bundle / "SHA256SUMS").write_text("\n".join(lines) + "\n")
+    result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+                    route="route_a", bundle=bundle, trigger=False)
+    assert result["evidence"]["V0"]
