@@ -150,6 +150,11 @@ def test_landing_offers_console_without_breaking_original_cta():
     assert 'href="/jobs/new"' in response.text
     assert 'data-testid="landing-agent-cta"' in response.text
     assert 'href="/agent"' in response.text
+    # T7.8: the console is the primary entry; the form is the fallback.
+    assert 'data-primary="1"' in response.text
+    assert response.text.index('data-testid="landing-agent-cta"') < response.text.index(
+        'data-testid="landing-cta"'
+    )
 
 
 def test_existing_setup_and_job_pages_still_work():

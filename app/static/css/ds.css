@@ -397,8 +397,29 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.4; }
   flex-wrap: wrap;
   gap: 18px;
   justify-content: center;
+  align-items: center;
   font-size: 13px;
   animation: ds-rise 0.5s ease 0.2s both;
+}
+.ds-home-links a { color: var(--ds-muted); }
+.ds-home-links a:hover { color: var(--ds-text); }
+.ds-home-links .ds-link-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: var(--ds-text);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(20, 18, 15, .18);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.ds-home-links .ds-link-primary:hover {
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(20, 18, 15, .22);
 }
 .ds-home-note { color: var(--ds-faint); font-size: 12px; text-align: center; }
 
