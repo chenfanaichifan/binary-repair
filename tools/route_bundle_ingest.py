@@ -334,6 +334,8 @@ def ingest(
                         f"{manifest['candidate_sha256']}"
                     )
                 chosen = matches[0]
+            # M5 017ca87 reached the same rule independently; the wording above
+            # is kept because record 101 and its test assert on this message.
             evidence[gate] = chosen
 
     analysis_ids = []
