@@ -497,8 +497,9 @@ The delivery `SHA256SUMS` covers every file in that directory except itself.
 1. **Lead:** choose A or B, and if B, name the corpus.
 2. **Contract owner (M5):** if A, own the `SecurityContract` revision and the
    hash/schema migration; M1 consumes it and adjusts intake/tests.
-3. **M3/VMer + M4:** if the 118 evidence package is delivered, re-hash it and
-   re-run the build/trigger in a clean window; that is what would lift the
-   limitations.
+3. **M4:** the 118 evidence is delivered at
+   `delivery/t30-rebuild-2026-11-05/`; M4 may re-hash and verify on its own
+   record. A clean-window re-run remains the remaining verification if M4
+   chooses it. M1 does not ask for an upgrade.
 4. **M1/M5:** reconcile the two provenance texts when the fork is merged; do
    not take live-bridge's stale mirror text over canonical's verified pin.
