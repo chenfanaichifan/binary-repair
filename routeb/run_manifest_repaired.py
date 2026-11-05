@@ -31,7 +31,7 @@ def sha256(path: Path) -> str:
 
 
 def run(elf: Path, arg: str | None = None, *, stdin_text: str | None = None) -> dict:
-    command = [str(elf)] + ([arg] if arg is not None else [])
+    command = [str(elf.resolve())] + ([arg] if arg is not None else [])
     try:
         p = subprocess.run(
             command,
