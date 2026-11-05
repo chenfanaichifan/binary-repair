@@ -515,6 +515,20 @@ V3_KIND_ROLES: dict[str, str] = {
 }
 
 
+def _assistant_payload(record: dict[str, Any]) -> dict[str, Any]:
+    """Render one stored plan.  ``plan`` is the AssistantPlan body; the wrapper
+    keeps the mode/model/usage metadata that explains how it was produced."""
+    return {
+        "id": record.get("id"),
+        "job_id": record.get("job_id"),
+        "mode": record.get("mode"),
+        "plan": record.get("plan"),
+        "model": record.get("model"),
+        "usage": record.get("usage"),
+        "created_at": record.get("created_at"),
+    }
+
+
 def _v3_payload(job_id: str) -> dict[str, Any]:
     """The two V3 evidence kinds, kept separate.
 
@@ -1247,6 +1261,97 @@ def get_v3(job_id: str) -> dict[str, Any]:
     """V3 round-trip vs repaired-behaviour, as two separate kinds."""
     _job_or_404(job_id)
     return _v3_payload(job_id)
+
+
+class AssistantPlanRequest(BaseModel):
+    """Optional planner mode for POST /assistant.
+
+    Omitting ``mode`` keeps the server default (``BINARYREPAIR_ASSISTANT_MODE``,
+    scripted when unset).  The mode only selects how the plan is produced.
+    """
+
+    mode: str | None = Field(default=None, pattern="^(scripted|llm)$")
+
+
+@app.get("/api/jobs/{job_id}/assistant")
+def get_assistant(job_id: str) -> dict[str, Any]:
+    """The latest stored plan.  A plan is advice, never a decision."""
+    _job_or_404(job_id)
+    from app.services.assistant import get_plan
+
+    record = get_plan(job_id, data_dir=_data_dir())
+    if record is None:
+        raise HTTPException(status_code=404, detail="No assistant plan for this job.")
+    return _assistant_payload(record)
+
+
+@app.post("/api/jobs/{job_id}/assistant")
+def generate_assistant(
+    job_id: str, payload: AssistantPlanRequest | None = None
+) -> dict[str, Any]:
+    """Generate and persist a plan.
+
+    This writes exactly one ``assistant_plans`` row.  It cannot approve the
+    contract, start a run, or write a verdict: the plan is guidance the user
+    still has to act on through the normal endpoints.
+    """
+    _job_or_404(job_id)
+    from app.services.assistant import generate_plan
+
+    try:
+        record = generate_plan(
+            job_id,
+            data_dir=_data_dir(),
+            mode=(payload.mode if payload is not None else None),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return _assistant_payload(record)
+
+
+class ProposalRequest(BaseModel):
+    """A provider repair suggestion.
+
+    Staging stores the text as input. It is not a candidate and it is never
+    evaluated here; a route still has to produce candidate bytes and those bytes
+    still have to pass V0-V5.
+    """
+
+    text: str = Field(min_length=1, max_length=70000)
+    source: str = Field(default="provider", max_length=64)
+    model: str | None = Field(default=None, max_length=200)
+
+
+@app.get("/api/jobs/{job_id}/proposals")
+def list_job_proposals(job_id: str) -> dict[str, Any]:
+    """Staged provider proposals for this job, newest first."""
+    _job_or_404(job_id)
+    from app.services.candidate_staging import list_proposals
+
+    return {"proposals": list_proposals(job_id, data_dir=_data_dir())}
+
+
+@app.post("/api/jobs/{job_id}/proposals")
+def stage_job_proposal(job_id: str, payload: ProposalRequest) -> dict[str, Any]:
+    """Stage provider text as input.
+
+    The response reports ``status: staged`` and ``candidate: false``. No run,
+    attempt, obligation, or verdict is created, so a model suggestion can never
+    read as a successful repair.
+    """
+    _job_or_404(job_id)
+    from app.services.candidate_staging import stage_proposal
+
+    try:
+        return stage_proposal(
+            job_id,
+            data_dir=_data_dir(),
+            text=payload.text,
+            source=payload.source,
+            model=payload.model,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/api/artifacts/{artifact_id}")

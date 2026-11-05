@@ -299,3 +299,29 @@ def test_unknown_job_is_404_on_every_flow_endpoint(client: TestClient) -> None:
     ):
         response = getattr(client, method)(path)
         assert response.status_code == 404, (method, path, response.text)
+
+def test_comparison_refuses_bytes_that_no_longer_match(
+    client: TestClient, data_dir: Path
+) -> None:
+    """A registered artifact whose bytes changed must not be rendered."""
+    job_id = _create(client)["id"]
+    body = {"cases": [{"name": "valid", "original": "pass", "candidate": "pass"}]}
+    _register(
+        data_dir,
+        job_id,
+        "behavior_comparison",
+        "behavior-comparison.json",
+        json.dumps(body).encode("utf-8"),
+    )
+    target = (
+        data_dir / "jobs" / job_id / "artifacts" / "analysis" / "behavior-comparison.json"
+    )
+    target.write_bytes(
+        b'{"cases": [{"name": "valid", "original": "pass", "candidate": "fail"}]}'
+    )
+
+    payload = client.get(f"/api/jobs/{job_id}/comparison").json()
+
+    assert payload["status"] == "available"
+    assert payload["comparison"] is None
+    assert "refusing" in payload["detail"]

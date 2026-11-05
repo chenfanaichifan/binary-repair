@@ -22,7 +22,9 @@ def get_plan(job_id: str, *, data_dir: str | Path) -> dict[str, Any] | None:
     connection = connect(data_dir)
     try:
         row = connection.execute(
-            "SELECT * FROM assistant_plans WHERE job_id = ? ORDER BY created_at DESC, id DESC LIMIT 1",
+            # insertion order, not created_at: two plans generated in the same
+            # second must still resolve to the newer one.
+            "SELECT * FROM assistant_plans WHERE job_id = ? ORDER BY rowid DESC LIMIT 1",
             (job_id,),
         ).fetchone()
     finally:
@@ -42,6 +44,7 @@ def save_plan(job_id: str, plan: AssistantPlan, *, data_dir: str | Path,
     if plan.job_id != job_id:
         raise ValueError("plan job_id does not match job")
     plan_id = uuid.uuid4().hex
+    created_at = _now()
     connection = connect(data_dir)
     try:
         with connection:
@@ -50,12 +53,13 @@ def save_plan(job_id: str, plan: AssistantPlan, *, data_dir: str | Path,
                 "(id, job_id, mode, plan_json, model, usage_json, created_at) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (plan_id, job_id, plan.mode, plan.model_dump_json(),
-                 model, json.dumps(usage, sort_keys=True) if usage else None, _now()),
+                 model, json.dumps(usage, sort_keys=True) if usage else None, created_at),
             )
     finally:
         connection.close()
     return {"id": plan_id, "job_id": job_id, "mode": plan.mode,
-            "plan": plan.model_dump(), "model": model, "usage": usage}
+            "plan": plan.model_dump(), "model": model, "usage": usage,
+            "created_at": created_at}
 
 
 def assistant_context(job: Any, *, data_dir: str | Path) -> dict[str, Any]:
