@@ -595,6 +595,69 @@ async def job_attempts(job_id: str):
     return JSONResponse(payload)
 
 
+@app.post("/api/assistant/plan")
+async def assistant_plan(request: Request) -> JSONResponse:
+    """Proxy M1's job-less planning route.
+
+    The GUI never invents a plan: when the controller has not shipped the route,
+    this answers 503 and ``/agent/new`` shows "not connected" instead of falling
+    back to fixture data.
+    """
+    _require_csrf(request.headers.get("x-csrf-token", ""))
+    try:
+        body = await request.json()
+    except ValueError:
+        return JSONResponse(
+            {"plan": None, "error": "invalid_request", "detail": "JSON body required."},
+            status_code=422,
+        )
+    if not isinstance(body, dict):
+        return JSONResponse(
+            {"plan": None, "error": "invalid_request", "detail": "JSON object required."},
+            status_code=422,
+        )
+    description = body.get("description")
+    if not isinstance(description, str) or not description.strip():
+        return JSONResponse(
+            {"plan": None, "error": "invalid_request", "detail": "'description' is required."},
+            status_code=422,
+        )
+    context = body.get("context")
+    if context is not None and not isinstance(context, dict):
+        return JSONResponse(
+            {"plan": None, "error": "invalid_request", "detail": "'context' must be an object."},
+            status_code=422,
+        )
+
+    getter = getattr(BACKEND, "get_plan", None)
+    if getter is None:
+        return JSONResponse(
+            {
+                "plan": None,
+                "error": "assistant_unavailable",
+                "fallback_reason": "llm_client_not_configured",
+            },
+            status_code=503,
+        )
+    try:
+        plan = getter(description.strip(), context)
+    except BackendError as exc:
+        return JSONResponse(
+            {"plan": None, "error": "assistant_unavailable", "detail": exc.detail},
+            status_code=503,
+        )
+    if plan is None:
+        return JSONResponse(
+            {
+                "plan": None,
+                "error": "assistant_unavailable",
+                "fallback_reason": "assistant_endpoint_missing",
+            },
+            status_code=503,
+        )
+    return JSONResponse({"plan": plan})
+
+
 @app.get("/api/jobs/{job_id}/export")
 async def export_bundle(job_id: str):
     """Export JSON v2 evidence (English ASCII; not production approval)."""

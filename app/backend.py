@@ -279,6 +279,8 @@ class Backend(Protocol):
     ) -> dict[str, Any]: ...
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
     def get_attempts(self, job_id: str) -> dict[str, Any] | None: ...
+    def get_plan(self, description: str,
+                 context: dict[str, Any] | None = None) -> dict[str, Any] | None: ...
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
     def get_visuals(self, job_id: str) -> dict[str, Any]: ...
     def export_bundle(self, job_id: str) -> dict[str, Any]: ...
@@ -369,6 +371,11 @@ class MockBackend:
         # The fixture has no run history; an empty list is the honest answer.
         self._job(job_id)
         return {"run_id": None, "attempts": [], "scope": "fixture"}
+
+    def get_plan(self, description: str,
+                 context: dict[str, Any] | None = None) -> dict[str, Any] | None:
+        # Mock mode has no plan service; a fake plan would be worse than none.
+        return None
 
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         return demo.artifacts(self._job(job_id))
@@ -505,6 +512,45 @@ class HttpBackend:
             raise BackendError(502, "Backend attempts response is missing an attempts list.")
         return payload
 
+    def get_plan(self, description: str,
+                 context: dict[str, Any] | None = None) -> dict[str, Any] | None:
+        """M1's job-less planning route: ``POST /api/assistant/plan``.
+
+        Returns ``None`` when the controller has not shipped the route, so
+        ``/agent/new`` can say "not connected" instead of substituting a fixture
+        plan. Plan copy is UI text and may be non-ASCII; it is not submitted data.
+        """
+        body: dict[str, Any] = {"description": description}
+        if context:
+            body["context"] = context
+        try:
+            response = self._client.request("POST", "/api/assistant/plan", json=body)
+        except httpx.HTTPError as exc:
+            raise BackendError(
+                502, f"Backend unavailable at {self.base_url}: {exc.__class__.__name__}."
+            ) from exc
+        if response.status_code in (404, 405, 501):
+            return None
+        if response.status_code >= 400:
+            detail = "Backend request failed for get_plan."
+            try:
+                payload = response.json()
+            except ValueError:
+                payload = None
+            if isinstance(payload, dict) and isinstance(payload.get("detail"), str):
+                detail = payload["detail"]
+            raise BackendError(
+                503 if response.status_code >= 500 else response.status_code, detail
+            )
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise BackendError(502, "Backend returned invalid JSON for get_plan.") from exc
+        plan = payload.get("plan") if isinstance(payload, dict) else None
+        if not isinstance(plan, dict) or not isinstance(plan.get("steps"), list):
+            raise BackendError(502, "Backend plan response is missing a 'steps' list.")
+        return plan
+
     def update_contract(
         self,
         job_id: str,
@@ -612,6 +658,18 @@ class LocalBackend:
         self.data_dir = Path(
             data_dir or os.environ.get(DATA_DIR_ENV, DEFAULT_DATA_DIR)
         ).resolve()
+
+    def get_plan(self, description: str,
+                 context: dict[str, Any] | None = None) -> dict[str, Any] | None:
+        """Local mode runs the deterministic planner in-process.
+
+        There is no provider client here, so the plan is ``mode=deterministic``;
+        a real model call still requires the controller to inject one.
+        """
+        from app.services.assistant import generate_plan
+
+        plan = generate_plan(description, context=context, data_dir=self.data_dir)
+        return plan.model_dump(mode="json")
 
 
     def _meta_path(self, job_id: str) -> Path:

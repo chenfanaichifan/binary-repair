@@ -90,7 +90,9 @@ M2 已接管该模块，并接上 M5 的稳定接缝
 `planner=` 是 M5 给测试注入假计划的 seam：只要传了 `planner`，`assistant.py` 就不会走到
 本模块。M2 的 fake transport 同时覆盖 `chat_json` 与 `complete` 两种形状。
 
-`/agent/new` 仍等 M1 的无 job_id 端点（`POST /api/assistant/plan`），本轮不自己造。
+`/agent/new` 已接好 `POST /api/assistant/plan` 的同源代理与渲染；controller 路由仍归 M1。
+后端未开通时返回 503，页面写“计划服务未接通（原因）”，不退回 fixture；`?plan=fixture`
+只作本地预览。
 
 ## 四之三、M1 交接（`97-m1-review-closeout`）
 
@@ -147,10 +149,11 @@ M1 声明的 `7984bb6` **不在远程**（`canonical/m1-m5-integration` 停在 `
 
 | 事项 | 等谁 |
 |---|---|
-| 引导计划来自真实 `GET/POST /api/jobs/{id}/assistant` | M5 T8.1（plan）+ M1 T8.1（端点，11-18） |
+| 引导计划的 controller 端点 `POST /api/assistant/plan`（无 job_id） | M1；GUI 侧代理、渲染与 503 回退已就绪，等它上线即可联调 |
+| 真实 provider client（实现 `chat_json` + key 注入） | M1 在端点内构造；未注入前只有 deterministic/回退计划 |
 | 服务端任务列表 `GET /api/jobs`（现在只有本机记录） | M1 |
 | 对话历史跨设备 / 服务端持久化 | M5 T8.1 persistence |
-| LLM 传输走哪条 trusted provider 路径 | M1 确认；确认前 client 不注入、明确回退 |
+| 创建任务时把 `plan_id` 关联到 job | M5/M1：`create_job` 目前不接收 plan |
 | 右栏执行状态直读 `execution.status` 标准枚举 | M1 T7.1 + execution-bridge-v1 正文 |
 | 时间线接入真实 attempt / run 节点 | M1 T6.2a、M5 T6.1 |
 | 结果屏接入真实 `analysis` / `comparison` | M5 T7.2、M1 T6.3 |

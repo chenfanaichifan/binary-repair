@@ -110,9 +110,10 @@ def test_no_model_calls_or_new_transport():
     for banned in ("api.openai.com", "new WebSocket", "new EventSource", "Bearer ",
                    'setRequestHeader("Authorization'):
         assert banned not in AGENT_JS, banned
-    # Read path: the existing snapshot endpoint only.
-    assert AGENT_JS.count("fetch(") == 1
+    # Read paths: the snapshot and the job-less plan route (same-origin only).
+    assert AGENT_JS.count("fetch(") == 2
     assert 'fetch("/api/jobs/" + encodeURIComponent(state.jobId)' in AGENT_JS
+    assert 'fetch("/api/assistant/plan"' in AGENT_JS
     # Write path: the existing create-job form endpoint only, with CSRF.
     assert 'xhr.open("POST", "/jobs")' in AGENT_JS
     assert 'form.append("csrf", CSRF)' in AGENT_JS
@@ -272,3 +273,108 @@ def test_conversation_history_is_stored_per_job():
     assert "writeHistoryFor(match[1], state.entries)" in AGENT_JS
     # History replay must not re-record what it replays.
     assert "{ replay: true }" in AGENT_JS
+
+
+# --- job-less plan route (M1's POST /api/assistant/plan) -------------------
+
+def test_plan_route_requires_csrf():
+    response = client.post("/api/assistant/plan", json={"description": "fix it"})
+    assert response.status_code == 403
+
+
+def test_plan_route_rejects_an_empty_description():
+    response = client.post(
+        "/api/assistant/plan",
+        json={"description": "   "},
+        headers={"X-CSRF-Token": CSRF_TOKEN},
+    )
+    assert response.status_code == 422
+    assert response.json()["error"] == "invalid_request"
+
+
+def test_plan_route_says_unavailable_instead_of_inventing_a_plan():
+    response = client.post(
+        "/api/assistant/plan",
+        json={"description": "fix it"},
+        headers={"X-CSRF-Token": CSRF_TOKEN},
+    )
+    assert response.status_code == 503
+    body = response.json()
+    assert body["plan"] is None
+    assert body["error"] == "assistant_unavailable"
+
+
+def test_plan_route_forwards_the_backend_plan(monkeypatch):
+    import app.main as main_module
+
+    class _PlanBackend:
+        mode = "mock"
+        base_url = ""
+
+        def get_plan(self, description, context=None):
+            assert description == "fix it"
+            assert context == {"filename": "s.elf"}
+            return {
+                "plan_id": "p1",
+                "mode": "llm",
+                "fallback": False,
+                "steps": [{"id": "r", "kind": "review", "title": "复核", "prompt": "复核"}],
+            }
+
+    monkeypatch.setattr(main_module, "BACKEND", _PlanBackend())
+    response = client.post(
+        "/api/assistant/plan",
+        json={"description": "fix it", "context": {"filename": "s.elf"}},
+        headers={"X-CSRF-Token": CSRF_TOKEN},
+    )
+    assert response.status_code == 200
+    assert response.json()["plan"]["plan_id"] == "p1"
+
+
+def test_http_backend_treats_a_missing_plan_route_as_not_available():
+    import httpx
+
+    from app.backend import HttpBackend
+
+    def handler(request):
+        assert request.url.path == "/api/assistant/plan"
+        return httpx.Response(404, json={"detail": "Not Found"})
+
+    backend = HttpBackend(base_url="http://test", transport=httpx.MockTransport(handler))
+    assert backend.get_plan("fix it") is None
+
+
+def test_http_backend_keeps_chinese_plan_copy():
+    import httpx
+
+    from app.backend import HttpBackend
+
+    plan = {
+        "plan_id": "p1",
+        "mode": "llm",
+        "fallback": False,
+        "steps": [{"id": "r", "kind": "review", "title": "复核", "prompt": "复核"}],
+    }
+
+    def handler(request):
+        return httpx.Response(200, json={"plan": plan})
+
+    backend = HttpBackend(base_url="http://test", transport=httpx.MockTransport(handler))
+    assert backend.get_plan("fix it") == plan
+
+
+def test_plan_response_must_carry_steps():
+    import httpx
+
+    from app.backend import BackendError, HttpBackend
+
+    def handler(request):
+        return httpx.Response(200, json={"plan": {"plan_id": "p1"}})
+
+    backend = HttpBackend(base_url="http://test", transport=httpx.MockTransport(handler))
+    try:
+        backend.get_plan("fix it")
+    except BackendError:
+        pass
+    else:  # pragma: no cover
+        raise AssertionError("a plan without steps must not be accepted")

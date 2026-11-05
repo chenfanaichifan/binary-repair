@@ -69,6 +69,7 @@
     scenario: "fresh",
     submitting: false,
     replaying: false,
+    planPending: null,
     entries: []
   };
 
@@ -384,6 +385,39 @@
   }
 
   /* ---------- 引导流程（plan 驱动；plan 内容由 M5 提供） ---------- */
+
+  /* 计划只来自后端。后端没开通就直说“未接通”，绝不退回 fixture 冒充真实计划。 */
+  function planUnavailableText(data) {
+    if (!data) { return "计划服务未接通（网络错误）"; }
+    if (data.error === "assistant_unavailable") {
+      return "计划服务未接通（" + (data.fallback_reason || data.detail || "endpoint_missing") + "）";
+    }
+    if (data.error === "invalid_request") {
+      return "计划请求无效（" + (data.detail || "缺少描述") + "）";
+    }
+    return "计划服务返回了无法使用的结果";
+  }
+
+  function requestPlan(description) {
+    if (state.planPending) return state.planPending;
+    state.planPending = fetch("/api/assistant/plan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
+      body: JSON.stringify({ description: description, context: {} })
+    }).then(function (response) {
+      return response.json().then(function (data) {
+        return { ok: response.ok, status: response.status, data: data };
+      }, function () {
+        return { ok: false, status: response.status, data: null };
+      });
+    }, function () {
+      return { ok: false, status: 0, data: null };
+    }).then(function (result) {
+      state.planPending = null;
+      return result;
+    });
+    return state.planPending;
+  }
 
   function currentStep() {
     return state.plan && state.plan.steps ? state.plan.steps[state.stepIndex] : null;
@@ -1111,7 +1145,26 @@
       state.stepIndex += 1;
       renderCurrentStep();
     } else if (!state.plan) {
-      pushMessage("assistant", "后端还没有提供引导计划（需要 M1 的 assistant 端点 + M5 的 planner）。你可以点上方「改用表单建单」，或打开 /agent/new?fixture=1 预览控制台。");
+      if (state.planPending) return;
+      setText("agent-side-step", "正在生成引导计划…");
+      setText("agent-poll", "请求计划中");
+      requestPlan(text).then(function (result) {
+        var plan = result.ok && result.data ? result.data.plan : null;
+        if (!plan || !plan.steps || !plan.steps.length) {
+          setText("agent-side-step", "后端未提供");
+          setText("agent-poll", "未选择任务");
+          pushMessage("assistant", planUnavailableText(result.data) +
+            "。你可以点上方「改用表单建单」，或打开 /agent/new?fixture=1 预览控制台。");
+          return;
+        }
+        state.plan = plan;
+        startGuidedFlow();
+        if (plan.fallback) {
+          pushMessage("assistant",
+            "注意：这是后端给出的回退计划（" + (plan.fallback_reason || "未说明原因") +
+            "），没有发生真实模型调用。步骤仍按契约渲染。");
+        }
+      });
     } else {
       pushMessage("assistant", "这一步请直接在上方卡片里填写，或点「使用默认答案」。");
     }
@@ -1192,9 +1245,10 @@
     } else {
       clear(stream());
       pushMessage("assistant",
-        "后端还没有提供引导计划（需要 M1 的 assistant 端点 + M5 的 planner），所以这里暂时不能对话式建单。\n" +
-        "你可以点上方「改用表单建单」提交完整材料，或打开 /agent/new?fixture=1 预览控制台的完整交互。");
-      setText("agent-side-step", "后端未提供");
+        "描述你想修的这个二进制问题，我会向后端请求一份引导计划。\n" +
+        "计划由后端生成；如果计划服务还没接通，我会直接说「未接通」，不会用占位内容代替。\n" +
+        "也可以点上方「改用表单建单」直接提交材料，或打开 /agent/new?fixture=1 预览控制台。");
+      setText("agent-side-step", "等待描述");
       setText("agent-poll", "未选择任务");
     }
     renderSide();

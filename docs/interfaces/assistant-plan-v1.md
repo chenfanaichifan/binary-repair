@@ -124,3 +124,27 @@ M5 的 planner 也应通过同一组断言；两边一致可以避免“后端�
 
 第 7 条不是字段问题，但会影响 `/agent/new` 的观感：契约层允许任意语言，内容是 M5 的。
 在端点接通前不影响交付；M1 的端点到位后需要二选一。
+
+## 8. 端点包裹（M2 消费侧，2026-11-05）
+
+```
+POST /api/assistant/plan          # 无 job_id；M1 的 controller 提供，GUI 同源代理
+Content-Type: application/json
+X-CSRF-Token: <GUI session csrf>
+
+{"description": "…", "context": {"filename": "…"}}
+
+200 {"plan": { …AssistantPlan… }}
+503 {"plan": null, "error": "assistant_unavailable",
+     "fallback_reason": "assistant_endpoint_missing" | "llm_client_not_configured",
+     "detail": "…"}
+422 {"plan": null, "error": "invalid_request", "detail": "…"}
+```
+
+规则：
+
+- `plan` 必须是完整 `AssistantPlan`；GUI 只渲染 `steps`，不补内容、不改 `mode`。
+- 503 表示“没接通”，`/agent/new` 显示“计划服务未接通（原因）”；**不**退回 fixture。
+- `?plan=fixture` 仍保留，仅用于本地预览，页面明确标注是占位。
+- plan 的 `title` / `prompt` 是界面文案，允许中文；`context` 里的业务字段仍按提交语言策略用 ASCII。
+- GUI 不轮询、不跨任务缓存计划；每次由用户描述触发一次请求。
