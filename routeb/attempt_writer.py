@@ -140,13 +140,22 @@ def _artifact(
 def _runtime_state(bundle: Path) -> tuple[str, Path | None]:
     compare = bundle / "manifest-compare.json"
     repaired = bundle / "manifest-repaired.json"
-    if compare.exists():
-        payload = _read_json(compare)
-        return ("passed" if payload.get("gate4_pass") is True else "failed"), compare
+    # An unchanged round trip is NOT repair V3: it may preserve the vulnerability.
+    # Only a repaired manifest may satisfy behaviour.
     if repaired.exists():
         payload = _read_json(repaired)
         return ("passed" if payload.get("repaired_pass") is True else "failed"), repaired
+    if compare.exists():
+        return "not_run", compare
     return "not_run", None
+
+
+def runtime_state(bundle: Path) -> tuple[str, Path | None, str]:
+    """Shared Route B behaviour rule: round-trip is not repair V3."""
+    state, path = _runtime_state(bundle)
+    if state == "not_run" and path is not None and path.name == "manifest-compare.json":
+        return state, path, "round-trip only; not repair V3"
+    return state, path, ("runtime manifest " + state if path else "no runtime manifest in bundle")
 
 
 def _repro_state(bundle: Path) -> tuple[str, Path | None]:
@@ -202,7 +211,10 @@ def write_attempt(
         "V0": f"original {manifest.get('original_sha256')} vs job {job.original_sha256}",
         "V1": "static ELF audit passed" if structure else "static ELF audit not passed",
         "V2": "interface check not implemented in Route B executor",
-        "V3": ("runtime manifest " + runtime_state) if runtime_path else "no runtime manifest in bundle",
+        "V3": (
+            "round-trip only; not repair V3" if runtime_path and runtime_path.name == "manifest-compare.json"
+            else (("runtime manifest " + runtime_state) if runtime_path else "no runtime manifest in bundle")
+        ),
         "V4": "symbolic check not run",
         "V5": ("build-twice " + repro_state) if repro_path else "build-twice not run",
     }

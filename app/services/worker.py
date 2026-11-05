@@ -40,6 +40,7 @@ from typing import Any
 
 from app.db.connection import connect
 from app.domain.acceptance import Verdict
+from app.domain.evidence import verify_candidate_binding
 from app.domain.outcomes import Outcome, ReasonCode
 from app.services import jobs, obligations, orchestration
 from app.services.attempt_driver import routeb_bundle_dir
@@ -285,6 +286,14 @@ def _attempt_verdict(
     if payload.get("route") not in (None, attempt.route):
         raise ValueError(f"result bundle route does not match attempt {attempt.id}")
 
+    if any(value == "passed" for value in payload["results"].values()):
+        verify_candidate_binding(
+            data_dir=data_dir,
+            job_id=job_id,
+            attempt_id=attempt.id,
+            candidate_sha256=payload["candidate_sha256"],
+            evidence=payload.get("evidence") or {},
+        )
     obligations.persist_obligations(
         data_dir=data_dir,
         job_id=job_id,

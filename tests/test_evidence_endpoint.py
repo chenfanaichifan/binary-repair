@@ -25,6 +25,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.controller_api import app
+from app.db.connection import connect
 from app.services import jobs, worker
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -141,15 +142,33 @@ def _write_bundle(
 ) -> None:
     path = _bundle_path(data_dir, job_id, run_id, attempt["id"])
     path.parent.mkdir(parents=True, exist_ok=True)
+    candidate_bytes = f"SYNTHETIC-TEST-CANDIDATE:{job_id}:{attempt['id']}".encode("utf-8")
+    candidate = hashlib.sha256(candidate_bytes).hexdigest()
+    evidence = {}
+    if results.get("V0") == "passed":
+        relative = f"jobs/{job_id}/evidence/{attempt['id']}/candidate.bin"
+        target = data_dir / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(candidate_bytes)
+        artifact_id = f"art-{attempt['id']}-candidate"
+        connection = connect(data_dir)
+        try:
+            with connection:
+                connection.execute(
+                    "INSERT INTO artifacts (id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?, 'application/octet-stream', 'candidate', '2026-11-01T00:00:00+00:00')",
+                    (artifact_id, job_id, attempt["id"], relative, candidate, len(candidate_bytes)),
+                )
+        finally:
+            connection.close()
+        evidence["V0"] = artifact_id
     payload = {
         "synthetic": True,
         "label": SYNTHETIC_LABEL,
         "route": attempt["route"],
-        "candidate_sha256": hashlib.sha256(
-            f"SYNTHETIC-TEST-CANDIDATE:{job_id}:{attempt['id']}".encode("utf-8")
-        ).hexdigest(),
+        "candidate_sha256": candidate,
         "results": results,
-        "evidence": {},
+        "evidence": evidence,
         "details": {
             gate: f"SYNTHETIC test bundle: {gate} reported {result}; no binary ran."
             for gate, result in results.items()
