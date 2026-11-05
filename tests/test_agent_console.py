@@ -416,3 +416,12 @@ def test_plan_503_keeps_the_fallback_reason():
         assert "no LLM client" in exc.detail
     else:  # pragma: no cover
         raise AssertionError("503 must surface as BackendError")
+
+
+def test_usage_null_is_not_rendered_as_zero():
+    # aggregate_job_usage returns None when any token count is missing; the
+    # page must keep that as 未提供 instead of defaulting to 0.
+    assert 'typeof usage.input_tokens === "number"' in AGENT_JS
+    assert 'input === undefined ? "未提供"' in AGENT_JS
+    assert "input_tokens || 0" not in AGENT_JS
+    assert 'setText("agent-model-meta", "未提供")' in AGENT_JS
