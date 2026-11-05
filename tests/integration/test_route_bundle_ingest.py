@@ -90,3 +90,20 @@ def test_ingest_rejects_symlink(tmp_path: Path) -> None:
     with pytest.raises(IngestError):
         ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
                route="route_a", bundle=bundle, trigger=False)
+
+
+def test_ingest_rejects_unknown_gate_and_status(tmp_path: Path) -> None:
+    data, job, run, attempt = _job(tmp_path)
+    bundle = _bundle(tmp_path)
+    manifest = json.loads((bundle / "bundle.json").read_text())
+    manifest["gates"]["V9"] = {"status": "passed", "artifacts": []}
+    (bundle / "bundle.json").write_text(json.dumps(manifest))
+    with pytest.raises(IngestError, match="unknown gate"):
+        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+               route="route_a", bundle=bundle, trigger=False)
+    manifest["gates"].pop("V9")
+    manifest["gates"]["V1"]["status"] = "maybe"
+    (bundle / "bundle.json").write_text(json.dumps(manifest))
+    with pytest.raises(IngestError, match="unknown status"):
+        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+               route="route_a", bundle=bundle, trigger=False)
