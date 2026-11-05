@@ -223,6 +223,29 @@ A mode-aware representation is needed so absence cannot be confused with a
 malformed input contract. The clean form is a tagged union
 (`input_mode` + a mode-specific rejection object), not four optional strings.
 
+**No-input valid/invalid semantics, stated explicitly.** For
+`input_mode = "none"`:
+
+- the **valid** set is exactly one case: no argv beyond `argv[0]`, no stdin;
+  the expected exit code, stdout bytes and stderr bytes are frozen in the
+  contract and the case manifest;
+- the **invalid** set is **not applicable**, not empty-with-invented-cases.
+  There is no input that can be rejected, so no `invalid_*` behavior may be
+  defined. An invocation with unexpected argv or stdin is outside the
+  contract's domain; it is not a tested invalid case and must not be counted as
+  one;
+- a validator must reject a no-input body that carries any `invalid_*` key or a
+  non-null rejection object. Absence is the semantic, so it has to be validated
+  as absence rather than tolerated as “empty”;
+- V3 evidence for this mode is `1/1 no-input`, never `6/6` or `4+2`. The result
+  bundle and the export must carry the mode so a reader cannot mistake it for
+  the input-case matrix.
+
+Shape sketch only — **not a fixture contract, not written anywhere**:
+`input_mode: "none"`, an `input_rejection: null` member, and no `invalid_*`
+keys. The exact `valid_behavior` bytes for T30 are the contract owner's to
+freeze against a repaired candidate; this record does not invent them.
+
 **Measured touch points.**
 
 | Area | What changes | Why |
