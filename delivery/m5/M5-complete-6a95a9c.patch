@@ -1,0 +1,2004 @@
+diff --git a/app/db/migrations/004_assistant.sql b/app/db/migrations/004_assistant.sql
+new file mode 100644
+index 0000000..cda3c94
+--- /dev/null
++++ b/app/db/migrations/004_assistant.sql
+@@ -0,0 +1,10 @@
++CREATE TABLE IF NOT EXISTS assistant_plans (
++    id          TEXT PRIMARY KEY,
++    job_id      TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
++    mode        TEXT NOT NULL,
++    plan_json   TEXT NOT NULL,
++    model       TEXT,
++    usage_json  TEXT,
++    created_at  TEXT NOT NULL
++);
++CREATE INDEX IF NOT EXISTS idx_assistant_plans_job ON assistant_plans(job_id, created_at);
+diff --git a/app/domain/analysis.py b/app/domain/analysis.py
+new file mode 100644
+index 0000000..dac5529
+--- /dev/null
++++ b/app/domain/analysis.py
+@@ -0,0 +1,28 @@
++"""Schema for the analysis artifacts shown in the result report.
++
++These are candidate-derived explanations, not acceptance evidence.  They are
++stored as artifacts so the GUI/report can render exactly what was reviewed.
++"""
++
++from __future__ import annotations
++
++from pydantic import BaseModel, ConfigDict, Field
++
++
++class AnalysisArtifacts(BaseModel):
++    model_config = ConfigDict(extra="forbid")
++    schema_version: int = 1
++    candidate_sha256: str = Field(min_length=64, max_length=64)
++    expected_effects: list[str] = Field(min_length=1, max_length=32)
++    assumptions: list[str] = Field(default_factory=list, max_length=32)
++    uncertainties: list[str] = Field(default_factory=list, max_length=32)
++
++
++ANALYSIS_ROLES = {
++    "analysis_expected_effects": "expected_effects",
++    "analysis_assumptions": "assumptions",
++    "analysis_uncertainties": "uncertainties",
++}
++
++
++__all__ = ["ANALYSIS_ROLES", "AnalysisArtifacts"]
+diff --git a/app/domain/assistant.py b/app/domain/assistant.py
+new file mode 100644
+index 0000000..d8c307a
+--- /dev/null
++++ b/app/domain/assistant.py
+@@ -0,0 +1,75 @@
++"""Assistant plan schema and deterministic v1 planner.
++
++The assistant is guidance only: it cannot approve, start a run, or write a
++verdict.  Plans are persisted as data so the controller/UI can render exactly
++what was proposed, with the mode and model metadata visible.
++"""
++
++from __future__ import annotations
++
++from typing import Literal
++
++from pydantic import BaseModel, ConfigDict, Field
++
++
++class AssistantStep(BaseModel):
++    model_config = ConfigDict(extra="forbid")
++    id: str = Field(min_length=1, max_length=64)
++    title: str = Field(min_length=1, max_length=200)
++    detail: str = Field(min_length=1, max_length=2000)
++    state: Literal["next", "waiting", "done", "blocked"] = "next"
++
++
++class AssistantQuestion(BaseModel):
++    model_config = ConfigDict(extra="forbid")
++    id: str = Field(min_length=1, max_length=64)
++    prompt: str = Field(min_length=1, max_length=1000)
++    options: list[str] = Field(default_factory=list, max_length=8)
++
++
++class AssistantPlan(BaseModel):
++    model_config = ConfigDict(extra="forbid")
++    schema_version: Literal[1] = 1
++    job_id: str = Field(min_length=1, max_length=64)
++    mode: Literal["scripted", "llm"]
++    summary: str = Field(min_length=1, max_length=2000)
++    steps: list[AssistantStep] = Field(min_length=1, max_length=16)
++    questions: list[AssistantQuestion] = Field(default_factory=list, max_length=8)
++    model: str | None = Field(default=None, max_length=200)
++    fallback_reason: str | None = Field(default=None, max_length=500)
++
++
++def deterministic_plan(job: dict) -> AssistantPlan:
++    """A stable plan derived only from job state; never from a model."""
++    job_id = str(job.get("id") or "")
++    phase = str(job.get("phase") or "draft")
++    approved = bool((job.get("contract") or {}).get("approved"))
++    steps = [
++        AssistantStep(id="input", title="确认样本与输入",
++                      detail="检查原始 ELF、缺陷描述、复现输入和有效输入测试。",
++                      state="done"),
++        AssistantStep(id="contract", title="复核安全契约",
++                      detail="确认有效输入域、禁止行为与 invalid 输入结果；批准前不能启动。",
++                      state="done" if approved else "blocked"),
++        AssistantStep(id="route_a", title="Route A 指令修复",
++                      detail="生成/检查指令级候选；无法安全放置时记录 unsupported。",
++                      state="next" if approved else "waiting"),
++        AssistantStep(id="route_b", title="Route B recovered-C 修复",
++                      detail="先做 unchanged round-trip，再做安全编辑和回填。",
++                      state="waiting"),
++        AssistantStep(id="acceptance", title="V0–V5 共享验收",
++                      detail="两路线使用同一测试和契约；required 未通过不得写 success。",
++                      state="waiting"),
++    ]
++    if phase in {"finished", "cancelled"}:
++        steps[-1].state = "done" if phase == "finished" else "blocked"
++    return AssistantPlan(
++        job_id=job_id,
++        mode="scripted",
++        summary="按输入 → 契约 → 双路线 → 共享验收推进；助手只给建议，不改变 verdict。",
++        steps=steps,
++        questions=[],
++    )
++
++
++__all__ = ["AssistantPlan", "AssistantQuestion", "AssistantStep", "deterministic_plan"]
+diff --git a/app/domain/evidence.py b/app/domain/evidence.py
+new file mode 100644
+index 0000000..59bc3bd
+--- /dev/null
++++ b/app/domain/evidence.py
+@@ -0,0 +1,145 @@
++"""Evidence-envelope validation for acceptance.
++
++A persisted ``passed`` result is only meaningful when its artifact row has bytes
++on disk that match the recorded hash and belong to this job/attempt.  The pure
++acceptance engine remains I/O-free; this module is the boundary that turns a
++declaration into validated evidence.
++"""
++
++from __future__ import annotations
++
++import hashlib
++from pathlib import Path
++from typing import Any
++
++from app.db.connection import connect
++
++
++class EvidenceError(ValueError):
++    """Evidence is missing, outside the job store, or has the wrong bytes."""
++
++
++def _sha256(path: Path) -> str:
++    digest = hashlib.sha256()
++    with path.open("rb") as handle:
++        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
++            digest.update(chunk)
++    return digest.hexdigest()
++
++
++def _resolve_store_path(data_dir: str | Path, relative_path: str) -> Path:
++    root = Path(data_dir).resolve()
++    candidate = (root / relative_path).resolve()
++    job_root = (root / "jobs").resolve()
++    try:
++        candidate.relative_to(job_root)
++    except ValueError as exc:
++        raise EvidenceError(f"artifact path escapes the job store: {relative_path}") from exc
++    if candidate.is_symlink():
++        raise EvidenceError(f"artifact path is a symlink: {relative_path}")
++    return candidate
++
++
++def verify_artifact(
++    *,
++    data_dir: str | Path,
++    job_id: str,
++    attempt_id: str,
++    artifact_id: str,
++    gate: str,
++    require_attempt: bool = False,
++) -> dict[str, Any]:
++    """Return the verified artifact row or raise EvidenceError.
++
++    V0 may use a job-level original artifact (attempt_id NULL).  V1-V5 must be
++    bound to this attempt, so evidence copied from another attempt cannot pass.
++    """
++
++    connection = connect(data_dir)
++    try:
++        row = connection.execute(
++            "SELECT * FROM artifacts WHERE id = ? AND job_id = ?",
++            (artifact_id, job_id),
++        ).fetchone()
++    finally:
++        connection.close()
++    if row is None:
++        raise EvidenceError(f"{gate} evidence artifact is not part of job {job_id}: {artifact_id}")
++    bound_attempt = row["attempt_id"]
++    if gate == "V0" and not require_attempt:
++        if bound_attempt not in (None, attempt_id):
++            raise EvidenceError(f"{gate} evidence belongs to another attempt: {bound_attempt}")
++    elif bound_attempt != attempt_id:
++        raise EvidenceError(f"{gate} evidence belongs to another attempt: {bound_attempt}")
++
++    path = _resolve_store_path(data_dir, str(row["relative_path"]))
++    if not path.is_file():
++        raise EvidenceError(f"{gate} evidence file is missing: {path}")
++    actual_size = path.stat().st_size
++    if actual_size != int(row["size_bytes"]):
++        raise EvidenceError(
++            f"{gate} evidence size mismatch: recorded {row['size_bytes']}, actual {actual_size}"
++        )
++    actual_hash = _sha256(path)
++    if actual_hash != str(row["sha256"]):
++        raise EvidenceError(f"{gate} evidence hash mismatch: {actual_hash} != {row['sha256']}")
++    return {
++        "id": str(row["id"]),
++        "attempt_id": bound_attempt,
++        "relative_path": str(row["relative_path"]),
++        "sha256": actual_hash,
++        "size_bytes": actual_size,
++    }
++
++
++def verify_evidence_map(
++    *,
++    data_dir: str | Path,
++    job_id: str,
++    attempt_id: str,
++    evidence: dict[str, str],
++    require_attempt: bool = False,
++) -> dict[str, dict[str, Any]]:
++    verified = {}
++    for gate, artifact_id in evidence.items():
++        if not artifact_id:
++            continue
++        verified[gate] = verify_artifact(
++            data_dir=data_dir,
++            job_id=job_id,
++            attempt_id=attempt_id,
++            artifact_id=artifact_id,
++            gate=gate,
++            require_attempt=require_attempt,
++        )
++    return verified
++
++
++__all__ = ["EvidenceError", "verify_artifact", "verify_candidate_binding", "verify_evidence_map"]
++
++
++def verify_candidate_binding(
++    *,
++    data_dir: str | Path,
++    job_id: str,
++    attempt_id: str,
++    candidate_sha256: str,
++    evidence: dict[str, str],
++) -> dict[str, Any]:
++    """Require at least one verified artifact to be the declared candidate bytes.
++
++    A string in result JSON is not a binding; the bytes must exist in the job
++    store under this attempt and hash to the declared candidate.
++    """
++    allowed = {f"V{i}" for i in range(6)}
++    filtered = {gate: artifact_id for gate, artifact_id in evidence.items() if gate in allowed}
++    verified = verify_evidence_map(
++        data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
++        evidence=filtered, require_attempt=True,
++    )
++    for gate, record in verified.items():
++        if record["sha256"] == candidate_sha256:
++            return record
++    raise EvidenceError(
++        f"candidate_sha256 {candidate_sha256} is not bound to any verified evidence artifact"
++    )
+diff --git a/app/services/assistant.py b/app/services/assistant.py
+new file mode 100644
+index 0000000..2a16206
+--- /dev/null
++++ b/app/services/assistant.py
+@@ -0,0 +1,130 @@
++"""Persistence and mode selection for assistant plans."""
++
++from __future__ import annotations
++
++import json
++import os
++import uuid
++from datetime import datetime, timezone
++from pathlib import Path
++from typing import Any
++
++from app.db.connection import connect
++from app.domain.assistant import AssistantPlan, deterministic_plan
++from app.services import jobs, model_calls
++from binaryrepair_ai.client import DeepSeekClient
++from binaryrepair_ai.settings import Settings
++
++
++def _now() -> str:
++    return datetime.now(timezone.utc).isoformat(timespec="seconds")
++
++
++def get_plan(job_id: str, *, data_dir: str | Path) -> dict[str, Any] | None:
++    connection = connect(data_dir)
++    try:
++        row = connection.execute(
++            "SELECT * FROM assistant_plans WHERE job_id = ? ORDER BY created_at DESC, id DESC LIMIT 1",
++            (job_id,),
++        ).fetchone()
++    finally:
++        connection.close()
++    if row is None:
++        return None
++    return {
++        "id": row["id"], "job_id": row["job_id"], "mode": row["mode"],
++        "plan": json.loads(row["plan_json"]), "model": row["model"],
++        "usage": json.loads(row["usage_json"]) if row["usage_json"] else None,
++        "created_at": row["created_at"],
++    }
++
++
++def save_plan(job_id: str, plan: AssistantPlan, *, data_dir: str | Path,
++              model: str | None = None, usage: dict | None = None) -> dict[str, Any]:
++    if plan.job_id != job_id:
++        raise ValueError("plan job_id does not match job")
++    plan_id = uuid.uuid4().hex
++    connection = connect(data_dir)
++    try:
++        with connection:
++            connection.execute(
++                "INSERT INTO assistant_plans "
++                "(id, job_id, mode, plan_json, model, usage_json, created_at) "
++                "VALUES (?, ?, ?, ?, ?, ?, ?)",
++                (plan_id, job_id, plan.mode, plan.model_dump_json(),
++                 model, json.dumps(usage, sort_keys=True) if usage else None, _now()),
++            )
++    finally:
++        connection.close()
++    return {"id": plan_id, "job_id": job_id, "mode": plan.mode,
++            "plan": plan.model_dump(), "model": model, "usage": usage}
++
++
++def _job_context(job: Any, *, data_dir: str | Path) -> dict[str, Any]:
++    return {
++        "id": job.id,
++        "filename": job.filename,
++        "defect_description": job.defect_description,
++        "phase": job.phase,
++        "original_sha256": job.original_sha256,
++    }
++
++
++def _llm_plan(job: Any, *, data_dir: str | Path, client: Any) -> tuple[AssistantPlan, dict | None, str | None]:
++    context = _job_context(job, data_dir=data_dir)
++    messages = [
++        {"role": "system", "content": (
++            "You are a BinaryRepair assistant. Return JSON only, matching the "
++            "AssistantPlan schema: schema_version, job_id, mode, summary, steps "
++            "(id/title/detail/state), questions (id/prompt/options). "
++            "You must not approve contracts, start runs, or claim a verdict."
++        )},
++        {"role": "user", "content": json.dumps(context, sort_keys=True)},
++    ]
++    response = client.chat_json(messages, max_tokens=1200, thinking=False)
++    raw = getattr(response, "content", "")
++    payload = json.loads(raw)
++    plan = AssistantPlan.model_validate(payload)
++    if plan.job_id != job.id:
++        raise ValueError("LLM plan job_id does not match job")
++    plan.mode = "llm"
++    plan.model = getattr(response, "model", None)
++    plan.fallback_reason = None
++    usage = getattr(response, "usage", None)
++    return plan, usage, plan.model
++
++
++def generate_plan(job_id: str, *, data_dir: str | Path,
++                  mode: str | None = None, client: Any | None = None) -> dict[str, Any]:
++    """Generate a plan. LLM failures fall back to the deterministic planner."""
++    job = jobs.get_job(job_id, data_dir=data_dir)
++    if job is None:
++        raise ValueError("job not found")
++    selected = (mode or os.environ.get("BINARYREPAIR_ASSISTANT_MODE", "scripted")).strip().lower()
++    if selected == "scripted":
++        return save_plan(job.id, deterministic_plan(_job_context(job, data_dir=data_dir)),
++                         data_dir=data_dir)
++    if selected == "llm":
++        try:
++            if client is None:
++                settings = Settings.from_env()
++                client = DeepSeekClient(settings)
++            plan, usage, model = _llm_plan(job, data_dir=data_dir, client=client)
++            call_id = model_calls.record_call(
++                data_dir=data_dir, model_requested=model or "unknown",
++                model_returned=model, status="accepted_for_assistant",
++                route="assistant", usage=usage,
++            )
++            stored_usage = dict(usage or {})
++            stored_usage["model_call_id"] = call_id
++            return save_plan(job.id, plan, data_dir=data_dir, model=model,
++                             usage=stored_usage)
++        except Exception as exc:
++            fallback = deterministic_plan(_job_context(job, data_dir=data_dir))
++            fallback.fallback_reason = f"llm unavailable: {type(exc).__name__}: {exc}"[:500]
++            return save_plan(job.id, fallback, data_dir=data_dir,
++                             usage={"fallback": True})
++    raise ValueError(f"unknown assistant mode: {selected!r}")
++
++
++__all__ = ["generate_plan", "get_plan", "save_plan"]
+diff --git a/app/services/attempt_writer.py b/app/services/attempt_writer.py
+index 35fab52..05c61df 100644
+--- a/app/services/attempt_writer.py
++++ b/app/services/attempt_writer.py
+@@ -236,28 +236,18 @@ def _routeb(
+                 role="routeb_audit",
+             )
+ 
+-    if compare.is_file():
+-        try:
+-            compare_data = json.loads(compare.read_text(encoding="utf-8"))
+-        except ValueError:
+-            compare_data = {}
+-        passed = bool(
+-            compare_data.get("gate4_pass")
+-            or compare_data.get("pass")
+-            or compare_data.get("passed")
+-        ) if isinstance(compare_data, dict) else False
+-        results["V3"] = "passed" if passed else "failed"
+-        details["V3"] = "routeb manifest-compare (runtime execution)"
+-        if passed:
+-            evidence["V3"] = _register(
+-                data_dir=data_dir,
+-                job_id=job_id,
+-                attempt_id=attempt_id,
+-                source=compare,
+-                role="routeb_manifest_compare",
+-            )
+-    else:
+-        details["V3"] = "static routeb bundle has no runtime manifest; Gate 4 not claimed"
++    from routeb.attempt_writer import runtime_state
++    runtime, runtime_path, runtime_detail = runtime_state(bundle)
++    results["V3"] = runtime
++    details["V3"] = runtime_detail
++    if runtime == "passed" and runtime_path is not None:
++        evidence["V3"] = _register(
++            data_dir=data_dir,
++            job_id=job_id,
++            attempt_id=attempt_id,
++            source=runtime_path,
++            role="routeb_manifest_repaired",
++        )
+ 
+     return {
+         "route": "route_b",
+diff --git a/app/services/model_calls.py b/app/services/model_calls.py
+new file mode 100644
+index 0000000..3676db1
+--- /dev/null
++++ b/app/services/model_calls.py
+@@ -0,0 +1,120 @@
++"""Persist and aggregate model-call records.
++
++The provider adapter may fail before a candidate exists; these records are
++audit/cost data, never evidence of correctness.  ``ai_usage`` is either the
++real token counts or ``None``; it is never a fabricated string.
++"""
++
++from __future__ import annotations
++
++import json
++import uuid
++from datetime import datetime, timezone
++from pathlib import Path
++from typing import Any
++
++from app.db.connection import connect
++
++
++def record_call(
++    *,
++    data_dir: str | Path,
++    model_requested: str,
++    status: str,
++    attempt_id: str | None = None,
++    route: str | None = None,
++    model_returned: str | None = None,
++    usage: dict[str, Any] | None = None,
++    latency_ms: int | None = None,
++    request_id: str | None = None,
++) -> str:
++    usage = usage or {}
++    prompt = usage.get("prompt_tokens")
++    completion = usage.get("completion_tokens")
++    total = usage.get("total_tokens")
++    if total is None and prompt is not None and completion is not None:
++        total = int(prompt) + int(completion)
++    call_id = uuid.uuid4().hex
++    connection = connect(data_dir)
++    try:
++        with connection:
++            connection.execute(
++                "INSERT INTO model_calls "
++                "(id, attempt_id, route, model_requested, model_returned, status, "
++                "prompt_tokens, completion_tokens, total_tokens, estimated_cost_usd, "
++                "latency_ms, request_id, usage_json, created_at) "
++                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
++                (
++                    call_id, attempt_id, route, model_requested, model_returned, status,
++                    int(prompt) if prompt is not None else None,
++                    int(completion) if completion is not None else None,
++                    int(total) if total is not None else None,
++                    usage.get("estimated_cost_usd"),
++                    latency_ms, request_id,
++                    json.dumps(usage, sort_keys=True) if usage else None,
++                    datetime.now(timezone.utc).isoformat(timespec="seconds"),
++                ),
++            )
++    finally:
++        connection.close()
++    return call_id
++
++
++def aggregate_usage(
++    *, data_dir: str | Path, attempt_id: str | None = None, route: str | None = None
++) -> dict[str, int] | None:
++    where = []
++    params: list[Any] = []
++    if attempt_id is not None:
++        where.append("attempt_id = ?")
++        params.append(attempt_id)
++    if route is not None:
++        where.append("route = ?")
++        params.append(route)
++    clause = (" WHERE " + " AND ".join(where)) if where else ""
++    connection = connect(data_dir)
++    try:
++        rows = connection.execute(
++            "SELECT prompt_tokens, completion_tokens, total_tokens FROM model_calls" + clause,
++            params,
++        ).fetchall()
++    finally:
++        connection.close()
++    if not rows:
++        return None
++    # Missing token fields are unavailable; do not turn them into zero.
++    if any(row["prompt_tokens"] is None or row["completion_tokens"] is None for row in rows):
++        return None
++    return {
++        "input_tokens": sum(int(row["prompt_tokens"]) for row in rows),
++        "output_tokens": sum(int(row["completion_tokens"]) for row in rows),
++    }
++
++
++__all__ = ["aggregate_usage", "record_call", "record_provider_result"]
++
++
++def record_provider_result(
++    *, data_dir: str | Path, result: Any, route: str,
++    attempt_id: str | None = None,
++) -> str | None:
++    """Record a DeepSeekProvider result (success or typed failure).
++
++    The provider result's ``record`` carries model/usage/latency/request id;
++    its own words never become a verdict.
++    """
++    record = getattr(result, "record", None)
++    if record is None:
++        return None
++    usage = getattr(record, "usage", None)
++    return record_call(
++        data_dir=data_dir,
++        attempt_id=attempt_id,
++        route=route,
++        model_requested=str(getattr(record, "model", "") or "unknown"),
++        model_returned=getattr(record, "model_returned", None),
++        status=str(getattr(record, "status", "unknown")),
++        usage=usage,
++        latency_ms=getattr(record, "latency_ms", None),
++        request_id=getattr(record, "request_id", None),
++    )
+diff --git a/app/services/obligations.py b/app/services/obligations.py
+index a54b6b4..5f049d5 100644
+--- a/app/services/obligations.py
++++ b/app/services/obligations.py
+@@ -12,6 +12,7 @@ from pathlib import Path
+ from typing import Any, Mapping
+ 
+ from app.db.connection import connect
++from app.domain.evidence import verify_artifact
+ from app.services.orchestration import GATES, build_obligations
+ 
+ 
+@@ -60,14 +61,16 @@ def persist_obligations(
+                     raise ObligationWriteError(
+                         f"{gate} passed requires evidence_artifact_id"
+                     )
+-                artifact = connection.execute(
+-                    "SELECT id FROM artifacts WHERE id = ? AND job_id = ?",
+-                    (artifact_id, job_id),
+-                ).fetchone()
+-                if artifact is None:
+-                    raise ObligationWriteError(
+-                        f"{gate} evidence artifact is not part of job {job_id}: {artifact_id}"
++                try:
++                    verify_artifact(
++                        data_dir=data_dir,
++                        job_id=job_id,
++                        attempt_id=attempt_id,
++                        artifact_id=str(artifact_id),
++                        gate=gate,
+                     )
++                except Exception as exc:
++                    raise ObligationWriteError(str(exc)) from exc
+             rows.append(
+                 (
+                     uuid.uuid4().hex,
+diff --git a/app/services/worker.py b/app/services/worker.py
+index df92884..07e412e 100644
+--- a/app/services/worker.py
++++ b/app/services/worker.py
+@@ -39,6 +39,7 @@ from typing import Any
+ 
+ from app.db.connection import connect
+ from app.domain.acceptance import Verdict
++from app.domain.evidence import verify_candidate_binding
+ from app.domain.outcomes import Outcome, ReasonCode
+ from app.services import jobs, obligations, orchestration
+ 
+@@ -248,6 +249,14 @@ def _attempt_verdict(
+     if payload.get("route") not in (None, attempt.route):
+         raise ValueError(f"result bundle route does not match attempt {attempt.id}")
+ 
++    if any(value == "passed" for value in payload["results"].values()):
++        verify_candidate_binding(
++            data_dir=data_dir,
++            job_id=job_id,
++            attempt_id=attempt.id,
++            candidate_sha256=payload["candidate_sha256"],
++            evidence=payload.get("evidence") or {},
++        )
+     obligations.persist_obligations(
+         data_dir=data_dir,
+         job_id=job_id,
+diff --git a/docs/handoffs/91-m5-completion-2026-11-05.md b/docs/handoffs/91-m5-completion-2026-11-05.md
+new file mode 100644
+index 0000000..8f20cf3
+--- /dev/null
++++ b/docs/handoffs/91-m5-completion-2026-11-05.md
+@@ -0,0 +1,58 @@
++# 91 — M5 completion status (2026-11-05)
++
++**Branch:** `member-5/complete-m5`
++**Base:** `origin/post-final/host-importer-broker` @ `1da22ff`
++**Status:** M5 implementation for records 87 / Improve.md; not merged, no tag.
++
++## Completed
++
++| Task | Deliverable | Evidence |
++|---|---|---|
++| T6.1 ingest adapter | `tools/route_bundle_ingest.py`: manifest/schema validation, path traversal/symlink/size/hash checks, artifact registration, gate→artifact map | `tests/integration/test_route_bundle_ingest.py` |
++| T6.1 hardening | `tools/host_importer.py` result/status/evidence validation; `tools/host_broker.py` `bundle_path` containment/symlink rejection | `tests/integration/test_host_broker.py` |
++| T6.5 conformance | reject-list tests: unknown gate/status, traversal, symlink, missing passed evidence, idempotency | ingest tests |
++| T7.2 analysis/comparison | `analysis` roles + `behavior-comparison.json` registration and ids in result details | `test_ingest_registers_analysis_and_comparison` |
++| T8.1 assistant seam | `app/domain/assistant.py` schema + deterministic planner; `004_assistant.sql`; `app/services/assistant.py` persistence | `tests/integration/test_assistant_plan.py` |
++| T8.2 LLM planner | `BINARYREPAIR_ASSISTANT_MODE=llm`, JSON plan validation, model/usage persistence, deterministic fallback | fake-client test |
++| M5 #14 analysis roles | `app/domain/analysis.py`; `docs/interfaces/artifact-roles-v1.md`; ingest validates expected_effects/assumptions/uncertainties | ingest/analysis tests |
++| M5 #15 model_calls | `app/services/model_calls.py`; assistant calls persisted; provider-result helper; aggregate returns token counts or null | assistant usage test |
++| Legacy result hash | `result-bundle.json` must be listed in handoff.json + SHA256SUMS before it is read | `test_legacy_result_bundle_must_be_in_sums` |
++| Envelope hash/size | tampered bytes and size mismatches rejected | `test_evidence_hash_and_size_are_rehashed` |
++| F2/F3 V3 regression | manifest-compare never maps to repair V3 | `test_manifest_compare_is_not_repair_v3` |
++| Evidence envelope | `app/domain/evidence.py`; passed artifacts rehashed, size/path/attempt binding checked before obligation persistence | `tests/integration/test_evidence_envelope.py` |
++| Route B V3 honesty | round-trip `manifest-compare.json` no longer maps to repair V3; only `manifest-repaired.json` does; shared `runtime_state()` used by both writers | writer tests |
++| P0.2 strict Route B comparison | `routeb/run_manifest_compare.py`: rejects empty/timeout cases and requires original to exhibit pre-repair invalid behaviour; matching crashes cannot pass | `tests/test_run_manifest_compare.py` |
++| Protocol docs | `docs/interfaces/execution-bridge-v1.md`, `docs/host-importer-broker.md` | docs |
++
++## Test status
++
++```text
++M5 host: pytest --ignore=tests/e2e -q -> exit 0
++M4 host: not reproducible (exit 2, missing environment deps)
++M4 report: `_scratch/m5-verify-15fed2d/M4-VERIFIER-REPORT.md`; M5 does not claim M4 PASS.
++M4 f326537 report: symlink skip, exit-0 wording, candidate binding independently reproduced;
++273 passed / 4 skipped after installing capstone/pyelftools. This is not merge/tag/live success.
++
++Review items 9/10/11/12 are explicitly **not** part of this M5 PASS:
++9/10 missing incomplete_test_set/timeout_observed; 11 is error/tool_failed, not reject/evidence_hash_mismatch; 12 lacks scope/bounded. They remain separate work.
++```
++
++This is a host-dependent result, not a universal claim. M4's environment gaps
++are authoritative; the symlink rejection test skips when the host cannot create
++symlinks. M4 remains independent verifier and must not sign a full pass from
++M5's local run alone.
++
++## Not completed / blocked
++
++```text
++T8.3 generic repair plan
++  blocked on: second public sample of a different defect class + T7.3 comparison;
++  M5 must not fabricate a second class.
++```
++
++Controller/UI endpoint bodies for T8.1 remain M1/M2; M5 supplies schema + persistence only.
++
++## Boundaries
++
++No verdict/approval is written by the assistant. Synthetic evidence without
++bytes/hash binding is rejected. No main merge, no tag.
+diff --git a/docs/host-importer-broker.md b/docs/host-importer-broker.md
+index 52d9eb0..31dd06b 100644
+--- a/docs/host-importer-broker.md
++++ b/docs/host-importer-broker.md
+@@ -83,3 +83,17 @@ batch. `--once` exits `1` if any envelope failed.
+ python -m pytest -q tests/integration/test_host_broker.py
+ # 2 passed
+ ```
++
++## Guest bundle ingest (M5)
++
++For a guest-produced directory (not a prebuilt result JSON), use:
++
++```bash
++python tools/route_bundle_ingest.py \
++  --data-dir var --job-id <job> --run-id <run> --attempt-id <attempt> \
++  --route route_a --bundle /path/to/guest-bundle
++```
++
++It validates `bundle.json`, paths/symlinks/sizes/hashes, registers evidence and
++analysis artifacts, and only then calls `host_importer.import_bundle`. See
++`docs/interfaces/execution-bridge-v1.md`.
+diff --git a/docs/interfaces/artifact-roles-v1.md b/docs/interfaces/artifact-roles-v1.md
+new file mode 100644
+index 0000000..1c066c7
+--- /dev/null
++++ b/docs/interfaces/artifact-roles-v1.md
+@@ -0,0 +1,27 @@
++# Artifact roles v1
++
++Artifact `role` is a semantic label, not a security boundary. New evidence must
++use one of these values; the ingest adapter rejects an unknown analysis role.
++
++| role | meaning |
++|---|---|
++| `original` | immutable uploaded original ELF |
++| `route_a_evidence` | Route A gate evidence |
++| `route_b_evidence` | Route B gate evidence |
++| `routeb_audit` | static Route B audit |
++| `routeb_manifest_compare` | unchanged round-trip result (historical) |
++| `routeb_manifest_repaired` | repaired-behaviour result (repair V3 credit) |
++| `analysis_expected_effects` | candidate expected effects JSON |
++| `analysis_assumptions` | candidate assumptions JSON |
++| `analysis_uncertainties` | candidate uncertainties JSON |
++| `analysis_v3` | legacy named analysis artifact |
++| `behavior_comparison` | original-vs-candidate comparison JSON |
++| `agent_plan` | assistant plan (guidance only; never verdict) |
++| `model_call` | model-call audit record (never acceptance evidence) |
++
++## Analysis JSON
++
++`analysis_expected_effects` / `analysis_assumptions` / `analysis_uncertainties`
++must be JSON objects matching `app/domain/analysis.py::AnalysisArtifacts` (or a
++document with the same three lists and `candidate_sha256`). Display only; they
++must not be converted into a `passed` obligation.
+diff --git a/docs/interfaces/execution-bridge-v1.md b/docs/interfaces/execution-bridge-v1.md
+new file mode 100644
+index 0000000..cab6a61
+--- /dev/null
++++ b/docs/interfaces/execution-bridge-v1.md
+@@ -0,0 +1,94 @@
++# Execution bridge v1 — bundle ingest contract
++
++This is the host-side boundary between a guest executor and the controller.
++The guest writes a bundle directory; the host adapter validates it before any
++artifact is registered or any worker verdict is computed.
++
++## Envelope (broker)
++
++One JSON file per attempt in the inbox:
++
++```json
++{
++  "job_id": "<id>",
++  "run_id": "<id>",
++  "attempt_id": "<id>",
++  "route": "route_a",
++  "bundle_path": "relative/path/to/bundle.json"
++}
++```
++
++`bundle` may be inline instead of `bundle_path`. `bundle_path` must be a regular
++file under the inbox directory; absolute paths, `..`, and symlinks are rejected.
++
++## Bundle directory
++
++```text
++bundle.json
++candidate.elf
++audit.json
++analysis/...
++behavior-comparison.json
++```
++
++`bundle.json`:
++
++```json
++{
++  "schema_version": 1,
++  "route": "route_a",
++  "candidate_sha256": "<64 lowercase hex>",
++  "gates": {
++    "V0": {"status": "passed", "artifacts": ["candidate.elf"]},
++    "V1": {"status": "passed", "artifacts": ["audit.json"]},
++    "V2": {"status": "not_run", "artifacts": []},
++    "V3": {"status": "not_run", "artifacts": []},
++    "V4": {"status": "not_run", "artifacts": []},
++    "V5": {"status": "not_run", "artifacts": []}
++  },
++  "analysis": [{"role": "analysis_v3", "path": "analysis/v3.json"}],
++  "comparison": "behavior-comparison.json"
++}
++```
++
++## Reject list
++
++The ingest adapter rejects without writing:
++
++- `bundle.json` missing, non-object, wrong schema version, wrong route;
++- candidate hash not 64 lowercase hex;
++- unknown gate or unknown gate status;
++- absolute artifact path, `..` escape, or symlink;
++- missing artifact file;
++- per-file size > 64 MiB or total > 256 MiB;
++- a `passed` gate with no artifact;
++- artifact path/destination collision with different bytes;
++- wrong job/run/attempt/route binding;
++- a different result bundle already at the attempt path (idempotent only for identical bytes).
++
++## Idempotency
++
++Re-ingesting the same bundle with unchanged bytes returns the existing artifact
++ids and does not rewrite the attempt result. A conflicting existing artifact or
++attempt bundle is rejected, never overwritten.
++
++## Ownership
++
++- Guest: writes bundle directory.
++- M5: validates, registers artifacts, maps gates to artifact ids.
++- M1: worker/controller transport.
++- M4: independent re-hash and verdict review.
++
++## Legacy INTERFACE-v1 compatibility
++
++The ingest adapter also accepts the frozen 2026-10-29 package shape:
++
++```text
++handoff.json + SHA256SUMS + relative files
++```
++
++It validates that package with `scripts/check_handoff.py`, reads an optional
++`result-bundle.json` for gate status/evidence, and registers all listed files.
++If no `result-bundle.json` is present, gates default to `not_run`; the worker
++then reports `inconclusive`, never success. This lets M3 continue producing the
++old contract while the new `bundle.json` schema is adopted.
+diff --git a/routeb/attempt_writer.py b/routeb/attempt_writer.py
+index d6ee780..07ae644 100644
+--- a/routeb/attempt_writer.py
++++ b/routeb/attempt_writer.py
+@@ -140,15 +140,24 @@ def _artifact(
+ def _runtime_state(bundle: Path) -> tuple[str, Path | None]:
+     compare = bundle / "manifest-compare.json"
+     repaired = bundle / "manifest-repaired.json"
+-    if compare.exists():
+-        payload = _read_json(compare)
+-        return ("passed" if payload.get("gate4_pass") is True else "failed"), compare
++    # An unchanged round trip is NOT repair V3: it may preserve the vulnerability.
++    # Only a repaired manifest may satisfy behaviour.
+     if repaired.exists():
+         payload = _read_json(repaired)
+         return ("passed" if payload.get("repaired_pass") is True else "failed"), repaired
++    if compare.exists():
++        return "not_run", compare
+     return "not_run", None
+ 
+ 
++def runtime_state(bundle: Path) -> tuple[str, Path | None, str]:
++    """Shared Route B behaviour rule: round-trip is not repair V3."""
++    state, path = _runtime_state(bundle)
++    if state == "not_run" and path is not None and path.name == "manifest-compare.json":
++        return state, path, "round-trip only; not repair V3"
++    return state, path, ("runtime manifest " + state if path else "no runtime manifest in bundle")
++
++
+ def _repro_state(bundle: Path) -> tuple[str, Path | None]:
+     path = bundle / "reproducibility.json"
+     if not path.exists():
+@@ -202,7 +211,10 @@ def write_attempt(
+         "V0": f"original {manifest.get('original_sha256')} vs job {job.original_sha256}",
+         "V1": "static ELF audit passed" if structure else "static ELF audit not passed",
+         "V2": "interface check not implemented in Route B executor",
+-        "V3": ("runtime manifest " + runtime_state) if runtime_path else "no runtime manifest in bundle",
++        "V3": (
++            "round-trip only; not repair V3" if runtime_path and runtime_path.name == "manifest-compare.json"
++            else (("runtime manifest " + runtime_state) if runtime_path else "no runtime manifest in bundle")
++        ),
+         "V4": "symbolic check not run",
+         "V5": ("build-twice " + repro_state) if repro_path else "build-twice not run",
+     }
+diff --git a/routeb/run_manifest_compare.py b/routeb/run_manifest_compare.py
+index 27b2583..2120396 100644
+--- a/routeb/run_manifest_compare.py
++++ b/routeb/run_manifest_compare.py
+@@ -36,47 +36,74 @@ def sha256(path: Path) -> str:
+     return hashlib.sha256(path.read_bytes()).hexdigest()
+ 
+ 
+-def main() -> int:
+-    ap = argparse.ArgumentParser()
+-    ap.add_argument("--original", type=Path, required=True)
+-    ap.add_argument("--patched", type=Path, required=True)
+-    ap.add_argument("--tests", type=Path, required=True)
+-    ap.add_argument("--out", type=Path, required=True)
+-    args = ap.parse_args()
+-
++def compare(original: Path, patched: Path, tests: Path) -> dict:
+     cases = []
+     for name in ("valid.json", "invalid.json"):
+-        data = json.loads((args.tests / name).read_text(encoding="utf-8"))
+-        for case in data["tests"]:
++        data = json.loads((tests / name).read_text(encoding="utf-8"))
++        rows = data.get("tests") or []
++        if not rows:
++            raise ValueError(f"{name} contains no frozen cases")
++        for case in rows:
+             cases.append((name, case))
++    if not cases:
++        raise ValueError("no frozen cases")
+ 
+     rows = []
++    original_ok = True
+     for name, case in cases:
+         arg = case["argv"][1]
+-        before = run(args.original, arg)
+-        after = run(args.patched, arg)
+-        same = before == after
++        before = run(original, arg)
++        after = run(patched, arg)
++        expected = case["expected"]
++        # A timeout/None exit is inconclusive, never "same".
++        complete = (
++            before.get("timeout") is not True and after.get("timeout") is not True
++            and before.get("returncode") is not None and after.get("returncode") is not None
++        )
++        # The original must exhibit the frozen pre-repair behaviour.  In
++        # particular the invalid cases must NOT already match the repaired
++        # expected result; otherwise a matching crash could pass a round trip.
++        if case.get("kind") == "valid":
++            case_original_ok = (
++                before.get("returncode") == expected["return_code"]
++                and before.get("stdout_hex") == expected["stdout"].encode().hex()
++            )
++        else:
++            case_original_ok = not (
++                before.get("returncode") == expected["return_code"]
++                and before.get("stdout_hex") == expected["stdout"].encode().hex()
++                and before.get("stderr_hex") == expected["stderr"].encode().hex()
++            )
++        original_ok = original_ok and case_original_ok
++        same = complete and before == after
+         rows.append({
+-            "manifest": name,
+-            "id": case["id"],
+-            "kind": case["kind"],
+-            "input_len": len(arg.encode()),
+-            "original": before,
+-            "patched": after,
+-            "same": same,
++            "manifest": name, "id": case["id"], "kind": case["kind"],
++            "input_len": len(arg.encode()), "original": before, "patched": after,
++            "complete": complete, "original_ok": case_original_ok, "same": same,
+         })
+-
+-    passed = sum(1 for row in rows if row["same"])
+-    result = {
+-        "original_sha256": sha256(args.original),
+-        "patched_sha256": sha256(args.patched),
+-        "original_size": args.original.stat().st_size,
+-        "patched_size": args.patched.stat().st_size,
+-        "cases": rows,
+-        "same_count": passed,
+-        "total": len(rows),
+-        "gate4_pass": passed == len(rows),
++    passed = sum(1 for row in rows if row["same"] and row["complete"] and row["original_ok"])
++    return {
++        "original_sha256": sha256(original), "patched_sha256": sha256(patched),
++        "original_size": original.stat().st_size, "patched_size": patched.stat().st_size,
++        "cases": rows, "same_count": passed, "total": len(rows),
++        "original_ok": original_ok,
++        "gate4_pass": bool(rows) and original_ok and passed == len(rows),
+     }
++
++
++def main() -> int:
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--original", type=Path, required=True)
++    ap.add_argument("--patched", type=Path, required=True)
++    ap.add_argument("--tests", type=Path, required=True)
++    ap.add_argument("--out", type=Path, required=True)
++    args = ap.parse_args()
++
++    try:
++        result = compare(args.original, args.patched, args.tests)
++    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
++        print(f"run_manifest_compare: {exc}", file=sys.stderr)
++        return 2
+     args.out.parent.mkdir(parents=True, exist_ok=True)
+     args.out.write_text(json.dumps(result, indent=2), encoding="utf-8")
+     print(json.dumps({k: result[k] for k in
+diff --git a/tests/integration/test_assistant_plan.py b/tests/integration/test_assistant_plan.py
+new file mode 100644
+index 0000000..6bfc454
+--- /dev/null
++++ b/tests/integration/test_assistant_plan.py
+@@ -0,0 +1,65 @@
++from __future__ import annotations
++
++from pathlib import Path
++
++import pytest
++
++from app.services import assistant, jobs
++
++
++def test_scripted_plan_persists(tmp_path: Path) -> None:
++    data = tmp_path / "var"
++    job = jobs.create_job(original_bytes=b"\x7fELF assistant", filename="s.elf",
++                          defect_description="overflow", data_dir=data)
++    result = assistant.generate_plan(job.id, data_dir=data)
++    assert result["mode"] == "scripted"
++    assert result["plan"]["job_id"] == job.id
++    assert result["plan"]["steps"]
++    found = assistant.get_plan(job.id, data_dir=data)
++    assert found is not None
++    assert found["plan"]["summary"] == result["plan"]["summary"]
++
++
++def test_unknown_assistant_mode_fails_closed(tmp_path: Path) -> None:
++    data = tmp_path / "var"
++    job = jobs.create_job(original_bytes=b"\x7fELF assistant", filename="s.elf",
++                          defect_description="overflow", data_dir=data)
++    with pytest.raises(ValueError, match="unknown assistant mode"):
++        assistant.generate_plan(job.id, data_dir=data, mode="bogus")
++
++
++_PLAN_TEMPLATE = '{"schema_version":1,"job_id":"__JOB__","mode":"llm","summary":"llm plan","steps":[{"id":"s","title":"step","detail":"do it","state":"next"}],"questions":[]}'
++
++
++class _FakeResponse:
++    content = _PLAN_TEMPLATE
++    model = "fake-model"
++    usage = {"prompt_tokens": 10, "completion_tokens": 5}
++
++
++class _FakeClient:
++    def chat_json(self, messages, **kwargs):
++        return _FakeResponse
++
++
++def test_llm_plan_is_saved_with_usage(tmp_path: Path) -> None:
++    data = tmp_path / "var"
++    job = jobs.create_job(original_bytes=b"\x7fELF assistant", filename="s.elf",
++                          defect_description="overflow", data_dir=data)
++    _FakeResponse.content = _PLAN_TEMPLATE.replace("__JOB__", job.id)
++    result = assistant.generate_plan(job.id, data_dir=data, mode="llm", client=_FakeClient())
++    assert result["mode"] == "llm"
++    assert result["model"] == "fake-model"
++    assert result["usage"]["prompt_tokens"] == 10
++
++
++def test_llm_call_is_recorded_for_usage(tmp_path: Path) -> None:
++    data = tmp_path / "var"
++    job = jobs.create_job(original_bytes=b"\x7fELF assistant", filename="s.elf",
++                          defect_description="overflow", data_dir=data)
++    _FakeResponse.content = _PLAN_TEMPLATE.replace("__JOB__", job.id)
++    result = assistant.generate_plan(job.id, data_dir=data, mode="llm", client=_FakeClient())
++    from app.services import model_calls
++    usage = model_calls.aggregate_usage(data_dir=data, route="assistant")
++    assert usage == {"input_tokens": 10, "output_tokens": 5}
++    assert result["usage"]["model_call_id"]
+diff --git a/tests/integration/test_evidence_envelope.py b/tests/integration/test_evidence_envelope.py
+new file mode 100644
+index 0000000..e7084ed
+--- /dev/null
++++ b/tests/integration/test_evidence_envelope.py
+@@ -0,0 +1,120 @@
++from __future__ import annotations
++
++import hashlib
++from pathlib import Path
++
++import pytest
++
++from app.db.connection import connect
++from app.services import jobs, obligations
++
++
++def _setup(tmp_path: Path):
++    data = tmp_path / "var"
++    job = jobs.create_job(original_bytes=b"\x7fELF evidence", filename="s.elf",
++                          defect_description="overflow", data_dir=data)
++    approval = jobs.approve_contract(job.id, contract_revision=1, reviewer_label="t",
++                                     data_dir=data, input_sha256=job.original_sha256,
++                                     manifest_sha256="1" * 64)
++    run = jobs.start_run(job.id, approval=approval, idempotency_key="ev", data_dir=data)
++    attempt = next(a for a in jobs.list_attempts(run.id, data_dir=data) if a.route == "route_a")
++    return data, job, run, attempt
++
++
++def _artifact(data: Path, job_id: str, attempt_id: str, *, content: bytes,
++              relative: str, attempt_binding: str | None = None) -> str:
++    target = data / relative
++    target.parent.mkdir(parents=True, exist_ok=True)
++    target.write_bytes(content)
++    digest = hashlib.sha256(content).hexdigest()
++    artifact_id = "art-" + digest[:12]
++    connection = connect(data)
++    try:
++        with connection:
++            connection.execute(
++                "INSERT INTO artifacts (id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
++                "VALUES (?, ?, ?, ?, ?, ?, 'application/octet-stream', 'evidence', '2026-11-01T00:00:00+00:00')",
++                (artifact_id, job_id, attempt_binding or attempt_id, relative, digest, len(content)),
++            )
++    finally:
++        connection.close()
++    return artifact_id
++
++
++def test_passed_evidence_missing_file_is_rejected(tmp_path: Path) -> None:
++    data, job, run, attempt = _setup(tmp_path)
++    relative = f"jobs/{job.id}/evidence/{attempt.id}/missing.bin"
++    artifact = _artifact(data, job.id, attempt.id, content=b"x", relative=relative)
++    (data / relative).unlink()
++    with pytest.raises(obligations.ObligationWriteError, match="missing"):
++        obligations.persist_obligations(
++            data_dir=data, job_id=job.id, attempt_id=attempt.id,
++            results={"V1": "passed"}, evidence={"V1": artifact},
++        )
++
++
++def test_evidence_from_another_attempt_is_rejected(tmp_path: Path) -> None:
++    data, job, run, attempt = _setup(tmp_path)
++    other = next(a for a in jobs.list_attempts(run.id, data_dir=data) if a.id != attempt.id)
++    relative = f"jobs/{job.id}/evidence/{other.id}/cross.bin"
++    artifact = _artifact(data, job.id, other.id, content=b"cross", relative=relative)
++    with pytest.raises(obligations.ObligationWriteError, match="another attempt"):
++        obligations.persist_obligations(
++            data_dir=data, job_id=job.id, attempt_id=attempt.id,
++            results={"V1": "passed"}, evidence={"V1": artifact},
++        )
++
++
++def test_candidate_hash_must_match_a_real_artifact(tmp_path: Path) -> None:
++    from app.domain.evidence import EvidenceError, verify_candidate_binding
++    data, job, run, attempt = _setup(tmp_path)
++    relative = f"jobs/{job.id}/evidence/{attempt.id}/candidate.bin"
++    artifact = _artifact(data, job.id, attempt.id, content=b"not the candidate", relative=relative)
++    with pytest.raises(EvidenceError, match="not bound"):
++        verify_candidate_binding(
++            data_dir=data, job_id=job.id, attempt_id=attempt.id,
++            candidate_sha256="a" * 64, evidence={"V0": artifact},
++        )
++
++
++def test_candidate_binding_rejects_job_level_original(tmp_path: Path) -> None:
++    from app.domain.evidence import EvidenceError, verify_candidate_binding
++    data, job, run, attempt = _setup(tmp_path)
++    connection = connect(data)
++    try:
++        row = connection.execute(
++            "SELECT id FROM artifacts WHERE job_id = ? AND role = 'original'", (job.id,)
++        ).fetchone()
++    finally:
++        connection.close()
++    with pytest.raises(EvidenceError, match="another attempt"):
++        verify_candidate_binding(
++            data_dir=data, job_id=job.id, attempt_id=attempt.id,
++            candidate_sha256=job.original_sha256, evidence={"V0": row["id"]},
++        )
++
++
++def test_candidate_binding_accepts_attempt_bound_candidate(tmp_path: Path) -> None:
++    from app.domain.evidence import verify_candidate_binding
++    data, job, run, attempt = _setup(tmp_path)
++    content = b"a genuinely different candidate"
++    relative = f"jobs/{job.id}/evidence/{attempt.id}/candidate.elf"
++    artifact = _artifact(data, job.id, attempt.id, content=content, relative=relative)
++    digest = hashlib.sha256(content).hexdigest()
++    record = verify_candidate_binding(
++        data_dir=data, job_id=job.id, attempt_id=attempt.id,
++        candidate_sha256=digest, evidence={"V0": artifact},
++    )
++    assert record["sha256"] == digest
++
++
++def test_evidence_hash_and_size_are_rehashed(tmp_path: Path) -> None:
++    from app.domain.evidence import EvidenceError, verify_artifact
++    data, job, run, attempt = _setup(tmp_path)
++    relative = f"jobs/{job.id}/evidence/{attempt.id}/tamper.bin"
++    artifact = _artifact(data, job.id, attempt.id, content=b"original bytes", relative=relative)
++    target = data / relative
++    target.write_bytes(b"tampered!")
++    with pytest.raises(EvidenceError, match="size mismatch|hash mismatch"):
++        verify_artifact(data_dir=data, job_id=job.id, attempt_id=attempt.id,
++                        artifact_id=artifact, gate="V1")
+diff --git a/tests/integration/test_host_broker.py b/tests/integration/test_host_broker.py
+index 9cae0c4..00c5cb5 100644
+--- a/tests/integration/test_host_broker.py
++++ b/tests/integration/test_host_broker.py
+@@ -107,3 +107,19 @@ def test_broker_rejects_wrong_route_without_writing(tmp_path: Path) -> None:
+     target = data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json"
+     assert not target.exists()
+     assert jobs.get_attempt(attempt.id, data_dir=data_dir).outcome is None
++
++
++def test_broker_rejects_bundle_path_escape(tmp_path: Path) -> None:
++    data_dir, record, run = _started(tmp_path)
++    attempt = next(a for a in jobs.list_attempts(run.id, data_dir=data_dir) if a.route == "route_a")
++    inbox = tmp_path / "inbox"; inbox.mkdir()
++    outside = tmp_path / "outside.json"
++    outside.write_text(json.dumps(_bundle(record, attempt)))
++    envelope = {
++        "job_id": record.id, "run_id": run.id, "attempt_id": attempt.id,
++        "route": attempt.route, "bundle_path": "../outside.json",
++    }
++    (inbox / "escape.json").write_text(json.dumps(envelope), encoding="utf-8")
++    summary = process_once(data_dir=data_dir, inbox=inbox, trigger=False)
++    assert summary["imported"] == 0
++    assert summary["failed"] == 1
+diff --git a/tests/integration/test_route_bundle_ingest.py b/tests/integration/test_route_bundle_ingest.py
+new file mode 100644
+index 0000000..afbeff5
+--- /dev/null
++++ b/tests/integration/test_route_bundle_ingest.py
+@@ -0,0 +1,169 @@
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++import pytest
++
++from app.services import jobs
++from tools.route_bundle_ingest import IngestError, ingest
++
++
++def _job(tmp_path: Path):
++    data = tmp_path / "var"
++    job = jobs.create_job(original_bytes=b"\x7fELF ingest", filename="sample.elf",
++                          defect_description="overflow", data_dir=data)
++    approval = jobs.approve_contract(job.id, contract_revision=1, reviewer_label="test",
++                                     data_dir=data, input_sha256=job.original_sha256,
++                                     manifest_sha256="1" * 64)
++    run = jobs.start_run(job.id, approval=approval, idempotency_key="ingest", data_dir=data)
++    attempt = next(a for a in jobs.list_attempts(run.id, data_dir=data) if a.route == "route_a")
++    return data, job, run, attempt
++
++
++def _bundle(tmp_path: Path, candidate: str = "a" * 64) -> Path:
++    bundle = tmp_path / "bundle"; bundle.mkdir()
++    (bundle / "candidate.elf").write_bytes(b"candidate bytes")
++    (bundle / "audit.json").write_text('{"pass": true}')
++    (bundle / "bundle.json").write_text(json.dumps({
++        "schema_version": 1, "route": "route_a", "candidate_sha256": candidate,
++        "gates": {"V0": {"status": "passed", "artifacts": ["candidate.elf"]},
++                  "V1": {"status": "passed", "artifacts": ["audit.json"]}},
++    }))
++    return bundle
++
++
++def test_ingest_registers_artifacts_and_bundle(tmp_path: Path) -> None:
++    data, job, run, attempt = _job(tmp_path)
++    bundle = _bundle(tmp_path)
++    result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++                    route="route_a", bundle=bundle, trigger=False)
++    assert result["evidence"]["V0"]
++    payload = json.loads((data / "jobs" / job.id / "runs" / run.id / "attempts" / f"{attempt.id}.json").read_text())
++    assert payload["results"]["V0"] == "passed"
++    assert payload["evidence"]["V0"] == result["evidence"]["V0"]
++
++
++def test_ingest_rejects_traversal_and_missing_passed_evidence(tmp_path: Path) -> None:
++    data, job, run, attempt = _job(tmp_path)
++    bundle = _bundle(tmp_path)
++    manifest = json.loads((bundle / "bundle.json").read_text())
++    manifest["gates"]["V1"] = {"status": "passed", "artifacts": ["../outside"]}
++    (bundle / "bundle.json").write_text(json.dumps(manifest))
++    with pytest.raises(IngestError):
++        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++               route="route_a", bundle=bundle, trigger=False)
++
++
++def test_ingest_is_idempotent_for_same_bytes(tmp_path: Path) -> None:
++    data, job, run, attempt = _job(tmp_path)
++    bundle = _bundle(tmp_path)
++    first = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++                   route="route_a", bundle=bundle, trigger=False)
++    second = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++                    route="route_a", bundle=bundle, trigger=False)
++    assert first["evidence"] == second["evidence"]
++
++
++def test_ingest_registers_analysis_and_comparison(tmp_path: Path) -> None:
++    data, job, run, attempt = _job(tmp_path)
++    bundle = _bundle(tmp_path)
++    (bundle / "analysis").mkdir()
++    (bundle / "analysis" / "v3.json").write_text('{"cases": 6}')
++    (bundle / "behavior-comparison.json").write_text('{"same": 6}')
++    manifest = json.loads((bundle / "bundle.json").read_text())
++    manifest["analysis"] = [{"role": "analysis_v3", "path": "analysis/v3.json"}]
++    manifest["comparison"] = "behavior-comparison.json"
++    (bundle / "bundle.json").write_text(json.dumps(manifest))
++    result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++                    route="route_a", bundle=bundle, trigger=False)
++    assert result["analysis_artifact_ids"]
++
++
++def test_ingest_rejects_symlink(tmp_path: Path) -> None:
++    data, job, run, attempt = _job(tmp_path)
++    bundle = _bundle(tmp_path)
++    try:
++        (bundle / "link.json").symlink_to(bundle / "audit.json")
++    except OSError:
++        pytest.skip("symlink creation unavailable on this host")
++    manifest = json.loads((bundle / "bundle.json").read_text())
++    manifest["gates"]["V1"] = {"status": "passed", "artifacts": ["link.json"]}
++    (bundle / "bundle.json").write_text(json.dumps(manifest))
++    with pytest.raises(IngestError):
++        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++               route="route_a", bundle=bundle, trigger=False)
++
++
++def test_ingest_rejects_unknown_gate_and_status(tmp_path: Path) -> None:
++    data, job, run, attempt = _job(tmp_path)
++    bundle = _bundle(tmp_path)
++    manifest = json.loads((bundle / "bundle.json").read_text())
++    manifest["gates"]["V9"] = {"status": "passed", "artifacts": []}
++    (bundle / "bundle.json").write_text(json.dumps(manifest))
++    with pytest.raises(IngestError, match="unknown gate"):
++        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++               route="route_a", bundle=bundle, trigger=False)
++    manifest["gates"].pop("V9")
++    manifest["gates"]["V1"]["status"] = "maybe"
++    (bundle / "bundle.json").write_text(json.dumps(manifest))
++    with pytest.raises(IngestError, match="unknown status"):
++        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++               route="route_a", bundle=bundle, trigger=False)
++
++
++def test_ingest_validates_expected_effects_analysis_schema(tmp_path: Path) -> None:
++    data, job, run, attempt = _job(tmp_path)
++    bundle = _bundle(tmp_path)
++    analysis = bundle / "analysis"; analysis.mkdir()
++    (analysis / "effects.json").write_text(json.dumps({
++        "schema_version": 1, "candidate_sha256": "a" * 64,
++        "expected_effects": ["guard added"], "assumptions": [], "uncertainties": [],
++    }))
++    manifest = json.loads((bundle / "bundle.json").read_text())
++    manifest["analysis"] = [{"role": "analysis_expected_effects", "path": "analysis/effects.json"}]
++    (bundle / "bundle.json").write_text(json.dumps(manifest))
++    result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++                    route="route_a", bundle=bundle, trigger=False)
++    assert result["analysis_artifact_ids"]
++
++
++def test_ingest_accepts_legacy_interface_v1(tmp_path: Path) -> None:
++    import hashlib
++    data, job, run, attempt = _job(tmp_path)
++    bundle = tmp_path / "legacy"; bundle.mkdir()
++    candidate = bundle / "candidate.elf"; candidate.write_bytes(b"\x7fELF legacy")
++    (bundle / "result-bundle.json").write_text(json.dumps({
++        "route": "route_a",
++        "identity": {"candidate_sha256": hashlib.sha256(candidate.read_bytes()).hexdigest()},
++        "gates": {"V0": {"status": "pass", "evidence": [{"relative_path": "candidate.elf"}]}},
++    }))
++    files = ["result-bundle.json", "candidate.elf"]
++    (bundle / "handoff.json").write_text(json.dumps({
++        "id": "LEGACY", "from": "M3", "to": "M5", "route": "route_a",
++        "created_at": "2026-11-05T00:00:00+08:00", "files": files,
++    }))
++    lines = []
++    for name in sorted(files):
++        lines.append(f"{hashlib.sha256((bundle/name).read_bytes()).hexdigest()}  {name}")
++    (bundle / "SHA256SUMS").write_text("\n".join(lines) + "\n")
++    result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++                    route="route_a", bundle=bundle, trigger=False)
++    assert result["evidence"]["V0"]
++
++
++def test_legacy_result_bundle_must_be_in_sums(tmp_path: Path) -> None:
++    import hashlib
++    data, job, run, attempt = _job(tmp_path)
++    bundle = tmp_path / "legacy-unlisted"; bundle.mkdir()
++    candidate = bundle / "candidate.elf"; candidate.write_bytes(b"\x7fELF")
++    (bundle / "result-bundle.json").write_text(json.dumps({"identity": {"candidate_sha256": hashlib.sha256(candidate.read_bytes()).hexdigest()}}))
++    files = ["candidate.elf"]
++    (bundle / "handoff.json").write_text(json.dumps({
++        "id": "LEGACY", "from": "M3", "to": "M5", "route": "route_a",
++        "created_at": "2026-11-05T00:00:00+08:00", "files": files,
++    }))
++    (bundle / "SHA256SUMS").write_text(f"{hashlib.sha256(candidate.read_bytes()).hexdigest()}  candidate.elf\n")
++    with pytest.raises(IngestError, match="result-bundle.json"):
++        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
++               route="route_a", bundle=bundle, trigger=False)
+diff --git a/tests/integration/test_worker.py b/tests/integration/test_worker.py
+index 8ffaaa4..f8db3ba 100644
+--- a/tests/integration/test_worker.py
++++ b/tests/integration/test_worker.py
+@@ -52,6 +52,13 @@ def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5)
+         with connection:
+             for index in range(1, count + 1):
+                 artifact_id = f"art-{attempt_id}-{index}"
++                relative = f"jobs/{job_id}/evidence/{attempt_id}/{index}.bin"
++                target = data_dir / relative
++                target.parent.mkdir(parents=True, exist_ok=True)
++                content = ((data_dir / "jobs" / job_id / "original.bin").read_bytes()
++                           if index == 1 else f"worker-evidence-{index}".encode())
++                target.write_bytes(content)
++                digest = __import__("hashlib").sha256(target.read_bytes()).hexdigest()
+                 connection.execute(
+                     "INSERT INTO artifacts "
+                     "(id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
+@@ -60,9 +67,9 @@ def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5)
+                         artifact_id,
+                         job_id,
+                         attempt_id,
+-                        f"evidence/{attempt_id}/{index}.bin",
+-                        str(index) * 64,
+-                        index,
++                        relative,
++                        digest,
++                        target.stat().st_size,
+                         "2026-10-22T00:00:00+00:00",
+                     ),
+                 )
+diff --git a/tests/test_db_v2.py b/tests/test_db_v2.py
+index 0c84d39..b62d1b5 100644
+--- a/tests/test_db_v2.py
++++ b/tests/test_db_v2.py
+@@ -50,7 +50,7 @@ def _run(conn: sqlite3.Connection, run_id: str = "r1", key: str = "k1") -> None:
+ def test_init_creates_baseline_and_ai_tables(tmp_path: Path) -> None:
+     conn = init_db(tmp_path)
+     versions = [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")]
+-    assert versions == [1, 2, 3]
++    assert versions == [1, 2, 3, 4]
+     tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+     assert {"jobs", "artifacts", "contracts", "runs", "attempts",
+             "obligations", "events", "model_calls"} <= tables
+@@ -64,7 +64,7 @@ def test_init_creates_baseline_and_ai_tables(tmp_path: Path) -> None:
+ def test_reinit_is_idempotent(tmp_path: Path) -> None:
+     init_db(tmp_path).close()
+     conn = init_db(tmp_path)
+-    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == [1, 2, 3]
++    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == [1, 2, 3, 4]
+     conn.close()
+ 
+ 
+diff --git a/tests/test_evidence_endpoint.py b/tests/test_evidence_endpoint.py
+index 4d53e7e..aeb1914 100644
+--- a/tests/test_evidence_endpoint.py
++++ b/tests/test_evidence_endpoint.py
+@@ -25,6 +25,7 @@ import pytest
+ from fastapi.testclient import TestClient
+ 
+ from app.controller_api import app
++from app.db.connection import connect
+ from app.services import jobs, worker
+ 
+ REPO_ROOT = Path(__file__).resolve().parents[1]
+@@ -141,15 +142,33 @@ def _write_bundle(
+ ) -> None:
+     path = _bundle_path(data_dir, job_id, run_id, attempt["id"])
+     path.parent.mkdir(parents=True, exist_ok=True)
++    candidate_bytes = f"SYNTHETIC-TEST-CANDIDATE:{job_id}:{attempt['id']}".encode("utf-8")
++    candidate = hashlib.sha256(candidate_bytes).hexdigest()
++    evidence = {}
++    if results.get("V0") == "passed":
++        relative = f"jobs/{job_id}/evidence/{attempt['id']}/candidate.bin"
++        target = data_dir / relative
++        target.parent.mkdir(parents=True, exist_ok=True)
++        target.write_bytes(candidate_bytes)
++        artifact_id = f"art-{attempt['id']}-candidate"
++        connection = connect(data_dir)
++        try:
++            with connection:
++                connection.execute(
++                    "INSERT INTO artifacts (id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
++                    "VALUES (?, ?, ?, ?, ?, ?, 'application/octet-stream', 'candidate', '2026-11-01T00:00:00+00:00')",
++                    (artifact_id, job_id, attempt["id"], relative, candidate, len(candidate_bytes)),
++                )
++        finally:
++            connection.close()
++        evidence["V0"] = artifact_id
+     payload = {
+         "synthetic": True,
+         "label": SYNTHETIC_LABEL,
+         "route": attempt["route"],
+-        "candidate_sha256": hashlib.sha256(
+-            f"SYNTHETIC-TEST-CANDIDATE:{job_id}:{attempt['id']}".encode("utf-8")
+-        ).hexdigest(),
++        "candidate_sha256": candidate,
+         "results": results,
+-        "evidence": {},
++        "evidence": evidence,
+         "details": {
+             gate: f"SYNTHETIC test bundle: {gate} reported {result}; no binary ran."
+             for gate, result in results.items()
+diff --git a/tests/test_routeb_attempt_writer.py b/tests/test_routeb_attempt_writer.py
+index abdfea6..937a363 100644
+--- a/tests/test_routeb_attempt_writer.py
++++ b/tests/test_routeb_attempt_writer.py
+@@ -110,3 +110,17 @@ def test_routeb_fails_closed_on_missing_worker_contract(tmp_path: Path) -> None:
+         write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                       run_id=run.id, attempt_id=attempt.id,
+                       original_path=original, contract_path=tmp_path / "missing.json")
++
++
++def test_manifest_compare_is_not_repair_v3(tmp_path: Path) -> None:
++    data, job, run, attempt = _setup(tmp_path)
++    bundle = tmp_path / "bundle"
++    make_bundle(original=ORIGINAL, candidate=CANDIDATE, outdir=bundle,
++                func=FUNC, mode="roundtrip")
++    (bundle / "manifest-compare.json").write_text(json.dumps({"gate4_pass": True, "total": 6, "same_count": 6}))
++    result = write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
++                           run_id=run.id, attempt_id=attempt.id)
++    payload = json.loads(Path(result["path"]).read_text())
++    assert payload["results"]["V3"] == "not_run"
++    assert "V3" not in payload["evidence"]
++    assert "round-trip" in payload["details"]["V3"]
+diff --git a/tests/test_run_manifest_compare.py b/tests/test_run_manifest_compare.py
+new file mode 100644
+index 0000000..a3979a3
+--- /dev/null
++++ b/tests/test_run_manifest_compare.py
+@@ -0,0 +1,61 @@
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++import pytest
++
++from routeb import run_manifest_compare as cmp
++
++
++def _tests(tmp_path: Path, *, valid=True, invalid=True) -> Path:
++    root = tmp_path / "tests"; root.mkdir()
++    (root / "valid.json").write_text(json.dumps({"tests": [
++        {"id": "v", "kind": "valid", "argv": ["./x", "A"],
++         "expected": {"return_code": 0, "stdout": "A\n", "stderr": ""}}
++    ] if valid else []}))
++    (root / "invalid.json").write_text(json.dumps({"tests": [
++        {"id": "i", "kind": "invalid", "argv": ["./x", "B"],
++         "expected": {"return_code": 1, "stdout": "", "stderr": "ERROR\n"}}
++    ] if invalid else []}))
++    return root
++
++
++def _binary(tmp_path: Path, name: str) -> Path:
++    path = tmp_path / name; path.write_bytes(b"\x7fELF " + name.encode()); return path
++
++
++def test_compare_rejects_empty_cases(tmp_path: Path) -> None:
++    with pytest.raises(ValueError, match="no frozen cases"):
++        cmp.compare(_binary(tmp_path, "a"), _binary(tmp_path, "b"),
++                    _tests(tmp_path, valid=False, invalid=False))
++
++
++def test_compare_timeout_is_not_gate4_pass(tmp_path: Path, monkeypatch) -> None:
++    original = _binary(tmp_path, "original")
++    patched = _binary(tmp_path, "patched")
++    tests = _tests(tmp_path)
++
++    def fake_run(elf, arg):
++        if elf == original:
++            return {"returncode": 0, "stdout_hex": "410a", "stderr_hex": ""} if arg == "A" else {"returncode": 0, "stdout_hex": "", "stderr_hex": ""}
++        return {"timeout": True, "returncode": None, "stdout_hex": "", "stderr_hex": ""}
++    monkeypatch.setattr(cmp, "run", fake_run)
++    result = cmp.compare(original, patched, tests)
++    assert result["gate4_pass"] is False
++
++
++def test_compare_requires_original_to_be_unrepaired(tmp_path: Path, monkeypatch) -> None:
++    original = _binary(tmp_path, "original")
++    patched = _binary(tmp_path, "patched")
++    tests = _tests(tmp_path)
++
++    def fake_run(elf, arg):
++        if arg == "A":
++            return {"returncode": 0, "stdout_hex": "410a", "stderr_hex": ""}
++        # Original already matches repaired invalid expectation -> not a valid round trip.
++        return {"returncode": 1, "stdout_hex": "", "stderr_hex": "4552524f520a"}
++    monkeypatch.setattr(cmp, "run", fake_run)
++    result = cmp.compare(original, patched, tests)
++    assert result["original_ok"] is False
++    assert result["gate4_pass"] is False
+diff --git a/tools/host_broker.py b/tools/host_broker.py
+index 0f922e5..145511d 100644
+--- a/tools/host_broker.py
++++ b/tools/host_broker.py
+@@ -52,9 +52,16 @@ def _bundle_from_envelope(envelope: dict[str, Any], path: Path) -> Any:
+     if "bundle" in envelope:
+         return envelope["bundle"]
+     raw_path = Path(envelope["bundle_path"])
+-    if not raw_path.is_absolute():
+-        raw_path = path.parent / raw_path
+-    return json.loads(raw_path.read_text(encoding="utf-8"))
++    base = path.parent.resolve()
++    candidate = raw_path if raw_path.is_absolute() else (base / raw_path)
++    if candidate.is_symlink():
++        raise ValueError("bundle_path must not be a symlink")
++    resolved = candidate.resolve()
++    try:
++        resolved.relative_to(base)
++    except ValueError as exc:
++        raise ValueError("bundle_path escapes the inbox directory") from exc
++    return json.loads(resolved.read_text(encoding="utf-8"))
+ 
+ 
+ def _move(path: Path, directory: Path) -> Path:
+diff --git a/tools/host_importer.py b/tools/host_importer.py
+index b7e2c7a..35bd6e8 100644
+--- a/tools/host_importer.py
++++ b/tools/host_importer.py
+@@ -30,6 +30,7 @@ if str(ROOT) not in sys.path:
+ from app.services import jobs, worker
+ 
+ ROUTES = {"route_a", "route_b"}
++STATUSES = {"passed", "failed", "not_run", "unknown", "timed_out"}
+ 
+ 
+ def _validate_bundle(bundle: Any) -> dict[str, Any]:
+@@ -48,6 +49,14 @@ def _validate_bundle(bundle: Any) -> dict[str, Any]:
+     results = bundle.get("results")
+     if not isinstance(results, dict):
+         raise ValueError("bundle results must be an object")
++    for gate, status in results.items():
++        if gate not in {f"V{i}" for i in range(6)}:
++            raise ValueError(f"unknown result gate: {gate}")
++        if status not in STATUSES:
++            raise ValueError(f"unknown result status for {gate}: {status!r}")
++    evidence = bundle.get("evidence")
++    if evidence is not None and not isinstance(evidence, dict):
++        raise ValueError("bundle evidence must be an object")
+     return bundle
+ 
+ 
+diff --git a/tools/route_bundle_ingest.py b/tools/route_bundle_ingest.py
+new file mode 100644
+index 0000000..ce85f69
+--- /dev/null
++++ b/tools/route_bundle_ingest.py
+@@ -0,0 +1,334 @@
++#!/usr/bin/env python3
++"""Ingest a self-describing execution bundle into the controller store.
++
++The guest writes a bundle directory; this host-side adapter verifies paths,
++symlinks, sizes and hashes before registering artifacts and handing a result
++bundle to the worker.  It is deliberately separate from ``host_importer``:
++that module imports a declarative result JSON, while this module is the only
++place that accepts guest files.
++
++Expected ``bundle.json``::
++
++    {
++      "schema_version": 1,
++      "route": "route_a" | "route_b",
++      "candidate_sha256": "<64 hex>",
++      "gates": {
++        "V0": {"status": "passed", "artifacts": ["candidate.elf"]},
++        ...
++      },
++      "analysis": [{"role": "analysis_v3", "path": "analysis/v3.json"}],
++      "comparison": "behavior-comparison.json"
++    }
++
++``gates`` may be omitted; then all gates are ``not_run``.  A passed gate must
++name at least one artifact.  No file is read from outside the bundle root.
++"""
++
++from __future__ import annotations
++
++import argparse
++import hashlib
++import json
++import os
++import shutil
++import sys
++import uuid
++from datetime import datetime, timezone
++from pathlib import Path
++from typing import Any
++
++ROOT = Path(__file__).resolve().parents[1]
++if str(ROOT) not in sys.path:
++    sys.path.insert(0, str(ROOT))
++
++from app.db.connection import connect
++from app.domain.analysis import ANALYSIS_ROLES, AnalysisArtifacts
++from app.services import jobs, worker
++from tools.host_importer import import_bundle
++
++GATES = ("V0", "V1", "V2", "V3", "V4", "V5")
++STATUS = {"passed", "failed", "not_run", "unknown", "timed_out"}
++LEGACY_STATUS = {"pass": "passed", "passed": "passed", "fail": "failed",
++                 "failed": "failed", "not_run": "not_run", "unknown": "unknown",
++                 "timed_out": "timed_out"}
++MAX_FILE_BYTES = 64 * 1024 * 1024
++MAX_TOTAL_BYTES = 256 * 1024 * 1024
++
++
++class IngestError(ValueError):
++    pass
++
++
++def _sha256(path: Path) -> str:
++    digest = hashlib.sha256()
++    with path.open("rb") as handle:
++        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
++            digest.update(chunk)
++    return digest.hexdigest()
++
++
++def _safe_file(root: Path, relative: str) -> Path:
++    if not relative or Path(relative).is_absolute():
++        raise IngestError(f"artifact path must be relative: {relative!r}")
++    root_resolved = root.resolve()
++    raw = root_resolved / relative
++    if raw.is_symlink():
++        raise IngestError(f"artifact path is a symlink: {relative!r}")
++    candidate = raw.resolve()
++    try:
++        candidate.relative_to(root_resolved)
++    except ValueError as exc:
++        raise IngestError(f"artifact path escapes bundle: {relative!r}") from exc
++    if not candidate.is_file():
++        raise IngestError(f"artifact is missing: {relative!r}")
++    return candidate
++
++
++def _read_handoff(bundle: Path) -> dict[str, Any]:
++    from scripts.check_handoff import validate
++    errors, meta = validate(bundle)
++    if errors:
++        raise IngestError("legacy handoff rejected: " + "; ".join(errors))
++    return meta
++
++
++def _legacy_payload(bundle: Path, route: str) -> tuple[dict[str, Any], list[str]]:
++    """Accept INTERFACE-v1 handoff.json + SHA256SUMS as a compatibility path.
++
++    The old package has no bundle.json, so gates are read from an optional
++    result-bundle.json (the same shape used by Route A) or default to not_run.
++    Artifact paths are still validated by _register_file.
++    """
++    meta = _read_handoff(bundle)
++    if meta.get("route") != route:
++        raise IngestError(f"legacy handoff route {meta.get('route')!r} != {route!r}")
++    raw_meta = json.loads((bundle / "handoff.json").read_text(encoding="utf-8"))
++    files = [str(x) for x in raw_meta.get("files") or []]
++    result_path = bundle / "result-bundle.json"
++    if result_path.is_file() and "result-bundle.json" not in files:
++        raise IngestError("result-bundle.json must be listed in handoff.json and SHA256SUMS")
++    result = json.loads(result_path.read_text(encoding="utf-8")) if result_path.is_file() else {}
++    identity = result.get("identity") or {}
++    candidate = identity.get("candidate_sha256")
++    if not candidate and (bundle / "candidate.elf").is_file():
++        candidate = _sha256(bundle / "candidate.elf")
++    if not isinstance(candidate, str) or len(candidate) != 64:
++        raise IngestError("legacy package has no candidate_sha256/candidate.elf")
++    gate_entries = result.get("gates") or {}
++    results = {}
++    evidence_specs = {}
++    for gate in GATES:
++        entry = gate_entries.get(gate) or {}
++        status = LEGACY_STATUS.get(str(entry.get("status", "not_run")), str(entry.get("status", "not_run")))
++        if status not in STATUS:
++            raise IngestError(f"legacy gate {gate} has unknown status")
++        results[gate] = status
++        evidence_specs[gate] = [
++            str(item.get("relative_path")) for item in entry.get("evidence") or []
++            if isinstance(item, dict) and item.get("relative_path")
++        ]
++    return (
++        {"schema_version": 1, "route": route, "candidate_sha256": candidate,
++         "gates": {g: {"status": results[g], "artifacts": evidence_specs[g]} for g in GATES}},
++        files,
++    )
++
++
++def _read_manifest(bundle: Path) -> dict[str, Any]:
++    path = bundle / "bundle.json"
++    if not path.is_file():
++        raise IngestError("bundle.json is missing")
++    try:
++        data = json.loads(path.read_text(encoding="utf-8"))
++    except (OSError, ValueError) as exc:
++        raise IngestError(f"bundle.json is invalid: {exc}") from exc
++    if not isinstance(data, dict):
++        raise IngestError("bundle.json must be an object")
++    if data.get("schema_version") != 1:
++        raise IngestError("bundle.json schema_version must be 1")
++    candidate = data.get("candidate_sha256")
++    if not isinstance(candidate, str) or len(candidate) != 64:
++        raise IngestError("bundle.json candidate_sha256 must be 64 hex characters")
++    try:
++        int(candidate, 16)
++    except ValueError as exc:
++        raise IngestError("bundle.json candidate_sha256 must be hex") from exc
++    gates = data.get("gates") or {}
++    if not isinstance(gates, dict):
++        raise IngestError("bundle.json gates must be an object")
++    for gate, entry in gates.items():
++        if gate not in GATES:
++            raise IngestError(f"unknown gate: {gate}")
++        if not isinstance(entry, dict):
++            raise IngestError(f"gate {gate} must be an object")
++        if str(entry.get("status", "not_run")) not in STATUS:
++            raise IngestError(f"gate {gate} has unknown status")
++    return data
++
++
++def _register_file(
++    *,
++    data_dir: Path,
++    job_id: str,
++    attempt_id: str,
++    bundle: Path,
++    relative: str,
++    role: str,
++) -> str:
++    source = _safe_file(bundle, relative)
++    size = source.stat().st_size
++    if size > MAX_FILE_BYTES:
++        raise IngestError(f"artifact too large: {relative}")
++    destination_rel = f"jobs/{job_id}/evidence/{attempt_id}/{Path(relative).name}"
++    destination = data_dir / destination_rel
++    destination.parent.mkdir(parents=True, exist_ok=True)
++    shutil.copyfile(source, destination)
++    digest = _sha256(destination)
++    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
++    connection = connect(data_dir)
++    try:
++        with connection:
++            row = connection.execute(
++                "SELECT id, sha256 FROM artifacts WHERE job_id = ? AND relative_path = ?",
++                (job_id, destination_rel),
++            ).fetchone()
++            if row is not None:
++                if str(row["sha256"]) != digest:
++                    raise IngestError(f"conflicting existing artifact: {destination_rel}")
++                return str(row["id"])
++            artifact_id = uuid.uuid4().hex
++            connection.execute(
++                "INSERT INTO artifacts "
++                "(id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
++                "VALUES (?, ?, ?, ?, ?, ?, 'application/octet-stream', ?, ?)",
++                (artifact_id, job_id, attempt_id, destination_rel, digest, size, role, now),
++            )
++    finally:
++        connection.close()
++    return artifact_id
++
++
++def ingest(
++    *,
++    data_dir: str | Path,
++    job_id: str,
++    run_id: str,
++    attempt_id: str,
++    route: str,
++    bundle: str | Path,
++    trigger: bool = True,
++) -> dict[str, Any]:
++    data_dir = Path(data_dir)
++    bundle = Path(bundle)
++    attempt = jobs.get_attempt(attempt_id, data_dir=data_dir)
++    if attempt is None:
++        raise IngestError("unknown attempt")
++    if attempt.run_id != run_id:
++        raise IngestError("attempt does not belong to run")
++    if attempt.route != route:
++        raise IngestError("route does not match attempt")
++    run = jobs.get_run(run_id, data_dir=data_dir)
++    if run is None or run.job_id != job_id:
++        raise IngestError("run does not belong to job")
++    if not bundle.is_dir():
++        raise IngestError("bundle must be a directory")
++    if not (bundle / "bundle.json").is_file() and (bundle / "handoff.json").is_file():
++        manifest, legacy_files = _legacy_payload(bundle, route)
++    else:
++        manifest = _read_manifest(bundle)
++        legacy_files = []
++    if manifest.get("route") not in (None, route):
++        raise IngestError("bundle route does not match attempt")
++
++    total = 0
++    evidence: dict[str, str] = {}
++    results: dict[str, str] = {}
++    for gate in GATES:
++        entry = (manifest.get("gates") or {}).get(gate) or {}
++        status = str(entry.get("status", "not_run"))
++        results[gate] = status
++        names = entry.get("artifacts") or []
++        if not isinstance(names, list):
++            raise IngestError(f"gate {gate} artifacts must be a list")
++        ids = []
++        for name in names:
++            if not isinstance(name, str):
++                raise IngestError(f"gate {gate} artifact name must be a string")
++            path = _safe_file(bundle, name)
++            total += path.stat().st_size
++            if total > MAX_TOTAL_BYTES:
++                raise IngestError("bundle exceeds total size limit")
++            ids.append(_register_file(data_dir=data_dir, job_id=job_id,
++                                      attempt_id=attempt_id, bundle=bundle,
++                                      relative=name, role=f"{gate.lower()}_evidence"))
++        if status == "passed" and not ids:
++            raise IngestError(f"gate {gate} passed without evidence")
++        if ids:
++            evidence[gate] = ids[0]
++
++    analysis_ids = []
++    for item in manifest.get("analysis") or []:
++        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
++            raise IngestError("analysis entries need path")
++        role = str(item.get("role") or "analysis")
++        if role not in ANALYSIS_ROLES and not role.startswith("analysis_"):
++            raise IngestError(f"unknown analysis role: {role}")
++        path = _safe_file(bundle, item["path"])
++        if role in ANALYSIS_ROLES:
++            try:
++                AnalysisArtifacts.model_validate(json.loads(path.read_text(encoding="utf-8")))
++            except Exception as exc:
++                raise IngestError(f"invalid analysis artifact {item['path']}: {exc}") from exc
++        analysis_ids.append(_register_file(
++            data_dir=data_dir, job_id=job_id, attempt_id=attempt_id, bundle=bundle,
++            relative=item["path"], role=role,
++        ))
++    if manifest.get("comparison"):
++        _register_file(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
++                       bundle=bundle, relative=str(manifest["comparison"]),
++                       role="behavior_comparison")
++
++    for name in legacy_files:
++        if name in ("handoff.json", "SHA256SUMS"):
++            continue
++        _register_file(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
++                       bundle=bundle, relative=name, role="legacy_artifact")
++
++    payload = {
++        "route": route,
++        "candidate_sha256": manifest["candidate_sha256"],
++        "results": results,
++        "evidence": evidence,
++        "details": {"analysis_artifact_ids": analysis_ids},
++    }
++    imported = import_bundle(
++        data_dir=data_dir, job_id=job_id, run_id=run_id, attempt_id=attempt_id,
++        bundle=payload, route=route, trigger=trigger,
++    )
++    return {"imported": imported, "evidence": evidence, "analysis_artifact_ids": analysis_ids}
++
++
++def main(argv: list[str] | None = None) -> int:
++    ap = argparse.ArgumentParser(prog="tools/route_bundle_ingest.py")
++    ap.add_argument("--data-dir", required=True, type=Path)
++    ap.add_argument("--job-id", required=True)
++    ap.add_argument("--run-id", required=True)
++    ap.add_argument("--attempt-id", required=True)
++    ap.add_argument("--route", required=True, choices=("route_a", "route_b"))
++    ap.add_argument("--bundle", required=True, type=Path)
++    ap.add_argument("--no-trigger", action="store_true")
++    args = ap.parse_args(argv)
++    try:
++        result = ingest(data_dir=args.data_dir, job_id=args.job_id, run_id=args.run_id,
++                        attempt_id=args.attempt_id, route=args.route,
++                        bundle=args.bundle, trigger=not args.no_trigger)
++    except (IngestError, OSError, ValueError) as exc:
++        print(f"route_bundle_ingest: {exc}", file=sys.stderr)
++        return 2
++    print(json.dumps(result, indent=2, sort_keys=True))
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
