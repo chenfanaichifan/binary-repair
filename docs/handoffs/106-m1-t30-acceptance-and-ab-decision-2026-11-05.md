@@ -243,8 +243,8 @@ malformed input contract. The clean form is a tagged union
 
 Shape sketch only — **not a fixture contract, not written anywhere**:
 `input_mode: "none"`, an `input_rejection: null` member, and no `invalid_*`
-keys. The exact `valid_behavior` bytes for T30 are the contract owner's to
-freeze against a repaired candidate; this record does not invent them.
+keys. The exact `valid_behavior` bytes for T30 are the contract owner's to freeze
+before a candidate is built; this record does not invent them.
 
 **Measured touch points.**
 
