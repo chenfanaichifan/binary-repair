@@ -52,7 +52,11 @@ Evidence: `docs/handoffs/evidence/t30-rebuild-2026-11-05/` (11 files,
 `01`–`05` and is unchanged). The same 11 files travel as
 `dist/M3-t30-rebuild-evidence-2026-11-05.zip` with a top-level digest in
 `dist/M3-t30-rebuild-evidence-2026-11-05.zip.sha256`, so the record can be read
-without this branch.
+without this branch. This record plus those 11 files also travel together as
+`dist/M3-118-handoff-2026-11-05.zip`, whose digest sits in the matching
+`.sha256` file; that bundle carries its own `SHA256SUMS` and an `INDEX.md`, and
+is the one to hand over when the reader needs the record and the evidence
+together.
 
 ---
 
