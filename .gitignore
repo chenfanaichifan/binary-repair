@@ -45,3 +45,9 @@ binaryrepair-synthetic-*/
 # to a stash and recovered it from stash@{0}^3 by hash. Ignoring costs nothing
 # because nothing here was ever in the index.
 .workbuddy/
+
+# Scratch output. dist/ is deliberately NOT here: it carries tracked
+# delivery artifacts that M4/M5 read, and ignoring it would hide updates.
+worklogs/
+.tmp/
+.dsh-acl-recovery/
