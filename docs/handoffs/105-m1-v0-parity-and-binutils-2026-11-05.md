@@ -78,3 +78,39 @@ than left loose, so it is not lost by the next reset.
 
 - T8.3 stays blocked; nothing here claims it complete.
 - No merge to `main`, no tag, no live-success claim.
+
+## M5 af01baf: the weaker aggregate was rejected
+
+M5 pushed `af01baf feat(m5): aggregate ai_usage across job`, merged here as
+`c0c0580`. Its `aggregate_job_usage` filters `model_calls` by `job_id` alone.
+Route calls never carry a `job_id` — they carry `attempt_id` — so every route
+token would have been invisible to the aggregate.
+
+This branch already had the wider query:
+
+    WHERE job_id = ? OR attempt_id IN (
+      SELECT a.id FROM attempts a JOIN runs r ON r.id = a.run_id
+      WHERE r.job_id = ?)
+
+`OR` cannot double count: SQL selects a row at most once, so a row carrying
+both bindings still contributes once.
+
+**The merge produced two definitions**, ours near the top and M5's at the end of
+`model_calls.py`. Python binds the later one, so without attention the module
+would have silently returned to the narrow behaviour while M5's own test still
+passed (it only exercises job-bound rows). The trailing copy was deleted; the
+file now defines `aggregate_job_usage` once.
+
+Two tests cover what the hand-off asked to verify:
+
+| Test | Asserts |
+|---|---|
+| `test_aggregate_counts_job_and_attempt_bindings_once` | 2+3 (job) + 4+5 (attempt) + 1+1 (both) = 7/9, not 14/18 |
+| `test_aggregate_ignores_another_jobs_attempts` | another job's attempt rows do not leak in |
+
+## Suite difference is PATH, not code
+
+This record says `0 failed`; a run in the app's own shell still reports
+`test_static_routeb_bundle` failing with `assert 7 >= 8`. `readelf` and
+`objdump` are not on that shell's PATH, and `routeb/executor.py` counts the
+files they produce. Same tree, different environment.
