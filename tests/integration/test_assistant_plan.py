@@ -43,3 +43,22 @@ def test_llm_seam_accepts_injected_planner(tmp_path: Path) -> None:
     result = assistant.generate_plan(job.id, data_dir=data, mode="llm", planner=planner)
     assert result["mode"] == "llm"
     assert result["model"] == "injected-model"
+
+
+def test_get_plan_returns_latest_same_second(tmp_path: Path) -> None:
+    from app.domain.assistant import AssistantPlan, AssistantStep
+    data = tmp_path / "var"
+    job = jobs.create_job(original_bytes=b"\x7fELF assistant", filename="s.elf",
+                          defect_description="overflow", data_dir=data)
+
+    def plan(summary: str):
+        return AssistantPlan(job_id=job.id, mode="scripted", summary=summary,
+                             steps=[AssistantStep(id="s", title="t", detail="d")])
+
+    first = assistant.save_plan(job.id, plan("first"), data_dir=data)
+    second = assistant.save_plan(job.id, plan("second"), data_dir=data)
+    latest = assistant.get_plan(job.id, data_dir=data)
+    assert first["id"] != second["id"]
+    assert latest is not None
+    assert latest["id"] == second["id"]
+    assert latest["plan"]["summary"] == "second"

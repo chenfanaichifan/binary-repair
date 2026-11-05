@@ -22,7 +22,7 @@ def get_plan(job_id: str, *, data_dir: str | Path) -> dict[str, Any] | None:
     connection = connect(data_dir)
     try:
         row = connection.execute(
-            "SELECT * FROM assistant_plans WHERE job_id = ? ORDER BY created_at DESC, id DESC LIMIT 1",
+            "SELECT * FROM assistant_plans WHERE job_id = ? ORDER BY rowid DESC LIMIT 1",
             (job_id,),
         ).fetchone()
     finally:
