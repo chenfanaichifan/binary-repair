@@ -1,23 +1,23 @@
-"""T8.2 LLM planner seam (M2)。
+"""T8.2 LLM planner implementation (owner: M2).
 
-范围（Lead 决定，T8.2 由 M2 承接）：
+M5 owns the stable seam (``app/services/assistant.py``) and persistence
+(``assistant_plans``).  This module only fills the ``client`` branch and must
+return an object that validates as :class:`app.domain.assistant.AssistantPlan`
+— the wire shape the GUI consumes.
 
-* ``BINARYREPAIR_ASSISTANT_MODE=llm`` 时的 prompt 构造；
-* 模型返回的 ``AssistantPlan`` 结构校验；
-* 任何失败都回退到确定性引导，并给出可展示的 ``fallback_reason``；
-* 调用 usage 记录（写入 ``model_calls`` 形状的 dict，交给调用方落库）；
-* 供 UI 使用的 mode / fallback 状态。
+Rules kept from the M2 draft:
 
-边界：
+* a model/schema/transport failure never raises and never returns half a plan;
+  it returns the deterministic guide marked ``mode="llm"``, ``fallback=True``
+  and a stable ``fallback_reason``;
+* ``plan_id`` is always present (the model may omit it, the schema requires it);
+* ``model`` / ``tokens`` are filled from the real response, never from what the
+  model claims; missing usage stays ``None`` (never ``0``);
+* ``model_calls`` gets one row per attempt, including fallbacks; no prompt,
+  raw content or key is written to the row or to logs.
 
-* 不实现 M5 的 deterministic planner，不改 ``app/domain/assistant.py`` /
-  ``004_assistant.sql`` / ``app/services/assistant.py`` 的持久化部分。
-* 不读环境里的 API key，不建 HTTP 连接。传输层通过 ``client`` 注入，具体走
-  哪条 trusted provider 路径待 M1 确认；未注入 client 时直接回退，不伪造计划。
-* 不把 prompt、模型原文或 key 写进日志/返回值。``PlanOutcome`` 只暴露长度、
-  模型名、token 计数与稳定的失败码。
-
-LLM 调用若在本进程内完成，key 只应存在于注入的 client 里；本模块从不接触它。
+Not in scope: persistence, the deterministic planner, the HTTP surface, and the
+``POST /api/assistant/plan`` endpoint (M1).
 """
 
 from __future__ import annotations
@@ -25,31 +25,40 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from dataclasses import dataclass, field
-from typing import Any, Mapping, Protocol, Sequence
+import uuid
+from dataclasses import dataclass
+from typing import Any, Mapping, Sequence
+
+from app.domain.assistant import AssistantPlan, deterministic_plan
+from app.services import model_calls
 
 __all__ = [
     "ASSISTANT_MODE_ENV",
     "DEFAULT_MODEL",
     "FallbackReason",
-    "PlanClient",
-    "PlanOutcome",
     "assistant_status",
     "build_messages",
     "generate_plan",
     "resolve_mode",
+    "resolve_model",
     "validate_plan",
 ]
 
 ASSISTANT_MODE_ENV = "BINARYREPAIR_ASSISTANT_MODE"
 ASSISTANT_MODEL_ENV = "BINARYREPAIR_ASSISTANT_MODEL"
 DEFAULT_MODEL = "deepseek-chat"
+MAX_OUTPUT_TOKENS = 1200
 
 MODES = ("llm", "deterministic", "fixture")
 
+#: ``model_calls.status`` values.  A fallback is recorded as a fallback; it is
+#: never stored as an accepted plan.
+STATUS_OK = "accepted_for_assistant"
+STATUS_FALLBACK = "fallback"
+
 
 class FallbackReason:
-    """稳定的回退原因码；展示层只翻译，不推断。"""
+    """Stable reason codes; the GUI translates them, it never infers them."""
 
     NO_CLIENT = "llm_client_not_configured"
     DISABLED = "assistant_mode_not_llm"
@@ -61,87 +70,20 @@ class FallbackReason:
     UNKNOWN = "llm_unknown_error"
 
 
-#: 计划步骤允许的交互类型。未知 kind 一律按 schema 失败处理，避免前端猜渲染方式。
-STEP_KINDS = ("upload", "question", "review")
-
-
-class PlanClient(Protocol):
-    """注入的传输层。
-
-    实现方负责鉴权与网络；本模块只消费返回值。返回值形如::
-
-        {"content": "<json string>", "model": "deepseek-chat",
-         "usage": {"prompt_tokens": 10, "completion_tokens": 20,
-                   "total_tokens": 30}, "request_id": "..."}
-
-    ``content`` 必须是 JSON 文本；也可以直接返回已解析的 dict。
-    """
-
-    def complete(self, messages: Sequence[Mapping[str, str]], *, model: str) -> Mapping[str, Any]:
-        ...
+class _TransportMissing(TypeError):
+    """The injected client exposes neither ``chat_json`` nor ``complete``."""
 
 
 @dataclass(frozen=True)
-class PlanOutcome:
-    """一次规划尝试的结果。``plan`` 只在 llm 成功时非空。"""
-
-    mode: str
-    plan: dict[str, Any] | None
-    fallback: bool
-    fallback_reason: str | None
-    model_requested: str
-    model_returned: str | None = None
-    usage: dict[str, Any] = field(default_factory=dict)
-    request_id: str | None = None
-    #: 仅用于排障的长度/指纹，绝不含原文。
-    prompt_chars: int = 0
-    prompt_sha256_prefix: str = ""
-
-    def as_agent_view(self) -> dict[str, Any]:
-        """给控制台徽章/侧栏用的最小视图（不含计划正文）。"""
-        return {
-            "mode": self.mode,
-            "fallback": self.fallback,
-            "fallback_reason": self.fallback_reason,
-            "model": self.model_returned or self.model_requested,
-            "tokens": {
-                "prompt": self.usage.get("prompt_tokens"),
-                "completion": self.usage.get("completion_tokens"),
-            },
-        }
-
-    def as_model_call_row(self, *, call_id: str, created_at: str) -> dict[str, Any]:
-        """映射成 ``model_calls`` 表的一行；调用方负责写库。
-
-        ``status`` 只有 ``ok`` / ``fallback``，不把失败伪装成成功。
-        """
-        row: dict[str, Any] = {
-            "id": call_id,
-            "model_requested": self.model_requested,
-            "model_returned": self.model_returned,
-            "status": "ok" if not self.fallback else "fallback",
-            "prompt_tokens": self.usage.get("prompt_tokens"),
-            "completion_tokens": self.usage.get("completion_tokens"),
-            "total_tokens": self.usage.get("total_tokens"),
-            "estimated_cost_usd": None,
-            "latency_ms": self.usage.get("latency_ms"),
-            "request_id": self.request_id,
-            "usage_json": json.dumps(
-                {
-                    "fallback_reason": self.fallback_reason,
-                    "prompt_chars": self.prompt_chars,
-                    "prompt_sha256_prefix": self.prompt_sha256_prefix,
-                },
-                ensure_ascii=True,
-                sort_keys=True,
-            ),
-            "created_at": created_at,
-        }
-        return row
+class _Response:
+    content: Any
+    model: str | None
+    usage: dict[str, Any]
+    request_id: str | None
 
 
 def resolve_mode(value: str | None = None) -> str:
-    """读取助手模式；未知取值一律视为 deterministic，不静默当成 llm。"""
+    """Read the assistant mode; unknown values are deterministic, never llm."""
     raw = (value if value is not None else os.environ.get(ASSISTANT_MODE_ENV, "")).strip().lower()
     return raw if raw in MODES else "deterministic"
 
@@ -151,14 +93,13 @@ def resolve_model(value: str | None = None) -> str:
 
 
 def assistant_status(*, mode: str | None = None, client_configured: bool | None = None) -> dict[str, Any]:
-    """UI 用的模式状态。
+    """Mode badge for the workbench.
 
-    ``available`` 只有在 llm 模式且确实注入了 client 时才为真。未接线时页面必须
-    显示“未接线”，不能显示成“已启用”。
+    ``available`` is true only in llm mode with an injected client.  Without an
+    explicit signal the page says "not wired", never "enabled".
     """
     resolved = resolve_mode(mode)
     if client_configured is None:
-        # 没有显式告知时按“未接线”处理：宁可显示未接线，也不冒充已启用。
         client_configured = False
     return {
         "mode": resolved,
@@ -173,104 +114,130 @@ def _fingerprint(text: str) -> str:
 
 
 def build_messages(description: str, *, context: Mapping[str, Any] | None = None) -> list[dict[str, str]]:
-    """构造规划用的对话消息。
+    """Build the planning messages.
 
-    prompt 只含用户描述与结构化上下文；不含任何凭据。输出要求严格 JSON，
-    便于校验失败时明确回退，而不是把半截文本当计划。
+    The prompt contains only the user description and structured context.  It
+    asks for one JSON object; the caller validates it, so a half-written answer
+    falls back instead of being rendered.
     """
     system = (
         "You are the planning assistant of a binary-repair workbench.\n"
         "Return ONLY a JSON object matching this shape:\n"
-        '{"mode":"llm","steps":[{"id":"string","title":"string",'
-        '"kind":"upload|question|review","prompt":"string","questions":'
-        '[{"key":"string","label":"string","required":true,"ascii":true,'
-        '"input":"text|textarea","default":"string"}], '
-        '"default":"string"}]}\n'
+        '{"plan_id":"string","mode":"llm","fallback":false,"fallback_reason":null,'
+        '"model":null,"tokens":null,"steps":[{"id":"string","kind":"upload|question|review",'
+        '"title":"string","prompt":"string","questions":[{"key":"string","label":"string",'
+        '"input":"text|textarea","required":true,"ascii":true,"default":"string"}]}]}\n'
         "Rules:\n"
-        "- You guide the user; you never create jobs, never start runs, never judge repairs.\n"
-        "- Do not invent hashes, verdicts, or evidence.\n"
-        "- Steps must be concrete and ordered; keep the number small (<= 6).\n"
-        "- Output ASCII English only for values that will be submitted to the backend.\n"
+        "- Every step needs a non-empty id, title and prompt; ids are unique.\n"
+        "- kind is upload, question or review; a question step needs >= 1 question.\n"
+        "- questions are only allowed on question steps; keys are unique per step.\n"
+        "- The last step must be kind=review.\n"
+        "- 1 to 6 steps, in the order the user should follow.\n"
+        "- Do not add fields outside this shape.\n"
+        "- You guide the user; you never create jobs, start runs or judge repairs.\n"
+        "- Never invent hashes, verdicts, evidence or token counts; model and tokens are filled by the caller.\n"
+        "- Use ASCII English for any value that will be submitted to the backend.\n"
         "- No markdown fences, no commentary."
     )
     payload: dict[str, Any] = {"description": description}
     if context:
-        payload["context"] = dict(context)
+        # data_dir and job_id are routing hints, not prompt material.
+        safe = {k: v for k, v in dict(context).items() if k not in ("data_dir",)}
+        if safe:
+            payload["context"] = safe
     user = json.dumps(payload, ensure_ascii=False, sort_keys=True)
     return [{"role": "system", "content": system}, {"role": "user", "content": user}]
 
 
+def _errors_of(payload: Any) -> list[str]:
+    """Schema errors without echoing model output.
+
+    ``include_input=False`` matters: pydantic's default errors carry the offending
+    value, which would put model text (and possibly user data) into a response.
+    """
+    if isinstance(payload, AssistantPlan):
+        return []
+    try:
+        AssistantPlan.model_validate(payload)
+    except Exception as exc:  # noqa: BLE001 - ValidationError and its subclasses
+        errors = getattr(exc, "errors", None)
+        if callable(errors):
+            try:
+                details = errors(include_input=False)
+            except TypeError:  # pragma: no cover - older pydantic
+                details = []
+            result: list[str] = []
+            for item in details[:20]:
+                loc = ".".join(str(part) for part in item.get("loc", ())) or "plan"
+                result.append(f"{loc}: {item.get('msg', 'invalid')}")
+            return result or ["plan does not match AssistantPlan v1"]
+        return ["plan does not match AssistantPlan v1"]
+    return []
+
+
 def validate_plan(plan: Any) -> list[str]:
-    """按前端消费契约校验计划；返回错误列表，空列表表示可渲染。"""
-    errors: list[str] = []
-    if not isinstance(plan, dict):
-        return ["plan is not an object"]
-    steps = plan.get("steps")
-    if not isinstance(steps, list) or not steps:
-        return ["steps must be a non-empty list"]
-    if len(steps) > 6:
-        errors.append("steps must contain at most 6 entries")
-
-    seen_ids: set[str] = set()
-    for index, step in enumerate(steps):
-        where = f"steps[{index}]"
-        if not isinstance(step, dict):
-            errors.append(f"{where} is not an object")
-            continue
-        step_id = step.get("id")
-        if not isinstance(step_id, str) or not step_id.strip():
-            errors.append(f"{where}.id must be a non-empty string")
-        elif step_id in seen_ids:
-            errors.append(f"{where}.id is duplicated")
-        else:
-            seen_ids.add(step_id)
-        if not isinstance(step.get("title"), str) or not step["title"].strip():
-            errors.append(f"{where}.title must be a non-empty string")
-        kind = step.get("kind")
-        if kind not in STEP_KINDS:
-            errors.append(f"{where}.kind must be one of {STEP_KINDS}")
-        if kind in ("question", "upload"):
-            if not isinstance(step.get("prompt"), str) or not step["prompt"].strip():
-                errors.append(f"{where}.prompt must be a non-empty string")
-        if kind == "question":
-            questions = step.get("questions")
-            if not isinstance(questions, list) or not questions:
-                errors.append(f"{where}.questions must be a non-empty list")
-                continue
-            keys: set[str] = set()
-            for q_index, question in enumerate(questions):
-                qwhere = f"{where}.questions[{q_index}]"
-                if not isinstance(question, dict):
-                    errors.append(f"{qwhere} is not an object")
-                    continue
-                key = question.get("key")
-                if not isinstance(key, str) or not key.strip():
-                    errors.append(f"{qwhere}.key must be a non-empty string")
-                elif key in keys:
-                    errors.append(f"{qwhere}.key is duplicated")
-                else:
-                    keys.add(key)
-                if not isinstance(question.get("label"), str) or not question["label"].strip():
-                    errors.append(f"{qwhere}.label must be a non-empty string")
-                if "required" in question and not isinstance(question["required"], bool):
-                    errors.append(f"{qwhere}.required must be a boolean")
-                if "ascii" in question and not isinstance(question["ascii"], bool):
-                    errors.append(f"{qwhere}.ascii must be a boolean")
-                if "input" in question and question["input"] not in ("text", "textarea"):
-                    errors.append(f"{qwhere}.input must be text or textarea")
-        if kind == "review" and "questions" in step and not isinstance(step["questions"], list):
-            errors.append(f"{where}.questions must be a list when present")
-    return errors
+    """Validate against AssistantPlan v1; ``[]`` means the GUI can render it."""
+    return _errors_of(plan)
 
 
-def _parse_content(content: Any) -> tuple[dict[str, Any] | None, str | None]:
-    if isinstance(content, dict):
-        return content, None
+def _field(response: Any, name: str) -> Any:
+    if isinstance(response, Mapping):
+        return response.get(name)
+    return getattr(response, name, None)
+
+
+def _usage_of(response: Any) -> dict[str, Any]:
+    usage = _field(response, "usage")
+    if not isinstance(usage, Mapping):
+        return {}
+    result: dict[str, Any] = {}
+    for key in ("prompt_tokens", "completion_tokens", "total_tokens", "latency_ms"):
+        value = usage.get(key)
+        if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+            result[key] = value
+    return result
+
+
+def _tokens_of(usage: Mapping[str, Any]) -> dict[str, int] | None:
+    prompt = usage.get("prompt_tokens")
+    completion = usage.get("completion_tokens")
+    if not isinstance(prompt, int) or not isinstance(completion, int):
+        return None
+    if prompt < 0 or completion < 0:
+        return None
+    return {"prompt": prompt, "completion": completion}
+
+
+def _invoke(client: Any, messages: Sequence[Mapping[str, str]], model: str) -> Any:
+    chat_json = getattr(client, "chat_json", None)
+    if callable(chat_json):
+        # The provider adapter used by M5: returns content/model/usage.
+        return chat_json(messages, max_tokens=MAX_OUTPUT_TOKENS, thinking=False)
+    complete = getattr(client, "complete", None)
+    if callable(complete):
+        return complete(messages, model=model)
+    raise _TransportMissing("client exposes neither chat_json nor complete")
+
+
+def _response_of(raw: Any) -> _Response:
+    content = _field(raw, "content")
+    model = _field(raw, "model")
+    request_id = _field(raw, "request_id")
+    return _Response(
+        content=content,
+        model=model if isinstance(model, str) and model else None,
+        usage=_usage_of(raw),
+        request_id=request_id if isinstance(request_id, str) and request_id else None,
+    )
+
+
+def _parse_content(content: Any) -> tuple[Any | None, str | None]:
+    if isinstance(content, Mapping):
+        return dict(content), None
     if not isinstance(content, str) or not content.strip():
         return None, FallbackReason.EMPTY
     text = content.strip()
     if text.startswith("```"):
-        # 容忍围栏，但仍然要求围栏内是合法 JSON。
         lines = [line for line in text.splitlines() if not line.strip().startswith("```")]
         text = "\n".join(lines).strip()
     try:
@@ -282,89 +249,140 @@ def _parse_content(content: Any) -> tuple[dict[str, Any] | None, str | None]:
     return parsed, None
 
 
-def _usage_of(response: Mapping[str, Any]) -> dict[str, Any]:
-    usage = response.get("usage")
-    if not isinstance(usage, Mapping):
-        return {}
-    result: dict[str, Any] = {}
-    for key in ("prompt_tokens", "completion_tokens", "total_tokens", "latency_ms"):
-        value = usage.get(key)
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
-            result[key] = int(value)
-    return result
+def _fallback(
+    description: str,
+    context: Mapping[str, Any] | None,
+    *,
+    reason: str,
+    requested: str,
+    returned: str | None = None,
+    usage: Mapping[str, Any] | None = None,
+) -> AssistantPlan:
+    base = deterministic_plan(description, dict(context) if context else None)
+    return base.model_copy(update={
+        "mode": "llm",
+        "fallback": True,
+        "fallback_reason": reason,
+        "model": returned,
+        "tokens": _tokens_of(usage or {}),
+    })
+
+
+def _record(
+    plan: AssistantPlan,
+    *,
+    context: Mapping[str, Any] | None,
+    requested: str,
+    returned: str | None,
+    usage: Mapping[str, Any],
+    request_id: str | None,
+    status: str,
+) -> None:
+    data_dir = context.get("data_dir") if isinstance(context, Mapping) else None
+    job_id = context.get("job_id") if isinstance(context, Mapping) else None
+    try:
+        model_calls.record_call(
+            data_dir=data_dir or "var",
+            model_requested=requested,
+            model_returned=returned,
+            status=status,
+            route="assistant",
+            usage=dict(usage) if usage else None,
+            request_id=request_id,
+            job_id=job_id,
+            plan_id=plan.plan_id,
+        )
+    except Exception:  # noqa: BLE001 - audit failure must not break planning
+        # A missing audit row is reported by ai_usage being unavailable; it is
+        # never replaced by a fabricated zero.
+        pass
 
 
 def generate_plan(
     description: str,
     *,
     context: Mapping[str, Any] | None = None,
-    client: PlanClient | None = None,
-    mode: str | None = None,
-    model: str | None = None,
-) -> PlanOutcome:
-    """生成计划；失败一律回退，绝不返回半成品计划。
+    client: Any | None = None,
+    mode: str | None = "llm",
+) -> AssistantPlan:
+    """Return a plan for the ``client`` branch of the M5 seam.
 
-    调用方（M5 的持久化层 / 路由）负责把 ``as_agent_view()`` 放进响应、
-    把 ``as_model_call_row()`` 写进 ``model_calls``。
+    Called as ``assistant_llm.generate_plan(description, context=..., client=...,
+    mode="llm")`` from ``app/services/assistant.py``.  Never raises on model
+    failure; the caller persists whatever comes back.
     """
     resolved = resolve_mode(mode)
-    requested = resolve_model(model)
-    messages = build_messages(description, context=context)
-    prompt_text = messages[-1]["content"]
-    base = {
-        "model_requested": requested,
-        "prompt_chars": len(prompt_text),
-        "prompt_sha256_prefix": _fingerprint(prompt_text),
-    }
+    requested = resolve_model()
 
     if resolved != "llm":
-        return PlanOutcome(mode=resolved, plan=None, fallback=False, fallback_reason=None, **base)
+        # Defensive: the seam only routes here in llm mode.
+        return deterministic_plan(description, dict(context) if context else None)
     if client is None:
-        return PlanOutcome(
-            mode=resolved,
-            plan=None,
-            fallback=True,
-            fallback_reason=FallbackReason.NO_CLIENT,
-            **base,
-        )
+        plan = _fallback(description, context, reason=FallbackReason.NO_CLIENT,
+                         requested=requested)
+        _record(plan, context=context, requested=requested, returned=None,
+                usage={}, request_id=None, status=STATUS_FALLBACK)
+        return plan
 
+    messages = build_messages(description, context=context)
     try:
-        response = client.complete(messages, model=requested)
+        raw = _invoke(client, messages, requested)
     except TimeoutError:
-        return PlanOutcome(mode=resolved, plan=None, fallback=True,
-                           fallback_reason=FallbackReason.TIMEOUT, **base)
+        plan = _fallback(description, context, reason=FallbackReason.TIMEOUT,
+                         requested=requested)
+        _record(plan, context=context, requested=requested, returned=None,
+                usage={}, request_id=None, status=STATUS_FALLBACK)
+        return plan
     except ConnectionError:
-        return PlanOutcome(mode=resolved, plan=None, fallback=True,
-                           fallback_reason=FallbackReason.NETWORK, **base)
-    except Exception:  # noqa: BLE001 - 任何传输异常都必须降级，且不回显原文
-        return PlanOutcome(mode=resolved, plan=None, fallback=True,
-                           fallback_reason=FallbackReason.UNKNOWN, **base)
+        plan = _fallback(description, context, reason=FallbackReason.NETWORK,
+                         requested=requested)
+        _record(plan, context=context, requested=requested, returned=None,
+                usage={}, request_id=None, status=STATUS_FALLBACK)
+        return plan
+    except _TransportMissing:
+        plan = _fallback(description, context, reason=FallbackReason.NO_CLIENT,
+                         requested=requested)
+        _record(plan, context=context, requested=requested, returned=None,
+                usage={}, request_id=None, status=STATUS_FALLBACK)
+        return plan
+    except Exception:  # noqa: BLE001 - transport failures downgrade, never leak
+        plan = _fallback(description, context, reason=FallbackReason.UNKNOWN,
+                         requested=requested)
+        _record(plan, context=context, requested=requested, returned=None,
+                usage={}, request_id=None, status=STATUS_FALLBACK)
+        return plan
 
-    if not isinstance(response, Mapping):
-        return PlanOutcome(mode=resolved, plan=None, fallback=True,
-                           fallback_reason=FallbackReason.UNKNOWN, **base)
+    response = _response_of(raw)
+    payload, parse_reason = _parse_content(response.content)
+    if payload is None:
+        plan = _fallback(description, context, reason=parse_reason or FallbackReason.EMPTY,
+                         requested=requested, returned=response.model,
+                         usage=response.usage)
+        _record(plan, context=context, requested=requested, returned=response.model,
+                usage=response.usage, request_id=response.request_id,
+                status=STATUS_FALLBACK)
+        return plan
 
-    usage = _usage_of(response)
-    returned_model = response.get("model") if isinstance(response.get("model"), str) else None
-    request_id = response.get("request_id") if isinstance(response.get("request_id"), str) else None
+    payload = dict(payload)
+    # Identity and accounting are server-side facts; do not trust the model's.
+    payload.setdefault("plan_id", uuid.uuid4().hex)
+    payload["mode"] = "llm"
+    payload["fallback"] = False
+    payload["fallback_reason"] = None
+    payload["model"] = response.model
+    payload["tokens"] = _tokens_of(response.usage)
 
-    plan, parse_reason = _parse_content(response.get("content"))
-    if plan is None:
-        # 空内容/坏 JSON/非对象：都是回退，不猜计划。
-        return PlanOutcome(
-            mode=resolved, plan=None, fallback=True, fallback_reason=parse_reason,
-            model_returned=returned_model, usage=usage, request_id=request_id, **base
-        )
-
-    errors = validate_plan(plan)
+    errors = _errors_of(payload)
     if errors:
-        return PlanOutcome(
-            mode=resolved, plan=None, fallback=True, fallback_reason=FallbackReason.SCHEMA,
-            model_returned=returned_model, usage=usage, request_id=request_id, **base
-        )
+        plan = _fallback(description, context, reason=FallbackReason.SCHEMA,
+                         requested=requested, returned=response.model,
+                         usage=response.usage)
+        _record(plan, context=context, requested=requested, returned=response.model,
+                usage=response.usage, request_id=response.request_id,
+                status=STATUS_FALLBACK)
+        return plan
 
-    plan.setdefault("mode", "llm")
-    return PlanOutcome(
-        mode=resolved, plan=plan, fallback=False, fallback_reason=None,
-        model_returned=returned_model, usage=usage, request_id=request_id, **base
-    )
+    plan = AssistantPlan.model_validate(payload)
+    _record(plan, context=context, requested=requested, returned=response.model,
+            usage=response.usage, request_id=response.request_id, status=STATUS_OK)
+    return plan

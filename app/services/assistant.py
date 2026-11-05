@@ -125,6 +125,8 @@ def assistant_context(job: Any, *, data_dir: str | Path) -> dict[str, Any]:
         "defect_description": job.defect_description,
         "phase": job.phase,
         "original_sha256": job.original_sha256,
+        "job_id": job.id,
+        "data_dir": str(data_dir),
     }
 
 
@@ -140,6 +142,8 @@ def generate_plan(description: str | None = None, *, context: dict | None = None
     """
     if mode not in (None, "deterministic", "llm"):
         raise ValueError(f"unknown assistant mode: {mode!r}")
+    if context is None and data_dir is not None:
+        context = {"data_dir": str(data_dir), "job_id": job_id}
     if description is None:
         if job_id is None or data_dir is None:
             raise ValueError("description or job_id+data_dir is required")

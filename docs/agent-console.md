@@ -73,24 +73,24 @@
 
 ## 四之二、T8.2 LLM planner 接缝（`app/services/assistant_llm.py`）
 
-Lead 决定把 T8.2 从 M5 转给 M2。本分支只实现**不依赖 M5 持久化**的那一半：
+M2 已接管该模块，并接上 M5 的稳定接缝
+`app/services/assistant.py: generate_plan(..., client=..., planner=...)`。
+不编辑 `assistant.py`，不碰持久化。
 
 | 范围 | 状态 |
 |---|---|
-| `BINARYREPAIR_ASSISTANT_MODE=llm` 的 prompt 构造 | 已实现（`build_messages`） |
-| `AssistantPlan` 结构校验 | 已实现（`validate_plan`，按前端消费契约） |
-| 失败回退 + 稳定原因码 | 已实现（`generate_plan` 永不返回半成品计划） |
-| usage 记录形状 | 已实现（`PlanOutcome.as_model_call_row`，映射 `model_calls`） |
-| mode / fallback UI | 已实现（`assistant_status` + 徽章 + 降级横幅） |
-| 真实传输 | **未接**：`client` 由调用方注入，本模块不建连接、不读 key |
+| 输入 | `description` + `context`；`context.data_dir` / `context.job_id` 只用于审计路由，不进 prompt |
+| 传输 | `client.chat_json(messages, max_tokens=..., thinking=False)`；兼容旧 `client.complete(messages, model=...)` |
+| 输出 | `AssistantPlan`（`app/domain/assistant.py`）——M5 直接 `model_validate` 并落 `assistant_plans` |
+| 失败 | 返回确定性引导包装：`mode="llm"`、`fallback=True`、`fallback_reason` 稳定码；**不抛异常、不返回半成品** |
+| 账号字段 | `plan_id` 缺省时补 uuid；`model` / `tokens` 只取响应真值，缺失为 `null`，不填 0 |
+| 审计 | 每次尝试写一行 `model_calls`（成功 `accepted_for_assistant`，失败 `fallback`）；写库失败不影响计划返回 |
+| 安全 | 不读 key、不建连接、不记录 prompt/模型原文；schema 错误用 `include_input=False` |
 
-传输路径待定：按分工需 M1 确认 LLM 调用走 trusted provider 的哪条路径。在确认前：
+`planner=` 是 M5 给测试注入假计划的 seam：只要传了 `planner`，`assistant.py` 就不会走到
+本模块。M2 的 fake transport 同时覆盖 `chat_json` 与 `complete` 两种形状。
 
-- 不传 `client` → 直接回退，`fallback_reason=llm_client_not_configured`；
-- 页面显示「助手模式：llm（未接线）」+ 降级横幅，而不是伪装成已启用；
-- key 只在注入的 client 里；本模块与日志/返回值都不接触 key、prompt 原文。
-
-M5 的 `app/domain/assistant.py`、`004_assistant.sql`、`app/services/assistant.py` 持久化部分不在本文件改动范围内。等 M5 在 `generate_plan` 留出可注入 client 的分支后，接线只需把 `client` 传进来。
+`/agent/new` 仍等 M1 的无 job_id 端点（`POST /api/assistant/plan`），本轮不自己造。
 
 ## 四之三、M1 交接（`97-m1-review-closeout`）
 
