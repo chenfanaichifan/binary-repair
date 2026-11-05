@@ -3,14 +3,15 @@
 - Date: 2026-11-05
 - Owner: M1 (host backend)
 - Source: `origin/m3/cwe122-fixture-build` @
-  `977011425c317a3e3cd47dd6582740857e82e568`
+  `87f63502d0fc5679f9dd797b7adc20c2069a5d39`
 - Status: **evidence delivered**. T30 build/trigger status is unchanged; M1 does
   not ask M4 to upgrade record 118.
 
 ## What is here
 
 ```
-t30-rebuild-2026-11-05/                  the 10 evidence files, byte-identical to M3
+t30-rebuild-2026-11-05/                  the 11 evidence files, byte-identical to M3
+  00-window-host.txt
   01-window-and-isolation.txt
   02-build.txt
   03-readelf.txt
@@ -21,7 +22,7 @@ t30-rebuild-2026-11-05/                  the 10 evidence files, byte-identical t
   collect.sh
   README.md
   SHA256SUMS
-M3-t30-rebuild-evidence-2026-11-05.zip   original transport zip (10 members)
+M3-t30-rebuild-evidence-2026-11-05.zip   original transport zip (11 members)
 M3-t30-rebuild-evidence-2026-11-05.zip.sha256
 PROVENANCE.md                            canonical T30 path + c274893 git binding
 VERIFICATION.txt                         the checks run on this copy
@@ -29,7 +30,7 @@ SHA256SUMS                               hashes for the files at this level
 ```
 
 The zip's top-level SHA-256 is
-`c56c2ef5ad8587f3a75b88fa550dd8c880cfba24309d7cea55e9de8fbd36f12c`.
+`968fb8d9a80f991567c0cdd1e082a844556ef6405ee366786e2b3b7a010fcbd5`.
 
 ## How to verify
 
@@ -37,7 +38,7 @@ The zip's top-level SHA-256 is
 # top-level transport hash
 shasum -a 256 -c M3-t30-rebuild-evidence-2026-11-05.zip.sha256
 
-# extracted directory manifest: 9/9
+# extracted directory manifest: 10/10
 cd t30-rebuild-2026-11-05 && shasum -a 256 -c SHA256SUMS
 
 # guest transport manifest: 5/5

@@ -75,15 +75,15 @@ the canonical path above is the identity.
 | Field | Value |
 |---|---|
 | source branch | `origin/m3/cwe122-fixture-build` |
-| source commit | `977011425c317a3e3cd47dd6582740857e82e568` |
+| source commit | `87f63502d0fc5679f9dd797b7adc20c2069a5d39` |
 | source directory | `docs/handoffs/evidence/t30-rebuild-2026-11-05/` |
 | transport zip | `dist/M3-t30-rebuild-evidence-2026-11-05.zip` on that branch |
-| zip SHA-256 | `c56c2ef5ad8587f3a75b88fa550dd8c880cfba24309d7cea55e9de8fbd36f12c` |
-| zip members | 10: `01`–`07`, `collect.sh`, `README.md`, `SHA256SUMS` |
-| directory `SHA256SUMS` | 9/9 verified (covers 01–07, README.md, collect.sh) |
+| zip SHA-256 | `968fb8d9a80f991567c0cdd1e082a844556ef6405ee366786e2b3b7a010fcbd5` |
+| zip members | 11: `00-window-host.txt`, `01`–`07`, `collect.sh`, `README.md`, `SHA256SUMS` |
+| directory `SHA256SUMS` | 10/10 verified (covers 00–07, README.md, collect.sh) |
 | guest `06-SHA256SUMS` | 5/5 verified (covers 01–05) |
 
-The zip extracts to `t30-rebuild-2026-11-05/`. The 10 files in this delivery
+The zip extracts to `t30-rebuild-2026-11-05/`. The 11 files in this delivery
 folder are byte-identical to the source branch; they were not edited.
 
 ## 5. What changed in this delivery

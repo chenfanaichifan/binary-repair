@@ -18,9 +18,9 @@ and canonical-path follow-up.
 
 | Item | Status | Basis |
 |---|---|---|
-| Record 118 evidence | **DELIVERED, readable** | 10 files + transport zip at `delivery/t30-rebuild-2026-11-05/`; source `origin/m3/cwe122-fixture-build` @ `9770114` |
-| Top-level zip SHA-256 | `c56c2ef5…36f12c` | sibling `.sha256` matches the zip |
-| Directory manifest | **9/9 OK** | `t30-rebuild-2026-11-05/SHA256SUMS` |
+| Record 118 evidence | **DELIVERED, readable** | 11 files + transport zip at `delivery/t30-rebuild-2026-11-05/`; source `origin/m3/cwe122-fixture-build` @ `87f6350` |
+| Top-level zip SHA-256 | `968fb8d9…0fcbd5` | sibling `.sha256` matches the zip |
+| Directory manifest | **10/10 OK** | `t30-rebuild-2026-11-05/SHA256SUMS` |
 | Guest transport manifest | **5/5 OK** | `06-SHA256SUMS` |
 | 118 conformance | **21 fields: 20 match, 1 differs by design** | `07-rebuild.json`; the difference is `window.is_baseline` |
 | M4 upgrade of 118 | **not requested** | M4 may verify now that the bytes are readable; M1 does not ask |
@@ -42,7 +42,7 @@ it was fetched, verified and placed at a path M4/M5 can read:
 
 ```
 delivery/t30-rebuild-2026-11-05/
-  M3-t30-rebuild-evidence-2026-11-05.zip          (10 members)
+  M3-t30-rebuild-evidence-2026-11-05.zip          (11 members)
   M3-t30-rebuild-evidence-2026-11-05.zip.sha256   (top-level digest)
   PROVENANCE.md                                   (canonical path + c274893)
   README.md                                       (verification/upgrade boundary)
@@ -51,6 +51,7 @@ delivery/t30-rebuild-2026-11-05/
 The zip members are the required set:
 
 ```
+00-window-host.txt
 01-window-and-isolation.txt
 02-build.txt
 03-readelf.txt
@@ -72,17 +73,17 @@ plus its top-level hash and the two provenance/readme files.
 | Item | Value |
 |---|---|
 | source branch | `origin/m3/cwe122-fixture-build` |
-| source commit | `977011425c317a3e3cd47dd6582740857e82e568` |
+| source commit | `87f63502d0fc5679f9dd797b7adc20c2069a5d39` |
 | source directory | `docs/handoffs/evidence/t30-rebuild-2026-11-05/` |
 | transport zip | `dist/M3-t30-rebuild-evidence-2026-11-05.zip` on that branch |
-| zip SHA-256 | `c56c2ef5ad8587f3a75b88fa550dd8c880cfba24309d7cea55e9de8fbd36f12c` |
+| zip SHA-256 | `968fb8d9a80f991567c0cdd1e082a844556ef6405ee366786e2b3b7a010fcbd5` |
 
 Verification run by M1:
 
 - top-level `.sha256` matches the zip;
-- directory `SHA256SUMS` 9/9 (covers `01`–`07`, `README.md`, `collect.sh`);
+- directory `SHA256SUMS` 10/10 (covers `00`–`07`, `README.md`, `collect.sh`);
 - guest `06-SHA256SUMS` 5/5 (covers `01`–`05`);
-- zip contains exactly the 10 files above, under `t30-rebuild-2026-11-05/`;
+- zip contains exactly the 11 files above, under `t30-rebuild-2026-11-05/`;
 - extracted files are byte-identical to the directory.
 
 The package's own `07-rebuild.json` tabulates **21** fields: **20 match**, one
@@ -98,7 +99,7 @@ Record 106 said the missing package was why M4 could not verify the rebuild. The
 package is now readable, so that specific blocker is gone. It does **not**
 follow that M4 must or should upgrade record 118, and M1 does not ask for it.
 
-- M4 can now re-hash the 10 files and the top-level zip, and decide whether to
+- M4 can now re-hash the 11 files and the top-level zip, and decide whether to
   verify the rebuild. That decision is M4's record to write.
 - M1 does not promote `V1`/`V5`, does not call the rebuild M4-verified, and does
   not change T30's status. `PASS WITH LIMITATIONS` remains the M1-side status.
@@ -239,7 +240,7 @@ Delivery checks:
 
 ```
 cd delivery && shasum -a 256 -c SHA256SUMS              # 4/4
-cd delivery/t30-rebuild-2026-11-05 && unzip -l M3-t30-rebuild-evidence-2026-11-05.zip   # 10 members
+cd delivery/t30-rebuild-2026-11-05 && unzip -l M3-t30-rebuild-evidence-2026-11-05.zip   # 11 members
 ```
 
 The 118 package's own checks are in `VERIFICATION.txt` in the workspace copy and
@@ -254,7 +255,7 @@ in the package `README.md`.
 | `delivery/t30-rebuild-2026-11-05/` | the tracked 118 delivery: zip, top-level `.sha256`, `PROVENANCE.md`, `README.md` |
 | `delivery/SHA256SUMS` | hashes for the delivery files |
 | `delivery/MANIFEST.md` | the three new rows (zip, provenance, readme) |
-| `M1-T30-118-evidence-2026-11-05/` (workspace) | extracted 10 files, transport zip, `PROVENANCE.md`, `README-M1.md`, `VERIFICATION.txt`, wrapper `SHA256SUMS` |
+| `M1-T30-118-evidence-2026-11-05/` (workspace) | extracted 11 files, transport zip, `PROVENANCE.md`, `README-M1.md`, `VERIFICATION.txt`, wrapper `SHA256SUMS` |
 
 ---
 

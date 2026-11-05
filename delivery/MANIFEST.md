@@ -12,7 +12,7 @@ position; the hash is authoritative.
 | `dist/m5-routea-c4a159-2026-10-22.zip` | Route A artifact for the c4a159 candidate | M4, M5 |
 | `dist/p3b-fixed-c-2026-10-29.zip` | Fixed C source for P3B | M3 |
 | `dist/README.md` | Original description of the `dist/` packages | all |
-| `delivery/t30-rebuild-2026-11-05/M3-t30-rebuild-evidence-2026-11-05.zip` | Record 118 evidence: 01–07, `collect.sh`, `SHA256SUMS`; top-level hash in the sibling `.sha256` | M4, M5 |
+| `delivery/t30-rebuild-2026-11-05/M3-t30-rebuild-evidence-2026-11-05.zip` | Record 118 evidence: 00–07, `collect.sh`, `SHA256SUMS`; top-level hash in the sibling `.sha256` | M4, M5 |
 | `delivery/t30-rebuild-2026-11-05/PROVENANCE.md` | T30 canonical path (`docs/handoffs/evidence/T30/build/original.elf`) and the `c274893` git binding | M4, M5 |
 | `delivery/t30-rebuild-2026-11-05/README.md` | Delivery/verification instructions and the upgrade boundary | M4, M5 |
 

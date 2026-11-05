@@ -78,7 +78,7 @@ M1 re-ran those package checks here; they are recorded in
 | Limitation | Consequence |
 |---|---|
 | M4 did not rebuild and did not run the trigger | the rebuild is accepted **as reported**, not independently reproduced |
-| ~~The record 118 evidence package is absent~~ — **resolved by record 107** | the 10 files are now at `delivery/t30-rebuild-2026-11-05/`; the top-level zip and both manifests re-hash there. The original absence was the limitation; it is no longer one |
+| ~~The record 118 evidence package is absent~~ — **resolved by record 107** | the 11 files are now at `delivery/t30-rebuild-2026-11-05/`; the top-level zip and both manifests re-hash there. The original absence was the limitation; it is no longer one |
 | The guest is not available in this session | no M1 re-run of `build.sh` or `trigger.sh` |
 | Scope is gcc 13.3.0 / glibc 2.39 / this guest image | no claim about another compiler, libc, or distribution |
 | The trigger is deterministic only under `setarch -R` | with ASLR on, 10 runs produced 10 distinct `stdout` values; `05040a` is the no-ASLR observation, not a universal one |
