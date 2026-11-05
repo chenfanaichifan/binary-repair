@@ -41,11 +41,12 @@
 {% for key, route in bundle.routes.items() %}
 <h3>Route {{ key }}</h3>
 <table>
-  <tr><th>Outcome (from controller)</th><td>{{ route.outcome if route.outcome is not none else "not_run" }}</td></tr>
-  <tr><th>Reason</th><td>{{ route.reason or "not_run" }}</td></tr>
-  <tr><th>Failing obligation</th><td>{{ route.failing_obligation or "not_run" }}</td></tr>
+  <tr><th>Outcome (from controller)</th><td>{{ route.outcome if route.outcome is not none else "none (not reported by the controller)" }}</td></tr>
+  <tr><th>Reason</th><td>{{ route.reason or "none" }}</td></tr>
+  <tr><th>Failing obligation</th><td>{{ route.failing_obligation or "none" }}</td></tr>
   <tr><th>Candidate SHA-256</th><td><code>{{ route.candidate_sha256 or "not_available" }}</code></td></tr>
-  <tr><th>Verification</th><td>{{ route.verification or "not_run" }}</td></tr>
+  <tr><th>Verification</th><td>{{ route.verification or "not_reported" }}</td></tr>
+  <tr><th>Evidence state</th><td>{{ route.evidence_state or "unknown" }}</td></tr>
 </table>
 <table>
   <thead><tr><th>ID</th><th>Kind</th><th>Required</th><th>Result</th><th>Scope</th><th>Reason</th></tr></thead>
@@ -60,7 +61,7 @@
       <td>{{ row.reason or row.detail or "" }}</td>
     </tr>
   {% else %}
-    <tr><td colspan="6" class="notrun">not_run (no obligation rows returned by the controller)</td></tr>
+    <tr><td colspan="6" class="notrun">no obligation rows were returned by the controller{% if route.evidence_state == "not_persisted" %} (evidence: not_persisted); an empty table is not a pass{% endif %}</td></tr>
   {% endfor %}
   </tbody>
 </table>
@@ -111,7 +112,7 @@
   {% for item in bundle.not_run %}
     <tr><td>{{ item.route }}</td><td>{{ item.obligation }}</td><td class="notrun">{{ item.result }}</td><td>{{ item.reason or "" }}</td></tr>
   {% else %}
-    <tr><td colspan="4">No non-passing obligations were returned.</td></tr>
+    <tr><td colspan="4">{% if bundle.evidence_pending %}No obligation results have been received (evidence: not_persisted); this is missing evidence, not a pass.{% else %}No non-passing obligation rows were returned.{% endif %}</td></tr>
   {% endfor %}
   </tbody>
 </table>

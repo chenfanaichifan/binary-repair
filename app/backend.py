@@ -218,6 +218,9 @@ def build_export_bundle(
             "sources": ["GET /api/jobs/{id}", "GET /api/jobs/{id}/obligations", "GET /api/jobs/{id}/artifacts"],
             "gui_computes_outcome": False,
         },
+        "evidence_pending": any(
+            route["evidence_state"] == "not_persisted" for route in routes_out.values()
+        ),
         "limitations": limitations,
         "not_run": not_run,
         "manifest_sha256": manifest,
