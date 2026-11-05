@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "contract": {
+    "sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b",
+    "schema_version": 3,
+    "input_mode": "none",
+    "invalid": "not_applicable"
+  },
+  "gates": [
+    {
+      "gate": "V0",
+      "kind": "identity",
+      "scope": "metadata",
+      "file": "v0-identity.json",
+      "result": "passed",
+      "detail": "original c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9 candidate 46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0"
+    },
+    {
+      "gate": "V1",
+      "kind": "structure",
+      "scope": "binary",
+      "file": "audit.json",
+      "result": "passed",
+      "detail": "5 changed bytes, all inside the recorded interval; size 25344 -> 25344; segments and section layout unchanged"
+    },
+    {
+      "gate": "V2",
+      "kind": "interface",
+      "scope": "binary",
+      "file": "v2-interface.json",
+      "result": "not_run",
+      "detail": "no interface check is implemented in Route B; the file records a static observation (pass=true) and claims no verdict"
+    },
+    {
+      "gate": "V3",
+      "kind": "behaviour",
+      "scope": "replay",
+      "file": "manifest-repaired.json",
+      "result": "passed",
+      "detail": "input_mode=none, valid 1/1, passed=1 total=1, invalid=not_applicable"
+    },
+    {
+      "gate": "V4",
+      "kind": "symbolic",
+      "scope": "model",
+      "file": "v4-symbolic.json",
+      "result": "not_run",
+      "detail": "no symbolic engine ran; not a binary-level claim"
+    },
+    {
+      "gate": "V5",
+      "kind": "reproducibility",
+      "scope": "replay",
+      "file": "reproducibility.json",
+      "result": "passed",
+      "detail": "source rebuilt twice to the same digest; patch replayed twice to the same digest"
+    }
+  ],
+  "control": {
+    "file": "manifest-repaired-original.json",
+    "note": "the same runner and manifest pointed at the unrepaired original",
+    "valid": "0/1",
+    "passed": 0,
+    "total": 1,
+    "repaired_pass": false,
+    "stdout_hex": "4ba2020a"
+  },
+  "not_claimed": [
+    "Gate 4 acceptance",
+    "T8.3 relief",
+    "a second defect class or a second sample",
+    "binary-level V4"
+  ]
+}

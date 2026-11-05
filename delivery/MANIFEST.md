@@ -16,6 +16,8 @@ position; the hash is authoritative.
 | `delivery/t30-rebuild-2026-11-05/PROVENANCE.md` | T30 canonical path (`docs/handoffs/evidence/T30/build/original.elf`) and the `c274893` git binding | M4, M5 |
 | `delivery/t30-rebuild-2026-11-05/README.md` | Delivery/verification instructions and the upgrade boundary | M4, M5 |
 
+| `delivery/cwe416-124-candidate-2026-11-05.zip` | CWE416 candidate 124 + controller-ingest evidence; top-level hash in the sibling `.sha256` | M4, M5, M3 |
+
 ## Adding an entry
 
 1. Put the artifact in `delivery/` (new hand-offs) or leave it in `dist/`
