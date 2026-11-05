@@ -1081,7 +1081,7 @@
       state.stepIndex += 1;
       renderCurrentStep();
     } else if (!state.plan) {
-      pushMessage("assistant", "后端还没有提供引导计划（M5 的 assistant seam 未接入）。你可以点上方「切换到表单」，或用 /agent?fixture=1 预览控制台。");
+      pushMessage("assistant", "后端还没有提供引导计划（需要 M1 的 assistant 端点 + M5 的 planner）。你可以点上方「改用表单建单」，或打开 /agent/new?fixture=1 预览控制台。");
     } else {
       pushMessage("assistant", "这一步请直接在上方卡片里填写，或点「使用默认答案」。");
     }
@@ -1150,7 +1150,7 @@
       pushMessage(
         "assistant",
         "已打开任务 " + state.jobId + "。上面的对话来自本机保存的该任务记录；我会每 2 秒刷新状态。" +
-        "引导计划需要 M5 的 assistant seam 接入后才会出现在这里。",
+        "引导计划需要 M1 的 assistant 端点与 M5 的 planner 接入后才会出现在这里。",
         { replay: true }
       );
       setText("agent-side-step", "后端未提供");
@@ -1158,12 +1158,12 @@
     } else if (PLAN_FIXTURE) {
       state.plan = FIXTURES.plan;
       startGuidedFlow();
-      pushMessage("assistant", "说明：本页的引导计划来自占位 fixture（M5 的 assistant seam 未接入），但你点击「创建任务」后会真实提交到本机后端。");
+      pushMessage("assistant", "说明：本页的引导计划来自占位 fixture（真实计划需要 M1 的端点与 M5 的 planner），但你点击「创建任务」后会真实提交到本机后端。");
     } else {
       clear(stream());
       pushMessage("assistant",
-        "后端还没有提供引导计划（M5 的 assistant seam 未接入），所以这里暂时不能对话式建单。\n" +
-        "你可以点上方「切换到表单」用现有页面建单，或打开 /agent?fixture=1 预览控制台的完整交互。");
+        "后端还没有提供引导计划（需要 M1 的 assistant 端点 + M5 的 planner），所以这里暂时不能对话式建单。\n" +
+        "你可以点上方「改用表单建单」提交完整材料，或打开 /agent/new?fixture=1 预览控制台的完整交互。");
       setText("agent-side-step", "后端未提供");
       setText("agent-poll", "未选择任务");
     }
