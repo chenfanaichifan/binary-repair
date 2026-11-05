@@ -115,7 +115,7 @@ def main() -> int:
             shot("01-home.png", full=True)
 
             # 02 控制台 · 引导首屏（上传卡）
-            go("/agent?fixture=1")
+            go("/agent/new?fixture=1")
             session.wait_js('document.querySelector(\'[data-testid="agent-dropzone"]\') !== null')
             shot("02-agent-guided.png")
 
@@ -144,7 +144,7 @@ def main() -> int:
             )
 
             # 03 控制台 · 问题卡（真实读取样本后）
-            go("/agent?plan=fixture")
+            go("/agent/new?plan=fixture")
             session.wait_js('document.querySelector(\'[data-testid="agent-dropzone"]\') !== null')
             session.set_file_input('[data-testid="agent-file-input"]', str(sample))
             session.wait_js('document.querySelector(\'[data-testid="agent-field-defect"]\') !== null')
@@ -165,25 +165,25 @@ def main() -> int:
             shot("04-agent-review.png")
 
             # 05 等待回传
-            go("/agent?fixture=1&scenario=pending")
+            go("/agent/new?fixture=1&scenario=pending")
             session.click('[data-testid="agent-tab-result"]')
             session.wait_js('!document.querySelector(\'[data-testid="agent-receipt-placeholder"]\').hidden')
             shot("05-agent-pending.png")
 
             # 06 成功 · 结果屏
-            go("/agent?fixture=1&scenario=success")
+            go("/agent/new?fixture=1&scenario=success")
             session.click('[data-testid="agent-tab-result"]')
             session.wait_js('document.querySelector(\'[data-testid="agent-before-after"] pre\') !== null')
             shot("06-agent-success.png")
 
             # 07 失败 · 结果屏
-            go("/agent?fixture=1&scenario=failure")
+            go("/agent/new?fixture=1&scenario=failure")
             session.click('[data-testid="agent-tab-result"]')
             session.wait_js('document.querySelector(\'[data-testid="agent-obligations"]\') !== null')
             shot("07-agent-failure.png")
 
             # 08 成功 · 对话屏（含 llm 徽章与降级横幅）
-            go("/agent?fixture=1&scenario=success")
+            go("/agent/new?fixture=1&scenario=success")
             session.wait_js('!document.querySelector(\'[data-testid="agent-fallback"]\').hidden')
             shot("08-agent-success-chat.png")
 
@@ -223,7 +223,7 @@ def main() -> int:
             shot("13-job-evidence.png", full=True)
 
             # 14 控制台打开真实任务
-            go(f"/agent?job={job_id}")
+            go(f"/agent/{job_id}")
             time.sleep(1.2)
             shot("14-agent-live-job.png")
 
@@ -235,7 +235,7 @@ def main() -> int:
             # 16 控制台真实模式（无引导计划时的诚实提示）
             go("/agent")
             time.sleep(0.5)
-            shot("16-agent-live-empty.png")
+            shot("16-agent-task-list.png")
 
         http.close()
     finally:

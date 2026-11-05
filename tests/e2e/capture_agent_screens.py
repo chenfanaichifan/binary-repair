@@ -27,10 +27,10 @@ ROOT = HERE.parents[1]
 OUT = ROOT / "docs" / "screenshots"
 
 SHOTS = [
-    ("agent-guided.png", "/agent?fixture=1", False),
-    ("agent-pending.png", "/agent?fixture=1&scenario=pending", True),
-    ("agent-failure.png", "/agent?fixture=1&scenario=failure", True),
-    ("agent-success.png", "/agent?fixture=1&scenario=success", True),
+    ("agent-guided.png", "/agent/new?fixture=1", False),
+    ("agent-pending.png", "/agent/new?fixture=1&scenario=pending", True),
+    ("agent-failure.png", "/agent/new?fixture=1&scenario=failure", True),
+    ("agent-success.png", "/agent/new?fixture=1&scenario=success", True),
 ]
 
 

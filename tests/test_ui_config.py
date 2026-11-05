@@ -62,14 +62,14 @@ def test_broken_file_falls_back_to_builtin(tmp_path, monkeypatch):
 
 
 def test_unknown_selection_falls_back_to_default():
-    page = client.get("/agent?workspace=nope&mode=nope")
+    page = client.get("/agent/new?workspace=nope&mode=nope")
     assert page.status_code == 200
     assert 'data-workspace="local"' in page.text
     assert 'data-mode="standard"' in page.text
 
 
 def test_demo_mode_enables_fixture_and_records_the_choice():
-    page = client.get("/agent?mode=demo")
+    page = client.get("/agent/new?mode=demo")
     assert 'data-fixture="1"' in page.text
     assert 'data-mode="demo"' in page.text
     assert 'data-testid="agent-workspace-chip"' in page.text

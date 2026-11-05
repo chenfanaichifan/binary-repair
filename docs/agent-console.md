@@ -14,20 +14,35 @@
 
 | 地址 | 用途 |
 |---|---|
-| `/agent` | 真实模式。后端未提供引导计划时会**如实说明**，不假装有助手 |
-| `/agent?fixture=1` | 全演示模式：占位 plan + 占位快照，**不会创建真实任务**，演示横幅常显 |
-| `/agent?fixture=1&scenario=pending` | 演示「等待测试机回传」：诊断区是占位，不渲染 `not_run` |
-| `/agent?fixture=1&scenario=success` | 演示成功：diff、义务全 passed、`llm` 徽章 + 降级横幅 + model/token |
-| `/agent?fixture=1&scenario=failure` | 演示失败：原因卡 + 建议卡，`not_run` 逐字显示 |
-| `/agent?plan=fixture` | **引导用占位 plan，但创建任务走真实 `POST /jobs`**，之后真实轮询 |
-| `/agent?job=<任务ID>` | 按 URL 恢复某个任务，2 秒轮询，页面隐藏时降为 8 秒 |
+| `/agent` | 任务列表（工作台入口）：本机任务卡片 + 一个「新建修复任务」入口 |
+| `/agent/<任务ID>` | **单任务对话页**：该任务自己的对话与操作记录，2 秒轮询，页面隐藏时降为 8 秒 |
+| `/agent/new` | 新建修复任务：对话式引导，创建成功后跳到 `/agent/<新ID>` |
+| `/agent?job=<任务ID>` | 旧链接兼容，307 跳到 `/agent/<任务ID>` |
+| `/agent/new?fixture=1` | 全演示模式：占位 plan + 占位快照，**不会创建真实任务**，演示横幅常显 |
+| `/agent/new?fixture=1&scenario=pending` | 演示「等待测试机回传」：诊断区是占位，不渲染 `not_run` |
+| `/agent/new?fixture=1&scenario=success` | 演示成功：diff、义务全 passed、`llm` 徽章 + 降级横幅 + model/token |
+| `/agent/new?fixture=1&scenario=failure` | 演示失败：原因卡 + 建议卡，`not_run` 逐字显示 |
+| `/agent/new?plan=fixture` | **引导用占位 plan，但创建任务走真实 `POST /jobs`**，之后真实轮询 |
+
+### 任务列表的来源与边界
+
+| 能力 | 现在的实现 | 诚实的限制 |
+|---|---|---|
+| 任务排列 | 本机 `localStorage`（`br.jobs.v1`），按最近打开排序，最多 50 条 | 不是 controller 全量列表；换浏览器看不到 |
+| 任务状态 | 每条 `GET /api/jobs/<id>` 核对 `phase` / `cancelled` | 404 标「后端已不可查」，不删除记录 |
+| 对话历史 | 按任务存 `br.msg.v1.<id>`，最多 120 条消息/工具摘要 | 仅本机；跨设备需 M5 T8.1 持久化 |
+| 创建新任务 | `POST /jobs`，成功后写列表并跳 `/agent/<新ID>` | 仍必须用户点击「创建任务（由你确认）」 |
+
+侧栏只有一个「＋ 新任务」；任务本身在列表里切换，不再出现「修复控制台」「新建任务（表单）」这类重复入口。表单页 `/jobs/new` 保留为次要入口，从任务列表或新建页进入。
 
 ## 二、界面结构
 
 ```
+侧栏：品牌 · ＋新任务 · 本机任务列表（可切换）· 工作区 · 边界说明
+单任务页：← 全部任务 · 修复任务 <短ID>
 顶栏：助手模式徽章 · 任务 id · 轮询心跳
-降级横幅：仅在后端给出 fallback 时出现
-视图：对话引导 / 结果与证据 / 切换到表单（旧页面保留）
+降级横幅：后端给出 fallback，或 llm 模式未接线时出现
+视图：对话引导 / 结果与证据；有任务时给「对比页」「证据与导出」
 主列：终端流（助手消息、可展开工具块、问题卡、上传卡、复核卡）+ composer
 右栏：当前步骤 · 执行状态 · 阶段 · 契约 · 助手调用元数据 · 产物
 ```
@@ -42,8 +57,8 @@
 1. 结论只读 `verdict`，前端不推断、不聚合；没有 verdict 时显示「尚无 verdict（等待验收引擎）」。
 2. 义务结果**逐字**渲染后端取值，`not_run` 不翻译、不美化。
 3. `execution.receipt_pending` 为真时，诊断区只显示「等待执行结果回传」占位，**不渲染 `not_run`**。
-4. 模式徽章如实显示 `scripted v1` / `llm`；后端没给就显示「后端未提供」。
-5. 发生降级时**必须**出现降级横幅；model/token 没给就显示「未提供」，不编数字。
+4. 模式徽章如实显示 `scripted v1` / `llm` / `deterministic`；`llm` 但 client 未接线时显示「llm（未接线）」，不冒充已启用。
+5. 发生降级时**必须**出现降级横幅；model/token 没给就显示「未提供」或「未调用」，不编数字。
 6. 未登记的 `reason_code` 显示「未知原因 + 请把 status.json 发给 M1/M4」，不猜原因。
 7. 创建任务只能由用户点击触发；助手不发起运行、不写 verdict。
 
@@ -56,14 +71,38 @@
 - 真实接口联调通过后应删除该文件。
 - 其中所有 `default` 值都是 ASCII，因为它们会进入提交 payload。
 
+## 四之二、T8.2 LLM planner 接缝（`app/services/assistant_llm.py`）
+
+Lead 决定把 T8.2 从 M5 转给 M2。本分支只实现**不依赖 M5 持久化**的那一半：
+
+| 范围 | 状态 |
+|---|---|
+| `BINARYREPAIR_ASSISTANT_MODE=llm` 的 prompt 构造 | 已实现（`build_messages`） |
+| `AssistantPlan` 结构校验 | 已实现（`validate_plan`，按前端消费契约） |
+| 失败回退 + 稳定原因码 | 已实现（`generate_plan` 永不返回半成品计划） |
+| usage 记录形状 | 已实现（`PlanOutcome.as_model_call_row`，映射 `model_calls`） |
+| mode / fallback UI | 已实现（`assistant_status` + 徽章 + 降级横幅） |
+| 真实传输 | **未接**：`client` 由调用方注入，本模块不建连接、不读 key |
+
+传输路径待定：按分工需 M1 确认 LLM 调用走 trusted provider 的哪条路径。在确认前：
+
+- 不传 `client` → 直接回退，`fallback_reason=llm_client_not_configured`；
+- 页面显示「助手模式：llm（未接线）」+ 降级横幅，而不是伪装成已启用；
+- key 只在注入的 client 里；本模块与日志/返回值都不接触 key、prompt 原文。
+
+M5 的 `app/domain/assistant.py`、`004_assistant.sql`、`app/services/assistant.py` 持久化部分不在本文件改动范围内。等 M5 在 `generate_plan` 留出可注入 client 的分支后，接线只需把 `client` 传进来。
+
 ## 五、测试
 
 ```bash
-# 服务端：路由、会话/host 门、诚实性、越界扫描、语言策略、旧页面回归
+# 服务端：路由、会话/host 门、诚实性、任务列表/单任务路由、历史键
 .venv/Scripts/python.exe -m pytest tests/test_agent_console.py -q
 
+# T8.2 接缝：成功、超时、坏 JSON、schema、无 client
+.venv/Scripts/python.exe -m pytest tests/test_assistant_llm.py -q
+
 # 核心回归
-.venv/Scripts/python.exe -m pytest tests/test_agent_console.py tests/test_language_policy.py tests/test_status_honesty.py tests/test_smoke.py tests/test_security.py tests/test_verdict_view.py tests/test_export_bundle.py -q
+.venv/Scripts/python.exe -m pytest tests/test_agent_console.py tests/test_assistant_llm.py tests/test_ui_config.py tests/test_agent_honesty.py tests/test_language_policy.py tests/test_status_honesty.py tests/test_smoke.py tests/test_security.py tests/test_export_bundle.py -q
 
 # 浏览器（本机 Edge + CDP，无需下载 Playwright）
 .venv/Scripts/python.exe -m pytest tests/e2e -q
@@ -72,7 +111,7 @@
 .venv/Scripts/python.exe tests/e2e/capture_agent_screens.py
 ```
 
-本次实测：`test_agent_console.py` 16/16；核心回归 46 项全通过；`tests/e2e` 12/12（旧 7 + 新 5）。
+本次实测：`test_agent_console.py` 22/22；`test_assistant_llm.py` 15/15；核心回归 74 项全通过。
 
 **已知预存在失败（与本次改动无关，已用 stash 对照确认）**：`tests/test_evidence_endpoint.py` 5 项在基线上同样失败，报 `attempts/<id>.json` 文件不存在，属后端持久化问题，归 M1/M5，不在 M2 范围。
 
@@ -90,6 +129,9 @@
 | 事项 | 等谁 |
 |---|---|
 | 引导计划来自真实 `GET/POST /api/jobs/{id}/assistant` | M5 T8.1（plan）+ M1 T8.1（端点，11-18） |
+| 服务端任务列表 `GET /api/jobs`（现在只有本机记录） | M1 |
+| 对话历史跨设备 / 服务端持久化 | M5 T8.1 persistence |
+| LLM 传输走哪条 trusted provider 路径 | M1 确认；确认前 client 不注入、明确回退 |
 | 右栏执行状态直读 `execution.status` 标准枚举 | M1 T7.1 + execution-bridge-v1 正文 |
 | 时间线接入真实 attempt / run 节点 | M1 T6.2a、M5 T6.1 |
 | 结果屏接入真实 `analysis` / `comparison` | M5 T7.2、M1 T6.3 |

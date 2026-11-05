@@ -15,7 +15,7 @@ import os
 import re
 import secrets
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
@@ -30,6 +30,7 @@ from app.backend import (
     get_backend,
 )
 from app.evidence_domains import evidence_domain
+from app.services.assistant_llm import ASSISTANT_MODE_ENV, assistant_status
 from app.ui_config import load_ui_config, resolve_mode, resolve_workspace
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -231,36 +232,112 @@ async def ui_config():
     return JSONResponse(load_ui_config())
 
 
-@app.get("/agent", response_class=HTMLResponse, name="agent_console")
-async def agent_console(
+def _agent_context(
+    *,
+    job_id: str = "",
+    fixture: int = 0,
+    workspace: str = "",
+    mode: str = "",
+    job: dict[str, str] | None = None,
+) -> dict:
+    """Shared template context for the workbench routes.
+
+    ``assistant`` is the GUI's view of the T8.2 seam. It is deliberately
+    conservative: llm mode without a configured client reports
+    ``available=false`` so the badge says "未接线" instead of implying a call
+    happened.
+    """
+    ui = load_ui_config()
+    selected_workspace = resolve_workspace(ui, workspace or None)
+    selected_mode = resolve_mode(ui, mode or None)
+    fixture_mode = bool(fixture) or selected_mode["id"] == "demo"
+    return {
+        "demo": BACKEND_MODE == "mock" or fixture_mode,
+        "job": job,
+        "job_id": job_id,
+        "fixture": fixture_mode,
+        "backend_note": backend_description(BACKEND),
+        "workspace": selected_workspace,
+        "mode": selected_mode,
+        "assistant": assistant_status(
+            mode=os.environ.get(ASSISTANT_MODE_ENV),
+            client_configured=False,
+        ),
+    }
+
+
+@app.get("/agent", response_class=HTMLResponse, name="agent_index")
+async def agent_index(
     request: Request,
     job: str = "",
     fixture: int = 0,
     workspace: str = "",
     mode: str = "",
 ):
-    """Render the M2 agent console shell (Lead record 86 / task T7.4).
+    """Workbench entry: the task list, with one action to start a new repair.
+
+    Older links used ``/agent?job=<id>``; they keep working by redirecting to the
+    per-task conversation route, so bookmarks and the landing CTA do not break.
+    """
+    if job:
+        query: dict[str, str] = {}
+        if fixture:
+            query["fixture"] = str(fixture)
+        if workspace:
+            query["workspace"] = workspace
+        if mode:
+            query["mode"] = mode
+        target = f"/agent/{job}"
+        if query:
+            target += "?" + urlencode(query)
+        return RedirectResponse(url=target, status_code=307)
+
+    return templates.TemplateResponse(
+        request,
+        "agent_index.html",
+        _agent_context(fixture=fixture, workspace=workspace, mode=mode),
+    )
+
+
+@app.get("/agent/new", response_class=HTMLResponse, name="agent_new")
+async def agent_new(
+    request: Request,
+    fixture: int = 0,
+    workspace: str = "",
+    mode: str = "",
+):
+    """Start a brand-new repair: the guided conversation with no job attached."""
+    return templates.TemplateResponse(
+        request,
+        "agent.html",
+        _agent_context(fixture=fixture, workspace=workspace, mode=mode),
+    )
+
+
+@app.get("/agent/{job_id}", response_class=HTMLResponse, name="agent_console")
+async def agent_console(
+    request: Request,
+    job_id: str,
+    fixture: int = 0,
+    workspace: str = "",
+    mode: str = "",
+):
+    """One repair task = one conversation, with its own local history.
 
     UI only: no planner, no model calls, no new write endpoints. Until M1's
     agent/execution fields and M5's assistant plan land, ?fixture=1 drives the
     shell with clearly labelled placeholder data, and the demo banner stays on.
     """
-    ui = load_ui_config()
-    selected_workspace = resolve_workspace(ui, workspace or None)
-    selected_mode = resolve_mode(ui, mode or None)
-    fixture_mode = bool(fixture) or selected_mode["id"] == "demo"
     return templates.TemplateResponse(
         request,
         "agent.html",
-        {
-            "demo": BACKEND_MODE == "mock" or fixture_mode,
-            "job": None,
-            "job_id": job,
-            "fixture": fixture_mode,
-            "backend_note": backend_description(BACKEND),
-            "workspace": selected_workspace,
-            "mode": selected_mode,
-        },
+        _agent_context(
+            job_id=job_id,
+            fixture=fixture,
+            workspace=workspace,
+            mode=mode,
+            job={"id": job_id},
+        ),
     )
 
 

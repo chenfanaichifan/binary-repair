@@ -4,37 +4,25 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}BinaryRepair{% endblock %} · BinaryRepair</title>
-  <link rel="stylesheet" href="/static/css/ds.css?v=20261104a">
+  <link rel="stylesheet" href="/static/css/ds.css?v=20261105a">
   {% block head %}{% endblock %}
 </head>
 <body class="ds-body" data-job-id="{{ job.id if job else '' }}" data-demo="{{ '1' if demo else '0' }}">
   <div class="ds-app">
     <aside class="ds-sidebar">
       <a class="ds-brand" href="/" aria-label="返回起始页" title="返回起始页">BinaryRepair <span class="ds-badge">预览版</span></a>
-      <a class="ds-new" href="/agent">＋ 新任务</a>
+      <a class="ds-new" href="/agent/new" data-testid="sidebar-new-task">＋ 新任务</a>
 
-      <nav class="ds-nav" aria-label="主导航">
-        <a href="/agent" class="{% if request.url.path == '/agent' %}is-active{% endif %}">修复控制台</a>
-        <a href="/jobs/new" class="{% if request.url.path == '/jobs/new' %}is-active{% endif %}">新建任务（表单）</a>
+      <div class="ds-group">任务</div>
+      <nav class="ds-job-list" id="ds-job-list" data-testid="ds-job-list" aria-label="任务列表">
+        <p class="ds-job-empty" data-testid="ds-job-empty">还没有本机任务记录。</p>
       </nav>
-
-      {% if job %}
-      <div class="ds-group">当前任务</div>
-      <nav class="ds-nav" aria-label="任务导航">
-        <a href="/jobs/{{ job.id }}" class="{% if request.url.path == '/jobs/' + job.id %}is-active{% endif %}">进度与对比</a>
-        <a href="/jobs/{{ job.id }}/evidence" class="{% if request.url.path.endswith('/evidence') %}is-active{% endif %}">证据与导出</a>
-        <a href="/agent?job={{ job.id }}">在控制台中打开</a>
-      </nav>
-      {% endif %}
 
       <div class="ds-group">工作区</div>
-      <div class="ds-workspace">本地工作区 · 127.0.0.1</div>
-      {% if job %}
-      <div class="ds-session is-active">任务 {{ job.id[:8] }}<small>当前</small></div>
-      {% else %}
-      <div class="ds-session">尚未选择任务</div>
-      {% endif %}
-      <a class="ds-session" href="/agent?fixture=1">演示控制台<small>fixture</small></a>
+      <div class="ds-workspace">{% if workspace %}{{ workspace.label }}{% else %}本地工作区 · 127.0.0.1{% endif %}</div>
+      <p class="ds-side-hint">
+        任务列表保存在本机浏览器，逐条向后端核对状态；服务端全量列表待 controller 提供。
+      </p>
 
       <div class="ds-side-foot">
         阶段与结论是两条独立的轴。<br>
@@ -58,6 +46,7 @@
     </div>
   </div>
 
+  <script src="/static/js/jobs-list.js?v=20261105a"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

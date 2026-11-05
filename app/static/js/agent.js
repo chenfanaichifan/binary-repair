@@ -55,6 +55,9 @@
      POST /jobs、之后真实轮询。与 ?fixture=1（全演示、不创建）区分开。 */
   var PLAN_FIXTURE = !FIXTURE_MODE && QUERY.get("plan") === "fixture" && !!FIXTURES;
 
+  var ASSISTANT_MODE = root.dataset.assistantMode || "deterministic";
+  var ASSISTANT_AVAILABLE = root.dataset.assistantAvailable === "1";
+
   var state = {
     jobId: root.dataset.jobId || "",
     plan: null,
@@ -64,8 +67,56 @@
     snapshot: null,
     view: "chat",
     scenario: "fresh",
-    submitting: false
+    submitting: false,
+    replaying: false,
+    entries: []
   };
+
+  /* ---------- 单任务历史（本机） ----------
+   * 每个任务 id 一个键，只存对话与工具摘要，不存文件内容。
+   * 服务端历史要等 M5 的 T8.1 持久化；这里明确标注来源，不冒充跨设备记录。 */
+
+  var HISTORY_LIMIT = 120;
+
+  function historyKey() {
+    return "br.msg.v1." + (state.jobId || "draft");
+  }
+
+  function readHistory() {
+    try {
+      var raw = window.localStorage.getItem(historyKey());
+      var list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function writeHistoryFor(jobId, list) {
+    if (!jobId) return;
+    try {
+      window.localStorage.setItem(
+        "br.msg.v1." + jobId,
+        JSON.stringify(list.slice(-HISTORY_LIMIT))
+      );
+    } catch (error) {
+      /* 存储满或被禁用时不阻断对话；当前页仍然可用。 */
+    }
+  }
+
+  function record(entry) {
+    if (state.replaying || FIXTURE_MODE) return;
+    state.entries.push(entry);
+    if (state.entries.length > HISTORY_LIMIT) {
+      state.entries = state.entries.slice(-HISTORY_LIMIT);
+    }
+    if (state.jobId) writeHistoryFor(state.jobId, state.entries);
+  }
+
+  function registerJob(label) {
+    if (!state.jobId || !window.BRJobs) return;
+    window.BRJobs.register(state.jobId, label);
+  }
 
   /* ---------- 中文展示标签：仅翻译，不判定 ---------- */
 
@@ -223,7 +274,7 @@
 
   /* ---------- 终端流渲染 ---------- */
 
-  function pushMessage(role, text) {
+  function pushMessage(role, text, options) {
     var item = el("li", "agent-msg agent-msg-" + role);
     var head = el("div", "agent-msg-head");
     head.appendChild(el("span", "agent-msg-role", role === "user" ? "你" : "助手"));
@@ -232,10 +283,13 @@
     item.appendChild(body);
     stream().appendChild(item);
     scrollStream();
+    if (!(options && options.replay)) {
+      record({ kind: "message", role: role, text: text, at: new Date().toISOString() });
+    }
     return body;
   }
 
-  function pushTool(name, summary, fields, raw) {
+  function pushTool(name, summary, fields, raw, options) {
     var item = el("li", "agent-msg");
     var tool = el("div", "agent-tool");
     var button = el("button", "agent-tool-summary");
@@ -269,6 +323,30 @@
     item.appendChild(tool);
     stream().appendChild(item);
     scrollStream();
+    if (!(options && options.replay)) {
+      record({
+        kind: "tool",
+        name: name,
+        summary: summary,
+        fields: fields || {},
+        at: new Date().toISOString()
+      });
+    }
+  }
+
+  function replayHistory() {
+    var entries = state.entries;
+    if (!entries.length) return;
+    state.replaying = true;
+    entries.forEach(function (entry) {
+      if (!entry || typeof entry !== "object") return;
+      if (entry.kind === "message" && typeof entry.text === "string") {
+        pushMessage(entry.role === "user" ? "user" : "assistant", entry.text, { replay: true });
+      } else if (entry.kind === "tool" && typeof entry.name === "string") {
+        pushTool(entry.name, entry.summary || "", entry.fields || {}, null, { replay: true });
+      }
+    });
+    state.replaying = false;
   }
 
   function pushCard(cardElement) {
@@ -590,7 +668,10 @@
         progressText.textContent = "上传完成，已创建任务";
         pushTool("创建任务", match[1], { "job_id": match[1], "http_status": xhr.status });
         state.jobId = match[1];
-        window.location.href = "/agent?job=" + encodeURIComponent(match[1]);
+        // 把本次会话（创建前的问答）一并归档到新任务，避免历史断在创建那一步。
+        writeHistoryFor(match[1], state.entries);
+        registerJob((state.answers.defect || "").slice(0, 40));
+        window.location.href = "/agent/" + encodeURIComponent(match[1]);
       } else {
         progressText.textContent = "创建失败";
         pushMessage("assistant", "创建任务没有成功（HTTP " + xhr.status + "）。请检查必填项与英文 ASCII 要求，或切到表单页查看详细报错。");
@@ -612,19 +693,29 @@
     setText("agent-job-chip", state.jobId ? "任务 " + state.jobId.slice(0, 8) : "未选择任务");
 
     var agent = view && view.agent ? view.agent : (state.plan || null);
+    var notWired = ASSISTANT_MODE === "llm" && !ASSISTANT_AVAILABLE;
+
     if (agent && agent.mode) {
       setText("agent-mode-badge", "助手模式：" + agent.mode);
+    } else if (notWired) {
+      setText("agent-mode-badge", "助手模式：llm（未接线）");
     } else {
-      setText("agent-mode-badge", "助手模式：后端未提供");
+      setText("agent-mode-badge", "助手模式：" + ASSISTANT_MODE);
     }
 
-    var fallback = agent && agent.fallback;
+    var fallback = (agent && agent.fallback) || (!agent && notWired);
     show("agent-fallback", !!fallback);
-    if (fallback && agent.fallback_reason) {
-      setText("agent-fallback-text", "模型通道不可用（" + agent.fallback_reason + "），当前回退到确定性引导；页面内容不代表模型输出。");
+    if (fallback) {
+      var reason = agent && agent.fallback_reason
+        ? agent.fallback_reason
+        : "llm_client_not_configured";
+      setText("agent-fallback-text",
+        "模型通道未建立（" + reason + "），当前回退到确定性引导；页面内容不代表模型输出。");
     }
 
-    if (agent && (agent.model || agent.tokens)) {
+    if (notWired && !(agent && (agent.model || agent.tokens))) {
+      setText("agent-model-meta", "未调用（llm 通道未接线）");
+    } else if (agent && (agent.model || agent.tokens)) {
       var parts = [];
       if (agent.model) parts.push("model：" + agent.model);
       if (agent.tokens) {
@@ -1053,7 +1144,15 @@
 
     if (state.jobId) {
       clear(stream());
-      pushMessage("assistant", "已打开任务 " + state.jobId + "。我会每 2 秒刷新状态；引导计划需要 M5 的 assistant seam 接入后才会出现在这里。");
+      state.entries = readHistory();
+      registerJob();
+      replayHistory();
+      pushMessage(
+        "assistant",
+        "已打开任务 " + state.jobId + "。上面的对话来自本机保存的该任务记录；我会每 2 秒刷新状态。" +
+        "引导计划需要 M5 的 assistant seam 接入后才会出现在这里。",
+        { replay: true }
+      );
       setText("agent-side-step", "后端未提供");
       startPolling();
     } else if (PLAN_FIXTURE) {

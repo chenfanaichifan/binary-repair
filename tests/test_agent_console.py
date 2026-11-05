@@ -27,7 +27,7 @@ assert client.get("/?token=" + SESSION_TOKEN).status_code == 200
 
 
 def test_agent_shell_renders():
-    response = client.get("/agent?fixture=1")
+    response = client.get("/agent/new?fixture=1")
     assert response.status_code == 200
     for testid in (
         "agent-root",
@@ -47,18 +47,18 @@ def test_agent_shell_renders():
         "agent-switch-form",
     ):
         assert f'data-testid="{testid}"' in response.text, testid
-    assert "修复控制台" in response.text
+    assert "修复任务" in response.text
     assert 'data-fixture="1"' in response.text
 
 
 def test_agent_fixture_mode_keeps_demo_banner():
-    response = client.get("/agent?fixture=1")
+    response = client.get("/agent/new?fixture=1")
     assert "演示数据" in response.text
     assert "未执行真实修复" in response.text
 
 
 def test_agent_live_mode_is_not_marked_as_fixture():
-    response = client.get("/agent")
+    response = client.get("/agent/new")
     assert response.status_code == 200
     assert 'data-fixture="0"' in response.text
 
@@ -189,7 +189,7 @@ def test_existing_setup_and_job_pages_still_work():
 
 def test_state_panel_can_collapse_into_a_single_column():
     """The side panel folds away so the conversation gets the full width."""
-    page = client.get("/agent")
+    page = client.get("/agent/new")
     assert page.status_code == 200
     assert 'data-testid="agent-side-toggle"' in page.text
     assert 'aria-controls="agent-side"' in page.text
@@ -225,6 +225,50 @@ def test_workspace_nav_does_not_repeat_the_landing_entry():
         # The brand stays the one way back, so the entry is still reachable.
         assert 'class="ds-brand" href="/"' in page.text
         assert 'aria-label="返回起始页"' in page.text
-        # Core entries remain.
-        assert 'href="/agent"' in page.text
-        assert 'href="/jobs/new"' in page.text
+        # Core entries remain: one new-task action, and the form as a secondary route.
+        assert 'href="/agent/new"' in page.text
+        assert 'data-testid="ds-job-list"' in page.text
+
+
+def test_agent_index_is_the_task_list_and_one_new_task_action():
+    """The workbench entry lists repairs and offers exactly one new-task entry."""
+    page = client.get("/agent")
+    assert page.status_code == 200
+    assert "修复任务" in page.text
+    assert 'data-testid="agent-start-new"' in page.text
+    assert 'data-testid="agent-job-cards"' in page.text
+    assert 'data-testid="ds-job-list"' in page.text
+    # The old duplicate nav entries are gone from the sidebar.
+    assert "修复控制台" not in page.text
+    assert "新建任务（表单）" not in page.text
+
+
+def test_single_task_route_is_its_own_conversation():
+    job_id = "abc123def456"
+    page = client.get(f"/agent/{job_id}")
+    assert page.status_code == 200
+    assert f'data-job-id="{job_id}"' in page.text
+    assert 'data-testid="agent-back"' in page.text
+    assert 'data-testid="agent-history-note"' in page.text
+    assert 'data-testid="agent-open-comparison"' in page.text
+    assert 'data-testid="agent-open-evidence"' in page.text
+    assert "该任务的独立会话" in page.text
+    # A new task does not show the per-task links.
+    fresh = client.get("/agent/new")
+    assert 'data-testid="agent-switch-form"' in fresh.text
+    assert 'data-testid="agent-open-comparison"' not in fresh.text
+
+
+def test_legacy_agent_query_redirects_to_the_task_route():
+    response = client.get("/agent?job=abc123", follow_redirects=False)
+    assert response.status_code in (307, 302)
+    assert response.headers["location"].startswith("/agent/abc123")
+
+
+def test_conversation_history_is_stored_per_job():
+    assert "br.msg.v1." in AGENT_JS
+    assert "HISTORY_LIMIT" in AGENT_JS
+    assert "state.entries" in AGENT_JS
+    assert "writeHistoryFor(match[1], state.entries)" in AGENT_JS
+    # History replay must not re-record what it replays.
+    assert "{ replay: true }" in AGENT_JS

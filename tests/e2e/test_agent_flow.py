@@ -37,7 +37,7 @@ def test_guided_flow_creates_a_real_job(mock_server, page, tmp_path):
     sample = tmp_path / "sample.elf"
     sample.write_bytes(b"\x7fELF" + b"demo-bytes" * 32)
 
-    _open(page, mock_server, "/agent?plan=fixture")
+    _open(page, mock_server, "/agent/new?plan=fixture")
     page.wait_js('document.querySelector(\'[data-testid="agent-dropzone"]\') !== null')
     page.set_file_input('[data-testid="agent-file-input"]', str(sample))
 
@@ -52,7 +52,7 @@ def test_guided_flow_creates_a_real_job(mock_server, page, tmp_path):
     page.wait_js('document.querySelector(\'[data-testid="agent-review-card"]\') !== null')
     _click_last(page, "agent-create-job")
 
-    page.wait_js('location.pathname === "/agent" && location.search.indexOf("job=") >= 0', timeout=40)
+    page.wait_js('location.pathname.indexOf("/agent/") === 0 && location.pathname !== "/agent/new"', timeout=40)
     page.wait_js(
         'document.querySelector(\'[data-testid="agent-side-phase"]\').textContent !== "—"',
         timeout=30,
@@ -61,7 +61,7 @@ def test_guided_flow_creates_a_real_job(mock_server, page, tmp_path):
 
 
 def test_pending_receipt_shows_placeholder_not_not_run(mock_server, page):
-    _open(page, mock_server, "/agent?fixture=1&scenario=pending")
+    _open(page, mock_server, "/agent/new?fixture=1&scenario=pending")
     page.click('[data-testid="agent-tab-result"]')
     page.wait_js('!document.querySelector(\'[data-testid="agent-receipt-placeholder"]\').hidden')
     assert page.eval_js('document.querySelector(\'[data-testid="agent-obligations"]\') === null')
@@ -70,7 +70,7 @@ def test_pending_receipt_shows_placeholder_not_not_run(mock_server, page):
 
 
 def test_failure_shows_reason_advice_and_verbatim_not_run(mock_server, page):
-    _open(page, mock_server, "/agent?fixture=1&scenario=failure")
+    _open(page, mock_server, "/agent/new?fixture=1&scenario=failure")
     page.click('[data-testid="agent-tab-result"]')
     page.wait_js('document.querySelector(\'[data-testid="agent-obligations"]\') !== null')
     assert "测试机缺少必需的环境变量" in page.text('[data-testid="agent-reason-card"]')
@@ -80,7 +80,7 @@ def test_failure_shows_reason_advice_and_verbatim_not_run(mock_server, page):
 
 
 def test_success_shows_mode_fallback_metadata_and_diff(mock_server, page):
-    _open(page, mock_server, "/agent?fixture=1&scenario=success")
+    _open(page, mock_server, "/agent/new?fixture=1&scenario=success")
     assert "llm" in page.text('[data-testid="agent-mode-badge"]')
     page.wait_js('!document.querySelector(\'[data-testid="agent-fallback"]\').hidden')
     assert "fixture-model-name" in page.text('[data-testid="agent-model-meta"]')
@@ -93,9 +93,9 @@ def test_success_shows_mode_fallback_metadata_and_diff(mock_server, page):
 
 
 def test_live_mode_without_plan_says_so(mock_server, page):
-    _open(page, mock_server, "/agent")
+    _open(page, mock_server, "/agent/new")
     page.wait_js(
         'document.querySelector(\'[data-testid="agent-stream"]\').textContent'
         '.indexOf("后端还没有提供引导计划") >= 0'
     )
-    assert "后端未提供" in page.text('[data-testid="agent-mode-badge"]')
+    assert "deterministic" in page.text('[data-testid="agent-mode-badge"]')

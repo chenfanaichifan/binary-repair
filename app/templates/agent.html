@@ -16,12 +16,20 @@
   data-demo="{{ '1' if demo else '0' }}"
   data-workspace="{{ workspace.id }}"
   data-mode="{{ mode.id }}"
+  data-assistant-mode="{{ assistant.mode }}"
+  data-assistant-available="{{ '1' if assistant.available else '0' }}"
   data-csrf="{{ csrf_token }}"
 >
   <div class="agent-top">
     <div class="agent-heading">
-      <h1 class="ds-page-title">修复控制台</h1>
-      <p class="ds-page-sub">助手只做引导与解释；创建任务、开始执行由你点击确认，结论由验收引擎给出。</p>
+      <a class="agent-back" href="/agent" data-testid="agent-back">← 全部任务</a>
+      <h1 class="ds-page-title">
+        {% if job_id %}修复任务 <code class="agent-job-id">{{ job_id[:8] }}</code>{% else %}新建修复任务{% endif %}
+      </h1>
+      <p class="ds-page-sub">
+        这是{% if job_id %}该任务{% else %}一次新任务{% endif %}的独立会话：对话与操作记录按任务分开保存。
+        助手只做引导与解释；创建任务、开始执行由你点击确认，结论由验收引擎给出。
+      </p>
     </div>
     <div class="agent-badges">
       <span id="agent-workspace-chip" class="ds-chip" data-testid="agent-workspace-chip">{{ workspace.label }}</span>
@@ -48,8 +56,17 @@
       aria-controls="agent-side"
       aria-expanded="true"
     >收起状态面板</button>
-    <a class="agent-tab agent-tab-link" href="/jobs/new" data-testid="agent-switch-form">切换到表单</a>
+    {% if job_id %}
+    <a class="agent-tab agent-tab-link" href="/jobs/{{ job_id }}" data-testid="agent-open-comparison">对比页</a>
+    <a class="agent-tab agent-tab-link" href="/jobs/{{ job_id }}/evidence" data-testid="agent-open-evidence">证据与导出</a>
+    {% else %}
+    <a class="agent-tab agent-tab-link" href="/jobs/new" data-testid="agent-switch-form">改用表单建单</a>
+    {% endif %}
   </div>
+
+  <p id="agent-history-note" class="agent-history-note" data-testid="agent-history-note">
+    对话与操作记录按任务保存在本机浏览器；服务端历史需要 M5 的 T8.1 持久化接入后才会跨设备可查。
+  </p>
 
   <div class="agent-body">
     <section class="agent-main">

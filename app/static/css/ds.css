@@ -153,6 +153,67 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.4; }
 .ds-session { font-size: 13px; }
 .ds-session small { margin-left: auto; color: var(--ds-faint); font-size: 11px; }
 
+/* 任务列表：一个任务一行，当前任务高亮；状态点由 JS 按后端 phase 着色。 */
+.ds-job-list { display: flex; flex-direction: column; gap: 1px; }
+
+.ds-job-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  color: var(--ds-text-2);
+  font-size: 13px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.ds-job-item:hover { background: var(--ds-side-hover); color: var(--ds-text); text-decoration: none; }
+.ds-job-item.is-active { background: var(--ds-side-active); color: var(--ds-text); font-weight: 500; }
+
+.ds-job-dot {
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ds-faint);
+}
+.ds-job-item[data-state="queued"] .ds-job-dot,
+.ds-job-item[data-state="draft"] .ds-job-dot { background: #c9ccd4; }
+.ds-job-item[data-state="running"] .ds-job-dot,
+.ds-job-item[data-state="screening"] .ds-job-dot,
+.ds-job-item[data-state="analyzing"] .ds-job-dot,
+.ds-job-item[data-state="roundtrip"] .ds-job-dot,
+.ds-job-item[data-state="generating"] .ds-job-dot,
+.ds-job-item[data-state="applying"] .ds-job-dot,
+.ds-job-item[data-state="validating"] .ds-job-dot { background: #4d7cff; }
+.ds-job-item[data-state="finished"] .ds-job-dot { background: #1f9d63; }
+.ds-job-item[data-state="cancelled"] .ds-job-dot,
+.ds-job-item[data-state="missing"] .ds-job-dot,
+.ds-job-item[data-state="unreachable"] .ds-job-dot { background: #b9bcc4; }
+
+.ds-job-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ds-job-phase { flex: none; font-size: 11px; color: var(--ds-faint); }
+
+.ds-job-empty {
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  color: var(--ds-faint);
+}
+
+.ds-side-hint {
+  margin: 6px 10px 0;
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--ds-muted);
+}
+
 .ds-workspace {
   padding: 6px 10px;
   font-size: 13px;
