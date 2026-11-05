@@ -50,10 +50,12 @@ def _run(conn: sqlite3.Connection, run_id: str = "r1", key: str = "k1") -> None:
 def test_init_creates_baseline_and_ai_tables(tmp_path: Path) -> None:
     conn = init_db(tmp_path)
     versions = [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")]
-    assert versions == [1, 2, 3, 4, 5]
+    assert versions == [1, 2, 3, 4, 5, 6]
     tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     assert {"jobs", "artifacts", "contracts", "runs", "attempts",
             "obligations", "events", "model_calls"} <= tables
+    obligation_cols = {r[1] for r in conn.execute("PRAGMA table_info(obligations)")}
+    assert "scope" in obligation_cols
     job_cols = {r[1] for r in conn.execute("PRAGMA table_info(jobs)")}
     assert {"classification", "cancel_requested"} <= job_cols
     artifact_cols = {r[1] for r in conn.execute("PRAGMA table_info(artifacts)")}
@@ -64,7 +66,7 @@ def test_init_creates_baseline_and_ai_tables(tmp_path: Path) -> None:
 def test_reinit_is_idempotent(tmp_path: Path) -> None:
     init_db(tmp_path).close()
     conn = init_db(tmp_path)
-    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == [1, 2, 3, 4, 5]
+    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == [1, 2, 3, 4, 5, 6]
     conn.close()
 
 

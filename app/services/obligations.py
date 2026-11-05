@@ -85,6 +85,26 @@ def persist_obligations(
                 )
             )
 
+        # V3 has two distinct evidence kinds. The gate row above still carries
+        # the behaviour verdict, but the kind itself is persisted so a reader
+        # never has to infer "was this a repair or only an unchanged trip?"
+        # from a detail string.
+        v3_kind = details.get("V3_kind")
+        if v3_kind in {"round_trip", "repaired_behaviour"}:
+            behaviour = rows[3]
+            rows.append(
+                (
+                    uuid.uuid4().hex,
+                    attempt_id,
+                    v3_kind,
+                    scope_for_kind(v3_kind),
+                    0,
+                    behaviour[5],
+                    behaviour[6],
+                    details.get("V3", "V3 behaviour"),
+                )
+            )
+
         with connection:
             for row in rows:
                 connection.execute(

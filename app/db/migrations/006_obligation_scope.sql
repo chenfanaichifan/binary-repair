@@ -1,4 +1,4 @@
--- 005: evidence scope per obligation.
+-- 006: evidence scope per obligation.
 --
 -- The API used to derive the scope from the obligation kind on the client side,
 -- so the displayed scope was an inference rather than a persisted fact. Scope is
