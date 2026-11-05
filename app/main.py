@@ -30,7 +30,7 @@ from app.backend import (
     get_backend,
 )
 from app.evidence_domains import evidence_domain, scope_display
-from app.services.assistant_llm import ASSISTANT_MODE_ENV, assistant_status
+from app.services.assistant_llm import ASSISTANT_MODE_ENV, assistant_status, client_from_env
 from app.ui_config import load_ui_config, resolve_mode, resolve_workspace
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -261,7 +261,7 @@ def _agent_context(
         "mode": selected_mode,
         "assistant": assistant_status(
             mode=os.environ.get(ASSISTANT_MODE_ENV),
-            client_configured=False,
+            client_configured=client_from_env() is not None,
         ),
     }
 

@@ -148,3 +148,32 @@ X-CSRF-Token: <GUI session csrf>
 - `?plan=fixture` 仍保留，仅用于本地预览，页面明确标注是占位。
 - plan 的 `title` / `prompt` 是界面文案，允许中文；`context` 里的业务字段仍按提交语言策略用 ASCII。
 - GUI 不轮询、不跨任务缓存计划；每次由用户描述触发一次请求。
+
+## 9. Provider 配置（M2，2026-11-05）
+
+`assistant_llm.generate_plan` 在没有显式 `client` 时调用 `client_from_env()`。
+
+| 变量 | 必填 | 默认 | 说明 |
+|---|---|---|---|
+| `BINARYREPAIR_ASSISTANT_PROVIDER_KEY` | 是 | — | 没有它就不发起真实调用，返回 `fallback_reason=llm_client_not_configured` |
+| `BINARYREPAIR_ASSISTANT_PROVIDER_BASE_URL` | 否 | `https://api.openai.com/v1` | OpenAI 兼容根路径 |
+| `BINARYREPAIR_ASSISTANT_PROVIDER_TIMEOUT` | 否 | `30` | 秒 |
+| `BINARYREPAIR_ASSISTANT_MODEL` | 否 | `deepseek-chat` | 请求体 `model` |
+
+key 只存在 `HttpJsonClient` 内存里：`repr` 不打印，错误只带 HTTP 状态、不带响应体。
+
+### M1 的注入约定
+
+controller 的 `POST /api/assistant/plan` 这样接：
+
+```python
+from app.services.assistant_llm import client_from_env
+
+plan = assistant.generate_plan(description, data_dir=..., client=client_from_env())
+```
+
+`client_from_env()` 返回 `None` 时，`assistant.generate_plan` 走 deterministic，
+不读环境、不发起调用。controller 不需要自己判断 key。
+
+GUI 徽章的 `data-assistant-available` 也由 `client_from_env() is not None` 决定，
+有 key 才显示 `1`。

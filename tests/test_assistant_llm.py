@@ -8,6 +8,7 @@ Owner: M2.  The seam under test is ``app/services/assistant.py``:
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -342,3 +343,132 @@ def test_messages_do_not_carry_the_data_dir():
     messages = build_messages("fix it", context={"job_id": "j1", "data_dir": "C:/secret"})
     assert "C:/secret" not in messages[-1]["content"]
     assert "j1" in messages[-1]["content"]
+
+
+def _plan_body() -> dict:
+    return {
+        "choices": [{"message": {"content": json.dumps(_payload())}}],
+        "model": "model-x",
+        "usage": {"prompt_tokens": 11, "completion_tokens": 22},
+    }
+
+
+def test_client_from_env_without_key_is_none():
+    assert assistant_llm.client_from_env({}) is None
+    assert assistant_llm.client_from_env({assistant_llm.PROVIDER_KEY_ENV: "   "}) is None
+
+
+def test_client_from_env_reads_base_model_and_timeout():
+    client = assistant_llm.client_from_env({
+        assistant_llm.PROVIDER_KEY_ENV: "sk-test",
+        assistant_llm.PROVIDER_BASE_ENV: "https://example.test/v1/",
+        assistant_llm.ASSISTANT_MODEL_ENV: "model-x",
+        assistant_llm.PROVIDER_TIMEOUT_ENV: "7.5",
+    })
+    assert client is not None
+    assert client.base_url == "https://example.test/v1"
+    assert client.model == "model-x"
+
+
+def test_http_client_sends_the_openai_shape():
+    import httpx
+
+    seen = {}
+
+    def handler(request):
+        seen["url"] = str(request.url)
+        seen["auth"] = request.headers.get("authorization")
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(200, json=_plan_body(), request=request)
+
+    client = assistant_llm.HttpJsonClient(
+        api_key="sk-test", base_url="https://example.test/v1", model="model-x",
+        transport=httpx.MockTransport(handler),
+    )
+    result = client.chat_json([{"role": "user", "content": "hi"}], max_tokens=99)
+    assert seen["url"] == "https://example.test/v1/chat/completions"
+    assert seen["auth"] == "Bearer sk-test"
+    assert seen["body"]["max_tokens"] == 99
+    assert seen["body"]["response_format"] == {"type": "json_object"}
+    assert result.content == _plan_body()["choices"][0]["message"]["content"]
+    assert result.usage == {"prompt_tokens": 11, "completion_tokens": 22}
+
+
+def test_http_client_hides_the_key_in_repr():
+    client = assistant_llm.HttpJsonClient(api_key="sk-secret", base_url="https://x", model="m")
+    assert "sk-secret" not in repr(client)
+
+
+def test_http_client_maps_timeout_to_timeout_error():
+    import httpx
+
+    def handler(request):
+        raise httpx.ConnectTimeout("slow", request=request)
+
+    client = assistant_llm.HttpJsonClient(
+        api_key="sk", base_url="https://x", model="m",
+        transport=httpx.MockTransport(handler),
+    )
+    try:
+        client.chat_json([{"role": "user", "content": "hi"}])
+    except TimeoutError:
+        pass
+    else:  # pragma: no cover
+        raise AssertionError("timeout must surface as TimeoutError")
+
+
+def test_http_client_maps_http_error():
+    import httpx
+
+    def handler(request):
+        return httpx.Response(500, json={"error": "boom"}, request=request)
+
+    client = assistant_llm.HttpJsonClient(
+        api_key="sk", base_url="https://x", model="m",
+        transport=httpx.MockTransport(handler),
+    )
+    with pytest.raises(assistant_llm._ProviderHTTPError) as caught:
+        client.chat_json([{"role": "user", "content": "hi"}])
+    assert caught.value.status == 500
+    assert "boom" not in str(caught.value)
+
+
+def test_generate_plan_uses_the_env_client(monkeypatch, tmp_path):
+    import httpx
+
+    def handler(request):
+        return httpx.Response(200, json=_plan_body(), request=request)
+
+    client = assistant_llm.HttpJsonClient(
+        api_key="sk", base_url="https://x/v1", model="model-x",
+        transport=httpx.MockTransport(handler),
+    )
+    monkeypatch.setattr(assistant_llm, "client_from_env", lambda environ=None: client)
+    plan = generate_plan("fix it", context={"data_dir": str(tmp_path)}, mode="llm")
+    assert plan.mode == "llm"
+    assert plan.fallback is False
+    assert plan.model == "model-x"
+    assert plan.tokens == {"prompt": 11, "completion": 22}
+
+
+def test_generate_plan_records_http_failure_as_fallback(monkeypatch, tmp_path):
+    import httpx
+
+    def handler(request):
+        return httpx.Response(503, json={}, request=request)
+
+    client = assistant_llm.HttpJsonClient(
+        api_key="sk", base_url="https://x/v1", model="model-x",
+        transport=httpx.MockTransport(handler),
+    )
+    monkeypatch.setattr(assistant_llm, "client_from_env", lambda environ=None: client)
+    plan = generate_plan("fix it", context={"data_dir": str(tmp_path)}, mode="llm")
+    assert plan.fallback is True
+    assert plan.fallback_reason == FallbackReason.HTTP
+
+
+def test_status_badge_reports_the_env_client(monkeypatch):
+    monkeypatch.setenv(assistant_llm.PROVIDER_KEY_ENV, "sk-test")
+    assert assistant_status(mode="llm")["available"] is True
+    monkeypatch.delenv(assistant_llm.PROVIDER_KEY_ENV, raising=False)
+    assert assistant_status(mode="llm")["available"] is False

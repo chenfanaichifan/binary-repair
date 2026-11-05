@@ -29,15 +29,23 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+import httpx
+
 from app.domain.assistant import AssistantPlan, deterministic_plan
 from app.services import model_calls
 
 __all__ = [
     "ASSISTANT_MODE_ENV",
     "DEFAULT_MODEL",
+    "DEFAULT_PROVIDER_BASE",
     "FallbackReason",
+    "HttpJsonClient",
+    "PROVIDER_BASE_ENV",
+    "PROVIDER_KEY_ENV",
+    "PROVIDER_TIMEOUT_ENV",
     "assistant_status",
     "build_messages",
+    "client_from_env",
     "generate_plan",
     "resolve_mode",
     "resolve_model",
@@ -46,7 +54,12 @@ __all__ = [
 
 ASSISTANT_MODE_ENV = "BINARYREPAIR_ASSISTANT_MODE"
 ASSISTANT_MODEL_ENV = "BINARYREPAIR_ASSISTANT_MODEL"
+PROVIDER_KEY_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_KEY"
+PROVIDER_BASE_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_BASE_URL"
+PROVIDER_TIMEOUT_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_TIMEOUT"
 DEFAULT_MODEL = "deepseek-chat"
+DEFAULT_PROVIDER_BASE = "https://api.openai.com/v1"
+DEFAULT_TIMEOUT = 30.0
 MAX_OUTPUT_TOKENS = 1200
 
 MODES = ("llm", "deterministic", "fixture")
@@ -67,6 +80,7 @@ class FallbackReason:
     EMPTY = "llm_empty_content"
     MALFORMED = "llm_invalid_json"
     SCHEMA = "llm_plan_schema_invalid"
+    HTTP = "llm_http_error"
     UNKNOWN = "llm_unknown_error"
 
 
@@ -100,7 +114,9 @@ def assistant_status(*, mode: str | None = None, client_configured: bool | None 
     """
     resolved = resolve_mode(mode)
     if client_configured is None:
-        client_configured = False
+        # Read the environment here so the badge answers "is a provider key
+        # present?" without the caller guessing.
+        client_configured = client_from_env() is not None
     return {
         "mode": resolved,
         "model": resolve_model() if resolved == "llm" else None,
@@ -298,6 +314,129 @@ def _record(
         pass
 
 
+@dataclass(frozen=True)
+class _ProviderResult:
+    content: Any
+    model: str | None
+    usage: dict[str, Any]
+    request_id: str | None
+
+
+class _ProviderHTTPError(RuntimeError):
+    """A provider answered with a non-2xx status; the body is not kept."""
+
+    def __init__(self, status: int) -> None:
+        super().__init__(f"provider returned HTTP {status}")
+        self.status = status
+
+
+class HttpJsonClient:
+    """Minimal OpenAI-compatible chat client.
+
+    Only used when ``BINARYREPAIR_ASSISTANT_PROVIDER_KEY`` is present.  The key
+    never leaves this object: ``repr`` hides it, errors carry only the status,
+    and no prompt or raw answer is logged.
+    """
+
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        base_url: str = DEFAULT_PROVIDER_BASE,
+        model: str = DEFAULT_MODEL,
+        timeout: float = DEFAULT_TIMEOUT,
+        transport: Any | None = None,
+    ) -> None:
+        if not api_key:
+            raise ValueError("api_key is required")
+        self._api_key = api_key
+        self._base_url = base_url.rstrip("/")
+        self._model = model
+        self._timeout = timeout
+        self._transport = transport
+
+    def __repr__(self) -> str:  # pragma: no cover - debugging aid
+        return f"HttpJsonClient(base_url={self._base_url!r}, model={self._model!r})"
+
+    @property
+    def base_url(self) -> str:
+        return self._base_url
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    def chat_json(
+        self,
+        messages: Sequence[Mapping[str, str]],
+        *,
+        max_tokens: int = MAX_OUTPUT_TOKENS,
+        thinking: bool = False,
+    ) -> _ProviderResult:
+        payload: dict[str, Any] = {
+            "model": self._model,
+            "messages": [dict(message) for message in messages],
+            "max_tokens": int(max_tokens),
+            "response_format": {"type": "json_object"},
+        }
+        headers = {"Authorization": f"Bearer {self._api_key}"}
+        try:
+            with httpx.Client(timeout=self._timeout, transport=self._transport) as client:
+                response = client.post(
+                    f"{self._base_url}/chat/completions", json=payload, headers=headers
+                )
+        except httpx.TimeoutException as exc:
+            raise TimeoutError("provider timed out") from exc
+        except httpx.TransportError as exc:
+            raise ConnectionError("provider unreachable") from exc
+        if response.status_code >= 400:
+            raise _ProviderHTTPError(response.status_code)
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise _ProviderHTTPError(response.status_code) from exc
+        choices = data.get("choices") if isinstance(data, dict) else None
+        choice = choices[0] if isinstance(choices, list) and choices else {}
+        message = choice.get("message") if isinstance(choice, dict) else {}
+        usage = data.get("usage") if isinstance(data, dict) else None
+        usage = usage if isinstance(usage, dict) else {}
+        return _ProviderResult(
+            content=message.get("content") if isinstance(message, dict) else None,
+            model=(
+                data.get("model")
+                if isinstance(data, dict) and isinstance(data.get("model"), str)
+                else self._model
+            ),
+            usage={
+                key: usage[key]
+                for key in ("prompt_tokens", "completion_tokens", "total_tokens")
+                if isinstance(usage.get(key), int) and not isinstance(usage.get(key), bool)
+            },
+            request_id=response.headers.get("x-request-id"),
+        )
+
+
+def client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient | None:
+    """Build a provider client from the environment, or ``None``.
+
+    ``None`` is a real answer: the caller must record a fallback, never a
+    fabricated plan and never a zero token count.
+    """
+    env = os.environ if environ is None else environ
+    key = (env.get(PROVIDER_KEY_ENV) or "").strip()
+    if not key:
+        return None
+    base = (env.get(PROVIDER_BASE_ENV) or DEFAULT_PROVIDER_BASE).strip().rstrip("/")
+    model = (env.get(ASSISTANT_MODEL_ENV) or "").strip() or DEFAULT_MODEL
+    try:
+        timeout = float(env.get(PROVIDER_TIMEOUT_ENV) or DEFAULT_TIMEOUT)
+    except (TypeError, ValueError):
+        timeout = DEFAULT_TIMEOUT
+    if timeout <= 0:
+        timeout = DEFAULT_TIMEOUT
+    return HttpJsonClient(api_key=key, base_url=base, model=model, timeout=timeout)
+
+
 def generate_plan(
     description: str,
     *,
@@ -317,6 +456,8 @@ def generate_plan(
     if resolved != "llm":
         # Defensive: the seam only routes here in llm mode.
         return deterministic_plan(description, dict(context) if context else None)
+    if client is None:
+        client = client_from_env()
     if client is None:
         plan = _fallback(description, context, reason=FallbackReason.NO_CLIENT,
                          requested=requested)
@@ -341,6 +482,12 @@ def generate_plan(
         return plan
     except _TransportMissing:
         plan = _fallback(description, context, reason=FallbackReason.NO_CLIENT,
+                         requested=requested)
+        _record(plan, context=context, requested=requested, returned=None,
+                usage={}, request_id=None, status=STATUS_FALLBACK)
+        return plan
+    except _ProviderHTTPError:
+        plan = _fallback(description, context, reason=FallbackReason.HTTP,
                          requested=requested)
         _record(plan, context=context, requested=requested, returned=None,
                 usage={}, request_id=None, status=STATUS_FALLBACK)

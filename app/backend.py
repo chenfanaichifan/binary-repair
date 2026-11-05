@@ -661,14 +661,17 @@ class LocalBackend:
 
     def get_plan(self, description: str,
                  context: dict[str, Any] | None = None) -> dict[str, Any] | None:
-        """Local mode runs the deterministic planner in-process.
+        """Local mode plans in-process.
 
-        There is no provider client here, so the plan is ``mode=deterministic``;
-        a real model call still requires the controller to inject one.
+        With ``BINARYREPAIR_ASSISTANT_PROVIDER_KEY`` set, the llm branch runs
+        and ``model_calls`` records the call; without it the deterministic
+        planner runs and the plan says so.
         """
         from app.services.assistant import generate_plan
+        from app.services.assistant_llm import client_from_env
 
-        plan = generate_plan(description, context=context, data_dir=self.data_dir)
+        plan = generate_plan(description, context=context, data_dir=self.data_dir,
+                             client=client_from_env())
         return plan.model_dump(mode="json")
 
 
