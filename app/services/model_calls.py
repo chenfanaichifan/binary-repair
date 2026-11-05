@@ -95,7 +95,46 @@ def aggregate_usage(
     }
 
 
-__all__ = ["aggregate_usage", "record_call", "record_provider_result"]
+def aggregate_job_usage(*, data_dir: str | Path, job_id: str) -> dict[str, int] | None:
+    """Sum token usage recorded for one job.
+
+    Rows may be bound by ``job_id`` directly (assistant calls) or by
+    ``attempt_id`` (route calls), so both paths are matched.  The ``OR`` cannot
+    double count a row: each row is selected at most once.
+
+    Any row missing a token count makes the whole answer ``None``; a partial
+    record is unavailable, not zero.
+    """
+    connection = connect(data_dir)
+    try:
+        rows = connection.execute(
+            "SELECT prompt_tokens, completion_tokens FROM model_calls "
+            "WHERE job_id = ? OR attempt_id IN ("
+            "  SELECT a.id FROM attempts a JOIN runs r ON r.id = a.run_id "
+            "  WHERE r.job_id = ?)",
+            (job_id, job_id),
+        ).fetchall()
+    finally:
+        connection.close()
+    if not rows:
+        return None
+    if any(
+        row["prompt_tokens"] is None or row["completion_tokens"] is None
+        for row in rows
+    ):
+        return None
+    return {
+        "input_tokens": sum(int(row["prompt_tokens"]) for row in rows),
+        "output_tokens": sum(int(row["completion_tokens"]) for row in rows),
+    }
+
+
+__all__ = [
+    "aggregate_job_usage",
+    "aggregate_usage",
+    "record_call",
+    "record_provider_result",
+]
 
 
 def record_provider_result(

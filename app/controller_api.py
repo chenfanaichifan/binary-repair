@@ -270,8 +270,28 @@ def _ai_usage_for_job(job_id: str) -> dict[str, int] | None:
     ``None`` means nothing recorded real usage. A missing number is never
     rendered as a made-up one, and a partial record is not padded with zeros.
     """
+    from app.db.connection import connect
     from app.services.assistant import get_plan
+    from app.services.model_calls import aggregate_job_usage
 
+    connection = connect(_data_dir())
+    try:
+        recorded = connection.execute(
+            "SELECT 1 FROM model_calls WHERE job_id = ? OR attempt_id IN ("
+            "  SELECT a.id FROM attempts a JOIN runs r ON r.id = a.run_id "
+            "  WHERE r.job_id = ?"
+            ") LIMIT 1",
+            (job_id, job_id),
+        ).fetchone()
+    finally:
+        connection.close()
+    if recorded is not None:
+        # Real model_calls rows are authoritative, including when their
+        # aggregate is None because a token count is missing. Falling back to
+        # the plan here would mix two sources under one label.
+        return aggregate_job_usage(data_dir=_data_dir(), job_id=job_id)
+
+    # Older jobs have no model_calls rows; their plan is the only real record.
     record = get_plan(job_id, data_dir=_data_dir())
     usage = (record or {}).get("usage")
     if not isinstance(usage, dict):
@@ -1312,7 +1332,9 @@ class AssistantPlanRequest(BaseModel):
     scripted when unset).  The mode only selects how the plan is produced.
     """
 
-    mode: str | None = Field(default=None, pattern="^(scripted|llm)$")
+    mode: str | None = Field(
+        default=None, pattern="^(scripted|deterministic|llm)$"
+    )
 
 
 @app.get("/api/jobs/{job_id}/assistant")
@@ -1338,17 +1360,116 @@ def generate_assistant(
     still has to act on through the normal endpoints.
     """
     _job_or_404(job_id)
-    from app.services.assistant import generate_plan
+    from app.services.assistant import generate_plan, get_plan
 
     try:
-        record = generate_plan(
-            job_id,
+        generate_plan(
+            job_id=job_id,
             data_dir=_data_dir(),
-            mode=(payload.mode if payload is not None else None),
+            mode=_planner_mode(payload.mode if payload is not None else None),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    # ``generate_plan`` returns the plan it built; the stored record carries the
+    # row id, version and message link the UI needs, so read it back by rowid.
+    record = get_plan(job_id, data_dir=_data_dir())
+    if record is None:
+        raise HTTPException(status_code=500, detail="Plan was not persisted.")
     return _assistant_payload(record)
+
+
+class StandalonePlanRequest(BaseModel):
+    """Ask for a plan without requiring a job row.
+
+    ``description`` is the defect text. When ``job_id`` is present the plan is
+    stored against that job; otherwise the plan is returned as a preview and
+    nothing is written, because an ``assistant_plans`` row requires a job id.
+    """
+
+    description: str | None = Field(default=None, max_length=2000)
+    job_id: str | None = Field(default=None, max_length=64)
+    mode: str | None = Field(
+        default=None, pattern="^(scripted|deterministic|llm)$"
+    )
+
+
+def _planner_mode(mode: str | None) -> str | None:
+    """Map the older ``scripted`` label onto M5's ``deterministic``."""
+    if mode == "scripted":
+        return "deterministic"
+    return mode
+
+
+def _agent_block(plan: Any) -> dict[str, Any]:
+    """How the plan was produced, flattened for M2.
+
+    ``mode`` reports what actually ran, ``fallback`` says whether the LLM path
+    degraded, and ``tokens`` is the M5 ``{prompt, completion}`` shape — not the
+    ``ai_usage`` ``{input_tokens, output_tokens}`` shape used for job calls.
+    """
+    return {
+        "mode": plan.mode,
+        "fallback": plan.fallback,
+        "fallback_reason": plan.fallback_reason,
+        "model": plan.model,
+        "tokens": plan.tokens,
+    }
+
+
+@app.post("/api/assistant/plan")
+def plan_from_description(payload: StandalonePlanRequest) -> dict[str, Any]:
+    """Build a plan from free text, with or without a job.
+
+    A plan is advice. This endpoint writes at most one ``assistant_plans`` row
+    and never touches contracts, runs, attempts, obligations or a verdict.
+    """
+    from app.domain.assistant import deterministic_plan
+    from app.services.assistant import generate_plan, get_plan
+
+    mode = _planner_mode(payload.mode)
+    if payload.job_id:
+        _job_or_404(payload.job_id)
+        try:
+            plan = generate_plan(
+                payload.description,
+                job_id=payload.job_id,
+                data_dir=_data_dir(),
+                mode=mode,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        record = get_plan(payload.job_id, data_dir=_data_dir())
+        if record is None:
+            raise HTTPException(status_code=500, detail="Plan was not persisted.")
+        return {
+            "job_id": payload.job_id,
+            "persisted": True,
+            "plan": record["plan"],
+            "agent": _agent_block(plan),
+        }
+
+    description = (payload.description or "").strip()
+    if not description:
+        raise HTTPException(
+            status_code=422, detail="description or job_id is required."
+        )
+    if mode == "llm":
+        # No client is configured on this host. Say so instead of returning a
+        # deterministic plan that claims the LLM path succeeded.
+        plan = deterministic_plan(description).model_copy(
+            update={
+                "fallback": True,
+                "fallback_reason": "no LLM client configured; deterministic plan returned",
+            }
+        )
+    else:
+        plan = deterministic_plan(description)
+    return {
+        "job_id": None,
+        "persisted": False,
+        "plan": plan.model_dump(),
+        "agent": _agent_block(plan),
+    }
 
 
 class ProposalRequest(BaseModel):

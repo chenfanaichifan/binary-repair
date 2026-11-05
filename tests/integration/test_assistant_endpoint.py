@@ -69,14 +69,17 @@ def test_post_returns_an_assistant_plan(client: TestClient) -> None:
     body = response.json()
 
     plan = body["plan"]
-    assert body["mode"] == "scripted"
-    assert plan["schema_version"] == 1
-    assert plan["job_id"] == job["id"]
-    assert plan["mode"] == "scripted"
+    # M5 renamed the mode value and reshaped the plan for the M2 UI; the
+    # request label is still accepted.
+    assert body["mode"] == "deterministic"
+    assert body["job_id"] == job["id"]
+    assert plan["plan_id"]
+    assert plan["mode"] == "deterministic"
     assert plan["steps"], "a plan with no steps is not actionable"
+    assert plan["steps"][-1]["kind"] == "review"
     for step in plan["steps"]:
-        assert {"id", "title", "detail", "state"} <= set(step)
-        assert step["state"] in {"next", "waiting", "done", "blocked"}
+        assert {"id", "kind", "title", "prompt"} <= set(step)
+        assert step["kind"] in {"upload", "question", "review"}
 
     again = client.get(f"/api/jobs/{job['id']}/assistant").json()
     assert again["id"] == body["id"]

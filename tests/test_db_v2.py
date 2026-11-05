@@ -54,6 +54,23 @@ def test_init_creates_baseline_and_ai_tables(tmp_path: Path) -> None:
     tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     assert {"jobs", "artifacts", "contracts", "runs", "attempts",
             "obligations", "events", "model_calls"} <= tables
+    # ``schema.sql`` is only the v1 baseline; 002 creates model_calls and
+    # 007/008 add the assistant columns. A single init_db call must cover both,
+    # or usage rows cannot be written on a freshly created database.
+    model_call_cols = {r[1] for r in conn.execute("PRAGMA table_info(model_calls)")}
+    assert {
+        "attempt_id",
+        "route",
+        "model_requested",
+        "status",
+        "prompt_tokens",
+        "completion_tokens",
+        "total_tokens",
+        "usage_json",
+        "assistant_plan_id",
+        "job_id",
+        "plan_id",
+    } <= model_call_cols
     obligation_cols = {r[1] for r in conn.execute("PRAGMA table_info(obligations)")}
     assert "scope" in obligation_cols
     job_cols = {r[1] for r in conn.execute("PRAGMA table_info(jobs)")}

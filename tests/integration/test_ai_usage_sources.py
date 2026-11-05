@@ -1,0 +1,102 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
+
+from app.controller_api import app
+from app.services import jobs
+from app.services import model_calls
+
+
+@pytest.fixture
+def data_dir(tmp_path) -> Path:
+    return tmp_path / "var"
+
+
+@pytest.fixture
+def client(data_dir, monkeypatch) -> TestClient:
+    monkeypatch.setenv("BINARYREPAIR_DATA_DIR", str(data_dir))
+    monkeypatch.delenv("BINARYREPAIR_ASSISTANT_MODE", raising=False)
+    return TestClient(app, base_url="http://127.0.0.1")
+
+
+def _create(client: TestClient) -> dict:
+    response = client.post(
+        "/api/jobs",
+        files={"binary": ("s.elf", b"\x7fELF usage", "application/octet-stream")},
+        data={"defect": "overflow"},
+    )
+    assert response.status_code == 201, response.text
+    return response.json()
+
+
+def _attempt(data: Path, job_id: str):
+    job = jobs.get_job(job_id, data_dir=data)
+    approval = jobs.approve_contract(
+        job_id,
+        contract_revision=1,
+        reviewer_label="t",
+        data_dir=data,
+        input_sha256=job.original_sha256,
+        manifest_sha256="1" * 64,
+    )
+    run = jobs.start_run(job_id, approval=approval, idempotency_key="usage", data_dir=data)
+    return next(a for a in jobs.list_attempts(run.id, data_dir=data) if a.route == "route_a")
+
+
+def _usage(client: TestClient, job_id: str):
+    routes = client.get(f"/api/jobs/{job_id}").json()["routes"]
+    return routes["A"]["ai_usage"]
+
+
+def test_model_calls_win_over_the_plan(client: TestClient, data_dir: Path) -> None:
+    job = _create(client)
+    attempt = _attempt(data_dir, job["id"])
+    model_calls.record_call(
+        data_dir=data_dir,
+        model_requested="m",
+        status="ok",
+        usage={"prompt_tokens": 12, "completion_tokens": 3},
+        job_id=job["id"],
+    )
+    model_calls.record_call(
+        data_dir=data_dir,
+        model_requested="m",
+        status="ok",
+        usage={"prompt_tokens": 1, "completion_tokens": 1},
+        attempt_id=attempt.id,
+        route="route_a",
+    )
+
+    # Both bindings count: direct job_id rows and attempt-bound rows.
+    assert _usage(client, job["id"]) == {"input_tokens": 13, "output_tokens": 4}
+
+
+def test_partial_model_call_is_none_not_zero(client: TestClient, data_dir: Path) -> None:
+    job = _create(client)
+    model_calls.record_call(
+        data_dir=data_dir,
+        model_requested="m",
+        status="ok",
+        usage={"prompt_tokens": 5},
+        job_id=job["id"],
+    )
+
+    # A missing count is unavailable; it is never padded to zero.
+    assert _usage(client, job["id"]) is None
+
+
+def test_plan_usage_is_only_a_fallback(client: TestClient, data_dir: Path) -> None:
+    job = _create(client)
+    assert client.post(f"/api/jobs/{job['id']}/assistant", json={}).status_code == 200
+
+    # No model_calls rows: the stored plan is the only real record.
+    usage = _usage(client, job["id"])
+    assert usage is None or set(usage) == {"input_tokens", "output_tokens"}
+
+
+def test_no_usage_anywhere_is_none(client: TestClient) -> None:
+    job = _create(client)
+    assert _usage(client, job["id"]) is None
