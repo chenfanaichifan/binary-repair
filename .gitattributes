@@ -28,6 +28,12 @@ fixtures/public/CWE122_c_CWE129_fgets_01/** -text
 # Evidence packages are hash-bound: every byte (including CRLF) must survive
 # clone/checkout exactly, or SHA256SUMS verification fails on a fresh clone.
 docs/handoffs/evidence/** -text
+
+# A digest manifest is itself read by sha256sum -c. With core.autocrlf=true,
+# text=auto turns the trailing LF into CRLF on Windows and `sha256sum -c` then
+# looks for a file whose name ends in a carriage return. Never rewrite these.
+*.sha256 -text
+*.sha256sum -text
 *.pdf binary
 *.vmdk binary
 *.png binary
