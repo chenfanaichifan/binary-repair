@@ -1,0 +1,27 @@
+# CWE416 deterministic trigger - measured observation
+# binary sha256: c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+# captured: 2026-11-05T12:00:18Z inside the guest
+
+## 1. single run (trigger.sh)
+exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+
+## 2. determinism: 50 consecutive runs with ASLR disabled
+# every line is one distinct observation, with its occurrence count
+50x exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+
+## 3. contrast: 10 runs with ASLR ON (plain ./original.elf)
+# shows why setarch -R is required: the bytes read back are heap residue
+1x 06e6030a
+1x 0d25020a
+1x 15ec0a
+1x 1ebc0a
+1x 2421020a
+1x 2703040a
+1x 408a010a
+1x 6a4f010a
+1x 84670a
+1x a05c010a
+
+## 4. what a correct program would print
+# 99 'A' bytes then a newline = 100 bytes, exit 0. Measured stdout here is 3 bytes.
+# The defect is silent: exit status stays 0 and stderr stays empty.

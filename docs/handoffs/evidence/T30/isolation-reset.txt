@@ -1,0 +1,93 @@
+# T30 window — isolation and reset evidence (measured 2026-11-05)
+
+## 1. Isolation: everything happened inside the guest
+
+| Check | Measured | Why it matters |
+|---|---|---|
+| Host has a C compiler? | **No** (`command -v gcc` → not found) | The host cannot build the fixture, so the build below cannot have happened on the host |
+| Build ran where? | guest `binrepair-vm`, `/var/tmp/cwe416` | AGENTS.md §3: the host never compiles or runs a binary |
+| Every execution ran where? | same guest, same directory | the 50 determinism runs and the 10 ASLR-on contrast runs are all in-guest |
+| Transfer integrity | every file hashed before and after each `ssh cat` | see §4 |
+
+Guest identity at capture time:
+
+```
+hostname  binrepair-vm
+os        Ubuntu 24.04.5 LTS
+kernel    6.8.0-147-generic
+arch      x86_64
+gcc       gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+libc      ldd (Ubuntu GLIBC 2.39-0ubuntu8.9) 2.39
+captured  2026-11-05T12:00:27Z
+access    ssh lab@192.168.30.128 with D:\VMs\binrepair-u2404-x64-01\keys\id_ed25519
+```
+
+## 2. Window identity — and the honest caveat
+
+```
+snapshot.current = "14"
+snapshot name    = t15-t6-work
+parent           = uid 11 (gate4-harness)
+is baseline?     = NO
+```
+
+**This window did not start from the clean baseline.** Record 88 §3.1 calls for a
+revert to the target snapshot before a run; that revert was not performed, because
+uid 14 holds the T6.2 working state (job directories, the routea config, the
+conformance build) that an earlier window produced and that has not yet been
+archived elsewhere.
+
+So this window is **working-snapshot clean, not baseline clean**. Stated plainly
+because the difference matters: a reviewer comparing this build against a future
+one should know which snapshot it came from. If a baseline-clean window is
+required, revert to uid 11 and re-run `build/build.sh` plus `build/trigger.sh` —
+both are deterministic and take under a minute, and the expected hashes are in
+`build.json`.
+
+## 3. Reset: NOT performed, and why
+
+Record 88 §3.2 defines staging out as: copy artifacts out → power off cleanly →
+verify `snapshot.current` and no `.lck` → revert to baseline.
+
+Measured state at capture time:
+
+```
+VM running        yes (vmrun list: 1 running VM)
+snapshot.current  14 (unchanged)
+*.lck directories 12
+```
+
+| Step | Status |
+|---|---|
+| Copy artifacts out | **done** — `original.elf`, `readelf.txt`, sources, scripts are in this package and their hashes match the guest copies |
+| Power off cleanly | **not done** — the VM is still running so the T6.2 state stays usable |
+| Verify no `.lck` | **12 lck directories present**, consistent with a running VM |
+| Revert to baseline | **not done** |
+
+So the reset half of the window is **open**, not silently skipped. It closes when
+the T6.2 working state is no longer needed: snapshot it if the disk state is the
+deliverable (record 88 §3.2 step 3), otherwise revert to uid 11.
+
+## 4. Transfer integrity (measured, both ends)
+
+Every artifact was transferred with `ssh 'cat > …'` and hashed on both sides.
+Selected values, all matching:
+
+```
+original.elf      c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+readelf.txt       47ddb5386ce4eaa91b40e350d3ebc72366eb56f506fceb4ef2c78b6827e4d047
+original.c        fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e
+harness.c         cef8f533765f3f9184377bf72e32792f6a4128080da8467cb478340a679c63a9
+```
+
+`build/original.c` still hashes to the declared quadruple value after the round
+trip, so the case source that produced the binary is the one that was asked for.
+
+## 5. What is deliberately absent
+
+- No repair candidate was built. T8.3 stays blocked; this window builds the
+  vulnerable original only.
+- No second sample type was added.
+- Nothing was executed on the host, and no host-side gcc was installed to
+  "check" the build — the absence of a host compiler is part of the isolation
+  claim, so installing one would weaken it.

@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "task": "task-30",
+  "fixture": {
+    "id": "CWE416_Use_After_Free__malloc_free_char_01",
+    "cwe": 416,
+    "cwe_name": "Use After Free",
+    "flow_variant": "01 Baseline",
+    "source_of_truth": {
+      "repo": "dsp-testing/samate-c-cpp",
+      "commit": "01e353daa3d28a4ce2ae68904cbcde5e03e3519d",
+      "commit_short": "01e353d",
+      "path": "C/testcases/CWE416_Use_After_Free/CWE416_Use_After_Free__malloc_free_char_01.c",
+      "sha256": "fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e",
+      "verified": "downloaded 2026-11-05 from raw.githubusercontent.com at the commit above; sha256 matches the declared prefix fa84a6bb and suffix 7f42e",
+      "note": "The local Juliet 1.3 checkout in the guest (~/evaluator/src/juliet-v1.3) ships CWE121 only, so the case file is supplied explicitly rather than taken from that tree."
+    },
+    "support_files": {
+      "std_testcase.h": {
+        "sha256": "a78aaf3a54a6210260ad70123c09c3c283c6edf7808b6244205e00b8f2d9b8d0",
+        "origin": "guest Juliet 1.3 checkout, byte-identical to the same path in dsp-testing/samate-c-cpp @ 01e353d"
+      },
+      "io.c": {
+        "sha256": "50ace91d0f9cd9f281d5d8ff3a9ca879ee2779d737030ae84e8e4be3df5b299c",
+        "origin": "guest Juliet 1.3 checkout, byte-identical to the same path in dsp-testing/samate-c-cpp @ 01e353d"
+      }
+    },
+    "harness": {
+      "file": "build/harness.c",
+      "sha256": "cef8f533765f3f9184377bf72e32792f6a4128080da8467cb478340a679c63a9",
+      "behaviour": "calls CWE416_..._bad() only; the case file is compiled unmodified",
+      "why_only_bad": "the case's own main() also runs good() and seeds srand() from the wall clock; neither belongs in a fixture"
+    }
+  },
+  "build": {
+    "date_utc": "2026-11-05T12:00:27Z",
+    "guest": {
+      "hostname": "binrepair-vm",
+      "os": "Ubuntu 24.04.5 LTS",
+      "kernel": "6.8.0-147-generic",
+      "arch": "x86_64"
+    },
+    "compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "libc": "ldd (Ubuntu GLIBC 2.39-0ubuntu8.9) 2.39",
+    "complete_flags": "-O0 -g -fno-stack-protector -fno-pie -no-pie -Wall -fdebug-prefix-map=<src>=. -ffile-prefix-map=<src>=. -fdebug-prefix-map=<support>=juliet/testcasesupport -ffile-prefix-map=<support>=juliet/testcasesupport",
+    "include_path": "<juliet>/C/testcasesupport",
+    "link_units": [
+      "harness.c",
+      "original.c (unmodified case)",
+      "<juliet>/C/testcasesupport/io.c"
+    ],
+    "build_script": {
+      "file": "build/build.sh",
+      "sha256": "6e33c82568db9e1d98df362290064e47e9d74c4124bfb966c19f383df90e30a9",
+      "invocation": "sh build.sh  (POSIX sh; bash not required)"
+    },
+    "stack_protector": "disabled deliberately (-fno-stack-protector), matching the CWE121 fixture so the two fixtures differ only in the case source",
+    "compiler_diagnostic": {
+      "present": true,
+      "text": "original.c:36:5: warning: pointer 'data' used after 'free' [-Wuse-after-free] / note: call to 'free' here (line 34)",
+      "handling": "recorded, not suppressed: the warning is the defect and is the first independent confirmation that the fixture is vulnerable"
+    },
+    "reproducibility": {
+      "measured": "2026-11-05, same sources and gcc, two builds per invocation style",
+      "experiment": [
+        {
+          "style": "relative paths, cwd = source dir",
+          "sha256": "fc40085cb1d404506f8c241968614ed05e55ddbf780dec4b06b5b9d4679c87e0",
+          "stable": true
+        },
+        {
+          "style": "absolute paths, same cwd",
+          "sha256": "0a26a80563973622a257ece4ec6ad5a3010d2d5167fd9d6569875dcc835a07ec",
+          "stable": true
+        },
+        {
+          "style": "relative + prefix-map (adopted)",
+          "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+          "stable": true
+        }
+      ],
+      "finding": "-g embeds DW_AT_comp_dir and source names, so the hash differs between invocation styles even though each style is internally reproducible",
+      "adopted_mitigation": "the two -fdebug-prefix-map / -ffile-prefix-map pairs normalise recorded paths to stable virtual ones",
+      "verified_location_independent": true,
+      "location_test": "built the same sources in /tmp/elsewhere and got the identical sha256 c9c2632e…23c9",
+      "deviation_note": "this is a deliberate deviation from the CWE121 fixture's flag list, which omits the prefix-map flags; rationale and measurements are above"
+    },
+    "script_output_contract": "the script prints machine-readable `sha256=<hex>` and `size=<bytes>` lines; build.json#output carries those exact values"
+  },
+  "output": {
+    "file": "build/original.elf",
+    "size_bytes": 25344,
+    "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "build_id": "951731d93ab7aa9e2a94dc87fb8915b784dd693a",
+    "readelf_dump": "readelf.txt",
+    "reported_by_script": true
+  },
+  "machine_check": {
+    "source": "readelf.txt (measured, not inferred)",
+    "class": "ELF64",
+    "data": "2's complement, little endian",
+    "type": "EXEC (non-PIE)",
+    "machine": "Advanced Micro Devices X86-64",
+    "entry_point": "0x4011b0",
+    "nx": "enabled (GNU_STACK RW, no E)",
+    "relro": "partial (GNU_RELRO present, BIND_NOW absent)",
+    "stack_canary": "absent (no __stack_chk_fail symbol)",
+    "needed": [
+      "libc.so.6"
+    ],
+    "debug_info": "present, not stripped"
+  },
+  "trigger": {
+    "script": "build/trigger.sh",
+    "sha256": "01cce3c72817f18557edbd33ed9cc61040c1ebd6487d9f81459b79e223606409",
+    "command": "setarch -R ./original.elf",
+    "input": "none — the defect is unconditional",
+    "expected_observation": {
+      "exit_code": 0,
+      "stdout_hex": "05040a",
+      "stdout_len": 3,
+      "stderr_len": 0
+    },
+    "correct_behaviour_reference": {
+      "exit_code": 0,
+      "stdout": "99 'A' bytes followed by a newline (100 bytes)",
+      "note": "a correct program prints the string it allocated, not allocator residue"
+    },
+    "why_setarch_R": "the bytes read back are the freed chunk's first bytes, which glibc's tcache overwrites with its next/key words; the key carries a heap address, so with ASLR on stdout varies per run (measured: 10 runs produced 10 distinct outputs). setarch -R disables ASLR for this process only and leaves the program and allocator untouched.",
+    "determinism_evidence": {
+      "runs": 50,
+      "distinct_observations": 1,
+      "observation": "exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0 (50/50)",
+      "aslr_on_contrast": "10 runs produced 10 distinct stdout values (recorded in trigger-observation.txt §3)"
+    },
+    "silence_note": "the defect does not crash and does not change the exit status; only the stdout bytes reveal it, which is why the trigger records exact bytes rather than only the exit code"
+  },
+  "window": {
+    "snapshot_uid": 14,
+    "snapshot_name": "t15-t6-work",
+    "parent_snapshot_uid": 11,
+    "parent_snapshot_name": "gate4-harness",
+    "is_baseline": false,
+    "baseline_note": "the build ran on working snapshot uid 14, not on the clean baseline uid 11; record 88 §3.1 calls for a baseline revert before a window, so this window is NOT baseline-clean and is recorded as such rather than restated as clean",
+    "access": "ssh lab@192.168.30.128 with D:\\VMs\\binrepair-u2404-x64-01\\keys\\id_ed25519",
+    "host_must_not_build": "the host has no gcc; every build and every execution above happened inside the guest"
+  },
+  "not_claimed": [
+    "no repair candidate was produced (T8.3 remains blocked)",
+    "no second sample type was invented; this task adds CWE416 only",
+    "no V4 symbolic check ran on this fixture",
+    "no result-bundle was packaged in this step; the packaging constraints (dual manifest, V0 candidate uniqueness) apply when the bundle is made"
+  ]
+}
