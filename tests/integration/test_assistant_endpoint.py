@@ -122,3 +122,40 @@ def test_unknown_mode_is_rejected(client: TestClient) -> None:
 def test_unknown_job_is_404(client: TestClient) -> None:
     assert client.get("/api/jobs/does-not-exist/assistant").status_code == 404
     assert client.post("/api/jobs/does-not-exist/assistant", json={}).status_code == 404
+
+def test_plan_does_not_touch_a_running_job(
+    client: TestClient, data_dir: Path
+) -> None:
+    """With a real run in place, generation may only append assistant_plans."""
+    job = _create(client)
+    contract = client.get(f"/api/jobs/{job['id']}").json()["contract"]
+    approval = client.post(
+        f"/api/jobs/{job['id']}/approve",
+        data={"expected_sha256": contract["sha256"], "reviewer_label": "t"},
+    ).json()
+    started = client.post(
+        f"/api/jobs/{job['id']}/runs",
+        json={
+            "contract_revision": approval["contract_revision"],
+            "manifest_sha256": approval["manifest_sha256"],
+            "idempotency_key": "assistant-only",
+        },
+    )
+    assert started.status_code in {200, 202}, started.text
+
+    tables = ("contracts", "runs", "attempts", "obligations", "assistant_plans")
+    before = {name: _count(data_dir, name) for name in tables}
+    snapshot_before = client.get(f"/api/jobs/{job['id']}").json()
+
+    assert client.post(f"/api/jobs/{job['id']}/assistant", json={}).status_code == 200
+
+    after = {name: _count(data_dir, name) for name in tables}
+    assert after["assistant_plans"] == before["assistant_plans"] + 1
+    for name in ("contracts", "runs", "attempts", "obligations"):
+        assert after[name] == before[name], name
+
+    snapshot_after = client.get(f"/api/jobs/{job['id']}").json()
+    assert snapshot_after["phase"] == snapshot_before["phase"]
+    assert snapshot_after["contract"] == snapshot_before["contract"]
+    assert snapshot_after["run"] == snapshot_before["run"]
+    assert snapshot_after["verdict"] == snapshot_before["verdict"]

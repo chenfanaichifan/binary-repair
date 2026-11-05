@@ -21,9 +21,14 @@ def _job(tmp_path: Path):
     return data, job, run, attempt
 
 
-def _bundle(tmp_path: Path, candidate: str = "a" * 64) -> Path:
+def _bundle(tmp_path: Path, candidate: str | None = None) -> Path:
+    import hashlib
     bundle = tmp_path / "bundle"; bundle.mkdir()
-    (bundle / "candidate.elf").write_bytes(b"candidate bytes")
+    payload = b"candidate bytes"
+    (bundle / "candidate.elf").write_bytes(payload)
+    if candidate is None:
+        # A placeholder hash would let V0 pass without carrying the candidate.
+        candidate = hashlib.sha256(payload).hexdigest()
     (bundle / "audit.json").write_text('{"pass": true}')
     (bundle / "bundle.json").write_text(json.dumps({
         "schema_version": 1, "route": "route_a", "candidate_sha256": candidate,
@@ -222,6 +227,22 @@ def test_v0_picks_candidate_not_first_artifact(tmp_path: Path) -> None:
     finally:
         connection.close()
     assert row["sha256"] == manifest["candidate_sha256"]
+
+
+def test_v0_without_the_candidate_bytes_is_rejected(tmp_path: Path) -> None:
+    """No silent ids[0] fallback: if V0 does not carry the candidate, refuse."""
+    import hashlib
+    data, job, run, attempt = _job(tmp_path)
+    bundle = _bundle(tmp_path)
+    (bundle / "decoy.json").write_text('{"not": "candidate"}')
+    manifest = json.loads((bundle / "bundle.json").read_text())
+    # Claim a candidate that is not present in the V0 artifact list.
+    manifest["candidate_sha256"] = hashlib.sha256(b"absent candidate").hexdigest()
+    manifest["gates"]["V0"]["artifacts"] = ["decoy.json"]
+    (bundle / "bundle.json").write_text(json.dumps(manifest))
+    with pytest.raises(IngestError, match="declared candidate"):
+        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+               route="route_a", bundle=bundle, trigger=False)
 
 
 def test_legacy_without_result_bundle_is_all_not_run(tmp_path: Path) -> None:
