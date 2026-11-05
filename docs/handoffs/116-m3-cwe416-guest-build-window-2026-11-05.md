@@ -11,6 +11,23 @@ merge without a collision.
 Nothing here writes to `fixtures/`, `tools/`, `app/`, or any interface contract.
 The fixture's bytes are exactly as `integration/live-bridge-2026-11-03` has them.
 
+**Reclassified 2026-11-05 (record 118 §7): this record is a build/trigger
+diagnostic, and is NOT a T8.3 fixture.** The `src.c` measured below is
+team-authored, so it cannot carry the second-defect-class obligation no matter
+how clean its measurements are. Specific consequences:
+
+- `original.variant.elf` is not shipped and must never be ingested — it differs
+  from `build.json#argv` in two ways (no `harness.c`, plus prefix-map flags) and
+  cannot stand in for the artefact that argv describes.
+- That fixture's `build.json#output.sha256` stays `null`.
+- Nothing here relieves T8.3.
+
+The root cause of the link failure is resolved in record 118 §1: the upstream
+`original.c` guards its `main` with `#ifdef INCLUDEMAIN` (line 91) and the T30
+gcc line does not define it, while this fixture's `src.c` had an unguarded
+`main` at line 90. It is a defect in the authored file, not in the toolchain or
+the window.
+
 ---
 
 ## 0. What actually happened

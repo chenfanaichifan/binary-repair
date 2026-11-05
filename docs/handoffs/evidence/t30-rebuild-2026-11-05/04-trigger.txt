@@ -1,0 +1,37 @@
+# trigger.sh - measured observation
+# binary sha256 c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+# captured 2026-11-05T13:45:51Z inside the guest
+
+## 1. single run
+
+exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+
+## 2. determinism: 50 consecutive runs, ASLR disabled by setarch -R
+# one line per distinct observation, with its occurrence count
+
+50x exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+
+## 3. determinism: 200 more runs
+
+200x exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+
+## 4. contrast: 10 runs with ASLR ON (plain ./original.elf)
+# this is why setarch -R is required: the bytes read are heap residue
+
+      1 f5c3030a
+      1 e93b0a
+      1 c412010a
+      1 8feb0a
+      1 7ba4010a
+      1 6ea3030a
+      1 68920a
+      1 46d6030a
+      1 3d780a
+      1 1c31020a
+
+distinct values among those 10 runs:
+10
+
+## 5. what a correct program would print
+# 99 'A' bytes then a newline = 100 bytes, exit 0. Measured stdout is 3 bytes,
+# exit 0, stderr empty. The defect is silent: no crash, no status change.

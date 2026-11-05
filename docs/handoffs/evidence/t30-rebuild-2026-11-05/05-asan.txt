@@ -1,0 +1,57 @@
+# supplementary: AddressSanitizer confirmation
+
+# This is a DIAGNOSTIC build, not the fixture artefact. It carries -fsanitize=address,
+# which build.json#build.complete_flags does not, so original.asan.elf is a different
+# binary by design and must never stand in for original.elf.
+
+## build
+
+  gcc -O0 -g -fno-omit-frame-pointer -fsanitize=address -I <support> \
+      -o original.asan.elf harness.c original.c <support>/io.c
+
+## run
+
+=================================================================
+==7479==ERROR: AddressSanitizer: heap-use-after-free on address 0x50b000000040 at pc 0x7ffff786cf85 bp 0x7fffffffea60 sp 0x7fffffffe208
+READ of size 2 at 0x50b000000040 thread T0
+    #0 0x7ffff786cf84 in puts ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:1236
+    #1 0x5555555566a6 in printLine /home/lab/evaluator/src/juliet-v1.3/C/testcasesupport/io.c:15
+    #2 0x555555556515 in CWE416_Use_After_Free__malloc_free_char_01_bad /var/tmp/cwe416/original.c:36
+    #3 0x555555556455 in main /var/tmp/cwe416/harness.c:25
+    #4 0x7ffff742a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #5 0x7ffff742a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #6 0x555555556384 in _start (/var/tmp/cwe416/original.asan.elf+0x2384) (BuildId: dd33234a598a01bc68298fc92059336c3e39f2fb)
+
+0x50b000000040 is located 0 bytes inside of 100-byte region [0x50b000000040,0x50b0000000a4)
+freed by thread T0 here:
+    #0 0x7ffff78fc4d8 in free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:52
+    #1 0x555555556509 in CWE416_Use_After_Free__malloc_free_char_01_bad /var/tmp/cwe416/original.c:34
+    #2 0x555555556455 in main /var/tmp/cwe416/harness.c:25
+    #3 0x7ffff742a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #4 0x7ffff742a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #5 0x555555556384 in _start (/var/tmp/cwe416/original.asan.elf+0x2384) (BuildId: dd33234a598a01bc68298fc92059336c3e39f2fb)
+
+previously allocated by thread T0 here:
+    #0 0x7ffff78fd9c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0x55555555648e in CWE416_Use_After_Free__malloc_free_char_01_bad /var/tmp/cwe416/original.c:29
+    #2 0x555555556455 in main /var/tmp/cwe416/harness.c:25
+    #3 0x7ffff742a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #4 0x7ffff742a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #5 0x555555556384 in _start (/var/tmp/cwe416/original.asan.elf+0x2384) (BuildId: dd33234a598a01bc68298fc92059336c3e39f2fb)
+
+SUMMARY: AddressSanitizer: heap-use-after-free ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:1236 in puts
+Shadow bytes around the buggy address:
+  0x50affffffd80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x50affffffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x50affffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x50afffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x50afffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x50b000000000: fa fa fa fa fa fa fa fa[fd]fd fd fd fd fd fd fd
+  0x50b000000080: fd fd fd fd fd fa fa fa fa fa fa fa fa fa fa fa
+  0x50b000000100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x50b000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x50b000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+
+## exit status
+
+exit=1

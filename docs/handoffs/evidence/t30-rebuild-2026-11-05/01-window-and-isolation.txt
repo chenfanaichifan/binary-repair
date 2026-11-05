@@ -1,0 +1,45 @@
+# T30 rebuild - isolation and window identity
+# captured 2026-11-05T13:45:51Z inside the guest
+
+## 1. where this ran
+
+hostname               binrepair-vm
+kernel                 6.8.0-147-generic
+arch                   x86_64
+user                   uid=1000(lab) gid=1000(lab) groups=1000(lab),4(adm),27(sudo)
+boot                    system boot 2026-11-05 21:43
+uptime                 up 2 minutes
+
+## 2. toolchain
+
+gcc                    gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+ld                     GNU ld (GNU Binutils for Ubuntu) 2.42
+libc                   ldd (Ubuntu GLIBC 2.39-0ubuntu8.9) 2.39
+
+## 3. baseline evidence - the home directory is the gate4-harness state
+
+no leftover from the CWE416 fixture window (that window created ~/cwe416):
+  absent
+
+home directory listing:
+  D
+  evaluator
+  repair-input
+  route-a
+
+## 4. Juliet tree - the checkout ships CWE121 only, support is complete
+
+  testcases: CWE121_Stack_Based_Buffer_Overflow
+  testcasesupport: 8 files
+
+## 5. support file hashes (must match build.json#fixture.support_files)
+
+50ace91d0f9cd9f281d5d8ff3a9ca879ee2779d737030ae84e8e4be3df5b299c  /home/lab/evaluator/src/juliet-v1.3/C/testcasesupport/io.c
+a78aaf3a54a6210260ad70123c09c3c283c6edf7808b6244205e00b8f2d9b8d0  /home/lab/evaluator/src/juliet-v1.3/C/testcasesupport/std_testcase.h
+
+## 6. build inputs as received (must match the hashes in build.json)
+
+6e33c82568db9e1d98df362290064e47e9d74c4124bfb966c19f383df90e30a9  build.sh
+fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e  original.c
+cef8f533765f3f9184377bf72e32792f6a4128080da8467cb478340a679c63a9  harness.c
+01cce3c72817f18557edbd33ed9cc61040c1ebd6487d9f81459b79e223606409  trigger.sh
