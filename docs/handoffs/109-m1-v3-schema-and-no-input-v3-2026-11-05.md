@@ -3,6 +3,9 @@
 - Date: 2026-11-05
 - Owner: Member 1 (host backend)
 - Branch: `m1/t30-acceptance-ab-2026-11-05`
+- Common baseline: `canonical/m1-m5-integration` @ `1430e1e` (v3 schema
+  `708d957` + intake). M1 merged it; `app/domain/contracts.py` diff vs the
+  baseline is 0.
 - Scope: schema integration, fixture-intake matrix, and the V3 no-input
   acceptance path. **No fixture byte change, no CWE416 contract.** No merge to
   `main`, no tag, no live-success claim.
@@ -17,8 +20,8 @@ it, but no sentinel `invalid_*` field is written.
 
 | Item | Status |
 |---|---|
-| M5 v3 schema | **integrated** — cherry-pick of `4c36898` (`7c279a1`) |
-| Second schema copy | **none** — `app/domain/contracts.py` is M5's implementation |
+| M5 v3 schema | **integrated on the common baseline** — `708d957` (canonical `1430e1e`); M1 merged it |
+| Second schema copy | **none** — one `app/domain/contracts.py`; diff vs canonical baseline is 0 |
 | CWE121 v2 hash | **`24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37`** (unchanged) |
 | no-input v3 hash | `98ba686723ec85a7631e156dc240315d1cf4736fde0f1adc9c709d52ef3a33a7` |
 | Intake argv/stdin | exactly **4 valid + 2 invalid** |
@@ -40,10 +43,12 @@ app/domain/contracts.py
 tests/test_contracts.py
 ```
 
-Our branch's copies of those files were identical to `4c36898^`, so the commit
-was cherry-picked cleanly as `7c279a1`. Nothing was re-typed, forked, or kept as
-a parallel schema: `SecurityContract` is M5's class, and `fixture_intake.py`
-imports it instead of carrying its own field rules.
+It was first cherry-picked on the M1 feature branch (`7c279a1`) and then
+integrated on the common baseline `canonical/m1-m5-integration` as `708d957`
+(commit `1430e1e`). M1 merged that baseline. There is now **one**
+`app/domain/contracts.py`; `git diff canonical/m1-m5-integration HEAD` for it is
+empty. `fixture_intake.py` imports that class instead of carrying its own field
+rules.
 
 CWE121 is a v2 contract with no `input_mode`. Its hash is unchanged:
 
@@ -143,9 +148,14 @@ sentinel field therefore fails before any case is run, not only at intake.
   four `invalid_*` fields and `max_valid_input_bytes` makes the CLI return 2
   before writing an artefact; the executor rejects a sentinel contract before
   creating a bundle; `_verify_contract` rejects the same body.
-- Full suite: **449 passed / 2 skipped / 0 failed**.
+- Full suite on M1: **449 passed / 2 skipped / 0 failed**.
+- Common baseline full suite: **430 passed / 2 skipped / 0 failed**.
+- M1 local checkpoint before the baseline merge (`1b08ae5`): **425 passed / 2 skipped / 0 failed**.
 
-The two skips are `ELF execution requires Linux`; a skip is not a pass.
+**425/2/0 is the recorded M1 local checkpoint at `1b08ae5`**; the post-baseline
+branch has 449 tests because it adds the v3 and V3 no-input tests. CI still
+needs **binutils** for the `readelf`/`objdump` checks. The two local skips are
+`ELF execution requires Linux`; a skip is not a pass.
 
 ---
 
@@ -160,9 +170,10 @@ src.c
 ```
 
 Intake reports 7 `missing_file` findings. The `defect.json` still carries
-`"trigger_case": "invalid-first"`; when the v3 no-input contract is added, the
-intake will report `no_input_trigger_case_present` until it is removed. No
-sentinel `invalid_*` field was written anywhere.
+`"trigger_case": "invalid-first"`. When the v3 no-input contract is created,
+that pointer must be **deleted in the same change**; it must not be carried into
+the no-input fixture. The intake reports `no_input_trigger_case_present` until
+it is gone. No sentinel `invalid_*` field was written anywhere.
 
 The schema now in this branch means a v3 no-input contract can load here. The
 fixture still needs the build, ELF, contract and tests before it can pass
