@@ -6,14 +6,22 @@
 # worktree of origin/main is needed any more. This script used to create one; it
 # now serves the same canonical API from the merged tree, which keeps the GUI and
 # the controller on one commit.
+#
+# One canonical data directory: the controller and start-worker.ps1 must use the
+# same store, otherwise the worker looks at an empty database. Both default to
+# <repo>\var and both honour an explicit BINARYREPAIR_DATA_DIR.
 
 $ErrorActionPreference = "Stop"
 $project = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $project
 
-$dataDir = Join-Path $project "var\controller"
+$dataDir = if ($env:BINARYREPAIR_DATA_DIR) {
+    $env:BINARYREPAIR_DATA_DIR
+} else {
+    Join-Path $project "var"
+}
 New-Item -ItemType Directory -Force $dataDir | Out-Null
-$env:BINARYREPAIR_DATA_DIR = $dataDir
+$env:BINARYREPAIR_DATA_DIR = (Resolve-Path $dataDir).Path
 
 $python = Join-Path $project ".venv\Scripts\python.exe"
 if (-not (Test-Path $python)) {

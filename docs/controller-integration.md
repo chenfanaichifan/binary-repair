@@ -7,9 +7,11 @@ interface and renders whatever the controller reports.
 
 - `.\start-controller.ps1` — serves the canonical controller `app.controller_api:app`
   from this checkout on `127.0.0.1:8000`, with
-  `BINARYREPAIR_DATA_DIR=var\controller`. Before the 2026-10-29 merge this script
-  created a separate worktree of `origin/main`; the canonical controller now lives
-  in the same tree as the GUI, so both run from one commit.
+  `BINARYREPAIR_DATA_DIR=<repo>\var` (the same default as `.\start-worker.ps1`;
+  set the variable explicitly to share a different store). Before the
+  2026-10-29 merge this script created a separate worktree of `origin/main`; the
+  canonical controller now lives in the same tree as the GUI, so both run from
+  one commit.
 - `tools\p0_acceptance.py` — one command checks session bootstrap, controller
   health, real job creation, `demo:false`, no demo banner, contract edit,
   approval, start → `queued`, cancel → `已取消`, and that cancel is not labelled
@@ -85,7 +87,9 @@ document; it exists only as a fallback.
 Run the worker (independent process, one command):
 
 ```powershell
-python -m app.services.worker --data-dir <project>\var\controller --poll 2
+.\start-worker.ps1                     # same default data dir as the controller
+# or, explicitly:
+python -m app.services.worker --data-dir <project>\var --poll 2
 ```
 
 At this tag `GET /api/jobs/{id}` returns: `verdict` (run outcome/reason/failing
