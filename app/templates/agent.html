@@ -32,9 +32,19 @@
     <strong>助手已降级</strong>：<span id="agent-fallback-text">模型通道不可用，当前回退到确定性引导；页面内容不代表模型输出。</span>
   </div>
 
-  <div class="agent-tabs" role="tablist" aria-label="控制台视图">
-    <button type="button" class="agent-tab is-active" data-view="chat" data-testid="agent-tab-chat" role="tab" aria-selected="true">对话引导</button>
-    <button type="button" class="agent-tab" data-view="result" data-testid="agent-tab-result" role="tab" aria-selected="false">结果与证据</button>
+  <div class="agent-tabs-row">
+    <div class="agent-tabs" role="tablist" aria-label="控制台视图">
+      <button type="button" class="agent-tab is-active" data-view="chat" data-testid="agent-tab-chat" role="tab" aria-selected="true">对话引导</button>
+      <button type="button" class="agent-tab" data-view="result" data-testid="agent-tab-result" role="tab" aria-selected="false">结果与证据</button>
+    </div>
+    <button
+      type="button"
+      class="agent-side-toggle"
+      id="agent-side-toggle"
+      data-testid="agent-side-toggle"
+      aria-controls="agent-side"
+      aria-expanded="true"
+    >收起状态面板</button>
     <a class="agent-tab agent-tab-link" href="/jobs/new" data-testid="agent-switch-form">切换到表单</a>
   </div>
 
@@ -105,7 +115,7 @@
       </div>
     </section>
 
-    <aside class="agent-side" aria-label="状态面板">
+    <aside class="agent-side" id="agent-side" aria-label="状态面板">
       <h2 class="agent-side-title">状态面板</h2>
       <dl class="agent-side-list">
         <div class="agent-side-row">

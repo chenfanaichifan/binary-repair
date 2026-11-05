@@ -186,3 +186,29 @@ def test_existing_setup_and_job_pages_still_work():
     resumed = client.get(f"/agent?job={job_id}")
     assert resumed.status_code == 200
     assert f'data-job-id="{job_id}"' in resumed.text
+
+def test_state_panel_can_collapse_into_a_single_column():
+    """The side panel folds away so the conversation gets the full width."""
+    page = client.get("/agent")
+    assert page.status_code == 200
+    assert 'data-testid="agent-side-toggle"' in page.text
+    assert 'aria-controls="agent-side"' in page.text
+    assert 'aria-expanded="true"' in page.text
+    assert "收起状态面板" in page.text
+    assert 'id="agent-side"' in page.text
+    # The toggle sits in the row, outside the tablist, so it is not a tab.
+    assert AGENT_TEMPLATE.index('class="agent-tabs-row"') < AGENT_TEMPLATE.index(
+        'id="agent-side-toggle"'
+    )
+    assert AGENT_TEMPLATE.index('class="agent-tabs"') < AGENT_TEMPLATE.index(
+        'id="agent-side-toggle"'
+    )
+
+    assert "br.agent.side.collapsed" in AGENT_JS
+    assert "is-side-collapsed" in AGENT_JS
+    assert "aria-expanded" in AGENT_JS
+
+    css = (BASE_DIR / "app" / "static" / "css" / "agent.css").read_text(encoding="utf-8")
+    collapsed = css.split(".agent-body.is-side-collapsed", 1)[1]
+    assert "display: none" in collapsed[:120]
+    assert "max-width: 820px" in collapsed[:400]

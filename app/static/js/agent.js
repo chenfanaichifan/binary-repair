@@ -17,6 +17,36 @@
   var root = document.getElementById("agent-root");
   if (!root) return;
 
+  /* ---------- 状态面板：可折叠，让对话流占满整行 ---------- */
+
+  var sideBody = document.querySelector(".agent-body");
+  var sideToggle = document.getElementById("agent-side-toggle");
+  var SIDE_KEY = "br.agent.side.collapsed";
+
+  function readSidePref() {
+    try { return window.localStorage.getItem(SIDE_KEY); } catch (e) { return null; }
+  }
+
+  function setSideCollapsed(collapsed, persist) {
+    if (!sideBody || !sideToggle) return;
+    sideBody.classList.toggle("is-side-collapsed", collapsed);
+    sideToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    sideToggle.textContent = collapsed ? "展开状态面板" : "收起状态面板";
+    if (persist) {
+      try { window.localStorage.setItem(SIDE_KEY, collapsed ? "1" : "0"); } catch (e) {}
+    }
+  }
+
+  if (sideToggle && sideBody) {
+    var storedSide = readSidePref();
+    var narrowSide = window.matchMedia("(max-width: 1100px)").matches;
+    /* 窄屏默认收起；用户显式选择过就尊重它。 */
+    setSideCollapsed(storedSide === null ? narrowSide : storedSide === "1", false);
+    sideToggle.addEventListener("click", function () {
+      setSideCollapsed(!sideBody.classList.contains("is-side-collapsed"), true);
+    });
+  }
+
   var FIXTURE_MODE = root.dataset.fixture === "1";
   var CSRF = root.dataset.csrf || "";
   var FIXTURES = window.AGENT_FIXTURES || null;

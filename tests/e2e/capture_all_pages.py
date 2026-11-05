@@ -119,6 +119,17 @@ def main() -> int:
             session.wait_js('document.querySelector(\'[data-testid="agent-dropzone"]\') !== null')
             shot("02-agent-guided.png")
 
+            # 02b 控制台 · 状态面板收起，对话流单列
+            session.click('[data-testid="agent-side-toggle"]')
+            session.wait_js(
+                'document.querySelector(".agent-body").classList.contains("is-side-collapsed")'
+            )
+            shot("02b-agent-collapsed.png")
+            session.click('[data-testid="agent-side-toggle"]')
+            session.eval_js(
+                '(() => { window.localStorage.removeItem("br.agent.side.collapsed"); return true; })()'
+            )
+
             # 03 控制台 · 问题卡（真实读取样本后）
             go("/agent?plan=fixture")
             session.wait_js('document.querySelector(\'[data-testid="agent-dropzone"]\') !== null')
