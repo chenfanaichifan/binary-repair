@@ -107,3 +107,19 @@ def test_ingest_rejects_unknown_gate_and_status(tmp_path: Path) -> None:
     with pytest.raises(IngestError, match="unknown status"):
         ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
                route="route_a", bundle=bundle, trigger=False)
+
+
+def test_ingest_validates_expected_effects_analysis_schema(tmp_path: Path) -> None:
+    data, job, run, attempt = _job(tmp_path)
+    bundle = _bundle(tmp_path)
+    analysis = bundle / "analysis"; analysis.mkdir()
+    (analysis / "effects.json").write_text(json.dumps({
+        "schema_version": 1, "candidate_sha256": "a" * 64,
+        "expected_effects": ["guard added"], "assumptions": [], "uncertainties": [],
+    }))
+    manifest = json.loads((bundle / "bundle.json").read_text())
+    manifest["analysis"] = [{"role": "analysis_expected_effects", "path": "analysis/effects.json"}]
+    (bundle / "bundle.json").write_text(json.dumps(manifest))
+    result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+                    route="route_a", bundle=bundle, trigger=False)
+    assert result["analysis_artifact_ids"]

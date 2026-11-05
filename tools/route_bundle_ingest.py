@@ -43,6 +43,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app.db.connection import connect
+from app.domain.analysis import ANALYSIS_ROLES, AnalysisArtifacts
 from app.services import jobs, worker
 from tools.host_importer import import_bundle
 
@@ -213,9 +214,18 @@ def ingest(
     for item in manifest.get("analysis") or []:
         if not isinstance(item, dict) or not isinstance(item.get("path"), str):
             raise IngestError("analysis entries need path")
+        role = str(item.get("role") or "analysis")
+        if role not in ANALYSIS_ROLES and not role.startswith("analysis_"):
+            raise IngestError(f"unknown analysis role: {role}")
+        path = _safe_file(bundle, item["path"])
+        if role in ANALYSIS_ROLES:
+            try:
+                AnalysisArtifacts.model_validate(json.loads(path.read_text(encoding="utf-8")))
+            except Exception as exc:
+                raise IngestError(f"invalid analysis artifact {item['path']}: {exc}") from exc
         analysis_ids.append(_register_file(
             data_dir=data_dir, job_id=job_id, attempt_id=attempt_id, bundle=bundle,
-            relative=item["path"], role=str(item.get("role") or "analysis"),
+            relative=item["path"], role=role,
         ))
     if manifest.get("comparison"):
         _register_file(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,

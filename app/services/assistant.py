@@ -11,7 +11,7 @@ from typing import Any
 
 from app.db.connection import connect
 from app.domain.assistant import AssistantPlan, deterministic_plan
-from app.services import jobs
+from app.services import jobs, model_calls
 from binaryrepair_ai.client import DeepSeekClient
 from binaryrepair_ai.settings import Settings
 
@@ -110,7 +110,15 @@ def generate_plan(job_id: str, *, data_dir: str | Path,
                 settings = Settings.from_env()
                 client = DeepSeekClient(settings)
             plan, usage, model = _llm_plan(job, data_dir=data_dir, client=client)
-            return save_plan(job.id, plan, data_dir=data_dir, model=model, usage=usage)
+            call_id = model_calls.record_call(
+                data_dir=data_dir, model_requested=model or "unknown",
+                model_returned=model, status="accepted_for_assistant",
+                route="assistant", usage=usage,
+            )
+            stored_usage = dict(usage or {})
+            stored_usage["model_call_id"] = call_id
+            return save_plan(job.id, plan, data_dir=data_dir, model=model,
+                             usage=stored_usage)
         except Exception as exc:
             fallback = deterministic_plan(_job_context(job, data_dir=data_dir))
             fallback.fallback_reason = f"llm unavailable: {type(exc).__name__}: {exc}"[:500]
