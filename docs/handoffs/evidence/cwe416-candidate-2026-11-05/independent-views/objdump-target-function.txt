@@ -1,0 +1,49 @@
+
+candidate.elf:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.sec:
+
+Disassembly of section .text:
+
+00000000004012aa <CWE416_Use_After_Free__malloc_free_char_01_bad>:
+  4012aa:	f3 0f 1e fa          	endbr64
+  4012ae:	55                   	push   rbp
+  4012af:	48 89 e5             	mov    rbp,rsp
+  4012b2:	48 83 ec 10          	sub    rsp,0x10
+  4012b6:	48 c7 45 f8 00 00 00 	mov    QWORD PTR [rbp-0x8],0x0
+  4012bd:	00 
+  4012be:	bf 64 00 00 00       	mov    edi,0x64
+  4012c3:	e8 88 fe ff ff       	call   401150 <malloc@plt>
+  4012c8:	48 89 45 f8          	mov    QWORD PTR [rbp-0x8],rax
+  4012cc:	48 83 7d f8 00       	cmp    QWORD PTR [rbp-0x8],0x0
+  4012d1:	75 0a                	jne    4012dd <CWE416_Use_After_Free__malloc_free_char_01_bad+0x33>
+  4012d3:	bf ff ff ff ff       	mov    edi,0xffffffff
+  4012d8:	e8 a3 fe ff ff       	call   401180 <exit@plt>
+  4012dd:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  4012e1:	ba 63 00 00 00       	mov    edx,0x63
+  4012e6:	be 41 00 00 00       	mov    esi,0x41
+  4012eb:	48 89 c7             	mov    rdi,rax
+  4012ee:	e8 3d fe ff ff       	call   401130 <memset@plt>
+  4012f3:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  4012f7:	48 83 c0 63          	add    rax,0x63
+  4012fb:	c6 00 00             	mov    BYTE PTR [rax],0x0
+  4012fe:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401302:	48 89 c7             	mov    rdi,rax
+  401305:	90                   	nop
+  401306:	90                   	nop
+  401307:	90                   	nop
+  401308:	90                   	nop
+  401309:	90                   	nop
+  40130a:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  40130e:	48 89 c7             	mov    rdi,rax
+  401311:	e8 e8 00 00 00       	call   4013fe <printLine>
+  401316:	90                   	nop
+  401317:	c9                   	leave
+  401318:	c3                   	ret
+
+Disassembly of section .fini:

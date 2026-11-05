@@ -1,0 +1,14 @@
+{
+  "gate": "V4",
+  "kind": "symbolic",
+  "scope": "model",
+  "state": "not_run",
+  "ran": false,
+  "reason": "no symbolic or bounded-model engine was run in this window; the five-byte edit has no model-level proof, and a replay result cannot be upgraded to one",
+  "claimed_scope": null,
+  "not_claimed": [
+    "binary-level proof of the repair",
+    "memory-safety for any path other than the single no-input observation",
+    "absence of the defect in the rest of the program"
+  ]
+}

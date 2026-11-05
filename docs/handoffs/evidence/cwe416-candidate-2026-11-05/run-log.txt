@@ -1,0 +1,182 @@
+
+=== window ===
+utc 2026-11-05T15:19:08Z
+ 23:19:08 up 4 min,  1 user,  load average: 0.06, 0.09, 0.04
+uid=1000(lab) gid=1000(lab) groups=1000(lab),4(adm),27(sudo)
+Linux binrepair-vm 6.8.0-147-generic #147-Ubuntu SMP PREEMPT_DYNAMIC Thu Sep 24 11:33:16 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+randomize_va_space=2
+gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+ldd (Ubuntu GLIBC 2.39-0ubuntu8.9) 2.39
+Python 3.12.3
+GNU readelf (GNU Binutils for Ubuntu) 2.42
+GNU objdump (GNU Binutils for Ubuntu) 2.42
+setarch from util-linux 2.39.3
+
+=== fixture hashes (must match the committed fixture) ===
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  original.elf
+fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e  original.c
+fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e  src.c
+cef8f533765f3f9184377bf72e32792f6a4128080da8467cb478340a679c63a9  harness.c
+50ace91d0f9cd9f281d5d8ff3a9ca879ee2779d737030ae84e8e4be3df5b299c  support/io.c
+a78aaf3a54a6210260ad70123c09c3c283c6edf7808b6244205e00b8f2d9b8d0  support/std_testcase.h
+6459df50d22697bb61619e2effd688ebb98915db25f7eb1bdbb767f888066fb6  support/std_testcase_io.h
+--- contract ---
+8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b  contract.json
+33be1edf0572a2563f456b3be3dd68a860da3d95d5f9b3d35d078de632180b08  tests/valid.json
+0
+schema_version: 3
+input_mode: none
+forbidden keys present: []
+trigger_case: None
+
+=== step 1: copy the original and apply the five-byte edit ===
+{
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "bytes_changed": 5,
+  "size_delta": 0
+}
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  original.elf
+46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0  candidate.elf
+-rwxr-xr-x 1 lab lab 25344 Nov  5 23:19 candidate.elf
+-rwxr-xr-x 1 lab lab 25344 Nov  5 23:19 original.elf
+--- the edited instruction, before ---
+00000000004012fe <CWE416_Use_After_Free__malloc_free_char_01_bad+0x54>:
+  4012fe:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401302:	48 89 c7             	mov    rdi,rax
+  401305:	e8 e6 fd ff ff       	call   4010f0 <free@plt>
+  40130a:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  40130e:	48 89 c7             	mov    rdi,rax
+  401311:	e8 e8 00 00 00       	call   4013fe <printLine>
+  401316:	90                   	nop
+  401317:	c9                   	leave
+  401318:	c3                   	ret
+
+0000000000401319 <goodG2B>:
+  401319:	f3                   	repz
+--- the edited instruction, after ---
+00000000004012fe <CWE416_Use_After_Free__malloc_free_char_01_bad+0x54>:
+  4012fe:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  401302:	48 89 c7             	mov    rdi,rax
+  401305:	90                   	nop
+  401306:	90                   	nop
+  401307:	90                   	nop
+  401308:	90                   	nop
+  401309:	90                   	nop
+  40130a:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+  40130e:	48 89 c7             	mov    rdi,rax
+  401311:	e8 e8 00 00 00       	call   4013fe <printLine>
+  401316:	90                   	nop
+  401317:	c9                   	leave
+  401318:	c3                   	ret
+
+0000000000401319 <goodG2B>:
+  401319:	f3                   	repz
+--- cmp -l (byte level) ---
+ 4870 350 220
+ 4871 346 220
+ 4872 375 220
+ 4873 377 220
+ 4874 377 220
+
+=== step 2: static audit (V1) and interface observation (V2) ===
+{
+  "audit_pass": true,
+  "interface_pass": true,
+  "changed_bytes": 5
+}
+
+=== step 3: rebuild the original twice from source ===
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  rebuild-1.elf
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  rebuild-2.elf
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  original.elf
+--- -Wuse-after-free is expected and recorded, not suppressed ---
+1
+original.c:36:5: warning: pointer ‘data’ used after ‘free’ [-Wuse-after-free]
+
+=== step 4: apply the edit a second time from the same input ===
+{
+  "pass": true,
+  "source_rebuild": [
+    "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9"
+  ],
+  "patch_replay": [
+    "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+    "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0"
+  ]
+}
+
+=== step 5: behaviour, with ASLR off, original then candidate ===
+--- original ---
+exit=0
+00000000: 0504 0a                                  ...
+3
+--- candidate ---
+exit=0
+00000000: 4141 4141 4141 4141 4141 4141 4141 4141  AAAAAAAAAAAAAAAA
+00000010: 4141 4141 4141 4141 4141 4141 4141 4141  AAAAAAAAAAAAAAAA
+00000020: 4141 4141 4141 4141 4141 4141 4141 4141  AAAAAAAAAAAAAAAA
+00000030: 4141 4141 4141 4141 4141 4141 4141 4141  AAAAAAAAAAAAAAAA
+00000040: 4141 4141 4141 4141 4141 4141 4141 4141  AAAAAAAAAAAAAAAA
+00000050: 4141 4141 4141 4141 4141 4141 4141 4141  AAAAAAAAAAAAAAAA
+00000060: 4141 410a                                AAA.
+100
+
+=== step 6: V3 runner, no-input contract ===
+{
+  "input_mode": "none",
+  "invalid": "not_applicable",
+  "passed": 1,
+  "total": 1,
+  "repaired_pass": true,
+  "binary_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0"
+}
+runner exit=0
+
+=== step 7: control - the same runner and manifest against the unrepaired original ===
+{
+  "input_mode": "none",
+  "invalid": "not_applicable",
+  "passed": 0,
+  "total": 1,
+  "repaired_pass": false,
+  "binary_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9"
+}
+control runner exit=1 (1 = expectation not met, 2 = runner error)
+
+=== step 8: independent views ===
+
+=== step 9: copy the two binaries and write the manifests ===
+{
+  "v0": true,
+  "edit_manifest": "46d16e997bdfbb87",
+  "v3": "input_mode=none, valid 1/1, passed=1 total=1, invalid=not_applicable"
+}
+
+=== step 10: manifest the bundle ===
+6e40ba1d4d08977656cafee17fd06f5f42a8d839e0ef29095946f3d5a695ac96  audit.json
+46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0  candidate.elf
+0a94d7b693f50708b96253da0250582d6c62d90c1543a331559b2a66a6e44cfc  edit-manifest.json
+2d6036858d680e31f5fb5da19cfd7a04ed33f4857f7fec8f9c210b5956ed4de2  environment.json
+e69206602cca9259947be48c83b8323d54582e5cc063f883622d39ca0fede549  gate-index.json
+72b903f88dc7358640ead7ca3a5b5b7d41725e7d7e2e72b9ceec19a2ea66eee3  independent-views/objdump-disassembly.txt
+5635f9c9911ad6f23cccb5c39aa88044c188057cd620d13854508a338ac89666  independent-views/objdump-target-function.txt
+86983ac6b13bfbc53ef17a8a4447b6e6350b3184fbcafd273d01c156e78c2688  independent-views/readelf-dynamic.txt
+efb3799511eb67380117549a5c9d1c4f67e9c1cc5b4ce86a02db70a24a2f7cac  independent-views/readelf-dynsyms.txt
+1f2af18eeac70f191abf329c619e04fb31c47b2bdd0b9be6249e7a419658996d  independent-views/readelf-program-headers.txt
+82966c0c35fb8216886048b52285e2cab8da278daa8089921a3687a7903875bb  independent-views/readelf-relocations.txt
+5e30bfc3fa9fd1993e5e8f83aff72e0ad8ac8402c681cdac0b46d23af57daa4b  independent-views/readelf-section-headers.txt
+21ceabe26ba77e5337fd2753a6dd60bae12e7726bdf6a51aad2e82ce7d067bea  independent-views/readelf-symtab.txt
+4d89874df93972972b226699b991fbdac4bd7dc6d69c4dbe1b43745ab5d89c8e  manifest-repaired-original.json
+b23f7783c2f808b804ec0dab6cd123713a5702ddca24a61837c875932e495748  manifest-repaired.json
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  original.elf
+0557905437d8b906951ac44798b3348d9d91cca774ae2c60a54790c13d4be6c0  reproducibility.json
+b3826e99cea9df166e66dd839bbee857a1dbb770d58faf0148e371e8445100cc  v0-identity.json
+8ced4ad885b0b7c38847cfc93976844e01f419016c08783083ed27c70510e009  v2-interface.json
+753af9cee33a91124dd50de4dc44b41e6a399e976c400fc4406694dd6747714d  v4-symbolic.json
+--- bundle-sha256 ---
+8906bd1854fdd6d85eed467b12525371ad4e68cd44811b6937261f9477f57568
+--- files ---
+20
+
+=== done ===

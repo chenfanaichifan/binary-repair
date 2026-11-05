@@ -1,0 +1,20 @@
+{
+  "gate": "V0",
+  "kind": "identity",
+  "scope": "metadata",
+  "state": "measured",
+  "checks": {
+    "candidate_built_from_this_original": true,
+    "original_matches_contract_manifest": true,
+    "file_sizes_recorded": true
+  },
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "size": {
+    "original": 25344,
+    "candidate": 25344
+  },
+  "contract_sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b",
+  "fixture_manifest_original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "pass": true
+}

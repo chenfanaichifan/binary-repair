@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-11-05T15:19:10Z",
+  "user": "lab uid=1000",
+  "kernel": "6.8.0-147-generic",
+  "arch": "x86_64",
+  "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "libc": "ldd (Ubuntu GLIBC 2.39-0ubuntu8.9) 2.39",
+  "python": "Python 3.12.3",
+  "readelf": "GNU readelf (GNU Binutils for Ubuntu) 2.42",
+  "objdump": "GNU objdump (GNU Binutils for Ubuntu) 2.42",
+  "randomize_va_space": 2,
+  "network": "no route used; nothing here fetched anything"
+}

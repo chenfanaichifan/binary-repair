@@ -1,0 +1,12 @@
+$ python -c "<verify_bundle + runtime_state + _repro_state on this directory>"
+
+route: route_b
+mode: fixed
+function: CWE416_Use_After_Free__malloc_free_char_01_bad
+original_sha256: c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+candidate_sha256: 46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0
+original_size: 25344
+candidate_size: 25344
+runtime_state: ('passed', WindowsPath('docs/handoffs/evidence/cwe416-candidate-2026-11-05/manifest-repaired.json'), 'runtime manifest passed; 1/1; input_mode=none, invalid not applicable')
+reproducible: passed
+audit_pass: True

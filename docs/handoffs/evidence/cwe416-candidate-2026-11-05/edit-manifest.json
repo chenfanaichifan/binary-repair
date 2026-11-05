@@ -1,0 +1,75 @@
+{
+  "schema_version": 2,
+  "route": "route_b",
+  "mode": "fixed",
+  "function": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "original_size": 25344,
+  "candidate_size": 25344,
+  "replacement_c_sha256": null,
+  "edit_method": {
+    "kind": "byte-level instruction removal",
+    "tool": "patch_candidate.py",
+    "replacement_c": false,
+    "code_cave": false,
+    "bytes_added": 0,
+    "contract_clause": "authorized_edits[0]: drop the free() and accept the leak"
+  },
+  "edits": [
+    {
+      "file_offset": 4869,
+      "file_offset_hex": "0x1305",
+      "vaddr": "0x401305",
+      "length": 5,
+      "before_hex": "e8e6fdffff",
+      "after_hex": "9090909090",
+      "before_text": "call 4010f0 <free@plt>",
+      "after_text": "nop; nop; nop; nop; nop",
+      "contract_clause": "authorized_edits[0]: drop the free() and accept the leak"
+    }
+  ],
+  "changed_file_intervals": [
+    {
+      "start": 4869,
+      "end": 4873,
+      "size": 5
+    }
+  ],
+  "header_changes": {
+    "same_program_header_count": true,
+    "entry_unchanged": true
+  },
+  "relocations_added": 0,
+  "tools": {
+    "compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "readelf": "GNU readelf (GNU Binutils for Ubuntu) 2.42",
+    "objdump": "GNU objdump (GNU Binutils for Ubuntu) 2.42",
+    "python": "3.12.3"
+  },
+  "runtime_manifest": {
+    "state": "measured",
+    "artifact": "manifest-repaired.json",
+    "input_mode": "none",
+    "invalid": "not_applicable",
+    "valid": "1/1",
+    "passed": 1,
+    "total": 1,
+    "repaired_pass": true
+  },
+  "scope_authorized": true,
+  "audit": {
+    "checks": {
+      "same_file_size": true,
+      "entry_unchanged": true,
+      "relocations_recorded": true,
+      "no_wx_segment": true,
+      "changed_inside_intervals": true,
+      "program_headers_unchanged": true,
+      "section_layout_unchanged": true,
+      "readelf_available": true
+    },
+    "pass": true
+  },
+  "contract_sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b"
+}

@@ -1,0 +1,35 @@
+# 00 — host-side window record
+
+The guest cannot see the hypervisor, so these facts come from the Windows host.
+They describe the same window as `run-log.txt`.
+
+- captured: `2026-11-05T23:20:17+08:00`
+- vmrun: `D:/VMware/vmrun.exe -T ws`
+- vmx: `D:\VMs\binrepair-u2404-x64-01\BinRepair-Lab.vmx`
+- running VMs before the start: **0**
+- `snapshot.current = "11"` → `snapshot7` = **gate4-harness**
+- guest boot: `2026-11-05 23:15:04` (`uptime -s`), about four minutes before the
+  first command in `run-log.txt` (`utc 2026-11-05T15:19:08Z`)
+- `.lck` entries in the VM directory while it runs: 11 (one per locked device
+  file, not a stale lock count for a stopped VM)
+
+Snapshot table as recorded in `BinRepair-Lab.vmsd` (`uid` → `displayName`):
+
+| uid | name |
+|---|---|
+| 4 | clean-toolchain |
+| 5 | job-isolation |
+| 6 | clean-baseline |
+| 7 | toolchain-v4-ready |
+| 8 | isolation-ready |
+| 9 | gate3-harness |
+| 10 | gate3-harness-v2 |
+| **11** | **gate4-harness — current** |
+| 12 | routeb-harness-wip |
+| 13 | routeb-harness |
+| 14 | t15-t6-work |
+
+Why it matters: uid 11 is the snapshot the T30 rebuild used. The compiler line
+in `build.sh` therefore re-derives `c9c2632e…23c9` from source in this window
+(step 3 of `run-log.txt`), and the five-byte edit is applied to a binary that is
+itself reproducible rather than to whatever happened to be on disk.

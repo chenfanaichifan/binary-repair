@@ -1,0 +1,28 @@
+{
+  "gate": "V5",
+  "kind": "reproducibility",
+  "state": "measured",
+  "runs": 2,
+  "source_rebuild": {
+    "command": "SUPPORT=<fixture>/support sh build.sh <tmp>.elf",
+    "sha256": [
+      "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+      "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9"
+    ],
+    "fixture_original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "byte_identical": true
+  },
+  "patch_replay": {
+    "command": "python3 patch_candidate.py --original original.elf --out <tmp>.elf",
+    "sha256": [
+      "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+      "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0"
+    ],
+    "byte_identical": true
+  },
+  "pass": true,
+  "does_not_prove": [
+    "that a rebuilt binary is bit-identical on a different toolchain or libc",
+    "anything about behaviour; the replay is manifest-repaired.json"
+  ]
+}
