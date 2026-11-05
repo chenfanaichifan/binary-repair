@@ -6,8 +6,13 @@ use one of these values; the ingest adapter rejects an unknown analysis role.
 | role | meaning |
 |---|---|
 | `original` | immutable uploaded original ELF |
-| `route_a_evidence` | Route A gate evidence |
-| `route_b_evidence` | Route B gate evidence |
+| `v0_evidence` | V0 (identity) gate evidence |
+| `v1_evidence` | V1 (structure) gate evidence |
+| `v2_evidence` | V2 (interface) gate evidence |
+| `v3_evidence` | V3 (behaviour) gate evidence |
+| `v4_evidence` | V4 (symbolic) gate evidence |
+| `v5_evidence` | V5 (reproducibility) gate evidence |
+| `legacy_artifact` | file from an INTERFACE-v1 bundle with no self-describing role |
 | `routeb_audit` | static Route B audit |
 | `routeb_manifest_compare` | unchanged round-trip result (historical) |
 | `routeb_manifest_repaired` | repaired-behaviour result (repair V3 credit) |
@@ -19,6 +24,11 @@ use one of these values; the ingest adapter rejects an unknown analysis role.
 | `legacy_result_bundle` | optional INTERFACE-v1 result-bundle.json, hash-bound in SHA256SUMS |
 | `agent_plan` | assistant plan (guidance only; never verdict) |
 | `model_call` | model-call audit record (never acceptance evidence) |
+
+Gate evidence uses ``<gate>_evidence`` with the gate lower-cased
+(``v0_evidence`` ... ``v5_evidence``). There is no ``route_a_evidence`` or
+``route_b_evidence`` role; the route is carried by ``attempts.route`` and the
+artifact's ``attempt_id``.
 
 ## Analysis JSON
 

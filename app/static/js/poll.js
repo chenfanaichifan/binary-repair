@@ -59,7 +59,13 @@
   };
 
   function $(id) { return document.getElementById(id); }
-  function setText(id, text) {
+  function formatUsage(usage) {
+  if (!usage) return "未提供";
+  if (typeof usage === "string") return usage;
+  return usage.input_tokens + " input / " + usage.output_tokens + " output tokens";
+}
+
+function setText(id, text) {
     var el = $(id);
     if (el) el.textContent = text;
   }
@@ -93,7 +99,7 @@
     setText("compatibility-" + key, VALUE_LABELS[route.compatibility] || route.compatibility);
     setText("elapsed-" + key, route.elapsed_s + " s");
     setText("manual-" + key, route.manual_interventions + " 次");
-    setText("ai-" + key, route.ai_usage);
+    setText("ai-" + key, formatUsage(route.ai_usage));
 
     var reason = $("reason-" + key);
     if (reason) {

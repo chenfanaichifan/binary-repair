@@ -89,3 +89,22 @@ def test_state_change_endpoints_are_all_guarded(client: TestClient) -> None:
     ):
         response = client.post(path, headers={"Origin": "http://evil.example"})
         assert response.status_code == 403, (path, response.status_code, response.text)
+
+def test_retry_is_guarded_before_any_lookup(client: TestClient) -> None:
+    """The retry route is a state change even when the run id is unknown."""
+    response = client.post(
+        "/api/runs/does-not-exist/attempts/retry",
+        json={"route": "route_a"},
+        headers={"Origin": "http://evil.example"},
+    )
+    assert response.status_code == 403
+
+def test_non_elf_upload_is_rejected(client: TestClient) -> None:
+    """A script or archive is not a repair target; reject before it is stored."""
+    response = client.post(
+        "/api/jobs",
+        data=FORM,
+        files={"binary": ("payload.sh", b"#!/bin/sh\necho hi\n", "text/x-shellscript")},
+    )
+    assert response.status_code == 400
+    assert "ELF" in response.json()["detail"]

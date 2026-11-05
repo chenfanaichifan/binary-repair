@@ -13,6 +13,7 @@ from typing import Any, Mapping
 
 from app.db.connection import connect
 from app.domain.evidence import verify_artifact
+from app.domain.scopes import scope_for_kind
 from app.services.orchestration import GATES, build_obligations
 
 
@@ -76,6 +77,7 @@ def persist_obligations(
                     uuid.uuid4().hex,
                     attempt_id,
                     obligation.kind,
+                    scope_for_kind(obligation.kind),
                     1 if obligation.required else 0,
                     obligation.result.value,
                     artifact_id,
@@ -87,10 +89,12 @@ def persist_obligations(
             for row in rows:
                 connection.execute(
                     "INSERT INTO obligations "
-                    "(id, attempt_id, kind, required, result, evidence_artifact_id, detail) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?) "
+                    "(id, attempt_id, kind, scope, required, result, "
+                    "evidence_artifact_id, detail) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
                     "ON CONFLICT(attempt_id, kind) DO UPDATE SET "
-                    "required = excluded.required, result = excluded.result, "
+                    "scope = excluded.scope, required = excluded.required, "
+                    "result = excluded.result, "
                     "evidence_artifact_id = excluded.evidence_artifact_id, detail = excluded.detail",
                     row,
                 )

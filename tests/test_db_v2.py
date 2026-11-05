@@ -50,7 +50,7 @@ def _run(conn: sqlite3.Connection, run_id: str = "r1", key: str = "k1") -> None:
 def test_init_creates_baseline_and_ai_tables(tmp_path: Path) -> None:
     conn = init_db(tmp_path)
     versions = [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")]
-    assert versions == [1, 2, 3, 4]
+    assert versions == [1, 2, 3, 4, 5]
     tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     assert {"jobs", "artifacts", "contracts", "runs", "attempts",
             "obligations", "events", "model_calls"} <= tables
@@ -64,7 +64,7 @@ def test_init_creates_baseline_and_ai_tables(tmp_path: Path) -> None:
 def test_reinit_is_idempotent(tmp_path: Path) -> None:
     init_db(tmp_path).close()
     conn = init_db(tmp_path)
-    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == [1, 2, 3, 4]
+    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == [1, 2, 3, 4, 5]
     conn.close()
 
 

@@ -118,7 +118,7 @@ def create_app(data_dir: str | Path | None = None) -> FastAPI:
             "compatibility": "not_run",
             "changed_regions": [],
             "manual_interventions": 0,
-            "ai_usage": "unavailable",
+            "ai_usage": None,
             "elapsed_s": 0.0,
         }
 

@@ -264,6 +264,24 @@ def _verified_artifact_response(job_id: str, artifact_id: str) -> FileResponse:
     )
 
 
+def _ai_usage_for_job(job_id: str) -> dict[str, int] | None:
+    """Provider token usage recorded for this job.
+
+    ``None`` means nothing recorded real usage. A missing number is never
+    rendered as a made-up one, and a partial record is not padded with zeros.
+    """
+    from app.services.assistant import get_plan
+
+    record = get_plan(job_id, data_dir=_data_dir())
+    usage = (record or {}).get("usage")
+    if not isinstance(usage, dict):
+        return None
+    values = [usage.get("input_tokens"), usage.get("output_tokens")]
+    if not all(isinstance(value, int) and value >= 0 for value in values):
+        return None
+    return {"input_tokens": values[0], "output_tokens": values[1]}
+
+
 def _placeholder_routes(phase: str) -> dict[str, dict[str, Any]]:
     routes: dict[str, dict[str, Any]] = {}
     for key, stages in ROUTE_STAGES.items():
@@ -277,9 +295,10 @@ def _placeholder_routes(phase: str) -> dict[str, dict[str, Any]]:
             "verification": "not_run",
             "evidence": "not_persisted",
             "compatibility": "not_run",
+            "attempt_id": None,
             "changed_regions": [],
             "manual_interventions": 0,
-            "ai_usage": "unavailable",
+            "ai_usage": None,
             "elapsed_s": 0.0,
         }
     return routes
@@ -674,6 +693,9 @@ def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
     contract.setdefault("approved", False)
 
     routes = _placeholder_routes(record.phase)
+    ai_usage = _ai_usage_for_job(record.id)
+    for route in routes.values():
+        route["ai_usage"] = ai_usage
     run = jobs.latest_run(record.id, data_dir=_data_dir())
     run_row: Any = None
     run_verdict: dict[str, Any] | None = None
@@ -692,6 +714,7 @@ def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
         for attempt in jobs.list_attempts(run.id, data_dir=_data_dir()):
             key = _route_key(attempt.route)
             route = routes[key]
+            route["attempt_id"] = attempt.id
             route["phase"] = attempt.phase
             route["outcome"] = attempt.outcome
             route["outcome_reason"] = attempt.reason or ""
@@ -828,6 +851,13 @@ async def create_job(
     payload = await binary.read()
     if not payload:
         raise HTTPException(status_code=422, detail="Uploaded file is empty.")
+    # A non-ELF upload cannot be repaired, screened, or executed; rejecting it
+    # here keeps junk out of jobs/ and out of every later hash comparison.
+    if not payload.startswith(b"\x7fELF"):
+        raise HTTPException(
+            status_code=400,
+            detail="Uploaded file is not an ELF binary (missing \\x7fELF magic).",
+        )
 
     filename = _ascii_filename(binary.filename or "sample.bin")
     record = jobs.create_job(
@@ -1136,6 +1166,18 @@ def attempt_evidence(attempt_id: str) -> dict[str, Any]:
         "evidence": _evidence_state(rows),
         "obligations": _obligation_groups(rows, _route_key(attempt.route)),
     }
+
+
+@app.get("/api/jobs/{job_id}/attempts")
+def job_attempts(job_id: str) -> dict[str, list[dict[str, Any]]]:
+    """Every attempt id for this job, oldest first.
+
+    The GUI needs these ids to render retry history and to call
+    ``/api/attempts/{id}/evidence``; ``attempt_no`` is the per-run sequence and
+    ``status`` is the attempt phase, both named for the client contract.
+    """
+    _job_or_404(job_id)
+    return {"attempts": jobs.list_job_attempts(job_id, data_dir=_data_dir())}
 
 
 @app.get("/api/jobs/{job_id}/obligations")

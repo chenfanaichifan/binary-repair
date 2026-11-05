@@ -75,7 +75,7 @@
     <div><dt>兼容性</dt><dd>{{ value_labels_zh.get(route.compatibility, route.compatibility) }}</dd></div>
     <div><dt>耗时</dt><dd>{{ route.elapsed_s }} s</dd></div>
     <div><dt>人工介入</dt><dd>{{ route.manual_interventions }} 次</dd></div>
-    <div><dt>AI 用量</dt><dd>{{ route.ai_usage }}</dd></div>
+    <div><dt>AI 用量</dt><dd>{{ (route.ai_usage.input_tokens|string ~ ' input / ' ~ route.ai_usage.output_tokens|string ~ ' output tokens') if route.ai_usage else '未提供' }}</dd></div>
   </dl>
 
   <h3>产物</h3>
