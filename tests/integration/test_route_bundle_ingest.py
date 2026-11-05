@@ -21,9 +21,12 @@ def _job(tmp_path: Path):
     return data, job, run, attempt
 
 
-def _bundle(tmp_path: Path, candidate: str = "a" * 64) -> Path:
+def _bundle(tmp_path: Path, candidate: str | None = None) -> Path:
     bundle = tmp_path / "bundle"; bundle.mkdir()
     (bundle / "candidate.elf").write_bytes(b"candidate bytes")
+    if candidate is None:
+        import hashlib
+        candidate = hashlib.sha256((bundle / "candidate.elf").read_bytes()).hexdigest()
     (bundle / "audit.json").write_text('{"pass": true}')
     (bundle / "bundle.json").write_text(json.dumps({
         "schema_version": 1, "route": "route_a", "candidate_sha256": candidate,
@@ -218,3 +221,14 @@ def test_legacy_without_result_bundle_is_all_not_run(tmp_path: Path) -> None:
     payload = json.loads((data / "jobs" / job.id / "runs" / run.id / "attempts" / f"{attempt.id}.json").read_text())
     assert payload["results"] == {f"V{i}": "not_run" for i in range(6)}
     assert result["evidence"] == {}
+
+
+def test_v0_candidate_must_exist(tmp_path: Path) -> None:
+    data, job, run, attempt = _job(tmp_path)
+    bundle = _bundle(tmp_path)
+    manifest = json.loads((bundle / "bundle.json").read_text())
+    manifest["candidate_sha256"] = "a" * 64
+    (bundle / "bundle.json").write_text(json.dumps(manifest))
+    with pytest.raises(IngestError, match="V0 candidate_sha256"):
+        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+               route="route_a", bundle=bundle, trigger=False)

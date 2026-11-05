@@ -296,12 +296,19 @@ def ingest(
             # V0 can contain several files; the candidate is the one whose bytes
             # match candidate_sha256, not merely the first list entry.  This is
             # the same binding M1 fixed in the controller ingest.
-            chosen = ids[0]
             if gate == "V0":
+                chosen = None
                 for name, artifact_id in ids_by_name.items():
                     if _sha256(_safe_file(bundle, name)) == manifest["candidate_sha256"]:
                         chosen = artifact_id
                         break
+                if chosen is None:
+                    raise IngestError(
+                        "V0 candidate_sha256 is not present in V0 artifacts; "
+                        "refusing to bind the first file by fallback"
+                    )
+            else:
+                chosen = ids[0]
             evidence[gate] = chosen
 
     analysis_ids = []
