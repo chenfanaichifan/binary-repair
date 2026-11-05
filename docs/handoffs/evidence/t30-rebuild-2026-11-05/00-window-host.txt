@@ -1,0 +1,49 @@
+# T30 rebuild - window identity, host side
+# read on the host at 2026-11-05 22:17:38 (+08:00)
+
+## 1. why this file exists next to 01
+
+01-window-and-isolation.txt is the guest view. A guest cannot see its own
+snapshot uid or the hypervisor lock directories, so those two facts are
+measured here, on the host, and 01 is left as the guest wrote it. Together
+they cover what 07-rebuild.json#window asserts.
+
+## 2. no VM is running
+
+$ vmrun -T ws list
+  Total running VMs: 0
+
+## 3. the VM stands at snapshot uid 11
+
+$ grep snapshot.current BinRepair-Lab.vmsd
+  snapshot.current = "11"
+
+## 4. uid to name, from the same file
+
+$ grep -A3 "snapshot[0-9]*.uid = \"1[14]\"" BinRepair-Lab.vmsd
+  snapshot7.uid = "11"
+  snapshot7.filename = "BinRepair-Lab-Snapshot11.vmsn"
+  snapshot7.displayName = "gate4-harness"
+  snapshot9.uid = "14"
+  snapshot9.filename = "BinRepair-Lab-Snapshot14.vmsn"
+  snapshot9.displayName = "t15-t6-work"
+
+## 5. no lock directories
+
+$ find "D:/VMs/binrepair-u2404-x64-01" -maxdepth 2 -name "*.lck" | wc -l
+  0
+
+## 6. snapshot artefacts on disk
+
+$ ls -l --time-style=+%Y-%m-%d_%H:%M BinRepair-Lab-Snapshot11.vmsn BinRepair-Lab-Snapshot14.vmsn
+  28061 2026-10-29_17:21 D:/VMs/binrepair-u2404-x64-01/BinRepair-Lab-Snapshot11.vmsn
+  5329816 2026-11-05_18:46 D:/VMs/binrepair-u2404-x64-01/BinRepair-Lab-Snapshot14.vmsn
+
+## 7. what this re-read does and does not show
+
+It is a read taken after the window closed, not a sample from the moment of
+revert. What it establishes is that nothing has moved since: the VM is off,
+the current snapshot is still gate4-harness (uid 11), and there are no lock
+directories. The moment-of-revert values themselves are the ones 07 recorded
+(revert exit 0, snapshot.current "11", 0 locks), and the boot time that ties
+the build to this window is in 01 section 1.

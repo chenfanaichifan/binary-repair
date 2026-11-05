@@ -21,6 +21,7 @@ as a compared field, and why the prose fields are excluded, is stated in
 
 | File | Origin | What it is |
 |---|---|---|
+| `00-window-host.txt` | host | Window identity from outside the guest: snapshot uid 11, 0 `.lck`, VM off |
 | `01-window-and-isolation.txt` | guest | Window identity, toolchain, baseline evidence, input hashes |
 | `02-build.txt` | guest | `sh build.sh` stdout, stderr and exit status, verbatim |
 | `03-readelf.txt` | guest | Full `readelf -h -l -S -d -n` plus a derived machine check |
@@ -35,10 +36,15 @@ Two manifests on purpose, and they cover different sets:
 
 - `06-SHA256SUMS` is what the guest hashed, over `01`–`05`, before anything left
   the machine. It is the transport check.
-- `SHA256SUMS` is the whole directory, including the three files added on the
-  host after export (`07-rebuild.json`, `collect.sh`, `README.md`).
+- `SHA256SUMS` is the whole directory, including the four files added on the
+  host (`00-window-host.txt`, `07-rebuild.json`, `collect.sh`, `README.md`).
 
 Neither is a result-bundle manifest. Nothing here is a bundle input.
+
+`01` and `00` split the window claim by who can see what: a guest cannot read its
+own snapshot uid or the hypervisor's lock directories, so those live in `00`,
+and `01` stays exactly as the guest wrote it. Between them they evidence what
+`07-rebuild.json#window` asserts.
 
 ## Where `T30/` actually lives
 

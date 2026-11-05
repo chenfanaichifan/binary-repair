@@ -19,6 +19,7 @@
     "how": "vmrun stop soft -> vmrun revertToSnapshot gate4-harness -> vmrun start nogui",
     "snapshot_current_before_boot": "11",
     "lock_directories_after_revert": 0,
+    "host_side_evidence": "00-window-host.txt - the uid and the lock count cannot be read from inside the guest, so they are measured on the host: vmrun list (0 running), .vmsd snapshot.current = \"11\", snapshot7.uid = 11 = gate4-harness, 0 *.lck. Read after the window closed, and stated as a re-read rather than a moment-of-revert sample.",
     "boot_local": "2026-11-05 21:43",
     "captured_utc": "2026-11-05T13:45:51Z",
     "baseline_evidence": [

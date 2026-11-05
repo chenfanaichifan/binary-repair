@@ -47,8 +47,9 @@ The three invocations are listed separately because the count claim is 251, not
 read as if the total were 50 while `07-rebuild.json#trigger.runs_total` and §5
 both say 251. `04-trigger.txt` §1–§3 is the primary record.
 
-Evidence: `docs/handoffs/evidence/t30-rebuild-2026-11-05/` (10 files,
-`SHA256SUMS` 9/9 verified after export). The same 10 files travel as
+Evidence: `docs/handoffs/evidence/t30-rebuild-2026-11-05/` (11 files,
+`SHA256SUMS` 10/10 verified after export; the guest-side `06-SHA256SUMS` covers
+`01`–`05` and is unchanged). The same 11 files travel as
 `dist/M3-t30-rebuild-evidence-2026-11-05.zip` with a top-level digest in
 `dist/M3-t30-rebuild-evidence-2026-11-05.zip.sha256`, so the record can be read
 without this branch.
@@ -129,6 +130,14 @@ The claim "baseline clean" is not the revert exit code. It is these three:
 1. `~/cwe416` — created by the CWE416 fixture window — **absent**.
 2. `~` contains exactly `D evaluator repair-input route-a`, the gate4-harness home.
 3. Boot time is the boot the build ran in; nothing was inherited from a running VM.
+
+Items 1–3 are in `01-window-and-isolation.txt` §1 and §3, measured by the guest.
+The uid and the lock count cannot be: a guest cannot see its own snapshot uid or
+the hypervisor's `.lck` directories. Those two are in `00-window-host.txt`,
+measured on the host after the window closed — `vmrun list` 0 running,
+`.vmsd` `snapshot.current = "11"`, `snapshot7.uid = 11` → `gate4-harness`,
+`0` `*.lck` — and that file says in its own §7 that it is a re-read, not a
+moment-of-revert sample.
 
 ---
 
