@@ -36,9 +36,9 @@ and canonical-path follow-up.
 
 ## 1. What was delivered
 
-Record 118's evidence was absent from the M1 workspace and the repo when record
-106 was written. It exists on the M3 branch, so it was fetched, verified and
-placed at a path M4/M5 can read:
+Record 118's evidence was absent from the local M1 workspace and local clone
+when record 106 was written. It already existed on the M3 branch at `origin`, so
+it was fetched, verified and placed at a path M4/M5 can read:
 
 ```
 delivery/t30-rebuild-2026-11-05/
