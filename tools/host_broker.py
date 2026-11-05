@@ -52,9 +52,16 @@ def _bundle_from_envelope(envelope: dict[str, Any], path: Path) -> Any:
     if "bundle" in envelope:
         return envelope["bundle"]
     raw_path = Path(envelope["bundle_path"])
-    if not raw_path.is_absolute():
-        raw_path = path.parent / raw_path
-    return json.loads(raw_path.read_text(encoding="utf-8"))
+    base = path.parent.resolve()
+    candidate = raw_path if raw_path.is_absolute() else (base / raw_path)
+    if candidate.is_symlink():
+        raise ValueError("bundle_path must not be a symlink")
+    resolved = candidate.resolve()
+    try:
+        resolved.relative_to(base)
+    except ValueError as exc:
+        raise ValueError("bundle_path escapes the inbox directory") from exc
+    return json.loads(resolved.read_text(encoding="utf-8"))
 
 
 def _move(path: Path, directory: Path) -> Path:

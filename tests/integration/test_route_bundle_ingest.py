@@ -1,0 +1,92 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from app.services import jobs
+from tools.route_bundle_ingest import IngestError, ingest
+
+
+def _job(tmp_path: Path):
+    data = tmp_path / "var"
+    job = jobs.create_job(original_bytes=b"\x7fELF ingest", filename="sample.elf",
+                          defect_description="overflow", data_dir=data)
+    approval = jobs.approve_contract(job.id, contract_revision=1, reviewer_label="test",
+                                     data_dir=data, input_sha256=job.original_sha256,
+                                     manifest_sha256="1" * 64)
+    run = jobs.start_run(job.id, approval=approval, idempotency_key="ingest", data_dir=data)
+    attempt = next(a for a in jobs.list_attempts(run.id, data_dir=data) if a.route == "route_a")
+    return data, job, run, attempt
+
+
+def _bundle(tmp_path: Path, candidate: str = "a" * 64) -> Path:
+    bundle = tmp_path / "bundle"; bundle.mkdir()
+    (bundle / "candidate.elf").write_bytes(b"candidate bytes")
+    (bundle / "audit.json").write_text('{"pass": true}')
+    (bundle / "bundle.json").write_text(json.dumps({
+        "schema_version": 1, "route": "route_a", "candidate_sha256": candidate,
+        "gates": {"V0": {"status": "passed", "artifacts": ["candidate.elf"]},
+                  "V1": {"status": "passed", "artifacts": ["audit.json"]}},
+    }))
+    return bundle
+
+
+def test_ingest_registers_artifacts_and_bundle(tmp_path: Path) -> None:
+    data, job, run, attempt = _job(tmp_path)
+    bundle = _bundle(tmp_path)
+    result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+                    route="route_a", bundle=bundle, trigger=False)
+    assert result["evidence"]["V0"]
+    payload = json.loads((data / "jobs" / job.id / "runs" / run.id / "attempts" / f"{attempt.id}.json").read_text())
+    assert payload["results"]["V0"] == "passed"
+    assert payload["evidence"]["V0"] == result["evidence"]["V0"]
+
+
+def test_ingest_rejects_traversal_and_missing_passed_evidence(tmp_path: Path) -> None:
+    data, job, run, attempt = _job(tmp_path)
+    bundle = _bundle(tmp_path)
+    manifest = json.loads((bundle / "bundle.json").read_text())
+    manifest["gates"]["V1"] = {"status": "passed", "artifacts": ["../outside"]}
+    (bundle / "bundle.json").write_text(json.dumps(manifest))
+    with pytest.raises(IngestError):
+        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+               route="route_a", bundle=bundle, trigger=False)
+
+
+def test_ingest_is_idempotent_for_same_bytes(tmp_path: Path) -> None:
+    data, job, run, attempt = _job(tmp_path)
+    bundle = _bundle(tmp_path)
+    first = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+                   route="route_a", bundle=bundle, trigger=False)
+    second = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+                    route="route_a", bundle=bundle, trigger=False)
+    assert first["evidence"] == second["evidence"]
+
+
+def test_ingest_registers_analysis_and_comparison(tmp_path: Path) -> None:
+    data, job, run, attempt = _job(tmp_path)
+    bundle = _bundle(tmp_path)
+    (bundle / "analysis").mkdir()
+    (bundle / "analysis" / "v3.json").write_text('{"cases": 6}')
+    (bundle / "behavior-comparison.json").write_text('{"same": 6}')
+    manifest = json.loads((bundle / "bundle.json").read_text())
+    manifest["analysis"] = [{"role": "analysis_v3", "path": "analysis/v3.json"}]
+    manifest["comparison"] = "behavior-comparison.json"
+    (bundle / "bundle.json").write_text(json.dumps(manifest))
+    result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+                    route="route_a", bundle=bundle, trigger=False)
+    assert result["analysis_artifact_ids"]
+
+
+def test_ingest_rejects_symlink(tmp_path: Path) -> None:
+    data, job, run, attempt = _job(tmp_path)
+    bundle = _bundle(tmp_path)
+    (bundle / "link.json").symlink_to(bundle / "audit.json")
+    manifest = json.loads((bundle / "bundle.json").read_text())
+    manifest["gates"]["V1"] = {"status": "passed", "artifacts": ["link.json"]}
+    (bundle / "bundle.json").write_text(json.dumps(manifest))
+    with pytest.raises(IngestError):
+        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+               route="route_a", bundle=bundle, trigger=False)

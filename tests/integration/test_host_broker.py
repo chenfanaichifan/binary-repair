@@ -107,3 +107,19 @@ def test_broker_rejects_wrong_route_without_writing(tmp_path: Path) -> None:
     target = data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json"
     assert not target.exists()
     assert jobs.get_attempt(attempt.id, data_dir=data_dir).outcome is None
+
+
+def test_broker_rejects_bundle_path_escape(tmp_path: Path) -> None:
+    data_dir, record, run = _started(tmp_path)
+    attempt = next(a for a in jobs.list_attempts(run.id, data_dir=data_dir) if a.route == "route_a")
+    inbox = tmp_path / "inbox"; inbox.mkdir()
+    outside = tmp_path / "outside.json"
+    outside.write_text(json.dumps(_bundle(record, attempt)))
+    envelope = {
+        "job_id": record.id, "run_id": run.id, "attempt_id": attempt.id,
+        "route": attempt.route, "bundle_path": "../outside.json",
+    }
+    (inbox / "escape.json").write_text(json.dumps(envelope), encoding="utf-8")
+    summary = process_once(data_dir=data_dir, inbox=inbox, trigger=False)
+    assert summary["imported"] == 0
+    assert summary["failed"] == 1

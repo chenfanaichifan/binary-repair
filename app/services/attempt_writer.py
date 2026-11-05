@@ -236,28 +236,18 @@ def _routeb(
                 role="routeb_audit",
             )
 
-    if compare.is_file():
-        try:
-            compare_data = json.loads(compare.read_text(encoding="utf-8"))
-        except ValueError:
-            compare_data = {}
-        passed = bool(
-            compare_data.get("gate4_pass")
-            or compare_data.get("pass")
-            or compare_data.get("passed")
-        ) if isinstance(compare_data, dict) else False
-        results["V3"] = "passed" if passed else "failed"
-        details["V3"] = "routeb manifest-compare (runtime execution)"
-        if passed:
-            evidence["V3"] = _register(
-                data_dir=data_dir,
-                job_id=job_id,
-                attempt_id=attempt_id,
-                source=compare,
-                role="routeb_manifest_compare",
-            )
-    else:
-        details["V3"] = "static routeb bundle has no runtime manifest; Gate 4 not claimed"
+    from routeb.attempt_writer import runtime_state
+    runtime, runtime_path, runtime_detail = runtime_state(bundle)
+    results["V3"] = runtime
+    details["V3"] = runtime_detail
+    if runtime == "passed" and runtime_path is not None:
+        evidence["V3"] = _register(
+            data_dir=data_dir,
+            job_id=job_id,
+            attempt_id=attempt_id,
+            source=runtime_path,
+            role="routeb_manifest_repaired",
+        )
 
     return {
         "route": "route_b",

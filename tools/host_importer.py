@@ -30,6 +30,7 @@ if str(ROOT) not in sys.path:
 from app.services import jobs, worker
 
 ROUTES = {"route_a", "route_b"}
+STATUSES = {"passed", "failed", "not_run", "unknown", "timed_out"}
 
 
 def _validate_bundle(bundle: Any) -> dict[str, Any]:
@@ -48,6 +49,14 @@ def _validate_bundle(bundle: Any) -> dict[str, Any]:
     results = bundle.get("results")
     if not isinstance(results, dict):
         raise ValueError("bundle results must be an object")
+    for gate, status in results.items():
+        if gate not in {f"V{i}" for i in range(6)}:
+            raise ValueError(f"unknown result gate: {gate}")
+        if status not in STATUSES:
+            raise ValueError(f"unknown result status for {gate}: {status!r}")
+    evidence = bundle.get("evidence")
+    if evidence is not None and not isinstance(evidence, dict):
+        raise ValueError("bundle evidence must be an object")
     return bundle
 
 

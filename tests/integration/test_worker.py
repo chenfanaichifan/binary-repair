@@ -52,6 +52,11 @@ def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5) 
         with connection:
             for index in range(1, count + 1):
                 artifact_id = f"art-{attempt_id}-{index}"
+                relative = f"jobs/{job_id}/evidence/{attempt_id}/{index}.bin"
+                target = data_dir / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(f"worker-evidence-{index}".encode())
+                digest = __import__("hashlib").sha256(target.read_bytes()).hexdigest()
                 connection.execute(
                     "INSERT INTO artifacts "
                     "(id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
@@ -60,9 +65,9 @@ def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5) 
                         artifact_id,
                         job_id,
                         attempt_id,
-                        f"evidence/{attempt_id}/{index}.bin",
-                        str(index) * 64,
-                        index,
+                        relative,
+                        digest,
+                        target.stat().st_size,
                         "2026-10-22T00:00:00+00:00",
                     ),
                 )

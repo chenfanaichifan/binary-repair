@@ -83,3 +83,17 @@ batch. `--once` exits `1` if any envelope failed.
 python -m pytest -q tests/integration/test_host_broker.py
 # 2 passed
 ```
+
+## Guest bundle ingest (M5)
+
+For a guest-produced directory (not a prebuilt result JSON), use:
+
+```bash
+python tools/route_bundle_ingest.py \
+  --data-dir var --job-id <job> --run-id <run> --attempt-id <attempt> \
+  --route route_a --bundle /path/to/guest-bundle
+```
+
+It validates `bundle.json`, paths/symlinks/sizes/hashes, registers evidence and
+analysis artifacts, and only then calls `host_importer.import_bundle`. See
+`docs/interfaces/execution-bridge-v1.md`.

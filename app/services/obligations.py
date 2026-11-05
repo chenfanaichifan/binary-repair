@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from app.db.connection import connect
+from app.domain.evidence import verify_artifact
 from app.services.orchestration import GATES, build_obligations
 
 
@@ -60,14 +61,16 @@ def persist_obligations(
                     raise ObligationWriteError(
                         f"{gate} passed requires evidence_artifact_id"
                     )
-                artifact = connection.execute(
-                    "SELECT id FROM artifacts WHERE id = ? AND job_id = ?",
-                    (artifact_id, job_id),
-                ).fetchone()
-                if artifact is None:
-                    raise ObligationWriteError(
-                        f"{gate} evidence artifact is not part of job {job_id}: {artifact_id}"
+                try:
+                    verify_artifact(
+                        data_dir=data_dir,
+                        job_id=job_id,
+                        attempt_id=attempt_id,
+                        artifact_id=str(artifact_id),
+                        gate=gate,
                     )
+                except Exception as exc:
+                    raise ObligationWriteError(str(exc)) from exc
             rows.append(
                 (
                     uuid.uuid4().hex,
