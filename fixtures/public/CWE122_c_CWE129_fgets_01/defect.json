@@ -1,0 +1,21 @@
+{
+  "baseline_bug_site": "stack",
+  "baseline_cwe": "CWE-121",
+  "baseline_mechanism": "bounded-copy",
+  "bug_site": "heap",
+  "cwe": "CWE-122",
+  "cwe_parent": "CWE-787",
+  "mechanism": "explicit-bounds-check",
+  "note": "CWE-787 is the parent class; SARD 112 predates that numbering and files the same defect as CWE-122 Heap_Based_Buffer_Overflow.",
+  "schema_version": 1,
+  "source": {
+    "archive": "2017-10-01-juliet-test-suite-for-c-cplusplus-v1-3.zip",
+    "archive_sha256": "ada9d7e1c323d283446df3f55bdee0d00bda1fed786785fe98764d58688f38eb",
+    "corpus": "NIST SARD Test Suite 112 (Juliet C/C++ v1.3)",
+    "path": "C/testcases/CWE122_Heap_Based_Buffer_Overflow/s06/CWE122_Heap_Based_Buffer_Overflow__c_CWE129_fgets_01.c",
+    "sha256": "082045a2dc9feb41b2feb94e8a2b15bfca4595a8a889cd4e05a19ec3e2aa46a0",
+    "unmodified": true
+  },
+  "title": "Heap out-of-bounds write through an unchecked array index",
+  "trigger_case": "invalid-index-ten"
+}

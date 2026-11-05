@@ -1,0 +1,11 @@
+{
+  "argv": [],
+  "case_id": "CWE122_c_CWE129_fgets_01",
+  "expected_original_effect": "heap write past the allocation; the exact stdout, stderr and exit code must be measured on original.elf, not predicted here.",
+  "invocation": [
+    "./original.elf"
+  ],
+  "rationale": "data=10 passes the only guard (data >= 0) and stores at buffer[10], one element past the ten-int heap block.",
+  "schema_version": 1,
+  "stdin_literal": "10\n"
+}

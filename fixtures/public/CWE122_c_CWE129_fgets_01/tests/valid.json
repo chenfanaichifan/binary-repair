@@ -1,0 +1,41 @@
+{
+  "case_id": "CWE122_c_CWE129_fgets_01",
+  "measured_by": "M3 (pending build)",
+  "original_sha256": null,
+  "schema_version": 1,
+  "tests": [
+    {
+      "argv": [
+        "./original.elf"
+      ],
+      "expected": null,
+      "id": "valid-lowest",
+      "kind": "valid",
+      "rationale": "index 0 is the first element; nine zeros then a one.",
+      "stdin_artifact": null,
+      "stdin_literal": "0\n"
+    },
+    {
+      "argv": [
+        "./original.elf"
+      ],
+      "expected": null,
+      "id": "valid-middle",
+      "kind": "valid",
+      "rationale": "index 5 is inside the block.",
+      "stdin_artifact": null,
+      "stdin_literal": "5\n"
+    },
+    {
+      "argv": [
+        "./original.elf"
+      ],
+      "expected": null,
+      "id": "valid-highest",
+      "kind": "valid",
+      "rationale": "index 9 is the last writable element.",
+      "stdin_artifact": null,
+      "stdin_literal": "9\n"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "authorized_edits": [
+    "Allow one explicit upper-bound comparison before the store and a branch to the existing negative-index message path; no new allocation, no realloc.",
+    "Allow up to 128 bytes of added x86-64 code in a verified-unused region of an R-X PT_LOAD reachable from the store site.",
+    "Allow up to 64 bytes of added read-only data holding the invalid-index message, RIP-relative references only.",
+    "Allow the invalid path to write that message to fd 2 and exit 1 without the ten printIntLine calls.",
+    "Allow no new segment, dynamic import, GOT/PLT edit or permission broadening."
+  ],
+  "capacity_includes_terminator": false,
+  "dest_capacity_bytes": 40,
+  "environment_assumptions": [
+    "Linux x86-64 non-PIE guest",
+    "stdin is a regular pipe carrying one line of digits",
+    "glibc malloc chunk metadata sits immediately after the 40-byte payload"
+  ],
+  "forbidden_behavior": "write outside the 10*sizeof(int) heap allocation, i.e. accept an index of 10 or more and store through buffer[index]",
+  "invalid_exit_code": 1,
+  "invalid_input_response": "print the recorded stderr line and exit 1 without printing the buffer",
+  "invalid_stderr": null,
+  "invalid_stdout": null,
+  "max_valid_input_bytes": 2,
+  "required_obligations": [
+    "behaviour",
+    "identity",
+    "interface",
+    "reproducibility",
+    "structure",
+    "symbolic"
+  ],
+  "schema_version": 2,
+  "target_entry": "CWE122_Heap_Based_Buffer_Overflow__c_CWE129_fgets_01_bad",
+  "target_signature": "void bad(void)",
+  "valid_behavior": "store 1 at buffer[index], then print the ten integers one per line",
+  "valid_domain": "decimal integers 0..9 on stdin; the ten-element heap buffer is indexed with the value read, and every index inside 0..9 is writable"
+}
