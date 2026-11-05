@@ -1,14 +1,23 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from app.services import assistant_llm, jobs
 
-_PLAN_TEMPLATE = '{"schema_version":1,"job_id":"__JOB__","mode":"llm","summary":"llm plan","steps":[{"id":"s","title":"step","detail":"do it","state":"next"}],"questions":[]}'
+_PLAN = {
+    "plan_id": "llm-plan", "mode": "llm", "fallback": False,
+    "fallback_reason": None, "model": "fake-model",
+    "tokens": None,
+    "steps": [
+        {"id": "sample", "kind": "upload", "title": "Sample", "prompt": "Upload."},
+        {"id": "review", "kind": "review", "title": "Review", "prompt": "Review."},
+    ],
+}
 
 
 class _FakeResponse:
-    content = _PLAN_TEMPLATE
+    content = json.dumps(_PLAN)
     model = "fake-model"
     usage = {"prompt_tokens": 10, "completion_tokens": 5}
 
@@ -25,20 +34,28 @@ def _job(tmp_path: Path):
     return data, job
 
 
-def test_llm_plan_is_saved_with_usage(tmp_path: Path) -> None:
+def test_llm_plan_is_validated_and_has_tokens(tmp_path: Path) -> None:
     data, job = _job(tmp_path)
-    _FakeResponse.content = _PLAN_TEMPLATE.replace("__JOB__", job.id)
-    result = assistant_llm.generate_llm_plan(job_id=job.id, data_dir=data, client=_FakeClient())
-    assert result["mode"] == "llm"
-    assert result["model"] == "fake-model"
-    assert result["usage"]["prompt_tokens"] == 10
+    plan = assistant_llm.generate_plan(
+        "fix", context={"job_id": job.id, "data_dir": str(data)}, client=_FakeClient()
+    )
+    assert plan.mode == "llm"
+    assert plan.model == "fake-model"
+    assert plan.tokens == {"prompt": 10, "completion": 5}
 
 
 def test_llm_call_is_recorded_for_usage(tmp_path: Path) -> None:
     data, job = _job(tmp_path)
-    _FakeResponse.content = _PLAN_TEMPLATE.replace("__JOB__", job.id)
-    result = assistant_llm.generate_llm_plan(job_id=job.id, data_dir=data, client=_FakeClient())
-    from app.services import model_calls
-    usage = model_calls.aggregate_usage(data_dir=data, route="assistant")
-    assert usage == {"input_tokens": 10, "output_tokens": 5}
-    assert result["usage"]["model_call_id"]
+    plan = assistant_llm.generate_plan(
+        "fix", context={"job_id": job.id, "data_dir": str(data)}, client=_FakeClient()
+    )
+    from app.db.connection import connect
+    connection = connect(data)
+    try:
+        row = connection.execute(
+            "SELECT job_id, plan_id FROM model_calls WHERE route = 'assistant'"
+        ).fetchone()
+    finally:
+        connection.close()
+    assert row["job_id"] == job.id
+    assert row["plan_id"] == plan.plan_id

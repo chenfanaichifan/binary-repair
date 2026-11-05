@@ -28,6 +28,8 @@ def record_call(
     latency_ms: int | None = None,
     request_id: str | None = None,
     assistant_plan_id: str | None = None,
+    job_id: str | None = None,
+    plan_id: str | None = None,
 ) -> str:
     usage = usage or {}
     prompt = usage.get("prompt_tokens")
@@ -43,8 +45,8 @@ def record_call(
                 "INSERT INTO model_calls "
                 "(id, attempt_id, route, model_requested, model_returned, status, "
                 "prompt_tokens, completion_tokens, total_tokens, estimated_cost_usd, "
-                "latency_ms, request_id, usage_json, assistant_plan_id, created_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "latency_ms, request_id, usage_json, assistant_plan_id, job_id, plan_id, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     call_id, attempt_id, route, model_requested, model_returned, status,
                     int(prompt) if prompt is not None else None,
@@ -53,7 +55,7 @@ def record_call(
                     usage.get("estimated_cost_usd"),
                     latency_ms, request_id,
                     json.dumps(usage, sort_keys=True) if usage else None,
-                    assistant_plan_id,
+                    assistant_plan_id or plan_id, job_id, plan_id,
                     datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 ),
             )
