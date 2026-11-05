@@ -452,7 +452,7 @@ def client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient 
     key = (env.get(PROVIDER_KEY_ENV) or "").strip()
     if not key:
         return None
-    base = (env.get(PROVIDER_BASE_ENV) or DEFAULT_PROVIDER_BASE).strip().rstrip("/")
+    base = (env.get(PROVIDER_BASE_ENV) or "").strip().rstrip("/") or DEFAULT_PROVIDER_BASE
     model = (env.get(ASSISTANT_MODEL_ENV) or "").strip() or DEFAULT_MODEL
     try:
         timeout = float(env.get(PROVIDER_TIMEOUT_ENV) or DEFAULT_TIMEOUT)

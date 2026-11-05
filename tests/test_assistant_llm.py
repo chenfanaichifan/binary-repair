@@ -424,6 +424,25 @@ def test_client_from_env_without_key_is_none():
     assert assistant_llm.client_from_env({assistant_llm.PROVIDER_KEY_ENV: "   "}) is None
 
 
+def test_client_from_env_falls_back_on_a_blank_base():
+    client = assistant_llm.client_from_env({
+        assistant_llm.PROVIDER_KEY_ENV: "sk-test",
+        assistant_llm.PROVIDER_BASE_ENV: "   ",
+    })
+    assert client is not None
+    assert client.base_url == assistant_llm.DEFAULT_PROVIDER_BASE
+
+
+def test_client_from_env_ignores_a_bad_timeout():
+    for raw in ("nope", "0", "-1"):
+        client = assistant_llm.client_from_env({
+            assistant_llm.PROVIDER_KEY_ENV: "sk-test",
+            assistant_llm.PROVIDER_TIMEOUT_ENV: raw,
+        })
+        assert client is not None
+        assert client._timeout == 30.0
+
+
 def test_client_from_env_reads_base_model_and_timeout():
     client = assistant_llm.client_from_env({
         assistant_llm.PROVIDER_KEY_ENV: "sk-test",
