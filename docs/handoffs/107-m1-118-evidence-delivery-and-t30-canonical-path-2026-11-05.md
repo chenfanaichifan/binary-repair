@@ -28,7 +28,7 @@ and canonical-path follow-up.
 | T30 canonical path | **fixed** | `docs/handoffs/evidence/T30/build/original.elf` @ `c274893` |
 | `c274893` | **bound** | remote `origin`, branch `member-3/t62-host-safe`, head `472b26e` |
 | 116 §8 Fix A/B | **not the contract A/B, not T8.3** | see §5 |
-| No-input contract A/B | **Lead** | record 106; unchanged |
+| No-input contract A/B | **A selected (M5 v3)** | Lead decision; M5 `4c36898`; M1 intake/test adaptation in record 108 |
 | T8.3 | **BLOCKED** | no contract/tests/candidate/V0–V5 |
 | main / tag / live success | **no / no / no** | §6 |
 
@@ -271,8 +271,8 @@ in the package `README.md`.
 
 1. **M4:** the evidence is readable; verify or decline on M4's own record. M1
    does not ask for an upgrade.
-2. **Lead:** decide the no-input contract A/B (record 106 §4). If A, the contract
-   owner (M5) owns the schema/hash revision; if B, name the corpus.
+2. **A is selected:** M5 owns the v3 schema/hash revision; M1 adapted the intake
+   and tests in record 108. No B corpus is needed.
 3. **M1/M5:** when the canonical/live-bridge fork is reconciled, keep the
    canonical path and the `c274893` binding; do not replace them with the
    live-bridge mirror text.

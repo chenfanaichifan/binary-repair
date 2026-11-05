@@ -13,6 +13,10 @@
   1 differs by design), not the 12/13 in the original text. The T30 status is
   unchanged, and M4 is **not** asked to upgrade. The canonical artifact path and
   the `c274893` binding are in record 107 and in the package `PROVENANCE.md`.
+- **Update (record 108, 2026-11-05):** the Lead selected **option A**. M5's v3
+  schema is at `origin/member-5/complete-m5` @ `4c36898`; M1 adapted the fixture
+  intake and tests in record 108. The schema is not merged into this branch, so
+  the CWE416 contract remains absent here.
 
 Numbering: `100`–`105` are M1's on this line; this is `106`. M3's `116`–`118`
 live on other lines and are cited here, not merged or renumbered.
@@ -29,7 +33,7 @@ live on other lines and are cited here, not merged or renumbered.
 | Record 116 | **DIAGNOSTIC / METHOD EVIDENCE** | synthetic source; not a T8.3 fixture |
 | `original.variant.elf` | **not in the fixture, never ingested** | absent from `fixtures/public`; the variant is diagnostic only |
 | CWE416 contract | **absent / unloadable** | no lawful v2 body exists for a no-input case; no `invalid_*` fabricated |
-| A/B decision | **OPEN — Lead owns it** | M1 prepared the decision, did not choose |
+| A/B decision | **A selected (M5 v3)** | Lead decision; M1 intake adaptation in record 108 |
 | `canonical/m1-m5-integration` vs `integration/live-bridge-2026-11-03` | **fork recorded, not merged** | common base `fba137e`; different commits, same CWE416 source bytes |
 | T8.3 | **BLOCKED** | one class measured, no second-class gate evidence |
 | `main` merged / tag created / live success claimed | **no / no / no** | ancestry and tag checks in §7 |
@@ -210,10 +214,12 @@ CWE416 invalid path.
 
 ---
 
-## 4. The A/B decision
+## 4. The A/B decision — A selected
 
-The Lead still owns this decision. M1 has measured what each route requires;
-it has not chosen, and the contract remains unloaded.
+**Update:** the Lead selected **option A** on 2026-11-05. M5's v3 schema is at
+`origin/member-5/complete-m5` @ `4c36898`; M1's intake/test adaptation is record
+108. The decision context below is kept for the record. The schema is not merged
+into this branch yet, so the CWE416 contract is still absent here.
 
 ### 4.1 Option A — extend `SecurityContract` with `input_mode=none`
 
@@ -229,7 +235,7 @@ it has not chosen, and the contract remains unloaded.
 - the four `invalid_*` fields are **absent and prohibited**, not set to
   sentinel values. “Invalid” is not applicable; the contract says so
   structurally, not in prose;
-- `max_valid_input_bytes` is `0`;
+- `max_valid_input_bytes` is **absent** too; M5 v3 treats it as invalid-only, like the four rejection fields;
 - the V3 behaviour set is **one no-input case, zero invalid cases**; there is no
   six-case matrix to claim.
 
@@ -494,9 +500,10 @@ The delivery `SHA256SUMS` covers every file in that directory except itself.
 
 ## 10. Open items
 
-1. **Lead:** choose A or B, and if B, name the corpus.
-2. **Contract owner (M5):** if A, own the `SecurityContract` revision and the
-   hash/schema migration; M1 consumes it and adjusts intake/tests.
+1. **A selected:** no further Lead choice on the route. If B had been chosen,
+   the corpus would have been named here.
+2. **Contract owner (M5):** land the v3 schema on the integration line; M1 has
+   already adapted the intake/tests in record 108.
 3. **M4:** the 118 evidence is delivered at
    `delivery/t30-rebuild-2026-11-05/`; M4 may re-hash and verify on its own
    record. A clean-window re-run remains the remaining verification if M4

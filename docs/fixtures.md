@@ -28,10 +28,15 @@ fixtures/public/<name>/
   build.json            provenance + exact command + expected output hash
   defect.json           defect class and which invalid case triggers it
   contract.json         obligations, forbidden behaviour, valid domain
-  tests/valid.json      at least 4 valid cases
-  tests/invalid.json    at least 2 invalid cases
+  tests/valid.json      at least 4 valid cases (1 when input_mode is "none")
+  tests/invalid.json    at least 2 invalid cases; optional and 0 cases for "none"
   tests/SHA256SUMS      every file, relative to <name>/
 ```
+
+`input_mode` is a contract field owned by the schema (M5). It is absent for the
+historical v2 argv contract, so CWE121 is unchanged. A v3 contract may set
+`"input_mode": "argv"`, `"stdin"` or `"none"`. The intake reads it as data; the
+`SecurityContract` loader remains the authority on the full schema.
 
 ## What each check is for
 
@@ -44,8 +49,15 @@ fixtures/public/<name>/
 | `build_json_network` / `build_script_network` | The guest build must work offline. A `curl`, `apt-get`, `pip` or `https://` in the recipe means it does not. |
 | `empty_provenance` | `source.url`, `source.commit` and `source.license` must be non-empty. "It was on a website" is not provenance. |
 | `defect_trigger_unknown` | `defect.json#trigger_case` must name a case that exists in `tests/invalid.json`. A prose claim that the class is covered is not accepted; the pointer has to resolve. |
+| `no_input_trigger_case_present` | For `input_mode: "none"` there is no invalid case; `trigger_case` must be absent or null. A leftover CWE121-shaped pointer is a fabricated invalid path. |
+| `contract_input_mode_unknown` | A v3 contract must set `input_mode` to `argv`, `stdin` or `none`. |
+| `contract_input_mode_not_allowed_v2` | The v2 contract is the historical argv shape; `input_mode` starts at v3. |
+| `contract_schema_version_unknown` | The intake understands schema `2` (argv) and `3` (input modes). |
+| `no_input_invalid_fields_present` | For `input_mode: "none"`, the four rejection fields and `max_valid_input_bytes` must be absent, not set to sentinels. |
+| `no_input_invalid_cases_present` | For `input_mode: "none"`, `tests/invalid.json` must contain 0 cases (or be absent). |
+| `no_input_valid_case_missing` | For `input_mode: "none"`, at least one valid case is required; the 4-case minimum does not apply. |
 | `not_a_distinct_class` | T8.3 needs a second defect class. Pass `--baseline-cwe CWE-121`, and the fixture fails if it uses that class. |
-| `too_few_valid` / `too_few_invalid` | Fewer than 4 valid or 2 invalid cases leaves "the repair works" unproven. |
+| `too_few_valid` / `too_few_invalid` | Fewer than 4 valid or 2 invalid cases leaves "the repair works" unproven. These minima apply to argv/stdin; `input_mode: "none"` uses 1 valid and 0 invalid. |
 | `case_sha_mismatch` | The test manifest cites a different binary than the committed one. |
 
 ## The `defect.json` file
@@ -71,6 +83,35 @@ repair adds a length check, `lifetime` means it changes ownership so freed memor
 is not read. `baseline_mechanism` records what the first class does; if the two
 match, intake fails with `not_a_distinct_class`. Two CWEs that are both repaired
 with a bounds check are the same exercise with a different label.
+
+## No-input fixtures (`input_mode: "none"`)
+
+CWE416/T30 takes no program input. Its contract is the M5 v3 shape:
+
+```json
+{
+  "schema_version": 3,
+  "input_mode": "none"
+}
+```
+
+The intake enforces three things beyond the normal layout:
+
+- **the four rejection fields must be absent** — `invalid_input_response`,
+  `invalid_exit_code`, `invalid_stdout`, `invalid_stderr`, plus
+  `max_valid_input_bytes`, which M5's v3 treats as invalid-only. A sentinel
+  value is still a fabricated rejection path, so it is an error.
+- **the invalid case count must be 0** — `tests/invalid.json` may be absent or
+  present with `"tests": []`; any invalid case is an error.
+- **at least one valid case must exist** — the 4-valid minimum applies to
+  argv/stdin fixtures, not to a no-input program.
+
+`defect.json#trigger_case` is also not applicable: it must be absent or null.
+The CWE121 fixture is untouched: its v2 contract has no `input_mode`, so it
+keeps the argv shape, the 4+2 matrix and the same contract hash.
+
+The schema itself is not duplicated here. The intake's job is layout and
+semantics; `SecurityContract` decides whether a contract loads.
 
 ## Current state
 
@@ -109,6 +150,12 @@ compare with `output.sha256` to clear it.
 `contract.json` and `tests/` do not exist yet, because producing them needs a
 compiler. The intake reports seven `missing_file` findings; that is the true
 state, not a regression.
+
+The intake now knows the `input_mode: "none"` shape, but this fixture still has
+no contract. When one is added it must be the M5 v3 no-input contract (no
+`invalid_*`, no `max_valid_input_bytes`, 1 valid / 0 invalid), and its
+`defect.json#trigger_case: "invalid-first"` must be removed at the same time;
+the intake will report `no_input_trigger_case_present` until it is.
 
 `PROVENANCE.md` records the resolved commit
 `f88433e3443648a17671398797a04ea1f8e1a274` and notes that the pin the Lead

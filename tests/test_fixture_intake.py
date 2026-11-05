@@ -36,9 +36,11 @@ def build_fixture(
     root: Path,
     *,
     cwe: str = "CWE-787",
-    trigger: str = "invalid-first",
+    trigger: str | None = "invalid-first",
     valid_count: int = 4,
     invalid_count: int = 2,
+    input_mode: str | None = None,
+    include_invalid: bool = True,
 ) -> str:
     root.mkdir(parents=True, exist_ok=True)
     (root / "tests").mkdir(exist_ok=True)
@@ -71,37 +73,34 @@ def build_fixture(
         encoding="utf-8",
     )
 
-    (root / "defect.json").write_text(
-        json.dumps(
-            {
-                "schema_version": 1,
-                "cwe": cwe,
-                "title": "out-of-bounds write past the end of a heap buffer",
-                "mechanism": "bounds-check",
-                "trigger_case": trigger,
-            }
-        ),
-        encoding="utf-8",
-    )
+    defect = {
+        "schema_version": 1,
+        "cwe": cwe,
+        "title": "out-of-bounds write past the end of a heap buffer",
+        "mechanism": "bounds-check",
+    }
+    if trigger is not None:
+        defect["trigger_case"] = trigger
+    (root / "defect.json").write_text(json.dumps(defect), encoding="utf-8")
 
-    (root / "contract.json").write_text(
-        json.dumps(
-            {
-                "schema_version": 2,
-                "required_obligations": [
-                    "behaviour",
-                    "identity",
-                    "interface",
-                    "reproducibility",
-                    "structure",
-                    "symbolic",
-                ],
-                "forbidden_behavior": "write past the end of the allocation",
-                "valid_domain": "inputs of length 0..16 bytes",
-            }
-        ),
-        encoding="utf-8",
-    )
+    contract = {
+        "schema_version": 2,
+        "required_obligations": [
+            "behaviour",
+            "identity",
+            "interface",
+            "reproducibility",
+            "structure",
+            "symbolic",
+        ],
+        "forbidden_behavior": "write past the end of the allocation",
+        "valid_domain": "inputs of length 0..16 bytes",
+    }
+    if input_mode is not None:
+        # M5 option A: input_mode is a v3 field. v2 stays the argv contract.
+        contract["schema_version"] = 3
+        contract["input_mode"] = input_mode
+    (root / "contract.json").write_text(json.dumps(contract), encoding="utf-8")
 
     valid = dict(CASE)
     valid["tests"] = [
@@ -111,13 +110,16 @@ def build_fixture(
     valid["original_sha256"] = sha
     (root / "tests" / "valid.json").write_text(json.dumps(valid), encoding="utf-8")
 
-    invalid = dict(CASE)
-    invalid["tests"] = [
-        _case("invalid-first", "invalid", ["./original", "x" * 20]),
-        _case("invalid-longer", "invalid", ["./original", "x" * 40]),
-    ][:invalid_count]
-    invalid["original_sha256"] = sha
-    (root / "tests" / "invalid.json").write_text(json.dumps(invalid), encoding="utf-8")
+    if include_invalid:
+        invalid = dict(CASE)
+        invalid["tests"] = [
+            _case("invalid-first", "invalid", ["./original", "x" * 20]),
+            _case("invalid-longer", "invalid", ["./original", "x" * 40]),
+        ][:invalid_count]
+        invalid["original_sha256"] = sha
+        (root / "tests" / "invalid.json").write_text(
+            json.dumps(invalid), encoding="utf-8"
+        )
 
     write_sums(root)
     return sha
@@ -333,3 +335,142 @@ def test_the_first_class_fixture_is_complete_but_not_reproduced() -> None:
     # silently.
     assert not [finding for finding in findings if finding.is_error]
     assert "reproduction_unverified" in codes(findings)
+
+
+# -- no-input contracts (CWE416 / T30, M5 option A) -------------------------
+#
+# The schema itself is M5's. This checker only reads ``input_mode`` as data:
+# absent means the historical argv contract, ``"none"`` changes the layout.
+
+
+def build_no_input(root: Path, **overrides) -> str:
+    options = dict(
+        cwe="CWE-416",
+        input_mode="none",
+        valid_count=1,
+        include_invalid=False,
+        trigger=None,
+    )
+    options.update(overrides)
+    return build_fixture(root, **options)
+
+
+def test_a_no_input_fixture_passes(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_no_input(root)
+
+    # One valid case, no invalid cases, no rejection fields: this is the shape
+    # the CWE416 contract needs when it takes no program input.
+    assert check_fixture(root) == []
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("invalid_input_response", "not applicable"),
+        ("invalid_exit_code", 0),
+        ("invalid_stdout", ""),
+        ("invalid_stderr", ""),
+    ],
+)
+def test_no_input_rejects_any_rejection_field(
+    tmp_path: Path, field: str, value
+) -> None:
+    root = tmp_path / "second_class_demo"
+    build_no_input(root)
+    data = json.loads((root / "contract.json").read_text(encoding="utf-8"))
+    data[field] = value
+    (root / "contract.json").write_text(json.dumps(data), encoding="utf-8")
+    write_sums(root)
+
+    # A sentinel value is still a fabricated rejection path. The field must be
+    # absent, not empty and not "not applicable".
+    assert "no_input_invalid_fields_present" in codes(check_fixture(root))
+
+
+def test_no_input_rejects_invalid_cases(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_no_input(root, include_invalid=True, invalid_count=1)
+
+    assert "no_input_invalid_cases_present" in codes(check_fixture(root))
+
+
+def test_no_input_requires_at_least_one_valid_case(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_no_input(root, valid_count=0)
+
+    assert "no_input_valid_case_missing" in codes(check_fixture(root))
+
+
+def test_no_input_allows_an_empty_invalid_manifest(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    sha = build_no_input(root)
+    empty = dict(CASE)
+    empty["tests"] = []
+    empty["original_sha256"] = sha
+    (root / "tests" / "invalid.json").write_text(json.dumps(empty), encoding="utf-8")
+    write_sums(root)
+
+    # Zero cases is zero cases, whether the file is absent or empty.
+    assert check_fixture(root) == []
+
+
+def test_no_input_rejects_a_trigger_case_pointer(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_no_input(root, trigger="invalid-first")
+
+    # There is no invalid case for the pointer to resolve to; a leftover
+    # CWE121-shaped trigger is a fabricated invalid path, not evidence.
+    assert "no_input_trigger_case_present" in codes(check_fixture(root))
+
+
+def test_an_unknown_input_mode_is_rejected(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_fixture(root, input_mode="environment")
+
+    assert "contract_input_mode_unknown" in codes(check_fixture(root))
+
+
+def test_a_v2_contract_must_not_carry_input_mode(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_fixture(root)
+    data = json.loads((root / "contract.json").read_text(encoding="utf-8"))
+    data["input_mode"] = "none"
+    (root / "contract.json").write_text(json.dumps(data), encoding="utf-8")
+    write_sums(root)
+
+    # The historical argv contract is v2; input_mode starts at v3 in M5's A.
+    assert "contract_input_mode_not_allowed_v2" in codes(check_fixture(root))
+
+
+def test_no_input_rejects_max_valid_input_bytes(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_no_input(root)
+    data = json.loads((root / "contract.json").read_text(encoding="utf-8"))
+    data["max_valid_input_bytes"] = 0
+    (root / "contract.json").write_text(json.dumps(data), encoding="utf-8")
+    write_sums(root)
+
+    # M5's v3 no-input shape treats this as invalid-only, like invalid_*.
+    assert "no_input_invalid_fields_present" in codes(check_fixture(root))
+
+
+def test_the_argv_default_keeps_the_four_and_two_matrix(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_fixture(root)
+
+    findings = check_fixture(root)
+    assert findings == []
+    assert not [f for f in findings if f.code.startswith("no_input_")]
+
+
+@pytest.mark.parametrize("mode", ["argv", "stdin"])
+def test_v3_input_modes_keep_the_four_and_two_matrix(
+    tmp_path: Path, mode: str
+) -> None:
+    root = tmp_path / f"second_class_{mode}"
+    build_fixture(root, input_mode=mode)
+
+    # Only "none" changes the layout; the input-bearing modes keep 4+2 and a
+    # resolvable trigger case.
+    assert check_fixture(root) == []
