@@ -314,15 +314,15 @@ def ingest(
             raise IngestError(f"gate {gate} passed without evidence")
         if ids:
             # A gate can carry several files (identity carries original, candidate,
-            # manifests).  Keep the candidate when it is present, because the
-            # worker requires the declared candidate to be bound to a verified
-            # artifact; taking the first file silently loses that binding.
-            chosen = ids[0]
+            # manifests).  V0 is bound only by content: the candidate is the file
+            # whose bytes match candidate_sha256, and its absence is a rejection.
+            # There is deliberately no fallback to the first entry - that would
+            # bind V0 to whatever the bundle happened to list first.
+            #
+            # M5 017ca87 reached the same rule independently; this is the single
+            # implementation, and the message below stays stable because record
+            # 101 and its test assert on it.
             if gate == "V0":
-                # Identity may carry original, candidate and manifests.  The
-                # bound candidate is the one whose bytes match candidate_sha256.
-                # Falling back to the first entry would bind V0 to whatever
-                # happened to be listed first, so an absence is a rejection.
                 matches = [
                     artifact_id
                     for name, artifact_id in ids_by_name.items()
@@ -333,10 +333,9 @@ def ingest(
                         "gate V0 evidence does not contain the declared candidate "
                         f"{manifest['candidate_sha256']}"
                     )
-                chosen = matches[0]
-            # M5 017ca87 reached the same rule independently; the wording above
-            # is kept because record 101 and its test assert on this message.
-            evidence[gate] = chosen
+                evidence[gate] = matches[0]
+            else:
+                evidence[gate] = ids[0]
 
     analysis_ids = []
     for item in manifest.get("analysis") or []:
