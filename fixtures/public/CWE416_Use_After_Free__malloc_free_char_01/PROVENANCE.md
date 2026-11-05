@@ -14,7 +14,7 @@ the Lead supplied for this source. The two hashes above differ only in line
 endings; converting the upstream bytes from CRLF to LF reproduces `src.c` byte for
 byte.
 
-`arichardson/juliet-test-suite-c` at `f88433e3443648a17671398797a04ea1f8e1a274`
+`https://github.com/arichardson/juliet-test-suite-c` at `f88433e3443648a17671398797a04ea1f8e1a274`
 carries the same bytes and was used for the first retrieval. It is not the pin:
 where the two disagree, `dsp-testing/samate-c-cpp@01e353d` is authoritative.
 
