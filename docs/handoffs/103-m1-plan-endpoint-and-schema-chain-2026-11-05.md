@@ -92,6 +92,17 @@ carried this working tree's changes into `c07334a`. Nothing was discarded: the
 model_calls correction, record 102 and the fixture intake tooling all remain.
 The operator then put this session in charge of the numbering.
 
+## Shipped
+
+Pushed to `origin/canonical/m1-m5-integration` at `33fc145`; the remote branch
+was at `5a13b6b` before, so 23 commits became visible to M4/M5, including
+`delivery/` and the assistant interface documents.
+
+GCM was not on PATH: `git` lives at `D:\tools\PortableGit\cmd\git.exe` and the
+credential manager at `ucrt64\bin\git-credential-manager.exe` complains
+`Failed to locate 'git.exe'` unless that `cmd` directory is prepended. Worth
+remembering for any script that pushes from this host.
+
 ## Unchanged
 
 T6.0 baseline guards stay as listed in record 100; V3's two kinds, the auth
