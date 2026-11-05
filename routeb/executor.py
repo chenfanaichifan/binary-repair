@@ -37,6 +37,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from elftools.elf.elffile import ELFFile  # noqa: E402
+from routeb.contract_mode import load_contract_mode  # noqa: E402
 
 SCHEMA_VERSION = 2
 
@@ -364,10 +365,10 @@ def main(argv: list[str] | None = None) -> int:
 
     input_mode = args.input_mode or "argv"
     if args.contract is not None:
-        contract = json.loads(args.contract.read_text(encoding="utf-8"))
-        if not isinstance(contract, dict):
-            ap.error("--contract must be a JSON object")
-        input_mode = contract.get("input_mode", "argv")
+        try:
+            input_mode = load_contract_mode(args.contract)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            ap.error(f"--contract: {exc}")
 
     result = make_bundle(
         original=args.original, candidate=candidate, outdir=args.out_dir,

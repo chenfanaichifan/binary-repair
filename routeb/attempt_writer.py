@@ -31,6 +31,7 @@ from typing import Any
 
 from app.db.connection import connect
 from app.services import jobs
+from routeb.contract_mode import load_contract
 
 GATES = ("V0", "V1", "V2", "V3", "V4", "V5")
 
@@ -58,9 +59,12 @@ def _verify_contract(path: Path) -> None:
     consumes the verified path and never reads contract bodies from SQLite."""
     if not path.is_file() or not os.access(path, os.R_OK):
         raise ValueError(f"BINARYREPAIR_CONTRACT is not readable: {path}")
-    payload = _read_json(path)
-    if not isinstance(payload, dict):
-        raise ValueError("BINARYREPAIR_CONTRACT must be a JSON object")
+    try:
+        load_contract(path)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"BINARYREPAIR_CONTRACT is not a valid SecurityContract: {exc}"
+        ) from exc
 
 
 def _verify_bundle(bundle: Path, *, original_path: Path | None = None) -> dict[str, Any]:

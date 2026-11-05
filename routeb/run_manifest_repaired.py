@@ -19,6 +19,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from routeb.contract_mode import load_contract_mode  # noqa: E402
+
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -46,17 +52,6 @@ def run(elf: Path, arg: str | None = None, *, stdin_text: str | None = None) -> 
             "stdout_hex": (exc.stdout or b"").hex(),
             "stderr_hex": (exc.stderr or b"").hex(),
         }
-
-
-def _contract_mode(contract: Path) -> str:
-    """Read the contract's mode as data; the schema owns the allowed values."""
-    data = json.loads(contract.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise ValueError("contract must be a JSON object")
-    mode = data.get("input_mode", "argv")
-    if data.get("schema_version") == 3 and mode not in {"argv", "stdin", "none"}:
-        raise ValueError(f"unsupported input_mode: {mode!r}")
-    return mode
 
 
 def _expected(case: dict) -> dict:
@@ -179,11 +174,10 @@ def main() -> int:
     ap.add_argument("--contract", type=Path)
     args = ap.parse_args()
 
-    mode = args.input_mode or "argv"
-    if args.contract is not None:
-        mode = _contract_mode(args.contract)
-
     try:
+        mode = args.input_mode or "argv"
+        if args.contract is not None:
+            mode = load_contract_mode(args.contract)
         result = run_manifest(args.binary, args.tests, input_mode=mode)
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         print(f"run_manifest_repaired: {exc}", file=sys.stderr)

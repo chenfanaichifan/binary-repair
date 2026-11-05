@@ -12,7 +12,7 @@
 - **Update (record 109):** the matrix is now exact — argv/stdin 4+2, none 1+0;
   `tests/invalid.json` must be **absent** for none (an empty file is rejected);
   contract validation is delegated to `SecurityContract`, so schema findings are
-  `contract_schema_invalid`. Current tests: 39 intake, 440 full. Where the text
+  `contract_schema_invalid`. Current tests: 39 intake, 449 full (109 adds the end-to-end suite). Where the text
   below says "at least one" or allows an empty invalid file, record 109 wins.
 
 The Lead selected **option A**: `input_mode: "none"` in the M5 v3 contract.
@@ -28,7 +28,7 @@ M1's part is the fixture intake and tests; the schema remains M5's.
 | `app/domain/contracts.py` | **M5 v3 integrated** by cherry-pick `4c36898` (`7c279a1`) — not a second schema |
 | Fixture intake | **adapted** for `input_mode: "none"` |
 | Intake tests | **39 passed** (`tests/test_fixture_intake.py`) |
-| Full suite | **440 passed / 2 skipped / 0 failed** |
+| Full suite | **449 passed / 2 skipped / 0 failed** |
 | CWE121 contract | **unchanged**: v2, default argv, 4+2 matrix, same hash |
 | CWE416 fixture | **still incomplete**: no contract/build/ELF/tests; 7 `missing_file` |
 | Sentinel `invalid_*` for CWE416 | **none added** |

@@ -124,13 +124,26 @@ mode to both runners. The runtime record carries `input_mode` and
 obligation. The no-input distinction lives in the V3 evidence (1/1, invalid
 N/A), not in a second acceptance engine.
 
-### 3.4 Tests
+### 3.4 Full-chain contract validation
+
+Route B does not read `input_mode` from a raw JSON body at the acceptance edge.
+`routeb/contract_mode.py` loads the body through M5's `SecurityContract`; the
+repaired runner, the compare runner, the executor and
+`routeb/attempt_writer._verify_contract` all use it. A no-input contract with a
+sentinel field therefore fails before any case is run, not only at intake.
+
+### 3.5 Tests
 
 - `tests/test_run_manifest_repaired.py`: 5 passed (1/1, invalid manifest
   rejected, two valid cases rejected, argv still runs, runtime detail).
 - `tests/test_run_manifest_compare.py`: 5 passed, including the no-input 1/1 and
   empty-invalid-manifest rejection.
-- Full suite: **440 passed / 2 skipped / 0 failed**.
+- `tests/test_v3_no_input_e2e.py`: 9 passed. A real executable with a valid
+  no-input contract returns `1/1` and `invalid: not_applicable`; each of the
+  four `invalid_*` fields and `max_valid_input_bytes` makes the CLI return 2
+  before writing an artefact; the executor rejects a sentinel contract before
+  creating a bundle; `_verify_contract` rejects the same body.
+- Full suite: **449 passed / 2 skipped / 0 failed**.
 
 The two skips are `ELF execution requires Linux`; a skip is not a pass.
 
