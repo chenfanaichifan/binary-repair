@@ -36,12 +36,22 @@ cd /var/tmp/cwe416 && sh build.sh
 readelf -h original.elf
   Class:  ELF64          Type: EXEC (non-PIE)      Entry: 0x4011b0
 
-./trigger.sh --repeat 50 ./original.elf
-  50x exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+./trigger.sh               ./original.elf    1 run    exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+./trigger.sh --repeat 50   ./original.elf    50 runs  same observation, 50/50
+./trigger.sh --repeat 200  ./original.elf    200 runs same observation, 200/200
+  251 runs in total (1 + 50 + 200), one distinct observation
 ```
 
+The three invocations are listed separately because the count claim is 251, not
+50: an earlier version of this summary showed only the `--repeat 50` line, which
+read as if the total were 50 while `07-rebuild.json#trigger.runs_total` and §5
+both say 251. `04-trigger.txt` §1–§3 is the primary record.
+
 Evidence: `docs/handoffs/evidence/t30-rebuild-2026-11-05/` (10 files,
-`SHA256SUMS` 9/9 verified after export).
+`SHA256SUMS` 9/9 verified after export). The same 10 files travel as
+`dist/M3-t30-rebuild-evidence-2026-11-05.zip` with a top-level digest in
+`dist/M3-t30-rebuild-evidence-2026-11-05.zip.sha256`, so the record can be read
+without this branch.
 
 ---
 
@@ -88,6 +98,15 @@ pass `-DINCLUDEMAIN -DOMITGOOD` (record 117 §1.1), because there the case's own
 `main` is the intended entry point and the harness is absent. So "define
 INCLUDEMAIN or not" is a per-fixture decision, not a house style. Both are
 correct; picking one globally would break one of the two fixtures.
+
+**No Fix A/B on the T30 upstream.** Nothing was changed in `original.c`, and no
+"Fix A" (define `INCLUDEMAIN` so the case supplies `main`) or "Fix B" (delete the
+guard) was applied to the upstream sample. T30 links as it stands with an
+unmodified case; the only file that would ever have needed such a change is the
+synthetic `src.c` that record 116 measured, and that file is retired rather than
+patched. Editing an upstream sample to make a recipe fit would turn a
+reproduction into a rewrite, and `build.json#fixture.source_of_truth.sha256`
+would stop describing what was compiled.
 
 ---
 
@@ -254,14 +273,15 @@ the host for the two edited host files.
 
 ## 7. Record 116 stays a diagnostic
 
-Record 116 measured the synthetic fixture and found its recipe does not link.
+Record 116 measured the **synthetic** fixture and found its recipe does not link.
 That finding stands and is useful. What it does **not** do is produce a public
 sample: the synthetic `src.c` is team-authored, and `fixtures/public/README.md`
 is explicit that a self-built sample does not carry the second-defect-class
 obligation.
 
-So 116 is reclassified here as **build/trigger diagnostic only**, with three
-consequences:
+So 116 is reclassified here as **synthetic diagnostic — build/trigger only**. It
+has no T8.3 identity: it is not a second defect class, it is not a fixture of
+record, and no gate may cite it as either. Three consequences:
 
 - `original.variant.elf` is not shipped anywhere and must not be ingested. A
   variant that differs from `build.json#argv` in two ways cannot stand in for the
@@ -269,8 +289,8 @@ consequences:
 - The synthetic fixture's `output.sha256` stays `null`. Filling it with the
   variant digest would bind a recipe that was never run.
 - Nothing from 116 relieves T8.3. The second-class obligation is unchanged and
-  is not satisfied by anything in this record either — this is one defect class,
-  measured again.
+  is not satisfied by anything in this record either — T30 is one defect class
+  (CWE-416) measured again, and T8.3 stays **blocked**.
 
 ---
 
@@ -323,6 +343,22 @@ So the ordering is: contract bytes frozen first, then candidate built against
 them. The first half is a contract-owner decision (record 117 §10 already asks it
 alongside the PIE question), and I am not the owner of that file. Consequently
 there is no candidate for CWE122 in this step, and nothing new goes to M4.
+
+**Where this now stands (2026-11-05, after Lead instruction).** The CWE416
+blocker is the same shape and is a policy question, not a measurement one: a
+no-input sample cannot honestly fill four fields that describe an input rejection
+path. Two ways out, both owned by Lead, neither taken here:
+
+- **A — relax the contract** so a case with no input may declare the rejection
+  path as structurally absent (a sentinel, or a contract variant), and the four
+  keys become conditional rather than required.
+- **B — narrow the fixture set** so only cases with an input rejection path are
+  eligible, and CWE416 is recorded as out of scope for the contract, not as a
+  gap.
+
+Until one is chosen, contract, tests and candidate for T30 stay **untouched**, on
+Lead's explicit instruction. T8.3 stays **blocked**; no candidate is created, no
+V0–V5 gate is run, and the second-class obligation remains open.
 
 ---
 

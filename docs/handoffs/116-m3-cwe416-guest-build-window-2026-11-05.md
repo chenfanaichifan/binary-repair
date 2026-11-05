@@ -1,5 +1,8 @@
 # 116 — CWE416 in the guest: the committed recipe does not link, the sample itself is stable
 
+> **Status: synthetic diagnostic.** Not an upstream sample, not a T8.3 fixture,
+> no T8.3 identity. See the note below and record 118 §7.
+
 Date: 2026-11-05
 Author: M3 (guest build / evidence)
 Window: `revertToSnapshot gate4-harness` (uid 11) → cold boot 21:24 → build → measured
@@ -11,10 +14,12 @@ merge without a collision.
 Nothing here writes to `fixtures/`, `tools/`, `app/`, or any interface contract.
 The fixture's bytes are exactly as `integration/live-bridge-2026-11-03` has them.
 
-**Reclassified 2026-11-05 (record 118 §7): this record is a build/trigger
-diagnostic, and is NOT a T8.3 fixture.** The `src.c` measured below is
+**Reclassified 2026-11-05 (record 118 §7): this record is a synthetic diagnostic,
+build/trigger only, and is NOT a T8.3 fixture.** The `src.c` measured below is
 team-authored, so it cannot carry the second-defect-class obligation no matter
-how clean its measurements are. Specific consequences:
+how clean its measurements are. **T8.3 identity: none** — it is not a second
+defect class, not a fixture of record, and no gate may cite it as either;
+T8.3 stays blocked. Specific consequences:
 
 - `original.variant.elf` is not shipped and must never be ingested — it differs
   from `build.json#argv` in two ways (no `harness.c`, plus prefix-map flags) and
