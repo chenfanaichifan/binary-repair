@@ -1,0 +1,22 @@
+# src.c is an alias, not a second source
+
+$ cmp fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.c fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/src.c && echo identical
+identical (byte for byte)
+
+$ sha256sum fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.c fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/src.c
+  fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e  fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.c
+  fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e  fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/src.c
+
+$ grep -c src.c fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/build.json fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/build.sh
+  build.json: 0   # the recipe never names it
+  build.sh:   0
+
+$ grep -n "original.c" fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/build.sh
+  20:# dsp-testing/samate-c-cpp at 01e353d, byte-identical to original.c here
+  24:# Expect a -Wuse-after-free warning from original.c line 36. That warning IS the
+  32:test -f "$HERE/original.c" || { echo "missing case source: $HERE/original.c" >&2; exit 1; }
+  41:sha256sum original.c harness.c "$SUPPORT/io.c" "$SUPPORT/std_testcase.h"
+  50:    original.c \
+
+# So: the build reads original.c, the intake insists a file called src.c exists,
+# and both names carry the same digest in tests/SHA256SUMS.

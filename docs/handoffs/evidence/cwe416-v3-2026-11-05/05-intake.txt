@@ -1,0 +1,57 @@
+# Rerun of the fixture intake on the M1/M5 line
+
+## 0. which intake was run
+
+$ git rev-parse --short HEAD          # branch head this was run on
+8d54a06
+
+  d7bfa04e4cfc06be78e0e4a56989c6db2d0ac10126d7abc1e53e87f81713d951  tools/fixture_intake.py
+  cc976f62cc79c1f98188d7cdec9bdb40abd40797e1d1c5156e7443b76ff5fd6a  app/domain/contracts.py
+  # tools/fixture_intake.py here == 1430e1e (canonical, validates via SecurityContract)
+  # 1430e1e postdates 1b08ae5 in the same branch; 1b08ae5 is run separately below
+  # app/domain/contracts.py is byte-identical to M5 4c36898
+
+## 1. canonical intake, plain
+
+$ python tools/fixture_intake.py --check fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput
+error	not_a_distinct_class	defect.json#cwe	CWE-416 is already used by fixtures\public\CWE416_Use_After_Free__malloc_free_char_01; T8.3 needs a different defect class, or pass --allow-same-cwe if the axis is the repair mechanism
+FAILED (1 error(s), 0 warning(s))
+  exit=1
+
+## 2. canonical intake, --allow-same-cwe
+
+$ python tools/fixture_intake.py --check fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput --allow-same-cwe
+OK
+  exit=0
+
+## 3. M1 local iteration (1b08ae5), for comparison
+
+$ python <intake_1b08ae5.py> --check fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput --allow-same-cwe
+OK
+  exit=0
+  # this version reads input_mode as data and never loads the contract:
+  # OK here does not mean the contract is valid, only that the layout is.
+
+## 4. baseline untouched
+
+$ python tools/fixture_intake.py --check fixtures/public/CWE121_src_char_declare_cpy_51b
+warning	reproduction_unverified	build.json#reproduction	No toolchain was available when this record was written: gcc 13.3.0, the Juliet testcasesupport tree and the original harness.c are not on the authoring host, so build.sh was NOT run against these sources. The committed ELF was built by the sample owner in /home/lab/evaluator/build/CWE121_src_char_declare_cpy_51b; the flags come from DW_AT_producer and the argv is reconstructed from it. Run this fixture's build.sh inside the guest (with JULIET_ROOT set) and compare with output.sha256 before calling it reproducible.
+OK (1 warning(s))
+  exit=0
+
+## 5. the whole directory
+
+$ python tools/fixture_intake.py --list fixtures/public
+CWE121_src_char_declare_cpy_51b	OK (1 warning(s))
+  warning	reproduction_unverified	build.json#reproduction	No toolchain was available when this record was written: gcc 13.3.0, the Juliet testcasesupport tree and the original harness.c are not on the authoring host, so build.sh was NOT run against these sources. The committed ELF was built by the sample owner in /home/lab/evaluator/build/CWE121_src_char_declare_cpy_51b; the flags come from DW_AT_producer and the argv is reconstructed from it. Run this fixture's build.sh inside the guest (with JULIET_ROOT set) and compare with output.sha256 before calling it reproducible.
+CWE416_Use_After_Free__malloc_free_char_01	FAILED (7)
+  error	missing_file	original.elf	required for intake
+  error	missing_file	build.sh	required for intake
+  error	missing_file	build.json	required for intake
+  error	missing_file	contract.json	required for intake
+  error	missing_file	tests/valid.json	required for intake
+  error	missing_file	tests/invalid.json	required for intake
+  error	missing_file	tests/SHA256SUMS	required for intake
+CWE416_Use_After_Free__malloc_free_char_01_noinput	FAILED (1)
+  error	not_a_distinct_class	defect.json#cwe	CWE-416 is already used by fixtures\public\CWE416_Use_After_Free__malloc_free_char_01; T8.3 needs a different defect class, or pass --allow-same-cwe if the axis is the repair mechanism
+  exit=1

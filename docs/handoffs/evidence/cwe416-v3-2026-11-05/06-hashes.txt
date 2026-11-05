@@ -1,0 +1,37 @@
+# The four names the Lead asked to hold, compared with the previous commit
+
+# 6ce16ac is the fixture as first committed. "blob" is git cat-file of 6ce16ac,
+# "work" is the file on disk on this branch. src.c did not exist there: it is new.
+
+FILE                           BLOB-6ce16ac                                                     WORKTREE                                                         VERDICT
+original.c                     fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e unchanged
+src.c                          -                                                                fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e new (same bytes as original.c)
+support/io.c                   50ace91d0f9cd9f281d5d8ff3a9ca879ee2779d737030ae84e8e4be3df5b299c 50ace91d0f9cd9f281d5d8ff3a9ca879ee2779d737030ae84e8e4be3df5b299c unchanged
+support/std_testcase.h         a78aaf3a54a6210260ad70123c09c3c283c6edf7808b6244205e00b8f2d9b8d0 a78aaf3a54a6210260ad70123c09c3c283c6edf7808b6244205e00b8f2d9b8d0 unchanged
+support/std_testcase_io.h      6459df50d22697bb61619e2effd688ebb98915db25f7eb1bdbb767f888066fb6 6459df50d22697bb61619e2effd688ebb98915db25f7eb1bdbb767f888066fb6 unchanged
+original.elf                   c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9 c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9 unchanged
+
+## sizes
+
+  original.elf  25344 bytes
+
+## the whole manifest
+
+$ (cd fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput && sha256sum -c tests/SHA256SUMS)
+  PROVENANCE.md: OK
+  build.json: OK
+  build.sh: OK
+  contract.json: OK
+  defect.json: OK
+  harness.c: OK
+  original.c: OK
+  original.elf: OK
+  src.c: OK
+  support/io.c: OK
+  support/std_testcase.h: OK
+  support/std_testcase_io.h: OK
+  tests/valid.json: OK
+
+## contract digest (canonical form, not the file bytes)
+
+  contract_sha256: c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c

@@ -1,0 +1,20 @@
+$ diff -u 01-contract-before.json 02-contract-after.json
+--- 01-contract-before.json	2026-11-05 23:00:53.911321900 +0800
++++ 02-contract-after.json	2026-11-05 23:00:53.993031800 +0800
+@@ -20,7 +20,6 @@
+   ],
+   "forbidden_behavior": "read a heap block after free() has released it, so stdout carries allocator residue instead of the allocated text",
+   "input_mode": "none",
+-  "invalid_exit_code": 0,
+   "required_obligations": [
+     "behaviour",
+     "identity",
+@@ -29,7 +28,7 @@
+     "structure",
+     "symbolic"
+   ],
+-  "schema_version": 2,
++  "schema_version": 3,
+   "target_entry": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+   "target_signature": "void CWE416_Use_After_Free__malloc_free_char_01_bad(void)",
+   "valid_behavior": "exit 0 and print the 100-byte block it allocated -- 99 'A' bytes then one LF -- the same 100 bytes on every run",

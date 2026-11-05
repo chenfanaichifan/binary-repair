@@ -1,0 +1,12 @@
+# Contract model: the checked-out app/domain/contracts.py
+  cc976f62cc79c1f98188d7cdec9bdb40abd40797e1d1c5156e7443b76ff5fd6a  app/domain/contracts.py
+
+from_dict(contract.json)
+  LOADS schema=3 input_mode=none
+  invalid_* / max_valid_input_bytes all None: True
+  to_dict() == the file: True
+  contract_sha256: c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c
+
+schema_version 2 + input_mode none: ValueError: unknown contract fields: ['input_mode']
+schema_version 3 none + invalid_exit_code 0: ValueError: unknown contract fields: ['invalid_exit_code']
+schema_version 3 none + max_valid_input_bytes 0: ValueError: unknown contract fields: ['max_valid_input_bytes']

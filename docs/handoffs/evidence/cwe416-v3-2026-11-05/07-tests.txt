@@ -1,0 +1,21 @@
+# Scoped test run — the two modules this change can reach
+
+$ .tmp/venv-int/Scripts/python.exe -m pytest -q tests/test_fixture_intake.py tests/test_contracts.py
+
+  ........................................................................ [ 97%]
+  ..                                                                       [100%][safe-delete][SAFE_DELETE_BULK_GUARD_ERROR] failed to acquire lock: EPERM: operation not permitted, mkdir 'C:\Users\何欣蔚\AppData\Local\Temp\codebuddy-safe-delete-bulk\598fae5a00614be7d3db3f352e649cfe0ffa4128985533128ae560ff97daa895\.lock'
+
+  # 74 dots = 74 passed, no F, no traceback.
+  # The non-zero exit is not a test failure: the sandbox hook that cleans up
+  # %TEMP% fails with EPERM ("codebuddy-safe-delete-bulk") after pytest has
+  # already finished. Reproduced on a run redirecting to a file; piping to tail
+  # returns 0 because tail owns the status then.
+
+$ .tmp/venv-int/Scripts/python.exe -m pytest --collect-only -q tests/test_fixture_intake.py tests/test_contracts.py
+  tests/test_contracts.py: 35
+  tests/test_fixture_intake.py: 39
+
+  # 39 intake + 35 contracts = 74
+
+# The full suite was not re-run in this window: it exceeded the run budget here.
+# M1 reports 449 passed / 2 skipped at 8d54a06; that is theirs, not a measurement of this branch.
