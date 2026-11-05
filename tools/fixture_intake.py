@@ -22,6 +22,11 @@ Required layout::
       tests/invalid.json
       tests/SHA256SUMS
 
+``tests/invalid.json`` is optional for a v3 contract with
+``input_mode: "none"``; when it exists it must contain zero cases. The four
+``invalid_*`` fields and ``max_valid_input_bytes`` must be absent in that mode.
+The older v2 argv contract (CWE121) is unchanged.
+
 ``tests/SHA256SUMS`` lists every file in the fixture by its path relative to
 the fixture root, so editing ``original.elf`` without updating the sums fails
 instead of rotting silently.
@@ -89,12 +94,30 @@ NETWORK_MARKERS = (
 MIN_VALID_CASES = 4
 MIN_INVALID_CASES = 2
 
+# ``input_mode`` is a contract field owned by the schema (M5). The intake only
+# reads it as data: absent means the historical argv contract (CWE121), and
+# ``"none"`` means the sample takes no program input (CWE416/T30).
+CONTRACT_INPUT_MODES = ("argv", "stdin", "none")
+NO_INPUT_REJECTION_FIELDS = (
+    "invalid_input_response",
+    "invalid_exit_code",
+    "invalid_stdout",
+    "invalid_stderr",
+)
+# M5's v3 no-input shape treats max_valid_input_bytes as invalid-only too.
+NO_INPUT_OMIT_FIELDS = NO_INPUT_REJECTION_FIELDS + ("max_valid_input_bytes",)
+
 
 @dataclass(frozen=True)
 class Finding:
     code: str
     path: str
     detail: str
+    severity: str = "error"
+
+    @property
+    def is_error(self) -> bool:
+        return self.severity == "error"
 
 
 def _sha256(path: Path) -> str:
@@ -207,6 +230,38 @@ def _check_build_json(
             Finding("invalid_shape", "build.json#source", "expected an object")
         )
 
+    reproduction = data.get("reproduction")
+    if reproduction is not None:
+        if not isinstance(reproduction, dict):
+            findings.append(
+                Finding("invalid_shape", "build.json#reproduction", "expected an object")
+            )
+        else:
+            _require_keys(
+                reproduction, ("status", "reason"), "build.json#reproduction", findings
+            )
+            status = reproduction.get("status")
+            if status not in {"verified", "unverified"}:
+                findings.append(
+                    Finding(
+                        "invalid_shape",
+                        "build.json#reproduction.status",
+                        f"expected 'verified' or 'unverified', got {status!r}",
+                    )
+                )
+            elif status == "unverified":
+                # The fixture may be complete while its build is unproven. That
+                # is a warning: it must not fail the intake, and it must not be
+                # printed as a pass either.
+                findings.append(
+                    Finding(
+                        "reproduction_unverified",
+                        "build.json#reproduction",
+                        str(reproduction.get("reason") or "no reason given"),
+                        severity="warning",
+                    )
+                )
+
     output = data.get("output")
     if isinstance(output, dict):
         _require_keys(output, ("path", "sha256"), "build.json#output", findings)
@@ -235,17 +290,21 @@ def _check_build_json(
 
 
 def _check_defect(
-    root: Path, invalid_ids: set[str], findings: list[Finding]
-) -> str | None:
+    root: Path, invalid_ids: set[str], findings: list[Finding], input_mode: str
+) -> tuple[str | None, str | None]:
     data = _load_json(root / "defect.json", findings)
     if data is None:
-        return None
+        return None, None
     if not isinstance(data, dict):
         findings.append(Finding("invalid_shape", "defect.json", "expected an object"))
-        return None
-    _require_keys(
-        data, ("schema_version", "cwe", "title", "trigger_case"), "defect.json", findings
-    )
+        return None, None
+    required_keys = ["schema_version", "cwe", "title"]
+    bug_site = data.get("bug_site")
+    if bug_site is None:
+        required_keys.append("mechanism")
+    if input_mode != "none":
+        required_keys.append("trigger_case")
+    _require_keys(data, tuple(required_keys), "defect.json", findings)
 
     cwe = data.get("cwe")
     if not isinstance(cwe, str) or not CWE_PATTERN.match(cwe):
@@ -258,21 +317,41 @@ def _check_defect(
         )
         cwe = None
 
-    trigger = data.get("trigger_case")
-    if trigger not in invalid_ids:
+    mechanism = data.get("mechanism")
+    if mechanism is None and bug_site is not None:
+        # M3 classifies by bug_site; 1b08ae5 classifies by mechanism. A fixture
+        # may state either axis, but not neither.
+        mechanism = None
+    elif not isinstance(mechanism, str) or not mechanism.strip():
         findings.append(
             Finding(
-                "defect_trigger_unknown",
-                "defect.json#trigger_case",
-                f"{trigger!r} is not an invalid case in tests/invalid.json",
+                "defect_mechanism_missing",
+                "defect.json#mechanism",
+                "the repair mechanism is the axis T8.3 differs on; it must be stated",
             )
         )
+        mechanism = None
 
-    # A second class is not distinct just because the CWE label differs: two
-    # CWEs repaired in the same place are one exercise.  The site is
-    # stack/heap/global, and it is compared against the baseline only when the
-    # caller declares one.
-    bug_site = data.get("bug_site")
+    baseline = data.get("baseline_mechanism")
+    if baseline is not None:
+        if not isinstance(baseline, str) or not baseline.strip():
+            findings.append(
+                Finding(
+                    "invalid_shape",
+                    "defect.json#baseline_mechanism",
+                    "expected a non-empty string",
+                )
+            )
+        elif mechanism is not None and baseline == mechanism:
+            findings.append(
+                Finding(
+                    "not_a_distinct_class",
+                    "defect.json#baseline_mechanism",
+                    f"mechanism equals the baseline mechanism {baseline!r}; a second "
+                    "class cannot repair the same way as the first",
+                )
+            )
+
     if bug_site is not None and bug_site not in BUG_SITES:
         findings.append(
             Finding(
@@ -311,11 +390,45 @@ def _check_defect(
                 )
             )
 
-    return cwe
+    trigger = data.get("trigger_case")
+    if input_mode == "none":
+        if trigger is not None:
+            findings.append(
+                Finding(
+                    "no_input_trigger_case_present",
+                    "defect.json#trigger_case",
+                    "input_mode=none has no invalid case; trigger_case must be "
+                    f"absent or null, got {trigger!r}",
+                )
+            )
+    elif trigger not in invalid_ids:
+        findings.append(
+            Finding(
+                "defect_trigger_unknown",
+                "defect.json#trigger_case",
+                f"{trigger!r} is not an invalid case in tests/invalid.json",
+            )
+        )
+    return cwe, mechanism
 
 
-def _check_contract(root: Path, findings: list[Finding]) -> None:
-    data = _load_json(root / "contract.json", findings)
+def _contract_input_mode(data: Any) -> str:
+    """Read the mode without judging it; the schema owner defines the values.
+
+    An absent field means the historical argv contract, so CWE121 keeps its
+    existing shape. Anything other than an explicit ``"none"`` is treated as
+    argv here; ``_check_contract`` reports an unknown value.
+    """
+    if (
+        isinstance(data, dict)
+        and data.get("schema_version") == 3
+        and data.get("input_mode") == "none"
+    ):
+        return "none"
+    return "argv"
+
+
+def _check_contract(data: Any, findings: list[Finding]) -> None:
     if data is None:
         return
     if not isinstance(data, dict):
@@ -327,6 +440,45 @@ def _check_contract(root: Path, findings: list[Finding]) -> None:
         "contract.json",
         findings,
     )
+    schema = data.get("schema_version")
+    mode = data.get("input_mode")
+    if schema == 2:
+        if "input_mode" in data:
+            findings.append(
+                Finding(
+                    "contract_input_mode_not_allowed_v2",
+                    "contract.json#input_mode",
+                    "v2 is the historical argv contract; input_mode starts at v3",
+                )
+            )
+    elif schema == 3:
+        if mode not in CONTRACT_INPUT_MODES:
+            findings.append(
+                Finding(
+                    "contract_input_mode_unknown",
+                    "contract.json#input_mode",
+                    f"expected one of {CONTRACT_INPUT_MODES}, got {mode!r}",
+                )
+            )
+        elif mode == "none":
+            present = [key for key in NO_INPUT_OMIT_FIELDS if key in data]
+            if present:
+                findings.append(
+                    Finding(
+                        "no_input_invalid_fields_present",
+                        "contract.json",
+                        "input_mode=none has no input to reject; these fields must "
+                        f"be absent: {present}",
+                    )
+                )
+    else:
+        findings.append(
+            Finding(
+                "contract_schema_version_unknown",
+                "contract.json#schema_version",
+                f"expected 2 or 3, got {schema!r}",
+            )
+        )
     obligations = data.get("required_obligations")
     if isinstance(obligations, list):
         missing = REQUIRED_OBLIGATIONS - set(obligations)
@@ -351,7 +503,12 @@ def _check_contract(root: Path, findings: list[Finding]) -> None:
 
 
 def _load_cases(
-    root: Path, name: str, expected_kind: str, findings: list[Finding]
+    root: Path,
+    name: str,
+    expected_kind: str,
+    findings: list[Finding],
+    *,
+    allow_empty: bool = False,
 ) -> tuple[list[str], str | None]:
     data = _load_json(root / "tests" / name, findings)
     if data is None:
@@ -362,7 +519,14 @@ def _load_cases(
     _require_keys(data, ("schema_version", "case_id", "original_sha256", "tests"), f"tests/{name}", findings)
 
     tests = data.get("tests")
-    if not isinstance(tests, list) or not tests:
+    if not isinstance(tests, list):
+        findings.append(
+            Finding("invalid_shape", f"tests/{name}#tests", "expected a list")
+        )
+        return [], data.get("original_sha256")
+    if not tests:
+        if allow_empty:
+            return [], data.get("original_sha256")
         findings.append(Finding("empty_cases", f"tests/{name}", "no test cases"))
         return [], data.get("original_sha256")
 
@@ -464,7 +628,17 @@ def check_fixture(
     if not root.is_dir():
         return [Finding("not_a_directory", str(root), "fixture path is not a directory")]
 
-    for relative in REQUIRED_FILES:
+    # The contract is read before the required-file check because input_mode
+    # changes the layout: a no-input fixture has no tests/invalid.json.
+    contract = _load_json(root / "contract.json", findings)
+    input_mode = _contract_input_mode(contract)
+
+    required_files = REQUIRED_FILES
+    if input_mode == "none":
+        required_files = tuple(
+            relative for relative in REQUIRED_FILES if relative != "tests/invalid.json"
+        )
+    for relative in required_files:
         if not (root / relative).is_file():
             findings.append(Finding("missing_file", relative, "required for intake"))
 
@@ -476,27 +650,54 @@ def check_fixture(
     _check_build_script(root, findings)
     artifact_sha256 = _check_elf(root, findings)
     _check_build_json(root, artifact_sha256, findings)
-    _check_contract(root, findings)
+    _check_contract(contract, findings)
 
-    valid_ids, valid_sha = _load_cases(root, "valid.json", "valid", findings)
-    invalid_ids, invalid_sha = _load_cases(root, "invalid.json", "invalid", findings)
+    valid_ids, valid_sha = _load_cases(
+        root, "valid.json", "valid", findings, allow_empty=(input_mode == "none")
+    )
+    if input_mode == "none":
+        invalid_path = root / "tests" / "invalid.json"
+        if invalid_path.is_file():
+            invalid_ids, invalid_sha = _load_cases(
+                root, "invalid.json", "invalid", findings, allow_empty=True
+            )
+        else:
+            invalid_ids, invalid_sha = [], None
+        if invalid_ids:
+            findings.append(
+                Finding(
+                    "no_input_invalid_cases_present",
+                    "tests/invalid.json",
+                    f"{len(invalid_ids)} invalid case(s); input_mode=none requires 0",
+                )
+            )
+        if not valid_ids:
+            findings.append(
+                Finding(
+                    "no_input_valid_case_missing",
+                    "tests/valid.json",
+                    "at least one valid case is required for input_mode=none",
+                )
+            )
+    else:
+        invalid_ids, invalid_sha = _load_cases(root, "invalid.json", "invalid", findings)
 
-    if len(valid_ids) < MIN_VALID_CASES:
-        findings.append(
-            Finding(
-                "too_few_valid",
-                "tests/valid.json",
-                f"{len(valid_ids)} cases, need at least {MIN_VALID_CASES}",
+        if len(valid_ids) < MIN_VALID_CASES:
+            findings.append(
+                Finding(
+                    "too_few_valid",
+                    "tests/valid.json",
+                    f"{len(valid_ids)} cases, need at least {MIN_VALID_CASES}",
+                )
             )
-        )
-    if len(invalid_ids) < MIN_INVALID_CASES:
-        findings.append(
-            Finding(
-                "too_few_invalid",
-                "tests/invalid.json",
-                f"{len(invalid_ids)} cases, need at least {MIN_INVALID_CASES}",
+        if len(invalid_ids) < MIN_INVALID_CASES:
+            findings.append(
+                Finding(
+                    "too_few_invalid",
+                    "tests/invalid.json",
+                    f"{len(invalid_ids)} cases, need at least {MIN_INVALID_CASES}",
+                )
             )
-        )
 
     overlap = set(valid_ids) & set(invalid_ids)
     if overlap:
@@ -504,7 +705,7 @@ def check_fixture(
             Finding("duplicate_case_id", "tests", f"used in both files: {sorted(overlap)}")
         )
 
-    _check_defect(root, set(invalid_ids), findings)
+    _check_defect(root, set(invalid_ids), findings, input_mode)
 
     declared = {value for value in (valid_sha, invalid_sha) if value is not None}
     if len(declared) > 1:
@@ -597,10 +798,15 @@ def main(argv: list[str] | None = None) -> int:
             baseline_cwe=args.baseline_cwe,
         )
         for finding in findings:
-            print(f"{finding.code}\t{finding.path}\t{finding.detail}")
-        if findings:
-            print(f"FAILED ({len(findings)} finding(s))")
+            print(f"{finding.severity}\t{finding.code}\t{finding.path}\t{finding.detail}")
+        errors = [f for f in findings if f.is_error]
+        warnings = [f for f in findings if not f.is_error]
+        if errors:
+            print(f"FAILED ({len(errors)} error(s), {len(warnings)} warning(s))")
             return 1
+        if warnings:
+            print(f"OK ({len(warnings)} warning(s))")
+            return 0
         print("OK")
         return 0
 
@@ -616,11 +822,18 @@ def main(argv: list[str] | None = None) -> int:
             allow_same_cwe=args.allow_same_cwe,
             baseline_cwe=args.baseline_cwe,
         )
-        state = "OK" if not findings else f"FAILED ({len(findings)})"
+        errors = [f for f in findings if f.is_error]
+        warnings = [f for f in findings if not f.is_error]
+        if errors:
+            state = f"FAILED ({len(errors)})"
+        elif warnings:
+            state = f"OK ({len(warnings)} warning(s))"
+        else:
+            state = "OK"
         print(f"{child.name}\t{state}")
         for finding in findings:
-            print(f"  {finding.code}\t{finding.path}\t{finding.detail}")
-        status = status or (1 if findings else 0)
+            print(f"  {finding.severity}\t{finding.code}\t{finding.path}\t{finding.detail}")
+        status = status or (1 if errors else 0)
     return status
 
 
