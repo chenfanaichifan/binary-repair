@@ -55,7 +55,9 @@ def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5) 
                 relative = f"jobs/{job_id}/evidence/{attempt_id}/{index}.bin"
                 target = data_dir / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(f"worker-evidence-{index}".encode())
+                content = ((data_dir / "jobs" / job_id / "original.bin").read_bytes()
+                           if index == 1 else f"worker-evidence-{index}".encode())
+                target.write_bytes(content)
                 digest = __import__("hashlib").sha256(target.read_bytes()).hexdigest()
                 connection.execute(
                     "INSERT INTO artifacts "

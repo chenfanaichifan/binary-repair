@@ -63,3 +63,15 @@ def test_evidence_from_another_attempt_is_rejected(tmp_path: Path) -> None:
             data_dir=data, job_id=job.id, attempt_id=attempt.id,
             results={"V1": "passed"}, evidence={"V1": artifact},
         )
+
+
+def test_candidate_hash_must_match_a_real_artifact(tmp_path: Path) -> None:
+    from app.domain.evidence import EvidenceError, verify_candidate_binding
+    data, job, run, attempt = _setup(tmp_path)
+    relative = f"jobs/{job.id}/evidence/{attempt.id}/candidate.bin"
+    artifact = _artifact(data, job.id, attempt.id, content=b"not the candidate", relative=relative)
+    with pytest.raises(EvidenceError, match="not bound"):
+        verify_candidate_binding(
+            data_dir=data, job_id=job.id, attempt_id=attempt.id,
+            candidate_sha256="a" * 64, evidence={"V0": artifact},
+        )

@@ -83,7 +83,10 @@ def test_ingest_registers_analysis_and_comparison(tmp_path: Path) -> None:
 def test_ingest_rejects_symlink(tmp_path: Path) -> None:
     data, job, run, attempt = _job(tmp_path)
     bundle = _bundle(tmp_path)
-    (bundle / "link.json").symlink_to(bundle / "audit.json")
+    try:
+        (bundle / "link.json").symlink_to(bundle / "audit.json")
+    except OSError:
+        pytest.skip("symlink creation unavailable on this host")
     manifest = json.loads((bundle / "bundle.json").read_text())
     manifest["gates"]["V1"] = {"status": "passed", "artifacts": ["link.json"]}
     (bundle / "bundle.json").write_text(json.dumps(manifest))

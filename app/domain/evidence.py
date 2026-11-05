@@ -112,4 +112,28 @@ def verify_evidence_map(
     return verified
 
 
-__all__ = ["EvidenceError", "verify_artifact", "verify_evidence_map"]
+__all__ = ["EvidenceError", "verify_artifact", "verify_candidate_binding", "verify_evidence_map"]
+
+
+def verify_candidate_binding(
+    *,
+    data_dir: str | Path,
+    job_id: str,
+    attempt_id: str,
+    candidate_sha256: str,
+    evidence: dict[str, str],
+) -> dict[str, Any]:
+    """Require at least one verified artifact to be the declared candidate bytes.
+
+    A string in result JSON is not a binding; the bytes must exist in the job
+    store under this attempt and hash to the declared candidate.
+    """
+    verified = verify_evidence_map(
+        data_dir=data_dir, job_id=job_id, attempt_id=attempt_id, evidence=evidence
+    )
+    for gate, record in verified.items():
+        if record["sha256"] == candidate_sha256:
+            return record
+    raise EvidenceError(
+        f"candidate_sha256 {candidate_sha256} is not bound to any verified evidence artifact"
+    )
