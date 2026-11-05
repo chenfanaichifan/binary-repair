@@ -56,9 +56,9 @@ relocated read.
 Supporting files: `edit-manifest.json` (Route B schema 2, including the edit and
 the runtime manifest), `patch-report.json` (raw patch output), `environment.json`
 (toolchain), `independent-views/` (readelf and objdump dumps of the candidate),
-`run-log.txt` (the whole window, including the failed first attempt — see §6),
-`00-window-host.txt` (hypervisor side), `tools/` (the five scripts that produced
-all of it).
+`run-log.txt` (the whole window), `repeat-runs.txt` (five runs of each binary
+under default ASLR), `00-window-host.txt` (hypervisor side), `tools/` (the five
+scripts that produced all of it).
 
 ## 3. V3, and the control that makes it mean something
 
@@ -86,6 +86,10 @@ Determinism, stated exactly:
   count depends on where the heap landed. With ASLR off that is the frozen
   `05040a` in `defect.json`; the control run had ASLR on and recorded `4ba2020a`.
   Both are residue; neither is the 100-byte string.
+
+`repeat-runs.txt` is five runs of each under default ASLR: five identical output
+hashes for the candidate, five different residues for the original. That is the
+difference between a repair and a coincidence.
 
 `invalid: not_applicable` is not `0/0` and not `0/2`. There is no `invalid.json`
 in the fixture and no invalid row in the manifest; the runner refuses one if it

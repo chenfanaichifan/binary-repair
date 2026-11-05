@@ -1,0 +1,20 @@
+# repeat runs — five each, ASLR at its default (randomize_va_space=2)
+# 2026-11-05T15:23:10Z on Linux 6.8.0-147-generic
+
+$ for i in 1 2 3 4 5; do ./candidate.elf | sha256sum; done
+028411ecdead9452e1e980cb4cb4e416e3bc4a24b62dcdffe87e7790e08bf043  -
+028411ecdead9452e1e980cb4cb4e416e3bc4a24b62dcdffe87e7790e08bf043  -
+028411ecdead9452e1e980cb4cb4e416e3bc4a24b62dcdffe87e7790e08bf043  -
+028411ecdead9452e1e980cb4cb4e416e3bc4a24b62dcdffe87e7790e08bf043  -
+028411ecdead9452e1e980cb4cb4e416e3bc4a24b62dcdffe87e7790e08bf043  -
+
+$ for i in 1 2 3 4 5; do ./original.elf | xxd -p; done
+7caa030a
+57c4020a
+91830a
+5e6d010a
+7116010a
+
+# the candidate prints the same 100 bytes every time because it no longer
+# reads allocator metadata; the original prints a different residue every run,
+# which is why the fixture freezes its observation under setarch -R.
