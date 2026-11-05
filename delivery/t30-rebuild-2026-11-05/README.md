@@ -4,8 +4,9 @@
 - Owner: M1 (host backend)
 - Source: `origin/m3/cwe122-fixture-build` @
   `87f63502d0fc5679f9dd797b7adc20c2069a5d39`
-- Status: **evidence delivered**. T30 build/trigger status is unchanged; M1 does
-  not ask M4 to upgrade record 118.
+- Status: **M4 VERIFIED (rebuild evidence package)** — five gates pass on the
+  delivered evidence, scope-limited; T30 build/trigger status is unchanged and
+  no V0–V5 promotion follows.
 
 ## What is here
 
@@ -67,22 +68,18 @@ on `member-3/t62-host-safe` at commit
 aliases that are not identities (`build/original.elf`, `T30/build/original.elf`,
 `/var/tmp/cwe416/original.elf`).
 
-## Upgrade boundary
+## Verification status
 
-This delivery makes the missing bytes readable. It does **not**:
+M4 has moved record 118 to **VERIFIED (rebuild evidence package)**: the five
+evidence gates pass on the delivered package. The verification is scope-limited
+to the hash-bound evidence; M4 did not re-execute the build or trigger.
 
-- promote T30 `V0`–`V5`;
-- claim M4 verified the rebuild;
-- ask M4 to upgrade record 118;
-- relieve T8.3.
-
-M4 can now re-hash the package and decide whether to verify. If M4 verifies, that
-is M4's record to write. Until then, record 118 stays **reported**, and T30
-build/trigger stays **PASS WITH LIMITATIONS** on the M1 side.
+This delivery does **not** promote T30 `V0`–`V5`, and it does not relieve T8.3.
+T30 build/trigger stays **PASS WITH LIMITATIONS** on the M1 side.
 
 ## Boundaries held
 
 - T8.3 remains blocked.
 - No merge to `main`, no tag, no live-success claim.
 - No fixture byte changed.
-- CWE416 contract remains absent/unloadable; no `invalid_*` invented.
+- CWE416 is a separate record; this 118 delivery makes no CWE416 claim.

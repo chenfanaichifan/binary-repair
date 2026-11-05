@@ -28,7 +28,7 @@ it, but no sentinel `invalid_*` field is written.
 | Intake none | exactly **1 valid + 0 invalid**; `tests/invalid.json` must be absent |
 | V3 none | **1/1**, `invalid: not_applicable` |
 | CWE416 contract | **still absent**; no sentinel fields |
-| 118 evidence | readable; waiting for M4's five-gate verification; no self-upgrade |
+| 118 evidence | **M4 VERIFIED (rebuild evidence package)**; no V0–V5 promotion |
 | T8.3 | **BLOCKED** |
 | main / tag / live success | **no / no / no** |
 
@@ -200,7 +200,9 @@ intake; T8.3 is not relieved by any of this.
 
 The 118 evidence is delivered at
 `delivery/t30-rebuild-2026-11-05/` (record 107): 11 files, top-level zip hash
-`968fb8d9…0fcbd5`, directory 10/10, guest 5/5. It is readable by M4/M5.
+`968fb8d9…0fcbd5`, directory 10/10, guest 5/5. M4 has **VERIFIED (rebuild
+evidence package)** all five gates; that is a scope-limited verification, not a
+V0–V5 promotion.
 
 M1 does **not** upgrade it. T30 remains `PASS WITH LIMITATIONS` on the M1 side
 until M4 completes its five-gate verification and writes its own record. No
@@ -226,12 +228,14 @@ V0–V5 promotion is made here.
 - **Not** a second schema; the M5 implementation is the only one.
 - **Not** a CWE416 contract or candidate; the fixture is still incomplete.
 - **Not** a V3 gate pass on a candidate; only the runner/intake path is ready.
-- **Not** an M4 verification of 118; M4 owns that record.
+- **Not** a V0–V5 promotion. M4 has **VERIFIED (rebuild evidence package)**
+  record 118; that is a scope-limited evidence verification.
 - **Not** a T8.3 credit, merge, tag, or live success.
 
 ## 8. Open items
 
-1. **M4:** complete the five-gate verification of 118 and record the result.
+1. **M4:** 118 is **VERIFIED (rebuild evidence package)**; no further gate
+   promotion is implied.
 2. **M1/fixture owner:** add the v3 no-input contract, one valid case, no
    invalid file, and remove `defect.json#trigger_case` when the CWE416 build
    exists.

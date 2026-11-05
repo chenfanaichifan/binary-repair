@@ -96,6 +96,6 @@ folder are byte-identical to the source branch; they were not edited.
 - The `c274893` git binding is written here, because record 118's `git cat-file`
   command is unusable without the branch that contains the object.
 
-This file does not claim that M4 verified the rebuild. It gives M4/M5 the
-missing bytes and the coordinates; the verification record remains M4's to
-write if it chooses to verify.
+M4 has moved record 118 to **VERIFIED (rebuild evidence package)** on this
+delivered evidence; the verification is scope-limited and does not re-execute
+the rebuild. This file supplies the bytes and coordinates behind that record.

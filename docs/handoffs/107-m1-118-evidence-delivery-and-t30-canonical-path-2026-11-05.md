@@ -23,7 +23,7 @@ and canonical-path follow-up.
 | Directory manifest | **10/10 OK** | `t30-rebuild-2026-11-05/SHA256SUMS` |
 | Guest transport manifest | **5/5 OK** | `06-SHA256SUMS` |
 | 118 conformance | **21 fields: 20 match, 1 differs by design** | `07-rebuild.json`; the difference is `window.is_baseline` |
-| M4 upgrade of 118 | **not requested** | M4 may verify now that the bytes are readable; M1 does not ask |
+| M4 status for 118 | **VERIFIED (rebuild evidence package)** | M4 five-gate verification; scope-limited, no guest re-run |
 | T30 build/trigger | **PASS WITH LIMITATIONS** (unchanged) | record 106; no V0–V5 promotion |
 | T30 canonical path | **fixed** | `docs/handoffs/evidence/T30/build/original.elf` @ `c274893` |
 | `c274893` | **bound** | remote `origin`, branch `member-3/t62-host-safe`, head `472b26e` |
@@ -93,21 +93,20 @@ which came from the older 118 record before M3 expanded the table to 21.
 
 ---
 
-## 2. Upgrade boundary: do not ask M4 to upgrade
+## 2. M4 status: VERIFIED, scope-limited
 
-Record 106 said the missing package was why M4 could not verify the rebuild. The
-package is now readable, so that specific blocker is gone. It does **not**
-follow that M4 must or should upgrade record 118, and M1 does not ask for it.
+M4 moved record 118 to **VERIFIED (rebuild evidence package)**: the five
+evidence gates (dual manifests, build transcript, trigger transcript,
+baseline-clean window, 21-field conformance) all pass on the delivered package.
+M4 did **not** re-execute the build or trigger; the verification is of the
+hash-bound evidence, not a guest rebuild.
 
-- M4 can now re-hash the 11 files and the top-level zip, and decide whether to
-  verify the rebuild. That decision is M4's record to write.
-- M1 does not promote `V1`/`V5`, does not call the rebuild M4-verified, and does
-  not change T30's status. `PASS WITH LIMITATIONS` remains the M1-side status.
-- The remaining limitations from record 106 still stand: M4 has not re-run the
-  build/trigger, the guest was not available to M1, and the acceptance is scoped
-  to gcc 13.3.0 / glibc 2.39 / the `gate4-harness` image.
-- If M4 verifies, the upgrade is M4's; if M4 does not, the evidence is still
-  delivered and the status is still reported. Neither path is a T8.3 credit.
+- M1 does not promote `V1`/`V5`; T30's M1-side status remains
+  `PASS WITH LIMITATIONS`.
+- The remaining limitations from record 106 still stand: no independent guest
+  re-run, and the acceptance is scoped to gcc 13.3.0 / glibc 2.39 / the
+  `gate4-harness` image.
+- This is not a V0–V5 promotion and not a T8.3 credit.
 
 ---
 
@@ -261,7 +260,8 @@ in the package `README.md`.
 
 ## 9. Not claimed
 
-- **Not** an M4 verification of 118; **not** a V0–V5 pass.
+- **Not** a V0–V5 promotion. M4 has **VERIFIED (rebuild evidence package)**
+  record 118; that is a scope-limited evidence verification, not a gate pass.
 - **Not** a T8.3 fixture or T8.3 credit.
 - **Not** a no-input contract approval; the contract remains absent/unloadable.
 - **Not** a substitution of 116's Fix A/B for the contract A/B.

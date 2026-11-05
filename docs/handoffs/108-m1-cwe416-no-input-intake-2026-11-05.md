@@ -212,8 +212,9 @@ output is quoted in §3, not merged into the test suite.
 - **Not** a CWE416 contract, candidate, or V0–V5 result. The fixture is still
   incomplete.
 - **Not** a T8.3 fixture or T8.3 credit.
-- **Not** an M4 verification of 118. The 118 evidence is delivered; M4 may
-  verify on its own record.
+- **Not** a V0–V5 promotion. M4 has since moved 118 to **VERIFIED (rebuild
+  evidence package)**; that is a scope-limited evidence verification. The 118
+  evidence is delivered and M4 has verified it; no further action is implied.
 - **Not** a merge, tag, or live success.
 
 ## 8. Open items

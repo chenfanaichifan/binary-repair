@@ -11,8 +11,10 @@
 - **Update (record 107, 2026-11-05):** the 118 evidence is now delivered at
   `delivery/t30-rebuild-2026-11-05/`; the package tabulates 21 fields (20 match,
   1 differs by design), not the 12/13 in the original text. The T30 status is
-  unchanged, and M4 is **not** asked to upgrade. The canonical artifact path and
-  the `c274893` binding are in record 107 and in the package `PROVENANCE.md`.
+  unchanged. M4 has since moved record 118 to **VERIFIED (rebuild evidence
+  package)**; that is a scope-limited verification of the rebuild evidence, not
+  a V0–V5 promotion. The canonical artifact path and the `c274893` binding are
+  in record 107 and in the package `PROVENANCE.md`.
 - **Update (records 108/109, 2026-11-05):** the Lead selected **option A**.
   M5's v3 schema (`origin/member-5/complete-m5` @ `4c36898`) is now integrated
   by cherry-pick `7c279a1`; M1 adapted the fixture intake and V3 runner in
@@ -27,7 +29,7 @@ live on other lines and are cited here, not merged or renumbered.
 
 | Item | Status | Basis |
 |---|---|---|
-| T30 **build/trigger** | **PASS WITH LIMITATIONS** | Lead ruling, recorded here; record 118 reported; M4 verified source/package identity only |
+| T30 **build/trigger** | **PASS WITH LIMITATIONS** | Lead ruling, recorded here; M4 **VERIFIED (rebuild evidence package)**, scope-limited; no V0–V5 promotion |
 | T30 rebuild, independently re-run | **not done** | no VM access in this session; M4 did not re-run it either |
 | T30 `V0`–`V5` | **not promoted** | no candidate, no loadable contract; package self-reports V1/V5 only |
 | Record 116 | **DIAGNOSTIC / METHOD EVIDENCE** | synthetic source; not a T8.3 fixture |
@@ -91,10 +93,10 @@ M1 re-ran those package checks here; they are recorded in
 
 What remains to lift the other limitations: have M3/VMer re-run the build and
 trigger in a clean window with M4 or another verifier observing. The evidence
-delivery half is done in record 107. M1 does **not** ask M4 to upgrade record
-118; M4 may verify on its own record now that the bytes are readable. Until
-then, the acceptance stands exactly as written: **build/trigger only, with the
-gaps named**.
+delivery half is done in record 107. M4 has now **VERIFIED (rebuild evidence
+package)** record 118: all five evidence gates pass, but M4 did not re-execute
+the build or trigger. The acceptance still stands exactly as written:
+**build/trigger only, with the gaps named**; no V0–V5 promotion.
 
 ### 1.3 Why accept it anyway
 
@@ -489,8 +491,8 @@ The delivery `SHA256SUMS` covers every file in that directory except itself.
 
 ## 9. Not claimed
 
-- **Not** a V0–V5 pass; **not** a verified rebuild; **not** an M4 signature on
-  the rebuild.
+- **Not** a V0–V5 pass. M4 has **VERIFIED (rebuild evidence package)** record
+  118, but that is not a V0–V5 promotion and not a guest re-execution.
 - **Not** a T8.3 fixture or T8.3 credit. Record 116 is not one either.
 - **Not** a claim that the CWE416 contract is valid or that a no-input contract
   has been approved. It is absent by design.
@@ -504,9 +506,8 @@ The delivery `SHA256SUMS` covers every file in that directory except itself.
    the corpus would have been named here.
 2. **Contract owner (M5):** land the v3 schema on the integration line; M1 has
    already adapted the intake/tests in record 108.
-3. **M4:** the 118 evidence is delivered at
-   `delivery/t30-rebuild-2026-11-05/`; M4 may re-hash and verify on its own
-   record. A clean-window re-run remains the remaining verification if M4
-   chooses it. M1 does not ask for an upgrade.
+3. **M4:** record 118 is **VERIFIED (rebuild evidence package)** — five gates
+   passed on the delivered evidence. A clean-window re-run remains a separate
+   action; it is not a V0–V5 promotion.
 4. **M1/M5:** reconcile the two provenance texts when the fork is merged; do
    not take live-bridge's stale mirror text over canonical's verified pin.
