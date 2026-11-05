@@ -49,19 +49,22 @@
   <tr><th>Evidence state</th><td>{{ route.evidence_state or "unknown" }}</td></tr>
 </table>
 <table>
-  <thead><tr><th>ID</th><th>Kind</th><th>Required</th><th>Result</th><th>Scope</th><th>Reason</th></tr></thead>
+  <thead><tr><th>ID</th><th>Kind</th><th>Evidence domain</th><th>Level</th><th>Required</th><th>Result</th><th>Scope</th><th>Reason</th></tr></thead>
   <tbody>
   {% for row in route.obligations %}
+    {% set domain = evidence_domain(row.kind) %}
     <tr>
       <td>{{ row.id or row.kind }}</td>
       <td>{{ row.kind or "" }}</td>
+      <td>{{ domain.label_en }}</td>
+      <td>{{ domain.level }}</td>
       <td>{{ "yes" if row.required else "no" }}</td>
-      <td class="{{ 'notrun' if row.result != 'passed' else '' }}">{{ row.result or "not_run" }}</td>
-      <td>{{ row.scope or "" }}</td>
+      <td class="{{ 'notrun' if row.result != 'passed' else '' }}">{{ row.result or "unknown" }}</td>
+      <td>{{ row.scope or domain.scope_en }}</td>
       <td>{{ row.reason or row.detail or "" }}</td>
     </tr>
   {% else %}
-    <tr><td colspan="6" class="notrun">no obligation rows were returned by the controller{% if route.evidence_state == "not_persisted" %} (evidence: not_persisted); an empty table is not a pass{% endif %}</td></tr>
+    <tr><td colspan="8" class="notrun">no obligation rows were returned by the controller{% if route.evidence_state == "not_persisted" %} (evidence: not_persisted); an empty table is not a pass{% endif %}</td></tr>
   {% endfor %}
   </tbody>
 </table>

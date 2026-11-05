@@ -92,6 +92,8 @@ limitations: 6 条（两条路线各 3 条，含 "empty table is not a pass"）
 | 6 | `ai_usage` 真实结构：现在真实值是字符串 `"unavailable"`，文档曾按对象描述 | M5 + M1 | 报告 AI 用量卡片只能显示原文 |
 | 7 | 失败/取消时 `routes.*.evidence` 是否始终为 `not_persisted`？还是可能有 `persisted` 但全 `not_run`？ | M1 | 决定提示文案分支 |
 | 8 | `execution-bridge-v1.md`（§4a/§4b）仍不存在；`execution` 枚举目前只见 `not_started` / `queued` | Lead + M1 | 无法固定 execution 状态机文案 |
+| 9 | obligations 行增加 `scope` 字段（当前 DB 只有 `id/attempt_id/kind/required/result/evidence_artifact_id/detail`） | M1 | GUI 目前用「证据域」映射兜底，无法显示后端认定的真实范围 |
+| 10 | 把 V3 拆成 `round_trip` 与 `repaired_behaviour` 两个 kind，并各自落盘 | M1 + M5 | 否则「保持原始行为」会被算成「修复通过」（评审第 3 条） |
 
 ---
 

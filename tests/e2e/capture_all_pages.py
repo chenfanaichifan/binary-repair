@@ -100,6 +100,16 @@ def main() -> int:
                 session.navigate(base_url + path)
                 time.sleep(0.4)
 
+            # 00 未认证页面：清掉 cookie 后必须只看到提示页，且不含 token
+            session.send("Network.clearBrowserCookies")
+            session.navigate(base_url + "/jobs/new")
+            time.sleep(0.8)
+            shot("00-auth-required.png")
+
+            # 重新登录，后续页面才可用
+            session.navigate(base_url + "/?token=" + SESSION_TOKEN)
+            time.sleep(0.6)
+
             # 01 起始页
             go("/")
             shot("01-home.png", full=True)
