@@ -1,0 +1,67 @@
+{
+  "total_state": "pass",
+  "reason": "every required case matched the matrix",
+  "missing": [],
+  "cases": [
+    {
+      "id": "pos-gate5-routea-probe",
+      "kind": "positive",
+      "result": "pass",
+      "detail": ""
+    },
+    {
+      "id": "pos-gate5-routeb-probe",
+      "kind": "positive",
+      "result": "pass",
+      "detail": ""
+    },
+    {
+      "id": "pos-routea-exec",
+      "kind": "positive",
+      "result": "pass",
+      "detail": ""
+    },
+    {
+      "id": "neg-non-root",
+      "kind": "negative",
+      "result": "pass",
+      "detail": ""
+    },
+    {
+      "id": "neg-wrong-argc",
+      "kind": "negative",
+      "result": "pass",
+      "detail": ""
+    },
+    {
+      "id": "neg-path-traversal-job-id",
+      "kind": "negative",
+      "result": "pass",
+      "detail": ""
+    },
+    {
+      "id": "neg-unknown-job",
+      "kind": "negative",
+      "result": "pass",
+      "detail": ""
+    },
+    {
+      "id": "neg-candidate-hash-mismatch",
+      "kind": "negative",
+      "result": "pass",
+      "detail": ""
+    },
+    {
+      "id": "neg-unknown-mode",
+      "kind": "negative",
+      "result": "pass",
+      "detail": ""
+    },
+    {
+      "id": "neg-relative-path",
+      "kind": "negative",
+      "result": "pass",
+      "detail": ""
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "window": {
+    "snapshot_uid": 11,
+    "snapshot_name": "gate4-harness",
+    "started_at": "2026-11-05T10:10:00Z",
+    "finished_at": "2026-11-05T10:10:00Z",
+    "executor_sha256": "293df727636e800d1735443e9ca82cf62add85ccd52d6c93c482b29dd6c128bc",
+    "original_jobwrap_sha256": "b232d60b20b13dc696402112dd1d970c35b41a3ee720af32cfb2df396c621fa8",
+    "available_modes": [
+      "probe",
+      "routea",
+      "gate5"
+    ],
+    "kernel": "6.8.0-147-generic",
+    "python": "3.12.3"
+  },
+  "cases": [
+    {
+      "id": "pos-gate5-routea-probe",
+      "argv": [
+        "/var/tmp/conformance/jobwrap-gate5",
+        "probe",
+        "m4-gate5",
+        "--",
+        "/srv/gate5-build",
+        "/var/tmp/conformance/work"
+      ],
+      "rc": 0,
+      "stderr": "",
+      "stdout": "CHECK PASS R1-candidate-identity c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82\nCHECK PASS R1-original-identity aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393\nCHECK PASS R6-isolation-uid uid=1003\nCHECK PASS R6-isolation-caps CapEff=0000000000000000\nCHECK PASS R6-isolation-nnp NoNewPrivs=1\nCHECK PASS R2-runtime-mapping 0x401000           0x402000     0x1000     0x1000  r-xp   /var/tmp/conformance/work/candidate.elf\nCHECK PASS R4-site marker SITE in gdb output\nCHECK PASS R4-cave marker CAVE in gdb output\nCHECK PASS R4-after marker AFTER in gdb output\nCHECK PASS R4-ret marker RET in gdb output\nCHECK PASS R3-memory-equals-file file=1926ce1f526820ef0376c212a76f9e7b4ee96ea8ba797b135669498e58ea6b1d memory=1926ce1f526820ef0376c212a76f9e7b4ee96ea8ba797b135669498e58ea6b1d bytes=1815/1815\nCHECK PASS R5-case-valid-empty rc=0 expected=0\nCHECK PASS R5-case-valid-smallest rc=0 expected=0\nCHECK PASS R5-case-valid-typical rc=0 expected=0\nCHECK PASS R5-case-valid-maximum rc=0 expected=0\nCHECK PASS R5-case-invalid-first rc=1 expected=1\nCHECK PASS R5-case-invalid-longer rc=1 expected=1\nCHECK PASS R5-six-cases 6/6\nCHECK PASS R7-candidate-stable c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82\nCHECK PASS R8-evidence-manifest rows=35 sha256sums_sha256=762d4533481896e9858a1cfdb7b96521be619ced074ab0e4ddfbbc4d0269bc01\nSUMMARY pass=19 fail=0 not_verified=0\nWORKDIR=/var/tmp/conformance/work\n",
+      "attestation": {
+        "uid": 1003,
+        "gid": 1003,
+        "cap_eff": "0",
+        "no_new_privs": 1,
+        "netns": "net:[4026532221]",
+        "default_route": "",
+        "rlimit_cpu": 300
+      }
+    },
+    {
+      "id": "pos-gate5-routeb-probe",
+      "argv": [
+        "/var/tmp/conformance/jobwrap-gate5",
+        "probe",
+        "m4-gate5b",
+        "--",
+        "/srv/gate5-build",
+        "/var/tmp/conformance/work"
+      ],
+      "rc": 0,
+      "stderr": "",
+      "stdout": "CHECK PASS R1-candidate-identity 208574ab5b7753fab6f28860830069770622fb7b1fcb8d181fa50453f8656717\nCHECK PASS R1-original-identity aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393\nCHECK PASS R6-isolation-uid uid=1003\nCHECK PASS R6-isolation-caps CapEff=0000000000000000\nCHECK PASS R6-isolation-nnp NoNewPrivs=1\nCHECK PASS R2-runtime-mapping 0x401000           0x402000     0x1000     0x1000  r-xp   /var/tmp/conformance/work/candidate.elf\nCHECK PASS R4-entry-redirect entry 0x4012b0 jmp -> 0x4018ec (inside tail)\nCHECK PASS R3-memory-equals-file file=e16ba161b15c4f1a509d76c8f973e5e4200c60f14738694731f172127db325f3 memory=e16ba161b15c4f1a509d76c8f973e5e4200c60f14738694731f172127db325f3 bytes=1815/1815\nCHECK PASS R5-case-valid-empty rc=0 expected=0\nCHECK PASS R5-case-valid-smallest rc=0 expected=0\nCHECK PASS R5-case-valid-typical rc=0 expected=0\nCHECK PASS R5-case-valid-maximum rc=0 expected=0\nCHECK PASS R5-case-invalid-first rc=1 expected=1\nCHECK PASS R5-case-invalid-longer rc=1 expected=1\nCHECK PASS R5-six-cases 6/6\nCHECK PASS R7-candidate-stable 208574ab5b7753fab6f28860830069770622fb7b1fcb8d181fa50453f8656717\nCHECK PASS R8-evidence-manifest rows=35 sha256sums_sha256=12e235d1e1dbf340e0830a6dd3f320624a77c56fd95594205f452797a21943ab\nSUMMARY pass=16 fail=0 not_verified=0\nWORKDIR=/var/tmp/conformance/work\n",
+      "attestation": {
+        "uid": 1003,
+        "gid": 1003,
+        "cap_eff": "0",
+        "no_new_privs": 1,
+        "netns": "net:[4026532279]",
+        "default_route": "",
+        "rlimit_cpu": 300
+      }
+    },
+    {
+      "id": "pos-routea-exec",
+      "argv": [
+        "/var/tmp/conformance/jobwrap-gate5",
+        "routea",
+        "demo"
+      ],
+      "rc": 0,
+      "stderr": "",
+      "stdout": "{\n  \"candidate_sha256\": \"c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82\",\n  \"status\": \"route_a-run/status.json\",\n  \"valid_sha256\": \"17b2ee399db5ef43ba14978c497d71dc45d28aaa685ff90a60baaabc6f221e76\",\n  \"invalid_sha256\": \"d493f370a37b25f910eb72cb6f9202856e46be0e42e76922db38a30769f8190d\"\n}\n",
+      "attestation": {
+        "uid": 1003,
+        "gid": 1003,
+        "cap_eff": "0",
+        "no_new_privs": 1,
+        "netns": "net:[4026532221]",
+        "default_route": "",
+        "rlimit_cpu": 300
+      }
+    },
+    {
+      "id": "neg-non-root",
+      "argv": [
+        "/var/tmp/conformance/jobwrap-gate5",
+        "routea",
+        "demo"
+      ],
+      "rc": 1,
+      "stderr": "jobwrap-gate5: must run as root (euid=1000); jobwrap-gate5 refuses non-root\n",
+      "stdout": "",
+      "attestation": null
+    },
+    {
+      "id": "neg-wrong-argc",
+      "argv": [
+        "/var/tmp/conformance/jobwrap-gate5",
+        "probe",
+        "m4-gate5"
+      ],
+      "rc": 2,
+      "stderr": "usage: jobwrap-gate5 probe (m4-gate5|m4-gate5b) -- <repo-root> <work-dir>\n       jobwrap-gate5 routea <job-id>\n",
+      "stdout": "",
+      "attestation": null
+    },
+    {
+      "id": "neg-path-traversal-job-id",
+      "argv": [
+        "/var/tmp/conformance/jobwrap-gate5",
+        "routea",
+        "../etc"
+      ],
+      "rc": 2,
+      "stderr": "jobwrap-gate5: bad job id ../etc (want [A-Za-z0-9._-]{1,64})\n",
+      "stdout": "",
+      "attestation": null
+    },
+    {
+      "id": "neg-unknown-job",
+      "argv": [
+        "/var/tmp/conformance/jobwrap-gate5",
+        "routea",
+        "missing"
+      ],
+      "rc": 3,
+      "stderr": "jobwrap-gate5: unknown job: missing\n",
+      "stdout": "",
+      "attestation": null
+    },
+    {
+      "id": "neg-candidate-hash-mismatch",
+      "argv": [
+        "/var/tmp/conformance/jobwrap-gate5",
+        "routea",
+        "demo-badhash"
+      ],
+      "rc": 4,
+      "stderr": "jobwrap-gate5: candidate hash mismatch: got c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82, expected 0000000000000000000000000000000000000000000000000000000000000000\n",
+      "stdout": "",
+      "attestation": null
+    },
+    {
+      "id": "neg-unknown-mode",
+      "argv": [
+        "/var/tmp/conformance/jobwrap-gate5",
+        "probe",
+        "not-a-mode",
+        "--",
+        "/repo",
+        "/work"
+      ],
+      "rc": 2,
+      "stderr": "usage: jobwrap-gate5 probe (m4-gate5|m4-gate5b) -- <repo-root> <work-dir>\n       jobwrap-gate5 routea <job-id>\n",
+      "stdout": "",
+      "attestation": null
+    },
+    {
+      "id": "neg-relative-path",
+      "argv": [
+        "/var/tmp/conformance/jobwrap-gate5",
+        "probe",
+        "m4-gate5",
+        "--",
+        "repo",
+        "work"
+      ],
+      "rc": 1,
+      "stderr": "jobwrap-gate5: repo-root and work-dir must be absolute paths\n",
+      "stdout": "",
+      "attestation": null
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+# T15 conformance window — environment (measured 2026-11-05)
+
+Every value below was read from the running system at capture time, not copied
+from a document or a chat summary.
+
+## Host side
+
+```
+VM          D:\VMs\binrepair-u2404-x64-01\BinRepair-Lab.vmx
+hypervisor  VMware Workstation (vmware.exe at D:\VMware)
+snapshot.current = "11"   (gate4-harness)
+network     VMnet8 NAT = 192.168.30.1/24, guest 192.168.30.128
+access      ssh lab@192.168.30.128 with D:\VMs\binrepair-u2404-x64-01\keys\id_ed25519
+note        guest sudo is requiretty, so root commands need `ssh -tt`
+```
+
+## Guest side
+
+```
+uname        Linux binrepair-vm 6.8.0-147-generic #147-Ubuntu SMP PREEMPT_DYNAMIC ... x86_64
+os           Ubuntu 24.04.5 LTS
+gcc          gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+python3      Python 3.12.3
+gdb          GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1
+```
+
+## Binaries (hashes from bytes)
+
+```
+b232d60b20b13dc696402112dd1d970c35b41a3ee720af32cfb2df396c621fa8  /usr/local/sbin/jobwrap          # UNCHANGED (Gate 4)
+0066973d5304e06024b56fbc1e9d969d5007eac290314935129517f931209eee  /usr/local/sbin/jobwrap-gate5     # UNCHANGED (Gate 5)
+293df727636e800d1735443e9ca82cf62add85ccd52d6c93c482b29dd6c128bc  /var/tmp/conformance/jobwrap-gate5  # this run (built in guest)
+```
+
+The conformance executor was built under `/var/tmp/conformance/` **on purpose**,
+so neither the Gate 4 binary nor the Gate 5 successor was replaced or re-signed.
+
+## Config
+
+```
+-rw------- root:root /usr/local/etc/binrepair/routea.conf
+4204258ed9f1c2d6e150b7a49fea7a57d19f5a6e066ebc79b273347dbe46cc42
+demo          | /var/lib/binrepair/jobs/demo | /opt/binrepair/workers/route_a/worker.py | /var/lib/binrepair/jobs/demo | /opt/angr-venv/bin/python | c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82
+demo-badhash  | /var/lib/binrepair/jobs/demo | /opt/binrepair/workers/route_a/worker.py | /var/lib/binrepair/jobs/demo | /opt/angr-venv/bin/python | 0000000000000000000000000000000000000000000000000000000000000000
+```
+
+`demo-badhash` is a deliberate negative: a valid job whose configured hash does
+not match the candidate on disk, used to exercise exit code 4.
+
+## Job inputs
+
+```
+aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393  original.elf
+c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82  route_a/candidate.elf   (documented Route A candidate)
+17b2ee399db5ef43ba14978c497d71dc45d28aaa685ff90a60baaabc6f221e76  tests/valid.json
+d493f370a37b25f910eb72cb6f9202856e46be0e42e76922db38a30769f8190d  tests/invalid.json
+```
+
+`original.elf`'s hash equals `tests/valid.json`'s `original_sha256`, so the
+worker's own consistency check can pass.
+
+## Worker and probes
+
+```
+5e14234aae0d630eaf03217f75fd85d93ad8e3476bf2b9836d809aea9260c5c5  /opt/binrepair/workers/route_a/worker.py   (stdlib-only build)
+f39a0302dd1aa42635da80fa4e9160d37a221f5ac383270add3eaedcffd146cb  /srv/gate5-build/scripts/m4_gate5_probe.py
+05d9a2cd417880c9be51e1a4cd4608158d94b50da233b223c2f4a589850edb82  /srv/gate5-build/scripts/m4_gate5b_probe.py
+```
+
+Both probe hashes equal the compile-time pins in `jobwrap_gate5.c`, so the
+positive probe cases exercise the real fail-closed check rather than a stub.
+
+## Build command (guest only)
+
+```
+gcc -O2 -Wall -Wextra -Werror -static -o /var/tmp/conformance/jobwrap-gate5 \
+    /var/tmp/conformance/jobwrap_gate5.c
+```
+
+Exit code 0 with no warnings.

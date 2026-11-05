@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "binary_sha256": "decdcdb821bfe4c41a070b0a23a2f6497f46a92f439cb02a1e4139a82cde954b",
+  "binary_size": 26792,
+  "binary_basename": "original",
+  "tests_dir": "/var/lib/binrepair/jobs/demo/tests",
+  "kernel": "6.8.0-147-generic",
+  "python": "3.12.3",
+  "cases": [
+    {
+      "case_id": "valid-empty",
+      "kind": "valid",
+      "argv": [
+        "./original",
+        ""
+      ],
+      "return_code": 0,
+      "signal": null,
+      "stdout_hex": "0a",
+      "stderr_hex": "",
+      "stdout_len": 1,
+      "stderr_len": 0,
+      "output_files": {}
+    },
+    {
+      "case_id": "valid-smallest",
+      "kind": "valid",
+      "argv": [
+        "./original",
+        "A"
+      ],
+      "return_code": 0,
+      "signal": null,
+      "stdout_hex": "410a",
+      "stderr_hex": "",
+      "stdout_len": 2,
+      "stderr_len": 0,
+      "output_files": {}
+    },
+    {
+      "case_id": "valid-typical",
+      "kind": "valid",
+      "argv": [
+        "./original",
+        "AAAAAAAAAA"
+      ],
+      "return_code": 0,
+      "signal": null,
+      "stdout_hex": "414141414141414141410a",
+      "stderr_hex": "",
+      "stdout_len": 11,
+      "stderr_len": 0,
+      "output_files": {}
+    },
+    {
+      "case_id": "valid-maximum",
+      "kind": "valid",
+      "argv": [
+        "./original",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "return_code": 0,
+      "signal": null,
+      "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+      "stderr_hex": "",
+      "stdout_len": 50,
+      "stderr_len": 0,
+      "output_files": {}
+    },
+    {
+      "case_id": "invalid-first",
+      "kind": "invalid",
+      "argv": [
+        "./original",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "return_code": 0,
+      "signal": null,
+      "stdout_hex": "41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+      "stderr_hex": "",
+      "stdout_len": 51,
+      "stderr_len": 0,
+      "output_files": {}
+    },
+    {
+      "case_id": "invalid-longer",
+      "kind": "invalid",
+      "argv": [
+        "./original",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "return_code": 139,
+      "signal": "SIG11",
+      "stdout_hex": "",
+      "stderr_hex": "",
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "output_files": {}
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "gate": "V3",
+  "fixture": "CWE121_src_char_declare_cpy_51b",
+  "manifests": [
+    "tests/valid.json",
+    "tests/invalid.json"
+  ],
+  "measured": "2026-11-05 in the disposable Ubuntu guest (snapshot 11 / gate4-harness)",
+  "original": {
+    "binary_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+    "binary_size": 26792,
+    "v3_result": "failed",
+    "passed": 4,
+    "failed": 2,
+    "not_run": 0,
+    "obligation": {
+      "kind": "behaviour",
+      "required": true,
+      "result": "failed",
+      "detail": "4 passed, 2 failed, 0 not run"
+    },
+    "cases": [
+      {
+        "case_id": "valid-empty",
+        "kind": "valid",
+        "result": "passed",
+        "mismatches": []
+      },
+      {
+        "case_id": "valid-smallest",
+        "kind": "valid",
+        "result": "passed",
+        "mismatches": []
+      },
+      {
+        "case_id": "valid-typical",
+        "kind": "valid",
+        "result": "passed",
+        "mismatches": []
+      },
+      {
+        "case_id": "valid-maximum",
+        "kind": "valid",
+        "result": "passed",
+        "mismatches": []
+      },
+      {
+        "case_id": "invalid-first",
+        "kind": "invalid",
+        "result": "failed",
+        "mismatches": [
+          "return_code: expected 1, actual 0",
+          "stdout: expected b'', actual b'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\n' (length differs: expected 0, actual 51)",
+          "stderr: expected b'ERROR: input exceeds destination capacity\\n', actual b'' (length differs: expected 42, actual 0)"
+        ]
+      },
+      {
+        "case_id": "invalid-longer",
+        "kind": "invalid",
+        "result": "failed",
+        "mismatches": [
+          "return_code: expected 1, actual 139",
+          "stderr: expected b'ERROR: input exceeds destination capacity\\n', actual b'' (length differs: expected 42, actual 0)"
+        ]
+      }
+    ]
+  },
+  "candidate": {
+    "binary_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+    "binary_size": 26792,
+    "v3_result": "passed",
+    "passed": 6,
+    "failed": 0,
+    "not_run": 0,
+    "obligation": {
+      "kind": "behaviour",
+      "required": true,
+      "result": "passed",
+      "detail": "6 passed, 0 failed, 0 not run"
+    },
+    "cases": [
+      {
+        "case_id": "valid-empty",
+        "kind": "valid",
+        "result": "passed",
+        "mismatches": []
+      },
+      {
+        "case_id": "valid-smallest",
+        "kind": "valid",
+        "result": "passed",
+        "mismatches": []
+      },
+      {
+        "case_id": "valid-typical",
+        "kind": "valid",
+        "result": "passed",
+        "mismatches": []
+      },
+      {
+        "case_id": "valid-maximum",
+        "kind": "valid",
+        "result": "passed",
+        "mismatches": []
+      },
+      {
+        "case_id": "invalid-first",
+        "kind": "invalid",
+        "result": "passed",
+        "mismatches": []
+      },
+      {
+        "case_id": "invalid-longer",
+        "kind": "invalid",
+        "result": "passed",
+        "mismatches": []
+      }
+    ]
+  },
+  "conclusion": "The vulnerability is real on the original (50-byte input silently overflows and exits 0; 100-byte input dies with SIGSEGV) and the Route A candidate repairs it (both invalid cases return exit 1 with the exact contracted stderr), byte-exact against the frozen manifest."
+}

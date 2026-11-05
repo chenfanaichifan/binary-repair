@@ -1,0 +1,33 @@
+# routea.conf — sample for /usr/local/etc/binrepair/routea.conf
+#
+# Install as root, mode 0600, owner root:root. The wrapper refuses to read a
+# config that is group- or other-writable, or not root-owned.
+#
+#   install -o root -g root -m 0600 routea.conf.sample \
+#           /usr/local/etc/binrepair/routea.conf
+#
+# Format: exactly 6 TAB-separated fields per line. Comments (#) and blank
+# lines are ignored. An empty field or a wrong field count is a hard error,
+# never a silently skipped line.
+#
+#   <job-id> TAB <job-dir> TAB <worker.py> TAB <work-dir> TAB <python> TAB <candidate-sha256>
+#
+# NOTE: work-dir is the parent of `route_a/`, because the wrapper looks for the
+# candidate at `<work-dir>/route_a/candidate.elf` (JOBWRAP_ROUTEA.md). Do not
+# append `/route_a` here or the path doubles.
+#
+# Validation the wrapper performs before it will exec (JOBWRAP_ROUTEA.md):
+#   job-id        matches [A-Za-z0-9._-]{1,64}
+#   job-dir       starts with /var/lib/binrepair/jobs/
+#   worker.py     is exactly /opt/binrepair/workers/route_a/worker.py
+#   work-dir      is inside <job-dir>
+#   python        is exactly /opt/angr-venv/bin/python
+#   sha256        64 lowercase hex; must equal sha256(<work-dir>/route_a/candidate.elf)
+#
+# Exit codes: 2 bad argument, 3 unknown job, 4 candidate hash mismatch.
+# The worker's own exit code is propagated verbatim; a worker failure is never
+# recorded as a pass.
+#
+# NOTE: the TABs below are real tab characters. Do not convert them to spaces.
+
+demo	/var/lib/binrepair/jobs/demo	/opt/binrepair/workers/route_a/worker.py	/var/lib/binrepair/jobs/demo	/opt/angr-venv/bin/python	0000000000000000000000000000000000000000000000000000000000000000

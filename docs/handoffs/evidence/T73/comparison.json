@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "gate": "V3",
+  "fixture": "CWE121_src_char_declare_cpy_51b",
+  "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "cases": [
+    {
+      "case_id": "valid-empty",
+      "kind": "valid",
+      "expected_return_code": 0,
+      "original": {
+        "return_code": 0,
+        "result": "passed",
+        "mismatches": []
+      },
+      "routes": {
+        "A": {
+          "return_code": 0,
+          "result": "passed",
+          "mismatches": []
+        },
+        "B_roundtrip": {
+          "return_code": 0,
+          "result": "passed",
+          "mismatches": []
+        }
+      },
+      "changed_by": []
+    },
+    {
+      "case_id": "valid-smallest",
+      "kind": "valid",
+      "expected_return_code": 0,
+      "original": {
+        "return_code": 0,
+        "result": "passed",
+        "mismatches": []
+      },
+      "routes": {
+        "A": {
+          "return_code": 0,
+          "result": "passed",
+          "mismatches": []
+        },
+        "B_roundtrip": {
+          "return_code": 0,
+          "result": "passed",
+          "mismatches": []
+        }
+      },
+      "changed_by": []
+    },
+    {
+      "case_id": "valid-typical",
+      "kind": "valid",
+      "expected_return_code": 0,
+      "original": {
+        "return_code": 0,
+        "result": "passed",
+        "mismatches": []
+      },
+      "routes": {
+        "A": {
+          "return_code": 0,
+          "result": "passed",
+          "mismatches": []
+        },
+        "B_roundtrip": {
+          "return_code": 0,
+          "result": "passed",
+          "mismatches": []
+        }
+      },
+      "changed_by": []
+    },
+    {
+      "case_id": "valid-maximum",
+      "kind": "valid",
+      "expected_return_code": 0,
+      "original": {
+        "return_code": 0,
+        "result": "passed",
+        "mismatches": []
+      },
+      "routes": {
+        "A": {
+          "return_code": 0,
+          "result": "passed",
+          "mismatches": []
+        },
+        "B_roundtrip": {
+          "return_code": 0,
+          "result": "passed",
+          "mismatches": []
+        }
+      },
+      "changed_by": []
+    },
+    {
+      "case_id": "invalid-first",
+      "kind": "invalid",
+      "expected_return_code": 1,
+      "original": {
+        "return_code": 0,
+        "result": "failed",
+        "mismatches": [
+          "return_code: expected 1, actual 0",
+          "stdout: expected b'', actual b'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\n' (length differs: expected 0, actual 51)",
+          "stderr: expected b'ERROR: input exceeds destination capacity\\n', actual b'' (length differs: expected 42, actual 0)"
+        ]
+      },
+      "routes": {
+        "A": {
+          "return_code": 1,
+          "result": "passed",
+          "mismatches": []
+        },
+        "B_roundtrip": {
+          "return_code": 0,
+          "result": "failed",
+          "mismatches": [
+            "return_code: expected 1, actual 0",
+            "stdout: expected b'', actual b'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\n' (length differs: expected 0, actual 51)",
+            "stderr: expected b'ERROR: input exceeds destination capacity\\n', actual b'' (length differs: expected 42, actual 0)"
+          ]
+        }
+      },
+      "changed_by": [
+        "A"
+      ]
+    },
+    {
+      "case_id": "invalid-longer",
+      "kind": "invalid",
+      "expected_return_code": 1,
+      "original": {
+        "return_code": 139,
+        "result": "failed",
+        "mismatches": [
+          "return_code: expected 1, actual 139",
+          "stderr: expected b'ERROR: input exceeds destination capacity\\n', actual b'' (length differs: expected 42, actual 0)"
+        ]
+      },
+      "routes": {
+        "A": {
+          "return_code": 1,
+          "result": "passed",
+          "mismatches": []
+        },
+        "B_roundtrip": {
+          "return_code": 139,
+          "result": "failed",
+          "mismatches": [
+            "return_code: expected 1, actual 139",
+            "stderr: expected b'ERROR: input exceeds destination capacity\\n', actual b'' (length differs: expected 42, actual 0)"
+          ]
+        }
+      },
+      "changed_by": [
+        "A"
+      ]
+    }
+  ],
+  "routes": {
+    "A": {
+      "route": "A",
+      "candidate_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+      "v3_result": "passed",
+      "passed": 6,
+      "failed": 0,
+      "not_run": 0,
+      "valid_behaviour_preserved": true,
+      "repaired_invalid_cases": [
+        "invalid-first",
+        "invalid-longer"
+      ],
+      "still_failing_invalid_cases": []
+    },
+    "B_roundtrip": {
+      "route": "B_roundtrip",
+      "candidate_sha256": "decdcdb821bfe4c41a070b0a23a2f6497f46a92f439cb02a1e4139a82cde954b",
+      "v3_result": "failed",
+      "passed": 4,
+      "failed": 2,
+      "not_run": 0,
+      "valid_behaviour_preserved": true,
+      "repaired_invalid_cases": [],
+      "still_failing_invalid_cases": [
+        "invalid-first",
+        "invalid-longer"
+      ]
+    }
+  },
+  "ranking": null,
+  "note": "No ranking is produced. A smaller diff or a higher pass count does not imply a safer repair; read the per-case rows and the route summaries.",
+  "limitations": [
+    "Route B_roundtrip: invalid cases still failing (invalid-first, invalid-longer) — the defect is not repaired for those inputs."
+  ]
+}

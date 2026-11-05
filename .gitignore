@@ -27,6 +27,15 @@ pip_cache/
 pytest_deps/
 .write-probe.tmp
 
+# Local-only records and runtime artifacts. Never committed.
+# Aligned with member-3-route-a on 2026-11-05: this branch was missing these, so
+# a `git add -A` here would have swept in a 22 MB git bundle under .tmp/ and the
+# dozens of zips under dist/. See record 98 Q5.
+.tmp/
+worklogs/
+dist/
+.dsh-acl-recovery/
+
 # Local delivery artifacts (git bundles/archives for teammates)
 /delivery/
 

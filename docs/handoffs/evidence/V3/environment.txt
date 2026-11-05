@@ -1,0 +1,52 @@
+# V3 behaviour verification — environment (measured 2026-11-05)
+
+Values read from the running systems at capture time.
+
+## Session
+
+```
+host        Windows, VMware Workstation (vmware.exe at D:\VMware)
+VM          D:\VMs\binrepair-u2404-x64-01\BinRepair-Lab.vmx
+snapshot    11 = gate4-harness (.vmsd snapshot.current)
+access      ssh lab@192.168.30.128 with D:\VMs\binrepair-u2404-x64-01\keys\id_ed25519
+note        guest sudo is requiretty -> root commands need `ssh -tt`
+```
+
+## Guest
+
+```
+uname     Linux binrepair-vm 6.8.0-147-generic #147-Ubuntu SMP PREEMPT_DYNAMIC ... x86_64
+os        Ubuntu 24.04.5 LTS
+gcc       gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+python3   Python 3.12.3
+```
+
+## Inputs
+
+```
+aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393  original.elf           (pre-repair control)
+c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82  route_a/candidate.elf  (Route A candidate)
+17b2ee399db5ef43ba14978c497d71dc45d28aaa685ff90a60baaabc6f221e76  tests/valid.json
+d493f370a37b25f910eb72cb6f9202856e46be0e42e76922db38a30769f8190d  tests/invalid.json
+```
+
+The fixture manifests hash to the frozen `SHA256SUMS` values, and
+`original.elf`'s hash equals `valid.json`'s `original_sha256`.
+
+## Observer
+
+```
+547eb4c2588f820f79ffc6c16c636800956c65dbfd0825246dfa616a82c5ef7f  /var/tmp/conformance/guest_behaviour.py
+```
+
+Stdlib-only, refuses non-Linux / non-root / missing `--guest-ack`. It records
+`(return_code, stdout_hex, stderr_hex)` per case and judges nothing; a signal
+death is normalised to `128+N` so the SIGSEGV case reads as 139, matching the
+fixture provenance.
+
+## Execution
+
+Each case ran as `./original <input>` with the binary copied into a fresh
+scratch dir under that exact basename (`/var/tmp/behaviour/{original,candidate}`),
+which is the form the manifests declare. The scratch dir is deleted and rebuilt
+per run so a stale artefact cannot be mistaken for this run's output.
