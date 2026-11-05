@@ -11,9 +11,11 @@ so; this is the baseline run that record left open.
 ## Result in one line
 
 The rebuild reproduces `c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9`,
-25,344 bytes, byte-identical to `T30/build/original.elf`. Twelve of thirteen
-`build.json` fields match exactly; the thirteenth (`window.is_baseline`) differs
-because this run is the baseline one.
+25,344 bytes, byte-identical to `T30/build/original.elf`. Twenty of the
+twenty-one compared `build.json` fields match exactly; the twenty-first
+(`window.is_baseline`) differs because this run is the baseline one. What counts
+as a compared field, and why the prose fields are excluded, is stated in
+`07-rebuild.json#conformance_scope`.
 
 ## Files
 
@@ -25,7 +27,7 @@ because this run is the baseline one.
 | `04-trigger.txt` | guest | Trigger observation, 251 deterministic runs, ASLR-on contrast |
 | `05-asan.txt` | guest | AddressSanitizer confirmation — a diagnostic, not the artefact |
 | `06-SHA256SUMS` | guest | Digests of `01`–`05`, computed inside the guest |
-| `07-rebuild.json` | host | Structured conformance record, field by field against `T30/build.json` |
+| `07-rebuild.json` | host | Structured conformance record: 21 tabulated fields against `T30/build.json` |
 | `collect.sh` | host | The script the guest ran to produce `01`–`06` |
 | `SHA256SUMS` | host | Digest of every file here except itself |
 
@@ -37,6 +39,25 @@ Two manifests on purpose, and they cover different sets:
   host after export (`07-rebuild.json`, `collect.sh`, `README.md`).
 
 Neither is a result-bundle manifest. Nothing here is a bundle input.
+
+## Where `T30/` actually lives
+
+`docs/handoffs/evidence/T30` is **not** in this branch's tree. This branch was cut
+from `origin/integration/live-bridge-2026-11-03` at `bcb7a30`; the T30 evidence
+landed afterwards on `member-3/t62-host-safe` at `c274893`, which is not an
+ancestor here. Every `T30/...` path in this directory therefore points at that
+commit, not at a sibling folder — a reviewer holding only this branch can still
+check the central claim:
+
+```sh
+git cat-file -p c274893:docs/handoffs/evidence/T30/build/original.elf | sha256sum
+# c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+git cat-file -s c274893:docs/handoffs/evidence/T30/build/original.elf
+# 25344
+```
+
+Both were run on the host on 2026-11-05. Carrying T30 onto this line is a
+delivery decision, not an evidence one; this directory does not make it.
 
 ## What is deliberately not here
 

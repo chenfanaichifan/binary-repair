@@ -6,11 +6,22 @@
 **Status:** the upstream CWE-416 case was rebuilt in a **baseline-clean window**
 (snapshot uid 11, `gate4-harness`) and reproduces
 `c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9` — byte-identical
-to the artefact T30 already carries. Twelve of thirteen `build.json` fields match
-exactly; the thirteenth is the window, which is the point of this run.
+to the artefact T30 already carries. Twenty of the twenty-one compared
+`build.json` fields match exactly; the twenty-first is the window, which is the
+point of this run. (§6 tabulates the twenty-one and says why the prose fields are
+read rather than tabulated.)
 
 Record 116 stays as a build/trigger diagnostic for the synthetic fixture and is
 **not** a T8.3 fixture. §7 restates that and closes it.
+
+**One caveat about paths.** `docs/handoffs/evidence/T30/` is not in this branch's
+tree. This branch was cut from `origin/integration/live-bridge-2026-11-03` at
+`bcb7a30`; T30 landed afterwards on `member-3/t62-host-safe` at `c274893`, which
+is not an ancestor here. Every `T30/...` reference below therefore names that
+commit. The central claim is still checkable without checking it out:
+`git cat-file -p c274893:docs/handoffs/evidence/T30/build/original.elf | sha256sum`
+gives the same digest, and `git cat-file -s` the same 25,344 bytes. Whether T30
+should be carried onto this line is a delivery decision and is not made here.
 
 ---
 
@@ -212,6 +223,32 @@ compiler, or another libc.
 and is bound by `T30/SHA256SUMS`; changing it would rewrite bytes an existing
 record cites. `07-rebuild.json` sits beside it and carries the second-window
 measurement plus the field-by-field comparison.
+
+### The comparison, and what it covers
+
+Twenty-one fields are tabulated in `07-rebuild.json#conformance`; twenty match.
+They are the fields that define the artefact and its observation — `output.*`,
+`machine_check.*`, `build.build_script.sha256`, `fixture.harness.sha256`,
+`fixture.source_of_truth.sha256`, the two `support_files` digests,
+`trigger.sha256`, `trigger.expected_observation`, `window.is_baseline`. The
+free-text fields (origins, notes, `why_*`, reproduction prose) were read and
+agree, but a string-equality row for them would assert nothing a reader cannot
+see; `conformance_scope` states that in the file itself.
+
+The one non-match is `window.is_baseline`: `false` at uid 14, `true` here. It is
+the measurement, not a deviation.
+
+Two corrections were made in this pass, both found by re-reading the committed
+record against `build.json`. First, the count was written as "twelve of thirteen"
+in this record's status line and in the evidence README, while the table itself
+held twelve rows, eleven of them matching — a stale count carried over from an
+earlier draft, not a measurement. Second, the machine rows (`class`, `data`,
+`machine`, `needed`, `debug_info`) plus `output.file`,
+`build.build_script.sha256`, `fixture.harness.sha256` and `trigger.sha256` were
+quoted in the prose but missing from the table, so the table under-covered what
+the record already claimed. Neither correction changes a measured value: `01`–`06`
+are byte-identical, `06-SHA256SUMS` still holds, and `SHA256SUMS` was rebuilt on
+the host for the two edited host files.
 
 ---
 

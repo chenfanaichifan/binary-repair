@@ -5,6 +5,13 @@
   "additive": true,
   "does_not_replace": "docs/handoffs/evidence/T30/build.json",
   "why_additive": "T30/build.json is the historic record of the first build and is bound by docs/handoffs/evidence/T30/SHA256SUMS. Editing it would change bytes an existing record cites. This file is a second-window conformance measurement laid alongside it, not a correction of it.",
+  "reachability": {
+    "problem": "docs/handoffs/evidence/T30/ is not present in this branch's tree. This branch was cut from origin/integration/live-bridge-2026-11-03 at bcb7a30, and the T30 evidence landed later on member-3/t62-host-safe at c274893, which is not an ancestor of this branch's HEAD.",
+    "where_it_is": "commit c274893 on member-3/t62-host-safe (and origin/member-3/t62-host-safe); 11 files, 936 insertions",
+    "how_to_verify_without_checking_out": "git cat-file -p c274893:docs/handoffs/evidence/T30/build/original.elf | sha256sum  ->  c9c2632e...23c9; git cat-file -s ... -> 25344",
+    "checked": "done on 2026-11-05 on this host; the blob in that commit is the same 25,344 bytes and the same digest the guest printed in 02-build.txt",
+    "consequence": "every T30/... path in this record is a reference to that commit, not to a sibling directory. A reviewer reading only this branch cannot resolve them by path."
+  },
   "window": {
     "snapshot_uid": 11,
     "snapshot_name": "gate4-harness",
@@ -99,18 +106,34 @@
     "exit_code": 1,
     "not_the_fixture_artefact": "original.asan.elf carries -fsanitize=address, which build.json#build.complete_flags does not; it is a different binary by design and is not shipped as a fixture artefact"
   },
+  "conformance_scope": "The fields tabulated below are the ones that define the artefact and its observation: what file it is, what bytes it is, what the ELF header says about it, which inputs produced it, and what it prints. Free-text fields in T30/build.json (origins, notes, why_* explanations, reproduction prose) were read and agree, but are not tabulated because a string-equality row would assert nothing a reader cannot see.",
+  "conformance_summary": {
+    "tabulated": 21,
+    "match": 20,
+    "differs": 1,
+    "the_difference": "window.is_baseline - T30 measured uid 14 and recorded false; this run measured uid 11 and records true. That difference is the purpose of the exercise, not a deviation from it."
+  },
   "conformance": [
+    { "field": "output.file", "build_json": "build/original.elf", "measured": "build/original.elf (same relative path, same 25,344 bytes)", "verdict": "match" },
     { "field": "output.size_bytes", "build_json": 25344, "measured": 25344, "verdict": "match" },
     { "field": "output.sha256", "build_json": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9", "measured": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9", "verdict": "match" },
     { "field": "output.build_id", "build_json": "951731d93ab7aa9e2a94dc87fb8915b784dd693a", "measured": "951731d93ab7aa9e2a94dc87fb8915b784dd693a", "verdict": "match" },
     { "field": "output.reported_by_script", "build_json": true, "measured": "build.sh printed sha256= and size=", "verdict": "match" },
+    { "field": "machine_check.class", "build_json": "ELF64", "measured": "ELF64 (readelf -h, 03-readelf.txt:4)", "verdict": "match" },
+    { "field": "machine_check.data", "build_json": "2's complement, little endian", "measured": "2's complement, little endian (03-readelf.txt:5)", "verdict": "match" },
     { "field": "machine_check.type", "build_json": "EXEC (non-PIE)", "measured": "EXEC (Executable file)", "verdict": "match" },
+    { "field": "machine_check.machine", "build_json": "Advanced Micro Devices X86-64", "measured": "Advanced Micro Devices X86-64 (03-readelf.txt:10)", "verdict": "match" },
     { "field": "machine_check.entry_point", "build_json": "0x4011b0", "measured": "0x4011b0", "verdict": "match" },
+    { "field": "machine_check.needed", "build_json": ["libc.so.6"], "measured": "libc.so.6 - one NEEDED entry", "verdict": "match" },
+    { "field": "machine_check.debug_info", "build_json": "present, not stripped", "measured": "1 .debug_info section; file(1) says with debug_info, not stripped", "verdict": "match" },
     { "field": "machine_check.stack_canary", "build_json": "absent", "measured": "0 occurrences of __stack_chk_fail", "verdict": "match" },
-    { "field": "trigger.expected_observation", "build_json": "exit 0, stdout_hex 05040a, len 3, stderr 0", "measured": "exit 0, stdout_hex 05040a, len 3, stderr 0, 251/251", "verdict": "match" },
+    { "field": "build.build_script.sha256", "build_json": "6e33c82568db9e1d98df362290064e47e9d74c4124bfb966c19f383df90e30a9", "measured": "6e33c82568db9e1d98df362290064e47e9d74c4124bfb966c19f383df90e30a9 (01-window-and-isolation.txt section 6)", "verdict": "match" },
+    { "field": "fixture.harness.sha256", "build_json": "cef8f533765f3f9184377bf72e32792f6a4128080da8467cb478340a679c63a9", "measured": "cef8f533765f3f9184377bf72e32792f6a4128080da8467cb478340a679c63a9", "verdict": "match" },
     { "field": "fixture.source_of_truth.sha256", "build_json": "fa84a6bb...7f42e", "measured": "fa84a6bb...7f42e after scp", "verdict": "match" },
     { "field": "fixture.support_files.io.c", "build_json": "50ace91d...299c", "measured": "50ace91d...299c", "verdict": "match" },
     { "field": "fixture.support_files.std_testcase.h", "build_json": "a78aaf3a...b8d0", "measured": "a78aaf3a...b8d0", "verdict": "match" },
+    { "field": "trigger.sha256", "build_json": "01cce3c72817f18557edbd33ed9cc61040c1ebd6487d9f81459b79e223606409", "measured": "01cce3c72817f18557edbd33ed9cc61040c1ebd6487d9f81459b79e223606409", "verdict": "match" },
+    { "field": "trigger.expected_observation", "build_json": "exit 0, stdout_hex 05040a, len 3, stderr 0", "measured": "exit 0, stdout_hex 05040a, len 3, stderr 0, 251/251", "verdict": "match" },
     { "field": "window.is_baseline", "build_json": "false (uid 14)", "measured": "true (uid 11) - this run", "verdict": "differs by design; this record supplies the baseline-clean run that build.json did not have" }
   ],
   "reproducibility_upgrade": {
