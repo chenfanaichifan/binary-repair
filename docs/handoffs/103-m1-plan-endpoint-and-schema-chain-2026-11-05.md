@@ -65,6 +65,12 @@ Response: `{job_id, persisted, plan, agent}` where `agent` is
 `agent.tokens` is M5's `{prompt, completion}`, not the `ai_usage`
 `{input_tokens, output_tokens}` shape. The two remain separate contracts.
 
+`mode: "llm"` with no client answers `503 {"plan": null, "error":
+"assistant_unavailable", "fallback_reason": "..."}`. That is settled, not
+provisional: a caller must be able to tell "no plan" from "a deterministic plan
+wearing the LLM's clothes". The 200 body still carries `agent`, but clients read
+`plan`.
+
 `test_plan_does_not_touch_a_running_job` holds the line that matters: with a
 queued run, generating a plan changes no `contracts`, `runs`, `attempts` or
 `obligations` row and no snapshot verdict.
