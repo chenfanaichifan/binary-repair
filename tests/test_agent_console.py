@@ -215,3 +215,16 @@ def test_state_panel_can_collapse_into_a_single_column():
     assert "position: absolute" in collapsed[:400]
     assert ":hover" in collapsed[:2600]
     assert "max-width: 820px" in collapsed
+
+def test_workspace_nav_does_not_repeat_the_landing_entry():
+    """Inside the workbench the sidebar must not offer a second way back."""
+    for path in ("/agent", "/jobs/new"):
+        page = client.get(path)
+        assert page.status_code == 200
+        assert ">起始页<" not in page.text
+        # The brand stays the one way back, so the entry is still reachable.
+        assert 'class="ds-brand" href="/"' in page.text
+        assert 'aria-label="返回起始页"' in page.text
+        # Core entries remain.
+        assert 'href="/agent"' in page.text
+        assert 'href="/jobs/new"' in page.text
