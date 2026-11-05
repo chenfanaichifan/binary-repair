@@ -1,0 +1,43 @@
+{
+  "schema_version": 2,
+  "required_obligations": [
+    "behaviour",
+    "identity",
+    "interface",
+    "reproducibility",
+    "structure",
+    "symbolic"
+  ],
+  "forbidden_behavior": "read a heap block after free() has released it (the --uaf path)",
+  "valid_domain": "argv[1] is a C string of length 0..4096; the copy keeps at most 49 bytes",
+  "target_entry": "badSink",
+  "target_signature": "void badSink(char *data)",
+  "valid_behavior": "print argv[1] followed by one LF on stdout and exit 0, on both paths",
+  "invalid_behavior": "on --uaf the released block must still print its original text, never allocator sentinel bytes",
+  "invalid_exit_code": 0,
+  "dest_capacity_bytes": 50,
+  "capacity_includes_terminator": true,
+  "max_input_bytes": 4096,
+  "allowed_calls": [
+    "malloc",
+    "free",
+    "memcpy",
+    "strlen",
+    "fputs",
+    "fputc",
+    "fprintf",
+    "memset",
+    "strcmp",
+    "exit"
+  ],
+  "authorized_edits": [
+    "Move the read of the buffer before free() in badSink, or drop the free()-then-read ordering; no other behaviour may change.",
+    "Allow up to 128 bytes of added x86-64 code in a gate-3-verified unused region of a loadable R-X segment; zero bytes alone are not evidence.",
+    "Allow no new segment, dynamic import, GOT/PLT/relocation edit or permission broadening beyond the existing contract rules."
+  ],
+  "environment_assumptions": [
+    "Linux x86-64 non-PIE guest",
+    "glibc tcache serves the same-size follow-up malloc from the just-freed block; this makes the hazard observable without a sanitizer and is not a language guarantee",
+    "CET: ENDBR64 is compile-time only; runtime IBT/shadow-stack enforcement is not verified"
+  ]
+}

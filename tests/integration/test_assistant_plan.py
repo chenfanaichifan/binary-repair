@@ -128,5 +128,5 @@ def test_aggregate_job_usage(tmp_path: Path) -> None:
     model_calls.record_call(data_dir=data, model_requested="m", status="ok",
                             job_id=job.id, usage={"prompt_tokens": 4, "completion_tokens": 5})
     assert model_calls.aggregate_job_usage(data_dir=data, job_id=job.id) == {
-        "input_tokens": 6, "output_tokens": 8,
+        "input_tokens": 6, "output_tokens": 8, "partial": False,
     }

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "compiler": {
+    "name": "gcc",
+    "version": "guest toolchain (>= 9, C11)"
+  },
+  "flags": [
+    "-mtune=generic",
+    "-march=x86-64",
+    "-g",
+    "-O0",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-fstack-clash-protection",
+    "-fcf-protection",
+    "-fasynchronous-unwind-tables",
+    "-no-pie"
+  ],
+  "argv": [
+    "gcc",
+    "-mtune=generic",
+    "-march=x86-64",
+    "-g",
+    "-O0",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-fstack-clash-protection",
+    "-fcf-protection",
+    "-fasynchronous-unwind-tables",
+    "-no-pie",
+    "-o",
+    "original.elf",
+    "src.c",
+    "harness.c"
+  ],
+  "source": {
+    "url": "repo://fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/src.c",
+    "commit": "authored-in-this-repository",
+    "license": "Apache-2.0 (project licence; no upstream code copied)"
+  },
+  "output": {
+    "path": "original.elf",
+    "sha256": null
+  },
+  "network": false
+}

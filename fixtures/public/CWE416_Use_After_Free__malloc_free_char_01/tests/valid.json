@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "case_id": "CWE416_Use_After_Free__malloc_free_char_01",
+  "original_sha256": null,
+  "tests": [
+    {
+      "id": "valid-empty",
+      "kind": "valid",
+      "argv": [
+        "./original",
+        ""
+      ],
+      "stdin_literal": null,
+      "stdin_artifact": null,
+      "expected": {
+        "return_code": 0,
+        "stdout": "\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
+      "rationale": "Empty input: the clamped copy is one NUL byte and exactly one LF is printed."
+    },
+    {
+      "id": "valid-one",
+      "kind": "valid",
+      "argv": [
+        "./original",
+        "a"
+      ],
+      "stdin_literal": null,
+      "stdin_artifact": null,
+      "expected": {
+        "return_code": 0,
+        "stdout": "a\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
+      "rationale": "Smallest non-empty input."
+    },
+    {
+      "id": "valid-max49",
+      "kind": "valid",
+      "argv": [
+        "./original",
+        "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+      ],
+      "stdin_literal": null,
+      "stdin_artifact": null,
+      "expected": {
+        "return_code": 0,
+        "stdout": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
+      "rationale": "Longest input the copy keeps whole before clamping (49 bytes + NUL = 50)."
+    },
+    {
+      "id": "valid-spaces",
+      "kind": "valid",
+      "argv": [
+        "./original",
+        "two words"
+      ],
+      "stdin_literal": null,
+      "stdin_artifact": null,
+      "expected": {
+        "return_code": 0,
+        "stdout": "two words\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
+      "rationale": "Internal spaces survive; only the trailing LF is added."
+    }
+  ]
+}
