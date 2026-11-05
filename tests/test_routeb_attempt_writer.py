@@ -110,3 +110,17 @@ def test_routeb_fails_closed_on_missing_worker_contract(tmp_path: Path) -> None:
         write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
                       run_id=run.id, attempt_id=attempt.id,
                       original_path=original, contract_path=tmp_path / "missing.json")
+
+
+def test_manifest_compare_is_not_repair_v3(tmp_path: Path) -> None:
+    data, job, run, attempt = _setup(tmp_path)
+    bundle = tmp_path / "bundle"
+    make_bundle(original=ORIGINAL, candidate=CANDIDATE, outdir=bundle,
+                func=FUNC, mode="roundtrip")
+    (bundle / "manifest-compare.json").write_text(json.dumps({"gate4_pass": True, "total": 6, "same_count": 6}))
+    result = write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                           run_id=run.id, attempt_id=attempt.id)
+    payload = json.loads(Path(result["path"]).read_text())
+    assert payload["results"]["V3"] == "not_run"
+    assert "V3" not in payload["evidence"]
+    assert "round-trip" in payload["details"]["V3"]

@@ -47,6 +47,7 @@ def verify_artifact(
     attempt_id: str,
     artifact_id: str,
     gate: str,
+    require_attempt: bool = False,
 ) -> dict[str, Any]:
     """Return the verified artifact row or raise EvidenceError.
 
@@ -65,7 +66,7 @@ def verify_artifact(
     if row is None:
         raise EvidenceError(f"{gate} evidence artifact is not part of job {job_id}: {artifact_id}")
     bound_attempt = row["attempt_id"]
-    if gate == "V0":
+    if gate == "V0" and not require_attempt:
         if bound_attempt not in (None, attempt_id):
             raise EvidenceError(f"{gate} evidence belongs to another attempt: {bound_attempt}")
     elif bound_attempt != attempt_id:
@@ -97,6 +98,7 @@ def verify_evidence_map(
     job_id: str,
     attempt_id: str,
     evidence: dict[str, str],
+    require_attempt: bool = False,
 ) -> dict[str, dict[str, Any]]:
     verified = {}
     for gate, artifact_id in evidence.items():
@@ -108,6 +110,7 @@ def verify_evidence_map(
             attempt_id=attempt_id,
             artifact_id=artifact_id,
             gate=gate,
+            require_attempt=require_attempt,
         )
     return verified
 
@@ -128,8 +131,11 @@ def verify_candidate_binding(
     A string in result JSON is not a binding; the bytes must exist in the job
     store under this attempt and hash to the declared candidate.
     """
+    allowed = {f"V{i}" for i in range(6)}
+    filtered = {gate: artifact_id for gate, artifact_id in evidence.items() if gate in allowed}
     verified = verify_evidence_map(
-        data_dir=data_dir, job_id=job_id, attempt_id=attempt_id, evidence=evidence
+        data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+        evidence=filtered, require_attempt=True,
     )
     for gate, record in verified.items():
         if record["sha256"] == candidate_sha256:

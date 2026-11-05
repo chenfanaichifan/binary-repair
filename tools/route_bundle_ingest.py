@@ -106,6 +106,8 @@ def _legacy_payload(bundle: Path, route: str) -> tuple[dict[str, Any], list[str]
     raw_meta = json.loads((bundle / "handoff.json").read_text(encoding="utf-8"))
     files = [str(x) for x in raw_meta.get("files") or []]
     result_path = bundle / "result-bundle.json"
+    if result_path.is_file() and "result-bundle.json" not in files:
+        raise IngestError("result-bundle.json must be listed in handoff.json and SHA256SUMS")
     result = json.loads(result_path.read_text(encoding="utf-8")) if result_path.is_file() else {}
     identity = result.get("identity") or {}
     candidate = identity.get("candidate_sha256")

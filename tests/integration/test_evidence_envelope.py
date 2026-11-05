@@ -75,3 +75,46 @@ def test_candidate_hash_must_match_a_real_artifact(tmp_path: Path) -> None:
             data_dir=data, job_id=job.id, attempt_id=attempt.id,
             candidate_sha256="a" * 64, evidence={"V0": artifact},
         )
+
+
+def test_candidate_binding_rejects_job_level_original(tmp_path: Path) -> None:
+    from app.domain.evidence import EvidenceError, verify_candidate_binding
+    data, job, run, attempt = _setup(tmp_path)
+    connection = connect(data)
+    try:
+        row = connection.execute(
+            "SELECT id FROM artifacts WHERE job_id = ? AND role = 'original'", (job.id,)
+        ).fetchone()
+    finally:
+        connection.close()
+    with pytest.raises(EvidenceError, match="another attempt"):
+        verify_candidate_binding(
+            data_dir=data, job_id=job.id, attempt_id=attempt.id,
+            candidate_sha256=job.original_sha256, evidence={"V0": row["id"]},
+        )
+
+
+def test_candidate_binding_accepts_attempt_bound_candidate(tmp_path: Path) -> None:
+    from app.domain.evidence import verify_candidate_binding
+    data, job, run, attempt = _setup(tmp_path)
+    content = b"a genuinely different candidate"
+    relative = f"jobs/{job.id}/evidence/{attempt.id}/candidate.elf"
+    artifact = _artifact(data, job.id, attempt.id, content=content, relative=relative)
+    digest = hashlib.sha256(content).hexdigest()
+    record = verify_candidate_binding(
+        data_dir=data, job_id=job.id, attempt_id=attempt.id,
+        candidate_sha256=digest, evidence={"V0": artifact},
+    )
+    assert record["sha256"] == digest
+
+
+def test_evidence_hash_and_size_are_rehashed(tmp_path: Path) -> None:
+    from app.domain.evidence import EvidenceError, verify_artifact
+    data, job, run, attempt = _setup(tmp_path)
+    relative = f"jobs/{job.id}/evidence/{attempt.id}/tamper.bin"
+    artifact = _artifact(data, job.id, attempt.id, content=b"original bytes", relative=relative)
+    target = data / relative
+    target.write_bytes(b"tampered!")
+    with pytest.raises(EvidenceError, match="size mismatch|hash mismatch"):
+        verify_artifact(data_dir=data, job_id=job.id, attempt_id=attempt.id,
+                        artifact_id=artifact, gate="V1")

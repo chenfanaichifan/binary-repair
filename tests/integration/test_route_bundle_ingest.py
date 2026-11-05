@@ -150,3 +150,20 @@ def test_ingest_accepts_legacy_interface_v1(tmp_path: Path) -> None:
     result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
                     route="route_a", bundle=bundle, trigger=False)
     assert result["evidence"]["V0"]
+
+
+def test_legacy_result_bundle_must_be_in_sums(tmp_path: Path) -> None:
+    import hashlib
+    data, job, run, attempt = _job(tmp_path)
+    bundle = tmp_path / "legacy-unlisted"; bundle.mkdir()
+    candidate = bundle / "candidate.elf"; candidate.write_bytes(b"\x7fELF")
+    (bundle / "result-bundle.json").write_text(json.dumps({"identity": {"candidate_sha256": hashlib.sha256(candidate.read_bytes()).hexdigest()}}))
+    files = ["candidate.elf"]
+    (bundle / "handoff.json").write_text(json.dumps({
+        "id": "LEGACY", "from": "M3", "to": "M5", "route": "route_a",
+        "created_at": "2026-11-05T00:00:00+08:00", "files": files,
+    }))
+    (bundle / "SHA256SUMS").write_text(f"{hashlib.sha256(candidate.read_bytes()).hexdigest()}  candidate.elf\n")
+    with pytest.raises(IngestError, match="result-bundle.json"):
+        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+               route="route_a", bundle=bundle, trigger=False)
