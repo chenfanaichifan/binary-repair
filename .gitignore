@@ -27,8 +27,9 @@ pip_cache/
 pytest_deps/
 .write-probe.tmp
 
-# Local delivery artifacts (git bundles/archives for teammates)
-/delivery/
+# delivery/ is deliberately tracked: it is the shared hand-off directory for
+# M4 and M5. Do not re-add a /delivery/ ignore rule here - a bundle that only
+# exists in one worktree is not readable by the other members.
 
 # Editors / OS
 .vscode/
