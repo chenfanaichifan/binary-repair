@@ -92,6 +92,25 @@ Lead 决定把 T8.2 从 M5 转给 M2。本分支只实现**不依赖 M5 持久�
 
 M5 的 `app/domain/assistant.py`、`004_assistant.sql`、`app/services/assistant.py` 持久化部分不在本文件改动范围内。等 M5 在 `generate_plan` 留出可注入 client 的分支后，接线只需把 `client` 传进来。
 
+## 四之三、M1 交接（`97-m1-review-closeout`）
+
+M1 声明的 `7984bb6` **不在远程**（`canonical/m1-m5-integration` 停在 `5a13b6b`），本分支
+拿不到那批改动。GUI 侧按契约先做好消费与回退，等合入后只需联调：
+
+| 契约 | GUI 行为 |
+|---|---|
+| `obligations.scope` ∈ metadata / binary / replay / model | 优先渲染持久化值，`data-evidence-scope-source="persisted"`；缺失时回退 kind 表并标 `kind` |
+| `GET /api/jobs/{id}/attempts` | 代理到同名路径；端点不存在时返回 `available:false`，报告写 `not_available`，**不写成“零次尝试”** |
+| `ai_usage = {input_tokens, output_tokens}` 或 `null` | 只显示后端给的数字；`null`/缺失显示“未提供”，不显示 0 |
+| artifact `role` | GUI 不按 `route_a_evidence` / `route_b_evidence` 映射；原样显示后端 `role` |
+
+语义决定（答复 M1）：
+
+- **scope**：接受 V1/V2 = `binary`。scope 只表达“证据覆盖哪一层”，不表达“用什么手段获得”；
+  枚举里不设 `static`，否则会出现两套轴。screening 的静态分析产物是另一列（source），不塞进 scope。
+- **attempt_no / status**：保持清单字段名。GUI 不依赖 `sequence` / `phase` 这类数据库列名，
+  对外 API 字段稳定比跟 DB 列对齐更重要。
+
 ## 五、测试
 
 ```bash
@@ -111,7 +130,7 @@ M5 的 `app/domain/assistant.py`、`004_assistant.sql`、`app/services/assistant
 .venv/Scripts/python.exe tests/e2e/capture_agent_screens.py
 ```
 
-本次实测：`test_agent_console.py` 22/22；`test_assistant_llm.py` 15/15；核心回归 74 项全通过。
+本次实测：`test_agent_console.py` 22/22；`test_assistant_llm.py` 15/15；`test_m1_handoff.py` 6/6；核心回归 80 项全通过。
 
 **已知预存在失败（与本次改动无关，已用 stash 对照确认）**：`tests/test_evidence_endpoint.py` 5 项在基线上同样失败，报 `attempts/<id>.json` 文件不存在，属后端持久化问题，归 M1/M5，不在 M2 范围。
 

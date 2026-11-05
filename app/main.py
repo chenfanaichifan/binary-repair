@@ -29,7 +29,7 @@ from app.backend import (
     backend_mode,
     get_backend,
 )
-from app.evidence_domains import evidence_domain
+from app.evidence_domains import evidence_domain, scope_display
 from app.services.assistant_llm import ASSISTANT_MODE_ENV, assistant_status
 from app.ui_config import load_ui_config, resolve_mode, resolve_workspace
 
@@ -541,6 +541,16 @@ async def evidence_page(request: Request, job_id: str):
     if len(obligations) < len(snapshot.get("routes") or {}):
         for key, group in BACKEND.get_obligations(job_id).items():
             obligations.setdefault(key, group)
+    getter = getattr(BACKEND, "get_attempts", None)
+    if getter is None:
+        attempts = {"available": False, "attempts": []}
+    else:
+        try:
+            attempts = getter(job_id)
+        except BackendError:
+            attempts = None
+        if attempts is None:
+            attempts = {"available": False, "attempts": []}
     return templates.TemplateResponse(
         request,
         "evidence.html",
@@ -549,8 +559,10 @@ async def evidence_page(request: Request, job_id: str):
             "job": snapshot,
             "obligations": obligations,
             "artifacts": BACKEND.get_artifacts(job_id),
+            "attempts": attempts,
             "backend_note": backend_description(BACKEND),
             "evidence_domain": evidence_domain,
+            "scope_display": scope_display,
         },
     )
 
@@ -559,6 +571,28 @@ async def evidence_page(request: Request, job_id: str):
 async def job_status(job_id: str):
     """Return the polling status JSON."""
     return JSONResponse(BACKEND.get_snapshot(job_id))
+
+
+@app.get("/api/jobs/{job_id}/attempts")
+async def job_attempts(job_id: str):
+    """Proxy M1's per-attempt history.
+
+    ``available: false`` means the controller does not expose the endpoint yet;
+    it is not the same as "this job has no attempts", and the UI says so.
+    """
+    getter = getattr(BACKEND, "get_attempts", None)
+    payload = getter(job_id) if getter is not None else None
+    if payload is None:
+        return JSONResponse(
+            {
+                "attempts": [],
+                "available": False,
+                "note": "Controller does not expose GET /api/jobs/{id}/attempts yet.",
+            }
+        )
+    payload = dict(payload)
+    payload.setdefault("available", True)
+    return JSONResponse(payload)
 
 
 @app.get("/api/jobs/{job_id}/export")
@@ -626,10 +660,26 @@ async def evidence_report(request: Request, job_id: str, download: int = 0):
     headers = None
     if download:
         headers = {"Content-Disposition": f'attachment; filename="{job_id}-evidence.html"'}
+    getter = getattr(BACKEND, "get_attempts", None)
+    if getter is None:
+        attempts = {"available": False, "attempts": []}
+    else:
+        try:
+            attempts = getter(job_id)
+        except BackendError:
+            attempts = None
+        if attempts is None:
+            attempts = {"available": False, "attempts": []}
     return templates.TemplateResponse(
         request,
         "report.html",
-        {"bundle": bundle, "sha_lines": sha_lines, "evidence_domain": evidence_domain},
+        {
+            "bundle": bundle,
+            "sha_lines": sha_lines,
+            "evidence_domain": evidence_domain,
+            "scope_display": scope_display,
+            "attempts": attempts,
+        },
         headers=headers,
     )
 

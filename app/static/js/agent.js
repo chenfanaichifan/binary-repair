@@ -214,9 +214,36 @@
    * 渲染层只消费 normalize() 的返回结构。execution-bridge-v1 与 M5 plan schema
    * 到位后，只需调整这里与取数函数，不动渲染层。 */
 
+  function routeUsage(routes) {
+    // M1: routes.<A|B>.ai_usage is {input_tokens, output_tokens} or null.
+    // Only surface numbers the backend actually sent; never fill them in.
+    if (!routes || typeof routes !== "object") return null;
+    var keys = Object.keys(routes);
+    for (var i = 0; i < keys.length; i += 1) {
+      var usage = routes[keys[i]] && routes[keys[i]].ai_usage;
+      if (usage && typeof usage === "object") {
+        return {
+          input: typeof usage.input_tokens === "number" ? usage.input_tokens : undefined,
+          output: typeof usage.output_tokens === "number" ? usage.output_tokens : undefined,
+          model: typeof usage.model === "string" ? usage.model : null
+        };
+      }
+    }
+    return null;
+  }
+
   function normalize(data) {
     data = data || {};
     var agent = data.agent || null;
+    if (!agent) {
+      var usage = routeUsage(data.routes);
+      if (usage) {
+        agent = {
+          model: usage.model,
+          tokens: { input: usage.input, output: usage.output }
+        };
+      }
+    }
     var execution = data.execution || null;
     var routes = data.routes || {};
     var routeKeys = Object.keys(routes);
@@ -719,8 +746,11 @@
       var parts = [];
       if (agent.model) parts.push("model：" + agent.model);
       if (agent.tokens) {
-        parts.push("tokens：prompt " + (agent.tokens.prompt === undefined ? "?" : agent.tokens.prompt) +
-          " / completion " + (agent.tokens.completion === undefined ? "?" : agent.tokens.completion));
+        var input = agent.tokens.input !== undefined ? agent.tokens.input : agent.tokens.prompt;
+        var output = agent.tokens.output !== undefined ? agent.tokens.output : agent.tokens.completion;
+        // null/absent usage is "未提供", never 0 and never an estimate.
+        parts.push("tokens：input " + (input === undefined ? "未提供" : input) +
+          " / output " + (output === undefined ? "未提供" : output));
       }
       setText("agent-model-meta", parts.join("；"));
     } else {

@@ -146,14 +146,18 @@
         <tbody>
         {% for row in route.obligations %}
           {% set domain = evidence_domain(row.kind) %}
-          <tr>
+          {% set scope = scope_display(row) %}
+          <tr data-evidence-scope="{{ scope.key }}" data-evidence-scope-source="{{ scope.source }}">
             <td>{{ row.id or row.kind }}</td>
             <td>{{ row.kind or "" }}</td>
             <td>{{ domain.label_en }}</td>
             <td><span class="pill">{{ domain.level }}</span></td>
             <td>{{ "yes" if row.required else "no" }}</td>
             <td class="{{ 'notrun' if row.result != 'passed' else '' }}">{{ row.result or "unknown" }}</td>
-            <td>{{ row.scope or domain.scope_en }}</td>
+            <td>
+              <span class="pill">{{ scope.en }}</span>
+              {% if scope.source == "kind" %}<span class="notrun">inferred</span>{% endif %}
+            </td>
             <td>{{ row.reason or row.detail or "" }}</td>
           </tr>
         {% else %}
@@ -196,6 +200,42 @@
         </tbody>
       </table>
     </div>
+  </section>
+
+  <section class="card">
+    <h2>Attempts</h2>
+    {% if attempts is none %}
+      <p class="notrun">attempt history: not_available (controller error).</p>
+    {% elif attempts.available is defined and not attempts.available %}
+      <p class="notrun">
+        attempt history: not_available — the controller does not expose
+        <code>GET /api/jobs/{id}/attempts</code> yet. This is not "zero attempts".
+      </p>
+    {% elif attempts.attempts %}
+      {% if attempts.scope == "latest_run_only" %}
+      <p class="notrun">attempt history: latest run only (local backend, not the full job history).</p>
+      {% endif %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Route</th><th>Attempt no.</th><th>Status</th><th>Outcome</th><th>Reason</th><th>Attempt ID</th></tr></thead>
+          <tbody>
+          {% for row in attempts.attempts %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ row.route or "" }}</td>
+              <td>{{ row.attempt_no }}</td>
+              <td>{{ row.status or "" }}</td>
+              <td class="{{ 'notrun' if row.outcome != 'success_within_scope' else '' }}">{{ row.outcome or "unknown" }}</td>
+              <td>{{ row.reason or "" }}</td>
+              <td><code>{{ row.attempt_id or "" }}</code></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="notrun">attempt history: empty — the controller returned no attempts for this job.</p>
+    {% endif %}
   </section>
 
   <section class="card">

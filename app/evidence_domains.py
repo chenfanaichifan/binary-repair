@@ -24,6 +24,7 @@ EVIDENCE_DOMAINS: dict[str, dict[str, Any]] = {
         "label_zh": "冻结输入",
         "label_en": "Identity and preconditions",
         "level": "metadata",
+        "scope": "metadata",
         "level_zh": "元数据",
         "scope_zh": "只核对任务输入与契约版本哈希，不执行代码。",
         "scope_en": "Frozen job inputs and contract identity; no execution.",
@@ -33,6 +34,7 @@ EVIDENCE_DOMAINS: dict[str, dict[str, Any]] = {
         "label_zh": "静态结构",
         "label_en": "Structure and placement",
         "level": "static",
+        "scope": "binary",
         "level_zh": "静态",
         "scope_zh": "静态检查指令边界与改动区间，不执行代码。",
         "scope_en": "Static placement of instructions and changed intervals.",
@@ -42,6 +44,7 @@ EVIDENCE_DOMAINS: dict[str, dict[str, Any]] = {
         "label_zh": "接口兼容",
         "label_en": "Interface and compatibility",
         "level": "static",
+        "scope": "binary",
         "level_zh": "静态",
         "scope_zh": "检查调用约定、载入与 ABI 兼容，不证明行为正确。",
         "scope_en": "Signature, loader and ABI compatibility; not behaviour.",
@@ -51,6 +54,7 @@ EVIDENCE_DOMAINS: dict[str, dict[str, Any]] = {
         "label_zh": "行为测试",
         "label_en": "Concrete behaviour",
         "level": "binary",
+        "scope": "replay",
         "level_zh": "二进制级",
         "scope_zh": "实际执行冻结的有效/无效输入；只覆盖这些输入与本机环境。",
         "scope_en": "Executed frozen valid/invalid inputs; scope limited to that set.",
@@ -60,6 +64,7 @@ EVIDENCE_DOMAINS: dict[str, dict[str, Any]] = {
         "label_zh": "符号验证",
         "label_en": "Bounded symbolic security",
         "level": "model",
+        "scope": "model",
         "level_zh": "模型级",
         "scope_zh": "对手写 Z3 模型的证明；不证明发射出的机器指令正确实现了该逻辑。",
         "scope_en": "Proof over a hand-written model, not over the emitted instructions.",
@@ -69,6 +74,7 @@ EVIDENCE_DOMAINS: dict[str, dict[str, Any]] = {
         "label_zh": "可复现重放",
         "label_en": "Reproducibility",
         "level": "replay",
+        "scope": "replay",
         "level_zh": "重放",
         "scope_zh": "用冻结哈希与输入重放，证明可重复，不单独证明修复正确。",
         "scope_en": "Replay with frozen hashes and inputs; reproducibility only.",
@@ -80,6 +86,7 @@ EVIDENCE_DOMAINS: dict[str, dict[str, Any]] = {
         "label_zh": "往返行为",
         "label_en": "Round-trip behaviour",
         "level": "binary",
+        "scope": "replay",
         "level_zh": "二进制级",
         "scope_zh": "未修复的恢复代码保持了原始行为；原始行为可能正是漏洞本身，因此不构成修复证据。",
         "scope_en": "Unrepaired recovered code keeps the original behaviour; not repair evidence.",
@@ -89,6 +96,7 @@ EVIDENCE_DOMAINS: dict[str, dict[str, Any]] = {
         "label_zh": "修复后行为",
         "label_en": "Repaired behaviour",
         "level": "binary",
+        "scope": "replay",
         "level_zh": "二进制级",
         "scope_zh": "最终候选保留有效行为并满足安全契约；这是唯一可计入修复的行为证据。",
         "scope_en": "Final candidate keeps valid behaviour and meets the safe contract.",
@@ -164,4 +172,58 @@ def evidence_domain(kind: str | None) -> dict[str, Any]:
     return dict(EVIDENCE_DOMAINS[canonical], kind=str(kind))
 
 
-__all__ = ["EVIDENCE_DOMAINS", "evidence_domain"]
+#: M1 migration 005 persists ``obligations.scope``. Its value set is deliberately
+#: small: metadata / binary / replay / model. There is no "static" scope — checks
+#: that read ELF bytes without executing are still binary-artifact evidence.
+SCOPE_LABELS: dict[str, dict[str, str]] = {
+    "metadata": {"zh": "元数据", "en": "Metadata"},
+    "binary": {"zh": "二进制制品", "en": "Binary artifact"},
+    "replay": {"zh": "重放/执行", "en": "Replay / execution"},
+    "model": {"zh": "符号模型", "en": "Symbolic model"},
+}
+
+
+def obligation_scope(obligation: Any) -> str | None:
+    """Return the persisted scope when it is one of the four known values."""
+
+    value = obligation.get("scope") if isinstance(obligation, dict) else None
+    if isinstance(value, str) and value.strip().lower() in SCOPE_LABELS:
+        return value.strip().lower()
+    return None
+
+
+def scope_display(obligation: Any) -> dict[str, str]:
+    """Prefer the persisted scope; fall back to the kind table and say which.
+
+    ``source`` is ``persisted`` only when the controller sent a valid scope. A
+    fallback is labelled ``kind`` so it is never presented as recorded data.
+    """
+
+    persisted = obligation_scope(obligation)
+    if persisted:
+        labels = SCOPE_LABELS[persisted]
+        return {
+            "key": persisted,
+            "zh": labels["zh"],
+            "en": labels["en"],
+            "source": "persisted",
+        }
+    kind = obligation.get("kind") if isinstance(obligation, dict) else obligation
+    domain = evidence_domain(kind if isinstance(kind, str) else None)
+    fallback = domain.get("scope") or "unknown"
+    labels = SCOPE_LABELS.get(fallback)
+    return {
+        "key": fallback,
+        "zh": labels["zh"] if labels else "未分类",
+        "en": labels["en"] if labels else "Unclassified",
+        "source": "kind",
+    }
+
+
+__all__ = [
+    "EVIDENCE_DOMAINS",
+    "SCOPE_LABELS",
+    "evidence_domain",
+    "obligation_scope",
+    "scope_display",
+]

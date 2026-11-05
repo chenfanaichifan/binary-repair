@@ -278,6 +278,7 @@ class Backend(Protocol):
         self, job_id: str, *, expected_sha256: str, reviewer_label: str
     ) -> dict[str, Any]: ...
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
+    def get_attempts(self, job_id: str) -> dict[str, Any] | None: ...
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
     def get_visuals(self, job_id: str) -> dict[str, Any]: ...
     def export_bundle(self, job_id: str) -> dict[str, Any]: ...
@@ -363,6 +364,11 @@ class MockBackend:
 
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         return demo.obligations(self._job(job_id))
+
+    def get_attempts(self, job_id: str) -> dict[str, Any] | None:
+        # The fixture has no run history; an empty list is the honest answer.
+        self._job(job_id)
+        return {"run_id": None, "attempts": [], "scope": "fixture"}
 
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         return demo.artifacts(self._job(job_id))
@@ -475,6 +481,28 @@ class HttpBackend:
         payload = self._request("GET", f"/api/jobs/{job_id}/obligations", where="get_obligations")
         if not isinstance(payload, dict):
             raise BackendError(502, "Backend obligations response must be an object.")
+        return payload
+
+    def get_attempts(self, job_id: str) -> dict[str, Any] | None:
+        """Per-attempt history from M1's ``GET /api/jobs/{id}/attempts``.
+
+        Returns ``None`` when the controller does not expose the endpoint yet, so
+        the GUI can say "not available" instead of rendering an empty history as
+        if the job had never been attempted.
+        """
+        try:
+            payload = self._request(
+                "GET", f"/api/jobs/{job_id}/attempts", where="get_attempts"
+            )
+        except BackendError as exc:
+            if exc.status_code == 404:
+                return None
+            raise
+        if not isinstance(payload, dict):
+            raise BackendError(502, "Backend attempts response must be an object.")
+        rows = payload.get("attempts")
+        if not isinstance(rows, list):
+            raise BackendError(502, "Backend attempts response is missing an attempts list.")
         return payload
 
     def update_contract(
@@ -860,6 +888,30 @@ class LocalBackend:
             "A": [identity, *[dict(item) for item in pending]],
             "B": [dict(identity), *[dict(item) for item in pending]],
         }
+
+    def get_attempts(self, job_id: str) -> dict[str, Any] | None:
+        """Latest run's attempts, in the M1 response shape.
+
+        The local backend has no cross-run query yet, so it reports the latest
+        run only and says so; it is not presented as the full history.
+        """
+        self._record(job_id)
+        run = job_store.latest_run(job_id, data_dir=self.data_dir)
+        if run is None:
+            return {"run_id": None, "attempts": [], "scope": "latest_run_only"}
+        rows = [
+            {
+                "attempt_id": attempt.id,
+                "attempt_no": attempt.sequence,
+                "route": attempt.route,
+                "status": attempt.phase,
+                "outcome": attempt.outcome,
+                "reason": attempt.reason,
+                "failing_obligation": attempt.failing_obligation,
+            }
+            for attempt in job_store.list_attempts(run.id, data_dir=self.data_dir)
+        ]
+        return {"run_id": run.id, "attempts": rows, "scope": "latest_run_only"}
 
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         self._record(job_id)
