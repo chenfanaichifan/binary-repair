@@ -1,0 +1,24 @@
+{
+  "baseline_bug_site": "stack",
+  "bug_site": "heap",
+  "cwe": "CWE-416",
+  "observed_original": {
+    "argv": [],
+    "note": "three bytes of allocator residue where a correct program prints 100 bytes of 'A'; exit status and stderr are unchanged, so the defect is silent apart from stdout",
+    "return_code": 0,
+    "stderr_len": 0,
+    "stdout_hex": "05040a",
+    "stdout_len": 3
+  },
+  "schema_version": 1,
+  "source": {
+    "commit": "01e353daa3d28a4ce2ae68904cbcde5e03e3519d",
+    "path": "C/testcases/CWE416_Use_After_Free/CWE416_Use_After_Free__malloc_free_char_01.c",
+    "repo": "dsp-testing/samate-c-cpp",
+    "sha256": "fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e",
+    "unmodified": true
+  },
+  "title": "Use of a heap block after it was freed",
+  "trigger_case": null,
+  "trigger_note": "no invalid trigger case exists: bad() takes no arguments and the use-after-free is unconditional, so there is nothing to reject. The one valid case is the whole test surface."
+}

@@ -1,0 +1,49 @@
+{
+  "argv": [
+    "gcc",
+    "-O0",
+    "-g",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-no-pie",
+    "-Wall",
+    "-fdebug-prefix-map=$PWD=.",
+    "-ffile-prefix-map=$PWD=.",
+    "-fdebug-prefix-map=$PWD/support=juliet/testcasesupport",
+    "-ffile-prefix-map=$PWD/support=juliet/testcasesupport",
+    "-I",
+    "support",
+    "-o",
+    "original.elf",
+    "harness.c",
+    "original.c",
+    "support/io.c"
+  ],
+  "compiler": {
+    "name": "gcc",
+    "version": "13.3.0"
+  },
+  "flags": [
+    "-O0",
+    "-g",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-no-pie",
+    "-Wall",
+    "-fdebug-prefix-map=<src>=.",
+    "-ffile-prefix-map=<src>=.",
+    "-fdebug-prefix-map=<support>=juliet/testcasesupport",
+    "-ffile-prefix-map=<support>=juliet/testcasesupport"
+  ],
+  "network": false,
+  "output": {
+    "path": "original.elf",
+    "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9"
+  },
+  "schema_version": 1,
+  "source": {
+    "commit": "01e353daa3d28a4ce2ae68904cbcde5e03e3519d",
+    "license": "NIST SARD test suite sample; archive identity recorded in defect.json#source",
+    "url": "https://github.com/dsp-testing/samate-c-cpp/blob/01e353daa3d28a4ce2ae68904cbcde5e03e3519d/C/testcases/CWE416_Use_After_Free/CWE416_Use_After_Free__malloc_free_char_01.c"
+  }
+}

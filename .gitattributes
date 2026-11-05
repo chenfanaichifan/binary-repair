@@ -22,6 +22,10 @@ fixtures/public/**/tests/*.json -text
 # filter would change its sha256 and void defect.json#source.sha256.
 fixtures/public/CWE122_c_CWE129_fgets_01/** -text
 
+# Same reason, same bytes: the SARD case here is CRLF (107 of 110 lines), and
+# tests/SHA256SUMS is verified with sha256sum -c, which a CRLF rewrite breaks.
+fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/** -text
+
 *.elf  binary
 *.bin  binary
 *.zip  binary
