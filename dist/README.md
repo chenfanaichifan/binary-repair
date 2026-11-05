@@ -9,6 +9,7 @@ remain recoverable from git history / `archive/2026-10-22/*` tags.
 | `m5-routea-c4a159-2026-10-22.zip` | `957d73d4284a4e5ced27de451bacdfe8956751232bd4a1fa5aa6454dccdc108e` | Route A c4a159 candidate handoff |
 | `m5-delivery-2026-10-22.zip` | `2b0f8364bb940f67261ba59b01209f2ad490c5fb16bd57beb9307a77736830ca` | M5 consolidated handoff |
 | `M3-120-cwe416-v3-handoff-2026-11-05.zip` | `e90c82de89c6c0d6700d8056b54b55cd84a1549946066ce84b8581a7bbb19ec7` | M3: record 120 + 9 evidence files + the CWE416 no-input fixture, own `INDEX.md` and `SHA256SUMS` |
+| `M3-121-cwe416-closeout-2026-11-05.zip` | `486c7b0575546bdc157ca22e795f58d5f978e489d40b435d368735ab4d04e2e8` | M3: record 121 + 11 evidence files + the fixture as closed out (the current tree) |
 
 Notes:
 
