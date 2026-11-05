@@ -33,29 +33,74 @@ def get_plan(job_id: str, *, data_dir: str | Path) -> dict[str, Any] | None:
         "id": row["id"], "job_id": row["job_id"], "mode": row["mode"],
         "plan": json.loads(row["plan_json"]), "model": row["model"],
         "usage": json.loads(row["usage_json"]) if row["usage_json"] else None,
+        "version": row["version"],
+        "message_id": row["message_id"],
         "created_at": row["created_at"],
     }
 
 
 def save_plan(job_id: str, plan: AssistantPlan, *, data_dir: str | Path,
-              model: str | None = None, usage: dict | None = None) -> dict[str, Any]:
+              model: str | None = None, usage: dict | None = None,
+              message_id: str | None = None) -> dict[str, Any]:
     if plan.job_id != job_id:
         raise ValueError("plan job_id does not match job")
     plan_id = uuid.uuid4().hex
     connection = connect(data_dir)
     try:
         with connection:
+            row = connection.execute(
+                "SELECT COALESCE(MAX(version), 0) AS v FROM assistant_plans WHERE job_id = ?",
+                (job_id,),
+            ).fetchone()
+            version = int(row["v"]) + 1
             connection.execute(
                 "INSERT INTO assistant_plans "
-                "(id, job_id, mode, plan_json, model, usage_json, created_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "(id, job_id, mode, plan_json, model, usage_json, version, message_id, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (plan_id, job_id, plan.mode, plan.model_dump_json(),
-                 model, json.dumps(usage, sort_keys=True) if usage else None, _now()),
+                 model, json.dumps(usage, sort_keys=True) if usage else None,
+                 version, message_id, _now()),
             )
     finally:
         connection.close()
     return {"id": plan_id, "job_id": job_id, "mode": plan.mode,
-            "plan": plan.model_dump(), "model": model, "usage": usage}
+            "plan": plan.model_dump(), "model": model, "usage": usage,
+            "version": version, "message_id": message_id}
+
+
+def append_message(job_id: str, role: str, content: str, *,
+                   data_dir: str | Path, plan_id: str | None = None) -> dict[str, Any]:
+    if role not in {"user", "assistant", "system"}:
+        raise ValueError("invalid assistant message role")
+    if not content.strip():
+        raise ValueError("assistant message content must not be empty")
+    message_id = uuid.uuid4().hex
+    connection = connect(data_dir)
+    try:
+        with connection:
+            connection.execute(
+                "INSERT INTO assistant_messages (id, job_id, role, content, plan_id, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (message_id, job_id, role, content, plan_id, _now()),
+            )
+    finally:
+        connection.close()
+    return {"id": message_id, "job_id": job_id, "role": role,
+            "content": content, "plan_id": plan_id}
+
+
+def list_messages(job_id: str, *, data_dir: str | Path) -> list[dict[str, Any]]:
+    connection = connect(data_dir)
+    try:
+        rows = connection.execute(
+            "SELECT * FROM assistant_messages WHERE job_id = ? ORDER BY rowid",
+            (job_id,),
+        ).fetchall()
+    finally:
+        connection.close()
+    return [{"id": row["id"], "job_id": row["job_id"], "role": row["role"],
+             "content": row["content"], "plan_id": row["plan_id"],
+             "created_at": row["created_at"]} for row in rows]
 
 
 def assistant_context(job: Any, *, data_dir: str | Path) -> dict[str, Any]:
@@ -99,4 +144,4 @@ def generate_plan(job_id: str, *, data_dir: str | Path,
     raise ValueError(f"unknown assistant mode: {selected!r}")
 
 
-__all__ = ["assistant_context", "generate_plan", "get_plan", "save_plan"]
+__all__ = ["append_message", "assistant_context", "generate_plan", "get_plan", "list_messages", "save_plan"]

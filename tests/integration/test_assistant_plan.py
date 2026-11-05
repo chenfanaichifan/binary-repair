@@ -62,3 +62,30 @@ def test_get_plan_returns_latest_same_second(tmp_path: Path) -> None:
     assert latest is not None
     assert latest["id"] == second["id"]
     assert latest["plan"]["summary"] == "second"
+
+
+def test_messages_versions_and_model_call_link(tmp_path: Path) -> None:
+    from app.domain.assistant import AssistantPlan, AssistantStep
+    from app.services import model_calls
+    data = tmp_path / "var"
+    job = jobs.create_job(original_bytes=b"\x7fELF assistant", filename="s.elf",
+                          defect_description="overflow", data_dir=data)
+    message = assistant.append_message(job.id, "user", "build a plan", data_dir=data)
+    plan = AssistantPlan(job_id=job.id, mode="scripted", summary="one",
+                         steps=[AssistantStep(id="s", title="t", detail="d")])
+    first = assistant.save_plan(job.id, plan, data_dir=data, message_id=message["id"])
+    second = assistant.save_plan(job.id, plan, data_dir=data)
+    assert first["version"] == 1
+    assert second["version"] == 2
+    assert [m["content"] for m in assistant.list_messages(job.id, data_dir=data)] == ["build a plan"]
+    call_id = model_calls.record_call(
+        data_dir=data, model_requested="m", status="ok",
+        assistant_plan_id=first["id"], usage={"prompt_tokens": 1, "completion_tokens": 2},
+    )
+    from app.db.connection import connect
+    connection = connect(data)
+    try:
+        row = connection.execute("SELECT assistant_plan_id FROM model_calls WHERE id = ?", (call_id,)).fetchone()
+    finally:
+        connection.close()
+    assert row["assistant_plan_id"] == first["id"]
