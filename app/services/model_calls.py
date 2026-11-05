@@ -124,25 +124,41 @@ def record_provider_result(
     )
 
 
-def aggregate_job_usage(*, data_dir: str | Path, job_id: str) -> dict[str, int] | None:
+def aggregate_job_usage(*, data_dir: str | Path, job_id: str) -> dict[str, Any] | None:
     """Aggregate token usage for all model calls bound to one job.
 
-    Rows without real token counts make the aggregate unavailable (None);
-    missing usage is never reported as zero.
+    A call is job-bound either by ``model_calls.job_id`` or by an
+    ``attempt_id`` whose attempt belongs to a run of this job.  This matches
+    the canonical M1 query so a rebase cannot silently drop attempt rows.
+
+    Semantics:
+      * no calls                 -> None
+      * calls but no real tokens -> None
+      * some NULL, some real     -> sum real tokens, partial=True
+      * all real                 -> sum, partial=False
+
+    NULL is never counted as zero and never blanks real sibling usage.
     """
     connection = connect(data_dir)
     try:
         rows = connection.execute(
-            "SELECT prompt_tokens, completion_tokens FROM model_calls WHERE job_id = ?",
-            (job_id,),
+            "SELECT prompt_tokens, completion_tokens FROM model_calls "
+            "WHERE job_id = ? OR attempt_id IN ("
+            "  SELECT a.id FROM attempts a JOIN runs r ON r.id = a.run_id "
+            "  WHERE r.job_id = ?"
+            ")",
+            (job_id, job_id),
         ).fetchall()
     finally:
         connection.close()
     if not rows:
         return None
-    if any(row["prompt_tokens"] is None or row["completion_tokens"] is None for row in rows):
+    real = [row for row in rows if row["prompt_tokens"] is not None
+            and row["completion_tokens"] is not None]
+    if not real:
         return None
     return {
-        "input_tokens": sum(int(row["prompt_tokens"]) for row in rows),
-        "output_tokens": sum(int(row["completion_tokens"]) for row in rows),
+        "input_tokens": sum(int(row["prompt_tokens"]) for row in real),
+        "output_tokens": sum(int(row["completion_tokens"]) for row in real),
+        "partial": len(real) != len(rows),
     }

@@ -128,5 +128,31 @@ def test_aggregate_job_usage(tmp_path: Path) -> None:
     model_calls.record_call(data_dir=data, model_requested="m", status="ok",
                             job_id=job.id, usage={"prompt_tokens": 4, "completion_tokens": 5})
     assert model_calls.aggregate_job_usage(data_dir=data, job_id=job.id) == {
-        "input_tokens": 6, "output_tokens": 8,
+        "input_tokens": 6, "output_tokens": 8, "partial": False,
+    }
+    # An assistant failure row with no token counts must not erase real usage;
+    # it makes the aggregate partial instead.
+    model_calls.record_call(data_dir=data, model_requested="m", status="failed",
+                            job_id=job.id, usage=None)
+    assert model_calls.aggregate_job_usage(data_dir=data, job_id=job.id) == {
+        "input_tokens": 6, "output_tokens": 8, "partial": True,
+    }
+
+
+def test_aggregate_job_usage_includes_attempt_bound_rows(tmp_path: Path) -> None:
+    from app.services import model_calls
+    data, job = _job(tmp_path)
+    approval = jobs.approve_contract(
+        job.id, contract_revision=1, reviewer_label="test", data_dir=data,
+        input_sha256=job.original_sha256, manifest_sha256="1" * 64,
+    )
+    run = jobs.start_run(job.id, approval=approval, idempotency_key="usage-attempt",
+                         data_dir=data)
+    attempt = jobs.list_attempts(run.id, data_dir=data)[0]
+    model_calls.record_call(
+        data_dir=data, model_requested="m", status="ok", attempt_id=attempt.id,
+        route="route_b", usage={"prompt_tokens": 7, "completion_tokens": 9},
+    )
+    assert model_calls.aggregate_job_usage(data_dir=data, job_id=job.id) == {
+        "input_tokens": 7, "output_tokens": 9, "partial": False,
     }
