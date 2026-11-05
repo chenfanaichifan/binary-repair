@@ -101,3 +101,19 @@ def test_messages_and_model_call_link(tmp_path: Path) -> None:
         connection.close()
     assert row["job_id"] == job.id
     assert row["plan_id"] == plan.plan_id
+
+
+def test_generate_plan_context_contains_data_dir(tmp_path: Path) -> None:
+    data, job = _job(tmp_path)
+    seen = {}
+
+    def planner(*, description, context=None, client=None):
+        seen.update(context or {})
+        return AssistantPlan(
+            plan_id="ctx-plan", mode="llm",
+            steps=[AssistantStep(id="r", kind="review", title="Review", prompt="Review.")],
+        )
+
+    assistant.generate_plan("x", job_id=job.id, data_dir=data, planner=planner)
+    assert seen["data_dir"] == str(data)
+    assert seen["job_id"] == job.id
