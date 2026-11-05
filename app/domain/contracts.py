@@ -29,8 +29,6 @@ from dataclasses import dataclass
 from typing import Any, Iterable
 
 CONTRACT_SCHEMA_VERSION = 2
-CONTRACT_SCHEMA_VERSION_NO_INPUT = 3
-INPUT_MODES = ("argv", "stdin", "none")
 
 # V0-V5 kinds accepted by the acceptance engine (verification-design §4.1.4).
 OBLIGATION_KINDS = (
@@ -60,29 +58,18 @@ _TEXT_FIELDS = (
     "valid_domain",
     "valid_behavior",
     "forbidden_behavior",
+    "invalid_input_response",
 )
-_INVALID_TEXT_FIELDS = ("invalid_input_response",)
 _NUMERIC_FIELDS = (
     "dest_capacity_bytes",
     "max_valid_input_bytes",
     "capacity_includes_terminator",
     "invalid_exit_code",
 )
-_INVALID_FIELDS = _INVALID_TEXT_FIELDS + (
-    "max_valid_input_bytes",
-    "invalid_exit_code",
-    "invalid_stdout",
-    "invalid_stderr",
-)
-_BASE_KEYS = (
-    _TEXT_FIELDS + _LIST_FIELDS + ("dest_capacity_bytes",
-    "capacity_includes_terminator", "required_obligations", "schema_version")
-)
+_BYTE_TEXT_FIELDS = ("invalid_stdout", "invalid_stderr")
 _REQUIRED_KEYS = (
-    _BASE_KEYS + _INVALID_FIELDS
+    _TEXT_FIELDS + _LIST_FIELDS + _NUMERIC_FIELDS + _BYTE_TEXT_FIELDS + ("schema_version",)
 )
-_REQUIRED_KEYS_V3_ARGV = _REQUIRED_KEYS + ("input_mode",)
-_REQUIRED_KEYS_V3_NONE = _BASE_KEYS + ("input_mode",)
 
 
 def _clean_text(
@@ -142,38 +129,22 @@ class SecurityContract:
     valid_domain: str
     valid_behavior: str
     forbidden_behavior: str
-    invalid_input_response: str | None = None
-    dest_capacity_bytes: int = 1
-    max_valid_input_bytes: int | None = None
-    capacity_includes_terminator: bool = True
-    invalid_exit_code: int | None = None
-    invalid_stdout: str | None = None
-    invalid_stderr: str | None = None
+    invalid_input_response: str
+    dest_capacity_bytes: int
+    max_valid_input_bytes: int
+    capacity_includes_terminator: bool
+    invalid_exit_code: int
+    invalid_stdout: str
+    invalid_stderr: str
     authorized_edits: tuple[str, ...] = ()
     allowed_calls: tuple[str, ...] = ()
     environment_assumptions: tuple[str, ...] = ()
     required_obligations: tuple[str, ...] = OBLIGATION_KINDS
     schema_version: int = CONTRACT_SCHEMA_VERSION
-    input_mode: str = "argv"
 
     def __post_init__(self) -> None:
-        if self.schema_version not in (CONTRACT_SCHEMA_VERSION, CONTRACT_SCHEMA_VERSION_NO_INPUT):
-            raise ValueError("unsupported schema_version")
-        if self.schema_version == CONTRACT_SCHEMA_VERSION:
-            if self.input_mode != "argv":
-                raise ValueError("v2 contract must use input_mode argv")
-            self._require_legacy_rejection_fields()
-        else:
-            if self.input_mode not in INPUT_MODES:
-                raise ValueError(f"input_mode must be one of {INPUT_MODES}")
-            if self.input_mode == "none":
-                if any(getattr(self, field) is not None for field in _INVALID_FIELDS):
-                    raise ValueError(
-                        "input_mode none must omit invalid_* and max_valid_input_bytes; "
-                        "sentinel values are not allowed"
-                    )
-            else:
-                self._require_legacy_rejection_fields()
+        if self.schema_version != CONTRACT_SCHEMA_VERSION:
+            raise ValueError(f"schema_version must be {CONTRACT_SCHEMA_VERSION}")
         entry = _clean_text(self.target_entry, "target_entry")
         if not _ENTRY_RE.match(entry):
             raise ValueError("target_entry must be a C identifier or 0x address")
@@ -181,44 +152,38 @@ class SecurityContract:
         object.__setattr__(
             self, "target_signature", _clean_text(self.target_signature, "target_signature", _MAX_ITEM)
         )
-        for field in ("valid_domain", "valid_behavior", "forbidden_behavior"):
+        for field in ("valid_domain", "valid_behavior", "forbidden_behavior", "invalid_input_response"):
             object.__setattr__(self, field, _clean_text(getattr(self, field), field))
-        if self.input_mode != "none":
-            object.__setattr__(
-                self, "invalid_input_response",
-                _clean_text(self.invalid_input_response, "invalid_input_response"),
-            )
 
         if not isinstance(self.dest_capacity_bytes, int) or isinstance(self.dest_capacity_bytes, bool):
             raise TypeError("dest_capacity_bytes must be an integer")
         if self.dest_capacity_bytes < 1:
             raise ValueError("dest_capacity_bytes must be >= 1")
+        if not isinstance(self.max_valid_input_bytes, int) or isinstance(self.max_valid_input_bytes, bool):
+            raise TypeError("max_valid_input_bytes must be an integer")
+        if self.max_valid_input_bytes < 0:
+            raise ValueError("max_valid_input_bytes must be >= 0")
         if not isinstance(self.capacity_includes_terminator, bool):
             raise TypeError("capacity_includes_terminator must be a bool")
-        if self.input_mode != "none":
-            if not isinstance(self.max_valid_input_bytes, int) or isinstance(self.max_valid_input_bytes, bool):
-                raise TypeError("max_valid_input_bytes must be an integer")
-            if self.max_valid_input_bytes < 0:
-                raise ValueError("max_valid_input_bytes must be >= 0")
-            if self.capacity_includes_terminator:
-                if self.max_valid_input_bytes >= self.dest_capacity_bytes:
-                    raise ValueError(
-                        "max_valid_input_bytes must be < dest_capacity_bytes when the terminator is counted"
-                    )
-            elif self.max_valid_input_bytes > self.dest_capacity_bytes:
+        if self.capacity_includes_terminator:
+            if self.max_valid_input_bytes >= self.dest_capacity_bytes:
                 raise ValueError(
-                    "max_valid_input_bytes must be <= dest_capacity_bytes when the terminator is not counted"
+                    "max_valid_input_bytes must be < dest_capacity_bytes when the terminator is counted"
                 )
-            if not isinstance(self.invalid_exit_code, int) or isinstance(self.invalid_exit_code, bool):
-                raise TypeError("invalid_exit_code must be an integer")
-            if not 0 <= self.invalid_exit_code <= 255:
-                raise ValueError("invalid_exit_code must be in 0..255")
-            object.__setattr__(
-                self, "invalid_stdout", _clean_byte_text(self.invalid_stdout, "invalid_stdout")
+        elif self.max_valid_input_bytes > self.dest_capacity_bytes:
+            raise ValueError(
+                "max_valid_input_bytes must be <= dest_capacity_bytes when the terminator is not counted"
             )
-            object.__setattr__(
-                self, "invalid_stderr", _clean_byte_text(self.invalid_stderr, "invalid_stderr")
-            )
+        if not isinstance(self.invalid_exit_code, int) or isinstance(self.invalid_exit_code, bool):
+            raise TypeError("invalid_exit_code must be an integer")
+        if not 0 <= self.invalid_exit_code <= 255:
+            raise ValueError("invalid_exit_code must be in 0..255")
+        object.__setattr__(
+            self, "invalid_stdout", _clean_byte_text(self.invalid_stdout, "invalid_stdout")
+        )
+        object.__setattr__(
+            self, "invalid_stderr", _clean_byte_text(self.invalid_stderr, "invalid_stderr")
+        )
 
         object.__setattr__(
             self, "allowed_calls", _clean_list(self.allowed_calls, "allowed_calls", pattern=_ENTRY_RE)
@@ -231,42 +196,27 @@ class SecurityContract:
         if not self.required_obligations:
             raise ValueError("required_obligations must not be empty")
 
-    def _require_legacy_rejection_fields(self) -> None:
-        missing = [field for field in _INVALID_FIELDS if getattr(self, field) is None]
-        if missing:
-            raise ValueError(f"missing contract fields: {sorted(missing)}")
-
     # -- serialization --------------------------------------------------------
     def to_dict(self) -> dict[str, Any]:
-        payload: dict[str, Any] = {
+        return {
             "schema_version": self.schema_version,
             "target_entry": self.target_entry,
             "target_signature": self.target_signature,
             "valid_domain": self.valid_domain,
             "valid_behavior": self.valid_behavior,
             "forbidden_behavior": self.forbidden_behavior,
+            "invalid_input_response": self.invalid_input_response,
             "dest_capacity_bytes": self.dest_capacity_bytes,
+            "max_valid_input_bytes": self.max_valid_input_bytes,
             "capacity_includes_terminator": self.capacity_includes_terminator,
+            "invalid_exit_code": self.invalid_exit_code,
+            "invalid_stdout": self.invalid_stdout,
+            "invalid_stderr": self.invalid_stderr,
             "authorized_edits": list(self.authorized_edits),
             "allowed_calls": list(self.allowed_calls),
             "environment_assumptions": list(self.environment_assumptions),
             "required_obligations": list(self.required_obligations),
         }
-        if self.schema_version == CONTRACT_SCHEMA_VERSION_NO_INPUT:
-            payload["input_mode"] = self.input_mode
-            if self.input_mode != "none":
-                payload["invalid_input_response"] = self.invalid_input_response
-                payload["max_valid_input_bytes"] = self.max_valid_input_bytes
-                payload["invalid_exit_code"] = self.invalid_exit_code
-                payload["invalid_stdout"] = self.invalid_stdout
-                payload["invalid_stderr"] = self.invalid_stderr
-        else:
-            payload["invalid_input_response"] = self.invalid_input_response
-            payload["max_valid_input_bytes"] = self.max_valid_input_bytes
-            payload["invalid_exit_code"] = self.invalid_exit_code
-            payload["invalid_stdout"] = self.invalid_stdout
-            payload["invalid_stderr"] = self.invalid_stderr
-        return payload
 
     def canonical_payload(self) -> dict[str, Any]:
         payload = self.to_dict()
@@ -290,25 +240,14 @@ class SecurityContract:
     def from_dict(cls, data: dict[str, Any]) -> "SecurityContract":
         if not isinstance(data, dict):
             raise TypeError("contract must be a dict")
-        schema = data.get("schema_version")
-        if schema == CONTRACT_SCHEMA_VERSION:
-            required = set(_REQUIRED_KEYS)
-        elif schema == CONTRACT_SCHEMA_VERSION_NO_INPUT:
-            mode = data.get("input_mode")
-            if mode not in INPUT_MODES:
-                raise ValueError(f"input_mode must be one of {INPUT_MODES}")
-            required = set(_REQUIRED_KEYS_V3_ARGV if mode != "none" else _REQUIRED_KEYS_V3_NONE)
-        else:
-            raise ValueError(f"unsupported schema_version: {schema!r}")
-        unknown = set(data) - required
+        unknown = set(data) - set(_REQUIRED_KEYS)
         if unknown:
             raise ValueError(f"unknown contract fields: {sorted(unknown)}")
-        missing = required - set(data)
+        missing = set(_REQUIRED_KEYS) - set(data)
         if missing:
             raise ValueError(f"missing contract fields: {sorted(missing)}")
-        if schema == CONTRACT_SCHEMA_VERSION_NO_INPUT and data["input_mode"] == "none":
-            return cls(**{key: data[key] for key in required})
-        return cls(**{key: data[key] for key in required})
+        return cls(**{key: data[key] for key in _REQUIRED_KEYS})
+
 
 # -- single canonicalization entry points for the controller -----------------
 # The controller must call these; it must not re-implement sorting or JSON
