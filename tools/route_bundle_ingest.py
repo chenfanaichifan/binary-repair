@@ -135,6 +135,30 @@ def _legacy_payload(bundle: Path, route: str) -> tuple[dict[str, Any], list[str]
     )
 
 
+def _verify_sums(bundle: Path) -> int:
+    """If the bundle ships SHA256SUMS, every listed file must match.
+
+    Accepts GNU coreutils text/binary markers (``hash  file`` and ``hash *file``).
+    """
+    path = bundle / "SHA256SUMS"
+    if not path.is_file():
+        return 0
+    count = 0
+    for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        parts = line.split(None, 1)
+        if len(parts) != 2:
+            raise IngestError(f"SHA256SUMS:{lineno}: malformed line")
+        expected, raw = parts
+        rel = raw.lstrip("* ")
+        source = _safe_file(bundle, rel)
+        if _sha256(source) != expected:
+            raise IngestError(f"SHA256SUMS:{lineno}: hash mismatch: {rel}")
+        count += 1
+    return count
+
+
 def _read_manifest(bundle: Path) -> dict[str, Any]:
     path = bundle / "bundle.json"
     if not path.is_file():
@@ -238,6 +262,7 @@ def ingest(
     else:
         manifest = _read_manifest(bundle)
         legacy_files = []
+    _verify_sums(bundle)
     if manifest.get("route") not in (None, route):
         raise IngestError("bundle route does not match attempt")
 
