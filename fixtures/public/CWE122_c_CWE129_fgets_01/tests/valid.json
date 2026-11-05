@@ -1,14 +1,18 @@
 {
   "case_id": "CWE122_c_CWE129_fgets_01",
-  "measured_by": "M3 (pending build)",
-  "original_sha256": null,
+  "original_sha256": "c9ddb9c257a81d97a32e3026eacfd2e3453b41bebbaab36e53505e47421c4915",
   "schema_version": 1,
   "tests": [
     {
       "argv": [
         "./original.elf"
       ],
-      "expected": null,
+      "expected": {
+        "return_code": 0,
+        "stdout": "Calling bad()...\n1\n0\n0\n0\n0\n0\n0\n0\n0\n0\nFinished bad()\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
       "id": "valid-lowest",
       "kind": "valid",
       "rationale": "index 0 is the first element; nine zeros then a one.",
@@ -19,7 +23,28 @@
       "argv": [
         "./original.elf"
       ],
-      "expected": null,
+      "expected": {
+        "return_code": 0,
+        "stdout": "Calling bad()...\n0\n1\n0\n0\n0\n0\n0\n0\n0\n0\nFinished bad()\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
+      "id": "valid-one",
+      "kind": "valid",
+      "rationale": "index 1 is inside the block, one above the lowest index; the store lands on the second element.",
+      "stdin_artifact": null,
+      "stdin_literal": "1\n"
+    },
+    {
+      "argv": [
+        "./original.elf"
+      ],
+      "expected": {
+        "return_code": 0,
+        "stdout": "Calling bad()...\n0\n0\n0\n0\n0\n1\n0\n0\n0\n0\nFinished bad()\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
       "id": "valid-middle",
       "kind": "valid",
       "rationale": "index 5 is inside the block.",
@@ -30,7 +55,12 @@
       "argv": [
         "./original.elf"
       ],
-      "expected": null,
+      "expected": {
+        "return_code": 0,
+        "stdout": "Calling bad()...\n0\n0\n0\n0\n0\n0\n0\n0\n0\n1\nFinished bad()\n",
+        "stderr": "",
+        "allowed_output_files": []
+      },
       "id": "valid-highest",
       "kind": "valid",
       "rationale": "index 9 is the last writable element.",

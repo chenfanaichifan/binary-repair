@@ -1,23 +1,40 @@
 {
-  "inputs": {
-    "origin": "verbatim copy of the SARD 112 test case",
-    "support": "verbatim copies of Juliet testcasesupport/std_testcase.h, std_testcase_io.h and io.c"
-  },
-  "output": "original.elf",
-  "reproduction": {
-    "reason": "original.elf is built by M3 on Linux; this host has no ELF compiler and no WSL distribution.",
-    "status": "unverified"
-  },
   "schema_version": 1,
-  "status": "pending",
-  "toolchain": {
-    "cc": "gcc",
-    "flags": "-O0 -g -DINCLUDEMAIN -DOMITGOOD -I support",
-    "sources": [
-      "src.c",
-      "support/io.c"
-    ],
-    "target": "x86_64-linux-gnu",
+  "compiler": {
+    "name": "gcc",
     "version": "13.3.0"
-  }
+  },
+  "flags": [
+    "-O0",
+    "-g",
+    "-fno-pie",
+    "-no-pie",
+    "-DINCLUDEMAIN",
+    "-DOMITGOOD"
+  ],
+  "argv": [
+    "gcc",
+    "-O0",
+    "-g",
+    "-fno-pie",
+    "-no-pie",
+    "-DINCLUDEMAIN",
+    "-DOMITGOOD",
+    "-I",
+    "support",
+    "-o",
+    "original.elf",
+    "src.c",
+    "support/io.c"
+  ],
+  "source": {
+    "url": "sard://2017-10-01-juliet-test-suite-for-c-cplusplus-v1-3.zip",
+    "commit": "sha256:ada9d7e1c323d283446df3f55bdee0d00bda1fed786785fe98764d58688f38eb",
+    "license": "NIST SARD test suite; archive identity recorded in defect.json"
+  },
+  "output": {
+    "path": "original.elf",
+    "sha256": "c9ddb9c257a81d97a32e3026eacfd2e3453b41bebbaab36e53505e47421c4915"
+  },
+  "network": false
 }
