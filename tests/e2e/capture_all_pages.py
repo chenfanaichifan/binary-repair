@@ -125,6 +125,19 @@ def main() -> int:
                 'document.querySelector(".agent-body").classList.contains("is-side-collapsed")'
             )
             shot("02b-agent-collapsed.png")
+
+            # 02c 控制台 · 窄条悬停浮出
+            session.eval_js(
+                '(() => { document.getElementById("agent-side").classList.add("is-peek"); return true; })()'
+            )
+            session.wait_js(
+                'document.getElementById("agent-side").classList.contains("is-peek")'
+            )
+            shot("02c-agent-peek.png")
+            session.eval_js(
+                '(() => { document.getElementById("agent-side").classList.remove("is-peek"); return true; })()'
+            )
+
             session.click('[data-testid="agent-side-toggle"]')
             session.eval_js(
                 '(() => { window.localStorage.removeItem("br.agent.side.collapsed"); return true; })()'

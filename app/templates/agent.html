@@ -14,6 +14,8 @@
   data-job-id="{{ job_id }}"
   data-fixture="{{ '1' if fixture else '0' }}"
   data-demo="{{ '1' if demo else '0' }}"
+  data-workspace="{{ workspace.id }}"
+  data-mode="{{ mode.id }}"
   data-csrf="{{ csrf_token }}"
 >
   <div class="agent-top">
@@ -22,6 +24,7 @@
       <p class="ds-page-sub">助手只做引导与解释；创建任务、开始执行由你点击确认，结论由验收引擎给出。</p>
     </div>
     <div class="agent-badges">
+      <span id="agent-workspace-chip" class="ds-chip" data-testid="agent-workspace-chip">{{ workspace.label }}</span>
       <span id="agent-mode-badge" class="ds-chip accent" data-testid="agent-mode-badge">助手模式：读取中…</span>
       <span id="agent-job-chip" class="ds-chip" data-testid="agent-job-chip">未选择任务</span>
       <span id="agent-poll" class="agent-poll" data-testid="agent-poll">待连接</span>

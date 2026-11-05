@@ -30,6 +30,7 @@ from app.backend import (
     get_backend,
 )
 from app.evidence_domains import evidence_domain
+from app.ui_config import load_ui_config, resolve_mode, resolve_workspace
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -207,22 +208,47 @@ def _auth_required_page() -> str:
 @app.get("/", response_class=HTMLResponse, name="landing_page")
 async def index(request: Request):
     """Render the landing page."""
+    ui = load_ui_config()
     return templates.TemplateResponse(
         request,
         "landing.html",
-        {"backend_note": backend_description(BACKEND)},
+        {
+            "backend_note": backend_description(BACKEND),
+            "ui": ui,
+            "default_workspace": resolve_workspace(ui, None),
+            "default_mode": resolve_mode(ui, None),
+        },
     )
 
 
+@app.get("/api/ui-config", name="ui_config")
+async def ui_config():
+    """Expose the workspace/mode catalogue the landing page renders from.
+
+    This is the GUI's own configuration. When a real backend owns it, only
+    ``app.ui_config.load_ui_config`` changes; the response shape stays.
+    """
+    return JSONResponse(load_ui_config())
+
+
 @app.get("/agent", response_class=HTMLResponse, name="agent_console")
-async def agent_console(request: Request, job: str = "", fixture: int = 0):
+async def agent_console(
+    request: Request,
+    job: str = "",
+    fixture: int = 0,
+    workspace: str = "",
+    mode: str = "",
+):
     """Render the M2 agent console shell (Lead record 86 / task T7.4).
 
     UI only: no planner, no model calls, no new write endpoints. Until M1's
     agent/execution fields and M5's assistant plan land, ?fixture=1 drives the
     shell with clearly labelled placeholder data, and the demo banner stays on.
     """
-    fixture_mode = bool(fixture)
+    ui = load_ui_config()
+    selected_workspace = resolve_workspace(ui, workspace or None)
+    selected_mode = resolve_mode(ui, mode or None)
+    fixture_mode = bool(fixture) or selected_mode["id"] == "demo"
     return templates.TemplateResponse(
         request,
         "agent.html",
@@ -232,6 +258,8 @@ async def agent_console(request: Request, job: str = "", fixture: int = 0):
             "job_id": job,
             "fixture": fixture_mode,
             "backend_note": backend_description(BACKEND),
+            "workspace": selected_workspace,
+            "mode": selected_mode,
         },
     )
 

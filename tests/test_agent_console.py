@@ -149,7 +149,7 @@ def test_landing_offers_console_without_breaking_original_cta():
     assert 'data-testid="landing-cta"' in response.text
     assert 'href="/jobs/new"' in response.text
     assert 'data-testid="landing-agent-cta"' in response.text
-    assert 'href="/agent"' in response.text
+    assert 'href="/agent?' in response.text
     # T7.8: the console is the primary entry; the form is the fallback.
     assert 'data-primary="1"' in response.text
     assert response.text.index('data-testid="landing-agent-cta"') < response.text.index(
@@ -210,5 +210,8 @@ def test_state_panel_can_collapse_into_a_single_column():
 
     css = (BASE_DIR / "app" / "static" / "css" / "agent.css").read_text(encoding="utf-8")
     collapsed = css.split(".agent-body.is-side-collapsed", 1)[1]
-    assert "display: none" in collapsed[:120]
-    assert "max-width: 820px" in collapsed[:400]
+    # Collapsed leaves a thin rail instead of removing the panel outright.
+    assert "width: 16px" in collapsed[:600]
+    assert "position: absolute" in collapsed[:400]
+    assert ":hover" in collapsed[:2600]
+    assert "max-width: 820px" in collapsed
