@@ -26,6 +26,7 @@ Run a command once and record the result before quoting it anywhere.
 
 ## Read first — when relevant
 
+- New to this project, or starting a fresh session with no history: `HANDOFF.md` at the repository root — onboarding memory (current state, the D0 baseline-branch decision, next tasks, stale documents, traps). It does not replace the rules in this file.
 - Product scope, acceptance criteria, outcome semantics: `docs_BinaryRepair/PRD-BinaryRepair-MVP.md`.
 - Architecture, data model, route design, verification ladder, operational defaults: `docs_BinaryRepair/TechDesign-BinaryRepair-MVP.md`.
 - Background research and source register (dated record, not requirements): `docs_BinaryRepair/research-BinaryRepair.md`.

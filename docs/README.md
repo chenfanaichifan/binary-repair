@@ -32,6 +32,7 @@ index.
 
 ## Start here
 
+- New agent onboarding: `../HANDOFF.md` at the repository root.
 - Current task board: `handoffs/BOARD.md`
 - Live execution framework: `handoffs/85-lead-gui-vm-integration-framework-2026-11-03.md`
 - Agent console redesign: `handoffs/86-lead-agent-gui-redesign-2026-11-03.md`
