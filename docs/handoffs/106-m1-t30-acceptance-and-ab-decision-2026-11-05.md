@@ -8,6 +8,11 @@
   change. No merge to `main`, no tag, no live-success claim.
 - Suite on this host: `410 passed / 2 skipped / 0 failed`
   (`--ignore=tests/e2e`; the two skips say `ELF execution requires Linux`).
+- **Update (record 107, 2026-11-05):** the 118 evidence is now delivered at
+  `delivery/t30-rebuild-2026-11-05/`; the package tabulates 21 fields (20 match,
+  1 differs by design), not the 12/13 in the original text. The T30 status is
+  unchanged, and M4 is **not** asked to upgrade. The canonical artifact path and
+  the `c274893` binding are in record 107 and in the package `PROVENANCE.md`.
 
 Numbering: `100`–`105` are M1's on this line; this is `106`. M3's `116`–`118`
 live on other lines and are cited here, not merged or renumbered.
@@ -40,14 +45,17 @@ The accepted claim is narrow:
 
 > In the baseline-clean `gate4-harness` window (snapshot uid 11), `sh build.sh`
 > on the T30 inputs produced `c9c2632e…23c9`, 25,344 bytes, byte-identical to
-> the committed `T30/original.elf`; `./trigger.sh` under `setarch -R` produced
-> one deterministic observation, `exit 0`, `stdout 05040a`, 3 bytes. This is
-> recorded as **PASS WITH LIMITATIONS**.
+> `docs/handoffs/evidence/T30/build/original.elf` at commit `c274893`;
+> `./trigger.sh` under `setarch -R` produced one deterministic observation,
+> `exit 0`, `stdout 05040a`, 3 bytes. This is recorded as
+> **PASS WITH LIMITATIONS**.
 
-Twelve of thirteen `build.json` fields match the rebuild; the thirteenth is
-`window.is_baseline`, and it differs because the rebuild is the baseline run
-while `build.json` records the earlier non-baseline window. That difference is
-the point of record 118, not a mismatch to paper over.
+Twenty of the twenty-one compared `build.json` fields match the rebuild; the
+twenty-first is `window.is_baseline`, and it differs because the rebuild is the
+baseline run while `build.json` records the earlier non-baseline window. That
+difference is the point of record 118, not a mismatch to paper over. (The first
+version of this record said 12/13; the 118 package later expanded its table to
+21 fields. Record 107 carries the correction.)
 
 ### 1.1 What M4 did verify
 
@@ -70,17 +78,19 @@ M1 re-ran those package checks here; they are recorded in
 | Limitation | Consequence |
 |---|---|
 | M4 did not rebuild and did not run the trigger | the rebuild is accepted **as reported**, not independently reproduced |
-| The record 118 evidence package (`01`–`07`, `collect.sh`, `README.md`, and the top-level `SHA256SUMS`) is absent from this workspace and from the repo | the claimed 10 files and their two manifests (the 5-entry transport `06-SHA256SUMS` and the 9-entry directory `SHA256SUMS`) cannot be re-hashed here; only the workspace `README.md` exists |
+| ~~The record 118 evidence package is absent~~ — **resolved by record 107** | the 10 files are now at `delivery/t30-rebuild-2026-11-05/`; the top-level zip and both manifests re-hash there. The original absence was the limitation; it is no longer one |
 | The guest is not available in this session | no M1 re-run of `build.sh` or `trigger.sh` |
 | Scope is gcc 13.3.0 / glibc 2.39 / this guest image | no claim about another compiler, libc, or distribution |
 | The trigger is deterministic only under `setarch -R` | with ASLR on, 10 runs produced 10 distinct `stdout` values; `05040a` is the no-ASLR observation, not a universal one |
 | `V1`/`V5` are package self-reports | M4 did not promote them; they remain fixture-scoped |
 | The T30 ZIP is flat while `README.txt` names `build/…` paths | a rebuild must reconcile the layout before using the documented paths |
 
-What would lift the limitations: deliver the record 118 evidence package to
-this workspace, re-hash it, then have M3/VMer re-run the build and trigger in a
-clean window with M4 or another verifier observing. Until then, the acceptance
-stands exactly as written: **build/trigger only, with the gaps named**.
+What remains to lift the other limitations: have M3/VMer re-run the build and
+trigger in a clean window with M4 or another verifier observing. The evidence
+delivery half is done in record 107. M1 does **not** ask M4 to upgrade record
+118; M4 may verify on its own record now that the bytes are readable. Until
+then, the acceptance stands exactly as written: **build/trigger only, with the
+gaps named**.
 
 ### 1.3 Why accept it anyway
 
@@ -112,6 +122,10 @@ Disposition, unchanged from record 118 §7:
 - The synthetic fixture's `output.sha256` stays `null`. Filling it with the
   variant digest would bind a recipe that was never run.
 - Nothing in 116 relieves T8.3, and nothing in 116 is T30 evidence.
+- 116 §8's **Fix A** (drop `harness.c`) and **Fix B** (remove `main` from the
+  synthetic `src.c`) are fixture-authoring fixes for the retired synthetic
+  sample. They are **not** the no-input contract A/B in §4, not a T8.3 decision,
+  and not a T30 source change. Record 107 §5 states the separation.
 
 The root cause of the link failure is resolved by record 118 §1: the upstream
 case guards its `main` with `#ifdef INCLUDEMAIN` and the T30 gcc line does not
@@ -461,7 +475,7 @@ both `ELF execution requires Linux`. A skip is not a pass.
 | `cwe416-corpus.txt` | 150 `.c` + 372 `.cpp` CWE416 files, 0 case sources reading input |
 | `constraints.txt` | main ancestry, tags, worktree state |
 | `suite.txt` | full and targeted suite results |
-| `118-evidence-absence.txt` | where the record 118 package is absent |
+| `118-evidence-absence.txt` | historical note: where the package was absent when 106 was written (superseded by record 107) |
 
 The delivery `SHA256SUMS` covers every file in that directory except itself.
 
