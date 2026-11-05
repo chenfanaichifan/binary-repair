@@ -32,6 +32,9 @@
     <span class="badge {% if route.outcome %}outcome-{{ route.outcome | replace('_', '-') }}{% else %}outcome-none{% endif %}" data-testid="evidence-outcome-{{ key }}">
       {{ outcome_labels_zh.get(route.outcome) or "尚无结论" }}
     </span>
+    {% if route.evidence %}
+    <span class="badge" data-testid="evidence-state-{{ key }}">evidence: {{ route.evidence }}</span>
+    {% endif %}
   </header>
 
   {% if route.outcome and route.outcome != "success_within_scope" %}
@@ -50,6 +53,7 @@
   {% endif %}
 
   <h3>验证义务（V0–V5）</h3>
+  {% if obligations[key] %}
   <table class="obligations">
     <thead>
       <tr><th>编号</th><th>类别</th><th>要求</th><th>结果</th><th>范围 / 依据</th><th>说明</th></tr>
@@ -67,6 +71,16 @@
       {% endfor %}
     </tbody>
   </table>
+  {% else %}
+  <p class="limits" data-testid="evidence-pending-{{ key }}">
+    {% if route.evidence == "not_persisted" %}
+    后端尚未写入本路线的义务结果（evidence: not_persisted）。此处不显示 <code>not_run</code> 占位，
+    也不代表“全部通过”；等结果回传后刷新即可。
+    {% else %}
+    本次快照没有包含本路线的义务结果（evidence: {{ route.evidence or "unknown" }}）。空表不等于通过。
+    {% endif %}
+  </p>
+  {% endif %}
 
   <h3>测试与范围</h3>
   <dl class="facts">

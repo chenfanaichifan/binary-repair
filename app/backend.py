@@ -73,13 +73,20 @@ def _route_verdict_field(route: dict[str, Any], field: str) -> Any:
 
 
 def _artifact_entry(route_key: str, item: dict[str, Any]) -> dict[str, Any]:
+    artifact_id = item.get("id") or None
+    # An artifact is downloadable only when the controller gave it an id and
+    # marked it available; a hash without bytes is metadata, not a download.
+    available = bool(artifact_id) and bool(item.get("available", True))
     return {
         "route": route_key,
+        "artifact_id": artifact_id,
         "name": item.get("name"),
         "role": item.get("role"),
         "sha256": item.get("sha256"),
         "size_bytes": item.get("size_bytes"),
-        "download": bool(item.get("id") and item.get("available", True)),
+        "available": available,
+        "content_url": item.get("content_url"),
+        "download": available,
     }
 
 
@@ -129,12 +136,19 @@ def build_export_bundle(
         candidate = _route_candidate_sha256(route, route_items)
         outcome = _route_outcome(route)
         verdict = route.get("verdict") if isinstance(route.get("verdict"), dict) else {}
+        # "not_persisted" is the controller telling us the worker never wrote
+        # obligation rows. Consumers must read that as "no evidence", never as
+        # "checks passed", so it is propagated verbatim instead of inferred.
+        evidence_state = route.get("evidence")
+        if not isinstance(evidence_state, str) or not evidence_state:
+            evidence_state = "persisted" if route_rows else "unknown"
         routes_out[key] = {
             "candidate_sha256": candidate,
             "outcome": outcome,
-            "reason": verdict.get("reason") or route.get("outcome_reason"),
+            "reason": verdict.get("reason") or route.get("outcome_reason") or None,
             "failing_obligation": verdict.get("failing_obligation"),
             "verification": route.get("verification"),
+            "evidence_state": evidence_state,
             "obligations": route_rows,
             "evidence": evidence,
         }
@@ -157,6 +171,11 @@ def build_export_bundle(
             limitations.append(f"Route {key}: no candidate binary is available.")
         if route["verification"] in (None, "not_run", "not_run"):
             limitations.append(f"Route {key}: verification is not_run.")
+        if route["evidence_state"] == "not_persisted":
+            limitations.append(
+                f"Route {key}: no obligation results have been received "
+                "(evidence not persisted); an empty table is not a pass."
+            )
     if not flat_artifacts:
         limitations.append("No evidence artifacts are available for download.")
 
@@ -187,6 +206,18 @@ def build_export_bundle(
         },
         "routes": routes_out,
         "artifacts": flat_artifacts,
+        "run": {
+            "id": run.get("id"),
+            "phase": run.get("phase"),
+            "manifest_sha256": run.get("manifest_sha256"),
+            "reviewed_scope_sha256": run.get("reviewed_scope_sha256"),
+        } if run else None,
+        "sync": {
+            "data_source": snapshot.get("data_source") or ("mock" if demo else "controller"),
+            "execution": snapshot.get("execution"),
+            "sources": ["GET /api/jobs/{id}", "GET /api/jobs/{id}/obligations", "GET /api/jobs/{id}/artifacts"],
+            "gui_computes_outcome": False,
+        },
         "limitations": limitations,
         "not_run": not_run,
         "manifest_sha256": manifest,
@@ -506,6 +537,38 @@ class HttpBackend:
             self.get_artifacts(job_id),
             demo=bool(snapshot.get("demo")),
         )
+
+    def get_artifact_metadata(self, artifact_id: str) -> dict[str, Any]:
+        """Artifact metadata by id (id/name/role/sha256/size/media_type)."""
+        payload = self._request("GET", f"/api/artifacts/{artifact_id}", where="get_artifact")
+        if not isinstance(payload, dict) or not payload.get("id"):
+            raise BackendError(502, "Backend artifact metadata is missing an id.")
+        return payload
+
+    def get_artifact_bytes(self, artifact_id: str) -> tuple[bytes, str, str]:
+        """Fetch registered artifact bytes; never decoded as JSON.
+
+        The controller serves attachments, so this bypasses ``_request`` and its
+        JSON/language checks. A 404 means the bytes are not available, which the
+        caller must surface as a missing download instead of an empty file.
+        """
+        try:
+            response = self._client.get(f"/api/artifacts/{artifact_id}/download")
+        except httpx.HTTPError as exc:
+            raise BackendError(
+                502, f"Backend unavailable at {self.base_url}: {exc.__class__.__name__}."
+            ) from exc
+        if response.status_code == 404:
+            raise BackendError(404, "Artifact content is unavailable at the controller.")
+        if response.status_code >= 400:
+            raise BackendError(
+                502, f"Backend artifact download failed ({response.status_code})."
+            )
+        media_type = response.headers.get("content-type") or "application/octet-stream"
+        disposition = response.headers.get("content-disposition") or ""
+        match = re.search(r'filename="?([^";]+)"?', disposition)
+        filename = match.group(1) if match else f"{artifact_id}.bin"
+        return response.content, media_type, filename
 
 
 class LocalBackend:

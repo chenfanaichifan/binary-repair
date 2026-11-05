@@ -472,6 +472,36 @@ async def export_bundle(job_id: str):
     )
 
 
+@app.get("/api/artifacts/{artifact_id}")
+async def artifact_metadata(artifact_id: str):
+    """Proxy artifact metadata so evidence pages work against the controller."""
+    getter = getattr(BACKEND, "get_artifact_metadata", None)
+    if getter is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Artifact metadata is only available in controller (http) mode.",
+        )
+    return JSONResponse(getter(artifact_id))
+
+
+@app.get("/api/artifacts/{artifact_id}/download")
+async def artifact_download(artifact_id: str):
+    """Proxy registered artifact bytes; a missing byte stream is a 404, not an empty file."""
+    getter = getattr(BACKEND, "get_artifact_bytes", None)
+    if getter is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Artifact downloads are only available in controller (http) mode.",
+        )
+    content, media_type, filename = getter(artifact_id)
+    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", filename) or f"{artifact_id}.bin"
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{safe_name}"'},
+    )
+
+
 @app.get("/jobs/{job_id}/report", response_class=HTMLResponse)
 async def evidence_report(request: Request, job_id: str, download: int = 0):
     """Render the printable English evidence report (same data as JSON v2)."""
