@@ -28,8 +28,3 @@ docs/handoffs/evidence/** -text
 *.vmdk binary
 *.png binary
 *.jpg binary
-
-# A fixture is verified by hashing its files, so nothing under fixtures/public
-# may be rewritten on checkout - not even a text file. This also keeps
-# tests/SHA256SUMS byte-identical to what the intake hashed.
-fixtures/public/** -text
