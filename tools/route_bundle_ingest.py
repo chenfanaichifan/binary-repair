@@ -277,6 +277,7 @@ def ingest(
         if not isinstance(names, list):
             raise IngestError(f"gate {gate} artifacts must be a list")
         ids = []
+        candidate_id = None
         for name in names:
             if not isinstance(name, str):
                 raise IngestError(f"gate {gate} artifact name must be a string")
@@ -284,13 +285,20 @@ def ingest(
             total += path.stat().st_size
             if total > MAX_TOTAL_BYTES:
                 raise IngestError("bundle exceeds total size limit")
-            ids.append(_register_file(data_dir=data_dir, job_id=job_id,
-                                      attempt_id=attempt_id, bundle=bundle,
-                                      relative=name, role=f"{gate.lower()}_evidence"))
+            artifact_id = _register_file(data_dir=data_dir, job_id=job_id,
+                                         attempt_id=attempt_id, bundle=bundle,
+                                         relative=name, role=f"{gate.lower()}_evidence")
+            ids.append(artifact_id)
+            # A gate can carry several files (identity carries original, candidate,
+            # manifests). Keep the candidate when it is present, because the
+            # worker requires the declared candidate to be bound to a verified
+            # artifact; taking the first file silently loses that binding.
+            if candidate_id is None and _sha256(path) == manifest["candidate_sha256"]:
+                candidate_id = artifact_id
         if status == "passed" and not ids:
             raise IngestError(f"gate {gate} passed without evidence")
         if ids:
-            evidence[gate] = ids[0]
+            evidence[gate] = candidate_id or ids[0]
 
     analysis_ids = []
     for item in manifest.get("analysis") or []:

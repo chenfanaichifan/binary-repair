@@ -240,14 +240,31 @@ def _routeb(
     runtime, runtime_path, runtime_detail = runtime_state(bundle)
     results["V3"] = runtime
     details["V3"] = runtime_detail
-    if runtime == "passed" and runtime_path is not None:
-        evidence["V3"] = _register(
-            data_dir=data_dir,
-            job_id=job_id,
-            attempt_id=attempt_id,
-            source=runtime_path,
-            role="routeb_manifest_repaired",
-        )
+    # V3 has two distinct kinds. An unchanged round trip is recorded as evidence
+    # but never earns behaviour credit: it may preserve the vulnerability.
+    v3_kind = None
+    if runtime_path is not None:
+        if runtime_path.name == "manifest-compare.json":
+            v3_kind = "round_trip"
+            _register(
+                data_dir=data_dir,
+                job_id=job_id,
+                attempt_id=attempt_id,
+                source=runtime_path,
+                role="routeb_manifest_compare",
+            )
+        else:
+            v3_kind = "repaired_behaviour"
+            repaired_id = _register(
+                data_dir=data_dir,
+                job_id=job_id,
+                attempt_id=attempt_id,
+                source=runtime_path,
+                role="routeb_manifest_repaired",
+            )
+            if runtime == "passed":
+                evidence["V3"] = repaired_id
+    details["V3_kind"] = v3_kind
 
     return {
         "route": "route_b",

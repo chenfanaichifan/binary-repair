@@ -140,7 +140,7 @@ If a checkout has no `app/controller_api.py`, this tree also ships a bridge back
 by the real job store. It is a development fallback, not the integration target:
 
 ```powershell
-$env:BINARYREPAIR_CONTROLLER_DATA = "var/controller"
+$env:BINARYREPAIR_CONTROLLER_DATA = "var"   # same store as controller/worker
 .\.venv\Scripts\python.exe -m uvicorn tools.controller_service:app --host 127.0.0.1 --port 8000
 ```
 

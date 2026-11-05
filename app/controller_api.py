@@ -16,6 +16,7 @@ adapter calls these endpoints:
     GET  /api/jobs/{id}/analysis           screening state and analysis artifacts
     POST /api/jobs/{id}/analysis           request a screening (no executor yet)
     GET  /api/jobs/{id}/comparison         behavior-comparison artifact, when ingested
+    GET  /api/jobs/{id}/v3                 V3 round-trip vs repaired-behaviour
     GET  /api/artifacts/{id}               artifact metadata by id (legacy)
     GET  /api/artifacts/{id}/download      registered artifact bytes (legacy)
 
@@ -34,12 +35,14 @@ Then start the GUI with ``BINARYREPAIR_BACKEND=http`` and
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
@@ -457,7 +460,7 @@ def _analysis_payload(job_id: str, record: jobs.JobRecord) -> dict[str, Any]:
         "detail": state["detail"],
         "phase": record.phase,
         "screening": None,
-        "artifacts": [_artifact_metadata(row) for row in state["rows"]],
+        "artifacts": [_artifact_metadata(row, verify_hash=True) for row in state["rows"]],
     }
 
 
@@ -480,10 +483,15 @@ def _comparison_payload(job_id: str) -> dict[str, Any]:
 
     row = rows[0]
     base["status"] = "available"
-    base["artifacts"] = [_artifact_metadata(row)]
+    base["artifacts"] = [_artifact_metadata(row, verify_hash=True)]
     path = _artifact_file(row)
     if path is None:
         base["detail"] = "the comparison artifact is registered but its bytes are not on disk"
+        return base
+    # Content is only rendered from bytes that still match the registration.
+    problem = _artifact_problem(row, path, verify_hash=True)
+    if problem:
+        base["detail"] = f"refusing to render the comparison: {problem}"
         return base
     if path.stat().st_size > COMPARISON_MAX_BYTES:
         base["detail"] = (
@@ -499,6 +507,45 @@ def _comparison_payload(job_id: str) -> dict[str, Any]:
     base["comparison"] = parsed
     base["detail"] = ""
     return base
+
+
+V3_KIND_ROLES: dict[str, str] = {
+    "round_trip": "routeb_manifest_compare",
+    "repaired_behaviour": "routeb_manifest_repaired",
+}
+
+
+def _v3_payload(job_id: str) -> dict[str, Any]:
+    """The two V3 evidence kinds, kept separate.
+
+    ``round_trip`` records an unchanged round trip; it is evidence, not repair
+    credit. Only ``repaired_behaviour`` can earn V3, and the API says so in
+    ``v3_credit`` instead of letting a reader guess from two similar rows.
+    """
+    rows = jobs.list_artifacts(job_id, data_dir=_data_dir())
+    kinds: dict[str, Any] = {}
+    for kind, role in V3_KIND_ROLES.items():
+        matches = [row for row in rows if row.get("role") == role]
+        kinds[kind] = _artifact_metadata(matches[-1], verify_hash=True) if matches else None
+    repaired = kinds["repaired_behaviour"] is not None
+    round_trip = kinds["round_trip"] is not None
+    if repaired:
+        status, detail = "available", "repaired behaviour evidence is registered"
+    elif round_trip:
+        status = "available"
+        detail = (
+            "only round-trip evidence is registered; an unchanged round trip is "
+            "not repair V3 and earns no behaviour credit"
+        )
+    else:
+        status, detail = "not_provided", "no V3 evidence artifact is registered"
+    return {
+        "job_id": job_id,
+        "status": status,
+        "v3_credit": repaired,
+        "detail": detail,
+        "kinds": kinds,
+    }
 
 
 def _execution_status(record: jobs.JobRecord, run_row: Any) -> dict[str, Any]:
@@ -687,6 +734,53 @@ async def local_only(request: Request, call_next):
             {"detail": "Local access only (host check failed)."},
             status_code=403,
         )
+    return await call_next(request)
+
+
+ALLOWED_ORIGIN_HOSTS = {"127.0.0.1", "localhost", "::1"}
+STATE_CHANGING_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+def _state_change_origin_allowed(origin: str) -> bool:
+    """Accept only loopback origins for browser-initiated state changes."""
+    try:
+        parsed = urlsplit(origin)
+    except ValueError:
+        return False
+    if parsed.scheme not in {"http", "https"}:
+        return False
+    return (parsed.hostname or "").lower() in ALLOWED_ORIGIN_HOSTS
+
+
+def _state_change_authorized(request: Request) -> tuple[bool, int, str]:
+    origin = request.headers.get("origin")
+    if origin and not _state_change_origin_allowed(origin):
+        return False, 403, "cross-origin state change rejected"
+    if (request.headers.get("sec-fetch-site") or "").lower() == "cross-site":
+        return False, 403, "cross-site state change rejected"
+    token = os.environ.get("BINARYREPAIR_CONTROLLER_TOKEN")
+    if token:
+        supplied = request.headers.get("x-binaryrepair-token") or ""
+        authorization = request.headers.get("authorization") or ""
+        if not supplied and authorization.lower().startswith("bearer "):
+            supplied = authorization[7:].strip()
+        if not hmac.compare_digest(token, supplied):
+            return False, 401, "missing or invalid controller token"
+    return True, 200, ""
+
+
+@app.middleware("http")
+async def _guard_state_changes(request: Request, call_next: Any) -> Any:
+    """Reject cross-site or unauthenticated state changes.
+
+    Reads are unaffected: this service is loopback-only and every read is job
+    scoped. Uploads, approvals, runs, cancels, and analysis requests all pass
+    through here, so there is no unguarded write path.
+    """
+    if request.method in STATE_CHANGING_METHODS:
+        allowed, status, detail = _state_change_authorized(request)
+        if not allowed:
+            return JSONResponse({"detail": detail}, status_code=status)
     return await call_next(request)
 
 
@@ -1146,6 +1240,13 @@ def get_comparison(job_id: str) -> dict[str, Any]:
     """Original-vs-candidate behavior comparison, only from an ingested artifact."""
     _job_or_404(job_id)
     return _comparison_payload(job_id)
+
+
+@app.get("/api/jobs/{job_id}/v3")
+def get_v3(job_id: str) -> dict[str, Any]:
+    """V3 round-trip vs repaired-behaviour, as two separate kinds."""
+    _job_or_404(job_id)
+    return _v3_payload(job_id)
 
 
 @app.get("/api/artifacts/{artifact_id}")
