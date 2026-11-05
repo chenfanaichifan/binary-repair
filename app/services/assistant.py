@@ -11,9 +11,7 @@ from typing import Any
 
 from app.db.connection import connect
 from app.domain.assistant import AssistantPlan, deterministic_plan
-from app.services import jobs, model_calls
-from binaryrepair_ai.client import DeepSeekClient
-from binaryrepair_ai.settings import Settings
+from app.services import jobs
 
 
 def _now() -> str:
@@ -60,7 +58,7 @@ def save_plan(job_id: str, plan: AssistantPlan, *, data_dir: str | Path,
             "plan": plan.model_dump(), "model": model, "usage": usage}
 
 
-def _job_context(job: Any, *, data_dir: str | Path) -> dict[str, Any]:
+def assistant_context(job: Any, *, data_dir: str | Path) -> dict[str, Any]:
     return {
         "id": job.id,
         "filename": job.filename,
@@ -70,61 +68,35 @@ def _job_context(job: Any, *, data_dir: str | Path) -> dict[str, Any]:
     }
 
 
-def _llm_plan(job: Any, *, data_dir: str | Path, client: Any) -> tuple[AssistantPlan, dict | None, str | None]:
-    context = _job_context(job, data_dir=data_dir)
-    messages = [
-        {"role": "system", "content": (
-            "You are a BinaryRepair assistant. Return JSON only, matching the "
-            "AssistantPlan schema: schema_version, job_id, mode, summary, steps "
-            "(id/title/detail/state), questions (id/prompt/options). "
-            "You must not approve contracts, start runs, or claim a verdict."
-        )},
-        {"role": "user", "content": json.dumps(context, sort_keys=True)},
-    ]
-    response = client.chat_json(messages, max_tokens=1200, thinking=False)
-    raw = getattr(response, "content", "")
-    payload = json.loads(raw)
-    plan = AssistantPlan.model_validate(payload)
-    if plan.job_id != job.id:
-        raise ValueError("LLM plan job_id does not match job")
-    plan.mode = "llm"
-    plan.model = getattr(response, "model", None)
-    plan.fallback_reason = None
-    usage = getattr(response, "usage", None)
-    return plan, usage, plan.model
-
-
 def generate_plan(job_id: str, *, data_dir: str | Path,
-                  mode: str | None = None, client: Any | None = None) -> dict[str, Any]:
-    """Generate a plan. LLM failures fall back to the deterministic planner."""
+                  mode: str | None = None, client: Any | None = None,
+                  planner: Any | None = None) -> dict[str, Any]:
+    """Generate a plan.
+
+    T8.2 owner is M2.  The stable seam is ``planner`` (and its optional
+    ``client``); M2 can change ``app.services.assistant_llm`` without editing
+    this file.  Any planner exception falls back to the deterministic plan.
+    """
     job = jobs.get_job(job_id, data_dir=data_dir)
     if job is None:
         raise ValueError("job not found")
     selected = (mode or os.environ.get("BINARYREPAIR_ASSISTANT_MODE", "scripted")).strip().lower()
     if selected == "scripted":
-        return save_plan(job.id, deterministic_plan(_job_context(job, data_dir=data_dir)),
+        return save_plan(job.id, deterministic_plan(assistant_context(job, data_dir=data_dir)),
                          data_dir=data_dir)
     if selected == "llm":
         try:
-            if client is None:
-                settings = Settings.from_env()
-                client = DeepSeekClient(settings)
-            plan, usage, model = _llm_plan(job, data_dir=data_dir, client=client)
-            call_id = model_calls.record_call(
-                data_dir=data_dir, model_requested=model or "unknown",
-                model_returned=model, status="accepted_for_assistant",
-                route="assistant", usage=usage,
-            )
-            stored_usage = dict(usage or {})
-            stored_usage["model_call_id"] = call_id
-            return save_plan(job.id, plan, data_dir=data_dir, model=model,
-                             usage=stored_usage)
+            selected_planner = planner
+            if selected_planner is None:
+                from app.services.assistant_llm import generate_llm_plan
+                selected_planner = generate_llm_plan
+            return selected_planner(job_id=job.id, data_dir=data_dir, client=client)
         except Exception as exc:
-            fallback = deterministic_plan(_job_context(job, data_dir=data_dir))
+            fallback = deterministic_plan(assistant_context(job, data_dir=data_dir))
             fallback.fallback_reason = f"llm unavailable: {type(exc).__name__}: {exc}"[:500]
             return save_plan(job.id, fallback, data_dir=data_dir,
                              usage={"fallback": True})
     raise ValueError(f"unknown assistant mode: {selected!r}")
 
 
-__all__ = ["generate_plan", "get_plan", "save_plan"]
+__all__ = ["assistant_context", "generate_plan", "get_plan", "save_plan"]

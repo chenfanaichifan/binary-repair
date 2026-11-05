@@ -277,7 +277,7 @@ def ingest(
         if not isinstance(names, list):
             raise IngestError(f"gate {gate} artifacts must be a list")
         ids = []
-        candidate_id = None
+        ids_by_name: dict[str, str] = {}
         for name in names:
             if not isinstance(name, str):
                 raise IngestError(f"gate {gate} artifact name must be a string")
@@ -289,16 +289,21 @@ def ingest(
                                          attempt_id=attempt_id, bundle=bundle,
                                          relative=name, role=f"{gate.lower()}_evidence")
             ids.append(artifact_id)
-            # A gate can carry several files (identity carries original, candidate,
-            # manifests). Keep the candidate when it is present, because the
-            # worker requires the declared candidate to be bound to a verified
-            # artifact; taking the first file silently loses that binding.
-            if candidate_id is None and _sha256(path) == manifest["candidate_sha256"]:
-                candidate_id = artifact_id
+            ids_by_name[name] = artifact_id
         if status == "passed" and not ids:
             raise IngestError(f"gate {gate} passed without evidence")
         if ids:
-            evidence[gate] = candidate_id or ids[0]
+            # A gate can carry several files (identity carries original, candidate,
+            # manifests).  Keep the candidate when it is present, because the
+            # worker requires the declared candidate to be bound to a verified
+            # artifact; taking the first file silently loses that binding.  This
+            # is not specific to V0: M5 and M1 fixed the same defect independently.
+            chosen = ids[0]
+            for name, artifact_id in ids_by_name.items():
+                if _sha256(_safe_file(bundle, name)) == manifest["candidate_sha256"]:
+                    chosen = artifact_id
+                    break
+            evidence[gate] = chosen
 
     analysis_ids = []
     for item in manifest.get("analysis") or []:
@@ -323,7 +328,10 @@ def ingest(
                        role="behavior_comparison")
 
     for name in legacy_files:
-        if name in ("handoff.json", "SHA256SUMS"):
+        # result-bundle.json gets its own role below; registering it as a
+        # generic legacy_artifact first would win the path and leave the role
+        # wrong (M4 ac84862 finding).
+        if name in ("handoff.json", "SHA256SUMS", "result-bundle.json"):
             continue
         _register_file(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                        bundle=bundle, relative=name, role="legacy_artifact")
