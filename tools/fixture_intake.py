@@ -18,14 +18,14 @@ Required layout::
       build.json
       defect.json
       contract.json
-      tests/valid.json
-      tests/invalid.json
+      tests/valid.json       exactly 4 cases (exactly 1 for input_mode none)
+      tests/invalid.json     exactly 2 cases; must be absent for input_mode none
       tests/SHA256SUMS
 
-``tests/invalid.json`` is optional for a v3 contract with
-``input_mode: "none"``; when it exists it must contain zero cases. The four
-``invalid_*`` fields and ``max_valid_input_bytes`` must be absent in that mode.
-The older v2 argv contract (CWE121) is unchanged.
+A v3 contract with ``input_mode: "none"`` must not ship ``tests/invalid.json``
+at all; an empty file is still a placeholder and is rejected. The contract
+schema (M5) rejects the four ``invalid_*`` fields and ``max_valid_input_bytes``
+in that mode. The older v2 argv contract (CWE121) is unchanged.
 
 ``tests/SHA256SUMS`` lists every file in the fixture by its path relative to
 the fixture root, so editing ``original.elf`` without updating the sums fails
@@ -48,6 +48,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+# The contract schema is M5's, not a copy. Adding the repository root keeps the
+# checker runnable as ``python tools/fixture_intake.py`` from the repo root.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from app.domain.contracts import (  # noqa: E402
+    CONTRACT_SCHEMA_VERSION_NO_INPUT,
+    SecurityContract,
+)
+
 REQUIRED_FILES = (
     "src.c",
     "original.elf",
@@ -59,15 +70,6 @@ REQUIRED_FILES = (
     "tests/invalid.json",
     "tests/SHA256SUMS",
 )
-
-REQUIRED_OBLIGATIONS = {
-    "behaviour",
-    "identity",
-    "interface",
-    "reproducibility",
-    "structure",
-    "symbolic",
-}
 
 CWE_PATTERN = re.compile(r"^CWE-\d+$")
 
@@ -87,21 +89,8 @@ NETWORK_MARKERS = (
     "ftp://",
 )
 
-MIN_VALID_CASES = 4
-MIN_INVALID_CASES = 2
-
-# ``input_mode`` is a contract field owned by the schema (M5). The intake only
-# reads it as data: absent means the historical argv contract (CWE121), and
-# ``"none"`` means the sample takes no program input (CWE416/T30).
-CONTRACT_INPUT_MODES = ("argv", "stdin", "none")
-NO_INPUT_REJECTION_FIELDS = (
-    "invalid_input_response",
-    "invalid_exit_code",
-    "invalid_stdout",
-    "invalid_stderr",
-)
-# M5's v3 no-input shape treats max_valid_input_bytes as invalid-only too.
-NO_INPUT_OMIT_FIELDS = NO_INPUT_REJECTION_FIELDS + ("max_valid_input_bytes",)
+ARGV_VALID_CASES = 4
+ARGV_INVALID_CASES = 2
 
 
 @dataclass(frozen=True)
@@ -364,15 +353,15 @@ def _check_defect(
 
 
 def _contract_input_mode(data: Any) -> str:
-    """Read the mode without judging it; the schema owner defines the values.
+    """Read the mode without re-implementing the schema.
 
-    An absent field means the historical argv contract, so CWE121 keeps its
-    existing shape. Anything other than an explicit ``"none"`` is treated as
-    argv here; ``_check_contract`` reports an unknown value.
+    ``SecurityContract`` owns the allowed values and the field set. This helper
+    only decides which fixture *layout* to check: a v3 no-input contract has no
+    invalid manifest and a 1-valid/0-invalid matrix.
     """
     if (
         isinstance(data, dict)
-        and data.get("schema_version") == 3
+        and data.get("schema_version") == CONTRACT_SCHEMA_VERSION_NO_INPUT
         and data.get("input_mode") == "none"
     ):
         return "none"
@@ -385,72 +374,11 @@ def _check_contract(data: Any, findings: list[Finding]) -> None:
     if not isinstance(data, dict):
         findings.append(Finding("invalid_shape", "contract.json", "expected an object"))
         return
-    _require_keys(
-        data,
-        ("schema_version", "required_obligations", "forbidden_behavior", "valid_domain"),
-        "contract.json",
-        findings,
-    )
-    schema = data.get("schema_version")
-    mode = data.get("input_mode")
-    if schema == 2:
-        if "input_mode" in data:
-            findings.append(
-                Finding(
-                    "contract_input_mode_not_allowed_v2",
-                    "contract.json#input_mode",
-                    "v2 is the historical argv contract; input_mode starts at v3",
-                )
-            )
-    elif schema == 3:
-        if mode not in CONTRACT_INPUT_MODES:
-            findings.append(
-                Finding(
-                    "contract_input_mode_unknown",
-                    "contract.json#input_mode",
-                    f"expected one of {CONTRACT_INPUT_MODES}, got {mode!r}",
-                )
-            )
-        elif mode == "none":
-            present = [key for key in NO_INPUT_OMIT_FIELDS if key in data]
-            if present:
-                findings.append(
-                    Finding(
-                        "no_input_invalid_fields_present",
-                        "contract.json",
-                        "input_mode=none has no input to reject; these fields must "
-                        f"be absent: {present}",
-                    )
-                )
-    else:
-        findings.append(
-            Finding(
-                "contract_schema_version_unknown",
-                "contract.json#schema_version",
-                f"expected 2 or 3, got {schema!r}",
-            )
-        )
-    obligations = data.get("required_obligations")
-    if isinstance(obligations, list):
-        missing = REQUIRED_OBLIGATIONS - set(obligations)
-        if missing:
-            findings.append(
-                Finding(
-                    "contract_obligations",
-                    "contract.json#required_obligations",
-                    f"missing {sorted(missing)}",
-                )
-            )
-    elif "required_obligations" in data:
-        findings.append(
-            Finding("invalid_shape", "contract.json#required_obligations", "expected a list")
-        )
-    for key in ("forbidden_behavior", "valid_domain"):
-        value = data.get(key)
-        if key in data and (not isinstance(value, str) or not value.strip()):
-            findings.append(
-                Finding("empty_contract_field", f"contract.json#{key}", "must not be empty")
-            )
+    # The schema is M5's; do not keep a second copy of its field rules here.
+    try:
+        SecurityContract.from_dict(data)
+    except (TypeError, ValueError) as exc:
+        findings.append(Finding("contract_schema_invalid", "contract.json", str(exc)))
 
 
 def _load_cases(
@@ -607,46 +535,58 @@ def check_fixture(
         root, "valid.json", "valid", findings, allow_empty=(input_mode == "none")
     )
     if input_mode == "none":
-        invalid_path = root / "tests" / "invalid.json"
-        if invalid_path.is_file():
-            invalid_ids, invalid_sha = _load_cases(
-                root, "invalid.json", "invalid", findings, allow_empty=True
-            )
-        else:
-            invalid_ids, invalid_sha = [], None
-        if invalid_ids:
+        # No invalid manifest at all: an empty file is still a file and would
+        # be a placeholder for a case class that does not exist.
+        if (root / "tests" / "invalid.json").is_file():
             findings.append(
                 Finding(
-                    "no_input_invalid_cases_present",
+                    "no_input_invalid_manifest_present",
                     "tests/invalid.json",
-                    f"{len(invalid_ids)} invalid case(s); input_mode=none requires 0",
+                    "input_mode=none must not ship tests/invalid.json, empty included",
                 )
             )
-        if not valid_ids:
+        invalid_ids, invalid_sha = [], None
+        if len(valid_ids) != 1:
             findings.append(
                 Finding(
-                    "no_input_valid_case_missing",
+                    "no_input_valid_case_count_mismatch",
                     "tests/valid.json",
-                    "at least one valid case is required for input_mode=none",
+                    f"{len(valid_ids)} valid case(s); input_mode=none requires exactly 1",
                 )
             )
     else:
         invalid_ids, invalid_sha = _load_cases(root, "invalid.json", "invalid", findings)
 
-        if len(valid_ids) < MIN_VALID_CASES:
+        if len(valid_ids) < ARGV_VALID_CASES:
             findings.append(
                 Finding(
                     "too_few_valid",
                     "tests/valid.json",
-                    f"{len(valid_ids)} cases, need at least {MIN_VALID_CASES}",
+                    f"{len(valid_ids)} cases, need exactly {ARGV_VALID_CASES}",
                 )
             )
-        if len(invalid_ids) < MIN_INVALID_CASES:
+        elif len(valid_ids) > ARGV_VALID_CASES:
+            findings.append(
+                Finding(
+                    "too_many_valid",
+                    "tests/valid.json",
+                    f"{len(valid_ids)} cases, need exactly {ARGV_VALID_CASES}",
+                )
+            )
+        if len(invalid_ids) < ARGV_INVALID_CASES:
             findings.append(
                 Finding(
                     "too_few_invalid",
                     "tests/invalid.json",
-                    f"{len(invalid_ids)} cases, need at least {MIN_INVALID_CASES}",
+                    f"{len(invalid_ids)} cases, need exactly {ARGV_INVALID_CASES}",
+                )
+            )
+        elif len(invalid_ids) > ARGV_INVALID_CASES:
+            findings.append(
+                Finding(
+                    "too_many_invalid",
+                    "tests/invalid.json",
+                    f"{len(invalid_ids)} cases, need exactly {ARGV_INVALID_CASES}",
                 )
             )
 

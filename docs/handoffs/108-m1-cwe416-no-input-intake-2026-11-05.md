@@ -7,7 +7,13 @@
   change, no contract written. No merge to `main`, no tag, no live-success
   claim.
 - M5 reference: `origin/member-5/complete-m5` @ `4c36898`
-  (`feat(m5): add v3 no-input contract mode`), used as a read-only cross-check.
+  (`feat(m5): add v3 no-input contract mode`). It was a read-only cross-check
+  when this record was written; record 109 then integrated it by cherry-pick.
+- **Update (record 109):** the matrix is now exact — argv/stdin 4+2, none 1+0;
+  `tests/invalid.json` must be **absent** for none (an empty file is rejected);
+  contract validation is delegated to `SecurityContract`, so schema findings are
+  `contract_schema_invalid`. Current tests: 39 intake, 440 full. Where the text
+  below says "at least one" or allows an empty invalid file, record 109 wins.
 
 The Lead selected **option A**: `input_mode: "none"` in the M5 v3 contract.
 M1's part is the fixture intake and tests; the schema remains M5's.
@@ -19,10 +25,10 @@ M1's part is the fixture intake and tests; the schema remains M5's.
 | Item | Status |
 |---|---|
 | No-input contract route | **A selected** (M5 v3) |
-| `app/domain/contracts.py` | **unchanged** — M5 owns the schema |
+| `app/domain/contracts.py` | **M5 v3 integrated** by cherry-pick `4c36898` (`7c279a1`) — not a second schema |
 | Fixture intake | **adapted** for `input_mode: "none"` |
-| Intake tests | **36 passed** (`tests/test_fixture_intake.py`) |
-| Full suite | **425 passed / 2 skipped / 0 failed** |
+| Intake tests | **39 passed** (`tests/test_fixture_intake.py`) |
+| Full suite | **440 passed / 2 skipped / 0 failed** |
 | CWE121 contract | **unchanged**: v2, default argv, 4+2 matrix, same hash |
 | CWE416 fixture | **still incomplete**: no contract/build/ELF/tests; 7 `missing_file` |
 | Sentinel `invalid_*` for CWE416 | **none added** |

@@ -155,7 +155,18 @@ def runtime_state(bundle: Path) -> tuple[str, Path | None, str]:
     state, path = _runtime_state(bundle)
     if state == "not_run" and path is not None and path.name == "manifest-compare.json":
         return state, path, "round-trip only; not repair V3"
-    return state, path, ("runtime manifest " + state if path else "no runtime manifest in bundle")
+    if path is None:
+        return state, path, "no runtime manifest in bundle"
+    detail = "runtime manifest " + state
+    if path.name == "manifest-repaired.json":
+        payload = _read_json(path)
+        mode = payload.get("input_mode", "argv")
+        passed, total = payload.get("passed"), payload.get("total")
+        if isinstance(passed, int) and isinstance(total, int):
+            detail += f"; {passed}/{total}"
+        if mode == "none":
+            detail += "; input_mode=none, invalid not applicable"
+    return state, path, detail
 
 
 def _repro_state(bundle: Path) -> tuple[str, Path | None]:

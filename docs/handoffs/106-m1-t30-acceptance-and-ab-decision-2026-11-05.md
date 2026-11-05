@@ -13,10 +13,10 @@
   1 differs by design), not the 12/13 in the original text. The T30 status is
   unchanged, and M4 is **not** asked to upgrade. The canonical artifact path and
   the `c274893` binding are in record 107 and in the package `PROVENANCE.md`.
-- **Update (record 108, 2026-11-05):** the Lead selected **option A**. M5's v3
-  schema is at `origin/member-5/complete-m5` @ `4c36898`; M1 adapted the fixture
-  intake and tests in record 108. The schema is not merged into this branch, so
-  the CWE416 contract remains absent here.
+- **Update (records 108/109, 2026-11-05):** the Lead selected **option A**.
+  M5's v3 schema (`origin/member-5/complete-m5` @ `4c36898`) is now integrated
+  by cherry-pick `7c279a1`; M1 adapted the fixture intake and V3 runner in
+  records 108/109. The CWE416 contract itself remains absent.
 
 Numbering: `100`–`105` are M1's on this line; this is `106`. M3's `116`–`118`
 live on other lines and are cited here, not merged or renumbered.

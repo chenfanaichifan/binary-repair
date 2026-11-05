@@ -59,3 +59,33 @@ def test_compare_requires_original_to_be_unrepaired(tmp_path: Path, monkeypatch)
     result = cmp.compare(original, patched, tests)
     assert result["original_ok"] is False
     assert result["gate4_pass"] is False
+
+
+def test_no_input_compare_is_one_of_one(tmp_path: Path, monkeypatch) -> None:
+    tests = tmp_path / "tests"; tests.mkdir()
+    (tests / "valid.json").write_text(json.dumps({"tests": [
+        {"id": "v", "kind": "valid", "argv": ["./x"],
+         "expected": {"return_code": 0, "stdout": "OK\n", "stderr": ""}}
+    ]}))
+    original = _binary(tmp_path, "original")
+    patched = _binary(tmp_path, "patched")
+    monkeypatch.setattr(cmp, "run", lambda *a, **k: {
+        "returncode": 0, "stdout_hex": "4f4b0a", "stderr_hex": ""
+    })
+
+    result = cmp.compare(original, patched, tests, input_mode="none")
+    assert result["input_mode"] == "none"
+    assert result["invalid"] == "not_applicable"
+    assert result["same_count"] == result["total"] == 1
+    assert result["gate4_pass"] is True
+
+
+def test_no_input_compare_rejects_an_invalid_manifest(tmp_path: Path) -> None:
+    tests = tmp_path / "tests"; tests.mkdir()
+    (tests / "valid.json").write_text(json.dumps({"tests": [
+        {"id": "v", "kind": "valid", "argv": ["./x"],
+         "expected": {"return_code": 0, "stdout": "", "stderr": ""}}
+    ]}))
+    (tests / "invalid.json").write_text(json.dumps({"tests": []}))
+    with pytest.raises(ValueError, match="must not ship"):
+        cmp.compare(_binary(tmp_path, "a"), _binary(tmp_path, "b"), tests, input_mode="none")

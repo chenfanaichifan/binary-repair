@@ -28,8 +28,8 @@ fixtures/public/<name>/
   build.json            provenance + exact command + expected output hash
   defect.json           defect class and which invalid case triggers it
   contract.json         obligations, forbidden behaviour, valid domain
-  tests/valid.json      at least 4 valid cases (1 when input_mode is "none")
-  tests/invalid.json    at least 2 invalid cases; optional and 0 cases for "none"
+  tests/valid.json      exactly 4 valid cases (exactly 1 when input_mode is "none")
+  tests/invalid.json    exactly 2 invalid cases; must be absent for "none"
   tests/SHA256SUMS      every file, relative to <name>/
 ```
 
@@ -50,14 +50,12 @@ historical v2 argv contract, so CWE121 is unchanged. A v3 contract may set
 | `empty_provenance` | `source.url`, `source.commit` and `source.license` must be non-empty. "It was on a website" is not provenance. |
 | `defect_trigger_unknown` | `defect.json#trigger_case` must name a case that exists in `tests/invalid.json`. A prose claim that the class is covered is not accepted; the pointer has to resolve. |
 | `no_input_trigger_case_present` | For `input_mode: "none"` there is no invalid case; `trigger_case` must be absent or null. A leftover CWE121-shaped pointer is a fabricated invalid path. |
-| `contract_input_mode_unknown` | A v3 contract must set `input_mode` to `argv`, `stdin` or `none`. |
-| `contract_input_mode_not_allowed_v2` | The v2 contract is the historical argv shape; `input_mode` starts at v3. |
-| `contract_schema_version_unknown` | The intake understands schema `2` (argv) and `3` (input modes). |
-| `no_input_invalid_fields_present` | For `input_mode: "none"`, the four rejection fields and `max_valid_input_bytes` must be absent, not set to sentinels. |
-| `no_input_invalid_cases_present` | For `input_mode: "none"`, `tests/invalid.json` must contain 0 cases (or be absent). |
-| `no_input_valid_case_missing` | For `input_mode: "none"`, at least one valid case is required; the 4-case minimum does not apply. |
+| `contract_schema_invalid` | `SecurityContract` (M5) rejected the body: unknown `input_mode`, v2 carrying `input_mode`, an `invalid_*` or `max_valid_input_bytes` field in `none`, a missing field, and so on. |
+| `no_input_invalid_manifest_present` | For `input_mode: "none"`, `tests/invalid.json` must be absent. An empty file is a placeholder and is rejected. |
+| `no_input_valid_case_count_mismatch` | For `input_mode: "none"`, exactly 1 valid case is required. |
+| `too_many_valid` / `too_many_invalid` | The argv/stdin matrix is exactly 4 valid + 2 invalid; extra cases are rejected. |
 | `not_a_distinct_class` | T8.3 needs a second defect class. Pass `--baseline-cwe CWE-121`, and the fixture fails if it uses that class. |
-| `too_few_valid` / `too_few_invalid` | Fewer than 4 valid or 2 invalid cases leaves "the repair works" unproven. These minima apply to argv/stdin; `input_mode: "none"` uses 1 valid and 0 invalid. |
+| `too_few_valid` / `too_few_invalid` | Fewer than 4 valid or 2 invalid cases leaves "the repair works" unproven. The argv/stdin matrix is exactly 4+2; `input_mode: "none"` uses exactly 1 valid + 0 invalid. |
 | `case_sha_mismatch` | The test manifest cites a different binary than the committed one. |
 
 ## The `defect.json` file
@@ -99,11 +97,11 @@ The intake enforces three things beyond the normal layout:
 
 - **the four rejection fields must be absent** — `invalid_input_response`,
   `invalid_exit_code`, `invalid_stdout`, `invalid_stderr`, plus
-  `max_valid_input_bytes`, which M5's v3 treats as invalid-only. A sentinel
-  value is still a fabricated rejection path, so it is an error.
-- **the invalid case count must be 0** — `tests/invalid.json` may be absent or
-  present with `"tests": []`; any invalid case is an error.
-- **at least one valid case must exist** — the 4-valid minimum applies to
+  `max_valid_input_bytes`, which M5's v3 treats as invalid-only. The schema
+  rejects them; a sentinel value is still a fabricated rejection path.
+- **the invalid case count must be 0** — `tests/invalid.json` must be absent;
+  an empty file is a placeholder, not an omission, and is rejected.
+- **exactly one valid case must exist** — the 4-valid matrix applies to
   argv/stdin fixtures, not to a no-input program.
 
 `defect.json#trigger_case` is also not applicable: it must be absent or null.

@@ -28,7 +28,7 @@ and canonical-path follow-up.
 | T30 canonical path | **fixed** | `docs/handoffs/evidence/T30/build/original.elf` @ `c274893` |
 | `c274893` | **bound** | remote `origin`, branch `member-3/t62-host-safe`, head `472b26e` |
 | 116 §8 Fix A/B | **not the contract A/B, not T8.3** | see §5 |
-| No-input contract A/B | **A selected (M5 v3)** | Lead decision; M5 `4c36898`; M1 intake/test adaptation in record 108 |
+| No-input contract A/B | **A selected (M5 v3)** | Lead decision; M5 `4c36898` integrated by `7c279a1`; M1 intake/V3 adaptation in records 108/109 |
 | T8.3 | **BLOCKED** | no contract/tests/candidate/V0–V5 |
 | main / tag / live success | **no / no / no** | §6 |
 
