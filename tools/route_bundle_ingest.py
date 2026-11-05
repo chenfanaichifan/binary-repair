@@ -315,7 +315,10 @@ def ingest(
                        role="behavior_comparison")
 
     for name in legacy_files:
-        if name in ("handoff.json", "SHA256SUMS"):
+        # result-bundle.json gets its own role below; registering it as a
+        # generic legacy_artifact first would win the path and leave the role
+        # wrong (M4 ac84862 finding).
+        if name in ("handoff.json", "SHA256SUMS", "result-bundle.json"):
             continue
         _register_file(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                        bundle=bundle, relative=name, role="legacy_artifact")

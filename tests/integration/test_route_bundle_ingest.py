@@ -150,6 +150,16 @@ def test_ingest_accepts_legacy_interface_v1(tmp_path: Path) -> None:
     result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
                     route="route_a", bundle=bundle, trigger=False)
     assert result["evidence"]["V0"]
+    from app.db.connection import connect
+    connection = connect(data)
+    try:
+        role = connection.execute(
+            "SELECT role FROM artifacts WHERE job_id = ? AND relative_path LIKE ?",
+            (job.id, "%result-bundle.json"),
+        ).fetchone()["role"]
+    finally:
+        connection.close()
+    assert role == "legacy_result_bundle"
 
 
 def test_legacy_result_bundle_must_be_in_sums(tmp_path: Path) -> None:
