@@ -2,5 +2,7 @@
   "schema_version": 1,
   "cwe": "CWE-416",
   "title": "use of a heap block after it was freed",
-  "trigger_case": "invalid-first"
+  "trigger_case": "invalid-first",
+  "bug_site": "heap",
+  "baseline_bug_site": "stack"
 }

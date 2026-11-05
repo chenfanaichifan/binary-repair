@@ -66,6 +66,10 @@ REQUIRED_OBLIGATIONS = {
 
 CWE_PATTERN = re.compile(r"^CWE-\d+$")
 
+# Where the out-of-bounds access happens. T8.3 needs a site the frozen
+# CWE-121 fixture does not already cover (it is stack).
+BUG_SITES = frozenset({"stack", "heap", "global"})
+
 # A build script that can reach the network cannot be reproduced offline, which
 # is the point of a guest build path.
 NETWORK_MARKERS = (
@@ -239,7 +243,9 @@ def _check_defect(
     if not isinstance(data, dict):
         findings.append(Finding("invalid_shape", "defect.json", "expected an object"))
         return None
-    _require_keys(data, ("schema_version", "cwe", "title", "trigger_case"), "defect.json", findings)
+    _require_keys(
+        data, ("schema_version", "cwe", "title", "trigger_case"), "defect.json", findings
+    )
 
     cwe = data.get("cwe")
     if not isinstance(cwe, str) or not CWE_PATTERN.match(cwe):
@@ -250,18 +256,62 @@ def _check_defect(
                 f"expected 'CWE-<number>', got {cwe!r}",
             )
         )
-    else:
-        trigger = data.get("trigger_case")
-        if trigger not in invalid_ids:
+        cwe = None
+
+    trigger = data.get("trigger_case")
+    if trigger not in invalid_ids:
+        findings.append(
+            Finding(
+                "defect_trigger_unknown",
+                "defect.json#trigger_case",
+                f"{trigger!r} is not an invalid case in tests/invalid.json",
+            )
+        )
+
+    # A second class is not distinct just because the CWE label differs: two
+    # CWEs repaired in the same place are one exercise.  The site is
+    # stack/heap/global, and it is compared against the baseline only when the
+    # caller declares one.
+    bug_site = data.get("bug_site")
+    if bug_site is not None and bug_site not in BUG_SITES:
+        findings.append(
+            Finding(
+                "defect_bug_site",
+                "defect.json#bug_site",
+                f"expected one of {sorted(BUG_SITES)}, got {bug_site!r}",
+            )
+        )
+        bug_site = None
+
+    baseline_site = data.get("baseline_bug_site")
+    if baseline_site is not None:
+        if not isinstance(baseline_site, str) or not baseline_site.strip():
             findings.append(
                 Finding(
-                    "defect_trigger_unknown",
-                    "defect.json#trigger_case",
-                    f"{trigger!r} is not an invalid case in tests/invalid.json",
+                    "invalid_shape",
+                    "defect.json#baseline_bug_site",
+                    "expected a non-empty string",
                 )
             )
-        return cwe
-    return None
+        elif bug_site is None:
+            findings.append(
+                Finding(
+                    "defect_bug_site_missing",
+                    "defect.json#bug_site",
+                    "baseline_bug_site is declared, so bug_site must be stated too",
+                )
+            )
+        elif baseline_site == bug_site:
+            findings.append(
+                Finding(
+                    "not_a_distinct_class",
+                    "defect.json#baseline_bug_site",
+                    f"bug_site equals the baseline site {baseline_site!r}; the second "
+                    "class needs a different site, not the same bug again",
+                )
+            )
+
+    return cwe
 
 
 def _check_contract(root: Path, findings: list[Finding]) -> None:

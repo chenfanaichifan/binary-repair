@@ -87,21 +87,35 @@ This is a real gap, not a checker bug. `CWE121_src_char_declare_cpy_51b` ships
 M4 cannot verify a rebuild of that sample, and M3 has no recipe to hand the
 guest. A second-class fixture must not copy this shape.
 
-## What a second-class fixture still needs from the Lead
+## Second class: CWE-416, content complete and unbuilt
 
-The checker can be run today, but the fixture content cannot be chosen by M1
-alone:
+`CWE416_Use_After_Free__malloc_free_char_01` is the second-class fixture. The
+Lead chose CWE-416 over CWE-787, and the axis is the CWE itself, so the check is
+`--baseline-cwe CWE-121`.
 
-1. **Which class.** CWE-787 (cheap to build and verify) or CWE-416 (stronger
-   generic proof, longer path). Until this is decided, any sample M1 finds may
-   be thrown away.
-2. **What "different" means.** A different CWE, or a different repair mechanism
-   within the same CWE? This is exactly what `--baseline-cwe` versus
-   `--allow-same-cwe` encodes, so the decision is a flag, not a rewrite.
-3. **Which corpus is allowed.** `README.md` here permits team-built samples,
-   public CTF/teaching binaries and historical CVE binaries, and forbids
-   client-confidential content and unauthorized third-party binaries. The Lead
-   should name the specific source so the license is unambiguous.
+What it carries now: `src.c`, `harness.c`, `build.sh`, `build.json`,
+`defect.json`, `contract.json`, four valid cases, two defect-path cases,
+`tests/SHA256SUMS` covering every file, and `PROVENANCE.md`.
+
+What it does not carry: `original.elf`. The authoring host has no guest
+compiler and the sample must not be hand-built, so M3/VMer builds it from
+`build.sh` and records the digest in `build.json#output.sha256`. Until that
+happens intake prints exactly one finding:
+
+```
+$ python tools/fixture_intake.py --check fixtures/public/CWE416_Use_After_Free__malloc_free_char_01 --baseline-cwe CWE-121
+missing_file	original.elf	required for intake
+FAILED (1 finding(s))
+```
+
+That is the intended state. Content-complete plus unbuilt is not passing, and
+the checker says so in one line instead of four.
+
+The sample is synthetic, not imported: the pinned Juliet mirror commit
+(`01e353d`) does not resolve there, so no upstream bytes exist to licence.
+`PROVENANCE.md` states this and records the observation technique the invalid
+cases rely on (a same-size `malloc` after `free` so the stale read sees
+sentinel bytes) as a technique, not a guarantee.
 
 ## Rules for this directory
 

@@ -37,6 +37,8 @@ def build_fixture(
     *,
     cwe: str = "CWE-787",
     trigger: str = "invalid-first",
+    bug_site: str | None = "heap",
+    baseline_bug_site: str | None = None,
     valid_count: int = 4,
     invalid_count: int = 2,
 ) -> str:
@@ -77,6 +79,8 @@ def build_fixture(
                 "schema_version": 1,
                 "cwe": cwe,
                 "title": "out-of-bounds write past the end of a heap buffer",
+                "bug_site": bug_site,
+                "baseline_bug_site": baseline_bug_site,
                 "trigger_case": trigger,
             }
         ),
@@ -287,3 +291,27 @@ def test_the_existing_first_class_fixture_is_incomplete() -> None:
     # This is the real gap M4 would hit: the sample cannot be rebuilt and its
     # sums do not cover the binary.  A second-class fixture must not copy it.
     assert {"src.c", "build.sh", "build.json", "defect.json"} <= missing
+
+
+def test_a_bug_site_must_be_a_known_place(tmp_path: Path) -> None:
+    build_fixture(tmp_path / "f", bug_site="somewhere")
+    findings = check_fixture(tmp_path / "f")
+    assert any(f.code == "defect_bug_site" for f in findings)
+
+
+def test_a_second_class_cannot_reuse_the_baseline_site(tmp_path: Path) -> None:
+    build_fixture(tmp_path / "f", bug_site="stack", baseline_bug_site="stack")
+    findings = check_fixture(tmp_path / "f")
+    assert any(f.code == "not_a_distinct_class" for f in findings)
+
+
+def test_declaring_a_baseline_site_requires_the_new_site(tmp_path: Path) -> None:
+    build_fixture(tmp_path / "f", bug_site=None, baseline_bug_site="stack")
+    findings = check_fixture(tmp_path / "f")
+    assert any(f.code == "defect_bug_site_missing" for f in findings)
+
+
+def test_a_heap_site_after_a_stack_baseline_is_accepted(tmp_path: Path) -> None:
+    build_fixture(tmp_path / "f", bug_site="heap", baseline_bug_site="stack")
+    findings = check_fixture(tmp_path / "f")
+    assert not [f for f in findings if f.code == "not_a_distinct_class"]
