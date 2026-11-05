@@ -26,5 +26,6 @@ The V3 1/1 result is real, but it is not a success: V2 and V4 remain `not_run`,
 so the attempt is `inconclusive`, not `success_within_scope`.
 
 V4 is `not_run` because there is **no reviewed solver-accounting harness**; the
-guest does have angr 10.0.4.post1 and z3 5.1.0. It is not "no symbolic engine".
+guest does have angr 10.0.4.post1 and z3 5.1.0. This is a harness gap, not an
+engine-availability limitation.
 This package does not claim a gate promotion or T8.3 relief.
