@@ -2,14 +2,17 @@
 
 **Audience:** an AI coding agent that has never seen this repository.
 **Snapshot:** 2026-11-05, repository `D:\BinaryRepair_Project` (Windows host),
-branch `integration/consolidation-2026-10-29` at commit `39f4515`.
+branch `integration/consolidation-2026-10-29` at commit `da7fd7e`.
 **Purpose:** initialise your project memory. This is onboarding, not a rulebook:
 `AGENTS.md` holds the binding rules, dated handoff records hold the status, and
 this file tells you where everything is, what is actually true today, and what
 to do next.
+**Latest continuation:** read `docs/handoffs/90-live-bridge-continuation-2026-11-05.md`
+after this file for the owner's VM/API/push decisions, the verified Improve.md
+findings, and the P0 work required before a trustworthy live run.
 
-> Read this file first, then `AGENTS.md`, then the top of `MEMORY.md`. Do not
-> trust a status line in `README.md` or the "Gate status" table in
+> Read this file first, then `AGENTS.md`, then the top of `MEMORY.md` and record
+> 90. Do not trust a status line in `README.md` or the "Gate status" table in
 > `docs/handoffs/BOARD.md` before reading section 9 — both are stale in places.
 
 ## 0. The project in one minute
@@ -112,21 +115,24 @@ git switch -c integration/live-bridge-2026-11-03 origin/post-final/host-importer
 git log -1   # expect 1da22ff feat(host): atomic importer and inbox broker trigger worker
 ```
 
-Carry the documents with these two local commits (both docs-only, from
-2026-11-04):
+Carry the documents with these three local commits (the first two are from
+2026-11-04 and the third adds this onboarding file):
 
 - `77f0650 docs: archive live-bridge records and add documentation map`
 - `39f4515 docs: translate remaining Chinese documents to English`
+- `da7fd7e docs: add onboarding handoff for a new agent`
 
-`git cherry-pick 77f0650 39f4515` is the intended path; resolve conflicts in
-favour of the post-final product code plus the newer documents. If you switch
-branches before carrying them, this `HANDOFF.md` file disappears from the
-checkout — recover it with `git show 39f4515:HANDOFF.md > HANDOFF.md`.
+`git cherry-pick 77f0650 39f4515 da7fd7e` is the intended path; resolve
+conflicts in favour of the post-final product code plus the newer documents. If
+you switch branches before carrying them, this `HANDOFF.md` file disappears from
+the checkout — recover it with `git show da7fd7e:HANDOFF.md > HANDOFF.md`.
+The earlier instruction to recover it from `39f4515` was incorrect: the file did
+not exist in that commit.
 
 Record numbering: `83` exists on the baseline; `84` is the M4 host-importer row
 (here), `85` the framework, `86` the GUI redesign, `87` the assignment, `88` is
-reserved for the VM staging note and `89` for the verifier row. Next free number
-after that is **90**.
+reserved for the VM staging note and `89` for the verifier row. Record `90` is
+the 2026-11-05 live-bridge continuation; the next free number is **91**.
 
 ## 4. What the live bridge still needs (T6 gap inventory)
 
@@ -297,10 +303,10 @@ delivery/            local-only deliverables (report docx/pdf); git-ignored
    export ASCII". Do not translate UI strings or the tests that assert them.
    Chinese docs were translated to English on 2026-11-04; UI literals inside
    English documents are deliberate.
-9. **Handoff numbering.** 01-33 live in `docs_BinaryRepair/handoffs/`; 34-87 in
-   `docs/handoffs/`; duplicate numbers 69-73, 76, 80 come from parallel streams
-   and both copies are kept. Take the next free number (90+), do not renumber
-   history.
+9. **Handoff numbering.** 01-33 live in `docs_BinaryRepair/handoffs/`; 34-87 and
+   90 live in `docs/handoffs/`; 88/89 remain reserved. Duplicate numbers 69-73,
+   76, 80 come from parallel streams and both copies are kept. Take the next free
+   number (91+), do not renumber history.
 10. **The UI is not the product gap.** Do not rewrite the GUI or the acceptance
     engine as a shortcut; the missing link is execution/ingest/read surface.
 
@@ -327,27 +333,36 @@ delivery/            local-only deliverables (report docx/pdf); git-ignored
 1. **Verify the environment**: `python --version` (expect 3.14.6) and the
    acceptance command in section 5.
 2. **T6.0 — baseline migration** (was M1): create
-   `integration/live-bridge-2026-11-03` from `1da22ff`, carry the two local docs
-   commits, then run `tests/integration/test_host_broker.py` on the baseline
-   (expected 2 passed) and record the observed lines. Update the BOARD.
-3. **Host-only work can start immediately**: T6.1 ingest adapter + hardening,
-   T6.3 controller read surface, T7.1 flow endpoints, T8.1 assistant seam. These
-   do not need the guest.
-4. **Guest-dependent work is blocked on VM access**: T6.2 executor, T7.3
-   screening/comparison, T6.7/T7.7 verification. Do not fake them; report the
-   blocker.
-5. **AI repair (T6.6)** after the closed loop exists: provider proposes
+   `integration/live-bridge-2026-11-03` from `1da22ff`, carry the three local
+   docs commits listed in section 3, then run
+   `tests/integration/test_host_broker.py` on the baseline (expected 2 passed)
+   and record the observed lines. Add a dated record rather than rewriting stale
+   BOARD history.
+3. **Fix the P0 trust boundaries from record 90**: evidence/candidate/attempt
+   binding, strict Route B comparison, round-trip versus repaired-V3 separation,
+   GUI/controller authentication, and one canonical data directory. These are
+   prerequisites for trusting any live result.
+4. **Other host-only work can start immediately**: T6.1 ingest adapter +
+   hardening, T6.3 controller read surface, T7.1 flow endpoints, T8.1 assistant
+   seam. These do not need the guest.
+5. **Guest work is environment-unblocked but protocol-dependent**: the owner
+   confirmed on 2026-11-05 that a VM is available. Obtain or write the record 88
+   staging/snapshot note before T6.2 execution, then run T6.2, T7.3 and
+   T6.7/T7.7 with real isolation. Do not fake a guest result.
+6. **AI repair (T6.6)** after the closed loop exists: provider proposes
    `CandidateV1`, guest builds/tests, same V0-V5 ladder; deterministic frozen
-   candidate is only the loop's first proof.
-6. **T7 GUI** and **T8 assistant** follow the framework in records 86/87; the
+   candidate is only the loop's first proof. Hosted inference is authorized for
+   the public fixture; the key remains host-provider-only.
+7. **T7 GUI** and **T8 assistant** follow the framework in records 86/87; the
    LLM planner is display-only and must never approve, start runs or write a
    verdict.
-7. **Before any claim:** re-run the relevant measured command, write the dated
+8. **Before any claim:** re-run the relevant measured command, write the dated
    record with the observed values and hashes, and keep the append-only style.
 
 If you are a single AI replacing the five team members: work host-side first,
-keep one owner per layer as in record 87, and do not start guest work before VM
-access is confirmed with the owner.
+keep one owner per layer as in record 87, and use record 90 as the execution
+checklist. VM availability is confirmed, but real guest execution still requires
+the staging, isolation and reset details.
 
 ## 12. Glossary
 
