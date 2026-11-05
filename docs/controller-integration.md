@@ -66,6 +66,14 @@ Snapshot requirements:
 - `routes.A` and `routes.B`, each with `phase`, `outcome` (`null` while running),
   `stages[]`, `tests{passed,total}`, `verification`, `compatibility`,
   `changed_regions[]`, `elapsed_s`, `manual_interventions`, `ai_usage`.
+- `ai_usage` is `null`, or `{input_tokens, output_tokens, partial}`.
+  `partial: true` means at least one recorded model call had a NULL token count
+  and the sum covers only the calls that reported real tokens; `partial: false`
+  means every recorded call contributed. A plan fallback (no `model_calls` rows)
+  always reports `partial: false` because it reads a single stored plan record
+  that either has both counts or is not used at all. The flag is passed through
+  from `aggregate_job_usage` unchanged; it is never derived or dropped in the
+  controller.
 - `demo: false` once the controller runs real jobs; the GUI banner disappears
   automatically and `/api/jobs/{id}` stops being labelled as a fixture.
 - All data strings are English ASCII; the GUI scans snapshot/obligations/artifacts

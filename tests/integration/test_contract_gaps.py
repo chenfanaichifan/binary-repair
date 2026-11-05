@@ -170,6 +170,7 @@ def test_ai_usage_reports_recorded_tokens(pipeline) -> None:
     assert snapshot["routes"]["A"]["ai_usage"] == {
         "input_tokens": 12,
         "output_tokens": 3,
+        "partial": False,
     }
 
 def test_every_ingested_artifact_role_is_documented(pipeline) -> None:

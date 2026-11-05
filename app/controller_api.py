@@ -264,11 +264,18 @@ def _verified_artifact_response(job_id: str, artifact_id: str) -> FileResponse:
     )
 
 
-def _ai_usage_for_job(job_id: str) -> dict[str, int] | None:
+def _ai_usage_for_job(job_id: str) -> dict[str, Any] | None:
     """Provider token usage recorded for this job.
 
     ``None`` means nothing recorded real usage. A missing number is never
     rendered as a made-up one, and a partial record is not padded with zeros.
+
+    ``partial`` is passed through from :func:`aggregate_job_usage` unchanged:
+    ``True`` means at least one recorded call has a NULL token count, so the sum
+    covers only the calls that did report real tokens; ``False`` means every
+    recorded call contributed. The plan fallback always reports ``False``
+    because it reads one stored plan record that either has both counts or is
+    not used at all -- there are no siblings that could be missing.
     """
     from app.db.connection import connect
     from app.services.assistant import get_plan
@@ -290,7 +297,8 @@ def _ai_usage_for_job(job_id: str) -> dict[str, int] | None:
         # Calls exist, so the aggregate is authoritative. It is None only when
         # no row carries real tokens; when some rows do, it returns their sum
         # with ``partial: true``. Falling back to the plan would mix two
-        # sources under one label.
+        # sources under one label. Return it untouched so the flag cannot be
+        # dropped or re-derived here.
         return aggregate_job_usage(data_dir=_data_dir(), job_id=job_id)
 
     # Older jobs have no model_calls rows; their plan is the only real record.
@@ -301,7 +309,11 @@ def _ai_usage_for_job(job_id: str) -> dict[str, int] | None:
     values = [usage.get("input_tokens"), usage.get("output_tokens")]
     if not all(isinstance(value, int) and value >= 0 for value in values):
         return None
-    return {"input_tokens": values[0], "output_tokens": values[1]}
+    return {
+        "input_tokens": values[0],
+        "output_tokens": values[1],
+        "partial": False,
+    }
 
 
 def _placeholder_routes(phase: str) -> dict[str, dict[str, Any]]:
@@ -1408,7 +1420,8 @@ def _agent_block(plan: Any) -> dict[str, Any]:
 
     ``mode`` reports what actually ran, ``fallback`` says whether the LLM path
     degraded, and ``tokens`` is the M5 ``{prompt, completion}`` shape — not the
-    ``ai_usage`` ``{input_tokens, output_tokens}`` shape used for job calls.
+    ``ai_usage`` ``{input_tokens, output_tokens, partial}`` shape used for job
+    calls.
     """
     return {
         "mode": plan.mode,
