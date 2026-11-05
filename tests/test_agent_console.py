@@ -387,3 +387,32 @@ def test_plan_rendering_is_not_class_specific():
     assert 'nextStep.kind === "review"' in AGENT_JS
     assert "question.label || labels[question.key]" in AGENT_JS
     assert "样本 → 缺陷 → 用例 → 契约 → 复核" not in AGENT_JS
+
+
+def test_agent_js_marks_a_deterministic_plan():
+    # mode=deterministic is a real answer, not a model answer; the page has to
+    # say so even when fallback is false.
+    assert 'plan.mode === "deterministic"' in AGENT_JS
+    assert "确定性计划（未调用模型）" in AGENT_JS
+
+
+def test_plan_503_keeps_the_fallback_reason():
+    import httpx
+
+    from app.backend import BackendError, HttpBackend
+
+    def handler(request):
+        return httpx.Response(503, json={
+            "plan": None,
+            "error": "assistant_unavailable",
+            "fallback_reason": "no LLM client is configured on this host",
+        }, request=request)
+
+    backend = HttpBackend(base_url="http://test", transport=httpx.MockTransport(handler))
+    try:
+        backend.get_plan("fix it")
+    except BackendError as exc:
+        assert exc.status_code == 503
+        assert "no LLM client" in exc.detail
+    else:  # pragma: no cover
+        raise AssertionError("503 must surface as BackendError")

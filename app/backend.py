@@ -537,8 +537,11 @@ class HttpBackend:
                 payload = response.json()
             except ValueError:
                 payload = None
-            if isinstance(payload, dict) and isinstance(payload.get("detail"), str):
-                detail = payload["detail"]
+            if isinstance(payload, dict):
+                if isinstance(payload.get("fallback_reason"), str):
+                    detail = payload["fallback_reason"]
+                elif isinstance(payload.get("detail"), str):
+                    detail = payload["detail"]
             raise BackendError(
                 503 if response.status_code >= 500 else response.status_code, detail
             )

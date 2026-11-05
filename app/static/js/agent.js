@@ -1168,6 +1168,9 @@
           pushMessage("assistant",
             "注意：这是后端给出的回退计划（" + (plan.fallback_reason || "未说明原因") +
             "），没有发生真实模型调用。步骤仍按契约渲染。");
+        } else if (plan.mode === "deterministic") {
+          pushMessage("assistant",
+            "说明：这是确定性计划（未调用模型），步骤来自固定模板，不是模型输出。");
         }
       });
     } else {
