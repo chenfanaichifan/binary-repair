@@ -425,3 +425,11 @@ def test_usage_null_is_not_rendered_as_zero():
     assert 'input === undefined ? "未提供"' in AGENT_JS
     assert "input_tokens || 0" not in AGENT_JS
     assert 'setText("agent-model-meta", "未提供")' in AGENT_JS
+
+
+def test_partial_usage_is_labelled():
+    # partial=true means the sum is real but incomplete; it must never be
+    # presented as the full number.
+    assert "partial: usage.partial === true" in AGENT_JS
+    assert "（部分真实用量）" in AGENT_JS
+    assert "tokens：未提供" in AGENT_JS

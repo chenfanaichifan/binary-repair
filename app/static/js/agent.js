@@ -216,7 +216,7 @@
    * 到位后，只需调整这里与取数函数，不动渲染层。 */
 
   function routeUsage(routes) {
-    // M1: routes.<A|B>.ai_usage is {input_tokens, output_tokens} or null.
+    // M1: routes.<A|B>.ai_usage is {input_tokens, output_tokens, partial} or null.
     // Only surface numbers the backend actually sent; never fill them in.
     if (!routes || typeof routes !== "object") return null;
     var keys = Object.keys(routes);
@@ -226,6 +226,7 @@
         return {
           input: typeof usage.input_tokens === "number" ? usage.input_tokens : undefined,
           output: typeof usage.output_tokens === "number" ? usage.output_tokens : undefined,
+          partial: usage.partial === true,
           model: typeof usage.model === "string" ? usage.model : null
         };
       }
@@ -241,7 +242,7 @@
       if (usage) {
         agent = {
           model: usage.model,
-          tokens: { input: usage.input, output: usage.output }
+          tokens: { input: usage.input, output: usage.output, partial: usage.partial }
         };
       }
     }
@@ -788,8 +789,15 @@
         var input = agent.tokens.input !== undefined ? agent.tokens.input : agent.tokens.prompt;
         var output = agent.tokens.output !== undefined ? agent.tokens.output : agent.tokens.completion;
         // null/absent usage is "未提供", never 0 and never an estimate.
-        parts.push("tokens：input " + (input === undefined ? "未提供" : input) +
-          " / output " + (output === undefined ? "未提供" : output));
+        // partial=true means some rows had no usable counts; the sum is real
+        // but incomplete, so it must say so.
+        if (input === undefined && output === undefined) {
+          parts.push("tokens：未提供");
+        } else {
+          parts.push("tokens：input " + (input === undefined ? "未提供" : input) +
+            " / output " + (output === undefined ? "未提供" : output) +
+            (agent.tokens.partial ? "（部分真实用量）" : ""));
+        }
       }
       setText("agent-model-meta", parts.join("；"));
     } else {

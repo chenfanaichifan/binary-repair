@@ -103,7 +103,7 @@ M1 的 `7984bb6` 与 503 契约 `3fec2c0` 已进入 `canonical/m1-m5-integration
 |---|---|
 | `obligations.scope` ∈ metadata / binary / replay / model | 优先渲染持久化值，`data-evidence-scope-source="persisted"`；缺失时回退 kind 表并标 `kind` |
 | `GET /api/jobs/{id}/attempts` | 代理到同名路径；端点不存在时返回 `available:false`，报告写 `not_available`，**不写成“零次尝试”** |
-| `ai_usage = {input_tokens, output_tokens}` 或 `null` | 只显示后端给的数字；`null`/缺失显示“未提供”，不显示 0 |
+| `ai_usage = {input_tokens, output_tokens, partial}` 或 `null` | 只显示后端给的数字；`null`/全缺失显示“未提供”，不显示 0；`partial=true` 时在数字后标“（部分真实用量）”，不当作完整值 |
 | artifact `role` | GUI 不按 `route_a_evidence` / `route_b_evidence` 映射；原样显示后端 `role` |
 
 语义决定（答复 M1）：

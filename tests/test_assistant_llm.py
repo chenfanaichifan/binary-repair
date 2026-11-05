@@ -266,6 +266,20 @@ def test_total_only_usage_does_not_become_a_token_pair(tmp_path: Path):
     assert row["total_tokens"] == 9
 
 
+def test_one_sided_usage_is_kept_but_never_completed(tmp_path: Path):
+    # A half-reported usage row must stay half-reported: it feeds the job-level
+    # "partial" flag instead of being completed with zeros.
+    data, job = _job(tmp_path)
+    plan = generate_plan("fix it", client=FakeTransport(_payload(), usage={"prompt_tokens": 11}),
+                         context={"data_dir": str(data), "job_id": job.id})
+    assert plan.tokens is None
+    row = _rows(data)[0]
+    assert row["prompt_tokens"] == 11
+    assert row["completion_tokens"] is None
+    assert row["total_tokens"] is None
+    assert json.loads(row["usage_json"]) == {"prompt_tokens": 11}
+
+
 def test_latency_goes_to_its_own_column(tmp_path: Path):
     data, job = _job(tmp_path)
     plan = generate_plan("fix it", client=FakeTransport(_payload(), usage={"latency_ms": 42}),
