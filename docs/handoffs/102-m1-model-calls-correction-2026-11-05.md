@@ -56,9 +56,16 @@ partial row -> `None`, plan-only fallback, and no-source -> `None`.
 ## Merge note
 
 M5 `c50ca04` renumbered its assistant migrations to `007`/`008` to avoid this
-branch's `006_obligation_scope.sql`. The chain is `002, 003, 004, 006, 007, 008`;
-version 5 is unused on purpose, and `test_db_v2` pins `[1, 2, 3, 4, 6, 7, 8]` with
-that reason in the test.
+branch's `006_obligation_scope.sql`. That left version 5 unused and pinned
+`[1, 2, 3, 4, 6, 7, 8]`. It was later compacted to a contiguous chain:
+
+    005_assistant_messages
+    006_obligation_scope
+    007_assistant_plan_superseded
+
+`test_db_v2` now pins `[1, 2, 3, 4, 5, 6, 7]`. The gap had no functional effect
+(`apply_migrations` skips `version <= current`), but seven files reaching version
+8 made the next author's numbering guesswork.
 
 ## Ledger answers accepted
 
