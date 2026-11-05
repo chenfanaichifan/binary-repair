@@ -3,9 +3,9 @@
 - Date: 2026-11-05
 - Owner: Member 1 (host backend)
 - Branch: `m1/t30-acceptance-ab-2026-11-05`
-- Common baseline: `canonical/m1-m5-integration` @ `1430e1e` (v3 schema
-  `708d957` + intake). M1 merged it; `app/domain/contracts.py` diff vs the
-  baseline is 0.
+- Common baseline: `canonical/m1-m5-integration` @ `40a4153` (v3 schema
+  `708d957`, intake `1430e1e`, V3 acceptance `d56cbdc`, evidence `40a4153`).
+  M1 merged it; `app/domain/contracts.py` diff vs the baseline is 0.
 - Scope: schema integration, fixture-intake matrix, and the V3 no-input
   acceptance path. **No fixture byte change, no CWE416 contract.** No merge to
   `main`, no tag, no live-success claim.
@@ -20,7 +20,7 @@ it, but no sentinel `invalid_*` field is written.
 
 | Item | Status |
 |---|---|
-| M5 v3 schema | **integrated on the common baseline** — `708d957` (canonical `1430e1e`); M1 merged it |
+| M5 v3 schema | **integrated on the common baseline** — `708d957` (canonical `40a4153`); M1 merged it |
 | Second schema copy | **none** — one `app/domain/contracts.py`; diff vs canonical baseline is 0 |
 | CWE121 v2 hash | **`24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37`** (unchanged) |
 | no-input v3 hash | `98ba686723ec85a7631e156dc240315d1cf4736fde0f1adc9c709d52ef3a33a7` |
@@ -149,13 +149,28 @@ sentinel field therefore fails before any case is run, not only at intake.
   before writing an artefact; the executor rejects a sentinel contract before
   creating a bundle; `_verify_contract` rejects the same body.
 - Full suite on M1: **449 passed / 2 skipped / 0 failed**.
-- Common baseline full suite: **430 passed / 2 skipped / 0 failed**.
+- Common baseline full suite: **446 passed / 2 skipped / 0 failed**.
 - M1 local checkpoint before the baseline merge (`1b08ae5`): **425 passed / 2 skipped / 0 failed**.
 
 **425/2/0 is the recorded M1 local checkpoint at `1b08ae5`**; the post-baseline
-branch has 449 tests because it adds the v3 and V3 no-input tests. CI still
+branch has 449 tests because it adds the v3 and V3 no-input tests. The baseline
+has 446 after the same additions. CI still
 needs **binutils** for the `readelf`/`objdump` checks. The two local skips are
 `ELF execution requires Linux`; a skip is not a pass.
+
+### 3.6 Real execution evidence
+
+`docs/handoffs/evidence/V3-no-input-2026-11-05/` contains one actual run:
+
+- one valid case, no argv, no stdin, no invalid manifest;
+- exit code `0`;
+- stdout hex `4e4f5f494e5055545f4f4b0a` (`NO_INPUT_OK\n`);
+- stderr hex empty;
+- `passed=1`, `total=1`, `valid="1/1"`, `invalid="not_applicable"`.
+
+The candidate is a synthetic host-native Python demo, **not CWE416 and not an
+ELF**; it proves the runner's 1/1 shape and byte capture, not a CWE416 V3 gate.
+`SHA256SUMS` binds every file.
 
 ---
 
