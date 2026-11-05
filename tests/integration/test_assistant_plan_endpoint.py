@@ -105,15 +105,47 @@ def test_plan_with_a_job_uses_the_job_description(client: TestClient) -> None:
     assert response.json()["plan"]["steps"]
 
 
-def test_llm_mode_without_a_client_reports_the_fallback(client: TestClient) -> None:
+def test_llm_mode_without_a_client_is_503(
+    client: TestClient, data_dir: Path
+) -> None:
     response = client.post(
         "/api/assistant/plan", json={"description": DESCRIPTION, "mode": "llm"}
     )
 
+    # No client is configured, so there is no LLM plan. Returning a
+    # deterministic one with a fallback flag would let the caller believe the
+    # LLM path ran.
+    assert response.status_code == 503, response.text
+    assert response.json() == {
+        "plan": None,
+        "error": "assistant_unavailable",
+        "fallback_reason": "no LLM client is configured on this host",
+    }
+    assert _count(data_dir, "assistant_plans") == 0
+
+
+def test_llm_mode_with_a_job_is_also_503(
+    client: TestClient, data_dir: Path
+) -> None:
+    job = _create(client)
+    response = client.post(
+        "/api/assistant/plan",
+        json={"job_id": job["id"], "description": DESCRIPTION, "mode": "llm"},
+    )
+
+    assert response.status_code == 503, response.text
+    assert response.json()["error"] == "assistant_unavailable"
+    assert _count(data_dir, "assistant_plans") == 0
+
+
+def test_the_contract_context_field_is_accepted(client: TestClient) -> None:
+    response = client.post(
+        "/api/assistant/plan",
+        json={"description": DESCRIPTION, "context": {"stage": "defect", "n": 2}},
+    )
+
     assert response.status_code == 200, response.text
-    agent = response.json()["agent"]
-    assert agent["fallback"] is True
-    assert agent["fallback_reason"]
+    assert response.json()["plan"]["steps"]
 
 
 def test_scripted_label_maps_to_deterministic(client: TestClient) -> None:

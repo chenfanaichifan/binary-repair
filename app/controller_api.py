@@ -1387,6 +1387,7 @@ class StandalonePlanRequest(BaseModel):
     """
 
     description: str | None = Field(default=None, max_length=2000)
+    context: dict[str, Any] | None = None
     job_id: str | None = Field(default=None, max_length=64)
     mode: str | None = Field(
         default=None, pattern="^(scripted|deterministic|llm)$"
@@ -1416,25 +1417,64 @@ def _agent_block(plan: Any) -> dict[str, Any]:
     }
 
 
+def _assistant_unavailable(reason: str) -> JSONResponse:
+    """The agreed 503 body for a plan that cannot be produced.
+
+    A caller has to be able to tell "no plan" apart from "a deterministic plan
+    dressed up as the LLM result", so this is an error response with an explicit
+    code, not a 200 carrying a ``fallback`` flag.
+    """
+    return JSONResponse(
+        status_code=503,
+        content={
+            "plan": None,
+            "error": "assistant_unavailable",
+            "fallback_reason": reason,
+        },
+    )
+
+
 @app.post("/api/assistant/plan")
-def plan_from_description(payload: StandalonePlanRequest) -> dict[str, Any]:
+def plan_from_description(payload: StandalonePlanRequest) -> Any:
     """Build a plan from free text, with or without a job.
+
+    Contract::
+
+        200 {"plan": {...}}
+        503 {"plan": null, "error": "assistant_unavailable",
+             "fallback_reason": "..."}
 
     A plan is advice. This endpoint writes at most one ``assistant_plans`` row
     and never touches contracts, runs, attempts, obligations or a verdict.
+
+    ``mode="llm"`` answers 503 when no client is configured; it never returns a
+    deterministic plan labelled as the LLM path. Omitting ``mode`` asks for the
+    deterministic planner, which is always available and is a different answer,
+    not a substitute one.
+
+    ``context`` is accepted as free-form caller state for forward
+    compatibility. The deterministic planner does not read it, and a job id makes
+    the plan use the job's stored context instead, so no caller can shift what
+    the plan sees. Accepting a field it ignores is recorded here rather than
+    implied by a passing status code.
     """
     from app.domain.assistant import deterministic_plan
     from app.services.assistant import generate_plan, get_plan
 
     mode = _planner_mode(payload.mode)
+
     if payload.job_id:
         _job_or_404(payload.job_id)
+        if mode == "llm":
+            return _assistant_unavailable(
+                "no LLM client is configured on this host"
+            )
         try:
             plan = generate_plan(
                 payload.description,
                 job_id=payload.job_id,
                 data_dir=_data_dir(),
-                mode=mode,
+                mode="deterministic",
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -1454,20 +1494,13 @@ def plan_from_description(payload: StandalonePlanRequest) -> dict[str, Any]:
             status_code=422, detail="description or job_id is required."
         )
     if mode == "llm":
-        # No client is configured on this host. Say so instead of returning a
-        # deterministic plan that claims the LLM path succeeded.
-        plan = deterministic_plan(description).model_copy(
-            update={
-                "fallback": True,
-                "fallback_reason": "no LLM client configured; deterministic plan returned",
-            }
-        )
-    else:
-        plan = deterministic_plan(description)
+        return _assistant_unavailable("no LLM client is configured on this host")
+
+    plan = deterministic_plan(description)
     return {
+        "plan": plan.model_dump(),
         "job_id": None,
         "persisted": False,
-        "plan": plan.model_dump(),
         "agent": _agent_block(plan),
     }
 
