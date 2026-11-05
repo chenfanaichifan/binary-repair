@@ -287,8 +287,10 @@ def _ai_usage_for_job(job_id: str) -> dict[str, int] | None:
         connection.close()
     if recorded is not None:
         # Real model_calls rows are authoritative, including when their
-        # aggregate is None because a token count is missing. Falling back to
-        # the plan here would mix two sources under one label.
+        # Calls exist, so the aggregate is authoritative. It is None only when
+        # no row carries real tokens; when some rows do, it returns their sum
+        # with ``partial: true``. Falling back to the plan would mix two
+        # sources under one label.
         return aggregate_job_usage(data_dir=_data_dir(), job_id=job_id)
 
     # Older jobs have no model_calls rows; their plan is the only real record.

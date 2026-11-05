@@ -71,7 +71,11 @@ def test_model_calls_win_over_the_plan(client: TestClient, data_dir: Path) -> No
     )
 
     # Both bindings count: direct job_id rows and attempt-bound rows.
-    assert _usage(client, job["id"]) == {"input_tokens": 13, "output_tokens": 4}
+    assert _usage(client, job["id"]) == {
+        "input_tokens": 13,
+        "output_tokens": 4,
+        "partial": False,
+    }
 
 
 def test_partial_model_call_is_none_not_zero(client: TestClient, data_dir: Path) -> None:
@@ -94,7 +98,11 @@ def test_plan_usage_is_only_a_fallback(client: TestClient, data_dir: Path) -> No
 
     # No model_calls rows: the stored plan is the only real record.
     usage = _usage(client, job["id"])
-    assert usage is None or set(usage) == {"input_tokens", "output_tokens"}
+    assert usage is None or set(usage) == {
+        "input_tokens",
+        "output_tokens",
+        "partial",
+    }
 
 
 def test_no_usage_anywhere_is_none(client: TestClient) -> None:
@@ -131,6 +139,7 @@ def test_aggregate_counts_job_and_attempt_bindings_once(data_dir: Path) -> None:
     assert model_calls.aggregate_job_usage(data_dir=data_dir, job_id=job.id) == {
         "input_tokens": 7,
         "output_tokens": 9,
+        "partial": False,
     }
 
 
@@ -149,3 +158,43 @@ def test_aggregate_ignores_another_jobs_attempts(data_dir: Path) -> None:
         attempt_id=foreign.id, usage={"prompt_tokens": 9, "completion_tokens": 9},
     )
     assert model_calls.aggregate_job_usage(data_dir=data_dir, job_id=mine.id) is None
+
+
+def test_one_incomplete_call_keeps_the_sum_and_marks_it_partial(
+    client: TestClient, data_dir: Path
+) -> None:
+    """A NULL row must not erase a sibling's real tokens, and must not be zero."""
+    job = _create(client)
+    model_calls.record_call(
+        data_dir=data_dir,
+        model_requested="m",
+        status="ok",
+        usage={"prompt_tokens": 9, "completion_tokens": 3},
+        job_id=job["id"],
+    )
+    model_calls.record_call(
+        data_dir=data_dir,
+        model_requested="m",
+        status="ok",
+        usage={"prompt_tokens": 5},
+        job_id=job["id"],
+    )
+
+    usage = _usage(client, job["id"])
+    assert usage == {"input_tokens": 9, "output_tokens": 3, "partial": True}
+
+
+def test_all_complete_calls_are_not_partial(client: TestClient, data_dir: Path) -> None:
+    job = _create(client)
+    model_calls.record_call(
+        data_dir=data_dir,
+        model_requested="m",
+        status="ok",
+        usage={"prompt_tokens": 4, "completion_tokens": 1},
+        job_id=job["id"],
+    )
+    assert _usage(client, job["id"]) == {
+        "input_tokens": 4,
+        "output_tokens": 1,
+        "partial": False,
+    }

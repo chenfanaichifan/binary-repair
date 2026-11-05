@@ -95,15 +95,21 @@ def aggregate_usage(
     }
 
 
-def aggregate_job_usage(*, data_dir: str | Path, job_id: str) -> dict[str, int] | None:
+def aggregate_job_usage(*, data_dir: str | Path, job_id: str) -> dict[str, Any] | None:
     """Sum token usage recorded for one job.
 
     Rows may be bound by ``job_id`` directly (assistant calls) or by
     ``attempt_id`` (route calls), so both paths are matched.  The ``OR`` cannot
     double count a row: each row is selected at most once.
 
-    Any row missing a token count makes the whole answer ``None``; a partial
-    record is unavailable, not zero.
+    Semantics:
+      * no calls                 -> None
+      * calls but no real tokens -> None
+      * some NULL, some real     -> sum the real ones, ``partial`` is True
+      * all real                 -> sum, ``partial`` is False
+
+    A NULL count is never read as zero, and one incomplete row does not erase
+    the real usage its siblings recorded -- it only marks the sum partial.
     """
     connection = connect(data_dir)
     try:
@@ -118,14 +124,16 @@ def aggregate_job_usage(*, data_dir: str | Path, job_id: str) -> dict[str, int] 
         connection.close()
     if not rows:
         return None
-    if any(
-        row["prompt_tokens"] is None or row["completion_tokens"] is None
-        for row in rows
-    ):
+    real = [
+        row for row in rows
+        if row["prompt_tokens"] is not None and row["completion_tokens"] is not None
+    ]
+    if not real:
         return None
     return {
-        "input_tokens": sum(int(row["prompt_tokens"]) for row in rows),
-        "output_tokens": sum(int(row["completion_tokens"]) for row in rows),
+        "input_tokens": sum(int(row["prompt_tokens"]) for row in real),
+        "output_tokens": sum(int(row["completion_tokens"]) for row in real),
+        "partial": len(real) != len(rows),
     }
 
 
