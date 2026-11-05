@@ -10,8 +10,11 @@ adapter calls these endpoints:
     GET  /api/jobs/{id}/obligations        persisted V0-V5 rows of the latest attempt per route
     GET  /api/attempts/{id}/evidence       persisted per-attempt evidence
     GET  /api/jobs/{id}/artifacts          artifact list
-    GET  /api/artifacts/{id}               artifact metadata by id
-    GET  /api/artifacts/{id}/download      registered artifact bytes
+    GET  /api/jobs/{id}/artifacts/{aid}    artifact metadata, job scoped
+    GET  /api/jobs/{id}/artifacts/{aid}/download
+                                           verified artifact bytes, job scoped
+    GET  /api/artifacts/{id}               artifact metadata by id (legacy)
+    GET  /api/artifacts/{id}/download      registered artifact bytes (legacy)
 
 Evidence honesty rule: this module only *renders* what the worker persisted. It
 never invents a ``passed`` obligation, and an attempt whose checks never ran has
@@ -52,6 +55,19 @@ ROUTE_NAMES: dict[str, str] = {
     "A": "Route A - Direct instruction repair",
     "B": "Route B - Recovered C reintegration",
 }
+
+# Roles that carry displayable analysis content, from
+# docs/interfaces/artifact-roles-v1.md. They are display only and never become
+# an acceptance obligation.
+ANALYSIS_ROLES = frozenset(
+    {
+        "analysis_expected_effects",
+        "analysis_assumptions",
+        "analysis_uncertainties",
+        "analysis_v3",
+        "behavior_comparison",
+    }
+)
 
 _UNSAFE_FILENAME = re.compile(r"[^A-Za-z0-9._-]+")
 _CJK = re.compile(r"[\u2e80-\u2fff\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]")
@@ -168,18 +184,77 @@ def _artifact_file(row: dict[str, Any]) -> Path | None:
     return None
 
 
-def _artifact_metadata(row: dict[str, Any]) -> dict[str, Any]:
+def _artifact_problem(
+    row: dict[str, Any], path: Path | None, *, verify_hash: bool
+) -> str:
+    """Return an empty string when the bytes on disk match the registration.
+
+    ``verify_hash=False`` only compares the file size, which is cheap enough for
+    a listing. Detail and download pass ``True`` and rehash the bytes.
+    """
+
+    if path is None:
+        return "artifact bytes are not on disk"
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return "artifact bytes are not readable"
+    registered_size = row.get("size_bytes")
+    if registered_size is not None and size != int(registered_size):
+        return "artifact size does not match the registered size"
+    if not verify_hash:
+        return ""
+    try:
+        payload = path.read_bytes()
+    except OSError:
+        return "artifact bytes are not readable"
+    registered = str(row.get("sha256") or "").lower()
+    if registered and hashlib.sha256(payload).hexdigest() != registered:
+        return "artifact sha256 does not match the registered hash"
+    return ""
+
+
+def _artifact_metadata(row: dict[str, Any], *, verify_hash: bool = False) -> dict[str, Any]:
     path = _artifact_file(row)
+    problem = _artifact_problem(row, path, verify_hash=verify_hash)
+    artifact_id = row["id"]
+    job_id = str(row.get("job_id") or "")
     return {
-        "id": row["id"],
+        "id": artifact_id,
         "name": path.name if path else Path(str(row["relative_path"])).name,
         "role": row["role"],
         "sha256": row["sha256"],
         "size_bytes": row["size_bytes"],
         "media_type": row["media_type"],
-        "available": path is not None,
-        "content_url": f"/api/artifacts/{row['id']}/download",
+        "available": problem == "",
+        "unavailable_reason": problem,
+        "integrity": "sha256" if (verify_hash and problem == "") else "size",
+        "content_url": f"/api/artifacts/{artifact_id}/download",
+        "job_content_url": f"/api/jobs/{job_id}/artifacts/{artifact_id}/download",
     }
+
+
+def _job_artifact_or_404(job_id: str, artifact_id: str) -> dict[str, Any]:
+    _job_or_404(job_id)
+    row = jobs.get_artifact(artifact_id, data_dir=_data_dir())
+    if row is None or str(row.get("job_id") or "") != job_id:
+        # An artifact of another job must look exactly like a missing one.
+        raise HTTPException(status_code=404, detail="Artifact not found.")
+    return row
+
+
+def _verified_artifact_response(job_id: str, artifact_id: str) -> FileResponse:
+    row = _job_artifact_or_404(job_id, artifact_id)
+    path = _artifact_file(row)
+    problem = _artifact_problem(row, path, verify_hash=True)
+    if problem or path is None:
+        raise HTTPException(status_code=409, detail=problem or "artifact bytes are not on disk")
+    return FileResponse(
+        path,
+        media_type=row.get("media_type") or "application/octet-stream",
+        filename=path.name,
+        content_disposition_type="attachment",
+    )
 
 
 def _placeholder_routes(phase: str) -> dict[str, dict[str, Any]]:
@@ -737,9 +812,37 @@ def obligations(job_id: str) -> dict[str, list[dict[str, Any]]]:
 @app.get("/api/jobs/{job_id}/visuals")
 def visuals(job_id: str) -> dict[str, Any]:
     _job_or_404(job_id)
+    rows = [
+        row
+        for row in jobs.list_artifacts(job_id, data_dir=_data_dir())
+        if row.get("role") in ANALYSIS_ROLES
+    ]
+    if not rows:
+        reason = "no analysis artifact is registered for this job"
+        return {
+            "available": False,
+            "synthetic": False,
+            "reason": reason,
+            "note": reason,
+            "sources": [],
+            "routes": {},
+        }
     return {
-        "available": False,
-        "note": "Repair execution is not implemented by the controller yet.",
+        "available": True,
+        "synthetic": False,
+        "reason": "",
+        "note": "",
+        "routes": {},
+        "sources": [
+            {
+                "id": row["id"],
+                "role": row["role"],
+                "media_type": row["media_type"],
+                "sha256": row["sha256"],
+                "content_url": f"/api/jobs/{job_id}/artifacts/{row['id']}/download",
+            }
+            for row in rows
+        ],
     }
 
 
@@ -747,29 +850,22 @@ def visuals(job_id: str) -> dict[str, Any]:
 def artifacts(job_id: str) -> dict[str, list[dict[str, Any]]]:
     _job_or_404(job_id)
     rows = jobs.list_artifacts(job_id, data_dir=_data_dir())
-    if not rows:
-        record = _job_or_404(job_id)
-        return {
-            "A": [
-                {
-                    "id": "",
-                    "name": record.filename,
-                    "role": "original binary",
-                    "sha256": record.original_sha256,
-                    "size_bytes": len(record.original_bytes),
-                    "available": False,
-                }
-            ],
-            "B": [],
-        }
-
     groups: dict[str, list[dict[str, Any]]] = {"A": [], "B": []}
     for row in rows:
         meta = _artifact_metadata(row)
-        route = row.get("route")
-        key = "B" if route == "route_b" else "A"
+        key = "B" if row.get("route") == "route_b" else "A"
         groups[key].append(meta)
     return groups
+
+
+@app.get("/api/jobs/{job_id}/artifacts/{artifact_id}")
+def job_artifact(job_id: str, artifact_id: str) -> dict[str, Any]:
+    return _artifact_metadata(_job_artifact_or_404(job_id, artifact_id), verify_hash=True)
+
+
+@app.get("/api/jobs/{job_id}/artifacts/{artifact_id}/download")
+def download_job_artifact(job_id: str, artifact_id: str) -> FileResponse:
+    return _verified_artifact_response(job_id, artifact_id)
 
 
 @app.get("/api/artifacts/{artifact_id}")
@@ -777,7 +873,7 @@ def get_artifact(artifact_id: str) -> dict[str, Any]:
     row = jobs.get_artifact(artifact_id, data_dir=_data_dir())
     if row is None:
         raise HTTPException(status_code=404, detail="Artifact not found.")
-    return _artifact_metadata(row)
+    return _artifact_metadata(row, verify_hash=True)
 
 
 @app.get("/api/artifacts/{artifact_id}/download")
@@ -785,12 +881,4 @@ def download_artifact(artifact_id: str) -> FileResponse:
     row = jobs.get_artifact(artifact_id, data_dir=_data_dir())
     if row is None:
         raise HTTPException(status_code=404, detail="Artifact not found.")
-    path = _artifact_file(row)
-    if path is None:
-        raise HTTPException(status_code=404, detail="Artifact content is unavailable.")
-    return FileResponse(
-        path,
-        media_type=row.get("media_type") or "application/octet-stream",
-        filename=path.name,
-        content_disposition_type="attachment",
-    )
+    return _verified_artifact_response(str(row.get("job_id") or ""), artifact_id)

@@ -299,3 +299,98 @@ def test_non_ascii_form_is_rejected(client: TestClient) -> None:
 def test_host_check(client: TestClient) -> None:
     response = client.get("/healthz", headers={"host": "evil.example"})
     assert response.status_code == 403
+
+
+def test_job_scoped_artifact_is_verified_and_downloadable(client: TestClient) -> None:
+    job_id = _create(client)["id"]
+    artifact = client.get(f"/api/jobs/{job_id}/artifacts").json()["A"][0]
+
+    meta = client.get(f"/api/jobs/{job_id}/artifacts/{artifact['id']}")
+    assert meta.status_code == 200, meta.text
+    payload = meta.json()
+    assert payload["role"] == "original"
+    assert payload["available"] is True
+    assert payload["integrity"] == "sha256"
+    assert payload["unavailable_reason"] == ""
+    assert payload["job_content_url"].endswith(
+        f"/api/jobs/{job_id}/artifacts/{artifact['id']}/download"
+    )
+
+    download = client.get(f"/api/jobs/{job_id}/artifacts/{artifact['id']}/download")
+    assert download.status_code == 200
+    assert download.content == b"\x7fELF demo bytes"
+    assert "attachment" in download.headers.get("content-disposition", "")
+
+
+def test_job_scoped_artifact_hides_other_jobs(client: TestClient) -> None:
+    first = _create(client)["id"]
+    second = _create(client)["id"]
+    artifact = client.get(f"/api/jobs/{first}/artifacts").json()["A"][0]
+
+    assert client.get(f"/api/jobs/{second}/artifacts/{artifact['id']}").status_code == 404
+    assert (
+        client.get(f"/api/jobs/{second}/artifacts/{artifact['id']}/download").status_code
+        == 404
+    )
+    assert client.get(f"/api/jobs/{first}/artifacts/does-not-exist").status_code == 404
+
+
+def test_tampered_artifact_bytes_are_never_served(client: TestClient, tmp_path) -> None:
+    created = _create(client)
+    job_id = created["id"]
+    artifact = client.get(f"/api/jobs/{job_id}/artifacts").json()["A"][0]
+
+    original = tmp_path / "var" / "jobs" / job_id / "original.bin"
+    original.write_bytes(b"\x7fELF different bytes")
+
+    listing = client.get(f"/api/jobs/{job_id}/artifacts").json()["A"][0]
+    assert listing["available"] is False
+    assert listing["unavailable_reason"] == "artifact size does not match the registered size"
+
+    meta = client.get(f"/api/jobs/{job_id}/artifacts/{artifact['id']}")
+    assert meta.status_code == 200
+    assert meta.json()["available"] is False
+
+    download = client.get(f"/api/jobs/{job_id}/artifacts/{artifact['id']}/download")
+    assert download.status_code == 409
+    assert "does not match" in download.json()["detail"]
+
+
+def test_same_size_tamper_is_caught_by_hash(client: TestClient, tmp_path) -> None:
+    created = _create(client)
+    job_id = created["id"]
+    artifact = client.get(f"/api/jobs/{job_id}/artifacts").json()["A"][0]
+
+    original = tmp_path / "var" / "jobs" / job_id / "original.bin"
+    original.write_bytes(b"\x7fELF DEMO BYTES")
+
+    download = client.get(f"/api/jobs/{job_id}/artifacts/{artifact['id']}/download")
+    assert download.status_code == 409
+    assert download.json()["detail"] == "artifact sha256 does not match the registered hash"
+
+
+def test_artifact_list_never_fabricates_a_placeholder(client: TestClient, tmp_path) -> None:
+    created = _create(client)
+    job_id = created["id"]
+
+    from app.db.connection import connect
+
+    connection = connect(tmp_path / "var")
+    try:
+        with connection:
+            connection.execute("DELETE FROM artifacts WHERE job_id = ?", (job_id,))
+    finally:
+        connection.close()
+
+    listing = client.get(f"/api/jobs/{job_id}/artifacts")
+    assert listing.status_code == 200
+    assert listing.json() == {"A": [], "B": []}
+
+
+def test_visuals_report_registered_analysis_only(client: TestClient) -> None:
+    job_id = _create(client)["id"]
+    body = client.get(f"/api/jobs/{job_id}/visuals").json()
+    assert body["available"] is False
+    assert body["synthetic"] is False
+    assert body["sources"] == []
+    assert body["reason"]
