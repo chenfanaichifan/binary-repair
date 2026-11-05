@@ -1,0 +1,58 @@
+# The fixture manifest, before and after
+
+## 1. what changed
+
+$ diff -u 06-sums-before.txt 07-sums-after.txt
+--- 06-sums-before.txt
++++ 07-sums-after.txt
+@@ -2,7 +2,7 @@
+ e8b00c6442f680cb86b97fa01d4a3cdd8188f7a8ac2075b93a0ee689fede54a7  build.json
+ 6bb322b841d3e75c188b9b180b33fc8a52c6a0625f2bc8096bd3fbfa4c39dd96  build.sh
+ 8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b  contract.json
+-aff4afba4b69c20285082ae103c78c725c1580820539c00a5c300e81ffc19d89  defect.json
++1016ffd6c53fc6cbb098c76c495a5c89faa9aa530ca21350e1f097574eac1c70  defect.json
+ cef8f533765f3f9184377bf72e32792f6a4128080da8467cb478340a679c63a9  harness.c
+ fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e  original.c
+ c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  original.elf
+
+  # one row: defect.json. The manifest was rebuilt, not hand-edited.
+
+## 2. it verifies in place
+
+$ (cd fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput && sha256sum -c tests/SHA256SUMS)
+  PROVENANCE.md: OK
+  build.json: OK
+  build.sh: OK
+  contract.json: OK
+  defect.json: OK
+  harness.c: OK
+  original.c: OK
+  original.elf: OK
+  src.c: OK
+  support/io.c: OK
+  support/std_testcase.h: OK
+  support/std_testcase_io.h: OK
+  tests/valid.json: OK
+
+  rows: 13   files: 14
+
+## 3. the test surface is one valid case and nothing else
+
+$ ls fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/tests
+  SHA256SUMS
+  valid.json
+
+$ python -c "count valid / invalid cases"
+  valid cases:   1  -> ['valid-no-input']
+  invalid.json:  absent (input_mode none)
+  valid-no-input: argv=['./original'] stdin=None rc=0 stdout_len=100 stdout_sha=028411ecdead
+
+## 4. contract: no rejection path left in it
+
+$ grep -c "invalid_\|max_valid" contract.json
+  0
+
+$ python -c "SecurityContract.from_dict"
+  schema_version=3 input_mode=none
+  round-trip to_dict() == file: True
+  contract_sha256: c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c

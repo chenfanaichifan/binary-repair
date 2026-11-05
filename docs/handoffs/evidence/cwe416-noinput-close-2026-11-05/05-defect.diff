@@ -1,0 +1,10 @@
+$ diff -u 03-defect-before.json 04-defect-after.json
+--- 03-defect-before.json
++++ 04-defect-after.json
+@@ -22,5 +22,5 @@
+   },
+   "title": "Use of a heap block after it was freed",
+   "trigger_case": null,
+-  "trigger_note": "no invalid trigger case exists: bad() takes no arguments and the use-after-free is unconditional, so there is nothing to reject. The one valid case is the whole test surface."
++  "trigger_note": "not_applicable: input_mode is none. bad() takes no arguments, reads no stdin and opens no file, and the use-after-free is unconditional, so there is no input to reject and none to select first. The single valid case is the whole test surface; invalid is a category this sample does not have."
+ }

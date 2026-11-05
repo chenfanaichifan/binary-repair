@@ -1,0 +1,51 @@
+# V3 / V4 on a fixture whose input domain is empty
+
+## What is being counted
+
+`tests/valid.json` holds exactly one case, `valid-no-input`: argv `./original`,
+no stdin, no file, expected exit 0 and 100 bytes of stdout. `tests/invalid.json`
+does not exist, because `input_mode` is `none` — there is no input to reject.
+
+So the behaviour surface has one observation, not six.
+
+## V3
+
+    component   denominator   state
+    valid       1             the only countable observation
+    invalid     n/a           not_applicable — input_mode none
+
+V3 is recorded as **`<k>/1`, no valid cases weakened, invalid = `not_applicable`**.
+
+`not_applicable` is a distinct verdict from the four that already exist:
+
+- not `0/0` — that reads as "two components ran and found nothing";
+- not `0/2` or a failure — the invalid component was never owed;
+- not `skipped` — skip means someone chose not to run it; here there is nothing
+  to run;
+- not a missing field — the field is present and its value is this word.
+
+Anything that reports this fixture as `4/4` or `6/6` is counting cases that do
+not exist. Anything that reports `1/1, 0/0` has the valid half right and the
+invalid half mislabelled.
+
+**Current state: `not_run`.** There is no candidate, so nothing has been scored.
+`not_run` is not `0/1`; the fixture has not failed, it has not been tried.
+
+## V4
+
+`not_run`. There is no input domain to reason over — no argv parsing, no stdin
+read, no file open in `bad()` or in the harness. Calling this "binary-level"
+coverage would name a category the fixture does not have.
+
+Consequence, stated once so it is not mistaken for a defect later: the contract
+still lists `symbolic` in `required_obligations`. A candidate produced against
+this contract will therefore be judged **inconclusive** on
+`REQUIRED_CHECK_NOT_RUN` — V4 cannot run, the obligation still stands. That is
+the honest verdict under the current obligation set; removing `symbolic` is a
+contract-owner decision, not a fixture decision.
+
+## T8.3
+
+**Blocked.** This fixture is one defect class (CWE-416 / lifetime) measured
+again. It is not a second class and does not relieve T8.3. No synthetic sample
+is promoted to stand in for one.
