@@ -156,7 +156,7 @@ X-CSRF-Token: <GUI session csrf>
 | 变量 | 必填 | 默认 | 说明 |
 |---|---|---|---|
 | `BINARYREPAIR_ASSISTANT_PROVIDER_KEY` | 是 | — | 没有它就不发起真实调用，返回 `fallback_reason=llm_client_not_configured` |
-| `BINARYREPAIR_ASSISTANT_PROVIDER_BASE_URL` | 否 | `https://api.openai.com/v1` | OpenAI 兼容根路径 |
+| `BINARYREPAIR_ASSISTANT_PROVIDER_BASE_URL` | 否 | `https://api.deepseek.com/v1` | OpenAI 兼容根路径 |
 | `BINARYREPAIR_ASSISTANT_PROVIDER_TIMEOUT` | 否 | `30` | 秒 |
 | `BINARYREPAIR_ASSISTANT_MODEL` | 否 | `deepseek-chat` | 请求体 `model` |
 
