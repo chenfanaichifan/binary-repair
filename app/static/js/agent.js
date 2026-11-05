@@ -428,8 +428,11 @@
     state.answers = {};
     state.file = null;
     clear(stream());
+    var titles = state.plan.steps.map(function (step) {
+      return step.title || step.id;
+    }).join(" → ");
     pushMessage("assistant",
-      "你好，我是这个工作台的引导助手。我会按「样本 → 缺陷 → 用例 → 契约 → 复核」带你填完任务单。\n" +
+      "你好，我是这个工作台的引导助手。这次按「" + titles + "」带你填完任务单。\n" +
       "两件事先说清楚：我只做引导和解释，不会替你创建任务或开始执行；修复结论由验收引擎给出，不由我判断。");
     renderCurrentStep();
     renderSide();
@@ -488,7 +491,8 @@
     });
 
     var actions = el("div", "agent-card-actions");
-    var next = el("button", "agent-btn", state.stepIndex === state.plan.steps.length - 2 ? "进入复核" : "保存并继续");
+    var nextStep = state.plan.steps[state.stepIndex + 1];
+    var next = el("button", "agent-btn", nextStep && nextStep.kind === "review" ? "进入复核" : "保存并继续");
     next.type = "button";
     next.dataset.testid = "agent-question-next";
     next.addEventListener("click", function () {
@@ -645,7 +649,8 @@
     };
     state.plan.steps.forEach(function (step, index) {
       (step.questions || []).forEach(function (question) {
-        rows.push([labels[question.key] || question.key, state.answers[question.key] || "（未填）", index]);
+        // The plan owns the wording; the legacy map is only a fallback.
+        rows.push([question.label || labels[question.key] || question.key, state.answers[question.key] || "（未填）", index]);
       });
     });
 

@@ -378,3 +378,12 @@ def test_plan_response_must_carry_steps():
         pass
     else:  # pragma: no cover
         raise AssertionError("a plan without steps must not be accepted")
+
+
+def test_plan_rendering_is_not_class_specific():
+    # T8.3 needs a second defect class; the GUI must not assume the first one's
+    # step count, question keys or wording.
+    assert "steps.length - 2" not in AGENT_JS
+    assert 'nextStep.kind === "review"' in AGENT_JS
+    assert "question.label || labels[question.key]" in AGENT_JS
+    assert "样本 → 缺陷 → 用例 → 契约 → 复核" not in AGENT_JS
