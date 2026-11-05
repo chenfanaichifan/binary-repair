@@ -21,6 +21,13 @@ fixtures/public/**/tests/*.json -text
 *.elf  binary
 *.bin  binary
 *.zip  binary
+
+# A digest manifest is read by `sha256sum -c`, which treats the rest of the line
+# as a filename. With core.autocrlf=true, text=auto rewrites its trailing LF to
+# CRLF and the checker then looks for a file whose name ends in a carriage
+# return. Reproduced on dist/m5-delivery-2026-10-22.zip.sha256 before this rule.
+*.sha256     -text
+*.sha256sum  -text
 # Evidence packages are hash-bound: every byte (including CRLF) must survive
 # clone/checkout exactly, or SHA256SUMS verification fails on a fresh clone.
 docs/handoffs/evidence/** -text
