@@ -1,0 +1,41 @@
+# Commands used to produce 07-gate6-crash-evidence.txt
+# Guest: Ubuntu 24.04.5 LTS, x86_64, kernel 6.8.0-147-generic
+# Working directory: ~/evaluator/build/CWE121_src_char_declare_cpy_51b
+# Binary: ./original.elf (sha256 aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393)
+
+ulimit -c 0
+BIN=./original.elf
+ARG=$(python3 -c "import sys; sys.stdout.write('A'*100)")
+
+# --- determinism: five native runs ---
+for i in 1 2 3 4 5; do
+    "$BIN" "$ARG" >/dev/null 2>&1
+    printf 'run %s: exit=%s\n' "$i" "$?"
+done
+
+# --- GDB: overwrite proof immediately after strcpy, then fault ---
+cat > /tmp/g6.gdb <<'GDB'
+set pagination off
+set confirm off
+break *0x401309
+run
+printf "\n[after strcpy] rbp=%p dest=%p  (rbp-dest=%ld bytes)\n", $rbp, $rbp-0x40, $rbp-($rbp-0x40)
+printf "[after strcpy] saved rbp slot [$rbp]:\n"
+x/gx $rbp
+printf "[after strcpy] return-address slot [$rbp+8]:\n"
+x/gx $rbp+8
+printf "[after strcpy] first 64 bytes at dest:\n"
+x/8gx $rbp-0x40
+continue
+printf "\n[at fault]\n"
+bt
+info registers rip rsp rbp
+printf "\nfaulting instruction at rip:\n"
+x/1i $rip
+printf "surrounding instructions:\n"
+x/3i $rip-2
+printf "\nstack top at fault (return slot):\n"
+x/2gx $rsp
+GDB
+
+gdb -batch -q -x /tmp/g6.gdb --args "$BIN" "$ARG"

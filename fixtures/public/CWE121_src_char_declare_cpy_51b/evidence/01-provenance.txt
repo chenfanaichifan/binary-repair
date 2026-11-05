@@ -1,0 +1,19 @@
+$ date -u; uname -a
+Tue Oct 20 02:27:31 UTC 2026
+Linux binrepair-lab 6.8.0-147-generic #147-Ubuntu SMP PREEMPT_DYNAMIC Thu Sep 24 11:33:16 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+
+$ sha256sum juliet-v1.3.zip case.c original.elf
+ada9d7e1c323d283446df3f55bdee0d00bda1fed786785fe98764d58688f38eb  /home/lab/evaluator/downloads/juliet-v1.3.zip
+8387d64613192b47c30658153548d111366f232a0bf03714e26643dd16ad343b  /home/lab/evaluator/src/juliet-v1.3/C/testcases/CWE121_Stack_Based_Buffer_Overflow/s09/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b.c
+aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393  ./original.elf
+
+$ stat -c "%s %n" juliet-v1.3.zip case.c original.elf
+152957342 /home/lab/evaluator/downloads/juliet-v1.3.zip
+1434 /home/lab/evaluator/src/juliet-v1.3/C/testcases/CWE121_Stack_Based_Buffer_Overflow/s09/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b.c
+26792 ./original.elf
+
+$ gcc --version | head -1
+gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+
+$ build command (from build.sh)
+gcc -O0 -g -fno-stack-protector -fno-pie -no-pie -Wall -I <juliet>/C/testcasesupport -o original.elf harness.c <case>.c <juliet>/C/testcasesupport/io.c

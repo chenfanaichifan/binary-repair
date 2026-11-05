@@ -18,6 +18,12 @@
 # Fixture manifests are hashed as bytes; never let Git rewrite them.
 fixtures/public/**/tests/*.json -text
 
+# The whole fixture tree is hash-bound by its own SHA256SUMS: build inputs,
+# provenance, raw evidence output and the manifest set. Any EOL conversion
+# breaks verification on a fresh Windows checkout, so opt the tree out of
+# text handling rather than listing files one by one.
+fixtures/public/** -text
+
 *.elf  binary
 *.bin  binary
 *.zip  binary

@@ -1,0 +1,20 @@
+$ for n in 0 1 10 49 50 100; do ./original.elf "$(python3 -c "print(chr(65)*$n,end=\"\")")" ...; done
+len=0   rc=0   stdout_bytes=1   stderr_bytes=0   stdout_sha256=01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+len=1   rc=0   stdout_bytes=2   stderr_bytes=0   stdout_sha256=06f961b802bc46ee168555f066d28f4f0e9afdf3f88174c1ee6f9de004fc30a0
+len=10  rc=0   stdout_bytes=11  stderr_bytes=0   stdout_sha256=705d290c12895901f809f6c2fe772a94db5181d726464d840682106f4a934b87
+len=49  rc=0   stdout_bytes=50  stderr_bytes=0   stdout_sha256=4a2cc35d0c0a06ee211d0d8bc49a1208caf43d3de57e13867c9333610e544199
+len=50  rc=0   stdout_bytes=51  stderr_bytes=0   stdout_sha256=f94b071bf9ccabc18019e7d7b983e2e4bacf7227a2b1f9b3a20a2fd5ca67787a
+bash: line 33:  4761 Segmentation fault      (core dumped) "$BIN" "$arg" > "out.$n" 2> "err.$n"
+len=100 rc=139 stdout_bytes=0   stderr_bytes=0   stdout_sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+--- stdout bytes for each length (od -c) ---
+len=0:  \n
+len=1:  A \n
+len=10:  A A A A A A A A A A \n
+len=49:  A A A A A A A A A A A A A A A A
+*
+len=50:  A A A A A A A A A A A A A A A A
+*
+len=100: 
+--- stderr bytes for each length (od -c) ---
+len=0: len=1: len=10: len=49: len=50: len=100: 

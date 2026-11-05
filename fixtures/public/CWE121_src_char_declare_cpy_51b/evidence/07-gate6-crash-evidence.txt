@@ -1,0 +1,66 @@
+$ date -u; uname -a
+Tue Oct 20 03:24:04 UTC 2026
+Linux binrepair-vm 6.8.0-147-generic #147-Ubuntu SMP PREEMPT_DYNAMIC Thu Sep 24 11:33:16 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+
+$ sha256sum original.elf
+aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393  ./original.elf
+
+$ cat /proc/sys/kernel/randomize_va_space
+2
+
+=== 5 repeated runs with 100 x A (determinism) ===
+bash: line 18:  2571 Segmentation fault      (core dumped) "$BIN" "$ARG" > /dev/null 2>&1
+run 1: exit=139
+bash: line 18:  2577 Segmentation fault      (core dumped) "$BIN" "$ARG" > /dev/null 2>&1
+run 2: exit=139
+bash: line 18:  2583 Segmentation fault      (core dumped) "$BIN" "$ARG" > /dev/null 2>&1
+run 3: exit=139
+bash: line 18:  2589 Segmentation fault      (core dumped) "$BIN" "$ARG" > /dev/null 2>&1
+run 4: exit=139
+bash: line 18:  2595 Segmentation fault      (core dumped) "$BIN" "$ARG" > /dev/null 2>&1
+run 5: exit=139
+
+=== gdb: saved rbp / return slot overwrite, then SIGSEGV ===
+Breakpoint 1 at 0x401309: file /home/lab/evaluator/src/juliet-v1.3/C/testcases/CWE121_Stack_Based_Buffer_Overflow/s09/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b.c, line 31.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink (data=0x7fffffffed37 'A' <repeats 100 times>) at /home/lab/evaluator/src/juliet-v1.3/C/testcases/CWE121_Stack_Based_Buffer_Overflow/s09/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b.c:31
+31	        printLine(data);
+
+[after strcpy] rbp=0x7fffffffe960 dest=0x7fffffffe920  (rbp-dest=64 bytes)
+[after strcpy] saved rbp slot [$rbp]:
+0x7fffffffe960:	0x4141414141414141
+[after strcpy] return-address slot [$rbp+8]:
+0x7fffffffe968:	0x4141414141414141
+[after strcpy] first 64 bytes at dest:
+0x7fffffffe920:	0x4141414141414141	0x4141414141414141
+0x7fffffffe930:	0x4141414141414141	0x4141414141414141
+0x7fffffffe940:	0x4141414141414141	0x4141414141414141
+0x7fffffffe950:	0x4141414141414141	0x4141414141414141
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000000000401317 in CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink (data=0x7fffffffed37 'A' <repeats 100 times>) at /home/lab/evaluator/src/juliet-v1.3/C/testcases/CWE121_Stack_Based_Buffer_Overflow/s09/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b.c:33
+33	}
+
+[at fault]
+#0  0x0000000000401317 in CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink (data=0x7fffffffed37 'A' <repeats 100 times>) at /home/lab/evaluator/src/juliet-v1.3/C/testcases/CWE121_Stack_Based_Buffer_Overflow/s09/CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b.c:33
+#1  0x4141414141414141 in ?? ()
+#2  0x4141414141414141 in ?? ()
+#3  0x4141414141414141 in ?? ()
+#4  0x00007f0041414141 in ?? ()
+#5  0x00007ffff7c2a1ca in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+Backtrace stopped: Cannot access memory at address 0x4141414141414149
+rip            0x401317            0x401317 <CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink+103>
+rsp            0x7fffffffe968      0x7fffffffe968
+rbp            0x4141414141414141  0x4141414141414141
+
+faulting instruction at rip:
+=> 0x401317 <CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink+103>:	ret
+surrounding instructions:
+   0x401315 <CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink+101>:	nop
+   0x401316 <CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink+102>:	leave
+=> 0x401317 <CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink+103>:	ret
+
+stack top at fault (return slot):
+0x7fffffffe968:	0x4141414141414141	0x4141414141414141

@@ -1,0 +1,11 @@
+$ checksec --file=original.elf
+[*] '/home/lab/evaluator/build/CWE121_src_char_declare_cpy_51b/original.elf'
+    Arch:       amd64-64-little
+    RELRO:      Partial RELRO
+    Stack:      No canary found
+    NX:         NX enabled
+    PIE:        No PIE (0x400000)
+    SHSTK:      Enabled
+    IBT:        Enabled
+    Stripped:   No
+    Debuginfo:  Yes

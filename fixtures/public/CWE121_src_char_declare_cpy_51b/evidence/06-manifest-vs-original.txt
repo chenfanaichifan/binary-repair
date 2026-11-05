@@ -1,0 +1,9 @@
+== tests/valid.json (case CWE121_src_char_declare_cpy_51b) ==
+valid-empty      kind=valid   rc=0 exp_rc=0 stdout=b'\n' exp_stdout='\n' stderr=b'' exp_stderr='' PASS
+valid-smallest   kind=valid   rc=0 exp_rc=0 stdout=b'A\n' exp_stdout='A\n' stderr=b'' exp_stderr='' PASS
+valid-typical    kind=valid   rc=0 exp_rc=0 stdout=b'AAAAAAAAAA\n' exp_stdout='AAAAAAAAAA\n' stderr=b'' exp_stderr='' PASS
+valid-maximum    kind=valid   rc=0 exp_rc=0 stdout=b'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' exp_stdout='AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' stderr=b'' exp_stderr='' PASS
+== tests/invalid.json (case CWE121_src_char_declare_cpy_51b) ==
+invalid-first    kind=invalid rc=0 exp_rc=1 stdout=b'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' exp_stdout='' stderr=b'' exp_stderr='ERROR: input exceeds destination capacity\n' FAIL
+invalid-longer   kind=invalid rc=-11 exp_rc=1 stdout=b'' exp_stdout='' stderr=b'' exp_stderr='ERROR: input exceeds destination capacity\n' FAIL
+== 4/6 passed against the original binary ==
