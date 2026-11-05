@@ -16,6 +16,7 @@ use one of these values; the ingest adapter rejects an unknown analysis role.
 | `analysis_uncertainties` | candidate uncertainties JSON |
 | `analysis_v3` | legacy named analysis artifact |
 | `behavior_comparison` | original-vs-candidate comparison JSON |
+| `legacy_result_bundle` | optional INTERFACE-v1 result-bundle.json, hash-bound in SHA256SUMS |
 | `agent_plan` | assistant plan (guidance only; never verdict) |
 | `model_call` | model-call audit record (never acceptance evidence) |
 

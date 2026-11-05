@@ -320,12 +320,22 @@ def ingest(
         _register_file(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                        bundle=bundle, relative=name, role="legacy_artifact")
 
+    supplemental_id = None
+    legacy_result = bundle / "result-bundle.json"
+    if legacy_result.is_file():
+        supplemental_id = _register_file(
+            data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+            bundle=bundle, relative="result-bundle.json",
+            role="legacy_result_bundle",
+        )
+
     payload = {
         "route": route,
         "candidate_sha256": manifest["candidate_sha256"],
         "results": results,
         "evidence": evidence,
-        "details": {"analysis_artifact_ids": analysis_ids},
+        "details": {"analysis_artifact_ids": analysis_ids,
+                    "legacy_result_bundle_id": supplemental_id},
     }
     imported = import_bundle(
         data_dir=data_dir, job_id=job_id, run_id=run_id, attempt_id=attempt_id,
