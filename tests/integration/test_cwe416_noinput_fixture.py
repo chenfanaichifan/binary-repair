@@ -10,10 +10,13 @@ import hashlib
 import json
 from pathlib import Path
 
+from app.domain.contracts import SecurityContract
 from app.services import jobs, worker
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput"
+CONTRACT_FILE_SHA256 = "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b"
+CONTRACT_CANONICAL_SHA256 = "c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c"
 REJECTION_FIELDS = (
     "invalid_input_response",
     "invalid_exit_code",
@@ -26,7 +29,10 @@ REJECTION_FIELDS = (
 def test_cwe416_noinput_fixture_reaches_worker_without_gate_upgrade(
     tmp_path: Path,
 ) -> None:
-    contract = json.loads((FIXTURE / "contract.json").read_text(encoding="utf-8"))
+    contract_bytes = (FIXTURE / "contract.json").read_bytes()
+    assert hashlib.sha256(contract_bytes).hexdigest() == CONTRACT_FILE_SHA256
+    contract = json.loads(contract_bytes.decode("utf-8"))
+    assert SecurityContract.from_dict(contract).sha256() == CONTRACT_CANONICAL_SHA256
     assert contract["schema_version"] == 3
     assert contract["input_mode"] == "none"
     assert all(field not in contract for field in REJECTION_FIELDS)
@@ -56,6 +62,7 @@ def test_cwe416_noinput_fixture_reaches_worker_without_gate_upgrade(
         data_dir=data_dir,
     )
     assert run.phase == "queued"
+    assert approval.scope_sha256 == CONTRACT_CANONICAL_SHA256
 
     # The worker can materialise the verified original and the approved v3
     # contract, but nothing has executed yet.
