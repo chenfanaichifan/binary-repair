@@ -1,5 +1,11 @@
 # 115 — M3 intake remediated: `1b08ae5` base, v2+input_mode still rejected
 
+> **M1-only record.** The canonical final head is fixed at `40a4153`.
+> The commits that carried this record (`48e32ce`, `ebd21fa`) were removed from
+> `canonical/m1-m5-integration` to keep one final head; the record is retained
+> here on M1 for the M3 audit trail.
+
+
 - Date: 2026-11-05
 - Owner: Member 1 (host backend)
 - Branch: `canonical/m1-m5-integration`
