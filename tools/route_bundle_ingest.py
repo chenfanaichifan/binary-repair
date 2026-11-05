@@ -106,8 +106,13 @@ def _legacy_payload(bundle: Path, route: str) -> tuple[dict[str, Any], list[str]
     raw_meta = json.loads((bundle / "handoff.json").read_text(encoding="utf-8"))
     files = [str(x) for x in raw_meta.get("files") or []]
     result_path = bundle / "result-bundle.json"
-    if result_path.is_file() and "result-bundle.json" not in files:
-        raise IngestError("result-bundle.json must be listed in handoff.json and SHA256SUMS")
+    if result_path.is_file():
+        # A gate-carrying file that is not hashed and not declared is exactly
+        # how an unverified bundle would slip past review.  Require both.
+        if "result-bundle.json" not in files:
+            raise IngestError("result-bundle.json must be listed in handoff.json and SHA256SUMS")
+        if "result-bundle.json" not in _sums_names(bundle):
+            raise IngestError("result-bundle.json must be listed in handoff.json and SHA256SUMS")
     result = json.loads(result_path.read_text(encoding="utf-8")) if result_path.is_file() else {}
     identity = result.get("identity") or {}
     candidate = identity.get("candidate_sha256")
@@ -133,6 +138,21 @@ def _legacy_payload(bundle: Path, route: str) -> tuple[dict[str, Any], list[str]
          "gates": {g: {"status": results[g], "artifacts": evidence_specs[g]} for g in GATES}},
         files,
     )
+
+
+def _sums_names(bundle: Path) -> set[str]:
+    """Return the file names declared by SHA256SUMS, without verifying bytes."""
+    path = bundle / "SHA256SUMS"
+    if not path.is_file():
+        return set()
+    names: set[str] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        parts = line.split(None, 1)
+        if len(parts) == 2:
+            names.add(parts[1].lstrip("* ").strip())
+    return names
 
 
 def _verify_sums(bundle: Path) -> int:
@@ -299,10 +319,14 @@ def ingest(
             # artifact; taking the first file silently loses that binding.  This
             # is not specific to V0: M5 and M1 fixed the same defect independently.
             chosen = ids[0]
-            for name, artifact_id in ids_by_name.items():
-                if _sha256(_safe_file(bundle, name)) == manifest["candidate_sha256"]:
-                    chosen = artifact_id
-                    break
+            if gate == "V0":
+                # Identity may carry original, candidate and manifests.  The
+                # bound candidate is the one whose bytes match candidate_sha256,
+                # never just the first list entry.
+                for name, artifact_id in ids_by_name.items():
+                    if _sha256(_safe_file(bundle, name)) == manifest["candidate_sha256"]:
+                        chosen = artifact_id
+                        break
             evidence[gate] = chosen
 
     analysis_ids = []

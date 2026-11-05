@@ -179,6 +179,30 @@ def test_legacy_result_bundle_must_be_in_sums(tmp_path: Path) -> None:
                route="route_a", bundle=bundle, trigger=False)
 
 
+def test_legacy_result_bundle_in_handoff_but_not_sums_is_rejected(tmp_path: Path) -> None:
+    import hashlib
+    data, job, run, attempt = _job(tmp_path)
+    bundle = tmp_path / "legacy-unhashed"; bundle.mkdir()
+    candidate = bundle / "candidate.elf"; candidate.write_bytes(b"\x7fELF legacy")
+    (bundle / "result-bundle.json").write_text(json.dumps({
+        "identity": {"candidate_sha256": hashlib.sha256(candidate.read_bytes()).hexdigest()},
+        "gates": {"V0": {"status": "passed",
+                         "evidence": [{"relative_path": "candidate.elf"}]}},
+    }))
+    (bundle / "handoff.json").write_text(json.dumps({
+        "id": "LEGACY", "from": "M3", "to": "M5", "route": "route_a",
+        "created_at": "2026-11-05T00:00:00+08:00",
+        "files": ["candidate.elf", "result-bundle.json"],
+    }))
+    # SHA256SUMS lists the payload but omits the gate-carrying file.
+    (bundle / "SHA256SUMS").write_text(
+        f"{hashlib.sha256(candidate.read_bytes()).hexdigest()}  candidate.elf\n"
+    )
+    with pytest.raises(IngestError, match="result-bundle.json"):
+        ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+               route="route_a", bundle=bundle, trigger=False)
+
+
 def test_v0_picks_candidate_not_first_artifact(tmp_path: Path) -> None:
     from app.db.connection import connect
     data, job, run, attempt = _job(tmp_path)
@@ -209,6 +233,8 @@ def test_legacy_without_result_bundle_is_all_not_run(tmp_path: Path) -> None:
     (bundle / "handoff.json").write_text(json.dumps({
         "id": "LEGACY", "from": "M3", "to": "M5", "route": "route_a",
         "created_at": "2026-11-05T00:00:00+08:00", "files": files,
+        # Prose claims must never become gate evidence.
+        "notes": "V2 16/16 passed; V3 6/6 repaired_behaviour; all gates green",
     }))
     (bundle / "SHA256SUMS").write_text(
         f"{hashlib.sha256(candidate.read_bytes()).hexdigest()}  candidate.elf\n"
