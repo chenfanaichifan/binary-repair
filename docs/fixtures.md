@@ -53,8 +53,10 @@ fixtures/public/<name>/
 ```json
 {
   "schema_version": 1,
-  "cwe": "CWE-787",
-  "title": "out-of-bounds write past the end of a heap buffer",
+  "cwe": "CWE-416",
+  "title": "use after free: freed data is read by the sink",
+  "mechanism": "lifetime",
+  "baseline_mechanism": "bounds-check",
   "trigger_case": "invalid-first"
 }
 ```
@@ -64,28 +66,66 @@ fixtures/public/<name>/
 that prose in notes is never parsed into a gate, so the class is a field and the
 trigger is an ID.
 
-## Current state: the first-class fixture is incomplete
+`mechanism` is the axis a second class has to differ on: `bounds-check` means the
+repair adds a length check, `lifetime` means it changes ownership so freed memory
+is not read. `baseline_mechanism` records what the first class does; if the two
+match, intake fails with `not_a_distinct_class`. Two CWEs that are both repaired
+with a bounds check are the same exercise with a different label.
+
+## Current state
 
 ```
 $ python tools/fixture_intake.py --list fixtures/public
-CWE121_src_char_declare_cpy_51b	FAILED (4)
-  missing_file	src.c	required for intake
-  missing_file	build.sh	required for intake
-  missing_file	build.json	required for intake
-  missing_file	defect.json	required for intake
+CWE121_src_char_declare_cpy_51b            OK (1 warning(s))
+CWE416_Use_After_Free__malloc_free_char_01 FAILED (7)
 ```
 
-This is a real gap, not a checker bug. `CWE121_src_char_declare_cpy_51b` ships
-`contract.json`, `original.elf` and `tests/*.json`, but:
+### CWE121: complete, not reproduced
 
-- there is no `src.c`, so the sample cannot be rebuilt;
-- there is no `build.sh` or `build.json`, so nobody knows the compiler, flags or
-  command that produced the binary;
-- `tests/SHA256SUMS` lists only `valid.json` and `invalid.json`, relative to
-  `tests/`, so it does not cover `original.elf` at all.
+The baseline fixture now has `src.c`, `harness.c`, `build.sh`, `build.json`,
+`defect.json` and a `SHA256SUMS` that covers `original.elf`. The `.elf` itself was
+not rebuilt: there is no compiler on the authoring host and the upstream Juliet
+`testcasesupport` tree is not vendored.
 
-M4 cannot verify a rebuild of that sample, and M3 has no recipe to hand the
-guest. A second-class fixture must not copy this shape.
+`src.c` and `harness.c` were reconstructed from the committed binary, and the
+file says so at the top. The evidence is exact rather than guessed:
+
+- `DW_AT_producer`: `GNU C17 13.3.0 ... -g -O0 -fno-stack-protector -fno-pie`
+- `.debug_line_str`: `juliet-v1.3/.../CWE121_..._src_char_declare_cpy_51b.c`
+- `badSink` at `0x4012b0`: `char dest[50]` zero-initialised, `strcpy` at
+  `0x401304`, then `printLine(data)` - it prints `data`, not `dest`
+- `main` at `0x401256`: `fprintf(stderr, "usage: %s <input>")` and `return 2`
+
+`build.json#reproduction.status` is `unverified`, so intake prints
+`reproduction_unverified` as a **warning**. It does not fail the fixture and it
+does not pretend the build ran. Run the fixture's `build.sh` inside the guest and
+compare with `output.sha256` to clear it.
+
+### CWE416: source pinned, binary still missing
+
+`fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/` holds the upstream
+`src.c` and `defect.json` (`mechanism: lifetime`,
+`baseline_mechanism: bounds-check`). `original.elf`, `build.sh`, `build.json`,
+`contract.json` and `tests/` do not exist yet, because producing them needs a
+compiler. The intake reports seven `missing_file` findings; that is the true
+state, not a regression.
+
+`PROVENANCE.md` records the resolved commit
+`f88433e3443648a17671398797a04ea1f8e1a274` and notes that the pin the Lead
+supplied (`01e353d`) does not resolve in that mirror. If it names a different
+source, the file may differ.
+
+## readelf and objdump
+
+`tests/test_routeb_executor.py` needs both for the Route B static audit. If they
+are installed outside `PATH` (a MinGW or LLVM tree), point
+`BINARYREPAIR_BINUTILS_DIR` at that directory:
+
+```
+set BINARYREPAIR_BINUTILS_DIR=D:\tools\mingw64\bin
+```
+
+`tests/conftest.py` prepends it, so no PATH edit is needed.
 
 ## What a second-class fixture still needs from the Lead
 

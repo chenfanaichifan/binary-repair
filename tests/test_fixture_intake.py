@@ -77,6 +77,7 @@ def build_fixture(
                 "schema_version": 1,
                 "cwe": cwe,
                 "title": "out-of-bounds write past the end of a heap buffer",
+                "mechanism": "bounds-check",
                 "trigger_case": trigger,
             }
         ),
@@ -276,14 +277,59 @@ def test_a_fixture_matching_the_baseline_class_is_rejected(tmp_path: Path) -> No
     assert check_fixture(root, baseline_cwe="CWE-121", allow_same_cwe=True) == []
 
 
-def test_the_existing_first_class_fixture_is_incomplete() -> None:
+def test_a_defect_without_a_mechanism_is_rejected(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_fixture(root)
+    data = json.loads((root / "defect.json").read_text(encoding="utf-8"))
+    del data["mechanism"]
+    (root / "defect.json").write_text(json.dumps(data), encoding="utf-8")
+    write_sums(root)
+
+    # The mechanism is the axis a second class differs on; it cannot be implied
+    # by the CWE number alone.
+    assert "defect_mechanism_missing" in codes(check_fixture(root))
+
+
+def test_a_second_class_cannot_reuse_the_baseline_mechanism(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_fixture(root, cwe="CWE-416")
+    data = json.loads((root / "defect.json").read_text(encoding="utf-8"))
+    data["mechanism"] = "bounds-check"
+    data["baseline_mechanism"] = "bounds-check"
+    (root / "defect.json").write_text(json.dumps(data), encoding="utf-8")
+    write_sums(root)
+
+    assert "not_a_distinct_class" in codes(check_fixture(root))
+
+
+def test_an_unverified_build_is_a_warning_not_a_pass(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_fixture(root)
+    data = json.loads((root / "build.json").read_text(encoding="utf-8"))
+    data["reproduction"] = {
+        "status": "unverified",
+        "reason": "no toolchain on the authoring host",
+    }
+    (root / "build.json").write_text(json.dumps(data), encoding="utf-8")
+    write_sums(root)
+
+    findings = check_fixture(root)
+    warnings = [f for f in findings if not f.is_error]
+    assert codes(warnings) == {"reproduction_unverified"}
+    assert not [f for f in findings if f.is_error]
+
+
+def test_the_first_class_fixture_is_complete_but_not_reproduced() -> None:
     root = Path(__file__).resolve().parents[1] / "fixtures" / "public" / "CWE121_src_char_declare_cpy_51b"
     if not root.is_dir():
         pytest.skip("first-class fixture not present")
 
     findings = check_fixture(root)
     missing = {finding.path for finding in findings if finding.code == "missing_file"}
+    assert not missing, f"the baseline fixture still lacks {sorted(missing)}"
 
-    # This is the real gap M4 would hit: the sample cannot be rebuilt and its
-    # sums do not cover the binary.  A second-class fixture must not copy it.
-    assert {"src.c", "build.sh", "build.json", "defect.json"} <= missing
+    # Provenance and sums are complete now, but the recipe has never been run:
+    # there is no compiler on the host. The intake says so instead of passing
+    # silently.
+    assert not [finding for finding in findings if finding.is_error]
+    assert "reproduction_unverified" in codes(findings)

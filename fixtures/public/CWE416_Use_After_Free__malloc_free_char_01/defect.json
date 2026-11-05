@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "cwe": "CWE-416",
+  "title": "use after free: data is freed in the source and read by the sink",
+  "mechanism": "lifetime",
+  "baseline_mechanism": "bounds-check",
+  "trigger_case": "invalid-first"
+}

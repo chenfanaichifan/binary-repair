@@ -91,6 +91,11 @@ class Finding:
     code: str
     path: str
     detail: str
+    severity: str = "error"
+
+    @property
+    def is_error(self) -> bool:
+        return self.severity == "error"
 
 
 def _sha256(path: Path) -> str:
@@ -203,6 +208,38 @@ def _check_build_json(
             Finding("invalid_shape", "build.json#source", "expected an object")
         )
 
+    reproduction = data.get("reproduction")
+    if reproduction is not None:
+        if not isinstance(reproduction, dict):
+            findings.append(
+                Finding("invalid_shape", "build.json#reproduction", "expected an object")
+            )
+        else:
+            _require_keys(
+                reproduction, ("status", "reason"), "build.json#reproduction", findings
+            )
+            status = reproduction.get("status")
+            if status not in {"verified", "unverified"}:
+                findings.append(
+                    Finding(
+                        "invalid_shape",
+                        "build.json#reproduction.status",
+                        f"expected 'verified' or 'unverified', got {status!r}",
+                    )
+                )
+            elif status == "unverified":
+                # The fixture may be complete while its build is unproven. That
+                # is a warning: it must not fail the intake, and it must not be
+                # printed as a pass either.
+                findings.append(
+                    Finding(
+                        "reproduction_unverified",
+                        "build.json#reproduction",
+                        str(reproduction.get("reason") or "no reason given"),
+                        severity="warning",
+                    )
+                )
+
     output = data.get("output")
     if isinstance(output, dict):
         _require_keys(output, ("path", "sha256"), "build.json#output", findings)
@@ -232,14 +269,19 @@ def _check_build_json(
 
 def _check_defect(
     root: Path, invalid_ids: set[str], findings: list[Finding]
-) -> str | None:
+) -> tuple[str | None, str | None]:
     data = _load_json(root / "defect.json", findings)
     if data is None:
-        return None
+        return None, None
     if not isinstance(data, dict):
         findings.append(Finding("invalid_shape", "defect.json", "expected an object"))
-        return None
-    _require_keys(data, ("schema_version", "cwe", "title", "trigger_case"), "defect.json", findings)
+        return None, None
+    _require_keys(
+        data,
+        ("schema_version", "cwe", "title", "mechanism", "trigger_case"),
+        "defect.json",
+        findings,
+    )
 
     cwe = data.get("cwe")
     if not isinstance(cwe, str) or not CWE_PATTERN.match(cwe):
@@ -250,18 +292,49 @@ def _check_defect(
                 f"expected 'CWE-<number>', got {cwe!r}",
             )
         )
-    else:
-        trigger = data.get("trigger_case")
-        if trigger not in invalid_ids:
+        cwe = None
+
+    mechanism = data.get("mechanism")
+    if not isinstance(mechanism, str) or not mechanism.strip():
+        findings.append(
+            Finding(
+                "defect_mechanism_missing",
+                "defect.json#mechanism",
+                "the repair mechanism is the axis T8.3 differs on; it must be stated",
+            )
+        )
+        mechanism = None
+
+    baseline = data.get("baseline_mechanism")
+    if baseline is not None:
+        if not isinstance(baseline, str) or not baseline.strip():
             findings.append(
                 Finding(
-                    "defect_trigger_unknown",
-                    "defect.json#trigger_case",
-                    f"{trigger!r} is not an invalid case in tests/invalid.json",
+                    "invalid_shape",
+                    "defect.json#baseline_mechanism",
+                    "expected a non-empty string",
                 )
             )
-        return cwe
-    return None
+        elif mechanism is not None and baseline == mechanism:
+            findings.append(
+                Finding(
+                    "not_a_distinct_class",
+                    "defect.json#baseline_mechanism",
+                    f"mechanism equals the baseline mechanism {baseline!r}; a second "
+                    "class cannot repair the same way as the first",
+                )
+            )
+
+    trigger = data.get("trigger_case")
+    if trigger not in invalid_ids:
+        findings.append(
+            Finding(
+                "defect_trigger_unknown",
+                "defect.json#trigger_case",
+                f"{trigger!r} is not an invalid case in tests/invalid.json",
+            )
+        )
+    return cwe, mechanism
 
 
 def _check_contract(root: Path, findings: list[Finding]) -> None:
@@ -547,10 +620,15 @@ def main(argv: list[str] | None = None) -> int:
             baseline_cwe=args.baseline_cwe,
         )
         for finding in findings:
-            print(f"{finding.code}\t{finding.path}\t{finding.detail}")
-        if findings:
-            print(f"FAILED ({len(findings)} finding(s))")
+            print(f"{finding.severity}\t{finding.code}\t{finding.path}\t{finding.detail}")
+        errors = [f for f in findings if f.is_error]
+        warnings = [f for f in findings if not f.is_error]
+        if errors:
+            print(f"FAILED ({len(errors)} error(s), {len(warnings)} warning(s))")
             return 1
+        if warnings:
+            print(f"OK ({len(warnings)} warning(s))")
+            return 0
         print("OK")
         return 0
 
@@ -566,11 +644,18 @@ def main(argv: list[str] | None = None) -> int:
             allow_same_cwe=args.allow_same_cwe,
             baseline_cwe=args.baseline_cwe,
         )
-        state = "OK" if not findings else f"FAILED ({len(findings)})"
+        errors = [f for f in findings if f.is_error]
+        warnings = [f for f in findings if not f.is_error]
+        if errors:
+            state = f"FAILED ({len(errors)})"
+        elif warnings:
+            state = f"OK ({len(warnings)} warning(s))"
+        else:
+            state = "OK"
         print(f"{child.name}\t{state}")
         for finding in findings:
-            print(f"  {finding.code}\t{finding.path}\t{finding.detail}")
-        status = status or (1 if findings else 0)
+            print(f"  {finding.severity}\t{finding.code}\t{finding.path}\t{finding.detail}")
+        status = status or (1 if errors else 0)
     return status
 
 
