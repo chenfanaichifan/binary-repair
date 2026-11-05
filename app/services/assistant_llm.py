@@ -47,8 +47,14 @@ def generate_plan(description: str, *, context: dict | None = None,
     if client is None:
         raise ValueError("llm client is required")
     plan, usage, model = _llm_plan(description, context=context, client=client)
+    data_dir = (context or {}).get("data_dir")
+    if not data_dir:
+        raise ValueError(
+            "an assistant model call needs the job's data_dir; "
+            "refusing to fall back to a project-root var/"
+        )
     model_calls.record_call(
-        data_dir=context.get("data_dir") if context else "var",
+        data_dir=data_dir,
         model_requested=model or "unknown", model_returned=model,
         status="accepted_for_assistant", route="assistant",
         usage=usage, job_id=(context or {}).get("job_id"),

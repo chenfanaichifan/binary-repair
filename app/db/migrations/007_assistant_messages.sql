@@ -1,0 +1,12 @@
+-- Occupied by M5's 0072197, which renamed its own 005 to 007 because this
+-- branch already used 005. The two files were byte-identical: the plan
+-- version columns, assistant_messages, its indexes and
+-- model_calls.assistant_plan_id are all created by 005_assistant_messages.
+--
+-- Those ALTERs are not idempotent, so applying this body again fails with
+-- "duplicate column name: version". Version 7 is therefore recorded as an
+-- empty step: it keeps M5's numbering visible in schema_migrations and makes
+-- the chain contiguous, without re-running 005.
+--
+-- Do not move content here. If M5 later adds a real 007 delta, it goes in this
+-- file; anything already applied by 005 belongs in 005.

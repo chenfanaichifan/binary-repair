@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+
+import pytest
 from pathlib import Path
 
 from app.services import assistant_llm, jobs
@@ -59,3 +61,21 @@ def test_llm_call_is_recorded_for_usage(tmp_path: Path) -> None:
         connection.close()
     assert row["job_id"] == job.id
     assert row["plan_id"] == plan.plan_id
+
+
+def test_llm_call_without_a_data_dir_writes_nothing(tmp_path: Path) -> None:
+    """No data_dir means no write, not a silent project-root var/."""
+    data, job = _job(tmp_path)
+    with pytest.raises(ValueError, match="data_dir"):
+        assistant_llm.generate_plan(
+            "fix", context={"job_id": job.id}, client=_FakeClient()
+        )
+    from app.db.connection import connect
+    connection = connect(data)
+    try:
+        rows = connection.execute(
+            "SELECT COUNT(*) FROM model_calls WHERE route = 'assistant'"
+        ).fetchone()[0]
+    finally:
+        connection.close()
+    assert rows == 0

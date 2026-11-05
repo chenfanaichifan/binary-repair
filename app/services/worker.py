@@ -410,12 +410,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.services.worker")
     parser.add_argument(
         "--data-dir",
-        default=os.environ.get("BINARYREPAIR_DATA_DIR", "var"),
-        help="controller data directory",
+        default=os.environ.get("BINARYREPAIR_DATA_DIR"),
+        help="controller data directory; defaults to BINARYREPAIR_DATA_DIR",
     )
     parser.add_argument("--once", action="store_true", help="process queued runs once")
     parser.add_argument("--poll", type=float, default=0.0, help="poll interval in seconds")
     args = parser.parse_args(argv)
+    if not args.data_dir:
+        parser.error("--data-dir is required (or set BINARYREPAIR_DATA_DIR)")
 
     if args.poll > 0:
         while True:

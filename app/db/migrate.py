@@ -9,6 +9,7 @@ before any DDL, not silently migrated.
 from __future__ import annotations
 
 import argparse
+import os
 import sqlite3
 from pathlib import Path
 from typing import Iterable
@@ -166,8 +167,14 @@ def init_db(data_dir: str | Path) -> sqlite3.Connection:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Apply BinaryRepair DB migrations")
-    parser.add_argument("--db", default="var", help="data directory (contains app.db)")
+    parser.add_argument(
+        "--db",
+        default=os.environ.get("BINARYREPAIR_DATA_DIR"),
+        help="data directory (contains app.db); defaults to BINARYREPAIR_DATA_DIR",
+    )
     args = parser.parse_args()
+    if not args.db:
+        parser.error("--db is required (or set BINARYREPAIR_DATA_DIR)")
     connection = init_db(args.db)
     versions = [row[0] for row in connection.execute(
         "SELECT version FROM schema_migrations ORDER BY version"
