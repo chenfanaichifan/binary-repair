@@ -81,7 +81,10 @@ def test_start_requires_approval_and_is_idempotent(client: TestClient) -> None:
 
     snapshot = client.get(f"/api/jobs/{job_id}").json()
     assert snapshot["phase"] == "queued"
-    assert snapshot["execution"] == "queued"
+    assert snapshot["execution"]["status"] == "queued"
+    assert snapshot["execution"]["source"] == "controller-derived"
+    assert snapshot["execution"]["sidecar"] is None
+    assert snapshot["execution_phase"] == "queued"
 
 
 def test_contract_edit_invalidates_approval(client: TestClient) -> None:

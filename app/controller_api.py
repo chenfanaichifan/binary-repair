@@ -13,6 +13,9 @@ adapter calls these endpoints:
     GET  /api/jobs/{id}/artifacts/{aid}    artifact metadata, job scoped
     GET  /api/jobs/{id}/artifacts/{aid}/download
                                            verified artifact bytes, job scoped
+    GET  /api/jobs/{id}/analysis           screening state and analysis artifacts
+    POST /api/jobs/{id}/analysis           request a screening (no executor yet)
+    GET  /api/jobs/{id}/comparison         behavior-comparison artifact, when ingested
     GET  /api/artifacts/{id}               artifact metadata by id (legacy)
     GET  /api/artifacts/{id}/download      registered artifact bytes (legacy)
 
@@ -34,6 +37,7 @@ import hashlib
 import json
 import os
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -383,6 +387,225 @@ def _job_obligation_groups(job_id: str) -> dict[str, list[dict[str, Any]]]:
     return groups
 
 
+STEP_FLOW: tuple[tuple[str, str], ...] = (
+    ("intake", "Describe the defect"),
+    ("contract", "Review the repair contract"),
+    ("screening", "Screen the original"),
+    ("repair", "Repair and verify"),
+    ("verification", "Collect evidence"),
+    ("done", "Finished"),
+)
+STEP_IDS: tuple[str, ...] = tuple(step for step, _ in STEP_FLOW)
+RUN_ACTIVE_PHASES = frozenset(
+    {"screening", "analyzing", "roundtrip", "generating", "applying", "validating"}
+)
+RUN_FAILED_OUTCOMES = frozenset({"rejected", "error", "failed"})
+COMPARISON_ROLE = "behavior_comparison"
+COMPARISON_MAX_BYTES = 2 * 1024 * 1024
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _analysis_rows(job_id: str) -> list[dict[str, Any]]:
+    """Registered screening artifacts (``analysis_*`` roles), newest last."""
+    return [
+        row
+        for row in jobs.list_artifacts(job_id, data_dir=_data_dir())
+        if str(row.get("role") or "").startswith("analysis_")
+    ]
+
+
+def _analysis_state(job_id: str) -> dict[str, Any]:
+    """Screening state without pretending a producer exists.
+
+    ``available`` means artifacts are registered; ``requested`` means the host
+    recorded a request but nothing has been ingested; ``not_provided`` is the
+    honest answer for a job nobody has screened. The screening executor (M3) and
+    the ingest adapter (M5) are the only writers of the first two states.
+    """
+    rows = _analysis_rows(job_id)
+    request = _read_meta(job_id).get("analysis") or {}
+    if rows:
+        status = "available"
+        detail = f"{len(rows)} analysis artifact(s) are registered for this job"
+    elif request.get("status") == "requested":
+        status = "requested"
+        detail = (
+            "a screening was requested but no analysis artifact has been ingested; "
+            "this build has no screening executor"
+        )
+    else:
+        status = "not_provided"
+        detail = "no screening has been requested for this job"
+    return {
+        "status": status,
+        "requested_at": request.get("requested_at"),
+        "detail": detail,
+        "rows": rows,
+    }
+
+
+def _analysis_payload(job_id: str, record: jobs.JobRecord) -> dict[str, Any]:
+    state = _analysis_state(job_id)
+    return {
+        "job_id": job_id,
+        "purpose": "screening",
+        "status": state["status"],
+        "requested_at": state["requested_at"],
+        "detail": state["detail"],
+        "phase": record.phase,
+        "screening": None,
+        "artifacts": [_artifact_metadata(row) for row in state["rows"]],
+    }
+
+
+def _comparison_payload(job_id: str) -> dict[str, Any]:
+    """Behavior comparison is rendered only from an ingested artifact."""
+    rows = [
+        row
+        for row in jobs.list_artifacts(job_id, data_dir=_data_dir())
+        if row.get("role") == COMPARISON_ROLE
+    ]
+    base: dict[str, Any] = {
+        "job_id": job_id,
+        "status": "not_provided",
+        "detail": "no behavior-comparison artifact is registered for this job",
+        "comparison": None,
+        "artifacts": [],
+    }
+    if not rows:
+        return base
+
+    row = rows[0]
+    base["status"] = "available"
+    base["artifacts"] = [_artifact_metadata(row)]
+    path = _artifact_file(row)
+    if path is None:
+        base["detail"] = "the comparison artifact is registered but its bytes are not on disk"
+        return base
+    if path.stat().st_size > COMPARISON_MAX_BYTES:
+        base["detail"] = (
+            f"the comparison artifact is larger than {COMPARISON_MAX_BYTES} bytes; "
+            "download it directly"
+        )
+        return base
+    try:
+        parsed = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        base["detail"] = f"the comparison artifact is not readable JSON: {exc}"
+        return base
+    base["comparison"] = parsed
+    base["detail"] = ""
+    return base
+
+
+def _execution_status(record: jobs.JobRecord, run_row: Any) -> dict[str, Any]:
+    """Derive execution state from persisted rows.
+
+    Record 87 asks for an ``execution.status``. The execution-bridge sidecar it
+    once referred to (record 85) does not exist in this tree, so this value is
+    derived from ``runs.phase`` / ``runs.outcome`` and says so: ``sidecar`` stays
+    ``null`` and ``source`` is explicit. Nothing here upgrades an unknown phase
+    into a success.
+    """
+    base: dict[str, Any] = {
+        "source": "controller-derived",
+        "sidecar": None,
+        "note": (
+            "Derived from persisted run rows; no producer sidecar exists in this build."
+        ),
+        "run_id": None,
+        "phase": record.phase,
+        "outcome": None,
+        "started_at": None,
+        "finished_at": None,
+    }
+    if run_row is None:
+        if record.phase == "cancelled":
+            status = "cancelled"
+        elif record.phase in {"draft", "awaiting_review"}:
+            status = "not_started"
+        elif record.phase in {"queued", "running"}:
+            status = "queued"
+        else:
+            status = "unknown"
+        return {**base, "status": status}
+
+    keys = set(run_row.keys())
+    phase = str(run_row["phase"])
+    outcome = run_row["outcome"] if "outcome" in keys else None
+    if phase == "queued":
+        status = "queued"
+    elif phase in RUN_ACTIVE_PHASES:
+        status = "running"
+    elif phase == "finished":
+        status = "failed" if str(outcome or "").lower() in RUN_FAILED_OUTCOMES else "completed"
+    elif phase == "cancelled":
+        status = "cancelled"
+    else:
+        status = "unknown"
+    return {
+        **base,
+        "status": status,
+        "run_id": run_row["id"],
+        "phase": phase,
+        "outcome": outcome,
+        "started_at": run_row["started_at"] if "started_at" in keys else None,
+        "finished_at": run_row["finished_at"] if "finished_at" in keys else None,
+    }
+
+
+def _current_step(
+    record: jobs.JobRecord, run_row: Any, analysis_status: str
+) -> str:
+    phase = record.phase
+    if phase == "cancelled":
+        return "done"
+    if run_row is not None:
+        run_phase = str(run_row["phase"])
+        if run_phase in {"finished", "cancelled"}:
+            return "done"
+        return "repair"
+    if phase == "finished":
+        return "done"
+    if analysis_status == "requested":
+        return "screening"
+    if phase == "draft":
+        return "intake"
+    if phase == "awaiting_review":
+        return "contract"
+    if phase in {"queued", "running"}:
+        return "repair"
+    return "unknown"
+
+
+def _agent_state(
+    record: jobs.JobRecord, run_row: Any, analysis_status: str
+) -> dict[str, Any]:
+    """The step the agent console should highlight, with the whole flow."""
+    current = _current_step(record, run_row, analysis_status)
+    index = STEP_IDS.index(current) if current in STEP_IDS else None
+    steps = []
+    for position, (step_id, label) in enumerate(STEP_FLOW):
+        if index is None:
+            state = "pending"
+        elif position < index:
+            state = "done"
+        elif position == index:
+            state = "active"
+        else:
+            state = "pending"
+        steps.append({"id": step_id, "label": label, "state": state})
+    return {
+        "current_step": current,
+        "label": dict(STEP_FLOW).get(current, ""),
+        "steps": steps,
+        "source": "controller-derived",
+    }
+
+
 def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
     contract = dict(meta.get("contract") or _contract_body())
     contract.setdefault("revision", 1)
@@ -391,6 +614,7 @@ def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
 
     routes = _placeholder_routes(record.phase)
     run = jobs.latest_run(record.id, data_dir=_data_dir())
+    run_row: Any = None
     run_verdict: dict[str, Any] | None = None
     if run is not None:
         connection = connect(_data_dir())
@@ -424,11 +648,14 @@ def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
                 if interface is not None:
                     route["compatibility"] = interface["result"]
 
+    analysis = _analysis_state(record.id)
     return {
         "id": record.id,
         "demo": False,
         "data_source": "controller-http",
-        "execution": "not_started" if record.phase == "draft" else record.phase,
+        "execution": _execution_status(record, run_row),
+        "execution_phase": "not_started" if record.phase == "draft" else record.phase,
+        "agent": _agent_state(record, run_row, analysis["status"]),
         "filename": record.filename,
         "original_sha256": record.original_sha256,
         "defect": record.defect_description,
@@ -866,6 +1093,59 @@ def job_artifact(job_id: str, artifact_id: str) -> dict[str, Any]:
 @app.get("/api/jobs/{job_id}/artifacts/{artifact_id}/download")
 def download_job_artifact(job_id: str, artifact_id: str) -> FileResponse:
     return _verified_artifact_response(job_id, artifact_id)
+
+
+@app.get("/api/jobs/{job_id}/analysis")
+def get_analysis(job_id: str) -> dict[str, Any]:
+    """Screening state: ``available`` / ``requested`` / ``not_provided``."""
+    record = _job_or_404(job_id)
+    return _analysis_payload(job_id, record)
+
+
+@app.post("/api/jobs/{job_id}/analysis")
+def request_analysis(job_id: str) -> JSONResponse:
+    """Record a screening request.
+
+    This build has no screening executor, so an accepted request is recorded and
+    reported as ``requested``; it never fabricates an analysis. Once M3's executor
+    runs and M5's ingest registers ``analysis_*`` artifacts, ``GET`` moves to
+    ``available`` without an endpoint change. The call is idempotent: an existing
+    request (or existing artifacts) returns 200 instead of starting a second one.
+    """
+    record = _job_or_404(job_id)
+    payload = _analysis_payload(job_id, record)
+    if payload["status"] in {"available", "requested"}:
+        return JSONResponse(payload, status_code=200)
+    if record.phase == "cancelled":
+        raise HTTPException(status_code=409, detail="A cancelled job cannot be screened.")
+
+    meta = _read_meta(job_id)
+    contract = meta.get("contract") or {}
+    approved = bool(meta.get("approval")) or bool(contract.get("approved"))
+    if not approved:
+        raise HTTPException(
+            status_code=409,
+            detail="Approve the repair contract before screening the original.",
+        )
+    if jobs.latest_run(record.id, data_dir=_data_dir()) is not None:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "A repair run already exists for this job; request screening before "
+                "starting the run."
+            ),
+        )
+
+    meta["analysis"] = {"status": "requested", "requested_at": _now()}
+    _write_meta(job_id, meta)
+    return JSONResponse(_analysis_payload(job_id, record), status_code=202)
+
+
+@app.get("/api/jobs/{job_id}/comparison")
+def get_comparison(job_id: str) -> dict[str, Any]:
+    """Original-vs-candidate behavior comparison, only from an ingested artifact."""
+    _job_or_404(job_id)
+    return _comparison_payload(job_id)
 
 
 @app.get("/api/artifacts/{artifact_id}")
