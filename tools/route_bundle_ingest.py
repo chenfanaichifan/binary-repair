@@ -277,6 +277,7 @@ def ingest(
         if not isinstance(names, list):
             raise IngestError(f"gate {gate} artifacts must be a list")
         ids = []
+        ids_by_name: dict[str, str] = {}
         for name in names:
             if not isinstance(name, str):
                 raise IngestError(f"gate {gate} artifact name must be a string")
@@ -284,13 +285,24 @@ def ingest(
             total += path.stat().st_size
             if total > MAX_TOTAL_BYTES:
                 raise IngestError("bundle exceeds total size limit")
-            ids.append(_register_file(data_dir=data_dir, job_id=job_id,
-                                      attempt_id=attempt_id, bundle=bundle,
-                                      relative=name, role=f"{gate.lower()}_evidence"))
+            artifact_id = _register_file(data_dir=data_dir, job_id=job_id,
+                                         attempt_id=attempt_id, bundle=bundle,
+                                         relative=name, role=f"{gate.lower()}_evidence")
+            ids.append(artifact_id)
+            ids_by_name[name] = artifact_id
         if status == "passed" and not ids:
             raise IngestError(f"gate {gate} passed without evidence")
         if ids:
-            evidence[gate] = ids[0]
+            # V0 can contain several files; the candidate is the one whose bytes
+            # match candidate_sha256, not merely the first list entry.  This is
+            # the same binding M1 fixed in the controller ingest.
+            chosen = ids[0]
+            if gate == "V0":
+                for name, artifact_id in ids_by_name.items():
+                    if _sha256(_safe_file(bundle, name)) == manifest["candidate_sha256"]:
+                        chosen = artifact_id
+                        break
+            evidence[gate] = chosen
 
     analysis_ids = []
     for item in manifest.get("analysis") or []:

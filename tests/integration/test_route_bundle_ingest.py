@@ -177,3 +177,44 @@ def test_legacy_result_bundle_must_be_in_sums(tmp_path: Path) -> None:
     with pytest.raises(IngestError, match="result-bundle.json"):
         ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
                route="route_a", bundle=bundle, trigger=False)
+
+
+def test_v0_picks_candidate_not_first_artifact(tmp_path: Path) -> None:
+    from app.db.connection import connect
+    data, job, run, attempt = _job(tmp_path)
+    bundle = _bundle(tmp_path)
+    (bundle / "decoy.json").write_text('{"not": "candidate"}')
+    manifest = json.loads((bundle / "bundle.json").read_text())
+    manifest["candidate_sha256"] = __import__("hashlib").sha256((bundle / "candidate.elf").read_bytes()).hexdigest()
+    manifest["gates"]["V0"]["artifacts"] = ["decoy.json", "candidate.elf"]
+    (bundle / "bundle.json").write_text(json.dumps(manifest))
+    result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+                    route="route_a", bundle=bundle, trigger=False)
+    connection = connect(data)
+    try:
+        row = connection.execute(
+            "SELECT sha256 FROM artifacts WHERE id = ?", (result["evidence"]["V0"],)
+        ).fetchone()
+    finally:
+        connection.close()
+    assert row["sha256"] == manifest["candidate_sha256"]
+
+
+def test_legacy_without_result_bundle_is_all_not_run(tmp_path: Path) -> None:
+    import hashlib
+    data, job, run, attempt = _job(tmp_path)
+    bundle = tmp_path / "legacy-no-result"; bundle.mkdir()
+    candidate = bundle / "candidate.elf"; candidate.write_bytes(b"\x7fELF legacy")
+    files = ["candidate.elf"]
+    (bundle / "handoff.json").write_text(json.dumps({
+        "id": "LEGACY", "from": "M3", "to": "M5", "route": "route_a",
+        "created_at": "2026-11-05T00:00:00+08:00", "files": files,
+    }))
+    (bundle / "SHA256SUMS").write_text(
+        f"{hashlib.sha256(candidate.read_bytes()).hexdigest()}  candidate.elf\n"
+    )
+    result = ingest(data_dir=data, job_id=job.id, run_id=run.id, attempt_id=attempt.id,
+                    route="route_a", bundle=bundle, trigger=False)
+    payload = json.loads((data / "jobs" / job.id / "runs" / run.id / "attempts" / f"{attempt.id}.json").read_text())
+    assert payload["results"] == {f"V{i}": "not_run" for i in range(6)}
+    assert result["evidence"] == {}
