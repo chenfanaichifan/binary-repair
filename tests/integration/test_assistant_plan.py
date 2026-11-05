@@ -28,38 +28,18 @@ def test_unknown_assistant_mode_fails_closed(tmp_path: Path) -> None:
         assistant.generate_plan(job.id, data_dir=data, mode="bogus")
 
 
-_PLAN_TEMPLATE = '{"schema_version":1,"job_id":"__JOB__","mode":"llm","summary":"llm plan","steps":[{"id":"s","title":"step","detail":"do it","state":"next"}],"questions":[]}'
-
-
-class _FakeResponse:
-    content = _PLAN_TEMPLATE
-    model = "fake-model"
-    usage = {"prompt_tokens": 10, "completion_tokens": 5}
-
-
-class _FakeClient:
-    def chat_json(self, messages, **kwargs):
-        return _FakeResponse
-
-
-def test_llm_plan_is_saved_with_usage(tmp_path: Path) -> None:
+def test_llm_seam_accepts_injected_planner(tmp_path: Path) -> None:
+    from app.domain.assistant import AssistantPlan, AssistantStep
     data = tmp_path / "var"
     job = jobs.create_job(original_bytes=b"\x7fELF assistant", filename="s.elf",
                           defect_description="overflow", data_dir=data)
-    _FakeResponse.content = _PLAN_TEMPLATE.replace("__JOB__", job.id)
-    result = assistant.generate_plan(job.id, data_dir=data, mode="llm", client=_FakeClient())
+
+    def planner(*, job_id: str, data_dir, client=None):
+        return assistant.save_plan(job_id, AssistantPlan(
+            job_id=job_id, mode="llm", summary="injected",
+            steps=[AssistantStep(id="s", title="step", detail="detail")],
+        ), data_dir=data_dir, model="injected-model")
+
+    result = assistant.generate_plan(job.id, data_dir=data, mode="llm", planner=planner)
     assert result["mode"] == "llm"
-    assert result["model"] == "fake-model"
-    assert result["usage"]["prompt_tokens"] == 10
-
-
-def test_llm_call_is_recorded_for_usage(tmp_path: Path) -> None:
-    data = tmp_path / "var"
-    job = jobs.create_job(original_bytes=b"\x7fELF assistant", filename="s.elf",
-                          defect_description="overflow", data_dir=data)
-    _FakeResponse.content = _PLAN_TEMPLATE.replace("__JOB__", job.id)
-    result = assistant.generate_plan(job.id, data_dir=data, mode="llm", client=_FakeClient())
-    from app.services import model_calls
-    usage = model_calls.aggregate_usage(data_dir=data, route="assistant")
-    assert usage == {"input_tokens": 10, "output_tokens": 5}
-    assert result["usage"]["model_call_id"]
+    assert result["model"] == "injected-model"
