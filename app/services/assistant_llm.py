@@ -25,6 +25,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import time
 import uuid
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
@@ -129,6 +130,15 @@ def _fingerprint(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
 
 
+def _json_safe(value: Any) -> bool:
+    """True when ``value`` can be serialised without inventing a repr."""
+    try:
+        json.dumps(value, ensure_ascii=False)
+    except (TypeError, ValueError):
+        return False
+    return True
+
+
 def build_messages(description: str, *, context: Mapping[str, Any] | None = None) -> list[dict[str, str]]:
     """Build the planning messages.
 
@@ -157,8 +167,14 @@ def build_messages(description: str, *, context: Mapping[str, Any] | None = None
     )
     payload: dict[str, Any] = {"description": description}
     if context:
-        # data_dir and job_id are routing hints, not prompt material.
-        safe = {k: v for k, v in dict(context).items() if k not in ("data_dir",)}
+        # data_dir and job_id are routing/audit hints, not prompt material.
+        # Anything the JSON encoder cannot represent is dropped instead of
+        # being sent as a Python repr.
+        safe = {
+            key: value
+            for key, value in dict(context).items()
+            if key not in ("data_dir", "job_id") and _json_safe(value)
+        }
         if safe:
             payload["context"] = safe
     user = json.dumps(payload, ensure_ascii=False, sort_keys=True)
@@ -296,6 +312,10 @@ def _record(
 ) -> None:
     data_dir = context.get("data_dir") if isinstance(context, Mapping) else None
     job_id = context.get("job_id") if isinstance(context, Mapping) else None
+    usage = dict(usage) if usage else {}
+    latency = usage.pop("latency_ms", None)
+    if not isinstance(latency, int) or isinstance(latency, bool) or latency < 0:
+        latency = None
     try:
         model_calls.record_call(
             data_dir=data_dir or "var",
@@ -303,7 +323,8 @@ def _record(
             model_returned=returned,
             status=status,
             route="assistant",
-            usage=dict(usage) if usage else None,
+            usage=usage or None,
+            latency_ms=latency,
             request_id=request_id,
             job_id=job_id,
             plan_id=plan.plan_id,
@@ -380,6 +401,7 @@ class HttpJsonClient:
             "response_format": {"type": "json_object"},
         }
         headers = {"Authorization": f"Bearer {self._api_key}"}
+        started = time.perf_counter()
         try:
             with httpx.Client(timeout=self._timeout, transport=self._transport) as client:
                 response = client.post(
@@ -389,6 +411,7 @@ class HttpJsonClient:
             raise TimeoutError("provider timed out") from exc
         except httpx.TransportError as exc:
             raise ConnectionError("provider unreachable") from exc
+        latency_ms = max(0, int((time.perf_counter() - started) * 1000))
         if response.status_code >= 400:
             raise _ProviderHTTPError(response.status_code)
         try:
@@ -400,6 +423,13 @@ class HttpJsonClient:
         message = choice.get("message") if isinstance(choice, dict) else {}
         usage = data.get("usage") if isinstance(data, dict) else None
         usage = usage if isinstance(usage, dict) else {}
+        usage_fields = {
+            key: usage[key]
+            for key in ("prompt_tokens", "completion_tokens", "total_tokens")
+            if isinstance(usage.get(key), int) and not isinstance(usage.get(key), bool)
+        }
+        # Measured here, never asked from the model.
+        usage_fields["latency_ms"] = latency_ms
         return _ProviderResult(
             content=message.get("content") if isinstance(message, dict) else None,
             model=(
@@ -407,11 +437,7 @@ class HttpJsonClient:
                 if isinstance(data, dict) and isinstance(data.get("model"), str)
                 else self._model
             ),
-            usage={
-                key: usage[key]
-                for key in ("prompt_tokens", "completion_tokens", "total_tokens")
-                if isinstance(usage.get(key), int) and not isinstance(usage.get(key), bool)
-            },
+            usage=usage_fields,
             request_id=response.headers.get("x-request-id"),
         )
 
@@ -465,8 +491,8 @@ def generate_plan(
                 usage={}, request_id=None, status=STATUS_FALLBACK)
         return plan
 
-    messages = build_messages(description, context=context)
     try:
+        messages = build_messages(description, context=context)
         raw = _invoke(client, messages, requested)
     except TimeoutError:
         plan = _fallback(description, context, reason=FallbackReason.TIMEOUT,
@@ -512,7 +538,10 @@ def generate_plan(
 
     payload = dict(payload)
     # Identity and accounting are server-side facts; do not trust the model's.
-    payload.setdefault("plan_id", uuid.uuid4().hex)
+    plan_id = payload.get("plan_id")
+    payload["plan_id"] = (
+        plan_id.strip() if isinstance(plan_id, str) and plan_id.strip() else uuid.uuid4().hex
+    )
     payload["mode"] = "llm"
     payload["fallback"] = False
     payload["fallback_reason"] = None

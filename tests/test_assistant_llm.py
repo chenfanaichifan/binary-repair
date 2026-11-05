@@ -80,7 +80,7 @@ def _rows(data_dir: Path) -> list[dict]:
     try:
         rows = connection.execute(
             "SELECT status, route, model_requested, model_returned, prompt_tokens, "
-            "completion_tokens, total_tokens, plan_id, job_id, usage_json "
+            "completion_tokens, total_tokens, latency_ms, plan_id, job_id, usage_json "
             "FROM model_calls ORDER BY rowid"
         ).fetchall()
     finally:
@@ -122,6 +122,14 @@ def test_missing_plan_id_is_filled_server_side():
     del payload["plan_id"]
     plan = generate_plan("fix it", client=FakeTransport(payload))
     assert plan.plan_id
+    assert plan.fallback is False
+
+
+def test_blank_plan_id_is_replaced():
+    payload = _payload()
+    payload["plan_id"] = "   "
+    plan = generate_plan("fix it", client=FakeTransport(payload))
+    assert plan.plan_id.strip()
     assert plan.fallback is False
 
 
@@ -247,6 +255,27 @@ def test_missing_usage_is_null_not_zero(tmp_path: Path):
     assert row["total_tokens"] is None
 
 
+def test_total_only_usage_does_not_become_a_token_pair(tmp_path: Path):
+    data, job = _job(tmp_path)
+    plan = generate_plan("fix it", client=FakeTransport(_payload(), usage={"total_tokens": 9}),
+                         context={"data_dir": str(data), "job_id": job.id})
+    assert plan.tokens is None
+    row = _rows(data)[0]
+    assert row["prompt_tokens"] is None
+    assert row["completion_tokens"] is None
+    assert row["total_tokens"] == 9
+
+
+def test_latency_goes_to_its_own_column(tmp_path: Path):
+    data, job = _job(tmp_path)
+    plan = generate_plan("fix it", client=FakeTransport(_payload(), usage={"latency_ms": 42}),
+                         context={"data_dir": str(data), "job_id": job.id})
+    assert plan.tokens is None
+    row = _rows(data)[0]
+    assert row["latency_ms"] == 42
+    assert row["usage_json"] is None
+
+
 def test_fallback_is_recorded_as_fallback(tmp_path: Path):
     data, job = _job(tmp_path)
     plan = generate_plan("fix it", client=FakeTransport("", error=TimeoutError()),
@@ -339,10 +368,33 @@ def test_status_badge_reports_an_unwired_llm():
     assert status["fallback_reason"] == FallbackReason.NO_CLIENT
 
 
-def test_messages_do_not_carry_the_data_dir():
-    messages = build_messages("fix it", context={"job_id": "j1", "data_dir": "C:/secret"})
+def test_messages_keep_routing_ids_out_of_the_prompt():
+    messages = build_messages("fix the overflow",
+                              context={"job_id": "j1", "data_dir": "C:/secret",
+                                       "defect": "heap overflow"})
+    payload = json.loads(messages[-1]["content"])
+    assert payload["description"] == "fix the overflow"
+    assert payload["context"] == {"defect": "heap overflow"}
+    assert "j1" not in messages[-1]["content"]
     assert "C:/secret" not in messages[-1]["content"]
-    assert "j1" in messages[-1]["content"]
+
+
+def test_messages_drop_values_json_cannot_carry():
+    messages = build_messages("fix it", context={"defect": "overflow", "blob": object(),
+                                                 "when": {1, 2}})
+    payload = json.loads(messages[-1]["content"])
+    assert payload["context"] == {"defect": "overflow"}
+    assert "object at" not in messages[-1]["content"]
+
+
+def test_build_failure_downgrades_instead_of_raising(monkeypatch):
+    def boom(*args, **kwargs):
+        raise TypeError("context is not serialisable")
+
+    monkeypatch.setattr(assistant_llm, "build_messages", boom)
+    plan = generate_plan("fix it", client=FakeTransport(_payload()))
+    assert plan.fallback is True
+    assert plan.fallback_reason == FallbackReason.UNKNOWN
 
 
 def _plan_body() -> dict:
@@ -391,7 +443,9 @@ def test_http_client_sends_the_openai_shape():
     assert seen["body"]["max_tokens"] == 99
     assert seen["body"]["response_format"] == {"type": "json_object"}
     assert result.content == _plan_body()["choices"][0]["message"]["content"]
-    assert result.usage == {"prompt_tokens": 11, "completion_tokens": 22}
+    assert result.usage["prompt_tokens"] == 11
+    assert result.usage["completion_tokens"] == 22
+    assert isinstance(result.usage["latency_ms"], int)
 
 
 def test_http_client_hides_the_key_in_repr():

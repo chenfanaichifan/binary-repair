@@ -79,12 +79,12 @@ M2 已接管该模块，并接上 M5 的稳定接缝
 
 | 范围 | 状态 |
 |---|---|
-| 输入 | `description` + `context`；`context.data_dir` / `context.job_id` 只用于审计路由，不进 prompt |
+| 输入 | `description` + `context`；`context.data_dir` / `context.job_id` 只用于审计路由，不进 prompt；不可 JSON 序列化的字段直接丢弃，不发 Python repr |
 | 传输 | `client.chat_json(messages, max_tokens=..., thinking=False)`；兼容旧 `client.complete(messages, model=...)` |
 | 输出 | `AssistantPlan`（`app/domain/assistant.py`）——M5 直接 `model_validate` 并落 `assistant_plans` |
 | 失败 | 返回确定性引导包装：`mode="llm"`、`fallback=True`、`fallback_reason` 稳定码；**不抛异常、不返回半成品** |
-| 账号字段 | `plan_id` 缺省时补 uuid；`model` / `tokens` 只取响应真值，缺失为 `null`，不填 0 |
-| 审计 | 每次尝试写一行 `model_calls`（成功 `accepted_for_assistant`，失败 `fallback`）；写库失败不影响计划返回 |
+| 账号字段 | `plan_id` 缺省或空白时补 uuid；`model` / `tokens` 只取响应真值，缺失为 `null`，不填 0；`latency_ms` 由客户端 `perf_counter` 实测，不信模型自报 |
+| 审计 | 每次尝试写一行 `model_calls`（成功 `accepted_for_assistant`，失败 `fallback`）；token 与 `latency_ms` 分列写；写库失败不影响计划返回 |
 | 安全 | 不读 key、不建连接、不记录 prompt/模型原文；schema 错误用 `include_input=False` |
 
 `planner=` 是 M5 给测试注入假计划的 seam：只要传了 `planner`，`assistant.py` 就不会走到
@@ -96,8 +96,8 @@ M2 已接管该模块，并接上 M5 的稳定接缝
 
 ## 四之三、M1 交接（`97-m1-review-closeout`）
 
-M1 声明的 `7984bb6` **不在远程**（`canonical/m1-m5-integration` 停在 `5a13b6b`），本分支
-拿不到那批改动。GUI 侧按契约先做好消费与回退，等合入后只需联调：
+M1 的 `7984bb6` 与 503 契约 `3fec2c0` 已进入 `canonical/m1-m5-integration`
+（tip `ce36d6f`）；本分支按契约消费，合入后只需联调：
 
 | 契约 | GUI 行为 |
 |---|---|
@@ -132,7 +132,7 @@ M1 声明的 `7984bb6` **不在远程**（`canonical/m1-m5-integration` 停在 `
 .venv/Scripts/python.exe tests/e2e/capture_agent_screens.py
 ```
 
-本次实测：`test_agent_console.py` 22/22；`test_assistant_llm.py` 15/15；`test_m1_handoff.py` 6/6；核心回归 80 项全通过。
+本次实测：`test_assistant_llm.py` 43/43；`test_agent_console.py` 33/33；`test_m1_handoff.py` 6/6；`tests/integration/test_assistant_plan.py` 5/5。
 
 **已知预存在失败（与本次改动无关，已用 stash 对照确认）**：`tests/test_evidence_endpoint.py` 5 项在基线上同样失败，报 `attempts/<id>.json` 文件不存在，属后端持久化问题，归 M1/M5，不在 M2 范围。
 
