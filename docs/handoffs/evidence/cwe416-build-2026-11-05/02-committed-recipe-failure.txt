@@ -1,0 +1,18 @@
+== fixture build.sh as committed, run unmodified ==
+cwd: /home/lab/cwe416/run-a
+command: sh build.sh
+exit: exit=1
+
+-- stdout --
+-- stderr --
+/usr/bin/ld: /tmp/cc5lnhqY.o: in function `main':
+/home/lab/cwe416/run-a/harness.c:21: multiple definition of `main'; /tmp/cciQn9Xh.o:/home/lab/cwe416/run-a/src.c:91: first defined here
+collect2: error: ld returned 1 exit status
+
+-- duplicate definition --
+src.c:90     int main(int argc, char **argv)
+harness.c:20 int main(int argc, char *argv[])
+
+-- per-object symbol --
+src.o     : 00000000000001dc T main
+harness.o : 0000000000000000 T main
