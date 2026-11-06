@@ -44,7 +44,6 @@ from pathlib import Path
 from typing import Any
 
 REQUIRED_FILES = (
-    "src.c",
     "original.elf",
     "build.sh",
     "build.json",
@@ -54,6 +53,11 @@ REQUIRED_FILES = (
     "tests/invalid.json",
     "tests/SHA256SUMS",
 )
+
+# A fixture may ship the source under the name the upstream corpus uses.
+# `original.c` is preferred when the file was taken verbatim from SARD; `src.c`
+# stays accepted for fixtures whose source was authored in this repository.
+SOURCE_FILES = ("original.c", "src.c")
 
 REQUIRED_OBLIGATIONS = {
     "behaviour",
@@ -141,9 +145,27 @@ def _check_build_script(root: Path, findings: list[Finding]) -> None:
             )
 
 
+def _source_path(root: Path) -> Path | None:
+    for name in SOURCE_FILES:
+        candidate = root / name
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def _check_source(root: Path, findings: list[Finding]) -> None:
-    if (root / "src.c").stat().st_size == 0:
-        findings.append(Finding("empty_file", "src.c", "source is empty"))
+    source = _source_path(root)
+    if source is None:
+        findings.append(
+            Finding(
+                "missing_file",
+                "original.c",
+                f"required for intake; ship one of {', '.join(SOURCE_FILES)}",
+            )
+        )
+        return
+    if source.stat().st_size == 0:
+        findings.append(Finding("empty_file", source.name, "source is empty"))
 
 
 def _check_elf(root: Path, findings: list[Finding]) -> str | None:
@@ -467,6 +489,15 @@ def check_fixture(
     for relative in REQUIRED_FILES:
         if not (root / relative).is_file():
             findings.append(Finding("missing_file", relative, "required for intake"))
+
+    if _source_path(root) is None:
+        findings.append(
+            Finding(
+                "missing_file",
+                "original.c",
+                f"required for intake; ship one of {', '.join(SOURCE_FILES)}",
+            )
+        )
 
     if any(f.code == "missing_file" for f in findings):
         # Later checks would only restate the absence.

@@ -1,5 +1,26 @@
 {
-  "schema_version": 1,
+  "argv": [
+    "gcc",
+    "-mtune=generic",
+    "-march=x86-64",
+    "-g",
+    "-O0",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-fstack-clash-protection",
+    "-fcf-protection",
+    "-fasynchronous-unwind-tables",
+    "-ffile-prefix-map=<fixture-root>=.",
+    "-fmacro-prefix-map=<fixture-root>=.",
+    "-I",
+    "support",
+    "-no-pie",
+    "-o",
+    "original.elf",
+    "original.c",
+    "harness.c",
+    "support/io.c"
+  ],
   "compiler": {
     "name": "gcc",
     "version": "guest toolchain (>= 9, C11)"
@@ -14,33 +35,33 @@
     "-fstack-clash-protection",
     "-fcf-protection",
     "-fasynchronous-unwind-tables",
+    "-ffile-prefix-map=<fixture-root>=.",
+    "-fmacro-prefix-map=<fixture-root>=.",
+    "-I",
+    "support",
     "-no-pie"
   ],
-  "argv": [
-    "gcc",
-    "-mtune=generic",
-    "-march=x86-64",
-    "-g",
-    "-O0",
-    "-fno-stack-protector",
-    "-fno-pie",
-    "-fstack-clash-protection",
-    "-fcf-protection",
-    "-fasynchronous-unwind-tables",
-    "-no-pie",
-    "-o",
-    "original.elf",
-    "src.c",
-    "harness.c"
-  ],
-  "source": {
-    "url": "repo://fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/src.c",
-    "commit": "authored-in-this-repository",
-    "license": "Apache-2.0 (project licence; no upstream code copied)"
-  },
+  "network": false,
+  "note": "output.sha256 is null until a host with a Linux gcc runs build.sh; the authoring host has no ELF compiler and this file must not be guessed.",
   "output": {
     "path": "original.elf",
     "sha256": null
   },
-  "network": false
+  "schema_version": 1,
+  "source": {
+    "sha256": "fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e",
+    "unmodified": true,
+    "upstream": "NIST SARD Test Suite 112 (Juliet C/C++ v1.3)",
+    "upstream_path": "C/testcases/CWE416_Use_After_Free/CWE416_Use_After_Free__malloc_free_char_01.c",
+    "url": "repo://fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/original.c"
+  },
+  "support": {
+    "files": [
+      "support/std_testcase.h",
+      "support/std_testcase_io.h",
+      "support/io.c"
+    ],
+    "origin": "verbatim Juliet testcasesupport",
+    "reason": "the upstream case includes std_testcase.h and calls printLine"
+  }
 }

@@ -290,7 +290,9 @@ def test_the_existing_first_class_fixture_is_incomplete() -> None:
 
     # This is the real gap M4 would hit: the sample cannot be rebuilt and its
     # sums do not cover the binary.  A second-class fixture must not copy it.
-    assert {"src.c", "build.sh", "build.json", "defect.json"} <= missing
+    # The source may be named original.c (upstream) or src.c (authored here);
+    # this one has neither.
+    assert {"original.c", "build.sh", "build.json", "defect.json"} <= missing
 
 
 def test_a_bug_site_must_be_a_known_place(tmp_path: Path) -> None:

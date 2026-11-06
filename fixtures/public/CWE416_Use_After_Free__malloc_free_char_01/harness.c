@@ -1,43 +1,36 @@
 /*
- * Evaluation harness.  It exists so the sink under test is reachable from a
- * fixed command line and so the defect path is selected explicitly rather
- * than depending on data values a caller might not reproduce.
+ * Evaluation harness for the verbatim SARD case.
  *
- *   ./original <input>          good path  (read, then free)
- *   ./original <input> --uaf    defect path (free, then read)
+ * The upstream file defines badSink/goodSink plus its own main() under
+ * `#ifdef INCLUDEMAIN`.  We do not define that macro, so this file supplies the
+ * entry point and the upstream sinks stay untouched.
  *
- * The harness never decides pass/fail: tests/*.json states the expected
- * bytes and M4 compares them.
+ *   ./original.elf <ignored>          good path (allocate, read)
+ *   ./original.elf <ignored> --uaf    defect path (free, then read)
+ *
+ * The first argument is accepted for command-line stability and is not read by
+ * the sinks; the upstream case derives its buffer itself.
  */
 #include <stdio.h>
 #include <string.h>
 
-void badSink(char *data);
-void goodSink(char *data);
-
-#define MAX_INPUT_BYTES 4096
+void CWE416_Use_After_Free__malloc_free_char_01_bad(void);
+void CWE416_Use_After_Free__malloc_free_char_01_good(void);
 
 int main(int argc, char *argv[])
 {
-    size_t length;
-
     if (argc < 2 || argc > 3) {
-        fprintf(stderr, "usage: %s <input> [--uaf]\n", argv[0]);
+        fprintf(stderr, "usage: %s <ignored> [--uaf]\n", argv[0]);
         return 2;
-    }
-    length = strlen(argv[1]);
-    if (length > MAX_INPUT_BYTES) {
-        fprintf(stderr, "ERROR: input exceeds %d bytes\n", MAX_INPUT_BYTES);
-        return 1;
     }
     if (argc == 3) {
         if (strcmp(argv[2], "--uaf") != 0) {
-            fprintf(stderr, "usage: %s <input> [--uaf]\n", argv[0]);
+            fprintf(stderr, "usage: %s <ignored> [--uaf]\n", argv[0]);
             return 2;
         }
-        badSink(argv[1]);
+        CWE416_Use_After_Free__malloc_free_char_01_bad();
         return 0;
     }
-    goodSink(argv[1]);
+    CWE416_Use_After_Free__malloc_free_char_01_good();
     return 0;
 }

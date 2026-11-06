@@ -1,75 +1,20 @@
 {
-  "schema_version": 1,
   "case_id": "CWE416_Use_After_Free__malloc_free_char_01",
+  "measured_by": "pending Linux build",
   "original_sha256": null,
+  "schema_version": 1,
   "tests": [
     {
-      "id": "valid-empty",
-      "kind": "valid",
       "argv": [
-        "./original",
-        ""
+        "./original.elf",
+        "ignored"
       ],
-      "stdin_literal": null,
-      "stdin_artifact": null,
-      "expected": {
-        "return_code": 0,
-        "stdout": "\n",
-        "stderr": "",
-        "allowed_output_files": []
-      },
-      "rationale": "Empty input: the clamped copy is one NUL byte and exactly one LF is printed."
-    },
-    {
-      "id": "valid-one",
+      "expected": null,
+      "id": "valid-good",
       "kind": "valid",
-      "argv": [
-        "./original",
-        "a"
-      ],
-      "stdin_literal": null,
+      "rationale": "good path: allocate, read, never free. The upstream goodG2B and goodB2G each print the 99-byte buffer, so two identical lines are expected; the exact bytes must be measured, not inferred.",
       "stdin_artifact": null,
-      "expected": {
-        "return_code": 0,
-        "stdout": "a\n",
-        "stderr": "",
-        "allowed_output_files": []
-      },
-      "rationale": "Smallest non-empty input."
-    },
-    {
-      "id": "valid-max49",
-      "kind": "valid",
-      "argv": [
-        "./original",
-        "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
-      ],
-      "stdin_literal": null,
-      "stdin_artifact": null,
-      "expected": {
-        "return_code": 0,
-        "stdout": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm\n",
-        "stderr": "",
-        "allowed_output_files": []
-      },
-      "rationale": "Longest input the copy keeps whole before clamping (49 bytes + NUL = 50)."
-    },
-    {
-      "id": "valid-spaces",
-      "kind": "valid",
-      "argv": [
-        "./original",
-        "two words"
-      ],
-      "stdin_literal": null,
-      "stdin_artifact": null,
-      "expected": {
-        "return_code": 0,
-        "stdout": "two words\n",
-        "stderr": "",
-        "allowed_output_files": []
-      },
-      "rationale": "Internal spaces survive; only the trailing LF is added."
+      "stdin_literal": null
     }
   ]
 }

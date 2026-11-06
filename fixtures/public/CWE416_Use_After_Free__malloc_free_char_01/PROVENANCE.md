@@ -1,76 +1,37 @@
-# Provenance: CWE416_Use_After_Free__malloc_free_char_01
+# Provenance
 
-## What this sample is
+## Source
 
-A synthetic, self-contained C program written for this repository. No upstream
-source was copied. The only CWE it contains on purpose is CWE-416 (use of a
-heap block after `free`).
+`original.c` is a byte-for-byte copy of the SARD test case:
 
-The Juliet mirror the Lead pinned (`arichardson/juliet-test-suite-c`,
-commit `01e353d`) does not resolve there (HTTP 422), so the upstream Julie
-sample could not be fetched and its terms could not be stated honestly for
-bytes we did not have. Rather than label reconstructed text as upstream, this
-sample declares itself synthetic.
+```
+corpus        NIST SARD Test Suite 112 (Juliet C/C++ v1.3)
+archive       2017-10-01-juliet-test-suite-for-c-cplusplus-v1-3.zip
+path          C/testcases/CWE416_Use_After_Free/
+              CWE416_Use_After_Free__malloc_free_char_01.c
+sha256        fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e
+```
 
-- author: M1 (host backend), acting through an AI agent
-- date: 2026-11-05
-- licence: Apache-2.0, the project licence. There is no third-party grant to
-  reproduce here because there is no third-party code.
+It is not edited. `build.json#source.sha256` pins the same digest, so a change to
+the file is detectable without trusting this note.
 
-## Why `original.elf` is absent
+## Support files
 
-`build.sh` is the recipe; the binary it produces is `original.elf`. It is not
-committed in this change because the authoring host has no guest compiler
-(`gcc` is not installed) and this sample must not be hand-built. M3/VMer builds
-it on the guest from exactly `build.sh`, and the resulting digest goes into
-`build.json#output.sha256`.
+`support/std_testcase.h`, `support/std_testcase_io.h` and `support/io.c` are
+verbatim copies from the same archive's `C/testcasesupport/`. They are needed
+because the upstream case includes `std_testcase.h` and calls `printLine`.
 
-Until then `tools/fixture_intake.py --check` reports one finding
-(`missing_file original.elf`) and exits 1. That is the intended state: the
-fixture is content-complete but unbuilt, and the checker must not call that
-passing.
+## What this fixture does not contain
 
-## The defect, and how it is observed
+- No `src.c`. The earlier synthetic source was removed; it was authored in this
+  repository and cannot stand in for the upstream case.
+- No `original.elf`. It is produced only by `build.sh` on a host with a Linux
+  gcc. Nothing named `original.elf` may be borrowed from a variant build: a
+  different source or flag set has a different digest, and `tests/SHA256SUMS`
+  would then attest to the wrong artefact.
 
-`goodSink` reads the buffer and then frees it. `badSink` frees first and then
-reads it; that ordering is the defect. The harness selects the defect path with
-`--uaf` so a caller does not have to infer it from data.
+## Rebuild status
 
-Reading freed memory is not reliably visible in stdout, because glibc usually
-leaves the bytes in place after `free`. `badSink` therefore requests a block of
-the same size immediately after the free. glibc serves that request from the
-tcache LIFO for the size class, so the stale pointer sees the sentinel bytes
-`'X'` instead of the original text, and the two behaviours become
-distinguishable by output alone.
-
-This is an observation technique, not a guarantee of the language or of the
-allocator:
-
-- a different allocator (musl, a hardened build, a different tcache shape) may
-  not reuse the block, and the original could then print the original text too;
-- where ASan, valgrind or MTE is available, that report is the authority and
-  wins over this technique.
-
-`invalid.json` therefore states the *repaired* behaviour (print the input) and
-does not claim that the unmodified binary always differs in output on every
-allocator.
-
-## Files
-
-| File | Purpose |
-|---|---|
-| `src.c` | the sample: `duplicate`, `goodSink`, `badSink`, `main` |
-| `harness.c` | fixed command line and the `--uaf` selector |
-| `build.sh` | offline, fail-closed build recipe |
-| `build.json` | compiler, flags, argv, source, expected output digest, `network:false` |
-| `defect.json` | class `CWE-416` and the invalid case that triggers it |
-| `contract.json` | obligations, forbidden behaviour, valid domain, repair boundaries |
-| `tests/valid.json` | four valid cases |
-| `tests/invalid.json` | two defect-path cases |
-| `tests/SHA256SUMS` | every file above, relative to this directory |
-
-## Scope limits
-
-`duplicate` clamps the copy to `DEST_CAPACITY - 1`, so this sample cannot also
-overflow the heap block. CWE-121 remains the baseline class; T8.3 needs a
-second class and this fixture is it.
+`build.json#output.sha256` and `tests/*.json#original_sha256` stay `null` until a
+Linux gcc build runs. The authoring host has no ELF compiler, so the digest and
+the test expectations are recorded as pending rather than predicted.

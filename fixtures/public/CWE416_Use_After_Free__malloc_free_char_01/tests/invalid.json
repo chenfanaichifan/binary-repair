@@ -1,43 +1,21 @@
 {
-  "schema_version": 1,
   "case_id": "CWE416_Use_After_Free__malloc_free_char_01",
+  "measured_by": "pending Linux build",
   "original_sha256": null,
+  "schema_version": 1,
   "tests": [
     {
+      "argv": [
+        "./original.elf",
+        "ignored",
+        "--uaf"
+      ],
+      "expected": null,
       "id": "invalid-first",
       "kind": "invalid",
-      "argv": [
-        "./original",
-        "1234567",
-        "--uaf"
-      ],
-      "stdin_literal": null,
+      "rationale": "defect path: free() then printLine(data). The bytes read back are allocator state, not the original payload, and the process may abort in free() later. Record what actually happens on the built ELF.",
       "stdin_artifact": null,
-      "expected": {
-        "return_code": 0,
-        "stdout": "1234567\n",
-        "stderr": "",
-        "allowed_output_files": []
-      },
-      "rationale": "The defect path: free() then read. The original prints allocator sentinel bytes; the repaired program must print '1234567'. This is the class trigger."
-    },
-    {
-      "id": "invalid-longer",
-      "kind": "invalid",
-      "argv": [
-        "./original",
-        "use-after-free",
-        "--uaf"
-      ],
-      "stdin_literal": null,
-      "stdin_artifact": null,
-      "expected": {
-        "return_code": 0,
-        "stdout": "use-after-free\n",
-        "stderr": "",
-        "allowed_output_files": []
-      },
-      "rationale": "Same path with a different length, so a repair that special-cases one input does not pass."
+      "stdin_literal": null
     }
   ]
 }
