@@ -67,7 +67,8 @@ The converter maps only facts the harness actually records:
   `target_entry`, `entry_address`, `contract_sha256` and per-case `cases` are
   preserved in `source`;
 - `claimed_scope` is the literal `"model"`;
-- `property_kind` is `"pointer-flow"` for this harness; empty
+- `property_kind` is read from the harness's explicit field; it is never
+  inferred from `property_text`. A missing field rejects conversion. Empty
   `forbidden_ranges` is allowed only for pointer-flow, while `memory-range`
   requires at least one range. The converter omits the field rather than
   silently writing `[]`;
@@ -93,10 +94,10 @@ actual M3 v4-evidence.json
   -> source entry 0x4012aa, contract 8a2b408c...
 ```
 
-Tests: `tests/test_v4_harness_adapter.py` (actual output conversion, writer
-round-trip, empty-disjunction disclosure, missing accounting/negative-control
-rejection); `tests/test_v4_evidence.py` covers the typed constraints and
-calibration regressions.
+Tests: `tests/test_v4_harness_adapter.py` (explicit `property_kind`, actual
+output conversion, writer round-trip, empty-disjunction disclosure, missing
+accounting/negative-control rejection); `tests/test_v4_evidence.py` covers the
+typed constraints and calibration regressions.
 
 ## 4. 124 is not upgraded
 
@@ -114,7 +115,7 @@ independent review.
 ## 5. Checks
 
 ```
-M1 full suite   500 passed / 2 skipped / 0 failed
+M1 full suite   501 passed / 2 skipped / 0 failed
 ```
 
 CWE121 v2 hash and the 120 contract file/canonical hash gate are unchanged.

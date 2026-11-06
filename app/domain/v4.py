@@ -308,9 +308,6 @@ def from_v4_harness(data: object) -> V4Evidence:
         property_text = str(data.get("property_text") or "").strip()
         if not input_domain or not property_text:
             raise V4EvidenceError("v4_harness input_domain/property_text is empty")
-        property_kind = (
-            "pointer-flow" if "pointer" in property_text.lower() else "memory-range"
-        )
 
         state_names = (
             "initial", "deadended", "errored", "unconstrained",
@@ -357,7 +354,7 @@ def from_v4_harness(data: object) -> V4Evidence:
             "tool_versions": tool_versions,
             "preconditions": [input_domain],
             "memory_predicates": [property_text],
-            "property_kind": property_kind,
+            "property_kind": data["property_kind"],
             "hooks": hooks,
             "exploration_accounting": exploration,
             "solver_accounting": solver_accounting,
@@ -390,6 +387,7 @@ def from_v4_harness(data: object) -> V4Evidence:
                 "property_text": property_text,
                 "input_domain": input_domain,
                 "generated_by": data.get("generated_by"),
+                "property_kind": data["property_kind"],
                 "cases": cases,
                 "engine": engine,
             },

@@ -115,9 +115,10 @@
     "absence of the defect under a different allocator or a different libc",
     "equivalence with the C source: the model reads the ELF, not the source",
     "solver queries issued inside angr (branch and memory resolution) are not counted",
-    "a deep proof on the repaired side: its unsat is the empty-disjunction case — no free() occurs on the path — not a constraint that was solved"
+    "a deep proof on the repaired side: its unsat is the empty-disjunction case \u2014 no free() occurs on the path \u2014 not a constraint that was solved"
   ],
   "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "property_kind": "pointer-flow",
   "property_text": "on every execution, no pointer passed to free() is later passed to printLine()",
   "replay": {
     "digests": [

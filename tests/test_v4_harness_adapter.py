@@ -104,3 +104,11 @@ def test_adapter_does_not_add_disclosure_when_free_calls_is_nonzero() -> None:
     assert not any(
         "empty-disjunction" in item.lower() for item in evidence.not_claimed
     )
+
+
+def test_adapter_rejects_missing_property_kind_without_text_inference() -> None:
+    data = json.loads(HARNESS.read_text(encoding="utf-8"))
+    del data["property_kind"]
+    # property_text still says "pointer"; the adapter must not infer from it.
+    with pytest.raises(V4EvidenceError):
+        from_v4_harness(data)
