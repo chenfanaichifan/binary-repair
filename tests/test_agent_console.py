@@ -433,3 +433,10 @@ def test_partial_usage_is_labelled():
     assert "partial: usage.partial === true" in AGENT_JS
     assert "（部分真实用量）" in AGENT_JS
     assert "tokens：未提供" in AGENT_JS
+
+
+def test_empty_test_suite_renders_as_na():
+    # 0/0 is not a result. An empty suite must render N/A and must not be
+    # folded into another suite's ratio.
+    assert 'var total = typeof tests.total === "number"' in AGENT_JS
+    assert '? "N/A" : (passed + "/" + total)' in AGENT_JS

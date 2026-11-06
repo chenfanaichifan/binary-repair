@@ -967,8 +967,14 @@
 
     view.routeKeys.forEach(function (key) {
       var route = view.routes[key];
+      var tests = route.tests || {};
+      var total = typeof tests.total === "number" ? tests.total : null;
+      var passed = typeof tests.passed === "number" ? tests.passed : null;
+      // No cases is not "0/0 passed": show N/A so an empty suite is never
+      // read as a result, and never fold it into another suite's ratio.
+      var cases = (total === null || total === 0 || passed === null) ? "N/A" : (passed + "/" + total);
       var title = el("h3", "agent-side-subtitle",
-        "Route " + key + " · 用例 " + route.tests.passed + "/" + route.tests.total);
+        "Route " + key + " · 用例 " + cases);
       box.appendChild(title);
     });
 
