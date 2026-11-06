@@ -1,0 +1,79 @@
+# M4's guest key: install and acceptance — 2026-11-06T10:00:54Z
+# host: the M3 workstation.  guest: lab@192.168.30.128 over VMnet8 (192.168.30.1).
+# The install itself ran at 17:56 local; this transcript is the 18:00 re-check, which
+# is idempotent, plus the acceptance the request asked for. It is not a second install.
+
+## 1. the key, as delivered in text (not read from any branch)
+
+$ printf '%s\n' 'ssh-ed25519 AAAAC3…bdq m4-guest-replay-2026-11-06' > m4_guest_key.pub
+$ sha256sum m4_guest_key.pub
+ab8fbd7dc23bf900dc1597da8025a689feed55f77275c87869e55fa4dca5a703 *docs/handoffs/evidence/m4-key-install-2026-11-06/m4_guest_key.pub
+  expected   ab8fbd7dc23bf900dc1597da8025a689feed55f77275c87869e55fa4dca5a703
+$ wc -c -l m4_guest_key.pub
+  108 bytes, 1 line
+$ ssh-keygen -lf m4_guest_key.pub
+  256 SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q m4-guest-replay-2026-11-06 (ED25519)
+  expected   SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q
+
+## 2. the same file, hashed on the guest after transfer
+
+$ scp … ; sha256sum /tmp/m4_guest_key.pub        # on the guest
+ab8fbd7dc23bf900dc1597da8025a689feed55f77275c87869e55fa4dca5a703  /tmp/m4_guest_key.pub
+  (same digest on both sides, so the transfer did not alter it)
+
+## 3. the two keys that are now installed
+
+$ sudo awk "{print \$3, \$1}" /home/m4verify/.ssh/authorized_keys
+  m5-v4-access-2026-11-06  ssh-ed25519
+  m4-guest-replay-2026-11-06  ssh-ed25519
+
+$ sudo sh -c "wc -l < /home/m4verify/.ssh/authorized_keys"
+  2
+
+$ sudo ssh-keygen -lf /home/m4verify/.ssh/authorized_keys
+  256 SHA256:JF1hZZdGsxmEUt0REdbg4X76LCbaA/1q+0IYObh3zgI m5-v4-access-2026-11-06 (ED25519)
+  256 SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q m4-guest-replay-2026-11-06 (ED25519)
+
+## 4. idempotence — the same key again must not add a third line
+
+$ sudo sh guest/add-m4-key.sh /tmp/m4_guest_key.pub
+  already present: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5…
+  
+  fingerprint: SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q
+  authorized_keys now holds 2 key(s)
+$ sudo sh -c "wc -l < /home/m4verify/.ssh/authorized_keys"
+  2
+
+## 5. permissions, sshd, and the account
+
+$ sudo stat -c "%a %U:%G %n" /home/m4verify/.ssh /home/m4verify/.ssh/authorized_keys
+  700 m4verify:m4verify /home/m4verify/.ssh
+  600 m4verify:m4verify /home/m4verify/.ssh/authorized_keys
+
+$ sudo sshd -T | egrep "^(authorizedkeysfile|pubkeyauthentication|passwordauthentication|strictmodes)"
+  pubkeyauthentication yes
+  passwordauthentication no
+  strictmodes yes
+  authorizedkeysfile .ssh/authorized_keys .ssh/authorized_keys2
+
+$ ss -ltn | grep ":22"
+  LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+  LISTEN 0      4096            [::]:22           [::]:*          
+
+$ id m4verify; sudo passwd -S m4verify; groups m4verify
+  uid=1004(m4verify) gid=1004(m4verify) groups=1004(m4verify)
+  m4verify L 2026-11-06 0 99999 7 -1
+  groups: m4verify : m4verify
+
+## 6. acceptance, line by line against the request
+
+  two lines, m5 then m4                  -> yes, and the order is the install order
+  authorized_keys 600 m4verify:m4verify  -> yes
+  M5 not replaced                        -> yes: same fingerprint JF1hZZdG… as before
+  M4 installed                           -> yes: bRq28b6J… , both on the same file
+  idempotent                             -> yes: still 2 lines after a second run
+  login possible                        -> not testable here: it needs M4's private
+                                           half, which was never sent to this host.
+                                           sshd accepts pubkey only (password "no"),
+                                           so the key is the one thing missing,
+                                           and it is no longer missing.

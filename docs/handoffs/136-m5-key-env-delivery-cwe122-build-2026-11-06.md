@@ -6,7 +6,7 @@
   took that number while this record was being written. Same rule as 132/133:
   numbers are taken, not raced.
 - Branches: `m3/cwe416-v3-noinput` (this record), `m3/cwe122-fixture-build`
-  (the fixture change, `f25db07`)
+  (the fixture change, `f25db07` → rebased to `79cd4f9`; see §9)
 - Gate status assigned here: **none**. No `verified_by`, V4 still `not_run`,
   T8.3 still blocked.
 
@@ -139,37 +139,52 @@ meant this one. The sealed packages (133 and the T8.3 bundle) keep their bytes a
 their phrasing; this record is the interpretation they are read against, and it
 supersedes nothing about their content.
 
-## 6. Guest state, and M4's key
+## 6. Guest state, and the two keys on the account
 
-M4's key is identified by fingerprint
-`SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q` and was expected at
-`m4_guest_key.pub`. At 17:24 on 2026-11-06 that file was **not on this host**: the
-repository root, `D://` to depth three, `/tmp`, the user's home, Desktop and
-Downloads were searched by name, and every `*.pub` on disk was fingerprinted in
-case it had been saved under another name. Nothing matched, so nothing was
-installed — a key cannot be reconstructed from its fingerprint.
+M4's key arrived as text in this window and is now installed beside M5's:
 
-The account is otherwise ready, verified at the same time:
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBFmDHmwn/0KeulZ32w97zmV2jP+p7kGMdWew2rZnbdq  m4-guest-replay-2026-11-06
+file sha256  ab8fbd7dc23bf900dc1597da8025a689feed55f77275c87869e55fa4dca5a703
+fingerprint  SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q
+```
 
 | | |
 |---|---|
-| `authorized_keys` | mode **600**, owner **m4verify:m4verify** |
-| keys present | **1** — M5's `m5-v4-access-2026-11-06`, `SHA256:JF1hZZdGsxmEUt0REdbg4X76LCbaA/1q+0IYObh3zgI` |
-| sshd | listening on `0.0.0.0:22` and `[::]:22`; `pubkeyauthentication yes`, `passwordauthentication no`; no `AllowUsers`/`DenyUsers`/`AllowGroups` |
-| firewall | `ufw` inactive, no `DROP`/`REJECT` rules |
+| `authorized_keys` | mode **600**, owner **m4verify:m4verify**, `.ssh` at **700** |
+| keys present | **2** — M5 `JF1hZZdG…` first, M4 `bRq28b6J…` second |
+| M5's line | unchanged: same fingerprint, same position. Nothing was replaced |
+| idempotent | a second run prints `already present` and the count stays 2 |
+| sshd | `0.0.0.0:22` and `[::]:22`; `pubkeyauthentication yes`, `passwordauthentication no`, `strictmodes yes` |
+| account | uid 1004, own group, no sudo, password locked (`L`) |
 
-So `m4verify@192.168.30.128:22` accepts key authentication from any host that can
-route to the VMnet8 address; what it does not yet have is M4's key. When the file
-arrives, this appends beside M5's line rather than replacing it:
+Evidence, with both sides' digests and the full acceptance run:
+`docs/handoffs/evidence/m4-key-install-2026-11-06/`.
 
-```sh
-sudo sh /opt/binrepair-handoff/T8.3-evidence-2026-11-06/guest/add-m4-key.sh m4_guest_key.pub
-```
+### The correction this window owes
 
-`add-m4-key.sh` refuses a private key and is idempotent, and it prints the key
-count afterwards — the check that matters is **2**, with M5's fingerprint still
-among them. Until then there is no M4 replay, which is the same statement as
-"T8.3 stays blocked", not a second one.
+Records 135 and 136 both said M4's key "was not on this host". That conclusion came
+from searching the working tree, `D://` to depth three, `/tmp`, the home directory,
+Desktop and Downloads, and from fingerprinting every `*.pub` on disk. The request
+then named the missing step: the key is on a separate branch,
+`delivery/t83-2026-11-06` (root `f46c626c`, key commit `df99853b`), which no
+checkout here contains. `git fetch origin delivery/t83-2026-11-06` was the command
+those two windows did not run.
+
+**This window did not verify that either**, and says so rather than inheriting the
+claim. The fetch was attempted five more times and failed every time with the same
+transport fault as the rest of the afternoon; `git cat-file -t` on both commit ids
+still returns `could not get object info`, because without the branch there is
+nothing to read. So the installed key is byte-identical to the **text and the two
+digests supplied with the request**, which is a weaker statement than "identical to
+what the branch holds" — and it is the one the evidence directory makes. When the
+transport recovers, `git show origin/delivery/t83-2026-11-06:m4_guest_key.pub`
+should produce the same 108 bytes; if it does not, the evidence directory is wrong
+and the key has to be replaced.
+
+What this unlocks and what it does not: M4 can now authenticate, which was the only
+client-side blocker. It does not make M4's replay happen, and it is not a replay.
+`V4` stays `not_run` until M4 runs the harness and writes its own `verified_by`.
 
 ## 7. Boundaries
 
@@ -187,3 +202,64 @@ among them. Until then there is no M4 replay, which is the same statement as
 3. CWE122 still needs the rest of its T8.3 path (contract review, candidate,
    gates) — the build recipe is now reproducible, which is only step one.
 4. Branch merge, after T8.3 closes, decided by the Lead.
+
+## 9. The 502 was hiding a non-fast-forward
+
+`m3/cwe122-fixture-build` refused to push four times with
+`CONNECT tunnel failed, response 502`, and that was read as "the network is
+down, try later". When the tunnel came back the same push failed in a different
+way:
+
+```
+! [rejected]  m3/cwe122-fixture-build -> m3/cwe122-fixture-build (non-fast-forward)
+```
+
+So there were two separate facts stacked on top of each other, and the transport
+error was masking the second one:
+
+```
+local  f25db07   (1 commit: the CWE122 build fix)
+remote 52ffecd   (10 commits ahead of the common base, incl. M1's
+                  "record 1b08ae5 as the M3 intake base")
+base   6ce16ac6
+```
+
+The branch had been cut before those 10 commits landed, so this was a rebase,
+not a retry. Only `tools/fixture_intake.py` changed on the remote side and only
+the three CWE122 files changed on this side — no overlap, so the rebase applied
+cleanly and dropped nothing:
+
+```
+f25db07  ->  79cd4f9   build.json  +6/-1, build.sh +15/-1, tests/SHA256SUMS +2/-2
+              (rebased onto 52ffecd; the three changed files are byte-identical)
+```
+
+The lesson is the one worth keeping: **"502" describes the transport, not the
+state of the branch.** A retry loop that only counts HTTP failures would have
+reported "network flaky" forever; the push had to reach the server to learn it
+was being rejected for a reason that had nothing to do with the network.
+
+Nothing about the fixture's content changed in the rebase — the digest is still
+`c9ddb9c2…`, `output.sha256` and `tests/*.json#original_sha256` still hold it,
+and the pin did not move for a second time.
+
+## 10. Push state, corrected
+
+The status block this window was given says `3e2c108: 未推送，远端仍 2533780`. That
+is no longer true: `3e2c108` was pushed at 17:47 during a brief window, and the
+push printed
+
+```
+To https://github.com/chenfanaichifan/binary-repair.git
+   2533780..3e2c108  m3/cwe416-v3-noinput -> m3/cwe416-v3-noinput
+```
+
+A caveat that belongs next to it: `git ls-remote` fails again as of 18:05, so the
+remote cannot be read right now to re-confirm. The claim rests on that push's own
+output, not on a fresh read.
+
+`m3/cwe122-fixture-build` is the branch that is still outstanding, at `79cd4f9`
+after the rebase in §9. A background loop is retrying it every ten seconds and will
+stop as soon as `ls-remote` agrees with local. Two branches, two different reasons:
+one is behind the network, the other was behind the network *and* behind a rebase
+that the network error was hiding.

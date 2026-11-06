@@ -1,0 +1,25 @@
+# why this window installed from text: the branch could not be read — 2026-11-06T10:02:14Z
+
+$ git fetch origin delivery/t83-2026-11-06        # five attempts, 17:58–17:59
+  fatal: unable to access 'https://github.com/chenfanaichifan/binary-repair.git/':
+  Empty reply from server   (attempt 1)
+  CONNECT tunnel failed, response 502   (attempts 2-5)
+  exit status: non-zero on every attempt
+
+$ git cat-file -t f46c626c3dca3d36b09f511127353e4817e56cb1
+  fatal: git cat-file: could not get object info
+$ git cat-file -t df99853b22517f193bffb49424b461288dc48a69
+  fatal: git cat-file: could not get object info
+  (exit 1 on both: git has no such object locally — the message is
+   "could not get object info", not silence)
+
+$ git ls-remote --heads origin 2>/dev/null | wc -l
+  0
+  (0 = the remote itself is unreachable right now, so "absent" here means
+   "not fetched", not "does not exist upstream")
+
+# Consequence, stated plainly: this window could not read the branch, so it
+# cannot claim the installed key is byte-identical to what the branch holds.
+# It can claim the installed key is byte-identical to the text and the two
+# digests supplied with the request, which is a weaker statement and is the
+# one this directory makes.
