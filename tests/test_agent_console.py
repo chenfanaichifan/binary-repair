@@ -110,10 +110,12 @@ def test_no_model_calls_or_new_transport():
     for banned in ("api.openai.com", "new WebSocket", "new EventSource", "Bearer ",
                    'setRequestHeader("Authorization'):
         assert banned not in AGENT_JS, banned
-    # Read paths: the snapshot and the job-less plan route (same-origin only).
-    assert AGENT_JS.count("fetch(") == 2
+    # Read paths: the snapshot, the job-less plan route, and per-attempt
+    # evidence (all same-origin GETs).
+    assert AGENT_JS.count("fetch(") == 3
     assert 'fetch("/api/jobs/" + encodeURIComponent(state.jobId)' in AGENT_JS
     assert 'fetch("/api/assistant/plan"' in AGENT_JS
+    assert 'fetch("/api/attempts/" + encodeURIComponent(attemptId) + "/evidence"' in AGENT_JS
     # Write path: the existing create-job form endpoint only, with CSRF.
     assert 'xhr.open("POST", "/jobs")' in AGENT_JS
     assert 'form.append("csrf", CSRF)' in AGENT_JS
@@ -440,3 +442,75 @@ def test_empty_test_suite_renders_as_na():
     # folded into another suite's ratio.
     assert 'var total = typeof tests.total === "number"' in AGENT_JS
     assert '? "N/A" : (passed + "/" + total)' in AGENT_JS
+
+
+def test_gates_render_in_endpoint_order():
+    # The endpoint returns V0..V5 as an ordered array; the GUI renders that
+    # order and never sorts or invents a gate row.
+    assert "Array.isArray(evidence.gates)" in AGENT_JS
+    assert "evidence.gates.forEach(function (gate)" in AGENT_JS
+    assert 'gateList.dataset.testid = "agent-gates-" + key' in AGENT_JS
+    assert "evidence.gates.sort" not in AGENT_JS
+
+
+def test_invalid_is_na_when_not_applicable():
+    # invalid_applicable=false means the contract has no invalid cases: N/A,
+    # never 0/0 passed.
+    assert "v3.invalid_applicable !== false" in AGENT_JS
+    assert 'var invalidText = "N/A";' in AGENT_JS
+    assert '" · invalid " + invalidText' in AGENT_JS
+
+
+def test_valid_ratio_comes_from_the_v3_summary():
+    assert '" · valid " + v3.valid.passed + "/" + v3.valid.total' in AGENT_JS
+
+
+def test_result_screen_does_not_hardcode_the_evidence_sample():
+    # The controller sample (124: V4 not_run, inconclusive) is evidence, not a
+    # fixture; the screen renders whatever the API returns.
+    assert "required_check_not_run" not in AGENT_JS
+    assert "V4 not_run" not in AGENT_JS
+    assert '["V0", "V1"' not in AGENT_JS
+
+
+def test_evidence_proxy_reports_unavailable_in_fixture_mode():
+    response = client.get("/api/attempts/att-1/evidence")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["available"] is False
+
+
+def test_http_backend_treats_a_missing_evidence_route_as_not_available():
+    import httpx
+
+    from app.backend import HttpBackend
+
+    def handler(request):
+        assert request.url.path == "/api/attempts/att-1/evidence"
+        return httpx.Response(404, json={"detail": "Attempt not found."})
+
+    backend = HttpBackend(base_url="http://test", transport=httpx.MockTransport(handler))
+    assert backend.get_attempt_evidence("att-1") is None
+
+
+def test_http_backend_passes_gates_and_v3_through():
+    import httpx
+
+    from app.backend import HttpBackend
+
+    payload = {
+        "gates": [{"gate": "V3", "kind": "behaviour", "result": "passed"}],
+        "v3": {
+            "gate": "V3",
+            "valid": {"passed": 1, "total": 1},
+            "invalid": {"passed": 0, "total": 0},
+            "invalid_applicable": False,
+        },
+    }
+
+    def handler(request):
+        assert request.url.path == "/api/attempts/att-1/evidence"
+        return httpx.Response(200, json=payload)
+
+    backend = HttpBackend(base_url="http://test", transport=httpx.MockTransport(handler))
+    assert backend.get_attempt_evidence("att-1") == payload

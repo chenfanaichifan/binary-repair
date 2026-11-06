@@ -512,6 +512,26 @@ class HttpBackend:
             raise BackendError(502, "Backend attempts response is missing an attempts list.")
         return payload
 
+    def get_attempt_evidence(self, attempt_id: str) -> dict[str, Any] | None:
+        """M1 GET /api/attempts/{id}/evidence.
+
+        Returns None when the controller does not expose the route, so the
+        result screen can say "not available" instead of inventing gate rows.
+        """
+        try:
+            payload = self._request(
+                "GET",
+                f"/api/attempts/{attempt_id}/evidence",
+                where="get_attempt_evidence",
+            )
+        except BackendError as exc:
+            if exc.status_code == 404:
+                return None
+            raise
+        if not isinstance(payload, dict):
+            raise BackendError(502, "Backend evidence response must be an object.")
+        return payload
+
     def get_plan(self, description: str,
                  context: dict[str, Any] | None = None) -> dict[str, Any] | None:
         """M1's job-less planning route: ``POST /api/assistant/plan``.

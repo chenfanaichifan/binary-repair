@@ -292,13 +292,47 @@
     };
   }
 
+  var evidenceCache = {};
+
+  function fetchAttemptEvidence(attemptId) {
+    if (evidenceCache[attemptId]) return Promise.resolve(evidenceCache[attemptId]);
+    return fetch("/api/attempts/" + encodeURIComponent(attemptId) + "/evidence", {
+      headers: { Accept: "application/json" }
+    }).then(function (response) {
+      if (!response.ok) return null;
+      return response.json();
+    }).then(function (payload) {
+      if (!payload || payload.available === false) return null;
+      evidenceCache[attemptId] = payload;
+      return payload;
+    }).catch(function () { return null; });
+  }
+
+  function attachAttemptEvidence(data) {
+    var routes = data && data.routes ? data.routes : {};
+    var wanted = [];
+    Object.keys(routes).forEach(function (key) {
+      var id = routes[key] && routes[key].attempt_id;
+      if (typeof id === "string" && id) wanted.push({ key: key, id: id });
+    });
+    if (!wanted.length) return Promise.resolve(data);
+    return Promise.all(wanted.map(function (item) {
+      return fetchAttemptEvidence(item.id);
+    })).then(function (items) {
+      wanted.forEach(function (item, index) {
+        if (items[index]) routes[item.key].__evidence = items[index];
+      });
+      return data;
+    });
+  }
+
   function fetchLiveSnapshot() {
     return fetch("/api/jobs/" + encodeURIComponent(state.jobId), {
       headers: { Accept: "application/json" }
     }).then(function (response) {
       if (!response.ok) throw new Error("HTTP " + response.status);
       return response.json();
-    });
+    }).then(attachAttemptEvidence);
   }
 
   /* ---------- 终端流渲染 ---------- */
@@ -967,15 +1001,50 @@
 
     view.routeKeys.forEach(function (key) {
       var route = view.routes[key];
-      var tests = route.tests || {};
-      var total = typeof tests.total === "number" ? tests.total : null;
-      var passed = typeof tests.passed === "number" ? tests.passed : null;
-      // No cases is not "0/0 passed": show N/A so an empty suite is never
-      // read as a result, and never fold it into another suite's ratio.
-      var cases = (total === null || total === 0 || passed === null) ? "N/A" : (passed + "/" + total);
-      var title = el("h3", "agent-side-subtitle",
-        "Route " + key + " · 用例 " + cases);
-      box.appendChild(title);
+      var evidence = route.__evidence || null;
+      var v3 = evidence && evidence.v3 ? evidence.v3 : null;
+      var title = "Route " + key;
+      if (v3 && v3.valid && typeof v3.valid.total === "number" &&
+          typeof v3.valid.passed === "number") {
+        title += " · valid " + v3.valid.passed + "/" + v3.valid.total;
+      } else {
+        var tests = route.tests || {};
+        var total = typeof tests.total === "number" ? tests.total : null;
+        var passed = typeof tests.passed === "number" ? tests.passed : null;
+        // No cases is not "0/0 passed": show N/A so an empty suite is never
+        // read as a result, and never fold it into another suite's ratio.
+        title += " · 用例 " + ((total === null || total === 0 || passed === null) ? "N/A" : (passed + "/" + total));
+      }
+      if (v3) {
+        // invalid_applicable=false means the contract has no invalid cases:
+        // that is N/A, never 0/0 passed.
+        var invalidText = "N/A";
+        if (v3.invalid_applicable !== false && v3.invalid &&
+            typeof v3.invalid.total === "number" && typeof v3.invalid.passed === "number") {
+          invalidText = v3.invalid.passed + "/" + v3.invalid.total;
+        }
+        title += " · invalid " + invalidText;
+      }
+      box.appendChild(el("h3", "agent-side-subtitle", title));
+
+      if (evidence && Array.isArray(evidence.gates) && evidence.gates.length) {
+        // Gates render in the order the endpoint returns them; the front end
+        // does not sort, reorder, or fill in a missing gate.
+        var gateList = el("ul", "agent-gates");
+        gateList.dataset.testid = "agent-gates-" + key;
+        evidence.gates.forEach(function (gate) {
+          var li = el("li");
+          var value = el("span", "agent-result-value",
+            gate.result === null || gate.result === undefined ? "—" : String(gate.result));
+          value.dataset.testid = "agent-gate-" + key + "-" + gate.gate;
+          li.appendChild(value);
+          li.appendChild(document.createTextNode(" "));
+          li.appendChild(el("code", null, gate.gate + (gate.kind ? " " + gate.kind : "")));
+          if (gate.detail) li.appendChild(document.createTextNode(" · " + gate.detail));
+          gateList.appendChild(li);
+        });
+        box.appendChild(gateList);
+      }
     });
 
     if (!view.obligations.length) {

@@ -97,13 +97,16 @@ M2 已接管该模块，并接上 M5 的稳定接缝
 ## 四之三、M1 交接（`97-m1-review-closeout`）
 
 M1 的 `7984bb6` 与 503 契约 `3fec2c0` 已进入 `canonical/m1-m5-integration`
-（tip `ce36d6f`）；本分支按契约消费，合入后只需联调：
+（tip `1938c31`）；ordered gates / V3 计数在 `m1/t30-acceptance-ab-2026-11-05 @ fdc083d`，
+尚未进 canonical。本分支按契约消费，合入后只需联调：
 
 | 契约 | GUI 行为 |
 |---|---|
 | `obligations.scope` ∈ metadata / binary / replay / model | 优先渲染持久化值，`data-evidence-scope-source="persisted"`；缺失时回退 kind 表并标 `kind` |
 | `GET /api/jobs/{id}/attempts` | 代理到同名路径；端点不存在时返回 `available:false`，报告写 `not_available`，**不写成“零次尝试”** |
 | `ai_usage = {input_tokens, output_tokens, partial}` 或 `null` | 只显示后端给的数字；`null`/全缺失显示“未提供”，不显示 0；`partial=true` 时在数字后标“（部分真实用量）”，不当作完整值 |
+| `GET /api/attempts/{id}/evidence` 的 `gates[]` | 代理到同名路径；**按后端数组顺序**渲染 V0..V5，不排序、不补行、不写死样例 |
+| 同响应的 `v3 = {gate, kind, result, input_mode, valid, invalid, invalid_applicable}` | 标题显示 `valid passed/total`；`invalid_applicable=false` 时 invalid 显示 `N/A`，不显示 `0/0 passed`；`input_mode` 不参与推断结论 |
 | artifact `role` | GUI 不按 `route_a_evidence` / `route_b_evidence` 映射；原样显示后端 `role` |
 
 语义决定（答复 M1）：
@@ -132,7 +135,7 @@ M1 的 `7984bb6` 与 503 契约 `3fec2c0` 已进入 `canonical/m1-m5-integration
 .venv/Scripts/python.exe tests/e2e/capture_agent_screens.py
 ```
 
-本次实测：`test_assistant_llm.py` 43/43；`test_agent_console.py` 33/33；`test_m1_handoff.py` 6/6；`tests/integration/test_assistant_plan.py` 5/5。
+本次实测：`test_assistant_llm.py` 46/46；`test_agent_console.py` 40/40（含 gates 顺序、invalid N/A、V3 valid 计数、evidence 代理不可用）；`test_m1_handoff.py` 6/6；`tests/integration/test_assistant_plan.py` 5/5。
 
 **已知预存在失败（与本次改动无关，已用 stash 对照确认）**：`tests/test_evidence_endpoint.py` 5 项在基线上同样失败，报 `attempts/<id>.json` 文件不存在，属后端持久化问题，归 M1/M5，不在 M2 范围。
 

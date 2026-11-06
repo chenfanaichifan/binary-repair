@@ -595,6 +595,27 @@ async def job_attempts(job_id: str):
     return JSONResponse(payload)
 
 
+@app.get("/api/attempts/{attempt_id}/evidence")
+async def attempt_evidence(attempt_id: str):
+    """Proxy M1's attempt evidence (ordered gates + V3 summary) unchanged.
+
+    ``available: false`` means the controller does not expose the route yet;
+    the result screen then shows no gate rows instead of inventing them.
+    """
+    getter = getattr(BACKEND, "get_attempt_evidence", None)
+    payload = getter(attempt_id) if getter is not None else None
+    if payload is None:
+        return JSONResponse(
+            {
+                "available": False,
+                "note": "Controller does not expose GET /api/attempts/{id}/evidence yet.",
+            }
+        )
+    payload = dict(payload)
+    payload.setdefault("available", True)
+    return JSONResponse(payload)
+
+
 @app.post("/api/assistant/plan")
 async def assistant_plan(request: Request) -> JSONResponse:
     """Proxy M1's job-less planning route.
