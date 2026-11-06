@@ -71,30 +71,62 @@ def test_model_calls_win_over_the_plan(client: TestClient, data_dir: Path) -> No
     )
 
     # Both bindings count: direct job_id rows and attempt-bound rows.
-    assert _usage(client, job["id"]) == {"input_tokens": 13, "output_tokens": 4}
+    assert _usage(client, job["id"]) == {
+        "input_tokens": 13, "output_tokens": 4, "partial": False,
+    }
 
 
-def test_partial_model_call_is_none_not_zero(client: TestClient, data_dir: Path) -> None:
+def test_partial_model_call_is_marked_not_dropped(client: TestClient, data_dir: Path) -> None:
     job = _create(client)
     model_calls.record_call(
         data_dir=data_dir,
         model_requested="m",
         status="ok",
-        usage={"prompt_tokens": 5},
+        usage={"prompt_tokens": 5, "completion_tokens": 7},
+        job_id=job["id"],
+    )
+    model_calls.record_call(
+        data_dir=data_dir,
+        model_requested="m",
+        status="failed",
+        usage=None,
         job_id=job["id"],
     )
 
-    # A missing count is unavailable; it is never padded to zero.
+    # A NULL sibling does not erase real usage; it marks the aggregate partial.
+    assert _usage(client, job["id"]) == {
+        "input_tokens": 5, "output_tokens": 7, "partial": True,
+    }
+
+
+def test_all_null_model_calls_is_none_not_zero(client: TestClient, data_dir: Path) -> None:
+    job = _create(client)
+    model_calls.record_call(
+        data_dir=data_dir,
+        model_requested="m",
+        status="failed",
+        usage=None,
+        job_id=job["id"],
+    )
     assert _usage(client, job["id"]) is None
 
 
-def test_plan_usage_is_only_a_fallback(client: TestClient, data_dir: Path) -> None:
-    job = _create(client)
-    assert client.post(f"/api/jobs/{job['id']}/assistant", json={}).status_code == 200
+def test_plan_usage_is_only_a_complete_fallback(client: TestClient, data_dir: Path) -> None:
+    from app.domain.assistant import deterministic_plan
+    from app.services import assistant
 
-    # No model_calls rows: the stored plan is the only real record.
-    usage = _usage(client, job["id"])
-    assert usage is None or set(usage) == {"input_tokens", "output_tokens"}
+    job = _create(client)
+    plan = deterministic_plan("fix the reported binary vulnerability")
+    assistant.save_plan(
+        job["id"], plan, data_dir=data_dir,
+        usage={"input_tokens": 3, "output_tokens": 4},
+    )
+
+    # No model_calls rows: the stored plan is the only real record, and it is
+    # complete by construction.
+    assert _usage(client, job["id"]) == {
+        "input_tokens": 3, "output_tokens": 4, "partial": False,
+    }
 
 
 def test_no_usage_anywhere_is_none(client: TestClient) -> None:
