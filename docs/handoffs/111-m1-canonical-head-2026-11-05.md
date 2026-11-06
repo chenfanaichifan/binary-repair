@@ -73,13 +73,15 @@ They share an ancestor and then diverge. They are **not** the same line, and one
 is not a superset of the other in ancestry.
 
 ```
-                        fba137e  feat(fixtures): complete the CWE121 baseline and pin CWE416
+                        fba137e  (canonical and integration fork here)
                        /       \
-       (canonical)    /         \    (integration)
-         ba65aed     /           \   9d59e72  Revert "feat(fixtures): complete the CWE121 baseline
-       1938c31  <-- /             \            and pin CWE416"
-                                  \
-                                   ... -> bcb7a30  (both integration branches)
+      (canonical)    /         \    (integration)
+        ba65aed     /           \   9d59e72  Revert fba137e
+      1938c31  <-- /             \
+                                  bcb7a30
+                                  /      \
+                     live-bridge /        \ 2026-11-03
+                        3cc9894            e231777
 ```
 
 Facts, all verified:
@@ -87,11 +89,36 @@ Facts, all verified:
 | Item | Value |
 |---|---|
 | merge-base(`integration/live-bridge`, `canonical/m1-m5-integration`) | `fba137e` |
-| `integration/live-bridge` | `bcb7a30` |
-| `integration/live-bridge-2026-11-03` | `bcb7a30` (identical tip) |
+| `integration/live-bridge` | `bcb7a30` before this doc, `3cc9894` after |
+| `integration/live-bridge-2026-11-03` | `e231777` (remote, moved by another session) |
 | `canonical/m1-m5-integration` | `1938c31` |
-| CWE-122 fixture present at `bcb7a30` | yes |
+| CWE-122 fixture present at `integration/live-bridge` | yes |
 | CWE-122 fixture present at `1938c31` | **no** |
+
+The two integration branches are no longer at the same tip. `origin` has
+`e231777 Revert "feat(m5): add v3 no-input contract mode"` on the dated branch
+while `live-bridge` carries the newer docs commit; they are 1 / 2 apart, so
+neither is a fast-forward of the other. A push of the local `live-bridge` tip to
+the dated branch was rejected as non-fast-forward and was **not** forced.
+
+### Remote contention on canonical
+
+The canonical ref was moved by another session while this work was in flight:
+
+```
+1938c31  <- M1 pinned here
+40a4153  <- another session pushed 4 v3 commits on top
+1938c31  <- M1 restored with force-with-lease, verified by ls-remote
+```
+
+The four displaced commits (`708d957`, `1430e1e`, `d56cbdc`, `40a4153`) add a V3
+no-input acceptance path. They add no ELF and their own text says "no merge to
+`main`, no tag, no live success", so they do not violate a boundary; they simply
+are not the requested baseline. They are kept on the local
+`backup/canonical-40a4153` ref, unpushed.
+
+Anyone pinning to the remote must re-read `ls-remote` rather than reuse an older
+number: this ref has moved three times today.
 
 ### What `9d59e72` reverts
 
