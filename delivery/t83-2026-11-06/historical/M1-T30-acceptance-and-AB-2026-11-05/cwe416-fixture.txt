@@ -1,0 +1,37 @@
+## CWE416 fixture: files tracked
+fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/PROVENANCE.md
+fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/defect.json
+fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/src.c
+
+## no variant binary anywhere under fixtures/public
+(none)
+
+## intake
+error	missing_file	original.elf	required for intake
+error	missing_file	build.sh	required for intake
+error	missing_file	build.json	required for intake
+error	missing_file	contract.json	required for intake
+error	missing_file	tests/valid.json	required for intake
+error	missing_file	tests/invalid.json	required for intake
+error	missing_file	tests/SHA256SUMS	required for intake
+FAILED (7 error(s), 0 warning(s))
+intake_exit=1
+
+## defect.json
+{
+  "schema_version": 1,
+  "cwe": "CWE-416",
+  "title": "use after free: data is freed in the source and read by the sink",
+  "mechanism": "lifetime",
+  "baseline_mechanism": "bounds-check",
+  "trigger_case": "invalid-first"
+}
+
+## absence of contract/build/tests
+absent  contract.json
+absent  build.json
+absent  build.sh
+absent  original.elf
+absent  tests/valid.json
+absent  tests/invalid.json
+absent  tests/SHA256SUMS

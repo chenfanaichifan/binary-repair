@@ -1,0 +1,78 @@
+# M4 deeb1da v3 full-chain verification — evidence — 2026-11-05
+
+$ git -C _m1-work/live-bridge log -1 --format='%H %s' deeb1da
+deeb1da8cec85003b53799c0cfbd705c83288699 test(v3): validate the no-input contract across intake, executor and runners
+
+$ git -C _m1-work/live-bridge show --stat --oneline 38c1b1b | head -6
+38c1b1b feat(v3): integrate M5 schema, exact intake matrices, no-input V3 1/1
+ docs/fixtures.md                                   |  26 ++-
+ ...m1-t30-acceptance-and-ab-decision-2026-11-05.md |   8 +-
+ ...e-delivery-and-t30-canonical-path-2026-11-05.md |   2 +-
+ .../108-m1-cwe416-no-input-intake-2026-11-05.md    |  14 +-
+ .../109-m1-v3-schema-and-no-input-v3-2026-11-05.md | 200 ++++++++++++++++++++
+
+# working tree state (mid-merge):
+$ git -C _m1-work/live-bridge status --short | grep -E '^(UU|AA|DD)' | head -5
+UU MEMORY.md
+UU docs/fixtures.md
+UU tests/test_fixture_intake.py
+UU tools/fixture_intake.py
+
+$ grep -c '^<<<<<<<\|^=======\|^>>>>>>>' _m1-work/live-bridge/tests/test_fixture_intake.py || true
+9
+
+# clean tree extracted with git archive deeb1da:
+$ grep -c '^<<<<<<<\|^=======\|^>>>>>>>' _m4-verify/deeb1da/tests/test_fixture_intake.py || true
+0
+
+$ cd _m4-verify/deeb1da && python3 -m pytest tests/test_v3_no_input_e2e.py -q -k 'not executor' 2>&1 | tail -2
+........                                                                 [100%]
+
+$ cd _m4-verify/deeb1da && python3 -m pytest tests/test_fixture_intake.py -q 2>&1 | tail -2
+.......................................                                  [100%]
+
+$ cd _m4-verify/deeb1da && python3 -m pytest tests/test_run_manifest_compare.py tests/test_run_manifest_repaired.py -q 2>&1 | tail -2
+..........                                                               [100%]
+
+$ cd _m4-verify/deeb1da && python3 -m pytest tests/test_v3_no_input_e2e.py -q 2>&1 | tail -3
+tests/test_v3_no_input_e2e.py:183: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_v3_no_input_e2e.py::test_executor_rejects_a_sentinel_contract_before_work
+
+$ python3 _m4-verify/probe_deeb1da_v3.py _m4-verify/deeb1da 2>&1 | tail -16
+  "input_mode": "none",
+  "invalid": "not_applicable",
+  "passed": 1,
+  "total": 1,
+  "repaired_pass": true,
+  "binary_sha256": "c5aa097f218586036cbf815dcbf1044215016f2f241324190945105c0aac6b9e"
+}
+artifact valid: 1/1 invalid: not_applicable total: 1
+
+== v3 none + sentinel ==
+rc: 2
+stderr: run_manifest_repaired: unknown contract fields: ['invalid_input_response']
+artifact exists: False
+
+== CWE121 hash via shared loader ==
+24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37 True
+
+$ cd M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05 && shasum -a 256 -c 06-SHA256SUMS | tail -5
+01-window-and-isolation.txt: OK
+02-build.txt: OK
+03-readelf.txt: OK
+04-trigger.txt: OK
+05-asan.txt: OK
+
+$ cd M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05 && shasum -a 256 -c SHA256SUMS | tail -10
+00-window-host.txt: OK
+01-window-and-isolation.txt: OK
+02-build.txt: OK
+03-readelf.txt: OK
+04-trigger.txt: OK
+05-asan.txt: OK
+06-SHA256SUMS: OK
+07-rebuild.json: OK
+README.md: OK
+collect.sh: OK
+

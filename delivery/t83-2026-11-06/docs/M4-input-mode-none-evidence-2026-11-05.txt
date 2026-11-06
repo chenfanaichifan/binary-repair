@@ -1,0 +1,56 @@
+# M4 input_mode=none contract verification evidence — 2026-11-05
+# host: Darwin arm64; cwd: _m1-work/canonical for code probes
+
+$ cd _m1-work/canonical && grep -rn 'input_mode' app tools || echo '(no input_mode in app/ or tools/)'
+(no input_mode in app/ or tools/)
+
+$ cd _m1-work/canonical && git log --all -S 'input_mode' --oneline | head -5
+27cc77f docs(m1): deliver the 118 evidence, fix the T30 canonical path, bind c274893
+6e99442 docs(m1): spell out no-input valid/invalid semantics for option A
+f115ee9 docs(m1): record T30 build/trigger acceptance and the open CWE416 A/B decision
+502ef41 docs(m3): verification records 112-115
+
+$ cd _m1-work/canonical && PYTHONPATH=. python3 ../../_m4-verify/probe_input_mode.py
+A add input_mode: ValueError: unknown contract fields: ['input_mode']
+B omit invalid_*: ValueError: missing contract fields: ['invalid_exit_code', 'invalid_input_response', 'invalid_stderr', 'invalid_stdout']
+C sentinel invalid_*: LOADED hash=568c43aa6ea924a89c982aa2719ce13f3a3c0b382031c46e1c05a843ead4ebd5
+   invalid_input_response='not applicable: the program takes no input'
+   invalid_exit_code=0 invalid_stdout='' invalid_stderr=''
+
+$ cd _m1-work/canonical && grep -n 'MIN_VALID_CASES\|MIN_INVALID_CASES' tools/fixture_intake.py
+85:MIN_VALID_CASES = 4
+86:MIN_INVALID_CASES = 2
+507:    if len(valid_ids) < MIN_VALID_CASES:
+512:                f"{len(valid_ids)} cases, need at least {MIN_VALID_CASES}",
+515:    if len(invalid_ids) < MIN_INVALID_CASES:
+520:                f"{len(invalid_ids)} cases, need at least {MIN_INVALID_CASES}",
+
+$ cd _m1-work/canonical && grep -n 'tests/invalid.json' tools/fixture_intake.py
+22:      tests/invalid.json
+54:    "tests/invalid.json",
+334:                f"{trigger!r} is not an invalid case in tests/invalid.json",
+519:                "tests/invalid.json",
+541:    for name, value in (("tests/valid.json", valid_sha), ("tests/invalid.json", invalid_sha)):
+
+$ cd _m1-work/canonical && python3 -m pytest tests/test_contracts.py tests/test_fixture_intake.py tests/test_fixture_contract.py -q 2>&1 | tail -3
+....................................................                     [100%]
+
+$ cd _m1-work/canonical && python3 -m pytest tests/test_status_honesty.py tests/test_routeb_attempt_writer.py -q 2>&1 | tail -3
+........                                                                 [100%]
+
+$ cd _m1-work/canonical && PYTHONPATH=. python3 ../../_m4-verify/probe_decide.py
+all not_run: outcome=inconclusive reason=required_check_not_run failing=identity
+V4 not_run only: outcome=inconclusive reason=required_check_not_run failing=symbolic
+all passed: outcome=success_within_scope reason=None failing=None
+
+$ shasum -a 256 _m1-work/canonical/fixtures/public/CWE121_src_char_declare_cpy_51b/tests/valid.json _m1-work/live-bridge/fixtures/public/CWE121_src_char_declare_cpy_51b/tests/valid.json
+17b2ee399db5ef43ba14978c497d71dc45d28aaa685ff90a60baaabc6f221e76  _m1-work/canonical/fixtures/public/CWE121_src_char_declare_cpy_51b/tests/valid.json
+17b2ee399db5ef43ba14978c497d71dc45d28aaa685ff90a60baaabc6f221e76  _m1-work/live-bridge/fixtures/public/CWE121_src_char_declare_cpy_51b/tests/valid.json
+
+$ shasum -a 256 _m1-work/canonical/fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json _m1-work/live-bridge/fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json
+15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df  _m1-work/canonical/fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json
+15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df  _m1-work/live-bridge/fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json
+
+$ cd _m1-work/canonical && PYTHONPATH=. python3 -c "import json;from app.domain.contracts import SecurityContract as S;c=S.from_dict(json.load(open('fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json')));print('CWE121 contract loads, canonical sha256 =', c.sha256())"
+CWE121 contract loads, canonical sha256 = 24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
+

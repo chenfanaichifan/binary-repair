@@ -1,0 +1,24 @@
+{
+  "schema_version": 2,
+  "input_mode": "none",
+  "required_obligations": ["behaviour", "identity", "interface", "reproducibility", "structure", "symbolic"],
+  "target_entry": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+  "target_signature": "void CWE416_Use_After_Free__malloc_free_char_01_bad(void)",
+  "valid_domain": "no input: the entry point takes no arguments, reads no stdin and opens no file; every run takes the same path",
+  "valid_behavior": "exit 0 and print the 100-byte block it allocated -- 99 'A' bytes then one LF -- the same 100 bytes on every run",
+  "forbidden_behavior": "read a heap block after free() has released it, so stdout carries allocator residue instead of the allocated text",
+  "dest_capacity_bytes": 100,
+  "capacity_includes_terminator": true,
+  "invalid_exit_code": 0,
+  "allowed_calls": ["exit", "free", "malloc", "memset", "printLine"],
+  "authorized_edits": [
+    "Move the read of the block before free(), or drop the free() and accept the leak; no other behaviour may change.",
+    "Allow up to 128 bytes of added x86-64 code in a gate-3-verified unused region of a loadable R-X segment; zero bytes alone are not evidence.",
+    "Allow no new segment, dynamic import, GOT/PLT/relocation edit or permission broadening."
+  ],
+  "environment_assumptions": [
+    "Linux x86-64 non-PIE guest",
+    "glibc tcache writes its next/key words into the freed chunk, so the residue is observable without a sanitizer; this is an allocator behaviour, not a language guarantee",
+    "the observation is taken with ASLR disabled (setarch -R) because the tcache key carries a heap address"
+  ]
+}

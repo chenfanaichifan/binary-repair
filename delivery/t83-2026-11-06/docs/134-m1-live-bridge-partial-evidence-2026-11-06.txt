@@ -1,0 +1,419 @@
+# 134 evidence — live-bridge 6d67140 already carries the partial usage contract
+# collected: 2026-11-06 16:16:50 +0800 (Asia/Shanghai)
+# repo: binary-repair (read-only git objects; audit worktree _m1-work/audit-6d67140)
+# no ref was created, moved, merged, tagged or pushed by this audit.
+
+==================================================================
+[1] fresh remote heads (git ls-remote origin)
+==================================================================
+dc3bcd366a71b61f9d23c6562bc52dd0244d0647	refs/heads/canonical/m1-m5-integration
+6d67140ee560ec66d5e606965d8193ae810405b1	refs/heads/integration/live-bridge
+e6689e47c0987afb8ec302d61050c6702f8c340f	refs/heads/m1/t30-acceptance-ab-2026-11-05
+
+==================================================================
+[2] live-bridge commit under audit
+==================================================================
+6d67140ee560ec66d5e606965d8193ae810405b1
+Member 1 <chenfanaichifan@users.noreply.github.com>
+2026-11-06 15:53:15 +0800
+docs(m1): record the branch alignment and the withdrawn T30 swap
+
+==================================================================
+[3] probe_134_partial_6d67140.py (15 checks)
+==================================================================
+[PASS] aggregate_returns_partial
+       aggregate_job_usage(...) -> dict[str, Any] | None with "partial": len(real) != len(rows)
+[PASS] aggregate_partial_is_false_when_all_complete
+       partial is the exact expression len(real) != len(rows): False when all rows carry both counts
+[PASS] aggregate_null_rows_do_not_erase_real_usage
+       no real rows -> None; mixed -> sum real + partial True; never zero-pad
+[PASS] controller_passes_aggregate_through
+       _ai_usage_for_job returns aggregate_job_usage(...) untouched when model_calls rows exist
+[PASS] controller_does_not_rebuild_partial
+       no local partial derivation before the passthrough return
+[PASS] plan_fallback_partial_false
+       legacy plan fallback returns {"input_tokens": ..., "output_tokens": ..., "partial": False}
+[PASS] canonical_1938c31_lacks_partial
+       1938c31 aggregate/controller carry no partial field
+[PASS] canonical_1938c31_lacks_v4
+       1938c31 has no app/domain/v4.py (V4 stack only exists on live-bridge)
+[PASS] canonical_is_merge_base
+       merge-base(1938c31, 6d67140) = 1938c311672282ebd1fee3634fec9aad57760769
+[PASS] live_is_66_ahead_and_canonical_is_0
+       rev-list --left-right --count = 0 66
+[PASS] live_parent_is_41ff540
+       6d67140 parent = 41ff540c414338931005928399358bb3241bea69
+[PASS] 41ff540_merges_c217046_and_3f21d31
+       41ff540 parents = ['c2170460d45010b0f074aefb2fc64ed277a073a9', '3f21d317b9c61a5ed7cc5f22b233a8bad62169c2']
+[PASS] partial_commits_are_on_the_live_line
+       de48d6a + 165891d are ancestors of 6d67140 and not of 1938c31
+[PASS] canonical_followup_is_partial_only
+       dc3bcd3 parent=1938c311672282ebd1fee3634fec9aad57760769, changed=6 files, no app/domain/v4.py
+[PASS] followup_differs_from_live
+       dc3bcd3 and 6d67140 are siblings (1 / 66), not interchangeable
+
+summary: 15 passed, 0 failed
+
+==================================================================
+[4] app/services/model_calls.py @ 6d67140:98-140
+==================================================================
+    98	def aggregate_job_usage(*, data_dir: str | Path, job_id: str) -> dict[str, Any] | None:
+    99	    """Sum token usage recorded for one job.
+   100	
+   101	    Rows may be bound by ``job_id`` directly (assistant calls) or by
+   102	    ``attempt_id`` (route calls), so both paths are matched.  The ``OR`` cannot
+   103	    double count a row: each row is selected at most once.
+   104	
+   105	    Semantics:
+   106	      * no calls                 -> None
+   107	      * calls but no real tokens -> None
+   108	      * some NULL, some real     -> sum the real ones, ``partial`` is True
+   109	      * all real                 -> sum, ``partial`` is False
+   110	
+   111	    A NULL count is never read as zero, and one incomplete row does not erase
+   112	    the real usage its siblings recorded -- it only marks the sum partial.
+   113	    """
+   114	    connection = connect(data_dir)
+   115	    try:
+   116	        rows = connection.execute(
+   117	            "SELECT prompt_tokens, completion_tokens FROM model_calls "
+   118	            "WHERE job_id = ? OR attempt_id IN ("
+   119	            "  SELECT a.id FROM attempts a JOIN runs r ON r.id = a.run_id "
+   120	            "  WHERE r.job_id = ?)",
+   121	            (job_id, job_id),
+   122	        ).fetchall()
+   123	    finally:
+   124	        connection.close()
+   125	    if not rows:
+   126	        return None
+   127	    real = [
+   128	        row for row in rows
+   129	        if row["prompt_tokens"] is not None and row["completion_tokens"] is not None
+   130	    ]
+   131	    if not real:
+   132	        return None
+   133	    return {
+   134	        "input_tokens": sum(int(row["prompt_tokens"]) for row in real),
+   135	        "output_tokens": sum(int(row["completion_tokens"]) for row in real),
+   136	        "partial": len(real) != len(rows),
+   137	    }
+   138	
+   139	
+   140	__all__ = [
+
+==================================================================
+[5] app/controller_api.py @ 6d67140:267-318
+==================================================================
+   267	def _ai_usage_for_job(job_id: str) -> dict[str, Any] | None:
+   268	    """Provider token usage recorded for this job.
+   269	
+   270	    ``None`` means nothing recorded real usage. A missing number is never
+   271	    rendered as a made-up one, and a partial record is not padded with zeros.
+   272	
+   273	    ``partial`` is passed through from :func:`aggregate_job_usage` unchanged:
+   274	    ``True`` means at least one recorded call has a NULL token count, so the sum
+   275	    covers only the calls that did report real tokens; ``False`` means every
+   276	    recorded call contributed. The plan fallback always reports ``False``
+   277	    because it reads one stored plan record that either has both counts or is
+   278	    not used at all -- there are no siblings that could be missing.
+   279	    """
+   280	    from app.db.connection import connect
+   281	    from app.services.assistant import get_plan
+   282	    from app.services.model_calls import aggregate_job_usage
+   283	
+   284	    connection = connect(_data_dir())
+   285	    try:
+   286	        recorded = connection.execute(
+   287	            "SELECT 1 FROM model_calls WHERE job_id = ? OR attempt_id IN ("
+   288	            "  SELECT a.id FROM attempts a JOIN runs r ON r.id = a.run_id "
+   289	            "  WHERE r.job_id = ?"
+   290	            ") LIMIT 1",
+   291	            (job_id, job_id),
+   292	        ).fetchone()
+   293	    finally:
+   294	        connection.close()
+   295	    if recorded is not None:
+   296	        # Real model_calls rows are authoritative, including when their
+   297	        # Calls exist, so the aggregate is authoritative. It is None only when
+   298	        # no row carries real tokens; when some rows do, it returns their sum
+   299	        # with ``partial: true``. Falling back to the plan would mix two
+   300	        # sources under one label. Return it untouched so the flag cannot be
+   301	        # dropped or re-derived here.
+   302	        return aggregate_job_usage(data_dir=_data_dir(), job_id=job_id)
+   303	
+   304	    # Older jobs have no model_calls rows; their plan is the only real record.
+   305	    record = get_plan(job_id, data_dir=_data_dir())
+   306	    usage = (record or {}).get("usage")
+   307	    if not isinstance(usage, dict):
+   308	        return None
+   309	    values = [usage.get("input_tokens"), usage.get("output_tokens")]
+   310	    if not all(isinstance(value, int) and value >= 0 for value in values):
+   311	        return None
+   312	    return {
+   313	        "input_tokens": values[0],
+   314	        "output_tokens": values[1],
+   315	        "partial": False,
+   316	    }
+   317	
+   318	
+
+==================================================================
+[6] canonical 1938c31: same two files, no partial field, no V4 module
+==================================================================
+$ git show 1938c31:app/services/model_calls.py | grep -c "\"partial\""
+0
+$ git show 1938c31:app/controller_api.py | grep -n "partial"
+271:    rendered as a made-up one, and a partial record is not padded with zeros.
+$ git cat-file -e 1938c31:app/domain/v4.py
+absent
+
+==================================================================
+[7] topology: 1938c31 is the merge-base and an ancestor; live is 66 ahead
+==================================================================
+$ git merge-base 1938c31 6d67140
+1938c311672282ebd1fee3634fec9aad57760769
+$ git rev-list --left-right --count 1938c31...6d67140   # left=canonical-only right=live-only
+0	66
+$ git rev-list --parents -n1 6d67140
+6d67140ee560ec66d5e606965d8193ae810405b1 41ff540c414338931005928399358bb3241bea69
+$ git rev-list --parents -n1 41ff540
+41ff540c414338931005928399358bb3241bea69 c2170460d45010b0f074aefb2fc64ed277a073a9 3f21d317b9c61a5ed7cc5f22b233a8bad62169c2
+
+==================================================================
+[8] partial commits are on the live line, not under 1938c31
+==================================================================
+$ git merge-base --is-ancestor de48d6a 6d67140  -> yes
+$ git merge-base --is-ancestor de48d6a 1938c31  -> no
+$ git merge-base --is-ancestor 165891d 6d67140  -> yes
+$ git merge-base --is-ancestor 165891d 1938c31  -> no
+$ git show -s --format="%h %s" de48d6a 165891d
+de48d6a feat(usage): report a partial sum instead of discarding it
+165891d feat(ai-usage): pass partial through instead of dropping it
+
+==================================================================
+[9] canonical follow-up dc3bcd3: partial only, still no V4
+==================================================================
+dc3bcd366a71b61f9d23c6562bc52dd0244d0647
+huajinyao <2761163826@qq.com>
+2026-11-06 16:11:01 +0800
+feat(usage): merge M5 partial aggregate semantics into canonical
+$ git rev-list --parents -n1 dc3bcd3
+dc3bcd366a71b61f9d23c6562bc52dd0244d0647 1938c311672282ebd1fee3634fec9aad57760769
+$ git diff --name-only 1938c31 dc3bcd3
+app/controller_api.py
+app/services/model_calls.py
+docs/handoffs/133-m5-partial-usage-merge-2026-11-06.md
+tests/integration/test_ai_usage_sources.py
+tests/integration/test_assistant_plan.py
+tests/integration/test_contract_gaps.py
+$ git cat-file -e dc3bcd3:app/domain/v4.py
+absent
+$ git rev-list --left-right --count dc3bcd3...6d67140
+1	66
+
+==================================================================
+[10] pytest at 6d67140 (detached worktree, read-only)
+==================================================================
+# worktree: _m1-work/audit-6d67140 @ 6d67140; interpreter: role5-kit/.venv (pytest 8.4.2)
+
+$ python -m pytest tests/integration/test_ai_usage_sources.py tests/integration/test_assistant_plan.py
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+15 passed, 1 warning in 0.67s
+
+$ python -m pytest tests/test_v4_harness_adapter.py tests/integration/test_cwe416_124_v4_rerun.py
+...........                                                              [100%]
+11 passed in 0.20s
+
+$ python -m pytest tests/test_fixture_contract.py tests/integration/test_cwe416_noinput_fixture.py
+..                                                                       [100%]
+2 passed in 0.13s
+
+$ python -m pytest        # full suite
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+513 passed, 9 skipped, 1 warning in 14.85s
+
+==================================================================
+[11] contract pins recomputed at 6d67140
+==================================================================
+CWE121 file sha256: 15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df
+CWE121 canonical  : 24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
+CWE416 file sha256: 8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b
+CWE416 canonical  : c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c
+
+==================================================================
+[12] V4 verified_by gate at 6d67140
+==================================================================
+$ git show 6d67140:app/domain/v4.py | nl -ba | sed -n "125,135p;426,438p"
+   125	class Replay(BaseModel):
+   126	    model_config = ConfigDict(extra="forbid")
+   127	    command: str = Field(min_length=1)
+   128	    runs: int = Field(ge=2)
+   129	    identical: bool
+   130	    evidence_sha256: str = Field(pattern=HEX64)
+   131	    verified_by: Literal["m4"] | None = None
+   132	
+   133	
+   134	class V4Evidence(BaseModel):
+   135	    model_config = ConfigDict(extra="forbid")
+   426	            f"candidate hash {evidence.candidate_sha256} != {candidate_sha256}"
+   427	        )
+   428	    if original_sha256 is not None and evidence.original_sha256 != original_sha256:
+   429	        raise V4EvidenceError(
+   430	            f"original hash {evidence.original_sha256} != {original_sha256}"
+   431	        )
+   432	    if require_independent and evidence.replay.verified_by != "m4":
+   433	        raise V4EvidenceError(
+   434	            "V4 is producer/ingest provisional; independent M4 replay is missing"
+   435	        )
+   436	    return evidence
+   437	
+   438	
+$ grep -rn "require_independent" app/services/obligations.py tools/route_bundle_ingest.py tests/test_v4_harness_adapter.py
+_m1-work/audit-6d67140/app/services/obligations.py:160:                        require_independent=True,
+_m1-work/audit-6d67140/tools/route_bundle_ingest.py:363:                        require_independent=True,
+_m1-work/audit-6d67140/tests/test_v4_harness_adapter.py:133:            require_independent=True,
+
+==================================================================
+[13] 124 bundle declares V4 passed; ingest must downgrade it
+==================================================================
+candidate_sha256: 46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0
+V0: declared=passed artifacts=['original.elf', 'candidate.elf']
+V1: declared=passed artifacts=['audit.json']
+V2: declared=not_run artifacts=['v2-interface.json']
+V3: declared=passed artifacts=['manifest-repaired.json']
+V4: declared=passed artifacts=['v4-symbolic.json']
+V5: declared=passed artifacts=['reproducibility.json']
+# tests/integration/test_cwe416_124_v4_rerun.py asserts (excerpt):
+    assert payload["results"] == {
+        "V0": "passed",
+        "V1": "passed",
+        "V2": "passed",
+        "V3": "passed",
+        "V4": "not_run",
+        "V5": "passed",
+    }
+    assert payload["details"]["V2"] == "5/5 static interface checks passed"
+    assert "V4" not in payload["evidence"]
+    assert "independent M4 replay" in payload["details"]["V4"]
+
+    final = jobs.get_attempt(attempt.id, data_dir=data_dir)
+    assert final is not None
+    assert final.outcome == "inconclusive"
+    assert final.reason == "required_check_not_run"
+    assert final.failing_obligation == "symbolic"
+    by_kind = {
+        row["kind"]: row["result"]
+        for row in jobs.list_obligations(attempt.id, data_dir=data_dir)
+    }
+    assert by_kind == {
+        "behaviour": "passed",
+        "identity": "passed",
+        "interface": "passed",
+        "reproducibility": "passed",
+        "structure": "passed",
+        "symbolic": "not_run",
+    }
+    # Route A has no bundle, so the run itself is not finished/success yet.
+    assert jobs.get_run(run.id, data_dir=data_dir).phase == "screening"
+
+==================================================================
+[14] dc3bcd3 carries the same three statements (only doc/comment text differs)
+==================================================================
+--- app/services/model_calls.py @ dc3bcd3 ---
+109:    * some NULL, some real      -> sum the real ones, ``partial`` is ``True``
+110:    * all real                  -> sum, ``partial`` is ``False``
+113:    the real usage its siblings recorded -- it only marks the sum partial.
+137:        "partial": len(real) != len(rows),
+--- app/controller_api.py @ dc3bcd3 ---
+271:    rendered as a made-up one, and a partial record is not padded with zeros.
+273:    ``partial`` is passed through from :func:`aggregate_job_usage` unchanged:
+298:        # with ``partial: true``. Falling back to the plan would mix two
+301:        return aggregate_job_usage(data_dir=_data_dir(), job_id=job_id)
+314:        "partial": False,
+
+==================================================================
+[15] T8.3 status recorded at 6d67140
+==================================================================
+T8.3 blocked; no main/tag/live.
+T8.3/live claim.
+T8.3 BLOCKED; no merge to main (still 472aa94), no tag, no live-success claim.
+
+==================================================================
+[16] scope guard
+==================================================================
+no ref moved: git worktree add --detach _m1-work/audit-6d67140 6d67140 (read-only checkout)
+"/Users/huageorge/Desktop/AI\351\251\261\345\212\250\347\232\204\344\272\214\350\277\233\345\210\266\346\274\217\346\264\236\350\207\252\345\212\250\344\277\256\345\244\215\344\270\216\346\255\243\347\241\256\346\200\247\351\252\214\350\257\201/_m1-work/audit-6d67140"     6d67140 (detached HEAD)
+END
+
+==================================================================
+[10b] direct _ai_usage_for_job tests (passthrough + plan fallback)
+==================================================================
+$ python -m pytest tests/integration/test_ai_usage_helper.py
+......                                                                   [100%]
+6 passed in 0.38s
+# named cases:
+  test_a_null_row_keeps_the_real_sum_and_passes_partial_through -> partial True
+  test_complete_rows_are_summed_and_not_partial                -> partial False
+  test_plan_fallback_reports_not_partial                       -> partial False
+
+==================================================================
+[17] canonical head moved again during the audit: d1ce352
+==================================================================
+# observed: 2026-11-06 16:22:48 +0800
+$ git ls-remote origin refs/heads/canonical/m1-m5-integration
+d1ce352f60057ab3cd389c6af609c7b5ed3bcefd	refs/heads/canonical/m1-m5-integration
+$ git show -s --format="%H%n%an <%ae>%n%ad%n%s" --date=iso d1ce352
+d1ce352f60057ab3cd389c6af609c7b5ed3bcefd
+huajinyao <2761163826@qq.com>
+2026-11-06 16:16:40 +0800
+merge(canonical): bring the v3 no-input baseline in with the partial usage fix
+$ git rev-list --parents -n1 d1ce352
+d1ce352f60057ab3cd389c6af609c7b5ed3bcefd dc3bcd366a71b61f9d23c6562bc52dd0244d0647 40a4153e769065a7e51f9017162067c961c4db98
+$ git show d1ce352:app/services/model_calls.py | grep -n "\"partial\""
+137:        "partial": len(real) != len(rows),
+$ git show d1ce352:app/controller_api.py | grep -n "\"partial\""
+314:        "partial": False,
+$ git cat-file -e d1ce352:app/domain/v4.py
+absent
+$ git diff --stat dc3bcd3 d1ce352 | tail -1
+ 26 files changed, 1738 insertions(+), 231 deletions(-)
+
+==================================================================
+[18] live-bridge head fast-forwarded during the audit: 7817a20
+==================================================================
+# observed: 2026-11-06 16:24:37 +0800
+$ git ls-remote origin refs/heads/integration/live-bridge
+7817a20cd5a215e4423de6e045bf754691671120	refs/heads/integration/live-bridge
+$ git show -s --format="%H%n%an <%ae>%n%ad%n%s" --date=iso 7817a20
+7817a20cd5a215e4423de6e045bf754691671120
+Member 1 <chenfanaichifan@users.noreply.github.com>
+2026-11-06 16:21:56 +0800
+docs(api): pin the obligation evidence field contract with a real response
+$ git rev-list --parents -n1 7817a20
+7817a20cd5a215e4423de6e045bf754691671120 0233d34d208bb05077d7cea708978b8087293e9c
+$ git rev-list --left-right --count 6d67140...7817a20
+0	2
+$ git diff --stat 6d67140 7817a20
+ app/controller_api.py                     |  16 +++-
+ docs/interfaces/obligation-evidence-v1.md | 131 ++++++++++++++++++++++++++++++
+ 2 files changed, 145 insertions(+), 2 deletions(-)
+$ git show 7817a20:app/services/model_calls.py | grep -n "\"partial\""
+136:        "partial": len(real) != len(rows),
+$ git show 7817a20:app/controller_api.py | grep -n "\"partial\""
+315:        "partial": False,
+$ git cat-file -e 7817a20:app/domain/v4.py
+present
+$ git show 7817a20:app/domain/v4.py | grep -n "verified_by"
+131:    verified_by: Literal["m4"] | None = None
+432:    if require_independent and evidence.replay.verified_by != "m4":
+$ git tag --points-at 7817a20
+
+# targeted suites at 7817a20 (detached worktree _m1-work/audit-7817a20)
+$ python -m pytest tests/integration/test_ai_usage_helper.py tests/integration/test_ai_usage_sources.py tests/integration/test_assistant_plan.py
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+21 passed, 1 warning in 0.83s
+$ python -m pytest tests/test_v4_harness_adapter.py tests/integration/test_cwe416_124_v4_rerun.py
+...........                                                              [100%]
+11 passed in 0.21s

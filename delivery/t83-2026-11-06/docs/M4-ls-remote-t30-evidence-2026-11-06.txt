@@ -1,0 +1,57 @@
+# M4 ls-remote three lines + T30 pending — evidence — 2026-11-06
+
+# SSH
+$ cd _m1-work/canonical && GIT_SSH_COMMAND='ssh -o BatchMode=yes -o ConnectTimeout=10' git ls-remote origin 'refs/heads/canonical/m1-m5-integration' 'refs/heads/m1/t30-acceptance-ab-2026-11-05' 'refs/heads/m3/cwe416-v3-noinput' 'refs/heads/main' 'refs/heads/integration/live-bridge-2026-11-03'
+1938c311672282ebd1fee3634fec9aad57760769	refs/heads/canonical/m1-m5-integration
+e2317772d638dbedbc64e6f049d1dcf4f1bc7699	refs/heads/integration/live-bridge-2026-11-03
+fdc083da747ff305457bb7f8096ad35431ba4e08	refs/heads/m1/t30-acceptance-ab-2026-11-05
+42d00181e03c17eaf54d18924b4ea8d2de499406	refs/heads/m3/cwe416-v3-noinput
+472aa94b8d931e03a2b20a8e4f671ba64f832230	refs/heads/main
+
+$ cd _m1-work/canonical && GIT_SSH_COMMAND='ssh -o BatchMode=yes -o ConnectTimeout=10' git ls-remote origin | grep -i 8735f75 || echo '(no remote ref contains 8735f75)'
+(no remote ref contains 8735f75)
+
+# HTTPS cross-check
+$ cd _m1-work/canonical && GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/chenfanaichifan/binary-repair.git 'refs/heads/canonical/m1-m5-integration' 'refs/heads/m1/t30-acceptance-ab-2026-11-05' 'refs/heads/m3/cwe416-v3-noinput'
+1938c311672282ebd1fee3634fec9aad57760769	refs/heads/canonical/m1-m5-integration
+fdc083da747ff305457bb7f8096ad35431ba4e08	refs/heads/m1/t30-acceptance-ab-2026-11-05
+42d00181e03c17eaf54d18924b4ea8d2de499406	refs/heads/m3/cwe416-v3-noinput
+
+$ cd _m1-work/canonical && git cat-file -t 8735f75 2>&1 | head -1
+致命错误：Not a valid object name 8735f75
+
+# T30 artifacts
+$ unzip -l M1-T30-acceptance-and-AB-2026-11-05.zip | head -18
+Archive:  M1-T30-acceptance-and-AB-2026-11-05.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+    26089  11-05-2026 23:54   106-m1-t30-acceptance-and-ab-decision-2026-11-05.md
+     1036  11-05-2026 22:14   118-evidence-absence.txt
+      856  11-06-2026 15:14   SHA256SUMS
+      253  11-05-2026 22:14   constraints.txt
+      515  11-05-2026 22:14   contract-probe.txt
+     1700  11-05-2026 22:14   cwe416-corpus.txt
+     1169  11-05-2026 22:14   cwe416-fixture.txt
+     4934  11-05-2026 22:14   fork.txt
+     5159  11-06-2026 15:14   status.json
+      613  11-05-2026 22:14   suite.txt
+     1598  11-05-2026 22:14   t30-package.txt
+---------                     -------
+    43922                     11 files
+
+$ ls -l _m1-work/live-bridge/delivery/t30-rebuild-2026-11-05/ 2>/dev/null
+total 72
+-rw-r--r--@ 1 huageorge  staff  18516 Nov  5 22:24 M3-t30-rebuild-evidence-2026-11-05.zip
+-rw-r--r--@ 1 huageorge  staff    105 Nov  5 22:24 M3-t30-rebuild-evidence-2026-11-05.zip.sha256
+-rw-------@ 1 huageorge  staff   4732 Nov  5 23:54 PROVENANCE.md
+-rw-------@ 1 huageorge  staff   2757 Nov  5 23:54 README.md
+
+$ find . -maxdepth 6 -name 'output.sha256' 2>/dev/null | grep -v '^./rea/' | head || echo '(no output.sha256)'
+
+# CWE121 / 124
+$ python3 -c "import json;d=json.load(open('_m1-work/live-bridge/fixtures/public/CWE121_src_char_declare_cpy_51b/build.json'));print('CWE121 verified_by:',d.get('verified_by'))"
+CWE121 verified_by: None
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

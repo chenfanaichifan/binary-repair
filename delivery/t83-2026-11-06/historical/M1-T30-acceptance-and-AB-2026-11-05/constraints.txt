@@ -1,0 +1,7 @@
+## main / tag / live-success state
+live is NOT an ancestor of main (no merge)
+canonical is NOT an ancestor of main (no merge)
+tags pointing at live head: 0
+tags pointing at canonical head: 0
+HEAD branch: m1/t30-acceptance-ab-2026-11-05
+worktree status:

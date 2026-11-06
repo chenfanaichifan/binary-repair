@@ -1,0 +1,41 @@
+# M4 record 127 V4 producer shape — evidence — 2026-11-06
+
+$ python3 -c "import json;d=json.load(open('v4-evidence.json'));print('keys:',sorted(d))"
+keys: ['candidate_sha256', 'cases', 'claimed_scope', 'complete', 'contract_sha256', 'engine', 'entry_address', 'gate', 'generated_by', 'hooks', 'input_domain', 'known_bad', 'known_bad_rejected', 'known_good', 'max_steps', 'not_claimed', 'original_sha256', 'property_text', 'replay', 'schema_version', 'solver', 'states', 'steps', 'target_entry', 'timeouts', 'unexplored', 'unknown']
+
+$ cd _m4-verify/fdaaa7b && PYTHONPATH=. ../../role5-kit/.venv/bin/python ../../_m4-verify/probe_v4_ingest.py
+V4EvidenceError
+35 validation errors for V4Evidence
+state
+  Field required [type=missing, input_value={'candidate_sha256': '46d...ored': [], 'unknown': 0}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.14/v/missing
+tool_versions
+  Field required [type=missing, input_value={'candidate_sha256': '46d...ored': [], 'unknown': 0}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.14/v/missing
+preconditions
+  Field required [type=missing, input_value={'candidate_sha256': '46d...ored': [], 'unknown': 0}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.14/v/missing
+memory_predicates
+  Field required [type=missing, input_value={'candidate_sha256': '46d...ored': [], 'unknown': 0}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.14/v/missing
+forbidden_ranges
+  Field required [type=miss
+
+$ python3 -c "import json;d=json.load(open('v4-evidence.json'));print('known_good=',repr(d.get('known_good')),'known_bad=',repr(d.get('known_bad')),'known_bad_rejected=',d.get('known_bad_rejected'));print('replay=',d.get('replay'));print('claimed_scope=',d.get('claimed_scope'));print('states=',d.get('states'));print('solver=',d.get('solver'));print('steps=',d.get('steps'),'max_steps=',d.get('max_steps'))"
+known_good= 'known_good' known_bad= 'known_bad' known_bad_rejected= True
+replay= {'digests': ['cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14', 'cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14'], 'identical': True, 'runs': 2}
+claimed_scope= model
+states= {'active': 0, 'deadended': 2, 'deferred': 0, 'errored': 0, 'initial': 2, 'pruned': 0, 'unconstrained': 0}
+solver= {'eval': 2, 'sat': 1, 'timeouts': 0, 'unknown': 0, 'unsat': 1}
+steps= 25 max_steps= 128
+
+$ grep -n 'def write_v4_evidence' v4_evidence.py _m1-work/live-bridge/app/domain/v4.py
+v4_evidence.py:206:def write_v4_evidence(path: str | Path, evidence: V4Evidence) -> Path:
+_m1-work/live-bridge/app/domain/v4.py:169:def write_v4_evidence(
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+
+$ cd _m4-verify/fdaaa7b && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "from app.domain.acceptance import Obligation,decide_attempt_outcome;from app.domain.outcomes import CheckResult as C;k=['identity','structure','interface','behaviour','symbolic','reproducibility'];r=[C.PASSED,C.PASSED,C.PASSED,C.PASSED,C.NOT_RUN,C.PASSED];c='46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0';v=decide_attempt_outcome(obligations=[Obligation(kind=x,required=True,result=y) for x,y in zip(k,r)],candidate_sha256=c,expected_sha256=c,reviewed_scope_sha256='b'*64);print(v.outcome.value,getattr(v.reason,'value',v.reason),v.failing_obligation)"
+inconclusive required_check_not_run symbolic
+

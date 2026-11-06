@@ -1,0 +1,68 @@
+# M4 contract v3 schema verification evidence — 2026-11-05
+# scope: schema only; fixture_intake/V3 not verified
+
+$ git -C _m1-work/m5-schema log --oneline -3
+4c36898 feat(m5): add v3 no-input contract mode
+9940c64 fix(m5): include attempt-bound usage and mark partial aggregates
+af01baf feat(m5): aggregate ai_usage across job
+
+$ git -C _m1-work/m5-schema show --stat --oneline 4c36898 | head -8
+4c36898 feat(m5): add v3 no-input contract mode
+ app/domain/contracts.py | 147 ++++++++++++++++++++++++++++++++++--------------
+ tests/test_contracts.py |  62 ++++++++++++++++++++
+ 2 files changed, 166 insertions(+), 43 deletions(-)
+
+$ shasum -a 256 _m1-work/m5-schema/app/domain/contracts.py
+cc976f62cc79c1f98188d7cdec9bdb40abd40797e1d1c5156e7443b76ff5fd6a  _m1-work/m5-schema/app/domain/contracts.py
+
+$ grep -n 'CONTRACT_SCHEMA_VERSION\|INPUT_MODES\|_REQUIRED_KEYS_V3' _m1-work/m5-schema/app/domain/contracts.py | head -10
+31:CONTRACT_SCHEMA_VERSION = 2
+32:CONTRACT_SCHEMA_VERSION_NO_INPUT = 3
+33:INPUT_MODES = ("argv", "stdin", "none")
+84:_REQUIRED_KEYS_V3_ARGV = _REQUIRED_KEYS + ("input_mode",)
+85:_REQUIRED_KEYS_V3_NONE = _BASE_KEYS + ("input_mode",)
+156:    schema_version: int = CONTRACT_SCHEMA_VERSION
+160:        if self.schema_version not in (CONTRACT_SCHEMA_VERSION, CONTRACT_SCHEMA_VERSION_NO_INPUT):
+162:        if self.schema_version == CONTRACT_SCHEMA_VERSION:
+167:            if self.input_mode not in INPUT_MODES:
+168:                raise ValueError(f"input_mode must be one of {INPUT_MODES}")
+
+$ cd _m1-work/m5-schema && python3 -m pytest tests/test_contracts.py -q 2>&1 | tail -3
+...................................                                      [100%]
+
+$ cd _m1-work/m5-schema && PYTHONPATH=. python3 ../../_m4-verify/probe_v3_schema.py
+== A: v3 none minimal ==
+keys: ['allowed_calls', 'authorized_edits', 'capacity_includes_terminator', 'dest_capacity_bytes', 'environment_assumptions', 'forbidden_behavior', 'input_mode', 'required_obligations', 'schema_version', 'target_entry', 'target_signature', 'valid_behavior', 'valid_domain']
+rejection-ish keys present: []
+input_mode: none
+round-trip hash stable: True
+hash: 73df6814f4b701f2ca16516f3b8cf7ac77ef01f941b784402714cb0ace54c31b
+
+== B: v3 none sentinel values ==
+invalid_input_response='': rejected (input_mode none must omit invalid_* and max_valid_input_bytes; sentinel values are not allowed)
+invalid_exit_code=0: rejected (input_mode none must omit invalid_* and max_valid_input_bytes; sentinel values are not allowed)
+invalid_stdout='': rejected (input_mode none must omit invalid_* and max_valid_input_bytes; sentinel values are not allowed)
+invalid_stderr='': rejected (input_mode none must omit invalid_* and max_valid_input_bytes; sentinel values are not allowed)
+max_valid_input_bytes=0: rejected (input_mode none must omit invalid_* and max_valid_input_bytes; sentinel values are not allowed)
+
+== C: v3 none from_dict with null rejection field ==
+null invalid_input_response: rejected unknown contract fields: ['invalid_input_response']
+
+== D: v3 argv missing rejection fields ==
+v3 argv missing: rejected missing contract fields: ['invalid_exit_code', 'invalid_input_response', 'invalid_stderr', 'invalid_stdout', 'max_valid_input_bytes']
+
+== E: v2 + input_mode ==
+v2+input_mode: rejected unknown contract fields: ['input_mode']
+
+== F: CWE121 v2 hash ==
+24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
+
+$ ls _m1-work/m5-schema/tools | grep -i fixture_intake || echo '(no fixture_intake in the m5-schema delivery)'
+(no fixture_intake in the m5-schema delivery)
+
+$ grep -c 'input_mode' _m1-work/live-bridge/tools/fixture_intake.py 2>/dev/null || true
+24
+
+$ shasum -a 256 _m1-work/canonical/fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json 
+15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df  _m1-work/canonical/fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json
+

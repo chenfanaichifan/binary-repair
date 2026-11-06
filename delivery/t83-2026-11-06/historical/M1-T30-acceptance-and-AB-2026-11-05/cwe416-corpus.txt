@@ -1,0 +1,33 @@
+## CWE416 corpus input-path measurement
+source: https://github.com/dsp-testing/samate-c-cpp @ 01e353daa3d28a4ce2ae68904cbcde5e03e3519d
+paths:  C/testcases/CWE416_Use_After_Free/*.c
+        C/testcases/CWE416_Use_After_Free/*.cpp
+method: GitHub contents API listing, then one raw.githubusercontent.com fetch per source file
+
+c_files: 150
+cpp_files: 372
+total_source_files: 522
+c_files_with_main: 138
+cpp_files_with_main: 324
+
+c_files_reading_argv_or_stdin: 0
+cpp_files_reading_argv_or_stdin: 0
+combined_files_reading_argv_or_stdin: 0
+
+c_grep_pattern: argv[0-9] | atoi( | strtol( | scanf( | fgets( | getchar( | fread( | read(0 | std::cin | ifstream | getenv(
+cpp_grep_pattern: argv[0-9] | std::cin | cin >> | getline( | scanf( | fgets( | getchar( | ifstream | fread( | getenv(
+
+## argc/argv uses other than the declaration, C files (Python check)
+/tmp/cwe416all/*.c files: 150 non_declaration_argc_argv_uses: 0
+/tmp/cwe416cpp/*.cpp files: 372 non_declaration_argc_argv_uses: 4
+   ('/tmp/cwe416cpp/main_linux.cpp', 17, 'globalArgc = argc;')
+   ('/tmp/cwe416cpp/main_linux.cpp', 18, 'globalArgv = argv;')
+   ('/tmp/cwe416cpp/main.cpp', 17, 'globalArgc = argc;')
+   ('/tmp/cwe416cpp/main.cpp', 18, 'globalArgv = argv;')
+
+## Notes
+- The only non-declaration argc/argv uses are in the aggregator drivers main.cpp and main_linux.cpp (globalArgc = argc; globalArgv = argv); they do not parse input.
+- 138 C files declare int main(int argc, char * argv[]); none uses argc/argv.
+- The C++ family is new_delete_*; no case reads stdin or argv.
+- The fixture format here is C (src.c, build.sh); the C++ count is included so the
+  'no input in this corpus' statement is not an artifact of looking only at .c files.

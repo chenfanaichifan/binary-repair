@@ -1,0 +1,92 @@
+## Fork refs
+origin/integration/live-bridge-2026-11-03               ddd3869018b59c74703da57f7024d5e2a518bb07
+origin/canonical/m1-m5-integration                      1938c311672282ebd1fee3634fec9aad57760769
+main                                                    125016944771060f89bffaf036d15bc877b3d06c
+merge-base:
+fba137e1512b660ab7d4b6d1e2b048422244f70f
+
+## canonical-only commits (merge-base..canonical)
+1938c31 docs(fixtures): name the mirror by its full URL
+ba65aed fix(m1): bind V0 by content only and pin CWE416 to samate-c-cpp 01e353d
+
+## live-only commits (merge-base..live)
+ddd3869 chore: ignore worklogs, .tmp and .dsh-acl-recovery
+4292da0 docs: record the af01baf rejection and the duplicate-definition trap
+de4c63d test(ingest): isolate the two result-bundle listing checks
+c0c0580 merge(m5): take af01baf, keep the stronger aggregate_job_usage
+3b8a81e docs: record the delta bundle and the branch restore
+af01baf feat(m5): aggregate ai_usage across job
+
+## canonical diff stat vs merge-base
+ .../PROVENANCE.md                                  | 52 +++++++++-------------
+ tools/route_bundle_ingest.py                       | 23 +++++-----
+ 2 files changed, 32 insertions(+), 43 deletions(-)
+
+## live diff stat vs merge-base
+ .gitignore                                         |  12 +++
+ MEMORY.md                                          |   3 +
+ ...1-bundle-delta-and-branch-restore-2026-11-05.md |  73 +++++++++++++
+ .../105-m1-v0-parity-and-binutils-2026-11-05.md    | 116 +++++++++++++++++++++
+ tests/integration/test_ai_usage_sources.py         |  49 +++++++++
+ tests/integration/test_assistant_plan.py           |  13 +++
+ tests/integration/test_route_bundle_ingest.py      |  11 +-
+ 7 files changed, 275 insertions(+), 2 deletions(-)
+
+## CWE416 src.c hash on both refs
+origin/integration/live-bridge-2026-11-03               262dee1d39243c944a55b4b967ab6a56524977dc88a684ff0b7150cacf0b5a61  -
+origin/canonical/m1-m5-integration                      262dee1d39243c944a55b4b967ab6a56524977dc88a684ff0b7150cacf0b5a61  -
+
+## PROVENANCE pin lines
+--- origin/integration/live-bridge-2026-11-03
+4:- Mirror used: `arichardson/juliet-test-suite-c`
+5:- Commit (resolved): `f88433e3443648a17671398797a04ea1f8e1a274` (2025-03-27, "Create LICENSE")
+21:`01e353d` does not resolve in this mirror (`GET /commits/01e353d` returns 422), so
+24:- `lead_provided_pin`: `01e353d` (unresolved)
+25:- `resolved_pin`: `f88433e3443648a17671398797a04ea1f8e1a274`
+--- origin/canonical/m1-m5-integration
+4:- Repository: https://github.com/dsp-testing/samate-c-cpp
+5:- Pin: `01e353d` (`01e353daa3d28a4ce2ae68904cbcde5e03e3519d`, 2025-09-30,
+
+## ingest semantic comparison
+diff --git a/tools/route_bundle_ingest.py b/tools/route_bundle_ingest.py
+index 56929dc..31fb1c5 100644
+--- a/tools/route_bundle_ingest.py
++++ b/tools/route_bundle_ingest.py
+@@ -314,15 +314,15 @@ def ingest(
+             raise IngestError(f"gate {gate} passed without evidence")
+         if ids:
+             # A gate can carry several files (identity carries original, candidate,
+-            # manifests).  Keep the candidate when it is present, because the
+-            # worker requires the declared candidate to be bound to a verified
+-            # artifact; taking the first file silently loses that binding.
+-            chosen = ids[0]
++            # manifests).  V0 is bound only by content: the candidate is the file
++            # whose bytes match candidate_sha256, and its absence is a rejection.
++            # There is deliberately no fallback to the first entry - that would
++            # bind V0 to whatever the bundle happened to list first.
++            #
++            # M5 017ca87 reached the same rule independently; this is the single
++            # implementation, and the message below stays stable because record
++            # 101 and its test assert on it.
+             if gate == "V0":
+-                # Identity may carry original, candidate and manifests.  The
+-                # bound candidate is the one whose bytes match candidate_sha256.
+-                # Falling back to the first entry would bind V0 to whatever
+-                # happened to be listed first, so an absence is a rejection.
+                 matches = [
+                     artifact_id
+                     for name, artifact_id in ids_by_name.items()
+@@ -333,10 +333,9 @@ def ingest(
+                         "gate V0 evidence does not contain the declared candidate "
+                         f"{manifest['candidate_sha256']}"
+                     )
+-                chosen = matches[0]
+-            # M5 017ca87 reached the same rule independently; the wording above
+-            # is kept because record 101 and its test assert on this message.
+-            evidence[gate] = chosen
++                evidence[gate] = matches[0]
++            else:
++                evidence[gate] = ids[0]
+ 
+     analysis_ids = []
+     for item in manifest.get("analysis") or []:

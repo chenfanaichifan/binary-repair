@@ -1,0 +1,84 @@
+# 135 evidence — M1 pin and count correction
+# collected: 2026-11-06 16:25-16:40 +0800 (Asia/Shanghai)
+# documentation only: no ref created, moved, merged, tagged or pushed
+
+==================================================================
+[1] fresh remote pins (git ls-remote origin)
+==================================================================
+d1ce352f60057ab3cd389c6af609c7b5ed3bcefd	refs/heads/canonical/m1-m5-integration
+7817a20cd5a215e4423de6e045bf754691671120	refs/heads/integration/live-bridge
+
+==================================================================
+[2] 6d67140 is an ancestor of 7817a20, not the head
+==================================================================
+$ git merge-base --is-ancestor 6d67140 7817a20 ; echo $?
+0
+$ git rev-list --left-right --count 6d67140...7817a20
+0	2
+$ git log -1 --format='%h %s' 7817a20
+7817a20 docs(api): pin the obligation evidence field contract with a real response
+
+==================================================================
+[3] full suite on canonical d1ce352 (nothing ignored)
+==================================================================
+$ python -m pytest -q -o addopts=""
+SKIPPED [1] tests/e2e/test_gui_journey.py:98: Microsoft Edge is not installed; browser e2e cannot run
+SKIPPED [1] tests/e2e/test_gui_journey.py:123: Microsoft Edge is not installed; browser e2e cannot run
+SKIPPED [1] tests/e2e/test_gui_journey.py:134: Microsoft Edge is not installed; browser e2e cannot run
+SKIPPED [1] tests/e2e/test_gui_journey.py:170: Microsoft Edge is not installed; browser e2e cannot run
+SKIPPED [1] tests/e2e/test_gui_journey.py:234: Microsoft Edge is not installed; browser e2e cannot run
+SKIPPED [1] tests/e2e/test_gui_journey.py:256: Microsoft Edge is not installed; browser e2e cannot run
+SKIPPED [1] tests/e2e/test_gui_journey.py:280: Microsoft Edge is not installed; browser e2e cannot run
+SKIPPED [1] tests/test_fixture_v3_manifest.py:141: ELF execution requires Linux
+SKIPPED [1] tests/test_fixture_v3_manifest.py:163: ELF execution requires Linux
+449 passed, 9 skipped, 1 warning
+
+==================================================================
+[4] full suite on integration 6d67140 and 41ff540
+==================================================================
+6d67140:
+513 passed, 9 skipped, 1 warning
+
+41ff540:
+513 passed, 9 skipped, 1 warning
+
+41ff540 -> 6d67140 diff: MEMORY.md | 1 + (docs only; same test tree)
+
+==================================================================
+[5] the 506 figure has no tested tree
+==================================================================
+c217046 (live line, partial, no V4):
+419 passed, 9 skipped, 1 warning
+
+3f21d31 (m1/t30 line, V4, no partial):
+503 passed, 9 skipped, 1 warning
+
+41ff540 (merge):
+513 passed, 9 skipped, 1 warning
+
+6d67140 (merge + docs line):
+513 passed, 9 skipped, 1 warning
+
+=> 506/9/0 withdrawn; accepted count is 513/9/0.
+
+==================================================================
+[6] gates on canonical d1ce352
+==================================================================
+$ python -m pytest -q -o addopts="" \
+    tests/test_fixture_contract.py tests/test_contracts.py \
+    tests/test_fixture_intake.py tests/test_v3_no_input_e2e.py
+84 passed
+
+CWE121 canonical hash (app.domain.contracts):
+24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
+
+CWE121 file sha256: 15f6b492...0ad8df (unchanged fixture)
+
+==================================================================
+[7] constraints
+==================================================================
+T8.3 BLOCKED
+no merge to main
+no tag
+no live-success claim
+no code, contract or fixture change

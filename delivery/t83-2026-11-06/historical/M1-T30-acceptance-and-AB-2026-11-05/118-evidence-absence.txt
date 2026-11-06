@@ -1,0 +1,26 @@
+## Record 118 evidence package: absence check
+expected by 118 README: docs/handoffs/evidence/t30-rebuild-2026-11-05/
+absent  docs/handoffs/evidence/t30-rebuild-2026-11-05/01-window-and-isolation.txt
+absent  docs/handoffs/evidence/t30-rebuild-2026-11-05/02-build.txt
+absent  docs/handoffs/evidence/t30-rebuild-2026-11-05/03-readelf.txt
+absent  docs/handoffs/evidence/t30-rebuild-2026-11-05/04-trigger.txt
+absent  docs/handoffs/evidence/t30-rebuild-2026-11-05/05-asan.txt
+absent  docs/handoffs/evidence/t30-rebuild-2026-11-05/06-SHA256SUMS
+absent  docs/handoffs/evidence/t30-rebuild-2026-11-05/07-rebuild.json
+absent  docs/handoffs/evidence/t30-rebuild-2026-11-05/collect.sh
+absent  docs/handoffs/evidence/t30-rebuild-2026-11-05/README.md
+absent  docs/handoffs/evidence/t30-rebuild-2026-11-05/SHA256SUMS
+
+find results in workspace (none expected):
+
+record 118 README at workspace root:
+d84fdbafd365e47f608a7935fec3fa1691324dbe731a0584118942388dfd4c3b  README.md
+
+repo evidence directory:
+P2-real
+P3A
+P3B
+P4
+README.md
+
+ABSENT repo package

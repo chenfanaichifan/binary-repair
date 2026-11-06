@@ -1,0 +1,129 @@
+# M4 evidence transcript — T30 + record 116 — 2026-11-05
+# host: Darwin arm64; purpose: source/package identity only (no guest rebuild)
+
+$ shasum -a 256 T30/original.c pin/CWE416_Use_After_Free__malloc_free_char_01.c
+fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e  T30/original.c
+fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e  pin/CWE416_Use_After_Free__malloc_free_char_01.c
+
+$ diff T30/original.c pin/CWE416_Use_After_Free__malloc_free_char_01.c && echo IDENTICAL
+IDENTICAL
+
+$ grep -n 'INCLUDEMAIN\|int main' T30/original.c
+91:#ifdef INCLUDEMAIN
+93:int main(int argc, char * argv[])
+
+$ grep -n 'INCLUDEMAIN\|-D[A-Z]' T30/build.sh T30/build.json || echo 'no -DINCLUDEMAIN and no -D macros'
+no -DINCLUDEMAIN and no -D macros
+
+$ cd T30 && shasum -a 256 -c SHA256SUMS
+original.elf: OK
+README.txt: OK
+build.json: OK
+build.sh: OK
+handoff.json: OK
+harness.c: OK
+isolation-reset.txt: OK
+original.c: OK
+readelf.txt: OK
+result-bundle.json: OK
+trigger-observation.txt: OK
+trigger.sh: OK
+
+$ cd T30 && shasum -a 256 original.elf
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  original.elf
+
+$ cd T30 && python3 -c "import json;b=json.load(open('build.json'));print('declared output sha256:',b['output']['sha256']);print('declared size:',b['output']['size_bytes']);print('link_units:',b['build']['link_units']);print('harness:',b['fixture']['harness']['file'],b['fixture']['harness']['sha256']);print('source sha256:',b['fixture']['source_of_truth']['sha256'])"
+declared output sha256: c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+declared size: 25344
+link_units: ['harness.c', 'original.c (unmodified case)', '<juliet>/C/testcasesupport/io.c']
+harness: build/harness.c cef8f533765f3f9184377bf72e32792f6a4128080da8467cb478340a679c63a9
+source sha256: fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e
+
+$ cd T30 && objdump -d --start-address=0x401296 --stop-address=0x4012aa original.elf | tail -12
+original.elf:	file format elf64-x86-64
+
+Disassembly of section .text:
+
+0000000000401296 <main>:
+  401296: f3 0f 1e fa                  	endbr64
+  40129a: 55                           	pushq	%rbp
+  40129b: 48 89 e5                     	movq	%rsp, %rbp
+  40129e: e8 07 00 00 00               	callq	0x4012aa <CWE416_Use_After_Free__malloc_free_char_01_bad>
+  4012a3: b8 00 00 00 00               	movl	$0, %eax
+  4012a8: 5d                           	popq	%rbp
+  4012a9: c3                           	retq
+
+$ cd T30 && objdump -d --start-address=0x4012aa --stop-address=0x401319 original.elf | tail -26
+  4012b2: 48 83 ec 10                  	subq	$16, %rsp
+  4012b6: 48 c7 45 f8 00 00 00 00      	movq	$0, -8(%rbp)
+  4012be: bf 64 00 00 00               	movl	$100, %edi
+  4012c3: e8 88 fe ff ff               	callq	0x401150 <.plt.sec+0x60>
+  4012c8: 48 89 45 f8                  	movq	%rax, -8(%rbp)
+  4012cc: 48 83 7d f8 00               	cmpq	$0, -8(%rbp)
+  4012d1: 75 0a                        	jne	0x4012dd <CWE416_Use_After_Free__malloc_free_char_01_bad+0x33>
+  4012d3: bf ff ff ff ff               	movl	$4294967295, %edi       # imm = 0xFFFFFFFF
+  4012d8: e8 a3 fe ff ff               	callq	0x401180 <.plt.sec+0x90>
+  4012dd: 48 8b 45 f8                  	movq	-8(%rbp), %rax
+  4012e1: ba 63 00 00 00               	movl	$99, %edx
+  4012e6: be 41 00 00 00               	movl	$65, %esi
+  4012eb: 48 89 c7                     	movq	%rax, %rdi
+  4012ee: e8 3d fe ff ff               	callq	0x401130 <.plt.sec+0x40>
+  4012f3: 48 8b 45 f8                  	movq	-8(%rbp), %rax
+  4012f7: 48 83 c0 63                  	addq	$99, %rax
+  4012fb: c6 00 00                     	movb	$0, (%rax)
+  4012fe: 48 8b 45 f8                  	movq	-8(%rbp), %rax
+  401302: 48 89 c7                     	movq	%rax, %rdi
+  401305: e8 e6 fd ff ff               	callq	0x4010f0 <.plt.sec>
+  40130a: 48 8b 45 f8                  	movq	-8(%rbp), %rax
+  40130e: 48 89 c7                     	movq	%rax, %rdi
+  401311: e8 e8 00 00 00               	callq	0x4013fe <printLine>
+  401316: 90                           	nop
+  401317: c9                           	leave
+  401318: c3                           	retq
+
+$ cd T30 && objdump -R original.elf | grep -E 'free|malloc|memset|exit|printLine'
+0000000000404000 R_X86_64_JUMP_SLOT       free
+0000000000404020 R_X86_64_JUMP_SLOT       memset
+0000000000404030 R_X86_64_JUMP_SLOT       malloc
+0000000000404048 R_X86_64_JUMP_SLOT       exit
+
+$ cd T30 && objdump -d --start-address=0x4010f0 --stop-address=0x401190 original.elf | grep -E '4010f0|401130|401150|401180|jmpq'
+00000000004010f0 <.plt.sec>:
+  4010f0: f3 0f 1e fa                  	endbr64
+  4010f4: ff 25 06 2f 00 00            	jmpq	*12038(%rip)            # 0x404000 <_GLOBAL_OFFSET_TABLE_+0x18>
+  401104: ff 25 fe 2e 00 00            	jmpq	*12030(%rip)            # 0x404008 <_GLOBAL_OFFSET_TABLE_+0x20>
+  401114: ff 25 f6 2e 00 00            	jmpq	*12022(%rip)            # 0x404010 <_GLOBAL_OFFSET_TABLE_+0x28>
+  401124: ff 25 ee 2e 00 00            	jmpq	*12014(%rip)            # 0x404018 <_GLOBAL_OFFSET_TABLE_+0x30>
+  401130: f3 0f 1e fa                  	endbr64
+  401134: ff 25 e6 2e 00 00            	jmpq	*12006(%rip)            # 0x404020 <_GLOBAL_OFFSET_TABLE_+0x38>
+  401144: ff 25 de 2e 00 00            	jmpq	*11998(%rip)            # 0x404028 <_GLOBAL_OFFSET_TABLE_+0x40>
+  401150: f3 0f 1e fa                  	endbr64
+  401154: ff 25 d6 2e 00 00            	jmpq	*11990(%rip)            # 0x404030 <_GLOBAL_OFFSET_TABLE_+0x48>
+  401164: ff 25 ce 2e 00 00            	jmpq	*11982(%rip)            # 0x404038 <_GLOBAL_OFFSET_TABLE_+0x50>
+  401174: ff 25 c6 2e 00 00            	jmpq	*11974(%rip)            # 0x404040 <_GLOBAL_OFFSET_TABLE_+0x58>
+  401180: f3 0f 1e fa                  	endbr64
+  401184: ff 25 be 2e 00 00            	jmpq	*11966(%rip)            # 0x404048 <_GLOBAL_OFFSET_TABLE_+0x60>
+
+# PLT map: 0x4010f0 -> GOT 0x404000 = free; 0x401130 -> 0x404020 = memset;
+#          0x401150 -> 0x404030 = malloc; 0x401180 -> 0x404048 = exit
+
+$ cd T30 && python3 - <<'PY'
+import struct
+d=open('original.elf','rb').read()
+sh=struct.unpack_from('<Q',d,0x28)[0]; es,n,si=struct.unpack_from('<HHH',d,0x3a)
+secs=[dict(zip(['name','type','flags','addr','offset','size','link','info','align','entsize'],struct.unpack_from('<IIQQQQIIQQ',d,sh+i*es))) for i in range(n)]
+def c(o): return d[o:d.index(b'\0',o)].decode('utf-8','replace')
+for st in secs:
+    if st['type']!=2: continue
+    strs=secs[st['link']]; k=st['size']//st['entsize']
+    for i in range(k):
+        o=st['offset']+i*st['entsize']; nm,info,oth,shx,val,sz=struct.unpack_from('<IBBHQQ',d,o)
+        if nm:
+            s=c(strs['offset']+nm)
+            if 'CWE416' in s or s in ('main','printLine'): print(f'{s:58s} 0x{val:x} size={sz}')
+PY
+main                                                       0x401296 size=20
+CWE416_Use_After_Free__malloc_free_char_01_good            0x4013df size=31
+CWE416_Use_After_Free__malloc_free_char_01_bad             0x4012aa size=111
+printLine                                                  0x4013fe size=38
+

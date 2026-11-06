@@ -1,0 +1,32 @@
+# M4 record 119 contract rejection — evidence — 2026-11-05
+
+$ find _m1-work/m3/fixtures/public -maxdepth 1 -type d -name '*noinput*' || true
+
+# (empty above = the _noinput fixture directory is absent)
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/119-contract.json'));print('schema_version:',d['schema_version']);print('input_mode:',d.get('input_mode'));print('invalid_*:',{k:v for k,v in d.items() if k.startswith('invalid_') or k=='max_valid_input_bytes'})"
+schema_version: 2
+input_mode: none
+invalid_*: {'invalid_exit_code': 0}
+
+$ cd _m1-work/m5-schema && PYTHONPATH=. python3 -c "import json;from app.domain.contracts import SecurityContract;d=json.load(open('../../_m4-verify/119-contract.json'));SecurityContract.from_dict(d)"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m1-work/m5-schema/app/domain/contracts.py", line 305, in from_dict
+    raise ValueError(f"unknown contract fields: {sorted(unknown)}")
+ValueError: unknown contract fields: ['input_mode']
+
+$ cd _m1-work/m5-schema && PYTHONPATH=. python3 -c "import copy,json;from app.domain.contracts import SecurityContract;d=json.load(open('../../_m4-verify/119-contract.json'));d['schema_version']=3;SecurityContract.from_dict(d)"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m1-work/m5-schema/app/domain/contracts.py", line 305, in from_dict
+    raise ValueError(f"unknown contract fields: {sorted(unknown)}")
+ValueError: unknown contract fields: ['invalid_exit_code']
+
+$ cd _m1-work/m5-schema && PYTHONPATH=. python3 -c "import copy,json;from app.domain.contracts import SecurityContract;d=json.load(open('../../_m4-verify/119-contract.json'));d['schema_version']=3;d.pop('invalid_exit_code',None);c=SecurityContract.from_dict(d);print('LOADED',c.sha256());print('rejections:',{k:getattr(c,k) for k in ('invalid_input_response','invalid_exit_code','invalid_stdout','invalid_stderr','max_valid_input_bytes')})"
+LOADED c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c
+rejections: {'invalid_input_response': None, 'invalid_exit_code': None, 'invalid_stdout': None, 'invalid_stderr': None, 'max_valid_input_bytes': None}
+
+$ cd _m1-work/live-bridge && python3 -c "import json;from app.domain.contracts import SecurityContract;c=SecurityContract.from_dict(json.load(open('fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json')));print(c.sha256(), c.sha256()=='24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37')"
+24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37 True
+

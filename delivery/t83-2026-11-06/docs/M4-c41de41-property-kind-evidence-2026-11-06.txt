@@ -1,0 +1,29 @@
+# M4 c41de41 explicit property_kind — evidence — 2026-11-06
+
+$ git -C _m1-work/live-bridge log -1 --format='%H %s'
+c41de418d72168b963f0ecdb294bfef0de3149cf fix(m1): require explicit property_kind from the V4 harness
+
+$ git -C _m1-work/live-bridge status --short
+
+$ grep -n 'property_kind' _m4-verify/c41de41/app/domain/v4.py | head -10
+152:    property_kind: Literal["pointer-flow", "memory-range"]
+171:        if self.property_kind != "pointer-flow" and not self.forbidden_ranges:
+357:            "property_kind": data["property_kind"],
+390:                "property_kind": data["property_kind"],
+
+$ grep -n 'pointer.*in property_text\|property_text.*pointer' _m4-verify/c41de41/app/domain/v4.py || echo '(no text-based property_kind inference)'
+(no text-based property_kind inference)
+
+$ cd _m4-verify/c41de41 && PYTHONPATH=. ../../role5-kit/.venv/bin/python ../../_m4-verify/probe_v4_property_kind.py
+missing property_kind: REJECTED - v4_harness output cannot be converted: 'property_kind'
+pointer-flow + empty ranges: ACCEPTED (kind=pointer-flow, ranges=None)
+memory-range + empty ranges: REJECTED - 1 validation error for V4Evidence
+text says pointer + memory-range + empty: REJECTED - 1 validation error for V4Evidence
+text omits pointer + pointer-flow + empty: ACCEPTED (kind=pointer-flow, ranges=None)
+
+$ cd _m4-verify/c41de41 && ../../role5-kit/.venv/bin/python -m pytest tests/test_v4_harness_adapter.py tests/test_v4_evidence.py tests/integration/test_cwe416_124_ingest.py tests/integration/test_v4_bundle_gate.py -q 2>&1 | tail -2
+..........................................                               [100%]
+
+$ cd _m4-verify/c41de41 && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "from app.domain.acceptance import Obligation,decide_attempt_outcome;from app.domain.outcomes import CheckResult as C;k=['identity','structure','interface','behaviour','symbolic','reproducibility'];r=[C.PASSED,C.PASSED,C.PASSED,C.PASSED,C.NOT_RUN,C.PASSED];c='46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0';v=decide_attempt_outcome(obligations=[Obligation(kind=x,required=True,result=y) for x,y in zip(k,r)],candidate_sha256=c,expected_sha256=c,reviewed_scope_sha256='b'*64);print(v.outcome.value,getattr(v.reason,'value',v.reason),v.failing_obligation)"
+inconclusive required_check_not_run symbolic
+

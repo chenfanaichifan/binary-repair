@@ -1,0 +1,112 @@
+{
+  "schema_version": 2,
+  "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "patched_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+  "function": {
+    "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+    "entry": "0x4012b0",
+    "size": 104
+  },
+  "displaced": [
+    {
+      "vaddr": "0x401304",
+      "file_offset": "0x1304",
+      "size": 5,
+      "original_hex": "e8c7fdffff",
+      "new_hex": "e8e0050000",
+      "purpose": "displaced strcpy call"
+    }
+  ],
+  "added": [
+    {
+      "kind": "code",
+      "vaddr": "0x4018e9",
+      "file_offset": "0x18e9",
+      "size": 71,
+      "sha256": "cd0326946d931b2566d888e7244a917ef90f97e62be60c87805d4d03bbd7203e",
+      "purpose": "guard length and branch"
+    },
+    {
+      "kind": "data",
+      "vaddr": "0x401930",
+      "file_offset": "0x1930",
+      "size": 42,
+      "sha256": "083d3bfb2d9e1fa4978aabdd2318d60c67bd54f2a34d0086b0a9d11f6f84f69b",
+      "purpose": "exact invalid stderr"
+    }
+  ],
+  "intervals": {
+    "changed": [
+      [
+        "0x401304",
+        "0x401309"
+      ]
+    ],
+    "added": [
+      [
+        "0x4018e9",
+        "0x40195a"
+      ]
+    ]
+  },
+  "header_changes": {
+    "rx_load": {
+      "phdr_file_offset": "0xe8",
+      "vaddr": "0x401000",
+      "p_offset": "0x1000",
+      "old_filesz": "0x8e9",
+      "new_filesz": "0x1000",
+      "old_memsz": "0x8e9",
+      "new_memsz": "0x1000",
+      "align": "0x1000",
+      "page_congruent": true,
+      "no_overlap": true,
+      "beyond_original_p_filesz": true
+    },
+    "original_size": 26792,
+    "patched_size": 26792
+  },
+  "writer": "write(2, msg, 42) syscall",
+  "termination": "exit_group(1)",
+  "tool_versions": {
+    "python": "3.11.8",
+    "pyelftools": "0.33",
+    "capstone": "5.0.9",
+    "build_script": "regen_c4a159.py",
+    "build_script_kind": "stdlib-only"
+  },
+  "edits": [
+    {
+      "kind": "call_redirect",
+      "vaddr": "0x401304",
+      "size": 5,
+      "new_hex": "e8e0050000",
+      "purpose": "redirect strcpy call to cave"
+    }
+  ],
+  "mappings": [
+    {
+      "vaddr": "0x4018e9",
+      "perm": "R-X",
+      "size": 113,
+      "purpose": "guard + exact stderr in existing cave"
+    }
+  ],
+  "relocations_added": [],
+  "scope_authorized": true,
+  "audit": {
+    "checks": {
+      "redirect_bytes": true,
+      "cave_code": true,
+      "message_bytes": true,
+      "harness_unchanged": true,
+      "no_new_segments": true,
+      "relocations_unchanged": true,
+      "no_wx": true,
+      "rx_extended": true
+    },
+    "pass": true,
+    "original_size": 26792,
+    "patched_size": 26792
+  }
+}

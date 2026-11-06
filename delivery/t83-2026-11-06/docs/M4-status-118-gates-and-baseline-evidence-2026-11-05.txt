@@ -1,0 +1,80 @@
+# M4 118 gates re-run + M1/M5 v3 baseline — 2026-11-05
+
+$ cd M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05 && shasum -a 256 -c 06-SHA256SUMS | tail -5
+01-window-and-isolation.txt: OK
+02-build.txt: OK
+03-readelf.txt: OK
+04-trigger.txt: OK
+05-asan.txt: OK
+
+$ cd M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05 && shasum -a 256 -c SHA256SUMS | tail -10
+00-window-host.txt: OK
+01-window-and-isolation.txt: OK
+02-build.txt: OK
+03-readelf.txt: OK
+04-trigger.txt: OK
+05-asan.txt: OK
+06-SHA256SUMS: OK
+07-rebuild.json: OK
+README.md: OK
+collect.sh: OK
+
+$ grep -E '^exit=|^sha256=|^size=' M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/02-build.txt
+exit=0
+sha256=c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+size=25344
+
+$ grep -E '^(50x|200x)|distinct values' M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/04-trigger.txt
+50x exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+200x exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+distinct values among those 10 runs:
+
+$ grep -E 'snapshot.current|uid = |lck' M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/00-window-host.txt
+$ grep snapshot.current BinRepair-Lab.vmsd
+  snapshot.current = "11"
+$ grep -A3 "snapshot[0-9]*.uid = \"1[14]\"" BinRepair-Lab.vmsd
+  snapshot7.uid = "11"
+  snapshot9.uid = "14"
+$ find "D:/VMs/binrepair-u2404-x64-01" -maxdepth 2 -name "*.lck" | wc -l
+(revert exit 0, snapshot.current "11", 0 locks), and the boot time that ties
+
+$ grep -E 'boot |uptime|cwe416' M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/01-window-and-isolation.txt
+boot                    system boot 2026-11-05 21:43
+uptime                 up 2 minutes
+no leftover from the CWE416 fixture window (that window created ~/cwe416):
+
+$ python3 _m4-verify/probe_conformance.py | head -4
+rows: 21 matched: 21
+mismatches: []
+verdict differs: ['window.is_baseline']
+summary: {'tabulated': 21, 'match': 20, 'differs': 1, 'the_difference': 'window.is_baseline - T30 measured uid 14 and recorded false; this run measured uid 11 and records true. That difference is the purpose of the exercise, not a deviation from it.'}
+
+$ git -C _m1-work/live-bridge log --oneline -3
+7c279a1 feat(m5): add v3 no-input contract mode
+1b08ae5 feat(intake): accept the CWE416 no-input contract shape (M5 option A)
+4c73f87 docs(m1): point record 106 at the delivered evidence, not a future delivery
+
+$ git -C _m1-work/m5-schema log --oneline -3
+4c36898 feat(m5): add v3 no-input contract mode
+9940c64 fix(m5): include attempt-bound usage and mark partial aggregates
+af01baf feat(m5): aggregate ai_usage across job
+
+$ git -C _m1-work/live-bridge merge-base 7c279a1 4c36898
+af01baf79eeca2ef565aa09b16839a4b250d6960
+
+$ git -C _m1-work/live-bridge merge-base --is-ancestor 7c279a1 4c36898 && echo ancestor || echo 'not ancestor'
+not ancestor
+
+$ git -C _m1-work/live-bridge merge-base --is-ancestor 4c36898 7c279a1 && echo ancestor || echo 'not ancestor'
+not ancestor
+
+$ shasum -a 256 _m1-work/live-bridge/app/domain/contracts.py _m1-work/m5-schema/app/domain/contracts.py
+cc976f62cc79c1f98188d7cdec9bdb40abd40797e1d1c5156e7443b76ff5fd6a  _m1-work/live-bridge/app/domain/contracts.py
+cc976f62cc79c1f98188d7cdec9bdb40abd40797e1d1c5156e7443b76ff5fd6a  _m1-work/m5-schema/app/domain/contracts.py
+
+$ cd _m1-work/live-bridge && python3 -c "import json;from app.domain.contracts import SecurityContract;c=SecurityContract.from_dict(json.load(open('fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json')));print(c.sha256(), c.sha256()=='24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37','input_mode' in c.to_dict())"
+24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37 True False
+
+$ cd _m1-work/m5-schema && python3 -c "import json;from app.domain.contracts import SecurityContract;c=SecurityContract.from_dict(json.load(open('fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json')));print(c.sha256(), c.sha256()=='24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37','input_mode' in c.to_dict())"
+24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37 True False
+

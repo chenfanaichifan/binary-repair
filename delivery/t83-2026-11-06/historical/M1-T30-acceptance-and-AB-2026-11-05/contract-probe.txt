@@ -1,0 +1,8 @@
+## SecurityContract probe (v2, no input_mode)
+schema_version = 2
+A) input_mode: ValueError: unknown contract fields: ['input_mode']
+B) omitted invalid_*: ValueError: missing contract fields: ['invalid_exit_code', 'invalid_input_response', 'invalid_stderr', 'invalid_stdout']
+C) sentinel invalid_*: LOADED; hash = c3b5a9f2c856cb8d863be5e1758d40ef418b14ba8b0c57df24a94f24f1ea833f
+   invalid_input_response = 'not applicable: the program takes no input'
+   invalid_exit_code      = 0
+   invalid_stdout/stderr  = '' ''

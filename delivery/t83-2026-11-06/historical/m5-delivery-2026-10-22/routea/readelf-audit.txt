@@ -1,0 +1,107 @@
+Linux runnervmxehtw 7.0.0-1017-azure #17~24.04.1-Ubuntu SMP PREEMPT Thu Sep 24 18:46:57 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+Python 3.12.15
+GNU readelf (GNU Binutils for Ubuntu) 2.42
+aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393  fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf
+c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82  routea/out/cave-probe.elf
+
+Elf file type is EXEC (Executable file)
+Entry point 0x401170
+There are 13 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align
+  PHDR           0x000040 0x0000000000400040 0x0000000000400040 0x0002d8 0x0002d8 R   0x8
+  INTERP         0x000318 0x0000000000400318 0x0000000000400318 0x00001c 0x00001c R   0x1
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+  LOAD           0x000000 0x0000000000400000 0x0000000000400000 0x000788 0x000788 R   0x1000
+  LOAD           0x001000 0x0000000000401000 0x0000000000401000 0x001000 0x001000 R E 0x1000
+  LOAD           0x002000 0x0000000000402000 0x0000000000402000 0x0007a4 0x0007a4 R   0x1000
+  LOAD           0x002df8 0x0000000000403df8 0x0000000000403df8 0x000270 0x0002a8 RW  0x1000
+  DYNAMIC        0x002e08 0x0000000000403e08 0x0000000000403e08 0x0001d0 0x0001d0 RW  0x8
+  NOTE           0x000338 0x0000000000400338 0x0000000000400338 0x000030 0x000030 R   0x8
+  NOTE           0x000368 0x0000000000400368 0x0000000000400368 0x000044 0x000044 R   0x4
+  GNU_PROPERTY   0x000338 0x0000000000400338 0x0000000000400338 0x000030 0x000030 R   0x8
+  GNU_EH_FRAME   0x002088 0x0000000000402088 0x0000000000402088 0x000174 0x000174 R   0x4
+  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x10
+  GNU_RELRO      0x002df8 0x0000000000403df8 0x0000000000403df8 0x000208 0x000208 R   0x1
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .interp .note.gnu.property .note.gnu.build-id .note.ABI-tag .gnu.hash .dynsym .dynstr .gnu.version .gnu.version_r .rela.dyn .rela.plt 
+   03     .init .plt .plt.sec .text .fini 
+   04     .rodata .eh_frame_hdr .eh_frame 
+   05     .init_array .fini_array .dynamic .got .got.plt .data .bss 
+   06     .dynamic 
+   07     .note.gnu.property 
+   08     .note.gnu.build-id .note.ABI-tag 
+   09     .note.gnu.property 
+   10     .eh_frame_hdr 
+   11     
+   12     .init_array .fini_array .dynamic .got 
+There are 37 section headers, starting at offset 0x5f68:
+
+Section Headers:
+  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            0000000000000000 000000 000000 00      0   0  0
+  [ 1] .interp           PROGBITS        0000000000400318 000318 00001c 00   A  0   0  1
+  [ 2] .note.gnu.property NOTE            0000000000400338 000338 000030 00   A  0   0  8
+  [ 3] .note.gnu.build-id NOTE            0000000000400368 000368 000024 00   A  0   0  4
+  [ 4] .note.ABI-tag     NOTE            000000000040038c 00038c 000020 00   A  0   0  4
+  [ 5] .gnu.hash         GNU_HASH        00000000004003b0 0003b0 000024 00   A  6   0  8
+  [ 6] .dynsym           DYNSYM          00000000004003d8 0003d8 000150 18   A  7   1  8
+  [ 7] .dynstr           STRTAB          0000000000400528 000528 0000b8 00   A  0   0  1
+  [ 8] .gnu.version      VERSYM          00000000004005e0 0005e0 00001c 02   A  6   0  2
+  [ 9] .gnu.version_r    VERNEED         0000000000400600 000600 000050 00   A  7   1  8
+  [10] .rela.dyn         RELA            0000000000400650 000650 000048 18   A  6   0  8
+  [11] .rela.plt         RELA            0000000000400698 000698 0000f0 18  AI  6  24  8
+  [12] .init             PROGBITS        0000000000401000 001000 00001b 00  AX  0   0  4
+  [13] .plt              PROGBITS        0000000000401020 001020 0000b0 10  AX  0   0 16
+  [14] .plt.sec          PROGBITS        00000000004010d0 0010d0 0000a0 10  AX  0   0 16
+  [15] .text             PROGBITS        0000000000401170 001170 00076c 00  AX  0   0 16
+  [16] .fini             PROGBITS        00000000004018dc 0018dc 00000d 00  AX  0   0  4
+  [17] .rodata           PROGBITS        0000000000402000 002000 000088 00   A  0   0  4
+  [18] .eh_frame_hdr     PROGBITS        0000000000402088 002088 000174 00   A  0   0  4
+  [19] .eh_frame         PROGBITS        0000000000402200 002200 0005a4 00   A  0   0  8
+  [20] .init_array       INIT_ARRAY      0000000000403df8 002df8 000008 08  WA  0   0  8
+  [21] .fini_array       FINI_ARRAY      0000000000403e00 002e00 000008 08  WA  0   0  8
+  [22] .dynamic          DYNAMIC         0000000000403e08 002e08 0001d0 10  WA  7   0  8
+  [23] .got              PROGBITS        0000000000403fd8 002fd8 000010 08  WA  0   0  8
+  [24] .got.plt          PROGBITS        0000000000403fe8 002fe8 000068 08  WA  0   0  8
+  [25] .data             PROGBITS        0000000000404050 003050 000018 00  WA  0   0  8
+  [26] .bss              NOBITS          0000000000404080 003068 000020 00  WA  0   0 32
+  [27] .comment          PROGBITS        0000000000000000 003068 00002d 01  MS  0   0  1
+  [28] .debug_aranges    PROGBITS        0000000000000000 003095 000090 00      0   0  1
+  [29] .debug_info       PROGBITS        0000000000000000 003125 000d57 00      0   0  1
+  [30] .debug_abbrev     PROGBITS        0000000000000000 003e7c 00044f 00      0   0  1
+  [31] .debug_line       PROGBITS        0000000000000000 0042cb 000370 00      0   0  1
+  [32] .debug_str        PROGBITS        0000000000000000 00463b 0006f1 01  MS  0   0  1
+  [33] .debug_line_str   PROGBITS        0000000000000000 004d2c 0002ac 01  MS  0   0  1
+  [34] .symtab           SYMTAB          0000000000000000 004fd8 0008d0 18     35  20  8
+  [35] .strtab           STRTAB          0000000000000000 0058a8 00054f 00      0   0  1
+  [36] .shstrtab         STRTAB          0000000000000000 005df7 00016f 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
+  L (link order), O (extra OS processing required), G (group), T (TLS),
+  C (compressed), x (unknown), o (OS specific), E (exclude),
+  D (mbind), l (large), p (processor specific)
+
+Relocation section '.rela.dyn' at offset 0x650 contains 3 entries:
+    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+0000000000403fd8  0000000100000006 R_X86_64_GLOB_DAT      0000000000000000 __libc_start_main@GLIBC_2.34 + 0
+0000000000403fe0  0000000800000006 R_X86_64_GLOB_DAT      0000000000000000 __gmon_start__ + 0
+0000000000404080  0000000d00000005 R_X86_64_COPY          0000000000404080 stderr@GLIBC_2.2.5 + 0
+
+Relocation section '.rela.plt' at offset 0x698 contains 10 entries:
+    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+0000000000404000  0000000200000007 R_X86_64_JUMP_SLOT     0000000000000000 strcpy@GLIBC_2.2.5 + 0
+0000000000404008  0000000300000007 R_X86_64_JUMP_SLOT     0000000000000000 puts@GLIBC_2.2.5 + 0
+0000000000404010  0000000400000007 R_X86_64_JUMP_SLOT     0000000000000000 iswxdigit@GLIBC_2.2.5 + 0
+0000000000404018  0000000500000007 R_X86_64_JUMP_SLOT     0000000000000000 printf@GLIBC_2.2.5 + 0
+0000000000404020  0000000600000007 R_X86_64_JUMP_SLOT     0000000000000000 __isoc99_swscanf@GLIBC_2.7 + 0
+0000000000404028  0000000700000007 R_X86_64_JUMP_SLOT     0000000000000000 fprintf@GLIBC_2.2.5 + 0
+0000000000404030  0000000900000007 R_X86_64_JUMP_SLOT     0000000000000000 wprintf@GLIBC_2.2.5 + 0
+0000000000404038  0000000a00000007 R_X86_64_JUMP_SLOT     0000000000000000 __isoc99_sscanf@GLIBC_2.7 + 0
+0000000000404040  0000000b00000007 R_X86_64_JUMP_SLOT     0000000000000000 rand@GLIBC_2.2.5 + 0
+0000000000404048  0000000c00000007 R_X86_64_JUMP_SLOT     0000000000000000 __ctype_b_loc@GLIBC_2.3 + 0

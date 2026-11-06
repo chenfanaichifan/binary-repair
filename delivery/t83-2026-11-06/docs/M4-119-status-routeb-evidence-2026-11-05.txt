@@ -1,0 +1,44 @@
+# M4 record 119 status + Route B no-input V3 — evidence — 2026-11-05
+
+$ ls -l 119-m3-cwe416-noinput-contract-2026-11-05.md
+-rw-r--r--@ 1 huageorge  staff  11232 Nov  5 22:36 119-m3-cwe416-noinput-contract-2026-11-05.md
+
+$ find _m1-work/m3/fixtures/public -maxdepth 1 -type d -name '*noinput*' || true
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/119-contract.json'));print('schema:',d['schema_version'],'mode:',d.get('input_mode'),'invalid:',{k:v for k,v in d.items() if k.startswith('invalid_') or k=='max_valid_input_bytes'})"
+schema: 2 mode: none invalid: {'invalid_exit_code': 0}
+
+$ cd _m1-work/live-bridge && git status --short | head -5
+ M routeb/attempt_writer.py
+ M routeb/executor.py
+ M routeb/run_manifest_compare.py
+ M routeb/run_manifest_repaired.py
+?? routeb/contract_mode.py
+
+$ cd _m1-work/live-bridge && python3 -c "import sys;sys.path.insert(0,'.');from pathlib import Path;from routeb.contract_mode import load_contract;load_contract(Path('../../_m4-verify/119-contract.json'))"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m1-work/live-bridge/routeb/contract_mode.py", line 26, in load_contract
+    return SecurityContract.from_dict(payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m1-work/live-bridge/app/domain/contracts.py", line 305, in from_dict
+    raise ValueError(f"unknown contract fields: {sorted(unknown)}")
+ValueError: unknown contract fields: ['input_mode']
+
+$ grep -n 'exactly 1 valid case\|valid.*1/1\|not_applicable' _m1-work/live-bridge/routeb/run_manifest_compare.py _m1-work/live-bridge/routeb/run_manifest_repaired.py | head -8
+_m1-work/live-bridge/routeb/run_manifest_compare.py:64:        raise ValueError("input_mode none requires exactly 1 valid case")
+_m1-work/live-bridge/routeb/run_manifest_compare.py:88:        "invalid": "not_applicable",
+_m1-work/live-bridge/routeb/run_manifest_repaired.py:89:            raise ValueError("input_mode none requires exactly 1 valid case")
+_m1-work/live-bridge/routeb/run_manifest_repaired.py:117:            "invalid": "not_applicable",
+_m1-work/live-bridge/routeb/run_manifest_repaired.py:118:            "valid": "1/1" if ok else "0/1",
+
+$ grep -n 'def test_no_input' _m1-work/live-bridge/tests/test_run_manifest_compare.py
+64:def test_no_input_compare_is_one_of_one(tmp_path: Path, monkeypatch) -> None:
+83:def test_no_input_compare_rejects_an_invalid_manifest(tmp_path: Path) -> None:
+
+$ cd _m1-work/live-bridge && python3 -m pytest tests/test_run_manifest_compare.py -q 2>&1 | tail -2
+.....                                                                    [100%]
+
+$ cd _m1-work/live-bridge && python3 -c "import json;from app.domain.contracts import SecurityContract;c=SecurityContract.from_dict(json.load(open('fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json')));print(c.sha256(), c.sha256()=='24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37')"
+24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37 True
+

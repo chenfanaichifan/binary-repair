@@ -1,0 +1,107 @@
+# 126 — Lead V4 data-model decision: evidence
+
+Prepared: 2026-11-06T02:44:27Z  Host: Darwin 22.6.0 arm64
+Branch under test: origin/m3/cwe416-v3-noinput (8556d9e)
+Reading tree: _m3-run @ 6ce16ac (origin/m3/cwe122-fixture-build)
+
+## A. Scope: V4 is model, never machine code
+$ git show origin/m3/cwe416-v3-noinput:app/domain/scopes.py | sed -n '13,15p;27p'
+The mapping is deliberately conservative: a check never claims a stronger scope
+than the evidence it reads. ``V4 symbolic`` is ``model`` even when it passes,
+which is exactly why a passing V4 alone cannot be read as machine-level proof.
+    "symbolic": "model",
+
+## B. Writer hardcodes V4 (both writers)
+$ git show origin/m3/cwe416-v3-noinput:routeb/attempt_writer.py | sed -n '216,223p;233p'
+    results = {
+        "V0": "passed" if identity else "failed",
+        "V1": "passed" if structure else "failed" if (bundle / "audit.json").exists() else "not_run",
+        "V2": "not_run",
+        "V3": runtime_state,
+        "V4": "not_run",
+        "V5": repro_state,
+    }
+        "V4": "symbolic check not run",
+
+$ git show origin/m3/cwe416-v3-noinput:app/services/attempt_writer.py | sed -n '175,181p'
+        "V0": "not_run",
+        "V1": "not_run",
+        "V2": "not_run",
+        "V3": "not_run",
+        "V4": "not_run",
+        "V5": "not_run",
+    }
+
+## C. No code assigns V4 from an artifact
+$ git grep -n 'results\["V4"\]' origin/m3/cwe416-v3-noinput   # expected: no output
+(no hits)
+
+## D. Producer stub hardcodes state and gate result
+$ git show origin/m3/cwe416-v3-noinput:docs/handoffs/evidence/cwe416-candidate-2026-11-05/tools/write_bundle_meta.py | sed -n '136,153p;182,184p'
+    v4 = {
+        "gate": "V4",
+        "kind": "symbolic",
+        "scope": "model",
+        "state": "not_run",
+        "ran": False,
+        "reason": (
+            "no symbolic or bounded-model engine was run in this window; the five-byte "
+            "edit has no model-level proof, and a replay result cannot be upgraded to one"
+        ),
+        "claimed_scope": None,
+        "not_claimed": [
+            "binary-level proof of the repair",
+            "memory-safety for any path other than the single no-input observation",
+            "absence of the defect in the rest of the program",
+        ],
+    }
+    (args.out_dir / "v4-symbolic.json").write_text(json.dumps(v4, indent=2) + "\n", encoding="utf-8")
+            {"gate": "V4", "kind": "symbolic", "scope": "model", "file": "v4-symbolic.json",
+             "result": "not_run",
+             "detail": "no symbolic engine ran; not a binary-level claim"},
+
+## E. Documented as unimplemented
+$ git show origin/m3/cwe416-v3-noinput:docs/route-b/22-routeb-attempt-bundle.md | sed -n '100p'
+| V4 symbolic | `not_run` | not implemented |
+
+## F. Acceptance: required NOT_RUN forces inconclusive
+$ git show origin/m3/cwe416-v3-noinput:app/domain/acceptance.py | sed -n '74,80p'
+    if obligation.result is CheckResult.NOT_RUN:
+        return Verdict(
+            outcome=Outcome.INCONCLUSIVE,
+            reason=ReasonCode.REQUIRED_CHECK_NOT_RUN,
+            failing_obligation=obligation.kind,
+            detail=obligation.detail,
+        )
+
+$ git show origin/m3/cwe416-v3-noinput:app/services/orchestration.py | sed -n '24,31p'
+GATES: tuple[tuple[str, str, bool], ...] = (
+    ("V0", "identity", True),
+    ("V1", "structure", True),
+    ("V2", "interface", True),
+    ("V3", "behaviour", True),
+    ("V4", "symbolic", True),
+    ("V5", "reproducibility", True),
+)
+
+## G. The 124 V4 artefact as shipped
+$ cat _m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/v4-symbolic.json
+{
+  "gate": "V4",
+  "kind": "symbolic",
+  "scope": "model",
+  "state": "not_run",
+  "ran": false,
+  "reason": "no symbolic or bounded-model engine was run in this window; the five-byte edit has no model-level proof, and a replay result cannot be upgraded to one",
+  "claimed_scope": null,
+  "not_claimed": [
+    "binary-level proof of the repair",
+    "memory-safety for any path other than the single no-input observation",
+    "absence of the defect in the rest of the program"
+  ]
+}
+
+## H. Line-number note
+The assignment cites attempt_writer.py:221; that is routeb/attempt_writer.py on origin/m3/cwe416-v3-noinput.
+The controller-side writer app/services/attempt_writer.py:179 carries the same literal,
+so the gap is in both writers, not one.

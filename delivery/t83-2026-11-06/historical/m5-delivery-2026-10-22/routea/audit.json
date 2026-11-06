@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "redirect_bytes": true,
+    "cave_code": true,
+    "message_bytes": true,
+    "harness_unchanged": true,
+    "no_new_segments": true,
+    "relocations_unchanged": true,
+    "no_wx": true,
+    "rx_extended": true
+  },
+  "pass": true,
+  "original_size": 26792,
+  "patched_size": 26792
+}

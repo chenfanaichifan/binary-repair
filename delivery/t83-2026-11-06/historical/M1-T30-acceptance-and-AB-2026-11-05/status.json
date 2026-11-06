@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "record": "106-m1-t30-acceptance-and-ab-decision-2026-11-05",
+  "date": "2026-11-05",
+  "branch": "m1/t30-acceptance-ab-2026-11-05",
+  "commit": "fdc083d",
+  "pushed_ref": "origin/m1/t30-acceptance-ab-2026-11-05",
+  "not_a_gate_result": true,
+  "authority": "Lead ruling recorded by M1; M3 report for the rebuild; M4 source/package identity only",
+  "t30_build_trigger": {
+    "status": "PASS_WITH_LIMITATIONS",
+    "scope": "record 118 baseline rebuild: build and trigger only",
+    "accepted": {
+      "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+      "size_bytes": 25344,
+      "source_sha256": "fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e",
+      "trigger": {
+        "command": "setarch -R ./original.elf",
+        "exit_code": 0,
+        "stdout_hex": "05040a",
+        "stdout_len": 3,
+        "stderr_len": 0
+      }
+    },
+    "limitations": [
+      "M4 did not independently rebuild or re-run the trigger",
+      "the record 118 evidence package is absent from this workspace and from the repo",
+      "the guest was not available in this session",
+      "scope is gcc 13.3.0 / glibc 2.39 / the gate4-harness image",
+      "the trigger is deterministic only under setarch -R; ASLR-on gives distinct values",
+      "V1 and V5 are package self-reports, not M4-verified",
+      "the T30 ZIP is flat while README.txt names build/ paths"
+    ],
+    "promotes_v0_v5": false,
+    "promotes_t8_3": false
+  },
+  "record_116": {
+    "classification": "DIAGNOSTIC_METHOD_EVIDENCE",
+    "is_t8_3_fixture": false,
+    "original_variant_elf_in_fixture": false,
+    "original_variant_elf_ingested": false,
+    "synthetic_output_sha256": null
+  },
+  "cwe416_contract": {
+    "status": "ABSENT_UNLOADABLE",
+    "path": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/contract.json",
+    "present": false,
+    "invalid_fields_fabricated": false,
+    "reason": "contract absent; M5 v3 schema is now integrated, but the fixture still lacks build/ELF/contract/tests; no sentinel invalid_* written",
+    "measured_errors": {
+      "input_mode": "unknown contract fields: ['input_mode']",
+      "omitted_invalid_fields": "missing contract fields: ['invalid_exit_code', 'invalid_input_response', 'invalid_stderr', 'invalid_stdout']",
+      "sentinel_filled": "loads, and would bind invented semantics into the contract hash"
+    }
+  },
+  "ab_decision": {
+    "status": "CHOSEN_A",
+    "owner": "Lead",
+    "option_a": "extend SecurityContract with input_mode=none; one valid + zero invalid V3 cases; schema/hash revision; lifetime obligation required",
+    "option_b": "reselect an input-bearing public CWE416 case; no such case exists in the pinned 522-file Juliet CWE416 corpus, so B is a corpus change",
+    "m1_recommendation": "A, as a real schema revision (not sentinel values), subject to Lead approval and M5 ownership",
+    "chosen": "A",
+    "m5_schema": "M5 4c36898; common baseline canonical/m1-m5-integration @ 1430e1e (708d957); M1 merged b56b2ee",
+    "m1_adaptation": "records 108/109: intake exact 4+2 / 1+0, none must not ship invalid.json; V3 1/1 no-input with invalid N/A; SecurityContract is the authority"
+  },
+  "fork": {
+    "canonical": {
+      "ref": "origin/canonical/m1-m5-integration",
+      "head": "1938c311672282ebd1fee3634fec9aad57760769"
+    },
+    "live_bridge": {
+      "ref": "origin/integration/live-bridge-2026-11-03",
+      "head": "ddd3869018b59c74703da57f7024d5e2a518bb07"
+    },
+    "merge_base": "fba137e1512b660ab7d4b6d1e2b048422244f70f",
+    "merged": false,
+    "cwe416_src_sha256": "262dee1d39243c944a55b4b967ab6a56524977dc88a684ff0b7150cacf0b5a61",
+    "cwe416_provenance_authority": "canonical (dsp-testing/samate-c-cpp@01e353d)"
+  },
+  "t8_3": {
+    "status": "BLOCKED",
+    "reason": "no loadable CWE416 contract, no frozen tests, no candidate, no V0-V5 evidence, no M4 verification of a candidate"
+  },
+  "constraints": {
+    "main_merged": false,
+    "tag_created": false,
+    "live_success_claimed": false,
+    "candidate_created": false,
+    "v0_v5_promoted": false,
+    "fixture_bytes_changed": false
+  },
+  "updated_by": "113-m1-v3-no-input-acceptance-2026-11-05",
+  "evidence_118": {
+    "delivered": true,
+    "path": "delivery/t30-rebuild-2026-11-05/",
+    "zip_sha256": "968fb8d9a80f991567c0cdd1e082a844556ef6405ee366786e2b3b7a010fcbd5",
+    "directory_sums": "10/10",
+    "guest_sums": "5/5",
+    "conformance": "21 fields: 20 match, 1 differs by design (window.is_baseline)",
+    "files": 11,
+    "source_commit": "87f63502d0fc5679f9dd797b7adc20c2069a5d39",
+    "m4_status": "VERIFIED (rebuild evidence package)",
+    "m4_scope": "five evidence gates; no guest re-execution; no V0-V5 promotion"
+  },
+  "canonical_t30": {
+    "path": "docs/handoffs/evidence/T30/build/original.elf",
+    "remote": "git@github.com:chenfanaichifan/binary-repair.git",
+    "branch": "member-3/t62-host-safe",
+    "branch_head": "472b26ea95f8bfbc63ccaba4ef4b4233e3816d75",
+    "commit": "c274893d3cc495fd8c1cbc9e28847b565b341f7e",
+    "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "size": 25344
+  }
+}

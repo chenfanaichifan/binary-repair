@@ -1,0 +1,122 @@
+{
+  "live": {
+    "rev": "6d67140ee560ec66d5e606965d8193ae810405b1",
+    "date": "2026-11-06 15:53:15 +0800",
+    "subject": "docs(m1): record the branch alignment and the withdrawn T30 swap"
+  },
+  "canonical": {
+    "rev": "1938c311672282ebd1fee3634fec9aad57760769",
+    "subject": "docs(fixtures): name the mirror by its full URL"
+  },
+  "followup": {
+    "rev": "dc3bcd366a71b61f9d23c6562bc52dd0244d0647",
+    "parent": "1938c311672282ebd1fee3634fec9aad57760769",
+    "changed_files": [
+      "app/controller_api.py",
+      "app/services/model_calls.py",
+      "docs/handoffs/133-m5-partial-usage-merge-2026-11-06.md",
+      "tests/integration/test_ai_usage_sources.py",
+      "tests/integration/test_assistant_plan.py",
+      "tests/integration/test_contract_gaps.py"
+    ]
+  },
+  "topology": {
+    "merge_base": "1938c311672282ebd1fee3634fec9aad57760769",
+    "canonical_ahead": 0,
+    "live_ahead": 66,
+    "live_parents": [
+      "41ff540c414338931005928399358bb3241bea69"
+    ],
+    "merge_41ff540_parents": [
+      "c2170460d45010b0f074aefb2fc64ed277a073a9",
+      "3f21d317b9c61a5ed7cc5f22b233a8bad62169c2"
+    ]
+  },
+  "blobs": {
+    "model_calls.py@6d67140": "5839e11a72050467e97ab8ee2b89486e228525ae",
+    "controller_api.py@6d67140": "1e9ecb1b59494e912328173b6188e9dd299c0385",
+    "v4.py@6d67140": "7e3cd73b5895daa1be69c1c787edafb4366f1b38",
+    "model_calls.py@1938c31": "a646054d854ce4583157524b8770fe27c5822ffb"
+  },
+  "checks": [
+    {
+      "check": "aggregate_returns_partial",
+      "ok": true,
+      "detail": "aggregate_job_usage(...) -> dict[str, Any] | None with \"partial\": len(real) != len(rows)"
+    },
+    {
+      "check": "aggregate_partial_is_false_when_all_complete",
+      "ok": true,
+      "detail": "partial is the exact expression len(real) != len(rows): False when all rows carry both counts"
+    },
+    {
+      "check": "aggregate_null_rows_do_not_erase_real_usage",
+      "ok": true,
+      "detail": "no real rows -> None; mixed -> sum real + partial True; never zero-pad"
+    },
+    {
+      "check": "controller_passes_aggregate_through",
+      "ok": true,
+      "detail": "_ai_usage_for_job returns aggregate_job_usage(...) untouched when model_calls rows exist"
+    },
+    {
+      "check": "controller_does_not_rebuild_partial",
+      "ok": true,
+      "detail": "no local partial derivation before the passthrough return"
+    },
+    {
+      "check": "plan_fallback_partial_false",
+      "ok": true,
+      "detail": "legacy plan fallback returns {\"input_tokens\": ..., \"output_tokens\": ..., \"partial\": False}"
+    },
+    {
+      "check": "canonical_1938c31_lacks_partial",
+      "ok": true,
+      "detail": "1938c31 aggregate/controller carry no partial field"
+    },
+    {
+      "check": "canonical_1938c31_lacks_v4",
+      "ok": true,
+      "detail": "1938c31 has no app/domain/v4.py (V4 stack only exists on live-bridge)"
+    },
+    {
+      "check": "canonical_is_merge_base",
+      "ok": true,
+      "detail": "merge-base(1938c31, 6d67140) = 1938c311672282ebd1fee3634fec9aad57760769"
+    },
+    {
+      "check": "live_is_66_ahead_and_canonical_is_0",
+      "ok": true,
+      "detail": "rev-list --left-right --count = 0 66"
+    },
+    {
+      "check": "live_parent_is_41ff540",
+      "ok": true,
+      "detail": "6d67140 parent = 41ff540c414338931005928399358bb3241bea69"
+    },
+    {
+      "check": "41ff540_merges_c217046_and_3f21d31",
+      "ok": true,
+      "detail": "41ff540 parents = ['c2170460d45010b0f074aefb2fc64ed277a073a9', '3f21d317b9c61a5ed7cc5f22b233a8bad62169c2']"
+    },
+    {
+      "check": "partial_commits_are_on_the_live_line",
+      "ok": true,
+      "detail": "de48d6a + 165891d are ancestors of 6d67140 and not of 1938c31"
+    },
+    {
+      "check": "canonical_followup_is_partial_only",
+      "ok": true,
+      "detail": "dc3bcd3 parent=1938c311672282ebd1fee3634fec9aad57760769, changed=6 files, no app/domain/v4.py"
+    },
+    {
+      "check": "followup_differs_from_live",
+      "ok": true,
+      "detail": "dc3bcd3 and 6d67140 are siblings (1 / 66), not interchangeable"
+    }
+  ],
+  "summary": {
+    "passed": 15,
+    "failed": 0
+  }
+}

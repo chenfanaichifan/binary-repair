@@ -1,0 +1,42 @@
+# M4 e24a569 V4 residual fixes — evidence — 2026-11-06
+
+$ git -C _m1-work/live-bridge log -1 --format='%H %s'
+e24a569c64b2d4bbe2654e018a152c11946a9626 feat(m1): require property_kind for empty V4 ranges and force disclosure
+
+$ git -C _m1-work/live-bridge status --short
+
+$ grep -n 'forbidden_ranges\|property_kind\|_with_empty_disjunction_disclosure\|known_bad_rejected = ' _m4-verify/e24a569/app/domain/v4.py | head -12
+146:    forbidden_ranges: list[ForbiddenRange] | None = None
+152:    property_kind: Literal["pointer-flow", "memory-range"]
+171:        if self.property_kind != "pointer-flow" and not self.forbidden_ranges:
+173:                "only pointer-flow may leave forbidden_ranges empty; "
+214:def _with_empty_disjunction_disclosure(
+272:        known_bad_rejected = bool(known_bad_cases) and all(
+311:        property_kind = (
+360:            "property_kind": property_kind,
+381:            "not_claimed": _with_empty_disjunction_disclosure(
+
+$ cd _m4-verify/e24a569 && PYTHONPATH=. ../../role5-kit/.venv/bin/python ../../_m4-verify/probe_v4_adapter.py
+claimed_scope: model
+calibration: suite='v4_harness.py' cases=2 passed=1 failed=1 known_good=True known_bad=True known_bad_rejected=True complete=True
+exploration: initial=2 deadended=2 errored=0 unconstrained=0 deferred=0 active=0 pruned=0 complete=True unexplored=[]
+solver: engine='angr' version='10.0.4.post1' queries=4 sat=1 unsat=1 unknown=0 eval=2 timeouts=0 steps=25 max_steps=128 complete=True
+replay: command='v4_harness.py' runs=2 identical=True evidence_sha256='cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14'
+forbidden_ranges: None
+empty-disjunction in not_claimed: True
+binary-level exclusion: True
+revalidate: passed
+
+$ cd _m4-verify/e24a569 && PYTHONPATH=. ../../role5-kit/.venv/bin/python ../../_m4-verify/probe_v4_residuals.py
+converted property_kind: pointer-flow forbidden_ranges: None
+memory-range + empty ranges: REJECTED - 1 validation error for V4Evidence
+pointer-flow + empty ranges: ACCEPTED (explicit allowance)
+disclosure re-added: True
+one known-bad holds: REJECTED - 1 validation error for V4Evidence
+
+$ cd _m4-verify/e24a569 && ../../role5-kit/.venv/bin/python -m pytest tests/test_v4_evidence.py tests/test_v4_harness_adapter.py tests/integration/test_cwe416_124_ingest.py tests/integration/test_v4_bundle_gate.py -q 2>&1 | tail -2
+.........................................                                [100%]
+
+$ cd _m4-verify/e24a569 && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "from app.domain.acceptance import Obligation,decide_attempt_outcome;from app.domain.outcomes import CheckResult as C;k=['identity','structure','interface','behaviour','symbolic','reproducibility'];r=[C.PASSED,C.PASSED,C.PASSED,C.PASSED,C.NOT_RUN,C.PASSED];c='46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0';v=decide_attempt_outcome(obligations=[Obligation(kind=x,required=True,result=y) for x,y in zip(k,r)],candidate_sha256=c,expected_sha256=c,reviewed_scope_sha256='b'*64);print(v.outcome.value,getattr(v.reason,'value',v.reason),v.failing_obligation)"
+inconclusive required_check_not_run symbolic
+

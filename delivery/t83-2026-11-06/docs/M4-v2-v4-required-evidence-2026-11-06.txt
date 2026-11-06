@@ -1,0 +1,38 @@
+# M4 V2 scoring + V4 typed + required lock — evidence — 2026-11-06
+
+$ git -C _m1-work/live-bridge log --oneline -3
+e73dafc test(m1): cover persist-level V4 rejection
+f57a051 feat(m1): require typed V4 evidence and lock V2/V4 required
+3e31ee6 feat(m1): wire V2/V4 not_run through bundle, writer and acceptance
+
+$ grep -n 'FORCED_REQUIRED_GATES' _m4-verify/e73dafc/app/services/orchestration.py
+24:FORCED_REQUIRED_GATES = frozenset({"V2", "V4"})
+60:        is_required = True if gate in FORCED_REQUIRED_GATES else required.get(gate, default_required)
+
+$ grep -c 'validate_interface_report\|target_entry' _m4-verify/e73dafc/app/services/obligations.py || true
+0
+
+$ ls _m4-verify/e73dafc/app/domain/interface.py 2>&1 | tail -1
+ls: _m4-verify/e73dafc/app/domain/interface.py: No such file or directory
+
+$ git -C _m1-work/live-bridge status --short | grep '^??'
+?? app/domain/interface.py
+?? tests/test_interface_check.py
+
+$ cd _m4-verify/e73dafc && ../../role5-kit/.venv/bin/python -m pytest tests/test_v4_evidence.py tests/test_orchestration_required.py tests/integration/test_v4_bundle_gate.py tests/integration/test_cwe416_124_ingest.py -q 2>&1 | tail -3
+......................                                                   [100%]
+
+$ cd _m4-verify/e73dafc && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "from app.services.orchestration import build_obligations;obs=build_obligations({'V2':'not_run','V4':'not_run'},required={'V2':False,'V4':False});print([(o.kind,o.required,o.result.value) for o in obs])"
+[('identity', True, 'not_run'), ('structure', True, 'not_run'), ('interface', True, 'not_run'), ('behaviour', True, 'not_run'), ('symbolic', True, 'not_run'), ('reproducibility', True, 'not_run')]
+
+$ cd _m1-work/live-bridge && ../../role5-kit/.venv/bin/python -m pytest tests/test_interface_check.py -q 2>&1 | tail -2
+....                                                                     [100%]
+
+$ cd _m1-work/live-bridge && PYTHONPATH=. ../../role5-kit/.venv/bin/python ../../_m4-verify/probe_v2_validator.py
+scored: passed {'passed': 5, 'total': 5}
+scored report: ACCEPTED
+observation: REJECTED V2 report is not a schema-1 V2 report
+
+$ cd _m4-verify/e73dafc && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "from app.domain.acceptance import Obligation,decide_attempt_outcome;from app.domain.outcomes import CheckResult as C;k=['identity','structure','interface','behaviour','symbolic','reproducibility'];r=[C.PASSED,C.PASSED,C.NOT_RUN,C.PASSED,C.NOT_RUN,C.PASSED];c='46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0';v=decide_attempt_outcome(obligations=[Obligation(kind=x,required=True,result=y) for x,y in zip(k,r)],candidate_sha256=c,expected_sha256=c,reviewed_scope_sha256='b'*64);print(v.outcome.value,getattr(v.reason,'value',v.reason),v.failing_obligation)"
+inconclusive required_check_not_run interface
+

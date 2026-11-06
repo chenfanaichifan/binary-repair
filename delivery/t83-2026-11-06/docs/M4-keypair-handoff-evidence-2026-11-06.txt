@@ -1,0 +1,51 @@
+# M4 keypair / handoff / T8.3 — evidence — 2026-11-06
+
+$ date '+%Y-%m-%dT%H:%M:%S%z'
+2026-11-06T16:55:28+0800
+
+$ ls -l _m4-verify/keys/m4_guest_ed25519 _m4-verify/keys/m4_guest_ed25519.pub
+-rw-------@ 1 huageorge  staff  419 Nov  6 16:54 _m4-verify/keys/m4_guest_ed25519
+-rw-r--r--@ 1 huageorge  staff  108 Nov  6 16:54 _m4-verify/keys/m4_guest_ed25519.pub
+
+$ ssh-keygen -lf _m4-verify/m4_guest_key.pub
+256 SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q m4-guest-replay-2026-11-06 (ED25519)
+
+$ shasum -a 256 _m4-verify/m4_guest_key.pub
+ab8fbd7dc23bf900dc1597da8025a689feed55f77275c87869e55fa4dca5a703  _m4-verify/m4_guest_key.pub
+
+$ ssh -i _m4-verify/keys/m4_guest_ed25519 -o BatchMode=yes -o ConnectTimeout=5 m4verify@192.168.30.128 'echo ok' 2>&1 | tail -2
+ssh: connect to host 192.168.30.128 port 22: Operation timed out
+
+$ nc -z -G 3 192.168.30.128 22; echo nc_exit=$?
+nc_exit=1
+
+# handoff integrity
+$ cd _m4-verify/m3-handoff-ea5cc9e/M4-v4-handoff-2026-11-06 && shasum -a 256 -c SHA256SUMS 2>&1 | tail -14
+README.md: OK
+expected/harness-output.expected.json: OK
+expected/selfcheck.expected.json: OK
+inputs/candidate.elf: OK
+inputs/contract.json: OK
+inputs/original.elf: OK
+inputs/v4_harness.py: OK
+run_e2e.sh: OK
+run_selfcheck.sh: OK
+scripts/selfcheck.py: OK
+scripts/summarize_output.py: OK
+verify_all.sh: OK
+
+$ cd _m4-verify/m3-handoff-ea5cc9e/M4-v4-handoff-2026-11-06 && shasum -a 256 inputs/candidate.elf inputs/original.elf inputs/contract.json expected/harness-output.expected.json
+46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0  inputs/candidate.elf
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  inputs/original.elf
+8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b  inputs/contract.json
+9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c  expected/harness-output.expected.json
+
+# T8.3
+$ python3 -c "import json;d=json.load(open('_m4-verify/m3-handoff-ea5cc9e/T8.3-evidence-2026-11-06/gates/gate-index.json'));print('blocked:',d['blocked']);print('gates:',[(g['gate'],g['state']) for g in d['gates']])"
+blocked: {'T8.3': 'blocked', 'not_done_by_M3': ['verified_by', 'V4 pass', 'T8.3 completion', 'a second sample'], 'on': 'M4 independent replay (V4) and M4/Lead acceptance of the second sample'}
+gates: [('V0', 'passed'), ('V1', 'passed'), ('V2', 'passed'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+
+# 124
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

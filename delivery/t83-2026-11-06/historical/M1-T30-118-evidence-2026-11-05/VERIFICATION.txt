@@ -1,0 +1,65 @@
+# Record 118 evidence: verification run by M1 on 2026-11-05
+# Source: origin/m3/cwe122-fixture-build @ 87f6350
+
+## top-level zip hash
+968fb8d9a80f991567c0cdd1e082a844556ef6405ee366786e2b3b7a010fcbd5  M3-t30-rebuild-evidence-2026-11-05.zip
+declared:
+968fb8d9a80f991567c0cdd1e082a844556ef6405ee366786e2b3b7a010fcbd5  M3-t30-rebuild-evidence-2026-11-05.zip
+
+## zip contents
+Archive:  M3-t30-rebuild-evidence-2026-11-05.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+     1806  11-05-2026 14:17   t30-rebuild-2026-11-05/00-window-host.txt
+     1690  11-05-2026 14:17   t30-rebuild-2026-11-05/01-window-and-isolation.txt
+     1333  11-05-2026 14:17   t30-rebuild-2026-11-05/02-build.txt
+    11565  11-05-2026 14:17   t30-rebuild-2026-11-05/03-readelf.txt
+     1060  11-05-2026 14:17   t30-rebuild-2026-11-05/04-trigger.txt
+     3722  11-05-2026 14:17   t30-rebuild-2026-11-05/05-asan.txt
+      413  11-05-2026 14:17   t30-rebuild-2026-11-05/06-SHA256SUMS
+    12501  11-05-2026 14:17   t30-rebuild-2026-11-05/07-rebuild.json
+     5266  11-05-2026 14:17   t30-rebuild-2026-11-05/README.md
+      813  11-05-2026 14:17   t30-rebuild-2026-11-05/SHA256SUMS
+     5561  11-05-2026 14:17   t30-rebuild-2026-11-05/collect.sh
+---------                     -------
+    45730                     11 files
+
+## directory SHA256SUMS (10/10)
+00-window-host.txt: OK
+01-window-and-isolation.txt: OK
+02-build.txt: OK
+03-readelf.txt: OK
+04-trigger.txt: OK
+05-asan.txt: OK
+06-SHA256SUMS: OK
+07-rebuild.json: OK
+README.md: OK
+collect.sh: OK
+
+## guest transport SHA256SUMS (5/5)
+01-window-and-isolation.txt: OK
+02-build.txt: OK
+03-readelf.txt: OK
+04-trigger.txt: OK
+05-asan.txt: OK
+
+## 07-rebuild conformance
+{
+ "tabulated": 21,
+ "match": 20,
+ "differs": 1,
+ "the_difference": "window.is_baseline - T30 measured uid 14 and recorded false; this run measured uid 11 and records true. That difference is the purpose of the exercise, not a deviation from it."
+}
+verdicts: {'match': 20, 'differs by design; this record supplies the baseline-clean run that build.json did not have': 1}
+trigger: {"exit_code": 0, "stdout_hex": "05040a", "stdout_len": 3, "stderr_len": 0} runs_total 251 distinct 1
+
+## c274893 git binding
+remote: git@github.com:chenfanaichifan/binary-repair.git
+branch: origin/member-3/t62-host-safe
+branch head: 472b26ea95f8bfbc63ccaba4ef4b4233e3816d75
+commit: c274893d3cc495fd8c1cbc9e28847b565b341f7e
+subject: feat(t30): CWE416 fixture built in the guest, with a deterministic trigger
+ancestor of branch: yes
+blob sha256: c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+blob size: 25344
+canonical path: docs/handoffs/evidence/T30/build/original.elf

@@ -1,0 +1,186 @@
+From 2d741d566580b4a075e9d6668f05240679247e7b Mon Sep 17 00:00:00 2001
+From: M5 <m5@example.invalid>
+Date: Fri, 6 Nov 2026 15:10:32 +0800
+Subject: [PATCH] feat(api): expose ordered gates and V3 valid/invalid summary
+
+---
+ app/controller_api.py           | 101 ++++++++++++++++++++++++++++++++
+ tests/test_evidence_endpoint.py |  46 +++++++++++++++
+ 2 files changed, 147 insertions(+)
+
+diff --git a/app/controller_api.py b/app/controller_api.py
+index b74e5ee..17c7099 100644
+--- a/app/controller_api.py
++++ b/app/controller_api.py
+@@ -1168,6 +1168,105 @@ def retry(run_id: str, body: RetryRequest) -> dict[str, Any]:
+     }
+ 
+ 
++_GATE_BY_KIND = {
++    "identity": "V0",
++    "structure": "V1",
++    "interface": "V2",
++    "behaviour": "V3",
++    "symbolic": "V4",
++    "reproducibility": "V5",
++}
++_GATE_ORDER = {gate: index for index, gate in enumerate(("V0", "V1", "V2", "V3", "V4", "V5"))}
++
++
++def _gate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    """Render the persisted rows as V0-V5 rows for API consumers."""
++    return [
++        {
++            "gate": _GATE_BY_KIND.get(row["kind"], row["kind"]),
++            "kind": row["kind"],
++            "scope": row["scope"],
++            "required": row["required"],
++            "result": row["result"],
++            "detail": row["detail"],
++            "evidence_artifact_id": row["evidence_artifact_id"],
++        }
++        for row in rows
++    ]
++
++
++def _sorted_gate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    return sorted(rows, key=lambda row: _GATE_ORDER.get(row["gate"], len(_GATE_ORDER)))
++
++
++def _v3_counts_from_artifact(
++    row: dict[str, Any], *, data_dir: str | Path
++) -> tuple[int | None, int | None, int | None, int | None, str | None]:
++    """Return valid/invalid passed/total from the V3 artifact.
++
++    Missing artifact or an unrecognised manifest yields ``None`` for each
++    count; the endpoint never invents zero from an absent file.
++    """
++    artifact_id = row.get("evidence_artifact_id")
++    if not artifact_id:
++        return None, None, None, None, None
++    artifact = jobs.get_artifact(artifact_id, data_dir=data_dir)
++    if artifact is None:
++        return None, None, None, None, None
++    root = Path(data_dir).resolve()
++    path = (root / artifact["relative_path"]).resolve()
++    try:
++        path.relative_to(root)
++    except ValueError:
++        return None, None, None, None, None
++    try:
++        payload = json.loads(path.read_text(encoding="utf-8"))
++    except (OSError, ValueError):
++        return None, None, None, None, None
++    cases = payload.get("cases")
++    if not isinstance(cases, list):
++        cases = payload.get("tests")
++    if not isinstance(cases, list):
++        return None, None, None, None, None
++    valid = [case for case in cases if isinstance(case, dict) and case.get("kind") == "valid"]
++    invalid = [case for case in cases if isinstance(case, dict) and case.get("kind") == "invalid"]
++    if not valid and not invalid:
++        return None, None, None, None, None
++    valid_passed = sum(1 for case in valid if case.get("ok") is True or case.get("passed") is True)
++    invalid_passed = sum(1 for case in invalid if case.get("ok") is True or case.get("passed") is True)
++    detail = row.get("detail") or ""
++    mode_match = re.search(r"input_mode\s*=\s*(none|argv|stdin)", detail)
++    return (
++        valid_passed,
++        len(valid),
++        invalid_passed,
++        len(invalid),
++        mode_match.group(1) if mode_match else None,
++    )
++
++
++def _v3_summary(rows: list[dict[str, Any]], *, data_dir: str | Path) -> dict[str, Any] | None:
++    row = next((item for item in rows if item["kind"] == "behaviour"), None)
++    if row is None:
++        return None
++    valid_passed, valid_total, invalid_passed, invalid_total, mode = _v3_counts_from_artifact(
++        row, data_dir=data_dir
++    )
++    if mode is None:
++        mode_match = re.search(r"input_mode\s*=\s*(none|argv|stdin)", row.get("detail") or "")
++        mode = mode_match.group(1) if mode_match else None
++    invalid_applicable = None if invalid_total is None else invalid_total > 0
++    return {
++        "gate": "V3",
++        "kind": "behaviour",
++        "result": row["result"],
++        "input_mode": mode,
++        "valid": {"passed": valid_passed, "total": valid_total},
++        "invalid": {"passed": invalid_passed, "total": invalid_total},
++        "invalid_applicable": invalid_applicable,
++    }
++
++
+ @app.get("/api/attempts/{attempt_id}/evidence")
+ def attempt_evidence(attempt_id: str) -> dict[str, Any]:
+     attempt = jobs.get_attempt(attempt_id, data_dir=_data_dir())
+@@ -1184,6 +1283,8 @@ def attempt_evidence(attempt_id: str) -> dict[str, Any]:
+         "failing_obligation": attempt.failing_obligation,
+         "detail": attempt.detail,
+         "evidence": _evidence_state(rows),
++        "gates": _sorted_gate_rows(_gate_rows(rows)),
++        "v3": _v3_summary(rows, data_dir=_data_dir()),
+         "obligations": _obligation_groups(rows, _route_key(attempt.route)),
+     }
+ 
+diff --git a/tests/test_evidence_endpoint.py b/tests/test_evidence_endpoint.py
+index aeb1914..cfa671f 100644
+--- a/tests/test_evidence_endpoint.py
++++ b/tests/test_evidence_endpoint.py
+@@ -351,3 +351,49 @@ def test_unknown_job_obligations_returns_404(client: TestClient) -> None:
+     response = client.get("/api/jobs/does-not-exist/obligations")
+     assert response.status_code == 404
+     assert response.json()["detail"] == "Job not found."
++
++
++def test_evidence_exposes_ordered_gates_and_v3_counts(client: TestClient) -> None:
++    job_id, run = _seed_finished_run(client, MIXED_RESULTS, key="gate-summary")
++    attempt = _route_attempt(run, "route_b")
++    data_dir = _data_dir()
++    relative = f"jobs/{job_id}/evidence/{attempt['id']}/manifest-repaired.json"
++    target = data_dir / relative
++    target.parent.mkdir(parents=True, exist_ok=True)
++    manifest = {
++        "cases": [
++            {"id": "valid-no-input", "kind": "valid", "ok": True},
++        ]
++    }
++    raw = json.dumps(manifest).encode("utf-8")
++    target.write_bytes(raw)
++    connection = connect(data_dir)
++    try:
++        with connection:
++            connection.execute(
++                "INSERT INTO artifacts (id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
++                "VALUES (?, ?, ?, ?, ?, ?, 'application/json', 'v3_manifest', '2026-11-06T00:00:00+00:00')",
++                ("art-v3-test", job_id, attempt["id"], relative, hashlib.sha256(raw).hexdigest(), len(raw)),
++            )
++            connection.execute(
++                "UPDATE obligations SET result = 'passed', evidence_artifact_id = ?, "
++                "detail = 'input_mode=none valid 1/1 invalid not_applicable' "
++                "WHERE attempt_id = ? AND kind = 'behaviour'",
++                ("art-v3-test", attempt["id"]),
++            )
++    finally:
++        connection.close()
++
++    response = client.get(f"/api/attempts/{attempt['id']}/evidence")
++    assert response.status_code == 200
++    payload = response.json()
++    assert [row["gate"] for row in payload["gates"]] == ["V0", "V1", "V2", "V3", "V4", "V5"]
++    assert payload["v3"] == {
++        "gate": "V3",
++        "kind": "behaviour",
++        "result": "passed",
++        "input_mode": "none",
++        "valid": {"passed": 1, "total": 1},
++        "invalid": {"passed": 0, "total": 0},
++        "invalid_applicable": False,
++    }
+-- 
+2.55.0
+

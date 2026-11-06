@@ -1,0 +1,45 @@
+# M4 V4 verified_by gate — evidence — 2026-11-06
+
+$ git -C _m1-work/live-bridge log -1 --format='%H %s'
+3f21d317b9c61a5ed7cc5f22b233a8bad62169c2 test(m1): prove the V4 adapter cannot set M4 verification
+
+$ git -C _m1-work/live-bridge status --short
+
+$ git -C _m1-work/live-bridge show 3f21d31:app/domain/v4.py | grep -n 'verified_by\|require_independent' | head -6
+131:    verified_by: Literal["m4"] | None = None
+411:    require_independent: bool = False,
+432:    if require_independent and evidence.replay.verified_by != "m4":
+
+$ cd _m4-verify/3f21d31 && PYTHONPATH=. ../../role5-kit/.venv/bin/python - <<'PY'
+import json
+from app.domain.v4 import validate_v4_evidence, V4EvidenceError, from_v4_harness
+p='delivery/cwe416-124-v4-rerun-2026-11-06/v4-symbolic.json'
+d=json.load(open(p))
+print('bundle v4-symbolic replay.verified_by:', d['replay'].get('verified_by'))
+for flag in (True, False):
+    try:
+        validate_v4_evidence(d, require_independent=flag)
+        print(f'require_independent={flag}: ACCEPTED')
+    except V4EvidenceError as e:
+        print(f'require_independent={flag}: REJECTED -', str(e).splitlines()[0])
+h=json.load(open('../../harness-output.json'))
+h['replay']['verified_by']='m4'
+print('forged marker -> adapter:', from_v4_harness(h).replay.verified_by)
+PY
+bundle v4-symbolic replay.verified_by: None
+require_independent=True: REJECTED - V4 is producer/ingest provisional; independent M4 replay is missing
+require_independent=False: ACCEPTED
+forged marker -> adapter: None
+
+$ cd _m4-verify/3f21d31 && ../../role5-kit/.venv/bin/python -m pytest tests/test_v4_harness_adapter.py tests/integration/test_cwe416_124_v4_rerun.py tests/integration/test_v4_bundle_gate.py -q 2>&1 | tail -2
+..............                                                           [100%]
+
+$ grep -n 'V4.*not_run\|failing_obligation\|symbolic.*not_run\|phase ==' _m4-verify/3f21d31/tests/integration/test_cwe416_124_v4_rerun.py | head -8
+66:        "V4": "not_run",
+77:    assert final.failing_obligation == "symbolic"
+88:        "symbolic": "not_run",
+91:    assert jobs.get_run(run.id, data_dir=data_dir).phase == "screening"
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/3f21d31/delivery/cwe416-124-v4-rerun-2026-11-06/bundle.json'));print('bundle V4 declaration:',d.get('gates',{}).get('V4'))"
+bundle V4 declaration: {'status': 'passed', 'artifacts': ['v4-symbolic.json']}
+

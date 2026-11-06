@@ -1,0 +1,53 @@
+# M4 287aebd V4 adapter — evidence — 2026-11-06
+
+$ git -C _m1-work/live-bridge log -1 --format='%H %s'
+287aebd29b5f1552c60296963ab96b92fef388db feat(m1): make V4Evidence the only product schema and add harness converter
+
+$ git -C _m1-work/live-bridge status --short
+ M MEMORY.md
+ M app/domain/v4.py
+ M docs/handoffs/125-m1-cwe416-124-ingest-2026-11-05.md
+ M docs/handoffs/128-m1-v4-harness-adapter-2026-11-06.md
+ M tests/test_v4_evidence.py
+ M tests/test_v4_harness_adapter.py
+
+$ grep -n 'def from_v4_harness\|def write_v4_evidence' _m4-verify/287aebd/app/domain/v4.py
+169:def write_v4_evidence(
+204:def from_v4_harness(data: object) -> V4Evidence:
+
+$ grep -n 'from_v4_harness\|V4Evidence' _m4-verify/287aebd/tools/v4_harness_to_evidence.py
+19:from app.domain.v4 import V4EvidenceError, from_v4_harness, write_v4_evidence
+25:    parser.add_argument("--output", required=True, type=Path, help="typed V4Evidence JSON")
+29:        evidence = from_v4_harness(data)
+31:    except (OSError, ValueError, json.JSONDecodeError, V4EvidenceError) as exc:
+
+$ cd _m4-verify/287aebd && PYTHONPATH=. ../../role5-kit/.venv/bin/python ../../_m4-verify/probe_v4_adapter.py
+claimed_scope: model
+calibration: suite='v4_harness.py' cases=2 passed=1 failed=1 known_good=True known_bad=True known_bad_rejected=True complete=True
+exploration: initial=2 deadended=2 errored=0 unconstrained=0 deferred=0 active=0 pruned=0 complete=True unexplored=[]
+solver: engine='angr' version='10.0.4.post1' queries=4 sat=1 unsat=1 unknown=0 eval=2 timeouts=0 steps=25 max_steps=128 complete=True
+replay: command='v4_harness.py' runs=2 identical=True evidence_sha256='cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14'
+forbidden_ranges: []
+empty-disjunction in not_claimed: True
+binary-level exclusion: True
+revalidate: passed
+
+$ cd _m4-verify/287aebd && PYTHONPATH=. ../../role5-kit/.venv/bin/python tools/v4_harness_to_evidence.py --input ../../v4-evidence.json --output /tmp/v4-symbolic.json
+{
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "claimed_scope": "model",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "output": "/tmp/v4-symbolic.json",
+  "score": {
+    "known_bad": true,
+    "known_bad_rejected": true,
+    "known_good": true
+  }
+}
+
+$ cd _m4-verify/287aebd && ../../role5-kit/.venv/bin/python -m pytest tests/test_v4_harness_adapter.py tests/test_v4_evidence.py tests/integration/test_cwe416_124_ingest.py tests/integration/test_v4_bundle_gate.py -q 2>&1 | tail -2
+..................................                                       [100%]
+
+$ cd _m4-verify/287aebd && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "from app.domain.acceptance import Obligation,decide_attempt_outcome;from app.domain.outcomes import CheckResult as C;k=['identity','structure','interface','behaviour','symbolic','reproducibility'];r=[C.PASSED,C.PASSED,C.PASSED,C.PASSED,C.NOT_RUN,C.PASSED];c='46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0';v=decide_attempt_outcome(obligations=[Obligation(kind=x,required=True,result=y) for x,y in zip(k,r)],candidate_sha256=c,expected_sha256=c,reviewed_scope_sha256='b'*64);print(v.outcome.value,getattr(v.reason,'value',v.reason),v.failing_obligation)"
+inconclusive required_check_not_run symbolic
+

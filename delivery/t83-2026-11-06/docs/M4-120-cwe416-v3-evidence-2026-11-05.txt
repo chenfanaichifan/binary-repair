@@ -1,0 +1,46 @@
+# M4 record 120 CWE416 v3 contract — evidence — 2026-11-05
+
+$ cd _m1-work/m5-schema && PYTHONPATH=. python3 -c "import json;from app.domain.contracts import SecurityContract;c=SecurityContract.from_dict(json.load(open('../../_m4-verify/120/M3-120-cwe416-v3-handoff-2026-11-05/fixture/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json')));print('schema',c.schema_version,'mode',c.input_mode);print('sha256',c.sha256());print('invalid',{k:getattr(c,k) for k in ('invalid_input_response','invalid_exit_code','invalid_stdout','invalid_stderr','max_valid_input_bytes')})"
+schema 3 mode none
+sha256 c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c
+invalid {'invalid_input_response': None, 'invalid_exit_code': None, 'invalid_stdout': None, 'invalid_stderr': None, 'max_valid_input_bytes': None}
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/120/M3-120-cwe416-v3-handoff-2026-11-05/fixture/CWE416_Use_After_Free__malloc_free_char_01_noinput/defect.json'));print('trigger_case:',d.get('trigger_case'));print('trigger_note:',d.get('trigger_note'))"
+trigger_case: None
+trigger_note: no invalid trigger case exists: bad() takes no arguments and the use-after-free is unconditional, so there is nothing to reject. The one valid case is the whole test surface.
+
+$ python3 -c "import json,os;F='_m4-verify/120/M3-120-cwe416-v3-handoff-2026-11-05/fixture/CWE416_Use_After_Free__malloc_free_char_01_noinput';print('valid cases:',len(json.load(open(F+'/tests/valid.json'))['tests']));print('invalid.json exists:',os.path.exists(F+'/tests/invalid.json'))"
+valid cases: 1
+invalid.json exists: False
+
+$ cd _m1-work/live-bridge && python3 tools/fixture_intake.py --check ../../_m4-verify/120/M3-120-cwe416-v3-handoff-2026-11-05/fixture/CWE416_Use_After_Free__malloc_free_char_01_noinput; echo exit=$?
+OK
+exit=0
+
+$ cd _m4-verify/120/M3-120-cwe416-v3-handoff-2026-11-05 && shasum -a 256 -c SHA256SUMS | tail -6
+fixture/CWE416_Use_After_Free__malloc_free_char_01_noinput/support/io.c: OK
+fixture/CWE416_Use_After_Free__malloc_free_char_01_noinput/support/std_testcase.h: OK
+fixture/CWE416_Use_After_Free__malloc_free_char_01_noinput/support/std_testcase_io.h: OK
+fixture/CWE416_Use_After_Free__malloc_free_char_01_noinput/tests/SHA256SUMS: OK
+fixture/CWE416_Use_After_Free__malloc_free_char_01_noinput/tests/valid.json: OK
+INDEX.md: OK
+
+$ cd _m4-verify/120/M3-120-cwe416-v3-handoff-2026-11-05/evidence/cwe416-v3-2026-11-05 && shasum -a 256 -c SHA256SUMS | tail -4
+06-hashes.txt: OK
+07-tests.txt: OK
+08-alias.txt: OK
+README.md: OK
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/120/M3-120-cwe416-v3-handoff-2026-11-05/fixture/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json'));print('zip contract keys:',sorted(d));print('invalid-ish:',{k:v for k,v in d.items() if k.startswith('invalid_') or k=='max_valid_input_bytes'})"
+zip contract keys: ['allowed_calls', 'authorized_edits', 'capacity_includes_terminator', 'dest_capacity_bytes', 'environment_assumptions', 'forbidden_behavior', 'input_mode', 'required_obligations', 'schema_version', 'target_entry', 'target_signature', 'valid_behavior', 'valid_domain']
+invalid-ish: {}
+
+$ python3 -c "import json;d=json.load(open('_m3-run/fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json'));print('in-tree schema:',d.get('schema_version'),'mode:',d.get('input_mode'),'invalid:',{k:v for k,v in d.items() if k.startswith('invalid_') or k=='max_valid_input_bytes'})"
+in-tree schema: 2 mode: none invalid: {'invalid_exit_code': 0}
+
+$ shasum -a 256 _m3-run/fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json
+c5d8ed77c389d0ed9c6a2e9c9abda15e598a0a54d6a36fecaafe0b1a1e8e769a  _m3-run/fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json
+
+$ cd _m1-work/m5-schema && PYTHONPATH=. python3 -c "import json;from app.domain.contracts import SecurityContract;c=SecurityContract.from_dict(json.load(open('../../_m1-work/live-bridge/docs/handoffs/evidence/V3-no-input-2026-11-05/contract.json')));print('docs-evidence canonical:',c.sha256())"
+docs-evidence canonical: 41170c432f3952a92415e8a5b0b962bec111eff80e1ae22f0e639d530092e6a7
+

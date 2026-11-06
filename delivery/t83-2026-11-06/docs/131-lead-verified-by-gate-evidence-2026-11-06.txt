@@ -1,0 +1,68 @@
+# 131 — Lead verified_by gate: evidence
+
+Prepared: 2026-11-06T06:02:26Z  Host: Darwin 22.6.0 arm64
+Tree: _m4-verify/3f21d31 (HEAD 3f21d317b9c61a5ed7cc5f22b233a8bad62169c2)
+Interpreter: 3.11.8 pydantic 2.14.1
+
+## A. The marker field, the validator, and its refusal
+$ sed -n '406,412p;432,437p' app/domain/v4.py
+    def validate_v4_evidence(
+        data: object,
+        *,
+        candidate_sha256: str | None = None,
+        original_sha256: str | None = None,
+        require_independent: bool = False,
+    ) -> V4Evidence:
+    ...
+        if require_independent and evidence.replay.verified_by != "m4":
+            raise V4EvidenceError(
+                "V4 is producer/ingest provisional; independent M4 replay is missing"
+            )
+        return evidence
+    
+
+## B. Production callers
+$ grep -n 'require_independent=True' tools/route_bundle_ingest.py app/services/obligations.py
+/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m4-verify/3f21d31/tools/route_bundle_ingest.py:363:                        require_independent=True,
+/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m4-verify/3f21d31/app/services/obligations.py:160:                        require_independent=True,
+
+## C. The adapter builds replay without the marker key
+$ sed -n '374,379p' app/domain/v4.py
+                    "runs": runs,
+                    "identical": identical,
+                    "evidence_sha256": evidence_sha256,
+                },
+                "claimed_scope": data["claimed_scope"],
+                "not_claimed": _with_empty_disjunction_disclosure(
+
+## D. Measured gate behavior on the shipped rerun evidence
+$ python - <<'PY'
+state: passed | ran: True | scope: model | replay.verified_by: None
+require_independent=True: REJECTED - V4 is producer/ingest provisional; independent M4 replay is missing
+require_independent=False: ACCEPTED
+forged marker through adapter -> None
+hand-added marker in the product file, require_independent=True: ACCEPTED
+
+## E. The bundle declares V4 passed
+$ python -c "...['gates']['V4']"
+{'status': 'passed', 'artifacts': ['v4-symbolic.json']}
+
+## F. Tests
+$ python -m pytest -q tests/test_v4_harness_adapter.py tests/test_v4_evidence.py
+.......................................                                  [100%]
+$ python -m pytest -q tests/integration/test_v4_bundle_gate.py
+...                                                                      [100%]
+
+## G. Producer dossier facts (what M4 must reproduce)
+candidate_sha256 : 46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0
+original_sha256  : c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+contract_sha256  : 8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b
+entry_address    : 0x4012aa
+engine           : {'angr': '10.0.4.post1', 'claripy': 'bundled with angr', 'python': '3.12.3'}
+replay           : {'command': 'v4_harness.py', 'evidence_sha256': 'cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14', 'identical': True, 'runs': 2}
+calibration      : {'cases': 2, 'complete': True, 'failed': 1, 'known_bad': True, 'known_bad_rejected': True, 'known_good': True, 'passed': 1, 'suite': 'v4_harness.py'}
+solver_accounting: {'complete': True, 'engine': 'angr', 'eval': 2, 'max_steps': 128, 'queries': 4, 'sat': 1, 'steps': 25, 'timeouts': 0, 'unknown': 0, 'unsat': 1, 'version': '10.0.4.post1'}
+
+## H. Note
+The gate is an operator marker, not a signature: the last measured line of
+section D is that limitation, and record 131 section 2 states it.

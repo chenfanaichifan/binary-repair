@@ -1,0 +1,27 @@
+# M4 status lock evidence — contract/intake PASS, end-to-end PARTIAL — 2026-11-05
+
+$ git -C _m1-work/live-bridge log --oneline -3
+7c279a1 feat(m5): add v3 no-input contract mode
+1b08ae5 feat(intake): accept the CWE416 no-input contract shape (M5 option A)
+4c73f87 docs(m1): point record 106 at the delivered evidence, not a future delivery
+
+$ git -C _m1-work/m5-schema log --oneline -3
+4c36898 feat(m5): add v3 no-input contract mode
+9940c64 fix(m5): include attempt-bound usage and mark partial aggregates
+af01baf feat(m5): aggregate ai_usage across job
+
+$ git -C _m1-work/live-bridge log --oneline -3 -- app/domain/acceptance.py
+1406f11 fix(acceptance): bind expected_sha256 to approved candidate, not original input
+cc29158 integration: consolidate repo layouts, merge acceptance slice, add measured evidence and controller evidence fixes
+7f967bb feat(orchestration): route V0-V5 obligations into the acceptance engine
+
+$ grep -n 'input_mode\|no_input' _m1-work/live-bridge/app/domain/acceptance.py || echo '(no no-input handling in acceptance.py)'
+(no no-input handling in acceptance.py)
+
+$ grep -n 'SecurityContract.from_dict\|no_input_valid_case_count_mismatch' _m1-work/live-bridge/tools/fixture_intake.py
+379:        SecurityContract.from_dict(data)
+552:                    "no_input_valid_case_count_mismatch",
+
+$ cd _m1-work/live-bridge && python3 -c "import json;from app.domain.contracts import SecurityContract;c=SecurityContract.from_dict(json.load(open('fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json')));print(c.sha256(), c.sha256()=='24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37')"
+24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37 True
+

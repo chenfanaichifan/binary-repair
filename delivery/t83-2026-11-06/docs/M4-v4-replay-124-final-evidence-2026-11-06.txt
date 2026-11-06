@@ -1,0 +1,53 @@
+# M4 V4 replay attempt + 124 final — evidence — 2026-11-06
+
+# host angr
+$ python3 -c 'import angr' 2>&1 | tail -1
+ModuleNotFoundError: No module named 'angr'
+
+$ role5-kit/.venv/bin/python -c 'import angr' 2>&1 | tail -1
+ModuleNotFoundError: No module named 'angr'
+
+$ ls ~/anaconda3/pkgs | grep -i angr | head || echo '(no conda angr)'
+
+# guest
+$ ping -c 1 -W 1000 192.168.30.128 2>&1 | tail -2
+--- 192.168.30.128 ping statistics ---
+1 packets transmitted, 0 packets received, 100.0% packet loss
+
+$ ssh -o BatchMode=yes -o ConnectTimeout=5 lab@192.168.30.128 'true' 2>&1 | tail -1
+ssh: connect to host 192.168.30.128 port 22: Operation timed out
+
+# adapter replay
+$ cd _m4-verify/c41de41 && PYTHONPATH=. ../../role5-kit/.venv/bin/python tools/v4_harness_to_evidence.py --input ../../harness-output.json --output /tmp/v4-replayed.json
+{
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "claimed_scope": "model",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "output": "/tmp/v4-replayed.json",
+  "score": {
+    "known_bad": true,
+    "known_bad_rejected": true,
+    "known_good": true
+  }
+}
+
+$ cd _m4-verify/c41de41 && diff <(python3 -m json.tool /tmp/v4-replayed.json) <(python3 -m json.tool ../../v4-symbolic.json) && echo IDENTICAL
+IDENTICAL
+
+$ cd _m4-verify/c41de41 && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "import json;from app.domain.v4 import validate_v4_evidence;e=validate_v4_evidence(json.load(open('../../v4-symbolic.json')));print('OK',e.property_kind,e.claimed_scope,e.calibration.cases,e.calibration.passed,e.calibration.failed,e.calibration.known_bad_rejected,e.exploration_accounting.complete,e.solver_accounting.complete)"
+OK pointer-flow model 2 1 1 True True True
+
+# harness output (recorded)
+$ python3 -c "import json;d=json.load(open('harness-output.json'));print('candidate',d['candidate_sha256']);print('original',d['original_sha256']);print('cases',[(c['kind'],c['observed'],c['solver']) for c in d['cases']]);print('replay',d['replay'])"
+candidate 46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0
+original c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+cases [('known_good', 'holds', {'eval': 1, 'sat': 0, 'timeouts': 0, 'unknown': 0, 'unsat': 1}), ('known_bad', 'violated', {'eval': 1, 'sat': 1, 'timeouts': 0, 'unknown': 0, 'unsat': 0})]
+replay {'digests': ['cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14', 'cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14'], 'identical': True, 'runs': 2}
+
+# 124
+$ cd _m4-verify/c41de41 && ../../role5-kit/.venv/bin/python -m pytest tests/integration/test_cwe416_124_ingest.py -q 2>&1 | tail -2
+.                                                                        [100%]
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

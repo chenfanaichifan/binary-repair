@@ -1,0 +1,84 @@
+# 132 — Lead environment and PIE decision: evidence
+
+Prepared: 2026-11-06T08:43:15Z  Host: Darwin 22.6.0 arm64
+
+## A. Environment handed to M4: absent
+$ ls /opt/angr-venv
+ls: /opt/angr-venv: No such file or directory
+$ /opt/angr-venv/bin/python --version
+bash: line 9: /opt/angr-venv/bin/python: No such file or directory
+$ which -a python3.12
+(none)
+$ python3 --version
+Python 3.11.8
+$ python3 -c 'import angr'
+ModuleNotFoundError: No module named 'angr'
+$ ping -c1 -W 2000 192.168.30.128
+
+--- 192.168.30.128 ping statistics ---
+1 packets transmitted, 0 packets received, 100.0% packet loss
+$ find . -maxdepth 6 \( -name selfcheck.py -o -name run_selfcheck.sh \)
+(no output above = not shipped)
+
+## B. CWE122: the recipe disagrees with the artefact
+$ sed -n '6,7p' _m3-run/fixtures/public/CWE122_c_CWE129_fgets_01/build.sh
+    cd "$(dirname "$0")"
+    gcc -O0 -g -DINCLUDEMAIN -DOMITGOOD -I support src.c support/io.c -o original.elf
+$ json.load(build.json)['build']['argv'] / ['output']
+argv  : ['gcc', '-O0', '-g', '-fno-pie', '-no-pie', '-DINCLUDEMAIN', '-DOMITGOOD', '-I', 'support', '-o', 'original.elf', 'src.c', 'support/io.c']
+flags : ['-O0', '-g', '-fno-pie', '-no-pie', '-DINCLUDEMAIN', '-DOMITGOOD']
+output: {'path': 'original.elf', 'sha256': 'c9ddb9c257a81d97a32e3026eacfd2e3453b41bebbaab36e53505e47421c4915'}
+
+$ file _m3-run/fixtures/public/CWE122_c_CWE129_fgets_01/original.elf
+/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m3-run/fixtures/public/CWE122_c_CWE129_fgets_01/original.elf: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=d20d06a318db38244718180543627b69b3b3083e, for GNU/Linux 3.2.0, with debug_info, not stripped
+
+$ e_type + size + sha256 of that artefact
+e_type 2 (2=EXEC, 3=DYN)
+size   26344
+sha256 c9ddb9c257a81d97a32e3026eacfd2e3453b41bebbaab36e53505e47421c4915
+
+$ grep -n original_sha256 .../tests/valid.json .../tests/invalid.json
+/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m3-run/fixtures/public/CWE122_c_CWE129_fgets_01/tests/valid.json:3:  "original_sha256": "c9ddb9c257a81d97a32e3026eacfd2e3453b41bebbaab36e53505e47421c4915",
+/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m3-run/fixtures/public/CWE122_c_CWE129_fgets_01/tests/invalid.json:3:  "original_sha256": "c9ddb9c257a81d97a32e3026eacfd2e3453b41bebbaab36e53505e47421c4915",
+
+$ grep -n -i 'non-PIE' .../contract.json
+12:    "Linux x86-64 non-PIE guest",
+
+## C. The sibling recipe, and the fixture without a recipe
+$ grep -n 'gcc ' _m3-run/fixtures/public/CWE416_..._noinput/build.sh
+43:gcc -O0 -g -fno-stack-protector -fno-pie -no-pie -Wall \
+
+$ e_type of the CWE416 and CWE121 artefacts
+CWE416_Use_After_Free__malloc_free_char_01_noinput: e_type 2 | 25344 B | c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+CWE121_src_char_declare_cpy_51b: e_type 2 | 26792 B | aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393
+
+$ ls _m3-run/fixtures/public/CWE121_src_char_declare_cpy_51b
+contract.json
+original.elf
+tests
+
+## D. Intake checks the ELF magic only
+$ sed -n '150,156p' _m3-run/tools/fixture_intake.py
+        with (root / "original.elf").open("rb") as handle:
+            magic = handle.read(4)
+        if magic != b"\x7fELF":
+            findings.append(
+                Finding("not_elf", "original.elf", f"magic is {magic!r}, expected b'\\x7fELF'")
+            )
+            return None
+
+$ grep -n -i 'pie\|e_type\|DYN' _m3-run/tools/fixture_intake.py
+(no hits — no ELF-type check)
+
+## E. Record 117 already measured the PIE alternative
+$ grep -n 'd50641cb\|c9ddb9c2' _m3-run/docs/handoffs/117-*.md | head -5
+18:  c9ddb9c257a81d97a32e3026eacfd2e3453b41bebbaab36e53505e47421c4915   (26344 bytes)
+47:sha256    d50641cb6c87e22350fc78952c70bbf295bd79d991edbd24c09fa06a3e62bb8a
+73:sha256    c9ddb9c257a81d97a32e3026eacfd2e3453b41bebbaab36e53505e47421c4915
+100:I pinned the **non-PIE** build (`c9ddb9c2…`) into `build.json#output.sha256` and
+110:2. Rebuild in the guest → `d50641cb6c87e22350fc78952c70bbf295bd79d991edbd24c09fa06a3e62bb8a`,
+
+## F. Note
+The CWE122 artefact is EXEC and hashes to the pin; build.sh without the two
+flags is the inconsistent piece. The PIE alternative digest in section E was
+measured by M3 in the guest, not re-measured here (no Linux gcc on this host).

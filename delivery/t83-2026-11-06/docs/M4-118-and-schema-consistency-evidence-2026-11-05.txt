@@ -1,0 +1,90 @@
+# M4 118 five-gate + M5 v3 vs M1 intake consistency — evidence — 2026-11-05
+# host: Darwin arm64
+
+$ cd M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05 && shasum -a 256 -c 06-SHA256SUMS
+01-window-and-isolation.txt: OK
+02-build.txt: OK
+03-readelf.txt: OK
+04-trigger.txt: OK
+05-asan.txt: OK
+
+$ cd M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05 && shasum -a 256 -c SHA256SUMS
+00-window-host.txt: OK
+01-window-and-isolation.txt: OK
+02-build.txt: OK
+03-readelf.txt: OK
+04-trigger.txt: OK
+05-asan.txt: OK
+06-SHA256SUMS: OK
+07-rebuild.json: OK
+README.md: OK
+collect.sh: OK
+
+$ grep -E '^exit=|^sha256=|^size=|Wuse-after-free' M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/02-build.txt
+exit=0
+sha256=c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+size=25344
+original.c:36:5: warning: pointer ‘data’ used after ‘free’ [-Wuse-after-free]
+
+$ grep -E '^(50x|200x)|distinct values' M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/04-trigger.txt
+50x exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+200x exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+distinct values among those 10 runs:
+
+$ grep -E 'boot|uptime|cwe416|^  (D|evaluator|repair-input|route-a)$' M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/01-window-and-isolation.txt
+boot                    system boot 2026-11-05 21:43
+uptime                 up 2 minutes
+no leftover from the CWE416 fixture window (that window created ~/cwe416):
+  D
+  evaluator
+  repair-input
+  route-a
+
+$ grep -E 'snapshot.current|uid = |lck' M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/00-window-host.txt
+$ grep snapshot.current BinRepair-Lab.vmsd
+  snapshot.current = "11"
+$ grep -A3 "snapshot[0-9]*.uid = \"1[14]\"" BinRepair-Lab.vmsd
+  snapshot7.uid = "11"
+  snapshot9.uid = "14"
+$ find "D:/VMs/binrepair-u2404-x64-01" -maxdepth 2 -name "*.lck" | wc -l
+(revert exit 0, snapshot.current "11", 0 locks), and the boot time that ties
+
+$ python3 _m4-verify/probe_conformance.py
+rows: 21 matched: 21
+mismatches: []
+verdict differs: ['window.is_baseline']
+summary: {'tabulated': 21, 'match': 20, 'differs': 1, 'the_difference': 'window.is_baseline - T30 measured uid 14 and recorded false; this run measured uid 11 and records true. That difference is the purpose of the exercise, not a deviation from it.'}
+
+$ git -C _m1-work/canonical log -1 --format='%H %s' c274893
+c274893d3cc495fd8c1cbc9e28847b565b341f7e feat(t30): CWE416 fixture built in the guest, with a deterministic trigger
+
+$ git -C _m1-work/canonical ls-tree -r --name-only c274893 -- docs/handoffs/evidence/T30 | wc -l
+      11
+
+$ git -C _m1-work/canonical cat-file -p c274893:docs/handoffs/evidence/T30/build/original.elf | shasum -a 256
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  -
+
+$ git -C _m1-work/canonical cat-file -s c274893:docs/handoffs/evidence/T30/build/original.elf
+25344
+
+$ git -C _m1-work/canonical cat-file -p c274893:docs/handoffs/evidence/T30/build/build.sh | shasum -a 256
+6e33c82568db9e1d98df362290064e47e9d74c4124bfb966c19f383df90e30a9  -
+
+$ shasum -a 256 _m4-verify/T30/build.sh
+53bc605fcffc909888e59c56031c2513312298589e4918ea6cae9f8bbc3c0fa8  _m4-verify/T30/build.sh
+
+$ cd _m1-work/live-bridge && python3 ../../_m4-verify/probe_intake_consistency.py
+valid_count=2 findings: []
+missing dest_capacity_bytes findings: []
+saved: /Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m4-verify/contract-missing-cap.json
+
+$ cd _m1-work/m5-schema && PYTHONPATH=. python3 -c "import json;from app.domain.contracts import SecurityContract;d=json.load(open('../../_m4-verify/contract-missing-cap.json'));SecurityContract.from_dict(d)"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m1-work/m5-schema/app/domain/contracts.py", line 308, in from_dict
+    raise ValueError(f"missing contract fields: {sorted(missing)}")
+ValueError: missing contract fields: ['allowed_calls', 'authorized_edits', 'capacity_includes_terminator', 'dest_capacity_bytes', 'environment_assumptions', 'target_entry', 'target_signature', 'valid_behavior']
+
+$ cd _m1-work/live-bridge && python3 -m pytest tests/test_fixture_intake.py -q 2>&1 | tail -2
+....................................                                     [100%]
+
