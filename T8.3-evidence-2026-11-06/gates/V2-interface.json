@@ -1,0 +1,88 @@
+{
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "checks": [
+    {
+      "id": "target_symbol_present_and_unchanged",
+      "measured": {
+        "candidate_rows": [
+          "85: 00000000004012aa 111 FUNC GLOBAL DEFAULT 15 CWE416_Use_After_Free__malloc_free_char_01_bad"
+        ],
+        "original_rows": [
+          "85: 00000000004012aa 111 FUNC GLOBAL DEFAULT 15 CWE416_Use_After_Free__malloc_free_char_01_bad"
+        ],
+        "symbol": "CWE416_Use_After_Free__malloc_free_char_01_bad"
+      },
+      "pass": true
+    },
+    {
+      "id": "dynamic_symbol_table_unchanged",
+      "measured": {
+        "candidate_count": 15,
+        "only_in_candidate": [],
+        "only_in_original": [],
+        "original_count": 15
+      },
+      "pass": true
+    },
+    {
+      "id": "needed_and_flags_unchanged",
+      "measured": {
+        "candidate": {
+          "flags": [],
+          "needed": [
+            "0x0000000000000001 (NEEDED) Shared library: [libc.so.6]"
+          ]
+        },
+        "original": {
+          "flags": [],
+          "needed": [
+            "0x0000000000000001 (NEEDED) Shared library: [libc.so.6]"
+          ]
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "entry_point_unchanged",
+      "measured": {
+        "candidate": {
+          "Entry point address": "0x4011b0",
+          "Machine": "Advanced Micro Devices X86-64",
+          "Type": "EXEC (Executable file)"
+        },
+        "original": {
+          "Entry point address": "0x4011b0",
+          "Machine": "Advanced Micro Devices X86-64",
+          "Type": "EXEC (Executable file)"
+        }
+      },
+      "pass": true
+    },
+    {
+      "id": "no_new_dynamic_import",
+      "measured": {
+        "added_undefined_symbols": [],
+        "candidate_relocations": 12,
+        "candidate_undefined_count": 14,
+        "original_relocations": 12,
+        "original_undefined_count": 14
+      },
+      "pass": true
+    }
+  ],
+  "does_not_prove": [
+    "runtime ABI conformance for callers outside this fixture",
+    "that a caller compiled against the original still links against the candidate in every case",
+    "behavioural equivalence: V2 compares the interface, V3 and V4 compare the behaviour"
+  ],
+  "gate": "V2",
+  "kind": "interface",
+  "method": "readelf -sW / --dyn-syms -W / -dW / -hW / -rW on both binaries; the extracted rows are compared as normalised text",
+  "note": "Producer-side interface measurement. Route B's attempt_writer still maps V2 to not_run (attempt_writer.py:219), so an attempt assembled from a bundle reports required_check_not_run until V2 is wired there. This file records what was measured; accepting it as a gate result is the reviewer's decision, not this script's.",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "passed": 5,
+  "schema_version": 1,
+  "scope": "binary",
+  "state": "passed",
+  "total": 5
+}

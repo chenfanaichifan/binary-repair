@@ -1,0 +1,157 @@
+WARNING  | 2026-11-06 16:22:56,990 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
+WARNING  | 2026-11-06 16:22:57,678 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
+WARNING  | 2026-11-06 16:22:58,352 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
+WARNING  | 2026-11-06 16:22:58,932 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
+{
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "cases": [
+    {
+      "binary_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+      "expected": "holds",
+      "id": "known_good",
+      "kind": "known_good",
+      "max_steps": 64,
+      "notes": [
+        "unsat comes from an empty disjunction: no free() occurs on this path, so the question is unsatisfiable rather than decided by a constraint"
+      ],
+      "observed": "holds",
+      "property_text": "a pointer passed to free() is later passed to printLine()",
+      "solver": {
+        "eval": 1,
+        "sat": 0,
+        "timeouts": 0,
+        "unknown": 0,
+        "unsat": 1
+      },
+      "states": {
+        "active": 0,
+        "deadended": 1,
+        "deferred": 0,
+        "errored": 0,
+        "initial": 1,
+        "pruned": 0,
+        "unconstrained": 0
+      },
+      "steps": 11,
+      "witness": {
+        "free_calls": 0,
+        "print_calls": 1,
+        "solver": "unsat"
+      }
+    },
+    {
+      "binary_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+      "expected": "violated",
+      "id": "known_bad",
+      "kind": "known_bad",
+      "max_steps": 64,
+      "notes": [
+        "sat witness: the same symbolic pointer reaches free() and printLine()"
+      ],
+      "observed": "violated",
+      "property_text": "a pointer passed to free() is later passed to printLine()",
+      "solver": {
+        "eval": 1,
+        "sat": 1,
+        "timeouts": 0,
+        "unknown": 0,
+        "unsat": 0
+      },
+      "states": {
+        "active": 0,
+        "deadended": 1,
+        "deferred": 0,
+        "errored": 0,
+        "initial": 1,
+        "pruned": 0,
+        "unconstrained": 0
+      },
+      "steps": 14,
+      "witness": {
+        "freed_index": 0,
+        "print_calls_seen": 1,
+        "solver": "sat",
+        "state": "deadended"
+      }
+    }
+  ],
+  "claimed_scope": "model",
+  "complete": true,
+  "contract_sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b",
+  "engine": {
+    "angr": "10.0.4.post1",
+    "claripy": "bundled with angr",
+    "python": "3.12.3"
+  },
+  "entry_address": "0x4012aa",
+  "gate": "V4",
+  "generated_by": "v4_harness.py",
+  "harness": "v4_harness",
+  "harness_schema_version": 2,
+  "hooks": [
+    {
+      "symbol": "malloc",
+      "why": "makes the one remaining nondeterminism explicit: the returned address is a fresh symbolic 64-bit value, aligned and non-null. Modelling it concretely would remove the only reason this analysis quantifies over anything."
+    },
+    {
+      "symbol": "memset",
+      "why": "recorded as a no-op. The property is about which pointer reaches printLine(), not about block contents, so writing 99 bytes at a symbolic address adds nothing but state-explosion risk."
+    },
+    {
+      "symbol": "free",
+      "why": "records the pointer argument instead of modelling the allocator. Recording is what the property needs; a model of tcache would add assumptions without adding reach."
+    },
+    {
+      "symbol": "printLine",
+      "why": "hooked to observe the argument. It never returns a verdict by itself; the comparison with the freed pointers happens in the harness, and the state is terminated after the observation. Hooking it also keeps its strlen() loop out of the exploration."
+    },
+    {
+      "symbol": "exit",
+      "why": "the malloc-null guard calls exit(). Without a hook the path would jump to an unconstrained address and be counted as an unexplored state, which would make complete=True a lie."
+    }
+  ],
+  "input_domain": "none: the entry takes no arguments, reads no stdin, opens no file; only the address returned by malloc() is symbolic",
+  "max_steps": 128,
+  "not_claimed": [
+    "a binary-level proof: this is a model-level result over the target function only",
+    "memory safety anywhere outside the target function",
+    "absence of the defect under a different allocator or a different libc",
+    "equivalence with the C source: the model reads the ELF, not the source",
+    "solver queries issued inside angr (branch and memory resolution) are not counted",
+    "a deep proof on the repaired side: its unsat is the empty-disjunction case \u2014 no free() occurs on the path \u2014 not a constraint that was solved"
+  ],
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "property_kind": "pointer-flow",
+  "property_text": "on every execution, no pointer passed to free() is later passed to printLine()",
+  "replay": {
+    "digests": [
+      "cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14",
+      "cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14"
+    ],
+    "identical": true,
+    "runs": 2
+  },
+  "solver": {
+    "eval": 2,
+    "sat": 1,
+    "timeouts": 0,
+    "unknown": 0,
+    "unsat": 1
+  },
+  "states": {
+    "active": 0,
+    "deadended": 2,
+    "deferred": 0,
+    "errored": 0,
+    "initial": 2,
+    "pruned": 0,
+    "unconstrained": 0
+  },
+  "steps": 25,
+  "target_entry": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+  "timeouts": 0,
+  "unexplored": [],
+  "unknown": 0
+}
+
+written: /tmp/h1.json

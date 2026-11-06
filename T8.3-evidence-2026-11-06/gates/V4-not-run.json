@@ -1,0 +1,19 @@
+{
+  "does_not_claim": "a binary-level proof; the producer's own scope is model",
+  "gate": "V4",
+  "kind": "symbolic",
+  "note": "Producer evidence exists in v4/v4-symbolic.json and validates through app/domain/v4.py, but the gate result here stays not_run: per docs/handoffs/62 \u00a71 the producer does not certify its own result. It leaves not_run when M4 replays the raw evidence and records replay.verified_by=\"m4\". M3 does not write that field.",
+  "producer_evidence": "v4/v4-symbolic.json",
+  "producer_evidence_sha256": "726e2654a3a847d5f08abfd468260016b61274961f1704a42b054cc3f407688c",
+  "raw_measurement": "v4/harness-output.json",
+  "raw_measurement_sha256": "9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c",
+  "schema_version": 1,
+  "scope": "model",
+  "scored": false,
+  "state": "not_run",
+  "what_it_would_take": [
+    "M4 reruns v4/v4_harness.py on candidate/original/contract from this bundle",
+    "M4 compares the replay digest with v4/harness-output.json (cb2137a2\u2026)",
+    "M4 records the result, including verified_by"
+  ]
+}

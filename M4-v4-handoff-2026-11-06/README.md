@@ -14,7 +14,7 @@ decision executable and falsifiable.
 |---|---|
 | address | `m4verify@192.168.30.128` port 22 — routable IPv4 on VMnet8, no link-local, no `%5` |
 | user | `m4verify` (uid 1004), own group, `/bin/bash`, password locked |
-| key | `dist/m4verify_id_ed25519`, fingerprint `SHA256:5JOwkAS+6WI6rTdI88Ho6J4Lly/A+lozxUhEPN21zBc` |
+| key | **yours.** Generate a keypair and send the public half to M3, who installs it with `guest/add-m4-key.sh`. No private key for this account exists in the delivery. |
 | privilege | none. `sudo` answers "a password is required"; the account is in no sudo group |
 | interpreter | `/opt/angr-venv/bin/python` — CPython 3.12.3, angr 10.0.4.post1, z3 5.1.0, readable by this user |
 
@@ -28,7 +28,7 @@ or, if you prefer a name, put this in `~/.ssh/config`:
 Host binrepair-m4
     HostName 192.168.30.128
     User m4verify
-    IdentityFile ~/keys/m4verify_id_ed25519
+    IdentityFile ~/.ssh/m4_id_ed25519
     IdentitiesOnly yes
 ```
 
@@ -40,9 +40,50 @@ moves it, ask the hypervisor rather than guessing:
 "D:/VMware/vmrun.exe" -T ws getGuestIPAddress "D:/VMs/binrepair-u2404-x64-01/BinRepair-Lab.vmx"
 ```
 
-The private key ships outside this directory on purpose: it is not in
-`SHA256SUMS`, not in the zip, and not in git. Only the public half is installed,
-at `/home/m4verify/.ssh/authorized_keys` (mode 600, owner `m4verify`).
+### Joining with your own key
+
+M4 holds the private key; M3 never does. Two steps, in this order:
+
+```sh
+# on M4's side
+ssh-keygen -t ed25519 -f ~/.ssh/m4_id_ed25519 -C "m4@verifier"
+
+# on the host that owns the VM, given M4's public key
+sudo sh guest/add-m4-key.sh /path/to/m4_id_ed25519.pub
+```
+
+`add-m4-key.sh` refuses anything that is not a single public key, appends
+idempotently, and leaves `authorized_keys` at mode 600 owned by `m4verify`. The
+account has no password and is in no sudo group, so the key is the only way in
+and it buys no privilege beyond the account.
+
+Until M4's key is installed, `authorized_keys` holds no key for this delivery at
+all — the account is reachable only by whoever M3 adds in a later window.
+
+
+## Frozen inputs (T8.3)
+
+These four paths and four digests are what T8.3 is about. Nothing in this
+delivery may substitute a different sample, a CWE121 variant, a rebuilt binary or
+a re-versioned contract.
+
+```
+fixture:   fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/
+
+original   c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9
+candidate  46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0
+contract   8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b   (file)
+           c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c   (canonical)
+source     dsp-testing/samate-c-cpp @ 01e353daa3d28a4ce2ae68904cbcde5e03e3519d
+           C/testcases/CWE416_Use_After_Free/CWE416_Use_After_Free__malloc_free_char_01.c
+           original.c fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e
+```
+
+`inputs/` here carries the original, the candidate and the contract; the
+self-check re-hashes all three on every run, so a substitution fails loudly
+rather than changing an answer. The C source is not an input to the harness — the
+model reads the ELF — but its digest is frozen above so the provenance of the
+sample can be checked independently.
 
 ## Run it
 

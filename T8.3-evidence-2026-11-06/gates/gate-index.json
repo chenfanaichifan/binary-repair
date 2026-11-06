@@ -1,0 +1,66 @@
+{
+  "V2_caveat": "V2 here is the producer-side interface measurement in gates/v2_interface.py. Route B's attempt_writer still maps V2 to not_run (attempt_writer.py:219), so an attempt assembled from this bundle reports required_check_not_run until V2 is wired there. Recording 5/5 here does not change that; it records what was measured.",
+  "blocked": {
+    "T8.3": "blocked",
+    "not_done_by_M3": [
+      "verified_by",
+      "V4 pass",
+      "T8.3 completion",
+      "a second sample"
+    ],
+    "on": "M4 independent replay (V4) and M4/Lead acceptance of the second sample"
+  },
+  "gates": [
+    {
+      "counting": "identity",
+      "evidence": "gates/V0-identity.json",
+      "gate": "V0",
+      "state": "passed"
+    },
+    {
+      "counting": "structure",
+      "evidence": "gates/V1-structure.json",
+      "gate": "V1",
+      "state": "passed"
+    },
+    {
+      "counting": "5/5",
+      "evidence": "gates/V2-interface.json",
+      "gate": "V2",
+      "state": "passed"
+    },
+    {
+      "control": "gates/V3-control-original.json",
+      "counting": "1/1",
+      "evidence": "gates/V3-behaviour.json",
+      "gate": "V3",
+      "state": "passed"
+    },
+    {
+      "counting": "not_run",
+      "evidence": "gates/V4-not-run.json",
+      "gate": "V4",
+      "state": "not_run"
+    },
+    {
+      "counting": "reproducibility",
+      "evidence": "gates/V5-reproducibility.json",
+      "gate": "V5",
+      "state": "passed"
+    }
+  ],
+  "hashes": {
+    "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+    "contract_canonical_sha256": "c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c",
+    "contract_file_sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b",
+    "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9"
+  },
+  "sample": {
+    "bug_site": "heap",
+    "cwe": "CWE-416",
+    "fixture": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/",
+    "input_mode": "none",
+    "mechanism": "lifetime"
+  },
+  "schema_version": 1
+}

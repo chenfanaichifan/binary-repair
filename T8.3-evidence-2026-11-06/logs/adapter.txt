@@ -1,0 +1,22 @@
+$ python tools/v4_harness_to_evidence.py --input v4/harness-output.json --output v4/v4-symbolic.json
+  (run from a detached worktree at c41de41, M1's tip: app/domain/v4.py + tools/)
+  adapter exit=0
+
+$ python - <<PY   (validate_v4_evidence against the two binaries)
+  validate_v4_evidence      OK, hashes bound
+  property_kind             pointer-flow
+  forbidden_ranges          None
+  calibration               cases=2 passed=1 failed=1
+                            known_good=True known_bad=True known_bad_rejected=True
+  exploration               complete=True unexplored=[]
+  solver                    queries=4 sat=1 unsat=1 unknown=0 timeouts=0
+  steps                     25/128
+  replay                    runs=2 identical=True
+  state / scope             passed / model
+  not_claimed entries:
+    - a binary-level proof: this is a model-level result over the target function only
+    - memory safety anywhere outside the target function
+    - absence of the defect under a different allocator or a different libc
+    - equivalence with the C source: the model reads the ELF, not the source
+    - solver queries issued inside angr (branch and memory resolution) are not counted
+    - a deep proof on the repaired side: its unsat is the empty-disjunction case — no free() occurs on the path — not a constraint that was solved
