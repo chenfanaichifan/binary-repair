@@ -44,6 +44,7 @@ if str(ROOT) not in sys.path:
 
 from app.db.connection import connect
 from app.domain.analysis import ANALYSIS_ROLES, AnalysisArtifacts
+from app.domain.v4 import V4EvidenceError, validate_v4_evidence
 from app.services import jobs, worker
 from tools.host_importer import import_bundle
 
@@ -275,6 +276,9 @@ def ingest(
     run = jobs.get_run(run_id, data_dir=data_dir)
     if run is None or run.job_id != job_id:
         raise IngestError("run does not belong to job")
+    job = jobs.get_job(job_id, data_dir=data_dir)
+    if job is None:
+        raise IngestError("unknown job")
     if not bundle.is_dir():
         raise IngestError("bundle must be a directory")
     if not (bundle / "bundle.json").is_file() and (bundle / "handoff.json").is_file():
@@ -289,13 +293,32 @@ def ingest(
     total = 0
     evidence: dict[str, str] = {}
     results: dict[str, str] = {}
+    details: dict[str, str] = {}
     for gate in GATES:
         entry = (manifest.get("gates") or {}).get(gate) or {}
         status = str(entry.get("status", "not_run"))
-        results[gate] = status
         names = entry.get("artifacts") or []
         if not isinstance(names, list):
             raise IngestError(f"gate {gate} artifacts must be a list")
+
+        if gate == "V4" and status == "passed":
+            json_names = [name for name in names if isinstance(name, str) and name.endswith(".json")]
+            if not json_names:
+                status = "unknown"
+                details["V4"] = "V4 passed without typed evidence; NOT VERIFIED"
+            else:
+                try:
+                    payload = json.loads(_safe_file(bundle, json_names[0]).read_text(encoding="utf-8"))
+                    validate_v4_evidence(
+                        payload,
+                        candidate_sha256=manifest["candidate_sha256"],
+                        original_sha256=job.original_sha256,
+                    )
+                except (OSError, ValueError, json.JSONDecodeError, V4EvidenceError) as exc:
+                    status = "unknown"
+                    details["V4"] = f"V4 evidence not verified: {exc}"
+
+        results[gate] = status
         ids = []
         ids_by_name: dict[str, str] = {}
         for name in names:
@@ -312,7 +335,7 @@ def ingest(
             ids_by_name[name] = artifact_id
         if status == "passed" and not ids:
             raise IngestError(f"gate {gate} passed without evidence")
-        if ids:
+        if ids and status == "passed":
             # A gate can carry several files (identity carries original, candidate,
             # manifests).  V0 is bound only by content: the candidate is the file
             # whose bytes match candidate_sha256, and its absence is a rejection.
@@ -382,8 +405,11 @@ def ingest(
         "candidate_sha256": manifest["candidate_sha256"],
         "results": results,
         "evidence": evidence,
-        "details": {"analysis_artifact_ids": analysis_ids,
-                    "legacy_result_bundle_id": supplemental_id},
+        "details": {
+            "analysis_artifact_ids": analysis_ids,
+            "legacy_result_bundle_id": supplemental_id,
+            **details,
+        },
     }
     imported = import_bundle(
         data_dir=data_dir, job_id=job_id, run_id=run_id, attempt_id=attempt_id,

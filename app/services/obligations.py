@@ -7,13 +7,17 @@ V0 falls back to the job's original artifact, every other gate must supply one.
 
 from __future__ import annotations
 
+import json
 import uuid
 from pathlib import Path
 from typing import Any, Mapping
 
 from app.db.connection import connect
+from app.domain.acceptance import Obligation
 from app.domain.evidence import verify_artifact
+from app.domain.outcomes import CheckResult
 from app.domain.scopes import scope_for_kind
+from app.domain.v4 import V4EvidenceError, validate_v4_evidence
 from app.services.orchestration import GATES, build_obligations
 
 
@@ -37,6 +41,7 @@ def persist_obligations(
     results: Mapping[str, str | Any],
     evidence: Mapping[str, str] | None = None,
     details: Mapping[str, str] | None = None,
+    candidate_sha256: str | None = None,
 ) -> int:
     """Upsert one row per V0-V5 gate for ``attempt_id``.
 
@@ -46,12 +51,61 @@ def persist_obligations(
     """
 
     evidence = evidence or {}
-    details = details or {}
+    details = dict(details or {})
     obligations = build_obligations(results)
 
     connection = connect(data_dir)
     try:
         original = _original_artifact(connection, job_id)
+        job_row = connection.execute(
+            "SELECT original_sha256 FROM jobs WHERE id = ?", (job_id,)
+        ).fetchone()
+        job_original = str(job_row["original_sha256"]) if job_row is not None else None
+
+        # A V4 passed claim is only usable when its typed evidence validates
+        # against the candidate and original. Otherwise it becomes NOT VERIFIED
+        # (unknown), never a pass just because the file hash matched.
+        for index, (gate, obligation) in enumerate(
+            zip((item[0] for item in GATES), obligations)
+        ):
+            if gate != "V4" or obligation.result is not CheckResult.PASSED:
+                continue
+            reason = None
+            artifact_id = evidence.get("V4")
+            if not artifact_id:
+                reason = "missing V4 evidence artifact"
+            elif not candidate_sha256 or not job_original:
+                reason = "candidate/original hash unavailable"
+            else:
+                try:
+                    verified = verify_artifact(
+                        data_dir=data_dir,
+                        job_id=job_id,
+                        attempt_id=attempt_id,
+                        artifact_id=str(artifact_id),
+                        gate="V4",
+                    )
+                    payload = json.loads(
+                        (Path(data_dir) / str(verified["relative_path"])).read_text(
+                            encoding="utf-8"
+                        )
+                    )
+                    validate_v4_evidence(
+                        payload,
+                        candidate_sha256=candidate_sha256,
+                        original_sha256=job_original,
+                    )
+                except (OSError, ValueError, json.JSONDecodeError, V4EvidenceError) as exc:
+                    reason = str(exc)
+            if reason is not None:
+                obligations[index] = Obligation(
+                    kind=obligation.kind,
+                    required=obligation.required,
+                    result=CheckResult.UNKNOWN,
+                    detail=f"V4 evidence not verified: {reason}",
+                )
+                details["V4"] = obligations[index].detail
+
         rows = []
         for gate, obligation in zip((item[0] for item in GATES), obligations):
             artifact_id = evidence.get(gate)

@@ -301,6 +301,7 @@ def _attempt_verdict(
         results=payload["results"],
         evidence=payload.get("evidence") or {},
         details=payload.get("details") or {},
+        candidate_sha256=payload["candidate_sha256"],
     )
     return orchestration.evaluate_attempt(
         job_id,

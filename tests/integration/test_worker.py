@@ -45,6 +45,42 @@ def _bundle_path(data_dir: Path, job_id: str, run_id: str, attempt_id: str) -> P
     return data_dir / "jobs" / job_id / "runs" / run_id / "attempts" / f"{attempt_id}.json"
 
 
+def _v4_evidence(candidate_sha256: str, original_sha256: str) -> dict:
+    return {
+        "schema_version": 1,
+        "gate": "V4",
+        "kind": "symbolic",
+        "scope": "model",
+        "state": "passed",
+        "ran": True,
+        "candidate_sha256": candidate_sha256,
+        "original_sha256": original_sha256,
+        "tool_versions": {"angr": "10.0.4.post1", "z3": "5.1.0"},
+        "preconditions": ["synthetic worker fixture"],
+        "memory_predicates": ["candidate equals original in this fixture"],
+        "forbidden_ranges": [{"start": 0, "end": 64, "reason": "synthetic range"}],
+        "hooks": ["entry"],
+        "exploration_accounting": {
+            "states_explored": 2, "states_pruned": 0, "max_depth": 2,
+            "complete": True, "unexplored": [],
+        },
+        "solver_accounting": {
+            "engine": "z3", "version": "5.1.0", "queries": 2,
+            "sat": 1, "unsat": 1, "unknown": 0, "timeouts": 0, "complete": True,
+        },
+        "calibration": {
+            "suite": "synthetic", "cases": 2, "passed": 2, "failed": 0,
+            "complete": True,
+        },
+        "replay": {
+            "command": "synthetic replay", "runs": 2, "identical": True,
+            "evidence_sha256": original_sha256,
+        },
+        "claimed_scope": "synthetic worker fixture",
+        "not_claimed": ["binary-level proof"],
+    }
+
+
 def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5) -> dict[str, str]:
     evidence: dict[str, str] = {}
     connection = connect(data_dir)
@@ -55,8 +91,17 @@ def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5) 
                 relative = f"jobs/{job_id}/evidence/{attempt_id}/{index}.bin"
                 target = data_dir / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
-                content = ((data_dir / "jobs" / job_id / "original.bin").read_bytes()
-                           if index == 1 else f"worker-evidence-{index}".encode())
+                if index == 1:
+                    content = (data_dir / "jobs" / job_id / "original.bin").read_bytes()
+                elif index == 4:
+                    original_hash = __import__("hashlib").sha256(
+                        (data_dir / "jobs" / job_id / "original.bin").read_bytes()
+                    ).hexdigest()
+                    content = json.dumps(
+                        _v4_evidence(original_hash, original_hash), sort_keys=True
+                    ).encode("utf-8")
+                else:
+                    content = f"worker-evidence-{index}".encode()
                 target.write_bytes(content)
                 digest = __import__("hashlib").sha256(target.read_bytes()).hexdigest()
                 connection.execute(
