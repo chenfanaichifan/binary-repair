@@ -1,0 +1,56 @@
+# access facts for the m4verify account — host 2026-11-06T07:13:10Z
+
+$ ipconfig | grep -A6 VMnet8 | grep IPv4
+     IPv4 Address. . . . . . . . . . . : 192.168.30.1
+
+$ ping -n 2 192.168.30.128
+      Packets: Sent = 2, Received = 2, Lost = 0 (0% loss),
+  Approximate round trip times in milli-seconds:
+      Minimum = 0ms, Maximum = 1ms, Average = 0ms
+
+$ ssh-keygen -lf m4verify_id_ed25519.pub
+  256 SHA256:5JOwkAS+6WI6rTdI88Ho6J4Lly/A+lozxUhEPN21zBc m4verify@binrepair-vm 2026-11-06 (ED25519)
+
+$ ssh -i m4verify_id_ed25519 m4verify@192.168.30.128 "id; hostname; uname -sr"
+  uid=1004(m4verify) gid=1004(m4verify) groups=1004(m4verify)
+  binrepair-vm
+  Linux 6.8.0-147-generic
+
+$ ssh ... "sudo -n true"; echo exit=\$?      # must fail: no privilege
+  sudo: a password is required
+  exit=1
+
+$ ssh ... "sudo -n -l"; echo exit=\$?         # must fail too
+  sudo: a password is required
+  exit=1
+
+$ ssh ... "getent group sudo; groups"
+  sudo:x:27:lab,ubuntu
+  groups: m4verify
+
+$ ssh ... "getent shadow m4verify | cut -d: -f2   # empty: this account cannot read /etc/shadow"
+  (no output)
+
+$ ssh -i id_ed25519 lab@192.168.30.128 "sudo -n passwd -S m4verify"   # asked from the account that has sudo
+  m4verify L 2026-11-06 0 99999 7 -1          # L = password locked
+$ ssh -i id_ed25519 lab@192.168.30.128 "sudo -n getent shadow m4verify | cut -d: -f2"
+  !                                            # a locked hash, so no password can match
+
+$ ssh ... "ss -ltn | grep :22"
+  LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+  LISTEN 0      4096            [::]:22           [::]:*          
+
+$ ssh ... -o PreferredAuthentications=password -o PubkeyAuthentication=no true   # key-only
+  m4verify@192.168.30.128: Permission denied (publickey).
+  exit=255
+
+$ ssh ... "/opt/angr-venv/bin/python -c \"import angr,z3;print(angr.__version__, z3.get_version_string())\""
+  10.0.4.post1 5.1.0
+
+# Notes
+  - Reached over VMnet8 IPv4: host 192.168.30.1, guest 192.168.30.128. The IPv6
+    link-local path used in the previous window is not needed and is not documented here.
+  - No sudo, no root, no sudo group; the shadow entry shows a locked password,
+    so a public key is the only way in (the password attempt above is rejected).
+  - The private key is delivered outside the package, at dist/m4verify_id_ed25519,
+    and is not part of SHA256SUMS or the zip.

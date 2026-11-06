@@ -1,0 +1,105 @@
+{
+  "checks": [
+    {
+      "detail": "3.12.3 (expected 3.12.3)",
+      "name": "python version",
+      "ok": true
+    },
+    {
+      "detail": "/opt/angr-venv",
+      "name": "interpreter is the venv",
+      "ok": true
+    },
+    {
+      "detail": "/usr",
+      "name": "base interpreter",
+      "ok": true
+    },
+    {
+      "detail": "10.0.4.post1 (expected 10.0.4.post1)",
+      "name": "angr pinned",
+      "ok": true
+    },
+    {
+      "detail": "10.0.4 (expected 10.0.4)",
+      "name": "archinfo pinned",
+      "ok": true
+    },
+    {
+      "detail": "10.0.4 (expected 10.0.4)",
+      "name": "cle pinned",
+      "ok": true
+    },
+    {
+      "detail": "10.0.4 (expected 10.0.4)",
+      "name": "pyvex pinned",
+      "ok": true
+    },
+    {
+      "detail": "5.1.0.0 (expected 5.1.0.0)",
+      "name": "z3-solver pinned",
+      "ok": true
+    },
+    {
+      "detail": "10.0.4.post1",
+      "name": "angr.__version__",
+      "ok": true
+    },
+    {
+      "detail": "5.1.0 (expected 5.1.0)",
+      "name": "libz3 version",
+      "ok": true
+    },
+    {
+      "detail": "No broken requirements found.",
+      "name": "pip check",
+      "ok": true
+    },
+    {
+      "detail": "x>1 and x<3",
+      "name": "z3 returns sat",
+      "ok": true
+    },
+    {
+      "detail": "x>2 and x<2",
+      "name": "z3 returns unsat",
+      "ok": true
+    },
+    {
+      "detail": "986688bcc260abfe\u2026 18712 B",
+      "name": "harness sha256",
+      "ok": true
+    },
+    {
+      "detail": "46d16e997bdfbb87\u2026 25344 B",
+      "name": "candidate sha256",
+      "ok": true
+    },
+    {
+      "detail": "c9c2632e792c5acd\u2026 25344 B",
+      "name": "original sha256",
+      "ok": true
+    },
+    {
+      "detail": "8a2b408c9b1463ca\u2026 1654 B",
+      "name": "contract sha256",
+      "ok": true
+    },
+    {
+      "detail": "0x4012aa",
+      "name": "target entry resolves",
+      "ok": true
+    }
+  ],
+  "engine": {
+    "angr": "10.0.4.post1",
+    "distributions": 55,
+    "pip": "26.2.1",
+    "python": "3.12.3",
+    "z3_lib": "5.1.0",
+    "z3_solver": "5.1.0.0"
+  },
+  "ok": true,
+  "passed": 18,
+  "total": 18
+}

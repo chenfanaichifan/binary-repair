@@ -12,6 +12,9 @@ pytest_tmp*/
 pytest_cache*/
 
 # Local config and secrets (never commit)
+# The m4verify private key is delivered next to the package, never in it
+dist/m4verify_id_ed25519
+dist/m4verify_id_ed25519.pub
 .env
 .env.*
 !.env.example

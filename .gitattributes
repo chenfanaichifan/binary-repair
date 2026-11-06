@@ -31,6 +31,10 @@ fixtures/public/**/tests/*.json -text
 # Evidence packages are hash-bound: every byte (including CRLF) must survive
 # clone/checkout exactly, or SHA256SUMS verification fails on a fresh clone.
 docs/handoffs/evidence/** -text
+# Same reason: the M4 handoff is verified with `sha256sum -c SHA256SUMS`, so its
+# files must arrive byte-identical on every platform - including the scripts and
+# the expected-output JSON.
+M4-v4-handoff-2026-11-06/** -text
 *.pdf binary
 *.vmdk binary
 *.png binary
