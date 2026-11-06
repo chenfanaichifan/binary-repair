@@ -381,6 +381,83 @@ def _route_key(route: str) -> str:
     return "A" if route == "route_a" else "B"
 
 
+GATE_IDS_BY_KIND: dict[str, str] = {}
+
+
+def _gate_id_for_kind(kind: str) -> str | None:
+    """Map an obligation kind to its gate number, or None when it is not a gate.
+
+    ``V3`` owns two writer-level kinds (``round_trip`` and
+    ``repaired_behaviour``); both belong to the same gate row.
+    """
+    if not GATE_IDS_BY_KIND:
+        from app.services.orchestration import GATES
+
+        for gate, known, _default in GATES:
+            GATE_IDS_BY_KIND[known] = gate
+        GATE_IDS_BY_KIND["round_trip"] = "V3"
+        GATE_IDS_BY_KIND["repaired_behaviour"] = "V3"
+    return GATE_IDS_BY_KIND.get(kind)
+
+
+def _decorate_obligation(row: dict[str, Any]) -> dict[str, Any]:
+    """One persisted obligation with the fields a reviewer compares.
+
+    ``id`` is the gate number, ``gate`` states whether the acceptance decision
+    treats the row as required, and ``scope`` states which layer it observes.
+    The stored ``required`` bit is preserved so no client has to infer it.
+    """
+    gate = _gate_id_for_kind(row["kind"])
+    return {
+        "id": gate,
+        "kind": row["kind"],
+        "scope": row["scope"],
+        "required": row["required"],
+        "gate": gate is not None and bool(row["required"]),
+        "result": row["result"],
+        "evidence_artifact_id": row["evidence_artifact_id"],
+        "detail": row["detail"],
+    }
+
+
+_RESULT_VALUES: tuple[str, ...] = ("passed", "failed", "not_run", "unknown", "timed_out")
+
+
+def _obligation_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Counts derived only from stored rows.
+
+    ``invalid`` is the shape a reviewer checks when nothing is wrong: always an
+    object with ``total`` and ``items``, with ``total`` 0 and ``items`` an empty
+    list. A row lands there only when its kind is not one of V0-V5 or its result
+    is not a known ``CheckResult``; raw values are echoed, never coerced.
+    """
+    by_result = {value: 0 for value in _RESULT_VALUES}
+    invalid: list[dict[str, Any]] = []
+    gate_ids: list[str] = []
+    for row in rows:
+        gate = _gate_id_for_kind(row["kind"])
+        if gate is None:
+            invalid.append({"kind": row["kind"], "reason": "kind is not one of V0-V5"})
+        elif row["required"] and gate not in gate_ids:
+            gate_ids.append(gate)
+        if row["result"] in by_result:
+            by_result[row["result"]] += 1
+        else:
+            invalid.append(
+                {"kind": row["kind"], "reason": f"unknown result {row['result']!r}"}
+            )
+    # Rows arrive ordered by kind, which is not gate order; the summary names the
+    # gates in V0..V5 order so a client can render them without re-sorting.
+    gate_ids.sort(key=lambda gate: int(gate[1:]))
+    return {
+        "total": len(rows),
+        "required_total": sum(1 for row in rows if row["required"]),
+        "by_result": by_result,
+        "gate_ids": gate_ids,
+        "invalid": {"total": len(invalid), "items": invalid},
+    }
+
+
 def _evidence_state(rows: list[dict[str, Any]]) -> str:
     """Machine-readable marker for whether this payload is backed by stored rows.
 
@@ -399,7 +476,11 @@ def _obligation_groups(
     keyed by route. For a single attempt only its own route group carries the
     persisted rows; the other group is empty rather than a placeholder.
     """
-    return {"A": rows if route_key == "A" else [], "B": rows if route_key == "B" else []}
+    decorated = [_decorate_obligation(row) for row in rows]
+    return {
+        "A": decorated if route_key == "A" else [],
+        "B": decorated if route_key == "B" else [],
+    }
 
 
 def _verification_label(results: set[str]) -> str:
@@ -754,7 +835,8 @@ def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
             route["outcome_reason"] = attempt.reason or ""
             route["verdict"] = _verdict_for_attempt(attempt)
             group = jobs.list_obligations(attempt.id, data_dir=_data_dir())
-            route["obligations"] = group
+            route["obligations"] = [_decorate_obligation(row) for row in group]
+            route["summary"] = _obligation_summary(group)
             route["evidence"] = _evidence_state(group)
             route["stages"] = _stages_for(attempt.phase, ROUTE_STAGES[key])
             if group:
@@ -1198,6 +1280,7 @@ def attempt_evidence(attempt_id: str) -> dict[str, Any]:
         "failing_obligation": attempt.failing_obligation,
         "detail": attempt.detail,
         "evidence": _evidence_state(rows),
+        "summary": _obligation_summary(rows),
         "obligations": _obligation_groups(rows, _route_key(attempt.route)),
     }
 

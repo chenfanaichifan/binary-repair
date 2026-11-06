@@ -124,3 +124,41 @@ def test_manifest_compare_is_not_repair_v3(tmp_path: Path) -> None:
     assert payload["results"]["V3"] == "not_run"
     assert "V3" not in payload["evidence"]
     assert "round-trip" in payload["details"]["V3"]
+
+
+def test_repaired_noinput_keeps_v2_v4_not_run(tmp_path: Path) -> None:
+    data, job, run, attempt = _setup(tmp_path)
+    bundle, _ = _bundle(tmp_path)
+    (bundle / "manifest-repaired.json").write_text(json.dumps({
+        "input_mode": "none",
+        "invalid": "not_applicable",
+        "valid": "1/1",
+        "passed": 1,
+        "total": 1,
+        "repaired_pass": True,
+    }), encoding="utf-8")
+
+    result = write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                           run_id=run.id, attempt_id=attempt.id)
+    payload = json.loads(Path(result["path"]).read_text())
+    assert payload["results"]["V2"] == "not_run"
+    assert payload["results"]["V4"] == "not_run"
+    assert payload["results"]["V3"] == "passed"
+    assert "V3" in payload["evidence"]
+    assert "1/1" in payload["details"]["V3"]
+    assert "invalid not applicable" in payload["details"]["V3"]
+
+
+def test_writer_scores_v2_on_unchanged_interface(tmp_path: Path) -> None:
+    data, job, run, attempt = _setup(tmp_path)
+    bundle, _ = _bundle(tmp_path, candidate=ORIGINAL.read_bytes())
+    manifest = json.loads((bundle / "edit-manifest.json").read_text())
+    manifest["function"] = FUNC
+    (bundle / "edit-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    result = write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                           run_id=run.id, attempt_id=attempt.id)
+    payload = result["payload"]
+    assert payload["results"]["V2"] == "passed"
+    assert payload["details"]["V2"] == "5/5 static interface checks"
+    assert "V2" in payload["evidence"]

@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "cwe": "CWE-121",
+  "title": "stack-based buffer overflow: strcpy into dest[50] with an unchecked source",
+  "mechanism": "bounds-check",
+  "trigger_case": "invalid-first"
+}

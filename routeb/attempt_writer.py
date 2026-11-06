@@ -30,7 +30,9 @@ from pathlib import Path
 from typing import Any
 
 from app.db.connection import connect
+from app.domain.interface import InterfaceCheckError, check_interface
 from app.services import jobs
+from routeb.contract_mode import load_contract
 
 GATES = ("V0", "V1", "V2", "V3", "V4", "V5")
 
@@ -58,9 +60,12 @@ def _verify_contract(path: Path) -> None:
     consumes the verified path and never reads contract bodies from SQLite."""
     if not path.is_file() or not os.access(path, os.R_OK):
         raise ValueError(f"BINARYREPAIR_CONTRACT is not readable: {path}")
-    payload = _read_json(path)
-    if not isinstance(payload, dict):
-        raise ValueError("BINARYREPAIR_CONTRACT must be a JSON object")
+    try:
+        load_contract(path)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"BINARYREPAIR_CONTRACT is not a valid SecurityContract: {exc}"
+        ) from exc
 
 
 def _verify_bundle(bundle: Path, *, original_path: Path | None = None) -> dict[str, Any]:
@@ -155,7 +160,18 @@ def runtime_state(bundle: Path) -> tuple[str, Path | None, str]:
     state, path = _runtime_state(bundle)
     if state == "not_run" and path is not None and path.name == "manifest-compare.json":
         return state, path, "round-trip only; not repair V3"
-    return state, path, ("runtime manifest " + state if path else "no runtime manifest in bundle")
+    if path is None:
+        return state, path, "no runtime manifest in bundle"
+    detail = "runtime manifest " + state
+    if path.name == "manifest-repaired.json":
+        payload = _read_json(path)
+        mode = payload.get("input_mode", "argv")
+        passed, total = payload.get("passed"), payload.get("total")
+        if isinstance(passed, int) and isinstance(total, int):
+            detail += f"; {passed}/{total}"
+        if mode == "none":
+            detail += "; input_mode=none, invalid not applicable"
+    return state, path, detail
 
 
 def _repro_state(bundle: Path) -> tuple[str, Path | None]:
@@ -193,16 +209,29 @@ def write_attempt(
         _verify_contract(contract_path)
 
     audit = _read_json(bundle / "audit.json") if (bundle / "audit.json").exists() else {"pass": False}
-    runtime_state, runtime_path = _runtime_state(bundle)
+    v3_state, runtime_path, v3_detail = runtime_state(bundle)
     repro_state, repro_path = _repro_state(bundle)
     identity = manifest.get("original_sha256") == job.original_sha256
     structure = audit.get("pass") is True
 
+    target_entry = str(manifest.get("function") or "")
+    if contract_path is not None:
+        target_entry = load_contract(contract_path).target_entry
+    original_for_check = original_path or (bundle / "original.elf")
+    interface = check_interface(original_for_check, bundle / "candidate.elf", target_entry)
+    v2_state = "passed" if interface["pass"] else "not_run"
+    v2_report = bundle / "v2-interface-scored.json"
+    v2_report.write_text(json.dumps(interface, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    v2_detail = f"{interface['score']['passed']}/{interface['score']['total']} static interface checks"
+    if not interface["pass"]:
+        failed = [name for name, value in interface["checks"].items() if not value]
+        v2_detail += "; failed: " + ", ".join(failed)
+
     results = {
         "V0": "passed" if identity else "failed",
         "V1": "passed" if structure else "failed" if (bundle / "audit.json").exists() else "not_run",
-        "V2": "not_run",
-        "V3": runtime_state,
+        "V2": v2_state,
+        "V3": v3_state,
         "V4": "not_run",
         "V5": repro_state,
     }
@@ -210,11 +239,8 @@ def write_attempt(
     details: dict[str, str] = {
         "V0": f"original {manifest.get('original_sha256')} vs job {job.original_sha256}",
         "V1": "static ELF audit passed" if structure else "static ELF audit not passed",
-        "V2": "interface check not implemented in Route B executor",
-        "V3": (
-            "round-trip only; not repair V3" if runtime_path and runtime_path.name == "manifest-compare.json"
-            else (("runtime manifest " + runtime_state) if runtime_path else "no runtime manifest in bundle")
-        ),
+        "V2": v2_detail,
+        "V3": v3_detail,
         "V4": "symbolic check not run",
         "V5": ("build-twice " + repro_state) if repro_path else "build-twice not run",
     }
@@ -225,6 +251,10 @@ def write_attempt(
     if results["V1"] == "passed":
         evidence["V1"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                                    bundle=bundle, filename="audit.json")
+    if results["V2"] == "passed":
+        evidence["V2"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                                   bundle=bundle, filename="v2-interface-scored.json",
+                                   role="v2_evidence")
     if results["V3"] == "passed" and runtime_path is not None:
         evidence["V3"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                                    bundle=bundle, filename=runtime_path.name)

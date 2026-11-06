@@ -220,8 +220,23 @@ def test_evidence_serves_persisted_rows_verbatim(client: TestClient) -> None:
 
         own_key = "A" if attempt["route"] == "route_a" else "B"
         other_key = "B" if own_key == "A" else "A"
-        # The persisted rows are returned as stored, not re-derived.
-        assert payload["obligations"][own_key] == expected_rows
+        # The persisted rows are returned as stored, not re-derived. The endpoint
+        # adds the derived `id` (gate number) and `gate` (required flag) so a
+        # client does not have to reimplement the mapping; everything else must
+        # still match the stored row byte for byte.
+        stored = [
+            {key: value for key, value in row.items() if key not in ("id", "gate")}
+            for row in payload["obligations"][own_key]
+        ]
+        assert stored == expected_rows
+        assert {row["id"] for row in payload["obligations"][own_key]} == {
+            "V0",
+            "V1",
+            "V2",
+            "V3",
+            "V4",
+            "V5",
+        }
         assert payload["obligations"][other_key] == []
         assert {row["kind"] for row in payload["obligations"][own_key]} == {
             "identity",

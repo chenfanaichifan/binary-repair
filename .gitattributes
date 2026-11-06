@@ -21,7 +21,9 @@ fixtures/public/**/tests/*.json -text
 # This case is pinned to SARD's shipped bytes, CRLF included. A text
 # filter would change its sha256 and void defect.json#source.sha256.
 fixtures/public/CWE122_c_CWE129_fgets_01/** -text
-fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/** -text
+# The no-input case is hash-pinned to SARD's CRLF bytes by tests/SHA256SUMS;
+# a text filter would turn original.c into 262dee1d... and void that file.
+fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/** -text
 
 *.elf  binary
 *.bin  binary

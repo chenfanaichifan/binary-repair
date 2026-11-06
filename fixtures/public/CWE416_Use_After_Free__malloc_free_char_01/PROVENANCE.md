@@ -1,37 +1,34 @@
 # Provenance
 
-## Source
+- Upstream: NIST SARD / Juliet Test Suite for C/C++ version 1.3
+- Repository: https://github.com/dsp-testing/samate-c-cpp
+- Pin: `01e353d` (`01e353daa3d28a4ce2ae68904cbcde5e03e3519d`, 2025-09-30,
+  "Update one more LDAP test")
+- Path: `C/testcases/CWE416_Use_After_Free/CWE416_Use_After_Free__malloc_free_char_01.c`
+- Source hash (as served, CRLF): `fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e`
+- `src.c` in this repo (newline-normalised to LF): `262dee1d39243c944a55b4b967ab6a56524977dc88a684ff0b7150cacf0b5a61`
+- License: NIST public domain; foreign rights under CC0 1.0
 
-`original.c` is a byte-for-byte copy of the SARD test case:
+The pin resolves and the file it serves hashes to `fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e`, which is the hash
+the Lead supplied for this source. The two hashes above differ only in line
+endings; converting the upstream bytes from CRLF to LF reproduces `src.c` byte for
+byte.
 
-```
-corpus        NIST SARD Test Suite 112 (Juliet C/C++ v1.3)
-archive       2017-10-01-juliet-test-suite-for-c-cplusplus-v1-3.zip
-path          C/testcases/CWE416_Use_After_Free/
-              CWE416_Use_After_Free__malloc_free_char_01.c
-sha256        fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e
-```
+`https://github.com/arichardson/juliet-test-suite-c` at `f88433e3443648a17671398797a04ea1f8e1a274`
+carries the same bytes and was used for the first retrieval. It is not the pin:
+where the two disagree, `dsp-testing/samate-c-cpp@01e353d` is authoritative.
 
-It is not edited. `build.json#source.sha256` pins the same digest, so a change to
-the file is detectable without trusting this note.
+## Why this fixture is incomplete
 
-## Support files
+`fixtures/public/` intake requires `original.elf`, `build.sh`, `build.json`,
+`contract.json` and `tests/{valid,invalid}.json`. None of them exist yet:
 
-`support/std_testcase.h`, `support/std_testcase_io.h` and `support/io.c` are
-verbatim copies from the same archive's `C/testcasesupport/`. They are needed
-because the upstream case includes `std_testcase.h` and calls `printLine`.
+- the authoring host has no C compiler, and a hand-made ELF would be a fake;
+- `tests/invalid.json` needs at least one case that triggers the lifetime bug,
+  which must be measured against a real binary;
+- the contract must state destination/ownership rules for the repaired build,
+  which follows from the measured behaviour.
 
-## What this fixture does not contain
-
-- No `src.c`. The earlier synthetic source was removed; it was authored in this
-  repository and cannot stand in for the upstream case.
-- No `original.elf`. It is produced only by `build.sh` on a host with a Linux
-  gcc. Nothing named `original.elf` may be borrowed from a variant build: a
-  different source or flag set has a different digest, and `tests/SHA256SUMS`
-  would then attest to the wrong artefact.
-
-## Rebuild status
-
-`build.json#output.sha256` and `tests/*.json#original_sha256` stay `null` until a
-Linux gcc build runs. The authoring host has no ELF compiler, so the digest and
-the test expectations are recorded as pending rather than predicted.
+`tools/fixture_intake.py --check` therefore reports `missing_file` for this
+directory. That is the true state: the ELF belongs to the guest build path
+(M3/VMer). Until it exists, T8.3 stays blocked.
