@@ -57,7 +57,8 @@ python tools/v4_harness_to_evidence.py \
 The converter maps only facts the harness actually records:
 
 - `cases` -> calibration: `cases=2`, `known_good=True`, `known_bad=True`,
-  `known_bad_rejected=True`, `passed=1`, `failed=1`;
+  `known_bad_rejected=True`, `passed=1`, `failed=1`; every known-bad case must
+  be rejected;
 - `states` -> exploration counts (`initial`, `deadended`, `errored`,
   `unconstrained`, `deferred`, `active`, `pruned`) plus `complete/unexplored`;
 - `solver` + top-level `steps/max_steps` -> solver accounting (`queries` is the
@@ -66,12 +67,19 @@ The converter maps only facts the harness actually records:
   `target_entry`, `entry_address`, `contract_sha256` and per-case `cases` are
   preserved in `source`;
 - `claimed_scope` is the literal `"model"`;
-- `forbidden_ranges` is `[]` because the harness reports no ranges; the field is
-  still required, not omitted;
-- `not_claimed` must include the binary-level exclusion.
+- `property_kind` is `"pointer-flow"` for this harness; empty
+  `forbidden_ranges` is allowed only for pointer-flow, while `memory-range`
+  requires at least one range. The converter omits the field rather than
+  silently writing `[]`;
+- `known_bad_rejected` requires **every** known-bad case to be rejected, not just
+  one (no `any`);
+- `not_claimed` must include the binary-level exclusion. When the candidate case
+  is unsat with `free_calls == 0`, the empty-disjunction disclosure is forced if
+  the harness did not already carry it.
 
-A missing or inconsistent section raises `V4EvidenceError`; nothing is defaulted
-into a pass.
+A missing or inconsistent section raises `V4EvidenceError`; the converter does
+not add defaults, a negative control, or accounting. The only derived text is
+the conditional empty-disjunction disclosure.
 
 ## 3. What was verified
 
@@ -86,8 +94,9 @@ actual M3 v4-evidence.json
 ```
 
 Tests: `tests/test_v4_harness_adapter.py` (actual output conversion, writer
-round-trip, missing-section rejection); `tests/test_v4_evidence.py` covers the
-typed constraints and calibration regressions.
+round-trip, empty-disjunction disclosure, missing accounting/negative-control
+rejection); `tests/test_v4_evidence.py` covers the typed constraints and
+calibration regressions.
 
 ## 4. 124 is not upgraded
 
@@ -105,7 +114,7 @@ independent review.
 ## 5. Checks
 
 ```
-M1 full suite   493 passed / 2 skipped / 0 failed
+M1 full suite   500 passed / 2 skipped / 0 failed
 ```
 
 CWE121 v2 hash and the 120 contract file/canonical hash gate are unchanged.

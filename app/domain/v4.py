@@ -15,6 +15,10 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 HEX64 = r"^[a-f0-9]{64}$"
+EMPTY_DISJUNCTION_DISCLOSURE = (
+    "the candidate-side unsat is the empty-disjunction case: no free() occurs "
+    "on the path, so it is not a solved constraint"
+)
 
 
 class V4EvidenceError(ValueError):
@@ -139,12 +143,13 @@ class V4Evidence(BaseModel):
     tool_versions: dict[str, str] = Field(min_length=1)
     preconditions: list[str] = Field(min_length=1)
     memory_predicates: list[str] = Field(min_length=1)
-    forbidden_ranges: list[ForbiddenRange]
+    forbidden_ranges: list[ForbiddenRange] | None = None
     hooks: list[str] = Field(min_length=1)
     exploration_accounting: ExplorationAccounting
     solver_accounting: SolverAccounting
     calibration: Calibration
     replay: Replay
+    property_kind: Literal["pointer-flow", "memory-range"]
     claimed_scope: Literal["model"]
     not_claimed: list[str] = Field(min_length=1)
     source: dict[str, object] = Field(default_factory=dict)
@@ -163,6 +168,11 @@ class V4Evidence(BaseModel):
             raise ValueError("tool_versions entries must be non-empty")
         if not any("binary-level" in item.lower() for item in self.not_claimed):
             raise ValueError("not_claimed must explicitly exclude binary-level proof")
+        if self.property_kind != "pointer-flow" and not self.forbidden_ranges:
+            raise ValueError(
+                "only pointer-flow may leave forbidden_ranges empty; "
+                "memory-range needs at least one range"
+            )
         return self
 
 
@@ -193,12 +203,42 @@ def write_v4_evidence(
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_suffix(destination.suffix + ".tmp")
     temporary.write_text(
-        json.dumps(evidence.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
+        json.dumps(evidence.model_dump(mode="json", exclude_none=True), indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     temporary.replace(destination)
     return evidence
 
+
+
+def _with_empty_disjunction_disclosure(
+    not_claimed: list[str],
+    *,
+    cases: list[dict],
+    candidate_sha256: str,
+) -> list[str]:
+    """Force the caveat only for a candidate unsat with free_calls=0."""
+
+    if any(
+        "empty-disjunction" in item.lower() or "empty disjunction" in item.lower()
+        for item in not_claimed
+    ):
+        return not_claimed
+    candidate = next(
+        (
+            case for case in cases
+            if case.get("kind") == "known_good"
+            and case.get("binary_sha256") == candidate_sha256
+        ),
+        None,
+    )
+    if candidate is None:
+        return not_claimed
+    solver = candidate.get("solver") or {}
+    witness = candidate.get("witness") or {}
+    if int(solver.get("unsat", 0)) > 0 and int(witness.get("free_calls", -1)) == 0:
+        return not_claimed + [EMPTY_DISJUNCTION_DISCLOSURE]
+    return not_claimed
 
 
 def from_v4_harness(data: object) -> V4Evidence:
@@ -229,7 +269,7 @@ def from_v4_harness(data: object) -> V4Evidence:
         known_bad_cases = [c for c in cases if c.get("kind") == "known_bad"]
         known_good = bool(known_good_cases)
         known_bad = bool(known_bad_cases)
-        known_bad_rejected = any(
+        known_bad_rejected = bool(known_bad_cases) and all(
             c.get("observed") == "violated" for c in known_bad_cases
         )
         calibration_passed = sum(
@@ -268,32 +308,41 @@ def from_v4_harness(data: object) -> V4Evidence:
         property_text = str(data.get("property_text") or "").strip()
         if not input_domain or not property_text:
             raise V4EvidenceError("v4_harness input_domain/property_text is empty")
+        property_kind = (
+            "pointer-flow" if "pointer" in property_text.lower() else "memory-range"
+        )
 
-        exploration = {
-            name: int(states.get(name, 0))
-            for name in (
-                "initial", "deadended", "errored", "unconstrained",
-                "deferred", "active", "pruned",
+        state_names = (
+            "initial", "deadended", "errored", "unconstrained",
+            "deferred", "active", "pruned",
+        )
+        missing_states = [name for name in state_names if name not in states]
+        if missing_states:
+            raise V4EvidenceError(
+                "v4_harness states missing: " + ", ".join(missing_states)
             )
-        }
-        exploration["complete"] = bool(data.get("complete"))
-        exploration["unexplored"] = list(data.get("unexplored") or [])
+        exploration = {name: int(states[name]) for name in state_names}
+        exploration["complete"] = bool(data["complete"])
+        exploration["unexplored"] = list(data["unexplored"])
 
+        solver_names = ("eval", "sat", "unsat", "unknown", "timeouts")
+        missing_solver = [name for name in solver_names if name not in solver]
+        if missing_solver:
+            raise V4EvidenceError(
+                "v4_harness solver missing: " + ", ".join(missing_solver)
+            )
         solver_accounting = {
             "engine": "angr",
-            "version": str(engine.get("angr") or ""),
-            "queries": sum(
-                int(solver.get(name, 0))
-                for name in ("eval", "sat", "unsat", "unknown")
-            ),
-            "sat": int(solver.get("sat", 0)),
-            "unsat": int(solver.get("unsat", 0)),
-            "unknown": int(solver.get("unknown", 0)),
-            "eval": int(solver.get("eval", 0)),
-            "timeouts": int(solver.get("timeouts", 0)),
+            "version": str(engine["angr"]),
+            "queries": sum(int(solver[name]) for name in ("eval", "sat", "unsat", "unknown")),
+            "sat": int(solver["sat"]),
+            "unsat": int(solver["unsat"]),
+            "unknown": int(solver["unknown"]),
+            "eval": int(solver["eval"]),
+            "timeouts": int(solver["timeouts"]),
             "steps": int(data["steps"]),
             "max_steps": int(data["max_steps"]),
-            "complete": bool(data.get("complete")),
+            "complete": bool(data["complete"]),
         }
 
         payload = {
@@ -308,7 +357,7 @@ def from_v4_harness(data: object) -> V4Evidence:
             "tool_versions": tool_versions,
             "preconditions": [input_domain],
             "memory_predicates": [property_text],
-            "forbidden_ranges": [],
+            "property_kind": property_kind,
             "hooks": hooks,
             "exploration_accounting": exploration,
             "solver_accounting": solver_accounting,
@@ -328,8 +377,12 @@ def from_v4_harness(data: object) -> V4Evidence:
                 "identical": identical,
                 "evidence_sha256": evidence_sha256,
             },
-            "claimed_scope": data.get("claimed_scope"),
-            "not_claimed": list(data.get("not_claimed") or []),
+            "claimed_scope": data["claimed_scope"],
+            "not_claimed": _with_empty_disjunction_disclosure(
+                list(data["not_claimed"]),
+                cases=cases,
+                candidate_sha256=str(data["candidate_sha256"]),
+            ),
             "source": {
                 "target_entry": data.get("target_entry"),
                 "entry_address": data.get("entry_address"),
@@ -381,6 +434,7 @@ def validate_v4_evidence(
 
 __all__ = [
     "V4Evidence",
+    "EMPTY_DISJUNCTION_DISCLOSURE",
     "V4EvidenceError",
     "from_v4_harness",
     "validate_v4_evidence",

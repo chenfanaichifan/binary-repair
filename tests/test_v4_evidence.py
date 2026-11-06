@@ -23,6 +23,7 @@ def _valid() -> dict:
         "original_sha256": O,
         "tool_versions": {"angr": "10.0.4.post1", "z3": "5.1.0"},
         "preconditions": ["no ASLR", "one no-input path"],
+        "property_kind": "pointer-flow",
         "memory_predicates": ["data points to a freed chunk"],
         "forbidden_ranges": [{"start": 0, "end": 64, "reason": "freed object"}],
         "hooks": ["after free", "before read"],
@@ -85,12 +86,12 @@ def test_complete_v4_evidence_is_accepted() -> None:
         "tool_versions",
         "preconditions",
         "memory_predicates",
-        "forbidden_ranges",
         "hooks",
         "exploration_accounting",
         "solver_accounting",
         "calibration",
         "replay",
+        "property_kind",
         "claimed_scope",
         "not_claimed",
     ],
@@ -204,5 +205,19 @@ def test_known_bad_rejected_requires_failed_case() -> None:
         "cases": 2, "passed": 2, "failed": 0,
         "known_good": True, "known_bad": True, "known_bad_rejected": True,
     })
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)
+
+
+def test_pointer_flow_may_have_empty_forbidden_ranges() -> None:
+    data = copy.deepcopy(_valid())
+    data["forbidden_ranges"] = []
+    validate_v4_evidence(data)
+
+
+def test_memory_range_needs_a_forbidden_range() -> None:
+    data = copy.deepcopy(_valid())
+    data["property_kind"] = "memory-range"
+    data["forbidden_ranges"] = []
     with pytest.raises(V4EvidenceError):
         validate_v4_evidence(data)

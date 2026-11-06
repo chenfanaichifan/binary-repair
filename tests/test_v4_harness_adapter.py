@@ -53,3 +53,54 @@ def test_converter_rejects_incomplete_harness_output() -> None:
     del data["states"]
     with pytest.raises(V4EvidenceError):
         from_v4_harness(data)
+
+
+def test_adapter_adds_empty_disjunction_disclosure_without_evidence_defaults() -> None:
+    data = json.loads(HARNESS.read_text(encoding="utf-8"))
+    data["not_claimed"] = [
+        item for item in data["not_claimed"]
+        if "empty-disjunction" not in item.lower()
+    ]
+    evidence = from_v4_harness(data)
+    assert any("empty-disjunction" in item.lower() for item in evidence.not_claimed)
+    assert evidence.forbidden_ranges is None
+    assert "forbidden_ranges" not in evidence.model_dump(exclude_none=True)
+
+
+def test_adapter_does_not_invent_missing_negative_control() -> None:
+    data = json.loads(HARNESS.read_text(encoding="utf-8"))
+    data["cases"] = [case for case in data["cases"] if case["kind"] != "known_bad"]
+    with pytest.raises(V4EvidenceError):
+        from_v4_harness(data)
+
+
+def test_adapter_does_not_invent_missing_accounting() -> None:
+    data = json.loads(HARNESS.read_text(encoding="utf-8"))
+    del data["solver"]["sat"]
+    with pytest.raises(V4EvidenceError):
+        from_v4_harness(data)
+
+
+def test_adapter_requires_every_known_bad_case_rejected() -> None:
+    data = json.loads(HARNESS.read_text(encoding="utf-8"))
+    bad = next(case for case in data["cases"] if case["kind"] == "known_bad")
+    second = json.loads(json.dumps(bad))
+    second["id"] = "known_bad_second"
+    second["observed"] = "holds"
+    data["cases"].append(second)
+    with pytest.raises(V4EvidenceError):
+        from_v4_harness(data)
+
+
+def test_adapter_does_not_add_disclosure_when_free_calls_is_nonzero() -> None:
+    data = json.loads(HARNESS.read_text(encoding="utf-8"))
+    data["not_claimed"] = [
+        item for item in data["not_claimed"]
+        if "empty-disjunction" not in item.lower()
+    ]
+    good = next(case for case in data["cases"] if case["kind"] == "known_good")
+    good["witness"]["free_calls"] = 1
+    evidence = from_v4_harness(data)
+    assert not any(
+        "empty-disjunction" in item.lower() for item in evidence.not_claimed
+    )

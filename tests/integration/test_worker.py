@@ -64,6 +64,7 @@ def _v4_evidence(candidate_sha256: str, original_sha256: str) -> dict:
         "original_sha256": original_sha256,
         "tool_versions": {"angr": "10.0.4.post1", "z3": "5.1.0"},
         "preconditions": ["synthetic worker fixture"],
+        "property_kind": "pointer-flow",
         "memory_predicates": ["candidate equals original in this fixture"],
         "forbidden_ranges": [{"start": 0, "end": 64, "reason": "synthetic range"}],
         "hooks": ["entry"],
