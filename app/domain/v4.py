@@ -128,6 +128,7 @@ class Replay(BaseModel):
     runs: int = Field(ge=2)
     identical: bool
     evidence_sha256: str = Field(pattern=HEX64)
+    verified_by: Literal["m4"] | None = None
 
 
 class V4Evidence(BaseModel):
@@ -407,6 +408,7 @@ def validate_v4_evidence(
     *,
     candidate_sha256: str | None = None,
     original_sha256: str | None = None,
+    require_independent: bool = False,
 ) -> V4Evidence:
     """Validate a complete V4 claim and its identity bindings.
 
@@ -426,6 +428,10 @@ def validate_v4_evidence(
     if original_sha256 is not None and evidence.original_sha256 != original_sha256:
         raise V4EvidenceError(
             f"original hash {evidence.original_sha256} != {original_sha256}"
+        )
+    if require_independent and evidence.replay.verified_by != "m4":
+        raise V4EvidenceError(
+            "V4 is producer/ingest provisional; independent M4 replay is missing"
         )
     return evidence
 

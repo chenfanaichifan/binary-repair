@@ -360,10 +360,11 @@ def ingest(
                         payload,
                         candidate_sha256=manifest["candidate_sha256"],
                         original_sha256=job.original_sha256,
+                        require_independent=True,
                     )
                 except (OSError, ValueError, json.JSONDecodeError, V4EvidenceError) as exc:
-                    status = "unknown"
-                    details["V4"] = f"V4 evidence not verified: {exc}"
+                    status = "not_run"
+                    details["V4"] = f"V4 not_run: {exc}"
 
         results[gate] = status
         ids = []

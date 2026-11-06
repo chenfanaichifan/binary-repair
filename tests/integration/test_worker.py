@@ -86,6 +86,7 @@ def _v4_evidence(candidate_sha256: str, original_sha256: str) -> dict:
         "replay": {
             "command": "synthetic replay", "runs": 2, "identical": True,
             "evidence_sha256": original_sha256,
+            "verified_by": "m4",
         },
         "claimed_scope": "model",
         "not_claimed": ["binary-level proof"],

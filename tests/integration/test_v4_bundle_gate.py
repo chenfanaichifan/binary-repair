@@ -16,7 +16,7 @@ DELIVERY = ROOT / "delivery/cwe416-124-candidate-2026-11-05"
 CANDIDATE_SHA = "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0"
 
 
-def test_v4_passed_without_typed_evidence_becomes_unknown(tmp_path: Path) -> None:
+def test_v4_passed_without_typed_evidence_becomes_not_run(tmp_path: Path) -> None:
     contract = json.loads((FIXTURE / "contract.json").read_text(encoding="utf-8"))
     data_dir = tmp_path / "var"
     record = jobs.create_job(
@@ -88,22 +88,22 @@ def test_v4_passed_without_typed_evidence_becomes_unknown(tmp_path: Path) -> Non
     payload = json.loads(
         (data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json").read_text()
     )
-    assert payload["results"]["V4"] == "unknown"
+    assert payload["results"]["V4"] == "not_run"
     assert "V4" not in payload.get("evidence", {})
-    assert "not verified" in payload["details"]["V4"]
+    assert "not_run" in payload["details"]["V4"]
 
     final = jobs.get_attempt(attempt.id, data_dir=data_dir)
     assert final is not None
     assert final.outcome == "inconclusive"
-    assert final.reason == "solver_unknown"
+    assert final.reason == "required_check_not_run"
     by_kind = {
         row["kind"]: row["result"]
         for row in jobs.list_obligations(attempt.id, data_dir=data_dir)
     }
-    assert by_kind["symbolic"] == "unknown"
+    assert by_kind["symbolic"] == "not_run"
 
 
-def test_persist_v4_passed_with_invalid_artifact_is_unknown(tmp_path: Path) -> None:
+def test_persist_v4_passed_with_invalid_artifact_is_not_run(tmp_path: Path) -> None:
     import uuid
 
     from app.db.connection import connect
@@ -163,8 +163,8 @@ def test_persist_v4_passed_with_invalid_artifact_is_unknown(tmp_path: Path) -> N
     )
     rows = jobs.list_obligations(attempt.id, data_dir=data_dir)
     by_kind = {row["kind"]: row for row in rows}
-    assert by_kind["symbolic"]["result"] == "unknown"
-    assert "not verified" in by_kind["symbolic"]["detail"]
+    assert by_kind["symbolic"]["result"] == "not_run"
+    assert "not_run" in by_kind["symbolic"]["detail"]
 
 
 def _typed_v4(candidate_sha256: str, original_sha256: str) -> dict:
@@ -201,6 +201,7 @@ def _typed_v4(candidate_sha256: str, original_sha256: str) -> dict:
         "replay": {
             "command": "v4 replay", "runs": 2, "identical": True,
             "evidence_sha256": "d" * 64,
+            "verified_by": "m4",
         },
         "claimed_scope": "model",
         "not_claimed": ["binary-level proof"],

@@ -157,6 +157,7 @@ def persist_obligations(
                         payload,
                         candidate_sha256=candidate_sha256,
                         original_sha256=job_original,
+                        require_independent=True,
                     )
                 except (OSError, ValueError, json.JSONDecodeError, V4EvidenceError) as exc:
                     reason = str(exc)
@@ -164,8 +165,8 @@ def persist_obligations(
                 obligations[index] = Obligation(
                     kind=obligation.kind,
                     required=obligation.required,
-                    result=CheckResult.UNKNOWN,
-                    detail=f"V4 evidence not verified: {reason}",
+                    result=CheckResult.NOT_RUN,
+                    detail=f"V4 not_run: {reason}",
                 )
                 details["V4"] = obligations[index].detail
 

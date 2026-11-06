@@ -10,16 +10,17 @@ observation, not a verdict.
 - V4 artifact: `v4-symbolic.json` (product schema, record 128)
 - V2: scored by the product check from the binary pair; 5/5
 
-## Actual rerun
+## Actual rerun: provisional
 
-All six required gates are `passed` on the Route B attempt:
+The bundle declares V4 passed, but the product refuses it without M4's
+independent replay marker:
 
 ```
-V0 passed V1 passed V2 passed V3 passed V4 passed V5 passed
-attempt outcome success_within_scope
-obligations: all six passed
+V0 passed V1 passed V2 passed V3 passed V4 not_run V5 passed
+attempt outcome inconclusive / required_check_not_run / symbolic
+obligations: symbolic not_run
 ```
 
-The run remains `screening` because the Route A attempt has no result bundle;
-that is not a six-gate failure. This bundle does not claim a completed run,
-T8.3 relief, or a live success.
+This is producer/ingest provisional, not `success_within_scope`. The run also
+remains `screening` because Route A has no result bundle. No completed-run,
+T8.3 relief, or live-success claim.

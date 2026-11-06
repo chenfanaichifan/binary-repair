@@ -66,6 +66,7 @@ def _valid() -> dict:
             "runs": 2,
             "identical": True,
             "evidence_sha256": H,
+            "verified_by": "m4",
         },
         "claimed_scope": "model",
         "not_claimed": ["binary-level proof"],
