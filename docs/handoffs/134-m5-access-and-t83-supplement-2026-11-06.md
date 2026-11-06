@@ -124,8 +124,9 @@ disappears.
 - **V4 is `not_run`** in `gate-index.json`, and the producer evidence next to it
   is not promoted by anything written here.
 - **T8.3 stays blocked.** One sample, one mechanism. M5 running these checks is
-  a reader exercising the package, not the "second class" decision — that is M4's
-  replay plus the Lead.
+  a reader exercising the package. The class itself is decided (CWE-416, see
+  `docs/fixtures.md`); what the Lead still owns is acceptance of the evidence,
+  after M4's replay.
 
 ## 6. What M5 still needs from us
 

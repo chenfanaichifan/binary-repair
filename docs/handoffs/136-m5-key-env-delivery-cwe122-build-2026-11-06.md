@@ -1,7 +1,10 @@
-# 135 — M5 key installed, environment delivered, CWE122 made reproducible
+# 136 — M5 key installed, environment delivered, CWE122's recipe made reproducible
 
 - Date: 2026-11-06 (16:51–17:15 local)
 - Owner: Member 3 (guest execution / evidence)
+- Number: 136, not 135 — M1's `135-correction-second-class-cwe416-2026-11-06.md`
+  took that number while this record was being written. Same rule as 132/133:
+  numbers are taken, not raced.
 - Branches: `m3/cwe416-v3-noinput` (this record), `m3/cwe122-fixture-build`
   (the fixture change, `f25db07`)
 - Gate status assigned here: **none**. No `verified_by`, V4 still `not_run`,
@@ -112,7 +115,47 @@ the sample's verdict is still open would put unreviewed evidence on `main` and
 make the merge itself the story. The item is recorded here so it does not become
 folklore.
 
-## 5. Boundaries
+## 5. One wording for "the second class"
+
+The Lead fixed the vocabulary in `docs/fixtures.md` (section "Decided
+2026-11-06"): **the second class is CWE-416**, the no-input sample frozen in
+record 133, with the terms carried from record 103 (CWE-121 first class, CWE-416
+second class). **CWE-122 is out** — no third class — and the
+`fixtures/public/CWE122_*` `-text` rule must not reach the final line.
+
+Three sentences M3 will use from now on, and nowhere else:
+
+1. **The second class is CWE-416 no-input**: `mechanism: lifetime`, heap,
+   `input_mode: none`, frozen in record 133 with the hashes in its gate-index.
+2. **T8.3 is blocked on acceptance, not on selection.** The sample is chosen and
+   evidenced; what is missing is M4's replay of V4 and the Lead's acceptance of
+   the evidence.
+3. **CWE-122 is not part of T8.3.** Its build recipe was fixed on
+   `m3/cwe122-fixture-build` so a rebuild is not PIE-instead-of-non-PIE, and that
+   branch is not proposed for the final line.
+
+Where earlier M3 documents said "second sample" without saying which class, they
+meant this one. The sealed packages (133 and the T8.3 bundle) keep their bytes and
+their phrasing; this record is the interpretation they are read against, and it
+supersedes nothing about their content.
+
+## 6. Guest state, and the key that is still missing
+
+`192.168.30.128:22` is up and listening on both stacks; `lab` reaches it, and
+`~m4verify/.ssh/authorized_keys` holds exactly one line — M5's
+`m5-v4-access-2026-11-06`, fingerprint `SHA256:JF1hZZdGsxmEUt0REdbg4X76LCbaA/1q+0IYObh3zgI`.
+
+**No M4 public key has been provided yet**, so nothing was installed for M4. When
+it arrives, one command adds it beside M5's line:
+
+```sh
+sudo sh /opt/binrepair-handoff/T8.3-evidence-2026-11-06/guest/add-m4-key.sh m4_id_ed25519.pub
+```
+
+Until then M4's replay cannot happen, which is the same thing as saying T8.3 stays
+blocked — the two are not separate blockers.
+
+## 7. Boundaries
 
 - **No `verified_by`** anywhere: not in the JSON, not in the READMEs, not in the
   packages, not in this record.
@@ -121,7 +164,7 @@ folklore.
 - **T8.3 stays blocked.** One CWE416 sample and one CWE122 fixture in progress is
   not a family, and nothing here proposes a second class.
 
-## 6. Open items
+## 8. Open items
 
 1. M4's public key → add it next to M5's line, never replacing it.
 2. M4's replay of `v4/harness-output.json`, then its own `verified_by`.
