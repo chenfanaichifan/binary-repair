@@ -121,7 +121,7 @@ FIX=~/cwe416-sync/kit/fixtures/public/CWE416_Use_After_Free__malloc_free_char_01
 
 About 4 seconds. The harness runs both cases **twice** internally and refuses to
 write unless the two digests match, so a non-deterministic result cannot be
-published by accident. `01-run.log` is that run, untrimmed, including the four
+published by accident. `01-run.txt` is that run, untrimmed, including the four
 `Guessing call prototype` warnings angr emits for the hooked PLT entries.
 
 ## 8. Files
@@ -131,4 +131,4 @@ published by accident. `01-run.log` is that run, untrimmed, including the four
 | `v4_harness.py` | the producer: hooks, exploration, accounting, replay, CLI |
 | `v4_evidence.py` | typed `V4Evidence` + `write_v4_evidence`, with the checklist as validation |
 | `v4-evidence.json` | the output, written by the writer and by nothing else |
-| `01-run.log` | the full run behind that file |
+| `01-run.txt` | the full run behind that file |
