@@ -1,0 +1,27 @@
+# end-to-end check: does this environment reproduce the committed V4 evidence?
+# guest binrepair-vm, 2026-11-06T06:42:41Z
+
+$ sha256sum /home/lab/v4/v4_harness.py
+986688bcc260abfe9da43e8534f056d11e5c8eae20f3a77763e6943bde6b863e  /home/lab/v4/v4_harness.py
+
+$ /opt/angr-venv/bin/python /home/lab/v4/v4_harness.py \
+      --candidate /home/lab/cwe416-sync/candidate.elf \
+      --original $FIXTURE/original.elf \
+      --contract $FIXTURE/contract.json \
+      --out /home/lab/v4-env/rerun.json
+  exit 0 in 5251 ms
+
+$ sha256sum rerun.json committed-harness-output.json
+9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c  rerun.json
+9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c  committed-harness-output.json
+
+$ cmp rerun.json committed-harness-output.json && echo byte-identical
+byte-identical
+
+$ python3 /home/lab/v4-env/summarize_output.py rerun.json
+  known_good holds     -> holds     eval=1 sat=0 timeouts=0 unknown=0 unsat=1 steps=11/64
+  known_bad  violated  -> violated  eval=1 sat=1 timeouts=0 unknown=0 unsat=0 steps=14/64
+  complete=True unexplored=[] unknown=0 timeouts=0
+  solver totals: eval=2 sat=1 timeouts=0 unknown=0 unsat=1
+  claimed_scope=model replay runs=2 identical=True
+  derived: known_good_holds=True known_bad_rejected=True

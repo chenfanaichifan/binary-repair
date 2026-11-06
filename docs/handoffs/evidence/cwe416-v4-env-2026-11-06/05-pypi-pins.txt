@@ -1,0 +1,20 @@
+# do the pins exist upstream? — host 2026-11-06T06:46:16Z
+
+$ python3 check_pypi_pins.py
+package     version       uploaded    wheel
+angr        10.0.4.post1  2026-10-14  angr-10.0.4.post1-cp312-abi3-manylinux_2_28_x86_64.whl
+                                      sha256 ac30fa5e1bd753abdfc86c2ed801656c57e554a22e248a7ff155316e9f5092ee
+archinfo    10.0.4        2026-10-14  archinfo-10.0.4-py3-none-any.whl
+                                      sha256 91e748f4cad993ea87ea3aa036576ad801328467fe8133a291edd6dc59fe2efd
+cle         10.0.4        2026-10-14  cle-10.0.4-py3-none-any.whl
+                                      sha256 b6866f563a1220964682da0a75cfa41f4a0c933e12cf4ea3ed647d7e47571c92
+pyvex       10.0.4        2026-10-14  pyvex-10.0.4-cp312-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+                                      sha256 bcf106b0723e746de0684df209790ca1ee9271250f0d088172042d5ee1a5083b
+z3-solver   5.1.0.0       2026-08-16  z3_solver-5.1.0.0-py3-none-manylinux_2_27_x86_64.whl
+                                      sha256 dfad9e309d7010b1ff6bdb33f21570a1603ef4727373221c7117a74448f0cfef
+
+all 5 pins exist on PyPI with a linux x86-64 CPython 3.12 wheel
+
+# Read-only: this queries PyPI, it installs nothing. It shows the pins are
+# real artifacts, not that they install on a given machine — the guest has no
+# egress in this window (00-window-host.txt), so the install half is untested.

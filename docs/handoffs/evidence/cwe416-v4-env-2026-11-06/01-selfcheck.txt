@@ -1,0 +1,57 @@
+# environment self-check — guest binrepair-vm, 2026-11-06T06:43:19Z
+
+$ /opt/angr-venv/bin/python selfcheck.py
+# /opt/angr-venv environment self-check
+# run at binrepair-vm on Linux-6.8.0-147-generic-x86_64-with-glibc2.39
+
+interpreter
+  executable        /opt/angr-venv/bin/python
+  version           3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]
+  prefix            /opt/angr-venv
+  base_prefix       /usr
+  pyvenv.cfg        home = /usr/bin
+  pyvenv.cfg        include-system-site-packages = false
+  pyvenv.cfg        version = 3.12.3
+  pyvenv.cfg        executable = /usr/bin/python3.12
+  pyvenv.cfg        command = /usr/bin/python3 -m venv /opt/angr-venv
+  libc              glibc 2.39
+
+  [ok] python version                     3.12.3 (expected 3.12.3)
+  [ok] interpreter is the venv            /opt/angr-venv
+  [ok] base interpreter                   /usr
+
+packages
+  distributions     55 installed
+  pip               26.2.1
+  [ok] angr pinned                        10.0.4.post1 (expected 10.0.4.post1)
+  [ok] archinfo pinned                    10.0.4 (expected 10.0.4)
+  [ok] cle pinned                         10.0.4 (expected 10.0.4)
+  [ok] pyvex pinned                       10.0.4 (expected 10.0.4)
+  [ok] z3-solver pinned                   5.1.0.0 (expected 5.1.0.0)
+  [ok] angr.__version__                   10.0.4.post1
+  [ok] libz3 version                      5.1.0 (expected 5.1.0)
+  claripy           bundled with angr
+  z3 python module  /opt/angr-venv/lib/python3.12/site-packages/z3/__init__.py
+
+  [ok] pip check                          No broken requirements found.
+
+solver
+  [ok] z3 returns sat                     x>1 and x<3
+  [ok] z3 returns unsat                   x>2 and x<2
+  timeout probe     unknown (1 ms budget; informational)
+
+inputs
+  [ok] harness sha256                     986688bcc260abfe… 18712 B
+  [ok] candidate sha256                   46d16e997bdfbb87… 25344 B
+  [ok] original sha256                    c9c2632e792c5acd… 25344 B
+  [ok] contract sha256                    8a2b408c9b1463ca… 1654 B
+
+angr
+  contract target   CWE416_Use_After_Free__malloc_free_char_01_bad
+  contract mode     schema 3 / input_mode none
+  candidate  arch AMD64  entry 0x4011b0 target 0x4012aa
+  original   arch AMD64  entry 0x4011b0 target 0x4012aa
+  [ok] target entry resolves              0x4012aa
+
+verdict: 18/18 checks passed — this interpreter matches the recipe recorded on 2026-11-06
+exit=0

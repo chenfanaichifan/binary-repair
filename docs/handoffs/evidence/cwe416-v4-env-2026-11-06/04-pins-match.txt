@@ -1,0 +1,20 @@
+# do the shipped pins equal what is actually installed? — guest 2026-11-06T06:44:41Z
+
+$ grep -v "^#" ~/v4-env/requirements-angr-10.0.4.post1.txt > /tmp/pins.txt
+$ /opt/angr-venv/bin/pip freeze > /tmp/live.txt
+$ diff /tmp/pins.txt /tmp/live.txt && echo "identical"
+  identical
+
+$ wc -l /tmp/pins.txt /tmp/live.txt
+    54 /tmp/pins.txt
+    54 /tmp/live.txt
+   108 total
+
+$ sha256sum /tmp/pins.txt /tmp/live.txt ~/v4-env/requirements-angr-10.0.4.post1.txt
+  d06f776596a59e2e6eb72cca393aa1fe524204ba08bb3b68e709f75ef3a14ead  /tmp/pins.txt
+  d06f776596a59e2e6eb72cca393aa1fe524204ba08bb3b68e709f75ef3a14ead  /tmp/live.txt
+  c3244d276246e7b249d3322909f3e84dd219d5f6a42b8e11897856dcca1dce67  /home/lab/v4-env/requirements-angr-10.0.4.post1.txt
+
+# The pin file is not hand-typed: it is pip freeze with a comment header, so
+# the recipe cannot drift from the environment it describes without this
+# diff going non-empty.
