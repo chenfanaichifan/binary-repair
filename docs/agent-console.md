@@ -98,7 +98,8 @@ M2 已接管该模块，并接上 M5 的稳定接缝
 
 M1 的 `7984bb6` 与 503 契约 `3fec2c0` 已进入 `canonical/m1-m5-integration`
 （tip `1938c31`）；ordered gates / V3 计数在 `m1/t30-acceptance-ab-2026-11-05 @ fdc083d`，
-尚未进 canonical。本分支按契约消费，合入后只需联调：
+尚未进 canonical。本分支按契约消费，合入后只需联调。
+**验收目标：M1 合并 M5 后的最终 head**；canonical `1938c31` 只做基线。
 
 | 契约 | GUI 行为 |
 |---|---|
@@ -106,7 +107,7 @@ M1 的 `7984bb6` 与 503 契约 `3fec2c0` 已进入 `canonical/m1-m5-integration
 | `GET /api/jobs/{id}/attempts` | 代理到同名路径；端点不存在时返回 `available:false`，报告写 `not_available`，**不写成“零次尝试”** |
 | `ai_usage = {input_tokens, output_tokens, partial}` 或 `null` | 只显示后端给的数字；`null`/全缺失显示“未提供”，不显示 0；`partial=true` 时在数字后标“（部分真实用量）”，不当作完整值 |
 | `GET /api/attempts/{id}/evidence` 的 `gates[]` | 代理到同名路径；**按后端数组顺序**渲染 V0..V5，不排序、不补行、不写死样例 |
-| 同响应的 `v3 = {gate, kind, result, input_mode, valid, invalid, invalid_applicable}` | 标题显示 `valid passed/total`；`invalid_applicable=false` 时 invalid 显示 `N/A`，不显示 `0/0 passed`；`input_mode` 不参与推断结论 |
+| 同响应的 `v3 = {gate, kind, result, input_mode, valid, invalid}` | 标题显示 `valid passed/total`；`input_mode="none"` 或 `invalid.total=0` 时 invalid 显示 `N/A`，不显示 `0/0 passed`。`invalid` 定稿为 `{passed:0,total:0}`（不是 `null`）；`invalid_applicable` 只作旧响应兼容 |
 | artifact `role` | GUI 不按 `route_a_evidence` / `route_b_evidence` 映射；原样显示后端 `role` |
 
 语义决定（答复 M1）：

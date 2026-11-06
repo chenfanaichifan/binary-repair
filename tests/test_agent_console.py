@@ -453,11 +453,12 @@ def test_gates_render_in_endpoint_order():
     assert "evidence.gates.sort" not in AGENT_JS
 
 
-def test_invalid_is_na_when_not_applicable():
-    # invalid_applicable=false means the contract has no invalid cases: N/A,
-    # never 0/0 passed.
-    assert "v3.invalid_applicable !== false" in AGENT_JS
+def test_invalid_is_na_when_input_mode_is_none():
+    # Lead 定稿：input_mode="none" 时 invalid 是 {passed:0,total:0}，显示 N/A，
+    # 不显示 0/0 passed。invalid_applicable 只作旧响应的兼容。
+    assert 'v3.input_mode === "none"' in AGENT_JS
     assert 'var invalidText = "N/A";' in AGENT_JS
+    assert "v3.invalid.total > 0" in AGENT_JS
     assert '" · invalid " + invalidText' in AGENT_JS
 
 

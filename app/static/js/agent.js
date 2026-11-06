@@ -1016,11 +1016,13 @@
         title += " · 用例 " + ((total === null || total === 0 || passed === null) ? "N/A" : (passed + "/" + total));
       }
       if (v3) {
-        // invalid_applicable=false means the contract has no invalid cases:
-        // that is N/A, never 0/0 passed.
+        // Lead 定稿：input_mode="none" 时 invalid 是 {0,0}，显示 N/A；
+        // 任何 total=0 也不显示 0/0，避免被读成“没有失败”。
         var invalidText = "N/A";
-        if (v3.invalid_applicable !== false && v3.invalid &&
-            typeof v3.invalid.total === "number" && typeof v3.invalid.passed === "number") {
+        var noInput = v3.input_mode === "none" || v3.invalid_applicable === false;
+        if (!noInput && v3.invalid &&
+            typeof v3.invalid.total === "number" && typeof v3.invalid.passed === "number" &&
+            v3.invalid.total > 0) {
           invalidText = v3.invalid.passed + "/" + v3.invalid.total;
         }
         title += " · invalid " + invalidText;
