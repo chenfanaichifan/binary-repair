@@ -1,3 +1,4 @@
+705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da  ./.gitattributes
 56b152bd7876ff17217ef124cada0c6b85a0d82334d0b2f5649b28f340c15ef6  ./README.md
 aced6723c8c7a48b4aa04cb4907bdf345f8ec00f29984163b7fdc3c0259f29b3  ./checksums/126-lead-v4-datamodel-2026-11-06.zip.sha256
 45c4c4683e87ab07f48cf6ea2d8a53bb7824e72189361d457817bfbc54a17210  ./checksums/131-lead-verified-by-gate-2026-11-06.zip.sha256
@@ -238,10 +239,6 @@ f469153137be552fb5f5e3c46bfc6c78ac08c062df4823068ec12699120cfb69  ./historical/m
 0401c05f22028accb3ed0f281e4658d1aeac322818939009464e66407e1a4b24  ./historical/m5-delivery-2026-10-22/docs/21-routeb-executor-bundle.md
 61a249b13cc0d9585bb4ef9c5f216da50a6d33890835a3b0b15a5aeba15a64b1  ./historical/m5-delivery-2026-10-22/docs/22-routeb-attempt-bundle.md
 6b6f5286c47fd5344c02920eefd08c57ae7ad24cf4631a72557ba53d3b133f30  ./historical/m5-delivery-2026-10-22/gate3-record.md
-3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd  ./historical/m5-delivery-2026-10-22/routea/.pytest_cache/.gitignore
-37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4  ./historical/m5-delivery-2026-10-22/routea/.pytest_cache/CACHEDIR.TAG
-73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad  ./historical/m5-delivery-2026-10-22/routea/.pytest_cache/README.md
-4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945  ./historical/m5-delivery-2026-10-22/routea/.pytest_cache/v/cache/nodeids
 abc71beb67925d9550ed1121bf16dca88b0b16f269a690abb2e9a6415d88f1c3  ./historical/m5-delivery-2026-10-22/routea/README.md
 e915cb8bb211ed4305400ec02d0cb80847fe98bb1d27b264ac1032ade5165821  ./historical/m5-delivery-2026-10-22/routea/audit.json
 c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82  ./historical/m5-delivery-2026-10-22/routea/candidate.elf
@@ -261,16 +258,7 @@ bab98b95ad890cf0d8ad413273294c1044c0344806fbad7366fa2b6539d3ab1c  ./historical/m
 353784c982bd912c74d579c91c8554234652e951bf1dbc285b145389e4b66ad0  ./historical/m5-delivery/M5-complete-e30eefd.tar.gz
 002e069a8c8c6127e97aecffa1a40b73f4520e12c112dfb3576e1314fe6ae28d  ./historical/m5-delivery/M5-complete-f326537.patch
 6c0144dc3bdb7863b3d886902f8deacf4c7fd8faddfd8cf100a9ba9b8adcc9c8  ./historical/m5-delivery/M5-complete-f326537.tar.gz
-f05af43bffda1fa38231fc07707ec1178dac6e9bbb8e0bd77b26e7d9971ad6ea  ./historical/m5-delivery/M5-v11-adapter-worker.log
-32c1ce865aa269191191e785f4060fab4b6dbeb56a9025263323f5c2275ec266  ./historical/m5-delivery/M5-v11-real-p2.log
 9a8597177c7dd7840fa0f4a8880d38dcd5e65b8c3793e1497f820c5c8cec22de  ./historical/m5-delivery/M5-v8-consume-2026-10-31.md
-d6d5ab66eb8e89dfce054c2be735bccb37fc629773c9651403af740b3bc992d7  ./historical/m5-delivery/M5-v9-adapter-worker.log
-69591c61f848a39f6e77e9ea91f63f31f51d7e1ed2a47715425964eff5f02a9a  ./historical/m5-delivery/M5-v9-real-p2.log
-f1c7c6dc79f2a34e42ae0864b8568d8ef90bf5c4ca07e7d9d57a752646122a14  ./historical/m5-delivery/P3B-v3-worker-rerun-2026-10-29.log
-3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd  ./historical/m5-routea-c4a159-2026-10-22/.pytest_cache/.gitignore
-37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4  ./historical/m5-routea-c4a159-2026-10-22/.pytest_cache/CACHEDIR.TAG
-73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad  ./historical/m5-routea-c4a159-2026-10-22/.pytest_cache/README.md
-4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945  ./historical/m5-routea-c4a159-2026-10-22/.pytest_cache/v/cache/nodeids
 abc71beb67925d9550ed1121bf16dca88b0b16f269a690abb2e9a6415d88f1c3  ./historical/m5-routea-c4a159-2026-10-22/README.md
 e915cb8bb211ed4305400ec02d0cb80847fe98bb1d27b264ac1032ade5165821  ./historical/m5-routea-c4a159-2026-10-22/audit.json
 c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82  ./historical/m5-routea-c4a159-2026-10-22/candidate.elf
