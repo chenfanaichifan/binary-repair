@@ -37,16 +37,66 @@ import angr
 # angr 10 lazy-imports claripy; it is reachable through the angr package.
 claripy = angr.claripy
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+from dataclasses import asdict, dataclass, field  # noqa: E402
 
-from v4_evidence import (  # noqa: E402
-    Replay,
-    SolverAccounting,
-    StateAccounting,
-    V4Case,
-    V4Evidence,
-    write_v4_evidence,
-)
+# The harness states what kind of property it checked. The product adapter
+# reads this field instead of inferring a kind from prose, and it is required:
+# an empty `forbidden_ranges` is only legal for `pointer-flow`.
+PROPERTY_KIND = "pointer-flow"
+
+
+@dataclass
+class SolverAccounting:
+    eval: int = 0
+    sat: int = 0
+    unsat: int = 0
+    unknown: int = 0
+    timeouts: int = 0
+
+    def add(self, other: "SolverAccounting") -> None:
+        self.eval += other.eval
+        self.sat += other.sat
+        self.unsat += other.unsat
+        self.unknown += other.unknown
+        self.timeouts += other.timeouts
+
+
+@dataclass
+class StateAccounting:
+    initial: int = 0
+    deadended: int = 0
+    errored: int = 0
+    unconstrained: int = 0
+    deferred: int = 0
+    active: int = 0
+    pruned: int = 0
+
+
+@dataclass
+class V4Case:
+    id: str
+    kind: str
+    binary_sha256: str
+    expected: str
+    observed: str
+    property_text: str
+    steps: int
+    max_steps: int
+    states: StateAccounting
+    solver: SolverAccounting
+    witness: dict | None = None
+    notes: list[str] = field(default_factory=list)
+
+
+@dataclass
+class Replay:
+    runs: int
+    digests: list[str]
+
+    @property
+    def identical(self) -> bool:
+        return len(self.digests) >= 2 and len(set(self.digests)) == 1
+
 
 MAX_STEPS = 64
 QUERY_TIMEOUT_MS = 5000
@@ -370,20 +420,30 @@ def main(argv: list[str] | None = None) -> int:
     if states_total.unconstrained:
         unexplored.append(f"unconstrained={states_total.unconstrained}")
 
-    evidence = V4Evidence(
-        gate="V4",
-        candidate_sha256=hashlib.sha256(args.candidate.read_bytes()).hexdigest(),
-        original_sha256=hashlib.sha256(args.original.read_bytes()).hexdigest(),
-        contract_sha256=contract_sha,
-        target_entry=entry_name,
-        entry_address=hex(next(iter(entry_addrs.values()))),
-        property_text="on every execution, no pointer passed to free() is later passed to printLine()",
-        input_domain="none: the entry takes no arguments, reads no stdin, opens no file; only the "
-                     "address returned by malloc() is symbolic",
-        hooks=HOOKS,
-        cases=cases,
-        claimed_scope="model",
-        not_claimed=[
+    replay = Replay(runs=args.replay_runs, digests=[r["digest"] for r in runs])
+    if not replay.identical:
+        # Refuse to hand an irreproducible run to the adapter.
+        raise SystemExit(f"replay digests differ: {replay.digests}")
+
+    # Harness output. This is the measurement, not a product evidence shape:
+    # tools/v4_harness_to_evidence.py maps it into the one V4Evidence schema.
+    output = {
+        "harness": "v4_harness",
+        "harness_schema_version": 2,
+        "gate": "V4",
+        "property_kind": PROPERTY_KIND,
+        "candidate_sha256": hashlib.sha256(args.candidate.read_bytes()).hexdigest(),
+        "original_sha256": hashlib.sha256(args.original.read_bytes()).hexdigest(),
+        "contract_sha256": contract_sha,
+        "target_entry": entry_name,
+        "entry_address": hex(next(iter(entry_addrs.values()))),
+        "property_text": "on every execution, no pointer passed to free() is later passed to printLine()",
+        "input_domain": "none: the entry takes no arguments, reads no stdin, opens no file; only the "
+                        "address returned by malloc() is symbolic",
+        "hooks": HOOKS,
+        "cases": [asdict(c) for c in cases],
+        "claimed_scope": "model",
+        "not_claimed": [
             "a binary-level proof: this is a model-level result over the target function only",
             "memory safety anywhere outside the target function",
             "absence of the defect under a different allocator or a different libc",
@@ -392,25 +452,29 @@ def main(argv: list[str] | None = None) -> int:
             "a deep proof on the repaired side: its unsat is the empty-disjunction case — no free() "
             "occurs on the path — not a constraint that was solved",
         ],
-        complete=not unexplored,
-        unexplored=unexplored,
-        unknown=solver_total.unknown,
-        timeouts=solver_total.timeouts,
-        steps=steps_total,
-        max_steps=MAX_STEPS * len(cases),
-        solver=solver_total,
-        states=states_total,
-        replay=Replay(runs=args.replay_runs, digests=[r["digest"] for r in runs]),
-        engine={
+        "complete": not unexplored,
+        "unexplored": unexplored,
+        "unknown": solver_total.unknown,
+        "timeouts": solver_total.timeouts,
+        "steps": steps_total,
+        "max_steps": MAX_STEPS * len(cases),
+        "solver": asdict(solver_total),
+        "states": asdict(states_total),
+        "replay": {"runs": replay.runs, "digests": replay.digests, "identical": replay.identical},
+        "engine": {
             "angr": angr.__version__,
             "claripy": getattr(claripy, "__version__", "bundled with angr"),
             "python": sys.version.split()[0],
         },
-    )
+        "generated_by": "v4_harness.py",
+    }
 
-    path = write_v4_evidence(args.out, evidence)
-    print(json.dumps(evidence.payload(), indent=2, sort_keys=True))
-    print(f"\nwritten: {path}")
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(
+        json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+    )
+    print(json.dumps(output, indent=2, sort_keys=True))
+    print(f"\nwritten: {args.out}")
     return 0
 
 

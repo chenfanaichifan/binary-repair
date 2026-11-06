@@ -1,7 +1,7 @@
-WARNING  | 2026-11-06 11:28:52,307 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
-WARNING  | 2026-11-06 11:28:53,178 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
-WARNING  | 2026-11-06 11:28:53,989 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
-WARNING  | 2026-11-06 11:28:54,489 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
+WARNING  | 2026-11-06 13:18:12,383 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
+WARNING  | 2026-11-06 13:18:13,216 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
+WARNING  | 2026-11-06 13:18:14,014 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
+WARNING  | 2026-11-06 13:18:14,628 | angr.calling_conventions | Guessing call prototype. Please specify prototype.
 {
   "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
   "cases": [
@@ -86,6 +86,8 @@ WARNING  | 2026-11-06 11:28:54,489 | angr.calling_conventions | Guessing call pr
   "entry_address": "0x4012aa",
   "gate": "V4",
   "generated_by": "v4_harness.py",
+  "harness": "v4_harness",
+  "harness_schema_version": 2,
   "hooks": [
     {
       "symbol": "malloc",
@@ -109,9 +111,6 @@ WARNING  | 2026-11-06 11:28:54,489 | angr.calling_conventions | Guessing call pr
     }
   ],
   "input_domain": "none: the entry takes no arguments, reads no stdin, opens no file; only the address returned by malloc() is symbolic",
-  "known_bad": "known_bad",
-  "known_bad_rejected": true,
-  "known_good": "known_good",
   "max_steps": 128,
   "not_claimed": [
     "a binary-level proof: this is a model-level result over the target function only",
@@ -122,6 +121,7 @@ WARNING  | 2026-11-06 11:28:54,489 | angr.calling_conventions | Guessing call pr
     "a deep proof on the repaired side: its unsat is the empty-disjunction case \u2014 no free() occurs on the path \u2014 not a constraint that was solved"
   ],
   "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "property_kind": "pointer-flow",
   "property_text": "on every execution, no pointer passed to free() is later passed to printLine()",
   "replay": {
     "digests": [
@@ -131,7 +131,6 @@ WARNING  | 2026-11-06 11:28:54,489 | angr.calling_conventions | Guessing call pr
     "identical": true,
     "runs": 2
   },
-  "schema_version": 1,
   "solver": {
     "eval": 2,
     "sat": 1,
@@ -155,4 +154,4 @@ WARNING  | 2026-11-06 11:28:54,489 | angr.calling_conventions | Guessing call pr
   "unknown": 0
 }
 
-written: /home/lab/v4/v4-evidence.json
+written: /home/lab/v4/harness-output.json

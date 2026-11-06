@@ -1,0 +1,19 @@
+$ cd .tmp/wt-m1 && python -c 'validate_v4_evidence(payload, candidate, original)'
+  code at: c41de41 (detached worktree .tmp/wt-m1)
+  file   : v4-symbolic.json
+
+  validate_v4_evidence: OK (hashes bound)
+  property_kind        : pointer-flow
+  forbidden_ranges     : None
+  calibration          : cases=2 passed=1 failed=1
+                         known_good=True known_bad=True known_bad_rejected=True
+  exploration          : complete=True unexplored=[]
+  solver               : queries=4 sat=1 unsat=1 unknown=0 timeouts=0
+  steps/max_steps      : 25/128
+  replay               : runs=2 identical=True
+  state / scope        : passed / model
+
+  not_claimed entries mentioning the empty disjunction:
+    - a deep proof on the repaired side: its unsat is the empty-disjunction case — no free() occurs on the path — not a constraint that was solved
+
+  negative check — wrong candidate hash is rejected: candidate hash 46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0 != 0000000000000000000000000000000000000000000000000000000000000000
