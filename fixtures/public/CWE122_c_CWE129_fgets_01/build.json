@@ -9,6 +9,7 @@
     "-g",
     "-fno-pie",
     "-no-pie",
+    "-ffile-prefix-map=<fixture-dir>=/var/tmp/cwe122",
     "-DINCLUDEMAIN",
     "-DOMITGOOD"
   ],
@@ -18,6 +19,7 @@
     "-g",
     "-fno-pie",
     "-no-pie",
+    "-ffile-prefix-map=<fixture-dir>=/var/tmp/cwe122",
     "-DINCLUDEMAIN",
     "-DOMITGOOD",
     "-I",
@@ -36,5 +38,7 @@
     "path": "original.elf",
     "sha256": "c9ddb9c257a81d97a32e3026eacfd2e3453b41bebbaab36e53505e47421c4915"
   },
-  "network": false
+  "network": false,
+  "build_directory": "/var/tmp/cwe122",
+  "reproduction_note": "-g records the build directory in DW_AT_comp_dir, so the digest depends on it. build.sh maps the fixture directory to /var/tmp/cwe122, the directory the committed artefact was built in, so a rebuild reproduces output.sha256 anywhere."
 }
