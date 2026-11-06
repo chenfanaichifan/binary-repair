@@ -208,6 +208,7 @@ f49b9011a5b10dc0cc927dfc253ffff158e2008199ec775b5e31c51ee2263f11  ./docs/testing
 da1cc2cfb15e0245718b5ae214a522f1d7ff85780eaa71afc5297e52b327e0e6  ./historical/M1-T30-118-evidence-2026-11-05/M3-t30-rebuild-evidence-2026-11-05.zip.sha256
 27f2edee1f23178b477b103d52dc9f2065415c23ddd5c6357b6c9e7608ddf25a  ./historical/M1-T30-118-evidence-2026-11-05/PROVENANCE.md
 987bce8da22e3e9531e1042e0465127685d7fc808e78770eaa09ea566d724787  ./historical/M1-T30-118-evidence-2026-11-05/README-M1.md
+99d6d2acc6bc2eab63b8bae9a1d4c4d516f0c51cee6799ae96c7cb152af2ae90  ./historical/M1-T30-118-evidence-2026-11-05/SHA256SUMS
 b54f3ff6298e177813545aa9011abde6e2061931fa9ed125ea2188e9d6e6aa8e  ./historical/M1-T30-118-evidence-2026-11-05/VERIFICATION.txt
 f763853df8c65dff1fdd7d088c4f49c1fae05c739f3769dfd394ea8f06c0a2fd  ./historical/M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/00-window-host.txt
 0f5865d64f927229592f53bd08b8c92fdc64c753d349bff2e00bd0880b7858b6  ./historical/M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/01-window-and-isolation.txt
@@ -218,9 +219,11 @@ ce039f2a220a2ff20b74795371c737bd37bfcdcbd8d0bdb1a4d59a3ab6fb827f  ./historical/M
 87d367d6499d801fc918672f29616eb3ac1726e9eab695db490f4d9d740f3ec1  ./historical/M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/06-SHA256SUMS
 bc5a1856e3bee85ea6ead938885d2f83ac3fa0053183818a0e4beadf65875ce1  ./historical/M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/07-rebuild.json
 c2d03190c12ffbdd705b15ec8a1456aaa06f4128484f125189ab4c9b1c6db470  ./historical/M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/README.md
+c8fcb222882d825b6a02b14eca295e5013dafa4efe7399d5d41d14ed69d248bb  ./historical/M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/SHA256SUMS
 c75b1970231ad6217cdf7910227bd501eebede40872f489568ede8da335cf20b  ./historical/M1-T30-118-evidence-2026-11-05/t30-rebuild-2026-11-05/collect.sh
 9c8b8bcfbbecdd1cadf188d313224bf2b265d90a2446b5d8d83f75f807efad7f  ./historical/M1-T30-acceptance-and-AB-2026-11-05/106-m1-t30-acceptance-and-ab-decision-2026-11-05.md
 f198e8f34d152edc62aa86db1545e6c2be268ba5581f69780188399594313c9d  ./historical/M1-T30-acceptance-and-AB-2026-11-05/118-evidence-absence.txt
+65b6bebb68fa8357a3cb12ec8c72247de2c52664fe5d06837f52b24e31b2d4eb  ./historical/M1-T30-acceptance-and-AB-2026-11-05/SHA256SUMS
 d54b12c39d9f89838b009337ea3b326d5787517473dcb420f2b6c7c7fdd20132  ./historical/M1-T30-acceptance-and-AB-2026-11-05/constraints.txt
 e03602ac6ee4fb9299a82ce644bc752257b2e8ee0dea5d41f6ff8550b2d9df59  ./historical/M1-T30-acceptance-and-AB-2026-11-05/contract-probe.txt
 80fbed0890698e8cc230700ed41e8fd1dd1b31e425a5c51c6b538a8a2fe32366  ./historical/M1-T30-acceptance-and-AB-2026-11-05/cwe416-corpus.txt
@@ -231,6 +234,7 @@ c976259dda56bbe8545218f769434542f5eb4a22654b3aa91334a2faf3f3fbf4  ./historical/M
 da34d4bc1e31cbf90ab59821b82b8a087492ee9cc5e1453f71c75422d9ab8cd1  ./historical/M1-T30-acceptance-and-AB-2026-11-05/t30-package.txt
 28df81e7054f4d05a40266e362810b438cdede13994ba527719a20d33b212cc0  ./historical/m5-delivery-2026-10-22/M5-REPLAY.md
 f469153137be552fb5f5e3c46bfc6c78ac08c062df4823068ec12699120cfb69  ./historical/m5-delivery-2026-10-22/README.md
+eb075991fe67c8fb004377d3cf4dea42124d3ecc0113cdb507437b7ee44b18ff  ./historical/m5-delivery-2026-10-22/SHA256SUMS
 957d73d4284a4e5ced27de451bacdfe8956751232bd4a1fa5aa6454dccdc108e  ./historical/m5-delivery-2026-10-22/bundles/m5-routea-c4a159-2026-10-22.zip
 8011048c22e8598654970eb4a1851992f0f257f45ced9445e7572f1618df2855  ./historical/m5-delivery-2026-10-22/bundles/m5-routea-c4a159-2026-10-22.zip.sha256
 499f510c9fda660826ea6b7f5b1969839334ba7cd63cc0c975a1e4ca951e4b1d  ./historical/m5-delivery-2026-10-22/bundles/m5-routeb-kit-2026-10-22-v6.zip
@@ -240,6 +244,7 @@ f469153137be552fb5f5e3c46bfc6c78ac08c062df4823068ec12699120cfb69  ./historical/m
 61a249b13cc0d9585bb4ef9c5f216da50a6d33890835a3b0b15a5aeba15a64b1  ./historical/m5-delivery-2026-10-22/docs/22-routeb-attempt-bundle.md
 6b6f5286c47fd5344c02920eefd08c57ae7ad24cf4631a72557ba53d3b133f30  ./historical/m5-delivery-2026-10-22/gate3-record.md
 abc71beb67925d9550ed1121bf16dca88b0b16f269a690abb2e9a6415d88f1c3  ./historical/m5-delivery-2026-10-22/routea/README.md
+640b448228ea8e16d15930c5c81a1478a11a82a1feddb122f6262157a87788dd  ./historical/m5-delivery-2026-10-22/routea/SHA256SUMS
 e915cb8bb211ed4305400ec02d0cb80847fe98bb1d27b264ac1032ade5165821  ./historical/m5-delivery-2026-10-22/routea/audit.json
 c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82  ./historical/m5-delivery-2026-10-22/routea/candidate.elf
 15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df  ./historical/m5-delivery-2026-10-22/routea/contract.json
@@ -260,6 +265,7 @@ bab98b95ad890cf0d8ad413273294c1044c0344806fbad7366fa2b6539d3ab1c  ./historical/m
 6c0144dc3bdb7863b3d886902f8deacf4c7fd8faddfd8cf100a9ba9b8adcc9c8  ./historical/m5-delivery/M5-complete-f326537.tar.gz
 9a8597177c7dd7840fa0f4a8880d38dcd5e65b8c3793e1497f820c5c8cec22de  ./historical/m5-delivery/M5-v8-consume-2026-10-31.md
 abc71beb67925d9550ed1121bf16dca88b0b16f269a690abb2e9a6415d88f1c3  ./historical/m5-routea-c4a159-2026-10-22/README.md
+640b448228ea8e16d15930c5c81a1478a11a82a1feddb122f6262157a87788dd  ./historical/m5-routea-c4a159-2026-10-22/SHA256SUMS
 e915cb8bb211ed4305400ec02d0cb80847fe98bb1d27b264ac1032ade5165821  ./historical/m5-routea-c4a159-2026-10-22/audit.json
 c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82  ./historical/m5-routea-c4a159-2026-10-22/candidate.elf
 15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df  ./historical/m5-routea-c4a159-2026-10-22/contract.json
@@ -271,6 +277,7 @@ aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393  ./historical/m
 c858efcd65042adb729beedfa5587fb5efd2919ea162ec35fe8a9718569dc3b9  ./historical/m5-routeb-kit-2026-10-22-v6/README.md
 15f6b492608e8c137f2612058bf43b90173284aec86d8c51b25d09903d0ad8df  ./historical/m5-routeb-kit-2026-10-22-v6/fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json
 aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393  ./historical/m5-routeb-kit-2026-10-22-v6/fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf
+ecfba7857ee05b658dd91ec16a9f56310a422449a585b394a6f752d62b60f136  ./historical/m5-routeb-kit-2026-10-22-v6/fixtures/public/CWE121_src_char_declare_cpy_51b/tests/SHA256SUMS
 d493f370a37b25f910eb72cb6f9202856e46be0e42e76922db38a30769f8190d  ./historical/m5-routeb-kit-2026-10-22-v6/fixtures/public/CWE121_src_char_declare_cpy_51b/tests/invalid.json
 17b2ee399db5ef43ba14978c497d71dc45d28aaa685ff90a60baaabc6f221e76  ./historical/m5-routeb-kit-2026-10-22-v6/fixtures/public/CWE121_src_char_declare_cpy_51b/tests/valid.json
 0e5da0423d68518933f0fb910e8732d58f73ca9cc8323b1dae7bc82694753990  ./historical/m5-routeb-kit-2026-10-22-v6/routeb/experiment/samples/juliet_badSink.normalized.c
