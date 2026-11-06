@@ -312,13 +312,20 @@ def _record(
 ) -> None:
     data_dir = context.get("data_dir") if isinstance(context, Mapping) else None
     job_id = context.get("job_id") if isinstance(context, Mapping) else None
+    if not data_dir:
+        # A job-linked call must not fall back to a project-root "var": the row
+        # would be unreadable where the job lives. A job-less preview has
+        # nothing to persist, so it simply writes nothing.
+        if job_id:
+            raise ValueError("data_dir is required to record model usage")
+        return
     usage = dict(usage) if usage else {}
     latency = usage.pop("latency_ms", None)
     if not isinstance(latency, int) or isinstance(latency, bool) or latency < 0:
         latency = None
     try:
         model_calls.record_call(
-            data_dir=data_dir or "var",
+            data_dir=data_dir,
             model_requested=requested,
             model_returned=returned,
             status=status,
