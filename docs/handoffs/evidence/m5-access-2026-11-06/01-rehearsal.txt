@@ -1,0 +1,26 @@
+# m5verify rehearsal — 2026-11-06T08:41:45Z
+# a throwaway key, added with guest/add-m4-key.sh USER_NAME=m5verify
+
+$ id
+uid=1005(m5verify) gid=1005(m5verify) groups=1005(m5verify)
+$ sudo -n true
+sudo: a password is required
+  exit=1
+
+$ cd /opt/binrepair-handoff/M4-v4-handoff-2026-11-06 && sha256sum -c SHA256SUMS
+  all 12 rows OK (payload)
+
+$ cd /opt/binrepair-handoff/T8.3-evidence-2026-11-06 && sha256sum -c SHA256SUMS
+  all 29 rows OK (T8.3 bundle)
+
+$ sh /opt/binrepair-handoff/M4-v4-handoff-2026-11-06/verify_all.sh
+  EXIT=0
+PASS: the harness reproduces the recorded output from these inputs
+
+ALL PASS: 3/3 steps
+
+$ /opt/angr-venv/bin/python -c "import angr, z3; print(angr.__version__, z3.get_version_string())"
+10.0.4.post1 5.1.0
+
+# read-only check: can this account write into the handoff?
+  not writable (expected)

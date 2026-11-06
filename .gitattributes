@@ -36,6 +36,7 @@ docs/handoffs/evidence/** -text
 # the expected-output JSON.
 M4-v4-handoff-2026-11-06/** -text
 T8.3-evidence-2026-11-06/** -text
+T8.3-supplement-2026-11-06/** -text
 *.pdf binary
 *.vmdk binary
 *.png binary

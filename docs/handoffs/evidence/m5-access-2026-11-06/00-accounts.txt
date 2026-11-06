@@ -1,0 +1,27 @@
+# account and install state — 2026-11-06T08:46:25Z
+
+$ id m4verify
+uid=1004(m4verify) gid=1004(m4verify) groups=1004(m4verify)
+$ sudo -n passwd -S m4verify
+m4verify L 2026-11-06 0 99999 7 -1
+$ keys in ~m4verify/.ssh/authorized_keys
+0
+$ groups m4verify
+m4verify : m4verify
+
+$ id m5verify
+uid=1005(m5verify) gid=1005(m5verify) groups=1005(m5verify)
+$ sudo -n passwd -S m5verify
+m5verify L 2026-11-06 0 99999 7 -1
+$ keys in ~m5verify/.ssh/authorized_keys
+0
+$ groups m5verify
+m5verify : m5verify
+
+$ ls -ld /opt/binrepair-handoff/*
+drwxr-xr-x 5 root root 4096 Nov  6 16:26 /opt/binrepair-handoff/M4-v4-handoff-2026-11-06
+drwxr-xr-x 8 root root 4096 Nov  6 16:33 /opt/binrepair-handoff/T8.3-evidence-2026-11-06
+drwxr-xr-x 2 root root 4096 Nov  6 16:44 /opt/binrepair-handoff/T8.3-supplement-2026-11-06
+
+$ sudo -n find /opt/binrepair-handoff -maxdepth 1 -type f | wc -l
+0
