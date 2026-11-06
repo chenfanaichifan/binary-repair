@@ -351,3 +351,49 @@ def test_unknown_job_obligations_returns_404(client: TestClient) -> None:
     response = client.get("/api/jobs/does-not-exist/obligations")
     assert response.status_code == 404
     assert response.json()["detail"] == "Job not found."
+
+
+def test_evidence_exposes_ordered_gates_and_v3_counts(client: TestClient) -> None:
+    job_id, run = _seed_finished_run(client, MIXED_RESULTS, key="gate-summary")
+    attempt = _route_attempt(run, "route_b")
+    data_dir = _data_dir()
+    relative = f"jobs/{job_id}/evidence/{attempt['id']}/manifest-repaired.json"
+    target = data_dir / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "cases": [
+            {"id": "valid-no-input", "kind": "valid", "ok": True},
+        ]
+    }
+    raw = json.dumps(manifest).encode("utf-8")
+    target.write_bytes(raw)
+    connection = connect(data_dir)
+    try:
+        with connection:
+            connection.execute(
+                "INSERT INTO artifacts (id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, 'application/json', 'v3_manifest', '2026-11-06T00:00:00+00:00')",
+                ("art-v3-test", job_id, attempt["id"], relative, hashlib.sha256(raw).hexdigest(), len(raw)),
+            )
+            connection.execute(
+                "UPDATE obligations SET result = 'passed', evidence_artifact_id = ?, "
+                "detail = 'input_mode=none valid 1/1 invalid not_applicable' "
+                "WHERE attempt_id = ? AND kind = 'behaviour'",
+                ("art-v3-test", attempt["id"]),
+            )
+    finally:
+        connection.close()
+
+    response = client.get(f"/api/attempts/{attempt['id']}/evidence")
+    assert response.status_code == 200
+    payload = response.json()
+    assert [row["gate"] for row in payload["gates"]] == ["V0", "V1", "V2", "V3", "V4", "V5"]
+    assert payload["v3"] == {
+        "gate": "V3",
+        "kind": "behaviour",
+        "result": "passed",
+        "input_mode": "none",
+        "valid": {"passed": 1, "total": 1},
+        "invalid": {"passed": 0, "total": 0},
+        "invalid_applicable": False,
+    }
