@@ -163,6 +163,45 @@ def test_aggregate_counts_job_and_attempt_bindings_once(data_dir: Path) -> None:
     assert model_calls.aggregate_job_usage(data_dir=data_dir, job_id=job.id) == {
         "input_tokens": 7,
         "output_tokens": 9,
+        "partial": False,
+    }
+
+
+def test_aggregate_all_null_returns_none(data_dir: Path) -> None:
+    """Every recorded call lacks usage: there is no real sum to report."""
+    job = jobs.create_job(
+        original_bytes=b"\x7fELF null", filename="n.elf",
+        defect_description="overflow", data_dir=data_dir,
+    )
+    model_calls.record_call(
+        data_dir=data_dir, model_requested="m", status="ok",
+        job_id=job.id, usage=None,
+    )
+    model_calls.record_call(
+        data_dir=data_dir, model_requested="m", status="ok",
+        job_id=job.id, usage={"prompt_tokens": None, "completion_tokens": None},
+    )
+    assert model_calls.aggregate_job_usage(data_dir=data_dir, job_id=job.id) is None
+
+
+def test_aggregate_partial_null_marks_partial(data_dir: Path) -> None:
+    """Some rows carry usage, some do not: sum the real ones and say so."""
+    job = jobs.create_job(
+        original_bytes=b"\x7fELF partial", filename="p.elf",
+        defect_description="overflow", data_dir=data_dir,
+    )
+    model_calls.record_call(
+        data_dir=data_dir, model_requested="m", status="ok",
+        job_id=job.id, usage={"prompt_tokens": 2, "completion_tokens": 3},
+    )
+    model_calls.record_call(
+        data_dir=data_dir, model_requested="m", status="failed",
+        job_id=job.id, usage=None,
+    )
+    assert model_calls.aggregate_job_usage(data_dir=data_dir, job_id=job.id) == {
+        "input_tokens": 2,
+        "output_tokens": 3,
+        "partial": True,
     }
 
 

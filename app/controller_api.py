@@ -1268,6 +1268,16 @@ def _v3_summary(rows: list[dict[str, Any]], *, data_dir: str | Path) -> dict[str
     if mode is None:
         mode_match = re.search(r"input_mode\s*=\s*(none|argv|stdin)", row.get("detail") or "")
         mode = mode_match.group(1) if mode_match else None
+    # A no-input run has no invalid cases by construction and may have no V3
+    # manifest at all. Report zero counts and "none" rather than unknown: the
+    # gate result still comes from the row, so this never turns not_run into a
+    # pass, and a client no longer has to parse a null pair.
+    if valid_total is None:
+        valid_passed, valid_total = 0, 0
+    if invalid_total is None:
+        invalid_passed, invalid_total = 0, 0
+    if mode is None:
+        mode = "none"
     invalid_applicable = None if invalid_total is None else invalid_total > 0
     return {
         "gate": "V3",
