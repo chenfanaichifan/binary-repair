@@ -1,0 +1,53 @@
+$ grep -n "GATES: tuple" -A 8 app/services/orchestration.py
+  24:GATES: tuple[tuple[str, str, bool], ...] = (
+  25-    ("V0", "identity", True),
+  26-    ("V1", "structure", True),
+  27-    ("V2", "interface", True),
+  28-    ("V3", "behaviour", True),
+  29-    ("V4", "symbolic", True),
+  30-    ("V5", "reproducibility", True),
+  31-)
+  32-
+
+$ grep -n "build_obligations(results" -B2 -A2 app/services/orchestration.py app/services/obligations.py
+  app/services/orchestration.py-163-
+  app/services/orchestration.py-164-    run, body = _run_context(job_id, run_id, data_dir)
+  app/services/orchestration.py:165:    obligations = build_obligations(results, required=required)
+  app/services/orchestration.py-166-    verdict = decide_attempt_outcome(
+  app/services/orchestration.py-167-        obligations=obligations,
+  --
+  app/services/obligations.py-48-    evidence = evidence or {}
+  app/services/obligations.py-49-    details = details or {}
+  app/services/obligations.py:50:    obligations = build_obligations(results)
+  app/services/obligations.py-51-
+  app/services/obligations.py-52-    connection = connect(data_dir)
+
+$ grep -n "evaluate_attempt(" -A 8 app/services/worker.py | sed -n "1,14p"
+  305:    return orchestration.evaluate_attempt(
+  306-        job_id,
+  307-        run.id,
+  308-        attempt_id=attempt.id,
+  309-        results=payload["results"],
+  310-        data_dir=data_dir,
+  311-        candidate_sha256=payload["candidate_sha256"],
+  312-    )
+  313-
+  --
+  357:                    verdict = orchestration.evaluate_attempt(
+  358-                        job.id,
+  359-                        run.id,
+  360-                        attempt_id=attempt.id,
+
+  -> the worker passes results, data_dir and candidate_sha256, and no
+     `required=` mapping, so build_obligations() uses the defaults above:
+     all six gates required.
+
+$ grep -n "interface check not implemented" routeb/attempt_writer.py
+  228:        "V2": "interface check not implemented in Route B executor",
+
+$ grep -n "\"V4\": \"not_run\"" routeb/attempt_writer.py
+  221:        "V4": "not_run",
+
+  -> Route B sets both V2 and V4 to not_run by construction, and both gates
+     are required. That is the whole finding: the bundle cannot reach
+     success_within_scope while those two facts hold together.

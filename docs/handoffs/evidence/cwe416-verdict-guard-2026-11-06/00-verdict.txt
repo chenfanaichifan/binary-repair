@@ -1,0 +1,69 @@
+$ python3 show_verdict.py    (repo root; no binary is executed)
+
+  bundle           : docs/handoffs/evidence/cwe416-candidate-2026-11-05
+  gate-index says  : {'V0': 'passed', 'V1': 'passed', 'V2': 'not_run', 'V3': 'passed', 'V4': 'not_run', 'V5': 'passed'}
+  candidate_sha256 : 46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0
+  contract sha256  : 8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b
+
+  GATES as the service declares them (app/services/orchestration.py:24-31):
+    V0  kind=identity         required=True
+    V1  kind=structure        required=True
+    V2  kind=interface        required=True
+    V3  kind=behaviour        required=True
+    V4  kind=symbolic         required=True
+    V5  kind=reproducibility  required=True
+
+  The worker calls evaluate_attempt without a `required` mapping
+  (app/services/worker.py:305), so build_obligations() falls back to the
+  third column above: every gate is required.
+
+  [A] as the bundle stands, contract untouched:
+      identity         required=True  result=passed
+      structure        required=True  result=passed
+      interface        required=True  result=not_run
+      behaviour        required=True  result=passed
+      symbolic         required=True  result=not_run
+      reproducibility  required=True  result=passed
+    outcome            : inconclusive
+    reason             : required_check_not_run
+    failing_obligation : interface
+    detail             : V2 interface: not_run
+    is_success         : False
+
+  [B] COUNTERFACTUAL 1 — what if `interface` were not required?
+      Not a result. Nothing may quote it. No file was edited.
+    outcome            : inconclusive
+    reason             : required_check_not_run
+    failing_obligation : symbolic
+    detail             : V4 symbolic: not_run
+    is_success         : False
+
+  [C] COUNTERFACTUAL 2 — neither `interface` nor `symbolic` required.
+      Not a result, not a claim, and not achievable by evidence: it is a
+      contract-owner edit to contract.json#required_obligations. Shown only
+      to locate the two walls, i.e. to prove nothing else stands in the way.
+    outcome            : success_within_scope
+    reason             : None
+    failing_obligation : None
+    detail             : 4 required obligations passed
+    is_success         : True
+
+  Reading:
+    [A] fails on `interface`, before `symbolic` is even reached: V2 is
+        `not_run` because Route B has no interface check
+        (routeb/attempt_writer.py:228 — "interface check not implemented
+        in Route B executor").
+    [B] with `interface` no longer required, the attempt still fails — now on
+        `symbolic`. So a hand-written V4 would move the failing obligation
+        from `interface` to `symbolic`, not to success.
+    [C] both disabled is the only combination that reads as success, and it
+        is a contract-owner edit, not evidence. Quoting [C] as the outcome
+        of this bundle would be a fabricated pass.
+
+  Two walls, then, and neither is an evidence task. Note that [C] also says
+  "4 required obligations passed": V0, V1, V3 and V5 are the four, which is
+  exactly what this candidate does demonstrate.
+
+  And: no code path reads v4-symbolic.json, v2-interface.json or
+  gate-index.json (see 02-readers.txt). A V4 file, real or invented, has no
+  route into a verdict at all.

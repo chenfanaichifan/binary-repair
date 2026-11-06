@@ -1,0 +1,23 @@
+$ # does any code read the three review artifacts?
+
+$ grep -rn "v4-symbolic" app routeb scripts tools tests --include=*.py --include=*.html --include=*.js
+  (no match)
+
+$ grep -rn "v2-interface" app routeb scripts tools tests --include=*.py --include=*.html --include=*.js
+  (no match)
+
+$ grep -rn "gate-index" app routeb scripts tools tests --include=*.py --include=*.html --include=*.js
+  (no match)
+
+$ grep -rn "gate_index" app routeb scripts tools tests --include=*.py --include=*.html --include=*.js
+  (no match)
+
+$ # and in JSON schema / GUI templates?
+  (no match above means the GUI never renders them either)
+
+What this means:
+  The three files are review artifacts for a human. No code path promotes a
+  V4 result — real or hand-written — into an obligation. The obligation for
+  V4 is written by routeb/attempt_writer.py and is the literal string
+  "not_run" (line 221). So "dont fake a V4" is not only a discipline rule
+  here; a fake V4 file would have no effect at all. The same holds for V2.
