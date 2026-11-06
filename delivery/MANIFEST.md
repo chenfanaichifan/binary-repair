@@ -18,6 +18,8 @@ position; the hash is authoritative.
 
 | `delivery/cwe416-124-candidate-2026-11-05.zip` | CWE416 candidate 124 + controller-ingest evidence; top-level hash in the sibling `.sha256` | M4, M5, M3 |
 
+| `delivery/cwe416-124-v4-rerun-2026-11-06.zip` | 124 rerun bundle with record 128 product V4 evidence; all six Route B gates passed | M4, M5, M3 |
+
 ## Adding an entry
 
 1. Put the artifact in `delivery/` (new hand-offs) or leave it in `dist/`
