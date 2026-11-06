@@ -21,6 +21,7 @@ fixtures/public/**/tests/*.json -text
 # This case is pinned to SARD's shipped bytes, CRLF included. A text
 # filter would change its sha256 and void defect.json#source.sha256.
 fixtures/public/CWE122_c_CWE129_fgets_01/** -text
+fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/** -text
 
 *.elf  binary
 *.bin  binary
