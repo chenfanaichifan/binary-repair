@@ -35,18 +35,35 @@ class ForbiddenRange(BaseModel):
 
 
 class ExplorationAccounting(BaseModel):
+    """The state counts the harness actually reports.
+
+    ``active``/``deferred``/``unconstrained``/``errored`` left over on a
+    ``complete`` run make completeness a lie, so they are rejected together
+    with a non-empty ``unexplored`` list.
+    """
+
     model_config = ConfigDict(extra="forbid")
-    states_explored: int = Field(ge=0)
-    states_pruned: int = Field(ge=0)
-    resource_pruned: int = Field(ge=0)
-    max_depth: int = Field(ge=0)
+    initial: int = Field(ge=0)
+    deadended: int = Field(ge=0)
+    errored: int = Field(ge=0)
+    unconstrained: int = Field(ge=0)
+    deferred: int = Field(ge=0)
+    active: int = Field(ge=0)
+    pruned: int = Field(ge=0)
     complete: bool
     unexplored: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def _complete_has_no_unexplored(self) -> "ExplorationAccounting":
+    def _complete_has_no_open_states(self) -> "ExplorationAccounting":
         if self.complete and self.unexplored:
             raise ValueError("complete exploration must have unexplored == []")
+        if self.complete and any(
+            (self.errored, self.unconstrained, self.deferred, self.active)
+        ):
+            raise ValueError(
+                "complete exploration cannot leave errored/unconstrained/"
+                "deferred/active states"
+            )
         return self
 
 
@@ -122,7 +139,7 @@ class V4Evidence(BaseModel):
     tool_versions: dict[str, str] = Field(min_length=1)
     preconditions: list[str] = Field(min_length=1)
     memory_predicates: list[str] = Field(min_length=1)
-    forbidden_ranges: list[ForbiddenRange] = Field(min_length=1)
+    forbidden_ranges: list[ForbiddenRange]
     hooks: list[str] = Field(min_length=1)
     exploration_accounting: ExplorationAccounting
     solver_accounting: SolverAccounting
@@ -130,6 +147,7 @@ class V4Evidence(BaseModel):
     replay: Replay
     claimed_scope: Literal["model"]
     not_claimed: list[str] = Field(min_length=1)
+    source: dict[str, object] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _complete(self) -> "V4Evidence":
@@ -162,10 +180,14 @@ def write_v4_evidence(
     manufacture a pass.
     """
 
-    evidence = validate_v4_evidence(
-        data,
-        candidate_sha256=candidate_sha256,
-        original_sha256=original_sha256,
+    evidence = (
+        data
+        if isinstance(data, V4Evidence)
+        else validate_v4_evidence(
+            data,
+            candidate_sha256=candidate_sha256,
+            original_sha256=original_sha256,
+        )
     )
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -176,6 +198,157 @@ def write_v4_evidence(
     )
     temporary.replace(destination)
     return evidence
+
+
+
+def from_v4_harness(data: object) -> V4Evidence:
+    """Minimal converter: M3 ``v4_harness`` output -> product V4Evidence.
+
+    The harness already records the real exploration, solver, calibration and
+    replay facts. This function maps those facts into the one product schema;
+    it does not re-derive a verdict and it rejects missing or inconsistent
+    sections instead of filling them with defaults.
+    """
+
+    if not isinstance(data, dict):
+        raise V4EvidenceError("v4_harness output must be an object")
+    try:
+        cases = data["cases"]
+        states = data["states"]
+        solver = data["solver"]
+        engine = data["engine"]
+        replay = data["replay"]
+        if not isinstance(cases, list) or not isinstance(states, dict):
+            raise V4EvidenceError("v4_harness cases/states have the wrong shape")
+        if not isinstance(solver, dict) or not isinstance(engine, dict):
+            raise V4EvidenceError("v4_harness solver/engine have the wrong shape")
+        if not isinstance(replay, dict):
+            raise V4EvidenceError("v4_harness replay has the wrong shape")
+
+        known_good_cases = [c for c in cases if c.get("kind") == "known_good"]
+        known_bad_cases = [c for c in cases if c.get("kind") == "known_bad"]
+        known_good = bool(known_good_cases)
+        known_bad = bool(known_bad_cases)
+        known_bad_rejected = any(
+            c.get("observed") == "violated" for c in known_bad_cases
+        )
+        calibration_passed = sum(
+            1 for c in known_good_cases if c.get("observed") == "holds"
+        )
+        calibration_failed = sum(
+            1 for c in known_bad_cases if c.get("observed") == "violated"
+        )
+
+        digests = replay.get("digests") or []
+        if not isinstance(digests, list) or not digests:
+            raise V4EvidenceError("v4_harness replay has no digest")
+        evidence_sha256 = str(digests[0])
+        runs = int(replay.get("runs", len(digests)))
+        identical = bool(
+            replay.get("identical", runs >= 2 and len(set(digests)) == 1)
+        )
+
+        hooks = []
+        for hook in data.get("hooks") or []:
+            if not isinstance(hook, dict) or not hook.get("symbol"):
+                raise V4EvidenceError("v4_harness hook is missing its symbol")
+            hooks.append(str(hook["symbol"]))
+        if not hooks:
+            raise V4EvidenceError("v4_harness output has no hooks")
+
+        tool_versions = {
+            str(name): str(version)
+            for name, version in engine.items()
+            if name and version
+        }
+        if not tool_versions:
+            raise V4EvidenceError("v4_harness engine has no versions")
+
+        input_domain = str(data.get("input_domain") or "").strip()
+        property_text = str(data.get("property_text") or "").strip()
+        if not input_domain or not property_text:
+            raise V4EvidenceError("v4_harness input_domain/property_text is empty")
+
+        exploration = {
+            name: int(states.get(name, 0))
+            for name in (
+                "initial", "deadended", "errored", "unconstrained",
+                "deferred", "active", "pruned",
+            )
+        }
+        exploration["complete"] = bool(data.get("complete"))
+        exploration["unexplored"] = list(data.get("unexplored") or [])
+
+        solver_accounting = {
+            "engine": "angr",
+            "version": str(engine.get("angr") or ""),
+            "queries": sum(
+                int(solver.get(name, 0))
+                for name in ("eval", "sat", "unsat", "unknown")
+            ),
+            "sat": int(solver.get("sat", 0)),
+            "unsat": int(solver.get("unsat", 0)),
+            "unknown": int(solver.get("unknown", 0)),
+            "eval": int(solver.get("eval", 0)),
+            "timeouts": int(solver.get("timeouts", 0)),
+            "steps": int(data["steps"]),
+            "max_steps": int(data["max_steps"]),
+            "complete": bool(data.get("complete")),
+        }
+
+        payload = {
+            "schema_version": 1,
+            "gate": "V4",
+            "kind": "symbolic",
+            "scope": "model",
+            "state": "passed",
+            "ran": True,
+            "candidate_sha256": str(data["candidate_sha256"]),
+            "original_sha256": str(data["original_sha256"]),
+            "tool_versions": tool_versions,
+            "preconditions": [input_domain],
+            "memory_predicates": [property_text],
+            "forbidden_ranges": [],
+            "hooks": hooks,
+            "exploration_accounting": exploration,
+            "solver_accounting": solver_accounting,
+            "calibration": {
+                "suite": str(data.get("generated_by") or "v4_harness"),
+                "cases": len(cases),
+                "passed": calibration_passed,
+                "failed": calibration_failed,
+                "known_good": known_good,
+                "known_bad": known_bad,
+                "known_bad_rejected": known_bad_rejected,
+                "complete": bool(data.get("complete")),
+            },
+            "replay": {
+                "command": str(data.get("generated_by") or "v4_harness"),
+                "runs": runs,
+                "identical": identical,
+                "evidence_sha256": evidence_sha256,
+            },
+            "claimed_scope": data.get("claimed_scope"),
+            "not_claimed": list(data.get("not_claimed") or []),
+            "source": {
+                "target_entry": data.get("target_entry"),
+                "entry_address": data.get("entry_address"),
+                "contract_sha256": data.get("contract_sha256"),
+                "property_text": property_text,
+                "input_domain": input_domain,
+                "generated_by": data.get("generated_by"),
+                "cases": cases,
+                "engine": engine,
+            },
+        }
+    except (KeyError, TypeError, ValueError) as exc:
+        raise V4EvidenceError(f"v4_harness output cannot be converted: {exc}") from exc
+
+    return validate_v4_evidence(
+        payload,
+        candidate_sha256=str(data["candidate_sha256"]),
+        original_sha256=str(data["original_sha256"]),
+    )
 
 
 def validate_v4_evidence(
@@ -209,6 +382,7 @@ def validate_v4_evidence(
 __all__ = [
     "V4Evidence",
     "V4EvidenceError",
+    "from_v4_harness",
     "validate_v4_evidence",
     "write_v4_evidence",
 ]

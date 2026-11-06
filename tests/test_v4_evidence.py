@@ -27,10 +27,13 @@ def _valid() -> dict:
         "forbidden_ranges": [{"start": 0, "end": 64, "reason": "freed object"}],
         "hooks": ["after free", "before read"],
         "exploration_accounting": {
-            "states_explored": 12,
-            "states_pruned": 3,
-            "resource_pruned": 1,
-            "max_depth": 8,
+            "initial": 12,
+            "deadended": 10,
+            "errored": 0,
+            "unconstrained": 0,
+            "deferred": 0,
+            "active": 0,
+            "pruned": 2,
             "complete": True,
             "unexplored": [],
         },
@@ -133,14 +136,14 @@ def test_write_v4_evidence_only_writes_validated_content(tmp_path) -> None:
     assert not bad.exists()
 
 
-def test_step_cap_and_missing_resource_pruned_are_not_verified() -> None:
+def test_step_cap_and_missing_pruned_accounting_are_not_verified() -> None:
     data = copy.deepcopy(_valid())
     data["solver_accounting"]["steps"] = data["solver_accounting"]["max_steps"]
     with pytest.raises(V4EvidenceError):
         validate_v4_evidence(data)
 
     data = copy.deepcopy(_valid())
-    del data["exploration_accounting"]["resource_pruned"]
+    del data["exploration_accounting"]["pruned"]
     with pytest.raises(V4EvidenceError):
         validate_v4_evidence(data)
 

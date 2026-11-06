@@ -183,8 +183,9 @@ def _typed_v4(candidate_sha256: str, original_sha256: str) -> dict:
         "forbidden_ranges": [{"start": 0, "end": 64, "reason": "freed object"}],
         "hooks": ["after free", "before read"],
         "exploration_accounting": {
-            "states_explored": 8, "states_pruned": 1, "resource_pruned": 0,
-            "max_depth": 6, "complete": True, "unexplored": [],
+            "initial": 8, "deadended": 7, "errored": 0, "unconstrained": 0,
+            "deferred": 0, "active": 0, "pruned": 1,
+            "complete": True, "unexplored": [],
         },
         "solver_accounting": {
             "engine": "z3", "version": "5.1.0", "queries": 8,
