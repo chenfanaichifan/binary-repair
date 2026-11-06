@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "route": "route_b",
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "gates": {
+    "V0": {
+      "status": "passed",
+      "artifacts": [
+        "original.elf",
+        "candidate.elf"
+      ]
+    },
+    "V1": {
+      "status": "passed",
+      "artifacts": [
+        "audit.json"
+      ]
+    },
+    "V2": {
+      "status": "not_run",
+      "artifacts": [
+        "v2-interface.json"
+      ]
+    },
+    "V3": {
+      "status": "passed",
+      "artifacts": [
+        "manifest-repaired.json"
+      ]
+    },
+    "V4": {
+      "status": "passed",
+      "artifacts": [
+        "v4-symbolic.json"
+      ]
+    },
+    "V5": {
+      "status": "passed",
+      "artifacts": [
+        "reproducibility.json"
+      ]
+    }
+  }
+}

@@ -132,3 +132,52 @@ def test_plan_usage_is_only_a_complete_fallback(client: TestClient, data_dir: Pa
 def test_no_usage_anywhere_is_none(client: TestClient) -> None:
     job = _create(client)
     assert _usage(client, job["id"]) is None
+
+
+def test_aggregate_counts_job_and_attempt_bindings_once(data_dir: Path) -> None:
+    """A route call carries attempt_id only; a plan call carries job_id only.
+
+    Both belong to the same job, and a row that happens to carry both must
+    still contribute its tokens once.
+    """
+    job = jobs.create_job(
+        original_bytes=b"\x7fELF usage", filename="u.elf",
+        defect_description="overflow", data_dir=data_dir,
+    )
+    attempt = _attempt(data_dir, job.id)
+
+    model_calls.record_call(
+        data_dir=data_dir, model_requested="m", status="ok",
+        job_id=job.id, usage={"prompt_tokens": 2, "completion_tokens": 3},
+    )
+    model_calls.record_call(
+        data_dir=data_dir, model_requested="m", status="ok",
+        attempt_id=attempt.id, usage={"prompt_tokens": 4, "completion_tokens": 5},
+    )
+    model_calls.record_call(
+        data_dir=data_dir, model_requested="m", status="ok",
+        job_id=job.id, attempt_id=attempt.id,
+        usage={"prompt_tokens": 1, "completion_tokens": 1},
+    )
+
+    assert model_calls.aggregate_job_usage(data_dir=data_dir, job_id=job.id) == {
+        "input_tokens": 7,
+        "output_tokens": 9,
+    }
+
+
+def test_aggregate_ignores_another_jobs_attempts(data_dir: Path) -> None:
+    mine = jobs.create_job(
+        original_bytes=b"\x7fELF mine", filename="a.elf",
+        defect_description="overflow", data_dir=data_dir,
+    )
+    other = jobs.create_job(
+        original_bytes=b"\x7fELF other", filename="b.elf",
+        defect_description="overflow", data_dir=data_dir,
+    )
+    foreign = _attempt(data_dir, other.id)
+    model_calls.record_call(
+        data_dir=data_dir, model_requested="m", status="ok",
+        attempt_id=foreign.id, usage={"prompt_tokens": 9, "completion_tokens": 9},
+    )
+    assert model_calls.aggregate_job_usage(data_dir=data_dir, job_id=mine.id) is None

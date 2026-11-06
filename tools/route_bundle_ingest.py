@@ -44,6 +44,8 @@ if str(ROOT) not in sys.path:
 
 from app.db.connection import connect
 from app.domain.analysis import ANALYSIS_ROLES, AnalysisArtifacts
+from app.domain.interface import InterfaceCheckError, check_interface
+from app.domain.v4 import V4EvidenceError, validate_v4_evidence
 from app.services import jobs, worker
 from tools.host_importer import import_bundle
 
@@ -275,6 +277,24 @@ def ingest(
     run = jobs.get_run(run_id, data_dir=data_dir)
     if run is None or run.job_id != job_id:
         raise IngestError("run does not belong to job")
+    job = jobs.get_job(job_id, data_dir=data_dir)
+    if job is None:
+        raise IngestError("unknown job")
+    target_entry = ""
+    if run.contract_id:
+        connection = connect(data_dir)
+        try:
+            row = connection.execute(
+                "SELECT body_json FROM contracts WHERE id = ? AND job_id = ?",
+                (run.contract_id, job_id),
+            ).fetchone()
+        finally:
+            connection.close()
+        if row is not None:
+            try:
+                target_entry = str(json.loads(row["body_json"]).get("target_entry") or "")
+            except (TypeError, ValueError):
+                target_entry = ""
     if not bundle.is_dir():
         raise IngestError("bundle must be a directory")
     if not (bundle / "bundle.json").is_file() and (bundle / "handoff.json").is_file():
@@ -289,13 +309,64 @@ def ingest(
     total = 0
     evidence: dict[str, str] = {}
     results: dict[str, str] = {}
+    details: dict[str, str] = {}
     for gate in GATES:
         entry = (manifest.get("gates") or {}).get(gate) or {}
         status = str(entry.get("status", "not_run"))
-        results[gate] = status
         names = entry.get("artifacts") or []
         if not isinstance(names, list):
             raise IngestError(f"gate {gate} artifacts must be a list")
+        names = list(names)
+
+        if gate == "V2":
+            # Do not trust a measured observation's pass:true. Recompute the
+            # five static checks from the binary pair; only 5/5 becomes passed.
+            try:
+                report = check_interface(
+                    bundle / "original.elf",
+                    bundle / "candidate.elf",
+                    target_entry,
+                )
+            except InterfaceCheckError as exc:
+                report = {"pass": False, "checks": {}, "score": {"passed": 0, "total": 5}, "details": {"error": str(exc)}}
+            if report["pass"]:
+                status = "passed"
+                scored = bundle / "_v2-interface-scored.json"
+                scored.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+                names.append(scored.name)
+                details["V2"] = f"{report['score']['passed']}/{report['score']['total']} static interface checks passed"
+            else:
+                status = "not_run"
+                failed = [name for name, value in report.get("checks", {}).items() if not value]
+                details["V2"] = "V2 static interface check not passed" + (
+                    ": " + ", ".join(failed) if failed else ""
+                )
+
+        if gate == "V4" and status == "passed":
+            v4_names = [
+                name for name in names
+                if isinstance(name, str) and Path(name).name == "v4-symbolic.json"
+            ]
+            json_names = v4_names or [
+                name for name in names if isinstance(name, str) and name.endswith(".json")
+            ]
+            if not json_names:
+                status = "unknown"
+                details["V4"] = "V4 passed without typed evidence; NOT VERIFIED"
+            else:
+                try:
+                    payload = json.loads(_safe_file(bundle, json_names[0]).read_text(encoding="utf-8"))
+                    validate_v4_evidence(
+                        payload,
+                        candidate_sha256=manifest["candidate_sha256"],
+                        original_sha256=job.original_sha256,
+                        require_independent=True,
+                    )
+                except (OSError, ValueError, json.JSONDecodeError, V4EvidenceError) as exc:
+                    status = "not_run"
+                    details["V4"] = f"V4 not_run: {exc}"
+
+        results[gate] = status
         ids = []
         ids_by_name: dict[str, str] = {}
         for name in names:
@@ -312,7 +383,7 @@ def ingest(
             ids_by_name[name] = artifact_id
         if status == "passed" and not ids:
             raise IngestError(f"gate {gate} passed without evidence")
-        if ids:
+        if ids and status == "passed":
             # A gate can carry several files (identity carries original, candidate,
             # manifests).  V0 is bound only by content: the candidate is the file
             # whose bytes match candidate_sha256, and its absence is a rejection.
@@ -334,6 +405,8 @@ def ingest(
                         f"{manifest['candidate_sha256']}"
                     )
                 evidence[gate] = matches[0]
+            elif gate == "V2" and "_v2-interface-scored.json" in ids_by_name:
+                evidence[gate] = ids_by_name["_v2-interface-scored.json"]
             else:
                 evidence[gate] = ids[0]
 
@@ -382,8 +455,11 @@ def ingest(
         "candidate_sha256": manifest["candidate_sha256"],
         "results": results,
         "evidence": evidence,
-        "details": {"analysis_artifact_ids": analysis_ids,
-                    "legacy_result_bundle_id": supplemental_id},
+        "details": {
+            "analysis_artifact_ids": analysis_ids,
+            "legacy_result_bundle_id": supplemental_id,
+            **details,
+        },
     }
     imported = import_bundle(
         data_dir=data_dir, job_id=job_id, run_id=run_id, attempt_id=attempt_id,

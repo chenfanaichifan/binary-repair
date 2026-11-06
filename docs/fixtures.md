@@ -117,6 +117,9 @@ semantics; `SecurityContract` decides whether a contract loads.
 $ python tools/fixture_intake.py --list fixtures/public
 CWE121_src_char_declare_cpy_51b            OK (1 warning(s))
 CWE416_Use_After_Free__malloc_free_char_01 FAILED (7)
+CWE416_Use_After_Free__malloc_free_char_01_noinput
+                                           OK with --allow-same-cwe
+                                           FAILED (1) without it (duplicate class)
 ```
 
 ### CWE121: complete, not reproduced
@@ -140,20 +143,26 @@ file says so at the top. The evidence is exact rather than guessed:
 does not pretend the build ran. Run the fixture's `build.sh` inside the guest and
 compare with `output.sha256` to clear it.
 
-### CWE416: source pinned, binary still missing
+### CWE416: accepted no-input fixture, no candidate
 
-`fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/` holds the upstream
-`src.c` and `defect.json` (`mechanism: lifetime`,
-`baseline_mechanism: bounds-check`). `original.elf`, `build.sh`, `build.json`,
-`contract.json` and `tests/` do not exist yet, because producing them needs a
-compiler. The intake reports seven `missing_file` findings; that is the true
-state, not a regression.
+`fixtures/public/CWE416_Use_After_Free__malloc_free_char_01/` is the retired
+synthetic directory; it still has only `PROVENANCE.md`, `defect.json` and
+`src.c`, and intake reports seven `missing_file` findings.
 
-The intake now knows the `input_mode: "none"` shape, but this fixture still has
-no contract. When one is added it must be the M5 v3 no-input contract (no
-`invalid_*`, no `max_valid_input_bytes`, 1 valid / 0 invalid), and its
-`defect.json#trigger_case: "invalid-first"` must be removed at the same time;
-the intake will report `no_input_trigger_case_present` until it is.
+`fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/` is the
+accepted record-120 fixture:
+
+- v3 contract, `input_mode: "none"`, no `invalid_*` / `max_valid_input_bytes`;
+- **1** valid case, **0** invalid, `invalid` is N/A;
+- `defect.json#trigger_case` is `null`;
+- `src.c` is a byte-identical alias of `original.c` (the recipe still compiles
+  `original.c`);
+- `mechanism: lifetime`, `baseline_mechanism: bounds-check`.
+
+Its intake is `OK` with `--allow-same-cwe`; without the flag the only finding is
+`not_a_distinct_class` against the retired sibling. There is **no candidate**,
+so V0–V5 stay `not_run`; the fixture is wired to controller/worker but not
+promoted. CWE121 remains the v2 4+2 baseline.
 
 `PROVENANCE.md` records the resolved commit
 `f88433e3443648a17671398797a04ea1f8e1a274` and notes that the pin the Lead

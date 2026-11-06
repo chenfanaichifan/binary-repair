@@ -1,0 +1,30 @@
+{
+  "binary": "/home/lab/cwe416-cand/work/candidate.elf",
+  "binary_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "input_mode": "none",
+  "invalid": "not_applicable",
+  "valid": "1/1",
+  "cases": [
+    {
+      "manifest": "valid.json",
+      "id": "valid-no-input",
+      "kind": "valid",
+      "input_len": 0,
+      "expected": {
+        "allowed_output_files": [],
+        "return_code": 0,
+        "stderr": "",
+        "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n"
+      },
+      "got": {
+        "returncode": 0,
+        "stdout_hex": "4141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+        "stderr_hex": ""
+      },
+      "ok": true
+    }
+  ],
+  "passed": 1,
+  "total": 1,
+  "repaired_pass": true
+}

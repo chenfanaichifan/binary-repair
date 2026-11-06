@@ -1181,6 +1181,105 @@ def retry(run_id: str, body: RetryRequest) -> dict[str, Any]:
     }
 
 
+_GATE_BY_KIND = {
+    "identity": "V0",
+    "structure": "V1",
+    "interface": "V2",
+    "behaviour": "V3",
+    "symbolic": "V4",
+    "reproducibility": "V5",
+}
+_GATE_ORDER = {gate: index for index, gate in enumerate(("V0", "V1", "V2", "V3", "V4", "V5"))}
+
+
+def _gate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Render the persisted rows as V0-V5 rows for API consumers."""
+    return [
+        {
+            "gate": _GATE_BY_KIND.get(row["kind"], row["kind"]),
+            "kind": row["kind"],
+            "scope": row["scope"],
+            "required": row["required"],
+            "result": row["result"],
+            "detail": row["detail"],
+            "evidence_artifact_id": row["evidence_artifact_id"],
+        }
+        for row in rows
+    ]
+
+
+def _sorted_gate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(rows, key=lambda row: _GATE_ORDER.get(row["gate"], len(_GATE_ORDER)))
+
+
+def _v3_counts_from_artifact(
+    row: dict[str, Any], *, data_dir: str | Path
+) -> tuple[int | None, int | None, int | None, int | None, str | None]:
+    """Return valid/invalid passed/total from the V3 artifact.
+
+    Missing artifact or an unrecognised manifest yields ``None`` for each
+    count; the endpoint never invents zero from an absent file.
+    """
+    artifact_id = row.get("evidence_artifact_id")
+    if not artifact_id:
+        return None, None, None, None, None
+    artifact = jobs.get_artifact(artifact_id, data_dir=data_dir)
+    if artifact is None:
+        return None, None, None, None, None
+    root = Path(data_dir).resolve()
+    path = (root / artifact["relative_path"]).resolve()
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return None, None, None, None, None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None, None, None, None, None
+    cases = payload.get("cases")
+    if not isinstance(cases, list):
+        cases = payload.get("tests")
+    if not isinstance(cases, list):
+        return None, None, None, None, None
+    valid = [case for case in cases if isinstance(case, dict) and case.get("kind") == "valid"]
+    invalid = [case for case in cases if isinstance(case, dict) and case.get("kind") == "invalid"]
+    if not valid and not invalid:
+        return None, None, None, None, None
+    valid_passed = sum(1 for case in valid if case.get("ok") is True or case.get("passed") is True)
+    invalid_passed = sum(1 for case in invalid if case.get("ok") is True or case.get("passed") is True)
+    detail = row.get("detail") or ""
+    mode_match = re.search(r"input_mode\s*=\s*(none|argv|stdin)", detail)
+    return (
+        valid_passed,
+        len(valid),
+        invalid_passed,
+        len(invalid),
+        mode_match.group(1) if mode_match else None,
+    )
+
+
+def _v3_summary(rows: list[dict[str, Any]], *, data_dir: str | Path) -> dict[str, Any] | None:
+    row = next((item for item in rows if item["kind"] == "behaviour"), None)
+    if row is None:
+        return None
+    valid_passed, valid_total, invalid_passed, invalid_total, mode = _v3_counts_from_artifact(
+        row, data_dir=data_dir
+    )
+    if mode is None:
+        mode_match = re.search(r"input_mode\s*=\s*(none|argv|stdin)", row.get("detail") or "")
+        mode = mode_match.group(1) if mode_match else None
+    invalid_applicable = None if invalid_total is None else invalid_total > 0
+    return {
+        "gate": "V3",
+        "kind": "behaviour",
+        "result": row["result"],
+        "input_mode": mode,
+        "valid": {"passed": valid_passed, "total": valid_total},
+        "invalid": {"passed": invalid_passed, "total": invalid_total},
+        "invalid_applicable": invalid_applicable,
+    }
+
+
 @app.get("/api/attempts/{attempt_id}/evidence")
 def attempt_evidence(attempt_id: str) -> dict[str, Any]:
     attempt = jobs.get_attempt(attempt_id, data_dir=_data_dir())
@@ -1197,6 +1296,8 @@ def attempt_evidence(attempt_id: str) -> dict[str, Any]:
         "failing_obligation": attempt.failing_obligation,
         "detail": attempt.detail,
         "evidence": _evidence_state(rows),
+        "gates": _sorted_gate_rows(_gate_rows(rows)),
+        "v3": _v3_summary(rows, data_dir=_data_dir()),
         "obligations": _obligation_groups(rows, _route_key(attempt.route)),
     }
 

@@ -61,7 +61,7 @@ rejection, exact counts, and the v2 argv default.
 | Check | Result |
 |---|---|
 | `tests/test_fixture_intake.py` + `tests/test_contracts.py` on baseline | **74 passed** |
-| Full baseline after v3 + intake | **430 passed / 2 skipped / 0 failed** |
+| Full baseline after v3 + intake | **430 passed / 2 skipped / 0 failed** (before record 113's acceptance tests; now 446) |
 | M1 local checkpoint before this baseline merge (`1b08ae5`) | **425 passed / 2 skipped / 0 failed** |
 | CWE121 intake | `OK (1 warning: reproduction_unverified)` |
 | CWE416 intake | `FAILED (7 missing_file)` — contract still absent |

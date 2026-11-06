@@ -13,13 +13,19 @@ from fastapi.testclient import TestClient
 
 from app.controller_api import app
 from app.db.connection import connect
+from app.domain.interface import check_interface
 from app.services import jobs, worker
+
+ROOT = Path(__file__).resolve().parents[2]
+ORIGINAL_ELF = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf"
+CONTRACT_JSON = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json"
+TARGET = "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
 
 
 def _started(tmp_path: Path):
     data_dir = tmp_path / "var"
     record = jobs.create_job(
-        original_bytes=b"\x7fELF worker bytes",
+        original_bytes=ORIGINAL_ELF.read_bytes(),
         filename="sample.elf",
         defect_description="stack buffer overflow",
         data_dir=data_dir,
@@ -29,6 +35,7 @@ def _started(tmp_path: Path):
         contract_revision=1,
         reviewer_label="test",
         data_dir=data_dir,
+        contract_body=json.loads(CONTRACT_JSON.read_text(encoding="utf-8")),
         input_sha256=record.original_sha256,
         manifest_sha256="1" * 64,
     )
@@ -45,6 +52,47 @@ def _bundle_path(data_dir: Path, job_id: str, run_id: str, attempt_id: str) -> P
     return data_dir / "jobs" / job_id / "runs" / run_id / "attempts" / f"{attempt_id}.json"
 
 
+def _v4_evidence(candidate_sha256: str, original_sha256: str) -> dict:
+    return {
+        "schema_version": 1,
+        "gate": "V4",
+        "kind": "symbolic",
+        "scope": "model",
+        "state": "passed",
+        "ran": True,
+        "candidate_sha256": candidate_sha256,
+        "original_sha256": original_sha256,
+        "tool_versions": {"angr": "10.0.4.post1", "z3": "5.1.0"},
+        "preconditions": ["synthetic worker fixture"],
+        "property_kind": "pointer-flow",
+        "memory_predicates": ["candidate equals original in this fixture"],
+        "forbidden_ranges": [{"start": 0, "end": 64, "reason": "synthetic range"}],
+        "hooks": ["entry"],
+        "exploration_accounting": {
+            "initial": 2, "deadended": 2, "errored": 0, "unconstrained": 0,
+            "deferred": 0, "active": 0, "pruned": 0,
+            "complete": True, "unexplored": [],
+        },
+        "solver_accounting": {
+            "engine": "z3", "version": "5.1.0", "queries": 2,
+            "sat": 1, "unsat": 1, "unknown": 0, "eval": 0,
+            "timeouts": 0, "steps": 20, "max_steps": 80, "complete": True,
+        },
+        "calibration": {
+            "suite": "synthetic", "cases": 2, "passed": 1, "failed": 1,
+            "known_good": True, "known_bad": True, "known_bad_rejected": True,
+            "complete": True,
+        },
+        "replay": {
+            "command": "synthetic replay", "runs": 2, "identical": True,
+            "evidence_sha256": original_sha256,
+            "verified_by": "m4",
+        },
+        "claimed_scope": "model",
+        "not_claimed": ["binary-level proof"],
+    }
+
+
 def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5) -> dict[str, str]:
     evidence: dict[str, str] = {}
     connection = connect(data_dir)
@@ -55,8 +103,23 @@ def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5) 
                 relative = f"jobs/{job_id}/evidence/{attempt_id}/{index}.bin"
                 target = data_dir / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
-                content = ((data_dir / "jobs" / job_id / "original.bin").read_bytes()
-                           if index == 1 else f"worker-evidence-{index}".encode())
+                if index == 1:
+                    content = (data_dir / "jobs" / job_id / "original.bin").read_bytes()
+                elif index == 2:
+                    original_path = data_dir / "jobs" / job_id / "original.bin"
+                    content = json.dumps(
+                        check_interface(original_path, original_path, TARGET),
+                        sort_keys=True,
+                    ).encode("utf-8")
+                elif index == 4:
+                    original_hash = __import__("hashlib").sha256(
+                        (data_dir / "jobs" / job_id / "original.bin").read_bytes()
+                    ).hexdigest()
+                    content = json.dumps(
+                        _v4_evidence(original_hash, original_hash), sort_keys=True
+                    ).encode("utf-8")
+                else:
+                    content = f"worker-evidence-{index}".encode()
                 target.write_bytes(content)
                 digest = __import__("hashlib").sha256(target.read_bytes()).hexdigest()
                 connection.execute(
