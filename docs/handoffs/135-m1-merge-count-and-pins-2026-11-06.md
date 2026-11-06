@@ -15,13 +15,17 @@ $ git ls-remote origin \
     refs/heads/m1/t30-acceptance-ab-2026-11-05
 
 d1ce352f60057ab3cd389c6af609c7b5ed3bcefd  canonical/m1-m5-integration
-6d67140ee560ec66d5e606965d8193ae810405b1  integration/live-bridge
+7817a20cd5a215e4423de6e045bf754691671120  integration/live-bridge
 e2317772d638dbedbc64e6f049d1dcf4f1bc7699  integration/live-bridge-2026-11-03
 e6689e47c0987afb8ec302d61050c6702f8c340f  m1/t30-acceptance-ab-2026-11-05
 ```
 
 Canonical is **`d1ce352`** (the merge on top of `dc3bcd3`). `dc3bcd3` is its
 first parent and remains a valid historical pin.
+
+`integration/live-bridge` advanced from `6d67140` to **`7817a20`** during this
+check. `7817a20` is another docs-only commit (`docs(api): pin the obligation
+evidence field contract with a real response`), not a merge.
 
 ## 1. `6d67140` is docs-only; `41ff540` is the merge
 
@@ -31,7 +35,7 @@ parent   41ff540
 stat     MEMORY.md | 1 +
 ```
 
-`6d67140` is **not** a merge commit. The merge is:
+`6d67140` is **not** a merge commit; `7817a20` is its docs-only child. The merge is:
 
 ```
 41ff540  Merge 3f21d31 into integration/live-bridge
@@ -47,6 +51,7 @@ Measured on clean `git archive` trees, interpreter `role5-kit/.venv`,
 |---|---|
 | `6d67140` | **513 passed / 9 skipped / 0 failed** (522 collected) |
 | `41ff540` | **513 passed / 9 skipped / 0 failed** (522 collected) |
+| `7817a20` | docs-only child; no test change |
 
 The merge message's **506 passed / 9 skipped** is not reproduced on either
 tree. No tested commit/tree produced 506, so there is no exact tree+command to
