@@ -343,7 +343,13 @@ def ingest(
                 )
 
         if gate == "V4" and status == "passed":
-            json_names = [name for name in names if isinstance(name, str) and name.endswith(".json")]
+            v4_names = [
+                name for name in names
+                if isinstance(name, str) and Path(name).name == "v4-symbolic.json"
+            ]
+            json_names = v4_names or [
+                name for name in names if isinstance(name, str) and name.endswith(".json")
+            ]
             if not json_names:
                 status = "unknown"
                 details["V4"] = "V4 passed without typed evidence; NOT VERIFIED"

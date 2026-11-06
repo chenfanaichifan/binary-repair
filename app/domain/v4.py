@@ -38,6 +38,7 @@ class ExplorationAccounting(BaseModel):
     model_config = ConfigDict(extra="forbid")
     states_explored: int = Field(ge=0)
     states_pruned: int = Field(ge=0)
+    resource_pruned: int = Field(ge=0)
     max_depth: int = Field(ge=0)
     complete: bool
     unexplored: list[str] = Field(default_factory=list)
@@ -51,8 +52,17 @@ class SolverAccounting(BaseModel):
     sat: int = Field(ge=0)
     unsat: int = Field(ge=0)
     unknown: int = Field(ge=0)
+    eval: int = Field(ge=0)
     timeouts: int = Field(ge=0)
+    steps: int = Field(ge=0)
+    max_steps: int = Field(ge=1)
     complete: bool
+
+    @model_validator(mode="after")
+    def _step_cap(self) -> "SolverAccounting":
+        if self.steps >= self.max_steps:
+            raise ValueError("solver step cap reached; a capped run is not proven")
+        return self
 
 
 class Calibration(BaseModel):

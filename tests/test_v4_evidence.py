@@ -29,6 +29,7 @@ def _valid() -> dict:
         "exploration_accounting": {
             "states_explored": 12,
             "states_pruned": 3,
+            "resource_pruned": 1,
             "max_depth": 8,
             "complete": True,
             "unexplored": [],
@@ -40,7 +41,10 @@ def _valid() -> dict:
             "sat": 1,
             "unsat": 11,
             "unknown": 0,
+            "eval": 0,
             "timeouts": 0,
+            "steps": 80,
+            "max_steps": 200,
             "complete": True,
         },
         "calibration": {
@@ -124,3 +128,15 @@ def test_write_v4_evidence_only_writes_validated_content(tmp_path) -> None:
     with pytest.raises(V4EvidenceError):
         write_v4_evidence(bad, data)
     assert not bad.exists()
+
+
+def test_step_cap_and_missing_resource_pruned_are_not_verified() -> None:
+    data = copy.deepcopy(_valid())
+    data["solver_accounting"]["steps"] = data["solver_accounting"]["max_steps"]
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)
+
+    data = copy.deepcopy(_valid())
+    del data["exploration_accounting"]["resource_pruned"]
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)

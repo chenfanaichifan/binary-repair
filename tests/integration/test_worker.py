@@ -68,12 +68,13 @@ def _v4_evidence(candidate_sha256: str, original_sha256: str) -> dict:
         "forbidden_ranges": [{"start": 0, "end": 64, "reason": "synthetic range"}],
         "hooks": ["entry"],
         "exploration_accounting": {
-            "states_explored": 2, "states_pruned": 0, "max_depth": 2,
-            "complete": True, "unexplored": [],
+            "states_explored": 2, "states_pruned": 0, "resource_pruned": 0,
+            "max_depth": 2, "complete": True, "unexplored": [],
         },
         "solver_accounting": {
             "engine": "z3", "version": "5.1.0", "queries": 2,
-            "sat": 1, "unsat": 1, "unknown": 0, "timeouts": 0, "complete": True,
+            "sat": 1, "unsat": 1, "unknown": 0, "eval": 0,
+            "timeouts": 0, "steps": 20, "max_steps": 80, "complete": True,
         },
         "calibration": {
             "suite": "synthetic", "cases": 2, "passed": 2, "failed": 0,

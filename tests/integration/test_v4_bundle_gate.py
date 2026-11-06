@@ -165,3 +165,121 @@ def test_persist_v4_passed_with_invalid_artifact_is_unknown(tmp_path: Path) -> N
     by_kind = {row["kind"]: row for row in rows}
     assert by_kind["symbolic"]["result"] == "unknown"
     assert "not verified" in by_kind["symbolic"]["detail"]
+
+
+def _typed_v4(candidate_sha256: str, original_sha256: str) -> dict:
+    return {
+        "schema_version": 1,
+        "gate": "V4",
+        "kind": "symbolic",
+        "scope": "model",
+        "state": "passed",
+        "ran": True,
+        "candidate_sha256": candidate_sha256,
+        "original_sha256": original_sha256,
+        "tool_versions": {"angr": "10.0.4.post1", "z3": "5.1.0"},
+        "preconditions": ["bound 64", "no-input path"],
+        "memory_predicates": ["freed block is not read"],
+        "forbidden_ranges": [{"start": 0, "end": 64, "reason": "freed object"}],
+        "hooks": ["after free", "before read"],
+        "exploration_accounting": {
+            "states_explored": 8, "states_pruned": 1, "resource_pruned": 0,
+            "max_depth": 6, "complete": True, "unexplored": [],
+        },
+        "solver_accounting": {
+            "engine": "z3", "version": "5.1.0", "queries": 8,
+            "sat": 1, "unsat": 7, "unknown": 0, "eval": 0,
+            "timeouts": 0, "steps": 120, "max_steps": 256, "complete": True,
+        },
+        "calibration": {
+            "suite": "original-negative-control", "cases": 2,
+            "passed": 1, "failed": 1, "complete": True,
+        },
+        "replay": {
+            "command": "v4 replay", "runs": 2, "identical": True,
+            "evidence_sha256": "d" * 64,
+        },
+        "claimed_scope": "bound 64, no-input path",
+        "not_claimed": ["binary-level proof"],
+    }
+
+
+def test_typed_v4_symbolic_json_lands_in_bundle_and_persist(tmp_path: Path) -> None:
+    contract = json.loads((FIXTURE / "contract.json").read_text(encoding="utf-8"))
+    data_dir = tmp_path / "var"
+    record = jobs.create_job(
+        original_bytes=(FIXTURE / "original.elf").read_bytes(),
+        filename="CWE416_v4_typed.elf",
+        defect_description="typed V4 bundle path",
+        data_dir=data_dir,
+    )
+    approval = jobs.approve_contract(
+        record.id,
+        contract_revision=1,
+        reviewer_label="test",
+        data_dir=data_dir,
+        contract_body=contract,
+        input_sha256=record.original_sha256,
+    )
+    run = jobs.start_run(
+        record.id,
+        approval=approval,
+        idempotency_key="cwe416-v4-typed",
+        data_dir=data_dir,
+    )
+    attempt = next(
+        item for item in jobs.list_attempts(run.id, data_dir=data_dir)
+        if item.route == "route_b"
+    )
+
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    for name in ("original.elf", "candidate.elf", "audit.json"):
+        shutil.copyfile(DELIVERY / name, bundle / name)
+    candidate_sha = hashlib.sha256((DELIVERY / "candidate.elf").read_bytes()).hexdigest()
+    original_sha = hashlib.sha256((FIXTURE / "original.elf").read_bytes()).hexdigest()
+    (bundle / "v4-symbolic.json").write_text(
+        json.dumps(_typed_v4(candidate_sha, original_sha)), encoding="utf-8"
+    )
+    (bundle / "bundle.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "route": "route_b",
+                "candidate_sha256": candidate_sha,
+                "gates": {
+                    "V0": {"status": "passed", "artifacts": ["original.elf", "candidate.elf"]},
+                    "V1": {"status": "passed", "artifacts": ["audit.json"]},
+                    "V2": {"status": "not_run", "artifacts": []},
+                    "V3": {"status": "not_run", "artifacts": []},
+                    "V4": {"status": "passed", "artifacts": ["v4-symbolic.json"]},
+                    "V5": {"status": "not_run", "artifacts": []},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    ingest(
+        data_dir=data_dir,
+        job_id=record.id,
+        run_id=run.id,
+        attempt_id=attempt.id,
+        route="route_b",
+        bundle=bundle,
+        trigger=True,
+    )
+    payload = json.loads(
+        (data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json").read_text()
+    )
+    assert payload["results"]["V4"] == "passed"
+    assert "V4" in payload["evidence"]
+    by_kind = {
+        row["kind"]: row["result"]
+        for row in jobs.list_obligations(attempt.id, data_dir=data_dir)
+    }
+    assert by_kind["symbolic"] == "passed"
+    final = jobs.get_attempt(attempt.id, data_dir=data_dir)
+    assert final is not None
+    assert final.outcome == "inconclusive"
+    assert final.failing_obligation == "behaviour"
