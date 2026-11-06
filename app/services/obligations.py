@@ -68,7 +68,7 @@ def persist_obligations(
         for index, (gate, obligation) in enumerate(
             zip((item[0] for item in GATES), obligations)
         ):
-            if gate != "V4" or obligation.result is not CheckResult.PASSED:
+            if gate != "V4" or obligation.result != CheckResult.PASSED:
                 continue
             reason = None
             artifact_id = evidence.get("V4")

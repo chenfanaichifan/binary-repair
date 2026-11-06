@@ -101,3 +101,67 @@ def test_v4_passed_without_typed_evidence_becomes_unknown(tmp_path: Path) -> Non
         for row in jobs.list_obligations(attempt.id, data_dir=data_dir)
     }
     assert by_kind["symbolic"] == "unknown"
+
+
+def test_persist_v4_passed_with_invalid_artifact_is_unknown(tmp_path: Path) -> None:
+    import uuid
+
+    from app.db.connection import connect
+    from app.services import obligations
+
+    data_dir = tmp_path / "var"
+    job = jobs.create_job(
+        original_bytes=b"\x7fELF persist-v4",
+        filename="persist-v4.elf",
+        defect_description="persist V4 gate",
+        data_dir=data_dir,
+    )
+    approval = jobs.approve_contract(
+        job.id,
+        contract_revision=1,
+        reviewer_label="test",
+        data_dir=data_dir,
+        input_sha256=job.original_sha256,
+    )
+    run = jobs.start_run(
+        job.id,
+        approval=approval,
+        idempotency_key="persist-v4",
+        data_dir=data_dir,
+    )
+    attempt = next(
+        item for item in jobs.list_attempts(run.id, data_dir=data_dir)
+        if item.route == "route_b"
+    )
+
+    relative = f"jobs/{job.id}/evidence/{attempt.id}/v4.json"
+    path = data_dir / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"gate": "V4", "state": "not_run"}), encoding="utf-8")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    artifact_id = uuid.uuid4().hex
+    connection = connect(data_dir)
+    try:
+        with connection:
+            connection.execute(
+                "INSERT INTO artifacts "
+                "(id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, 'application/json', 'v4_evidence', ?)",
+                (artifact_id, job.id, attempt.id, relative, digest, path.stat().st_size,
+                 "2026-11-06T00:00:00+00:00"),
+            )
+    finally:
+        connection.close()
+
+    obligations.persist_obligations(
+        data_dir=data_dir,
+        job_id=job.id,
+        attempt_id=attempt.id,
+        results={"V4": "passed"},
+        evidence={"V4": artifact_id},
+        candidate_sha256=job.original_sha256,
+    )
+    rows = jobs.list_obligations(attempt.id, data_dir=data_dir)
+    by_kind = {row["kind"]: row for row in rows}
+    assert by_kind["symbolic"]["result"] == "unknown"
+    assert "not verified" in by_kind["symbolic"]["detail"]
