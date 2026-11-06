@@ -1,0 +1,15 @@
+{
+  "A": [
+    {
+      "available": true,
+      "content_url": "/api/artifacts/2d6fc4ed5fc84f79b8cb06e49b2e218f/download",
+      "id": "2d6fc4ed5fc84f79b8cb06e49b2e218f",
+      "media_type": "application/octet-stream",
+      "name": "original.bin",
+      "role": "original",
+      "sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "size_bytes": 26792
+    }
+  ],
+  "B": []
+}

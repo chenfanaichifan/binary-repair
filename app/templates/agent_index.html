@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}修复任务{% endblock %}
+
+{% block head %}
+<style>
+  .job-home { max-width: 1040px; }
+  .job-home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .job-start {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px;
+    border: 1px solid var(--ds-border-strong);
+    border-radius: 14px;
+    background: var(--ds-accent-soft);
+    color: var(--ds-text);
+  }
+  .job-start:hover { text-decoration: none; box-shadow: var(--ds-shadow); }
+  .job-start strong { font-size: 15px; }
+  .job-start span { font-size: 12.5px; color: var(--ds-text-2); }
+  .job-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    border: 1px solid var(--ds-border);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--ds-text);
+    min-height: 96px;
+  }
+  .job-card:hover { text-decoration: none; border-color: var(--ds-border-strong); box-shadow: var(--ds-shadow); }
+  .job-card-title { font-size: 14px; font-weight: 600; }
+  .job-card-id { font-size: 11.5px; color: var(--ds-muted); word-break: break-all; }
+  .job-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; }
+  .job-card-phase { font-size: 12px; color: var(--ds-text-2); }
+  .job-card-phase[data-state="missing"], .job-card-phase[data-state="unreachable"] { color: var(--ds-muted); }
+  .job-card-time { font-size: 11.5px; color: var(--ds-faint); }
+  .job-home-empty {
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px dashed var(--ds-border-strong);
+    border-radius: 14px;
+    color: var(--ds-muted);
+    font-size: 13px;
+  }
+  .job-home-note { margin-top: 14px; font-size: 12px; color: var(--ds-muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="job-home">
+  <h1 class="ds-page-title">修复任务</h1>
+  <p class="ds-page-sub">
+    每次修复是一个独立会话：有自己的对话、操作记录和结果。任务列表保存在本机浏览器，
+    状态逐条向 controller 核对。
+  </p>
+
+  <div class="job-home-grid">
+    <a class="job-start" href="/agent/new" data-testid="agent-start-new">
+      <strong>＋ 新建修复任务</strong>
+      <span>按「样本 → 缺陷 → 用例 → 契约 → 复核」对话式建单。</span>
+    </a>
+    <a class="job-start" href="/jobs/new" data-testid="agent-start-form">
+      <strong>用表单创建</strong>
+      <span>一次性填完上传与契约，适合已有完整材料时使用。</span>
+    </a>
+  </div>
+
+  <h2 class="agent-panel-title" style="margin-top: 28px;">本机任务</h2>
+  <div id="agent-job-cards" class="job-home-grid" data-testid="agent-job-cards">
+    <div class="job-home-empty" data-testid="agent-job-cards-empty">还没有本机任务记录。</div>
+  </div>
+
+  <p class="job-home-note">
+    列表按本浏览器记录排列，不代表 controller 上的全部任务。未在此浏览器打开过的任务，
+    仍可通过 <code>/agent/&lt;任务ID&gt;</code> 直接打开并加入列表。服务端全量列表需 controller
+    提供 <code>GET /api/jobs</code>。
+  </p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  "use strict";
+  var host = document.getElementById("agent-job-cards");
+  if (!host || !window.BRJobs) return;
+
+  var PHASE_LABELS = {
+    draft: "草稿", queued: "排队中", running: "执行中", screening: "输入筛查",
+    analyzing: "二进制分析", roundtrip: "C 往返校验", generating: "候选生成",
+    applying: "写入副本", validating: "共享校验", finished: "已完成"
+  };
+
+  function timeLabel(value) {
+    if (!value) return "";
+    var date = new Date(value);
+    if (isNaN(date.getTime())) return "";
+    return date.toLocaleString("zh-CN", { hour12: false });
+  }
+
+  function phaseNode(id) {
+    var node = document.createElement("span");
+    node.className = "job-card-phase";
+    node.dataset.state = "";
+    node.textContent = "核对中…";
+    var known = window.BRJobs.states[id];
+    if (known) {
+      node.dataset.state = known.state;
+      node.textContent = known.text;
+    }
+    return node;
+  }
+
+  var list = window.BRJobs.list();
+  host.textContent = "";
+
+  if (!list.length) {
+    var empty = document.createElement("div");
+    empty.className = "job-home-empty";
+    empty.dataset.testid = "agent-job-cards-empty";
+    empty.textContent = "还没有本机任务记录。";
+    host.appendChild(empty);
+  }
+
+  list.forEach(function (entry) {
+    var card = document.createElement("a");
+    card.className = "job-card";
+    card.href = "/agent/" + encodeURIComponent(entry.id);
+    card.dataset.jobId = entry.id;
+    card.dataset.testid = "agent-job-card";
+
+    var title = document.createElement("span");
+    title.className = "job-card-title";
+    title.textContent = entry.label || "任务 " + entry.id.slice(0, 8);
+
+    var id = document.createElement("code");
+    id.className = "job-card-id";
+    id.textContent = entry.id;
+
+    var foot = document.createElement("span");
+    foot.className = "job-card-foot";
+    foot.appendChild(phaseNode(entry.id));
+    var when = document.createElement("span");
+    when.className = "job-card-time";
+    when.textContent = timeLabel(entry.added_at);
+    foot.appendChild(when);
+
+    card.appendChild(title);
+    card.appendChild(id);
+    card.appendChild(foot);
+    host.appendChild(card);
+  });
+
+  document.addEventListener("brjobs:state", function (event) {
+    var detail = event.detail || {};
+    var card = host.querySelector('[data-job-id="' + detail.id + '"]');
+    if (!card) return;
+    var phase = card.querySelector(".job-card-phase");
+    if (!phase) return;
+    phase.dataset.state = detail.state;
+    phase.textContent = detail.text || PHASE_LABELS[detail.state] || detail.state;
+  });
+})();
+</script>
+{% endblock %}

@@ -73,13 +73,20 @@ def _route_verdict_field(route: dict[str, Any], field: str) -> Any:
 
 
 def _artifact_entry(route_key: str, item: dict[str, Any]) -> dict[str, Any]:
+    artifact_id = item.get("id") or None
+    # An artifact is downloadable only when the controller gave it an id and
+    # marked it available; a hash without bytes is metadata, not a download.
+    available = bool(artifact_id) and bool(item.get("available", True))
     return {
         "route": route_key,
+        "artifact_id": artifact_id,
         "name": item.get("name"),
         "role": item.get("role"),
         "sha256": item.get("sha256"),
         "size_bytes": item.get("size_bytes"),
-        "download": bool(item.get("id") and item.get("available", True)),
+        "available": available,
+        "content_url": item.get("content_url"),
+        "download": available,
     }
 
 
@@ -129,12 +136,19 @@ def build_export_bundle(
         candidate = _route_candidate_sha256(route, route_items)
         outcome = _route_outcome(route)
         verdict = route.get("verdict") if isinstance(route.get("verdict"), dict) else {}
+        # "not_persisted" is the controller telling us the worker never wrote
+        # obligation rows. Consumers must read that as "no evidence", never as
+        # "checks passed", so it is propagated verbatim instead of inferred.
+        evidence_state = route.get("evidence")
+        if not isinstance(evidence_state, str) or not evidence_state:
+            evidence_state = "persisted" if route_rows else "unknown"
         routes_out[key] = {
             "candidate_sha256": candidate,
             "outcome": outcome,
-            "reason": verdict.get("reason") or route.get("outcome_reason"),
+            "reason": verdict.get("reason") or route.get("outcome_reason") or None,
             "failing_obligation": verdict.get("failing_obligation"),
             "verification": route.get("verification"),
+            "evidence_state": evidence_state,
             "obligations": route_rows,
             "evidence": evidence,
         }
@@ -157,6 +171,11 @@ def build_export_bundle(
             limitations.append(f"Route {key}: no candidate binary is available.")
         if route["verification"] in (None, "not_run", "not_run"):
             limitations.append(f"Route {key}: verification is not_run.")
+        if route["evidence_state"] == "not_persisted":
+            limitations.append(
+                f"Route {key}: no obligation results have been received "
+                "(evidence not persisted); an empty table is not a pass."
+            )
     if not flat_artifacts:
         limitations.append("No evidence artifacts are available for download.")
 
@@ -187,6 +206,21 @@ def build_export_bundle(
         },
         "routes": routes_out,
         "artifacts": flat_artifacts,
+        "run": {
+            "id": run.get("id"),
+            "phase": run.get("phase"),
+            "manifest_sha256": run.get("manifest_sha256"),
+            "reviewed_scope_sha256": run.get("reviewed_scope_sha256"),
+        } if run else None,
+        "sync": {
+            "data_source": snapshot.get("data_source") or ("mock" if demo else "controller"),
+            "execution": snapshot.get("execution"),
+            "sources": ["GET /api/jobs/{id}", "GET /api/jobs/{id}/obligations", "GET /api/jobs/{id}/artifacts"],
+            "gui_computes_outcome": False,
+        },
+        "evidence_pending": any(
+            route["evidence_state"] == "not_persisted" for route in routes_out.values()
+        ),
         "limitations": limitations,
         "not_run": not_run,
         "manifest_sha256": manifest,
@@ -244,6 +278,9 @@ class Backend(Protocol):
         self, job_id: str, *, expected_sha256: str, reviewer_label: str
     ) -> dict[str, Any]: ...
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
+    def get_attempts(self, job_id: str) -> dict[str, Any] | None: ...
+    def get_plan(self, description: str,
+                 context: dict[str, Any] | None = None) -> dict[str, Any] | None: ...
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]: ...
     def get_visuals(self, job_id: str) -> dict[str, Any]: ...
     def export_bundle(self, job_id: str) -> dict[str, Any]: ...
@@ -329,6 +366,16 @@ class MockBackend:
 
     def get_obligations(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         return demo.obligations(self._job(job_id))
+
+    def get_attempts(self, job_id: str) -> dict[str, Any] | None:
+        # The fixture has no run history; an empty list is the honest answer.
+        self._job(job_id)
+        return {"run_id": None, "attempts": [], "scope": "fixture"}
+
+    def get_plan(self, description: str,
+                 context: dict[str, Any] | None = None) -> dict[str, Any] | None:
+        # Mock mode has no plan service; a fake plan would be worse than none.
+        return None
 
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         return demo.artifacts(self._job(job_id))
@@ -443,6 +490,90 @@ class HttpBackend:
             raise BackendError(502, "Backend obligations response must be an object.")
         return payload
 
+    def get_attempts(self, job_id: str) -> dict[str, Any] | None:
+        """Per-attempt history from M1's ``GET /api/jobs/{id}/attempts``.
+
+        Returns ``None`` when the controller does not expose the endpoint yet, so
+        the GUI can say "not available" instead of rendering an empty history as
+        if the job had never been attempted.
+        """
+        try:
+            payload = self._request(
+                "GET", f"/api/jobs/{job_id}/attempts", where="get_attempts"
+            )
+        except BackendError as exc:
+            if exc.status_code == 404:
+                return None
+            raise
+        if not isinstance(payload, dict):
+            raise BackendError(502, "Backend attempts response must be an object.")
+        rows = payload.get("attempts")
+        if not isinstance(rows, list):
+            raise BackendError(502, "Backend attempts response is missing an attempts list.")
+        return payload
+
+    def get_attempt_evidence(self, attempt_id: str) -> dict[str, Any] | None:
+        """M1 GET /api/attempts/{id}/evidence.
+
+        Returns None when the controller does not expose the route, so the
+        result screen can say "not available" instead of inventing gate rows.
+        """
+        try:
+            payload = self._request(
+                "GET",
+                f"/api/attempts/{attempt_id}/evidence",
+                where="get_attempt_evidence",
+            )
+        except BackendError as exc:
+            if exc.status_code == 404:
+                return None
+            raise
+        if not isinstance(payload, dict):
+            raise BackendError(502, "Backend evidence response must be an object.")
+        return payload
+
+    def get_plan(self, description: str,
+                 context: dict[str, Any] | None = None) -> dict[str, Any] | None:
+        """M1's job-less planning route: ``POST /api/assistant/plan``.
+
+        Returns ``None`` when the controller has not shipped the route, so
+        ``/agent/new`` can say "not connected" instead of substituting a fixture
+        plan. Plan copy is UI text and may be non-ASCII; it is not submitted data.
+        """
+        body: dict[str, Any] = {"description": description}
+        if context:
+            body["context"] = context
+        try:
+            response = self._client.request("POST", "/api/assistant/plan", json=body)
+        except httpx.HTTPError as exc:
+            raise BackendError(
+                502, f"Backend unavailable at {self.base_url}: {exc.__class__.__name__}."
+            ) from exc
+        if response.status_code in (404, 405, 501):
+            return None
+        if response.status_code >= 400:
+            detail = "Backend request failed for get_plan."
+            try:
+                payload = response.json()
+            except ValueError:
+                payload = None
+            if isinstance(payload, dict):
+                if isinstance(payload.get("fallback_reason"), str):
+                    detail = payload["fallback_reason"]
+                elif isinstance(payload.get("detail"), str):
+                    detail = payload["detail"]
+            raise BackendError(
+                503 if response.status_code >= 500 else response.status_code, detail
+            )
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise BackendError(502, "Backend returned invalid JSON for get_plan.") from exc
+        plan = payload.get("plan") if isinstance(payload, dict) else None
+        if not isinstance(plan, dict) or not isinstance(plan.get("steps"), list):
+            raise BackendError(502, "Backend plan response is missing a 'steps' list.")
+        return plan
+
     def update_contract(
         self,
         job_id: str,
@@ -507,6 +638,38 @@ class HttpBackend:
             demo=bool(snapshot.get("demo")),
         )
 
+    def get_artifact_metadata(self, artifact_id: str) -> dict[str, Any]:
+        """Artifact metadata by id (id/name/role/sha256/size/media_type)."""
+        payload = self._request("GET", f"/api/artifacts/{artifact_id}", where="get_artifact")
+        if not isinstance(payload, dict) or not payload.get("id"):
+            raise BackendError(502, "Backend artifact metadata is missing an id.")
+        return payload
+
+    def get_artifact_bytes(self, artifact_id: str) -> tuple[bytes, str, str]:
+        """Fetch registered artifact bytes; never decoded as JSON.
+
+        The controller serves attachments, so this bypasses ``_request`` and its
+        JSON/language checks. A 404 means the bytes are not available, which the
+        caller must surface as a missing download instead of an empty file.
+        """
+        try:
+            response = self._client.get(f"/api/artifacts/{artifact_id}/download")
+        except httpx.HTTPError as exc:
+            raise BackendError(
+                502, f"Backend unavailable at {self.base_url}: {exc.__class__.__name__}."
+            ) from exc
+        if response.status_code == 404:
+            raise BackendError(404, "Artifact content is unavailable at the controller.")
+        if response.status_code >= 400:
+            raise BackendError(
+                502, f"Backend artifact download failed ({response.status_code})."
+            )
+        media_type = response.headers.get("content-type") or "application/octet-stream"
+        disposition = response.headers.get("content-disposition") or ""
+        match = re.search(r'filename="?([^";]+)"?', disposition)
+        filename = match.group(1) if match else f"{artifact_id}.bin"
+        return response.content, media_type, filename
+
 
 class LocalBackend:
     """Data source backed by the local controller SQLite store."""
@@ -518,6 +681,21 @@ class LocalBackend:
         self.data_dir = Path(
             data_dir or os.environ.get(DATA_DIR_ENV, DEFAULT_DATA_DIR)
         ).resolve()
+
+    def get_plan(self, description: str,
+                 context: dict[str, Any] | None = None) -> dict[str, Any] | None:
+        """Local mode plans in-process.
+
+        With ``BINARYREPAIR_ASSISTANT_PROVIDER_KEY`` set, the llm branch runs
+        and ``model_calls`` records the call; without it the deterministic
+        planner runs and the plan says so.
+        """
+        from app.services.assistant import generate_plan
+        from app.services.assistant_llm import client_from_env
+
+        plan = generate_plan(description, context=context, data_dir=self.data_dir,
+                             client=client_from_env())
+        return plan.model_dump(mode="json")
 
 
     def _meta_path(self, job_id: str) -> Path:
@@ -794,6 +972,30 @@ class LocalBackend:
             "A": [identity, *[dict(item) for item in pending]],
             "B": [dict(identity), *[dict(item) for item in pending]],
         }
+
+    def get_attempts(self, job_id: str) -> dict[str, Any] | None:
+        """Latest run's attempts, in the M1 response shape.
+
+        The local backend has no cross-run query yet, so it reports the latest
+        run only and says so; it is not presented as the full history.
+        """
+        self._record(job_id)
+        run = job_store.latest_run(job_id, data_dir=self.data_dir)
+        if run is None:
+            return {"run_id": None, "attempts": [], "scope": "latest_run_only"}
+        rows = [
+            {
+                "attempt_id": attempt.id,
+                "attempt_no": attempt.sequence,
+                "route": attempt.route,
+                "status": attempt.phase,
+                "outcome": attempt.outcome,
+                "reason": attempt.reason,
+                "failing_obligation": attempt.failing_obligation,
+            }
+            for attempt in job_store.list_attempts(run.id, data_dir=self.data_dir)
+        ]
+        return {"run_id": run.id, "attempts": rows, "scope": "latest_run_only"}
 
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         self._record(job_id)
