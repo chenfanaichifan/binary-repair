@@ -77,14 +77,15 @@ def _v4_evidence(candidate_sha256: str, original_sha256: str) -> dict:
             "timeouts": 0, "steps": 20, "max_steps": 80, "complete": True,
         },
         "calibration": {
-            "suite": "synthetic", "cases": 2, "passed": 2, "failed": 0,
+            "suite": "synthetic", "cases": 2, "passed": 1, "failed": 1,
+            "known_good": True, "known_bad": True, "known_bad_rejected": True,
             "complete": True,
         },
         "replay": {
             "command": "synthetic replay", "runs": 2, "identical": True,
             "evidence_sha256": original_sha256,
         },
-        "claimed_scope": "synthetic worker fixture",
+        "claimed_scope": "model",
         "not_claimed": ["binary-level proof"],
     }
 

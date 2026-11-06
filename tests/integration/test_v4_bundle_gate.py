@@ -193,13 +193,14 @@ def _typed_v4(candidate_sha256: str, original_sha256: str) -> dict:
         },
         "calibration": {
             "suite": "original-negative-control", "cases": 2,
-            "passed": 1, "failed": 1, "complete": True,
+            "passed": 1, "failed": 1, "known_good": True, "known_bad": True,
+            "known_bad_rejected": True, "complete": True,
         },
         "replay": {
             "command": "v4 replay", "runs": 2, "identical": True,
             "evidence_sha256": "d" * 64,
         },
-        "claimed_scope": "bound 64, no-input path",
+        "claimed_scope": "model",
         "not_claimed": ["binary-level proof"],
     }
 

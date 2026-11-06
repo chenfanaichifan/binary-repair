@@ -43,6 +43,12 @@ class ExplorationAccounting(BaseModel):
     complete: bool
     unexplored: list[str] = Field(default_factory=list)
 
+    @model_validator(mode="after")
+    def _complete_has_no_unexplored(self) -> "ExplorationAccounting":
+        if self.complete and self.unexplored:
+            raise ValueError("complete exploration must have unexplored == []")
+        return self
+
 
 class SolverAccounting(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -62,6 +68,8 @@ class SolverAccounting(BaseModel):
     def _step_cap(self) -> "SolverAccounting":
         if self.steps >= self.max_steps:
             raise ValueError("solver step cap reached; a capped run is not proven")
+        if self.complete and (self.unknown != 0 or self.timeouts != 0):
+            raise ValueError("complete solver accounting requires unknown == 0 and timeouts == 0")
         return self
 
 
@@ -71,12 +79,25 @@ class Calibration(BaseModel):
     cases: int = Field(ge=1)
     passed: int = Field(ge=0)
     failed: int = Field(ge=0)
+    known_good: bool
+    known_bad: bool
+    known_bad_rejected: bool
     complete: bool
 
     @model_validator(mode="after")
     def _counts(self) -> "Calibration":
+        if self.cases < 2:
+            raise ValueError("calibration requires cases >= 2")
         if self.passed + self.failed > self.cases:
             raise ValueError("calibration passed+failed exceeds cases")
+        if not (self.known_good and self.known_bad and self.known_bad_rejected):
+            raise ValueError(
+                "calibration requires known_good, known_bad and known_bad_rejected"
+            )
+        if self.known_good and self.passed < 1:
+            raise ValueError("known_good requires passed >= 1")
+        if self.known_bad_rejected and self.failed < 1:
+            raise ValueError("known_bad_rejected requires failed >= 1")
         return self
 
 
@@ -107,7 +128,7 @@ class V4Evidence(BaseModel):
     solver_accounting: SolverAccounting
     calibration: Calibration
     replay: Replay
-    claimed_scope: str = Field(min_length=1)
+    claimed_scope: Literal["model"]
     not_claimed: list[str] = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -122,6 +143,8 @@ class V4Evidence(BaseModel):
             raise ValueError("replay is not identical")
         if any(not key.strip() or not value.strip() for key, value in self.tool_versions.items()):
             raise ValueError("tool_versions entries must be non-empty")
+        if not any("binary-level" in item.lower() for item in self.not_claimed):
+            raise ValueError("not_claimed must explicitly exclude binary-level proof")
         return self
 
 

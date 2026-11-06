@@ -49,9 +49,12 @@ def _valid() -> dict:
         },
         "calibration": {
             "suite": "known-safe/known-bad",
-            "cases": 4,
-            "passed": 4,
-            "failed": 0,
+            "cases": 3,
+            "passed": 2,
+            "failed": 1,
+            "known_good": True,
+            "known_bad": True,
+            "known_bad_rejected": True,
             "complete": True,
         },
         "replay": {
@@ -60,7 +63,7 @@ def _valid() -> dict:
             "identical": True,
             "evidence_sha256": H,
         },
-        "claimed_scope": "one no-input path",
+        "claimed_scope": "model",
         "not_claimed": ["binary-level proof"],
     }
 
@@ -138,5 +141,65 @@ def test_step_cap_and_missing_resource_pruned_are_not_verified() -> None:
 
     data = copy.deepcopy(_valid())
     del data["exploration_accounting"]["resource_pruned"]
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)
+
+
+@pytest.mark.parametrize("field", ["known_good", "known_bad", "known_bad_rejected"])
+def test_calibration_requires_all_known_controls(field: str) -> None:
+    data = copy.deepcopy(_valid())
+    data["calibration"][field] = False
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)
+
+
+def test_complete_exploration_cannot_have_unexplored_states() -> None:
+    data = copy.deepcopy(_valid())
+    data["exploration_accounting"]["unexplored"] = ["state-1"]
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)
+
+
+def test_complete_solver_cannot_have_unknown_or_timeout() -> None:
+    data = copy.deepcopy(_valid())
+    data["solver_accounting"]["unknown"] = 1
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)
+    data = copy.deepcopy(_valid())
+    data["solver_accounting"]["timeouts"] = 1
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)
+
+
+def test_claimed_scope_is_model_only() -> None:
+    data = copy.deepcopy(_valid())
+    data["claimed_scope"] = "bound 64"
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)
+
+
+def test_not_claimed_must_exclude_binary_level() -> None:
+    data = copy.deepcopy(_valid())
+    data["not_claimed"] = ["memory-safety on other paths"]
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)
+
+
+def test_calibration_cases_one_is_rejected() -> None:
+    data = copy.deepcopy(_valid())
+    data["calibration"].update({
+        "cases": 1, "passed": 1, "failed": 0,
+        "known_good": True, "known_bad": True, "known_bad_rejected": True,
+    })
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(data)
+
+
+def test_known_bad_rejected_requires_failed_case() -> None:
+    data = copy.deepcopy(_valid())
+    data["calibration"].update({
+        "cases": 2, "passed": 2, "failed": 0,
+        "known_good": True, "known_bad": True, "known_bad_rejected": True,
+    })
     with pytest.raises(V4EvidenceError):
         validate_v4_evidence(data)
