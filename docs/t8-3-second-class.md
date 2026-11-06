@@ -49,12 +49,12 @@ plan 与 GUI 都不得按类别分支；类别只出现在 fixture 元数据和 
 ## 4. 依赖顺序
 
 ```
-Lead 定类（已完成：A / CWE-787）
-  → M1 入库 fixtures/public/cwe787/
+Lead 定类（已完成：CWE-416 / use-after-free）
+  → M1 入库 fixtures/public/cwe416/
       src.c · original.elf · build.sh · build.json · contract.json
       tests/valid.json（4） · tests/invalid.json（2） · SHA256SUMS
       来源 URL / commit / license · original SHA-256 / build-id
-  → M3 建 scripts/guest_build_cwe787.sh
+  → M3 建 scripts/guest_build_cwe416.sh
       固定 argv · 无 shell 拼接 · fail-closed · 不联网 · 不 root · 不访问 host 路径
   → M5 冻结第二类 deterministic plan + generic repair proposal schema
   → M3 出第二类包（result-bundle 进 handoff.files + SHA256SUMS）
@@ -63,12 +63,12 @@ Lead 定类（已完成：A / CWE-787）
   → Lead 解 blocked
 ```
 
-`tests/invalid.json` 至少一条要触发 CWE-787 本身（越界写），否则 M4 只能证明
+`tests/invalid.json` 至少一条要触发 CWE-416 本身（释放后使用），否则 M4 只能证明
 “行为没坏”，不能证明“第二类缺陷被覆盖”。
 
 ## 5. 当前事实
 
 - GUI 已无第一类硬编码（`a9de810`）：欢迎语、复核按钮、复核标签都由 plan 驱动。
-- `app/` 下 grep 不到 `CWE-121` / `CWE-787` / `route_a_evidence` 之类分支。
+- `app/` 下 grep 不到 `CWE-121` / `CWE-416` / `route_a_evidence` 之类分支。
 - `/agent/new` 已接 `POST /api/assistant/plan`；controller 路由仍归 M1。
 - 第二类 fixture / plan / candidate 尚未出现，因此 T8.3 仍不能进入 M4 验证。
