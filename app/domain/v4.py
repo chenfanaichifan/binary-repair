@@ -8,6 +8,8 @@ did. Missing any required section makes the result NOT VERIFIED.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -113,6 +115,36 @@ class V4Evidence(BaseModel):
         return self
 
 
+def write_v4_evidence(
+    path: str | Path,
+    data: object,
+    *,
+    candidate_sha256: str | None = None,
+    original_sha256: str | None = None,
+) -> V4Evidence:
+    """Validate and atomically write one typed V4 artifact.
+
+    This is the producer's write landing point. It refuses incomplete content;
+    a caller without a reviewed solver-accounting harness cannot use it to
+    manufacture a pass.
+    """
+
+    evidence = validate_v4_evidence(
+        data,
+        candidate_sha256=candidate_sha256,
+        original_sha256=original_sha256,
+    )
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(evidence.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    temporary.replace(destination)
+    return evidence
+
+
 def validate_v4_evidence(
     data: object,
     *,
@@ -141,4 +173,9 @@ def validate_v4_evidence(
     return evidence
 
 
-__all__ = ["V4Evidence", "V4EvidenceError", "validate_v4_evidence"]
+__all__ = [
+    "V4Evidence",
+    "V4EvidenceError",
+    "validate_v4_evidence",
+    "write_v4_evidence",
+]

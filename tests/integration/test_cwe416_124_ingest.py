@@ -1,6 +1,6 @@
 """Ingest the 124 CWE416 candidate through the controller's normal rules.
 
-The candidate has a real V3 1/1, but V2 and V4 stay not_run. The attempt must be
+V2 is scored 5/5 from the binary pair; V4 stays not_run. The attempt must be
 inconclusive, never success.
 """
 
@@ -22,7 +22,7 @@ CANDIDATE_SHA = "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd
 CONTRACT_SHA = "c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c"
 
 
-def test_cwe416_124_ingest_keeps_v2_v4_not_run(tmp_path: Path) -> None:
+def test_cwe416_124_ingest_keeps_v4_not_run_after_v2_score(tmp_path: Path) -> None:
     original = (FIXTURE / "original.elf").read_bytes()
     candidate = (DELIVERY / "candidate.elf").read_bytes()
     assert hashlib.sha256(original).hexdigest() == ORIGINAL_SHA
@@ -100,10 +100,12 @@ def test_cwe416_124_ingest_keeps_v2_v4_not_run(tmp_path: Path) -> None:
     payload = json.loads(
         (data_dir / "jobs" / record.id / "runs" / run.id / "attempts" / f"{attempt.id}.json").read_text()
     )
+    assert "V2" in payload["evidence"]
+    assert payload["details"]["V2"] == "5/5 static interface checks passed"
     assert payload["results"] == {
         "V0": "passed",
         "V1": "passed",
-        "V2": "not_run",
+        "V2": "passed",
         "V3": "passed",
         "V4": "not_run",
         "V5": "passed",
@@ -112,8 +114,8 @@ def test_cwe416_124_ingest_keeps_v2_v4_not_run(tmp_path: Path) -> None:
     assert final is not None
     assert final.outcome == "inconclusive"
     assert final.reason == "required_check_not_run"
-    assert final.failing_obligation == "interface"
-    assert final.detail == "V2 interface: not_run"
+    assert final.failing_obligation == "symbolic"
+    assert final.detail == "V4 symbolic: not_run"
 
     by_kind = {
         row["kind"]: row["result"]
@@ -122,7 +124,7 @@ def test_cwe416_124_ingest_keeps_v2_v4_not_run(tmp_path: Path) -> None:
     assert by_kind == {
         "behaviour": "passed",
         "identity": "passed",
-        "interface": "not_run",
+        "interface": "passed",
         "reproducibility": "passed",
         "structure": "passed",
         "symbolic": "not_run",

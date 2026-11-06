@@ -13,13 +13,19 @@ from fastapi.testclient import TestClient
 
 from app.controller_api import app
 from app.db.connection import connect
+from app.domain.interface import check_interface
 from app.services import jobs, worker
+
+ROOT = Path(__file__).resolve().parents[2]
+ORIGINAL_ELF = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf"
+CONTRACT_JSON = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json"
+TARGET = "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
 
 
 def _started(tmp_path: Path):
     data_dir = tmp_path / "var"
     record = jobs.create_job(
-        original_bytes=b"\x7fELF worker bytes",
+        original_bytes=ORIGINAL_ELF.read_bytes(),
         filename="sample.elf",
         defect_description="stack buffer overflow",
         data_dir=data_dir,
@@ -29,6 +35,7 @@ def _started(tmp_path: Path):
         contract_revision=1,
         reviewer_label="test",
         data_dir=data_dir,
+        contract_body=json.loads(CONTRACT_JSON.read_text(encoding="utf-8")),
         input_sha256=record.original_sha256,
         manifest_sha256="1" * 64,
     )
@@ -93,6 +100,12 @@ def _add_evidence(data_dir: Path, job_id: str, attempt_id: str, count: int = 5) 
                 target.parent.mkdir(parents=True, exist_ok=True)
                 if index == 1:
                     content = (data_dir / "jobs" / job_id / "original.bin").read_bytes()
+                elif index == 2:
+                    original_path = data_dir / "jobs" / job_id / "original.bin"
+                    content = json.dumps(
+                        check_interface(original_path, original_path, TARGET),
+                        sort_keys=True,
+                    ).encode("utf-8")
                 elif index == 4:
                     original_hash = __import__("hashlib").sha256(
                         (data_dir / "jobs" / job_id / "original.bin").read_bytes()

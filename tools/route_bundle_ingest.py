@@ -44,6 +44,7 @@ if str(ROOT) not in sys.path:
 
 from app.db.connection import connect
 from app.domain.analysis import ANALYSIS_ROLES, AnalysisArtifacts
+from app.domain.interface import InterfaceCheckError, check_interface
 from app.domain.v4 import V4EvidenceError, validate_v4_evidence
 from app.services import jobs, worker
 from tools.host_importer import import_bundle
@@ -279,6 +280,21 @@ def ingest(
     job = jobs.get_job(job_id, data_dir=data_dir)
     if job is None:
         raise IngestError("unknown job")
+    target_entry = ""
+    if run.contract_id:
+        connection = connect(data_dir)
+        try:
+            row = connection.execute(
+                "SELECT body_json FROM contracts WHERE id = ? AND job_id = ?",
+                (run.contract_id, job_id),
+            ).fetchone()
+        finally:
+            connection.close()
+        if row is not None:
+            try:
+                target_entry = str(json.loads(row["body_json"]).get("target_entry") or "")
+            except (TypeError, ValueError):
+                target_entry = ""
     if not bundle.is_dir():
         raise IngestError("bundle must be a directory")
     if not (bundle / "bundle.json").is_file() and (bundle / "handoff.json").is_file():
@@ -300,6 +316,31 @@ def ingest(
         names = entry.get("artifacts") or []
         if not isinstance(names, list):
             raise IngestError(f"gate {gate} artifacts must be a list")
+        names = list(names)
+
+        if gate == "V2":
+            # Do not trust a measured observation's pass:true. Recompute the
+            # five static checks from the binary pair; only 5/5 becomes passed.
+            try:
+                report = check_interface(
+                    bundle / "original.elf",
+                    bundle / "candidate.elf",
+                    target_entry,
+                )
+            except InterfaceCheckError as exc:
+                report = {"pass": False, "checks": {}, "score": {"passed": 0, "total": 5}, "details": {"error": str(exc)}}
+            if report["pass"]:
+                status = "passed"
+                scored = bundle / "_v2-interface-scored.json"
+                scored.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+                names.append(scored.name)
+                details["V2"] = f"{report['score']['passed']}/{report['score']['total']} static interface checks passed"
+            else:
+                status = "not_run"
+                failed = [name for name, value in report.get("checks", {}).items() if not value]
+                details["V2"] = "V2 static interface check not passed" + (
+                    ": " + ", ".join(failed) if failed else ""
+                )
 
         if gate == "V4" and status == "passed":
             json_names = [name for name in names if isinstance(name, str) and name.endswith(".json")]
@@ -357,6 +398,8 @@ def ingest(
                         f"{manifest['candidate_sha256']}"
                     )
                 evidence[gate] = matches[0]
+            elif gate == "V2" and "_v2-interface-scored.json" in ids_by_name:
+                evidence[gate] = ids_by_name["_v2-interface-scored.json"]
             else:
                 evidence[gate] = ids[0]
 

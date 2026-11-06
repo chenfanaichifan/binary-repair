@@ -108,3 +108,19 @@ def test_hash_mismatch_is_not_verified() -> None:
         validate_v4_evidence(_valid(), candidate_sha256="d" * 64)
     with pytest.raises(V4EvidenceError):
         validate_v4_evidence(_valid(), original_sha256="d" * 64)
+
+
+def test_write_v4_evidence_only_writes_validated_content(tmp_path) -> None:
+    from app.domain.v4 import write_v4_evidence
+
+    path = tmp_path / "v4.json"
+    write_v4_evidence(path, _valid(), candidate_sha256=C, original_sha256=O)
+    assert path.is_file()
+    assert validate_v4_evidence(__import__("json").loads(path.read_text()), candidate_sha256=C)
+
+    bad = tmp_path / "bad.json"
+    data = copy.deepcopy(_valid())
+    del data["solver_accounting"]
+    with pytest.raises(V4EvidenceError):
+        write_v4_evidence(bad, data)
+    assert not bad.exists()

@@ -15,6 +15,7 @@ from typing import Any, Mapping
 from app.db.connection import connect
 from app.domain.acceptance import Obligation
 from app.domain.evidence import verify_artifact
+from app.domain.interface import InterfaceCheckError, validate_interface_report
 from app.domain.outcomes import CheckResult
 from app.domain.scopes import scope_for_kind
 from app.domain.v4 import V4EvidenceError, validate_v4_evidence
@@ -61,6 +62,68 @@ def persist_obligations(
             "SELECT original_sha256 FROM jobs WHERE id = ?", (job_id,)
         ).fetchone()
         job_original = str(job_row["original_sha256"]) if job_row is not None else None
+        target_entry = ""
+        run_row = connection.execute(
+            "SELECT r.contract_id FROM attempts a JOIN runs r ON r.id = a.run_id "
+            "WHERE a.id = ? AND r.job_id = ?",
+            (attempt_id, job_id),
+        ).fetchone()
+        if run_row is not None:
+            contract_row = connection.execute(
+                "SELECT body_json FROM contracts WHERE id = ? AND job_id = ?",
+                (run_row["contract_id"], job_id),
+            ).fetchone()
+            if contract_row is not None:
+                try:
+                    target_entry = str(
+                        json.loads(contract_row["body_json"]).get("target_entry") or ""
+                    )
+                except (TypeError, ValueError):
+                    target_entry = ""
+
+        # A V2 passed claim is only usable when its scored report has all five
+        # checks. A measured observation's pass:true is not a verdict.
+        for index, (gate, obligation) in enumerate(
+            zip((item[0] for item in GATES), obligations)
+        ):
+            if gate != "V2" or obligation.result != CheckResult.PASSED:
+                continue
+            reason = None
+            artifact_id = evidence.get("V2")
+            if not artifact_id:
+                reason = "missing V2 evidence artifact"
+            elif not candidate_sha256 or not job_original:
+                reason = "candidate/original hash unavailable"
+            else:
+                try:
+                    verified = verify_artifact(
+                        data_dir=data_dir,
+                        job_id=job_id,
+                        attempt_id=attempt_id,
+                        artifact_id=str(artifact_id),
+                        gate="V2",
+                    )
+                    payload = json.loads(
+                        (Path(data_dir) / str(verified["relative_path"])).read_text(
+                            encoding="utf-8"
+                        )
+                    )
+                    validate_interface_report(
+                        payload,
+                        candidate_sha256=candidate_sha256,
+                        original_sha256=job_original,
+                        target_entry=target_entry,
+                    )
+                except (OSError, ValueError, json.JSONDecodeError, InterfaceCheckError) as exc:
+                    reason = str(exc)
+            if reason is not None:
+                obligations[index] = Obligation(
+                    kind=obligation.kind,
+                    required=obligation.required,
+                    result=CheckResult.NOT_RUN,
+                    detail=f"V2 interface not verified: {reason}",
+                )
+                details["V2"] = obligations[index].detail
 
         # A V4 passed claim is only usable when its typed evidence validates
         # against the candidate and original. Otherwise it becomes NOT VERIFIED
