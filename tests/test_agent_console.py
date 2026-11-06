@@ -514,3 +514,33 @@ def test_http_backend_passes_gates_and_v3_through():
 
     backend = HttpBackend(base_url="http://test", transport=httpx.MockTransport(handler))
     assert backend.get_attempt_evidence("att-1") == payload
+
+
+def test_evidence_proxy_passes_gates_and_v3_unchanged(monkeypatch):
+    import app.main as main_module
+
+    payload = {
+        "gates": [
+            {"gate": "V0", "kind": "identity", "result": "passed"},
+            {"gate": "V3", "kind": "behaviour", "result": "passed"},
+        ],
+        "v3": {
+            "gate": "V3",
+            "valid": {"passed": 1, "total": 1},
+            "invalid": {"passed": 0, "total": 0},
+            "invalid_applicable": False,
+        },
+    }
+
+    class _EvidenceBackend:
+        def get_attempt_evidence(self, attempt_id):
+            assert attempt_id == "att-1"
+            return payload
+
+    monkeypatch.setattr(main_module, "BACKEND", _EvidenceBackend())
+    response = client.get("/api/attempts/att-1/evidence")
+    assert response.status_code == 200
+    body = response.json()
+    assert [row["gate"] for row in body["gates"]] == ["V0", "V3"]
+    assert body["v3"]["valid"] == {"passed": 1, "total": 1}
+    assert body["v3"]["invalid_applicable"] is False

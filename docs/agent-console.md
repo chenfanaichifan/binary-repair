@@ -135,7 +135,7 @@ M1 的 `7984bb6` 与 503 契约 `3fec2c0` 已进入 `canonical/m1-m5-integration
 .venv/Scripts/python.exe tests/e2e/capture_agent_screens.py
 ```
 
-本次实测：`test_assistant_llm.py` 46/46；`test_agent_console.py` 40/40（含 gates 顺序、invalid N/A、V3 valid 计数、evidence 代理不可用）；`test_m1_handoff.py` 6/6；`tests/integration/test_assistant_plan.py` 5/5。
+本次实测：`test_assistant_llm.py` 46/46；`test_agent_console.py` 43/43（含 gates 顺序、invalid N/A、V3 valid 计数、evidence 代理不可用）；`test_m1_handoff.py` 6/6；`tests/integration/test_assistant_plan.py` 5/5。
 
 **已知预存在失败（与本次改动无关，已用 stash 对照确认）**：`tests/test_evidence_endpoint.py` 5 项在基线上同样失败，报 `attempts/<id>.json` 文件不存在，属后端持久化问题，归 M1/M5，不在 M2 范围。
 
