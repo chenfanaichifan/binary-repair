@@ -12,6 +12,8 @@ fingerprint  SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q
 |---|---|
 | `m4_guest_key.pub` | the key exactly as installed — 108 bytes, one line, LF, trailing newline |
 | `01-install-and-acceptance.txt` | digest and fingerprint on both sides, the two lines in `authorized_keys`, idempotence, `600 m4verify:m4verify`, sshd's effective config |
+| `02-why-not-from-the-branch.txt` | the five fetch attempts that failed, and why the key was installed from text |
+| `03-network-path.txt` | the guest permits a remote client; the network does not yet, and the two elevated commands that would fix it |
 
 ## What is now true
 
@@ -35,6 +37,14 @@ That M4 can log in. That requires M4's private half, which was never sent to thi
 host and is in no repository, package or transcript here. The install proves the
 server will accept that key; the login proves the client holds it. Only M4 can
 produce the second half.
+
+There is also a network fact worth stating before M4 tries, because it is easy to
+mistake for "the key did not work": `192.168.30.128` is a **VMnet8 NAT address**,
+not a LAN address. It exists inside this host. Nothing outside this host has a
+route to it, so a login from another machine fails at the TCP layer before the key
+is ever offered. `03-network-path.txt` records the checks and the two elevated
+`netsh` commands (port 2222 → 22, plus the firewall rule) that would open the path.
+Neither could be run here: the environment is unelevated.
 
 Nor does it establish anything about V4. A key is access, not a replay. `V4` stays
 `not_run` until M4 runs the harness and writes its own `verified_by`, and M3 does

@@ -1,0 +1,66 @@
+# can M4 reach 192.168.30.128? — server side says yes, the network says not yet
+# 2026-11-06T10:04:40Z
+
+## 1. the guest permits it
+
+  hosts.allow / hosts.deny   empty
+  ufw                        inactive
+  iptables -S INPUT          -P INPUT ACCEPT, no rules
+  nft                        no ruleset
+  sshd listenaddress         0.0.0.0:22 and [::]:22
+  allowusers/denyusers       none set
+  authorized_keys            600 m4verify:m4verify, 2 lines (M5, M4)
+
+  So nothing in the guest refuses a remote client. Verified with:
+    sudo cat /etc/hosts.allow /etc/hosts.deny; sudo ufw status;
+    sudo iptables -S INPUT; sudo nft list ruleset; sudo sshd -T
+    | egrep "^(allowusers|denyusers|allowgroups|denygroups|listenaddress)"
+
+## 2. the network does not, yet
+
+$ ip -4 addr show           # on the guest
+  2: enp0s18: inet 192.168.30.128/24 brd 192.168.30.255 scope global dynamic
+
+$ ipconfig                  # on the host, VMware adapters only
+  VMware Network Adapter VMnet8 : 192.168.30.1 / 255.255.255.0, no default gateway
+
+  192.168.30.0/24 exists inside this host as a VMware NAT segment. A machine
+  that is not this host has no route to 192.168.30.128 — it is not a LAN
+  address, it is a host-internal one. That is the whole reason this window
+  could reach the guest and M4 cannot yet.
+
+$ netsh interface portproxy show all
+  (empty — no forwarding rule exists)
+
+## 3. what closing the gap requires, and why this window did not do it
+
+$ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=2222 \
+        connectaddress=192.168.30.128 connectport=22
+  The requested operation requires elevation (Run as administrator).
+
+  The agent runs unelevated in this environment, so the rule could not be
+  added. Two commands, both needing an administrator prompt on the host:
+
+    netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 ^
+          listenport=2222 connectaddress=192.168.30.128 connectport=22
+    netsh advfirewall firewall add rule name="binrepair-m4verify-2222" ^
+          dir=in action=allow protocol=TCP localport=2222
+
+  then, from M4:
+    ssh -p 2222 m4verify@<host-address>
+  and to check the path without a login:
+    nc -vz <host-address> 2222
+
+  The host addresses in this window: 192.168.43.11 (WLAN), 192.168.137.1
+  (Windows hotspot), 192.168.92.1 (VMnet1), 192.168.30.1 (VMnet8). Which one
+  M4 can reach depends on where M4 is; 0.0.0.0 listens on all of them, which
+  is convenient and broader than needed. Narrow it to one address if the
+  threat model wants that.
+
+## 4. what is and is not established here
+
+  established: the guest accepts key auth from anywhere that can route to it,
+               and the key M4 holds is the second line in authorized_keys.
+  not established: that M4 reached it. That needs either a route to
+               192.168.30.0/24 or the forwarding rule above, and then a login
+               with M4's private half. Neither can be produced from this side.
