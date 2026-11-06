@@ -31,6 +31,7 @@ from typing import Any
 
 from app.db.connection import connect
 from app.services import jobs
+from routeb.contract_mode import load_contract
 
 GATES = ("V0", "V1", "V2", "V3", "V4", "V5")
 
@@ -58,9 +59,12 @@ def _verify_contract(path: Path) -> None:
     consumes the verified path and never reads contract bodies from SQLite."""
     if not path.is_file() or not os.access(path, os.R_OK):
         raise ValueError(f"BINARYREPAIR_CONTRACT is not readable: {path}")
-    payload = _read_json(path)
-    if not isinstance(payload, dict):
-        raise ValueError("BINARYREPAIR_CONTRACT must be a JSON object")
+    try:
+        load_contract(path)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"BINARYREPAIR_CONTRACT is not a valid SecurityContract: {exc}"
+        ) from exc
 
 
 def _verify_bundle(bundle: Path, *, original_path: Path | None = None) -> dict[str, Any]:
@@ -155,7 +159,18 @@ def runtime_state(bundle: Path) -> tuple[str, Path | None, str]:
     state, path = _runtime_state(bundle)
     if state == "not_run" and path is not None and path.name == "manifest-compare.json":
         return state, path, "round-trip only; not repair V3"
-    return state, path, ("runtime manifest " + state if path else "no runtime manifest in bundle")
+    if path is None:
+        return state, path, "no runtime manifest in bundle"
+    detail = "runtime manifest " + state
+    if path.name == "manifest-repaired.json":
+        payload = _read_json(path)
+        mode = payload.get("input_mode", "argv")
+        passed, total = payload.get("passed"), payload.get("total")
+        if isinstance(passed, int) and isinstance(total, int):
+            detail += f"; {passed}/{total}"
+        if mode == "none":
+            detail += "; input_mode=none, invalid not applicable"
+    return state, path, detail
 
 
 def _repro_state(bundle: Path) -> tuple[str, Path | None]:

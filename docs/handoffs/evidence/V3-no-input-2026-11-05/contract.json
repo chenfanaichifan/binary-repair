@@ -1,0 +1,22 @@
+{
+  "schema_version": 3,
+  "input_mode": "none",
+  "target_entry": "demo_no_input",
+  "target_signature": "void demo_no_input(void)",
+  "valid_domain": "no program input",
+  "valid_behavior": "exit 0 and print NO_INPUT_OK followed by one LF",
+  "forbidden_behavior": "read or write through a pointer after its object is freed",
+  "dest_capacity_bytes": 50,
+  "capacity_includes_terminator": true,
+  "authorized_edits": [],
+  "allowed_calls": [],
+  "environment_assumptions": [],
+  "required_obligations": [
+    "behaviour",
+    "identity",
+    "interface",
+    "reproducibility",
+    "structure",
+    "symbolic"
+  ]
+}
