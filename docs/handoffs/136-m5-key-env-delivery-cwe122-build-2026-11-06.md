@@ -139,21 +139,37 @@ meant this one. The sealed packages (133 and the T8.3 bundle) keep their bytes a
 their phrasing; this record is the interpretation they are read against, and it
 supersedes nothing about their content.
 
-## 6. Guest state, and the key that is still missing
+## 6. Guest state, and M4's key
 
-`192.168.30.128:22` is up and listening on both stacks; `lab` reaches it, and
-`~m4verify/.ssh/authorized_keys` holds exactly one line — M5's
-`m5-v4-access-2026-11-06`, fingerprint `SHA256:JF1hZZdGsxmEUt0REdbg4X76LCbaA/1q+0IYObh3zgI`.
+M4's key is identified by fingerprint
+`SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q` and was expected at
+`m4_guest_key.pub`. At 17:24 on 2026-11-06 that file was **not on this host**: the
+repository root, `D://` to depth three, `/tmp`, the user's home, Desktop and
+Downloads were searched by name, and every `*.pub` on disk was fingerprinted in
+case it had been saved under another name. Nothing matched, so nothing was
+installed — a key cannot be reconstructed from its fingerprint.
 
-**No M4 public key has been provided yet**, so nothing was installed for M4. When
-it arrives, one command adds it beside M5's line:
+The account is otherwise ready, verified at the same time:
+
+| | |
+|---|---|
+| `authorized_keys` | mode **600**, owner **m4verify:m4verify** |
+| keys present | **1** — M5's `m5-v4-access-2026-11-06`, `SHA256:JF1hZZdGsxmEUt0REdbg4X76LCbaA/1q+0IYObh3zgI` |
+| sshd | listening on `0.0.0.0:22` and `[::]:22`; `pubkeyauthentication yes`, `passwordauthentication no`; no `AllowUsers`/`DenyUsers`/`AllowGroups` |
+| firewall | `ufw` inactive, no `DROP`/`REJECT` rules |
+
+So `m4verify@192.168.30.128:22` accepts key authentication from any host that can
+route to the VMnet8 address; what it does not yet have is M4's key. When the file
+arrives, this appends beside M5's line rather than replacing it:
 
 ```sh
-sudo sh /opt/binrepair-handoff/T8.3-evidence-2026-11-06/guest/add-m4-key.sh m4_id_ed25519.pub
+sudo sh /opt/binrepair-handoff/T8.3-evidence-2026-11-06/guest/add-m4-key.sh m4_guest_key.pub
 ```
 
-Until then M4's replay cannot happen, which is the same thing as saying T8.3 stays
-blocked — the two are not separate blockers.
+`add-m4-key.sh` refuses a private key and is idempotent, and it prints the key
+count afterwards — the check that matters is **2**, with M5's fingerprint still
+among them. Until then there is no M4 replay, which is the same statement as
+"T8.3 stays blocked", not a second one.
 
 ## 7. Boundaries
 
