@@ -420,6 +420,14 @@ def _decorate_obligation(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _gate_order(row: dict[str, Any]) -> tuple[int, int]:
+    """V0..V5 first, in numeric order; rows without a gate id last."""
+    gate = row.get("id") or ""
+    if len(gate) > 1 and gate[0] == "V" and gate[1:].isdigit():
+        return (0, int(gate[1:]))
+    return (1, 0)
+
+
 _RESULT_VALUES: tuple[str, ...] = ("passed", "failed", "not_run", "unknown", "timed_out")
 
 
@@ -476,7 +484,9 @@ def _obligation_groups(
     keyed by route. For a single attempt only its own route group carries the
     persisted rows; the other group is empty rather than a placeholder.
     """
-    decorated = [_decorate_obligation(row) for row in rows]
+    decorated = sorted(
+        (_decorate_obligation(row) for row in rows), key=_gate_order
+    )
     return {
         "A": decorated if route_key == "A" else [],
         "B": decorated if route_key == "B" else [],
@@ -835,7 +845,9 @@ def _snapshot(record: jobs.JobRecord, meta: dict[str, Any]) -> dict[str, Any]:
             route["outcome_reason"] = attempt.reason or ""
             route["verdict"] = _verdict_for_attempt(attempt)
             group = jobs.list_obligations(attempt.id, data_dir=_data_dir())
-            route["obligations"] = [_decorate_obligation(row) for row in group]
+            route["obligations"] = sorted(
+                (_decorate_obligation(row) for row in group), key=_gate_order
+            )
             route["summary"] = _obligation_summary(group)
             route["evidence"] = _evidence_state(group)
             route["stages"] = _stages_for(attempt.phase, ROUTE_STAGES[key])
