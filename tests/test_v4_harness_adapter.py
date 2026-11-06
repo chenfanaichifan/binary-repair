@@ -112,3 +112,23 @@ def test_adapter_rejects_missing_property_kind_without_text_inference() -> None:
     # property_text still says "pointer"; the adapter must not infer from it.
     with pytest.raises(V4EvidenceError):
         from_v4_harness(data)
+
+
+def test_adapter_and_writer_never_add_m4_verification(tmp_path: Path) -> None:
+    data = json.loads(HARNESS.read_text(encoding="utf-8"))
+    # Even if a harness file tries to claim M4 verification, the adapter drops it.
+    data["replay"]["verified_by"] = "m4"
+    evidence = from_v4_harness(data)
+    assert evidence.replay.verified_by is None
+
+    path = tmp_path / "v4-symbolic.json"
+    write_v4_evidence(path, evidence)
+    written = json.loads(path.read_text(encoding="utf-8"))
+    assert "verified_by" not in written["replay"]
+    with pytest.raises(V4EvidenceError):
+        validate_v4_evidence(
+            written,
+            candidate_sha256=evidence.candidate_sha256,
+            original_sha256=evidence.original_sha256,
+            require_independent=True,
+        )
