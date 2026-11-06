@@ -156,13 +156,39 @@ def _check_source(root: Path, findings: list[Finding]) -> None:
 
 def _check_elf(root: Path, findings: list[Finding]) -> str | None:
     with (root / "original.elf").open("rb") as handle:
-        magic = handle.read(4)
-    if magic != b"\x7fELF":
+        header = handle.read(20)
+    if header[:4] != b"\x7fELF":
         findings.append(
-            Finding("not_elf", "original.elf", f"magic is {magic!r}, expected b'\\x7fELF'")
+            Finding("not_elf", "original.elf", f"magic is {header[:4]!r}, expected b'\\x7fELF'")
         )
         return None
-    return _sha256(root / "original.elf")
+    artifact_sha256 = _sha256(root / "original.elf")
+    if len(header) < 20:
+        findings.append(
+            Finding(
+                "not_elf",
+                "original.elf",
+                "ELF header is truncated before e_type",
+            )
+        )
+        return artifact_sha256
+    endian = "little" if header[5] == 1 else "big" if header[5] == 2 else None
+    if endian is None:
+        findings.append(
+            Finding("not_elf", "original.elf", f"invalid EI_DATA {header[5]!r}")
+        )
+        return artifact_sha256
+    e_type = int.from_bytes(header[16:18], endian)
+    if e_type != 2:
+        findings.append(
+            Finding(
+                "elf_not_non_pie",
+                "original.elf",
+                f"e_type={e_type}; the contract requires a non-PIE ET_EXEC (2), "
+                "and ET_DYN/PIE (3) must not be accepted as the fixture binary",
+            )
+        )
+    return artifact_sha256
 
 
 def _check_build_json(
