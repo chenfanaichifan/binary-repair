@@ -208,7 +208,7 @@ def write_attempt(
         _verify_contract(contract_path)
 
     audit = _read_json(bundle / "audit.json") if (bundle / "audit.json").exists() else {"pass": False}
-    runtime_state, runtime_path = _runtime_state(bundle)
+    v3_state, runtime_path, v3_detail = runtime_state(bundle)
     repro_state, repro_path = _repro_state(bundle)
     identity = manifest.get("original_sha256") == job.original_sha256
     structure = audit.get("pass") is True
@@ -217,7 +217,7 @@ def write_attempt(
         "V0": "passed" if identity else "failed",
         "V1": "passed" if structure else "failed" if (bundle / "audit.json").exists() else "not_run",
         "V2": "not_run",
-        "V3": runtime_state,
+        "V3": v3_state,
         "V4": "not_run",
         "V5": repro_state,
     }
@@ -226,10 +226,7 @@ def write_attempt(
         "V0": f"original {manifest.get('original_sha256')} vs job {job.original_sha256}",
         "V1": "static ELF audit passed" if structure else "static ELF audit not passed",
         "V2": "interface check not implemented in Route B executor",
-        "V3": (
-            "round-trip only; not repair V3" if runtime_path and runtime_path.name == "manifest-compare.json"
-            else (("runtime manifest " + runtime_state) if runtime_path else "no runtime manifest in bundle")
-        ),
+        "V3": v3_detail,
         "V4": "symbolic check not run",
         "V5": ("build-twice " + repro_state) if repro_path else "build-twice not run",
     }

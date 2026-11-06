@@ -112,6 +112,8 @@ def test_cwe416_124_ingest_keeps_v2_v4_not_run(tmp_path: Path) -> None:
     assert final is not None
     assert final.outcome == "inconclusive"
     assert final.reason == "required_check_not_run"
+    assert final.failing_obligation == "interface"
+    assert final.detail == "V2 interface: not_run"
 
     by_kind = {
         row["kind"]: row["result"]
