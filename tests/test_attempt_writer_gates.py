@@ -60,14 +60,14 @@ def test_124_bundle_derives_all_six_gates(tmp_path: Path) -> None:
     assert {"V1", "V2", "V3", "V4", "V5"} <= set(payload["evidence"])
 
 
-def test_p1_bundle_keeps_v2_v4_v5_not_run(tmp_path: Path) -> None:
+def test_p1_bundle_derives_all_six_gates(tmp_path: Path) -> None:
     payload = _run(tmp_path, BUNDLE_P1)
     assert payload["results"] == {
         "V0": "passed",
         "V1": "passed",
-        "V2": "not_run",
+        "V2": "passed",
         "V3": "passed",
-        "V4": "not_run",
+        "V4": "passed",
         "V5": "passed",
     }
-    assert set(payload["evidence"]) == {"V0", "V1", "V3", "V5"}
+    assert {"V0", "V1", "V2", "V3", "V4", "V5"} <= set(payload["evidence"])

@@ -52,31 +52,31 @@
     "sha256": "80e4f2bb5b36d4afe5d28be3f5e39181915639895f477ae787db15d9c9bb9a11",
     "valid_domain": "Input length 0-64 bytes; out-of-range lengths rejected"
   },
-  "created_at": "2026-11-07T05:38:42+00:00",
+  "created_at": "2026-11-07T05:48:22+00:00",
   "data_source": "controller-http",
-  "defect": "P1 e2e",
+  "defect": "P1 e2e v2v4",
   "demo": false,
   "environment": "",
   "execution": {
-    "finished_at": "2026-11-07T05:38:42+00:00",
+    "finished_at": "2026-11-07T05:48:22+00:00",
     "note": "Derived from persisted run rows; no producer sidecar exists in this build.",
     "outcome": "inconclusive",
     "phase": "finished",
-    "run_id": "fde8b5f679ae4c12a5bdee90c60d6436",
+    "run_id": "3c30b19801aa47eabfb728953c1e2562",
     "sidecar": null,
     "source": "controller-derived",
-    "started_at": "2026-11-07T05:38:42+00:00",
+    "started_at": "2026-11-07T05:48:22+00:00",
     "status": "completed"
   },
   "execution_phase": "finished",
   "filename": "p1.elf",
-  "id": "b619abe49ca4421195173daea6caecd8",
+  "id": "a6565abf6eef472ba4775436973806b2",
   "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
   "phase": "finished",
   "routes": {
     "A": {
       "ai_usage": null,
-      "attempt_id": "01af0de087fa4a20a438f35534cecaac",
+      "attempt_id": "d1dfdb6713a5456eaeb9b47d930b2277",
       "changed_regions": [],
       "compatibility": "not_run",
       "elapsed_s": 0.0,
@@ -94,7 +94,7 @@
         },
         {
           "detail": "V0 identity: not_run",
-          "evidence_artifact_id": "a38e14c751f943ea838d015e63c5e233",
+          "evidence_artifact_id": "ad3396f28b484d4b8f1c4767ba5d98c7",
           "kind": "identity",
           "required": true,
           "result": "not_run",
@@ -172,9 +172,9 @@
     },
     "B": {
       "ai_usage": null,
-      "attempt_id": "a8cb533995f1425db4cd5e0388fd3681",
+      "attempt_id": "f3ee375a8889409180cf8b1c31c3e22b",
       "changed_regions": [],
-      "compatibility": "not_run",
+      "compatibility": "passed",
       "elapsed_s": 0.0,
       "evidence": "persisted",
       "manual_interventions": 0,
@@ -182,7 +182,7 @@
       "obligations": [
         {
           "detail": "runtime manifest passed; 1/1; input_mode=none, invalid not applicable",
-          "evidence_artifact_id": "c99ec069a0a94d45819e40cbcd4f3c99",
+          "evidence_artifact_id": "8e0f593810ea41e6a3454fcdfb8b0041",
           "kind": "behaviour",
           "required": true,
           "result": "passed",
@@ -190,23 +190,23 @@
         },
         {
           "detail": "original c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9 matches the job record",
-          "evidence_artifact_id": "1710a42d2b16451fb1926df46d908c22",
+          "evidence_artifact_id": "fc4632abc57d453e849874200d21c868",
           "kind": "identity",
           "required": true,
           "result": "passed",
           "scope": "metadata"
         },
         {
-          "detail": "V2 not_run: no v2-interface.json in bundle",
-          "evidence_artifact_id": null,
+          "detail": "5/5 static interface checks",
+          "evidence_artifact_id": "4c246e2df1374f97aff27e7295f0cdd0",
           "kind": "interface",
           "required": true,
-          "result": "not_run",
+          "result": "passed",
           "scope": "binary"
         },
         {
           "detail": "runtime manifest passed; 1/1; input_mode=none, invalid not applicable",
-          "evidence_artifact_id": "c99ec069a0a94d45819e40cbcd4f3c99",
+          "evidence_artifact_id": "8e0f593810ea41e6a3454fcdfb8b0041",
           "kind": "repaired_behaviour",
           "required": false,
           "result": "passed",
@@ -214,7 +214,7 @@
         },
         {
           "detail": "build-twice measured, byte-identical",
-          "evidence_artifact_id": "6721402a93884bcb8548d528b6e65456",
+          "evidence_artifact_id": "6e7b6fea0b5546f9b05abf42b342fb0f",
           "kind": "reproducibility",
           "required": true,
           "result": "passed",
@@ -222,23 +222,23 @@
         },
         {
           "detail": "routeb static audit",
-          "evidence_artifact_id": "9000d46934554a05a0f7806c2a4b42eb",
+          "evidence_artifact_id": "695adfbeed854347aeac67d3c537c685",
           "kind": "structure",
           "required": true,
           "result": "passed",
           "scope": "binary"
         },
         {
-          "detail": "V4 not_run: no v4-symbolic.json",
-          "evidence_artifact_id": null,
+          "detail": "V4 independently verified by M4",
+          "evidence_artifact_id": "4917a8ac3b3b47dda991bb9ecdd1430a",
           "kind": "symbolic",
           "required": true,
-          "result": "not_run",
+          "result": "passed",
           "scope": "model"
         }
       ],
-      "outcome": "inconclusive",
-      "outcome_reason": "required_check_not_run",
+      "outcome": "success_within_scope",
+      "outcome_reason": "",
       "phase": "finished",
       "stages": [
         {
@@ -271,16 +271,16 @@
         "total": 0
       },
       "verdict": {
-        "detail": "V2 interface: not_run",
-        "failing_obligation": "interface",
-        "outcome": "inconclusive",
-        "reason": "required_check_not_run"
+        "detail": "6 required obligations passed",
+        "failing_obligation": null,
+        "outcome": "success_within_scope",
+        "reason": null
       },
-      "verification": "inconclusive"
+      "verification": "passed"
     }
   },
   "run": {
-    "id": "fde8b5f679ae4c12a5bdee90c60d6436",
+    "id": "3c30b19801aa47eabfb728953c1e2562",
     "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "phase": "finished",
     "reviewed_scope_sha256": "c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c"

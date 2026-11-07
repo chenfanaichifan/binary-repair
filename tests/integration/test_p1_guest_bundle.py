@@ -45,14 +45,14 @@ def test_real_p1_bundle_ingests_measured_gates(tmp_path: Path) -> None:
         trigger=True,
     )
     assert result["imported"]["changed"] is True
-    assert set(result["evidence"]) == {"V0", "V1", "V2", "V3", "V5"}
+    assert set(result["evidence"]) == {"V0", "V1", "V2", "V3", "V4", "V5"}
 
     final = jobs.get_attempt(attempt.id, data_dir=data_dir)
     assert final is not None
     assert final.phase == "finished"
-    assert final.outcome == "inconclusive"
-    assert final.reason == "required_check_not_run"
-    assert final.failing_obligation == "symbolic"
+    assert final.outcome == "success_within_scope"
+    assert final.reason is None
+    assert final.failing_obligation is None
 
     payload = json.loads(
         (data_dir / "jobs" / job.id / "runs" / run.id / "attempts" / f"{attempt.id}.json").read_text()
@@ -62,6 +62,6 @@ def test_real_p1_bundle_ingests_measured_gates(tmp_path: Path) -> None:
         "V1": "passed",
         "V2": "passed",
         "V3": "passed",
-        "V4": "not_run",
+        "V4": "passed",
         "V5": "passed",
     }

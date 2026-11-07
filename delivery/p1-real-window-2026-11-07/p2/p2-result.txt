@@ -1,5 +1,5 @@
 {
-  "job_id": "b619abe49ca4421195173daea6caecd8",
+  "job_id": "a6565abf6eef472ba4775436973806b2",
   "synthetic": false,
   "phase": "finished",
   "verdict": {
@@ -14,7 +14,7 @@
       "obligations": 6
     },
     "B": {
-      "outcome": "inconclusive",
+      "outcome": "success_within_scope",
       "obligations": 7
     }
   }

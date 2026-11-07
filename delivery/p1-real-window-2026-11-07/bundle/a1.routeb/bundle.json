@@ -15,8 +15,10 @@
       "status": "passed"
     },
     "V2": {
-      "artifacts": [],
-      "status": "not_run"
+      "status": "passed",
+      "artifacts": [
+        "v2-interface.json"
+      ]
     },
     "V3": {
       "artifacts": [
@@ -25,8 +27,10 @@
       "status": "passed"
     },
     "V4": {
-      "artifacts": [],
-      "status": "not_run"
+      "status": "passed",
+      "artifacts": [
+        "v4-symbolic.json"
+      ]
     },
     "V5": {
       "status": "passed",
