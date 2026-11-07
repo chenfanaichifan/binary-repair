@@ -1,0 +1,6 @@
+guest executor 2026-11-07T04:37:01Z
+package: /var/lib/binrepair/jobs/p1-cwe416-noinput-20261107/staging/a1
+route: route_b purpose: repair
+$ /opt/angr-venv/bin/python -m routeb.executor --original /var/lib/binrepair/jobs/p1-cwe416-noinput-20261107/staging/a1/original.elf --func CWE416_Use_After_Free__malloc_free_char_01_bad --mode fixed --tests /var/lib/binrepair/jobs/p1-cwe416-noinput-20261107/staging/a1/tests --out-dir /var/lib/binrepair/jobs/p1-cwe416-noinput-20261107/runs/run1/attempts/a1.routeb --input-mode none --contract /var/lib/binrepair/jobs/p1-cwe416-noinput-20261107/staging/a1/contract.json --candidate /var/lib/binrepair/jobs/p1-cwe416-noinput-20261107/staging/a1/candidate.elf --run-manifest
+routeb-executor: rc=0
+wrote bundle.json and result-bundle.json
