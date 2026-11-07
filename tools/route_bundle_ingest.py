@@ -321,10 +321,13 @@ def ingest(
         if gate == "V2":
             # Do not trust a measured observation's pass:true. Recompute the
             # five static checks from the binary pair; only 5/5 becomes passed.
+            candidate_for_v2 = bundle / "candidate.elf"
+            if not candidate_for_v2.is_file() and (bundle / "route_a/candidate.elf").is_file():
+                candidate_for_v2 = bundle / "route_a/candidate.elf"
             try:
                 report = check_interface(
                     bundle / "original.elf",
-                    bundle / "candidate.elf",
+                    candidate_for_v2,
                     target_entry,
                 )
             except InterfaceCheckError as exc:
