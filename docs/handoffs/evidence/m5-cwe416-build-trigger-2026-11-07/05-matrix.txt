@@ -1,0 +1,15 @@
+== matrix against run-b/pm.elf (portable build) ==
+case              kind        rc  stdout                         stderr         verdict
+---------------------------------------------------------------------------------------
+valid-empty       valid        0  '\n'                           ''             MATCH
+valid-one         valid        0  'a\n'                          ''             MATCH
+valid-max49       valid        0  'mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm\n' ''             MATCH
+valid-spaces      valid        0  'two words\n'                  ''             MATCH
+invalid-first     invalid      0  'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' ''             DIFF
+invalid-longer    invalid      0  'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' ''             DIFF
+
+MATCH 4 / 6
+
+NOTE: the two invalid rows are EXPECTED to differ on the original.
+      tests/invalid.json records the POST-REPAIR output; reading the
+      freed block yields the reuse sentinel, which is the defect.

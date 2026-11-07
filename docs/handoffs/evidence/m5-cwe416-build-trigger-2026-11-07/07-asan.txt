@@ -1,0 +1,24 @@
+== gcc -fsanitize=address build, defect path ==
+=================================================================
+==4558==ERROR: AddressSanitizer: heap-use-after-free on address 0x506000000020 at pc 0x7395dd47035d bp 0x7fffff7e4e90 sp 0x7fffff7e4638
+READ of size 2 at 0x506000000020 thread T0
+    #0 0x7395dd47035c in fputs ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:1221
+    #1 0x5904cb508464 in printLine /home/lab/cwe416/run-b/src.c:43
+    #2 0x5904cb5085a0 in badSink /home/lab/cwe416/run-b/src.c:72
+    #3 0x5904cb50874e in main /home/lab/cwe416/run-b/src.c:97
+    #4 0x7395dd02a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #5 0x7395dd02a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #6 0x5904cb5082a4 in _start (/home/lab/cwe416/run-b/asan.elf+0x12a4) (BuildId: 9f5346ee300265a1086799bc8edfd7742b8c834d)
+
+0x506000000020 is located 0 bytes inside of 50-byte region [0x506000000020,0x506000000052)
+freed by thread T0 here:
+    #0 0x7395dd4fc4d8 in free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:52
+    #1 0x5904cb50852a in badSink /home/lab/cwe416/run-b/src.c:64
+    #2 0x5904cb50874e in main /home/lab/cwe416/run-b/src.c:97
+    #3 0x7395dd02a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #4 0x7395dd02a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #5 0x5904cb5082a4 in _start (/home/lab/cwe416/run-b/asan.elf+0x12a4) (BuildId: 9f5346ee300265a1086799bc8edfd7742b8c834d)
+
+
+== same binary, good path ==
+1234567

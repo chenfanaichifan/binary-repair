@@ -1,0 +1,12 @@
+== guest environment at build time ==
+hostname   : binrepair-vm
+kernel     : Linux 6.8.0-147-generic x86_64
+boot       : system boot 2026-11-05 21:24
+uptime     : up 2 minutes
+user       : uid=1000(lab) gid=1000(lab) groups=1000(lab),4(adm),27(sudo)
+gcc        : gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+ld         : GNU ld (GNU Binutils for Ubuntu) 2.42
+gcc sha256 : 1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26
+home dirs  : D cwe416 evaluator repair-input route-a 
+disk       : /dev/sda1        29G  5.6G   23G  20% /
+network    : lo 127.0.0.1/8;enp0s18 192.168.30.128/24;
