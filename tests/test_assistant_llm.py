@@ -16,7 +16,7 @@ import pytest
 
 from app.db.connection import connect
 from app.domain.assistant import AssistantPlan
-from app.services import assistant, jobs
+from app.services import assistant, jobs, model_calls
 from app.services import assistant_llm
 from app.services.assistant_llm import (
     FallbackReason,
@@ -278,6 +278,41 @@ def test_one_sided_usage_is_kept_but_never_completed(tmp_path: Path):
     assert row["completion_tokens"] is None
     assert row["total_tokens"] is None
     assert json.loads(row["usage_json"]) == {"prompt_tokens": 11}
+
+
+def test_aggregate_marks_partial_when_a_sibling_row_has_no_usage(tmp_path: Path):
+    # T8.2 seam + canonical d1ce352 aggregate: one row has real tokens, one is
+    # NULL. The sum must survive and be marked partial, never completed with 0.
+    data, job = _job(tmp_path)
+    generate_plan("fix it",
+                  client=FakeTransport(_payload(), usage={"prompt_tokens": 21,
+                                                          "completion_tokens": 5}),
+                  context={"data_dir": str(data), "job_id": job.id})
+    generate_plan("fix it", client=FakeTransport(_payload()),
+                  context={"data_dir": str(data), "job_id": job.id})
+    assert model_calls.aggregate_job_usage(data_dir=data, job_id=job.id) == {
+        "input_tokens": 21, "output_tokens": 5, "partial": True,
+    }
+
+
+def test_aggregate_is_null_when_every_row_lacks_usage(tmp_path: Path):
+    # "未提供" is null, not 0: a job with only missing usage has no sum.
+    data, job = _job(tmp_path)
+    generate_plan("fix it", client=FakeTransport(_payload()),
+                  context={"data_dir": str(data), "job_id": job.id})
+    assert model_calls.aggregate_job_usage(data_dir=data, job_id=job.id) is None
+
+
+def test_aggregate_is_complete_when_every_row_has_usage(tmp_path: Path):
+    data, job = _job(tmp_path)
+    for _ in range(2):
+        generate_plan("fix it",
+                      client=FakeTransport(_payload(), usage={"prompt_tokens": 3,
+                                                              "completion_tokens": 2}),
+                      context={"data_dir": str(data), "job_id": job.id})
+    assert model_calls.aggregate_job_usage(data_dir=data, job_id=job.id) == {
+        "input_tokens": 6, "output_tokens": 4, "partial": False,
+    }
 
 
 def test_latency_goes_to_its_own_column(tmp_path: Path):
