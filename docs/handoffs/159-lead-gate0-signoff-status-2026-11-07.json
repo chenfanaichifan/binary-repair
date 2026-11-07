@@ -1,0 +1,15 @@
+{
+  "gate0": {
+    "state": "signed",
+    "date": "2026-11-07",
+    "printed_name": "Lead (operator role)",
+    "exact_sentence": "Gate 0 通过",
+    "d1_d6": "all agreed; no amendments",
+    "tag": false,
+    "merge_main": false,
+    "same_operator": true
+  },
+  "t8_3": "COMPLETE",
+  "124": "success_within_scope (model scope)",
+  "final_code_head": "dd6b9654366ff288fe73b2b59f28429c4015cc95"
+}
