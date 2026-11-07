@@ -85,3 +85,11 @@ live success: none
 ```
 
 No private key is included. The only `verified_by` value in the archive is M4's marker; M1/M5 did not write one.
+
+## Full-suite run (2026-11-07)
+
+```text
+pytest -q -> exit 0
+log: delivery/logs/full-suite-2026-11-07.txt
+skips: 9 (7 Edge e2e + 2 Linux ELF; not passes)
+```
