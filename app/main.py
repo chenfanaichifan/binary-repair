@@ -280,6 +280,11 @@ async def agent_index(
     per-task conversation route, so bookmarks and the landing CTA do not break.
     """
     if job:
+        # Older links carry a job id; anything that is not id-shaped is not a
+        # job. In particular ``../x`` would make the browser normalise
+        # ``/agent/../x`` into another site path, so it must never redirect.
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", job):
+            raise HTTPException(status_code=404, detail="unknown job")
         query: dict[str, str] = {}
         if fixture:
             query["fixture"] = str(fixture)

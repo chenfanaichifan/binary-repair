@@ -284,6 +284,15 @@ def test_legacy_agent_query_redirects_to_the_task_route():
     assert response.headers["location"].startswith("/agent/abc123")
 
 
+def test_legacy_agent_query_never_redirects_a_non_job_id():
+    # ``/agent/../x`` would be normalised by the browser into another site
+    # path, so a legacy link may only redirect for an id-shaped job.
+    for bad in ("../secret", "a/b", "abc?x=1", "x" * 65, "%2e%2e"):
+        response = client.get(f"/agent?job={bad}", follow_redirects=False)
+        assert response.status_code == 404, bad
+        assert "location" not in response.headers, bad
+
+
 def test_conversation_history_is_stored_per_job():
     assert "br.msg.v1." in AGENT_JS
     assert "HISTORY_LIMIT" in AGENT_JS
