@@ -43,12 +43,15 @@ docs/handoffs/170-t83-fresh-tree-closure-2026-11-07.md
 docs/handoffs/171-m4-t83-confirmation-2026-11-07.md
 ```
 
-### M4 / Review
+### M2 / M4 / Review
 
 ```text
+delivery/m2-handoff-2026-11-08.zip
 docs/reviews/review-9-12-canonical-2026-11-07.md
 docs/reviews/review-9-12-m4-verification-2026-11-07.md
 docs/reviews/review-9-12-m4-verdict-2026-11-07.json
+docs/reviews/review-12-m4-verification-2026-11-08.md
+docs/handoffs/180-review12-pass-2026-11-08.md
 ```
 
 ### M5 / contracts
