@@ -46,6 +46,12 @@ def test_p1_two_route_success(tmp_path: Path) -> None:
         )
 
     worker.run_once(data_dir=data)
+    rows = jobs.list_job_attempts(job.id, data_dir=data)
+    assert len(rows) == 2
+    for row in rows:
+        assert row["started_at"]
+        assert row["finished_at"]
+        assert row["candidate_sha256"]
     for route in ("route_a", "route_b"):
         final = jobs.get_attempt(attempts[route].id, data_dir=data)
         assert final is not None

@@ -27,6 +27,7 @@ No path in this module invents a ``passed`` result.
 from __future__ import annotations
 
 import argparse
+import datetime as _dt
 import hashlib
 import json
 import os
@@ -46,6 +47,42 @@ from app.services import jobs, obligations, orchestration
 from app.services.attempt_driver import routeb_bundle_dir
 
 TERMINAL = {"finished", "cancelled"}
+
+
+def _now() -> str:
+    return _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _stamp_attempt(
+    attempt_id: str,
+    *,
+    data_dir: str | Path,
+    started: bool = False,
+    finished: bool = False,
+    candidate_sha256: str | None = None,
+) -> None:
+    assignments = []
+    values: list[Any] = []
+    if started:
+        assignments.append("started_at = COALESCE(started_at, ?)")
+        values.append(_now())
+    if finished:
+        assignments.append("finished_at = ?")
+        values.append(_now())
+    if candidate_sha256 is not None:
+        assignments.append("candidate_sha256 = ?")
+        values.append(candidate_sha256)
+    if not assignments:
+        return
+    values.append(attempt_id)
+    connection = connect(data_dir)
+    try:
+        with connection:
+            connection.execute(
+                f"UPDATE attempts SET {', '.join(assignments)} WHERE id = ?", values
+            )
+    finally:
+        connection.close()
 
 
 def _bundle_path(data_dir: str | Path, job_id: str, run_id: str, attempt_id: str) -> Path:
@@ -294,6 +331,12 @@ def _attempt_verdict(
             candidate_sha256=payload["candidate_sha256"],
             evidence=payload.get("evidence") or {},
         )
+    _stamp_attempt(
+        attempt.id,
+        data_dir=data_dir,
+        finished=True,
+        candidate_sha256=payload["candidate_sha256"],
+    )
     obligations.persist_obligations(
         data_dir=data_dir,
         job_id=job_id,
@@ -354,6 +397,7 @@ def run_once(*, data_dir: str | Path) -> int:
             if attempt.phase == "cancelled":
                 continue
 
+            _stamp_attempt(attempt.id, data_dir=data_dir, started=True)
             _set_phase("attempts", attempt.id, "analyzing", data_dir=data_dir)
             _set_phase("runs", run.id, "analyzing", data_dir=data_dir)
             _set_phase("jobs", job.id, "analyzing", data_dir=data_dir)
@@ -398,6 +442,7 @@ def run_once(*, data_dir: str | Path) -> int:
                 _set_phase("attempts", attempt.id, "queued", data_dir=data_dir)
                 print(f"worker: attempt {attempt.id} has no result bundle yet")
                 continue
+            _stamp_attempt(attempt.id, data_dir=data_dir, finished=True)
             verdicts[attempt.route] = verdict
             processed += 1
 

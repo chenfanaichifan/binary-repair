@@ -5,11 +5,11 @@ Date: 2026-11-07
 ## P1 final — consume, do not re-run
 
 ```text
-job       1f426d798bd04df9890bf7c8ea658cb3
-run       90f16624fcc2497dbd23236a66540584
-route A   a2dd161ec49349bd9695e8def320473f
-route B   b00c5ff22e2d4604aaf626bacbbe3cb6
-created   2026-11-07T14:16:53+00:00
+job       9247357c54714546a7ff84891f7766f8
+run       54a088e418d94a75b10d08bd893a5581
+route A   516d69ac6a5e44eca23ec9bca914dc5d
+route B   90aa7abe41cd4dd2b7d9211a44d247db
+created   2026-11-07T15:36:50+00:00
 phase     finished
 verdict   success_within_scope
 ```
@@ -33,7 +33,7 @@ delivery/p1-real-window-2026-11-07/p2/P2-ACCEPTANCE.txt
 p2 command:
 
 ```text
-python tools/p2_acceptance.py --job-id 1f426d798bd04df9890bf7c8ea658cb3 --base-url http://127.0.0.1:<port>
+python tools/p2_acceptance.py --job-id 9247357c54714546a7ff84891f7766f8 --base-url http://127.0.0.1:<port>
 exit 0
 synthetic false
 ```
