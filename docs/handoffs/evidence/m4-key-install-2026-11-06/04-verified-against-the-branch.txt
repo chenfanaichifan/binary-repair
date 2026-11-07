@@ -1,0 +1,38 @@
+# follow-up: the key was read from the branch after all — 2026-11-07T01:43:08Z
+
+# 02-why-not-from-the-branch.txt records five failed fetches on 2026-11-06.
+# The transport recovered the next morning, and the branch could be read.
+
+$ git fetch origin delivery/t83-2026-11-06
+  From https://github.com/chenfanaichifan/binary-repair
+   * branch            delivery/t83-2026-11-06 -> FETCH_HEAD
+
+$ git cat-file -t f46c626c3dca3d36b09f511127353e4817e56cb1
+  commit
+$ git cat-file -t df99853b22517f193bffb49424b461288dc48a69
+  commit
+  (both present now; on 2026-11-06 both answered "could not get object info")
+
+$ git show origin/delivery/t83-2026-11-06:m4_guest_key.pub > /tmp/from-branch.pub
+$ sha256sum /tmp/from-branch.pub m4_guest_key.pub
+  ab8fbd7dc23bf900dc1597da8025a689feed55f77275c87869e55fa4dca5a703 *.tmp/m4pub-branch.pub
+  ab8fbd7dc23bf900dc1597da8025a689feed55f77275c87869e55fa4dca5a703 *docs/handoffs/evidence/m4-key-install-2026-11-06/m4_guest_key.pub
+$ cmp /tmp/from-branch.pub m4_guest_key.pub
+  byte-identical
+
+$ ssh-keygen -lf /tmp/from-branch.pub
+  256 SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q m4-guest-replay-2026-11-06 (ED25519)
+
+# Result: the bytes installed on 2026-11-06 from the text in the request are the
+# same bytes the branch holds. The weaker claim in the README can now be
+# replaced by the stronger one, and the condition it set is satisfied:
+#
+#   "When the transport recovers, git show should produce these same 108 bytes
+#    — if it does not, this directory is wrong and the key would have to be
+#    replaced."
+#
+# It produced them. Nothing needs replacing.
+
+# What this does not change: installing a key was still not a replay, and the
+# timeline was still text first, verification second. Recording both is the
+# honest shape; silently rewriting 02 would have hidden the order.

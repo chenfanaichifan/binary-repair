@@ -1,0 +1,62 @@
+# does the V4 adapter believe a claim its digests deny? — 2026-11-07T01:43:01Z
+# code: M1 c41de41 in .tmp/wt-m1c; producer: docs/handoffs/evidence/cwe416-v4-2026-11-06/v4_harness.py
+# command: (cd .tmp/wt-m1c && python ../../docs/handoffs/evidence/t83-review-findings-2026-11-07/04-replay-contradiction.py)
+
+==============================================================================
+half 1 — can the producer emit identical=true with differing digests?
+==============================================================================
+
+  dataclass fields : ['runs', 'digests']
+  properties       : ['identical']
+
+  identical is a @property: computed from digests, never stored.
+  There is no setter, so no caller can set it to True. The value the
+  producer writes into JSON is therefore derived, not asserted.
+
+  source:
+    def identical(self) -> bool:
+            return len(self.digests) >= 2 and len(set(self.digests)) == 1
+
+==============================================================================
+half 2 — does the adapter accept identical=true with differing digests?
+==============================================================================
+
+  baseline (the shipped harness output):
+    replay.digests   : ['cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14', 'cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14']
+    replay.identical : True
+
+  tampered input:
+    replay.digests   : ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
+    replay.identical : True   <- the lie
+
+  ACCEPTED. The adapter produced evidence with:
+    replay.runs      : 2
+    replay.identical : True
+    replay.evidence_sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+  So the adapter trusts the producer's claim of identity instead of
+  deriving it. app/domain/v4.py:287-289:
+
+      identical = bool(
+          replay.get("identical", runs >= 2 and len(set(digests)) == 1)
+      )
+
+  The default argument is only evaluated when the key is absent, so a
+  present-but-false claim wins over the digests.
+
+  What this is and is not:
+    is      a converter that can carry a claim its own data denies
+    is not  a gate bypass on its own: the adapter adds no verified_by, so
+            a bundle built from this still reads V4 not_run (record 126)
+
+  Minimal fix, in the file that owns it:
+
+      derived = runs >= 2 and len(set(digests)) == 1
+      declared = replay.get("identical", derived)
+      if bool(declared) != derived:
+          raise V4EvidenceError(
+              f"replay.identical={declared} contradicts digests={digests}")
+      identical = derived
+
+  Deriving and rejecting a contradiction beats defaulting: a producer
+  that says true is then either redundant or wrong, never trusted.

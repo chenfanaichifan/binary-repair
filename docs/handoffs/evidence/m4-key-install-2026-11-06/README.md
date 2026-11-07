@@ -71,7 +71,15 @@ So the key was installed from the text supplied with the request, and the check
 performed was the one available: the file's digest equals the digest supplied
 alongside it, `ab8fbd7d…a703`, and its fingerprint equals `bRq28b6J…84Q`. That is
 consistency between two things the request provided, not an independent reading of
-a branch. When the transport recovers, `git show origin/delivery/t83-2026-11-06:m4_guest_key.pub`
-should produce these same 108 bytes — if it does not, this directory is wrong and
-the branch is right, and the installed key would have to be replaced.
+a branch.
+
+**That condition has since been met.** On 2026-11-07 the transport recovered, the
+branch was fetched, and `git show origin/delivery/t83-2026-11-06:m4_guest_key.pub`
+produced the same 108 bytes — `ab8fbd7d…a703`, `cmp` clean, same fingerprint
+(`04-verified-against-the-branch.txt`). So the stronger claim now holds: the
+installed key is byte-identical to what the branch holds. Nothing needs replacing.
+
+The order stays visible on purpose: text first, verification second. `02` keeps the
+five failed fetches rather than being rewritten to look as though the branch was
+read all along.
 

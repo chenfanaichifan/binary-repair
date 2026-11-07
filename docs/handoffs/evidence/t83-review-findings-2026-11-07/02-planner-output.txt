@@ -1,0 +1,76 @@
+# the planner cannot tell CWE-121 from CWE-416 — 2026-11-07T01:42:12Z
+# command: python docs/handoffs/evidence/t83-review-findings-2026-11-07/01-reproduce.py
+
+==============================================================================
+the deterministic planner, called through generate_plan()
+==============================================================================
+
+--- CWE-121 ---
+  context passed in : {"bug_site": "stack", "class": "CWE-121", "fixture": "CWE121_src_char_declare_cpy_51b", "input_mode": "argv", "mechanism": "bounds-check"}
+  mode              : deterministic
+  steps             : 5
+    sample       kind=upload    title='Step 1 - Sample'
+    defect       kind=question  title='Step 2 - Defect'
+      question 'defect': input=textarea required=True ascii=True default='fix the reported binary vulnerability'
+    valid        kind=question  title='Step 3 - Valid inputs'
+      question 'valid_tests': input=textarea required=True ascii=True default='valid: hello'
+    environment  kind=question  title='Step 4 - Environment'
+      question 'environment': input=text required=True ascii=True default='Ubuntu x86-64 guest'
+    review       kind=review    title='Step 5 - Review and create'
+
+--- CWE-416 ---
+  context passed in : {"bug_site": "heap", "class": "CWE-416", "fixture": "CWE416_Use_After_Free__malloc_free_char_01_noinput", "input_mode": "none", "mechanism": "lifetime"}
+  mode              : deterministic
+  steps             : 5
+    sample       kind=upload    title='Step 1 - Sample'
+    defect       kind=question  title='Step 2 - Defect'
+      question 'defect': input=textarea required=True ascii=True default='fix the reported binary vulnerability'
+    valid        kind=question  title='Step 3 - Valid inputs'
+      question 'valid_tests': input=textarea required=True ascii=True default='valid: hello'
+    environment  kind=question  title='Step 4 - Environment'
+      question 'environment': input=text required=True ascii=True default='Ubuntu x86-64 guest'
+    review       kind=review    title='Step 5 - Review and create'
+
+==============================================================================
+do the two plans differ, once the random plan_id is removed?
+==============================================================================
+  identical: True
+
+  question by question:
+    step         key            input     default
+    --------------------------------------------------------------------
+    defect       defect         textarea  'fix the reported binary vulnerability'
+    valid_tests  valid_tests    textarea  'valid: hello'
+    environment  environment    text      'Ubuntu x86-64 guest'
+
+  Reading: the planner returns one plan regardless of the defect class.
+  The context argument is accepted and then not read — see
+  app/domain/assistant.py:84, the only line in that module that
+  mentions `context`, and it is the parameter list.
+
+  Consequence for T8.3: these plans cannot carry the class contrast the
+  task asks for. Two saved plans taken from this planner would be the
+  same document with different ids, and calling that evidence would be
+  presenting an id as a difference.
+
+==============================================================================
+what a class-specific plan would have to say
+==============================================================================
+
+  CWE-121 (stack overflow, argv)
+    identify   the destination capacity and the terminator rule
+    propose    a length guard before the copy
+    test       valid inputs, a boundary-length input, an oversized input
+    invalid    applicable: the oversized input is the trigger case
+
+  CWE-416 (use after free, no input)
+    identify   the allocation, the release, and the read after the release
+    propose    a lifetime repair (reorder, or keep cleanup and stop the later read)
+    test       the no-input output, plus the pointer-flow property
+    invalid    not_applicable: the entry takes no input, so there is no invalid
+               input column to fill. This is the "N/A" the review asks for.
+
+  Both still go through V0-V5 unchanged. A different plan is not a different
+  acceptance standard.
+
+RESULT: measured, not asserted. identical=True
