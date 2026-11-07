@@ -1,0 +1,21 @@
+{
+  "account_guard": "passed",
+  "cap_eff": "0000000000000000",
+  "claimed_scope": "wrapper-enforced uid 1003, no-egress netns, CapEff=0, NoNewPrivs=1 and seccomp filter; values measured here",
+  "egid": 1003,
+  "euid": 1003,
+  "expected_uid": 1003,
+  "gid": 1003,
+  "groups": [],
+  "jobwrap": "/run/binrepair/executor/attest-16505.json",
+  "jobwrap_attested": true,
+  "jobwrap_path": "/usr/local/sbin/jobwrap-executor",
+  "jobwrap_pid": 16505,
+  "kernel": "6.8.0-147-generic",
+  "netns": "net:[4026532221]",
+  "no_new_privs": "1",
+  "platform": "Linux",
+  "schema_version": 1,
+  "seccomp": "2",
+  "uid": 1003
+}

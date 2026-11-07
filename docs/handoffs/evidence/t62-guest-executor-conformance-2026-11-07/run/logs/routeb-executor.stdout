@@ -1,0 +1,10 @@
+{
+  "outdir": "/var/lib/binrepair/jobs/t62-conformance-20261107/runs/run5",
+  "bundle_sha256": "6417946ba34e0c60a3912e4e8e4ce2bc3ec93da1c3b76297210a1b0adc9f9a3b",
+  "file_count": 14,
+  "static_audit": true,
+  "runtime": {
+    "state": "not_run"
+  },
+  "reproducibility": "not_run"
+}

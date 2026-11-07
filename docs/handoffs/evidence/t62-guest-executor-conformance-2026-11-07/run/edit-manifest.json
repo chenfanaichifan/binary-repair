@@ -1,0 +1,56 @@
+{
+  "schema_version": 2,
+  "route": "route_b",
+  "mode": "roundtrip",
+  "function": "main",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "original_size": 25344,
+  "candidate_size": 25344,
+  "replacement_c_sha256": null,
+  "changed_file_intervals": [
+    {
+      "start": 4869,
+      "end": 4873,
+      "size": 5
+    }
+  ],
+  "header_changes": {
+    "same_program_header_count": true,
+    "entry_unchanged": true
+  },
+  "relocations_added": 0,
+  "tools": {
+    "python": "3.12.3",
+    "patcherex2": "0.2.14",
+    "angr": "10.0.4.post1",
+    "z3-solver": "5.1.0.0",
+    "lief": "1.0.0",
+    "pyelftools": "0.33",
+    "capstone": "5.0.9",
+    "clang_path": "/usr/bin/clang",
+    "clang_version": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+    "ld.lld_path": "/usr/bin/ld.lld",
+    "ld.lld_version": "Ubuntu LLD 18.1.3 (compatible with GNU linkers)",
+    "readelf_path": "/usr/bin/readelf",
+    "readelf_version": "GNU readelf (GNU Binutils for Ubuntu) 2.42",
+    "objdump_path": "/usr/bin/objdump",
+    "objdump_version": "GNU objdump (GNU Binutils for Ubuntu) 2.42"
+  },
+  "runtime_manifest": {
+    "state": "not_run",
+    "reason": "execution is a guest-only step; pass --run-manifest in the guest"
+  },
+  "scope_authorized": true,
+  "audit": {
+    "checks": {
+      "same_file_size": true,
+      "entry_unchanged": true,
+      "relocations_recorded": true,
+      "no_wx_segment": true,
+      "changed_inside_intervals": true,
+      "readelf_available": true
+    },
+    "pass": true
+  }
+}

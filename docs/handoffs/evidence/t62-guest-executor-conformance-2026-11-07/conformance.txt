@@ -1,0 +1,114 @@
+# Captured guest session, 2026-11-07 12:09 local (04:09Z)
+# User: lab. The wrapper is setuid root, mode 04750 root:lab; the wrapper call
+# itself needs no sudo. Account retirement happened before this run.
+
+$ ls -l /usr/local/sbin/jobwrap-executor
+-rwsr-x--- 1 root lab 26752 Nov  7 11:58 /usr/local/sbin/jobwrap-executor
+
+$ /usr/local/sbin/jobwrap-executor executor \
+    /opt/binrepair/executor-repo \
+    /var/lib/binrepair/jobs/t62-conformance-20261107/staging/pkg \
+    /var/lib/binrepair/jobs/t62-conformance-20261107/runs/run5
+{
+  "ok": true,
+  "route": "route_b",
+  "purpose": "screening",
+  "out": "/var/lib/binrepair/jobs/t62-conformance-20261107/runs/run5",
+  "bundle_sha256": "9f4d9ac804099b0f00765765113ce2406074f608b4455519c7362ca34b24ed4c",
+  "gates": {
+    "V0": "passed",
+    "V1": "passed",
+    "V2": "not_run",
+    "V3": "not_run",
+    "V4": "not_run",
+    "V5": "not_run"
+  },
+  "verified_files": 5,
+  "isolation": {
+    "schema_version": 1,
+    "account_guard": "passed",
+    "expected_uid": 1003,
+    "uid": 1003,
+    "euid": 1003,
+    "gid": 1003,
+    "egid": 1003,
+    "groups": [],
+    "platform": "Linux",
+    "kernel": "6.8.0-147-generic",
+    "cap_eff": "0000000000000000",
+    "no_new_privs": "1",
+    "seccomp": "2",
+    "netns": "net:[4026532221]",
+    "jobwrap": "/run/binrepair/executor/attest-16505.json",
+    "jobwrap_attested": true,
+    "jobwrap_pid": 16505,
+    "jobwrap_path": "/usr/local/sbin/jobwrap-executor",
+    "claimed_scope": "wrapper-enforced uid 1003, no-egress netns, CapEff=0, NoNewPrivs=1 and seccomp filter; values measured here"
+  }
+}
+EXIT=0
+
+$ sudo -n env -C /var/lib/binrepair/jobs/t62-conformance-20261107/runs/run5 sha256sum -c SHA256SUMS
+audit.json: OK
+bundle-record.md: OK
+bundle.json: OK
+candidate.elf: OK
+edit-manifest.json: OK
+environment.json: OK
+independent-views/objdump-disassembly.txt: OK
+independent-views/readelf-dynamic.txt: OK
+independent-views/readelf-program-headers.txt: OK
+independent-views/readelf-relocations.txt: OK
+independent-views/readelf-section-headers.txt: OK
+isolation.json: OK
+logs/routeb-executor.stderr: OK
+logs/routeb-executor.stdout: OK
+original.elf: OK
+reproducibility.json: OK
+result-bundle.json: OK
+run.log: OK
+18/18 OK
+
+$ cat /run/binrepair/executor/attest-16505.json
+{"schema_version":1,"jobwrap":"/usr/local/sbin/jobwrap-executor","pid":16505,
+"uid":1003,"euid":1003,"gid":1003,"egid":1003,
+"cap_eff":"0000000000000000","no_new_privs":1,"seccomp":2,
+"netns":"net:[4026532221]","host_netns":"net:[4026531840]",
+"default_route":"","repo":"/opt/binrepair/executor-repo",
+"package":"/var/lib/binrepair/jobs/t62-conformance-20261107/staging/pkg",
+"out":"/var/lib/binrepair/jobs/t62-conformance-20261107/runs/run5"}
+
+# Account retirement (before this run):
+$ getent passwd repair
+repair:x:1002:1002::/home/repair:/bin/bash
+$ pgrep -a -u repair
+(no output)
+$ sudo -n tar -C /home -czf /var/backups/repair-home-20261107.tar.gz repair
+$ sudo -n chmod 0600 /var/backups/repair-home-20261107.tar.gz
+$ sudo -n userdel -r repair
+userdel: repair mail spool (/var/mail/repair) not found
+$ getent passwd repair
+(empty)
+$ id repair
+id: 'repair': no such user
+$ getent group repair
+(empty)
+$ sudo -n -u runner id
+uid=1003(runner) gid=1003(runner) groups=1003(runner)
+
+# Negative checks after retirement:
+$ sudo -n -u runner /usr/local/sbin/jobwrap-executor executor ...
+sudo: unable to execute /usr/local/sbin/jobwrap-executor: Permission denied
+EXIT=1
+
+$ sudo -n -u runner env BINARYREPAIR_JOBWRAP=/run/binrepair/executor/attest-16505.json \
+    /opt/angr-venv/bin/python /opt/binrepair/executor-repo/workers/executor/run_job.py \
+    --package ... --out /tmp/t62-neg --guest-ack
+guest_executor: refusing: jobwrap attestation is for a different pid
+EXIT=2
+
+$ sudo -n -u runner env BINARYREPAIR_JOBWRAP=/tmp/fake-attest.json \
+    /opt/angr-venv/bin/python /opt/binrepair/executor-repo/workers/executor/run_job.py \
+    --package ... --out /tmp/t62-neg --guest-ack
+guest_executor: refusing: jobwrap attestation missing: /tmp/fake-attest.json
+EXIT=2

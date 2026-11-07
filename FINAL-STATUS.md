@@ -36,10 +36,14 @@ GUI T7.4/T7.5/T7.6/T8.4/T7.8: NOT DONE in this branch
 ### M3
 
 ```text
-guest executor / account separation: NOT DONE in this branch
-T8.3 producer sample: used by M4 replay
+T6.2 guest executor: COMPLETE
+account separation: COMPLETE (repair removed; runner uid 1003)
+jobwrap-executor: attested, no-egress netns, CapEff=0, NoNewPrivs=1
+self_test: 9/9
+tests/test_guest_executor.py: 9 passed
 M4 public key install: external handoff
 ```
+
 
 ### M4
 

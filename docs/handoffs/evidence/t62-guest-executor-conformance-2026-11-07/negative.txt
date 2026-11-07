@@ -1,0 +1,6 @@
+sudo: unable to execute /usr/local/sbin/jobwrap-executor: Permission denied
+RUNNER_WRAPPER_RC=1
+guest_executor: refusing: jobwrap attestation is for a different pid
+STALE_RC=2
+guest_executor: refusing: jobwrap attestation missing: /tmp/fake-attest.json
+FAKE_RC=2

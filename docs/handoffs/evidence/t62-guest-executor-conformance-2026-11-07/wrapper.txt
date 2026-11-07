@@ -1,0 +1,4 @@
+-rwsr-x--- 1 root lab 26752 Nov  7 11:58 /usr/local/sbin/jobwrap-executor
+85be8aefea123c3825b807899486914c149cc371b95ce9ce88af1d8aeb1b2f60  /usr/local/sbin/jobwrap-executor
+1176b03ac04001af262d75e885c66ec24ff69ddff49cc4da316fc8ba622e9a72  /opt/binrepair/executor-repo/workers/executor/run_job.py
+Linux binrepair-vm 6.8.0-147-generic #147-Ubuntu SMP PREEMPT_DYNAMIC Thu Sep 24 11:33:16 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux

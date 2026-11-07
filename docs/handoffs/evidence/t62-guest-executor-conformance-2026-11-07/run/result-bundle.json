@@ -1,0 +1,154 @@
+{
+  "environment": {
+    "isolation": {
+      "account_guard": "passed",
+      "cap_eff": "0000000000000000",
+      "claimed_scope": "wrapper-enforced uid 1003, no-egress netns, CapEff=0, NoNewPrivs=1 and seccomp filter; values measured here",
+      "egid": 1003,
+      "euid": 1003,
+      "expected_uid": 1003,
+      "gid": 1003,
+      "groups": [],
+      "jobwrap": "/run/binrepair/executor/attest-16505.json",
+      "jobwrap_attested": true,
+      "jobwrap_path": "/usr/local/sbin/jobwrap-executor",
+      "jobwrap_pid": 16505,
+      "kernel": "6.8.0-147-generic",
+      "netns": "net:[4026532221]",
+      "no_new_privs": "1",
+      "platform": "Linux",
+      "schema_version": 1,
+      "seccomp": "2",
+      "uid": 1003
+    },
+    "purpose": "screening"
+  },
+  "evidence": [
+    {
+      "relative_path": "original.elf",
+      "role": "v0_evidence",
+      "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+      "size_bytes": 25344
+    },
+    {
+      "relative_path": "candidate.elf",
+      "role": "v0_evidence",
+      "sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+      "size_bytes": 25344
+    },
+    {
+      "relative_path": "audit.json",
+      "role": "v1_evidence",
+      "sha256": "48b484a0deeb66932a68774c47b72c7368b710658bdfa89b8dccf484bba0d7fc",
+      "size_bytes": 5693
+    },
+    {
+      "relative_path": "reproducibility.json",
+      "role": "v5_evidence",
+      "sha256": "db18e041d5c7af9fae40cc11e43bdf79f76c1560b8ecef5a0daef2b957e64831",
+      "size_bytes": 84
+    }
+  ],
+  "gates": {
+    "V0": {
+      "details": {
+        "note": "bundle hashes match the package"
+      },
+      "evidence": [
+        {
+          "relative_path": "original.elf",
+          "role": "v0_evidence",
+          "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+          "size_bytes": 25344
+        },
+        {
+          "relative_path": "candidate.elf",
+          "role": "v0_evidence",
+          "sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+          "size_bytes": 25344
+        }
+      ],
+      "missing": [],
+      "status": "pass"
+    },
+    "V1": {
+      "details": {
+        "note": "static ELF audit"
+      },
+      "evidence": [
+        {
+          "relative_path": "audit.json",
+          "role": "v1_evidence",
+          "sha256": "48b484a0deeb66932a68774c47b72c7368b710658bdfa89b8dccf484bba0d7fc",
+          "size_bytes": 5693
+        }
+      ],
+      "missing": [],
+      "status": "pass"
+    },
+    "V2": {
+      "details": {
+        "note": "V2 has no guest-side gate; producer measurement stays an observation"
+      },
+      "evidence": [],
+      "missing": [
+        "check not run"
+      ],
+      "status": "not_run"
+    },
+    "V3": {
+      "details": {
+        "note": "no runtime manifest"
+      },
+      "evidence": [],
+      "missing": [
+        "check not run"
+      ],
+      "status": "not_run"
+    },
+    "V4": {
+      "details": {
+        "note": "V4 belongs to the independent verifier"
+      },
+      "evidence": [],
+      "missing": [
+        "check not run"
+      ],
+      "status": "not_run"
+    },
+    "V5": {
+      "details": {
+        "note": "build-twice not measured"
+      },
+      "evidence": [
+        {
+          "relative_path": "reproducibility.json",
+          "role": "v5_evidence",
+          "sha256": "db18e041d5c7af9fae40cc11e43bdf79f76c1560b8ecef5a0daef2b957e64831",
+          "size_bytes": 84
+        }
+      ],
+      "missing": [
+        "check not run"
+      ],
+      "status": "not_run"
+    }
+  },
+  "generated_at": "2026-11-07T04:09:28Z",
+  "identity": {
+    "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+    "candidate_size": 25344,
+    "contract_sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b",
+    "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "original_size": 25344
+  },
+  "job_id": "job-synthetic-routeb",
+  "limitations": [
+    "No outcome is computed here; the acceptance engine owns the six labels.",
+    "A missing or unmeasured check is not_run, never pass.",
+    "V2 and V4 are never promoted by this executor."
+  ],
+  "purpose": "screening",
+  "route": "B",
+  "schema_version": 1
+}
