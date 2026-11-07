@@ -1,7 +1,7 @@
 # Final all-hands status — 2026-11-07
 
 This branch is a delivery/status integration at `integration/final-2026-11-06`
-plus M5's Gate 2b adapters. It is not a claim that T8.3 is complete.
+plus M5's Gate 2b adapters. It records the Lead closure of T8.3 on 2026-11-07, with the same-operator limitation.
 
 ## Verified locally
 
@@ -36,8 +36,9 @@ GUI T7.4/T7.5/T7.6/T8.4/T7.8: NOT DONE in this branch
 ### M3
 
 ```text
-guest executor / account separation / T8.3 second-sample closure: NOT DONE
-M4 public key install: pending
+guest executor / account separation: NOT DONE in this branch
+T8.3 producer sample: used by M4 replay
+M4 public key install: external handoff
 ```
 
 ### M4
@@ -83,4 +84,4 @@ tag: none
 live success: none
 ```
 
-No private key is included. No `verified_by` is written.
+No private key is included. The only `verified_by` value in the archive is M4's marker; M1/M5 did not write one.
