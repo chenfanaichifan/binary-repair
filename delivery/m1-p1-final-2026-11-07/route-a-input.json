@@ -1,0 +1,24 @@
+{
+  "route": "route_a",
+  "candidate_sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+  "results": {
+    "V0": "passed",
+    "V1": "passed",
+    "V2": "passed",
+    "V3": "passed",
+    "V4": "passed",
+    "V5": "passed"
+  },
+  "evidence_files": {
+    "V0": "/private/tmp/p1a4-evid2/route_a/candidate.elf",
+    "V1": "/private/tmp/p1a4-evid2/route_a/readelf-audit.txt",
+    "V2": "/private/tmp/p1a4-evid2/evidence/v2/interface-scored.json",
+    "V3": "/private/tmp/p1a4-evid2/evidence/v3/manifest-repaired.json",
+    "V4": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/v4-symbolic.json",
+    "V5": "/private/tmp/p1a4-evid2/evidence/v5/replay.json"
+  },
+  "details": {
+    "V2": "product check_interface 5/5",
+    "V4": "M4 marker 87c0972f; verified_by=m4"
+  }
+}

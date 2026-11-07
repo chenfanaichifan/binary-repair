@@ -303,11 +303,22 @@ def _attempt_verdict(
         details=payload.get("details") or {},
         candidate_sha256=payload["candidate_sha256"],
     )
+    # persist_obligations may downgrade a claimed pass (V2/V4) after validating
+    # its evidence. Evaluate the persisted rows, not the unvalidated payload,
+    # so a downgraded gate can never produce success.
+    persisted = {
+        row["kind"]: row["result"]
+        for row in jobs.list_obligations(attempt.id, data_dir=data_dir)
+    }
+    effective = {
+        gate: persisted.get(kind, "not_run")
+        for gate, kind, _required in orchestration.GATES
+    }
     return orchestration.evaluate_attempt(
         job_id,
         run.id,
         attempt_id=attempt.id,
-        results=payload["results"],
+        results=effective,
         data_dir=data_dir,
         candidate_sha256=payload["candidate_sha256"],
     )

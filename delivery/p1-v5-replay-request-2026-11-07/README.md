@@ -1,7 +1,8 @@
 # P1 V5 second guest replay request (M3/VMer)
 
-P1 `M3-P1-real-guest-window-2026-11-07.zip` measured V5 as `not_run`: the archive
-has no build-twice replay evidence. To use P1 as a V5-complete bundle, M3/VMer
+Route A now has V5 passed from `P1-routea-real-v4-2026-11-07`; **Route B**
+(`M3-P1-real.../a1.routeb`) still measures V5 as `not_run`, so the P1 overall
+cannot be success. To use P1 as a V5-complete bundle, M3/VMer
 must run a second independent guest replay from the same package and return the
 V5 evidence; M1 will not synthesize it and cannot execute ELF on the host.
 
@@ -22,3 +23,9 @@ V5 evidence; M1 will not synthesize it and cannot execute ELF on the host.
 
 P1 V5 remains `not_run`. The current controller run is `inconclusive /
 required_check_not_run / identity`; no success is claimed.
+
+## Current P1 final state
+
+Route A: six gates passed (V4 from M4 marker `87c0972f…38c1`).
+Route B: V0/V1/V3 passed; V2/V4/V5 not_run. Overall `inconclusive`.
+The requested replay is specifically for **Route B V5**.

@@ -400,3 +400,38 @@ def test_worker_leaves_queued_when_no_bundle(tmp_path: Path) -> None:
     assert run_after is not None
     assert run_after.phase != "finished"
     assert {item.outcome for item in jobs.list_attempts(run.id, data_dir=data_dir)} == {None}
+
+
+def test_worker_evaluates_persisted_gates_not_the_claimed_bundle(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from app.services import obligations
+
+    data_dir, record, run = _started(tmp_path)
+    attempts = jobs.list_attempts(run.id, data_dir=data_dir)
+    for attempt in attempts:
+        _write_bundle(data_dir, record.id, run.id, attempt, record)
+
+    original = obligations.persist_obligations
+
+    def downgrade_interface(**kwargs):
+        count = original(**kwargs)
+        connection = connect(data_dir)
+        try:
+            with connection:
+                connection.execute(
+                    "UPDATE obligations SET result = 'not_run' "
+                    "WHERE attempt_id = ? AND kind = 'interface'",
+                    (kwargs["attempt_id"],),
+                )
+        finally:
+            connection.close()
+        return count
+
+    monkeypatch.setattr(obligations, "persist_obligations", downgrade_interface)
+    worker.run_once(data_dir=data_dir)
+
+    for attempt in jobs.list_attempts(run.id, data_dir=data_dir):
+        assert attempt.outcome == "inconclusive"
+        assert attempt.reason == "required_check_not_run"
+        assert attempt.failing_obligation == "interface"

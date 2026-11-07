@@ -1,0 +1,295 @@
+{
+  "agent": {
+    "current_step": "done",
+    "label": "Finished",
+    "source": "controller-derived",
+    "steps": [
+      {
+        "id": "intake",
+        "label": "Describe the defect",
+        "state": "done"
+      },
+      {
+        "id": "contract",
+        "label": "Review the repair contract",
+        "state": "done"
+      },
+      {
+        "id": "screening",
+        "label": "Screen the original",
+        "state": "done"
+      },
+      {
+        "id": "repair",
+        "label": "Repair and verify",
+        "state": "done"
+      },
+      {
+        "id": "verification",
+        "label": "Collect evidence",
+        "state": "done"
+      },
+      {
+        "id": "done",
+        "label": "Finished",
+        "state": "active"
+      }
+    ]
+  },
+  "cancelled": false,
+  "contract": {
+    "approved": false,
+    "approved_at": null,
+    "assumptions": [
+      "Single process",
+      "Linux x86-64 ELF",
+      "Stack protector disabled"
+    ],
+    "forbidden": "Out-of-bounds write to the target buffer",
+    "invalid_outcome": "Return error code 1 without out-of-bounds access",
+    "reviewer_label": null,
+    "revision": 1,
+    "sha256": "80e4f2bb5b36d4afe5d28be3f5e39181915639895f477ae787db15d9c9bb9a11",
+    "valid_domain": "Input length 0-64 bytes; out-of-range lengths rejected"
+  },
+  "created_at": "2026-11-07T14:17:58+00:00",
+  "data_source": "controller-http",
+  "defect": "P1 Route A real + Route B P1 real",
+  "demo": false,
+  "environment": "",
+  "execution": {
+    "finished_at": "2026-11-07T14:17:58+00:00",
+    "note": "Derived from persisted run rows; no producer sidecar exists in this build.",
+    "outcome": "inconclusive",
+    "phase": "finished",
+    "run_id": "e08a38435428484ebaf56690eac13b4b",
+    "sidecar": null,
+    "source": "controller-derived",
+    "started_at": "2026-11-07T14:17:58+00:00",
+    "status": "completed"
+  },
+  "execution_phase": "finished",
+  "filename": "P1-final-cwe416.elf",
+  "id": "784f6cc0185b49edb45e2381d2fddc2a",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "phase": "finished",
+  "routes": {
+    "A": {
+      "ai_usage": null,
+      "attempt_id": "2117c7a4330a420dac09ac6091e9f4a7",
+      "changed_regions": [],
+      "compatibility": "passed",
+      "elapsed_s": 0.0,
+      "evidence": "persisted",
+      "manual_interventions": 0,
+      "name": "Route A - Direct instruction repair",
+      "obligations": [
+        {
+          "detail": "V3 behaviour: passed",
+          "evidence_artifact_id": "b514c4d326614a5a8013fed74088040c",
+          "kind": "behaviour",
+          "required": true,
+          "result": "passed",
+          "scope": "replay"
+        },
+        {
+          "detail": "V0 identity: passed",
+          "evidence_artifact_id": "f83192ceaa484a68a57dbce64d487f88",
+          "kind": "identity",
+          "required": true,
+          "result": "passed",
+          "scope": "metadata"
+        },
+        {
+          "detail": "product check_interface 5/5",
+          "evidence_artifact_id": "73650b6bbbbd485e9274f5642229aa8c",
+          "kind": "interface",
+          "required": true,
+          "result": "passed",
+          "scope": "binary"
+        },
+        {
+          "detail": "V5 reproducibility: passed",
+          "evidence_artifact_id": "51d083263eb04d25b090f62b1c0c90fd",
+          "kind": "reproducibility",
+          "required": true,
+          "result": "passed",
+          "scope": "replay"
+        },
+        {
+          "detail": "V1 structure: passed",
+          "evidence_artifact_id": "2f66b1ac3e694c8bba10448d2df85ff8",
+          "kind": "structure",
+          "required": true,
+          "result": "passed",
+          "scope": "binary"
+        },
+        {
+          "detail": "M4 marker 87c0972f; verified_by=m4",
+          "evidence_artifact_id": "6facbdda6869486d831a033f242411ad",
+          "kind": "symbolic",
+          "required": true,
+          "result": "passed",
+          "scope": "model"
+        }
+      ],
+      "outcome": "success_within_scope",
+      "outcome_reason": "",
+      "phase": "finished",
+      "stages": [
+        {
+          "name": "screening",
+          "state": "done"
+        },
+        {
+          "name": "analyzing",
+          "state": "done"
+        },
+        {
+          "name": "generating",
+          "state": "done"
+        },
+        {
+          "name": "applying",
+          "state": "done"
+        },
+        {
+          "name": "validating",
+          "state": "done"
+        }
+      ],
+      "tests": {
+        "passed": 0,
+        "total": 0
+      },
+      "verdict": {
+        "detail": "6 required obligations passed",
+        "failing_obligation": null,
+        "outcome": "success_within_scope",
+        "reason": null
+      },
+      "verification": "passed"
+    },
+    "B": {
+      "ai_usage": null,
+      "attempt_id": "52d1fde006d74846af2867d2311d6f9f",
+      "changed_regions": [],
+      "compatibility": "not_run",
+      "elapsed_s": 0.0,
+      "evidence": "persisted",
+      "manual_interventions": 0,
+      "name": "Route B - Recovered C reintegration",
+      "obligations": [
+        {
+          "detail": "runtime manifest passed; 1/1; input_mode=none, invalid not applicable",
+          "evidence_artifact_id": "1052b804e2c34e85851c61363f2f7f69",
+          "kind": "behaviour",
+          "required": true,
+          "result": "passed",
+          "scope": "replay"
+        },
+        {
+          "detail": "original c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9 matches the job record",
+          "evidence_artifact_id": "24985d8c3f7648d9983e02bd1b9afc62",
+          "kind": "identity",
+          "required": true,
+          "result": "passed",
+          "scope": "metadata"
+        },
+        {
+          "detail": "V2 interface: not_run",
+          "evidence_artifact_id": null,
+          "kind": "interface",
+          "required": true,
+          "result": "not_run",
+          "scope": "binary"
+        },
+        {
+          "detail": "runtime manifest passed; 1/1; input_mode=none, invalid not applicable",
+          "evidence_artifact_id": "1052b804e2c34e85851c61363f2f7f69",
+          "kind": "repaired_behaviour",
+          "required": false,
+          "result": "passed",
+          "scope": "replay"
+        },
+        {
+          "detail": "V5 reproducibility: not_run",
+          "evidence_artifact_id": null,
+          "kind": "reproducibility",
+          "required": true,
+          "result": "not_run",
+          "scope": "replay"
+        },
+        {
+          "detail": "routeb static audit",
+          "evidence_artifact_id": "584db25f2b3e4b8da105a3fd958b8635",
+          "kind": "structure",
+          "required": true,
+          "result": "passed",
+          "scope": "binary"
+        },
+        {
+          "detail": "V4 symbolic: not_run",
+          "evidence_artifact_id": null,
+          "kind": "symbolic",
+          "required": true,
+          "result": "not_run",
+          "scope": "model"
+        }
+      ],
+      "outcome": "inconclusive",
+      "outcome_reason": "required_check_not_run",
+      "phase": "finished",
+      "stages": [
+        {
+          "name": "screening",
+          "state": "done"
+        },
+        {
+          "name": "analyzing",
+          "state": "done"
+        },
+        {
+          "name": "roundtrip",
+          "state": "done"
+        },
+        {
+          "name": "generating",
+          "state": "done"
+        },
+        {
+          "name": "applying",
+          "state": "done"
+        },
+        {
+          "name": "validating",
+          "state": "done"
+        }
+      ],
+      "tests": {
+        "passed": 0,
+        "total": 0
+      },
+      "verdict": {
+        "detail": "V2 interface: not_run",
+        "failing_obligation": "interface",
+        "outcome": "inconclusive",
+        "reason": "required_check_not_run"
+      },
+      "verification": "inconclusive"
+    }
+  },
+  "run": {
+    "id": "e08a38435428484ebaf56690eac13b4b",
+    "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "phase": "finished",
+    "reviewed_scope_sha256": "c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c"
+  },
+  "valid_tests": [],
+  "verdict": {
+    "detail": "route_b: V2 interface: not_run",
+    "failing_obligation": "interface",
+    "outcome": "inconclusive",
+    "reason": "required_check_not_run"
+  }
+}
