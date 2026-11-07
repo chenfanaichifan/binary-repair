@@ -436,6 +436,38 @@ def test_messages_drop_values_json_cannot_carry():
     assert "object at" not in messages[-1]["content"]
 
 
+def test_messages_carry_read_evidence_context_verbatim():
+    # The M5 read_evidence payload is the planner's input. The seam must pass
+    # it through unchanged apart from the routing ids, including input_mode so
+    # a no-input attempt is not re-derived as "invalid unknown".
+    evidence = {
+        "attempt_id": "attempt-1",
+        "evidence": "persisted",
+        "gates": [{"gate": "V3", "kind": "behaviour", "result": "passed"}],
+        "v3": {
+            "gate": "V3", "kind": "behaviour", "result": "passed",
+            "input_mode": "none",
+            "valid": {"passed": 1, "total": 1},
+            "invalid": {"passed": 0, "total": 0},
+            "invalid_applicable": False,
+        },
+        "obligations": {"A": [], "B": []},
+    }
+    messages = build_messages("fix the crash", context={
+        "data_dir": "C:/secret", "job_id": "j1", "evidence": evidence,
+    })
+    payload = json.loads(messages[-1]["content"])
+    assert payload["context"]["evidence"] == evidence
+    assert "C:/secret" not in messages[-1]["content"]
+    assert "j1" not in messages[-1]["content"]
+
+
+def test_messages_drop_evidence_that_json_cannot_carry():
+    messages = build_messages("fix it", context={"evidence": {"blob": object()}})
+    payload = json.loads(messages[-1]["content"])
+    assert "evidence" not in payload.get("context", {})
+
+
 def test_build_failure_downgrades_instead_of_raising(monkeypatch):
     def boom(*args, **kwargs):
         raise TypeError("context is not serialisable")
