@@ -1,0 +1,18 @@
+{
+  "route": "route_a",
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "results": {
+    "V0": "not_run",
+    "V1": "not_run",
+    "V2": "not_run",
+    "V3": "not_run",
+    "V4": "not_run",
+    "V5": "not_run"
+  },
+  "evidence_files": {
+    "V0": "/private/tmp/p1-real/package/candidate.elf"
+  },
+  "details": {
+    "all": "Route A has no P1 guest execution; identity artifact only; no gate claimed"
+  }
+}
