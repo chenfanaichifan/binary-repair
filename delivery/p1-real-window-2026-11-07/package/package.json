@@ -1,0 +1,19 @@
+{
+  "candidate": "candidate.elf",
+  "contract": "contract.json",
+  "expected": {
+    "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+    "contract_sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b",
+    "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9"
+  },
+  "func": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+  "input_mode": "none",
+  "job_id": "p1-cwe416-noinput-20261107",
+  "mode": "fixed",
+  "original": "original.elf",
+  "purpose": "repair",
+  "route": "route_b",
+  "run_manifest": true,
+  "schema_version": 1,
+  "tests": "tests"
+}

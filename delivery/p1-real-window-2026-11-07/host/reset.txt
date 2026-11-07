@@ -1,0 +1,46 @@
+P1 real guest window - reset record
+Date: 2026-11-07 (UTC)
+
+Pre-window snapshot
+- name: p1-prewindow-20261107
+- vmsd uid: 15
+- created after the T6.2 executor install; powered off when created
+
+Window
+- job: p1-cwe416-noinput-20261107
+- run: run1
+- attempt: a1
+- out: /var/lib/binrepair/jobs/p1-cwe416-noinput-20261107/runs/run1/attempts/a1.routeb
+- artifacts copied out before reset: /tmp/a1.routeb.tgz
+- tar sha256: 01cd6a6c5b94dbebaa70a8312764cbfb3c9dd6c6b3ad03db948229b05a20906a
+
+Reset steps (host)
+1. vmrun -T ws stop <vmx> soft -> rc 0
+2. vmrun -T ws list -> "Total running VMs: 0"
+3. vmrun -T ws revertToSnapshot <vmx> p1-prewindow-20261107 -> rc 0
+4. .vmsd snapshot.current = "15" (p1-prewindow-20261107)
+
+Post-revert verification (guest booted once, then powered off)
+- boot_id: 6110521a-cf0d-4d0c-a5b0-0bb05a242221
+- boot time: 2026-11-07 12:39:44
+- p1 job directory absent: test ! -e .../jobs/p1-cwe416-noinput-20261107 -> rc 0
+- wrapper sha256: 85be8aefea123c3825b807899486914c149cc371b95ce9ce88af1d8aeb1b2f60
+- run_job.py sha256: 1176b03ac04001af262d75e885c66ec24ff69ddff49cc4da316fc8ba622e9a72
+- pre-existing (not removed): /var/lib/binrepair/jobs/t62-conformance-20261107
+
+Final host state
+- powered off
+- vmware-vmx processes: 0
+- .lck entries: none
+- snapshot.current: "15"
+
+Boot identities across the window
+- pre-window capture: 077f9414-1bda-4ec6-8103-f9d3c2c56c69
+- window run:        4f5ce22f-65cf-4fbd-89ba-58812707992d
+- post-revert:       6110521a-cf0d-4d0c-a5b0-0bb05a242221
+
+Note: the first invocation after the pre-window reboot failed closed because
+/tmp had been cleared and the staged package path did not exist:
+  jobwrap-executor: realpath .../staging/a1: No such file or directory
+  WRAPPER_RC=2
+The package was re-uploaded and the recorded run then completed with rc 0.
