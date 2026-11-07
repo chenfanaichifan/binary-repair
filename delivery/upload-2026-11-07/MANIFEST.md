@@ -25,6 +25,8 @@ Source: operator workspace root, no private keys.
 - `M4-p1-rehash-2026-11-07.zip`
 - `M4-p1-rehash-evidence-2026-11-07.txt`
 - `P1-routea-real-2026-11-07.zip`
+- `P1-routea-real-v4-2026-11-07.zip`
+- `P1-routea-real-v4-2026-11-07.zip.sha256`
 - `P1-routea-supplemental-2026-11-07.zip`
 - `P1-routea-supplemental-2026-11-07.zip.sha256`
 - `V5-replay-2026-11-07-v3.zip`
