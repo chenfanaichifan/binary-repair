@@ -21,3 +21,9 @@ The host worker invoked `attempt_driver`; no ELF was executed. `p2_acceptance.py
 exited 0 with `synthetic=false`; verdict is `inconclusive /
 required_check_not_run / identity` (Route A V0 not_run). V5 remains not_run, so
 the second guest replay is still pending.
+
+## V2 actual value
+
+P1 Route A and Route B both have **V2 = not_run** (no V2 artifact in the P1
+archive). This is not the 124 result: 124's V2 is the separate 5/5 static
+interface check. Do not copy 5/5 onto P1.

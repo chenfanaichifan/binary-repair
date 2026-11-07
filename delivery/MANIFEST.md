@@ -18,7 +18,10 @@ position; the hash is authoritative.
 
 | `delivery/cwe416-124-candidate-2026-11-05.zip` | CWE416 candidate 124 + controller-ingest evidence; top-level hash in the sibling `.sha256` | M4, M5, M3 |
 
-| `delivery/cwe416-124-v4-rerun-2026-11-06.zip` | 124 rerun bundle with record 128 product V4 evidence; all six Route B gates passed | M4, M5, M3 |
+| `delivery/cwe416-124-v4-rerun-2026-11-06.zip` | 124 rerun bundle with record 128 product V4 evidence; **provisional**, V4 not_run without M4 replay, no success | M4, M5, M3 |
+
+| `delivery/m1-real-p1-2026-11-07.zip` | P1 controller job/run, snapshot, worker/p2 logs; Route A identity-only, V2/V5 not_run | M4, M5, M3 |
+| `delivery/p1-v5-replay-request-2026-11-07/README.md` | P1 V5 second guest replay request; no V5 evidence yet | M3, VMer |
 
 ## Adding an entry
 
