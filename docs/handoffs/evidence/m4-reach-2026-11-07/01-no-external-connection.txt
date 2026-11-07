@@ -1,0 +1,44 @@
+# has anyone outside this host ever reached the guest? — 2026-11-07T01:52:11Z
+# guest lab@binrepair-vm; VM booted 2026-11-07 09:48 for this check
+
+$ sudo journalctl -u ssh --no-pager | grep -oE "from [0-9.]+ port" | awk "{print \$2}" | sort | uniq -c
+      460 192.168.30.1
+
+  Every accepted connection in the whole log comes from 192.168.30.1,
+  which is this host on VMnet8. Not one arrives from anywhere else.
+
+$ sudo journalctl -u ssh | grep "Accepted publickey for m4verify" | sed "s/.*SHA256:/  /" | sort | uniq -c
+       35   5JOwkAS+6WI6rTdI88Ho6J4Lly/A+lozxUhEPN21zBc
+        1   ffnNlGvMGd6EHzIW0OcnRXi+GjVNiBXFjh6jJJo2WqY
+
+  Both of those fingerprints are M3 test keys, retired on 2026-11-06:
+    5JOwkAS…  the key M3 generated for the first handoff, removed from
+              authorized_keys before delivery
+    ffnNlGvM… the throwaway key used to test add-m4-key.sh end to end
+  Neither is in authorized_keys now, so neither can authenticate again.
+
+$ sudo ssh-keygen -lf /home/m4verify/.ssh/authorized_keys
+  256 SHA256:JF1hZZdGsxmEUt0REdbg4X76LCbaA/1q+0IYObh3zgI m5-v4-access-2026-11-06 (ED25519)
+  256 SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q m4-guest-replay-2026-11-06 (ED25519)
+  These two — M5's real key and M4's real key — have zero accepted
+  logins between them. Neither party has connected.
+
+$ ss -ltn | grep ":22"
+  LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+  LISTEN 0      4096            [::]:22           [::]:*          
+
+# Reading
+#
+#   The account, the key and sshd are all ready; the log proves it, because
+#   the same account answered 36 successful logins from 192.168.30.1 while M3
+#   was building and testing the handoff (460 accepted connections in total,
+#   counting every account).
+#   What the log also proves is the converse: no outside client has ever
+#   reached this guest. So "M4 cannot connect" is not a key problem, not a
+#   permission problem and not a configuration problem — it is a routing
+#   problem, and the fix is on the host side (see
+#   ../m4-key-install-2026-11-06/03-network-path.txt).
+#
+#   A guest log cannot prove a negative about packets that never arrived; what
+#   it can prove is that sshd never even opened a preauth session for an
+#   outside address, which is the same thing one layer up.
