@@ -57,8 +57,11 @@ def _register(
     if not source.is_file():
         raise SystemExit(f"evidence file does not exist: {source}")
     artifact_id = uuid.uuid4().hex
-    relative = f"attempts/{attempt_id}/{artifact_id}-{source.name}"
-    target = data_dir / "jobs" / job_id / "artifacts" / relative
+    # Store the job-relative path that both the controller resolver and
+    # app.domain.evidence.verify_artifact use. A bare "attempts/..." path is
+    # outside data_dir/jobs and is rejected by the evidence envelope.
+    relative = f"jobs/{job_id}/artifacts/attempts/{attempt_id}/{artifact_id}-{source.name}"
+    target = data_dir / relative
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, target)
     digest = _sha256(target)
@@ -218,6 +221,16 @@ def _routeb(
     else:
         results["V0"] = "passed"
         details["V0"] = f"original {declared_original} matches the job record"
+        # Bind the declared candidate to a verified artifact. A hash string
+        # alone is not evidence; the worker's candidate-binding check requires
+        # the bytes under this attempt.
+        evidence["V0"] = _register(
+            data_dir=data_dir,
+            job_id=job_id,
+            attempt_id=attempt_id,
+            source=candidate,
+            role="routeb_candidate",
+        )
 
     if audit.is_file():
         try:

@@ -78,11 +78,20 @@ def validate_snapshot(snapshot: dict) -> list[str]:
         if not route.get("verdict"):
             errors.append(f"route {key} verdict missing")
         obligations = route.get("obligations") or []
-        kinds = {item.get("kind") for item in obligations if isinstance(item, dict)}
-        if len(obligations) != 6 or kinds != OBLIGATION_KINDS:
-            errors.append(f"route {key} obligations incomplete: {sorted(kinds)}")
-        results = [item.get("result") for item in obligations if isinstance(item, dict)]
-        all_not_run = bool(obligations) and all(result == "not_run" for result in results)
+        # V3 may persist an additional non-required kind row (round_trip or
+        # repaired_behaviour). The acceptance contract is the six required
+        # kinds, so optional rows are displayed but never counted as a gate.
+        required = [
+            item for item in obligations
+            if isinstance(item, dict) and item.get("required") is True
+        ]
+        if not required:
+            required = [item for item in obligations if isinstance(item, dict)]
+        kinds = {item.get("kind") for item in required}
+        if len(required) != 6 or kinds != OBLIGATION_KINDS:
+            errors.append(f"route {key} required obligations incomplete: {sorted(kinds)}")
+        results = [item.get("result") for item in required]
+        all_not_run = bool(required) and all(result == "not_run" for result in results)
         if all_not_run:
             all_not_run_routes.append(key)
         if outcome == "success_within_scope" and all_not_run:

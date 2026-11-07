@@ -1,0 +1,22 @@
+{
+  "route": "route_a",
+  "candidate_sha256": "c4a1592157a2858fcf2dd52623b6ae8c280355ce735a1c224530845569bcaa82",
+  "results": {
+    "V0": "passed",
+    "V1": "passed",
+    "V2": "not_run",
+    "V3": "passed",
+    "V4": "not_run",
+    "V5": "not_run"
+  },
+  "evidence_files": {
+    "V0": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/_m1-work/live-bridge/docs/handoffs/evidence/P3A/route_a/candidate.elf",
+    "V1": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/_m1-work/live-bridge/docs/handoffs/evidence/P3A/route_a/readelf-audit.txt",
+    "V3": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/_m1-work/live-bridge/docs/handoffs/evidence/P3A/evidence/v3/formal-run.json"
+  },
+  "details": {
+    "V2": "real P3A has no interface artifact",
+    "V4": "no symbolic evidence",
+    "V5": "no reproducibility artifact"
+  }
+}

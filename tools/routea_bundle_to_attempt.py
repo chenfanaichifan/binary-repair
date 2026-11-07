@@ -46,8 +46,8 @@ def _register(*, data_dir: Path, job_id: str, attempt_id: str, source: Path) -> 
     if not source.is_file():
         raise ValueError(f"evidence file missing: {source}")
     artifact_id = uuid.uuid4().hex
-    relative = f"attempts/{attempt_id}/{artifact_id}-{source.name}"
-    target = data_dir / "jobs" / job_id / "artifacts" / relative
+    relative = f"jobs/{job_id}/artifacts/attempts/{attempt_id}/{artifact_id}-{source.name}"
+    target = data_dir / relative
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, target)
     connection = connect(data_dir)

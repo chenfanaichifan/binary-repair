@@ -136,7 +136,7 @@ def test_routea_bundle_maps_gates_and_registers_evidence(tmp_path: Path) -> None
         connection.close()
     assert row is not None
     assert row["sha256"] == __import__("hashlib").sha256(evidence.read_bytes()).hexdigest()
-    assert row["relative_path"].startswith(f"attempts/{attempt.id}/")
+    assert row["relative_path"].startswith(f"jobs/{record.id}/artifacts/attempts/{attempt.id}/")
 
 
 def test_routea_bundle_rejects_passed_without_evidence(tmp_path: Path) -> None:
@@ -184,6 +184,15 @@ def test_routeb_identity_passes_only_with_matching_original(tmp_path: Path) -> N
     assert code == 0
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert payload["results"]["V0"] == "passed"
+    from app.domain.evidence import verify_candidate_binding
+    bound = verify_candidate_binding(
+        data_dir=data_dir, job_id=record.id, attempt_id=attempt.id,
+        candidate_sha256=payload["candidate_sha256"], evidence=payload["evidence"],
+    )
+    assert bound["sha256"] == payload["candidate_sha256"]
+    assert bound["relative_path"].startswith(
+        f"jobs/{record.id}/artifacts/attempts/{attempt.id}/"
+    )
 
 
 def test_routeb_identity_fails_on_original_mismatch(tmp_path: Path) -> None:

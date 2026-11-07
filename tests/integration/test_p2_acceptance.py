@@ -51,3 +51,14 @@ def test_synthetic_offline_finished_snapshot_still_passes(monkeypatch) -> None:
     assert p2_acceptance.main([
         "--job-id", "j", "--data-dir", "/tmp/does-not-matter", "--synthetic"
     ]) == 0
+
+
+def test_optional_v3_kind_row_does_not_break_the_six_required() -> None:
+    snapshot = _snapshot()
+    for route in snapshot["routes"].values():
+        for item in route["obligations"]:
+            item["required"] = True
+        route["obligations"].append(
+            {"kind": "repaired_behaviour", "result": "passed", "required": False}
+        )
+    assert p2_acceptance.validate_snapshot(snapshot) == []
