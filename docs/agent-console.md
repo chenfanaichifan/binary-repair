@@ -71,6 +71,17 @@
 - 真实接口联调通过后应删除该文件。
 - 其中所有 `default` 值都是 ASCII，因为它们会进入提交 payload。
 
+## 四之一、T8.4 assistant 模式 UI（已完成）
+
+| 项 | 实现 |
+|---|---|
+| 徽章 | `助手模式：脚本 v1（deterministic）` / `助手模式：LLM（llm）`；同时写 `data-plan-mode` 保留原值 |
+| 回退横幅 | `plan.fallback=true` 或 llm 未接线时显示，文案带 `fallback_reason`，明确「不代表模型输出」 |
+| 元数据 | `model` + `tokens`（兼容 `prompt/completion` 与 `input/output`）；缺失写「未提供」，`partial=true` 标「（部分真实用量）」 |
+
+模式字段来自 `app/domain/assistant.py: AssistantPlan`，M2 不改该 schema。
+后端未开通时徽章显示「LLM（未接线）」，不伪装成模型已调用。
+
 ## 四之二、T8.2 LLM planner 接缝（`app/services/assistant_llm.py`）
 
 M2 已接管该模块，并接上 M5 的稳定接缝
