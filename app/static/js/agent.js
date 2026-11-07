@@ -944,7 +944,10 @@
       tr.appendChild(el("td", null, "Route " + entry.route));
       ["address", "kind", "before", "after"].forEach(function (field) {
         var td = el("td");
-        td.appendChild(el("code", null, entry.region[field]));
+        // 缺失字段显示 —，不留空白单元格（空白会被读成“无改动”）。
+        var value = entry.region[field];
+        td.appendChild(el("code", null,
+          value === undefined || value === null || value === "" ? "—" : value));
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
@@ -1029,6 +1032,14 @@
       }
       box.appendChild(el("h3", "agent-side-subtitle", title));
 
+      if (!evidence) {
+        // 拉不到证据时明说不可用，不静默省略整块（省略会被读成“没有 gate”）。
+        box.appendChild(el("p", "agent-muted",
+          route.attempt_id
+            ? "证据不可用（attempt 未回传或端点未开通）"
+            : "证据不可用（该路线未回传 attempt）"));
+      }
+
       if (evidence && Array.isArray(evidence.gates) && evidence.gates.length) {
         // Gates render in the order the endpoint returns them; the front end
         // does not sort, reorder, or fill in a missing gate.
@@ -1095,6 +1106,8 @@
       list.appendChild(li);
     });
     view.artifacts.forEach(function (artifact) {
+      // 缺 id 不生成死链（/api/artifacts/undefined/download）。
+      if (!artifact || typeof artifact.id !== "string" || !artifact.id) return;
       var li = el("li");
       var link = el("a", null, "产物：" + (artifact.label || artifact.id));
       link.href = "/api/artifacts/" + encodeURIComponent(artifact.id) + "/download";

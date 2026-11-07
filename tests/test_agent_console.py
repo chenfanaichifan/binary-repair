@@ -105,6 +105,22 @@ def test_pending_receipt_shows_placeholder_instead_of_not_run():
     assert 'show("agent-receipt-placeholder", view.receiptPending);' in AGENT_JS
 
 
+def test_missing_region_field_renders_a_dash_not_a_blank_cell():
+    """A missing before/after byte shows —, never a blank cell."""
+    assert 'value === undefined || value === null || value === "" ? "—" : value' in AGENT_JS
+
+
+def test_artifact_without_id_is_not_linked():
+    """A bad artifact row must not yield /api/artifacts/undefined/download."""
+    assert 'if (!artifact || typeof artifact.id !== "string" || !artifact.id) return;' in AGENT_JS
+
+
+def test_route_without_evidence_says_unavailable():
+    """Missing evidence is announced, not silently omitted."""
+    assert "证据不可用（该路线未回传 attempt）" in AGENT_JS
+    assert "证据不可用（attempt 未回传或端点未开通）" in AGENT_JS
+
+
 def test_no_model_calls_or_new_transport():
     # Actual usage is banned (mentioning the rule in comments is fine).
     for banned in ("api.openai.com", "new WebSocket", "new EventSource", "Bearer ",
