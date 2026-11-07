@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +35,10 @@ def _valid_none(tmp_path: Path) -> Path:
     return tests
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="fixture executes /usr/bin/true; Windows coverage is in tests/test_assistant_tools.py",
+)
 def test_run_case_none_dispatches_to_repaired_runner(tmp_path: Path) -> None:
     tests = _valid_none(tmp_path)
     response = adapters.run_case(
