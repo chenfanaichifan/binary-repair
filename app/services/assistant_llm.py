@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from app.domain.assistant import AssistantPlan
+from app.domain.assistant import AssistantPlan, deterministic_plan
 from app.services import model_calls
 
 
@@ -42,11 +42,22 @@ def _llm_plan(description: str, *, context: dict | None, client: Any) -> tuple[A
     return plan, usage, plan.model
 
 
+def _fallback(description: str, *, context: dict | None, reason: str) -> AssistantPlan:
+    plan = deterministic_plan(description, context)
+    return plan.model_copy(update={"fallback": True, "fallback_reason": reason[:500]})
+
+
 def generate_plan(description: str, *, context: dict | None = None,
                   client: Any | None = None, mode: str = "llm") -> AssistantPlan:
     if client is None:
-        raise ValueError("llm client is required")
-    plan, usage, model = _llm_plan(description, context=context, client=client)
+        return _fallback(description, context=context, reason="no LLM client configured")
+    try:
+        plan, usage, model = _llm_plan(description, context=context, client=client)
+    except Exception as exc:  # noqa: BLE001 - planner must fail closed to deterministic
+        return _fallback(
+            description, context=context,
+            reason=f"LLM planner failed: {type(exc).__name__}",
+        )
     data_dir = (context or {}).get("data_dir")
     if not data_dir:
         raise ValueError(
