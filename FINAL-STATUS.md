@@ -47,15 +47,15 @@ verify_all.sh: PASS (M4 report)
 V4 harness x2: PASS (M4 report)
 replay.verified_by="m4": WRITTEN (marker SHA256 fc4802d0…2b06)
 V4: passed, scope=model
-124: STILL STALE
-  gate-index V2 not_run / V4 not_run
-  outcome inconclusive / required_check_not_run / symbolic
-  success_within_scope=false
-T8.3: BLOCKED until marker is ingested and 124 rerun
+124: RE-RUN WITH MARKER
+  V0/V1/V2/V3/V4/V5 passed
+  attempt outcome success_within_scope
+T8.3 evidence: COMPLETE
+T8.3 closure: pending Lead's separate acceptance
 ```
 
-The M4 marker file itself is not in this repository or workspace; only the
-report/hash is available here. M1 must not fabricate it.
+The M4 marker and five-criteria file are now archived under
+`delivery/m4/v4-2026-11-07/`; the bundle's V4 artifact is the marker.
 
 ### M5
 
@@ -72,9 +72,9 @@ CWE416 logs/plans/contracts: DONE
 ## Boundary
 
 ```text
-T8.3: BLOCKED
-V4: passed (M4 model-scope marker), 124 not yet ingested
-124: inconclusive / required_check_not_run / symbolic
+T8.3: EVIDENCE COMPLETE / closure pending Lead
+V4: passed (M4 model-scope marker), 124 success_within_scope
+124: success_within_scope (marker ingested)
 118: VERIFIED (independent)
 main: not merged
 tag: none

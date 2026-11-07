@@ -1,0 +1,35 @@
+{
+  "v4": {
+    "state": "passed",
+    "scope": "model",
+    "verified_by": "m4",
+    "marker": "M4-V4-MARKER.json",
+    "evidence_sha256": "cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14",
+    "run_a_sha256": "9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c",
+    "run_b_sha256": "9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c",
+    "five_criteria": "5/5"
+  },
+  "t8.3": {
+    "v4": "passed",
+    "v4_source": "M4 marker; producer gate-index remains not_run",
+    "closure": "pending separate Lead/M4 acceptance",
+    "success_within_scope": false
+  },
+  "candidate_124": {
+    "state": "inconclusive",
+    "reason": "package gate-index still has V2 not_run and V4 not_run; record 129 ingest had V2 passed/V4 not_run; marker was not ingested into 124",
+    "promoted": false
+  },
+  "record_118": {
+    "state": "VERIFIED",
+    "changed": false,
+    "note": "T30 rebuild evidence package; independent of T8.3"
+  },
+  "record_91": {
+    "state": "unchanged",
+    "changed": false
+  },
+  "review_items_9_12": "separate work; not assessed here",
+  "same_operator": "M4 verifier = Lead; role-separated, not human-independent",
+  "gate0_d5": "unchanged: V4=not_run for the Gate 0 round"
+}

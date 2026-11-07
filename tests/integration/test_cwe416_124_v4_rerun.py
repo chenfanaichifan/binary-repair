@@ -1,7 +1,8 @@
-"""124 rerun with record 128's product V4 evidence is provisional.
+"""124 rerun with M4's independent V4 marker.
 
-V4 is a producer/ingest claim; without M4's independent replay it stays
-not_run, so the attempt cannot be success yet.
+The bundle now carries M4's marker (verified_by="m4"), so V4 is no longer
+provisional. The attempt may finish with success_within_scope once all six
+required obligations are present.
 """
 
 from __future__ import annotations
@@ -63,18 +64,17 @@ def test_cwe416_124_v4_evidence_is_provisional_without_m4_replay(tmp_path: Path)
         "V1": "passed",
         "V2": "passed",
         "V3": "passed",
-        "V4": "not_run",
+        "V4": "passed",
         "V5": "passed",
     }
     assert payload["details"]["V2"] == "5/5 static interface checks passed"
-    assert "V4" not in payload["evidence"]
-    assert "independent M4 replay" in payload["details"]["V4"]
+    assert "V4" in payload["evidence"]
 
     final = jobs.get_attempt(attempt.id, data_dir=data_dir)
     assert final is not None
-    assert final.outcome == "inconclusive"
-    assert final.reason == "required_check_not_run"
-    assert final.failing_obligation == "symbolic"
+    assert final.outcome == "success_within_scope"
+    assert final.reason is None
+    assert final.failing_obligation is None
     by_kind = {
         row["kind"]: row["result"]
         for row in jobs.list_obligations(attempt.id, data_dir=data_dir)
@@ -85,7 +85,7 @@ def test_cwe416_124_v4_evidence_is_provisional_without_m4_replay(tmp_path: Path)
         "interface": "passed",
         "reproducibility": "passed",
         "structure": "passed",
-        "symbolic": "not_run",
+        "symbolic": "passed",
     }
     # Route A has no bundle, so the run itself is not finished/success yet.
     assert jobs.get_run(run.id, data_dir=data_dir).phase == "screening"
