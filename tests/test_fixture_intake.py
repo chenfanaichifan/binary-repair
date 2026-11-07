@@ -87,7 +87,12 @@ def build_fixture(
     root.mkdir(parents=True, exist_ok=True)
     (root / "tests").mkdir(exist_ok=True)
 
-    elf = b"\x7fELF" + bytes(range(64))
+    elf = bytearray(b"\x7fELF" + bytes(range(64)))
+    elf[4] = 2  # ELFCLASS64
+    elf[5] = 1  # ELFDATA2LSB
+    elf[6] = 1  # EV_CURRENT
+    elf[16:18] = (2).to_bytes(2, "little")  # ET_EXEC, non-PIE
+    elf = bytes(elf)
     (root / "original.elf").write_bytes(elf)
     sha = hashlib.sha256(elf).hexdigest()
 
@@ -545,3 +550,14 @@ def test_v3_input_modes_keep_the_four_and_two_matrix(
     # Only "none" changes the layout; the input-bearing modes keep 4+2 and a
     # resolvable trigger case.
     assert check_fixture(root) == []
+
+
+def test_a_pie_artifact_is_rejected(tmp_path: Path) -> None:
+    root = tmp_path / "second_class_demo"
+    build_fixture(root)
+    data = bytearray((root / "original.elf").read_bytes())
+    data[16:18] = (3).to_bytes(2, "little")  # ET_DYN, PIE
+    (root / "original.elf").write_bytes(data)
+    write_sums(root)
+
+    assert "elf_not_non_pie" in codes(check_fixture(root))

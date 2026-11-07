@@ -4,39 +4,49 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}BinaryRepair{% endblock %} · BinaryRepair</title>
-  <link rel="stylesheet" href="/static/css/app.css?v=20261022b">
+  <link rel="stylesheet" href="/static/css/ds.css?v=20261105a">
+  {% block head %}{% endblock %}
 </head>
-<body data-job-id="{{ job.id if job else '' }}" data-demo="{{ '1' if demo else '0' }}">
-  <div class="app-bg" aria-hidden="true"></div>
+<body class="ds-body" data-job-id="{{ job.id if job else '' }}" data-demo="{{ '1' if demo else '0' }}">
+  <div class="ds-app">
+    <aside class="ds-sidebar">
+      <a class="ds-brand" href="/" aria-label="返回起始页" title="返回起始页">BinaryRepair <span class="ds-badge">预览版</span></a>
+      <a class="ds-new" href="/agent/new" data-testid="sidebar-new-task">＋ 新任务</a>
 
-  <header class="topbar">
-    <a class="brand" href="/">
-      <span class="brand-mark" aria-hidden="true">BR</span>
-      <span class="brand-text">
-        <strong>BinaryRepair</strong>
-        <small>AI 二进制漏洞修复 · 证据工作台</small>
-      </span>
-    </a>
-    <nav class="topnav" aria-label="主导航">
-      <a href="/jobs/new" class="topnav-link">新建任务</a>
-      <span class="env-chip"><span class="env-dot" aria-hidden="true"></span> LOCAL · 127.0.0.1</span>
-    </nav>
-  </header>
+      <div class="ds-group">任务</div>
+      <nav class="ds-job-list" id="ds-job-list" data-testid="ds-job-list" aria-label="任务列表">
+        <p class="ds-job-empty" data-testid="ds-job-empty">还没有本机任务记录。</p>
+      </nav>
 
-  {% if demo %}
-  <div class="demo-banner" role="status">
-    <strong>演示数据</strong>：页面使用合成 fixture，<strong>未执行真实修复</strong>，不能作为"补丁已验证"的证据。
+      <div class="ds-group">工作区</div>
+      <div class="ds-workspace">{% if workspace %}{{ workspace.label }}{% else %}本地工作区 · 127.0.0.1{% endif %}</div>
+      <p class="ds-side-hint">
+        任务列表保存在本机浏览器，逐条向后端核对状态；服务端全量列表待 controller 提供。
+      </p>
+
+      <div class="ds-side-foot">
+        阶段与结论是两条独立的轴。<br>
+        未执行显示 <code>not_run</code>，未回传显示等待占位。<br>
+        页面不计算整体结论，导出不代表生产批准。
+      </div>
+    </aside>
+
+    <div class="ds-main">
+      {% if demo %}
+      <div class="ds-demo" role="status">
+        <strong>演示数据</strong>：页面使用合成 fixture，未执行真实修复，不能作为「补丁已验证」的证据。
+      </div>
+      {% endif %}
+
+      <main class="ds-content">
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="ds-footer">BinaryRepair · AI 二进制漏洞修复与正确性验证工作台</footer>
+    </div>
   </div>
-  {% endif %}
 
-  <main class="wrap">
-    {% block content %}{% endblock %}
-  </main>
-
-  <footer class="footer">
-    <span>阶段与结论是两条独立的轴 · 未执行显示 <code>not_run</code> · 两条路线都成功才算整体成功 · 导出不代表生产批准</span>
-  </footer>
-
+  <script src="/static/js/jobs-list.js?v=20261105a"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

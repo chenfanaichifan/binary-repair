@@ -1,0 +1,48 @@
+== readelf -h /home/lab/cwe416/run-b/pm.elf ==
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x401190
+  Start of program headers:          64 (bytes into file)
+  Start of section headers:          17672 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         13
+  Size of section headers:           64 (bytes)
+  Number of section headers:         37
+  Section header string table index: 36
+
+== loadable segments ==
+Program Headers:
+  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align
+  PHDR           0x000040 0x0000000000400040 0x0000000000400040 0x0002d8 0x0002d8 R   0x8
+  INTERP         0x000318 0x0000000000400318 0x0000000000400318 0x00001c 0x00001c R   0x1
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+  LOAD           0x000000 0x0000000000400000 0x0000000000400000 0x0007c8 0x0007c8 R   0x1000
+  LOAD           0x001000 0x0000000000401000 0x0000000000401000 0x0004e9 0x0004e9 R E 0x1000
+  LOAD           0x002000 0x0000000000402000 0x0000000000402000 0x0001bc 0x0001bc R   0x1000
+  LOAD           0x002df8 0x0000000000403df8 0x0000000000403df8 0x000270 0x0002b8 RW  0x1000
+  DYNAMIC        0x002e08 0x0000000000403e08 0x0000000000403e08 0x0001d0 0x0001d0 RW  0x8
+  NOTE           0x000338 0x0000000000400338 0x0000000000400338 0x000030 0x000030 R   0x8
+  NOTE           0x000368 0x0000000000400368 0x0000000000400368 0x000044 0x000044 R   0x4
+  GNU_PROPERTY   0x000338 0x0000000000400338 0x0000000000400338 0x000030 0x000030 R   0x8
+  GNU_EH_FRAME   0x002040 0x0000000000402040 0x0000000000402040 0x000054 0x000054 R   0x4
+  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x10
+  GNU_RELRO      0x002df8 0x0000000000403df8 0x0000000000403df8 0x000208 0x000208 R   0x1
+
+ Section to Segment mapping:
+
+== symbols of interest ==
+0000000000401276 t duplicate
+00000000004012ec t printLine
+0000000000401332 T badSink
+00000000004013de T goodSink
+0000000000401448 T main

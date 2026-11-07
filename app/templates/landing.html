@@ -3,19 +3,160 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>二进制漏洞修复 · BinaryRepair</title>
-  <link rel="stylesheet" href="/static/css/landing.css?v=20261022b">
+  <title>BinaryRepair · AI 二进制漏洞修复工作台</title>
+  <link rel="stylesheet" href="/static/css/ds.css?v=20261104a">
 </head>
-<body class="landing">
-  <div class="hero-bg" aria-hidden="true"></div>
+<body>
+  <main class="ds-home">
+    <h1 class="ds-home-brand hero-h1" style="margin:0">二进制漏洞修复 <span class="ds-badge">预览版</span></h1>
+    <p class="ds-home-sub">BinaryRepair · AI 驱动的自动修复与正确性验证工作台</p>
 
-  <main class="hero">
-    <p class="hero-eyebrow">AI-DRIVEN BINARY VULNERABILITY REPAIR</p>
-    <h1 class="hero-h1">二进制漏洞修复</h1>
+    <div class="ds-home-selectors" data-config-source="{{ ui.source }}">
+      <div class="ds-select" data-select="workspace">
+        <button type="button" class="ds-select" aria-haspopup="true" aria-expanded="false">
+          <span data-role="label">{{ default_workspace.label }}</span> <span class="caret">▾</span>
+        </button>
+        <div class="ds-menu" hidden>
+          {% for ws in ui.workspaces %}
+          <button type="button" data-value="{{ ws.label }}" data-id="{{ ws.id }}"
+                  data-detail="{{ ws.detail }}">{{ ws.label }}</button>
+          {% endfor %}
+          <p class="ds-menu-note">{{ default_workspace.detail }}</p>
+        </div>
+      </div>
 
-    <div class="hero-cta">
-      <a class="cta-pill" href="/jobs/new" data-testid="landing-cta">进入工作台 <span class="arrow" aria-hidden="true">→</span></a>
+      <div class="ds-select" data-select="mode">
+        <button type="button" class="ds-select" aria-haspopup="true" aria-expanded="false">
+          <span data-role="label">{{ default_mode.label }}</span> <span class="caret">▾</span>
+        </button>
+        <div class="ds-menu" hidden>
+          {% for mode in ui.modes %}
+          <button type="button" data-value="{{ mode.label }}" data-id="{{ mode.id }}"
+                  data-detail="{{ mode.detail }}">{{ mode.label }}（{{ mode.detail }}）</button>
+          {% endfor %}
+          <p class="ds-menu-note">助手只做引导，结论由验收引擎给出。</p>
+        </div>
+      </div>
     </div>
+
+    <form class="ds-composer" action="/agent" method="get" data-testid="home-composer">
+      <input type="hidden" name="workspace" id="home-workspace" value="{{ default_workspace.id }}">
+      <input type="hidden" name="mode" id="home-mode" value="{{ default_mode.id }}">
+      <label class="visually-hidden" for="home-q" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">缺陷描述</label>
+      <textarea id="home-q" name="q" rows="3" placeholder="描述你要修复的二进制缺陷，/ 调用指令，@ 选择样本"></textarea>
+      <div class="ds-composer-bar">
+        <a class="ds-icon-btn" href="/jobs/new" title="上传样本并填写表单" aria-label="上传样本">＋</a>
+        <span class="ds-chip" id="home-workspace-chip">{{ default_workspace.label }}</span>
+        <div class="ds-composer-meta">
+          <span>对话式引导</span>
+          <span class="ds-chip accent">ASCII 提交</span>
+          <button class="ds-send" type="submit" aria-label="开始引导" data-testid="home-send">↑</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="ds-home-links">
+      <a class="ds-link-primary" href="/agent?workspace={{ default_workspace.id }}&amp;mode={{ default_mode.id }}" data-testid="landing-agent-cta" data-primary="1">打开修复控制台 →</a>
+      <a href="/jobs/new" data-testid="landing-cta">或使用表单上传 →</a>
+      <a href="/agent?fixture=1" data-testid="home-demo-link">查看演示数据</a>
+    </div>
+
+    <p class="ds-home-note">
+      界面文案为中文，提交与导出的数据为英文 ASCII。<br>
+      未执行的项目显示 <code>not_run</code>；测试机结果未回传时显示等待占位，不会被当成已执行或已失败。<br>
+      阶段与结论是两条独立的轴，导出不代表生产批准。
+    </p>
   </main>
+
+  <script>
+    (function () {
+      "use strict";
+      var WS_KEY = "br.landing.workspace";
+      var MODE_KEY = "br.landing.mode";
+
+      function read(key) {
+        try { return window.localStorage.getItem(key); } catch (e) { return null; }
+      }
+      function write(key, value) {
+        try { window.localStorage.setItem(key, value); } catch (e) {}
+      }
+
+      var workspaceInput = document.getElementById("home-workspace");
+      var modeInput = document.getElementById("home-mode");
+      var workspaceChip = document.getElementById("home-workspace-chip");
+      var cta = document.querySelector('[data-primary="1"]');
+      var state = { workspace: workspaceInput.value, mode: modeInput.value };
+
+      function options(kind) {
+        return Array.prototype.slice.call(
+          document.querySelectorAll('[data-select="' + kind + '"] .ds-menu button[data-id]')
+        );
+      }
+      function find(kind, id) {
+        return options(kind).filter(function (item) { return item.dataset.id === id; })[0] || null;
+      }
+      function apply() {
+        var ws = find("workspace", state.workspace) || options("workspace")[0];
+        var mode = find("mode", state.mode) || options("mode")[0];
+        if (ws) { state.workspace = ws.dataset.id; }
+        if (mode) { state.mode = mode.dataset.id; }
+
+        workspaceInput.value = state.workspace;
+        modeInput.value = state.mode;
+        if (workspaceChip && ws) { workspaceChip.textContent = ws.dataset.value; }
+
+        var selects = document.querySelectorAll("[data-select]");
+        Array.prototype.forEach.call(selects, function (wrap) {
+          var kind = wrap.dataset.select;
+          var chosen = kind === "workspace" ? ws : mode;
+          if (!chosen) { return; }
+          var label = wrap.querySelector('[data-role="label"]');
+          if (label) { label.textContent = chosen.dataset.value; }
+        });
+
+        var params = new URLSearchParams({ workspace: state.workspace, mode: state.mode });
+        if (state.mode === "demo") { params.set("fixture", "1"); }
+        if (cta) { cta.setAttribute("href", "/agent?" + params.toString()); }
+      }
+
+      var savedWs = read(WS_KEY);
+      var savedMode = read(MODE_KEY);
+      if (savedWs && find("workspace", savedWs)) { state.workspace = savedWs; }
+      if (savedMode && find("mode", savedMode)) { state.mode = savedMode; }
+      apply();
+
+      document.querySelectorAll("[data-select]").forEach(function (wrap) {
+        var trigger = wrap.querySelector("button.ds-select");
+        var menu = wrap.querySelector(".ds-menu");
+        trigger.addEventListener("click", function (event) {
+          event.stopPropagation();
+          var open = !menu.hidden;
+          document.querySelectorAll(".ds-menu").forEach(function (m) { m.hidden = true; });
+          menu.hidden = open;
+          trigger.setAttribute("aria-expanded", String(!open));
+        });
+        menu.querySelectorAll("button[data-id]").forEach(function (item) {
+          item.addEventListener("click", function () {
+            if (wrap.dataset.select === "workspace") {
+              state.workspace = item.dataset.id;
+              write(WS_KEY, state.workspace);
+            } else {
+              state.mode = item.dataset.id;
+              write(MODE_KEY, state.mode);
+            }
+            menu.hidden = true;
+            trigger.setAttribute("aria-expanded", "false");
+            apply();
+            if (state.mode === "demo") {
+              window.location.href = cta ? cta.href : "/agent?fixture=1&mode=demo";
+            }
+          });
+        });
+      });
+      document.addEventListener("click", function () {
+        document.querySelectorAll(".ds-menu").forEach(function (m) { m.hidden = true; });
+      });
+    })();
+  </script>
 </body>
 </html>

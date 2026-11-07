@@ -1,0 +1,143 @@
+{
+  "cancelled": false,
+  "contract": {
+    "approved": true,
+    "approved_at": "2026-11-05T08:31:25+00:00",
+    "assumptions": [
+      "Single process",
+      "Linux x86-64 ELF",
+      "Stack protector disabled"
+    ],
+    "forbidden": "Out-of-bounds write to the target buffer (more than 8 bytes)",
+    "invalid_outcome": "Return error code 1 without out-of-bounds access or crash",
+    "reviewer_label": "m2-probe",
+    "revision": 2,
+    "sha256": "7c056084e602317ad5a7df2b68e56f13b9f2c325d941e2c835165ce9113aa005",
+    "valid_domain": "Input length 0-64 bytes; out-of-range lengths rejected"
+  },
+  "created_at": "2026-11-05T08:31:25+00:00",
+  "data_source": "controller-http",
+  "defect": "strcpy in stack_buf does not check length; overlong input writes out of bounds",
+  "demo": false,
+  "environment": "Ubuntu x86-64 VM (execution disabled in demo)",
+  "execution": "queued",
+  "filename": "original.elf",
+  "id": "e15c141a90e1432bb247e15edcd3ef4b",
+  "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "phase": "queued",
+  "routes": {
+    "A": {
+      "ai_usage": "unavailable",
+      "changed_regions": [],
+      "compatibility": "not_run",
+      "elapsed_s": 0.0,
+      "evidence": "not_persisted",
+      "manual_interventions": 0,
+      "name": "Route A - Direct instruction repair",
+      "obligations": [],
+      "outcome": null,
+      "outcome_reason": "",
+      "phase": "queued",
+      "stages": [
+        {
+          "name": "screening",
+          "state": "pending"
+        },
+        {
+          "name": "analyzing",
+          "state": "pending"
+        },
+        {
+          "name": "generating",
+          "state": "pending"
+        },
+        {
+          "name": "applying",
+          "state": "pending"
+        },
+        {
+          "name": "validating",
+          "state": "pending"
+        }
+      ],
+      "tests": {
+        "passed": 0,
+        "total": 0
+      },
+      "verdict": {
+        "detail": null,
+        "failing_obligation": null,
+        "outcome": null,
+        "reason": null
+      },
+      "verification": "not_run"
+    },
+    "B": {
+      "ai_usage": "unavailable",
+      "changed_regions": [],
+      "compatibility": "not_run",
+      "elapsed_s": 0.0,
+      "evidence": "not_persisted",
+      "manual_interventions": 0,
+      "name": "Route B - Recovered C reintegration",
+      "obligations": [],
+      "outcome": null,
+      "outcome_reason": "",
+      "phase": "queued",
+      "stages": [
+        {
+          "name": "screening",
+          "state": "pending"
+        },
+        {
+          "name": "analyzing",
+          "state": "pending"
+        },
+        {
+          "name": "roundtrip",
+          "state": "pending"
+        },
+        {
+          "name": "generating",
+          "state": "pending"
+        },
+        {
+          "name": "applying",
+          "state": "pending"
+        },
+        {
+          "name": "validating",
+          "state": "pending"
+        }
+      ],
+      "tests": {
+        "passed": 0,
+        "total": 0
+      },
+      "verdict": {
+        "detail": null,
+        "failing_obligation": null,
+        "outcome": null,
+        "reason": null
+      },
+      "verification": "not_run"
+    }
+  },
+  "run": {
+    "id": "4d7d671063fb4809bc44d9296bc520d5",
+    "manifest_sha256": "9280641af127f97c103275f1b11a0d1be6c7f3038a1a67d8c49966eec248c90c",
+    "phase": "queued",
+    "reviewed_scope_sha256": "b7cabfc2ef95604b144a9a23d27f68347c3ad05b01c00c95299e672664c58f85"
+  },
+  "valid_tests": [
+    "valid: hello",
+    "boundary: 8 bytes",
+    "invalid: 64 bytes"
+  ],
+  "verdict": {
+    "detail": null,
+    "failing_obligation": null,
+    "outcome": null,
+    "reason": null
+  }
+}
