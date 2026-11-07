@@ -222,9 +222,43 @@ def apply_candidate(request: dict[str, Any]) -> dict[str, Any]:
 
     if request.get("schema_version") != 2:
         raise ToolError("invalid_request", "schema_version must be 2")
-    for key in ("job_id", "run_id", "attempt_id", "bundle_path", "candidate_sha256"):
+    for key in ("job_id", "bundle_path", "candidate_sha256"):
         if not request.get(key):
             raise ToolError("pre_layer_required", f"{key} is required")
+    job_id = str(request["job_id"])
+    data_dir = Path(str(request.get("data_dir", "var")))
+    route = str(request.get("route", "route_b"))
+    run_id = request.get("run_id")
+    attempt_id = request.get("attempt_id")
+    if not run_id or not attempt_id:
+        from app.services import jobs
+
+        revision = request.get("contract_revision")
+        manifest_sha256 = request.get("manifest_sha256")
+        if revision is None or not manifest_sha256:
+            raise ToolError(
+                "pre_layer_required",
+                "run_id/attempt_id absent; contract_revision and manifest_sha256 are required to create them",
+            )
+        contract = jobs.get_contract(job_id, int(revision), data_dir=data_dir)
+        if contract is None:
+            raise ToolError("invalid_request", f"contract revision {revision} not found")
+        approval = jobs.approval_from_contract(contract, manifest_sha256=str(manifest_sha256))
+        run = jobs.start_run(
+            job_id,
+            approval=approval,
+            idempotency_key=str(request.get("idempotency_key") or "apply-candidate"),
+            data_dir=data_dir,
+        )
+        run_id = run.id
+        attempts = jobs.list_job_attempts(job_id, data_dir=data_dir)
+        match = next(
+            (item for item in attempts if item["run_id"] == run_id and item["route"] == route),
+            None,
+        )
+        if match is None:
+            raise ToolError("pre_layer_required", f"no {route} attempt was created")
+        attempt_id = match["id"]
     candidate = str(request["candidate_sha256"])
     if len(candidate) != 64:
         raise ToolError("invalid_request", "candidate_sha256 must be 64 hex chars")
@@ -244,9 +278,9 @@ def apply_candidate(request: dict[str, Any]) -> dict[str, Any]:
         return {
             "schema_version": 2,
             "status": "no_op",
-            "job_id": request["job_id"],
-            "run_id": request["run_id"],
-            "attempt_id": request["attempt_id"],
+            "job_id": job_id,
+            "run_id": str(run_id),
+            "attempt_id": str(attempt_id),
             "candidate_sha256": candidate,
             "previous_candidate_sha256": None,
             "bundle_path": str(bundle),
@@ -258,10 +292,10 @@ def apply_candidate(request: dict[str, Any]) -> dict[str, Any]:
     try:
         result = route_bundle_ingest.ingest(
             data_dir=Path(str(request.get("data_dir", "var"))),
-            job_id=str(request["job_id"]),
-            run_id=str(request["run_id"]),
-            attempt_id=str(request["attempt_id"]),
-            route=str(request.get("route", "route_b")),
+            job_id=job_id,
+            run_id=str(run_id),
+            attempt_id=str(attempt_id),
+            route=route,
             bundle=bundle,
             trigger=not bool(request.get("no_trigger")),
         )
@@ -272,9 +306,9 @@ def apply_candidate(request: dict[str, Any]) -> dict[str, Any]:
     return {
         "schema_version": 2,
         "status": "applied" if result.get("imported") is not None else "no_op",
-        "job_id": request["job_id"],
-        "run_id": request["run_id"],
-        "attempt_id": request["attempt_id"],
+        "job_id": job_id,
+        "run_id": str(run_id),
+        "attempt_id": str(attempt_id),
         "candidate_sha256": candidate,
         "previous_candidate_sha256": None,
         "bundle_path": str(bundle),

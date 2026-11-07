@@ -264,6 +264,10 @@ read_evidence  input_mode, status mapping, no invented sha256
 apply_candidate dry_run + candidate hash assertion
 ```
 
-`apply_candidate` still returns `pre_layer_required` when `run_id`/`attempt_id`
-are missing; creating them is the remaining Gate 2b work. The adapter is not a
-claim that Gate 2b is accepted.
+`apply_candidate` now creates or reuses the run/attempt when `run_id` or
+`attempt_id` is missing, using `contract_revision` + `manifest_sha256` and the
+existing `jobs.start_run`/`jobs.list_job_attempts` APIs. If those inputs are
+missing it returns `pre_layer_required` rather than silently inventing IDs.
+
+Gate 2b still needs M1's final-head verification and M4's independent acceptance;
+the adapter is not a claim that Gate 2b is accepted.
