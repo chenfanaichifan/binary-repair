@@ -35,3 +35,5 @@ Source: operator workspace root, no private keys.
 - `p1-routea-v4-input-2026-11-07.zip`
 - `p1-routea-v4-input-2026-11-07.zip.sha256`
 - `routea-cwe416-noinput-kit-2026-11-07.zip`
+- `v4-harness-2026-11-07.zip`
+- `v4-harness-2026-11-07.zip.sha256`
