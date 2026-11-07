@@ -1,0 +1,54 @@
+{
+  "candidate_sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+  "checks": {
+    "dynamic_symbols_unchanged": true,
+    "entry_unchanged": true,
+    "needed_flags_unchanged": true,
+    "no_new_dynamic_import": true,
+    "target_entry_symbol_unchanged": true
+  },
+  "details": {
+    "candidate_entry": "0x4011b0",
+    "candidate_flags": [],
+    "candidate_needed": [
+      "libc.so.6"
+    ],
+    "new_dynamic_imports": [],
+    "original_entry": "0x4011b0",
+    "original_flags": [],
+    "original_needed": [
+      "libc.so.6"
+    ],
+    "target_entry": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+    "target_symbol_candidate": [
+      "CWE416_Use_After_Free__malloc_free_char_01_bad",
+      4199082,
+      111,
+      "STT_FUNC",
+      "STB_GLOBAL",
+      "STV_DEFAULT",
+      "15"
+    ],
+    "target_symbol_original": [
+      "CWE416_Use_After_Free__malloc_free_char_01_bad",
+      4199082,
+      111,
+      "STT_FUNC",
+      "STB_GLOBAL",
+      "STV_DEFAULT",
+      "15"
+    ]
+  },
+  "gate": "V2",
+  "kind": "interface",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "pass": true,
+  "schema_version": 1,
+  "scope": "binary",
+  "score": {
+    "passed": 5,
+    "total": 5
+  },
+  "state": "passed",
+  "target_entry": "CWE416_Use_After_Free__malloc_free_char_01_bad"
+}
