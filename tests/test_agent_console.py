@@ -105,6 +105,11 @@ def test_pending_receipt_shows_placeholder_instead_of_not_run():
     assert 'show("agent-receipt-placeholder", view.receiptPending);' in AGENT_JS
 
 
+def test_top_level_obligations_are_accepted_when_routes_omit_them():
+    """M5 may return obligations at the top level; the view must not drop them."""
+    assert "!obligations.length && Array.isArray(data.obligations)" in AGENT_JS
+
+
 def test_missing_region_field_renders_a_dash_not_a_blank_cell():
     """A missing before/after byte shows —, never a blank cell."""
     assert 'value === undefined || value === null || value === "" ? "—" : value' in AGENT_JS

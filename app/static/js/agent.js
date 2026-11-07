@@ -269,6 +269,19 @@
         });
       });
     });
+    if (!obligations.length && Array.isArray(data.obligations)) {
+      // 兼容顶层形状：routes 未携带义务时按顶层列表渲染，route 缺失记为 "?"。
+      data.obligations.forEach(function (item) {
+        if (!item || typeof item !== "object") return;
+        obligations.push({
+          route: item.route || "?",
+          id: item.id || item.kind || "?",
+          kind: item.kind || "",
+          result: item.result,
+          reason: item.reason || item.detail || ""
+        });
+      });
+    }
     obligations.sort(function (a, b) {
       return (KIND_ORDER[a.kind] === undefined ? 99 : KIND_ORDER[a.kind]) -
              (KIND_ORDER[b.kind] === undefined ? 99 : KIND_ORDER[b.kind]);
