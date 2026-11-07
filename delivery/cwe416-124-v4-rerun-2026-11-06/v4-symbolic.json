@@ -49,11 +49,10 @@
   "property_kind": "pointer-flow",
   "ran": true,
   "replay": {
-    "command": "/opt/angr-venv/bin/python v4/v4_harness.py --candidate candidate/candidate.elf --original fixture/original.elf --contract fixture/contract.json --replay-runs 2",
+    "command": "v4_harness.py",
     "evidence_sha256": "cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14",
     "identical": true,
-    "runs": 2,
-    "verified_by": "m4"
+    "runs": 2
   },
   "schema_version": 1,
   "scope": "model",
@@ -151,73 +150,6 @@
     "entry_address": "0x4012aa",
     "generated_by": "v4_harness.py",
     "input_domain": "none: the entry takes no arguments, reads no stdin, opens no file; only the address returned by malloc() is symbolic",
-    "m4_replay": {
-      "expected_output_sha256": "9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c",
-      "five_criteria": [
-        {
-          "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
-          "contract_sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b",
-          "id": "identity",
-          "ok": true,
-          "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9"
-        },
-        {
-          "id": "known_good",
-          "observed": "holds",
-          "ok": true,
-          "sat": 0,
-          "unsat": 1
-        },
-        {
-          "id": "known_bad",
-          "observed": "violated",
-          "ok": true,
-          "sat": 1,
-          "unsat": 0
-        },
-        {
-          "id": "replay",
-          "ok": true,
-          "run_a_digests": [
-            "cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14",
-            "cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14"
-          ],
-          "run_a_sha256": "9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c",
-          "run_b_digests": [
-            "cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14",
-            "cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14"
-          ],
-          "run_b_sha256": "9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c"
-        },
-        {
-          "claimed_scope": "model",
-          "complete": true,
-          "entry_address": "0x4012aa",
-          "id": "complete_scope",
-          "ok": true,
-          "timeouts": 0,
-          "unexplored": [],
-          "unknown": 0
-        }
-      ],
-      "guest": "10.11.0.132:2222",
-      "replay_digest": "cb2137a20d838e3f48e02f2d38f258487ddc3a588a371970d9ef41b63304cb14",
-      "run_a": {
-        "path": "m4-run-a.json",
-        "sha256": "9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c"
-      },
-      "run_b": {
-        "path": "m4-run-b.json",
-        "sha256": "9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c"
-      },
-      "same_operator": "M4 verifier = Lead; role-separated, not independent two-person signature",
-      "scope": "model",
-      "selfcheck": "18/18",
-      "user": "m4verify",
-      "verified_at": "2026-11-07",
-      "verified_by": "m4",
-      "verify_all": "3/3"
-    },
     "property_kind": "pointer-flow",
     "property_text": "on every execution, no pointer passed to free() is later passed to printLine()",
     "target_entry": "CWE416_Use_After_Free__malloc_free_char_01_bad"

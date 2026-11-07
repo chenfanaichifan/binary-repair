@@ -56,7 +56,7 @@ V4: passed, scope=model
   V0/V1/V2/V3/V4/V5 passed
   attempt outcome success_within_scope
 T8.3 evidence: COMPLETE
-T8.3 closure: COMPLETE (Lead, 2026-11-07)
+T8.3 closure: WITHDRAWN (record 163)
 ```
 
 The M4 marker and five-criteria file are archived under
@@ -79,9 +79,9 @@ CWE416 logs/plans/contracts: DONE
 ## Boundary
 
 ```text
-T8.3: COMPLETE (Lead closure 2026-11-07)
-V4: passed (M4 model-scope marker), 124 success_within_scope
-124: success_within_scope (marker ingested)
+T8.3: BLOCKED (closure withdrawn by record 163)
+V4: passed marker retained; 124 not promoted (V2 not_run)
+124: inconclusive / required_check_not_run / symbolic
 118: VERIFIED (independent)
 main: not merged
 tag: none
