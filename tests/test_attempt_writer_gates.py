@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from pathlib import Path
 
 from app.services import attempt_writer, jobs
@@ -14,7 +15,11 @@ BUNDLE_P1 = ROOT / "delivery/p1-real-window-2026-11-07/bundle/a1.routeb"
 CONTRACT = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json"
 
 
-def _run(tmp_path: Path, bundle: Path) -> dict:
+def _run(tmp_path: Path, source: Path) -> dict:
+    # The writer enriches the bundle with v2-interface-scored.json. Never point
+    # it at a delivery artifact; copy first so the shipped SHA256SUMS stay intact.
+    bundle = tmp_path / source.name
+    shutil.copytree(source, bundle)
     data = tmp_path / "var"
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
     job = jobs.create_job(
