@@ -1,8 +1,6 @@
-P2 ACCEPTANCE PASSED  phase=finished job=a6565abf6eef472ba4775436973806b2
-command: python tools/p2_acceptance.py --job-id a6565abf6eef472ba4775436973806b2 --base-url http://127.0.0.1:8771
+P2 ACCEPTANCE PASSED phase=finished job=75384ab2bb5a4188aa036b33ce068c71
 exit: 0
 synthetic: false
-verdict: inconclusive / required_check_not_run / identity
-route A: inconclusive (6 required)
-route B: success_within_scope (6 required + optional repaired_behaviour)
-note: Route B is success; overall run remains inconclusive because Route A is identity-only.
+verdict: inconclusive / required_check_not_run / symbolic
+route A: inconclusive (V4 not_run)
+route B: success_within_scope

@@ -52,76 +52,76 @@
     "sha256": "80e4f2bb5b36d4afe5d28be3f5e39181915639895f477ae787db15d9c9bb9a11",
     "valid_domain": "Input length 0-64 bytes; out-of-range lengths rejected"
   },
-  "created_at": "2026-11-07T05:48:22+00:00",
+  "created_at": "2026-11-07T13:37:37+00:00",
   "data_source": "controller-http",
-  "defect": "P1 e2e v2v4",
+  "defect": "P1 full3",
   "demo": false,
   "environment": "",
   "execution": {
-    "finished_at": "2026-11-07T05:48:22+00:00",
+    "finished_at": "2026-11-07T13:37:38+00:00",
     "note": "Derived from persisted run rows; no producer sidecar exists in this build.",
     "outcome": "inconclusive",
     "phase": "finished",
-    "run_id": "3c30b19801aa47eabfb728953c1e2562",
+    "run_id": "1eea36ee14914a57a90ff9cc5794a75f",
     "sidecar": null,
     "source": "controller-derived",
-    "started_at": "2026-11-07T05:48:22+00:00",
+    "started_at": "2026-11-07T13:37:37+00:00",
     "status": "completed"
   },
   "execution_phase": "finished",
-  "filename": "p1.elf",
-  "id": "a6565abf6eef472ba4775436973806b2",
+  "filename": "p1-full3.elf",
+  "id": "75384ab2bb5a4188aa036b33ce068c71",
   "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
   "phase": "finished",
   "routes": {
     "A": {
       "ai_usage": null,
-      "attempt_id": "d1dfdb6713a5456eaeb9b47d930b2277",
+      "attempt_id": "b40ab208676541d18327a8fdd564c28c",
       "changed_regions": [],
-      "compatibility": "not_run",
+      "compatibility": "passed",
       "elapsed_s": 0.0,
       "evidence": "persisted",
       "manual_interventions": 0,
       "name": "Route A - Direct instruction repair",
       "obligations": [
         {
-          "detail": "V3 behaviour: not_run",
-          "evidence_artifact_id": null,
+          "detail": "V3 behaviour: passed",
+          "evidence_artifact_id": "456c1a80a39e45c893b2924bb7283526",
           "kind": "behaviour",
           "required": true,
-          "result": "not_run",
+          "result": "passed",
           "scope": "replay"
         },
         {
-          "detail": "V0 identity: not_run",
-          "evidence_artifact_id": "ad3396f28b484d4b8f1c4767ba5d98c7",
+          "detail": "V0 identity: passed",
+          "evidence_artifact_id": "2769dc1a8af64cc1aeeaadd538fae6c8",
           "kind": "identity",
           "required": true,
-          "result": "not_run",
+          "result": "passed",
           "scope": "metadata"
         },
         {
-          "detail": "V2 interface: not_run",
-          "evidence_artifact_id": null,
+          "detail": "5/5 static interface checks passed",
+          "evidence_artifact_id": "52f91f01f96a4b82a53373bb564b39eb",
           "kind": "interface",
           "required": true,
-          "result": "not_run",
+          "result": "passed",
           "scope": "binary"
         },
         {
-          "detail": "V5 reproducibility: not_run",
-          "evidence_artifact_id": null,
+          "detail": "V5 reproducibility: passed",
+          "evidence_artifact_id": "0bf7b83cde4f4e73bd00c35e5f24cb6f",
           "kind": "reproducibility",
           "required": true,
-          "result": "not_run",
+          "result": "passed",
           "scope": "replay"
         },
         {
-          "detail": "V1 structure: not_run",
-          "evidence_artifact_id": null,
+          "detail": "V1 structure: passed",
+          "evidence_artifact_id": "947feddf403d47258034976abe14d208",
           "kind": "structure",
           "required": true,
-          "result": "not_run",
+          "result": "passed",
           "scope": "binary"
         },
         {
@@ -163,16 +163,16 @@
         "total": 0
       },
       "verdict": {
-        "detail": "V0 identity: not_run",
-        "failing_obligation": "identity",
+        "detail": "V4 symbolic: not_run",
+        "failing_obligation": "symbolic",
         "outcome": "inconclusive",
         "reason": "required_check_not_run"
       },
-      "verification": "not_run"
+      "verification": "inconclusive"
     },
     "B": {
       "ai_usage": null,
-      "attempt_id": "f3ee375a8889409180cf8b1c31c3e22b",
+      "attempt_id": "eb5db66d818a42e68e07fa7128d40f68",
       "changed_regions": [],
       "compatibility": "passed",
       "elapsed_s": 0.0,
@@ -181,56 +181,48 @@
       "name": "Route B - Recovered C reintegration",
       "obligations": [
         {
-          "detail": "runtime manifest passed; 1/1; input_mode=none, invalid not applicable",
-          "evidence_artifact_id": "8e0f593810ea41e6a3454fcdfb8b0041",
+          "detail": "V3 behaviour: passed",
+          "evidence_artifact_id": "2118ae3e9419455784876c90f4c42a2d",
           "kind": "behaviour",
           "required": true,
           "result": "passed",
           "scope": "replay"
         },
         {
-          "detail": "original c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9 matches the job record",
-          "evidence_artifact_id": "fc4632abc57d453e849874200d21c868",
+          "detail": "V0 identity: passed",
+          "evidence_artifact_id": "0e041c0b8cc7446382480e6baea580ad",
           "kind": "identity",
           "required": true,
           "result": "passed",
           "scope": "metadata"
         },
         {
-          "detail": "5/5 static interface checks",
-          "evidence_artifact_id": "4c246e2df1374f97aff27e7295f0cdd0",
+          "detail": "5/5 static interface checks passed",
+          "evidence_artifact_id": "9133b41536e847e9b8179c2011491c73",
           "kind": "interface",
           "required": true,
           "result": "passed",
           "scope": "binary"
         },
         {
-          "detail": "runtime manifest passed; 1/1; input_mode=none, invalid not applicable",
-          "evidence_artifact_id": "8e0f593810ea41e6a3454fcdfb8b0041",
-          "kind": "repaired_behaviour",
-          "required": false,
-          "result": "passed",
-          "scope": "replay"
-        },
-        {
-          "detail": "build-twice measured, byte-identical",
-          "evidence_artifact_id": "6e7b6fea0b5546f9b05abf42b342fb0f",
+          "detail": "V5 reproducibility: passed",
+          "evidence_artifact_id": "7082c90f40244193bd899674180b5863",
           "kind": "reproducibility",
           "required": true,
           "result": "passed",
           "scope": "replay"
         },
         {
-          "detail": "routeb static audit",
-          "evidence_artifact_id": "695adfbeed854347aeac67d3c537c685",
+          "detail": "V1 structure: passed",
+          "evidence_artifact_id": "ca1118b551ec4ae6adfaf7af4a28b9fd",
           "kind": "structure",
           "required": true,
           "result": "passed",
           "scope": "binary"
         },
         {
-          "detail": "V4 independently verified by M4",
-          "evidence_artifact_id": "4917a8ac3b3b47dda991bb9ecdd1430a",
+          "detail": "V4 symbolic: passed",
+          "evidence_artifact_id": "0358d1597e7e459d9767ddb23cb5f8f9",
           "kind": "symbolic",
           "required": true,
           "result": "passed",
@@ -280,15 +272,15 @@
     }
   },
   "run": {
-    "id": "3c30b19801aa47eabfb728953c1e2562",
+    "id": "1eea36ee14914a57a90ff9cc5794a75f",
     "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "phase": "finished",
     "reviewed_scope_sha256": "c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c"
   },
   "valid_tests": [],
   "verdict": {
-    "detail": "route_a: V0 identity: not_run",
-    "failing_obligation": "identity",
+    "detail": "route_a: V4 symbolic: not_run",
+    "failing_obligation": "symbolic",
     "outcome": "inconclusive",
     "reason": "required_check_not_run"
   }
