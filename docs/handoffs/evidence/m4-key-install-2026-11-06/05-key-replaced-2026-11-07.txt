@@ -1,0 +1,76 @@
+# the key was replaced, not added to — 2026-11-07T02:14:02Z
+
+# M4 reported that the installed public key (bRq28b6J…) and the private half it
+# holds (FZfxZXkW…) are not a pair, and supplied the correct public half. This
+# window retired the old line and installed the new one, so the file holds two
+# keys rather than three.
+
+## 1. the supplied key, checked before anything was touched
+
+$ printf '%s\n' 'ssh-ed25519 AAAA…AGx m4-guest-replay-2026-11-06' > m4pub-new.pub
+$ wc -c -l m4pub-new.pub
+  108 bytes, 1 line
+$ ssh-keygen -lf m4pub-new.pub
+  256 SHA256:FZfxZXkWYLEVY+b9/cPRN+VhUf7tVXL4Xd9wKspYDQQ m4-guest-replay-2026-11-06 (ED25519)
+  expected  SHA256:FZfxZXkWYLEVY+b9/cPRN+VhUf7tVXL4Xd9wKspYDQQ
+
+## 2. what was there before
+
+$ sudo ssh-keygen -lf ~m4verify/.ssh/authorized_keys
+  256 SHA256:JF1hZZdGsxmEUt0REdbg4X76LCbaA/1q+0IYObh3zgI m5-v4-access-2026-11-06 (ED25519)
+  256 SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q m4-guest-replay-2026-11-06 (ED25519)
+
+## 3. retire, then install — the run at 10:13, quoted as it happened
+
+# The delivery script only appends; appending would have left three lines, two of
+# them claiming to be M4. So the old line was removed first, with a backup beside
+# the file, and the script then appended the new key.
+#
+# These outputs are from that run. The commands are not reproduced here because
+# re-running the retire step now would find nothing to remove and print a
+# different number — which would look like a contradiction and would not be one.
+
+$ sudo cp -p authorized_keys authorized_keys.retired-bRq28b6J-2026-11-07
+$ sudo grep -v <the bRq28b6J base64 line> authorized_keys > /tmp/ak.keep
+  lines kept: 1                       # M5 survived, M4's old line did not
+$ sudo sh -c 'cat /tmp/ak.keep > authorized_keys'
+  after retire:
+  256 SHA256:JF1hZZdGsxmEUt0REdbg4X76LCbaA/1q+0IYObh3zgI m5-v4-access-2026-11-06 (ED25519)
+
+$ sudo sh guest/add-m4-key.sh /tmp/m4pub-new.pub
+  added: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5…
+  fingerprint: SHA256:FZfxZXkWYLEVY+b9/cPRN+VhUf7tVXL4Xd9wKspYDQQ
+  authorized_keys now holds 2 key(s)
+
+# The file was emptied and rewritten with `cat >` rather than replaced with `mv`,
+# so its inode, owner and mode survived the edit; section 4 confirms all three.
+
+## 4. final state
+
+  lines           : 2
+  ssh- lines      : 2
+  mode / owner    : 600 m4verify:m4verify /home/m4verify/.ssh/authorized_keys
+  directory       : 700 m4verify:m4verify /home/m4verify/.ssh
+  fingerprints    :
+    256 SHA256:JF1hZZdGsxmEUt0REdbg4X76LCbaA/1q+0IYObh3zgI m5-v4-access-2026-11-06 (ED25519)
+    256 SHA256:FZfxZXkWYLEVY+b9/cPRN+VhUf7tVXL4Xd9wKspYDQQ m4-guest-replay-2026-11-06 (ED25519)
+  retired line    : absent from authorized_keys
+  backup kept     : -rw------- 1 m4verify m4verify 213 Nov  7 10:13 /home/m4verify/.ssh/authorized_keys.retired-bRq28b6J-2026-11-07
+
+## 5. idempotence, and the private-key guard
+
+  already present: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5…
+  
+  fingerprint: SHA256:FZfxZXkWYLEVY+b9/cPRN+VhUf7tVXL4Xd9wKspYDQQ
+  authorized_keys now holds 2 key(s)
+  keys after re-install: 2
+  a private key is still refused:
+    usage: sudo sh /opt/binrepair-handoff/T8.3-evidence-2026-11-06/guest/add-m4-key.sh /path/to/m4_public_key.pub
+
+## 6. what this does and does not establish
+
+  does    : the file holds exactly two keys, M5 and the new M4 key, both
+            fingerprints matching what each party states; the retired line is
+            gone rather than left beside the live one; permissions unchanged.
+  does not: that M4 can log in. That needs a signature from the private half,
+            which is not on this host and never will be. M4 has to try.
