@@ -892,7 +892,19 @@ async def create_job(
             detail="Uploaded file is not an ELF binary (missing \\x7fELF magic).",
         )
 
-    filename = _ascii_filename(binary.filename or "sample.bin")
+    raw_filename = binary.filename or "sample.bin"
+    parts = re.split(r"[\\/]+", raw_filename)
+    if (
+        raw_filename.startswith(("/", "\\"))
+        or ".." in parts
+        or (parts and parts[0] in {"", "."})
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Uploaded filename must be a plain basename without path traversal.",
+        )
+
+    filename = _ascii_filename(raw_filename)
     record = jobs.create_job(
         original_bytes=payload,
         filename=filename,

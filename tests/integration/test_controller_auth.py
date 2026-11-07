@@ -108,3 +108,13 @@ def test_non_elf_upload_is_rejected(client: TestClient) -> None:
     )
     assert response.status_code == 400
     assert "ELF" in response.json()["detail"]
+
+
+def test_path_traversal_filename_is_rejected(client: TestClient) -> None:
+    response = client.post(
+        "/api/jobs",
+        data=FORM,
+        files={"binary": ("../../evil.elf", b"\x7fELF traversal", "application/octet-stream")},
+    )
+    assert response.status_code == 400
+    assert "path traversal" in response.json()["detail"]
