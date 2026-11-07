@@ -1,0 +1,26 @@
+# M4 M2 bundle missing — evidence — 2026-11-07
+
+$ date '+%Y-%m-%dT%H:%M:%S%z'
+2026-11-07T10:28:39+0800
+
+$ find /Users/huageorge/Desktop -maxdepth 7 -name 'm2-06eb7ee.bundle' 2>/dev/null | head
+
+$ find /Users/huageorge/Desktop -maxdepth 6 -name '*.bundle' 2>/dev/null | head
+/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/upload/route-b.bundle
+
+$ mdfind -name 'm2-06eb7ee.bundle' 2>/dev/null | head
+
+$ cd _m1-work/live-bridge && for c in 06eb7ee 2963163 d3993555c303; do printf '%s: ' "$c"; git cat-file -t "$c" 2>&1 | head -1; done
+06eb7ee: fatal: Not a valid object name 06eb7ee
+2963163: fatal: Not a valid object name 2963163
+d3993555c303: fatal: Not a valid object name d3993555c303
+
+$ cd _m1-work/live-bridge && GIT_SSH_COMMAND='ssh -o BatchMode=yes -o ConnectTimeout=10' git ls-remote origin 2>/dev/null | grep -E '06eb7ee|2963163|d3993555' || echo '(no remote ref)'
+(no remote ref)
+
+$ grep -n 'outputs/m2-06eb7ee.bundle\|6AEF3C73' 96-m2-tool-contract-review-2026-11-07.md
+88:- 审查时 `06eb7ee` 已打包为 `outputs/m2-06eb7ee.bundle`（SHA256 `6AEF3C73…6CC6`）；`git push` 被远端拒绝（`Could not read from remote repository`），需人工转交或提供凭据。
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

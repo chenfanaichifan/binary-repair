@@ -1,0 +1,30 @@
+# 2026-11-07 delivery upload
+
+Source: operator workspace root, no private keys.
+
+- `M3-152-t62-executor-conformance-2026-11-07.zip`
+- `M3-152-t62-executor-conformance-2026-11-07.zip.sha256`
+- `M3-P1-real-guest-window-2026-11-07.zip`
+- `M3-P1-real-guest-window-2026-11-07.zip.sha256`
+- `M4-1b-attempts-404-2026-11-07.md`
+- `M4-1b-attempts-404-2026-11-07.zip`
+- `M4-1b-attempts-404-evidence-2026-11-07.txt`
+- `M4-guest-key-mismatch-2026-11-07.md`
+- `M4-guest-key-mismatch-2026-11-07.zip`
+- `M4-guest-key-mismatch-evidence-2026-11-07.txt`
+- `M4-m1-p2-v2-p1-2026-11-07.md`
+- `M4-m1-p2-v2-p1-2026-11-07.zip`
+- `M4-m1-p2-v2-p1-evidence-2026-11-07.txt`
+- `M4-m2-bundle-missing-2026-11-07.md`
+- `M4-m2-bundle-missing-2026-11-07.zip`
+- `M4-m2-bundle-missing-evidence-2026-11-07.txt`
+- `M4-m2-bundle-recheck-2026-11-07.md`
+- `M4-m2-bundle-recheck-2026-11-07.zip`
+- `M4-m2-bundle-recheck-evidence-2026-11-07.txt`
+- `M4-p1-rehash-2026-11-07.md`
+- `M4-p1-rehash-2026-11-07.zip`
+- `M4-p1-rehash-evidence-2026-11-07.txt`
+- `V5-replay-2026-11-07-v3.zip`
+- `m2-to-m5-2026-11-07.zip`
+- `m4-v4-2026-11-07.zip`
+- `routea-cwe416-noinput-kit-2026-11-07.zip`

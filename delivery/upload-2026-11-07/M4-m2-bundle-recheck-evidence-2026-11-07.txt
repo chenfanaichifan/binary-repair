@@ -1,0 +1,24 @@
+# M4 M2 bundle recheck — 2026-11-07
+
+$ date '+%Y-%m-%dT%H:%M:%S%z'
+2026-11-07T10:33:52+0800
+
+$ find /Users/huageorge/Desktop /Users/huageorge/Downloads /tmp /Volumes /Users/Shared -maxdepth 6 -name 'm2-06eb7ee.bundle' 2>/dev/null | head
+
+$ mdfind -name 'm2-06eb7ee.bundle' 2>/dev/null | head
+
+$ cd _m1-work/live-bridge && for c in 06eb7ee 2963163 d3993555c303; do printf '%s: ' "$c"; git cat-file -t "$c" 2>&1 | head -1; done
+06eb7ee: fatal: Not a valid object name 06eb7ee
+2963163: fatal: Not a valid object name 2963163
+d3993555c303: fatal: Not a valid object name d3993555c303
+
+$ nc -z -G 3 10.11.0.132 2222; echo nc=$?
+Connection to 10.11.0.132 port 2222 [tcp/rockwell-csp2] succeeded!
+nc=0
+
+$ ssh -p 2222 -i _m4-verify/keys/m4_guest_ed25519 -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 m4verify@10.11.0.132 'echo LOGIN_OK' 2>&1 | tail -1
+m4verify@10.11.0.132: Permission denied (publickey).
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

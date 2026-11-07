@@ -1,0 +1,50 @@
+# M4 1-B attempts fields / empty / 404 — evidence — 2026-11-07
+
+$ date '+%Y-%m-%dT%H:%M:%S%z'
+2026-11-07T12:31:01+0800
+
+$ cd _m1-work/verify-delivery && PYTHONPATH=. ../../role5-kit/.venv/bin/python ../../_m4-verify/probe_attempts_1b.py 2>/dev/null
+empty job status: 200
+empty job body: {'attempts': []}
+missing job status: 404
+missing job body: {'detail': 'Job not found.'}
+attempt count: 2
+row keys: ['attempt_no', 'candidate_sha256', 'finished_at', 'id', 'outcome', 'reason', 'route', 'run_id', 'started_at', 'status']
+attempt_no/status/route: 1 queued route_a
+row keys: ['attempt_no', 'candidate_sha256', 'finished_at', 'id', 'outcome', 'reason', 'route', 'run_id', 'started_at', 'status']
+attempt_no/status/route: 1 queued route_b
+all have attempt_no: True
+all have status: True
+all have reason: True
+snapshot routes A/B attempt_id: 2c03fe63c0a043d19dd00da124d6d34b cc7daea084624624b50e1b76400fd522
+snapshot attempt_id matches rows: True True
+empty snapshot attempt_id A/B: None None
+
+$ sed -n '10,27p' _m3-run/docs/handoffs/97-m1-review-closeout-2026-11-05.md
+was already true, what was wrong in the repo, and what was genuinely missing.
+
+## Item 1 - attempt list endpoint (was missing)
+
+```
+GET /api/jobs/{job_id}/attempts
+{"attempts": [{"id", "run_id", "route", "attempt_no", "status", "outcome",
+               "reason", "candidate_sha256", "started_at", "finished_at"}]}
+```
+
+Field mapping is explicit because the table names differ from the client
+contract: `attempt_no` is `attempts.sequence`, `status` is `attempts.phase`, and
+`reason` is the renamed `reason_code` from migration 003. Ordering is by run
+start then attempt sequence, so retry history reads oldest first.
+
+`GET /api/jobs/{id}` now carries `routes.A.attempt_id` / `routes.B.attempt_id`.
+Without it the GUI could show obligations but not open their evidence.
+
+
+$ grep -n '118 = VERIFIED' M4-120-cwe416-v3-contract-2026-11-05.md
+97:`118 = VERIFIED (rebuild evidence package)` remains an independent record. It does
+
+$ grep -rn 'Review 9' --include=*.md . 2>/dev/null | grep -v '^./rea/' | head -5 || echo '(no Review 9 original text)'
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+
