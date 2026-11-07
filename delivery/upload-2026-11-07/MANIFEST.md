@@ -32,4 +32,6 @@ Source: operator workspace root, no private keys.
 - `V5-replay-2026-11-07-v3.zip`
 - `m2-to-m5-2026-11-07.zip`
 - `m4-v4-2026-11-07.zip`
+- `p1-routea-v4-input-2026-11-07.zip`
+- `p1-routea-v4-input-2026-11-07.zip.sha256`
 - `routea-cwe416-noinput-kit-2026-11-07.zip`
