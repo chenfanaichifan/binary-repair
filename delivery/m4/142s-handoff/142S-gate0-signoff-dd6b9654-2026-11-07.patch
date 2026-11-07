@@ -1,0 +1,157 @@
+diff --git a/docs/handoffs/159-lead-gate0-signoff-2026-11-07.md b/docs/handoffs/159-lead-gate0-signoff-2026-11-07.md
+new file mode 100644
+index 0000000..d4610f9
+--- /dev/null
++++ b/docs/handoffs/159-lead-gate0-signoff-2026-11-07.md
+@@ -0,0 +1,43 @@
++# 159 — Lead Gate 0 sign-off
++
++Date: 2026-11-07  
++Role: Lead (operator role; same person as M4)  
++Status: Gate 0 signed
++
++## Decision
++
++```text
++D1–D6: all agreed; no amendments
++Printed name: Lead (operator role)
++Date: 2026-11-07
++Statement: Gate 0 通过
++```
++
++This records the Lead decision requested after records 142/149. It does not create
++a tag and does not merge main.
++
++## Basis
++
++```text
++M4 technical acceptance: PASS
++D1–D6 all ticked in record 142 (M4 report)
++M1 final head: dd6b9654366ff288fe73b2b59f28429c4015cc95 (M4 report)
++T8.3: COMPLETE (record 150)
++124: success_within_scope, model scope (record 154)
++```
++
++## Limitations
++
++```text
++M4 = Lead: role-separated, not independent two-person sign-off.
++Gate 0 sign-off is not a tag approval.
++No live-success claim.
++```
++
++## Boundary
++
++```text
++No tag.
++No merge to main.
++No change to 118 or record 91.
++```
+diff --git a/docs/handoffs/159-lead-gate0-signoff-status-2026-11-07.json b/docs/handoffs/159-lead-gate0-signoff-status-2026-11-07.json
+new file mode 100644
+index 0000000..ff457bc
+--- /dev/null
++++ b/docs/handoffs/159-lead-gate0-signoff-status-2026-11-07.json
+@@ -0,0 +1,15 @@
++{
++  "gate0": {
++    "state": "signed",
++    "date": "2026-11-07",
++    "printed_name": "Lead (operator role)",
++    "exact_sentence": "Gate 0 通过",
++    "d1_d6": "all agreed; no amendments",
++    "tag": false,
++    "merge_main": false,
++    "same_operator": true
++  },
++  "t8_3": "COMPLETE",
++  "124": "success_within_scope (model scope)",
++  "final_code_head": "dd6b9654366ff288fe73b2b59f28429c4015cc95"
++}
+diff --git a/docs/handoffs/160-m1-freeze-dd6b965-2026-11-07.md b/docs/handoffs/160-m1-freeze-dd6b965-2026-11-07.md
+new file mode 100644
+index 0000000..f866434
+--- /dev/null
++++ b/docs/handoffs/160-m1-freeze-dd6b965-2026-11-07.md
+@@ -0,0 +1,27 @@
++# 160 — M1 freeze of dd6b965
++
++Date: 2026-11-07  
++Owner: M1 (host backend)  
++Status: frozen for Gate 0
++
++## Frozen head
++
++```text
++dd6b9654366ff288fe73b2b59f28429c4015cc95
++```
++
++This is the final code head reported by M4 in record 157. It is not moved by
++this document commit; the delivery branch may contain docs-only commits after
++the code freeze.
++
++## Rules
++
++```text
++No new code commit on dd6b965.
++No silent cherry-pick.
++No merge to main.
++No tag until Lead explicitly instructs.
++```
++
++If a code change is required, it needs a new head and a new acceptance record;
++`dd6b965` must not be rewritten in place.
+diff --git a/outputs/142S-gate0-signoff-dd6b9654-2026-11-07.md b/outputs/142S-gate0-signoff-dd6b9654-2026-11-07.md
+new file mode 100644
+index 0000000..49ecb29
+--- /dev/null
++++ b/outputs/142S-gate0-signoff-dd6b9654-2026-11-07.md
+@@ -0,0 +1,48 @@
++# 142S — Gate 0 sign-off
++
++- Date: 2026-11-07
++- Final code head: `dd6b9654366ff288fe73b2b59f28429c4015cc95`
++- Source: M4 record/acceptance for `dd6b965`; this checkout records the decision,
++  not a new code move.
++
++## D1–D6
++
++```text
++D1: agreed
++D2: agreed
++D3: agreed
++D4: agreed
++D5: agreed
++D6: agreed
++```
++
++No amendment is proposed.
++
++## Lead signature
++
++```text
++Printed name: Lead (operator role; same person as M4)
++Date: 2026-11-07
++Statement: Gate 0 通过
++```
++
++## Tag decision
++
++```text
++No tag at this time.
++Reason: Gate 0 is signed, but no explicit tag instruction has been given.
++```
++
++## Limitations
++
++```text
++M4 = Lead: role-separated, not independent two-person sign-off.
++Gate 0 is not a live-success claim.
++T8.3 is already closed separately (record 150).
++No merge to main.
++```
++
++## M4 review
++
++M4's technical acceptance is recorded in its own acceptance/record set. This
++page does not add a second M4 signature and does not replace M4's acceptance.
