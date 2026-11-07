@@ -11,6 +11,11 @@ P2: ACCEPTANCE PASSED
 Canonical evidence: `delivery/INDEX.md`.
 Current records: `docs/INDEX.md`.
 
+```text
+Repository: https://github.com/chenfanaichifan/binary-repair
+Branch:     delivery/all-hands-2026-11-07
+```
+
 # BinaryRepair
 
 **AI-assisted binary vulnerability repair with deterministic acceptance.**
