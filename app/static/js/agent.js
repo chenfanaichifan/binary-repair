@@ -315,6 +315,36 @@
 
   var evidenceCache = {};
   var attemptsCache = { jobId: "", available: null, items: [] };
+  var comparisonCache = null; // { status, detail, artifacts }
+
+  // 179 契约：GET /api/jobs/{id}/comparison
+  // not_provided / 端点不可用一律按不可用显示，绝不显示通过，也不猜字段名。
+  function fetchComparison(jobId) {
+    if (!jobId) { comparisonCache = null; return Promise.resolve(null); }
+    return fetch("/api/jobs/" + encodeURIComponent(jobId) + "/comparison", {
+      headers: { Accept: "application/json" }
+    }).then(function (response) {
+      if (!response.ok) {
+        comparisonCache = { status: "unavailable", detail: "HTTP " + response.status, artifacts: [] };
+        return comparisonCache;
+      }
+      return response.json();
+    }).then(function (payload) {
+      if (!payload || typeof payload.status !== "string") {
+        comparisonCache = { status: "unavailable", detail: "payload 不可解析", artifacts: [] };
+        return comparisonCache;
+      }
+      comparisonCache = {
+        status: payload.status,
+        detail: payload.detail || "",
+        artifacts: Array.isArray(payload.artifacts) ? payload.artifacts : []
+      };
+      return comparisonCache;
+    }).catch(function () {
+      comparisonCache = { status: "unavailable", detail: "请求失败", artifacts: [] };
+      return comparisonCache;
+    });
+  }
 
   function fetchAttemptEvidence(attemptId) {
     if (evidenceCache[attemptId]) return Promise.resolve(evidenceCache[attemptId]);
@@ -1072,6 +1102,24 @@
     box.appendChild(wrap);
   }
 
+  function appendComparisonBox(box) {
+    // 只看 status；comparison 的内容不做字段级解析，未提供就是未提供。
+    if (!comparisonCache) return;
+    var wrap = el("div", "agent-card");
+    wrap.dataset.testid = "agent-comparison";
+    wrap.appendChild(el("p", "agent-card-title", "行为对比"));
+    var text;
+    if (comparisonCache.status === "available") {
+      text = "已提供（" + comparisonCache.artifacts.length + " 个 artifact）";
+    } else if (comparisonCache.status === "not_provided") {
+      text = "未提供（not_provided）";
+    } else {
+      text = "不可用（" + (comparisonCache.detail || "unknown") + "）";
+    }
+    wrap.appendChild(el("p", null, "comparison：" + text));
+    box.appendChild(wrap);
+  }
+
   function renderDiagnostics(view) {
     // 结论只读 verdict，绝不由前端推断。
     var verdictText = "结论：—";
@@ -1118,6 +1166,7 @@
     clear(box);
     if (view.receiptPending) return; // 未回传：只显示占位，不渲染 not_run
     appendScopeBox(box, view);
+    appendComparisonBox(box);
 
     view.routeKeys.forEach(function (key) {
       var route = view.routes[key];
@@ -1259,7 +1308,7 @@
   function tick() {
     if (!state.jobId) return;
     if (FIXTURE_MODE) return;
-    Promise.all([fetchLiveSnapshot(), fetchAttempts(state.jobId)]).then(function (results) {
+    Promise.all([fetchLiveSnapshot(), fetchAttempts(state.jobId), fetchComparison(state.jobId)]).then(function (results) {
       var data = results[0];
       state.snapshot = data;
       setText("agent-poll", "轮询中 · " + new Date().toLocaleTimeString());

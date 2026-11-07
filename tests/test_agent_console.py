@@ -125,6 +125,15 @@ def test_scope_and_bounded_never_turn_missing_into_pass():
 def test_snapshot_id_is_accepted_as_job_id():
     # P1 snapshot uses "id"; the console must not show an empty job chip for it.
     assert 'jobId: data.job_id || data.id || state.jobId || ""' in AGENT_JS
+
+
+def test_comparison_is_only_shown_when_the_api_says_available():
+    # 179 contract: status is the only source of truth; not_provided is never a pass.
+    assert 'comparisonCache.status === "available"' in AGENT_JS
+    assert 'text = "未提供（not_provided）"' in AGENT_JS
+    assert 'text = "不可用（"' in AGENT_JS
+    assert '"comparison：" + text' in AGENT_JS
+    assert "comparison：通过" not in AGENT_JS
     assert '"超出边界"' in AGENT_JS
 
 
@@ -156,9 +165,10 @@ def test_no_model_calls_or_new_transport():
         assert banned not in AGENT_JS, banned
     # Read paths: the snapshot, the attempts timeline, the job-less plan
     # route, and per-attempt evidence (all same-origin GETs).
-    assert AGENT_JS.count("fetch(") == 4
+    assert AGENT_JS.count("fetch(") == 5
     assert 'fetch("/api/jobs/" + encodeURIComponent(state.jobId)' in AGENT_JS
     assert 'fetch("/api/jobs/" + encodeURIComponent(jobId) + "/attempts"' in AGENT_JS
+    assert 'fetch("/api/jobs/" + encodeURIComponent(jobId) + "/comparison"' in AGENT_JS
     assert 'fetch("/api/assistant/plan"' in AGENT_JS
     assert 'fetch("/api/attempts/" + encodeURIComponent(attemptId) + "/evidence"' in AGENT_JS
     # Write path: the existing create-job form endpoint only, with CSRF.
