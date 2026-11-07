@@ -80,6 +80,8 @@ CWE416 logs/plans/contracts: DONE
 
 ```text
 T8.3: COMPLETE (record 170)
+P1: success_within_scope (record 173)
+P2: ACCEPTANCE PASSED
 V4: passed marker retained; 124 not promoted (V2 not_run)
 124: all six gates passed in writer tests (test_attempt_writer_gates.py); M4 revalidation pending
 118: VERIFIED (independent)
