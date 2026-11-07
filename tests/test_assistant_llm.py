@@ -600,6 +600,28 @@ def test_ensure_env_loaded_reads_a_dotenv_once(monkeypatch, tmp_path):
         monkeypatch.delenv("BINARYREPAIR_ASSISTANT_MODEL", raising=False)
 
 
+def test_unknown_tool_field_falls_back_and_never_echoes_the_model_text():
+    # Plans are display-only; a model that tries to smuggle a tool call into a
+    # step must hit the schema fallback, and the offending text must not be
+    # echoed back (include_input=False).
+    payload = _payload()
+    payload["steps"][0]["tool"] = "run_case"
+    plan = generate_plan("fix it", client=FakeTransport(json.dumps(payload)))
+    assert plan.fallback is True
+    assert plan.fallback_reason == FallbackReason.SCHEMA
+    assert "run_case" not in plan.model_dump_json()
+
+
+def test_provider_key_never_reaches_the_prompt_or_the_client_repr(monkeypatch):
+    key = "sk-SENTINEL-DO-NOT-LEAK"
+    monkeypatch.setenv(assistant_llm.PROVIDER_KEY_ENV, key)
+    messages = build_messages("fix it", context={"gates": [], "v3": None})
+    assert key not in json.dumps(messages)
+    client = assistant_llm.client_from_env()
+    assert client is not None
+    assert key not in repr(client)
+
+
 def test_http_client_sends_the_openai_shape():
     import httpx
 
