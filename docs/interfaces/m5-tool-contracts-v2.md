@@ -4,6 +4,20 @@ Status: Gate 2a document revision. This supersedes `m5-tool-contracts-v1.md`.
 It does not claim the adapters exist. Gate 2b (adapter implementation + sample
 mapping test) remains open.
 
+## 0. Acceptance of M2 review 96
+
+M5 accepts all three P0 findings:
+
+1. `run_case` must dispatch by `input_mode`: `none` -> `run_manifest_compare.py`,
+   `argv` -> `run_manifest_repaired.py`; no-input must not require
+   `tests/invalid.json`.
+2. `run_case` must not expose fake `argv`, `stdin_literal` or `stdin_artifact`
+   parameters; v2 rejects them with `invalid_request`.
+3. `apply_candidate` is renamed `ingest_bundle`, because creating a run/attempt
+   and assembling a bundle is a separate layer that does not exist yet.
+4. `read_evidence` must expose `input_mode`; `invalid_applicable` is legacy only.
+5. `read_evidence` must not claim a `sha256` the endpoint does not return.
+
 ## 1. Accepted findings
 
 M2 review 96 is correct on all three tools:
