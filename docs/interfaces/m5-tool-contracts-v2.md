@@ -61,7 +61,8 @@ Dispatch:
 
 | input_mode | existing runner |
 |---|---|
-| `none` | `routeb/run_manifest_compare.py` (no `invalid.json` required) |
+| `none` + `original_path` | `routeb/run_manifest_compare.py` (byte comparison) |
+| `none` without `original_path` | `routeb/run_manifest_repaired.py` (native no-input path) |
 | `argv` | `routeb/run_manifest_repaired.py` (`valid.json` + `invalid.json`) |
 | `stdin` | `invalid_request` in v2 |
 
@@ -251,3 +252,18 @@ No Gate 2 freeze until 2b.
 No T8.3 gate change.
 No verified_by.
 ```
+
+
+## 7. Gate 2b implementation note
+
+`tools/mcp_tool_adapters.py` now implements the first two adapters:
+
+```text
+run_case       none/argv dispatch, no fake stdin/argv parameters
+read_evidence  input_mode, status mapping, no invented sha256
+apply_candidate dry_run + candidate hash assertion
+```
+
+`apply_candidate` still returns `pre_layer_required` when `run_id`/`attempt_id`
+are missing; creating them is the remaining Gate 2b work. The adapter is not a
+claim that Gate 2b is accepted.
