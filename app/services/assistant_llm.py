@@ -28,6 +28,7 @@ import os
 import time
 import uuid
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 import httpx
@@ -41,6 +42,8 @@ __all__ = [
     "DEFAULT_PROVIDER_BASE",
     "FallbackReason",
     "HttpJsonClient",
+    "load_env_file",
+    "ensure_env_loaded",
     "PROVIDER_BASE_ENV",
     "PROVIDER_KEY_ENV",
     "PROVIDER_TIMEOUT_ENV",
@@ -449,20 +452,101 @@ class HttpJsonClient:
         )
 
 
+#: Documented aliases.  ``.env.example`` shipped these names for a while and
+#: the code never read them, so a filled-in ``.env`` silently produced the
+#: deterministic fallback.  Keep them accepted, but let the ``BINARYREPAIR_*``
+#: names win when both are set.
+COMPAT_KEY_ENVS = ("DEEPSEEK_API_KEY",)
+COMPAT_BASE_ENVS = ("DEEPSEEK_BASE_URL",)
+COMPAT_MODEL_ENVS = ("DEEPSEEK_MODEL",)
+COMPAT_TIMEOUT_ENVS = ("DEEPSEEK_TIMEOUT_S",)
+
+_ENV_FILE_LOADED = False
+
+
+def _first_env(env: Mapping[str, str], names: Sequence[str]) -> str:
+    for name in names:
+        value = (env.get(name) or "").strip()
+        if value:
+            return value
+    return ""
+
+
+def load_env_file(
+    path: str | Path | None = None,
+    environ: Mapping[str, str] | None = None,
+) -> dict[str, str]:
+    """Load ``.env`` into the environment without overwriting anything set.
+
+    Deliberately dependency-free: ``KEY=VALUE`` lines, ``export`` prefixes,
+    ``#`` comments, blank lines, and matching single/double quotes.  A missing
+    file is normal (the app then simply has no provider key) and returns ``{}``.
+    """
+
+    target = (
+        Path(path)
+        if path is not None
+        else Path(__file__).resolve().parents[2] / ".env"
+    )
+    env = os.environ if environ is None else environ
+    loaded: dict[str, str] = {}
+    try:
+        text = target.read_text(encoding="utf-8")
+    except (FileNotFoundError, NotADirectoryError, OSError):
+        return loaded
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export ") :].lstrip()
+        if "=" not in line:
+            continue
+        name, value = line.split("=", 1)
+        name = name.strip()
+        value = value.strip()
+        if not name or not (name[0].isalpha() or name[0] == "_"):
+            continue
+        if not all(char.isalnum() or char == "_" for char in name):
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        if (env.get(name) or "").strip():
+            continue
+        env[name] = value  # type: ignore[index]
+        loaded[name] = value
+    return loaded
+
+
+def ensure_env_loaded(path: str | Path | None = None) -> dict[str, str]:
+    """Load the repository ``.env`` once per process; later calls are no-ops."""
+
+    global _ENV_FILE_LOADED
+    if _ENV_FILE_LOADED:
+        return {}
+    _ENV_FILE_LOADED = True
+    return load_env_file(path)
+
+
 def client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient | None:
     """Build a provider client from the environment, or ``None``.
 
     ``None`` is a real answer: the caller must record a fallback, never a
     fabricated plan and never a zero token count.
     """
+    if environ is None:
+        ensure_env_loaded()
     env = os.environ if environ is None else environ
-    key = (env.get(PROVIDER_KEY_ENV) or "").strip()
+    key = _first_env(env, (PROVIDER_KEY_ENV, *COMPAT_KEY_ENVS))
     if not key:
         return None
-    base = (env.get(PROVIDER_BASE_ENV) or "").strip().rstrip("/") or DEFAULT_PROVIDER_BASE
-    model = (env.get(ASSISTANT_MODEL_ENV) or "").strip() or DEFAULT_MODEL
+    base = _first_env(
+        env, (PROVIDER_BASE_ENV, *COMPAT_BASE_ENVS)
+    ).rstrip("/") or DEFAULT_PROVIDER_BASE
+    model = _first_env(env, (ASSISTANT_MODEL_ENV, *COMPAT_MODEL_ENVS)) or DEFAULT_MODEL
+    raw_timeout = _first_env(env, (PROVIDER_TIMEOUT_ENV, *COMPAT_TIMEOUT_ENVS))
     try:
-        timeout = float(env.get(PROVIDER_TIMEOUT_ENV) or DEFAULT_TIMEOUT)
+        timeout = float(raw_timeout) if raw_timeout else DEFAULT_TIMEOUT
     except (TypeError, ValueError):
         timeout = DEFAULT_TIMEOUT
     if timeout <= 0:

@@ -9,6 +9,7 @@ Owner: M2.  The seam under test is ``app/services/assistant.py``:
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -534,6 +535,69 @@ def test_client_from_env_reads_base_model_and_timeout():
     assert client is not None
     assert client.base_url == "https://example.test/v1"
     assert client.model == "model-x"
+
+
+def test_client_from_env_accepts_the_documented_deepseek_aliases():
+    client = assistant_llm.client_from_env({
+        "DEEPSEEK_API_KEY": "sk-legacy",
+        "DEEPSEEK_BASE_URL": "https://api.deepseek.com/v1/",
+        "DEEPSEEK_MODEL": "deepseek-chat",
+        "DEEPSEEK_TIMEOUT_S": "12",
+    })
+    assert client is not None
+    assert client.base_url == "https://api.deepseek.com/v1"
+    assert client.model == "deepseek-chat"
+    assert client._timeout == 12.0
+
+
+def test_canonical_names_win_over_the_documented_aliases():
+    client = assistant_llm.client_from_env({
+        assistant_llm.PROVIDER_KEY_ENV: "sk-canonical",
+        "DEEPSEEK_API_KEY": "sk-legacy",
+        assistant_llm.ASSISTANT_MODEL_ENV: "canonical-model",
+        "DEEPSEEK_MODEL": "legacy-model",
+    })
+    assert client is not None
+    assert client.model == "canonical-model"
+
+
+def test_load_env_file_fills_missing_names_and_keeps_existing(tmp_path):
+    env_path = tmp_path / ".env"
+    env_path.write_text(
+        "# comment\n"
+        "export BINARYREPAIR_ASSISTANT_PROVIDER_KEY=sk-from-file\n"
+        "DEEPSEEK_MODEL='deepseek-chat'\n"
+        "ALREADY_SET=file-value\n"
+        "  \n"
+        "not a pair\n",
+        encoding="utf-8",
+    )
+    env = {"ALREADY_SET": "keep-me"}
+    loaded = assistant_llm.load_env_file(env_path, environ=env)
+    assert loaded == {
+        "BINARYREPAIR_ASSISTANT_PROVIDER_KEY": "sk-from-file",
+        "DEEPSEEK_MODEL": "deepseek-chat",
+    }
+    assert env["ALREADY_SET"] == "keep-me"
+
+
+def test_load_env_file_missing_is_empty(tmp_path):
+    assert assistant_llm.load_env_file(tmp_path / "nope.env", environ={}) == {}
+
+
+def test_ensure_env_loaded_reads_a_dotenv_once(monkeypatch, tmp_path):
+    env_path = tmp_path / ".env"
+    env_path.write_text(
+        "BINARYREPAIR_ASSISTANT_MODEL=from-dotenv\n", encoding="utf-8")
+    monkeypatch.setattr(assistant_llm, "_ENV_FILE_LOADED", False)
+    monkeypatch.delenv("BINARYREPAIR_ASSISTANT_MODEL", raising=False)
+    try:
+        loaded = assistant_llm.ensure_env_loaded(env_path)
+        assert loaded["BINARYREPAIR_ASSISTANT_MODEL"] == "from-dotenv"
+        assert os.environ["BINARYREPAIR_ASSISTANT_MODEL"] == "from-dotenv"
+        assert assistant_llm.ensure_env_loaded(env_path) == {}
+    finally:
+        monkeypatch.delenv("BINARYREPAIR_ASSISTANT_MODEL", raising=False)
 
 
 def test_http_client_sends_the_openai_shape():
