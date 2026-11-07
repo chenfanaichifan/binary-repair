@@ -20,6 +20,15 @@ Skips:
 2 ELF execution: requires Linux
 ```
 
+## P2 post-merge
+
+```text
+exit 0
+synthetic false
+verdict success_within_scope
+route A/B 6/6
+```
+
 ## Logs
 
 ```text
@@ -27,6 +36,7 @@ delivery/logs/all-members-full-2026-11-08.txt
 delivery/logs/m2-all-2026-11-08.txt
 delivery/logs/e2e-all-2026-11-08.txt
 delivery/logs/compileall-2026-11-08.txt
+delivery/logs/p2-post-merge-2026-11-08.txt
 delivery/logs/m3-self-test-2026-11-08.txt
 ```
 

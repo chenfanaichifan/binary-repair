@@ -1,0 +1,21 @@
+{
+  "job_id": "9247357c54714546a7ff84891f7766f8",
+  "synthetic": false,
+  "phase": "finished",
+  "verdict": {
+    "outcome": "success_within_scope",
+    "reason": null,
+    "failing_obligation": null,
+    "detail": "both routes succeeded within their reviewed scopes"
+  },
+  "routes": {
+    "A": {
+      "outcome": "success_within_scope",
+      "obligations": 6
+    },
+    "B": {
+      "outcome": "success_within_scope",
+      "obligations": 6
+    }
+  }
+}
