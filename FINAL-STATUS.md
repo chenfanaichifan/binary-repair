@@ -98,5 +98,5 @@ No private key is included. The only `verified_by` value in the archive is M4's 
 ```text
 pytest -q -> exit 0
 log: delivery/logs/full-suite-2026-11-07.txt
-skips: 9 (7 Edge e2e + 2 Linux ELF; not passes)
+skips: 14 (12 Edge e2e + 2 Linux ELF; not passes)
 ```

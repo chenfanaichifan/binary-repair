@@ -1,0 +1,10 @@
+PASS account guard
+PASS package verification
+PASS tamper rejected
+PASS unlisted file rejected
+PASS traversal rejected
+PASS symlink rejected
+PASS route B gate derivation
+PASS route A gate derivation
+PASS sums sorted and complete
+guest executor self-test: 9/9 passed
