@@ -102,9 +102,17 @@ Comparison is currently an artifact role, not a typed JSON schema:
 role: behavior_comparison
 ```
 
-M2 must render `unavailable` when absent and must not guess fields. If a
-comparison artifact exists, show its raw/summary content only after M5 publishes
-a typed schema; do not invent `analysis`/`comparison` field names.
+M2 must use `GET /api/jobs/{id}/comparison`; it returns:
+
+```json
+{"job_id":"...","status":"not_provided|available","detail":"...","comparison":null,"artifacts":[]}
+```
+
+When an artifact exists, `status=available` and `comparison` is the parsed JSON;
+when absent, render `not_provided`, never pass and never guess field names.
+
+Attempts now expose `started_at`, `finished_at`, `candidate_sha256`,
+`route_label`, `timeline_status`, `duration_ms`, `exit_code` (null = unknown).
 
 ## Review 9–12
 
