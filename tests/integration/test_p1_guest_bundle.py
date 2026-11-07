@@ -45,7 +45,7 @@ def test_real_p1_bundle_ingests_measured_gates(tmp_path: Path) -> None:
         trigger=True,
     )
     assert result["imported"]["changed"] is True
-    assert set(result["evidence"]) == {"V0", "V1", "V2", "V3"}
+    assert set(result["evidence"]) == {"V0", "V1", "V2", "V3", "V5"}
 
     final = jobs.get_attempt(attempt.id, data_dir=data_dir)
     assert final is not None
@@ -63,5 +63,5 @@ def test_real_p1_bundle_ingests_measured_gates(tmp_path: Path) -> None:
         "V2": "passed",
         "V3": "passed",
         "V4": "not_run",
-        "V5": "not_run",
+        "V5": "passed",
     }

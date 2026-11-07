@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "method": "byte-level instruction removal; no C replacement, no code cave, no added bytes",
+  "original": {
+    "path": "original-1.elf",
+    "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "size": 25344
+  },
+  "candidate": {
+    "path": "candidate-1.elf",
+    "sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+    "size": 25344
+  },
+  "edits": [
+    {
+      "file_offset": 4869,
+      "file_offset_hex": "0x1305",
+      "vaddr": "0x401305",
+      "length": 5,
+      "before_hex": "e8e6fdffff",
+      "after_hex": "9090909090",
+      "before_text": "call 4010f0 <free@plt>",
+      "after_text": "nop; nop; nop; nop; nop",
+      "contract_clause": "authorized_edits[0]: drop the free() and accept the leak"
+    }
+  ],
+  "bytes_changed": 5,
+  "changed_intervals": [
+    {
+      "start": 4869,
+      "end": 4873,
+      "size": 5
+    }
+  ],
+  "size_delta": 0
+}

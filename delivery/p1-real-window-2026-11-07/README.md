@@ -34,15 +34,24 @@ M3's `host_importer` projection failed on a V0 artifact binding; that projection
 is not the production `route_bundle_ingest` path. The production ingest was
 re-run here and succeeded.
 
-## P2 / P1 closure
+## V5
 
-Not complete:
+The 2026-11-07 independent guest replay (`V5-replay.json`, pass=true, original and
+candidate byte-identical twice) is integrated as the bundle's V5 gate.
 
 ```text
+v5-replay.json: pass=true, runs=2, matches P1 candidate 46d16e99…
+```
+
+## P2 / P1 closure
+
+```text
+V2 not_run
+V4 not_run
+V5 passed (independent replay)
 no route A controller result
-no finished two-route job
-p2_acceptance.py not run / no exit 0
-V2/V4/V5 not_run
+p2 acceptance: M1 exit 0, verdict inconclusive
+repair success: no
 ```
 
 T8.3 is independent and remains complete (V4 marker/124).

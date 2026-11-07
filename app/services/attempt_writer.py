@@ -334,8 +334,12 @@ def _routeb(
     else:
         details["V4"] = "V4 not_run: no v4-symbolic.json"
 
-    # V5 is a gate only from a measured build-twice artifact.
-    v5_path = bundle / "reproducibility.json"
+    # V5 is a gate only from a measured build-twice artifact. Independent
+    # replay evidence (v5-replay.json) takes precedence over the guest's own
+    # first-run reproducibility observation.
+    v5_path = bundle / "v5-replay.json"
+    if not v5_path.is_file():
+        v5_path = bundle / "reproducibility.json"
     if v5_path.is_file():
         try:
             v5_payload = json.loads(v5_path.read_text(encoding="utf-8"))

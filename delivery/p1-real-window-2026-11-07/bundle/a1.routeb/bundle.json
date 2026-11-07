@@ -29,10 +29,10 @@
       "status": "not_run"
     },
     "V5": {
+      "status": "passed",
       "artifacts": [
-        "reproducibility.json"
-      ],
-      "status": "not_run"
+        "v5-replay.json"
+      ]
     }
   },
   "route": "route_b",
