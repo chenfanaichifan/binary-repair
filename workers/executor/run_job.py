@@ -320,8 +320,29 @@ def verify_package(package: Path, *, check_permissions: bool = True) -> dict[str
     else:
         if "candidate" not in paths:
             raise ExecutorError("package_invalid", "route_a requires candidate", EXIT_PACKAGE)
-        if not (paths["tests"] / "invalid.json").is_file():
-            raise ExecutorError("package_invalid", "route_a requires tests/invalid.json", EXIT_PACKAGE)
+        invalid_path = paths["tests"] / "invalid.json"
+        if input_mode == "none":
+            # No-input fixtures have no invalid case. An existing non-empty
+            # invalid.json is a sentinel and is rejected rather than ignored.
+            if invalid_path.is_file():
+                try:
+                    invalid_obj = read_json(invalid_path)
+                except Exception as exc:  # noqa: BLE001
+                    raise ExecutorError(
+                        "package_invalid", f"invalid.json is unreadable: {exc}", EXIT_PACKAGE
+                    ) from exc
+                cases = invalid_obj.get("tests") if isinstance(invalid_obj, dict) else None
+                if not isinstance(cases, list) or cases:
+                    raise ExecutorError(
+                        "package_invalid",
+                        "route_a input_mode=none must not carry non-empty tests/invalid.json",
+                        EXIT_PACKAGE,
+                    )
+        else:
+            if not invalid_path.is_file():
+                raise ExecutorError(
+                    "package_invalid", "route_a requires tests/invalid.json", EXIT_PACKAGE
+                )
 
     if "candidate" in paths and "candidate_sha256" not in expected:
         raise ExecutorError("package_invalid", "candidate requires expected.candidate_sha256", EXIT_PACKAGE)
