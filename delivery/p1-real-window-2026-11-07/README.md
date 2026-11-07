@@ -45,13 +45,23 @@ v5-replay.json: pass=true, runs=2, matches P1 candidate 46d16e99…
 
 ## P2 / P1 closure
 
+Local controller rerun (2026-11-07):
+
 ```text
-V2 not_run
-V4 not_run
-V5 passed (independent replay)
-no route A controller result
-p2 acceptance: M1 exit 0, verdict inconclusive
-repair success: no
+job        b619abe49ca4421195173daea6caecd8
+run        fde8b5f679ae4c12a5bdee90c60d6436
+phase      finished
+verdict    inconclusive / required_check_not_run / identity
+route A    6 required, inconclusive
+route B    6 required + optional repaired_behaviour
+V2         not_run
+V4         not_run
+V5         passed (independent replay)
+p2         exit 0, synthetic=false
 ```
+
+Evidence: `controller/snapshot.json`, `p2/p2-result.txt`.
+This is a finished two-route job, not a repair success.
+
 
 T8.3 is independent and remains complete (V4 marker/124).
