@@ -57,8 +57,8 @@ def _register(
     if not source.is_file():
         raise SystemExit(f"evidence file does not exist: {source}")
     artifact_id = uuid.uuid4().hex
-    relative = f"attempts/{attempt_id}/{artifact_id}-{source.name}"
-    target = data_dir / "jobs" / job_id / "artifacts" / relative
+    relative = f"jobs/{job_id}/artifacts/attempts/{attempt_id}/{artifact_id}-{source.name}"
+    target = data_dir / relative
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, target)
     digest = _sha256(target)
@@ -218,6 +218,13 @@ def _routeb(
     else:
         results["V0"] = "passed"
         details["V0"] = f"original {declared_original} matches the job record"
+        evidence["V0"] = _register(
+            data_dir=data_dir,
+            job_id=job_id,
+            attempt_id=attempt_id,
+            source=candidate,
+            role="v0_evidence",
+        )
 
     if audit.is_file():
         try:

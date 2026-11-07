@@ -70,4 +70,4 @@ def test_p1_bundle_keeps_v2_v4_v5_not_run(tmp_path: Path) -> None:
         "V4": "not_run",
         "V5": "passed",
     }
-    assert set(payload["evidence"]) == {"V1", "V3", "V5"}
+    assert set(payload["evidence"]) == {"V0", "V1", "V3", "V5"}

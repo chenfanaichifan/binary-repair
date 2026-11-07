@@ -77,11 +77,15 @@ def validate_snapshot(snapshot: dict) -> list[str]:
             errors.append(f"route {key} outcome is not a valid outcome: {outcome!r}")
         if not route.get("verdict"):
             errors.append(f"route {key} verdict missing")
-        obligations = route.get("obligations") or []
-        kinds = {item.get("kind") for item in obligations if isinstance(item, dict)}
+        obligations = [
+            item
+            for item in (route.get("obligations") or [])
+            if isinstance(item, dict) and item.get("required") is True
+        ]
+        kinds = {item.get("kind") for item in obligations}
         if len(obligations) != 6 or kinds != OBLIGATION_KINDS:
-            errors.append(f"route {key} obligations incomplete: {sorted(kinds)}")
-        results = [item.get("result") for item in obligations if isinstance(item, dict)]
+            errors.append(f"route {key} required obligations incomplete: {sorted(kinds)}")
+        results = [item.get("result") for item in obligations]
         all_not_run = bool(obligations) and all(result == "not_run" for result in results)
         if all_not_run:
             all_not_run_routes.append(key)
