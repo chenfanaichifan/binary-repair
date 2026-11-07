@@ -1,0 +1,17 @@
+{
+  "candidate_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "v4_evidence": "v4-symbolic.json",
+  "v4_verified_by": "m4",
+  "v4_marker_sha256": "fc4802d05c277e27e12f5bfd9f0c906115263b43a0403b222131ecdbb6702b06",
+  "gates": {
+    "V0": "passed",
+    "V1": "passed",
+    "V2": "passed",
+    "V3": "passed",
+    "V4": "passed",
+    "V5": "passed"
+  },
+  "attempt_outcome": "success_within_scope",
+  "note": "Runtime ingest result after M4 marker; the older candidate handoff gate-index remains historical and is not edited."
+}

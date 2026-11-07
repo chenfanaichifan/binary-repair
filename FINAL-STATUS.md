@@ -51,7 +51,7 @@ V4: passed, scope=model
   V0/V1/V2/V3/V4/V5 passed
   attempt outcome success_within_scope
 T8.3 evidence: COMPLETE
-T8.3 closure: pending Lead's one-line acceptance
+T8.3 closure: COMPLETE (Lead, 2026-11-07)
 ```
 
 The M4 marker and five-criteria file are archived under
@@ -74,7 +74,7 @@ CWE416 logs/plans/contracts: DONE
 ## Boundary
 
 ```text
-T8.3: EVIDENCE COMPLETE / closure pending Lead
+T8.3: COMPLETE (Lead closure 2026-11-07)
 V4: passed (M4 model-scope marker), 124 success_within_scope
 124: success_within_scope (marker ingested)
 118: VERIFIED (independent)

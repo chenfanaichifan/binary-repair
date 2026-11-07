@@ -1,0 +1,19 @@
+{
+  "t8_3": {
+    "state": "complete",
+    "date": "2026-11-07",
+    "lead_role": "Lead (operator role; same person as M4)",
+    "same_operator": true,
+    "second_sample": "CWE-416 no-input",
+    "v4": "passed",
+    "v4_scope": "model",
+    "v4_verified_by": "m4",
+    "v4_marker_sha256": "fc4802d05c277e27e12f5bfd9f0c906115263b43a0403b222131ecdbb6702b06",
+    "attempt_124": "success_within_scope",
+    "merge_main": false,
+    "tag": false,
+    "live_success_claim": false
+  },
+  "record_118": "VERIFIED (rebuild evidence package), independent",
+  "record_91": "unchanged"
+}
