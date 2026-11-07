@@ -482,6 +482,15 @@ def test_partial_usage_is_labelled():
     assert "tokens：未提供" in AGENT_JS
 
 
+def test_plan_mode_badge_shows_scripted_v1_and_keeps_raw_mode():
+    # T8.4: the badge must read "脚本 v1" for deterministic plans, while the
+    # raw mode stays visible and is also exposed as a data attribute.
+    assert 'deterministic: "脚本 v1"' in AGENT_JS
+    assert 'llm: "LLM"' in AGENT_JS
+    assert '"（" + agent.mode + "）"' in AGENT_JS
+    assert '"data-plan-mode", activeMode' in AGENT_JS
+
+
 def test_empty_test_suite_renders_as_na():
     # 0/0 is not a result. An empty suite must render N/A and must not be
     # folded into another suite's ratio.
