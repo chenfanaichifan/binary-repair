@@ -116,6 +116,15 @@ def test_timeline_uses_timeline_status_and_marks_unknown_exit_code():
 def test_scope_and_bounded_never_turn_missing_into_pass():
     assert 'var scopeText = "unknown";' in AGENT_JS
     assert 'var boundedText = "unknown";' in AGENT_JS
+    # Review 12: missing scope/bounded must still render as unknown, never be hidden.
+    assert 'if (!view.scope && !view.bounded) return;' not in AGENT_JS
+    assert 'if (!view.jobId && !view.phase) return;' in AGENT_JS
+    assert 'wrap.dataset.testid = "agent-scope-bounded"' in AGENT_JS
+
+
+def test_snapshot_id_is_accepted_as_job_id():
+    # P1 snapshot uses "id"; the console must not show an empty job chip for it.
+    assert 'jobId: data.job_id || data.id || state.jobId || ""' in AGENT_JS
     assert '"超出边界"' in AGENT_JS
 
 

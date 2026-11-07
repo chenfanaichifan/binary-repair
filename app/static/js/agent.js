@@ -294,7 +294,7 @@
     });
 
     return {
-      jobId: data.job_id || state.jobId || "",
+      jobId: data.job_id || data.id || state.jobId || "",
       phase: data.phase || "",
       cancelled: !!data.cancelled,
       originalSha256: data.original_sha256 || "",
@@ -1044,9 +1044,10 @@
   }
 
   function appendScopeBox(box, view) {
-    // scope/bounded 缺失一律 unknown；exceeded 只认布尔值，绝不当成通过。
-    if (!view.scope && !view.bounded) return;
+    // Review 12：scope/bounded 缺失必须显示 unknown，不能隐藏；exceeded 只认布尔值。
+    if (!view.jobId && !view.phase) return;
     var wrap = el("div", "agent-card");
+    wrap.dataset.testid = "agent-scope-bounded";
     wrap.appendChild(el("p", "agent-card-title", "范围与边界"));
 
     var scopeText = "unknown";
