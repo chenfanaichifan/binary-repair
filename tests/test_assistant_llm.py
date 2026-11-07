@@ -468,6 +468,20 @@ def test_messages_drop_evidence_that_json_cannot_carry():
     assert "evidence" not in payload.get("context", {})
 
 
+def test_messages_carry_the_agent_tool_specs_as_plain_json():
+    # The runtime hands the planner the same three v2 tools it can call later.
+    # Specs must be JSON-only (no callables) so build_messages can serialise them.
+    from app.services import assistant_tools
+
+    specs = assistant_tools.tool_specs()
+    messages = build_messages("fix it", context={"tools": specs})
+    payload = json.loads(messages[-1]["content"])
+    assert payload["context"]["tools"] == specs
+    assert {spec["function"]["name"] for spec in specs} == {
+        "run_case", "read_evidence", "apply_candidate",
+    }
+
+
 def test_build_failure_downgrades_instead_of_raising(monkeypatch):
     def boom(*args, **kwargs):
         raise TypeError("context is not serialisable")
