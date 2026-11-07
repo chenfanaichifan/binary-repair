@@ -236,6 +236,44 @@ def _routeb(
                 role="routeb_audit",
             )
 
+    # V2 is a gate only when the bundle carries an explicit interface
+    # observation. The P1 guest bundle has no v2-interface.json and therefore
+    # stays not_run; the 124 bundle has one and is scored here.
+    v2_observation = bundle / "v2-interface.json"
+    if v2_observation.is_file():
+        try:
+            observed = json.loads(v2_observation.read_text(encoding="utf-8"))
+        except ValueError:
+            observed = {}
+        target_entry = observed.get("target_symbol") if isinstance(observed, dict) else None
+        if isinstance(target_entry, str) and target_entry:
+            from app.domain.interface import check_interface
+            try:
+                interface = check_interface(original, candidate, target_entry)
+            except Exception as exc:  # noqa: BLE001 - absent tools are not a pass
+                results["V2"] = "not_run"
+                details["V2"] = f"V2 interface check unavailable: {exc}"
+            else:
+                results["V2"] = "passed" if interface["pass"] else "not_run"
+                details["V2"] = (
+                    f"{interface['score']['passed']}/{interface['score']['total']} "
+                    "static interface checks"
+                )
+                scored = bundle / "v2-interface-scored.json"
+                scored.write_text(json.dumps(interface, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+                if interface["pass"]:
+                    evidence["V2"] = _register(
+                        data_dir=data_dir,
+                        job_id=job_id,
+                        attempt_id=attempt_id,
+                        source=scored,
+                        role="routeb_v2_interface",
+                    )
+        else:
+            details["V2"] = "V2 observation has no target_symbol"
+    else:
+        details["V2"] = "V2 not_run: no v2-interface.json in bundle"
+
     from routeb.attempt_writer import runtime_state
     runtime, runtime_path, runtime_detail = runtime_state(bundle)
     results["V3"] = runtime
@@ -265,6 +303,58 @@ def _routeb(
             if runtime == "passed":
                 evidence["V3"] = repaired_id
     details["V3_kind"] = v3_kind
+
+    # V4 is a gate only when the bundle carries an independently verified
+    # marker. Producer V4 without verified_by="m4" stays not_run.
+    v4_path = bundle / "v4-symbolic.json"
+    if v4_path.is_file():
+        try:
+            v4_payload = json.loads(v4_path.read_text(encoding="utf-8"))
+        except ValueError:
+            v4_payload = {}
+        if isinstance(v4_payload, dict) and (v4_payload.get("replay") or {}).get("verified_by") == "m4":
+            try:
+                from app.domain.v4 import validate_v4_evidence
+                validate_v4_evidence(v4_payload, require_independent=True)
+            except Exception as exc:  # noqa: BLE001 - invalid evidence is not a pass
+                results["V4"] = "not_run"
+                details["V4"] = f"V4 marker rejected: {exc}"
+            else:
+                results["V4"] = "passed"
+                details["V4"] = "V4 independently verified by M4"
+                evidence["V4"] = _register(
+                    data_dir=data_dir,
+                    job_id=job_id,
+                    attempt_id=attempt_id,
+                    source=v4_path,
+                    role="routeb_v4_evidence",
+                )
+        else:
+            details["V4"] = "V4 not_run: no replay.verified_by=m4 marker"
+    else:
+        details["V4"] = "V4 not_run: no v4-symbolic.json"
+
+    # V5 is a gate only from a measured build-twice artifact.
+    v5_path = bundle / "reproducibility.json"
+    if v5_path.is_file():
+        try:
+            v5_payload = json.loads(v5_path.read_text(encoding="utf-8"))
+        except ValueError:
+            v5_payload = {}
+        if isinstance(v5_payload, dict) and v5_payload.get("pass") is True:
+            results["V5"] = "passed"
+            details["V5"] = "build-twice measured, byte-identical"
+            evidence["V5"] = _register(
+                data_dir=data_dir,
+                job_id=job_id,
+                attempt_id=attempt_id,
+                source=v5_path,
+                role="routeb_v5_evidence",
+            )
+        else:
+            details["V5"] = "V5 not_run: reproducibility.json not passed"
+    else:
+        details["V5"] = "V5 not_run: no reproducibility.json"
 
     return {
         "route": "route_b",

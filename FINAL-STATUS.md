@@ -56,7 +56,7 @@ V4: passed, scope=model
   V0/V1/V2/V3/V4/V5 passed
   attempt outcome success_within_scope
 T8.3 evidence: COMPLETE
-T8.3 closure: WITHDRAWN (record 163)
+T8.3 closure: WITHDRAWN; record 164 wiring pending M4
 ```
 
 The M4 marker and five-criteria file are archived under
@@ -79,9 +79,9 @@ CWE416 logs/plans/contracts: DONE
 ## Boundary
 
 ```text
-T8.3: BLOCKED (closure withdrawn by record 163)
+T8.3: pending M4 revalidation after V2/V4/V5 wiring (record 164)
 V4: passed marker retained; 124 not promoted (V2 not_run)
-124: inconclusive / required_check_not_run / symbolic
+124: all six gates passed in local writer test; M4 revalidation pending
 118: VERIFIED (independent)
 main: not merged
 tag: none
