@@ -29,9 +29,9 @@ tests/integration/test_controller_auth.py: 9 passed
 ### M2
 
 ```text
-T8.2 assistant_llm / test_assistant_llm: NOT DONE in this branch
-GUI T7.4/T7.5/T7.6/T8.4/T7.8: NOT DONE in this branch
-M2 Review 12 scope/bounded UI: NOT DONE
+T8.2 assistant_llm / test_assistant_llm: DONE (M5; merge 2501120)
+GUI T7.4/T7.5/T7.6/T8.4/T7.8: MERGED from M2 (34d054c)
+M2 Review 12 scope/bounded UI: PASS (record 180)
 ```
 
 ### M3
