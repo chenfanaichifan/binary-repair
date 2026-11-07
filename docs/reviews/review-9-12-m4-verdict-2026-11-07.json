@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-07",
+  "owner": "M4 (operator role; same person as Lead)",
+  "source_state": "canonical reconstruction only; original not recovered",
+  "items": {
+    "9_incomplete_test_set": {
+      "verdict": "PASS",
+      "code": "tools/mcp_tool_adapters.py",
+      "test": "tests/test_mcp_tool_adapters.py::test_run_case_incomplete_set_is_machine_reason"
+    },
+    "10_timeout_observed": {
+      "verdict": "PASS",
+      "code": "tools/mcp_tool_adapters.py",
+      "test": "tests/test_mcp_tool_adapters.py::test_run_case_timeout_has_machine_reason"
+    },
+    "11_evidence_hash_mismatch": {
+      "verdict": "PASS",
+      "code": "tools/mcp_tool_adapters.py",
+      "test": "tests/test_mcp_tool_adapters.py::test_apply_candidate_maps_ingest_hash_error"
+    },
+    "12_scope_bounded": {
+      "verdict": "NOT_VERIFIED",
+      "reason": "M2 UI/API presentation is not implemented; M1 attempts fields exist but bounded/exceeded is incomplete."
+    }
+  },
+  "other_m4_tasks": {
+    "T8.3": "PASS (record 170/171)",
+    "P1": "PASS (success_within_scope)",
+    "P2": "PASS (exit 0)",
+    "T7.7_ui_honesty": "NOT_VERIFIED (M2 UI absent)",
+    "T8.5_llm_no_leak_no_injection": "NOT_VERIFIED (M2 assistant UI absent)"
+  },
+  "limitations": [
+    "Original Review 9-12 text is not recoverable.",
+    "Verdicts 9-11 are against the canonical reconstruction and their code/tests.",
+    "M4 = Lead same operator; not independent two-person."
+  ]
+}
