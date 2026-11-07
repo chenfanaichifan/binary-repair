@@ -1324,16 +1324,56 @@ def attempt_evidence(attempt_id: str) -> dict[str, Any]:
     }
 
 
+def _duration_ms(started_at: Any, finished_at: Any) -> int | None:
+    if not started_at or not finished_at:
+        return None
+    try:
+        start = datetime.fromisoformat(str(started_at).replace("Z", "+00:00"))
+        finish = datetime.fromisoformat(str(finished_at).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    delta = finish - start
+    return max(0, int(delta.total_seconds() * 1000))
+
+
+def _timeline_status(row: dict[str, Any]) -> str:
+    """Normalise an attempt phase/outcome for the timeline, without inventing ok."""
+    phase = str(row.get("status") or "")
+    outcome = str(row.get("outcome") or "")
+    reason = str(row.get("reason") or "").lower()
+    if "timeout" in reason or "timed_out" in reason:
+        return "timeout"
+    if phase == "cancelled":
+        return "cancelled"
+    if phase != "finished":
+        return "unknown"
+    if outcome in {"success", "success_within_scope"}:
+        return "ok"
+    if outcome in {"failed", "rejected", "error"}:
+        return "failed"
+    return "unknown"
+
+
 @app.get("/api/jobs/{job_id}/attempts")
-def job_attempts(job_id: str) -> dict[str, list[dict[str, Any]]]:
+def job_attempts(job_id: str) -> dict[str, Any]:
     """Every attempt id for this job, oldest first.
 
-    The GUI needs these ids to render retry history and to call
-    ``/api/attempts/{id}/evidence``; ``attempt_no`` is the per-run sequence and
-    ``status`` is the attempt phase, both named for the client contract.
+    ``available`` distinguishes "the job was read and has no attempts" from a
+    missing job (404). The legacy fields are kept; timeline-specific fields are
+    additive. ``exit_code`` is null when the store does not record one — never
+    invented as 0.
     """
     _job_or_404(job_id)
-    return {"attempts": jobs.list_job_attempts(job_id, data_dir=_data_dir())}
+    rows = jobs.list_job_attempts(job_id, data_dir=_data_dir())
+    attempts = []
+    for row in rows:
+        item = dict(row)
+        item["route_label"] = "repaired" if row.get("route") == "route_b" else "direct"
+        item["timeline_status"] = _timeline_status(row)
+        item["duration_ms"] = _duration_ms(row.get("started_at"), row.get("finished_at"))
+        item["exit_code"] = None
+        attempts.append(item)
+    return {"available": True, "job_id": job_id, "attempts": attempts}
 
 
 @app.get("/api/jobs/{job_id}/obligations")

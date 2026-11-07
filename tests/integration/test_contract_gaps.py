@@ -198,3 +198,17 @@ def test_every_ingested_artifact_role_is_documented(pipeline) -> None:
 
     assert used <= documented, sorted(used - documented)
     assert {"original", "v0_evidence", "v3_evidence"} <= used
+
+
+def test_attempts_available_is_true_with_empty_list(pipeline) -> None:
+    client, _data, _job, _run, _attempts = pipeline
+    from app.services import jobs
+    # Create a second job with no attempts; it must not be 404 or a fake list.
+    job = jobs.create_job(
+        original_bytes=b"\x7fELF empty attempts",
+        filename="empty.elf",
+        defect_description="no run yet",
+        data_dir=_data,
+    )
+    payload = client.get(f"/api/jobs/{job.id}/attempts").json()
+    assert payload == {"available": True, "job_id": job.id, "attempts": []}
