@@ -23,6 +23,8 @@ position; the hash is authoritative.
 | `delivery/m1-real-p1-2026-11-07.zip` | P1 controller job/run, snapshot, worker/p2 logs; Route A identity-only, V2/V5 not_run | M4, M5, M3 |
 | `delivery/p1-v5-replay-request-2026-11-07/README.md` | P1 V5 second guest replay request; no V5 evidence yet | M3, VMer |
 
+| `delivery/m1-p1-final-2026-11-07.zip` | P1 final controller run: Route A six passed (M4 V4 marker + 5/5 V2), Route B inconclusive, p2 exit 0 | M4, M5, M3 |
+
 ## Adding an entry
 
 1. Put the artifact in `delivery/` (new hand-offs) or leave it in `dist/`
