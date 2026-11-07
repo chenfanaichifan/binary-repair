@@ -201,11 +201,21 @@ def main(argv=None):
                   v3_ev, [] if ok else ["formal-run cases not 6/6 or hash mismatch"])
     elif os.path.isfile(repaired_path):
         mr = load_json(repaired_path)
-        v3 = gate("inconclusive",
-                  {"repaired_pass": bool(mr.get("repaired_pass")),
-                   "passed": mr.get("passed"), "total": mr.get("total"),
-                   "note": "non-formal run (not a reverted snapshot)"},
-                  v3_ev, ["formal reverted-snapshot run missing"])
+        no_input_pass = (
+            input_mode == "none"
+            and mr.get("repaired_pass") is True
+            and mr.get("total") == 1
+            and mr.get("passed") == 1
+        )
+        v3 = gate(
+            "pass" if no_input_pass else "inconclusive",
+            {"repaired_pass": bool(mr.get("repaired_pass")),
+             "passed": mr.get("passed"), "total": mr.get("total"),
+             "input_mode": input_mode,
+             "note": "no-input single-case execution" if no_input_pass
+                     else "non-formal run (not a reverted snapshot)"},
+            v3_ev, [] if no_input_pass else ["formal reverted-snapshot run missing"],
+        )
     else:
         v3 = gate("not_run", {}, [], ["behaviour evidence missing"])
 

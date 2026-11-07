@@ -666,6 +666,13 @@ def _route_a_commands(pkg: dict[str, Any], out: Path, job: Path) -> list[list[st
                         ("readelf", "--readelf")):
         if field in pkg["paths"]:
             worker += [flag, str(pkg["paths"][field])]
+    runner = [
+        sys.executable, str(Path(__file__).resolve().parents[2] / "workers/route_a/run_candidate.py"),
+        "--candidate", str(route_out / "candidate.elf"),
+        "--contract", str(job / "contract.json"),
+        "--tests-dir", str(job / "tests"),
+        "--out", str(out / "manifest-repaired.json"),
+    ]
     collector = [
         sys.executable, str(Path(__file__).resolve().parents[2] / "workers/route_a/result_bundle.py"),
         "--job-dir", str(job),
@@ -674,7 +681,7 @@ def _route_a_commands(pkg: dict[str, Any], out: Path, job: Path) -> list[list[st
         "--isolation", str(out / "isolation.json"),
         "--job-id", str(pkg.get("job_id", "")),
     ]
-    return [worker, collector]
+    return [worker, runner, collector]
 
 
 def _read_optional(out: Path, name: str) -> dict[str, Any] | None:

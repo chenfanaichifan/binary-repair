@@ -123,3 +123,35 @@ def test_result_bundle_none_does_not_hash_missing_invalid(tmp_path: Path) -> Non
     assert payload["identity"]["invalid_sha256"] is None
     assert not any(e.get("role") == "invalid_manifest" for e in payload["evidence"])
     assert payload["gates"]["V0"]["status"] == "pass"
+
+
+def test_result_bundle_none_v3_passes_single_case(tmp_path: Path) -> None:
+    package = _package(tmp_path)
+    work = tmp_path / "work"
+    (work / "route_a").mkdir(parents=True)
+    (work / "evidence/v3").mkdir(parents=True)
+    shutil.copyfile(package / "candidate.elf", work / "route_a/candidate.elf")
+    contract = json.loads((package / "contract.json").read_text(encoding="utf-8"))
+    from workers.route_a.result_bundle import canonical_json_hash
+    set_hash, _, _ = worker.manifest_set_hash(str(package / "tests"), "none")
+    status = {
+        "candidate": {"sha256": _sha(package / "candidate.elf")},
+        "contract_sha256": canonical_json_hash(contract),
+        "manifest_set_sha256": set_hash,
+        "artifacts": [],
+        "tool_versions": {},
+    }
+    (work / "route_a/status.json").write_text(json.dumps(status), encoding="utf-8")
+    (work / "evidence/v3/manifest-repaired.json").write_text(
+        json.dumps({"repaired_pass": True, "passed": 1, "total": 1}), encoding="utf-8"
+    )
+    out = work / "result-bundle.json"
+    from workers.route_a import result_bundle
+    rc = result_bundle.main([
+        "--job-dir", str(package),
+        "--work-dir", str(work),
+        "--out", str(out),
+    ])
+    assert rc == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["gates"]["V3"]["status"] == "pass"
