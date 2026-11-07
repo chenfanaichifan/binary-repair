@@ -1,3 +1,16 @@
+# BinaryRepair MVP
+
+Current delivery status (2026-11-08):
+
+```text
+T8.3: COMPLETE
+P1: success_within_scope
+P2: ACCEPTANCE PASSED
+```
+
+Canonical evidence: `delivery/INDEX.md`.
+Current records: `docs/INDEX.md`.
+
 # BinaryRepair
 
 **AI-assisted binary vulnerability repair with deterministic acceptance.**
