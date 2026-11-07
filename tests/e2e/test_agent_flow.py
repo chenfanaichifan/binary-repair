@@ -96,6 +96,6 @@ def test_live_mode_without_plan_says_so(mock_server, page):
     _open(page, mock_server, "/agent/new")
     page.wait_js(
         'document.querySelector(\'[data-testid="agent-stream"]\').textContent'
-        '.indexOf("后端还没有提供引导计划") >= 0'
+        '.indexOf("计划服务还没接通") >= 0'
     )
     assert "deterministic" in page.text('[data-testid="agent-mode-badge"]')
