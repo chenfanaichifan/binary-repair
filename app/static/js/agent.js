@@ -131,6 +131,10 @@
     inconclusive: "不确定", error: "错误", cancelled: "已取消"
   };
   var STATE_LABELS = { pending: "待执行", active: "进行中", done: "已完成", cancelled: "已取消" };
+  // 时间线语义来自后端 timeline_status；route/status 的旧语义保持不变。
+  var TIMELINE_LABELS = {
+    ok: "成功", failed: "失败", timeout: "超时", cancelled: "已取消", unknown: "未知"
+  };
   var KIND_ORDER = { identity: 0, structure: 1, interface: 2, behaviour: 3, symbolic: 4, reproducibility: 5 };
 
   /* 失败原因展示字典：只负责把后端给出的 reason_code 翻译成人话并附建议。
@@ -301,11 +305,14 @@
       candidate: data.candidate || null,
       agent: agent,
       execution: execution,
-      receiptPending: receiptPending
+      receiptPending: receiptPending,
+      scope: data.scope || null,
+      bounded: data.bounded || null
     };
   }
 
   var evidenceCache = {};
+  var attemptsCache = { jobId: "", available: null, items: [] };
 
   function fetchAttemptEvidence(attemptId) {
     if (evidenceCache[attemptId]) return Promise.resolve(evidenceCache[attemptId]);
@@ -336,6 +343,29 @@
         if (items[index]) routes[item.key].__evidence = items[index];
       });
       return data;
+    });
+  }
+
+  function fetchAttempts(jobId) {
+    if (!jobId || FIXTURE_MODE) return Promise.resolve();
+    return fetch("/api/jobs/" + encodeURIComponent(jobId) + "/attempts", {
+      headers: { Accept: "application/json" }
+    }).then(function (response) {
+      // 404 表示端点/任务不可用，必须与“零次尝试”分开。
+      if (response.status === 404) return { available: false, attempts: [] };
+      if (!response.ok) return { available: false, attempts: [] };
+      return response.json();
+    }).then(function (data) {
+      if (state.jobId !== jobId) return;
+      attemptsCache = {
+        jobId: jobId,
+        available: !!(data && data.available !== false),
+        items: data && Array.isArray(data.attempts) ? data.attempts : []
+      };
+    }).catch(function () {
+      if (state.jobId === jobId) {
+        attemptsCache = { jobId: jobId, available: false, items: [] };
+      }
     });
   }
 
@@ -897,6 +927,43 @@
   function renderTimeline(view) {
     var list = $("agent-timeline");
     clear(list);
+
+    // 优先用 /attempts 的时间线语义；旧 route/status 字段保持原样，不覆盖。
+    if (attemptsCache.jobId === view.jobId) {
+      if (attemptsCache.available === false) {
+        list.appendChild(el("li", "agent-muted", "尝试记录不可用"));
+        return;
+      }
+      if (attemptsCache.items.length) {
+        attemptsCache.items.forEach(function (attempt) {
+          var status = attempt.timeline_status;
+          var item = el("li", "agent-timeline-item" +
+            (status === "ok" ? " is-done" :
+              (status === "failed" || status === "timeout") ? " is-failed" : " is-active"));
+          item.appendChild(el("span", "agent-timeline-name",
+            "尝试 #" + (attempt.attempt_no || "?") + " · " +
+            (attempt.route_label || attempt.route || "?")));
+          item.appendChild(el("span", "agent-timeline-meta", TIMELINE_LABELS[status] || "未知"));
+          if (attempt.duration_ms !== null && attempt.duration_ms !== undefined) {
+            item.appendChild(el("span", "agent-timeline-meta", attempt.duration_ms + " ms"));
+          }
+          // 数据库没有可靠退出码时后端给 null；这里显示“未知”，不补 0。
+          item.appendChild(el("span", "agent-timeline-meta",
+            (attempt.exit_code === null || attempt.exit_code === undefined)
+              ? "未知退出码" : "退出码 " + attempt.exit_code));
+          if (attempt.started_at) {
+            item.appendChild(el("span", "agent-timeline-meta", attempt.started_at));
+          }
+          list.appendChild(item);
+        });
+        return;
+      }
+      if (attemptsCache.available === true) {
+        list.appendChild(el("li", "agent-muted", "尚无尝试记录"));
+        return;
+      }
+    }
+
     if (view.execution && view.execution.status) {
       var item = el("li", "agent-timeline-item is-active");
       item.appendChild(el("span", "agent-timeline-name", "回传状态"));
@@ -969,6 +1036,34 @@
     box.appendChild(table);
   }
 
+  function appendScopeBox(box, view) {
+    // scope/bounded 缺失一律 unknown；exceeded 只认布尔值，绝不当成通过。
+    if (!view.scope && !view.bounded) return;
+    var wrap = el("div", "agent-card");
+    wrap.appendChild(el("p", "agent-card-title", "范围与边界"));
+
+    var scopeText = "unknown";
+    if (view.scope && view.scope.kind && view.scope.value !== undefined &&
+        view.scope.value !== null && view.scope.value !== "") {
+      scopeText = view.scope.kind + "：" + view.scope.value +
+        (view.scope.note ? "（" + view.scope.note + "）" : "");
+    }
+    wrap.appendChild(el("p", null, "scope：" + scopeText));
+
+    var boundedText = "unknown";
+    if (view.bounded) {
+      if (view.bounded.exceeded === true) {
+        boundedText = "超出边界";
+      } else if (view.bounded.exceeded === false) {
+        boundedText = "未超出边界" +
+          (view.bounded.limit ? "（上限 " + view.bounded.limit + "，实测 " +
+            (view.bounded.observed || "unknown") + "）" : "");
+      }
+    }
+    wrap.appendChild(el("p", null, "bounded：" + boundedText));
+    box.appendChild(wrap);
+  }
+
   function renderDiagnostics(view) {
     // 结论只读 verdict，绝不由前端推断。
     var verdictText = "结论：—";
@@ -1014,6 +1109,7 @@
     var box = $("agent-diagnostics");
     clear(box);
     if (view.receiptPending) return; // 未回传：只显示占位，不渲染 not_run
+    appendScopeBox(box, view);
 
     view.routeKeys.forEach(function (key) {
       var route = view.routes[key];
@@ -1155,7 +1251,8 @@
   function tick() {
     if (!state.jobId) return;
     if (FIXTURE_MODE) return;
-    fetchLiveSnapshot().then(function (data) {
+    Promise.all([fetchLiveSnapshot(), fetchAttempts(state.jobId)]).then(function (results) {
+      var data = results[0];
       state.snapshot = data;
       setText("agent-poll", "轮询中 · " + new Date().toLocaleTimeString());
       renderSide();

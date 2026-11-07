@@ -105,6 +105,20 @@ def test_pending_receipt_shows_placeholder_instead_of_not_run():
     assert 'show("agent-receipt-placeholder", view.receiptPending);' in AGENT_JS
 
 
+def test_timeline_uses_timeline_status_and_marks_unknown_exit_code():
+    assert 'ok: "成功", failed: "失败", timeout: "超时", cancelled: "已取消", unknown: "未知"' in AGENT_JS
+    assert '"尝试记录不可用"' in AGENT_JS
+    assert '"尚无尝试记录"' in AGENT_JS
+    assert '"未知退出码"' in AGENT_JS
+    assert '"/attempts"' in AGENT_JS
+
+
+def test_scope_and_bounded_never_turn_missing_into_pass():
+    assert 'var scopeText = "unknown";' in AGENT_JS
+    assert 'var boundedText = "unknown";' in AGENT_JS
+    assert '"超出边界"' in AGENT_JS
+
+
 def test_top_level_obligations_are_accepted_when_routes_omit_them():
     """M5 may return obligations at the top level; the view must not drop them."""
     assert "!obligations.length && Array.isArray(data.obligations)" in AGENT_JS
@@ -131,10 +145,11 @@ def test_no_model_calls_or_new_transport():
     for banned in ("api.openai.com", "new WebSocket", "new EventSource", "Bearer ",
                    'setRequestHeader("Authorization'):
         assert banned not in AGENT_JS, banned
-    # Read paths: the snapshot, the job-less plan route, and per-attempt
-    # evidence (all same-origin GETs).
-    assert AGENT_JS.count("fetch(") == 3
+    # Read paths: the snapshot, the attempts timeline, the job-less plan
+    # route, and per-attempt evidence (all same-origin GETs).
+    assert AGENT_JS.count("fetch(") == 4
     assert 'fetch("/api/jobs/" + encodeURIComponent(state.jobId)' in AGENT_JS
+    assert 'fetch("/api/jobs/" + encodeURIComponent(jobId) + "/attempts"' in AGENT_JS
     assert 'fetch("/api/assistant/plan"' in AGENT_JS
     assert 'fetch("/api/attempts/" + encodeURIComponent(attemptId) + "/evidence"' in AGENT_JS
     # Write path: the existing create-job form endpoint only, with CSRF.
