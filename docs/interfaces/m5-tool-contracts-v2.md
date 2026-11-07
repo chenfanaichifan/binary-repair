@@ -160,10 +160,11 @@ HTTP 404 -> not_found
 other -> error
 ```
 
-## 4. ingest_bundle replaces apply_candidate
+## 4. apply_candidate v2 — includes the missing pre-layer
 
-`apply_candidate` implied creating run/attempt and assembling a bundle. That layer
-does not exist. Rename to `ingest_bundle`, matching the actual entry point.
+M2 is right that the previous `apply_candidate` described an application layer
+that did not exist. v2 keeps the name `apply_candidate` and makes the pre-layer
+explicit; `ingest_bundle` is the internal step, not the public tool.
 
 Request:
 
@@ -171,19 +172,34 @@ Request:
 {
   "schema_version": 2,
   "job_id": "job-id",
-  "run_id": "run-id",
-  "attempt_id": "attempt-id",
+  "run_id": "run-id-or-null",
+  "attempt_id": "attempt-id-or-null",
   "route": "route_b",
-  "bundle_path": "var/jobs/.../bundle",
+  "candidate_path": "artifacts/candidate.elf",
   "candidate_sha256": "64-hex-assertion",
+  "contract_revision": 1,
+  "manifest_sha256": "64-hex",
+  "bundle_path": "var/jobs/.../bundle",
   "no_trigger": false,
   "dry_run": false,
-  "idempotency_key": "job:attempt:ingest"
+  "idempotency_key": "job:attempt:apply"
 }
 ```
 
-The candidate assertion is checked against the bundle's V0 evidence and
-`manifest["candidate_sha256"]`; a mismatch is `candidate_hash_mismatch`.
+Preconditions and steps:
+
+```text
+1. job exists; contract revision is approved.
+2. if run_id is null, create/reuse run by idempotency_key.
+3. if attempt_id is null, create/reuse the route_b attempt.
+4. assemble the bundle from candidate_path + evidence.
+5. candidate_sha256 is an assertion: compare it with bundle V0 evidence and
+   manifest["candidate_sha256"]; mismatch -> candidate_hash_mismatch.
+6. call route_bundle_ingest / existing writer.
+```
+
+The tool does not build or execute the candidate. It only creates the run/attempt
+metadata, assembles the bundle, and delegates to the existing ingest.
 
 Return:
 
@@ -191,7 +207,8 @@ Return:
 {
   "schema_version": 2,
   "status": "applied|no_op|conflict|rejected|error",
-  "imported": true,
+  "job_id": "...",
+  "run_id": "...",
   "attempt_id": "...",
   "bundle_path": "...",
   "candidate_sha256": "...",
@@ -205,8 +222,8 @@ Return:
 Status:
 
 ```text
-same key + same bundle/candidate -> no_op
-same key + different bundle/candidate -> conflict
+same key + same candidate/bundle -> no_op
+same key + different candidate/bundle -> conflict
 candidate hash mismatch -> rejected + candidate_hash_mismatch
 timeout/partial write -> error, no bundle committed
 ```
