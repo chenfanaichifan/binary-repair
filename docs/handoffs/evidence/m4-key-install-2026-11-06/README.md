@@ -14,6 +14,11 @@ fingerprint  SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q
 | `01-install-and-acceptance.txt` | digest and fingerprint on both sides, the two lines in `authorized_keys`, idempotence, `600 m4verify:m4verify`, sshd's effective config |
 | `02-why-not-from-the-branch.txt` | the five fetch attempts that failed, and why the key was installed from text |
 | `03-network-path.txt` | the guest permits a remote client; the network does not yet, and the two elevated commands that would fix it |
+| `04-verified-against-the-branch.txt` | the branch became readable the next morning; its key is the installed one, byte for byte |
+
+The port forwarding `03` asked for was granted and executed on 2026-11-07 — the route is open at
+`ssh -p 2222 m4verify@<host WLAN address>`. That belongs to `../m4-reach-2026-11-07/`, which supersedes
+`03`'s "still blocked" conclusion without altering the file.
 
 ## What is now true
 

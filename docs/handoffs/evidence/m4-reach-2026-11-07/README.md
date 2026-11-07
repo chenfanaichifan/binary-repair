@@ -53,20 +53,39 @@ A guest log cannot prove a negative about packets that never arrived. What it ca
 prove is that `sshd` never opened a preauth session for an outside address, and that
 is the same claim one layer up.
 
-## So the fix is not in the guest
+## So the fix is not in the guest — and it has since been made there
 
-The two commands that would open the path are in
+The two commands that would open the path were recorded in
 `../m4-key-install-2026-11-06/03-network-path.txt`: a `netsh` port proxy and a
-firewall rule, both requiring an administrator prompt on this host. The agent runs
-unelevated and `netsh` answers *The requested operation requires elevation*, so this
-stays open on the host side.
+firewall rule, both requiring an administrator prompt on this host. On the morning
+of 2026-11-07 that prompt was granted, both commands ran and returned 0, and the
+route is open:
 
-One alternative needs no elevation and should be a decision, not a quiet change:
-switching the VM's adapter from NAT to bridged would put the guest directly on the
-LAN, where M4 could reach it without any forwarding. The cost is real — the guest
-would lose `192.168.30.128`, and every window record from 118 onward, including this
-one, describes that address. Re-cutting the environment to make a connection easier
-would invalidate the records faster than it would unblock anything.
+```
+host 10.11.0.132:2222  ->  guest 192.168.30.128:22
+
+$ ssh -p 2222 lab@10.11.0.132          logged in as lab on binrepair-vm
+$ ssh -p 2222 m4verify@10.11.0.132     Permission denied (publickey)  ← with the lab key
+```
+
+The second line is the one worth keeping: the forward carries the connection, and
+`sshd` still decides who is on the other end. An open port is not an open account.
+
+`02-port-forward-now-open.txt` has the rules, the firewall scope (`Any` profile,
+inbound, allow, TCP 2222) and all three measured paths.
+
+Two limits of that route, recorded there rather than discovered later: the host
+address is DHCP and has already moved once (`192.168.43.11` → `10.11.0.132`, the
+Wi-Fi changed), and it is a private `/20`, so only a client that can route to that
+network can use it. A machine on the open internet cannot, and no rule on this host
+changes that.
+
+The bridged-adapter alternative needs no elevation and was considered and rejected
+for the same reason it was never attractive: the guest would lose `192.168.30.128`,
+and every window record from 118 onward — including this one — describes that
+address. Re-cutting the environment to make a connection easier would invalidate the
+records faster than it would unblock anything. Forwarding changed nothing about the
+guest, which is why the existing evidence still stands.
 
 ## Housekeeping done while here
 

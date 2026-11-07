@@ -1,0 +1,69 @@
+# the route is open now — 2026-11-07T01:59:31Z
+
+# Yesterday this was recorded as blocked: two netsh commands needing an
+# administrator prompt the agent did not have. That prompt was granted this
+# morning, both commands ran, and both returned 0.
+
+$ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=2222 \
+        connectaddress=192.168.30.128 connectport=22                    # exit=0
+$ netsh advfirewall firewall add rule name="binrepair-m4verify-2222" \
+        dir=in action=allow protocol=TCP localport=2222                 # exit=0
+
+$ netsh interface portproxy show all
+  
+  Listen on ipv4:             Connect to ipv4:
+  
+  Address         Port        Address         Port
+  --------------- ----------  --------------- ----------
+  0.0.0.0         2222        192.168.30.128  22
+  
+
+$ netstat -ano | findstr :2222
+    TCP    0.0.0.0:2222           0.0.0.0:0              LISTENING       5468
+    TCP    10.11.0.132:56017      10.11.0.132:2222       TIME_WAIT       0
+
+$ Get-NetFirewallRule -DisplayName "binrepair-m4verify-2222"
+    Enabled   : True
+    Profile   : Any        (domain, private and public alike)
+    Direction : Inbound
+    Action    : Allow
+    Protocol  : TCP   LocalPort: 2222
+
+## three paths, measured — not inferred from the rule existing
+
+$ ssh -p 2222 lab@127.0.0.1                 # loopback
+  logged in as lab on binrepair-vm
+
+$ ssh -p 2222 lab@10.11.0.132                 # the WLAN address a remote client uses
+  logged in as lab on binrepair-vm
+
+$ ssh -p 2222 lab@192.168.30.1              # from inside the guest, back through the host
+lab@192.168.30.1: Permission denied (publickey).
+  Not a timeout, which is the part that matters: the TCP path and the forward
+  both work and sshd answered. What fails is authentication, because the guest
+  holds no private key of its own — the key that logs in as lab lives on the
+  host at .tmp/ssh/id_ed25519 and never goes into the guest.
+
+$ ssh -p 2222 lab@10.11.0.132  as m4verify, with the lab key   # must be refused
+  m4verify@10.11.0.132: Permission denied (publickey).
+  Refused, which is the point: the forward carries the connection, sshd still
+  decides the identity. An open port is not an open account.
+
+## what M4 runs
+
+    ssh -p 2222 -i ~/.ssh/m4_id_ed25519 m4verify@10.11.0.132
+
+  No password, no sudo; the key installed on 2026-11-06 (SHA256:bRq28b6J…84Q)
+  is the second line of ~m4verify/.ssh/authorized_keys and the only way in.
+  It has never been used — see 01-no-external-connection.txt.
+
+## two limits of this route, recorded now rather than discovered later
+
+  1. The host address is DHCP and it has already moved once. It was
+     192.168.43.11 when yesterday's record was written; the Wi-Fi changed and
+     it is 10.11.0.132 now. Quote the command, not the number:
+       Get-NetIPAddress -AddressFamily IPv4 | ? InterfaceAlias -eq WLAN
+
+  2. That address is private (a /20). A client can use this route only if it
+     can route to that network — the same Wi-Fi, or a VPN into it. A machine
+     on the open internet cannot, and no rule on this host changes that.
