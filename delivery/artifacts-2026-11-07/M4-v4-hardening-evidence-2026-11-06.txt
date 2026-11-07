@@ -1,0 +1,50 @@
+# M4 V4 schema hardening probe — evidence — 2026-11-06
+
+$ git -C _m1-work/live-bridge log --oneline -2
+fa41102 feat(m1): wire typed v4-symbolic through bundle and persist
+67b3458 feat(m1): score no-input V2 from the binary pair
+
+$ git -C _m1-work/live-bridge status --short
+ M MEMORY.md
+ M app/domain/v4.py
+ M docs/handoffs/125-m1-cwe416-124-ingest-2026-11-05.md
+ M tests/integration/test_v4_bundle_gate.py
+ M tests/integration/test_worker.py
+ M tests/test_v4_evidence.py
+
+$ grep -n '_complete_has_no_unexplored\|complete solver accounting\|known_good\|known_bad_rejected\|claimed_scope: Literal\|binary-level' _m1-work/live-bridge/app/domain/v4.py
+47:    def _complete_has_no_unexplored(self) -> "ExplorationAccounting":
+72:            raise ValueError("complete solver accounting requires unknown == 0 and timeouts == 0")
+82:    known_good: bool
+84:    known_bad_rejected: bool
+91:        if not (self.known_good and self.known_bad and self.known_bad_rejected):
+93:                "calibration requires known_good, known_bad and known_bad_rejected"
+125:    claimed_scope: Literal["model"]
+140:        if not any("binary-level" in item.lower() for item in self.not_claimed):
+141:            raise ValueError("not_claimed must explicitly exclude binary-level proof")
+
+$ cd _m1-work/live-bridge && PYTHONPATH=. ../../role5-kit/.venv/bin/python ../../_m4-verify/probe_v4_hardening.py hardened
+== hardened (working tree) ==
+valid base: ACCEPTED
+cases=1, passed=1, failed=0 (no known_*): REJECTED — 3 validation errors for V4Evidence
+cases=1, passed=1, failed=0 + known_* true: ACCEPTED
+complete=True + unexplored nonempty: REJECTED — 1 validation error for V4Evidence
+complete=True + unknown>0: REJECTED — 1 validation error for V4Evidence
+claimed_scope="binary-level proof": REJECTED — 1 validation error for V4Evidence
+not_claimed without binary-level: REJECTED — 1 validation error for V4Evidence
+
+$ cd _m4-verify/fa41102 && PYTHONPATH=. ../../role5-kit/.venv/bin/python ../../_m4-verify/probe_v4_hardening.py committed
+== committed fa41102 ==
+valid base: ACCEPTED
+cases=1, passed=1, failed=0 (no known_*): ACCEPTED
+complete=True + unexplored nonempty: ACCEPTED
+complete=True + unknown>0: ACCEPTED
+claimed_scope="binary-level proof": ACCEPTED
+not_claimed without binary-level: ACCEPTED
+
+$ cd _m1-work/live-bridge && ../../role5-kit/.venv/bin/python -m pytest tests/test_v4_evidence.py tests/integration/test_cwe416_124_ingest.py -q 2>&1 | tail -2
+..........................                                               [100%]
+
+$ cd _m1-work/live-bridge && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "from app.domain.acceptance import Obligation,decide_attempt_outcome;from app.domain.outcomes import CheckResult as C;k=['identity','structure','interface','behaviour','symbolic','reproducibility'];r=[C.PASSED,C.PASSED,C.PASSED,C.PASSED,C.NOT_RUN,C.PASSED];c='46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0';v=decide_attempt_outcome(obligations=[Obligation(kind=x,required=True,result=y) for x,y in zip(k,r)],candidate_sha256=c,expected_sha256=c,reviewed_scope_sha256='b'*64);print(v.outcome.value,getattr(v.reason,'value',v.reason),v.failing_obligation)"
+inconclusive required_check_not_run symbolic
+

@@ -1,0 +1,26 @@
+# M4 deeb1da clean-tree status — evidence — 2026-11-05
+
+$ git -C _m1-work/live-bridge status --short
+
+# (empty above = clean working tree)
+
+$ git -C _m1-work/live-bridge rev-parse --short HEAD
+deeb1da
+
+$ git -C _m1-work/live-bridge rev-parse --short @{u}
+deeb1da
+
+$ git -C _m1-work/live-bridge rev-parse -q --verify MERGE_HEAD || echo 'no merge in progress'
+no merge in progress
+
+$ grep -c '^<<<<<<<\|^=======\|^>>>>>>>' _m1-work/live-bridge/tests/test_fixture_intake.py || true
+0
+
+$ find _m1-work/m3/fixtures/public -maxdepth 1 -type d -name '*noinput*' || true
+
+$ ls -l 119-m3-cwe416-noinput-contract-2026-11-05.md
+-rw-r--r--@ 1 huageorge  staff  11232 Nov  5 22:36 119-m3-cwe416-noinput-contract-2026-11-05.md
+
+$ cd _m1-work/live-bridge && python3 -c "import json;from app.domain.contracts import SecurityContract;c=SecurityContract.from_dict(json.load(open('fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json')));print(c.sha256(), c.sha256()=='24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37')"
+24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37 True
+

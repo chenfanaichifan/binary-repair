@@ -1,0 +1,31 @@
+# M4 67b3458 V2 scoring + 124 symbolic — evidence — 2026-11-06
+
+$ git -C _m1-work/live-bridge log -1 --format='%H %s'
+67b3458ac0f9a5097f517807a91221264c7e661c feat(m1): score no-input V2 from the binary pair
+
+$ git -C _m1-work/live-bridge status --short
+
+$ ls _m4-verify/67b3458/app/domain/interface.py
+_m4-verify/67b3458/app/domain/interface.py
+
+$ grep -n 'check_interface' _m4-verify/67b3458/routeb/attempt_writer.py _m4-verify/67b3458/tools/route_bundle_ingest.py _m4-verify/67b3458/app/services/obligations.py
+_m4-verify/67b3458/routeb/attempt_writer.py:33:from app.domain.interface import InterfaceCheckError, check_interface
+_m4-verify/67b3458/routeb/attempt_writer.py:221:    interface = check_interface(original_for_check, bundle / "candidate.elf", target_entry)
+_m4-verify/67b3458/tools/route_bundle_ingest.py:47:from app.domain.interface import InterfaceCheckError, check_interface
+_m4-verify/67b3458/tools/route_bundle_ingest.py:325:                report = check_interface(
+
+$ cd _m4-verify/67b3458 && ../../role5-kit/.venv/bin/python -m pytest tests/test_interface_check.py tests/test_routeb_attempt_writer.py tests/integration/test_cwe416_124_ingest.py -q 2>&1 | tail -2
+...........                                                              [100%]
+
+$ cd _m4-verify/67b3458 && ../../role5-kit/.venv/bin/python -m pytest tests/test_v4_evidence.py tests/test_orchestration_required.py tests/integration/test_v4_bundle_gate.py -q 2>&1 | tail -2
+......................                                                   [100%]
+
+$ cd _m4-verify/67b3458 && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "from app.domain.interface import check_interface;E='../../_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05';r=check_interface(E+'/original.elf',E+'/candidate.elf','CWE416_Use_After_Free__malloc_free_char_01_bad');print('V2:',r['state'],r['score'])"
+V2: passed {'passed': 5, 'total': 5}
+
+$ cd _m4-verify/67b3458 && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "from app.domain.acceptance import Obligation,decide_attempt_outcome;from app.domain.outcomes import CheckResult as C;k=['identity','structure','interface','behaviour','symbolic','reproducibility'];res=[C.PASSED,C.PASSED,C.PASSED,C.PASSED,C.NOT_RUN,C.PASSED];c='46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0';v=decide_attempt_outcome(obligations=[Obligation(kind=x,required=True,result=y) for x,y in zip(k,res)],candidate_sha256=c,expected_sha256=c,reviewed_scope_sha256='b'*64);print(v.outcome.value,getattr(v.reason,'value',v.reason),v.failing_obligation)"
+inconclusive required_check_not_run symbolic
+
+$ grep -n 'failing_obligation ==' _m4-verify/67b3458/tests/integration/test_cwe416_124_ingest.py
+117:    assert final.failing_obligation == "symbolic"
+

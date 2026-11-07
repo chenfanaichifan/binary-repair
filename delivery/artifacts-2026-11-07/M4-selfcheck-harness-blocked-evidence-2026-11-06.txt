@@ -1,0 +1,50 @@
+# M4 selfcheck / V4 harness attempt — blocked — 2026-11-06
+
+$ date '+%Y-%m-%dT%H:%M:%S%z'
+2026-11-06T16:37:00+0800
+
+$ ls -l /opt/angr-venv/bin/python
+ls: /opt/angr-venv/bin/python: No such file or directory
+
+$ /opt/angr-venv/bin/python -c 'import sys,angr,z3;print(sys.version.split()[0],angr.__version__,z3.get_version_string())'; echo exit=$?
+bash: /opt/angr-venv/bin/python: No such file or directory
+exit=127
+
+$ which -a python3.12 || echo '(no python3.12)'
+(no python3.12)
+
+$ python3 -c 'import angr' 2>&1 | tail -1
+ModuleNotFoundError: No module named 'angr'
+
+$ ping -c 1 -W 1000 192.168.30.128 2>&1 | tail -2
+--- 192.168.30.128 ping statistics ---
+1 packets transmitted, 0 packets received, 100.0% packet loss
+
+$ ssh -o BatchMode=yes -o ConnectTimeout=4 lab@192.168.30.128 'echo ok' 2>&1 | tail -1
+ssh: connect to host 192.168.30.128 port 22: Operation timed out
+
+$ find . -maxdepth 7 \( -name selfcheck.py -o -name run_selfcheck.sh \) 2>/dev/null | grep -v '^./rea/' | head || echo '(no selfcheck scripts)'
+
+# T8.3 second class
+$ grep -n 'Second class blocked\|CWE-787\|CWE122\|PIE or non-PIE\|T8.3 blocked' _m3-run/docs/handoffs/106-m1-second-class-and-corpus-blockers-2026-11-05.md | head -8
+1:# Second class blocked on corpus and ELF; intake now checks the site
+8:## Decision recorded: CWE-787, not 416
+28:## Corpus: SARD 112 / Juliet v1.3 does not contain CWE-787
+44:CWE122_Heap_Based_Buffer_Overflow
+48:So "pick a CWE-787 case from test suite 112" cannot be satisfied literally, and
+49:I did not relabel a CWE-122 case as CWE-787 to make it look satisfied.
+53:1. **Use `CWE122_Heap_Based_Buffer_Overflow` as the second class**, recording
+54:   `cwe: "CWE-122"` and `cwe_parent: "CWE-787"`. It is a heap out-of-bounds
+
+$ grep -n 'non-PIE\|T8.3\|Status' _m3-run/docs/handoffs/117-m3-cwe122-build-result-and-variant-question-2026-11-05.md | head -6
+6:**Status:** the fixture now passes intake (`OK`, 0 findings) and the six case
+9:task book both require non-PIE. I pinned the non-PIE build and flagged it; if
+31:## 1. The blocking question: PIE or non-PIE
+59:artefact should be `EXEC (non-PIE)`, so **the prescribed command cannot produce
+82:"Linux x86-64 non-PIE guest"
+90:Both sibling fixtures agree with non-PIE:
+
+# 124
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

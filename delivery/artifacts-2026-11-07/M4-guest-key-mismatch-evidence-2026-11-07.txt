@@ -1,0 +1,39 @@
+# M4 guest key mismatch — evidence — 2026-11-07
+
+$ date '+%Y-%m-%dT%H:%M:%S%z'
+2026-11-07T10:20:22+0800
+
+$ nc -z -G 3 10.11.0.132 2222; echo nc_exit=$?
+Connection to 10.11.0.132 port 2222 [tcp/rockwell-csp2] succeeded!
+nc_exit=0
+
+$ ssh -p 2222 -i _m4-verify/keys/m4_guest_ed25519 -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 m4verify@10.11.0.132 'echo LOGIN_OK' 2>&1 | tail -2
+Warning: Permanently added '[10.11.0.132]:2222' (ED25519) to the list of known hosts.
+m4verify@10.11.0.132: Permission denied (publickey).
+
+$ ssh-add -l 2>&1
+The agent has no identities.
+
+$ ssh-keygen -lf _m4-verify/m4_guest_key.pub
+256 SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q m4-guest-replay-2026-11-06 (ED25519)
+
+$ for f in $(find /Users/huageorge -maxdepth 6 -name '*.pub' 2>/dev/null); do ssh-keygen -lf "$f" 2>/dev/null | grep -i FZfx && echo "$f"; done | head -3
+
+# installed keys per M3 145
+$ git -C _m3-run show dd2d926:docs/handoffs/145-m3-to-m4-key-installed-2026-11-07.md | grep -n 'FZfxZXkW\|JF1hZZdG\|10.11.0.132\|2222' | head -8
+18:  SHA256:JF1hZZdGsxmEUt0REdbg4X76LCbaA/1q+0IYObh3zgI   m5-v4-access-2026-11-06
+19:  SHA256:FZfxZXkWYLEVY+b9/cPRN+VhUf7tVXL4Xd9wKspYDQQ   m4-guest-replay-2026-11-06
+31:fingerprint is exactly `SHA256:FZfxZXkWYLEVY+b9/cPRN+VhUf7tVXL4Xd9wKspYDQQ` — the
+43:ssh -p 2222 -i ~/.ssh/m4_id_ed25519 m4verify@10.11.0.132
+52:| `Permission denied (publickey)` | the client is not offering this key | check `-i` points at the private half of `FZfxZXkW…`, and that `-o IdentitiesOnly=yes` is set if you have other keys in an agent |
+129:- `authorized_keys`: **2 lines**, `JF1hZZdG…` (M5) and `FZfxZXkW…` (you).
+
+# T8.3
+$ git -C _m3-run show dd2d926:T8.3-evidence-2026-11-06/gates/gate-index.json | python3 -c "import json,sys;d=json.load(sys.stdin);print(d['blocked']);print([(g['gate'],g['state']) for g in d['gates']])"
+{'T8.3': 'blocked', 'not_done_by_M3': ['verified_by', 'V4 pass', 'T8.3 completion', 'a second sample'], 'on': 'M4 independent replay (V4) and M4/Lead acceptance of the second sample'}
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'passed'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+
+# 124
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

@@ -1,0 +1,23 @@
+# M4 guest replay hold — evidence — 2026-11-06
+
+$ date '+%Y-%m-%dT%H:%M:%S%z'
+2026-11-06T16:57:51+0800
+
+$ unzip -l M4-keypair-handoff-2026-11-06.zip | grep -E 'keys/|m4_guest' || echo '(no private key in zip)'
+      108  11-06-2026 16:55   m4_guest_key.pub
+
+$ ls -l _m4-verify/keys/m4_guest_ed25519
+-rw-------@ 1 huageorge  staff  419 Nov  6 16:54 _m4-verify/keys/m4_guest_ed25519
+
+$ ssh-keygen -lf _m4-verify/m4_guest_key.pub
+256 SHA256:bRq28b6JG3LXILy3iayXdW/HdSre8mCofnd6B+8L84Q m4-guest-replay-2026-11-06 (ED25519)
+
+$ ssh -i _m4-verify/keys/m4_guest_ed25519 -o BatchMode=yes -o ConnectTimeout=4 m4verify@192.168.30.128 'echo ok' 2>&1 | tail -2
+ssh: connect to host 192.168.30.128 port 22: Operation timed out
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/m3-handoff-ea5cc9e/T8.3-evidence-2026-11-06/gates/gate-index.json'));print(d['blocked'])"
+{'T8.3': 'blocked', 'not_done_by_M3': ['verified_by', 'V4 pass', 'T8.3 completion', 'a second sample'], 'on': 'M4 independent replay (V4) and M4/Lead acceptance of the second sample'}
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

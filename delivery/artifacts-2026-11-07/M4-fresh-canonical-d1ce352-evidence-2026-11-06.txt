@@ -1,0 +1,72 @@
+# M4 fresh canonical pin — d1ce352 — 2026-11-06
+
+$ date '+%Y-%m-%dT%H:%M:%S%z'
+2026-11-06T16:22:15+0800
+
+$ cd _m1-work/live-bridge && GIT_SSH_COMMAND='ssh -o BatchMode=yes -o ConnectTimeout=10' git ls-remote origin 'refs/heads/canonical/m1-m5-integration' 'refs/heads/integration/live-bridge' 'refs/heads/m1/t30-acceptance-ab-2026-11-05' 'refs/heads/m3/cwe416-v3-noinput'
+d1ce352f60057ab3cd389c6af609c7b5ed3bcefd	refs/heads/canonical/m1-m5-integration
+7817a20cd5a215e4423de6e045bf754691671120	refs/heads/integration/live-bridge
+e6689e47c0987afb8ec302d61050c6702f8c340f	refs/heads/m1/t30-acceptance-ab-2026-11-05
+42d00181e03c17eaf54d18924b4ea8d2de499406	refs/heads/m3/cwe416-v3-noinput
+
+$ cd _m1-work/live-bridge && GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/chenfanaichifan/binary-repair.git 'refs/heads/canonical/m1-m5-integration' 'refs/heads/integration/live-bridge'
+d1ce352f60057ab3cd389c6af609c7b5ed3bcefd	refs/heads/canonical/m1-m5-integration
+7817a20cd5a215e4423de6e045bf754691671120	refs/heads/integration/live-bridge
+
+$ git -C _m1-work/live-bridge show -s --format='%H%n%P%n%s%n%b' d1ce352
+d1ce352f60057ab3cd389c6af609c7b5ed3bcefd
+dc3bcd366a71b61f9d23c6562bc52dd0244d0647 40a4153e769065a7e51f9017162067c961c4db98
+merge(canonical): bring the v3 no-input baseline in with the partial usage fix
+The partial-usage commit sat on 1938c31, which has no v3 no-input tests, so 'the 120 contract gate is unchanged' could not be measured there. Merge the local canonical v3 baseline 40a4153 into the branch; no fixture byte, contract rule or gate status changes.
+
+Re-measured on the merged tree: 84 gate tests, 19 usage/controller tests, 449 passed / 2 skipped full suite. CWE121 v2 hash 24bfe568...4e37 reproduced. T8.3 blocked; no main merge, no tag, no live-success claim.
+
+
+$ git -C _m1-work/live-bridge show --stat --oneline d1ce352 | head -12
+d1ce352 merge(canonical): bring the v3 no-input baseline in with the partial usage fix
+
+ MEMORY.md                                          |   2 +
+ app/domain/contracts.py                            | 147 +++++++----
+ docs/fixtures.md                                   |  51 +++-
+ .../112-m1-v3-common-baseline-2026-11-05.md        |  97 +++++++
+ .../113-m1-v3-no-input-acceptance-2026-11-05.md    |  95 +++++++
+ .../133-m5-partial-usage-merge-2026-11-06.md       |  29 ++-
+ .../evidence/V3-no-input-2026-11-05/README.md      |  50 ++++
+ .../evidence/V3-no-input-2026-11-05/SHA256SUMS     |   8 +
+ .../evidence/V3-no-input-2026-11-05/candidate      |   7 +
+ .../evidence/V3-no-input-2026-11-05/contract.json  |  22 ++
+
+$ git -C _m1-work/live-bridge merge-base d1ce352 6d67140
+40a4153e769065a7e51f9017162067c961c4db98
+
+$ git -C _m1-work/live-bridge merge-base --is-ancestor 6d67140 d1ce352 && echo '6d67140 ancestor of canonical' || echo '6d67140 NOT ancestor of canonical'
+6d67140 NOT ancestor of canonical
+
+$ git -C _m1-work/live-bridge merge-base --is-ancestor d1ce352 6d67140 && echo 'canonical ancestor of 6d67140' || echo 'canonical NOT ancestor of 6d67140'
+canonical NOT ancestor of 6d67140
+
+$ cd _m4-verify/d1ce352 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+449 passed, 9 skipped, 1 warning in 13.63s
+
+$ cd _m4-verify/6d67140 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+513 passed, 9 skipped, 1 warning in 14.80s
+
+$ cd _m4-verify/41ff540 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+513 passed, 9 skipped, 1 warning in 14.23s
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+
+
+# integration head moved during the check
+$ git -C _m1-work/live-bridge show -s --format="%H%n%P%n%s" 7817a20
+7817a20cd5a215e4423de6e045bf754691671120
+0233d34d208bb05077d7cea708978b8087293e9c
+docs(api): pin the obligation evidence field contract with a real response
+
+$ git -C _m1-work/live-bridge log --oneline 6d67140..7817a20
+7817a20 docs(api): pin the obligation evidence field contract with a real response
+0233d34 fix(api): order obligation rows V0..V5 in evidence and route summary
+
+$ git -C _m1-work/live-bridge merge-base --is-ancestor 6d67140 7817a20
+6d67140 ancestor of 7817a20

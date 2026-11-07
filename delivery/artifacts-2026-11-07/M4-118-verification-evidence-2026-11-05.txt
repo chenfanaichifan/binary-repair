@@ -1,0 +1,29 @@
+# M4 118 build/trigger verification evidence — 2026-11-05
+# host: Darwin arm64; no guest access, no host execution
+
+$ find . -maxdepth 5 \( -name '01-window-and-isolation.txt' -o -name '02-build.txt' -o -name '03-readelf.txt' -o -name '04-trigger.txt' -o -name '05-asan.txt' -o -name '06-SHA256SUMS' -o -name '07-rebuild.json' -o -name 'collect.sh' \) | grep -v '^./rea/' || true
+
+# (empty result above = no rebuild evidence file in this workspace)
+
+$ shasum -a 256 _m4-verify/T30/original.elf
+c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9  _m4-verify/T30/original.elf
+
+$ grep -n '251\|repeat 200\|repeat 50' 118-m3-t30-baseline-rebuild-2026-11-05.md README.md
+118-m3-t30-baseline-rebuild-2026-11-05.md:28:./trigger.sh --repeat 50 ./original.elf
+118-m3-t30-baseline-rebuild-2026-11-05.md:172:--repeat 50        50x  … 05040a …
+118-m3-t30-baseline-rebuild-2026-11-05.md:173:--repeat 200       200x … 05040a …
+118-m3-t30-baseline-rebuild-2026-11-05.md:176:**251 runs, one distinct observation.** With ASLR left on, 10 plain runs produced
+README.md:25:| `04-trigger.txt` | guest | Trigger observation, 251 deterministic runs, ASLR-on contrast |
+
+$ grep -n '50x\|50 consecutive\|distinct\|ASLR' _m4-verify/T30/trigger-observation.txt
+8:## 2. determinism: 50 consecutive runs with ASLR disabled
+9:# every line is one distinct observation, with its occurrence count
+10:50x exit_code=0 stdout_hex=05040a stdout_len=3 stderr_len=0
+12:## 3. contrast: 10 runs with ASLR ON (plain ./original.elf)
+
+$ git -C binary-repair cat-file -t c274893 || true
+致命错误：Not a valid object name c274893
+
+$ git -C binary-repair rev-parse --abbrev-ref HEAD
+member-5-deepseek-schema
+

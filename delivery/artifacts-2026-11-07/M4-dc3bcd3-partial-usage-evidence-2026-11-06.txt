@@ -1,0 +1,45 @@
+# M4 dc3bcd3 partial usage + controller pass-through — evidence — 2026-11-06
+
+$ git -C _m1-work/live-bridge log -1 --format='%H %s'
+e6689e47c0987afb8ec302d61050c6702f8c340f docs(m1): pin fresh remote heads
+
+$ git -C _m1-work/live-bridge show dc3bcd3 --stat --oneline | head -10
+dc3bcd3 feat(usage): merge M5 partial aggregate semantics into canonical
+ app/controller_api.py                              | 23 +++++++--
+ app/services/model_calls.py                        | 27 +++++++----
+ .../133-m5-partial-usage-merge-2026-11-06.md       | 55 ++++++++++++++++++++++
+ tests/integration/test_ai_usage_sources.py         | 50 ++++++++++++++++----
+ tests/integration/test_assistant_plan.py           | 45 ++++++++++++++++++
+ tests/integration/test_contract_gaps.py            |  1 +
+ 6 files changed, 178 insertions(+), 23 deletions(-)
+
+$ grep -n 'partial' _m4-verify/dc3bcd3/app/services/model_calls.py | head -8
+109:    * some NULL, some real      -> sum the real ones, ``partial`` is ``True``
+110:    * all real                  -> sum, ``partial`` is ``False``
+113:    the real usage its siblings recorded -- it only marks the sum partial.
+137:        "partial": len(real) != len(rows),
+
+$ grep -n 'partial' _m4-verify/dc3bcd3/app/controller_api.py | head -10
+271:    rendered as a made-up one, and a partial record is not padded with zeros.
+273:    ``partial`` is passed through from :func:`aggregate_job_usage` unchanged:
+298:        # with ``partial: true``. Falling back to the plan would mix two
+314:        "partial": False,
+
+$ cd _m4-verify/dc3bcd3 && PYTHONPATH=. ../../role5-kit/.venv/bin/python ../../_m4-verify/probe_partial_usage.py
+j1 real + NULL sibling: {'input_tokens': 12, 'output_tokens': 3, 'partial': True}
+j1 controller: {'input_tokens': 12, 'output_tokens': 3, 'partial': True}
+j2 all NULL: None
+j2 controller: None
+j3 all real: {'input_tokens': 6, 'output_tokens': 9, 'partial': False}
+j4 one-sided NULL only: None
+j5 one-sided NULL + real: {'input_tokens': 1, 'output_tokens': 2, 'partial': True}
+
+$ cd _m4-verify/dc3bcd3 && ../../role5-kit/.venv/bin/python -m pytest tests/integration/test_ai_usage_sources.py tests/integration/test_assistant_plan.py tests/integration/test_contract_gaps.py -q -o addopts='' --tb=short 2>&1 | tail -1
+19 passed, 1 warning in 1.68s
+
+$ cd _m4-verify/dc3bcd3 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+410 passed, 9 skipped, 1 warning in 12.30s
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

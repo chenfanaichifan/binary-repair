@@ -1,0 +1,145 @@
+# M4 V4 attributes + negative-control design + harness output — evidence — 2026-11-06
+
+$ sed -n '70,135p' _m4-verify/67b3458/app/domain/v4.py
+        return self
+
+
+class Replay(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    command: str = Field(min_length=1)
+    runs: int = Field(ge=2)
+    identical: bool
+    evidence_sha256: str = Field(pattern=HEX64)
+
+
+class V4Evidence(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    schema_version: Literal[1] = 1
+    gate: Literal["V4"] = "V4"
+    kind: Literal["symbolic"] = "symbolic"
+    scope: Literal["model"] = "model"
+    state: Literal["passed"]
+    ran: Literal[True] = True
+    candidate_sha256: str = Field(pattern=HEX64)
+    original_sha256: str = Field(pattern=HEX64)
+    tool_versions: dict[str, str] = Field(min_length=1)
+    preconditions: list[str] = Field(min_length=1)
+    memory_predicates: list[str] = Field(min_length=1)
+    forbidden_ranges: list[ForbiddenRange] = Field(min_length=1)
+    hooks: list[str] = Field(min_length=1)
+    exploration_accounting: ExplorationAccounting
+    solver_accounting: SolverAccounting
+    calibration: Calibration
+    replay: Replay
+    claimed_scope: str = Field(min_length=1)
+    not_claimed: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _complete(self) -> "V4Evidence":
+        if not self.exploration_accounting.complete:
+            raise ValueError("exploration accounting is incomplete")
+        if not self.solver_accounting.complete:
+            raise ValueError("solver accounting is incomplete")
+        if not self.calibration.complete:
+            raise ValueError("calibration is incomplete")
+        if not self.replay.identical:
+            raise ValueError("replay is not identical")
+        if any(not key.strip() or not value.strip() for key, value in self.tool_versions.items()):
+            raise ValueError("tool_versions entries must be non-empty")
+        return self
+
+
+def write_v4_evidence(
+    path: str | Path,
+    data: object,
+    *,
+    candidate_sha256: str | None = None,
+    original_sha256: str | None = None,
+) -> V4Evidence:
+    """Validate and atomically write one typed V4 artifact.
+
+    This is the producer's write landing point. It refuses incomplete content;
+    a caller without a reviewed solver-accounting harness cannot use it to
+    manufacture a pass.
+    """
+
+    evidence = validate_v4_evidence(
+        data,
+        candidate_sha256=candidate_sha256,
+        original_sha256=original_sha256,
+
+$ grep -n 'claimed_scope\|scope: Literal' _m4-verify/67b3458/app/domain/v4.py
+86:    scope: Literal["model"] = "model"
+100:    claimed_scope: str = Field(min_length=1)
+
+$ grep -n 'class Calibration' -A18 _m4-verify/67b3458/app/domain/v4.py
+58:class Calibration(BaseModel):
+59-    model_config = ConfigDict(extra="forbid")
+60-    suite: str = Field(min_length=1)
+61-    cases: int = Field(ge=1)
+62-    passed: int = Field(ge=0)
+63-    failed: int = Field(ge=0)
+64-    complete: bool
+65-
+66-    @model_validator(mode="after")
+67-    def _counts(self) -> "Calibration":
+68-        if self.passed + self.failed > self.cases:
+69-            raise ValueError("calibration passed+failed exceeds cases")
+70-        return self
+71-
+72-
+73-class Replay(BaseModel):
+74-    model_config = ConfigDict(extra="forbid")
+75-    command: str = Field(min_length=1)
+76-    runs: int = Field(ge=2)
+
+$ grep -n 'class ExplorationAccounting' -A10 _m4-verify/67b3458/app/domain/v4.py
+37:class ExplorationAccounting(BaseModel):
+38-    model_config = ConfigDict(extra="forbid")
+39-    states_explored: int = Field(ge=0)
+40-    states_pruned: int = Field(ge=0)
+41-    max_depth: int = Field(ge=0)
+42-    complete: bool
+43-    unexplored: list[str] = Field(default_factory=list)
+44-
+45-
+46-class SolverAccounting(BaseModel):
+47-    model_config = ConfigDict(extra="forbid")
+
+$ grep -n 'class SolverAccounting' -A12 _m4-verify/67b3458/app/domain/v4.py
+46:class SolverAccounting(BaseModel):
+47-    model_config = ConfigDict(extra="forbid")
+48-    engine: str = Field(min_length=1)
+49-    version: str = Field(min_length=1)
+50-    queries: int = Field(ge=1)
+51-    sat: int = Field(ge=0)
+52-    unsat: int = Field(ge=0)
+53-    unknown: int = Field(ge=0)
+54-    timeouts: int = Field(ge=0)
+55-    complete: bool
+56-
+57-
+58-class Calibration(BaseModel):
+
+$ cat _m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/v4-symbolic.json
+{
+  "gate": "V4",
+  "kind": "symbolic",
+  "scope": "model",
+  "state": "not_run",
+  "ran": false,
+  "reason": "no symbolic or bounded-model engine was run in this window; the five-byte edit has no model-level proof, and a replay result cannot be upgraded to one",
+  "claimed_scope": null,
+  "not_claimed": [
+    "binary-level proof of the repair",
+    "memory-safety for any path other than the single no-input observation",
+    "absence of the defect in the rest of the program"
+  ]
+}
+
+$ grep -in 'v4\|symbolic' _m3-run/docs/handoffs/evidence/P4/harness-manifest.json || echo '(P4 manifest has no V4 entry — it is a gate-4 round-trip harness)'
+(P4 manifest has no V4 entry — it is a gate-4 round-trip harness)
+
+$ cd _m4-verify/67b3458 && PYTHONPATH=. ../../role5-kit/.venv/bin/python -c "from app.domain.acceptance import Obligation,decide_attempt_outcome;from app.domain.outcomes import CheckResult as C;k=['identity','structure','interface','behaviour','symbolic','reproducibility'];r=[C.PASSED,C.PASSED,C.PASSED,C.PASSED,C.NOT_RUN,C.PASSED];c='46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0';v=decide_attempt_outcome(obligations=[Obligation(kind=x,required=True,result=y) for x,y in zip(k,r)],candidate_sha256=c,expected_sha256=c,reviewed_scope_sha256='b'*64);print(v.outcome.value,getattr(v.reason,'value',v.reason),v.failing_obligation)"
+inconclusive required_check_not_run symbolic
+

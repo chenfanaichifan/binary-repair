@@ -1,0 +1,30 @@
+# M4 V4 version self-check — handoff 131 — 2026-11-06
+
+$ git -C _m1-work/live-bridge log -1 --format='%H %s'
+3f21d317b9c61a5ed7cc5f22b233a8bad62169c2 test(m1): prove the V4 adapter cannot set M4 verification
+
+$ git -C _m1-work/live-bridge status --short
+
+$ ls -l /opt/angr-venv/bin/python
+ls: /opt/angr-venv/bin/python: No such file or directory
+
+$ /opt/angr-venv/bin/python -c "import sys, angr, z3; print(sys.version.split()[0], angr.__version__, z3.get_version_string())"; echo exit=$?
+bash: /opt/angr-venv/bin/python: No such file or directory
+exit=127
+
+$ which -a python3.12 || echo '(no python3.12)'
+(no python3.12)
+
+$ python3 -c 'import angr' 2>&1 | tail -1
+ModuleNotFoundError: No module named 'angr'
+
+$ ping -c 1 -W 1000 192.168.30.128 2>&1 | tail -2
+--- 192.168.30.128 ping statistics ---
+1 packets transmitted, 0 packets received, 100.0% packet loss
+
+$ ssh -o BatchMode=yes -o ConnectTimeout=4 lab@192.168.30.128 'ls -d /opt/angr-venv' 2>&1 | tail -1
+ssh: connect to host 192.168.30.128 port 22: Operation timed out
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

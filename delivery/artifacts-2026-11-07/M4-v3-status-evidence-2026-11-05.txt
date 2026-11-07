@@ -1,0 +1,40 @@
+# M4 v3 status lock evidence — 2026-11-05
+# schema PASS; end-to-end PARTIAL
+
+$ git -C _m1-work/live-bridge log --oneline -2
+7c279a1 feat(m5): add v3 no-input contract mode
+1b08ae5 feat(intake): accept the CWE416 no-input contract shape (M5 option A)
+
+$ git -C _m1-work/live-bridge show --stat --oneline 1b08ae5 | head -4
+1b08ae5 feat(intake): accept the CWE416 no-input contract shape (M5 option A)
+ MEMORY.md                                          |   1 +
+ docs/fixtures.md                                   |  53 ++++-
+ ...m1-t30-acceptance-and-ab-decision-2026-11-05.md |  23 ++-
+
+$ grep -n 'from app.domain.contracts\|SecurityContract.from_dict' _m1-work/live-bridge/tools/fixture_intake.py
+57:from app.domain.contracts import (  # noqa: E402
+379:        SecurityContract.from_dict(data)
+
+$ grep -n 'valid case(s); input_mode=none requires exactly 1\|no_input_valid_case_count_mismatch' _m1-work/live-bridge/tools/fixture_intake.py
+552:                    "no_input_valid_case_count_mismatch",
+554:                    f"{len(valid_ids)} valid case(s); input_mode=none requires exactly 1",
+
+$ cd _m1-work/live-bridge && python3 ../../_m4-verify/probe_intake_consistency.py
+valid_count=2 findings: ['no_input_valid_case_count_mismatch']
+missing dest_capacity_bytes findings: ['contract_schema_invalid']
+saved: /Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/_m4-verify/contract-missing-cap.json
+
+$ shasum -a 256 _m1-work/live-bridge/app/domain/contracts.py _m1-work/m5-schema/app/domain/contracts.py
+cc976f62cc79c1f98188d7cdec9bdb40abd40797e1d1c5156e7443b76ff5fd6a  _m1-work/live-bridge/app/domain/contracts.py
+cc976f62cc79c1f98188d7cdec9bdb40abd40797e1d1c5156e7443b76ff5fd6a  _m1-work/m5-schema/app/domain/contracts.py
+
+$ cd _m1-work/live-bridge && python3 -c "import json;from app.domain.contracts import SecurityContract;c=SecurityContract.from_dict(json.load(open('fixtures/public/CWE121_src_char_declare_cpy_51b/contract.json')));print('CWE121 v2 hash:', c.sha256());print('match:', c.sha256()=='24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37');print('input_mode in payload:', 'input_mode' in c.to_dict())"
+CWE121 v2 hash: 24bfe568e162be57de013abaeda96060d7edf4cad4b2eca0b003d929d9ec4e37
+match: True
+input_mode in payload: False
+
+$ git -C _m1-work/live-bridge log --oneline -3 -- app/domain/acceptance.py
+1406f11 fix(acceptance): bind expected_sha256 to approved candidate, not original input
+cc29158 integration: consolidate repo layouts, merge acceptance slice, add measured evidence and controller evidence fixes
+7f967bb feat(orchestration): route V0-V5 obligations into the acceptance engine
+

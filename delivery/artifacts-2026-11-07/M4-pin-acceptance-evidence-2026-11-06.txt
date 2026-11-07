@@ -1,0 +1,31 @@
+# M4 pin acceptance d1ce352 / 7817a20 — evidence — 2026-11-06
+
+$ date '+%Y-%m-%dT%H:%M:%S%z'
+2026-11-06T16:29:55+0800
+
+$ cd _m1-work/live-bridge && GIT_SSH_COMMAND='ssh -o BatchMode=yes -o ConnectTimeout=10' git ls-remote origin 'refs/heads/canonical/m1-m5-integration' 'refs/heads/integration/live-bridge'
+d1ce352f60057ab3cd389c6af609c7b5ed3bcefd	refs/heads/canonical/m1-m5-integration
+7817a20cd5a215e4423de6e045bf754691671120	refs/heads/integration/live-bridge
+
+$ git -C _m1-work/live-bridge show -s --format='%H%n%P%n%s' d1ce352
+d1ce352f60057ab3cd389c6af609c7b5ed3bcefd
+dc3bcd366a71b61f9d23c6562bc52dd0244d0647 40a4153e769065a7e51f9017162067c961c4db98
+merge(canonical): bring the v3 no-input baseline in with the partial usage fix
+
+$ git -C _m1-work/live-bridge show -s --format='%H%n%P%n%s' 7817a20
+7817a20cd5a215e4423de6e045bf754691671120
+0233d34d208bb05077d7cea708978b8087293e9c
+docs(api): pin the obligation evidence field contract with a real response
+
+$ cd _m4-verify/d1ce352 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+449 passed, 9 skipped, 1 warning in 16.95s
+
+$ cd _m4-verify/6d67140 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+513 passed, 9 skipped, 1 warning in 22.64s
+
+$ cd _m4-verify/41ff540 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+513 passed, 9 skipped, 1 warning in 21.01s
+
+$ python3 -c "import json;d=json.load(open('_m4-verify/124/M3-124-cwe416-candidate-handoff-2026-11-05/evidence/cwe416-candidate-2026-11-05/gate-index.json'));print([(g['gate'],g['result']) for g in d['gates']])"
+[('V0', 'passed'), ('V1', 'passed'), ('V2', 'not_run'), ('V3', 'passed'), ('V4', 'not_run'), ('V5', 'passed')]
+

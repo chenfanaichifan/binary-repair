@@ -1,0 +1,83 @@
+# M4 6d67140 six-item merge + local test count — evidence — 2026-11-06
+
+$ date '+%Y-%m-%dT%H:%M:%S%z'
+2026-11-06T16:17:09+0800
+
+$ git -C _m1-work/live-bridge show -s --format='%H%n%P%n%s' 6d67140
+6d67140ee560ec66d5e606965d8193ae810405b1
+41ff540c414338931005928399358bb3241bea69
+docs(m1): record the branch alignment and the withdrawn T30 swap
+
+$ git -C _m1-work/live-bridge show --stat --oneline 6d67140 | tail -3
+6d67140 docs(m1): record the branch alignment and the withdrawn T30 swap
+ MEMORY.md | 1 +
+ 1 file changed, 1 insertion(+)
+
+$ git -C _m1-work/live-bridge show -s --format='%H%n%P%n%s%n%b' 41ff540
+41ff540c414338931005928399358bb3241bea69
+c2170460d45010b0f074aefb2fc64ed277a073a9 3f21d317b9c61a5ed7cc5f22b233a8bad62169c2
+Merge 3f21d31 into integration/live-bridge
+Brings the V4 typed-evidence gate (replay.verified_by == "m4" on the
+production path) and the 124/120 records into this branch, which had
+forked before them.
+
+The main CWE416 fixture returns to the shipped src.c; the verbatim
+original.c experiment is withdrawn because 124's delivered ELF and
+SHA256SUMS bind the existing sources. Recorded in handoff 131.
+
+.gitattributes: the no-input fixture is byte-stable now, otherwise
+original.c would be normalised to LF on clone and fail its own
+tests/SHA256SUMS (fa84a6bb -> 262dee1d).
+
+Tests aligned with the merged semantics: a passed gate must name a
+verified artifact, V1/V2/V4 are re-validated and downgraded to not_run,
+and the evidence endpoint's derived id/gate fields are compared
+separately from the stored row.
+
+506 passed / 9 skipped / 0 failed.
+
+
+$ git -C _m1-work/live-bridge show --stat --oneline 41ff540 | tail -3
+ tools/route_bundle_ingest.py                       | 107 ++++-
+ tools/v4_harness_to_evidence.py                    |  55 +++
+ 121 files changed, 8873 insertions(+), 756 deletions(-)
+
+# fresh remote pins (final)
+$ cd _m1-work/live-bridge && GIT_SSH_COMMAND='ssh -o BatchMode=yes -o ConnectTimeout=10' git ls-remote origin 'refs/heads/canonical/m1-m5-integration' 'refs/heads/integration/live-bridge' 'refs/heads/m1/t30-acceptance-ab-2026-11-05' 'refs/heads/m3/cwe416-v3-noinput'
+dc3bcd366a71b61f9d23c6562bc52dd0244d0647	refs/heads/canonical/m1-m5-integration
+6d67140ee560ec66d5e606965d8193ae810405b1	refs/heads/integration/live-bridge
+e6689e47c0987afb8ec302d61050c6702f8c340f	refs/heads/m1/t30-acceptance-ab-2026-11-05
+42d00181e03c17eaf54d18924b4ea8d2de499406	refs/heads/m3/cwe416-v3-noinput
+
+$ git -C _m1-work/live-bridge merge-base --is-ancestor 6d67140 dc3bcd3 && echo '6d67140 ancestor of canonical' || echo '6d67140 NOT ancestor of canonical'
+6d67140 NOT ancestor of canonical
+
+$ git -C _m1-work/live-bridge merge-base --is-ancestor dc3bcd3 6d67140 && echo 'canonical ancestor of 6d67140' || echo 'canonical NOT ancestor of 6d67140'
+canonical NOT ancestor of 6d67140
+
+$ git -C _m1-work/live-bridge merge-base 6d67140 dc3bcd3
+1938c311672282ebd1fee3634fec9aad57760769
+
+# collected
+$ cd _m4-verify/6d67140 && ../../role5-kit/.venv/bin/python -m pytest --collect-only -q -o addopts='' 2>/dev/null | tail -1
+522 tests collected in 0.56s
+
+# local full-suite results
+$ cd _m4-verify/6d67140 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+513 passed, 9 skipped, 1 warning in 16.91s
+
+$ cd _m4-verify/41ff540 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+513 passed, 9 skipped, 1 warning in 12.08s
+
+$ cd _m4-verify/dc3bcd3 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+410 passed, 9 skipped, 1 warning in 10.04s
+
+$ cd _m4-verify/3f21d31 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+503 passed, 9 skipped, 1 warning in 17.95s
+
+$ cd _m4-verify/c217046 && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+419 passed, 9 skipped, 1 warning in 14.26s
+
+$ cd _m4-verify/fdc083d && ../../role5-kit/.venv/bin/python -m pytest -q -o addopts='' --tb=short 2>&1 | tail -1
+504 passed, 9 skipped, 1 warning in 11.90s
+
