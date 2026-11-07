@@ -18,11 +18,12 @@ M5 adapter files:         tools/mcp_tool_adapters.py
 
 ```text
 T6.0 contract/cancellation boundary tests: PASS
-Actual P0-C boundary: NOT DONE
-  unauthenticated_token_absent     FAIL
-  cross_origin_upload_rejected     FAIL
-  non_elf_upload_rejected          FAIL
-  traversal_filename_rejected      FAIL
+Local P0-C boundary checks: PASS
+  unauthenticated write rejected      401
+  cross-origin write rejected         403
+  non-ELF upload rejected             400
+  traversal filename rejected         400
+tests/integration/test_controller_auth.py: 9 passed
 ```
 
 ### M2
