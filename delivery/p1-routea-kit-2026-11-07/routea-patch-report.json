@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "route": "route_a",
+  "method": "swap two call targets: printLine before free (contract authorized edit 1)",
+  "original": {
+    "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "size": 25344
+  },
+  "candidate": {
+    "sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+    "size": 25344
+  },
+  "edits": [
+    {
+      "offset": 4869,
+      "vaddr": "0x401305",
+      "before": "e8e6fdffff",
+      "after": "e8f4000000",
+      "text": "call free@plt -> call printLine"
+    },
+    {
+      "offset": 4881,
+      "vaddr": "0x401311",
+      "before": "e8e8000000",
+      "after": "e8dafdffff",
+      "text": "call printLine -> call free@plt"
+    }
+  ],
+  "bytes_changed": 8,
+  "size_delta": 0,
+  "independent_of_route_b": "route B candidate is 46d16e99 (NOP free); this candidate swaps calls and has a different hash"
+}
