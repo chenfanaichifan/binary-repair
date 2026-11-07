@@ -1,0 +1,759 @@
+{
+  "candidate": {
+    "entrypoint": "0x4011b0",
+    "imagebase": "0x400000",
+    "is_pie": false,
+    "path": "candidate.elf",
+    "sections": [
+      {
+        "flags": 0,
+        "name": "",
+        "offset": 0,
+        "size": 0,
+        "virtual_address": 0
+      },
+      {
+        "flags": 2,
+        "name": ".interp",
+        "offset": 792,
+        "size": 28,
+        "virtual_address": 4195096
+      },
+      {
+        "flags": 2,
+        "name": ".note.gnu.property",
+        "offset": 824,
+        "size": 48,
+        "virtual_address": 4195128
+      },
+      {
+        "flags": 2,
+        "name": ".note.gnu.build-id",
+        "offset": 872,
+        "size": 36,
+        "virtual_address": 4195176
+      },
+      {
+        "flags": 2,
+        "name": ".note.ABI-tag",
+        "offset": 908,
+        "size": 32,
+        "virtual_address": 4195212
+      },
+      {
+        "flags": 2,
+        "name": ".gnu.hash",
+        "offset": 944,
+        "size": 28,
+        "virtual_address": 4195248
+      },
+      {
+        "flags": 2,
+        "name": ".dynsym",
+        "offset": 976,
+        "size": 360,
+        "virtual_address": 4195280
+      },
+      {
+        "flags": 2,
+        "name": ".dynstr",
+        "offset": 1336,
+        "size": 186,
+        "virtual_address": 4195640
+      },
+      {
+        "flags": 2,
+        "name": ".gnu.version",
+        "offset": 1522,
+        "size": 30,
+        "virtual_address": 4195826
+      },
+      {
+        "flags": 2,
+        "name": ".gnu.version_r",
+        "offset": 1552,
+        "size": 80,
+        "virtual_address": 4195856
+      },
+      {
+        "flags": 2,
+        "name": ".rela.dyn",
+        "offset": 1632,
+        "size": 48,
+        "virtual_address": 4195936
+      },
+      {
+        "flags": 66,
+        "name": ".rela.plt",
+        "offset": 1680,
+        "size": 288,
+        "virtual_address": 4195984
+      },
+      {
+        "flags": 6,
+        "name": ".init",
+        "offset": 4096,
+        "size": 27,
+        "virtual_address": 4198400
+      },
+      {
+        "flags": 6,
+        "name": ".plt",
+        "offset": 4128,
+        "size": 208,
+        "virtual_address": 4198432
+      },
+      {
+        "flags": 6,
+        "name": ".plt.sec",
+        "offset": 4336,
+        "size": 192,
+        "virtual_address": 4198640
+      },
+      {
+        "flags": 6,
+        "name": ".text",
+        "offset": 4528,
+        "size": 1962,
+        "virtual_address": 4198832
+      },
+      {
+        "flags": 6,
+        "name": ".fini",
+        "offset": 6492,
+        "size": 13,
+        "virtual_address": 4200796
+      },
+      {
+        "flags": 2,
+        "name": ".rodata",
+        "offset": 8192,
+        "size": 116,
+        "virtual_address": 4202496
+      },
+      {
+        "flags": 2,
+        "name": ".eh_frame_hdr",
+        "offset": 8308,
+        "size": 388,
+        "virtual_address": 4202612
+      },
+      {
+        "flags": 2,
+        "name": ".eh_frame",
+        "offset": 8696,
+        "size": 1508,
+        "virtual_address": 4203000
+      },
+      {
+        "flags": 3,
+        "name": ".init_array",
+        "offset": 11768,
+        "size": 8,
+        "virtual_address": 4210168
+      },
+      {
+        "flags": 3,
+        "name": ".fini_array",
+        "offset": 11776,
+        "size": 8,
+        "virtual_address": 4210176
+      },
+      {
+        "flags": 3,
+        "name": ".dynamic",
+        "offset": 11784,
+        "size": 464,
+        "virtual_address": 4210184
+      },
+      {
+        "flags": 3,
+        "name": ".got",
+        "offset": 12248,
+        "size": 16,
+        "virtual_address": 4210648
+      },
+      {
+        "flags": 3,
+        "name": ".got.plt",
+        "offset": 12264,
+        "size": 120,
+        "virtual_address": 4210664
+      },
+      {
+        "flags": 3,
+        "name": ".data",
+        "offset": 12384,
+        "size": 24,
+        "virtual_address": 4210784
+      },
+      {
+        "flags": 3,
+        "name": ".bss",
+        "offset": 12408,
+        "size": 24,
+        "virtual_address": 4210808
+      },
+      {
+        "flags": 48,
+        "name": ".comment",
+        "offset": 12408,
+        "size": 45,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".debug_aranges",
+        "offset": 12453,
+        "size": 144,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".debug_info",
+        "offset": 12597,
+        "size": 2812,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".debug_abbrev",
+        "offset": 15409,
+        "size": 958,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".debug_line",
+        "offset": 16367,
+        "size": 915,
+        "virtual_address": 0
+      },
+      {
+        "flags": 48,
+        "name": ".debug_str",
+        "offset": 17282,
+        "size": 1369,
+        "virtual_address": 0
+      },
+      {
+        "flags": 48,
+        "name": ".debug_line_str",
+        "offset": 18651,
+        "size": 326,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".symtab",
+        "offset": 18984,
+        "size": 2328,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".strtab",
+        "offset": 21312,
+        "size": 1290,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".shstrtab",
+        "offset": 22602,
+        "size": 367,
+        "virtual_address": 0
+      }
+    ],
+    "segments": [
+      {
+        "file_offset": 64,
+        "flags": 4,
+        "physical_size": 728,
+        "type": "PHDR",
+        "virtual_address": 4194368,
+        "virtual_size": 728
+      },
+      {
+        "file_offset": 792,
+        "flags": 4,
+        "physical_size": 28,
+        "type": "INTERP",
+        "virtual_address": 4195096,
+        "virtual_size": 28
+      },
+      {
+        "file_offset": 0,
+        "flags": 4,
+        "physical_size": 1968,
+        "type": "LOAD",
+        "virtual_address": 4194304,
+        "virtual_size": 1968
+      },
+      {
+        "file_offset": 4096,
+        "flags": 5,
+        "physical_size": 2409,
+        "type": "LOAD",
+        "virtual_address": 4198400,
+        "virtual_size": 2409
+      },
+      {
+        "file_offset": 8192,
+        "flags": 4,
+        "physical_size": 2012,
+        "type": "LOAD",
+        "virtual_address": 4202496,
+        "virtual_size": 2012
+      },
+      {
+        "file_offset": 11768,
+        "flags": 6,
+        "physical_size": 640,
+        "type": "LOAD",
+        "virtual_address": 4210168,
+        "virtual_size": 664
+      },
+      {
+        "file_offset": 11784,
+        "flags": 6,
+        "physical_size": 464,
+        "type": "DYNAMIC",
+        "virtual_address": 4210184,
+        "virtual_size": 464
+      },
+      {
+        "file_offset": 824,
+        "flags": 4,
+        "physical_size": 48,
+        "type": "NOTE",
+        "virtual_address": 4195128,
+        "virtual_size": 48
+      },
+      {
+        "file_offset": 872,
+        "flags": 4,
+        "physical_size": 68,
+        "type": "NOTE",
+        "virtual_address": 4195176,
+        "virtual_size": 68
+      },
+      {
+        "file_offset": 824,
+        "flags": 4,
+        "physical_size": 48,
+        "type": "GNU_PROPERTY",
+        "virtual_address": 4195128,
+        "virtual_size": 48
+      },
+      {
+        "file_offset": 8308,
+        "flags": 4,
+        "physical_size": 388,
+        "type": "GNU_EH_FRAME",
+        "virtual_address": 4202612,
+        "virtual_size": 388
+      },
+      {
+        "file_offset": 0,
+        "flags": 6,
+        "physical_size": 0,
+        "type": "GNU_STACK",
+        "virtual_address": 0,
+        "virtual_size": 0
+      },
+      {
+        "file_offset": 11768,
+        "flags": 4,
+        "physical_size": 520,
+        "type": "GNU_RELRO",
+        "virtual_address": 4210168,
+        "virtual_size": 520
+      }
+    ],
+    "sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+    "symbols": 112
+  },
+  "comparison": {
+    "entry_unchanged": true,
+    "same_section_count": true,
+    "same_segment_count": true
+  },
+  "original": {
+    "entrypoint": "0x4011b0",
+    "imagebase": "0x400000",
+    "is_pie": false,
+    "path": "original.elf",
+    "sections": [
+      {
+        "flags": 0,
+        "name": "",
+        "offset": 0,
+        "size": 0,
+        "virtual_address": 0
+      },
+      {
+        "flags": 2,
+        "name": ".interp",
+        "offset": 792,
+        "size": 28,
+        "virtual_address": 4195096
+      },
+      {
+        "flags": 2,
+        "name": ".note.gnu.property",
+        "offset": 824,
+        "size": 48,
+        "virtual_address": 4195128
+      },
+      {
+        "flags": 2,
+        "name": ".note.gnu.build-id",
+        "offset": 872,
+        "size": 36,
+        "virtual_address": 4195176
+      },
+      {
+        "flags": 2,
+        "name": ".note.ABI-tag",
+        "offset": 908,
+        "size": 32,
+        "virtual_address": 4195212
+      },
+      {
+        "flags": 2,
+        "name": ".gnu.hash",
+        "offset": 944,
+        "size": 28,
+        "virtual_address": 4195248
+      },
+      {
+        "flags": 2,
+        "name": ".dynsym",
+        "offset": 976,
+        "size": 360,
+        "virtual_address": 4195280
+      },
+      {
+        "flags": 2,
+        "name": ".dynstr",
+        "offset": 1336,
+        "size": 186,
+        "virtual_address": 4195640
+      },
+      {
+        "flags": 2,
+        "name": ".gnu.version",
+        "offset": 1522,
+        "size": 30,
+        "virtual_address": 4195826
+      },
+      {
+        "flags": 2,
+        "name": ".gnu.version_r",
+        "offset": 1552,
+        "size": 80,
+        "virtual_address": 4195856
+      },
+      {
+        "flags": 2,
+        "name": ".rela.dyn",
+        "offset": 1632,
+        "size": 48,
+        "virtual_address": 4195936
+      },
+      {
+        "flags": 66,
+        "name": ".rela.plt",
+        "offset": 1680,
+        "size": 288,
+        "virtual_address": 4195984
+      },
+      {
+        "flags": 6,
+        "name": ".init",
+        "offset": 4096,
+        "size": 27,
+        "virtual_address": 4198400
+      },
+      {
+        "flags": 6,
+        "name": ".plt",
+        "offset": 4128,
+        "size": 208,
+        "virtual_address": 4198432
+      },
+      {
+        "flags": 6,
+        "name": ".plt.sec",
+        "offset": 4336,
+        "size": 192,
+        "virtual_address": 4198640
+      },
+      {
+        "flags": 6,
+        "name": ".text",
+        "offset": 4528,
+        "size": 1962,
+        "virtual_address": 4198832
+      },
+      {
+        "flags": 6,
+        "name": ".fini",
+        "offset": 6492,
+        "size": 13,
+        "virtual_address": 4200796
+      },
+      {
+        "flags": 2,
+        "name": ".rodata",
+        "offset": 8192,
+        "size": 116,
+        "virtual_address": 4202496
+      },
+      {
+        "flags": 2,
+        "name": ".eh_frame_hdr",
+        "offset": 8308,
+        "size": 388,
+        "virtual_address": 4202612
+      },
+      {
+        "flags": 2,
+        "name": ".eh_frame",
+        "offset": 8696,
+        "size": 1508,
+        "virtual_address": 4203000
+      },
+      {
+        "flags": 3,
+        "name": ".init_array",
+        "offset": 11768,
+        "size": 8,
+        "virtual_address": 4210168
+      },
+      {
+        "flags": 3,
+        "name": ".fini_array",
+        "offset": 11776,
+        "size": 8,
+        "virtual_address": 4210176
+      },
+      {
+        "flags": 3,
+        "name": ".dynamic",
+        "offset": 11784,
+        "size": 464,
+        "virtual_address": 4210184
+      },
+      {
+        "flags": 3,
+        "name": ".got",
+        "offset": 12248,
+        "size": 16,
+        "virtual_address": 4210648
+      },
+      {
+        "flags": 3,
+        "name": ".got.plt",
+        "offset": 12264,
+        "size": 120,
+        "virtual_address": 4210664
+      },
+      {
+        "flags": 3,
+        "name": ".data",
+        "offset": 12384,
+        "size": 24,
+        "virtual_address": 4210784
+      },
+      {
+        "flags": 3,
+        "name": ".bss",
+        "offset": 12408,
+        "size": 24,
+        "virtual_address": 4210808
+      },
+      {
+        "flags": 48,
+        "name": ".comment",
+        "offset": 12408,
+        "size": 45,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".debug_aranges",
+        "offset": 12453,
+        "size": 144,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".debug_info",
+        "offset": 12597,
+        "size": 2812,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".debug_abbrev",
+        "offset": 15409,
+        "size": 958,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".debug_line",
+        "offset": 16367,
+        "size": 915,
+        "virtual_address": 0
+      },
+      {
+        "flags": 48,
+        "name": ".debug_str",
+        "offset": 17282,
+        "size": 1369,
+        "virtual_address": 0
+      },
+      {
+        "flags": 48,
+        "name": ".debug_line_str",
+        "offset": 18651,
+        "size": 326,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".symtab",
+        "offset": 18984,
+        "size": 2328,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".strtab",
+        "offset": 21312,
+        "size": 1290,
+        "virtual_address": 0
+      },
+      {
+        "flags": 0,
+        "name": ".shstrtab",
+        "offset": 22602,
+        "size": 367,
+        "virtual_address": 0
+      }
+    ],
+    "segments": [
+      {
+        "file_offset": 64,
+        "flags": 4,
+        "physical_size": 728,
+        "type": "PHDR",
+        "virtual_address": 4194368,
+        "virtual_size": 728
+      },
+      {
+        "file_offset": 792,
+        "flags": 4,
+        "physical_size": 28,
+        "type": "INTERP",
+        "virtual_address": 4195096,
+        "virtual_size": 28
+      },
+      {
+        "file_offset": 0,
+        "flags": 4,
+        "physical_size": 1968,
+        "type": "LOAD",
+        "virtual_address": 4194304,
+        "virtual_size": 1968
+      },
+      {
+        "file_offset": 4096,
+        "flags": 5,
+        "physical_size": 2409,
+        "type": "LOAD",
+        "virtual_address": 4198400,
+        "virtual_size": 2409
+      },
+      {
+        "file_offset": 8192,
+        "flags": 4,
+        "physical_size": 2012,
+        "type": "LOAD",
+        "virtual_address": 4202496,
+        "virtual_size": 2012
+      },
+      {
+        "file_offset": 11768,
+        "flags": 6,
+        "physical_size": 640,
+        "type": "LOAD",
+        "virtual_address": 4210168,
+        "virtual_size": 664
+      },
+      {
+        "file_offset": 11784,
+        "flags": 6,
+        "physical_size": 464,
+        "type": "DYNAMIC",
+        "virtual_address": 4210184,
+        "virtual_size": 464
+      },
+      {
+        "file_offset": 824,
+        "flags": 4,
+        "physical_size": 48,
+        "type": "NOTE",
+        "virtual_address": 4195128,
+        "virtual_size": 48
+      },
+      {
+        "file_offset": 872,
+        "flags": 4,
+        "physical_size": 68,
+        "type": "NOTE",
+        "virtual_address": 4195176,
+        "virtual_size": 68
+      },
+      {
+        "file_offset": 824,
+        "flags": 4,
+        "physical_size": 48,
+        "type": "GNU_PROPERTY",
+        "virtual_address": 4195128,
+        "virtual_size": 48
+      },
+      {
+        "file_offset": 8308,
+        "flags": 4,
+        "physical_size": 388,
+        "type": "GNU_EH_FRAME",
+        "virtual_address": 4202612,
+        "virtual_size": 388
+      },
+      {
+        "file_offset": 0,
+        "flags": 6,
+        "physical_size": 0,
+        "type": "GNU_STACK",
+        "virtual_address": 0,
+        "virtual_size": 0
+      },
+      {
+        "file_offset": 11768,
+        "flags": 4,
+        "physical_size": 520,
+        "type": "GNU_RELRO",
+        "virtual_address": 4210168,
+        "virtual_size": 520
+      }
+    ],
+    "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "symbols": 112
+  },
+  "schema_version": 1,
+  "tool": "lief 1.0.0-d05b3499b"
+}
