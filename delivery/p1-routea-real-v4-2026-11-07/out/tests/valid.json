@@ -1,0 +1,23 @@
+{
+  "case_id": "CWE416_Use_After_Free__malloc_free_char_01_noinput",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "schema_version": 1,
+  "tests": [
+    {
+      "argv": [
+        "./original"
+      ],
+      "expected": {
+        "allowed_output_files": [],
+        "return_code": 0,
+        "stderr": "",
+        "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n"
+      },
+      "id": "valid-no-input",
+      "kind": "valid",
+      "rationale": "The only case this sample has: no arguments, no stdin, one unconditional path. A correct program prints the 100 bytes it allocated; the original prints 3 bytes of allocator residue and exits 0.",
+      "stdin_artifact": null,
+      "stdin_literal": null
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "byte_identical": true,
+  "candidate_sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+  "gate": "V5",
+  "independent_replay": true,
+  "kind": "reproducibility",
+  "matches_candidate": true,
+  "method": "two independent patch_routea.py runs",
+  "pass": true,
+  "runs": 2,
+  "schema_version": 1,
+  "sha256": [
+    "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+    "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e"
+  ],
+  "state": "measured"
+}

@@ -1,16 +1,16 @@
 {
-  "job_id": "75384ab2bb5a4188aa036b33ce068c71",
+  "job_id": "1f426d798bd04df9890bf7c8ea658cb3",
   "synthetic": false,
   "phase": "finished",
   "verdict": {
-    "outcome": "inconclusive",
-    "reason": "required_check_not_run",
-    "failing_obligation": "symbolic",
-    "detail": "route_a: V4 symbolic: not_run"
+    "outcome": "success_within_scope",
+    "reason": null,
+    "failing_obligation": null,
+    "detail": "both routes succeeded within their reviewed scopes"
   },
   "routes": {
     "A": {
-      "outcome": "inconclusive",
+      "outcome": "success_within_scope",
       "obligations": 6
     },
     "B": {

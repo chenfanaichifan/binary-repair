@@ -1,0 +1,164 @@
+{
+  "calibration": {
+    "cases": 2,
+    "complete": true,
+    "failed": 1,
+    "known_bad": true,
+    "known_bad_rejected": true,
+    "known_good": true,
+    "passed": 1,
+    "suite": "v4_harness.py"
+  },
+  "candidate_sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+  "claimed_scope": "model",
+  "exploration_accounting": {
+    "active": 0,
+    "complete": true,
+    "deadended": 2,
+    "deferred": 0,
+    "errored": 0,
+    "initial": 2,
+    "pruned": 0,
+    "unconstrained": 0,
+    "unexplored": []
+  },
+  "gate": "V4",
+  "hooks": [
+    "malloc",
+    "memset",
+    "free",
+    "printLine",
+    "exit"
+  ],
+  "kind": "symbolic",
+  "memory_predicates": [
+    "on every execution, no pointer passed to free() is later passed to printLine()"
+  ],
+  "not_claimed": [
+    "a binary-level proof: this is a model-level result over the target function only",
+    "memory safety anywhere outside the target function",
+    "absence of the defect under a different allocator or a different libc",
+    "equivalence with the C source: the model reads the ELF, not the source",
+    "solver queries issued inside angr (branch and memory resolution) are not counted",
+    "a deep proof on the repaired side: its unsat is the empty-disjunction case \u2014 no free() occurs on the path \u2014 not a constraint that was solved"
+  ],
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "preconditions": [
+    "none: the entry takes no arguments, reads no stdin, opens no file; only the address returned by malloc() is symbolic"
+  ],
+  "property_kind": "pointer-flow",
+  "ran": true,
+  "replay": {
+    "command": "v4_harness.py",
+    "evidence_sha256": "9fdba84e44d04b09a3020479c486999fb5d68bc3a561fb2fe7cef29979accc69",
+    "identical": true,
+    "runs": 2,
+    "verified_by": "m4"
+  },
+  "schema_version": 1,
+  "scope": "model",
+  "solver_accounting": {
+    "complete": true,
+    "engine": "angr",
+    "eval": 2,
+    "max_steps": 128,
+    "queries": 4,
+    "sat": 1,
+    "steps": 28,
+    "timeouts": 0,
+    "unknown": 0,
+    "unsat": 1,
+    "version": "9.2.66"
+  },
+  "source": {
+    "cases": [
+      {
+        "binary_sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+        "expected": "holds",
+        "id": "known_good",
+        "kind": "known_good",
+        "max_steps": 64,
+        "notes": [
+          "unsat comes from an empty disjunction: no free() occurs on this path, so the question is unsatisfiable rather than decided by a constraint"
+        ],
+        "observed": "holds",
+        "property_text": "a pointer passed to free() is later passed to printLine()",
+        "solver": {
+          "eval": 1,
+          "sat": 0,
+          "timeouts": 0,
+          "unknown": 0,
+          "unsat": 1
+        },
+        "states": {
+          "active": 0,
+          "deadended": 1,
+          "deferred": 0,
+          "errored": 0,
+          "initial": 1,
+          "pruned": 0,
+          "unconstrained": 0
+        },
+        "steps": 14,
+        "witness": {
+          "free_calls": 1,
+          "print_calls": 1,
+          "solver": "unsat"
+        }
+      },
+      {
+        "binary_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+        "expected": "violated",
+        "id": "known_bad",
+        "kind": "known_bad",
+        "max_steps": 64,
+        "notes": [
+          "sat witness: the same symbolic pointer reaches free() and printLine()"
+        ],
+        "observed": "violated",
+        "property_text": "a pointer passed to free() is later passed to printLine()",
+        "solver": {
+          "eval": 1,
+          "sat": 1,
+          "timeouts": 0,
+          "unknown": 0,
+          "unsat": 0
+        },
+        "states": {
+          "active": 0,
+          "deadended": 1,
+          "deferred": 0,
+          "errored": 0,
+          "initial": 1,
+          "pruned": 0,
+          "unconstrained": 0
+        },
+        "steps": 14,
+        "witness": {
+          "freed_index": 0,
+          "print_calls_seen": 1,
+          "solver": "sat",
+          "state": "deadended"
+        }
+      }
+    ],
+    "contract_sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b",
+    "engine": {
+      "angr": "9.2.66",
+      "claripy": "9.2.66",
+      "python": "3.9.6"
+    },
+    "entry_address": "0x4012aa",
+    "generated_by": "v4_harness.py",
+    "input_domain": "none: the entry takes no arguments, reads no stdin, opens no file; only the address returned by malloc() is symbolic",
+    "property_kind": "pointer-flow",
+    "property_text": "on every execution, no pointer passed to free() is later passed to printLine()",
+    "target_entry": "CWE416_Use_After_Free__malloc_free_char_01_bad"
+  },
+  "state": "passed",
+  "tool_versions": {
+    "angr": "9.2.66",
+    "claripy": "9.2.66",
+    "python": "3.9.6"
+  }
+}

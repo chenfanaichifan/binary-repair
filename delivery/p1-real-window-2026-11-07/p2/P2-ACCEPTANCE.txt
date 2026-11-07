@@ -1,6 +1,6 @@
-P2 ACCEPTANCE PASSED phase=finished job=75384ab2bb5a4188aa036b33ce068c71
+P2 ACCEPTANCE PASSED phase=finished job=1f426d798bd04df9890bf7c8ea658cb3
 exit: 0
 synthetic: false
-verdict: inconclusive / required_check_not_run / symbolic
-route A: inconclusive (V4 not_run)
-route B: success_within_scope
+verdict: success_within_scope
+route A: success_within_scope (6/6)
+route B: success_within_scope (6/6)

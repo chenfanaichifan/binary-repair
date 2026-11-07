@@ -52,31 +52,31 @@
     "sha256": "80e4f2bb5b36d4afe5d28be3f5e39181915639895f477ae787db15d9c9bb9a11",
     "valid_domain": "Input length 0-64 bytes; out-of-range lengths rejected"
   },
-  "created_at": "2026-11-07T13:37:37+00:00",
+  "created_at": "2026-11-07T14:16:53+00:00",
   "data_source": "controller-http",
-  "defect": "P1 full3",
+  "defect": "P1 success",
   "demo": false,
   "environment": "",
   "execution": {
-    "finished_at": "2026-11-07T13:37:38+00:00",
+    "finished_at": "2026-11-07T14:16:53+00:00",
     "note": "Derived from persisted run rows; no producer sidecar exists in this build.",
-    "outcome": "inconclusive",
+    "outcome": "success_within_scope",
     "phase": "finished",
-    "run_id": "1eea36ee14914a57a90ff9cc5794a75f",
+    "run_id": "90f16624fcc2497dbd23236a66540584",
     "sidecar": null,
     "source": "controller-derived",
-    "started_at": "2026-11-07T13:37:37+00:00",
+    "started_at": "2026-11-07T14:16:53+00:00",
     "status": "completed"
   },
   "execution_phase": "finished",
-  "filename": "p1-full3.elf",
-  "id": "75384ab2bb5a4188aa036b33ce068c71",
+  "filename": "p1-success.elf",
+  "id": "1f426d798bd04df9890bf7c8ea658cb3",
   "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
   "phase": "finished",
   "routes": {
     "A": {
       "ai_usage": null,
-      "attempt_id": "b40ab208676541d18327a8fdd564c28c",
+      "attempt_id": "a2dd161ec49349bd9695e8def320473f",
       "changed_regions": [],
       "compatibility": "passed",
       "elapsed_s": 0.0,
@@ -86,7 +86,7 @@
       "obligations": [
         {
           "detail": "V3 behaviour: passed",
-          "evidence_artifact_id": "456c1a80a39e45c893b2924bb7283526",
+          "evidence_artifact_id": "fc126d0f09fd4397b0eb8da567c44f79",
           "kind": "behaviour",
           "required": true,
           "result": "passed",
@@ -94,7 +94,7 @@
         },
         {
           "detail": "V0 identity: passed",
-          "evidence_artifact_id": "2769dc1a8af64cc1aeeaadd538fae6c8",
+          "evidence_artifact_id": "f6775e0ee881442b96095d460660282e",
           "kind": "identity",
           "required": true,
           "result": "passed",
@@ -102,7 +102,7 @@
         },
         {
           "detail": "5/5 static interface checks passed",
-          "evidence_artifact_id": "52f91f01f96a4b82a53373bb564b39eb",
+          "evidence_artifact_id": "f22d338f7ab941969da0b97a4d4a60dc",
           "kind": "interface",
           "required": true,
           "result": "passed",
@@ -110,7 +110,7 @@
         },
         {
           "detail": "V5 reproducibility: passed",
-          "evidence_artifact_id": "0bf7b83cde4f4e73bd00c35e5f24cb6f",
+          "evidence_artifact_id": "3011299a93004719ba1f721467232ca2",
           "kind": "reproducibility",
           "required": true,
           "result": "passed",
@@ -118,23 +118,23 @@
         },
         {
           "detail": "V1 structure: passed",
-          "evidence_artifact_id": "947feddf403d47258034976abe14d208",
+          "evidence_artifact_id": "e1fc1d4568e94b1c90da4403fa0fa0c2",
           "kind": "structure",
           "required": true,
           "result": "passed",
           "scope": "binary"
         },
         {
-          "detail": "V4 symbolic: not_run",
-          "evidence_artifact_id": null,
+          "detail": "V4 symbolic: passed",
+          "evidence_artifact_id": "bd9ef8acfadc4f9eafebb99296fc71d1",
           "kind": "symbolic",
           "required": true,
-          "result": "not_run",
+          "result": "passed",
           "scope": "model"
         }
       ],
-      "outcome": "inconclusive",
-      "outcome_reason": "required_check_not_run",
+      "outcome": "success_within_scope",
+      "outcome_reason": "",
       "phase": "finished",
       "stages": [
         {
@@ -163,16 +163,16 @@
         "total": 0
       },
       "verdict": {
-        "detail": "V4 symbolic: not_run",
-        "failing_obligation": "symbolic",
-        "outcome": "inconclusive",
-        "reason": "required_check_not_run"
+        "detail": "6 required obligations passed",
+        "failing_obligation": null,
+        "outcome": "success_within_scope",
+        "reason": null
       },
-      "verification": "inconclusive"
+      "verification": "passed"
     },
     "B": {
       "ai_usage": null,
-      "attempt_id": "eb5db66d818a42e68e07fa7128d40f68",
+      "attempt_id": "b00c5ff22e2d4604aaf626bacbbe3cb6",
       "changed_regions": [],
       "compatibility": "passed",
       "elapsed_s": 0.0,
@@ -182,7 +182,7 @@
       "obligations": [
         {
           "detail": "V3 behaviour: passed",
-          "evidence_artifact_id": "2118ae3e9419455784876c90f4c42a2d",
+          "evidence_artifact_id": "46b36c5d9348405da943751a2ce6fa6a",
           "kind": "behaviour",
           "required": true,
           "result": "passed",
@@ -190,7 +190,7 @@
         },
         {
           "detail": "V0 identity: passed",
-          "evidence_artifact_id": "0e041c0b8cc7446382480e6baea580ad",
+          "evidence_artifact_id": "efe11cedbcd0474085e4c987065a0554",
           "kind": "identity",
           "required": true,
           "result": "passed",
@@ -198,7 +198,7 @@
         },
         {
           "detail": "5/5 static interface checks passed",
-          "evidence_artifact_id": "9133b41536e847e9b8179c2011491c73",
+          "evidence_artifact_id": "905f15b0927647a3a98b497ef4d2a6a3",
           "kind": "interface",
           "required": true,
           "result": "passed",
@@ -206,7 +206,7 @@
         },
         {
           "detail": "V5 reproducibility: passed",
-          "evidence_artifact_id": "7082c90f40244193bd899674180b5863",
+          "evidence_artifact_id": "6f471c9b390c48dd821ece85db08d397",
           "kind": "reproducibility",
           "required": true,
           "result": "passed",
@@ -214,7 +214,7 @@
         },
         {
           "detail": "V1 structure: passed",
-          "evidence_artifact_id": "ca1118b551ec4ae6adfaf7af4a28b9fd",
+          "evidence_artifact_id": "f70e066779a34eae8c3ae92fbe45e913",
           "kind": "structure",
           "required": true,
           "result": "passed",
@@ -222,7 +222,7 @@
         },
         {
           "detail": "V4 symbolic: passed",
-          "evidence_artifact_id": "0358d1597e7e459d9767ddb23cb5f8f9",
+          "evidence_artifact_id": "6e2c4fa2fbc94758af40f0a5cf3e1af7",
           "kind": "symbolic",
           "required": true,
           "result": "passed",
@@ -272,16 +272,16 @@
     }
   },
   "run": {
-    "id": "1eea36ee14914a57a90ff9cc5794a75f",
+    "id": "90f16624fcc2497dbd23236a66540584",
     "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "phase": "finished",
     "reviewed_scope_sha256": "c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c"
   },
   "valid_tests": [],
   "verdict": {
-    "detail": "route_a: V4 symbolic: not_run",
-    "failing_obligation": "symbolic",
-    "outcome": "inconclusive",
-    "reason": "required_check_not_run"
+    "detail": "both routes succeeded within their reviewed scopes",
+    "failing_obligation": null,
+    "outcome": "success_within_scope",
+    "reason": null
   }
 }

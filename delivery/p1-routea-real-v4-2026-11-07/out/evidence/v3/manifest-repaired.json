@@ -1,0 +1,24 @@
+{
+  "candidate_sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+  "candidate_size": 25344,
+  "cases": [
+    {
+      "exit_code": 0,
+      "id": "valid-no-input",
+      "ok": true,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 100,
+      "stdout_sha256": "028411ecdead9452e1e980cb4cb4e416e3bc4a24b62dcdffe87e7790e08bf043"
+    }
+  ],
+  "input_mode": "none",
+  "limits": [
+    "single no-input case; behaviour evidence only"
+  ],
+  "passed": 1,
+  "repaired_pass": true,
+  "route": "route_a",
+  "schema_version": 1,
+  "total": 1
+}

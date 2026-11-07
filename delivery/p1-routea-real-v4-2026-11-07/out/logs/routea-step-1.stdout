@@ -1,0 +1,6 @@
+{
+  "candidate_sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+  "status": "/var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/route_a/status.json",
+  "valid_sha256": "33be1edf0572a2563f456b3be3dd68a860da3d95d5f9b3d35d078de632180b08",
+  "invalid_sha256": null
+}
