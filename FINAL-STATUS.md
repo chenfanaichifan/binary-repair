@@ -51,11 +51,13 @@ V4: passed, scope=model
   V0/V1/V2/V3/V4/V5 passed
   attempt outcome success_within_scope
 T8.3 evidence: COMPLETE
-T8.3 closure: pending Lead's separate acceptance
+T8.3 closure: pending Lead's one-line acceptance
 ```
 
-The M4 marker and five-criteria file are now archived under
-`delivery/m4/v4-2026-11-07/`; the bundle's V4 artifact is the marker.
+The M4 marker and five-criteria file are archived under
+`delivery/m4/v4-2026-11-07/`; the 124 bundle's V4 artifact is the marker.
+Fresh clone: `tests/integration/test_cwe416_124_v4_rerun.py` and
+`tests/test_mcp_tool_adapters.py` pass; bundle `SHA256SUMS` verifies.
 
 ### M5
 
