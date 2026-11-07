@@ -31,6 +31,7 @@ tests/integration/test_controller_auth.py: 9 passed
 ```text
 T8.2 assistant_llm / test_assistant_llm: NOT DONE in this branch
 GUI T7.4/T7.5/T7.6/T8.4/T7.8: NOT DONE in this branch
+M2 Review 12 scope/bounded UI: NOT DONE
 ```
 
 ### M3
@@ -83,7 +84,7 @@ T8.3: COMPLETE (record 170)
 P1: success_within_scope (record 173)
 P2: ACCEPTANCE PASSED
 V4: passed marker retained; 124 not promoted (V2 not_run)
-124: all six gates passed in writer tests (test_attempt_writer_gates.py); M4 revalidation pending
+124: V0-V5 passed; M4 confirmation record 171
 118: VERIFIED (independent)
 main: not merged
 tag: none
