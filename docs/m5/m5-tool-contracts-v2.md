@@ -61,9 +61,9 @@ Dispatch:
 
 | input_mode | existing runner |
 |---|---|
-| `none` + `original_path` | `routeb/run_manifest_compare.py` (byte comparison) |
-| `none` without `original_path` | `routeb/run_manifest_repaired.py` (native no-input path) |
+| `none` | `routeb/run_manifest_compare.py`; `original_path` is required |
 | `argv` | `routeb/run_manifest_repaired.py` (`valid.json` + `invalid.json`) |
+| `stdin` | `invalid_request` in v2 |
 | `stdin` | `invalid_request` in v2 |
 
 Return:

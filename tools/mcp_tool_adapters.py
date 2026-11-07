@@ -120,7 +120,12 @@ def run_case(request: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(timeout_ms, int) or timeout_ms <= 0:
         raise ToolError("invalid_request", "timeout_ms must be a positive integer")
     original = request.get("original_path")
-    if input_mode == "none" and original is not None:
+    if input_mode == "none":
+        if not original:
+            raise ToolError(
+                "invalid_request",
+                "input_mode none requires original_path for run_manifest_compare.py",
+            )
         runner = ROOT / "routeb" / "run_manifest_compare.py"
         args = [
             "--original", str(Path(str(original))),
@@ -133,7 +138,7 @@ def run_case(request: dict[str, Any]) -> dict[str, Any]:
         args = [
             "--binary", str(binary),
             "--tests", str(tests),
-            "--input-mode", input_mode,
+            "--input-mode", "argv",
         ]
         contract = request.get("contract_path")
         if contract is not None:
@@ -148,8 +153,8 @@ def run_case(request: dict[str, Any]) -> dict[str, Any]:
         "status": normalized["status"],
         "timed_out": normalized["timed_out"],
         "returncode": normalized["returncode"],
-        "repaired_pass": bool(result.get("repaired_pass")),
-        "passed": result.get("passed"),
+        "repaired_pass": bool(result.get("repaired_pass") or result.get("gate4_pass")),
+        "passed": result.get("passed", result.get("same_count")),
         "total": result.get("total"),
         "cases": result.get("cases", []),
         "edge": {

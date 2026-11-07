@@ -41,6 +41,7 @@ def test_run_case_none_dispatches_to_repaired_runner(tmp_path: Path) -> None:
             "schema_version": 2,
             "case_id": "valid-no-input",
             "binary_path": "/usr/bin/true",
+            "original_path": "/usr/bin/true",
             "tests_dir": str(tests),
             "input_mode": "none",
             "timeout_ms": 5000,
@@ -60,6 +61,7 @@ def test_run_case_rejects_fake_stdin(tmp_path: Path) -> None:
             {
                 "schema_version": 2,
                 "binary_path": "/usr/bin/true",
+                "original_path": "/usr/bin/true",
                 "tests_dir": str(tests),
                 "input_mode": "none",
                 "stdin_literal": "x",
