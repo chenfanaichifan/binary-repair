@@ -17,26 +17,35 @@ M3 T6.2/P1 windows/V5: done
 M5 Gate 2b/Review 9-11: done
 ```
 
-## Open
+## Closed since this board
 
 ```text
-M2-T8.2 assistant_llm.py + test_assistant_llm.py: NOT DONE
-M2-T7.4/T7.5/T7.6/T8.4/T7.8 GUI: NOT DONE
-M4-T7.7 UI honesty: NOT DONE
-M4-T8.5 LLM no-key-leak/no-injection: NOT DONE
-Review 9-12 original text: MISSING
-Lead tag decision: NO TAG
-Lead main merge: NOT MERGED
+M2-T8.2 assistant_llm: DONE (M5; merge 2501120)
+M2-T7.4/T7.5/T7.6/T8.4/T7.8 GUI: MERGED (34d054c)
+M4-T7.7 UI honesty: PASS (source/test)
+M4-T8.5 LLM no-key/no-injection: PASS (backend)
+M2 Review 12: PASS (record 180)
+browser e2e: 12 passed via Chrome CDP
+full pytest: 714 passed / 2 Linux-only skipped
 ```
 
-## Ownership
+## Remaining / deliberate
 
-M2: T8.2, T7.4, T7.5, T7.6, T8.4, T7.8, Review 12 UI.
-M4: T7.7, T8.5, Review 9-12 independent verification.
-M1: API fields for UI; no UI changes.
-M3: no more guest work for P1; keep evidence frozen.
-M5: no more usage; envelope only.
-Lead: tag/main only after M2/M4.
+```text
+2 ELF execution tests: require Linux host
+Review 9-12 original verbatim: not recoverable; canonical reconstruction
+tag: no tag
+main: not merged
+```
+
+## Ownership now
+
+M1: P1/P2 freeze; no new code.
+M2: UI merged; browser e2e pass.
+M3: P1 evidence frozen.
+M4: Review 9-12 source/test complete; same-operator limit.
+M5: T8.2/Gate2b complete.
+Lead: tag/main decision only.
 
 ## Code suites
 

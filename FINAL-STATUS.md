@@ -83,7 +83,7 @@ CWE416 logs/plans/contracts: DONE
 T8.3: COMPLETE (record 170)
 P1: success_within_scope (record 173)
 P2: ACCEPTANCE PASSED
-V4: passed marker retained; 124 not promoted (V2 not_run)
+V4: passed marker retained
 124: V0-V5 passed; M4 confirmation record 171
 118: VERIFIED (independent)
 main: not merged
@@ -93,10 +93,11 @@ live success: none
 
 No private key is included. The only `verified_by` value in the archive is M4's marker; M1/M5 did not write one.
 
-## Full-suite run (2026-11-07)
+## Full-suite run (2026-11-08)
 
 ```text
-pytest -q -> exit 0
-log: delivery/logs/full-suite-2026-11-07.txt
+pytest -q -> exit 0 (714 passed, 2 Linux-only skipped)
+log: delivery/logs/all-members-full-chrome-2026-11-08.txt
+browser e2e: 12 passed via Chrome CDP
 skips: 2 (Linux ELF; browser e2e runs via Chrome CDP)
 ```
