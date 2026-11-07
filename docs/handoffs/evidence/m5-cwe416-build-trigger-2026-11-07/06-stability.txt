@@ -1,0 +1,12 @@
+== stdout digest over 50 runs, per case ==
+-- ./original.elf 1234567 --uaf
+     50 0593eb8a456e49af34d0fefb0eda54f10e34864e4c87e6e113a3cda26dd4bf1e
+-- ./original.elf use-after-free --uaf
+     50 0593eb8a456e49af34d0fefb0eda54f10e34864e4c87e6e113a3cda26dd4bf1e
+-- ./original.elf 1234567
+     50 349abe1272178917136372f667b13753e2c775bbe39112118420b7697749c97b
+
+== exact stdout bytes, defect path ==
+   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X
+*
+   X  \n

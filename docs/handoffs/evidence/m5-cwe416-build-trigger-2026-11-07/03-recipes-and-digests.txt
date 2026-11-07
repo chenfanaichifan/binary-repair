@@ -1,0 +1,16 @@
+== digests actually measured in this window ==
+run-b/original.elf                       20a58ba5b453db684619f7cc11a46ccc1ffd61b55d998ac158bed26a56200a03  20064 B
+run-c/original.elf                       0927df3e9d44526ef70bef4fb88370ee037b53f03365376f7e492ea43b743f09  20064 B
+run-b/pm.elf                             f1019618f0a6180b7fff28821ad6cff72d2477fd093cbddfa81d486bff5a5ff0  20040 B
+run-c/pm.elf                             f1019618f0a6180b7fff28821ad6cff72d2477fd093cbddfa81d486bff5a5ff0  20040 B
+run-b/asan.elf                           1125b4d78b2ddf5abd819628d78b6bc1141aa780d9c8de0ec5f644b13065f4ab  28864 B
+
+run-b vs run-c, plain -g (no prefix map):
+  20a58ba5b453db684619f7cc11a46ccc1ffd61b55d998ac158bed26a56200a03  run-b
+  0927df3e9d44526ef70bef4fb88370ee037b53f03365376f7e492ea43b743f09  run-c
+  -> different: the digest is bound to the build directory
+
+run-b vs run-c, -fdebug-prefix-map/-ffile-prefix-map:
+  f1019618f0a6180b7fff28821ad6cff72d2477fd093cbddfa81d486bff5a5ff0  run-b
+  f1019618f0a6180b7fff28821ad6cff72d2477fd093cbddfa81d486bff5a5ff0  run-c
+  -> identical: the digest is portable
