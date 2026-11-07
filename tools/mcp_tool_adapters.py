@@ -63,6 +63,7 @@ def _run_manifest(
         except subprocess.TimeoutExpired as exc:
             return {
                 "status": "timeout",
+                "reason": "timeout_observed",
                 "timed_out": True,
                 "returncode": None,
                 "stdout": (exc.stdout or b"").decode("utf-8", "replace"),
@@ -72,12 +73,21 @@ def _run_manifest(
         except OSError as exc:
             raise ToolError("runner_error", str(exc)) from exc
         if not out.is_file():
+            stderr = completed.stderr.decode("utf-8", "replace")
+            if completed.returncode == 2 and any(
+                token in stderr
+                for token in ("no frozen cases", "empty", "missing", "exactly", "contains no")
+            ):
+                reason = "incomplete_test_set"
+            else:
+                reason = "invalid_request" if completed.returncode == 2 else "error"
             return {
-                "status": "invalid_request" if completed.returncode == 2 else "error",
+                "status": reason if reason != "error" else "error",
+                "reason": reason,
                 "timed_out": False,
                 "returncode": completed.returncode,
                 "stdout": completed.stdout.decode("utf-8", "replace"),
-                "stderr": completed.stderr.decode("utf-8", "replace"),
+                "stderr": stderr,
                 "result": None,
             }
         try:
@@ -151,6 +161,7 @@ def run_case(request: dict[str, Any]) -> dict[str, Any]:
         "schema_version": 2,
         "case_id": request.get("case_id"),
         "status": normalized["status"],
+        "reason": normalized.get("reason"),
         "timed_out": normalized["timed_out"],
         "returncode": normalized["returncode"],
         "repaired_pass": bool(result.get("repaired_pass") or result.get("gate4_pass")),
@@ -306,7 +317,10 @@ def apply_candidate(request: dict[str, Any]) -> dict[str, Any]:
         )
     except Exception as exc:
         if exc.__class__.__name__ == "IngestError":
-            raise ToolError("bundle_invalid", str(exc)) from exc
+            message = str(exc)
+            if any(token in message.lower() for token in ("hash", "mismatch", "does not match")):
+                raise ToolError("evidence_hash_mismatch", message) from exc
+            raise ToolError("bundle_invalid", message) from exc
         raise
     return {
         "schema_version": 2,

@@ -154,3 +154,113 @@ def test_apply_candidate_rejects_hash_mismatch(tmp_path: Path) -> None:
             }
         )
     assert exc.value.reason == "candidate_hash_mismatch"
+
+
+def _argv_tests(tmp_path: Path, *, include_invalid: bool = True) -> Path:
+    tests = tmp_path / "tests"
+    tests.mkdir()
+    case = {
+        "id": "v1",
+        "kind": "valid",
+        "argv": ["/usr/bin/true", "x"],
+        "expected": {"return_code": 0, "stdout": "", "stderr": ""},
+    }
+    (tests / "valid.json").write_text(json.dumps({"tests": [case]}), encoding="utf-8")
+    if include_invalid:
+        bad = {
+            "id": "i1",
+            "kind": "invalid",
+            "argv": ["/usr/bin/false", "x"],
+            "expected": {"return_code": 1, "stdout": "", "stderr": ""},
+        }
+        (tests / "invalid.json").write_text(json.dumps({"tests": [bad]}), encoding="utf-8")
+    return tests
+
+
+def test_run_case_timeout_has_machine_reason(tmp_path: Path) -> None:
+    tests = tmp_path / "tests"
+    tests.mkdir()
+    (tests / "valid.json").write_text(
+        json.dumps(
+            {
+                "tests": [
+                    {
+                        "id": "slow",
+                        "kind": "valid",
+                        "argv": ["/bin/sleep", "2"],
+                        "expected": {"return_code": 0, "stdout": "", "stderr": ""},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tests / "invalid.json").write_text(
+        json.dumps(
+            {
+                "tests": [
+                    {
+                        "id": "slow-bad",
+                        "kind": "invalid",
+                        "argv": ["/bin/sleep", "2"],
+                        "expected": {"return_code": 1, "stdout": "", "stderr": ""},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    response = adapters.run_case(
+        {
+            "schema_version": 2,
+            "case_id": "slow",
+            "binary_path": "/bin/sleep",
+            "tests_dir": str(tests),
+            "input_mode": "argv",
+            "timeout_ms": 100,
+        }
+    )
+    assert response["status"] == "timeout"
+    assert response["reason"] == "timeout_observed"
+    assert response["edge"]["timeout"] is True
+
+
+def test_run_case_incomplete_set_is_machine_reason(tmp_path: Path) -> None:
+    tests = _argv_tests(tmp_path, include_invalid=False)
+    response = adapters.run_case(
+        {
+            "schema_version": 2,
+            "case_id": "v1",
+            "binary_path": "/usr/bin/true",
+            "tests_dir": str(tests),
+            "input_mode": "argv",
+            "timeout_ms": 2000,
+        }
+    )
+    assert response["status"] == "incomplete_test_set"
+    assert response["reason"] == "incomplete_test_set"
+
+
+def test_apply_candidate_maps_ingest_hash_error(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import tools.route_bundle_ingest as rbi
+
+    candidate = "c" * 64
+    bundle = _bundle(tmp_path, candidate)
+
+    def fake_ingest(**kwargs: object) -> dict[str, object]:
+        raise rbi.IngestError("artifact hash does not match recorded evidence")
+
+    monkeypatch.setattr(rbi, "ingest", fake_ingest)
+    with pytest.raises(adapters.ToolError) as exc:
+        adapters.apply_candidate(
+            {
+                "schema_version": 2,
+                "job_id": "j1",
+                "run_id": "r1",
+                "attempt_id": "a1",
+                "bundle_path": str(bundle),
+                "candidate_sha256": candidate,
+                "data_dir": str(tmp_path),
+            }
+        )
+    assert exc.value.reason == "evidence_hash_mismatch"
