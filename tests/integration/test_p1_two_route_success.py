@@ -9,8 +9,8 @@ from app.services import jobs, worker
 from tools.route_bundle_ingest import ingest
 
 ROOT = Path(__file__).resolve().parents[2]
-ROUTE_A = ROOT / "delivery/p1-routea-real-v4-2026-11-07/out"
-ROUTE_B = ROOT / "delivery/p1-real-window-2026-11-07/bundle/a1.routeb"
+ROUTE_A = ROOT / "artifacts/p1-routea-real-v4-2026-11-07/out"
+ROUTE_B = ROOT / "artifacts/p1-real-window-2026-11-07/bundle/a1.routeb"
 CONTRACT = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json"
 
 

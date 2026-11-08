@@ -27,8 +27,8 @@ pip_cache/
 pytest_deps/
 .write-probe.tmp
 
-# delivery/ is deliberately tracked: it is the shared hand-off directory for
-# M4 and M5. Do not re-add a /delivery/ ignore rule here - a bundle that only
+# artifacts/ is deliberately tracked: it is the shared hand-off directory for
+# M4 and M5. Do not re-add a /artifacts/ ignore rule here - a bundle that only
 # exists in one worktree is not readable by the other members.
 
 # Editors / OS
@@ -53,5 +53,5 @@ worklogs/
 .dsh-acl-recovery/
 
 # Canonical V5 replay logs are tracked evidence (four original logs).
-!delivery/**/*.log
+!artifacts/**/*.log
 

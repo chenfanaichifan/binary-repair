@@ -12,7 +12,7 @@ from tools.route_bundle_ingest import ingest
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput"
-DELIVERY = ROOT / "delivery/cwe416-124-candidate-2026-11-05"
+DELIVERY = ROOT / "artifacts/cwe416-124-candidate-2026-11-05"
 CANDIDATE_SHA = "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0"
 
 

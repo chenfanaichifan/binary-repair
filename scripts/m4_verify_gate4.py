@@ -17,7 +17,7 @@ Status vocabulary (fail closed):
 
 This script deliberately does not import ``scripts/check_handoff.py`` or any producer
 module: M4 recomputes hashes and reads the package independently. It does not replace
-the byte-level commands in ``docs/handoffs/42-m4-gate4-verification-checklist.md``;
+the byte-level commands in ``docs/development/handoffs/42-m4-gate4-verification-checklist.md``;
 it makes the missing-vs-contradiction distinction explicit.
 
 Exit codes: 0 = all PASS, 1 = at least one FAIL, 2 = no FAIL but at least one
@@ -25,13 +25,13 @@ NOT VERIFIED, 3 = usage error or package not found.
 
 Usage:
 
-    python scripts/m4_verify_gate4.py --package docs/handoffs/evidence/P4-2026-10-30
+    python scripts/m4_verify_gate4.py --package docs/development/handoffs/evidence/P4-2026-10-30
     python scripts/m4_verify_gate4.py --package ... --record <gate4-record.md>
     python scripts/m4_verify_gate4.py --package ... --controller http://127.0.0.1:8801 \
         --job-id <real-job-id>
 
 This is verifier tooling, not Gate 4 evidence. A synthetic self-test package must
-never be placed under ``docs/handoffs/evidence/``.
+never be placed under ``docs/development/handoffs/evidence/``.
 """
 
 from __future__ import annotations

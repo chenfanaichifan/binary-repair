@@ -4,7 +4,7 @@ Run from the project root:
     .venv/Scripts/python.exe tests/e2e/capture_agent_screens.py
 
 Uses the same local Edge + DevTools setup as the e2e suite, against the demo
-backend. Output: docs/screenshots/agent-*.png (fixture data, not real repairs).
+backend. Output: docs/assets/screenshots/agent-*.png (fixture data, not real repairs).
 """
 
 from __future__ import annotations
@@ -74,7 +74,7 @@ def main() -> int:
                 time.sleep(0.8)
                 data = session.send("Page.captureScreenshot", {"format": "png"})["data"]
                 (OUT / name).write_bytes(base64.b64decode(data))
-                print(f"saved docs/screenshots/{name}")
+                print(f"saved docs/assets/screenshots/{name}")
     finally:
         if session is not None:
             stop_browser(browser, session)

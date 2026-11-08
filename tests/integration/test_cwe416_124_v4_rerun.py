@@ -13,7 +13,7 @@ from app.services import jobs
 from tools.route_bundle_ingest import ingest
 
 ROOT = Path(__file__).resolve().parents[2]
-BUNDLE = ROOT / "delivery/cwe416-124-v4-rerun-2026-11-06"
+BUNDLE = ROOT / "artifacts/cwe416-124-v4-rerun-2026-11-06"
 FIXTURE = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput"
 
 

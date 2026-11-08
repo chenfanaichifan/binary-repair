@@ -23,7 +23,8 @@ fixtures/public/**/tests/*.json -text
 *.zip  binary
 # Evidence packages are hash-bound: every byte (including CRLF) must survive
 # clone/checkout exactly, or SHA256SUMS verification fails on a fresh clone.
-docs/handoffs/evidence/** -text
+docs/development/reviews/evidence/** -text
+docs/archive/** -text
 *.pdf binary
 *.vmdk binary
 *.png binary
@@ -35,9 +36,9 @@ docs/handoffs/evidence/** -text
 fixtures/public/** -text
 
 # Hash-bound delivery evidence: preserve every byte (CRLF/LF) across checkout.
-delivery/** -text
-docs/evidence/** -text
-docs/reviews/evidence/** -text
+artifacts/** -text
+
+
 
 
 # Keep web/template assets byte-stable (LF in the accepted snapshot).

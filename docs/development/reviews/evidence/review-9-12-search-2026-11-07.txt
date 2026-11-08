@@ -1,0 +1,22 @@
+# Review 9-12 provenance search — 2026-11-07
+
+Searched:
+- /Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证 (excluding .git)
+- _m1-work, _m3-run, _m4-verify checkouts
+- docs/development/handoffs, uploads, delivery
+- WeChat xwechat_files text files
+- all workspace .zip archives (md/txt/json/patch/diff members)
+- git history: git log -S'incomplete_test_set' --all
+
+Hits for Review 9-12 wording:
+- docs/development/handoffs/91-m5-completion-2026-11-05.md:38
+- docs/development/handoffs/97-m1-review-closeout-2026-11-05.md:117
+- _m4-verify/rec91/91-updated-3b4e492.md:38
+- M4-record91-verifier-row-3b4e492.zip:91-updated-3b4e492.md
+- M5-complete-5d0f980.patch:696
+
+No document contains the original numbered 9-12 text. The only surviving
+statements are the paraphrase in record 91 and the section names in record 97.
+Therefore the canonical reconstruction in
+docs/development/reviews/review-9-12-canonical-2026-11-07.md is the only reviewable source.
+It is not verbatim and must not be described as original.

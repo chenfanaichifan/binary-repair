@@ -9,8 +9,8 @@ from app.services import jobs
 from tools.route_bundle_ingest import ingest
 
 ROOT = Path(__file__).resolve().parents[2]
-BUNDLE = ROOT / "delivery/p1-real-window-2026-11-07/bundle/a1.routeb"
-PACKAGE = ROOT / "delivery/p1-real-window-2026-11-07/package"
+BUNDLE = ROOT / "artifacts/p1-real-window-2026-11-07/bundle/a1.routeb"
+PACKAGE = ROOT / "artifacts/p1-real-window-2026-11-07/package"
 
 
 def test_real_p1_bundle_ingests_measured_gates(tmp_path: Path) -> None:

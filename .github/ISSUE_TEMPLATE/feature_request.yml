@@ -1,0 +1,33 @@
+name: Feature request
+description: Propose a scoped improvement.
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user or acceptance problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Keep the single-fixture acceptance scope in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Acceptance impact
+      description: Which V0–V5 gates, evidence files or docs would change?
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Boundaries
+      options:
+        - label: This does not require executing uploaded/repaired binaries on the host.
+          required: true
+        - label: This does not include client material, secrets or private logs.
+          required: true

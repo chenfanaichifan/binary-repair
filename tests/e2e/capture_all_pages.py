@@ -3,7 +3,7 @@
 Run from the project root:
     .venv/Scripts/python.exe tests/e2e/capture_all_pages.py
 
-Output: docs/screenshots/pages/*.png
+Output: docs/assets/screenshots/pages/*.png
 Covers the home page, the agent console (guided / question / review / pending /
 success / failure / live job), the original setup wizard steps, and the job
 progress / evidence / report pages.

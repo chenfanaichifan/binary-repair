@@ -17,4 +17,4 @@ provides the template.
 
 Before a sample counts as evidence, run `python tools/fixture_intake.py --check <dir>`.
 The required layout, what each finding means, and the known gaps in the existing
-CWE-121 fixture are in `docs/fixtures.md`.
+CWE-121 fixture are in `docs/operations/fixtures.md`.

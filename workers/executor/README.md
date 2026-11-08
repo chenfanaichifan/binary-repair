@@ -5,7 +5,7 @@ Status: **COMPLETE for T6.2 guest executor and executor-account isolation**
 `/usr/local/sbin/jobwrap-executor` with uid 1003, `CapEff=0`, `NoNewPrivs=1`,
 `seccomp=2`, a separate netns and no default route; 18/18 output sums. The
 `repair` account (uid 1002) was retired. Evidence:
-`docs/handoffs/evidence/t62-guest-executor-conformance-2026-11-07/`.
+`docs/development/handoffs/evidence/t62-guest-executor-conformance-2026-11-07/`.
 
 `run_job.py` is guest-only. It refuses the host, refuses root, and refuses any
 account other than the fixed unprivileged executor uid (`1003`). A non-plan run
@@ -190,5 +190,5 @@ the root-owned pid-bound attestation, and execs the fixed Python path and argv.
 
 The formal conformance run (synthetic Route B screening, `run_manifest: false`)
 and the negative checks are recorded in
-`docs/handoffs/evidence/t62-guest-executor-conformance-2026-11-07/`. V2 and V4
+`docs/development/handoffs/evidence/t62-guest-executor-conformance-2026-11-07/`. V2 and V4
 stay `not_run`; no `verified_by` is written.

@@ -10,8 +10,8 @@ from pathlib import Path
 from app.services import attempt_writer, jobs
 
 ROOT = Path(__file__).resolve().parents[1]
-BUNDLE_124 = ROOT / "delivery/cwe416-124-v4-rerun-2026-11-06"
-BUNDLE_P1 = ROOT / "delivery/p1-real-window-2026-11-07/bundle/a1.routeb"
+BUNDLE_124 = ROOT / "artifacts/cwe416-124-v4-rerun-2026-11-06"
+BUNDLE_P1 = ROOT / "artifacts/p1-real-window-2026-11-07/bundle/a1.routeb"
 CONTRACT = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json"
 
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Build the CWE416 no-input fixture binary. Run inside the isolated Ubuntu guest.
 #
-# This is the T30 recipe (docs/handoffs/evidence/T30/build/build.sh, sha256
+# This is the T30 recipe (docs/development/handoffs/evidence/T30/build/build.sh, sha256
 # 6e33c825...) with exactly one change: the test-case support unit is resolved
 # from ./support instead of a Juliet checkout, so the fixture is self-contained.
 # The compiler line is untouched -- same flags, same order, same prefix maps.

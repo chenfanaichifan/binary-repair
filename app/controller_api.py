@@ -64,7 +64,7 @@ ROUTE_NAMES: dict[str, str] = {
 }
 
 # Roles that carry displayable analysis content, from
-# docs/interfaces/artifact-roles-v1.md. They are display only and never become
+# docs/reference/interfaces/artifact-roles-v1.md. They are display only and never become
 # an acceptance obligation.
 ANALYSIS_ROLES = frozenset(
     {

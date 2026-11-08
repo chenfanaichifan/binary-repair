@@ -7,7 +7,7 @@
 #     jobwrap gate5 -- <repo>/routeb/jobwrap_gate5.sh <repo> /var/tmp/gate5-work
 #
 # The caller must verify this file's SHA-256 against the pinned value in
-# docs/handoffs/50 §3a before the run and must chmod +x the guest copy. The script
+# docs/development/handoffs/50 §3a before the run and must chmod +x the guest copy. The script
 # does no work of its own: it execs the M4 probe, which refuses to run unless
 # euid == 1003 (jobwrap drops privileges before this point).
 set -euo pipefail

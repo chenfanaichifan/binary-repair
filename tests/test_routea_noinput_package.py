@@ -14,7 +14,7 @@ from workers.route_a import worker
 
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput"
-ROUTE_A = Path(__file__).resolve().parents[1] / "delivery/p1-routea-kit-2026-11-07"
+ROUTE_A = Path(__file__).resolve().parents[1] / "artifacts/p1-routea-kit-2026-11-07"
 
 
 def _sha(path: Path) -> str:

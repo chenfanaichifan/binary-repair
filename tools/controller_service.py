@@ -10,7 +10,7 @@ This is the bridge the GUI talks to in ``http`` mode. It is deliberately honest:
   message instead of pretending a repair happened.
 
 Replace this bridge with the final controller service once Member 1 exposes one;
-the response contract is documented in ``docs/controller-integration.md``.
+the response contract is documented in ``docs/architecture/controller-integration.md``.
 """
 
 from __future__ import annotations

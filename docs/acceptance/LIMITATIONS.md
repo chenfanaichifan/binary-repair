@@ -39,7 +39,7 @@ genuinely independent approval is not satisfied by this delivery.
 
 The verdict is against a canonical reconstruction. It must not be described as
 verbatim original review text. The source state is recorded in
-`docs/reviews/review-9-12-m4-verdict-2026-11-07.json`.
+`docs/development/reviews/review-9-12-m4-verdict-2026-11-07.json`.
 
 ## 6. V5 scope
 
