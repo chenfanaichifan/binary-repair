@@ -81,7 +81,7 @@ CWE416 logs/plans/contracts: DONE
 
 ```text
 T8.3: COMPLETE (record 170)
-Final audit: record 193
+Final audit: record 193 / 199
 P1: success_within_scope (record 173)
 P2: ACCEPTANCE PASSED
 V4: passed marker retained
