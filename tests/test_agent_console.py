@@ -149,7 +149,7 @@ def test_missing_region_field_renders_a_dash_not_a_blank_cell():
 
 def test_artifact_without_id_is_not_linked():
     """A bad artifact row must not yield /api/artifacts/undefined/download."""
-    assert 'if (!artifact || typeof artifact.id !== "string" || !artifact.id) return;' in AGENT_JS
+    assert 'if (!artifact || typeof artifact.id !== "string" || !artifact.id || seen[artifact.id]) return;' in AGENT_JS
 
 
 def test_route_without_evidence_says_unavailable():
@@ -165,7 +165,9 @@ def test_no_model_calls_or_new_transport():
         assert banned not in AGENT_JS, banned
     # Read paths: the snapshot, the attempts timeline, the job-less plan
     # route, and per-attempt evidence (all same-origin GETs).
-    assert AGENT_JS.count("fetch(") == 5
+    assert AGENT_JS.count("fetch(") == 7
+    assert "/artifacts" in AGENT_JS
+    assert "/deliverables" in AGENT_JS
     assert 'fetch("/api/jobs/" + encodeURIComponent(state.jobId)' in AGENT_JS
     assert 'fetch("/api/jobs/" + encodeURIComponent(jobId) + "/attempts"' in AGENT_JS
     assert 'fetch("/api/jobs/" + encodeURIComponent(jobId) + "/comparison"' in AGENT_JS
@@ -618,3 +620,13 @@ def test_evidence_proxy_passes_gates_and_v3_unchanged(monkeypatch):
     assert [row["gate"] for row in body["gates"]] == ["V0", "V3"]
     assert body["v3"]["valid"] == {"passed": 1, "total": 1}
     assert body["v3"]["invalid_applicable"] is False
+
+
+def test_deliverable_upload_controls_exist():
+    """The operator-facing repaired ELF upload must be present and same-origin."""
+    assert 'id="agent-deliverable-input"' in AGENT_TEMPLATE
+    assert 'id="agent-deliverable-upload"' in AGENT_TEMPLATE
+    assert 'data-testid="agent-deliverable-input"' in AGENT_TEMPLATE
+    assert "uploadDeliverable" in AGENT_JS
+    assert '"/deliverables"' in AGENT_JS
+    assert "/artifacts" in AGENT_JS

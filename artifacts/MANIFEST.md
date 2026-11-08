@@ -25,12 +25,16 @@ artifacts/m4/v4-2026-11-07/
 artifacts/m4-revalidation-ebc92a8/
 artifacts/p1-v5-logs-2026-11-07/
 artifacts/p1-v5-logs-2026-11-07.zip
+artifacts/p1-routea-kit-2026-11-07/
+artifacts/legacy-m5-evidence/
 ```
 
 ## Distribution snapshots included
 
 ```text
 artifacts/p1-v5-logs-2026-11-07.zip
+artifacts/p1-routea-kit-2026-11-07/
+artifacts/legacy-m5-evidence/
 ```
 
 Large historical distribution snapshots (`dist/`,

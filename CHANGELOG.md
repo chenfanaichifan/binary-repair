@@ -3,6 +3,17 @@
 All notable changes to this project are documented here. This project follows a
 simple semantic-versioning policy for delivery snapshots.
 
+## [1.1.1] — 2026-11-08
+
+### Fixed
+
+- Added the repaired-ELF upload/download entry (`operator_deliverable`; never
+  executed and never acceptance evidence).
+- Normalized artifact `SHA256SUMS` to LF; direct `shasum -c` now passes.
+- Restored curated test paths (`artifacts/legacy-m5-evidence`, `artifacts/p1-routea-kit`)
+  and the 124 candidate path.
+- Full clean-clone suite: 717 passed / 2 Linux-only skipped / 0 failed.
+
 ## [1.1.0] — 2026-11-08
 
 ### Added

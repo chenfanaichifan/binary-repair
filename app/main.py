@@ -702,6 +702,35 @@ async def export_bundle(job_id: str):
     )
 
 
+@app.get("/api/jobs/{job_id}/artifacts")
+async def job_artifacts(job_id: str):
+    """Proxy the job artifact list so the result screen can link deliverables."""
+    return JSONResponse(BACKEND.get_artifacts(job_id))
+
+
+@app.post("/api/jobs/{job_id}/deliverables", status_code=201)
+async def upload_deliverable(request: Request, job_id: str, file: UploadFile = File(...)):
+    """Store an operator-supplied repaired ELF for download only.
+
+    It does not create an obligation or change any verdict. The controller
+    validates the ELF magic, hashes the bytes and registers an
+    ``operator_deliverable`` artifact.
+    """
+    _require_csrf(request.headers.get("x-csrf-token", ""))
+    uploader = getattr(BACKEND, "upload_deliverable", None)
+    if uploader is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Deliverable upload is only available in controller (http) mode.",
+        )
+    payload = await file.read()
+    try:
+        result = uploader(job_id, filename=file.filename or "repaired.elf", content=payload)
+    except BackendError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    return JSONResponse(result, status_code=201)
+
+
 @app.get("/api/artifacts/{artifact_id}")
 async def artifact_metadata(artifact_id: str):
     """Proxy artifact metadata so evidence pages work against the controller."""

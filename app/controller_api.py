@@ -39,6 +39,7 @@ import hmac
 import json
 import os
 import re
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -1429,6 +1430,50 @@ def artifacts(job_id: str) -> dict[str, list[dict[str, Any]]]:
         key = "B" if row.get("route") == "route_b" else "A"
         groups[key].append(meta)
     return groups
+
+
+DELIVERABLE_MAX_BYTES = 64 * 1024 * 1024
+
+
+@app.post("/api/jobs/{job_id}/deliverables", status_code=201)
+async def upload_deliverable(job_id: str, file: UploadFile = File(...)) -> dict[str, Any]:
+    """Store an operator-supplied repaired ELF for download.
+
+    This is deliberately not acceptance evidence: it creates an
+    ``operator_deliverable`` artifact only. It never writes an obligation, never
+    changes an attempt/run outcome, and never executes the bytes.
+    """
+    _job_or_404(job_id)
+    payload = await file.read()
+    if not payload:
+        raise HTTPException(status_code=422, detail="Uploaded file is empty.")
+    if len(payload) > DELIVERABLE_MAX_BYTES:
+        raise HTTPException(status_code=413, detail="Uploaded file is too large.")
+    if not payload.startswith(b"\x7fELF"):
+        raise HTTPException(
+            status_code=400,
+            detail="Uploaded deliverable is not an ELF binary (missing \\x7fELF magic).",
+        )
+    raw_filename = file.filename or "repaired.elf"
+    parts = re.split(r"[\\/]+", raw_filename)
+    if raw_filename.startswith(("/", "\\")) or ".." in parts:
+        raise HTTPException(status_code=400, detail="Uploaded filename must be a plain basename.")
+    filename = _ascii_filename(raw_filename)
+    relative = Path("jobs") / job_id / "deliverables" / f"{uuid.uuid4().hex[:12]}-{filename}"
+    target = _data_dir() / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(payload)
+    row = jobs.add_artifact(
+        job_id,
+        relative_path=relative.as_posix(),
+        role="operator_deliverable",
+        data_dir=_data_dir(),
+        media_type="application/x-elf",
+    )
+    return {
+        "artifact": _artifact_metadata(row, verify_hash=True),
+        "note": "Stored for download only; not acceptance evidence and never executed.",
+    }
 
 
 @app.get("/api/jobs/{job_id}/artifacts/{artifact_id}")

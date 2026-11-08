@@ -20,8 +20,8 @@ from app.services import jobs, worker
 from tools.route_bundle_ingest import ingest
 
 REPO = Path(__file__).resolve().parents[2]
-P3A = REPO / "dist" / "m5-evidence" / "P3A-routea-2026-10-31-v7.zip"
-P3B = REPO / "dist" / "m5-evidence" / "P3B-package-v6-2026-10-31.zip"
+P3A = REPO / "artifacts" / "legacy-m5-evidence" / "P3A-routea-2026-10-31-v7.zip"
+P3B = REPO / "artifacts" / "legacy-m5-evidence" / "P3B-package-v6-2026-10-31.zip"
 
 
 def _unpack(archive: Path, target: Path) -> Path:
@@ -178,7 +178,7 @@ def test_every_ingested_artifact_role_is_documented(pipeline) -> None:
     _client, data, job, _run, _attempts = pipeline
 
     documented: set[str] = set()
-    for line in (REPO / "docs" / "interfaces" / "artifact-roles-v1.md").read_text(
+    for line in (REPO / "docs" / "reference" / "interfaces" / "artifact-roles-v1.md").read_text(
         encoding="utf-8"
     ).splitlines():
         matched = re.match(r"^\|\s*`([a-z0-9_]+)`\s*\|", line)

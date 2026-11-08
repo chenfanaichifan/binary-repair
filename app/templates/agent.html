@@ -130,6 +130,14 @@
 
         <section class="agent-panel" aria-labelledby="agent-downloads-title">
           <h2 id="agent-downloads-title" class="agent-panel-title">下载面板</h2>
+          <div class="agent-deliverable">
+            <input id="agent-deliverable-input" type="file" accept=".elf,application/x-elf"
+                   data-testid="agent-deliverable-input">
+            <button id="agent-deliverable-upload" type="button" class="btn ghost"
+                    data-testid="agent-deliverable-upload">上传修复文件</button>
+            <span id="agent-deliverable-status" class="agent-muted"
+                  data-testid="agent-deliverable-status"></span>
+          </div>
           <ul id="agent-downloads" class="agent-downloads" data-testid="agent-downloads"></ul>
         </section>
       </div>
