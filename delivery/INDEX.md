@@ -107,6 +107,14 @@ old candidate package = cwe416-124-candidate-2026-11-05 (do not use for current 
 upload-2026-11-07 = distribution snapshot, not a second source of truth
 ```
 
+## Final audit
+
+```text
+docs/handoffs/193-final-project-audit-2026-11-08.md
+delivery/logs/final-old-clean-2026-11-08.txt
+delivery/logs/final-public-v1.1.1-2026-11-08.txt
+```
+
 ## Not stored
 
 ```text
