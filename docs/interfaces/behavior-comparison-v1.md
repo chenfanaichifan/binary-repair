@@ -80,6 +80,7 @@ case.detail          required string, may be empty
 summary              required; counts must equal cases
 summary.total        == len(cases)
 summary.same + different + not_run + unknown == total
+summary.unknown must be 0 (unknown verdict is invalid)
 not_claimed          required non-empty list
 ```
 
@@ -99,7 +100,10 @@ missing required case field
   -> invalid whole artifact; do not infer values
 
 case.verdict=not_run
-  -> original/candidate may have null outputs; still not a pass
+  -> original/candidate objects are still required
+  -> returncode/stdout_sha256/stderr_sha256 may be null
+  -> timed_out must still be a bool
+  -> still not a pass
 
 case.verdict=same or different
   -> both outputs must be complete; hashes required
@@ -118,7 +122,7 @@ same
 status=not_provided -> "未提供"
 status=invalid      -> "不可用"
 status=available    -> show per-case counts, never "通过"
-same/different/not_run/unknown are displayed verbatim
+same/different/not_run are displayed verbatim; unknown is invalid, not a label
 no field may be rendered as "修复成功"
 ```
 

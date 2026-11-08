@@ -137,3 +137,38 @@ def test_no_session_is_401(monkeypatch) -> None:
     c = TestClient(app, base_url="http://127.0.0.1")
     response = c.get("/api/jobs/job-1/comparison")
     assert response.status_code == 401
+
+
+def test_not_run_allows_null_runtime_fields_but_objects_required(client, monkeypatch) -> None:
+    payload = _payload()
+    case = payload["cases"][0]
+    case["verdict"] = "not_run"
+    case["original"] = {"returncode": None, "stdout_sha256": None, "stderr_sha256": None, "timed_out": False}
+    case["candidate"] = {"returncode": None, "stdout_sha256": None, "stderr_sha256": None, "timed_out": False}
+    payload["summary"] = {"total": 1, "same": 0, "different": 0, "not_run": 1, "unknown": 0}
+    content = json.dumps(payload).encode()
+    _set_backend(monkeypatch, FakeBackend(row=_row(content), content=content))
+    response = client.get("/api/jobs/job-1/comparison")
+    assert response.status_code == 200
+    assert response.json()["status"] == "available"
+
+
+def test_unknown_kind_is_invalid(client, monkeypatch) -> None:
+    payload = _payload()
+    payload["cases"][0]["kind"] = "unknown"
+    content = json.dumps(payload).encode()
+    _set_backend(monkeypatch, FakeBackend(row=_row(content), content=content))
+    response = client.get("/api/jobs/job-1/comparison")
+    assert response.status_code == 200
+    assert response.json()["status"] == "invalid"
+    assert "kind" in response.json()["detail"]
+
+
+def test_unknown_verdict_is_invalid(client, monkeypatch) -> None:
+    payload = _payload()
+    payload["cases"][0]["verdict"] = "unknown"
+    content = json.dumps(payload).encode()
+    _set_backend(monkeypatch, FakeBackend(row=_row(content), content=content))
+    response = client.get("/api/jobs/job-1/comparison")
+    assert response.status_code == 200
+    assert response.json()["status"] == "invalid"
