@@ -30,6 +30,7 @@ docs/reviews/evidence/
 
 ```text
 docs/interfaces/artifact-roles-v1.md
+docs/interfaces/behavior-comparison-v1.md
 docs/interfaces/execution-bridge-v1.md
 docs/m5/m5-tool-contracts-v2.md
 ```
