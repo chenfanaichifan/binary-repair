@@ -5,6 +5,7 @@
 4458540d0ba3aefbb1a3bd70766579bb64cba5a94f9c2e7e11c03ab9c5d1cdf6  patches-m2/0002-fix-agent-do-not-redirect-a-legacy-job-link-that-is-.patch
 45a2a1b14f3ad1773a34be009dcbdf7dc47ad8dda8299b47f28e4dc4d2d2edb2  patches-m2/0005-feat-agent-label-the-plan-mode-as-scripted-v1-and-ke.patch
 487b014abb6a6d5cf96d869f002f1cdf0e06896cf2b0b3e1e9b76cfb2c867452  run-m2-tests.sh
+51c12d45b9b29133c741c4c7f3989c584c1c5b6cc1c8b45ede175c5ab87b6954  evidence/file-protocol-dom.html
 551220daf9e241406f3a8af83f41598f380c4753c1b6c181063477dd93be5ed1  130-blockers-and-decisions-2026-11-08.md
 59bf1fb2358d2a3242697dbae9df1c86a5a92e28fcbc308cb01e807296eadd37  patches-m2/0007-feat-agent-always-render-scope-bounded-as-unknown-wh.patch
 61d773204d0c7e36f1975029320296b7640f5d81425c64b04fa211cb74479c8d  132-final-verification-matrix-2026-11-08.md
@@ -15,6 +16,7 @@
 837d548f50b18f19ccb6e522a75a86a6634445c79e9877d5ecd05d86e0e0e158  REVIEW-12-CHECKLIST.md
 864fadd3d3175b75792f6569ad305e9953931ab6e6e5e83bd3fd585a3ff671ea  patches-m2/0004-feat-agent-render-the-attempts-timeline-and-scope-bo.patch
 9676dc5403e93a2a897d7fcee3d2c2d853a6a1b7418c04c3f62cb87d4c3c1fb3  patches-m2/0001-fix-agent-flag-missing-evidence-and-never-render-bla.patch
+9b4a56b00fb1ba73bb3273d17e94d9753e4782a81166a6267335ff2c056a7835  135-file-protocol-upload-hidden-2026-11-08.md
 a4f797cc3175a9681c76e6c1a2d1b15cf0171647e890663a2b2a89cd70d38011  STATE-122.md
 ce8f7127224fcdc97a3793f0ca4a8ea437c8f292565f2f79fc4cc05d9dfd7051  win-full-junit.xml
 d1ef055b0bcb8daed65a76b48cad93fa9249a602947b78805fd5cc8d54a499dd  patches-m2/0006-docs-agent-record-the-T8.4-mode-badge-and-metadata-b.patch

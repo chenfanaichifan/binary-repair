@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>修复控制台 · BinaryRepair</title>
+  <link rel="stylesheet" href="./static/css/ds.css?v=20261105a">
+  
+<link rel="stylesheet" href="./static/css/agent.css?v=20261104b">
+
+</head>
+<body class="ds-body" data-job-id="a28a0ac07a23497aa042bf6e7d6ea8fa" data-demo="0">
+  <div class="ds-app">
+    <aside class="ds-sidebar">
+      <a class="ds-brand" href="/" aria-label="返回起始页" title="返回起始页">BinaryRepair <span class="ds-badge">预览版</span></a>
+      <a class="ds-new" href="/agent/new" data-testid="sidebar-new-task">＋ 新任务</a>
+
+      <div class="ds-group">任务</div>
+      <nav class="ds-job-list" id="ds-job-list" data-testid="ds-job-list" aria-label="任务列表"><a class="ds-job-item is-active" href="/agent/a28a0ac07a23497aa042bf6e7d6ea8fa" data-job-id="a28a0ac07a23497aa042bf6e7d6ea8fa" data-testid="ds-job-item" data-state="unreachable"><span class="ds-job-dot" aria-hidden="true"></span><span class="ds-job-name" title="a28a0ac07a23497aa042bf6e7d6ea8fa">任务 a28a0ac0</span><span class="ds-job-phase">状态未知</span></a></nav>
+
+      <div class="ds-group">工作区</div>
+      <div class="ds-workspace">默认工作区</div>
+      <p class="ds-side-hint">
+        任务列表保存在本机浏览器，逐条向后端核对状态；服务端全量列表待 controller 提供。
+      </p>
+
+      <div class="ds-side-foot">
+        阶段与结论是两条独立的轴。<br>
+        未执行显示 <code>not_run</code>，未回传显示等待占位。<br>
+        页面不计算整体结论，导出不代表生产批准。
+      </div>
+    </aside>
+
+    <div class="ds-main">
+      
+
+      <main class="ds-content">
+        
+<div id="agent-root" class="agent" data-testid="agent-root" data-job-id="a28a0ac07a23497aa042bf6e7d6ea8fa" data-fixture="0" data-demo="0" data-workspace="local" data-mode="standard" data-assistant-mode="deterministic" data-assistant-available="0" data-csrf="63e0a5039186cce2c8b5e0c8e073ab58a79f568c98a818aa59336721c683263c">
+  <div class="agent-top">
+    <div class="agent-heading">
+      <a class="agent-back" href="/agent" data-testid="agent-back">← 全部任务</a>
+      <h1 class="ds-page-title">
+        修复任务 <code class="agent-job-id">a28a0ac0</code>
+      </h1>
+      <p class="ds-page-sub">
+        这是该任务的独立会话：对话与操作记录按任务分开保存。
+        助手只做引导与解释；创建任务、开始执行由你点击确认，结论由验收引擎给出。
+      </p>
+    </div>
+    <div class="agent-badges">
+      <span id="agent-workspace-chip" class="ds-chip" data-testid="agent-workspace-chip">默认工作区</span>
+      <span id="agent-mode-badge" class="ds-chip accent" data-testid="agent-mode-badge" data-plan-mode="deterministic">助手模式：脚本 v1（deterministic）</span>
+      <span id="agent-job-chip" class="ds-chip" data-testid="agent-job-chip">任务 a28a0ac0</span>
+      <span id="agent-poll" class="agent-poll" data-testid="agent-poll">网络错误，稍后重试</span>
+    </div>
+  </div>
+
+  <div id="agent-fallback" class="agent-fallback" data-testid="agent-fallback" hidden="">
+    <strong>助手已降级</strong>：<span id="agent-fallback-text">模型通道不可用，当前回退到确定性引导；页面内容不代表模型输出。</span>
+  </div>
+
+  <div class="agent-tabs-row">
+    <div class="agent-tabs" role="tablist" aria-label="控制台视图">
+      <button type="button" class="agent-tab is-active" data-view="chat" data-testid="agent-tab-chat" role="tab" aria-selected="true">对话引导</button>
+      <button type="button" class="agent-tab" data-view="result" data-testid="agent-tab-result" role="tab" aria-selected="false">结果与证据</button>
+    </div>
+    <button type="button" class="agent-side-toggle" id="agent-side-toggle" data-testid="agent-side-toggle" aria-controls="agent-side" aria-expanded="false">展开状态面板</button>
+    
+    <a class="agent-tab agent-tab-link" href="/jobs/a28a0ac07a23497aa042bf6e7d6ea8fa" data-testid="agent-open-comparison">对比页</a>
+    <a class="agent-tab agent-tab-link" href="/jobs/a28a0ac07a23497aa042bf6e7d6ea8fa/evidence" data-testid="agent-open-evidence">证据与导出</a>
+    
+  </div>
+
+  <p id="agent-history-note" class="agent-history-note" data-testid="agent-history-note">
+    对话与操作记录按任务保存在本机浏览器；服务端历史需要 M5 的 T8.1 持久化接入后才会跨设备可查。
+  </p>
+
+  <div class="agent-body is-side-collapsed">
+    <section class="agent-main">
+      <div id="agent-view-chat" data-testid="agent-view-chat">
+        <ol id="agent-stream" class="agent-stream" data-testid="agent-stream" aria-live="polite"><li class="agent-msg agent-msg-assistant"><div class="agent-msg-head"><span class="agent-msg-role">助手</span></div><div class="agent-msg-body">已打开任务 a28a0ac07a23497aa042bf6e7d6ea8fa。上面的对话来自本机保存的该任务记录；我会每 2 秒刷新状态。引导计划需要 M1 的 assistant 端点与 M5 的 planner 接入后才会出现在这里。</div></li></ol>
+
+        <form id="agent-composer" class="ds-composer agent-composer" data-testid="agent-composer">
+          <label class="visually-hidden" for="agent-input">输入回答</label>
+          <textarea id="agent-input" data-testid="agent-input" rows="2" placeholder="输入回答；Enter 发送，Shift+Enter 换行，/ 调用指令"></textarea>
+          <div class="ds-composer-bar">
+            <button type="button" class="ds-icon-btn" id="agent-attach" title="上传样本" aria-label="上传样本">＋</button>
+            <span class="ds-chip">本地工作区</span>
+            <div class="ds-composer-meta">
+              <span class="agent-composer-note">助手不发起执行</span>
+              <button class="ds-send" type="submit" aria-label="发送" data-testid="agent-send">↑</button>
+            </div>
+          </div>
+        </form>
+        <p class="agent-hint">
+          <code>/skip</code> 默认答案 · <code>/status</code> 当前状态 · <code>/restart</code> 重新引导
+          <span id="agent-fixture-hint" hidden=""> · <code>/fixture fresh|pending|success|failure</code> 切换演示场景</span>
+        </p>
+      </div>
+
+      <div id="agent-view-result" data-testid="agent-view-result" hidden="">
+        <section class="agent-panel" aria-labelledby="agent-timeline-title">
+          <h2 id="agent-timeline-title" class="agent-panel-title">执行时间线</h2>
+          <ol id="agent-timeline" class="agent-timeline" data-testid="agent-timeline"><li class="agent-timeline-item is-active"><span class="agent-timeline-name">尝试 #1 · route_a</span><span class="agent-timeline-meta">未知</span><span class="agent-timeline-meta">未知退出码</span></li><li class="agent-timeline-item is-active"><span class="agent-timeline-name">尝试 #1 · route_b</span><span class="agent-timeline-meta">未知</span><span class="agent-timeline-meta">未知退出码</span></li></ol>
+        </section>
+
+        <section class="agent-panel" aria-labelledby="agent-before-after-title">
+          <h2 id="agent-before-after-title" class="agent-panel-title">修改前后</h2>
+          <p class="agent-hashline">
+            <code id="agent-original-sha" data-testid="agent-original-sha">original_sha256：c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9</code>
+            <span aria-hidden="true">→</span>
+            <code id="agent-candidate-sha" data-testid="agent-candidate-sha">candidate_sha256：—</code>
+          </p>
+          <div id="agent-before-after" data-testid="agent-before-after"><p class="agent-muted">未产出候选改动；没有可展示的代码差异。</p></div>
+        </section>
+
+        <section class="agent-panel" aria-labelledby="agent-diagnostics-title">
+          <h2 id="agent-diagnostics-title" class="agent-panel-title">诊断与义务</h2>
+          <p id="agent-verdict" class="agent-verdict" data-testid="agent-verdict">结论：—</p>
+          <div id="agent-receipt-placeholder" class="agent-receipt" data-testid="agent-receipt-placeholder" hidden="">
+            等待执行结果回传。对端尚未给出义务结果，此处不显示 <code>not_run</code>，也不做任何结论推断。
+          </div>
+          <div id="agent-reason-card" class="agent-card agent-card-reason" data-testid="agent-reason-card" hidden=""></div>
+          <div id="agent-advice-card" class="agent-card agent-card-advice" data-testid="agent-advice-card" hidden=""></div>
+          <div id="agent-diagnostics" data-testid="agent-diagnostics"><div class="agent-card" data-testid="agent-scope-bounded"><p class="agent-card-title">范围与边界</p><p>scope：unknown</p><p>bounded：unknown</p></div><div class="agent-card" data-testid="agent-comparison"><p class="agent-card-title">行为对比</p><p>comparison：不可用（HTTP 404）</p></div><h3 class="agent-side-subtitle">Route A · 用例 0/8</h3><p class="agent-muted">证据不可用（该路线未回传 attempt）</p><h3 class="agent-side-subtitle">Route B · 用例 0/8</h3><p class="agent-muted">证据不可用（该路线未回传 attempt）</p><p class="agent-muted">后端未提供义务结果</p></div>
+        </section>
+
+        <section class="agent-panel" aria-labelledby="agent-downloads-title">
+          <h2 id="agent-downloads-title" class="agent-panel-title">下载面板</h2>
+          <div class="agent-deliverable">
+            <input id="agent-deliverable-input" type="file" accept=".elf,application/x-elf" data-testid="agent-deliverable-input" hidden="">
+            <button id="agent-deliverable-upload" type="button" class="btn ghost" data-testid="agent-deliverable-upload" hidden="">上传修复文件</button>
+            <span id="agent-deliverable-status" class="agent-muted" data-testid="agent-deliverable-status"></span>
+          </div>
+          <ul id="agent-downloads" class="agent-downloads" data-testid="agent-downloads"><li><a href="/api/jobs/a28a0ac07a23497aa042bf6e7d6ea8fa/export">证据包 JSON（/api/jobs/{id}/export）</a></li><li><a href="/jobs/a28a0ac07a23497aa042bf6e7d6ea8fa/report">HTML 报告（查看）</a></li><li><a href="/jobs/a28a0ac07a23497aa042bf6e7d6ea8fa/report?download=1">HTML 报告（下载）</a></li></ul>
+        </section>
+      </div>
+    </section>
+
+    <aside class="agent-side" id="agent-side" aria-label="状态面板">
+      <h2 class="agent-side-title">状态面板</h2>
+      <dl class="agent-side-list">
+        <div class="agent-side-row">
+          <dt>当前步骤</dt>
+          <dd id="agent-side-step" data-testid="agent-side-step">后端未提供</dd>
+        </div>
+        <div class="agent-side-row">
+          <dt>执行状态</dt>
+          <dd id="agent-side-execution" data-testid="agent-side-execution">—</dd>
+        </div>
+        <div class="agent-side-row">
+          <dt>阶段</dt>
+          <dd id="agent-side-phase" data-testid="agent-side-phase">—</dd>
+        </div>
+        <div class="agent-side-row">
+          <dt>契约</dt>
+          <dd id="agent-side-contract" data-testid="agent-side-contract">—</dd>
+        </div>
+      </dl>
+
+      <h3 class="agent-side-subtitle">助手调用元数据</h3>
+      <p id="agent-model-meta" class="agent-model-meta" data-testid="agent-model-meta">未提供</p>
+
+      <h3 class="agent-side-subtitle">产物</h3>
+      <ul id="agent-side-artifacts" class="agent-side-artifacts" data-testid="agent-side-artifacts"><li class="agent-muted">尚无产物</li></ul>
+
+      <p class="agent-side-note">
+        义务结果逐字展示后端取值；未回传时显示占位。页面不计算整体结论。
+      </p>
+    </aside>
+  </div>
+</div>
+
+      </main>
+
+      <footer class="ds-footer">BinaryRepair · AI 二进制漏洞修复与正确性验证工作台</footer>
+    </div>
+  </div>
+
+  <script src="./static/js/jobs-list.js?v=20261105a"></script>
+  
+<script src="./static/js/agent.fixtures.js?v=20261104a"></script>
+<script src="./static/js/agent.js?v=20261104b"></script>
+
+
+
+</body></html>
