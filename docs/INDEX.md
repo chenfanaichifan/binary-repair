@@ -21,6 +21,7 @@ docs/handoffs/179-m2-all-inputs-handoff-2026-11-07.md
 docs/reviews/review-9-12-canonical-2026-11-07.md
 docs/reviews/review-9-12-m4-verification-2026-11-07.md
 docs/reviews/review-9-12-m4-verdict-2026-11-07.json
+docs/reviews/review-9-12-provenance-2026-11-08.md
 docs/reviews/evidence/
 ```
 
