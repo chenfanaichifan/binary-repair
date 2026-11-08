@@ -16,7 +16,7 @@ from tools.route_bundle_ingest import ingest
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput"
-DELIVERY = ROOT / "artifacts/cwe416-124-candidate-2026-11-05"
+DELIVERY = ROOT / "artifacts/cwe416-124-v4-rerun-2026-11-06"
 ORIGINAL_SHA = "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9"
 CANDIDATE_SHA = "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0"
 CONTRACT_SHA = "c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c"

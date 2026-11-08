@@ -12,7 +12,7 @@ from tools.route_bundle_ingest import ingest
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput"
-DELIVERY = ROOT / "artifacts/cwe416-124-candidate-2026-11-05"
+DELIVERY = ROOT / "artifacts/cwe416-124-v4-rerun-2026-11-06"
 CANDIDATE_SHA = "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0"
 
 
@@ -53,9 +53,12 @@ def test_v4_passed_without_typed_evidence_becomes_not_run(tmp_path: Path) -> Non
         "manifest-repaired.json",
         "reproducibility.json",
         "v2-interface.json",
-        "v4-symbolic.json",
     ):
         shutil.copyfile(DELIVERY / name, bundle / name)
+    # Deliberately untyped: a bare V4 "passed" must not become evidence.
+    (bundle / "v4-symbolic.json").write_text(
+        json.dumps({"gate": "V4", "state": "passed"}), encoding="utf-8"
+    )
     (bundle / "bundle.json").write_text(
         json.dumps(
             {

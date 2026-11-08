@@ -2,7 +2,7 @@
 
 This repository is the curated public snapshot of the accepted BinaryRepair MVP.
 
-Current release: v1.1.2 (2026-11-08). The earlier v1.0.0 and v1.1.0/v1.1.1 tags are historical snapshots and are not moved.
+Current release: v1.1.3 (2026-11-08). The earlier v1.0.0 and v1.1.0/v1.1.1 tags are historical snapshots and are not moved.
 The source development repository remains
 `chenfanaichifan/binary-repair`; the snapshot source is branch
 `delivery/all-hands-2026-11-07` at

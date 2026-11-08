@@ -3,6 +3,15 @@
 All notable changes to this project are documented here. This project follows a
 simple semantic-versioning policy for delivery snapshots.
 
+## [1.1.3] — 2026-11-08
+
+### Fixed
+
+- Restored curated test paths that regressed in v1.1.2:
+  `artifacts/legacy-m5-evidence`, `artifacts/cwe416-124-v4-rerun-2026-11-06`,
+  and `docs/reference/interfaces/artifact-roles-v1.md`.
+- Full clean-clone suite: 729 collected / 727 passed / 2 Linux-only skipped / 0 failed.
+
 ## [1.1.2] — 2026-11-08
 
 ### Added
