@@ -9,6 +9,7 @@
 59bf1fb2358d2a3242697dbae9df1c86a5a92e28fcbc308cb01e807296eadd37  patches-m2/0007-feat-agent-always-render-scope-bounded-as-unknown-wh.patch
 61d773204d0c7e36f1975029320296b7640f5d81425c64b04fa211cb74479c8d  132-final-verification-matrix-2026-11-08.md
 656bb17842185fe415991d9e04e4858649f883b858fda63c80a9306f01411eee  .gitattributes
+721dff8c02f0f5fa682572950ae0c28a3af15258c0c9c8ca6a8739eccffaa321  133-upload-gates-2026-11-08.md
 7b8b58fe24dd26970867aac860442dcaf8a92d35f446bc9015932f07ecfdeed5  win-suite-132-junit.xml
 837d548f50b18f19ccb6e522a75a86a6634445c79e9877d5ecd05d86e0e0e158  REVIEW-12-CHECKLIST.md
 864fadd3d3175b75792f6569ad305e9953931ab6e6e5e83bd3fd585a3ff671ea  patches-m2/0004-feat-agent-render-the-attempts-timeline-and-scope-bo.patch

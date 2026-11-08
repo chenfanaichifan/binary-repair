@@ -17,6 +17,16 @@
   var root = document.getElementById("agent-root");
   if (!root) return;
 
+  /* The deliverable upload posts to a same-origin API, so it only makes sense
+   * when the page is served over HTTP(S). Opened from file:// the endpoint does
+   * not exist, and offering the control would only produce a network error. */
+  var UPLOAD_AVAILABLE =
+    window.location.protocol === "http:" || window.location.protocol === "https:";
+
+  /* Mirrors DELIVERABLE_MAX_BYTES in app/controller_api.py so the browser can
+   * reject oversized files without a round trip. Keep the two in sync. */
+  var DELIVERABLE_MAX_BYTES = 64 * 1024 * 1024;
+
   /* ---------- 状态面板：可折叠，让对话流占满整行 ---------- */
 
   var sideBody = document.querySelector(".agent-body");
@@ -1528,6 +1538,10 @@
       return;
     }
     var file = input.files[0];
+    if (file.size > DELIVERABLE_MAX_BYTES) {
+      setText("agent-deliverable-status", "文件超过 64 MiB 上限，已取消上传");
+      return;
+    }
     var form = new FormData();
     form.append("file", file);
     setText("agent-deliverable-status", "上传中…");
@@ -1552,6 +1566,11 @@
   }
 
   var uploadButton = $("agent-deliverable-upload");
+  var uploadInput = $("agent-deliverable-input");
+  if (!UPLOAD_AVAILABLE) {
+    if (uploadButton) uploadButton.hidden = true;
+    if (uploadInput) uploadInput.hidden = true;
+  }
   if (uploadButton) uploadButton.addEventListener("click", uploadDeliverable);
 
   function init() {

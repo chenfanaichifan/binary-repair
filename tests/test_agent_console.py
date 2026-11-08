@@ -630,3 +630,16 @@ def test_deliverable_upload_controls_exist():
     assert "uploadDeliverable" in AGENT_JS
     assert '"/deliverables"' in AGENT_JS
     assert "/artifacts" in AGENT_JS
+
+
+def test_deliverable_upload_is_hidden_off_http_and_rejects_oversized_files():
+    """The upload control must not be offered without an HTTP origin, and a file
+    above the server limit must be refused before any request leaves the page."""
+    assert 'window.location.protocol === "http:"' in AGENT_JS
+    assert 'window.location.protocol === "https:"' in AGENT_JS
+    assert "if (!UPLOAD_AVAILABLE)" in AGENT_JS
+    assert "uploadButton.hidden = true" in AGENT_JS
+    assert "uploadInput.hidden = true" in AGENT_JS
+    assert "DELIVERABLE_MAX_BYTES = 64 * 1024 * 1024" in AGENT_JS
+    assert "if (file.size > DELIVERABLE_MAX_BYTES)" in AGENT_JS
+    assert "64 MiB" in AGENT_JS
