@@ -53,6 +53,15 @@ artifact link: /api/jobs/<job>/artifacts/<artifact_id>/download
 
 No "通过" was shown for unknown scope/bounded.
 
+## Review 12 verdict
+
+```text
+Review 12: PASS
+```
+
+Reason: scope/bounded missing is rendered as `unknown`, and no `通过` is shown.
+This is UI honesty, not a claim that analysis passed.
+
 ## Remaining
 
 ```text
