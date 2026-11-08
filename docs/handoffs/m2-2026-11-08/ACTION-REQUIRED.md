@@ -5,12 +5,23 @@
 代码侧已收敛到 0 failed。剩下 3 件需要人推动的事，其中 1 件是硬阻断：
 M4 至今没有拿到 r4 包本体，所以 Review 12 无法出正式结论。
 
-## 1. 硬阻断：把两个包交给 M4
+## 1. 原硬阻断：已降级为 fetch（2026-11-08 下午更新）
 
-现状：187 文档对 M2-1 只写了「元数据接受」，包没收到；M4 因此没有跑过
-`shasum -c MANIFEST.sha256` 和 `run-m2-tests.sh`。
+不再依赖 10.6 MB 的 zip。远端已有两个分支：
 
-要做的：
+```bash
+git fetch origin m2-h m2-fix-188-windows-gates
+git checkout m2-h
+sha256sum -c docs/handoffs/m2-2026-11-08/MANIFEST.sha256
+# 19 OK
+```
+
+```text
+m2-fix-188-windows-gates   db814a8   F1–F5 修复
+m2-h                       c1e3b85   修复 + 交接材料
+```
+
+只有拿不到网络时才用离线包：
 
 ```text
 m2-handoff-2026-11-08-r4.zip
@@ -25,13 +36,13 @@ m2-handoff-2026-11-08-r4.zip
 期望 M4 回的三个数：
 
 ```text
-18/18              r4 的 MANIFEST 自校验
+19/19              m2-h 分支内 MANIFEST 自校验
 132 passed         run-m2-tests.sh 的 M2 用例集
-5/5                本包自校验
+18/18 或 5/5       若改用离线 zip
 ```
 
-为什么是阻断：Review 12 的 PASS 建立在 M2-3（用例集）和 M2-4（页面）被独立复核之上。
-只有元数据、没有包，就只能一直停在「接受元数据」。
+Review 12 的 PASS 仍建立在 M2-3（用例集）和 M2-4（页面）被独立复核之上。
+判定表见 130 号第 3 节，M4 只需核对事实并写一行结论。
 
 ## 2. 需要 M4 补一行明确结论
 
@@ -100,7 +111,7 @@ r4  = 已验收的 M2 主体（10.6MB，18/18）
 ## 5. 我这边的限制（说明，不需要你处理）
 
 ```text
-git push        无 origin 权限，只能 zip 交付
+git push        已解决：缺 ~/.ssh/config，用 id_ed25519_binaryrepair 已推送
 Linux           无环境，717/2/0 只能引用 M1 记录
 WSL / bash      不可用，shell 脚本只能人工审阅
 node            不可用，JS 只能靠 pytest 源码级断言
