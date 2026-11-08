@@ -137,6 +137,26 @@ def test_comparison_is_only_shown_when_the_api_says_available():
     assert '"超出边界"' in AGENT_JS
 
 
+def test_comparison_cases_are_rendered_without_becoming_a_verdict():
+    # M5 schema: an available comparison is behaviour evidence. same / different /
+    # not_run describe what was observed; none of them is an acceptance verdict.
+    assert "function appendComparisonCases" in AGENT_JS
+    assert 'if (comparisonCache.status === "available") appendComparisonCases(wrap);' in AGENT_JS
+    assert "CASE_KIND_LABELS" in AGENT_JS
+    assert "CASE_VERDICT_LABELS" in AGENT_JS
+    assert "不构成验收结论" in AGENT_JS
+    assert "data.not_claimed" in AGENT_JS
+    assert "未执行" in AGENT_JS
+    # Neutral vocabulary only: the comparison card never grows a pass label.
+    assert 'text = "通过"' not in AGENT_JS
+    assert "comparison：通过" not in AGENT_JS
+    # M5 (197): unknown kind/verdict is rejected by the route, so the
+    # comparison verdict table carries no unknown label. The execution-status
+    # map keeps its own "unknown" entry and is out of scope here.
+    verdict_block = AGENT_JS.split("var CASE_VERDICT_LABELS = {")[1].split("};")[0]
+    assert "unknown" not in verdict_block
+
+
 def test_top_level_obligations_are_accepted_when_routes_omit_them():
     """M5 may return obligations at the top level; the view must not drop them."""
     assert "!obligations.length && Array.isArray(data.obligations)" in AGENT_JS
