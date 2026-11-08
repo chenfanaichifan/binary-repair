@@ -429,6 +429,135 @@ def _comparison_response(
     )
 
 
+COMPARISON_ROLE = "behavior_comparison"
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _comparison_invalid(job_id: str, detail: str, artifacts: list[dict] | None = None) -> dict:
+    return {
+        "job_id": job_id,
+        "status": "invalid",
+        "detail": detail,
+        "comparison": None,
+        "artifacts": artifacts or [],
+    }
+
+
+def _comparison_validate(job_id: str, payload: Any) -> dict:
+    """Strict enough for the GUI; M5 owns the final validation vocabulary.
+
+    Unknown/ambiguous cases are invalid here, not guessed: this is a route-level
+    fail-closed check, not the acceptance engine.
+    """
+    if not isinstance(payload, dict):
+        return _comparison_invalid(job_id, "comparison payload is not an object")
+    if payload.get("schema_version") != 1:
+        return _comparison_invalid(job_id, "schema_version must be 1")
+    for key in ("original_sha256", "candidate_sha256"):
+        value = payload.get(key)
+        if not isinstance(value, str) or not _HEX64.fullmatch(value):
+            return _comparison_invalid(job_id, f"{key} must be 64 lowercase hex")
+    if payload.get("scope") != "behavior_only":
+        return _comparison_invalid(job_id, "scope must be behavior_only")
+    cases = payload.get("cases")
+    if not isinstance(cases, list) or not cases:
+        return _comparison_invalid(job_id, "cases must be a non-empty list")
+    ids: set[str] = set()
+    counts = {"same": 0, "different": 0, "not_run": 0, "unknown": 0}
+    allowed_kinds = {"known_good", "known_bad", "valid", "invalid"}
+    for index, case in enumerate(cases):
+        if not isinstance(case, dict):
+            return _comparison_invalid(job_id, f"case[{index}] is not an object")
+        cid = case.get("id")
+        if not isinstance(cid, str) or not cid or cid in ids:
+            return _comparison_invalid(job_id, f"case[{index}] id missing or duplicate")
+        ids.add(cid)
+        kind = case.get("kind")
+        if kind not in allowed_kinds:
+            return _comparison_invalid(job_id, f"case {cid}: kind is not supported yet")
+        verdict = case.get("verdict")
+        if verdict not in {"same", "different", "not_run"}:
+            return _comparison_invalid(job_id, f"case {cid}: verdict is not supported yet")
+        detail = case.get("detail")
+        if not isinstance(detail, str):
+            return _comparison_invalid(job_id, f"case {cid}: detail must be a string")
+        input_sha = case.get("input_sha256")
+        if input_sha is not None and (not isinstance(input_sha, str) or not _HEX64.fullmatch(input_sha)):
+            return _comparison_invalid(job_id, f"case {cid}: input_sha256 is invalid")
+        for side in ("original", "candidate"):
+            output = case.get(side)
+            if not isinstance(output, dict):
+                return _comparison_invalid(job_id, f"case {cid}: {side} output missing")
+            rc = output.get("returncode")
+            if rc is not None and (not isinstance(rc, int) or isinstance(rc, bool)):
+                return _comparison_invalid(job_id, f"case {cid}: {side}.returncode must be int or null")
+            if not isinstance(output.get("timed_out"), bool):
+                return _comparison_invalid(job_id, f"case {cid}: {side}.timed_out must be bool")
+            for key in ("stdout_sha256", "stderr_sha256"):
+                value = output.get(key)
+                if value is not None and (not isinstance(value, str) or not _HEX64.fullmatch(value)):
+                    return _comparison_invalid(job_id, f"case {cid}: {side}.{key} is invalid")
+            if verdict in {"same", "different"}:
+                if rc is None or output.get("stdout_sha256") is None or output.get("stderr_sha256") is None:
+                    return _comparison_invalid(job_id, f"case {cid}: {side} output incomplete for {verdict}")
+        counts[verdict] += 1
+    summary = payload.get("summary")
+    if not isinstance(summary, dict):
+        return _comparison_invalid(job_id, "summary is missing")
+    if any(not isinstance(summary.get(key), int) for key in ("total", "same", "different", "not_run", "unknown")):
+        return _comparison_invalid(job_id, "summary counts must be integers")
+    if summary["total"] != len(cases) or any(summary[k] != counts[k] for k in counts):
+        return _comparison_invalid(job_id, "summary does not match cases")
+    not_claimed = payload.get("not_claimed")
+    if not isinstance(not_claimed, list) or not not_claimed or not all(isinstance(x, str) and x for x in not_claimed):
+        return _comparison_invalid(job_id, "not_claimed must be a non-empty string list")
+    return {"job_id": job_id, "status": "available", "detail": "", "comparison": payload, "artifacts": []}
+
+
+@app.get("/api/jobs/{job_id}/comparison")
+async def job_comparison(job_id: str):
+    """JSON comparison route used by the agent result screen.
+
+    Missing artifact is an honest 200/not_provided. A present but unreadable,
+    hash-mismatched or schema-invalid artifact is 200/invalid. Unknown job is 404.
+    """
+    try:
+        BACKEND.get_snapshot(job_id)
+    except BackendError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    artifacts = BACKEND.get_artifacts(job_id)
+    rows = []
+    for key in ("A", "B"):
+        value = artifacts.get(key) if isinstance(artifacts, dict) else None
+        if isinstance(value, list):
+            rows.extend(item for item in value if isinstance(item, dict))
+    row = next((item for item in rows if item.get("role") == COMPARISON_ROLE), None)
+    if row is None:
+        return JSONResponse({
+            "job_id": job_id,
+            "status": "not_provided",
+            "detail": "no behavior-comparison artifact is registered for this job",
+            "comparison": None,
+            "artifacts": [],
+        })
+    if not row.get("available"):
+        return JSONResponse(_comparison_invalid(job_id, "comparison artifact bytes are unavailable", [row]))
+    getter = getattr(BACKEND, "get_artifact_bytes", None)
+    if getter is None:
+        return JSONResponse(_comparison_invalid(job_id, "artifact bytes are not readable in this backend", [row]))
+    try:
+        content, _media_type, _filename = getter(str(row.get("id") or ""))
+        if hashlib.sha256(content).hexdigest() != row.get("sha256"):
+            return JSONResponse(_comparison_invalid(job_id, "comparison artifact hash mismatch", [row]))
+        payload = json.loads(content.decode("utf-8"))
+    except (BackendError, OSError, ValueError, UnicodeDecodeError) as exc:
+        return JSONResponse(_comparison_invalid(job_id, f"comparison artifact is unreadable: {type(exc).__name__}", [row]))
+    result = _comparison_validate(job_id, payload)
+    if result["status"] == "available":
+        result["artifacts"] = [row]
+    return JSONResponse(result)
+
+
 @app.get("/jobs/{job_id}", response_class=HTMLResponse)
 async def comparison_page(request: Request, job_id: str):
     """Render progress/comparison for both routes."""
