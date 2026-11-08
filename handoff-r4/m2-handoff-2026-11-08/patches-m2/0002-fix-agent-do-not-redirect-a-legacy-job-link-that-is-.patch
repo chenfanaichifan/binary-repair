@@ -1,0 +1,48 @@
+From fb5ace1c9902aa5dccd3eef41dbf37593639abc8 Mon Sep 17 00:00:00 2001
+From: chenfanaichifan <2350776866@qq.com>
+Date: Sat, 7 Nov 2026 12:24:30 +0800
+Subject: [PATCH 2/8] fix(agent): do not redirect a legacy job link that is not
+ an id
+
+Old /agent?job= links keep working with a 307 to /agent/{id}. A value like ../x made the browser normalise /agent/../x into another site path, so only id-shaped values redirect now; anything else is a plain 404 that does not echo the input.
+---
+ app/main.py                 | 5 +++++
+ tests/test_agent_console.py | 9 +++++++++
+ 2 files changed, 14 insertions(+)
+
+diff --git a/app/main.py b/app/main.py
+index f02ef07..1936c8d 100644
+--- a/app/main.py
++++ b/app/main.py
+@@ -280,6 +280,11 @@ async def agent_index(
+     per-task conversation route, so bookmarks and the landing CTA do not break.
+     """
+     if job:
++        # Older links carry a job id; anything that is not id-shaped is not a
++        # job. In particular ``../x`` would make the browser normalise
++        # ``/agent/../x`` into another site path, so it must never redirect.
++        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", job):
++            raise HTTPException(status_code=404, detail="unknown job")
+         query: dict[str, str] = {}
+         if fixture:
+             query["fixture"] = str(fixture)
+diff --git a/tests/test_agent_console.py b/tests/test_agent_console.py
+index b6dae10..bc3862f 100644
+--- a/tests/test_agent_console.py
++++ b/tests/test_agent_console.py
+@@ -284,6 +284,15 @@ def test_legacy_agent_query_redirects_to_the_task_route():
+     assert response.headers["location"].startswith("/agent/abc123")
+ 
+ 
++def test_legacy_agent_query_never_redirects_a_non_job_id():
++    # ``/agent/../x`` would be normalised by the browser into another site
++    # path, so a legacy link may only redirect for an id-shaped job.
++    for bad in ("../secret", "a/b", "abc?x=1", "x" * 65, "%2e%2e"):
++        response = client.get(f"/agent?job={bad}", follow_redirects=False)
++        assert response.status_code == 404, bad
++        assert "location" not in response.headers, bad
++
++
+ def test_conversation_history_is_stored_per_job():
+     assert "br.msg.v1." in AGENT_JS
+     assert "HISTORY_LIMIT" in AGENT_JS

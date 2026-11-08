@@ -1,0 +1,213 @@
+From 2853f8d50105153db4d1a04b724316a9c868a4cc Mon Sep 17 00:00:00 2001
+From: chenfanaichifan <2350776866@qq.com>
+Date: Sat, 7 Nov 2026 12:32:33 +0800
+Subject: [PATCH 4/8] feat(agent): render the attempts timeline and
+ scope/bounded as read-only facts
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The timeline reads /api/jobs/{id}/attempts and maps timeline_status (ok/failed/timeout/cancelled/unknown); the legacy route/status fields are untouched. A null exit_code shows 未知退出码 instead of a fabricated 0. 404 means attempts unavailable, while available:true + [] means no attempt yet - never conflated. scope/bounded render unknown when missing and 超出边界 when exceeded, never implying pass.
+---
+ app/static/js/agent.js      | 101 +++++++++++++++++++++++++++++++++++-
+ tests/test_agent_console.py |  21 ++++++--
+ 2 files changed, 117 insertions(+), 5 deletions(-)
+
+diff --git a/app/static/js/agent.js b/app/static/js/agent.js
+index dbd5d1b..1b62b57 100644
+--- a/app/static/js/agent.js
++++ b/app/static/js/agent.js
+@@ -131,6 +131,10 @@
+     inconclusive: "不确定", error: "错误", cancelled: "已取消"
+   };
+   var STATE_LABELS = { pending: "待执行", active: "进行中", done: "已完成", cancelled: "已取消" };
++  // 时间线语义来自后端 timeline_status；route/status 的旧语义保持不变。
++  var TIMELINE_LABELS = {
++    ok: "成功", failed: "失败", timeout: "超时", cancelled: "已取消", unknown: "未知"
++  };
+   var KIND_ORDER = { identity: 0, structure: 1, interface: 2, behaviour: 3, symbolic: 4, reproducibility: 5 };
+ 
+   /* 失败原因展示字典：只负责把后端给出的 reason_code 翻译成人话并附建议。
+@@ -301,11 +305,14 @@
+       candidate: data.candidate || null,
+       agent: agent,
+       execution: execution,
+-      receiptPending: receiptPending
++      receiptPending: receiptPending,
++      scope: data.scope || null,
++      bounded: data.bounded || null
+     };
+   }
+ 
+   var evidenceCache = {};
++  var attemptsCache = { jobId: "", available: null, items: [] };
+ 
+   function fetchAttemptEvidence(attemptId) {
+     if (evidenceCache[attemptId]) return Promise.resolve(evidenceCache[attemptId]);
+@@ -339,6 +346,29 @@
+     });
+   }
+ 
++  function fetchAttempts(jobId) {
++    if (!jobId || FIXTURE_MODE) return Promise.resolve();
++    return fetch("/api/jobs/" + encodeURIComponent(jobId) + "/attempts", {
++      headers: { Accept: "application/json" }
++    }).then(function (response) {
++      // 404 表示端点/任务不可用，必须与“零次尝试”分开。
++      if (response.status === 404) return { available: false, attempts: [] };
++      if (!response.ok) return { available: false, attempts: [] };
++      return response.json();
++    }).then(function (data) {
++      if (state.jobId !== jobId) return;
++      attemptsCache = {
++        jobId: jobId,
++        available: !!(data && data.available !== false),
++        items: data && Array.isArray(data.attempts) ? data.attempts : []
++      };
++    }).catch(function () {
++      if (state.jobId === jobId) {
++        attemptsCache = { jobId: jobId, available: false, items: [] };
++      }
++    });
++  }
++
+   function fetchLiveSnapshot() {
+     return fetch("/api/jobs/" + encodeURIComponent(state.jobId), {
+       headers: { Accept: "application/json" }
+@@ -897,6 +927,43 @@
+   function renderTimeline(view) {
+     var list = $("agent-timeline");
+     clear(list);
++
++    // 优先用 /attempts 的时间线语义；旧 route/status 字段保持原样，不覆盖。
++    if (attemptsCache.jobId === view.jobId) {
++      if (attemptsCache.available === false) {
++        list.appendChild(el("li", "agent-muted", "尝试记录不可用"));
++        return;
++      }
++      if (attemptsCache.items.length) {
++        attemptsCache.items.forEach(function (attempt) {
++          var status = attempt.timeline_status;
++          var item = el("li", "agent-timeline-item" +
++            (status === "ok" ? " is-done" :
++              (status === "failed" || status === "timeout") ? " is-failed" : " is-active"));
++          item.appendChild(el("span", "agent-timeline-name",
++            "尝试 #" + (attempt.attempt_no || "?") + " · " +
++            (attempt.route_label || attempt.route || "?")));
++          item.appendChild(el("span", "agent-timeline-meta", TIMELINE_LABELS[status] || "未知"));
++          if (attempt.duration_ms !== null && attempt.duration_ms !== undefined) {
++            item.appendChild(el("span", "agent-timeline-meta", attempt.duration_ms + " ms"));
++          }
++          // 数据库没有可靠退出码时后端给 null；这里显示“未知”，不补 0。
++          item.appendChild(el("span", "agent-timeline-meta",
++            (attempt.exit_code === null || attempt.exit_code === undefined)
++              ? "未知退出码" : "退出码 " + attempt.exit_code));
++          if (attempt.started_at) {
++            item.appendChild(el("span", "agent-timeline-meta", attempt.started_at));
++          }
++          list.appendChild(item);
++        });
++        return;
++      }
++      if (attemptsCache.available === true) {
++        list.appendChild(el("li", "agent-muted", "尚无尝试记录"));
++        return;
++      }
++    }
++
+     if (view.execution && view.execution.status) {
+       var item = el("li", "agent-timeline-item is-active");
+       item.appendChild(el("span", "agent-timeline-name", "回传状态"));
+@@ -969,6 +1036,34 @@
+     box.appendChild(table);
+   }
+ 
++  function appendScopeBox(box, view) {
++    // scope/bounded 缺失一律 unknown；exceeded 只认布尔值，绝不当成通过。
++    if (!view.scope && !view.bounded) return;
++    var wrap = el("div", "agent-card");
++    wrap.appendChild(el("p", "agent-card-title", "范围与边界"));
++
++    var scopeText = "unknown";
++    if (view.scope && view.scope.kind && view.scope.value !== undefined &&
++        view.scope.value !== null && view.scope.value !== "") {
++      scopeText = view.scope.kind + "：" + view.scope.value +
++        (view.scope.note ? "（" + view.scope.note + "）" : "");
++    }
++    wrap.appendChild(el("p", null, "scope：" + scopeText));
++
++    var boundedText = "unknown";
++    if (view.bounded) {
++      if (view.bounded.exceeded === true) {
++        boundedText = "超出边界";
++      } else if (view.bounded.exceeded === false) {
++        boundedText = "未超出边界" +
++          (view.bounded.limit ? "（上限 " + view.bounded.limit + "，实测 " +
++            (view.bounded.observed || "unknown") + "）" : "");
++      }
++    }
++    wrap.appendChild(el("p", null, "bounded：" + boundedText));
++    box.appendChild(wrap);
++  }
++
+   function renderDiagnostics(view) {
+     // 结论只读 verdict，绝不由前端推断。
+     var verdictText = "结论：—";
+@@ -1014,6 +1109,7 @@
+     var box = $("agent-diagnostics");
+     clear(box);
+     if (view.receiptPending) return; // 未回传：只显示占位，不渲染 not_run
++    appendScopeBox(box, view);
+ 
+     view.routeKeys.forEach(function (key) {
+       var route = view.routes[key];
+@@ -1155,7 +1251,8 @@
+   function tick() {
+     if (!state.jobId) return;
+     if (FIXTURE_MODE) return;
+-    fetchLiveSnapshot().then(function (data) {
++    Promise.all([fetchLiveSnapshot(), fetchAttempts(state.jobId)]).then(function (results) {
++      var data = results[0];
+       state.snapshot = data;
+       setText("agent-poll", "轮询中 · " + new Date().toLocaleTimeString());
+       renderSide();
+diff --git a/tests/test_agent_console.py b/tests/test_agent_console.py
+index 760bd71..49bb7c9 100644
+--- a/tests/test_agent_console.py
++++ b/tests/test_agent_console.py
+@@ -105,6 +105,20 @@ def test_pending_receipt_shows_placeholder_instead_of_not_run():
+     assert 'show("agent-receipt-placeholder", view.receiptPending);' in AGENT_JS
+ 
+ 
++def test_timeline_uses_timeline_status_and_marks_unknown_exit_code():
++    assert 'ok: "成功", failed: "失败", timeout: "超时", cancelled: "已取消", unknown: "未知"' in AGENT_JS
++    assert '"尝试记录不可用"' in AGENT_JS
++    assert '"尚无尝试记录"' in AGENT_JS
++    assert '"未知退出码"' in AGENT_JS
++    assert '"/attempts"' in AGENT_JS
++
++
++def test_scope_and_bounded_never_turn_missing_into_pass():
++    assert 'var scopeText = "unknown";' in AGENT_JS
++    assert 'var boundedText = "unknown";' in AGENT_JS
++    assert '"超出边界"' in AGENT_JS
++
++
+ def test_top_level_obligations_are_accepted_when_routes_omit_them():
+     """M5 may return obligations at the top level; the view must not drop them."""
+     assert "!obligations.length && Array.isArray(data.obligations)" in AGENT_JS
+@@ -131,10 +145,11 @@ def test_no_model_calls_or_new_transport():
+     for banned in ("api.openai.com", "new WebSocket", "new EventSource", "Bearer ",
+                    'setRequestHeader("Authorization'):
+         assert banned not in AGENT_JS, banned
+-    # Read paths: the snapshot, the job-less plan route, and per-attempt
+-    # evidence (all same-origin GETs).
+-    assert AGENT_JS.count("fetch(") == 3
++    # Read paths: the snapshot, the attempts timeline, the job-less plan
++    # route, and per-attempt evidence (all same-origin GETs).
++    assert AGENT_JS.count("fetch(") == 4
+     assert 'fetch("/api/jobs/" + encodeURIComponent(state.jobId)' in AGENT_JS
++    assert 'fetch("/api/jobs/" + encodeURIComponent(jobId) + "/attempts"' in AGENT_JS
+     assert 'fetch("/api/assistant/plan"' in AGENT_JS
+     assert 'fetch("/api/attempts/" + encodeURIComponent(attemptId) + "/evidence"' in AGENT_JS
+     # Write path: the existing create-job form endpoint only, with CSRF.

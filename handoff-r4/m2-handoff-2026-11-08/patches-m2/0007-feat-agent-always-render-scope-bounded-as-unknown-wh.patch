@@ -1,0 +1,58 @@
+From 16b2a424e7da9515f0da5ec4a8679d15bc5bc2bb Mon Sep 17 00:00:00 2001
+From: chenfanaichifan <2350776866@qq.com>
+Date: Sat, 7 Nov 2026 22:45:13 +0800
+Subject: [PATCH 7/8] feat(agent): always render scope/bounded as unknown when
+ the job omits them (Review 12)
+
+The real P1 snapshot carries neither scope nor bounded, so the old early return hid the card entirely. Review 12 requires missing -> unknown, so the card now renders with unknown values for any job view. Also accept the snapshot's id field as job id.
+---
+ app/static/js/agent.js      | 7 ++++---
+ tests/test_agent_console.py | 9 +++++++++
+ 2 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/app/static/js/agent.js b/app/static/js/agent.js
+index 2b1ccd3..0efd4c7 100644
+--- a/app/static/js/agent.js
++++ b/app/static/js/agent.js
+@@ -294,7 +294,7 @@
+     });
+ 
+     return {
+-      jobId: data.job_id || state.jobId || "",
++      jobId: data.job_id || data.id || state.jobId || "",
+       phase: data.phase || "",
+       cancelled: !!data.cancelled,
+       originalSha256: data.original_sha256 || "",
+@@ -1044,9 +1044,10 @@
+   }
+ 
+   function appendScopeBox(box, view) {
+-    // scope/bounded 缺失一律 unknown；exceeded 只认布尔值，绝不当成通过。
+-    if (!view.scope && !view.bounded) return;
++    // Review 12：scope/bounded 缺失必须显示 unknown，不能隐藏；exceeded 只认布尔值。
++    if (!view.jobId && !view.phase) return;
+     var wrap = el("div", "agent-card");
++    wrap.dataset.testid = "agent-scope-bounded";
+     wrap.appendChild(el("p", "agent-card-title", "范围与边界"));
+ 
+     var scopeText = "unknown";
+diff --git a/tests/test_agent_console.py b/tests/test_agent_console.py
+index 615ed77..13087c3 100644
+--- a/tests/test_agent_console.py
++++ b/tests/test_agent_console.py
+@@ -116,6 +116,15 @@ def test_timeline_uses_timeline_status_and_marks_unknown_exit_code():
+ def test_scope_and_bounded_never_turn_missing_into_pass():
+     assert 'var scopeText = "unknown";' in AGENT_JS
+     assert 'var boundedText = "unknown";' in AGENT_JS
++    # Review 12: missing scope/bounded must still render as unknown, never be hidden.
++    assert 'if (!view.scope && !view.bounded) return;' not in AGENT_JS
++    assert 'if (!view.jobId && !view.phase) return;' in AGENT_JS
++    assert 'wrap.dataset.testid = "agent-scope-bounded"' in AGENT_JS
++
++
++def test_snapshot_id_is_accepted_as_job_id():
++    # P1 snapshot uses "id"; the console must not show an empty job chip for it.
++    assert 'jobId: data.job_id || data.id || state.jobId || ""' in AGENT_JS
+     assert '"超出边界"' in AGENT_JS
+ 
+ 

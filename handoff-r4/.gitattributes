@@ -1,0 +1,2 @@
+# r4 handoff is checksum-bound: keep bytes exactly as packed.
+* -text

@@ -1,0 +1,32 @@
+From 102d0fb81c0dc8814a1e221a27fe041b16f03e7f Mon Sep 17 00:00:00 2001
+From: chenfanaichifan <2350776866@qq.com>
+Date: Sat, 7 Nov 2026 22:36:27 +0800
+Subject: [PATCH 6/8] docs(agent): record the T8.4 mode badge and metadata
+ behaviour
+
+---
+ docs/agent-console.md | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/docs/agent-console.md b/docs/agent-console.md
+index 03b29c2..a5cf9f5 100644
+--- a/docs/agent-console.md
++++ b/docs/agent-console.md
+@@ -71,6 +71,17 @@
+ - 真实接口联调通过后应删除该文件。
+ - 其中所有 `default` 值都是 ASCII，因为它们会进入提交 payload。
+ 
++## 四之一、T8.4 assistant 模式 UI（已完成）
++
++| 项 | 实现 |
++|---|---|
++| 徽章 | `助手模式：脚本 v1（deterministic）` / `助手模式：LLM（llm）`；同时写 `data-plan-mode` 保留原值 |
++| 回退横幅 | `plan.fallback=true` 或 llm 未接线时显示，文案带 `fallback_reason`，明确「不代表模型输出」 |
++| 元数据 | `model` + `tokens`（兼容 `prompt/completion` 与 `input/output`）；缺失写「未提供」，`partial=true` 标「（部分真实用量）」 |
++
++模式字段来自 `app/domain/assistant.py: AssistantPlan`，M2 不改该 schema。
++后端未开通时徽章显示「LLM（未接线）」，不伪装成模型已调用。
++
+ ## 四之二、T8.2 LLM planner 接缝（`app/services/assistant_llm.py`）
+ 
+ M2 已接管该模块，并接上 M5 的稳定接缝

@@ -1,0 +1,69 @@
+From 3db4719c7fa5d6a085a5587cb74aeaf02cb7be6c Mon Sep 17 00:00:00 2001
+From: chenfanaichifan <2350776866@qq.com>
+Date: Sat, 7 Nov 2026 22:36:19 +0800
+Subject: [PATCH 5/8] feat(agent): label the plan mode as scripted v1 and keep
+ the raw mode visible
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+T8.4 badge: deterministic now reads 脚本 v1, llm reads LLM, and the raw mode stays in the badge text plus a data-plan-mode attribute. The fallback banner and model/token metadata were already in place; this closes the wording gap without touching the plan schema.
+---
+ app/static/js/agent.js      | 13 ++++++++++---
+ tests/test_agent_console.py |  9 +++++++++
+ 2 files changed, 19 insertions(+), 3 deletions(-)
+
+diff --git a/app/static/js/agent.js b/app/static/js/agent.js
+index 1b62b57..2b1ccd3 100644
+--- a/app/static/js/agent.js
++++ b/app/static/js/agent.js
+@@ -135,6 +135,8 @@
+   var TIMELINE_LABELS = {
+     ok: "成功", failed: "失败", timeout: "超时", cancelled: "已取消", unknown: "未知"
+   };
++  // T8.4：badge 用人话显示计划来源，同时保留原始 mode 值便于核对。
++  var PLAN_MODE_LABELS = { deterministic: "脚本 v1", llm: "LLM" };
+   var KIND_ORDER = { identity: 0, structure: 1, interface: 2, behaviour: 3, symbolic: 4, reproducibility: 5 };
+ 
+   /* 失败原因展示字典：只负责把后端给出的 reason_code 翻译成人话并附建议。
+@@ -839,12 +841,17 @@
+     var agent = view && view.agent ? view.agent : (state.plan || null);
+     var notWired = ASSISTANT_MODE === "llm" && !ASSISTANT_AVAILABLE;
+ 
++    var activeMode = agent && agent.mode ? agent.mode : ASSISTANT_MODE;
++    var badge = $("agent-mode-badge");
++    if (badge) badge.setAttribute("data-plan-mode", activeMode);
+     if (agent && agent.mode) {
+-      setText("agent-mode-badge", "助手模式：" + agent.mode);
++      setText("agent-mode-badge",
++        "助手模式：" + (PLAN_MODE_LABELS[agent.mode] || agent.mode) + "（" + agent.mode + "）");
+     } else if (notWired) {
+-      setText("agent-mode-badge", "助手模式：llm（未接线）");
++      setText("agent-mode-badge", "助手模式：LLM（未接线）");
+     } else {
+-      setText("agent-mode-badge", "助手模式：" + ASSISTANT_MODE);
++      setText("agent-mode-badge",
++        "助手模式：" + (PLAN_MODE_LABELS[ASSISTANT_MODE] || ASSISTANT_MODE) + "（" + ASSISTANT_MODE + "）");
+     }
+ 
+     var fallback = (agent && agent.fallback) || (!agent && notWired);
+diff --git a/tests/test_agent_console.py b/tests/test_agent_console.py
+index 49bb7c9..615ed77 100644
+--- a/tests/test_agent_console.py
++++ b/tests/test_agent_console.py
+@@ -482,6 +482,15 @@ def test_partial_usage_is_labelled():
+     assert "tokens：未提供" in AGENT_JS
+ 
+ 
++def test_plan_mode_badge_shows_scripted_v1_and_keeps_raw_mode():
++    # T8.4: the badge must read "脚本 v1" for deterministic plans, while the
++    # raw mode stays visible and is also exposed as a data attribute.
++    assert 'deterministic: "脚本 v1"' in AGENT_JS
++    assert 'llm: "LLM"' in AGENT_JS
++    assert '"（" + agent.mode + "）"' in AGENT_JS
++    assert '"data-plan-mode", activeMode' in AGENT_JS
++
++
+ def test_empty_test_suite_renders_as_na():
+     # 0/0 is not a result. An empty suite must render N/A and must not be
+     # folded into another suite's ratio.
