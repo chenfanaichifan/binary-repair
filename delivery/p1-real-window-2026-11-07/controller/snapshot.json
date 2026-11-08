@@ -1,0 +1,287 @@
+{
+  "agent": {
+    "current_step": "done",
+    "label": "Finished",
+    "source": "controller-derived",
+    "steps": [
+      {
+        "id": "intake",
+        "label": "Describe the defect",
+        "state": "done"
+      },
+      {
+        "id": "contract",
+        "label": "Review the repair contract",
+        "state": "done"
+      },
+      {
+        "id": "screening",
+        "label": "Screen the original",
+        "state": "done"
+      },
+      {
+        "id": "repair",
+        "label": "Repair and verify",
+        "state": "done"
+      },
+      {
+        "id": "verification",
+        "label": "Collect evidence",
+        "state": "done"
+      },
+      {
+        "id": "done",
+        "label": "Finished",
+        "state": "active"
+      }
+    ]
+  },
+  "cancelled": false,
+  "contract": {
+    "approved": false,
+    "approved_at": null,
+    "assumptions": [
+      "Single process",
+      "Linux x86-64 ELF",
+      "Stack protector disabled"
+    ],
+    "forbidden": "Out-of-bounds write to the target buffer",
+    "invalid_outcome": "Return error code 1 without out-of-bounds access",
+    "reviewer_label": null,
+    "revision": 1,
+    "sha256": "80e4f2bb5b36d4afe5d28be3f5e39181915639895f477ae787db15d9c9bb9a11",
+    "valid_domain": "Input length 0-64 bytes; out-of-range lengths rejected"
+  },
+  "created_at": "2026-11-07T15:36:50+00:00",
+  "data_source": "controller-http",
+  "defect": "P1 final2",
+  "demo": false,
+  "environment": "",
+  "execution": {
+    "finished_at": "2026-11-07T15:36:51+00:00",
+    "note": "Derived from persisted run rows; no producer sidecar exists in this build.",
+    "outcome": "success_within_scope",
+    "phase": "finished",
+    "run_id": "54a088e418d94a75b10d08bd893a5581",
+    "sidecar": null,
+    "source": "controller-derived",
+    "started_at": "2026-11-07T15:36:50+00:00",
+    "status": "completed"
+  },
+  "execution_phase": "finished",
+  "filename": "p1-final2.elf",
+  "id": "9247357c54714546a7ff84891f7766f8",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "phase": "finished",
+  "routes": {
+    "A": {
+      "ai_usage": null,
+      "attempt_id": "516d69ac6a5e44eca23ec9bca914dc5d",
+      "changed_regions": [],
+      "compatibility": "passed",
+      "elapsed_s": 0.0,
+      "evidence": "persisted",
+      "manual_interventions": 0,
+      "name": "Route A - Direct instruction repair",
+      "obligations": [
+        {
+          "detail": "V3 behaviour: passed",
+          "evidence_artifact_id": "fac8516693cc4bcfada690aecfe3999b",
+          "kind": "behaviour",
+          "required": true,
+          "result": "passed",
+          "scope": "replay"
+        },
+        {
+          "detail": "V0 identity: passed",
+          "evidence_artifact_id": "91f16259d5224893b5ac5b1e35423fcf",
+          "kind": "identity",
+          "required": true,
+          "result": "passed",
+          "scope": "metadata"
+        },
+        {
+          "detail": "5/5 static interface checks passed",
+          "evidence_artifact_id": "33b9a11e26db4985bff90ac92b86eff1",
+          "kind": "interface",
+          "required": true,
+          "result": "passed",
+          "scope": "binary"
+        },
+        {
+          "detail": "V5 reproducibility: passed",
+          "evidence_artifact_id": "6149fe06c4854c40a60dfd8c8740a1c1",
+          "kind": "reproducibility",
+          "required": true,
+          "result": "passed",
+          "scope": "replay"
+        },
+        {
+          "detail": "V1 structure: passed",
+          "evidence_artifact_id": "f4a2d6742de14f21a0c91bbb15b99f50",
+          "kind": "structure",
+          "required": true,
+          "result": "passed",
+          "scope": "binary"
+        },
+        {
+          "detail": "V4 symbolic: passed",
+          "evidence_artifact_id": "ee3bf1af07dd4d16bb0f5f0bf8639319",
+          "kind": "symbolic",
+          "required": true,
+          "result": "passed",
+          "scope": "model"
+        }
+      ],
+      "outcome": "success_within_scope",
+      "outcome_reason": "",
+      "phase": "finished",
+      "stages": [
+        {
+          "name": "screening",
+          "state": "done"
+        },
+        {
+          "name": "analyzing",
+          "state": "done"
+        },
+        {
+          "name": "generating",
+          "state": "done"
+        },
+        {
+          "name": "applying",
+          "state": "done"
+        },
+        {
+          "name": "validating",
+          "state": "done"
+        }
+      ],
+      "tests": {
+        "passed": 0,
+        "total": 0
+      },
+      "verdict": {
+        "detail": "6 required obligations passed",
+        "failing_obligation": null,
+        "outcome": "success_within_scope",
+        "reason": null
+      },
+      "verification": "passed"
+    },
+    "B": {
+      "ai_usage": null,
+      "attempt_id": "90aa7abe41cd4dd2b7d9211a44d247db",
+      "changed_regions": [],
+      "compatibility": "passed",
+      "elapsed_s": 0.0,
+      "evidence": "persisted",
+      "manual_interventions": 0,
+      "name": "Route B - Recovered C reintegration",
+      "obligations": [
+        {
+          "detail": "V3 behaviour: passed",
+          "evidence_artifact_id": "3b34388865264c61a8003bd71a740d93",
+          "kind": "behaviour",
+          "required": true,
+          "result": "passed",
+          "scope": "replay"
+        },
+        {
+          "detail": "V0 identity: passed",
+          "evidence_artifact_id": "1096de8305ff46c9aa5064c762d616a3",
+          "kind": "identity",
+          "required": true,
+          "result": "passed",
+          "scope": "metadata"
+        },
+        {
+          "detail": "5/5 static interface checks passed",
+          "evidence_artifact_id": "8d58c1015702465ebdd1a4b1e5fc3829",
+          "kind": "interface",
+          "required": true,
+          "result": "passed",
+          "scope": "binary"
+        },
+        {
+          "detail": "V5 reproducibility: passed",
+          "evidence_artifact_id": "190d1f424b544b2a92fed5f6fe394047",
+          "kind": "reproducibility",
+          "required": true,
+          "result": "passed",
+          "scope": "replay"
+        },
+        {
+          "detail": "V1 structure: passed",
+          "evidence_artifact_id": "b18f0c46a71747458b8ae7adce6bde4e",
+          "kind": "structure",
+          "required": true,
+          "result": "passed",
+          "scope": "binary"
+        },
+        {
+          "detail": "V4 symbolic: passed",
+          "evidence_artifact_id": "fafe166112a14ce794d060d112c7d590",
+          "kind": "symbolic",
+          "required": true,
+          "result": "passed",
+          "scope": "model"
+        }
+      ],
+      "outcome": "success_within_scope",
+      "outcome_reason": "",
+      "phase": "finished",
+      "stages": [
+        {
+          "name": "screening",
+          "state": "done"
+        },
+        {
+          "name": "analyzing",
+          "state": "done"
+        },
+        {
+          "name": "roundtrip",
+          "state": "done"
+        },
+        {
+          "name": "generating",
+          "state": "done"
+        },
+        {
+          "name": "applying",
+          "state": "done"
+        },
+        {
+          "name": "validating",
+          "state": "done"
+        }
+      ],
+      "tests": {
+        "passed": 0,
+        "total": 0
+      },
+      "verdict": {
+        "detail": "6 required obligations passed",
+        "failing_obligation": null,
+        "outcome": "success_within_scope",
+        "reason": null
+      },
+      "verification": "passed"
+    }
+  },
+  "run": {
+    "id": "54a088e418d94a75b10d08bd893a5581",
+    "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "phase": "finished",
+    "reviewed_scope_sha256": "c1684f15bb1c67cb9b3d6752e4023ca670a432ceb92342f6d10d040ee17b4f7c"
+  },
+  "valid_tests": [],
+  "verdict": {
+    "detail": "both routes succeeded within their reviewed scopes",
+    "failing_obligation": null,
+    "outcome": "success_within_scope",
+    "reason": null
+  }
+}

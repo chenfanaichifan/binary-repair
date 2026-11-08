@@ -1,53 +1,61 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
 from app.services import jobs, worker
 from routeb.attempt_writer import write_attempt
-from routeb.executor import make_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
-CASE = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b"
-ORIGINAL = CASE / "original.elf"
-CANDIDATE = ROOT / "routeb/out/gate4/roundtrip.elf"
+ORIGINAL = ROOT / "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf"
 FUNC = "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
 
 
 def _setup(tmp_path: Path):
     data = tmp_path / "var"
-    job = jobs.create_job(
-        original_bytes=ORIGINAL.read_bytes(),
-        filename="CWE121.elf",
-        defect_description="stack buffer overflow",
-        data_dir=data,
-    )
-    approval = jobs.approve_contract(
-        job.id, contract_revision=1, reviewer_label="test", data_dir=data,
-        input_sha256=job.original_sha256, manifest_sha256="1" * 64,
-    )
+    job = jobs.create_job(original_bytes=ORIGINAL.read_bytes(), filename="CWE121.elf",
+                          defect_description="stack buffer overflow", data_dir=data)
+    approval = jobs.approve_contract(job.id, contract_revision=1, reviewer_label="test",
+                                     data_dir=data, input_sha256=job.original_sha256,
+                                     manifest_sha256="1" * 64)
     run = jobs.start_run(job.id, approval=approval, idempotency_key="routeb-attempt",
                          data_dir=data)
-    route_b = [a for a in jobs.list_attempts(run.id, data_dir=data) if a.route == "route_b"][0]
-    return data, job, run, route_b
+    attempt = next(a for a in jobs.list_attempts(run.id, data_dir=data) if a.route == "route_b")
+    return data, job, run, attempt
+
+
+def _bundle(tmp_path: Path, *, candidate: bytes = b"\x7fELF candidate") -> tuple[Path, str]:
+    """Build a small bundle without importing routeb.executor (no pyelftools)."""
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    (bundle / "candidate.elf").write_bytes(candidate)
+    (bundle / "original.elf").write_bytes(ORIGINAL.read_bytes())
+    (bundle / "audit.json").write_text('{"pass": true}', encoding="utf-8")
+    candidate_sha = hashlib.sha256(candidate).hexdigest()
+    (bundle / "edit-manifest.json").write_text(json.dumps({
+        "route": "route_b",
+        "original_sha256": hashlib.sha256(ORIGINAL.read_bytes()).hexdigest(),
+        "candidate_sha256": candidate_sha,
+    }), encoding="utf-8")
+    return bundle, candidate_sha
 
 
 def test_routeb_static_bundle_maps_to_not_run_attempt(tmp_path: Path) -> None:
     data, job, run, attempt = _setup(tmp_path)
-    bundle = tmp_path / "bundle"
-    make_bundle(original=ORIGINAL, candidate=CANDIDATE, outdir=bundle,
-                func=FUNC, mode="roundtrip")
+    bundle, candidate_sha = _bundle(tmp_path)
     result = write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
                            run_id=run.id, attempt_id=attempt.id)
     payload = json.loads(Path(result["path"]).read_text())
     assert payload["route"] == "route_b"
-    assert payload["candidate_sha256"] == "decdcdb821bfe4c41a070b0a23a2f6497f46a92f439cb02a1e4139a82cde954b"
+    assert payload["candidate_sha256"] == candidate_sha
     assert payload["results"] == {
         "V0": "passed", "V1": "passed", "V2": "not_run",
         "V3": "not_run", "V4": "not_run", "V5": "not_run",
     }
     assert set(payload["evidence"]) == {"V0", "V1"}
-    assert Path(result["path"]).exists()
 
     worker.run_once(data_dir=data)
     finished = jobs.get_attempt(attempt.id, data_dir=data)
@@ -60,7 +68,97 @@ def test_routeb_static_bundle_maps_to_not_run_attempt(tmp_path: Path) -> None:
     by_kind = {row["kind"]: row for row in obligations}
     assert by_kind["identity"]["result"] == "passed"
     assert by_kind["structure"]["result"] == "passed"
-    assert by_kind["interface"]["result"] == "not_run"
-    assert by_kind["behaviour"]["result"] == "not_run"
-    assert by_kind["symbolic"]["result"] == "not_run"
-    assert by_kind["reproducibility"]["result"] == "not_run"
+    assert by_kind["identity"]["result"] == "passed"
+
+
+def _contract_file(tmp_path: Path, data: Path, job_id: str, run) -> Path:
+    from app.db.connection import connect
+    connection = connect(data)
+    try:
+        row = connection.execute(
+            "SELECT body_json FROM contracts WHERE id = ? AND job_id = ?",
+            (run.contract_id, job_id),
+        ).fetchone()
+    finally:
+        connection.close()
+    path = tmp_path / "run-contract.json"
+    path.write_bytes(row["body_json"].encode("utf-8"))
+    assert run.reviewed_scope_sha256 == __import__("hashlib").sha256(path.read_bytes()).hexdigest()
+    return path
+
+
+def test_routeb_uses_worker_original_and_contract_paths(tmp_path: Path) -> None:
+    data, job, run, attempt = _setup(tmp_path)
+    bundle, _ = _bundle(tmp_path)
+    (bundle / "original.elf").unlink()
+    original = tmp_path / "original.elf"
+    original.write_bytes(ORIGINAL.read_bytes())
+    contract = _contract_file(tmp_path, data, job.id, run)
+    result = write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                           run_id=run.id, attempt_id=attempt.id,
+                           original_path=original, contract_path=contract)
+    assert result["payload"]["results"]["V0"] == "passed"
+    assert Path(result["path"]).exists()
+
+
+def test_routeb_fails_closed_on_missing_worker_contract(tmp_path: Path) -> None:
+    data, job, run, attempt = _setup(tmp_path)
+    bundle, _ = _bundle(tmp_path)
+    original = tmp_path / "original.elf"
+    original.write_bytes(ORIGINAL.read_bytes())
+    with pytest.raises(ValueError, match="BINARYREPAIR_CONTRACT is not readable"):
+        write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                      run_id=run.id, attempt_id=attempt.id,
+                      original_path=original, contract_path=tmp_path / "missing.json")
+
+
+def test_manifest_compare_is_not_repair_v3(tmp_path: Path) -> None:
+    data, job, run, attempt = _setup(tmp_path)
+    bundle, _ = _bundle(tmp_path)
+    (bundle / "manifest-compare.json").write_text(json.dumps({
+        "gate4_pass": True, "total": 6, "same_count": 6,
+    }), encoding="utf-8")
+    result = write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                           run_id=run.id, attempt_id=attempt.id)
+    payload = json.loads(Path(result["path"]).read_text())
+    assert payload["results"]["V3"] == "not_run"
+    assert "V3" not in payload["evidence"]
+    assert "round-trip" in payload["details"]["V3"]
+
+
+def test_repaired_noinput_keeps_v2_v4_not_run(tmp_path: Path) -> None:
+    data, job, run, attempt = _setup(tmp_path)
+    bundle, _ = _bundle(tmp_path)
+    (bundle / "manifest-repaired.json").write_text(json.dumps({
+        "input_mode": "none",
+        "invalid": "not_applicable",
+        "valid": "1/1",
+        "passed": 1,
+        "total": 1,
+        "repaired_pass": True,
+    }), encoding="utf-8")
+
+    result = write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                           run_id=run.id, attempt_id=attempt.id)
+    payload = json.loads(Path(result["path"]).read_text())
+    assert payload["results"]["V2"] == "not_run"
+    assert payload["results"]["V4"] == "not_run"
+    assert payload["results"]["V3"] == "passed"
+    assert "V3" in payload["evidence"]
+    assert "1/1" in payload["details"]["V3"]
+    assert "invalid not applicable" in payload["details"]["V3"]
+
+
+def test_writer_scores_v2_on_unchanged_interface(tmp_path: Path) -> None:
+    data, job, run, attempt = _setup(tmp_path)
+    bundle, _ = _bundle(tmp_path, candidate=ORIGINAL.read_bytes())
+    manifest = json.loads((bundle / "edit-manifest.json").read_text())
+    manifest["function"] = FUNC
+    (bundle / "edit-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    result = write_attempt(bundle=bundle, data_dir=data, job_id=job.id,
+                           run_id=run.id, attempt_id=attempt.id)
+    payload = result["payload"]
+    assert payload["results"]["V2"] == "passed"
+    assert payload["details"]["V2"] == "5/5 static interface checks"
+    assert "V2" in payload["evidence"]

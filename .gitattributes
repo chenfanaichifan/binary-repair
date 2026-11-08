@@ -28,3 +28,22 @@ docs/handoffs/evidence/** -text
 *.vmdk binary
 *.png binary
 *.jpg binary
+
+# A fixture is verified by hashing its files, so nothing under fixtures/public
+# may be rewritten on checkout - not even a text file. This also keeps
+# tests/SHA256SUMS byte-identical to what the intake hashed.
+fixtures/public/** -text
+
+# Hash-bound delivery evidence: preserve every byte (CRLF/LF) across checkout.
+delivery/** -text
+docs/evidence/** -text
+docs/reviews/evidence/** -text
+
+
+# Keep web/template assets byte-stable (LF in the accepted snapshot).
+*.js   text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.svg  text eol=lf
+*.txt  text eol=lf
+

@@ -118,7 +118,7 @@ CANDIDATE_A: dict[str, Any] = {
     ],
     "uncertainties": ["guard placement assumes no incoming jumps into the call"],
     "attempts": 2,
-    "ai_usage": "12.4k input / 1.6k output tokens",
+    "ai_usage": None,
 }
 
 CANDIDATE_B: dict[str, Any] = {
@@ -132,7 +132,7 @@ CANDIDATE_B: dict[str, Any] = {
     ],
     "uncertainties": ["unresolved symbolic obligation for the memory-safety property"],
     "attempts": 1,
-    "ai_usage": "8.2k input / 1.4k output tokens",
+    "ai_usage": None,
 }
 
 

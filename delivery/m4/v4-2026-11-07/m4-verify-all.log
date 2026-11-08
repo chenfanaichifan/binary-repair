@@ -1,0 +1,87 @@
+=== 1/3  file integrity ===
+PASS: 12 files match SHA256SUMS
+
+=== 2/3  environment self-check ===
+$ /opt/angr-venv/bin/python scripts/selfcheck.py --json /tmp/tmp.QFYpFDLmr7/selfcheck.json
+# environment self-check
+# handoff   /opt/binrepair-handoff/M4-v4-handoff-2026-11-06
+# machine   binrepair-vm / Linux-6.8.0-147-generic-x86_64-with-glibc2.39
+# python    /opt/angr-venv/bin/python
+
+interpreter
+  version           3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]
+  prefix            /opt/angr-venv
+  base_prefix       /usr
+  pyvenv.cfg        home = /usr/bin
+  pyvenv.cfg        include-system-site-packages = false
+  pyvenv.cfg        version = 3.12.3
+  pyvenv.cfg        executable = /usr/bin/python3.12
+  pyvenv.cfg        command = /usr/bin/python3 -m venv /opt/angr-venv
+  libc              glibc 2.39
+
+  [ok] python version                     3.12.3 (expected 3.12.3)
+  [ok] interpreter is the venv            /opt/angr-venv
+  [ok] base interpreter                   /usr
+
+packages
+  distributions     55 (pip itself included)
+  pip               26.2.1
+  [ok] angr pinned                        10.0.4.post1 (expected 10.0.4.post1)
+  [ok] archinfo pinned                    10.0.4 (expected 10.0.4)
+  [ok] cle pinned                         10.0.4 (expected 10.0.4)
+  [ok] pyvex pinned                       10.0.4 (expected 10.0.4)
+  [ok] z3-solver pinned                   5.1.0.0 (expected 5.1.0.0)
+  claripy           bundled with angr   (not importable as `claripy` in angr 10; use `angr.claripy`)
+  z3 module         /opt/angr-venv/lib/python3.12/site-packages/z3/__init__.py
+  [ok] angr.__version__                   10.0.4.post1
+  [ok] libz3 version                      5.1.0 (expected 5.1.0)
+
+  [ok] pip check                          No broken requirements found.
+
+solver
+  [ok] z3 returns sat                     x>1 and x<3
+  [ok] z3 returns unsat                   x>2 and x<2
+
+inputs
+  [ok] harness sha256                     986688bcc260abfe… 18712 B
+  [ok] candidate sha256                   46d16e997bdfbb87… 25344 B
+  [ok] original sha256                    c9c2632e792c5acd… 25344 B
+  [ok] contract sha256                    8a2b408c9b1463ca… 1654 B
+
+angr
+  contract          schema 3 / input_mode none / target_entry CWE416_Use_After_Free__malloc_free_char_01_bad
+  candidate  arch AMD64  entry 0x4011b0 target 0x4012aa
+  original   arch AMD64  entry 0x4011b0 target 0x4012aa
+  [ok] target entry resolves              0x4012aa
+
+verdict: 18/18 checks passed — this interpreter matches the recipe recorded on 2026-11-06
+
+$ compare with expected/selfcheck.expected.json
+  identical: 18/18 checks, same engine block
+
+PASS: this machine matches the recorded environment
+
+=== 3/3  end-to-end rerun ===
+$ /opt/angr-venv/bin/python inputs/v4_harness.py --candidate inputs/candidate.elf \
+      --original inputs/original.elf --contract inputs/contract.json \
+      --out /tmp/tmp.kXMKuQ13Vm/harness-output.json
+  exit 0 in 5 s
+
+$ sha256sum harness-output.json expected/harness-output.expected.json
+  9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c  /tmp/tmp.kXMKuQ13Vm/harness-output.json
+  9c6eeda7684f2e405fbceb83fec4a3962687559b1d35e738431c631b7d58ca8c  /opt/binrepair-handoff/M4-v4-handoff-2026-11-06/expected/harness-output.expected.json
+
+$ cmp -s harness-output.json expected/harness-output.expected.json
+  byte-identical
+
+$ /opt/angr-venv/bin/python scripts/summarize_output.py harness-output.json
+  known_good holds     -> holds     eval=1 sat=0 timeouts=0 unknown=0 unsat=1 steps=11/64
+  known_bad  violated  -> violated  eval=1 sat=1 timeouts=0 unknown=0 unsat=0 steps=14/64
+  complete=True unexplored=[] unknown=0 timeouts=0
+  solver totals: eval=2 sat=1 timeouts=0 unknown=0 unsat=1
+  claimed_scope=model replay runs=2 identical=True
+  derived: known_good_holds=True known_bad_rejected=True
+
+PASS: the harness reproduces the recorded output from these inputs
+
+ALL PASS: 3/3 steps

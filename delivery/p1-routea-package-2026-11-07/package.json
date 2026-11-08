@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "job_id": "p1-routea-noinput-20261107",
+  "route": "route_a",
+  "purpose": "repair",
+  "input_mode": "none",
+  "original": "original.elf",
+  "contract": "contract.json",
+  "tests": "tests",
+  "candidate": "candidate.elf",
+  "expected": {
+    "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "candidate_sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+    "contract_sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b"
+  },
+  "audit": "audit.json",
+  "readelf": "readelf-audit.txt",
+  "edit_manifest": "edit-manifest.json"
+}

@@ -553,11 +553,52 @@ def list_artifacts(job_id: str, *, data_dir: str | Path) -> list[dict[str, Any]]
     ]
 
 
+
+def _scope_for_kind(kind: str) -> str:
+    from app.domain.scopes import scope_for_kind
+
+    return scope_for_kind(kind)
+
+
+def list_job_attempts(job_id: str, *, data_dir: str | Path) -> list[dict[str, Any]]:
+    """Every attempt of a job across all runs, oldest first.
+
+    The GUI needs attempt ids to show retry history and to call
+    ``/api/attempts/{id}/evidence``; no other endpoint exposes them as a list.
+    """
+    connection = connect(data_dir)
+    try:
+        rows = connection.execute(
+            "SELECT a.id, a.run_id, a.route, a.sequence, a.phase, a.outcome, "
+            "a.reason, a.candidate_sha256, a.started_at, a.finished_at "
+            "FROM attempts a JOIN runs r ON r.id = a.run_id "
+            "WHERE r.job_id = ? "
+            "ORDER BY r.started_at, r.id, a.sequence",
+            (job_id,),
+        ).fetchall()
+    finally:
+        connection.close()
+    return [
+        {
+            "id": row["id"],
+            "run_id": row["run_id"],
+            "route": row["route"],
+            "attempt_no": int(row["sequence"]),
+            "status": row["phase"],
+            "outcome": row["outcome"],
+            "reason": row["reason"],
+            "candidate_sha256": row["candidate_sha256"],
+            "started_at": row["started_at"],
+            "finished_at": row["finished_at"],
+        }
+        for row in rows
+    ]
+
 def list_obligations(attempt_id: str, *, data_dir: str | Path) -> list[dict[str, Any]]:
     connection = connect(data_dir)
     try:
         rows = connection.execute(
-            "SELECT kind, required, result, evidence_artifact_id, detail "
+            "SELECT kind, scope, required, result, evidence_artifact_id, detail "
             "FROM obligations WHERE attempt_id = ? ORDER BY kind",
             (attempt_id,),
         ).fetchall()
@@ -566,6 +607,7 @@ def list_obligations(attempt_id: str, *, data_dir: str | Path) -> list[dict[str,
     return [
         {
             "kind": row["kind"],
+            "scope": row["scope"] or _scope_for_kind(row["kind"]),
             "required": bool(row["required"]),
             "result": row["result"],
             "evidence_artifact_id": row["evidence_artifact_id"],

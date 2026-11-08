@@ -1,3 +1,9 @@
+﻿# HISTORICAL EVIDENCE (pre-2026-11-08)
+
+This directory is retained only as the earlier mvp-2026-10-31 evidence index. It is not the current acceptance evidence. Current canonical evidence is in delivery/, and current status is in FINAL-STATUS.md.
+
+---
+
 # Evidence manifest index
 
 This directory contains the final evidence **manifests** for the accepted MVP.
@@ -42,3 +48,4 @@ Raw guest logs and full bundles are not duplicated in this clean repository.
 They remain available in the original development repository's final tag and
 release artifacts. This index is sufficient to identify and re-hash the accepted
 evidence set.
+

@@ -1,0 +1,289 @@
+{
+  "checks": {
+    "changed_inside_intervals": true,
+    "entry_unchanged": true,
+    "no_wx_segment": true,
+    "readelf_available": false,
+    "relocations_recorded": true,
+    "same_file_size": true
+  },
+  "entry": {
+    "candidate": "0x4011b0",
+    "original": "0x4011b0"
+  },
+  "pass": true,
+  "relocations": {
+    "candidate": 14,
+    "original": 14
+  },
+  "segments": {
+    "candidate": [
+      {
+        "align": 8,
+        "filesz": 728,
+        "flags": 4,
+        "index": 0,
+        "memsz": 728,
+        "offset": 64,
+        "type": "PT_PHDR",
+        "vaddr": 4194368
+      },
+      {
+        "align": 1,
+        "filesz": 28,
+        "flags": 4,
+        "index": 1,
+        "memsz": 28,
+        "offset": 792,
+        "type": "PT_INTERP",
+        "vaddr": 4195096
+      },
+      {
+        "align": 4096,
+        "filesz": 1968,
+        "flags": 4,
+        "index": 2,
+        "memsz": 1968,
+        "offset": 0,
+        "type": "PT_LOAD",
+        "vaddr": 4194304
+      },
+      {
+        "align": 4096,
+        "filesz": 2409,
+        "flags": 5,
+        "index": 3,
+        "memsz": 2409,
+        "offset": 4096,
+        "type": "PT_LOAD",
+        "vaddr": 4198400
+      },
+      {
+        "align": 4096,
+        "filesz": 2012,
+        "flags": 4,
+        "index": 4,
+        "memsz": 2012,
+        "offset": 8192,
+        "type": "PT_LOAD",
+        "vaddr": 4202496
+      },
+      {
+        "align": 4096,
+        "filesz": 640,
+        "flags": 6,
+        "index": 5,
+        "memsz": 664,
+        "offset": 11768,
+        "type": "PT_LOAD",
+        "vaddr": 4210168
+      },
+      {
+        "align": 8,
+        "filesz": 464,
+        "flags": 6,
+        "index": 6,
+        "memsz": 464,
+        "offset": 11784,
+        "type": "PT_DYNAMIC",
+        "vaddr": 4210184
+      },
+      {
+        "align": 8,
+        "filesz": 48,
+        "flags": 4,
+        "index": 7,
+        "memsz": 48,
+        "offset": 824,
+        "type": "PT_NOTE",
+        "vaddr": 4195128
+      },
+      {
+        "align": 4,
+        "filesz": 68,
+        "flags": 4,
+        "index": 8,
+        "memsz": 68,
+        "offset": 872,
+        "type": "PT_NOTE",
+        "vaddr": 4195176
+      },
+      {
+        "align": 8,
+        "filesz": 48,
+        "flags": 4,
+        "index": 9,
+        "memsz": 48,
+        "offset": 824,
+        "type": "PT_GNU_PROPERTY",
+        "vaddr": 4195128
+      },
+      {
+        "align": 4,
+        "filesz": 388,
+        "flags": 4,
+        "index": 10,
+        "memsz": 388,
+        "offset": 8308,
+        "type": "PT_GNU_EH_FRAME",
+        "vaddr": 4202612
+      },
+      {
+        "align": 16,
+        "filesz": 0,
+        "flags": 6,
+        "index": 11,
+        "memsz": 0,
+        "offset": 0,
+        "type": "PT_GNU_STACK",
+        "vaddr": 0
+      },
+      {
+        "align": 1,
+        "filesz": 520,
+        "flags": 4,
+        "index": 12,
+        "memsz": 520,
+        "offset": 11768,
+        "type": "PT_GNU_RELRO",
+        "vaddr": 4210168
+      }
+    ],
+    "original": [
+      {
+        "align": 8,
+        "filesz": 728,
+        "flags": 4,
+        "index": 0,
+        "memsz": 728,
+        "offset": 64,
+        "type": "PT_PHDR",
+        "vaddr": 4194368
+      },
+      {
+        "align": 1,
+        "filesz": 28,
+        "flags": 4,
+        "index": 1,
+        "memsz": 28,
+        "offset": 792,
+        "type": "PT_INTERP",
+        "vaddr": 4195096
+      },
+      {
+        "align": 4096,
+        "filesz": 1968,
+        "flags": 4,
+        "index": 2,
+        "memsz": 1968,
+        "offset": 0,
+        "type": "PT_LOAD",
+        "vaddr": 4194304
+      },
+      {
+        "align": 4096,
+        "filesz": 2409,
+        "flags": 5,
+        "index": 3,
+        "memsz": 2409,
+        "offset": 4096,
+        "type": "PT_LOAD",
+        "vaddr": 4198400
+      },
+      {
+        "align": 4096,
+        "filesz": 2012,
+        "flags": 4,
+        "index": 4,
+        "memsz": 2012,
+        "offset": 8192,
+        "type": "PT_LOAD",
+        "vaddr": 4202496
+      },
+      {
+        "align": 4096,
+        "filesz": 640,
+        "flags": 6,
+        "index": 5,
+        "memsz": 664,
+        "offset": 11768,
+        "type": "PT_LOAD",
+        "vaddr": 4210168
+      },
+      {
+        "align": 8,
+        "filesz": 464,
+        "flags": 6,
+        "index": 6,
+        "memsz": 464,
+        "offset": 11784,
+        "type": "PT_DYNAMIC",
+        "vaddr": 4210184
+      },
+      {
+        "align": 8,
+        "filesz": 48,
+        "flags": 4,
+        "index": 7,
+        "memsz": 48,
+        "offset": 824,
+        "type": "PT_NOTE",
+        "vaddr": 4195128
+      },
+      {
+        "align": 4,
+        "filesz": 68,
+        "flags": 4,
+        "index": 8,
+        "memsz": 68,
+        "offset": 872,
+        "type": "PT_NOTE",
+        "vaddr": 4195176
+      },
+      {
+        "align": 8,
+        "filesz": 48,
+        "flags": 4,
+        "index": 9,
+        "memsz": 48,
+        "offset": 824,
+        "type": "PT_GNU_PROPERTY",
+        "vaddr": 4195128
+      },
+      {
+        "align": 4,
+        "filesz": 388,
+        "flags": 4,
+        "index": 10,
+        "memsz": 388,
+        "offset": 8308,
+        "type": "PT_GNU_EH_FRAME",
+        "vaddr": 4202612
+      },
+      {
+        "align": 16,
+        "filesz": 0,
+        "flags": 6,
+        "index": 11,
+        "memsz": 0,
+        "offset": 0,
+        "type": "PT_GNU_STACK",
+        "vaddr": 0
+      },
+      {
+        "align": 1,
+        "filesz": 520,
+        "flags": 4,
+        "index": 12,
+        "memsz": 520,
+        "offset": 11768,
+        "type": "PT_GNU_RELRO",
+        "vaddr": 4210168
+      }
+    ]
+  },
+  "size": {
+    "candidate": 25344,
+    "original": 25344
+  }
+}

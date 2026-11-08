@@ -1,0 +1,38 @@
+{
+  "gate": "V2",
+  "kind": "interface",
+  "scope": "binary",
+  "state": "measured_observation",
+  "scored": false,
+  "note": "Route B's attempt_writer maps V2 to not_run because no interface check is implemented there. This file records what was observed; it is not a gate verdict and is not counted as a V2 pass.",
+  "pass": true,
+  "checks": {
+    "target_symbol_present": true,
+    "target_symbol_unchanged": true,
+    "dynamic_symbols_unchanged": true,
+    "needed_and_flags_unchanged": true,
+    "entry_unchanged": true,
+    "no_new_dynamic_import": true
+  },
+  "target_symbol": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+  "symbol_rows": {
+    "original": [
+      "    85: 00000000004012aa   111 FUNC    GLOBAL DEFAULT   15 CWE416_Use_After_Free__malloc_free_char_01_bad"
+    ],
+    "candidate": [
+      "    85: 00000000004012aa   111 FUNC    GLOBAL DEFAULT   15 CWE416_Use_After_Free__malloc_free_char_01_bad"
+    ]
+  },
+  "dynamic": {
+    "needed_flags_original": [
+      " 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]"
+    ],
+    "needed_flags_candidate": [
+      " 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]"
+    ]
+  },
+  "does_not_prove": [
+    "runtime ABI conformance for callers outside this fixture",
+    "that the repaired function keeps its original calling convention under a different compiler"
+  ]
+}

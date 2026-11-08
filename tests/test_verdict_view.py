@@ -51,7 +51,7 @@ SNAPSHOT = {
             "compatibility": "passed",
             "changed_regions": [],
             "manual_interventions": 1,
-            "ai_usage": "unavailable",
+            "ai_usage": None,
             "elapsed_s": 1.0,
             "verdict": {
                 "outcome": "rejected",
@@ -87,7 +87,7 @@ SNAPSHOT = {
             "compatibility": "passed",
             "changed_regions": [],
             "manual_interventions": 0,
-            "ai_usage": "unavailable",
+            "ai_usage": None,
             "elapsed_s": 2.0,
             "verdict": {
                 "outcome": "inconclusive",

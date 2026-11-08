@@ -37,7 +37,18 @@ def test_unauthenticated_browser_gets_a_help_page():
     response = client.get("/jobs/new", headers={"accept": "text/html"})
     assert response.status_code == 401
     assert "需要本地会话" in response.text
-    assert "?token=" in response.text
+    # The unauthenticated response must never hand out the session credential.
+    assert SESSION_TOKEN not in response.text
+    assert "?token=" not in response.text
+
+
+def test_unauthenticated_pages_never_embed_the_session_token():
+    client = _client()
+    for path in ("/", "/jobs/new", "/agent"):
+        response = client.get(path, headers={"accept": "text/html"})
+        assert response.status_code == 401, path
+        assert SESSION_TOKEN not in response.text, path
+        assert "session.token" in response.text or "start.ps1" in response.text, path
 
 
 def test_csrf_token_is_required_for_post_forms():

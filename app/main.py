@@ -15,7 +15,7 @@ import os
 import re
 import secrets
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
@@ -29,6 +29,9 @@ from app.backend import (
     backend_mode,
     get_backend,
 )
+from app.evidence_domains import evidence_domain, scope_display
+from app.services.assistant_llm import ASSISTANT_MODE_ENV, assistant_status, client_from_env
+from app.ui_config import load_ui_config, resolve_mode, resolve_workspace
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -138,7 +141,7 @@ async def security_gate(request: Request, call_next):
     session = request.cookies.get(SESSION_COOKIE)
     if not session or not secrets.compare_digest(session, SESSION_TOKEN):
         if request.method == "GET" and "text/html" in (request.headers.get("accept") or ""):
-            return HTMLResponse(_auth_required_page(SESSION_TOKEN), status_code=401)
+            return HTMLResponse(_auth_required_page(), status_code=401)
         return JSONResponse(
             {
                 "detail": (
@@ -168,8 +171,13 @@ def _require_csrf(token: str) -> None:
         raise HTTPException(status_code=403, detail="CSRF token missing or invalid.")
 
 
-def _auth_required_page(session_token: str) -> str:
-    """Friendly 401 page for humans: one click restores the local session."""
+def _auth_required_page() -> str:
+    """Friendly 401 page for humans.
+
+    It deliberately carries no session token. An unauthenticated response must
+    never hand out the credential that unlocks the workspace; the trusted
+    launcher prints the one-time login address to its own console instead.
+    """
 
     return """<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><title>需要本地会话 · BinaryRepair</title>
@@ -182,34 +190,159 @@ def _auth_required_page(session_token: str) -> str:
  h1{font-family:Georgia,"Songti SC","SimSun",serif;font-size:24px;margin:0 0 10px;color:#2c2925}
  p{font-size:14px;line-height:1.75;color:#4a453d;margin:8px 0}
  code{font-family:"Cascadia Mono",Consolas,monospace;background:#eee6d6;color:#6b4a2c;padding:2px 6px;border-radius:4px}
- .btn{display:inline-flex;align-items:center;justify-content:center;margin:18px 0 6px;padding:12px 26px;
-      border-radius:999px;background:#2c2925;color:#faf6ec;border:1.5px solid #2c2925;
-      box-shadow:4px 5px 0 rgba(44,41,37,.18);font-weight:700;font-size:14px;text-decoration:none}
- .btn:hover{transform:translateY(-2px)}
  .steps{margin:16px 0 0;padding-left:18px;font-size:13px;color:#4a453d}
  .steps li{margin:6px 0}
  .hint{margin-top:14px;font-size:12px;color:#8a7f6e}
 </style></head>
 <body><div class="card">
 <h1>需要本地会话</h1>
-<p>这是本机工作台的访问保护。<strong>点下面的按钮即可登录</strong>，或者双击项目里的 <code>open.bat</code>。</p>
-<a class="btn" href="/?token=__TOKEN__">一键登录本机工作台 →</a>
+<p>这是本机工作台的访问保护。当前请求没有有效会话，<strong>所以这个页面不会显示登录令牌</strong>。</p>
 <ol class="steps">
-  <li>登录后 token 会从地址栏消失，浏览器会记住会话；</li>
-  <li>token 保存在 <code>var/session.token</code>，重启服务不会改变；</li>
-  <li>也可以从启动脚本打印的 <code>/?token=...</code> 地址进入。</li>
+  <li>双击项目里的 <code>open.bat</code>，或运行 <code>start.ps1</code>；</li>
+  <li>使用启动脚本控制台里打印的登录地址进入（令牌只在那一条地址里）；</li>
+  <li>令牌保存在本机 <code>var/session.token</code>，只应复制到你自己的浏览器。</li>
 </ol>
-<p class="hint">不要把带 token 的地址发到公开位置；本页面只在本机可访问。</p>
-</div></body></html>""".replace("__TOKEN__", session_token)
+<p class="hint">不要把登录地址发到公开位置。服务只监听本机回环地址，重启服务不会改变令牌。</p>
+</div></body></html>"""
 
 
 @app.get("/", response_class=HTMLResponse, name="landing_page")
 async def index(request: Request):
     """Render the landing page."""
+    ui = load_ui_config()
     return templates.TemplateResponse(
         request,
         "landing.html",
-        {"backend_note": backend_description(BACKEND)},
+        {
+            "backend_note": backend_description(BACKEND),
+            "ui": ui,
+            "default_workspace": resolve_workspace(ui, None),
+            "default_mode": resolve_mode(ui, None),
+        },
+    )
+
+
+@app.get("/api/ui-config", name="ui_config")
+async def ui_config():
+    """Expose the workspace/mode catalogue the landing page renders from.
+
+    This is the GUI's own configuration. When a real backend owns it, only
+    ``app.ui_config.load_ui_config`` changes; the response shape stays.
+    """
+    return JSONResponse(load_ui_config())
+
+
+def _agent_context(
+    *,
+    job_id: str = "",
+    fixture: int = 0,
+    workspace: str = "",
+    mode: str = "",
+    job: dict[str, str] | None = None,
+) -> dict:
+    """Shared template context for the workbench routes.
+
+    ``assistant`` is the GUI's view of the T8.2 seam. It is deliberately
+    conservative: llm mode without a configured client reports
+    ``available=false`` so the badge says "未接线" instead of implying a call
+    happened.
+    """
+    ui = load_ui_config()
+    selected_workspace = resolve_workspace(ui, workspace or None)
+    selected_mode = resolve_mode(ui, mode or None)
+    fixture_mode = bool(fixture) or selected_mode["id"] == "demo"
+    return {
+        "demo": BACKEND_MODE == "mock" or fixture_mode,
+        "job": job,
+        "job_id": job_id,
+        "fixture": fixture_mode,
+        "backend_note": backend_description(BACKEND),
+        "workspace": selected_workspace,
+        "mode": selected_mode,
+        "assistant": assistant_status(
+            mode=os.environ.get(ASSISTANT_MODE_ENV),
+            client_configured=client_from_env() is not None,
+        ),
+    }
+
+
+@app.get("/agent", response_class=HTMLResponse, name="agent_index")
+async def agent_index(
+    request: Request,
+    job: str = "",
+    fixture: int = 0,
+    workspace: str = "",
+    mode: str = "",
+):
+    """Workbench entry: the task list, with one action to start a new repair.
+
+    Older links used ``/agent?job=<id>``; they keep working by redirecting to the
+    per-task conversation route, so bookmarks and the landing CTA do not break.
+    """
+    if job:
+        # Older links carry a job id; anything that is not id-shaped is not a
+        # job. In particular ``../x`` would make the browser normalise
+        # ``/agent/../x`` into another site path, so it must never redirect.
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", job):
+            raise HTTPException(status_code=404, detail="unknown job")
+        query: dict[str, str] = {}
+        if fixture:
+            query["fixture"] = str(fixture)
+        if workspace:
+            query["workspace"] = workspace
+        if mode:
+            query["mode"] = mode
+        target = f"/agent/{job}"
+        if query:
+            target += "?" + urlencode(query)
+        return RedirectResponse(url=target, status_code=307)
+
+    return templates.TemplateResponse(
+        request,
+        "agent_index.html",
+        _agent_context(fixture=fixture, workspace=workspace, mode=mode),
+    )
+
+
+@app.get("/agent/new", response_class=HTMLResponse, name="agent_new")
+async def agent_new(
+    request: Request,
+    fixture: int = 0,
+    workspace: str = "",
+    mode: str = "",
+):
+    """Start a brand-new repair: the guided conversation with no job attached."""
+    return templates.TemplateResponse(
+        request,
+        "agent.html",
+        _agent_context(fixture=fixture, workspace=workspace, mode=mode),
+    )
+
+
+@app.get("/agent/{job_id}", response_class=HTMLResponse, name="agent_console")
+async def agent_console(
+    request: Request,
+    job_id: str,
+    fixture: int = 0,
+    workspace: str = "",
+    mode: str = "",
+):
+    """One repair task = one conversation, with its own local history.
+
+    UI only: no planner, no model calls, no new write endpoints. Until M1's
+    agent/execution fields and M5's assistant plan land, ?fixture=1 drives the
+    shell with clearly labelled placeholder data, and the demo banner stays on.
+    """
+    return templates.TemplateResponse(
+        request,
+        "agent.html",
+        _agent_context(
+            job_id=job_id,
+            fixture=fixture,
+            workspace=workspace,
+            mode=mode,
+            job={"id": job_id},
+        ),
     )
 
 
@@ -413,6 +546,16 @@ async def evidence_page(request: Request, job_id: str):
     if len(obligations) < len(snapshot.get("routes") or {}):
         for key, group in BACKEND.get_obligations(job_id).items():
             obligations.setdefault(key, group)
+    getter = getattr(BACKEND, "get_attempts", None)
+    if getter is None:
+        attempts = {"available": False, "attempts": []}
+    else:
+        try:
+            attempts = getter(job_id)
+        except BackendError:
+            attempts = None
+        if attempts is None:
+            attempts = {"available": False, "attempts": []}
     return templates.TemplateResponse(
         request,
         "evidence.html",
@@ -421,7 +564,10 @@ async def evidence_page(request: Request, job_id: str):
             "job": snapshot,
             "obligations": obligations,
             "artifacts": BACKEND.get_artifacts(job_id),
+            "attempts": attempts,
             "backend_note": backend_description(BACKEND),
+            "evidence_domain": evidence_domain,
+            "scope_display": scope_display,
         },
     )
 
@@ -430,6 +576,112 @@ async def evidence_page(request: Request, job_id: str):
 async def job_status(job_id: str):
     """Return the polling status JSON."""
     return JSONResponse(BACKEND.get_snapshot(job_id))
+
+
+@app.get("/api/jobs/{job_id}/attempts")
+async def job_attempts(job_id: str):
+    """Proxy M1's per-attempt history.
+
+    ``available: false`` means the controller does not expose the endpoint yet;
+    it is not the same as "this job has no attempts", and the UI says so.
+    """
+    getter = getattr(BACKEND, "get_attempts", None)
+    payload = getter(job_id) if getter is not None else None
+    if payload is None:
+        return JSONResponse(
+            {
+                "attempts": [],
+                "available": False,
+                "note": "Controller does not expose GET /api/jobs/{id}/attempts yet.",
+            }
+        )
+    payload = dict(payload)
+    payload.setdefault("available", True)
+    return JSONResponse(payload)
+
+
+@app.get("/api/attempts/{attempt_id}/evidence")
+async def attempt_evidence(attempt_id: str):
+    """Proxy M1's attempt evidence (ordered gates + V3 summary) unchanged.
+
+    ``available: false`` means the controller does not expose the route yet;
+    the result screen then shows no gate rows instead of inventing them.
+    """
+    getter = getattr(BACKEND, "get_attempt_evidence", None)
+    payload = getter(attempt_id) if getter is not None else None
+    if payload is None:
+        return JSONResponse(
+            {
+                "available": False,
+                "note": "Controller does not expose GET /api/attempts/{id}/evidence yet.",
+            }
+        )
+    payload = dict(payload)
+    payload.setdefault("available", True)
+    return JSONResponse(payload)
+
+
+@app.post("/api/assistant/plan")
+async def assistant_plan(request: Request) -> JSONResponse:
+    """Proxy M1's job-less planning route.
+
+    The GUI never invents a plan: when the controller has not shipped the route,
+    this answers 503 and ``/agent/new`` shows "not connected" instead of falling
+    back to fixture data.
+    """
+    _require_csrf(request.headers.get("x-csrf-token", ""))
+    try:
+        body = await request.json()
+    except ValueError:
+        return JSONResponse(
+            {"plan": None, "error": "invalid_request", "detail": "JSON body required."},
+            status_code=422,
+        )
+    if not isinstance(body, dict):
+        return JSONResponse(
+            {"plan": None, "error": "invalid_request", "detail": "JSON object required."},
+            status_code=422,
+        )
+    description = body.get("description")
+    if not isinstance(description, str) or not description.strip():
+        return JSONResponse(
+            {"plan": None, "error": "invalid_request", "detail": "'description' is required."},
+            status_code=422,
+        )
+    context = body.get("context")
+    if context is not None and not isinstance(context, dict):
+        return JSONResponse(
+            {"plan": None, "error": "invalid_request", "detail": "'context' must be an object."},
+            status_code=422,
+        )
+
+    getter = getattr(BACKEND, "get_plan", None)
+    if getter is None:
+        return JSONResponse(
+            {
+                "plan": None,
+                "error": "assistant_unavailable",
+                "fallback_reason": "llm_client_not_configured",
+            },
+            status_code=503,
+        )
+    try:
+        plan = getter(description.strip(), context)
+    except BackendError as exc:
+        return JSONResponse(
+            {"plan": None, "error": "assistant_unavailable", "detail": exc.detail},
+            status_code=503,
+        )
+    if plan is None:
+        return JSONResponse(
+            {
+                "plan": None,
+                "error": "assistant_unavailable",
+                "fallback_reason": "assistant_endpoint_missing",
+            },
+            status_code=503,
+        )
+    return JSONResponse({"plan": plan})
 
 
 @app.get("/api/jobs/{job_id}/export")
@@ -450,6 +702,36 @@ async def export_bundle(job_id: str):
     )
 
 
+@app.get("/api/artifacts/{artifact_id}")
+async def artifact_metadata(artifact_id: str):
+    """Proxy artifact metadata so evidence pages work against the controller."""
+    getter = getattr(BACKEND, "get_artifact_metadata", None)
+    if getter is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Artifact metadata is only available in controller (http) mode.",
+        )
+    return JSONResponse(getter(artifact_id))
+
+
+@app.get("/api/artifacts/{artifact_id}/download")
+async def artifact_download(artifact_id: str):
+    """Proxy registered artifact bytes; a missing byte stream is a 404, not an empty file."""
+    getter = getattr(BACKEND, "get_artifact_bytes", None)
+    if getter is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Artifact downloads are only available in controller (http) mode.",
+        )
+    content, media_type, filename = getter(artifact_id)
+    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", filename) or f"{artifact_id}.bin"
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{safe_name}"'},
+    )
+
+
 @app.get("/jobs/{job_id}/report", response_class=HTMLResponse)
 async def evidence_report(request: Request, job_id: str, download: int = 0):
     """Render the printable English evidence report (same data as JSON v2)."""
@@ -467,10 +749,26 @@ async def evidence_report(request: Request, job_id: str, download: int = 0):
     headers = None
     if download:
         headers = {"Content-Disposition": f'attachment; filename="{job_id}-evidence.html"'}
+    getter = getattr(BACKEND, "get_attempts", None)
+    if getter is None:
+        attempts = {"available": False, "attempts": []}
+    else:
+        try:
+            attempts = getter(job_id)
+        except BackendError:
+            attempts = None
+        if attempts is None:
+            attempts = {"available": False, "attempts": []}
     return templates.TemplateResponse(
         request,
         "report.html",
-        {"bundle": bundle, "sha_lines": sha_lines},
+        {
+            "bundle": bundle,
+            "sha_lines": sha_lines,
+            "evidence_domain": evidence_domain,
+            "scope_display": scope_display,
+            "attempts": attempts,
+        },
         headers=headers,
     )
 

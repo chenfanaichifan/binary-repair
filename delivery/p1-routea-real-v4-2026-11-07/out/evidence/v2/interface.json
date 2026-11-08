@@ -1,0 +1,17 @@
+{
+  "details": {
+    "checks": {
+      "dynamic_symbols_unchanged": true,
+      "entry_unchanged": true,
+      "needed_flags_unchanged": true,
+      "no_new_dynamic_import": true,
+      "target_entry_symbol_unchanged": true
+    },
+    "score": {
+      "passed": 5,
+      "total": 5
+    }
+  },
+  "missing": [],
+  "status": "pass"
+}

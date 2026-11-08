@@ -14,7 +14,7 @@ def _snapshot(*, verdict: str = "inconclusive", outcome: str = "inconclusive",
             key: {
                 "outcome": outcome,
                 "verdict": outcome,
-                "obligations": [{"kind": kind, "result": result} for kind in kinds],
+                "obligations": [{"kind": kind, "result": result, "required": True} for kind in kinds],
             }
             for key in ("A", "B")
         },
@@ -51,3 +51,20 @@ def test_synthetic_offline_finished_snapshot_still_passes(monkeypatch) -> None:
     assert p2_acceptance.main([
         "--job-id", "j", "--data-dir", "/tmp/does-not-matter", "--synthetic"
     ]) == 0
+
+
+def test_optional_non_required_row_is_ignored() -> None:
+    snapshot = _snapshot()
+    snapshot["routes"]["B"]["obligations"].append(
+        {"kind": "repaired_behaviour", "result": "passed", "required": False}
+    )
+    assert p2_acceptance.validate_snapshot(snapshot) == []
+
+
+def test_required_rows_must_be_exactly_six() -> None:
+    snapshot = _snapshot()
+    snapshot["routes"]["A"]["obligations"].append(
+        {"kind": "identity", "result": "passed", "required": True}
+    )
+    errors = p2_acceptance.validate_snapshot(snapshot)
+    assert any("required obligations incomplete" in error for error in errors)

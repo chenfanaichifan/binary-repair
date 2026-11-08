@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-07",
+  "items": {
+    "10_timeout_observed": {
+      "code": "tools/mcp_tool_adapters.py",
+      "test": "tests/test_mcp_tool_adapters.py::test_run_case_timeout_has_machine_reason",
+      "verdict": "PASS"
+    },
+    "11_evidence_hash_mismatch": {
+      "code": "tools/mcp_tool_adapters.py",
+      "test": "tests/test_mcp_tool_adapters.py::test_apply_candidate_maps_ingest_hash_error",
+      "verdict": "PASS"
+    },
+    "12_scope_bounded": {
+      "code": "app/static/js/agent.js",
+      "note": "source + unit/HTTP path; browser DOM not executed",
+      "test": "tests/test_agent_console.py::test_scope_and_bounded_never_turn_missing_into_pass",
+      "verdict": "PASS"
+    },
+    "9_incomplete_test_set": {
+      "code": "tools/mcp_tool_adapters.py",
+      "test": "tests/test_mcp_tool_adapters.py::test_run_case_incomplete_set_is_machine_reason",
+      "verdict": "PASS"
+    }
+  },
+  "limitations": [
+    "Original Review 9-12 text is not recoverable.",
+    "Verdicts 9-11 are against the canonical reconstruction and their code/tests.",
+    "Review 12/T7.7 are source/test verified; browser DOM was not executed.",
+    "M4 = Lead same operator; not independent two-person."
+  ],
+  "other_m4_tasks": {
+    "P1": "PASS (success_within_scope)",
+    "P2": "PASS (exit 0)",
+    "T7.7_ui_honesty": "PASS (source + tests; browser DOM not executed)",
+    "T8.3": "PASS (record 170/171)",
+    "T8.5_llm_no_leak_no_injection": "PASS (backend no-key tests; UI path not independently browser-executed)"
+  },
+  "owner": "M4 (operator role; same person as Lead)",
+  "schema_version": 1,
+  "source_state": "canonical reconstruction only; original not recovered"
+}

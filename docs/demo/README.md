@@ -41,14 +41,15 @@ banner and the export contains synthetic artifacts only.
 
 ### HTTP controller mode
 
-Start the controller (M1) in a separate terminal from a controller checkout:
+Start the controller (M1) from this checkout. There is one data directory:
+`BINARYREPAIR_DATA_DIR` (default `var`). Do not introduce a second
+`var/controller` root, or the worker and controller stop seeing the same jobs.
 
 ```bash
-cd ../binaryrepair-controller
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-BINARYREPAIR_CONTROLLER_DATA=var/controller \
+BINARYREPAIR_DATA_DIR=var \
   python -m uvicorn app.controller_api:app --host 127.0.0.1 --port 8000
 ```
 

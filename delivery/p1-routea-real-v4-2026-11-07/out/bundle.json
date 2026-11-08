@@ -1,0 +1,50 @@
+{
+  "candidate_sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+  "gates": {
+    "V0": {
+      "artifacts": [
+        "contract.json",
+        "original.elf",
+        "route_a/candidate.elf",
+        "route_a/status.json",
+        "tests/valid.json"
+      ],
+      "status": "passed"
+    },
+    "V1": {
+      "artifacts": [
+        "evidence/v1/lief.json",
+        "route_a/audit.json",
+        "route_a/edit-manifest.json",
+        "route_a/readelf-audit.txt"
+      ],
+      "status": "passed"
+    },
+    "V2": {
+      "artifacts": [
+        "evidence/v2/interface.json"
+      ],
+      "status": "passed"
+    },
+    "V3": {
+      "artifacts": [
+        "evidence/v3/manifest-repaired.json"
+      ],
+      "status": "passed"
+    },
+    "V4": {
+      "status": "passed",
+      "artifacts": [
+        "v4-symbolic.json"
+      ]
+    },
+    "V5": {
+      "artifacts": [
+        "evidence/v5/replay.json"
+      ],
+      "status": "passed"
+    }
+  },
+  "route": "route_a",
+  "schema_version": 1
+}

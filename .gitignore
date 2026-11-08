@@ -27,8 +27,9 @@ pip_cache/
 pytest_deps/
 .write-probe.tmp
 
-# Local delivery artifacts (git bundles/archives for teammates)
-/delivery/
+# delivery/ is deliberately tracked: it is the shared hand-off directory for
+# M4 and M5. Do not re-add a /delivery/ ignore rule here - a bundle that only
+# exists in one worktree is not readable by the other members.
 
 # Editors / OS
 .vscode/
@@ -38,3 +39,19 @@ pytest_deps/
 Thumbs.db
 
 binaryrepair-synthetic-*/
+
+# Cross-session notes. Never tracked, 60 KB of decision records: `git clean -fdx`
+# and `git stash -u` both destroy it, and `git add -A` commits it. M3 lost it once
+# to a stash and recovered it from stash@{0}^3 by hash. Ignoring costs nothing
+# because nothing here was ever in the index.
+.workbuddy/
+
+# Scratch output. dist/ is deliberately NOT here: it carries tracked
+# delivery artifacts that M4/M5 read, and ignoring it would hide updates.
+worklogs/
+.tmp/
+.dsh-acl-recovery/
+
+# Canonical V5 replay logs are tracked evidence (four original logs).
+!delivery/**/*.log
+

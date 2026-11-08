@@ -27,20 +27,62 @@ No path in this module invents a ``passed`` result.
 from __future__ import annotations
 
 import argparse
+import datetime as _dt
+import hashlib
 import json
 import os
+import shlex
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
 
 from app.db.connection import connect
 from app.domain.acceptance import Verdict
+from app.domain.evidence import verify_candidate_binding
 from app.domain.outcomes import Outcome, ReasonCode
 from app.services import jobs, obligations, orchestration
+from app.services.attempt_driver import routeb_bundle_dir
 
 TERMINAL = {"finished", "cancelled"}
+
+
+def _now() -> str:
+    return _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _stamp_attempt(
+    attempt_id: str,
+    *,
+    data_dir: str | Path,
+    started: bool = False,
+    finished: bool = False,
+    candidate_sha256: str | None = None,
+) -> None:
+    assignments = []
+    values: list[Any] = []
+    if started:
+        assignments.append("started_at = COALESCE(started_at, ?)")
+        values.append(_now())
+    if finished:
+        assignments.append("finished_at = ?")
+        values.append(_now())
+    if candidate_sha256 is not None:
+        assignments.append("candidate_sha256 = ?")
+        values.append(candidate_sha256)
+    if not assignments:
+        return
+    values.append(attempt_id)
+    connection = connect(data_dir)
+    try:
+        with connection:
+            connection.execute(
+                f"UPDATE attempts SET {', '.join(assignments)} WHERE id = ?", values
+            )
+    finally:
+        connection.close()
 
 
 def _bundle_path(data_dir: str | Path, job_id: str, run_id: str, attempt_id: str) -> Path:
@@ -89,6 +131,104 @@ def _load_bundle(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _executor_inputs(data_dir: str | Path, job_id: str, run_id: str) -> tuple[Path, Path]:
+    """Return verified original and contract paths for one executor spawn.
+
+    Fail closed if the original bytes or the approved contract cannot be
+    verified. The contract file is written atomically and idempotently under a
+    contract-id path, so it cannot overwrite another revision.
+    """
+
+    root = Path(data_dir)
+    connection = connect(data_dir)
+    try:
+        run = connection.execute(
+            "SELECT * FROM runs WHERE id = ? AND job_id = ?",
+            (run_id, job_id),
+        ).fetchone()
+        job = connection.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if run is None:
+            raise ValueError(f"unknown run id for job {job_id}: {run_id}")
+        if job is None:
+            raise ValueError(f"unknown job id: {job_id}")
+        contract = connection.execute(
+            "SELECT * FROM contracts WHERE id = ? AND job_id = ?",
+            (run["contract_id"], job_id),
+        ).fetchone()
+    finally:
+        connection.close()
+
+    if contract is None:
+        raise ValueError("run has no approved contract")
+    if not contract["approved_at"]:
+        raise ValueError("run contract is not approved")
+
+    original = root / "jobs" / job_id / "original.bin"
+    if not original.is_file() or not os.access(original, os.R_OK):
+        raise ValueError(f"original input is not readable: {original}")
+    if _sha256_file(original) != str(job["original_sha256"]):
+        raise ValueError("original input hash does not match the job record")
+
+    body = contract["body_json"]
+    if not isinstance(body, str):
+        raise ValueError("contract body is not text")
+    body_bytes = body.encode("utf-8")
+    contract_hash = hashlib.sha256(body_bytes).hexdigest()
+    bound_hash = str(run["reviewed_scope_sha256"] or "")
+    if contract_hash != str(contract["sha256"]) or contract_hash != bound_hash:
+        raise ValueError("contract bytes do not match the run-bound contract hash")
+
+    contracts_dir = root / "jobs" / job_id / "contracts"
+    contracts_dir.mkdir(parents=True, exist_ok=True)
+    contract_path = contracts_dir / f"{run['contract_id']}.json"
+    if contract_path.exists():
+        if _sha256_file(contract_path) != contract_hash:
+            raise ValueError(f"contract file exists with different bytes: {contract_path}")
+    else:
+        handle, temp_name = tempfile.mkstemp(
+            prefix=f".{run['contract_id']}-", suffix=".tmp", dir=contracts_dir
+        )
+        try:
+            with os.fdopen(handle, "wb") as temp:
+                temp.write(body_bytes)
+                temp.flush()
+                os.fsync(temp.fileno())
+            os.replace(temp_name, contract_path)
+        except BaseException:
+            try:
+                os.unlink(temp_name)
+            except OSError:
+                pass
+            raise
+    if not os.access(contract_path, os.R_OK):
+        raise ValueError(f"contract file is not readable: {contract_path}")
+    return original, contract_path
+
+
+def _executor_argv(command: str) -> list[str]:
+    """Turn ``BINARYREPAIR_ATTEMPT_CMD`` into an argv list.
+
+    A value that names an existing file is executed as-is, which keeps the
+    original single-executable contract for wrappers with spaces in their path.
+    Otherwise the value is a command line and is split, so ``python -m
+    app.services.attempt_driver`` works without a shell wrapper.
+    """
+    if Path(command).exists():
+        return [command]
+    argv = shlex.split(command)
+    if not argv:
+        raise ValueError("BINARYREPAIR_ATTEMPT_CMD is empty")
+    return argv
+
+
 def _run_executor(
     *,
     data_dir: str | Path,
@@ -101,6 +241,7 @@ def _run_executor(
     command = os.environ.get("BINARYREPAIR_ATTEMPT_CMD")
     if not command:
         return False
+    original, contract = _executor_inputs(data_dir, job_id, run_id)
     env = os.environ.copy()
     env.update(
         {
@@ -110,9 +251,30 @@ def _run_executor(
             "BINARYREPAIR_ATTEMPT_ID": attempt_id,
             "BINARYREPAIR_ROUTE": route,
             "BINARYREPAIR_RESULT_PATH": str(bundle),
+            "BINARYREPAIR_ORIGINAL": str(original),
+            "BINARYREPAIR_CONTRACT": str(contract),
+            # Host-side driver contract: where the guest leaves the Route B
+            # static bundle. Always set so a wrapper needs no extra flags; the
+            # driver fails closed when the directory is absent.
+            "BINARYREPAIR_ROUTEB_BUNDLE": str(
+                routeb_bundle_dir(data_dir, job_id, run_id, attempt_id)
+            ),
         }
     )
-    subprocess.run([command], env=env, check=True)
+    completed = subprocess.run(
+        _executor_argv(command),
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        stderr = (completed.stderr or "").strip().splitlines()
+        tail = stderr[-1] if stderr else ""
+        raise RuntimeError(
+            f"executor exited with status {completed.returncode}"
+            + (f": {tail}" if tail else "")
+        )
     return bundle.exists()
 
 
@@ -161,6 +323,20 @@ def _attempt_verdict(
     if payload.get("route") not in (None, attempt.route):
         raise ValueError(f"result bundle route does not match attempt {attempt.id}")
 
+    if any(value == "passed" for value in payload["results"].values()):
+        verify_candidate_binding(
+            data_dir=data_dir,
+            job_id=job_id,
+            attempt_id=attempt.id,
+            candidate_sha256=payload["candidate_sha256"],
+            evidence=payload.get("evidence") or {},
+        )
+    _stamp_attempt(
+        attempt.id,
+        data_dir=data_dir,
+        finished=True,
+        candidate_sha256=payload["candidate_sha256"],
+    )
     obligations.persist_obligations(
         data_dir=data_dir,
         job_id=job_id,
@@ -168,12 +344,24 @@ def _attempt_verdict(
         results=payload["results"],
         evidence=payload.get("evidence") or {},
         details=payload.get("details") or {},
+        candidate_sha256=payload["candidate_sha256"],
     )
+    # persist_obligations may downgrade a claimed pass (V2/V4) after validating
+    # its evidence. Evaluate the persisted rows, not the unvalidated payload,
+    # so a downgraded gate can never produce success.
+    persisted = {
+        row["kind"]: row["result"]
+        for row in jobs.list_obligations(attempt.id, data_dir=data_dir)
+    }
+    effective = {
+        gate: persisted.get(kind, "not_run")
+        for gate, kind, _required in orchestration.GATES
+    }
     return orchestration.evaluate_attempt(
         job_id,
         run.id,
         attempt_id=attempt.id,
-        results=payload["results"],
+        results=effective,
         data_dir=data_dir,
         candidate_sha256=payload["candidate_sha256"],
     )
@@ -209,6 +397,7 @@ def run_once(*, data_dir: str | Path) -> int:
             if attempt.phase == "cancelled":
                 continue
 
+            _stamp_attempt(attempt.id, data_dir=data_dir, started=True)
             _set_phase("attempts", attempt.id, "analyzing", data_dir=data_dir)
             _set_phase("runs", run.id, "analyzing", data_dir=data_dir)
             _set_phase("jobs", job.id, "analyzing", data_dir=data_dir)
@@ -253,6 +442,7 @@ def run_once(*, data_dir: str | Path) -> int:
                 _set_phase("attempts", attempt.id, "queued", data_dir=data_dir)
                 print(f"worker: attempt {attempt.id} has no result bundle yet")
                 continue
+            _stamp_attempt(attempt.id, data_dir=data_dir, finished=True)
             verdicts[attempt.route] = verdict
             processed += 1
 
@@ -277,12 +467,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.services.worker")
     parser.add_argument(
         "--data-dir",
-        default=os.environ.get("BINARYREPAIR_DATA_DIR", "var"),
-        help="controller data directory",
+        default=os.environ.get("BINARYREPAIR_DATA_DIR"),
+        help="controller data directory; defaults to BINARYREPAIR_DATA_DIR",
     )
     parser.add_argument("--once", action="store_true", help="process queued runs once")
     parser.add_argument("--poll", type=float, default=0.0, help="poll interval in seconds")
     args = parser.parse_args(argv)
+    if not args.data_dir:
+        parser.error("--data-dir is required (or set BINARYREPAIR_DATA_DIR)")
 
     if args.poll > 0:
         while True:

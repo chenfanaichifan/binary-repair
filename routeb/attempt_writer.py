@@ -30,7 +30,9 @@ from pathlib import Path
 from typing import Any
 
 from app.db.connection import connect
+from app.domain.interface import InterfaceCheckError, check_interface
 from app.services import jobs
+from routeb.contract_mode import load_contract
 
 GATES = ("V0", "V1", "V2", "V3", "V4", "V5")
 
@@ -46,7 +48,27 @@ def _read_json(path: Path) -> dict[str, Any]:
     return data
 
 
-def _verify_bundle(bundle: Path) -> dict[str, Any]:
+def _verify_original(path: Path, expected_sha256: str) -> None:
+    if not path.is_file() or not os.access(path, os.R_OK):
+        raise ValueError(f"BINARYREPAIR_ORIGINAL is not readable: {path}")
+    if _sha(path) != expected_sha256:
+        raise ValueError("BINARYREPAIR_ORIGINAL hash does not match edit-manifest.json")
+
+
+def _verify_contract(path: Path) -> None:
+    """The broker hashes/binds the contract before spawn; the adapter only
+    consumes the verified path and never reads contract bodies from SQLite."""
+    if not path.is_file() or not os.access(path, os.R_OK):
+        raise ValueError(f"BINARYREPAIR_CONTRACT is not readable: {path}")
+    try:
+        load_contract(path)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"BINARYREPAIR_CONTRACT is not a valid SecurityContract: {exc}"
+        ) from exc
+
+
+def _verify_bundle(bundle: Path, *, original_path: Path | None = None) -> dict[str, Any]:
     manifest_path = bundle / "edit-manifest.json"
     if not manifest_path.exists():
         raise ValueError(f"missing {manifest_path}")
@@ -55,11 +77,17 @@ def _verify_bundle(bundle: Path) -> dict[str, Any]:
         raise ValueError("bundle edit-manifest.json is not route_b")
     candidate = bundle / "candidate.elf"
     original = bundle / "original.elf"
-    if not candidate.exists() or not original.exists():
+    if not candidate.exists():
+        raise ValueError("bundle must contain candidate.elf")
+    if original_path is not None:
+        _verify_original(original_path, str(manifest.get("original_sha256") or ""))
+        if original.exists() and _sha(original) != _sha(original_path):
+            raise ValueError("bundle original.elf differs from BINARYREPAIR_ORIGINAL")
+    elif not original.exists():
         raise ValueError("bundle must contain candidate.elf and original.elf")
     if _sha(candidate) != manifest.get("candidate_sha256"):
         raise ValueError("candidate.elf hash does not match edit-manifest.json")
-    if _sha(original) != manifest.get("original_sha256"):
+    if original_path is None and _sha(original) != manifest.get("original_sha256"):
         raise ValueError("original.elf hash does not match edit-manifest.json")
     return manifest
 
@@ -117,13 +145,33 @@ def _artifact(
 def _runtime_state(bundle: Path) -> tuple[str, Path | None]:
     compare = bundle / "manifest-compare.json"
     repaired = bundle / "manifest-repaired.json"
-    if compare.exists():
-        payload = _read_json(compare)
-        return ("passed" if payload.get("gate4_pass") is True else "failed"), compare
+    # An unchanged round trip is NOT repair V3: it may preserve the vulnerability.
+    # Only a repaired manifest may satisfy behaviour.
     if repaired.exists():
         payload = _read_json(repaired)
         return ("passed" if payload.get("repaired_pass") is True else "failed"), repaired
+    if compare.exists():
+        return "not_run", compare
     return "not_run", None
+
+
+def runtime_state(bundle: Path) -> tuple[str, Path | None, str]:
+    """Shared Route B behaviour rule: round-trip is not repair V3."""
+    state, path = _runtime_state(bundle)
+    if state == "not_run" and path is not None and path.name == "manifest-compare.json":
+        return state, path, "round-trip only; not repair V3"
+    if path is None:
+        return state, path, "no runtime manifest in bundle"
+    detail = "runtime manifest " + state
+    if path.name == "manifest-repaired.json":
+        payload = _read_json(path)
+        mode = payload.get("input_mode", "argv")
+        passed, total = payload.get("passed"), payload.get("total")
+        if isinstance(passed, int) and isinstance(total, int):
+            detail += f"; {passed}/{total}"
+        if mode == "none":
+            detail += "; input_mode=none, invalid not applicable"
+    return state, path, detail
 
 
 def _repro_state(bundle: Path) -> tuple[str, Path | None]:
@@ -143,8 +191,10 @@ def write_attempt(
     job_id: str,
     run_id: str,
     attempt_id: str,
+    original_path: Path | None = None,
+    contract_path: Path | None = None,
+    out_path: Path | None = None,
 ) -> dict[str, Any]:
-    manifest = _verify_bundle(bundle)
     job = jobs.get_job(job_id, data_dir=data_dir)
     run = jobs.get_run(run_id, data_dir=data_dir)
     attempt = jobs.get_attempt(attempt_id, data_dir=data_dir)
@@ -154,18 +204,34 @@ def write_attempt(
         raise ValueError("job/run/attempt do not belong together")
     if attempt.route != "route_b":
         raise ValueError(f"attempt {attempt_id} is {attempt.route}, not route_b")
+    manifest = _verify_bundle(bundle, original_path=original_path)
+    if contract_path is not None:
+        _verify_contract(contract_path)
 
     audit = _read_json(bundle / "audit.json") if (bundle / "audit.json").exists() else {"pass": False}
-    runtime_state, runtime_path = _runtime_state(bundle)
+    v3_state, runtime_path, v3_detail = runtime_state(bundle)
     repro_state, repro_path = _repro_state(bundle)
     identity = manifest.get("original_sha256") == job.original_sha256
     structure = audit.get("pass") is True
 
+    target_entry = str(manifest.get("function") or "")
+    if contract_path is not None:
+        target_entry = load_contract(contract_path).target_entry
+    original_for_check = original_path or (bundle / "original.elf")
+    interface = check_interface(original_for_check, bundle / "candidate.elf", target_entry)
+    v2_state = "passed" if interface["pass"] else "not_run"
+    v2_report = bundle / "v2-interface-scored.json"
+    v2_report.write_text(json.dumps(interface, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    v2_detail = f"{interface['score']['passed']}/{interface['score']['total']} static interface checks"
+    if not interface["pass"]:
+        failed = [name for name, value in interface["checks"].items() if not value]
+        v2_detail += "; failed: " + ", ".join(failed)
+
     results = {
         "V0": "passed" if identity else "failed",
         "V1": "passed" if structure else "failed" if (bundle / "audit.json").exists() else "not_run",
-        "V2": "not_run",
-        "V3": runtime_state,
+        "V2": v2_state,
+        "V3": v3_state,
         "V4": "not_run",
         "V5": repro_state,
     }
@@ -173,8 +239,8 @@ def write_attempt(
     details: dict[str, str] = {
         "V0": f"original {manifest.get('original_sha256')} vs job {job.original_sha256}",
         "V1": "static ELF audit passed" if structure else "static ELF audit not passed",
-        "V2": "interface check not implemented in Route B executor",
-        "V3": ("runtime manifest " + runtime_state) if runtime_path else "no runtime manifest in bundle",
+        "V2": v2_detail,
+        "V3": v3_detail,
         "V4": "symbolic check not run",
         "V5": ("build-twice " + repro_state) if repro_path else "build-twice not run",
     }
@@ -185,6 +251,10 @@ def write_attempt(
     if results["V1"] == "passed":
         evidence["V1"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                                    bundle=bundle, filename="audit.json")
+    if results["V2"] == "passed":
+        evidence["V2"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
+                                   bundle=bundle, filename="v2-interface-scored.json",
+                                   role="v2_evidence")
     if results["V3"] == "passed" and runtime_path is not None:
         evidence["V3"] = _artifact(data_dir=data_dir, job_id=job_id, attempt_id=attempt_id,
                                    bundle=bundle, filename=runtime_path.name)
@@ -199,7 +269,7 @@ def write_attempt(
         "evidence": evidence,
         "details": details,
     }
-    path = data_dir / "jobs" / job_id / "runs" / run_id / "attempts" / f"{attempt_id}.json"
+    path = out_path or (data_dir / "jobs" / job_id / "runs" / run_id / "attempts" / f"{attempt_id}.json")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return {"path": str(path), "payload": payload}
@@ -214,8 +284,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--job", dest="job_id")
     ap.add_argument("--run", dest="run_id")
     ap.add_argument("--attempt", dest="attempt_id")
+    ap.add_argument("--original", type=Path)
+    ap.add_argument("--contract", type=Path)
     args = ap.parse_args(argv)
 
+    original_path = None
+    contract_path = None
+    out_path = None
     if args.from_env:
         data_dir = Path(os.environ["BINARYREPAIR_DATA_DIR"])
         job_id = os.environ["BINARYREPAIR_JOB_ID"]
@@ -225,6 +300,10 @@ def main(argv: list[str] | None = None) -> int:
         if not bundle_raw:
             raise SystemExit("BINARYREPAIR_ROUTEB_BUNDLE is required")
         bundle = Path(bundle_raw)
+        original_path = Path(os.environ["BINARYREPAIR_ORIGINAL"])
+        contract_path = Path(os.environ["BINARYREPAIR_CONTRACT"])
+        raw_out = os.environ.get("BINARYREPAIR_RESULT_PATH")
+        out_path = Path(raw_out) if raw_out else None
     else:
         if not (args.bundle and args.data_dir and args.job_id and args.run_id):
             ap.error("--bundle --data-dir --job --run are required")
@@ -240,7 +319,10 @@ def main(argv: list[str] | None = None) -> int:
             attempt_id = args.attempt_id
 
     result = write_attempt(bundle=bundle, data_dir=data_dir, job_id=job_id,
-                           run_id=run_id, attempt_id=attempt_id)
+                           run_id=run_id, attempt_id=attempt_id,
+                           original_path=original_path if args.from_env else args.original,
+                           contract_path=contract_path if args.from_env else args.contract,
+                           out_path=out_path if args.from_env else None)
     print(json.dumps({"path": result["path"], "results": result["payload"]["results"],
                       "evidence": result["payload"]["evidence"]}, indent=2))
     return 0

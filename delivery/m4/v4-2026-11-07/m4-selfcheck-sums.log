@@ -1,0 +1,12 @@
+README.md: OK
+expected/harness-output.expected.json: OK
+expected/selfcheck.expected.json: OK
+inputs/candidate.elf: OK
+inputs/contract.json: OK
+inputs/original.elf: OK
+inputs/v4_harness.py: OK
+run_e2e.sh: OK
+run_selfcheck.sh: OK
+scripts/selfcheck.py: OK
+scripts/summarize_output.py: OK
+verify_all.sh: OK

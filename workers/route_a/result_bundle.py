@@ -83,21 +83,38 @@ def main(argv=None):
     readelf = os.path.join(route, "readelf-audit.txt")
     log = os.path.join(route, "route_a.log")
 
-    for p in (original, contract, valid, invalid, candidate, status_path):
+    for p in (original, contract, valid, candidate, status_path):
         if not os.path.isfile(p):
             raise SystemExit(f"missing required artifact: {p}")
 
+    contract_obj = load_json(contract)
+    input_mode = contract_obj.get("input_mode", "argv")
+    if input_mode not in ("argv", "stdin", "none"):
+        raise SystemExit(f"unknown input_mode: {input_mode!r}")
     v = load_json(valid)
-    i = load_json(invalid)
-    contract_hash = canonical_json_hash(load_json(contract))
+    manifests = []
+    invalid_hash = None
+    if input_mode != "none":
+        if not os.path.isfile(invalid):
+            raise SystemExit(f"missing required artifact: {invalid}")
+        i = load_json(invalid)
+        if v.get("case_id") != i.get("case_id"):
+            raise SystemExit("valid/invalid manifests disagree on case_id")
+        if v.get("original_sha256") != i.get("original_sha256"):
+            raise SystemExit("valid/invalid manifests disagree on original_sha256")
+        invalid_hash = sha256_file(invalid)
+        manifests.append({"name": "invalid.json", "sha256": invalid_hash})
+    elif os.path.isfile(invalid):
+        empty = load_json(invalid)
+        if not isinstance(empty, dict) or empty.get("tests"):
+            raise SystemExit("input_mode=none must not carry non-empty tests/invalid.json")
+    manifests.append({"name": "valid.json", "sha256": sha256_file(valid)})
+    contract_hash = canonical_json_hash(contract_obj)
     set_payload = {
         "schema_version": 1,
         "case_id": v["case_id"],
         "original_sha256": v["original_sha256"],
-        "manifests": [
-            {"name": "invalid.json", "sha256": sha256_file(invalid)},
-            {"name": "valid.json", "sha256": sha256_file(valid)},
-        ],
+        "manifests": manifests,
     }
     set_hash = canonical_json_hash(set_payload)
     original_hash = sha256_file(original)
@@ -184,11 +201,21 @@ def main(argv=None):
                   v3_ev, [] if ok else ["formal-run cases not 6/6 or hash mismatch"])
     elif os.path.isfile(repaired_path):
         mr = load_json(repaired_path)
-        v3 = gate("inconclusive",
-                  {"repaired_pass": bool(mr.get("repaired_pass")),
-                   "passed": mr.get("passed"), "total": mr.get("total"),
-                   "note": "non-formal run (not a reverted snapshot)"},
-                  v3_ev, ["formal reverted-snapshot run missing"])
+        no_input_pass = (
+            input_mode == "none"
+            and mr.get("repaired_pass") is True
+            and mr.get("total") == 1
+            and mr.get("passed") == 1
+        )
+        v3 = gate(
+            "pass" if no_input_pass else "inconclusive",
+            {"repaired_pass": bool(mr.get("repaired_pass")),
+             "passed": mr.get("passed"), "total": mr.get("total"),
+             "input_mode": input_mode,
+             "note": "no-input single-case execution" if no_input_pass
+                     else "non-formal run (not a reverted snapshot)"},
+            v3_ev, [] if no_input_pass else ["formal reverted-snapshot run missing"],
+        )
     else:
         v3 = gate("not_run", {}, [], ["behaviour evidence missing"])
 
@@ -230,7 +257,7 @@ def main(argv=None):
             "contract_sha256": contract_hash,
             "manifest_set_sha256": set_hash,
             "valid_sha256": sha256_file(valid),
-            "invalid_sha256": sha256_file(invalid),
+            "invalid_sha256": invalid_hash,
             "candidate_sha256": candidate_hash,
             "candidate_size": os.path.getsize(candidate),
         },

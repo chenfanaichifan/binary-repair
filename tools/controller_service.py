@@ -41,7 +41,8 @@ ROUTE_NAMES = {
 
 
 def create_app(data_dir: str | Path | None = None) -> FastAPI:
-    root = Path(data_dir or os.environ.get("BINARYREPAIR_CONTROLLER_DATA", "var/controller"))
+    root = Path(data_dir or os.environ.get("BINARYREPAIR_CONTROLLER_DATA")
+            or os.environ.get("BINARYREPAIR_DATA_DIR", "var"))
 
     app = FastAPI(title="BinaryRepair controller bridge", version="0.1.0")
     app.state.data_dir = root
@@ -117,7 +118,7 @@ def create_app(data_dir: str | Path | None = None) -> FastAPI:
             "compatibility": "not_run",
             "changed_regions": [],
             "manual_interventions": 0,
-            "ai_usage": "unavailable",
+            "ai_usage": None,
             "elapsed_s": 0.0,
         }
 

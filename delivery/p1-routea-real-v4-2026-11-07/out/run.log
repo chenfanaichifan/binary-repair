@@ -1,0 +1,10 @@
+guest executor 2026-11-07T12:55:39Z
+package: /var/lib/binrepair/jobs/p1-routea-noinput-20261107/staging/pkg
+route: route_a purpose: repair
+$ /opt/angr-venv/bin/python /opt/binrepair/executor-repo/workers/route_a/worker.py --job-dir /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out --original /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/original.elf --contract /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/contract.json --tests-dir /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/tests --out /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/route_a --candidate /var/lib/binrepair/jobs/p1-routea-noinput-20261107/staging/pkg/candidate.elf --expected-candidate 2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e --job-id p1-routea-noinput-20261107 --edit-manifest /var/lib/binrepair/jobs/p1-routea-noinput-20261107/staging/pkg/edit-manifest.json --audit /var/lib/binrepair/jobs/p1-routea-noinput-20261107/staging/pkg/audit.json --readelf /var/lib/binrepair/jobs/p1-routea-noinput-20261107/staging/pkg/readelf-audit.txt
+routea-step-1: rc=0
+$ /opt/angr-venv/bin/python /opt/binrepair/executor-repo/workers/route_a/run_candidate.py --candidate /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/route_a/candidate.elf --contract /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/contract.json --tests-dir /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/tests --out /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/evidence/v3/manifest-repaired.json
+routea-step-2: rc=0
+$ /opt/angr-venv/bin/python /opt/binrepair/executor-repo/workers/route_a/result_bundle.py --job-dir /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out --work-dir /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out --out /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/result-bundle.json --isolation /var/lib/binrepair/jobs/p1-routea-noinput-20261107/out/isolation.json --job-id p1-routea-noinput-20261107
+routea-step-3: rc=0
+wrote bundle.json and result-bundle.json

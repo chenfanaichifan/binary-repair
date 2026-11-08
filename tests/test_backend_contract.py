@@ -53,7 +53,7 @@ SNAPSHOT = {
             "compatibility": "passed",
             "changed_regions": [],
             "manual_interventions": 1,
-            "ai_usage": "unavailable",
+            "ai_usage": None,
             "elapsed_s": 4.2,
         },
         "B": {
@@ -67,7 +67,7 @@ SNAPSHOT = {
             "compatibility": "not_run",
             "changed_regions": [],
             "manual_interventions": 0,
-            "ai_usage": "8.2k input / 1.4k output tokens",
+            "ai_usage": None,
             "elapsed_s": 3.0,
         },
     },

@@ -21,9 +21,18 @@ EDGE_CANDIDATES = (
     r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
 )
 
+# Chromium-compatible fallback. The CDP subset used here is browser-neutral;
+# this lets the suite run on hosts with Chrome but without Edge.
+CHROME_CANDIDATES = (
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+)
+
 
 def find_edge() -> str | None:
-    for candidate in EDGE_CANDIDATES:
+    for candidate in (*EDGE_CANDIDATES, *CHROME_CANDIDATES):
         if Path(candidate).exists():
             return candidate
     return None

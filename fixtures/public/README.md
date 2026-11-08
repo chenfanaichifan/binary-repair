@@ -14,3 +14,7 @@ Not allowed:
 Sample binaries may be large; confirm with the team before committing them (Git LFS may be
 required). Record provenance and hashes in `PROVENANCE.md` in this directory once Member 3
 provides the template.
+
+Before a sample counts as evidence, run `python tools/fixture_intake.py --check <dir>`.
+The required layout, what each finding means, and the known gaps in the existing
+CWE-121 fixture are in `docs/fixtures.md`.

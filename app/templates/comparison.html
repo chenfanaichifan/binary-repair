@@ -176,7 +176,7 @@
           <div><dt>模板</dt><dd><code>{{ view.candidate.template_id }}</code></dd></div>
           <div><dt>模型</dt><dd>{{ view.candidate.model }}</dd></div>
           <div><dt>尝试次数</dt><dd>{{ view.candidate.attempts }}</dd></div>
-          <div><dt>AI 用量</dt><dd>{{ view.candidate.ai_usage }}</dd></div>
+          <div><dt>AI 用量</dt><dd>{{ (view.candidate.ai_usage.input_tokens|string ~ ' input / ' ~ view.candidate.ai_usage.output_tokens|string ~ ' output tokens') if view.candidate.ai_usage else '未提供' }}</dd></div>
           <div><dt>理由</dt><dd>{{ view.candidate.rationale }}</dd></div>
           <div><dt>假设</dt><dd>{{ view.candidate.assumptions | join("；") }}</dd></div>
           <div><dt>不确定性</dt><dd>{{ view.candidate.uncertainties | join("；") }}</dd></div>
@@ -246,7 +246,7 @@
       <div><dt>兼容性</dt><dd id="compatibility-{{ key }}">{{ value_labels_zh.get(route.compatibility, route.compatibility) }}</dd></div>
       <div><dt>耗时</dt><dd id="elapsed-{{ key }}">{{ route.elapsed_s }} s</dd></div>
       <div><dt>人工介入</dt><dd id="manual-{{ key }}">{{ route.manual_interventions }} 次</dd></div>
-      <div><dt>AI 用量</dt><dd id="ai-{{ key }}">{{ route.ai_usage }}</dd></div>
+      <div><dt>AI 用量</dt><dd id="ai-{{ key }}">{{ (route.ai_usage.input_tokens|string ~ ' input / ' ~ route.ai_usage.output_tokens|string ~ ' output tokens') if route.ai_usage else '未提供' }}</dd></div>
     </dl>
 
     <p class="reason" id="reason-{{ key }}">{% if route.outcome_reason %}结论原因：{{ route.outcome_reason }}{% endif %}</p>

@@ -25,6 +25,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.controller_api import app
+from app.db.connection import connect
 from app.services import jobs, worker
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -141,15 +142,33 @@ def _write_bundle(
 ) -> None:
     path = _bundle_path(data_dir, job_id, run_id, attempt["id"])
     path.parent.mkdir(parents=True, exist_ok=True)
+    candidate_bytes = f"SYNTHETIC-TEST-CANDIDATE:{job_id}:{attempt['id']}".encode("utf-8")
+    candidate = hashlib.sha256(candidate_bytes).hexdigest()
+    evidence = {}
+    if results.get("V0") == "passed":
+        relative = f"jobs/{job_id}/evidence/{attempt['id']}/candidate.bin"
+        target = data_dir / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(candidate_bytes)
+        artifact_id = f"art-{attempt['id']}-candidate"
+        connection = connect(data_dir)
+        try:
+            with connection:
+                connection.execute(
+                    "INSERT INTO artifacts (id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?, 'application/octet-stream', 'candidate', '2026-11-01T00:00:00+00:00')",
+                    (artifact_id, job_id, attempt["id"], relative, candidate, len(candidate_bytes)),
+                )
+        finally:
+            connection.close()
+        evidence["V0"] = artifact_id
     payload = {
         "synthetic": True,
         "label": SYNTHETIC_LABEL,
         "route": attempt["route"],
-        "candidate_sha256": hashlib.sha256(
-            f"SYNTHETIC-TEST-CANDIDATE:{job_id}:{attempt['id']}".encode("utf-8")
-        ).hexdigest(),
+        "candidate_sha256": candidate,
         "results": results,
-        "evidence": {},
+        "evidence": evidence,
         "details": {
             gate: f"SYNTHETIC test bundle: {gate} reported {result}; no binary ran."
             for gate, result in results.items()
@@ -332,3 +351,49 @@ def test_unknown_job_obligations_returns_404(client: TestClient) -> None:
     response = client.get("/api/jobs/does-not-exist/obligations")
     assert response.status_code == 404
     assert response.json()["detail"] == "Job not found."
+
+
+def test_evidence_exposes_ordered_gates_and_v3_counts(client: TestClient) -> None:
+    job_id, run = _seed_finished_run(client, MIXED_RESULTS, key="gate-summary")
+    attempt = _route_attempt(run, "route_b")
+    data_dir = _data_dir()
+    relative = f"jobs/{job_id}/evidence/{attempt['id']}/manifest-repaired.json"
+    target = data_dir / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "cases": [
+            {"id": "valid-no-input", "kind": "valid", "ok": True},
+        ]
+    }
+    raw = json.dumps(manifest).encode("utf-8")
+    target.write_bytes(raw)
+    connection = connect(data_dir)
+    try:
+        with connection:
+            connection.execute(
+                "INSERT INTO artifacts (id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, 'application/json', 'v3_manifest', '2026-11-06T00:00:00+00:00')",
+                ("art-v3-test", job_id, attempt["id"], relative, hashlib.sha256(raw).hexdigest(), len(raw)),
+            )
+            connection.execute(
+                "UPDATE obligations SET result = 'passed', evidence_artifact_id = ?, "
+                "detail = 'input_mode=none valid 1/1 invalid not_applicable' "
+                "WHERE attempt_id = ? AND kind = 'behaviour'",
+                ("art-v3-test", attempt["id"]),
+            )
+    finally:
+        connection.close()
+
+    response = client.get(f"/api/attempts/{attempt['id']}/evidence")
+    assert response.status_code == 200
+    payload = response.json()
+    assert [row["gate"] for row in payload["gates"]] == ["V0", "V1", "V2", "V3", "V4", "V5"]
+    assert payload["v3"] == {
+        "gate": "V3",
+        "kind": "behaviour",
+        "result": "passed",
+        "input_mode": "none",
+        "valid": {"passed": 1, "total": 1},
+        "invalid": {"passed": 0, "total": 0},
+        "invalid_applicable": False,
+    }

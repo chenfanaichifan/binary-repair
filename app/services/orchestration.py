@@ -21,6 +21,8 @@ from typing import Any, Mapping
 
 from app.db.connection import connect
 
+FORCED_REQUIRED_GATES = frozenset({"V2", "V4"})
+
 GATES: tuple[tuple[str, str, bool], ...] = (
     ("V0", "identity", True),
     ("V1", "structure", True),
@@ -53,10 +55,13 @@ def build_obligations(
     obligations = []
     for gate, kind, default_required in GATES:
         result = _gate_result(results.get(gate, "not_run"))
+        # V2/V4 are never optional: a caller-supplied required mapping may not
+        # turn the interface or symbolic gate off and thereby manufacture a pass.
+        is_required = True if gate in FORCED_REQUIRED_GATES else required.get(gate, default_required)
         obligations.append(
             Obligation(
                 kind=kind,
-                required=required.get(gate, default_required),
+                required=is_required,
                 result=result,
                 detail=f"{gate} {kind}: {result.value}",
             )

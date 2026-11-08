@@ -8,6 +8,9 @@
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $dataDir = if ($env:BINARYREPAIR_DATA_DIR) { $env:BINARYREPAIR_DATA_DIR } else { Join-Path $root "var" }
+New-Item -ItemType Directory -Force $dataDir | Out-Null
+$dataDir = (Resolve-Path $dataDir).Path
+$env:BINARYREPAIR_DATA_DIR = $dataDir
 $python = Join-Path $root ".venv\Scripts\python.exe"
 if (-not (Test-Path $python)) { $python = "python" }
 

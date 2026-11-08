@@ -1,0 +1,6 @@
+P2 ACCEPTANCE PASSED phase=finished job=9247357c54714546a7ff84891f7766f8
+exit: 0
+synthetic: false
+verdict: success_within_scope
+route A: success_within_scope (6/6)
+route B: success_within_scope (6/6)

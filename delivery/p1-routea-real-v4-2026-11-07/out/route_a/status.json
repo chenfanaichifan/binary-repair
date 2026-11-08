@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "route": "A",
+  "job_id": "p1-routea-noinput-20261107",
+  "phase": "generating",
+  "reason_code": null,
+  "started_at": "2026-11-07T12:55:39Z",
+  "finished_at": "2026-11-07T12:55:39Z",
+  "original_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "contract_sha256": "2dea9b4c0a84a92450c029e3e17acc5894268b75594d401910cb98a7a2d44719",
+  "manifest_set_sha256": "6040a88b61c22e3649783414947f9fb84f118d34d372c4293a063f2a715e5432",
+  "candidate": {
+    "relative_path": "route_a/candidate.elf",
+    "sha256": "2a96b1083f23a0885ef6152dee39c48648d496a7a026e37ccfb31382c412970e",
+    "size_bytes": 25344
+  },
+  "artifacts": [
+    {
+      "role": "edit_manifest",
+      "relative_path": "route_a/edit-manifest.json",
+      "sha256": "56db4175016bbb20d0686d2d21160f11e3950cedf7abad049e78b4413c767108",
+      "size_bytes": 921,
+      "media_type": "application/json"
+    },
+    {
+      "role": "audit",
+      "relative_path": "route_a/audit.json",
+      "sha256": "47c481352de80177059824f2ac73d1029055ed087f8fbfa7cd0e9cf2a33df99f",
+      "size_bytes": 5695,
+      "media_type": "application/json"
+    },
+    {
+      "role": "readelf",
+      "relative_path": "route_a/readelf-audit.txt",
+      "sha256": "ad6816f6c0a22278832f6363f2f812e030ccf8991d70676e2f5ec8ee6ba5a980",
+      "size_bytes": 5364,
+      "media_type": "text/plain"
+    },
+    {
+      "role": "log",
+      "relative_path": "route_a/route_a.log",
+      "sha256": "ec82d82147f54a815ab903089959bd21eb7f0e1a2808886f5e9a88b6db7ac355",
+      "size_bytes": 472,
+      "media_type": "text/plain"
+    }
+  ],
+  "evidence": [
+    {
+      "obligation": "structure",
+      "result": "pass",
+      "evidence_path": "route_a/audit.json"
+    },
+    {
+      "obligation": "behaviour",
+      "result": "not_run",
+      "evidence_path": null
+    },
+    {
+      "obligation": "interface",
+      "result": "not_run",
+      "evidence_path": null
+    },
+    {
+      "obligation": "symbolic",
+      "result": "not_run",
+      "evidence_path": null
+    },
+    {
+      "obligation": "reproducibility",
+      "result": "not_run",
+      "evidence_path": null
+    }
+  ],
+  "tool_versions": {
+    "python": "3.12.3"
+  },
+  "manual_interventions": [],
+  "warnings": []
+}

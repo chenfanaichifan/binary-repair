@@ -1,0 +1,23 @@
+{
+  "input_mode": "none",
+  "invalid": "not_applicable",
+  "passed": 1,
+  "total": 1,
+  "repaired_pass": true,
+  "binary_sha256": "46d16e997bdfbb87fbd9c1d6f09443a7907b11b2b37118f5c773087a0d91fcd0"
+}
+{
+  "outdir": "/var/lib/binrepair/jobs/p1-cwe416-noinput-20261107/runs/run1/attempts/a1.routeb",
+  "bundle_sha256": "80a94490a7780c9d345df1267ab845016d9c5b06f9dc6c1619bd0ed63f9f0882",
+  "file_count": 15,
+  "static_audit": true,
+  "runtime": {
+    "state": "measured",
+    "returncode": 0,
+    "artifact": "manifest-repaired.json",
+    "input_mode": "none",
+    "invalid": "not_applicable",
+    "pass": true
+  },
+  "reproducibility": "not_run"
+}

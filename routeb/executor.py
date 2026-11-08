@@ -37,6 +37,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from elftools.elf.elffile import ELFFile  # noqa: E402
+from routeb.contract_mode import load_contract_mode  # noqa: E402
 
 SCHEMA_VERSION = 2
 
@@ -170,14 +171,23 @@ def build_candidate(original: Path, func: str, c_source: Path, out: Path) -> Non
     patch_function(original, func, c_source.read_text(), out)
 
 
-def _run_manifest(mode: str, original: Path, candidate: Path, tests: Path, out: Path) -> int:
+def _run_manifest(
+    mode: str,
+    original: Path,
+    candidate: Path,
+    tests: Path,
+    out: Path,
+    input_mode: str,
+) -> int:
     if mode == "roundtrip":
         cmd = [sys.executable, str(ROOT / "routeb/run_manifest_compare.py"),
                "--original", str(original), "--patched", str(candidate),
-               "--tests", str(tests), "--out", str(out)]
+               "--tests", str(tests), "--out", str(out),
+               "--input-mode", input_mode]
     else:
         cmd = [sys.executable, str(ROOT / "routeb/run_manifest_repaired.py"),
-               "--binary", str(candidate), "--tests", str(tests), "--out", str(out)]
+               "--binary", str(candidate), "--tests", str(tests), "--out", str(out),
+               "--input-mode", input_mode]
     return subprocess.run(cmd, cwd=ROOT).returncode
 
 
@@ -193,6 +203,7 @@ def make_bundle(
     run_manifest: bool = False,
     reproducible: bool = False,
     build_twice: bool = False,
+    input_mode: str = "argv",
 ) -> dict[str, Any]:
     outdir.mkdir(parents=True, exist_ok=True)
     views = outdir / "independent-views"
@@ -281,9 +292,10 @@ def make_bundle(
         else:
             result_path = outdir / ("manifest-compare.json" if mode == "roundtrip"
                                     else "manifest-repaired.json")
-            rc = _run_manifest(mode, original, candidate, tests, result_path)
+            rc = _run_manifest(mode, original, candidate, tests, result_path, input_mode)
             runtime = {"state": "measured", "returncode": rc,
-                       "artifact": result_path.name,
+                       "artifact": result_path.name, "input_mode": input_mode,
+                       "invalid": "not_applicable" if input_mode == "none" else "measured",
                        "pass": rc == 0}
             manifest["runtime_manifest"] = runtime
             (outdir / "edit-manifest.json").write_text(
@@ -301,7 +313,8 @@ def make_bundle(
         f"- runtime manifest: `{runtime['state']}`",
         "",
         "This bundle is static unless `runtime_manifest.state == measured`.",
-        "A static bundle is not a Gate 4 pass; run the six cases in the guest under",
+        f"- input mode: `{input_mode}`",
+        "A static bundle is not a Gate 4 pass; run the frozen cases in the guest under",
         "the isolation controls and attach the raw output.",
         "",
     ]
@@ -332,7 +345,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--tests", type=Path)
     ap.add_argument("--out-dir", type=Path, required=True)
     ap.add_argument("--run-manifest", action="store_true",
-                    help="guest-only: execute the frozen six cases")
+                    help="guest-only: execute the frozen manifest cases")
+    ap.add_argument("--input-mode", choices=("argv", "stdin", "none"), default=None,
+                    help="override the contract's input mode")
+    ap.add_argument("--contract", type=Path,
+                    help="contract JSON; its input_mode selects argv/stdin/none")
     ap.add_argument("--build-twice", action="store_true",
                     help="rebuild twice via Patcherex2 and compare bytes")
     args = ap.parse_args(argv)
@@ -346,11 +363,18 @@ def main(argv: list[str] | None = None) -> int:
     else:
         candidate = args.candidate
 
+    input_mode = args.input_mode or "argv"
+    if args.contract is not None:
+        try:
+            input_mode = load_contract_mode(args.contract)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            ap.error(f"--contract: {exc}")
+
     result = make_bundle(
         original=args.original, candidate=candidate, outdir=args.out_dir,
         func=args.func, mode=args.mode, c_source=args.c_source,
         tests=args.tests, run_manifest=args.run_manifest,
-        build_twice=args.build_twice,
+        build_twice=args.build_twice, input_mode=input_mode,
     )
     print(json.dumps(result, indent=2))
     return 0 if result["static_audit"] else 1

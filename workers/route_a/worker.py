@@ -45,25 +45,35 @@ def canonical_json_hash(obj) -> str:
     return hashlib.sha256(canon.encode("utf-8")).hexdigest()
 
 
-def manifest_set_hash(tests_dir: str) -> tuple[str, str, str]:
+def manifest_set_hash(tests_dir: str, input_mode: str = "argv") -> tuple[str, str, str | None]:
     valid_path = os.path.join(tests_dir, "valid.json")
     invalid_path = os.path.join(tests_dir, "invalid.json")
     valid = load_json(valid_path)
-    invalid = load_json(invalid_path)
-    if valid.get("case_id") != invalid.get("case_id"):
-        raise SystemExit("valid/invalid manifests disagree on case_id")
-    if valid.get("original_sha256") != invalid.get("original_sha256"):
-        raise SystemExit("valid/invalid manifests disagree on original_sha256")
+    manifests = []
+    invalid_hash = None
+    if input_mode == "none":
+        # No-input fixtures must not invent an invalid class. An empty file is
+        # tolerated for old packagers; a non-empty sentinel is rejected.
+        if os.path.isfile(invalid_path):
+            invalid = load_json(invalid_path)
+            if not isinstance(invalid, dict) or invalid.get("tests"):
+                raise SystemExit("input_mode=none must not carry non-empty tests/invalid.json")
+    else:
+        invalid = load_json(invalid_path)
+        if valid.get("case_id") != invalid.get("case_id"):
+            raise SystemExit("valid/invalid manifests disagree on case_id")
+        if valid.get("original_sha256") != invalid.get("original_sha256"):
+            raise SystemExit("valid/invalid manifests disagree on original_sha256")
+        invalid_hash = sha256_file(invalid_path)
+        manifests.append({"name": "invalid.json", "sha256": invalid_hash})
+    manifests.append({"name": "valid.json", "sha256": sha256_file(valid_path)})
     payload = {
         "schema_version": 1,
         "case_id": valid["case_id"],
         "original_sha256": valid["original_sha256"],
-        "manifests": [
-            {"name": "invalid.json", "sha256": sha256_file(invalid_path)},
-            {"name": "valid.json", "sha256": sha256_file(valid_path)},
-        ],
+        "manifests": manifests,
     }
-    return canonical_json_hash(payload), sha256_file(valid_path), sha256_file(invalid_path)
+    return canonical_json_hash(payload), sha256_file(valid_path), invalid_hash
 
 
 def build_candidate(args) -> str:
@@ -100,7 +110,10 @@ def main(argv=None) -> int:
     original_hash = sha256_file(args.original)
     contract_obj = load_json(args.contract)
     contract_hash = canonical_json_hash(contract_obj)
-    set_hash, valid_hash, invalid_hash = manifest_set_hash(args.tests_dir)
+    input_mode = contract_obj.get("input_mode", "argv")
+    if input_mode not in ("argv", "stdin", "none"):
+        raise SystemExit(f"unknown input_mode: {input_mode!r}")
+    set_hash, valid_hash, invalid_hash = manifest_set_hash(args.tests_dir, input_mode)
 
     valid = load_json(os.path.join(args.tests_dir, "valid.json"))
     if original_hash != valid.get("original_sha256"):

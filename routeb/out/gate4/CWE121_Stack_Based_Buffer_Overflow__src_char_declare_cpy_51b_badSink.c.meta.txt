@@ -1,0 +1,8 @@
+name=CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink
+entry=004012b0
+size_bytes=104
+signature=void __stdcall CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink(char * data)
+calling_convention=__stdcall
+external=false
+thunk=false
+callees=printLine strcpy 

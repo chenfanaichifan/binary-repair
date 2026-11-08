@@ -1,61 +1,73 @@
-# BinaryRepair — AI-Assisted Binary Vulnerability Repair MVP
+# BinaryRepair — AI-Assisted Binary Vulnerability Repair
 
 BinaryRepair is a local analyst tool that repairs one known vulnerability in a
-Linux x86-64 ELF **without rebuilding it from source**, through two independent
-repair routes, and decides the result with one deterministic acceptance engine.
-A model explanation is never evidence; only checks on the final bytes count.
+Linux x86-64 ELF **without original source**, using two independent repair
+routes and one deterministic acceptance engine. A model explanation is never
+evidence; only checks on the final bytes count.
 
-This repository is a **curated snapshot** of the accepted MVP, extracted from
-the final tag `mvp-2026-10-31` of the original development repository. It is not
-a universal binary-repair tool and it is not a commercial product.
-
-## MVP status
-
-**Accepted with recorded limitations** — see [`docs/acceptance/LIMITATIONS.md`](docs/acceptance/LIMITATIONS.md).
-
-| Gate | Status |
-|---|---|
-| Gate 3 — Route A feasibility | CLOSED / APPROVED |
-| Gate 4 — Route B unchanged round trip | PASS (strict scope) |
-| Gate 5 Route A — safe placement | PASS |
-| Gate 5 Route B — safe placement | PASS |
-| V4 — bounded symbolic (model-level) | PASS, bound 64 |
-| Fixture | FROZEN (candidate scope) |
-
-The source snapshot is tagged in the original repository at:
+This repository is a **curated public snapshot** of the accepted project. The
+full development repository and its historical evidence remain at
+`chenfanaichifan/binary-repair`; this snapshot selects the current code,
+canonical acceptance evidence, and user-facing documentation.
 
 ```text
-main: 753c0973c4eeac614fcc457dd327fd93ecf6a119
-tag:  mvp-2026-10-31
+Repository: https://github.com/leesirleesirlee-star/Binary_Repair
+Branch:     main
+Snapshot:   2026-11-08
+Source:     chenfanaichifan/binary-repair
+            branch delivery/all-hands-2026-11-07
+            commit b61774d04e793b3a5f34574df03ba6e1a034d700
 ```
 
-## What it does
+## Current status (2026-11-08)
 
-The product is a GUI + controller + worker for a single public CWE-121 fixture:
+| Item | State |
+|---|---|
+| T8.3 | **COMPLETE** |
+| P1 | **success_within_scope** |
+| P2 | **ACCEPTANCE PASSED** |
+| Test suite | **714 passed / 2 Linux-only skipped / 0 failed** (recorded Linux/Chrome run) |
+| Browser e2e | **12 passed** (Chrome CDP) |
+| V4 | **passed at model scope** (not a binary-level proof) |
+| 118 | **VERIFIED** (independent) |
+| tag / main merge | none in this snapshot |
+
+The canonical acceptance evidence is listed in
+[`delivery/INDEX.md`](delivery/INDEX.md). Current status records are listed in
+[`docs/INDEX.md`](docs/INDEX.md).
+
+## What it does
 
 - **Route A** produces a candidate by redirecting the vulnerable call into a
   reviewed code cave.
 - **Route B** recovers C, recompiles it, and re-integrates the function.
 - A shared acceptance engine checks V0–V5 on the final candidate and returns
   `success_within_scope`, `inconclusive`, `rejected`, `unsupported`, `error`, or
-  `cancelled`. The GUI only renders those outcomes.
+  `cancelled`.
+- The GUI and API only render verdicts; they never decide them.
+- The host never executes uploaded or repaired binaries. Parsing, compilation,
+  execution and symbolic analysis belong to the disposable guest under the
+  broker.
 
-The host never executes uploaded or repaired binaries. Execution, compilation
-and symbolic analysis belong to the disposable guest under the broker.
+## Repository layout
 
-## Frontend
+```text
+app/                  FastAPI controller, services, domain, Jinja UI, static assets
+binaryrepair_ai/      provider adapter and typed AI boundary
+routea/               Route A components
+routeb/               Route B components
+workers/              guest executor and Route A worker
+tools/                ingestion, P2 acceptance, MCP adapters
+schemas/              protocol and evidence schemas
+scripts/              operator scripts
+tests/                unit, integration and browser e2e tests
+fixtures/             public fixtures
+delivery/             canonical acceptance evidence
+docs/                 product, acceptance, interfaces, reviews, handoffs, screenshots
+```
 
-There is **no separate rontend/ directory and no Node/React build**. The UI is
-FastAPI + Jinja, served from the same Python process:
-
-- pages: pp/templates/ (landing.html, setup.html, comparison.html,
-  evidence.html, 
-eport.html, etc.)
-- CSS / JS / images: pp/static/
-- entry point: pp/main.py
-
-Start it with start.ps1 (Windows) or start.sh (Ubuntu); the terminal prints
-the local http://127.0.0.1:8123/?token=... URL.
+See [`FILES.md`](FILES.md) for a file-by-file orientation and
+[`REPO.md`](REPO.md) for canonical paths and commands.
 
 ## Quick start
 
@@ -67,104 +79,61 @@ python -m venv .venv
 .\start.ps1
 ```
 
-Then open the printed `http://127.0.0.1:8123/?token=...` URL.
-
-Controller and worker (separate terminals, loopback only):
-
-```powershell
-.\start-controller.ps1
-.\start-worker.ps1
-```
-
-GUI against the controller:
-
-```powershell
-$env:BINARYREPAIR_BACKEND = "http"
-$env:BINARYREPAIR_API_BASE = "http://127.0.0.1:8000"
-.\start.ps1
-```
-
-### Ubuntu (target runtime)
+### Linux
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
+. .venv/bin/activate
+pip install -r requirements.txt
 ./start.sh
 ```
 
-`start.sh` is marked unverified on Ubuntu until it is actually run on the target
-host; see `docs/acceptance/LIMITATIONS.md`.
+Open the printed `http://127.0.0.1:8123/?token=...` URL. Controller and worker
+are separate loopback-only processes; see the start scripts in the repository
+root.
 
-### Tests
+Run the test suite:
 
 ```bash
-python -m pytest tests/unit/test_acceptance.py -q
-python -m pytest tests/integration/test_p2_acceptance.py -q
-python -m pytest tests/integration/test_attempt_writer.py -q
+python -m pytest -q
 ```
 
-The full suite needs `pyelftools`, `capstone`, binutils and a browser for the
-e2e tests; missing tools are recorded as environment gaps, never as passes.
+The recorded acceptance environment is Linux with Chrome CDP for browser e2e.
+Windows hosts skip Linux-only cases and POSIX-fixture tests; use Linux for the
+full acceptance record.
 
-## Repository layout
+## Canonical evidence
 
 ```text
-app/                  GUI, controller, domain, services, SQLite layer
-binaryrepair_ai/      DeepSeek provider adapter
-routea/               Route A candidate builder and audit
-routeb/               Route B recovered-C / re-integration tooling
-tools/                P0/P2 acceptance and controller helpers
-scripts/              handoff checker, demo, verification helpers
-tests/                unit / integration / contract / e2e tests
-fixtures/public/      public CWE-121 fixture, tests and frozen manifests
-schemas/              candidate/context JSON schemas
-workers/              worker entry points
-docs/product/         PRD, technical design, research, verification design
-docs/acceptance/      final gate status, evidence hashes, limitations
-docs/demo/            setup → compare → evidence → export walkthrough
-docs/interfaces/      route/worker interface notes
-docs/evidence/        evidence manifest index
+delivery/p1-real-window-2026-11-07/           P1 job, snapshot, P2, V5 replay
+delivery/p1-routea-v4-symbolic-2026-11-07/    Route A V4 marker
+delivery/p1-routea-real-v4-2026-11-07/        Route A real V4 artifacts
+delivery/p1-routea-v4-input-2026-11-07/       Route A V4 input package
+delivery/v4-harness-2026-11-07/               V4 harness package
+delivery/cwe416-124-v4-rerun-2026-11-06/      124 V0–V5 rerun evidence
+delivery/m4/v4-2026-11-07/                    M4 V4 marker and five criteria
+delivery/m4-revalidation-ebc92a8/             M4 revalidation
+delivery/p1-v5-logs-2026-11-07/               original V5 replay logs
+docs/reviews/review-9-12-m4-verdict-2026-11-07.json
 ```
 
-## Verification and evidence
-
-The final acceptance records live in [`docs/acceptance/`](docs/acceptance/).
-
-- Gate 4: strict unchanged round-trip, P4 §B/C, `gate4_pass=true`, six cases 6/6.
-- Gate 5 Route A: probe, six cases, mapping, memory=file, breakpoints, isolation.
-- Gate 5 Route B: `208574ab…6717`, 43/43 evidence re-hash, isolation/fail-closed.
-- V4: hand-written z3 model, bound 64; **model-level**, not binary-level.
-
-Key evidence hashes and the final tag are listed in
-[`docs/evidence/README.md`](docs/evidence/README.md).
-
-## Known limitations
+## Verification and limitations
 
 Read [`docs/acceptance/LIMITATIONS.md`](docs/acceptance/LIMITATIONS.md) before
-citing this repository. In short:
+citing this project as proof.
 
-- **No real pipeline run reached success_within_scope.** The last recorded real
-  p2 verdicts were inconclusive / 
-ejected; this is gate/evidence acceptance
-  with recorded limitations, not a live end-to-end repair success.
-- **Gate 4 is an unchanged round-trip PASS, not a repair-success proof.** It does
-  not by itself show that the vulnerability is fixed.
-- V4 is a model-level bounded result, not a binary-level proof.
-- The full test suite is not green on every environment; missing tools are
-  recorded as `not_run`.
-- The M4 verifier and Lead approver were the same operator; this is **not**
-  independent two-person review.
-- Gate 4 F2 independent p2 rerun was waived.
-- Gate 5 uses split successor binaries for Route A and Route B; Route A was not
-  rerun under the Route B successor.
-- The repository is a curated snapshot of **one public CWE-121 fixture**, not a
-  general-purpose repair product.
+- **V4 is model-level.** It is a typed symbolic model claim over the target
+  function, not a binary-level whole-program proof.
+- **M4 verifier and Lead approver are the same operator.** This is
+  role-separated, not independent two-person review.
+- **Review 9–12 original text is not recovered.** The review verdict is against
+  a canonical reconstruction, not a verbatim original document.
+- **Coverage is one public fixture family.** It is not evidence that arbitrary
+  binaries, other architectures, other compilers, or stripped production
+  binaries work.
+- **No private key, client binary, credential, or private log** is included.
+- **Not a production product.** This is an accepted course/MVP deliverable.
 
-## License
+## License and contributors
 
-MIT — see [`LICENSE`](LICENSE).
-
-## Contributors
-
-See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the five-member team and GitHub handles.
+See [`LICENSE`](LICENSE) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
