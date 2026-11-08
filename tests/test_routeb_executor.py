@@ -17,6 +17,16 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _sums_rows(outdir: Path) -> list[tuple[str, str]]:
+    rows = []
+    for line in (outdir / "SHA256SUMS").read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        digest, name = line.split(None, 1)
+        rows.append((digest, name.strip()))
+    return rows
+
+
 def _verify_sums(outdir: Path) -> bool:
     for line in (outdir / "SHA256SUMS").read_text().splitlines():
         if not line.strip():
@@ -36,7 +46,13 @@ def test_static_routeb_bundle(tmp_path: Path) -> None:
     assert result["static_audit"] is True
     assert result["runtime"]["state"] == "not_run"
     assert result["reproducibility"] == "not_run"
-    assert result["file_count"] >= 8
+    views = sorted((out / "independent-views").glob("*.txt"))
+    assert len(views) in (0, 5)
+
+    rows = _sums_rows(out)
+    assert result["file_count"] == len(rows)
+    assert len(rows) == 7 + len(views)
+    assert {p.relative_to(out).as_posix() for p in views} <= {name for _, name in rows}
     manifest = json.loads((out / "edit-manifest.json").read_text())
     assert manifest["schema_version"] == 2
     assert manifest["route"] == "route_b"

@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 from tools import mcp_tool_adapters as adapters
+
+# run_case executes the binary through run_manifest_compare.py, which requires a
+# real ELF. That is ELF execution semantics, not generic subprocess dispatch, so
+# these cases are skipped on Windows instead of being pointed at sys.executable.
+_ELF_RUNNER_REQUIRED = pytest.mark.skipif(
+    os.name == "nt",
+    reason="run_case executes a real ELF through run_manifest_compare.py",
+)
 
 
 def _valid_none(tmp_path: Path) -> Path:
@@ -34,6 +43,7 @@ def _valid_none(tmp_path: Path) -> Path:
     return tests
 
 
+@_ELF_RUNNER_REQUIRED
 def test_run_case_none_dispatches_to_repaired_runner(tmp_path: Path) -> None:
     tests = _valid_none(tmp_path)
     response = adapters.run_case(
@@ -177,6 +187,7 @@ def _argv_tests(tmp_path: Path, *, include_invalid: bool = True) -> Path:
     return tests
 
 
+@_ELF_RUNNER_REQUIRED
 def test_run_case_timeout_has_machine_reason(tmp_path: Path) -> None:
     tests = tmp_path / "tests"
     tests.mkdir()
@@ -225,6 +236,7 @@ def test_run_case_timeout_has_machine_reason(tmp_path: Path) -> None:
     assert response["edge"]["timeout"] is True
 
 
+@_ELF_RUNNER_REQUIRED
 def test_run_case_incomplete_set_is_machine_reason(tmp_path: Path) -> None:
     tests = _argv_tests(tmp_path, include_invalid=False)
     response = adapters.run_case(
