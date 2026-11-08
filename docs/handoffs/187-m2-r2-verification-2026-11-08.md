@@ -59,6 +59,9 @@ No "通过" was shown for unknown scope/bounded.
 Review 12: PASS
 ```
 
+This is M4's verdict. M4 confirmed on 2026-11-08 that M4 wrote it; M1 only
+recorded it and does not co-sign or independently replace M4's judgment.
+
 Reason: scope/bounded missing is rendered as `unknown`, and no `通过` is shown.
 This is UI honesty, not a claim that analysis passed.
 
