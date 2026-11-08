@@ -33,3 +33,4 @@ docs/handoffs/evidence/** -text
 # may be rewritten on checkout - not even a text file. This also keeps
 # tests/SHA256SUMS byte-identical to what the intake hashed.
 fixtures/public/** -text
+delivery/m4-v1.1.1-2026-11-08/m4-v1.1.1-fix.patch -text
