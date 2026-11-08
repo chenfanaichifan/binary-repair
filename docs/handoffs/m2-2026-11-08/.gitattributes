@@ -1,0 +1,2 @@
+# Handoff artifacts are checksum-bound: keep their bytes exactly as written.
+* -text
