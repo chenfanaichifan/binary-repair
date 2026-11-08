@@ -34,3 +34,5 @@ docs/handoffs/evidence/** -text
 # tests/SHA256SUMS byte-identical to what the intake hashed.
 fixtures/public/** -text
 delivery/m4-v1.1.1-2026-11-08/m4-v1.1.1-fix.patch -text
+# Evidence packages are hash-bound: preserve every byte in delivery/ too.
+delivery/** -text
