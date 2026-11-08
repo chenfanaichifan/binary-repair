@@ -65,6 +65,7 @@
     answers: {},
     file: null,
     snapshot: null,
+    artifacts: [],
     view: "chat",
     scenario: "fresh",
     submitting: false,
@@ -408,6 +409,30 @@
       if (!response.ok) throw new Error("HTTP " + response.status);
       return response.json();
     }).then(attachAttemptEvidence);
+  }
+
+  function fetchArtifacts() {
+    if (!state.jobId) return Promise.resolve([]);
+    var jobId = state.jobId;
+    return fetch("/api/jobs/" + encodeURIComponent(jobId) + "/artifacts", {
+      headers: { Accept: "application/json" }
+    }).then(function (response) {
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return response.json();
+    }).then(function (payload) {
+      var out = [];
+      ["A", "B"].forEach(function (key) {
+        var rows = payload && Array.isArray(payload[key]) ? payload[key] : [];
+        rows.forEach(function (row) {
+          if (row && typeof row === "object") out.push(row);
+        });
+      });
+      if (state.jobId === jobId) state.artifacts = out;
+      return out;
+    }).catch(function () {
+      if (state.jobId === jobId) state.artifacts = [];
+      return [];
+    });
   }
 
   /* ---------- 终端流渲染 ---------- */
@@ -1271,12 +1296,17 @@
       li.appendChild(link);
       list.appendChild(li);
     });
-    view.artifacts.forEach(function (artifact) {
+    var seen = {};
+    (view.artifacts || []).concat(state.artifacts || []).forEach(function (artifact) {
       // 缺 id 不生成死链（/api/artifacts/undefined/download）。
-      if (!artifact || typeof artifact.id !== "string" || !artifact.id) return;
+      if (!artifact || typeof artifact.id !== "string" || !artifact.id || seen[artifact.id]) return;
+      seen[artifact.id] = true;
       var li = el("li");
-      var link = el("a", null, "产物：" + (artifact.label || artifact.id));
-      link.href = "/api/artifacts/" + encodeURIComponent(artifact.id) + "/download";
+      var label = artifact.name || artifact.label || artifact.id;
+      if (artifact.role) label += "（" + artifact.role + "）";
+      var link = el("a", null, "产物：" + label);
+      link.href = "/api/jobs/" + encodeURIComponent(state.jobId) + "/artifacts/" +
+        encodeURIComponent(artifact.id) + "/download";
       li.appendChild(link);
       list.appendChild(li);
     });
@@ -1308,7 +1338,7 @@
   function tick() {
     if (!state.jobId) return;
     if (FIXTURE_MODE) return;
-    Promise.all([fetchLiveSnapshot(), fetchAttempts(state.jobId), fetchComparison(state.jobId)]).then(function (results) {
+    Promise.all([fetchLiveSnapshot(), fetchAttempts(state.jobId), fetchComparison(state.jobId), fetchArtifacts()]).then(function (results) {
       var data = results[0];
       state.snapshot = data;
       setText("agent-poll", "轮询中 · " + new Date().toLocaleTimeString());
@@ -1488,6 +1518,41 @@
     renderResult();
     setText("agent-poll", "演示数据，不轮询");
   }
+
+  function uploadDeliverable() {
+    var input = $("agent-deliverable-input");
+    var status = $("agent-deliverable-status");
+    if (!state.jobId) { setText("agent-deliverable-status", "尚未创建任务"); return; }
+    if (!input || !input.files || !input.files.length) {
+      setText("agent-deliverable-status", "请选择修复后的 ELF 文件");
+      return;
+    }
+    var file = input.files[0];
+    var form = new FormData();
+    form.append("file", file);
+    setText("agent-deliverable-status", "上传中…");
+    fetch("/api/jobs/" + encodeURIComponent(state.jobId) + "/deliverables", {
+      method: "POST",
+      headers: { "x-csrf-token": CSRF },
+      body: form
+    }).then(function (response) {
+      return response.json().then(function (payload) {
+        if (!response.ok) throw new Error(payload && payload.detail ? payload.detail : "HTTP " + response.status);
+        return payload;
+      });
+    }).then(function (payload) {
+      var a = payload && payload.artifact ? payload.artifact : null;
+      setText("agent-deliverable-status",
+        a ? "已保存：" + a.name + "（可下载，不参与验收）" : "已保存（不参与验收）");
+      input.value = "";
+      return fetchArtifacts().then(function () { renderResult(); });
+    }).catch(function (exc) {
+      setText("agent-deliverable-status", "上传失败：" + exc.message);
+    });
+  }
+
+  var uploadButton = $("agent-deliverable-upload");
+  if (uploadButton) uploadButton.addEventListener("click", uploadDeliverable);
 
   function init() {
     show("agent-fixture-hint", FIXTURE_MODE);

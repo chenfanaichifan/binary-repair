@@ -43,6 +43,15 @@ docs/handoffs/170-t83-fresh-tree-closure-2026-11-07.md
 docs/handoffs/171-m4-t83-confirmation-2026-11-07.md
 ```
 
+### Repaired ELF upload
+
+```text
+POST /api/jobs/{job_id}/deliverables
+role: operator_deliverable
+never executed; never acceptance evidence
+UI: /agent -> 下载面板 -> 上传修复文件
+```
+
 ### M2 / M4 / Review
 
 ```text

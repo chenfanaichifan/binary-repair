@@ -8,6 +8,7 @@ P1: success_within_scope
 P2: ACCEPTANCE PASSED
 ```
 
+Repaired ELF upload: `/agent` → 下载面板 → 上传修复文件。
 Canonical evidence: `delivery/INDEX.md`.
 Current records: `docs/INDEX.md`.
 

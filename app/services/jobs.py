@@ -525,6 +525,45 @@ def get_artifact(artifact_id: str, *, data_dir: str | Path) -> dict[str, Any] | 
     }
 
 
+def add_artifact(
+    job_id: str,
+    *,
+    relative_path: str,
+    role: str,
+    data_dir: str | Path,
+    media_type: str = "application/octet-stream",
+    attempt_id: str | None = None,
+) -> dict[str, Any]:
+    """Register an existing file under the job's data directory.
+
+    This is a storage/registration primitive, not an acceptance result. Callers
+    must not turn an uploaded deliverable into an obligation or verdict.
+    """
+    data_root = Path(data_dir).resolve()
+    path = (data_root / relative_path).resolve()
+    try:
+        path.relative_to(data_root)
+    except ValueError as exc:
+        raise ValueError("artifact path escapes the data directory") from exc
+    if not path.is_file() or path.is_symlink():
+        raise ValueError("artifact path is not a regular file")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    artifact_id = uuid.uuid4().hex
+    connection = connect(data_dir)
+    try:
+        with connection:
+            connection.execute(
+                "INSERT INTO artifacts "
+                "(id, job_id, attempt_id, relative_path, sha256, size_bytes, media_type, role, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (artifact_id, job_id, attempt_id, relative_path, digest,
+                 path.stat().st_size, media_type, role, _now()),
+            )
+    finally:
+        connection.close()
+    return get_artifact(artifact_id, data_dir=data_dir) or {}
+
+
 def list_artifacts(job_id: str, *, data_dir: str | Path) -> list[dict[str, Any]]:
     connection = connect(data_dir)
     try:

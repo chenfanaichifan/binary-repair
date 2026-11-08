@@ -622,6 +622,18 @@ class HttpBackend:
             raise BackendError(502, "Backend artifacts response must be an object.")
         return payload
 
+    def upload_deliverable(self, job_id: str, *, filename: str, content: bytes) -> dict[str, Any]:
+        """Store an operator-supplied repaired ELF; never acceptance evidence."""
+        payload = self._request(
+            "POST",
+            f"/api/jobs/{job_id}/deliverables",
+            where="upload_deliverable",
+            files={"file": (filename, content, "application/x-elf")},
+        )
+        if not isinstance(payload, dict) or not isinstance(payload.get("artifact"), dict):
+            raise BackendError(502, "Backend deliverable response is malformed.")
+        return payload
+
     def get_visuals(self, job_id: str) -> dict[str, Any]:
         payload = self._request("GET", f"/api/jobs/{job_id}/visuals", where="get_visuals")
         if not isinstance(payload, dict):

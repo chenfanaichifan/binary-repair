@@ -13,6 +13,7 @@ docs/handoffs/176-m1-final-status-2026-11-07.md
 docs/handoffs/177-m4-final-acceptance-2026-11-07.md
 docs/handoffs/178-m5-final-status-2026-11-07.md
 docs/handoffs/179-m2-all-inputs-handoff-2026-11-07.md
+docs/handoffs/183-repaired-elf-upload-2026-11-08.md
 ```
 
 ## Reviews
