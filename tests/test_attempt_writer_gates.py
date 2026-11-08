@@ -17,7 +17,7 @@ CONTRACT = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_no
 
 def _run(tmp_path: Path, source: Path) -> dict:
     # The writer enriches the bundle with v2-interface-scored.json. Never point
-    # it at a delivery artifact; copy first so the shipped SHA256SUMS stay intact.
+    # it at a artifacts artifact; copy first so the shipped SHA256SUMS stay intact.
     bundle = tmp_path / source.name
     shutil.copytree(source, bundle)
     data = tmp_path / "var"

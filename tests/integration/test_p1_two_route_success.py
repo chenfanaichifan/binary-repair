@@ -14,7 +14,7 @@ ROUTE_B = ROOT / "artifacts/p1-real-window-2026-11-07/bundle/a1.routeb"
 CONTRACT = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json"
 
 
-def test_p1_two_route_success(tmp_path: Path) -> None:
+def test_p1_two_route_success(tmp_path: Path, copy_bundle) -> None:
     data = tmp_path / "var"
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
     job = jobs.create_job(
@@ -41,7 +41,7 @@ def test_p1_two_route_success(tmp_path: Path) -> None:
             run_id=run.id,
             attempt_id=attempts[route].id,
             route=route,
-            bundle=bundle,
+            bundle=copy_bundle(bundle, f"bundle-{route}"),
             trigger=False,
         )
 

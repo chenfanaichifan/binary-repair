@@ -2,11 +2,11 @@
 
 This repository is the curated public snapshot of the accepted BinaryRepair MVP.
 
-Current release: v1.1.1 (2026-11-08). The earlier v1.0.0 tag is the historical initial MVP snapshot and is not moved.
+Current release: v1.1.2 (2026-11-08). The earlier v1.0.0 and v1.1.0/v1.1.1 tags are historical snapshots and are not moved.
 The source development repository remains
 `chenfanaichifan/binary-repair`; the snapshot source is branch
 `delivery/all-hands-2026-11-07` at
-`56e11ca26108b5743adc43253e006b8dd19cf8e7`.
+`7297076fb973f8cfd95bd5bfb69f50390fc9d808`.
 
 ## Acceptance state
 
@@ -15,6 +15,7 @@ T8.3  COMPLETE
 P1    success_within_scope
 P2    ACCEPTANCE PASSED
 V4    passed at model scope, not binary-level proof
+comparison UI  case-level evidence; never a verdict
 124   V0-V5 passed; M4 confirmation recorded
 118   VERIFIED (independent)
 ```
@@ -22,7 +23,7 @@ V4    passed at model scope, not binary-level proof
 Recorded acceptance run:
 
 ```text
-pytest -q   717 passed / 2 Linux-only skipped / 0 failed
+pytest -q   729 collected / 727 passed / 2 Linux-only skipped / 0 failed
 e2e         12 passed (Chrome CDP)
 ```
 

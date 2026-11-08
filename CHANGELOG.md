@@ -3,6 +3,27 @@
 All notable changes to this project are documented here. This project follows a
 simple semantic-versioning policy for delivery snapshots.
 
+## [1.1.2] — 2026-11-08
+
+### Added
+
+- Comparison UI: renders case-level `same` / `different` / `not_run` evidence and
+  summary counts from the GUI comparison JSON route.
+- Comparison route fail-closed validation for schema, case IDs, kinds, verdicts,
+  hashes and per-side output completeness.
+
+### Changed
+
+- Updated README and final status for the comparison UI and the recorded
+  `729 collected / 727 passed / 2 Linux-only skipped` suite.
+- Added M1/M2/M4 comparison records 193–199 to the development history.
+
+### Verification
+
+- Full clean suite: 729 collected / 727 passed / 2 Linux-only skipped / 0 failed.
+- `artifacts/**/SHA256SUMS` direct: 201/201 OK.
+- Tag `v1.1.1` and earlier releases remain unchanged.
+
 ## [1.1.1] — 2026-11-08
 
 ### Fixed
@@ -49,6 +70,8 @@ Initial public MVP snapshot imported from the original development repository's
 ## Version policy
 
 - `v1.0.0` is the historical initial snapshot; do not retag it.
-- `v1.1.0` is the current organized delivery snapshot.
+- `v1.1.0` is the organized delivery snapshot.
+- `v1.1.1` is the curated test/upload fix.
+- `v1.1.2` is the current comparison-UI snapshot.
 - Future changes that alter accepted behavior or evidence scope should use a new
   version and a new annotated tag rather than moving an existing tag.

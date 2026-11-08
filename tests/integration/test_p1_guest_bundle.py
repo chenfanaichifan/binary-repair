@@ -13,7 +13,7 @@ BUNDLE = ROOT / "artifacts/p1-real-window-2026-11-07/bundle/a1.routeb"
 PACKAGE = ROOT / "artifacts/p1-real-window-2026-11-07/package"
 
 
-def test_real_p1_bundle_ingests_measured_gates(tmp_path: Path) -> None:
+def test_real_p1_bundle_ingests_measured_gates(tmp_path: Path, copy_bundle) -> None:
     contract = json.loads((PACKAGE / "contract.json").read_text(encoding="utf-8"))
     data_dir = tmp_path / "var"
     job = jobs.create_job(
@@ -41,7 +41,7 @@ def test_real_p1_bundle_ingests_measured_gates(tmp_path: Path) -> None:
         run_id=run.id,
         attempt_id=attempt.id,
         route="route_b",
-        bundle=BUNDLE,
+        bundle=copy_bundle(BUNDLE, "bundle-route-b"),
         trigger=True,
     )
     assert result["imported"]["changed"] is True

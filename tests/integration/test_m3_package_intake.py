@@ -32,8 +32,8 @@ from app.services import attempt_writer, jobs, worker
 from tools.route_bundle_ingest import ingest
 
 REPO = Path(__file__).resolve().parents[2]
-P3A = REPO / "artifacts" / "legacy-m5-evidence" / "P3A-routea-2026-10-31-v7.zip"
-P3B = REPO / "artifacts" / "legacy-m5-evidence" / "P3B-package-v6-2026-10-31.zip"
+P3A = REPO / "dist" / "m5-evidence" / "P3A-routea-2026-10-31-v7.zip"
+P3B = REPO / "dist" / "m5-evidence" / "P3B-package-v6-2026-10-31.zip"
 
 
 def _unpack(archive: Path, target: Path) -> Path:

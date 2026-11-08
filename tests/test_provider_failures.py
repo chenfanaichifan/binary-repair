@@ -1,6 +1,6 @@
 """Six typed provider failures, one test per reason.
 
-Member 5's contract (docs/development/routes/route-b/02-member-5-candidate-provider.md):
+Member 5's contract (docs/route-b/02-member-5-candidate-provider.md):
 every provider failure is a ``ProviderFailure`` carrying a ``FailureReason``;
 no failure may produce a candidate. These tests use a fake transport only:
 no API key, no network, no cost.

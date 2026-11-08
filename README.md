@@ -12,9 +12,9 @@ history and historical evidence remain in the source repository
 
 ```text
 Repository  https://github.com/leesirleesirlee-star/Binary_Repair
-Release     v1.1.1 (2026-11-08)
+Release     v1.1.2 (2026-11-08)
 Source      chenfanaichifan/binary-repair
-            delivery/all-hands-2026-11-07 @ 56e11ca
+            delivery/all-hands-2026-11-07 @ 7297076
 ```
 
 ## Current status

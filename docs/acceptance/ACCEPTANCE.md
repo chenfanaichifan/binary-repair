@@ -19,7 +19,7 @@ V4    passed at model scope, not binary-level proof
 Recorded acceptance run:
 
 ```text
-pytest -q   714 passed / 2 Linux-only skipped / 0 failed
+pytest -q   729 collected / 727 passed / 2 Linux-only skipped / 0 failed
 e2e         12 passed (Chrome CDP)
 ```
 

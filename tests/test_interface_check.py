@@ -13,7 +13,7 @@ from app.domain.interface import (
 
 ROOT = Path(__file__).resolve().parents[1]
 ORIGINAL = ROOT / "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf"
-CANDIDATE = ROOT / "artifacts/cwe416-124-v4-rerun-2026-11-06/candidate.elf"
+CANDIDATE = ROOT / "artifacts/cwe416-124-candidate-2026-11-05/candidate.elf"
 TARGET = "CWE416_Use_After_Free__malloc_free_char_01_bad"
 
 

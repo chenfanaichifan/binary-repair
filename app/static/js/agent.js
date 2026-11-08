@@ -338,6 +338,7 @@
       comparisonCache = {
         status: payload.status,
         detail: payload.detail || "",
+        comparison: payload.comparison || null,
         artifacts: Array.isArray(payload.artifacts) ? payload.artifacts : []
       };
       return comparisonCache;
@@ -1127,21 +1128,60 @@
     box.appendChild(wrap);
   }
 
+  var CASE_KIND_LABELS = {
+    known_good: "已知正常",
+    known_bad: "已知异常",
+    valid: "合法输入",
+    invalid: "非法输入"
+  };
+  var CASE_VERDICT_LABELS = {
+    same: "行为一致",
+    different: "行为不同",
+    not_run: "未执行"
+  };
+
+  // Render cases and summary only. This is behaviour evidence, never a verdict.
+  function appendComparisonCases(wrap) {
+    var data = comparisonCache.comparison;
+    if (!data || typeof data !== "object" || !Array.isArray(data.cases)) return;
+    var summary = data.summary || {};
+    wrap.appendChild(el("p", null,
+      "summary：合计 " + (summary.total === undefined ? data.cases.length : summary.total) +
+      " · 一致 " + (summary.same || 0) +
+      " · 不同 " + (summary.different || 0) +
+      " · 未执行 " + (summary.not_run || 0) +
+      " · 未知 " + (summary.unknown || 0)));
+    var list = el("ul", "agent-comparison-cases");
+    data.cases.forEach(function (item) {
+      var kind = CASE_KIND_LABELS[item.kind] || item.kind || "unknown";
+      var verdict = CASE_VERDICT_LABELS[item.verdict] || item.verdict || "unknown";
+      var line = (item.id || "—") + " · " + kind + " · " + verdict;
+      if (item.detail) line += " · " + item.detail;
+      list.appendChild(el("li", null, line));
+    });
+    wrap.appendChild(list);
+    if (Array.isArray(data.not_claimed) && data.not_claimed.length) {
+      wrap.appendChild(el("p", "agent-muted", "不构成验收结论：" + data.not_claimed.join("；")));
+    }
+  }
+
   function appendComparisonBox(box) {
-    // 只看 status；comparison 的内容不做字段级解析，未提供就是未提供。
+    // Status only when the payload is absent or refused; cases are rendered above
+    // only for an available artifact.
     if (!comparisonCache) return;
     var wrap = el("div", "agent-card");
     wrap.dataset.testid = "agent-comparison";
     wrap.appendChild(el("p", "agent-card-title", "行为对比"));
     var text;
     if (comparisonCache.status === "available") {
-      text = "已提供（" + comparisonCache.artifacts.length + " 个 artifact）";
+      text = "已提供";
     } else if (comparisonCache.status === "not_provided") {
       text = "未提供（not_provided）";
     } else {
       text = "不可用（" + (comparisonCache.detail || "unknown") + "）";
     }
     wrap.appendChild(el("p", null, "comparison：" + text));
+    if (comparisonCache.status === "available") appendComparisonCases(wrap);
     box.appendChild(wrap);
   }
 
