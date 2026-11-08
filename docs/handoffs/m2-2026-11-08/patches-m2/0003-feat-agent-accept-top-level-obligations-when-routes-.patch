@@ -1,0 +1,52 @@
+From c6f2035fffa4c0ee3fe624d76fe02f5329b8f183 Mon Sep 17 00:00:00 2001
+From: chenfanaichifan <2350776866@qq.com>
+Date: Sat, 7 Nov 2026 12:25:29 +0800
+Subject: [PATCH 3/8] feat(agent): accept top-level obligations when routes
+ omit them
+
+M5 has not frozen where obligations live. The view keeps reading routes[].obligations and now also falls back to data.obligations when the route lists are empty, so neither shape silently drops the obligation list. The fallback only runs when the route lists are empty, so no duplicate rows.
+---
+ app/static/js/agent.js      | 13 +++++++++++++
+ tests/test_agent_console.py |  5 +++++
+ 2 files changed, 18 insertions(+)
+
+diff --git a/app/static/js/agent.js b/app/static/js/agent.js
+index 05f8817..dbd5d1b 100644
+--- a/app/static/js/agent.js
++++ b/app/static/js/agent.js
+@@ -269,6 +269,19 @@
+         });
+       });
+     });
++    if (!obligations.length && Array.isArray(data.obligations)) {
++      // 兼容顶层形状：routes 未携带义务时按顶层列表渲染，route 缺失记为 "?"。
++      data.obligations.forEach(function (item) {
++        if (!item || typeof item !== "object") return;
++        obligations.push({
++          route: item.route || "?",
++          id: item.id || item.kind || "?",
++          kind: item.kind || "",
++          result: item.result,
++          reason: item.reason || item.detail || ""
++        });
++      });
++    }
+     obligations.sort(function (a, b) {
+       return (KIND_ORDER[a.kind] === undefined ? 99 : KIND_ORDER[a.kind]) -
+              (KIND_ORDER[b.kind] === undefined ? 99 : KIND_ORDER[b.kind]);
+diff --git a/tests/test_agent_console.py b/tests/test_agent_console.py
+index bc3862f..760bd71 100644
+--- a/tests/test_agent_console.py
++++ b/tests/test_agent_console.py
+@@ -105,6 +105,11 @@ def test_pending_receipt_shows_placeholder_instead_of_not_run():
+     assert 'show("agent-receipt-placeholder", view.receiptPending);' in AGENT_JS
+ 
+ 
++def test_top_level_obligations_are_accepted_when_routes_omit_them():
++    """M5 may return obligations at the top level; the view must not drop them."""
++    assert "!obligations.length && Array.isArray(data.obligations)" in AGENT_JS
++
++
+ def test_missing_region_field_renders_a_dash_not_a_blank_cell():
+     """A missing before/after byte shows —, never a blank cell."""
+     assert 'value === undefined || value === null || value === "" ? "—" : value' in AGENT_JS

@@ -1,0 +1,79 @@
+From dc7a01242130db562d951bf017f0e0f5509724ba Mon Sep 17 00:00:00 2001
+From: chenfanaichifan <2350776866@qq.com>
+Date: Sat, 7 Nov 2026 12:20:26 +0800
+Subject: [PATCH 1/8] fix(agent): flag missing evidence and never render blank
+ cells or dead links
+
+T7.6 5.1/5.2: a missing before/after byte shows an em dash instead of a blank cell; an artifact row without an id is skipped instead of producing /api/artifacts/undefined/download; a route with no attempt_id (or an attempt whose evidence cannot be fetched) now says evidence unavailable instead of silently omitting the gate block.
+---
+ app/static/js/agent.js      | 15 ++++++++++++++-
+ tests/test_agent_console.py | 16 ++++++++++++++++
+ 2 files changed, 30 insertions(+), 1 deletion(-)
+
+diff --git a/app/static/js/agent.js b/app/static/js/agent.js
+index 0866d4d..05f8817 100644
+--- a/app/static/js/agent.js
++++ b/app/static/js/agent.js
+@@ -944,7 +944,10 @@
+       tr.appendChild(el("td", null, "Route " + entry.route));
+       ["address", "kind", "before", "after"].forEach(function (field) {
+         var td = el("td");
+-        td.appendChild(el("code", null, entry.region[field]));
++        // 缺失字段显示 —，不留空白单元格（空白会被读成“无改动”）。
++        var value = entry.region[field];
++        td.appendChild(el("code", null,
++          value === undefined || value === null || value === "" ? "—" : value));
+         tr.appendChild(td);
+       });
+       tbody.appendChild(tr);
+@@ -1029,6 +1032,14 @@
+       }
+       box.appendChild(el("h3", "agent-side-subtitle", title));
+ 
++      if (!evidence) {
++        // 拉不到证据时明说不可用，不静默省略整块（省略会被读成“没有 gate”）。
++        box.appendChild(el("p", "agent-muted",
++          route.attempt_id
++            ? "证据不可用（attempt 未回传或端点未开通）"
++            : "证据不可用（该路线未回传 attempt）"));
++      }
++
+       if (evidence && Array.isArray(evidence.gates) && evidence.gates.length) {
+         // Gates render in the order the endpoint returns them; the front end
+         // does not sort, reorder, or fill in a missing gate.
+@@ -1095,6 +1106,8 @@
+       list.appendChild(li);
+     });
+     view.artifacts.forEach(function (artifact) {
++      // 缺 id 不生成死链（/api/artifacts/undefined/download）。
++      if (!artifact || typeof artifact.id !== "string" || !artifact.id) return;
+       var li = el("li");
+       var link = el("a", null, "产物：" + (artifact.label || artifact.id));
+       link.href = "/api/artifacts/" + encodeURIComponent(artifact.id) + "/download";
+diff --git a/tests/test_agent_console.py b/tests/test_agent_console.py
+index 963a309..b6dae10 100644
+--- a/tests/test_agent_console.py
++++ b/tests/test_agent_console.py
+@@ -105,6 +105,22 @@ def test_pending_receipt_shows_placeholder_instead_of_not_run():
+     assert 'show("agent-receipt-placeholder", view.receiptPending);' in AGENT_JS
+ 
+ 
++def test_missing_region_field_renders_a_dash_not_a_blank_cell():
++    """A missing before/after byte shows —, never a blank cell."""
++    assert 'value === undefined || value === null || value === "" ? "—" : value' in AGENT_JS
++
++
++def test_artifact_without_id_is_not_linked():
++    """A bad artifact row must not yield /api/artifacts/undefined/download."""
++    assert 'if (!artifact || typeof artifact.id !== "string" || !artifact.id) return;' in AGENT_JS
++
++
++def test_route_without_evidence_says_unavailable():
++    """Missing evidence is announced, not silently omitted."""
++    assert "证据不可用（该路线未回传 attempt）" in AGENT_JS
++    assert "证据不可用（attempt 未回传或端点未开通）" in AGENT_JS
++
++
+ def test_no_model_calls_or_new_transport():
+     # Actual usage is banned (mentioning the rule in comments is fine).
+     for banned in ("api.openai.com", "new WebSocket", "new EventSource", "Bearer ",
