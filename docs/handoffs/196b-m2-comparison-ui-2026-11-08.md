@@ -1,6 +1,10 @@
-# 196 · comparison 三态 UI（M2）
+# 196b · comparison 三态 UI（M2）
 
 日期：2026-11-08
+
+> 编号说明：原文件名为 `196-m2-comparison-ui-2026-11-08.md`，
+> 与 M1 的 `196-m1-gui-comparison-route-2026-11-08.md` 撞号；
+> v1.2.0 文档清理改为 `196b`，内容不变。
 起点：`c3bca0e01dce3204991c7ac47b158a1a5ffdd13f`（M1 路由已合入 delivery）
 上游：`docs/interfaces/behavior-comparison-v1.md`（M5 草案）
 

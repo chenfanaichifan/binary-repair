@@ -17,7 +17,7 @@ Diff before merge was exactly:
 ```text
 app/static/js/agent.js
 tests/test_agent_console.py
-docs/handoffs/196-m2-comparison-ui-2026-11-08.md
+docs/handoffs/196b-m2-comparison-ui-2026-11-08.md
 ```
 
 ## Full suite
