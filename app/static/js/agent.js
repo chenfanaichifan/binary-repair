@@ -1661,11 +1661,14 @@
       var body = test.body || {};
       if (test.ok && body.ok) {
         setText("assistant-key-result",
-          "连接成功" + (body.model ? "（model=" + body.model + "）" : "") + "；助手已可用。");
+          "连接成功" + (body.model ? "（model=" + body.model + "）" : "") + "；助手已可用，正在刷新…");
+        // The page was rendered with the old assistant_available flag; reload so
+        // the real controller/planner path sees the newly stored key.
+        setTimeout(function () { window.location.reload(); }, 900);
       } else {
         setText("assistant-key-result", "连接失败：" + (body.error || "unknown"));
+        refreshAssistantKeyStatus();
       }
-      refreshAssistantKeyStatus();
     }).catch(function (exc) {
       setText("assistant-key-result", "保存失败：" + exc.message);
     });
