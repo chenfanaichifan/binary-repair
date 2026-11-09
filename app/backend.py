@@ -541,6 +541,9 @@ class HttpBackend:
         plan. Plan copy is UI text and may be non-ASCII; it is not submitted data.
         """
         body: dict[str, Any] = {"description": description}
+        configured_mode = (os.environ.get("BINARYREPAIR_ASSISTANT_MODE") or "").strip().lower()
+        if configured_mode in ("deterministic", "llm"):
+            body["mode"] = configured_mode
         if context:
             body["context"] = context
         try:
