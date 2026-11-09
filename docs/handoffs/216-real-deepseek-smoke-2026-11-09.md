@@ -19,7 +19,7 @@ No key was echoed in the response. No `.env` or key file was committed.
 ## UI path
 
 ```text
-save -> 已保存（sk-…6789，保护：mode-0600）
+save -> 已保存（sk-…<masked>，保护：mode-0600）
 input cleared -> True
 provider test -> 连接失败：llm_http_error (fake key only)
 clear -> 已清除；助手回到未配置状态
