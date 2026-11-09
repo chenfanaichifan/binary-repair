@@ -225,6 +225,26 @@ def clear_key() -> bool:
             return False
 
 
+
+def is_secret_file(path: Path) -> bool:
+    """True when ``path`` is the configured key file, including Windows aliases.
+
+    ``samefile`` catches hardlinks and case/alias paths; the normalized-name
+    fallback catches Windows trailing-dot/space and default-stream spellings
+    even when the target is momentarily missing.
+    """
+    try:
+        target = key_path()
+        if path.resolve() == target.resolve():
+            return True
+        if path.exists() and target.exists() and os.path.samefile(path, target):
+            return True
+    except OSError:
+        pass
+    name = path.name.rstrip(" .").casefold()
+    target_name = key_path().name.rstrip(" .").casefold()
+    return bool(name) and name == target_name
+
 def mask_key(key: str) -> str:
     if not key:
         return ""

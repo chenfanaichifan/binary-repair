@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from app.db.connection import connect
+from app.services.assistant_key_store import is_secret_file
 
 ROUTES = ("route_a", "route_b")
 
@@ -54,7 +55,7 @@ def _register(
     source: Path,
     role: str,
 ) -> str:
-    if source.name in {"assistant.key", ".env", "session.token"}:
+    if is_secret_file(source) or source.name in {".env", "session.token"}:
         raise ValueError("refusing to copy secret material into evidence")
     if not source.is_file():
         raise SystemExit(f"evidence file does not exist: {source}")
