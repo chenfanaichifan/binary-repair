@@ -3,6 +3,29 @@
 All notable changes to this project are documented here. This project follows a
 simple semantic-versioning policy for delivery snapshots.
 
+## [1.2.0] — 2026-11-09
+
+### Added
+
+- Upload gate: hide the repaired-ELF upload controls when the page is not
+  served over HTTP(S), and reject files above 64 MiB in the browser before any
+  request is sent. The server-side 413 remains the backstop.
+- P1 Review 12 fresh browser replay evidence (12 passed) in the public record.
+- M4 browser verification for HTTP, `file://` and the 65 MiB rejection path.
+
+### Changed
+
+- Renamed duplicate record `196-m2...` to `196b-m2...`; updated the `198`
+  reference.
+- Updated status/README for v1.2.0: 730 collected / 728 passed / 2 Linux-only
+  skipped / 0 failed.
+
+### Verification
+
+- `artifacts/**/SHA256SUMS` direct: 201/201 OK.
+- Browser e2e: 12 passed.
+- `v1.1.3` and earlier tags remain unchanged.
+
 ## [1.1.3] — 2026-11-08
 
 ### Fixed
@@ -81,6 +104,8 @@ Initial public MVP snapshot imported from the original development repository's
 - `v1.0.0` is the historical initial snapshot; do not retag it.
 - `v1.1.0` is the organized delivery snapshot.
 - `v1.1.1` is the curated test/upload fix.
-- `v1.1.2` is the current comparison-UI snapshot.
+- `v1.1.2` is the comparison-UI snapshot.
+- `v1.1.3` is the v1.1.2 path hotfix.
+- `v1.2.0` is the current upload-gate / P1 replay snapshot.
 - Future changes that alter accepted behavior or evidence scope should use a new
   version and a new annotated tag rather than moving an existing tag.

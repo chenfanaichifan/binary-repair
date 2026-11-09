@@ -52,12 +52,12 @@ Current handoffs, reviews, analysis and route notes. These are development
 records, not a second acceptance authority; use `docs/status/final-status.md`.
 
 ```text
-docs/development/handoffs/          current records 165-199
+docs/development/handoffs/          current records 165-210
 docs/development/reviews/           Review 9-12 / Review 12 records
 docs/development/analysis/          root-cause and verification analysis
 docs/development/routes/            Route A/B notes
 docs/development/repository-guide.md
-comparison records 193-199: M1 GUI route, M2 comparison UI, M5 schema, M4 merge
+comparison records 193-199; v1.2.0 records 203-210 (upload gate, P1 replay, approval, M4 browser check)
 docs/development/repository-layout.md
 ```
 

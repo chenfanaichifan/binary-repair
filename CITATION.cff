@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this project, please cite the repository and release."
 title: "BinaryRepair: AI-Assisted Binary Vulnerability Repair"
-version: 1.1.2
+version: 1.2.0
 date-released: 2026-11-08
 url: "https://github.com/leesirleesirlee-star/Binary_Repair"
 repository-code: "https://github.com/leesirleesirlee-star/Binary_Repair"

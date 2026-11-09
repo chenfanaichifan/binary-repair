@@ -2,11 +2,12 @@
 
 This repository is the curated public snapshot of the accepted BinaryRepair MVP.
 
-Current release: v1.1.3 (2026-11-08). The earlier v1.0.0 and v1.1.0/v1.1.1 tags are historical snapshots and are not moved.
+Current release: v1.2.0 (2026-11-09). The earlier v1.0.0 through v1.1.3 tags are historical snapshots and are not moved.
 The source development repository remains
 `chenfanaichifan/binary-repair`; the snapshot source is branch
 `delivery/all-hands-2026-11-07` at
-`7297076fb973f8cfd95bd5bfb69f50390fc9d808`.
+`60c4aab205850b8d477b47d31bb34a3a1e01f247` and
+`release/v1.2.0` at `24d88cb6a2eb1b8ae4eb341330636525480d89b6`.
 
 ## Acceptance state
 
@@ -16,6 +17,7 @@ P1    success_within_scope
 P2    ACCEPTANCE PASSED
 V4    passed at model scope, not binary-level proof
 comparison UI  case-level evidence; never a verdict
+upload gate    HTTP-only controls; 64 MiB client rejection
 124   V0-V5 passed; M4 confirmation recorded
 118   VERIFIED (independent)
 ```
@@ -23,7 +25,7 @@ comparison UI  case-level evidence; never a verdict
 Recorded acceptance run:
 
 ```text
-pytest -q   729 collected / 727 passed / 2 Linux-only skipped / 0 failed
+pytest -q   730 collected / 728 passed / 2 Linux-only skipped / 0 failed
 e2e         12 passed (Chrome CDP)
 ```
 
@@ -34,6 +36,7 @@ Linux run for the canonical count.
 ## Canonical evidence
 
 ```text
+artifacts/logs/v1.2.0-p1-replay-12-2026-11-09.txt
 artifacts/p1-real-window-2026-11-07/
   controller/snapshot.json
   p2/p2-rc.txt

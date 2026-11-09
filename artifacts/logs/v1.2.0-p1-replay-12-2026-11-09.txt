@@ -1,0 +1,16 @@
+v1.2.0 RC dc74207 — P1 Review 12 browser replay
+Fresh browser: headless Google Chrome via CDP
+Command: python -m pytest tests/e2e -q
+Result: 12 passed, 0 failed
+Node counts:
+  tests/e2e/test_agent_flow.py: 5
+  tests/e2e/test_gui_journey.py: 7
+P1 UI:
+  URL /agent/9247357c54714546a7ff84891f7766f8
+  scope: 范围与边界 scope：unknown bounded：unknown
+  scope_has_pass: False
+  upload_visible: True
+Upload gate:
+  HTTP page upload input visible: True
+  65 MiB file -> 文件超过 64 MiB 上限，已取消上传
+  file:// hidden: source-level gate/test; direct file:// JS load blocked by Chrome policy

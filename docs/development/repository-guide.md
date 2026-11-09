@@ -12,7 +12,7 @@ release v1.1.2
 ```text
 source repository  https://github.com/chenfanaichifan/binary-repair
 source branch      delivery/all-hands-2026-11-07
-source commit      7297076fb973f8cfd95bd5bfb69f50390fc9d808
+source commit      24d88cb6a2eb1b8ae4eb341330636525480d89b6
 snapshot date      2026-11-08
 ```
 
@@ -22,7 +22,7 @@ snapshot date      2026-11-08
 T8.3   COMPLETE
 P1     success_within_scope
 P2     ACCEPTANCE PASSED
-tests  729 collected / 727 passed / 2 Linux-only skipped / 0 failed
+tests  730 collected / 728 passed / 2 Linux-only skipped / 0 failed
 e2e    12 passed (Chrome CDP)
 V4     passed at model scope, not binary-level proof
 ```
