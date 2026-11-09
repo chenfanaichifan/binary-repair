@@ -15,7 +15,7 @@ Receipt:
 
 ```text
 release/V1.2.0-RELEASE-RECEIPT.md
-status DRAFT — M4 signature pending
+status SIGNED (M4 role record)
 ```
 
 Verification:
