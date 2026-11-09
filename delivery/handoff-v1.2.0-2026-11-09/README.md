@@ -6,7 +6,15 @@ Public release:
 repo    https://github.com/leesirleesirlee-star/Binary_Repair
 main    94393403319a10acc00552a7ae62836699036518
 tag     v1.2.0
-source  60c4aab
+source  60c4aab205850b8d477b47d31bb34a3a1e01f247
+        fetch ref v1.2.0-source
+```
+
+Receipt:
+
+```text
+release/V1.2.0-RELEASE-RECEIPT.md
+status DRAFT — M4 signature pending
 ```
 
 Verification:
@@ -17,13 +25,5 @@ browser e2e: 12 passed
 M2 run-m2-tests.sh: pass
 M3 self_test: 9/9
 P2: exit 0 / success_within_scope
-```
-
-Scope:
-
-```text
-upload gate (non-http hide, 64 MiB client check)
-196 -> 196b doc rename
-P1 Review 12 replay
-v1.1.3 receipt/handoff sync
+P1 Review 12 replay: 12/12
 ```
