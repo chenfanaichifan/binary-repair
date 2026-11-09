@@ -10,6 +10,7 @@
 - **Host:** Windows, workspace-write sandbox; Python 3.12.15 (`D:\Binary_Repair\.venv\Scripts\python.exe`), pytest 9.2.0, FastAPI 0.162.0, httpx 0.28.1.
 - **Fake keys only.** No real provider key was read, written, logged, or transmitted by this review. No provider call was completed; the one attempted call was blocked by the probe's egress guard. No P1/V5 run was repeated, no binary was executed, no VM was started.
 - **Conclusion up front:** **PASS WITH LIMITATION** — no full-key disclosure was found in the reviewed store/API/UI/export paths, but two MEDIUM findings (mask policy, bundle-evidence path containment), one MEDIUM concurrency/atomicity defect, and several LOW findings are recorded, and the POSIX 0600 fallback was not executed on a POSIX host.
+- **Fix re-review (same day, reviewed source `0d5791a`):** M5 fixed F1/A-1/F3 and partially mitigated F2; independent re-verification found **F2 not fixed** (HIGH residual bypasses) plus residual F1/A-1 edges. See **§9 addendum** — it supersedes the per-finding statuses above but not the original evidence.
 
 ---
 
@@ -337,3 +338,92 @@ Reviewer working evidence (not committed; machine transcripts): `D:\BinRepair\.t
 ## Appendix B — Independence statement
 
 This review was produced by the M3 role, separate from the M2 role that implemented the key feature, and was supplemented by three independently-run focused reviews whose raw evidence was kept separate. All role windows are AI agents operated by the same human owner, and all ran on the same host. This is role-separated review, **not** a human-independent two-person signature; no such claim is made.
+
+---
+
+## 9. Fix re-review addendum — M5 fix commit `0d5791a` (2026-11-09)
+
+**reviewed source `0d5791a317d0e6d06dd6de7a818dfc65f7378bdf`** ("fix(m5): harden key masking, atomic save, and evidence copy", M5, 2026-11-09 22:00 +0800).
+
+- Release branch head at re-review close: `c495656` (docs-only delta over `0d5791a`: the `docs/handoffs/222` final verification/key-cleanup record; the reviewed code files are byte-identical between `0d5791a` and `c495656` — `git diff --stat 0d5791a c495656 -- <scope files>` is empty).
+- Reviewed diff: `git diff 8f0908a 0d5791a` for `app/services/assistant_key_store.py`, `app/services/attempt_writer.py`, `tools/routea_bundle_to_attempt.py`, `tests/test_assistant_key_store.py`, plus docs 216/218/222/226. `tools/route_bundle_ingest.py` was unchanged by the fix and was re-checked.
+- Method: Lead static review + dynamic probes, plus one independent adversarial verifier (`fix-verifier`, Team task `task-4`) with separate raw logs. Fake keys only; no provider/network call; no tracked file modified; no P1/V5 rerun.
+
+### 9.1 Fix verdicts
+
+```text
+reviewed source 0d5791a
+F1:  FIXED (stored/API path) / PARTIAL (environment-key residual = new finding N-1)
+A-1: FIXED (original defects) / PARTIAL (residual N-2 MEDIUM: spurious concurrent-save 500 on Windows)
+F2:  NOT FIXED (partial mitigation only; bypasses N-3 HIGH)
+F3:  FIXED
+new echo/log path: NONE (PASS)
+```
+
+- **F1 — mask/validation — FIXED for the stored/API path.** `mask_key` now returns `"*"*(len-4)+key[-4:]` (`app/services/assistant_key_store.py:228-231`): verified for lengths 5/8/15/16/33/512 — only the last 4 characters visible, no prefix leak. `_validate_key` (`:175-183`) enforces min 16, max 512, no whitespace, printable ASCII; API mapping verified: 15→422 `API key is too short`; 16→200; 512→200; 513→422 `API key is too long`; non-ASCII/NUL→422 `API key must be printable ASCII`; tab/newline→422 `API key must not contain whitespace`; empty/whitespace/non-string→422 `key is required.`. **Residual (N-1 LOW):** environment keys bypass `save_key` validation entirely and `mask_key` reveals the whole value when `len<=4` (verified: `BINARYREPAIR_ASSISTANT_PROVIDER_KEY=abcd` → `GET /api/assistant/key` masked `"abcd"`); 5–8-char env keys reveal 4 characters; a hand-written `BRKEY0` file is equally unvalidated.
+- **A-1 — atomicity/concurrency — FIXED for the original defects; PARTIAL residual (N-2 MEDIUM).** Implemented: `tempfile.mkstemp` unique temp per writer (`:149`), `_SAVE_LOCK` around `save_key`/`clear_key` (`:31,194,220`), post-`os.replace` existence check (`:161-163`), `fchmod 0600` (`:152-155`). Verified: 20/20 rounds of two concurrent `save_key()` threads → no errors, final key is one complete input, no `*.tmp`; stale `assistant.key.tmp` no longer blocks; injected `os.replace` failure → OSError, old key preserved, no temp, generic HTTP 500, no key echo; replace-then-vanish → post-replace check raises, HTTP 500 instead of a false 200. **Residual N-2:** two simultaneous `POST /api/assistant/key` (two event loops, as in the two-`TestClient` harness) still give one spurious HTTP 500 per round (8/8 here; 9/10 and 10/10 in the verifier's runs) with `PermissionError [WinError 5]` on `os.replace`, because the competing request's `key_status()`/`load_key()` read holds `assistant.key` open on Windows. No corruption, no leak, the winner's key is complete, retry succeeds. In the documented single-process uvicorn configuration the async handlers serialise after their single `await request.json()`, so the residual needs multi-event-loop / multi-worker / cross-process callers; it is recorded as a limitation, not a security defect.
+- **F2 — secret-path rejection — NOT FIXED (partial mitigation).** The exact basenames `assistant.key`, `.env`, `session.token` are now refused before copying in `app/services/attempt_writer.py:57-58` and `tools/routea_bundle_to_attempt.py:46-47` (verified). Bypasses that still copy the stored key are demonstrated in N-3: the fix is a three-name denylist, not containment.
+- **F3 — masked real-key tails — FIXED.** `docs/handoffs/216…:22` and `docs/handoffs/218…:21` now read `sk-…<masked>`; no real-key tail remains in the current tracked tree. INFO: git history is append-only here — commit `8f0d728` still contains the old `…6789`/`…27d8` tails (rewriting history is the team's decision); the fake-key tail in `docs/handoffs/222` was removed by the final `c495656` docs commit.
+- **No new echo/log path — PASS.** The fix commit adds no `print`/logging line (all 92 added lines scanned); save/status/delete and error responses, headers, 24 captured logging records, stdout/stderr contain no full fake key; the stored file remains DPAPI (`BRKEY1`, plaintext absent, round trip OK).
+
+### 9.2 New findings
+
+- **N-1 (LOW) — environment/hand-written keys bypass the new mask/validation policy.** `_env_key()` accepts any non-empty stripped string, `mask_key` reveals the entire value for `len<=4`, and non-ASCII env keys are accepted. Only reachable through operator-set env vars or a hand-written key file, never through `save_key`/POST. Recommendation: apply the same printable-ASCII/min-length policy to env keys, or mask anything shorter than the validation minimum with bullets only.
+- **N-2 (MEDIUM, availability) — residual concurrent-save 500 on Windows.** See A-1; reachable only with multi-event-loop/process callers, not the documented single-process uvicorn. Recommendation if multi-process support is ever claimed: take the read path under the same lock, or briefly retry `os.replace` on `PermissionError`.
+- **N-3 (HIGH — the unfixed part of F2) — the three-name denylist is bypassable, and one code path skips it.** Demonstrated by the Lead and independently by the verifier (fake keys, copied bytes verified in the artifact store):
+  - **Windows filename aliases** pass the name check while reaching the same file: `ASSISTANT.KEY`, `Assistant.Key`, `assistant.key.`, `assistant.key `, `assistant.key::$DATA`, and a hardlink with a different basename (all copied by `attempt_writer`; it does not canonicalise the source path). An absolute/relative alias declared by a bundle is copied end-to-end into `jobs/<job>/artifacts/...` and is then downloadable/exported.
+  - **Route A multi-evidence branch skips the per-source check entirely:** `tools/routea_bundle_to_attempt.py:123-136` zips all evidence for a gate first and only calls `_register()` on the archive (`V0-evidence.zip`), whose basename is not on the denylist. Lead reproduction: a V0 gate with two evidence paths (`assistant.key` + an innocuous file) produced a registered artifact whose ZIP contains `assistant.key` in plaintext. Single-evidence paths are blocked only because `convert()` canonicalises with `Path.resolve()` (`:119`).
+  - **Operator-custom key filenames** (`BINARYREPAIR_ASSISTANT_KEY_FILE=…\mykey.dat`) are copied by both writers — the key store's configured path is not what the denylist checks. On this Windows host the copied bytes are DPAPI ciphertext; on the POSIX `mode-0600` fallback the same copy is base64 plaintext, i.e. direct key exposure.
+  - `tools/route_bundle_ingest.py` remains safe (unchanged by the fix): `_safe_file` (`:73-89`) rejects absolute paths, `..` escapes, symlinks, and missing files (verified: absolute/`..`/missing rejected). Symlink and 8.3-short-name vectors could not be executed on this host (symlink privilege unavailable; 8.3 names disabled) — recorded as unverified, not passed.
+- **N-4 (LOW) — committed tests do not cover the fix's risk areas.** The new tests cover mask/validation/stale-temp only; no committed test covers F2 rejection (or its bypasses), concurrent saves/lock behaviour, replace failure, POSIX mode, or the environment-key mask edge. `test_short_and_non_ascii_keys_are_rejected` actually tests a NUL character, not a non-ASCII key.
+- **N-5 (INFO) — documentation residuals after F3.** Old masked real-key tails remain in git history (`8f0d728`); the fake-key tail in `docs/handoffs/222` was removed at `c495656`; this review's own files contain fake-key mask examples only.
+- **N-6 (INFO) — M5's `docs/handoffs/226` says "full suite: pass" without numbers.** This re-review ran the required target suite (66 passed, exit 0) and the verifier ran a focused 5-file subset (32 collected / 31 passed / 1 skipped; skip = symlink creation unavailable). The 740-test full-suite count in `docs/handoffs/222` was not independently reproduced.
+- **N-7 (unchanged prior findings, not in the fix scope):** F4 plaintext `BRKEY0` envelope still accepted on Windows and reported as `protection="dpapi-user"`; F7 save/clear still override `BINARYREPAIR_ASSISTANT_MODE`; F8 session-token file permissions/access-log exposure unchanged; old probe finding H (DELETE with `KEY_FILE` pointing at a directory → unhandled 500) unchanged; deterministic mode still does not gate `POST /api/assistant/key/test`.
+
+### 9.3 Tests and commands (re-review)
+
+```text
+required command (adapted as in §3: the macOS path does not exist here; sandbox tmp_path shim used):
+D:\Binary_Repair\.venv\Scripts\python.exe -m pytest -q -o addopts= \
+  -p dshenv_win_temp -p no:cacheprovider \
+  tests/test_assistant_key_store.py tests/test_assistant_key_api.py tests/test_agent_console.py
+-> exit 0; 66 passed, 1 warning in 1.40s
+   (store 5 passed / api 5 passed / agent console 56 passed)
+
+git diff --stat 8f0908a 0d5791a -- <reviewed files>  -> store 52 lines, attempt_writer +2,
+                                                        routea +2, tests +24, docs 216/218/222/226
+git diff --stat 0d5791a c495656 -- <scope files>     -> empty (docs-only branch movement after the fix)
+
+Lead probes: mask matrix, validation matrix, DPAPI, 20-round store concurrency, 8-round route
+  concurrency, replace-failure + false-success simulation, F2 alias/ZIP/custom-name bypasses,
+  echo/log scan, P1/V5 + main/tag checks.
+Verifier (independent): mask, validation, DPAPI, concurrency, secret-path, no-echo probes and a
+  focused pytest subset; raw logs under D:\BinRepair\.tmp\review-fix\logs\ (not committed).
+```
+
+Full re-review transcript excerpts: `docs/reviews/evidence/review-13-fix-rereview-0d5791a-2026-11-09.txt`.
+
+### 9.4 Limitations of this re-review
+
+1. The POSIX `mode-0600`/`fchmod` path was not executed (Windows host; same limitation as §6). The F2 plaintext-copy impact on POSIX is inferred from code and earlier static analysis, not observed on POSIX.
+2. Symlink and 8.3 short-name bypasses could not be executed here (Windows symlink privilege unavailable; 8.3 names disabled). The denylist logic suggests both would bypass; recorded as unverified.
+3. The N-2 concurrent-save 500 was reproduced with two event loops (`TestClient` threads), not against a real multi-worker uvicorn deployment; production exposure under the documented single-process configuration is unverified.
+4. No browser run and no real provider call in this re-review; the fake-key UI/API paths were driven with `TestClient`/direct calls.
+5. `docs/handoffs/226`'s "full suite: pass" and `docs/handoffs/222`'s 740-test count were not independently reproduced (only the required target suite and the verifier's focused subset).
+6. Git history was not rewritten or re-audited beyond noting the residual masked tails (N-5).
+
+### 9.5 Updated disposition
+
+- F1, A-1 and F3 are **substantially fixed and independently verified**; the F1 and A-1 residuals are LOW/MEDIUM non-confidentiality robustness edges (N-1, N-2).
+- **F2 remains open and is release-relevant.** A crafted/compromised result bundle plus a host adapter can still copy the stored key file into the artifact store/export path (plaintext on the POSIX fallback, DPAPI ciphertext on Windows). The three-name denylist blocks only the default names; the containment fix recommended under F2 is still required, especially before any stable tag on a POSIX host.
+- Suggested disposition: v1.2.1 may remain an **rc prerelease candidate** with these limitations disclosed; **hold the stable `v1.2.1` tag** until F2 is fixed (or explicitly accepted by the Lead with the POSIX plaintext constraint stated), and preferably address N-1/N-2 and the N-4 test gaps in the same follow-up. This is consistent with M2/M5's own "hold stable" recommendation in `docs/handoffs/222`.
+
+### 9.6 Submission gates (提交门槛)
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Fix re-review completed | **PASS** | Lead static + dynamic probes + independent verifier (task-4); all four findings adjudicated; residuals recorded |
+| No key leakage | **NOT CLEAN (F2 residual)** | No full key in committed files/logs/responses (scanned); but F2's host-side copy path can still copy the stored key file into artifacts/exports under a crafted bundle (N-3) — plaintext on the POSIX fallback; F3 real-key tails removed from docs 216/218 |
+| Unverified items explicit | **PASS** | §9.4 (6 items) |
+| P1/V5 evidence unmodified | **PASS** | `git diff --stat 8f0908a 0d5791a -- T8.3-* M4-v4-handoff-* delivery/p1-*` empty; no P1/V5 run repeated |
+| Tags/main not moved | **PASS** | `origin/main` still `472aa94b8d931e03a2b20a8e4f671ba64f832230`; no `v1.2.1` tag; release branch moved by M2/M5 (`0d5791a`→`c495656`, docs-only), not by this review |
