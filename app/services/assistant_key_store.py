@@ -16,6 +16,8 @@ import base64
 import ctypes
 import os
 import sys
+import tempfile
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +27,8 @@ _FILE_ENV = "BINARYREPAIR_ASSISTANT_KEY_FILE"
 _MAGIC_DPAPI = b"BRKEY1\n"
 _MAGIC_PLAIN = b"BRKEY0\n"
 _MAX_KEY_LEN = 512
+_MIN_KEY_LEN = 16
+_SAVE_LOCK = threading.Lock()
 
 
 def _root() -> Path:
@@ -142,19 +146,21 @@ else:  # pragma: no cover - CI may run here
 
 def _atomic_write(path: Path, payload: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
+    fd, name = tempfile.mkstemp(prefix=path.name + ".", suffix=".tmp", dir=str(path.parent))
+    tmp = Path(name)
     try:
-        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-        if hasattr(os, "O_BINARY"):
-            # Windows defaults os.open to text mode and would turn LF into CRLF.
-            flags |= os.O_BINARY
-        fd = os.open(str(tmp), flags, 0o600)
+        try:
+            os.fchmod(fd, 0o600)
+        except (AttributeError, OSError):
+            pass
         try:
             os.write(fd, payload)
             os.fsync(fd)
         finally:
             os.close(fd)
         os.replace(tmp, path)
+        if not path.is_file():
+            raise OSError("key replacement did not produce a file")
         try:
             os.chmod(path, 0o600)
         except OSError:
@@ -166,18 +172,27 @@ def _atomic_write(path: Path, payload: bytes) -> None:
             pass
 
 
-def save_key(key: str) -> dict[str, Any]:
-    key = (key or "").strip()
-    if not key:
-        raise ValueError("API key is empty")
+def _validate_key(key: str) -> None:
+    if len(key) < _MIN_KEY_LEN:
+        raise ValueError("API key is too short")
     if len(key) > _MAX_KEY_LEN:
         raise ValueError("API key is too long")
     if any(ch.isspace() for ch in key):
         raise ValueError("API key must not contain whitespace")
+    if any(ord(ch) < 33 or ord(ch) > 126 for ch in key):
+        raise ValueError("API key must be printable ASCII")
+
+
+def save_key(key: str) -> dict[str, Any]:
+    key = (key or "").strip()
+    if not key:
+        raise ValueError("API key is empty")
+    _validate_key(key)
     payload, protection = _protect_for_storage(key)
     if protection == "mode-0600":
         payload = _MAGIC_PLAIN + base64.b64encode(key.encode("utf-8"))
-    _atomic_write(key_path(), payload)
+    with _SAVE_LOCK:
+        _atomic_write(key_path(), payload)
     return {"configured": True, "protection": protection}
 
 
@@ -202,19 +217,18 @@ def load_key() -> str:
 
 def clear_key() -> bool:
     path = key_path()
-    try:
-        path.unlink()
-        return True
-    except FileNotFoundError:
-        return False
+    with _SAVE_LOCK:
+        try:
+            path.unlink()
+            return True
+        except FileNotFoundError:
+            return False
 
 
 def mask_key(key: str) -> str:
     if not key:
         return ""
-    if len(key) <= 8:
-        return "*" * len(key)
-    return key[:3] + "…" + key[-4:]
+    return "*" * max(0, len(key) - 4) + key[-4:]
 
 
 def key_status() -> dict[str, Any]:

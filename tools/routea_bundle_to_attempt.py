@@ -43,6 +43,8 @@ def _sha(path: Path) -> str:
 
 
 def _register(*, data_dir: Path, job_id: str, attempt_id: str, source: Path) -> str:
+    if source.name in {"assistant.key", ".env", "session.token"}:
+        raise ValueError("refusing to copy secret material into evidence")
     if not source.is_file():
         raise ValueError(f"evidence file missing: {source}")
     artifact_id = uuid.uuid4().hex

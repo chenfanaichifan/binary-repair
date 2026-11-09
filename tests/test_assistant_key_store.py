@@ -38,3 +38,27 @@ def test_environment_key_wins_and_cannot_be_cleared(tmp_path: Path, monkeypatch)
     status = assistant_key_store.key_status()
     assert status["source"] == "environment"
     assert status["can_clear"] is False
+
+
+def test_mask_reveals_only_last_four() -> None:
+    key = "sk-abcdefghijklmnopqrstuvwxyz1234"
+    masked = assistant_key_store.mask_key(key)
+    assert masked.endswith(key[-4:])
+    assert key[:4] not in masked
+    assert masked.count("*") == len(key) - 4
+
+
+def test_short_and_non_ascii_keys_are_rejected(tmp_path, monkeypatch) -> None:
+    import pytest
+    monkeypatch.setenv("BINARYREPAIR_ASSISTANT_KEY_FILE", str(tmp_path / "assistant.key"))
+    with pytest.raises(ValueError):
+        assistant_key_store.save_key("short")
+    with pytest.raises(ValueError):
+        assistant_key_store.save_key("sk-abcdefghijklmnop\u0000")
+
+
+def test_stale_temp_file_does_not_block_save(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("BINARYREPAIR_ASSISTANT_KEY_FILE", str(tmp_path / "assistant.key"))
+    (tmp_path / "assistant.key.tmp").write_text("stale", encoding="utf-8")
+    assistant_key_store.save_key("sk-stale-0123456789abcdef")
+    assert assistant_key_store.load_key() == "sk-stale-0123456789abcdef"

@@ -54,6 +54,8 @@ def _register(
     source: Path,
     role: str,
 ) -> str:
+    if source.name in {"assistant.key", ".env", "session.token"}:
+        raise ValueError("refusing to copy secret material into evidence")
     if not source.is_file():
         raise SystemExit(f"evidence file does not exist: {source}")
     artifact_id = uuid.uuid4().hex
