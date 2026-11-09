@@ -167,6 +167,20 @@
       <h3 class="agent-side-subtitle">助手调用元数据</h3>
       <p id="agent-model-meta" class="agent-model-meta" data-testid="agent-model-meta">未提供</p>
 
+      <div class="agent-key-panel" id="assistant-key-panel" data-testid="assistant-key-panel" style="margin:12px 0;padding:10px;border:1px solid rgba(44,41,37,.18);border-radius:10px">
+        <h3 class="agent-side-subtitle">模型 API Key</h3>
+        <p id="assistant-key-status" class="agent-side-note" data-testid="assistant-key-status">读取中…</p>
+        <input id="assistant-key-input" type="password" autocomplete="new-password"
+               placeholder="输入 key 后保存并测试"
+               data-testid="assistant-key-input"
+               style="width:100%;box-sizing:border-box;margin:6px 0;padding:6px 8px;border:1px solid #c9c2b5;border-radius:6px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button id="assistant-key-save" type="button" class="btn ghost" data-testid="assistant-key-save">保存并测试</button>
+          <button id="assistant-key-clear" type="button" class="btn ghost" data-testid="assistant-key-clear">清除</button>
+        </div>
+        <p id="assistant-key-result" class="agent-side-note" data-testid="assistant-key-result"></p>
+        <p class="agent-side-note">key 只保存在本机服务端，不回显、不写入日志；环境变量优先。</p>
+      </div>
       <h3 class="agent-side-subtitle">产物</h3>
       <ul id="agent-side-artifacts" class="agent-side-artifacts" data-testid="agent-side-artifacts">
         <li class="agent-muted">尚无产物</li>
