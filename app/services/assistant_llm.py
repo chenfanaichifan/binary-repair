@@ -538,6 +538,15 @@ def client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient 
         ensure_env_loaded()
     env = os.environ if environ is None else environ
     key = _first_env(env, (PROVIDER_KEY_ENV, *COMPAT_KEY_ENVS))
+    if not key and environ is None:
+        # A key saved from the local operator UI is the next fallback; the
+        # environment still wins when both exist.
+        try:
+            from app.services.assistant_key_store import load_key
+
+            key = (load_key() or "").strip()
+        except Exception:
+            key = ""
     if not key:
         return None
     base = _first_env(
@@ -552,6 +561,46 @@ def client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient 
     if timeout <= 0:
         timeout = DEFAULT_TIMEOUT
     return HttpJsonClient(api_key=key, base_url=base, model=model, timeout=timeout)
+
+
+def test_provider_connection(client: Any | None = None) -> dict[str, Any]:
+    """Make one tiny provider call to prove the configured key works.
+
+    This is deliberately a real call (the operator asked to test the key); it
+    uses a small token limit and returns only non-secret diagnostics.  It never
+    raises and never includes the key or provider body in the response.
+    """
+
+    if client is None:
+        client = client_from_env()
+    if client is None:
+        return {"ok": False, "error": "llm_client_not_configured"}
+    try:
+        result = client.chat_json(
+            [
+                {"role": "system", "content": "Reply with JSON only."},
+                {"role": "user", "content": "Return {\"ok\": true}."},
+            ],
+            max_tokens=8,
+            thinking=False,
+        )
+    except TimeoutError:
+        return {"ok": False, "error": "llm_timeout"}
+    except ConnectionError:
+        return {"ok": False, "error": "llm_network_error"}
+    except Exception as exc:  # provider HTTP/transport/schema
+        if type(exc).__name__ == "_ProviderHTTPError":
+            return {"ok": False, "error": "llm_http_error"}
+        return {"ok": False, "error": "llm_unknown_error"}
+    content = getattr(result, "content", None)
+    if not isinstance(content, str) or not content.strip():
+        return {"ok": False, "error": "llm_empty_content"}
+    return {
+        "ok": True,
+        "model": getattr(result, "model", None),
+        "request_id": getattr(result, "request_id", None),
+        "usage": getattr(result, "usage", None),
+    }
 
 
 def generate_plan(

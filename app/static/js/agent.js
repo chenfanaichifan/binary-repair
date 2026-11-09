@@ -1605,6 +1605,94 @@
     });
   }
 
+  function renderAssistantKeyStatus(payload) {
+    var key = (payload && payload.key) || {};
+    var assistant = (payload && payload.assistant) || {};
+    var status = "未配置";
+    if (key.source === "environment") {
+      status = "已由环境变量配置（" + (key.masked || "***") + "，不可在页面清除）";
+    } else if (key.configured) {
+      status = "已保存（" + (key.masked || "***") + "，保护：" + (key.protection || "unknown") + "）";
+    }
+    setText("assistant-key-status", status);
+    var clear = $("assistant-key-clear");
+    if (clear) clear.disabled = !key.can_clear;
+    var badge = $("agent-mode-badge");
+    if (badge && assistant.available) {
+      setText("agent-mode-badge", "助手模式：LLM（已连接）");
+    } else if (badge && key.configured) {
+      setText("agent-mode-badge", "助手模式：LLM（待测试）");
+    }
+  }
+
+  function refreshAssistantKeyStatus() {
+    if (!$("assistant-key-panel")) return;
+    fetch("/api/assistant/key", { headers: { "Accept": "application/json" } })
+      .then(function (response) { return response.json(); })
+      .then(renderAssistantKeyStatus)
+      .catch(function () { setText("assistant-key-status", "读取失败"); });
+  }
+
+  function saveAssistantKey() {
+    var input = $("assistant-key-input");
+    var result = $("assistant-key-result");
+    if (!input || !input.value) { setText("assistant-key-result", "请先输入 key"); return; }
+    setText("assistant-key-result", "保存中…");
+    fetch("/api/assistant/key", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
+      body: JSON.stringify({ key: input.value })
+    }).then(function (response) {
+      return response.json().then(function (payload) {
+        if (!response.ok) throw new Error(payload && payload.detail ? payload.detail : "HTTP " + response.status);
+        return payload;
+      });
+    }).then(function (payload) {
+      input.value = "";
+      renderAssistantKeyStatus(payload);
+      setText("assistant-key-result", "已保存，正在测试连接…");
+      return fetch("/api/assistant/key/test", {
+        method: "POST",
+        headers: { "X-CSRF-Token": CSRF }
+      }).then(function (response) {
+        return response.json().then(function (body) { return { ok: response.ok, body: body }; });
+      });
+    }).then(function (test) {
+      var body = test.body || {};
+      if (test.ok && body.ok) {
+        setText("assistant-key-result",
+          "连接成功" + (body.model ? "（model=" + body.model + "）" : "") + "；助手已可用。");
+      } else {
+        setText("assistant-key-result", "连接失败：" + (body.error || "unknown"));
+      }
+      refreshAssistantKeyStatus();
+    }).catch(function (exc) {
+      setText("assistant-key-result", "保存失败：" + exc.message);
+    });
+  }
+
+  function clearAssistantKey() {
+    setText("assistant-key-result", "清除中…");
+    fetch("/api/assistant/key", { method: "DELETE", headers: { "X-CSRF-Token": CSRF } })
+      .then(function (response) {
+        return response.json().then(function (payload) {
+          if (!response.ok) throw new Error(payload && payload.detail ? payload.detail : "HTTP " + response.status);
+          return payload;
+        });
+      })
+      .then(function (payload) {
+        renderAssistantKeyStatus(payload);
+        setText("assistant-key-result", "已清除；助手回到未配置状态。");
+      })
+      .catch(function (exc) { setText("assistant-key-result", "清除失败：" + exc.message); });
+  }
+
+  var assistantKeySave = $("assistant-key-save");
+  if (assistantKeySave) assistantKeySave.addEventListener("click", saveAssistantKey);
+  var assistantKeyClear = $("assistant-key-clear");
+  if (assistantKeyClear) assistantKeyClear.addEventListener("click", clearAssistantKey);
+  refreshAssistantKeyStatus();
+
   var uploadButton = $("agent-deliverable-upload");
   var uploadInput = $("agent-deliverable-input");
   if (!UPLOAD_AVAILABLE) {
