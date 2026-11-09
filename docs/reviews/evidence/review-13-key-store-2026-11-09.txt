@@ -1,0 +1,196 @@
+Review 13 — v1.2.1 assistant key store / API — evidence transcript excerpts
+Date: 2026-11-09
+Reviewer: M3 (independent of the M2 producer role)
+Target: release/v1.2.1
+  code state reviewed: b7ee9a882a6860751fcb89a46f2aa589ebe8b9da
+  head at review close: 8f0908af5e0fb319db4dccd2c0428758ce9e69b1
+  key-scope files byte-identical b7ee9a8..8f0908a except app/static/js/agent.js
+  (agent.js changed only in 97c565d: page reload after a successful key test; behavior-only,
+  reviewed - no key handling/echo/log/storage change)
+  reviewed blob hashes at 8f0908a:
+    6982474de524afc928ca51f7bf97abf056c6461a  app/services/assistant_key_store.py
+    992cbfd019247ed4042b918af911d39996242244  app/services/assistant_llm.py
+    542b48e74a5d106d1e8f5291bb863caab9dcd96f  app/main.py
+    c366541bdeed6a0ea634cce32ccff457bd3c893a  app/static/js/agent.js
+    7a3ce91a15e9b0490ed863276ff2a846d3e33eef  app/templates/agent.html
+    4734876e99f5b8a599077c9d328c337143c6f45a  tests/test_assistant_key_store.py
+    e2f45147ed97429297d50a1452ceb2ab231aa2d0  tests/test_assistant_key_api.py
+  other delta files reviewed: app/backend.py (24a0009d...), app/controller_api.py (bc93bea5...)
+Worktree: D:\BinRepair\.tmp\review-v121 (detached HEAD at 8f0908a; git status --porcelain empty
+          before and after the review)
+Host: Windows; Python 3.12.15 (D:\Binary_Repair\.venv\Scripts\python.exe); pytest 9.2.0;
+      FastAPI 0.162.0; httpx 0.28.1
+No real key was used, read, written, logged, or transmitted. No provider call completed.
+No P1/V5 run repeated. No VM started. No binary executed.
+
+--------------------------------------------------------------------------------------------------
+1. Required test command, as given (cannot run as written on this host: macOS path + no macOS python)
+--------------------------------------------------------------------------------------------------
+BINARYREPAIR_BINUTILS_DIR=/opt/homebrew/opt/binutils/bin \
+python -m pytest -q \
+  tests/test_assistant_key_store.py \
+  tests/test_assistant_key_api.py \
+  tests/test_agent_console.py
+
+Adapted equivalent run (Windows interpreter; BINARYREPAIR_BINUTILS_DIR set to the Windows
+binutils directory documented in docs/fixtures.md; none of the three files invokes
+readelf/objdump, verified by grep, so the variable is inert for them):
+
+  D:\Binary_Repair\.venv\Scripts\python.exe -m pytest -q -o addopts= \
+    -p dshenv_win_temp -p no:cacheprovider \
+    tests/test_assistant_key_store.py tests/test_assistant_key_api.py tests/test_agent_console.py
+
+  observed: exit 0
+            63 passed, 1 warning in 1.38s
+  per file:
+    tests/test_assistant_key_store.py   2 passed in 0.06s
+    tests/test_assistant_key_api.py     5 passed, 1 warning in 1.03s
+    tests/test_agent_console.py        56 passed, 1 warning in 1.33s
+
+`-o addopts=` overrides pytest.ini's `addopts = -q`; without it the command runs at -qq and the
+summary line is suppressed (only the test-planet dots are printed).
+
+--------------------------------------------------------------------------------------------------
+2. Plain run blocked by the host sandbox (environment defect, not an application defect)
+--------------------------------------------------------------------------------------------------
+  D:\Binary_Repair\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider \
+    tests/test_assistant_key_store.py tests/test_assistant_key_api.py
+  observed: exit 1, no application code executed
+  =========================== short test summary info ===========================
+  ERROR tests/test_assistant_key_store.py::test_key_round_trip_is_masked_and_removable
+  ERROR tests/test_assistant_key_store.py::test_environment_key_wins_and_cannot_be_cleared
+  ERROR tests/test_assistant_key_api.py::test_key_api_never_returns_or_echoes_key
+  ERROR tests/test_assistant_key_api.py::test_key_endpoints_require_csrf - Perm...
+  ERROR tests/test_assistant_key_api.py::test_key_test_route_uses_probe - Permi...
+  cause (from the full traceback): pytest's tmp_path factory creates its temp dirs with mode
+  0o700; this DSH Windows sandbox maps the POSIX mode onto the directory ACL, and the same
+  confined token then cannot os.scandir()/list them:
+    E   PermissionError: [WinError 5] 拒绝访问: '...\pytest-of-<user>'
+  The adapted run above uses a scratch-only pytest plugin
+  (D:\BinRepair\.tmp\review-findings\hostshim\dshenv_win_temp.py) that restores the documented
+  Windows behavior (the POSIX mode argument is ignored on Windows, per CPython docs). No project
+  file, test, or assertion was modified.
+
+--------------------------------------------------------------------------------------------------
+3. Required grep check (git grep over the clean worktree == -RIn over tracked files)
+--------------------------------------------------------------------------------------------------
+  git grep -In -E 'BINARYREPAIR_ASSISTANT_PROVIDER_KEY|sk-' -- app tests docs delivery
+  observed: exit 0; 92 hits; first hits:
+    app/backend.py:704:        With ``BINARYREPAIR_ASSISTANT_PROVIDER_KEY`` set, the llm branch runs
+    app/services/assistant_key_store.py:22:_KEY_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_KEY"
+    app/services/assistant_llm.py:61:PROVIDER_KEY_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_KEY"
+    app/services/assistant_llm.py:367:    Only used when ``BINARYREPAIR_ASSISTANT_PROVIDER_KEY`` is present.  The key
+    delivery/...: lines where "sk-" occurs inside words task- / disk- / risk- (false positives)
+  classification: env-var identifier in code/docs/tests; fake test fixtures (sk-test-*, sk-api-*,
+  sk-env-*, sk-stored-*, sk-csrf-*, sk-probe-*, sk-SENTINEL-DO-NOT-LEAK); .env.example placeholder
+  sk-your-key-here; word-internal false positives. No real key.
+
+  git grep -In -E 'sk-[0-9a-fA-F]{24,}' -- . ':!*.pyc'                  -> 0 hits
+  git grep -In -E 'sk-[A-Za-z0-9_-]{20,}' -- . ':!*.pyc'                -> 6 hits, all fake/false
+      delivery/artifacts-2026-11-07/M4-T30-116-confirmation-2026-11-05.md:52  (task-116-...)
+      docs/handoffs/93-m1-t6.2a-attempt-driver-2026-11-05.md:6               (task-116-...)
+      docs/handoffs/94-m1-t7.1-flow-endpoints-2026-11-05.md:6                (task-116-...)
+      tests/test_assistant_key_api.py:24    sk-api-0123456789abcdef
+      tests/test_assistant_key_store.py:14  sk-test-0123456789abcdef
+      tests/test_assistant_llm.py:616       sk-SENTINEL-DO-NOT-LEAK
+  git grep -In -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|Bearer [A-Za-z0-9._-]{20,}' -> 0 hits
+  independent tracked-tree scan (focused review): 1,370 tracked files + 85 zip archives (members
+  scanned, incl. delivery/) -> 49 pattern hits, all placeholder/fake; no key-like token in any zip.
+  git check-ignore -v var/assistant.key   -> .gitignore:20:var/	var/assistant.key
+  git ls-files 'var/*' '.env'             -> empty
+  Test-Path var/assistant.key / .env      -> False / False
+
+  Masked real-key tails committed in handoff records (found during this review; values NOT
+  reproduced here, per the review's own recommendation):
+    docs/handoffs/218-v1.2.1-real-key-ui-journey-2026-11-09.md:21   real-key journey, mask tail
+    docs/handoffs/216-real-deepseek-smoke-2026-11-09.md:22           masked tail (fake-key UI path)
+
+--------------------------------------------------------------------------------------------------
+4. Real uvicorn server log check (supplemental)
+--------------------------------------------------------------------------------------------------
+  started: uvicorn app.main:app --host 127.0.0.1 --port 8817 --log-level debug
+  env: scratch BINARYREPAIR_ASSISTANT_KEY_FILE, fixed BINARYREPAIR_SESSION_TOKEN, mode
+       deterministic, no provider env key; requests used only a fake key
+  observed responses:
+    healthz 200; login 303 (br_session cookie); POST save 200; GET status 200;
+    POST oversize 422 {"detail":"API key is too long"}; POST whitespace 422
+    {"detail":"API key must not contain whitespace"}; DELETE clear 200
+  access-log lines contain only method/path/status, e.g.
+    INFO:     127.0.0.1:54586 - "POST /api/assistant/key HTTP/1.1" 200 OK
+  fake-key occurrences in uvicorn stdout+stderr: 0
+  session-boundary observation (finding F8, not an API-key finding): the access log records the
+  login URL including the session token, e.g.
+    "GET /?token=<session-token> HTTP/1.1" 303 See Other
+
+--------------------------------------------------------------------------------------------------
+5. Adversarial probe summary (in-process TestClient; egress guard; fake keys only)
+--------------------------------------------------------------------------------------------------
+  required (a)-(f): PASS;  required (g) atomicity/concurrency: FAIL
+  (a) CSRF/session: 6/6 missing/wrong-token calls -> 403 {"detail":"CSRF token missing or invalid."};
+      no state change; correct token -> save 200, test 503 {"ok":false,"error":"llm_client_not_configured"},
+      delete 200; GET 200 with cookie / 401 without; foreign Host/Origin -> 403
+  (b) echo: invalid JSON 422 "JSON body required."; array/string body 422 "JSON object required.";
+      non-string/empty/whitespace 422 "key is required."; 513-char 422 "API key is too long";
+      newline 422 "API key must not contain whitespace"; 512-char accepted; 0 full-key leaks across
+      148 bodies/headers/log/stdout sinks and 248 logging records
+  (c) env: POST 409, DELETE 409; file absent / bytes unchanged; GET source=environment,
+      can_clear=false
+  (d) DPAPI: 313-byte file starts b"BRKEY1\n"; plaintext/base64 of fake key absent;
+      protection=dpapi-user; load_key() round trip equal
+  (e) save failure: 500 {"detail":"could not persist the key."}; no key in body/logs; 0 *.tmp;
+      previous 313-byte key unchanged (same sha256)
+  (f) masking: len 9 -> 7 literal chars exposed; len 12 -> 7; len <= 8 -> 0
+  (g) concurrency FAIL: fixed "<key>.tmp" + loser's unconditional unlink; 8/8 concurrent HTTP
+      rounds had at least one 500; 2/8 both 500 leaving no key; one captured round returned HTTP
+      200 while the key file was absent afterwards (trace in probe-raw.json)
+  extras: stale .tmp -> first save 500 then retry 200; DELETE unhandled 500 when KEY_FILE is a
+      directory; deterministic mode does not gate POST /key/test (provider attempt blocked by the
+      probe's egress guard, response 503 llm_unknown_error)
+
+--------------------------------------------------------------------------------------------------
+6. Lead's independent verification probes (fake keys only; selected observed values)
+--------------------------------------------------------------------------------------------------
+  GET /api/assistant/key without session cookie         -> 401
+  login ?token=<session>                                -> 303, br_session cookie set
+  POST save no CSRF / wrong CSRF                        -> 403 / 403, key not in body
+  POST test no CSRF / DELETE no CSRF / DELETE wrong CSRF-> 403 / 403 / 403
+  POST test with correct CSRF, no key configured        -> 503 {"ok":false,"error":"llm_client_not_configured"} (no network)
+  POST save invalid JSON / list / non-string / null /
+       empty / spaces / inner space / 513 chars / newline
+        -> 422, fixed strings; full fake key absent from every body
+  POST save valid fake key (DPAPI)                      -> 200; file starts "BRKEY1\n"; plaintext
+                                                            key absent from file bytes;
+                                                            masked "sk-…cdef"; no full-key leak
+  masking of 9-char fake key                            -> "ABC…FGHI" (7 of 9 chars visible)
+  plaintext BRKEY0 envelope on Windows                  -> loads key; reported protection
+                                                            "dpapi-user" (finding F4)
+  env key set: GET                                      -> source=environment, can_clear=false
+  env key set: POST save / DELETE                        -> 409 / 409, stored file untouched
+  save failure (KEY_FILE parent is a regular file)      -> 500 {"detail":"could not persist the key."};
+                                                            no key in body; no *.tmp leftovers
+  DELETE stored key                                     -> 200; file removed; mode deterministic
+  cross-origin POST / bad Host                          -> 403 / 403
+  temp-file leftovers after normal saves/clears         -> none
+
+--------------------------------------------------------------------------------------------------
+7. Evidence-chain checks (P1/V5 untouched; tag/main untouched)
+--------------------------------------------------------------------------------------------------
+  git diff --stat b7ee9a8 8f0908a -- \
+    T8.3-evidence-2026-11-06 T8.3-refresh-2026-11-06 T8.3-supplement-2026-11-06 \
+    M4-v4-handoff-2026-11-06 delivery/p1-real-window-2026-11-07              -> empty (no changes)
+  origin/main before review: 472aa94b8d931e03a2b20a8e4f671ba64f832230
+  origin/main at review close: 472aa94b8d931e03a2b20a8e4f671ba64f832230 (unchanged)
+  v1.2.1 tag on origin: none (not created; public tag/main not moved by this review)
+  branch moved during review: 97c565d (agent.js reload), 8f0908a (backend/controller plan mode);
+  both deltas reviewed, no key handling added, no key echo/log/storage path added.
+
+--------------------------------------------------------------------------------------------------
+8. Reviewer evidence files (not committed; machine transcripts under .tmp, gitignored)
+--------------------------------------------------------------------------------------------------
+  D:\BinRepair\.tmp\review-findings\backend-findings.md
+  D:\BinRepair\.tmp\review-findings\frontend-export-findings.md
+  D:\BinRepair\.tmp\review-findings\probe\probe-results.md
+  D:\BinRepair\.tmp\review-findings\probe\probe.py
+  D:\BinRepair\.tmp\review-findings\probe\probe-raw.json
+  D:\BinRepair\.tmp\review-findings\lead-verify.py / lead-verify.log
+  D:\BinRepair\.tmp\review-findings\hostshim\dshenv_win_temp.py
