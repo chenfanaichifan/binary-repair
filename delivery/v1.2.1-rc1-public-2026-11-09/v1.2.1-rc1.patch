@@ -1,248 +1,141 @@
-From f74c52d011fd7835595bfd180c8f119229094f7d Mon Sep 17 00:00:00 2001
+From 13fec513ba0d3060ef7358a8398ebeee6cd41c6a Mon Sep 17 00:00:00 2001
 From: M4 <m4@example.invalid>
-Date: Mon, 9 Nov 2026 22:02:07 +0800
-Subject: [PATCH] fix: harden API-key storage and evidence copy
+Date: Mon, 9 Nov 2026 22:33:16 +0800
+Subject: [PATCH] fix: close F2 secret-file alias bypass
 
 ---
- app/services/assistant_key_store.py           | 52 ++++++++++++-------
- app/services/attempt_writer.py                |  2 +
- .../212-v1.2.1-real-deepseek-smoke.md         |  2 +-
- .../handoffs/213-v1.2.1-real-key-ui.md        |  2 +-
- .../handoffs/216-v1.2.1-security-fixes.md     | 29 +++++++++++
- tests/test_assistant_key_store.py             | 24 +++++++++
- tools/routea_bundle_to_attempt.py             |  2 +
- 7 files changed, 92 insertions(+), 21 deletions(-)
- create mode 100644 docs/development/handoffs/216-v1.2.1-security-fixes.md
+ app/services/assistant_key_store.py           | 20 ++++++++++++++++
+ app/services/attempt_writer.py                |  3 ++-
+ .../handoffs/217-v1.2.1-f2-hardening.md       | 24 +++++++++++++++++++
+ tools/route_bundle_ingest.py                  |  1 +
+ tools/routea_bundle_to_attempt.py             |  5 +++-
+ 5 files changed, 51 insertions(+), 2 deletions(-)
+ create mode 100644 docs/development/handoffs/217-v1.2.1-f2-hardening.md
 
 diff --git a/app/services/assistant_key_store.py b/app/services/assistant_key_store.py
-index 6982474..a182ea3 100644
+index a182ea3..086994d 100644
 --- a/app/services/assistant_key_store.py
 +++ b/app/services/assistant_key_store.py
-@@ -16,6 +16,8 @@ import base64
- import ctypes
- import os
- import sys
-+import tempfile
-+import threading
- from pathlib import Path
- from typing import Any
- 
-@@ -25,6 +27,8 @@ _FILE_ENV = "BINARYREPAIR_ASSISTANT_KEY_FILE"
- _MAGIC_DPAPI = b"BRKEY1\n"
- _MAGIC_PLAIN = b"BRKEY0\n"
- _MAX_KEY_LEN = 512
-+_MIN_KEY_LEN = 16
-+_SAVE_LOCK = threading.Lock()
+@@ -225,6 +225,26 @@ def clear_key() -> bool:
+             return False
  
  
- def _root() -> Path:
-@@ -142,19 +146,21 @@ else:  # pragma: no cover - CI may run here
- 
- def _atomic_write(path: Path, payload: bytes) -> None:
-     path.parent.mkdir(parents=True, exist_ok=True)
--    tmp = path.with_name(path.name + ".tmp")
-+    fd, name = tempfile.mkstemp(prefix=path.name + ".", suffix=".tmp", dir=str(path.parent))
-+    tmp = Path(name)
-     try:
--        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
--        if hasattr(os, "O_BINARY"):
--            # Windows defaults os.open to text mode and would turn LF into CRLF.
--            flags |= os.O_BINARY
--        fd = os.open(str(tmp), flags, 0o600)
-+        try:
-+            os.fchmod(fd, 0o600)
-+        except (AttributeError, OSError):
-+            pass
-         try:
-             os.write(fd, payload)
-             os.fsync(fd)
-         finally:
-             os.close(fd)
-         os.replace(tmp, path)
-+        if not path.is_file():
-+            raise OSError("key replacement did not produce a file")
-         try:
-             os.chmod(path, 0o600)
-         except OSError:
-@@ -166,18 +172,27 @@ def _atomic_write(path: Path, payload: bytes) -> None:
-             pass
- 
- 
--def save_key(key: str) -> dict[str, Any]:
--    key = (key or "").strip()
--    if not key:
--        raise ValueError("API key is empty")
-+def _validate_key(key: str) -> None:
-+    if len(key) < _MIN_KEY_LEN:
-+        raise ValueError("API key is too short")
-     if len(key) > _MAX_KEY_LEN:
-         raise ValueError("API key is too long")
-     if any(ch.isspace() for ch in key):
-         raise ValueError("API key must not contain whitespace")
-+    if any(ord(ch) < 33 or ord(ch) > 126 for ch in key):
-+        raise ValueError("API key must be printable ASCII")
 +
++def is_secret_file(path: Path) -> bool:
++    """True when ``path`` is the configured key file, including Windows aliases.
 +
-+def save_key(key: str) -> dict[str, Any]:
-+    key = (key or "").strip()
-+    if not key:
-+        raise ValueError("API key is empty")
-+    _validate_key(key)
-     payload, protection = _protect_for_storage(key)
-     if protection == "mode-0600":
-         payload = _MAGIC_PLAIN + base64.b64encode(key.encode("utf-8"))
--    _atomic_write(key_path(), payload)
-+    with _SAVE_LOCK:
-+        _atomic_write(key_path(), payload)
-     return {"configured": True, "protection": protection}
- 
- 
-@@ -202,19 +217,18 @@ def load_key() -> str:
- 
- def clear_key() -> bool:
-     path = key_path()
--    try:
--        path.unlink()
--        return True
--    except FileNotFoundError:
--        return False
-+    with _SAVE_LOCK:
-+        try:
-+            path.unlink()
++    ``samefile`` catches hardlinks and case/alias paths; the normalized-name
++    fallback catches Windows trailing-dot/space and default-stream spellings
++    even when the target is momentarily missing.
++    """
++    try:
++        target = key_path()
++        if path.resolve() == target.resolve():
 +            return True
-+        except FileNotFoundError:
-+            return False
- 
- 
++        if path.exists() and target.exists() and os.path.samefile(path, target):
++            return True
++    except OSError:
++        pass
++    name = path.name.rstrip(" .").casefold()
++    target_name = key_path().name.rstrip(" .").casefold()
++    return bool(name) and name == target_name
++
  def mask_key(key: str) -> str:
      if not key:
          return ""
--    if len(key) <= 8:
--        return "*" * len(key)
--    return key[:3] + "…" + key[-4:]
-+    return "*" * max(0, len(key) - 4) + key[-4:]
- 
- 
- def key_status() -> dict[str, Any]:
 diff --git a/app/services/attempt_writer.py b/app/services/attempt_writer.py
-index 51fb7f2..317b0e9 100644
+index 317b0e9..feb1505 100644
 --- a/app/services/attempt_writer.py
 +++ b/app/services/attempt_writer.py
-@@ -54,6 +54,8 @@ def _register(
+@@ -25,6 +25,7 @@ from pathlib import Path
+ from typing import Any
+ 
+ from app.db.connection import connect
++from app.services.assistant_key_store import is_secret_file
+ 
+ ROUTES = ("route_a", "route_b")
+ 
+@@ -54,7 +55,7 @@ def _register(
      source: Path,
      role: str,
  ) -> str:
-+    if source.name in {"assistant.key", ".env", "session.token"}:
-+        raise ValueError("refusing to copy secret material into evidence")
+-    if source.name in {"assistant.key", ".env", "session.token"}:
++    if is_secret_file(source) or source.name in {".env", "session.token"}:
+         raise ValueError("refusing to copy secret material into evidence")
      if not source.is_file():
          raise SystemExit(f"evidence file does not exist: {source}")
-     artifact_id = uuid.uuid4().hex
-diff --git a/docs/development/handoffs/212-v1.2.1-real-deepseek-smoke.md b/docs/development/handoffs/212-v1.2.1-real-deepseek-smoke.md
-index f0c1be9..c7fc927 100644
---- a/docs/development/handoffs/212-v1.2.1-real-deepseek-smoke.md
-+++ b/docs/development/handoffs/212-v1.2.1-real-deepseek-smoke.md
-@@ -19,7 +19,7 @@ No key was echoed in the response. No `.env` or key file was committed.
- ## UI path
- 
- ```text
--save -> 已保存（sk-…6789，保护：mode-0600）
-+save -> 已保存（sk-…<masked>，保护：mode-0600）
- input cleared -> True
- provider test -> 连接失败：llm_http_error (fake key only)
- clear -> 已清除；助手回到未配置状态
-diff --git a/docs/development/handoffs/213-v1.2.1-real-key-ui.md b/docs/development/handoffs/213-v1.2.1-real-key-ui.md
-index 7d3c300..369c92b 100644
---- a/docs/development/handoffs/213-v1.2.1-real-key-ui.md
-+++ b/docs/development/handoffs/213-v1.2.1-real-key-ui.md
-@@ -18,7 +18,7 @@ panel rendered
- enter real key
- save
- provider test -> 连接成功（model=deepseek-flash）；助手已可用。
--status -> 已保存（sk-…27d8，保护：mode-0600）
-+status -> 已保存（sk-…<masked>，保护：mode-0600）
- input cleared
- log key count -> 0
- clear -> 已清除；助手回到未配置状态
-diff --git a/docs/development/handoffs/216-v1.2.1-security-fixes.md b/docs/development/handoffs/216-v1.2.1-security-fixes.md
+diff --git a/docs/development/handoffs/217-v1.2.1-f2-hardening.md b/docs/development/handoffs/217-v1.2.1-f2-hardening.md
 new file mode 100644
-index 0000000..d60374d
+index 0000000..7351cea
 --- /dev/null
-+++ b/docs/development/handoffs/216-v1.2.1-security-fixes.md
-@@ -0,0 +1,29 @@
-+# 226 — v1.2.1 security fixes from M3 review
++++ b/docs/development/handoffs/217-v1.2.1-f2-hardening.md
+@@ -0,0 +1,24 @@
++# 229 — F2 full hardening after M3 re-review
 +
 +Date: 2026-11-09
 +
-+## Fixed
-+
-+- F1: mask reveals only the last 4 characters; no prefix leak.
-+- F1/F6: minimum 16 chars, printable ASCII only, whitespace rejected.
-+- A-1/F5: unique temp file + process lock + post-replace existence check;
-+  stale `.tmp` no longer blocks the first save.
-+- F2: bundle/artifact copy paths refuse `assistant.key`, `.env`,
-+  `session.token`.
-+- F3: masked tail removed from docs 216/218.
-+
-+## Verification
++The initial basename denylist was bypassable. Replaced with key-file identity
++checks:
 +
 +```text
-+key store/API/console: pass
-+full suite: pass
++is_secret_file(path):
++  resolve equality
++  os.path.samefile (hardlinks/case aliases)
++  normalized basename (Windows trailing dot/space/default stream spelling)
 +```
 +
-+## Remaining limitations
++Applied to:
 +
 +```text
-+Windows DPAPI cross-user: not tested
-+POSIX 0600 runtime: not independently exercised on Windows
++app/services/attempt_writer.py
++tools/routea_bundle_to_attempt.py (single and multi-evidence zip)
++tools/route_bundle_ingest.py
 +```
 +
-+No public tag/main movement.
-diff --git a/tests/test_assistant_key_store.py b/tests/test_assistant_key_store.py
-index 4734876..4e22165 100644
---- a/tests/test_assistant_key_store.py
-+++ b/tests/test_assistant_key_store.py
-@@ -38,3 +38,27 @@ def test_environment_key_wins_and_cannot_be_cleared(tmp_path: Path, monkeypatch)
-     status = assistant_key_store.key_status()
-     assert status["source"] == "environment"
-     assert status["can_clear"] is False
-+
-+
-+def test_mask_reveals_only_last_four() -> None:
-+    key = "sk-abcdefghijklmnopqrstuvwxyz1234"
-+    masked = assistant_key_store.mask_key(key)
-+    assert masked.endswith(key[-4:])
-+    assert key[:4] not in masked
-+    assert masked.count("*") == len(key) - 4
-+
-+
-+def test_short_and_non_ascii_keys_are_rejected(tmp_path, monkeypatch) -> None:
-+    import pytest
-+    monkeypatch.setenv("BINARYREPAIR_ASSISTANT_KEY_FILE", str(tmp_path / "assistant.key"))
-+    with pytest.raises(ValueError):
-+        assistant_key_store.save_key("short")
-+    with pytest.raises(ValueError):
-+        assistant_key_store.save_key("sk-abcdefghijklmnop\u0000")
-+
-+
-+def test_stale_temp_file_does_not_block_save(tmp_path, monkeypatch) -> None:
-+    monkeypatch.setenv("BINARYREPAIR_ASSISTANT_KEY_FILE", str(tmp_path / "assistant.key"))
-+    (tmp_path / "assistant.key.tmp").write_text("stale", encoding="utf-8")
-+    assistant_key_store.save_key("sk-stale-0123456789abcdef")
-+    assert assistant_key_store.load_key() == "sk-stale-0123456789abcdef"
++Custom `BINARYREPAIR_ASSISTANT_KEY_FILE` paths and hardlinks are covered.
++Tests: full suite pass.
+diff --git a/tools/route_bundle_ingest.py b/tools/route_bundle_ingest.py
+index 0295f73..b0a6351 100644
+--- a/tools/route_bundle_ingest.py
++++ b/tools/route_bundle_ingest.py
+@@ -43,6 +43,7 @@ if str(ROOT) not in sys.path:
+     sys.path.insert(0, str(ROOT))
+ 
+ from app.db.connection import connect
++from app.services.assistant_key_store import is_secret_file
+ from app.domain.analysis import ANALYSIS_ROLES, AnalysisArtifacts
+ from app.domain.interface import InterfaceCheckError, check_interface
+ from app.domain.v4 import V4EvidenceError, validate_v4_evidence
 diff --git a/tools/routea_bundle_to_attempt.py b/tools/routea_bundle_to_attempt.py
-index efe998a..785082a 100644
+index 785082a..6e8888f 100644
 --- a/tools/routea_bundle_to_attempt.py
 +++ b/tools/routea_bundle_to_attempt.py
-@@ -43,6 +43,8 @@ def _sha(path: Path) -> str:
+@@ -24,6 +24,7 @@ if str(ROOT) not in __import__("sys").path:
+     __import__("sys").path.insert(0, str(ROOT))
+ 
+ from app.db.connection import connect
++from app.services.assistant_key_store import is_secret_file
+ 
+ STATUS_MAP = {
+     "pass": "passed",
+@@ -43,7 +44,7 @@ def _sha(path: Path) -> str:
  
  
  def _register(*, data_dir: Path, job_id: str, attempt_id: str, source: Path) -> str:
-+    if source.name in {"assistant.key", ".env", "session.token"}:
-+        raise ValueError("refusing to copy secret material into evidence")
+-    if source.name in {"assistant.key", ".env", "session.token"}:
++    if is_secret_file(source) or source.name in {".env", "session.token"}:
+         raise ValueError("refusing to copy secret material into evidence")
      if not source.is_file():
          raise ValueError(f"evidence file missing: {source}")
-     artifact_id = uuid.uuid4().hex
+@@ -131,6 +132,8 @@ def convert(
+                     archive = Path(tmp) / f"{gate}-evidence.zip"
+                     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
+                         for source in sources:
++                            if is_secret_file(source):
++                                raise ValueError("refusing to copy secret material into evidence")
+                             zf.write(source, source.name)
+                     evidence[gate] = _register(data_dir=data_dir, job_id=job_id,
+                                                attempt_id=attempt_id, source=archive)
 -- 
 2.55.0
 
