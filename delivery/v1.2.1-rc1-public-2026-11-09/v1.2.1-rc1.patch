@@ -1,129 +1,248 @@
-From 3c0c9a0886a3a51ef802e6809d0cb06a070ad66c Mon Sep 17 00:00:00 2001
+From f74c52d011fd7835595bfd180c8f119229094f7d Mon Sep 17 00:00:00 2001
 From: M4 <m4@example.invalid>
-Date: Mon, 9 Nov 2026 21:39:05 +0800
-Subject: [PATCH] docs: include M2 v1.2.1 verification
+Date: Mon, 9 Nov 2026 22:02:07 +0800
+Subject: [PATCH] fix: harden API-key storage and evidence copy
 
 ---
- .../handoffs/215-v1.2.1-m2-verification.md    | 110 ++++++++++++++++++
- 1 file changed, 110 insertions(+)
- create mode 100644 docs/development/handoffs/215-v1.2.1-m2-verification.md
+ app/services/assistant_key_store.py           | 52 ++++++++++++-------
+ app/services/attempt_writer.py                |  2 +
+ .../212-v1.2.1-real-deepseek-smoke.md         |  2 +-
+ .../handoffs/213-v1.2.1-real-key-ui.md        |  2 +-
+ .../handoffs/216-v1.2.1-security-fixes.md     | 29 +++++++++++
+ tests/test_assistant_key_store.py             | 24 +++++++++
+ tools/routea_bundle_to_attempt.py             |  2 +
+ 7 files changed, 92 insertions(+), 21 deletions(-)
+ create mode 100644 docs/development/handoffs/216-v1.2.1-security-fixes.md
 
-diff --git a/docs/development/handoffs/215-v1.2.1-m2-verification.md b/docs/development/handoffs/215-v1.2.1-m2-verification.md
+diff --git a/app/services/assistant_key_store.py b/app/services/assistant_key_store.py
+index 6982474..a182ea3 100644
+--- a/app/services/assistant_key_store.py
++++ b/app/services/assistant_key_store.py
+@@ -16,6 +16,8 @@ import base64
+ import ctypes
+ import os
+ import sys
++import tempfile
++import threading
+ from pathlib import Path
+ from typing import Any
+ 
+@@ -25,6 +27,8 @@ _FILE_ENV = "BINARYREPAIR_ASSISTANT_KEY_FILE"
+ _MAGIC_DPAPI = b"BRKEY1\n"
+ _MAGIC_PLAIN = b"BRKEY0\n"
+ _MAX_KEY_LEN = 512
++_MIN_KEY_LEN = 16
++_SAVE_LOCK = threading.Lock()
+ 
+ 
+ def _root() -> Path:
+@@ -142,19 +146,21 @@ else:  # pragma: no cover - CI may run here
+ 
+ def _atomic_write(path: Path, payload: bytes) -> None:
+     path.parent.mkdir(parents=True, exist_ok=True)
+-    tmp = path.with_name(path.name + ".tmp")
++    fd, name = tempfile.mkstemp(prefix=path.name + ".", suffix=".tmp", dir=str(path.parent))
++    tmp = Path(name)
+     try:
+-        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+-        if hasattr(os, "O_BINARY"):
+-            # Windows defaults os.open to text mode and would turn LF into CRLF.
+-            flags |= os.O_BINARY
+-        fd = os.open(str(tmp), flags, 0o600)
++        try:
++            os.fchmod(fd, 0o600)
++        except (AttributeError, OSError):
++            pass
+         try:
+             os.write(fd, payload)
+             os.fsync(fd)
+         finally:
+             os.close(fd)
+         os.replace(tmp, path)
++        if not path.is_file():
++            raise OSError("key replacement did not produce a file")
+         try:
+             os.chmod(path, 0o600)
+         except OSError:
+@@ -166,18 +172,27 @@ def _atomic_write(path: Path, payload: bytes) -> None:
+             pass
+ 
+ 
+-def save_key(key: str) -> dict[str, Any]:
+-    key = (key or "").strip()
+-    if not key:
+-        raise ValueError("API key is empty")
++def _validate_key(key: str) -> None:
++    if len(key) < _MIN_KEY_LEN:
++        raise ValueError("API key is too short")
+     if len(key) > _MAX_KEY_LEN:
+         raise ValueError("API key is too long")
+     if any(ch.isspace() for ch in key):
+         raise ValueError("API key must not contain whitespace")
++    if any(ord(ch) < 33 or ord(ch) > 126 for ch in key):
++        raise ValueError("API key must be printable ASCII")
++
++
++def save_key(key: str) -> dict[str, Any]:
++    key = (key or "").strip()
++    if not key:
++        raise ValueError("API key is empty")
++    _validate_key(key)
+     payload, protection = _protect_for_storage(key)
+     if protection == "mode-0600":
+         payload = _MAGIC_PLAIN + base64.b64encode(key.encode("utf-8"))
+-    _atomic_write(key_path(), payload)
++    with _SAVE_LOCK:
++        _atomic_write(key_path(), payload)
+     return {"configured": True, "protection": protection}
+ 
+ 
+@@ -202,19 +217,18 @@ def load_key() -> str:
+ 
+ def clear_key() -> bool:
+     path = key_path()
+-    try:
+-        path.unlink()
+-        return True
+-    except FileNotFoundError:
+-        return False
++    with _SAVE_LOCK:
++        try:
++            path.unlink()
++            return True
++        except FileNotFoundError:
++            return False
+ 
+ 
+ def mask_key(key: str) -> str:
+     if not key:
+         return ""
+-    if len(key) <= 8:
+-        return "*" * len(key)
+-    return key[:3] + "…" + key[-4:]
++    return "*" * max(0, len(key) - 4) + key[-4:]
+ 
+ 
+ def key_status() -> dict[str, Any]:
+diff --git a/app/services/attempt_writer.py b/app/services/attempt_writer.py
+index 51fb7f2..317b0e9 100644
+--- a/app/services/attempt_writer.py
++++ b/app/services/attempt_writer.py
+@@ -54,6 +54,8 @@ def _register(
+     source: Path,
+     role: str,
+ ) -> str:
++    if source.name in {"assistant.key", ".env", "session.token"}:
++        raise ValueError("refusing to copy secret material into evidence")
+     if not source.is_file():
+         raise SystemExit(f"evidence file does not exist: {source}")
+     artifact_id = uuid.uuid4().hex
+diff --git a/docs/development/handoffs/212-v1.2.1-real-deepseek-smoke.md b/docs/development/handoffs/212-v1.2.1-real-deepseek-smoke.md
+index f0c1be9..c7fc927 100644
+--- a/docs/development/handoffs/212-v1.2.1-real-deepseek-smoke.md
++++ b/docs/development/handoffs/212-v1.2.1-real-deepseek-smoke.md
+@@ -19,7 +19,7 @@ No key was echoed in the response. No `.env` or key file was committed.
+ ## UI path
+ 
+ ```text
+-save -> 已保存（sk-…6789，保护：mode-0600）
++save -> 已保存（sk-…<masked>，保护：mode-0600）
+ input cleared -> True
+ provider test -> 连接失败：llm_http_error (fake key only)
+ clear -> 已清除；助手回到未配置状态
+diff --git a/docs/development/handoffs/213-v1.2.1-real-key-ui.md b/docs/development/handoffs/213-v1.2.1-real-key-ui.md
+index 7d3c300..369c92b 100644
+--- a/docs/development/handoffs/213-v1.2.1-real-key-ui.md
++++ b/docs/development/handoffs/213-v1.2.1-real-key-ui.md
+@@ -18,7 +18,7 @@ panel rendered
+ enter real key
+ save
+ provider test -> 连接成功（model=deepseek-flash）；助手已可用。
+-status -> 已保存（sk-…27d8，保护：mode-0600）
++status -> 已保存（sk-…<masked>，保护：mode-0600）
+ input cleared
+ log key count -> 0
+ clear -> 已清除；助手回到未配置状态
+diff --git a/docs/development/handoffs/216-v1.2.1-security-fixes.md b/docs/development/handoffs/216-v1.2.1-security-fixes.md
 new file mode 100644
-index 0000000..c198daf
+index 0000000..d60374d
 --- /dev/null
-+++ b/docs/development/handoffs/215-v1.2.1-m2-verification.md
-@@ -0,0 +1,110 @@
-+# 222 — M2 v1.2.1-rc verification: Windows DPAPI and key UI
++++ b/docs/development/handoffs/216-v1.2.1-security-fixes.md
+@@ -0,0 +1,29 @@
++# 226 — v1.2.1 security fixes from M3 review
 +
 +Date: 2026-11-09
-+Status: **verification record only**; v1.2.1 is a prerelease candidate, not a
-+stable public release.
 +
-+## References
++## Fixed
 +
-+```text
-+source tested      657ef27a397dc70c457b3c6e16cf2eb5bc85b8d1
-+signed receipt     db99eb0 (M4 role; role record, not independent signature)
-+public stable main 94393403319a10acc00552a7ae62836699036518
-+public stable tag  v1.2.0 (object 82f3209d…, peeled 9439340)
-+v1.1.3             367d29b (frozen)
-+v1.2.1             prerelease candidate; no public tag/main move
-+```
++- F1: mask reveals only the last 4 characters; no prefix leak.
++- F1/F6: minimum 16 chars, printable ASCII only, whitespace rejected.
++- A-1/F5: unique temp file + process lock + post-replace existence check;
++  stale `.tmp` no longer blocks the first save.
++- F2: bundle/artifact copy paths refuse `assistant.key`, `.env`,
++  `session.token`.
++- F3: masked tail removed from docs 216/218.
 +
-+The originally requested `220` number is already used by
-+`220-v1.2.1-rc1-candidate-2026-11-09.md`; this record uses `222`.
-+
-+## Windows DPAPI (actual run)
-+
-+Environment:
++## Verification
 +
 +```text
-+Python 3.13.14
-+Windows NT 10.0.26200.0 (win32)
-+key file: %TEMP%\br-assistant.key
-+fake key only; no real key committed or logged
++key store/API/console: pass
++full suite: pass
 +```
 +
-+Tests:
++## Remaining limitations
 +
 +```text
-+tests/test_assistant_key_store.py + test_assistant_key_api.py
-+  7 collected / 7 passed / 0 failed / 0 skipped
-+tests/test_agent_console.py
-+  56 collected / 56 passed / 0 failed / 0 skipped
-+full suite
-+  737 collected / 737 passed / 0 failed / 13 skipped
++Windows DPAPI cross-user: not tested
++POSIX 0600 runtime: not independently exercised on Windows
 +```
 +
-+DPAPI probe:
++No public tag/main movement.
+diff --git a/tests/test_assistant_key_store.py b/tests/test_assistant_key_store.py
+index 4734876..4e22165 100644
+--- a/tests/test_assistant_key_store.py
++++ b/tests/test_assistant_key_store.py
+@@ -38,3 +38,27 @@ def test_environment_key_wins_and_cannot_be_cleared(tmp_path: Path, monkeypatch)
+     status = assistant_key_store.key_status()
+     assert status["source"] == "environment"
+     assert status["can_clear"] is False
 +
-+```json
-+{
-+  "protection": "dpapi-user",
-+  "file_after_save": true,
-+  "file_after_clear": false,
-+  "raw_contains_key": false,
-+  "mask_contains_full_key": false,
-+  "api_status": 200,
-+  "api_contains_key": false,
-+  "env_priority_source": "environment",
-+  "clear_returned": true
-+}
-+```
 +
-+So:
++def test_mask_reveals_only_last_four() -> None:
++    key = "sk-abcdefghijklmnopqrstuvwxyz1234"
++    masked = assistant_key_store.mask_key(key)
++    assert masked.endswith(key[-4:])
++    assert key[:4] not in masked
++    assert masked.count("*") == len(key) - 4
 +
-+- [x] `key_status.protection = "dpapi-user"`
-+- [x] storage file is not plaintext
-+- [x] GET does not return the key
-+- [x] logs had zero occurrences of the fake key
-+- [x] clear removes the key file
-+- [x] environment key wins
 +
-+## Browser journey — Windows Edge/CDP (actual run)
++def test_short_and_non_ascii_keys_are_rejected(tmp_path, monkeypatch) -> None:
++    import pytest
++    monkeypatch.setenv("BINARYREPAIR_ASSISTANT_KEY_FILE", str(tmp_path / "assistant.key"))
++    with pytest.raises(ValueError):
++        assistant_key_store.save_key("short")
++    with pytest.raises(ValueError):
++        assistant_key_store.save_key("sk-abcdefghijklmnop\u0000")
 +
-+Started `app.main` from `657ef27` with a local OpenAI-compatible mock provider
-+and drove the real page with headless Microsoft Edge over CDP:
 +
-+```text
-+page /agent/new?fixture=1 -> key panel rendered
-+input type -> password
-+enter fake key, click 保存并测试
-+result -> 连接成功 (model=mock-model)
-+status -> 已保存（sk-…cdef，保护：dpapi-user）
-+input -> cleared
-+body/DOM -> key absent
-+mock provider -> Authorization: Bearer <fake key> on /v1/chat/completions
-+click 清除 -> 未配置
-+key file -> removed
-+```
-+
-+Script/log: `C:\BinRepair-artifacts\browser-journey.py`,
-+`_work/rc657-verify/browser-journey.out`.
-+
-+This is a fake-key browser journey; real-key Windows UI remains NOT RUN.
-+
-+## Real-key journeys
-+
-+```text
-+Linux real-key UI:   PASS per source record 218 (headless Chrome/CDP,
-+                     real key entered interactively, provider test succeeded,
-+                     key count in logs = 0, clear removed file)
-+Windows real-key UI: NOT RUN (no real key available on this Windows host)
-+```
-+
-+The Linux record is a source record, not an independent M2 Windows replay.
-+
-+## Boundaries
-+
-+- v1.2.1 remains a **prerelease candidate**; no public tag/main/release.
-+- public stable remains v1.2.0 at `9439340`.
-+- No real key was written to this record, logs, page, or repository.
-+- Windows browser journey was executed with a **fake key**; real-key Windows UI
-+  was not executed because no real key is available on this host.
-+- M4/Lead share the same human operator; this is not an independent
-+  two-person signature.
++def test_stale_temp_file_does_not_block_save(tmp_path, monkeypatch) -> None:
++    monkeypatch.setenv("BINARYREPAIR_ASSISTANT_KEY_FILE", str(tmp_path / "assistant.key"))
++    (tmp_path / "assistant.key.tmp").write_text("stale", encoding="utf-8")
++    assistant_key_store.save_key("sk-stale-0123456789abcdef")
++    assert assistant_key_store.load_key() == "sk-stale-0123456789abcdef"
+diff --git a/tools/routea_bundle_to_attempt.py b/tools/routea_bundle_to_attempt.py
+index efe998a..785082a 100644
+--- a/tools/routea_bundle_to_attempt.py
++++ b/tools/routea_bundle_to_attempt.py
+@@ -43,6 +43,8 @@ def _sha(path: Path) -> str:
+ 
+ 
+ def _register(*, data_dir: Path, job_id: str, attempt_id: str, source: Path) -> str:
++    if source.name in {"assistant.key", ".env", "session.token"}:
++        raise ValueError("refusing to copy secret material into evidence")
+     if not source.is_file():
+         raise ValueError(f"evidence file missing: {source}")
+     artifact_id = uuid.uuid4().hex
 -- 
 2.55.0
 
