@@ -4,7 +4,7 @@ Local public candidate:
 
 ```text
 base   94393403319a10acc00552a7ae62836699036518 (v1.2.0)
-commit a5b073d7b581de03beaff7c022452807b8ca4afe
+commit 3c0c9a0886a3a51ef802e6809d0cb06a070ad66c
 tag    v1.2.1-rc1 (annotated)
 ```
 
@@ -20,8 +20,8 @@ push with an authorized identity:
 
 ```bash
 git bundle verify v1.2.1-rc1.bundle
-git fetch ./v1.2.1-rc1.bundle a5b073d:refs/heads/v1.2.1-rc1
-git push origin a5b073d:refs/heads/v1.2.1-rc1
+git fetch ./v1.2.1-rc1.bundle 3c0c9a0:refs/heads/v1.2.1-rc1
+git push origin 3c0c9a0:refs/heads/v1.2.1-rc1
 git push origin refs/tags/v1.2.1-rc1
 ```
 
