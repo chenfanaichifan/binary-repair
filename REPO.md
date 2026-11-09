@@ -4,7 +4,7 @@
 HTTPS  https://github.com/chenfanaichifan/binary-repair
 SSH    git@github.com:chenfanaichifan/binary-repair.git
 branch delivery/all-hands-2026-11-07
-head   4c804eb862e9dda1f22e3f4cd98ef8bcc52fc9f1
+head   088f9d344642715a7fa31ec805fa31fc1096221d
 ```
 
 ## Current status
