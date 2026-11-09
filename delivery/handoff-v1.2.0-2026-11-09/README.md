@@ -8,6 +8,7 @@ main    94393403319a10acc00552a7ae62836699036518
 tag     v1.2.0
 source  60c4aab205850b8d477b47d31bb34a3a1e01f247
         fetch ref v1.2.0-source
+release branch 1c6c86d (record 209 correction)
 ```
 
 Receipt:
