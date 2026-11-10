@@ -11,6 +11,7 @@
 - **Fake keys only.** No real provider key was read, written, logged, or transmitted by this review. No provider call was completed; the one attempted call was blocked by the probe's egress guard. No P1/V5 run was repeated, no binary was executed, no VM was started.
 - **Conclusion up front:** **PASS WITH LIMITATION** — no full-key disclosure was found in the reviewed store/API/UI/export paths, but two MEDIUM findings (mask policy, bundle-evidence path containment), one MEDIUM concurrency/atomicity defect, and several LOW findings are recorded, and the POSIX 0600 fallback was not executed on a POSIX host.
 - **Fix re-review (same day, reviewed source `0d5791a`):** M5 fixed F1/A-1/F3 and partially mitigated F2; independent re-verification found **F2 not fixed** (HIGH residual bypasses) plus residual F1/A-1 edges. See **§9 addendum** — it supersedes the per-finding statuses above but not the original evidence.
+- **F2 focused re-review (2026-11-10, reviewed commit `b06dadc`):** new `is_secret_file`-based fix passes all **8 required stored-key-file vectors** (pre-copy ValueError, 0 artifacts, 0 ZIPs with key), but is **not a full F2 closure**: `.env`/`session.token` aliases and a custom-env regression remain open. See **§10 addendum** (F2: PASS for the focused scope; overall F2 hardening still OPEN).
 
 ---
 
@@ -426,4 +427,105 @@ Full re-review transcript excerpts: `docs/reviews/evidence/review-13-fix-rerevie
 | No key leakage | **NOT CLEAN (F2 residual)** | No full key in committed files/logs/responses (scanned); but F2's host-side copy path can still copy the stored key file into artifacts/exports under a crafted bundle (N-3) — plaintext on the POSIX fallback; F3 real-key tails removed from docs 216/218 |
 | Unverified items explicit | **PASS** | §9.4 (6 items) |
 | P1/V5 evidence unmodified | **PASS** | `git diff --stat 8f0908a 0d5791a -- T8.3-* M4-v4-handoff-* delivery/p1-*` empty; no P1/V5 run repeated |
-| Tags/main not moved | **PASS** | `origin/main` still `472aa94b8d931e03a2b20a8e4f671ba64f832230`; no `v1.2.1` tag; release branch moved by M2/M5 (`0d5791a`→`c495656`, docs-only), not by this review |
+| Tags/main not moved | **PASS** | `origin/main` still `472aa94b8d931e03a2b20a8e4f671ba64f832230`; no `v1.2.1` tag; release branch moved by M2/M5 (`0d5791a`→`c495656`), docs-only, not by this review |
+
+---
+
+## 10. F2 focused re-review addendum — M5 fix commit `b06dadc` (2026-11-10)
+
+**reviewed commit `b06dadc40373b499f7ca46b338d2c6853cc0e86d`** ("fix(m5): close F2 secret-file aliases and archive bypass", M5, 2026-11-09 22:33 +0800; parent `78ac8d2`).
+
+- Release branch head at review close: `99d15507a93aeecae511370ac3a2264f68c87782` (docs-only delta over `b06dadc`: 222/228 status alignment). The reviewed code files and `docs/handoffs/229` are **byte-identical** between `b06dadc` and `99d1550` (`git diff --stat b06dadc 99d1550 -- <scope files>` empty).
+- Reviewed files (blob SHA-1 at `b06dadc`):
+  - `app/services/assistant_key_store.py` → `086994d707fecb2e8dc07e2d73bce262fb919d54` (new `is_secret_file`, lines 229-246)
+  - `app/services/attempt_writer.py` → `feb150546178781fac99d1ad662dd66a17c45a8a` (line 58 uses it)
+  - `tools/routea_bundle_to_attempt.py` → `6e8888f332cf0a78db5fa6a5f8afdb0854731cf8` (lines 47 and 135)
+  - `tools/route_bundle_ingest.py` → `b0a6351f38c20eb7404da6b21ee1ab93e6faea3b` (line 46: import only)
+  - `docs/handoffs/229-v1.2.1-f2-hardening-2026-11-09.md` → `7351cea151b00e63c9c1ae0d65a7cd2217e8a136`
+- Method: Lead static review + adversarial probe; one **independent** verifier agent (`f2-verifier`, Team task `task-5`) with separate logs. M5 wrote the fix and did not review its own work; this addendum is the M3 reviewer's independent result. Fake keys only; no provider/network call; no tracked file modified; no P1/V5 rerun.
+- `is_secret_file` design: resolve-equality with `key_path()`, `os.path.samefile` (hardlinks/case aliases) when both exist, and a normalized-basename fallback (`rstrip(" .")` + `casefold()`). Adapters call it before copying; the Route A multi-evidence ZIP loop calls it per source before `zf.write`.
+
+### 10.1 Required adversarial vectors — 8/8 PASS
+
+All of these were rejected **before any copy**: `ValueError("refusing to copy secret material into evidence")`, 0 artifact files, 0 ZIP archives, 0 DB rows, `jobs/` tree not created, and no key bytes in the error output.
+
+| # | Vector | `is_secret_file` | `attempt_writer` | routea single | Result |
+|---|---|---|---|---|---|
+| 1 | exact `…\assistant.key` | True | ValueError, 0 copied | ValueError, 0 copied | PASS |
+| 2 | `ASSISTANT.KEY` (case alias) | True | ValueError, 0 copied | ValueError, 0 copied | PASS |
+| 3 | `assistant.key.` (trailing dot) | True | ValueError, 0 copied | ValueError, 0 copied | PASS |
+| 4 | `"assistant.key "` (trailing space) | True | ValueError, 0 copied | ValueError, 0 copied | PASS |
+| 5 | `assistant.key::$DATA` | True | ValueError, 0 copied | ValueError, 0 copied | PASS |
+| 6 | hardlink `loot.bin -> assistant.key` | True | ValueError, 0 copied | ValueError, 0 copied | PASS |
+| 7 | custom key file `mykey.dat` (same env in adapter) | True | ValueError, 0 copied | ValueError, 0 copied | PASS |
+| 8 | Route A multi-evidence ZIP containing `assistant.key` (both source orders) | — | — | ValueError, ZIP count 0 | PASS |
+
+The Route A ZIP branch (the previous bypass) now fails closed: temp archive is cleaned, nothing registered, for `assistant.key` as first or last source, and also for `ASSISTANT.KEY` / trailing-dot / `::$DATA` / hardlink / `../` aliases (verifier's expanded matrix). Benign evidence still copies/registers normally (control), so the fix is not a blanket block. Rejection point: `is_secret_file` is checked before `source.is_file()` / `shutil.copyfile` in both writer `_register()` functions and before `zf.write()` in the ZIP loop. Error messages contain the fixed refusal sentence and no key value.
+
+### 10.2 F2 verdict
+
+**F2: PASS (focused re-review scope)** — the eight required vectors all fail closed, 0 artifacts, 0 ZIPs containing the key, 0 DB rows, and the rejection is pre-copy with a non-secret error message. The commit does what the task's vector list asks for the stored key file.
+
+**This is not a clean "F2 fully closed" result.** The same commit message/record claim "secret-file aliases" and `docs/handoffs/229` claims application to `route_bundle_ingest.py`; independent probing found the following open issues. Overall F2 hardening should stay **OPEN** at the "all designated secret files / env-independent" bar until N-8/N-9/N-10 are fixed or explicitly accepted.
+
+### 10.3 New findings
+
+- **N-8 (HIGH, pre-existing — not closed by b06dadc): `.env` and `session.token` Windows aliases are still copied, and the ZIP branch copies even their plain names.** `attempt_writer._register` keeps only the exact-name set for these two, so `.ENV`, `.env.`, `".env "`, `.env::$DATA`, and a hardlink to `.env` are copied (artifact files created; the fake-key `.env` bytes verified in the copied file); `SESSION.TOKEN`, `session.token.`, and hardlinks behave the same. The Route A multi-evidence ZIP branch calls only `is_secret_file` per source, so a plain `.env` or `session.token` evidence member is accepted and ends up inside the registered `V*-evidence.zip` (Lead probe: zip members `[".env", "other.txt"]`, with the `.env` plaintext key value inside). `var/session.token` is the live GUI session credential (`app/main.py:46-70`); `.env` can hold `BINARYREPAIR_ASSISTANT_PROVIDER_KEY`. This is the same exfiltration class as F2 and is *not* fixed by the commit.
+- **N-9 (MEDIUM, regression vs `0d5791a`): the unconditional `assistant.key` name deny was dropped.** The old check refused any source basename `assistant.key`; the new check only refuses the *configured* key file identity plus exact `.env`/`session.token`. When `BINARYREPAIR_ASSISTANT_KEY_FILE` points at a custom name (or a missing custom file), a separate file literally named `assistant.key` is no longer refused and is copied by `attempt_writer` and routea (Lead-reproduced: `is_secret_file=false`, artifact `…/assistant.key` created containing the fake key bytes; default-config control still blocks it). Restore an unconditional `assistant.key` basename deny (in addition to `is_secret_file`) or canonicalise every source against the key path predicate.
+- **N-10 (MEDIUM): custom-key protection depends on the adapter process seeing the same `BINARYREPAIR_ASSISTANT_KEY_FILE`.** In-process with the env set the custom file is blocked; a subprocess adapter with the variable removed copies the custom-named key file (Lead-reproduced via a subprocess; routea ZIP member would contain the key bytes). Worker processes inherit `os.environ`, but standalone routea tooling/launchers may not — record this limitation and avoid relying on env-var equality across processes.
+- **N-11 (LOW/MEDIUM, documentation integrity): `docs/handoffs/229` overstates the fix.** It says `is_secret_file` was "Applied to `tools/route_bundle_ingest.py`", but that file only gained an **unused import** (0 call sites, confirmed by grep); `_safe_file`/`_register_file` still accept and copy a bundle-local `assistant.key`/`.env` unchecked (route_bundle_ingest only reads inside the bundle root, so this is a defense-in-depth gap rather than a host-key exfiltration path, but the claim is false). The same record's "Tests: full suite pass" was not reproduced: b06dadc adds **no tests** and no committed test references the refusal; the verifier's full-suite attempt on this sandbox gave 740 collected / 715 passed / 13 skipped / **12 environment errors** (all e2e Edge/CDP setup) exit 1; targeted subsets passed (Lead: 66/66 required and 70/70 five-file; verifier: 86/86 targeted).
+- **N-12 (LOW): `is_secret_file` docstring inaccuracy.** It claims the name fallback catches the `::$DATA` spelling "even when the target is momentarily missing"; verified FALSE for a missing configured target (`is_secret_file("…missing.dat::$DATA")` → False). No security impact when the target exists (resolve/samefile catch it), but the documented guarantee is not real.
+- **N-13 (INFO): over-blocking trade-off / no tests.** Blocking any path whose normalized basename equals the configured key name even when the key file is absent is conservative and harmless; the commit adds no regression tests for `is_secret_file` or the two writers, so the new behaviour is unguarded against future edits.
+
+### 10.4 Tests and evidence (re-review)
+
+```text
+required command (adapted as before: macOS path absent, sandbox tmp_path shim):
+D:\Binary_Repair\.venv\Scripts\python.exe -m pytest -q -o addopts= \
+  -p dshenv_win_temp -p no:cacheprovider \
+  tests/test_assistant_key_store.py tests/test_assistant_key_api.py tests/test_agent_console.py
+-> exit 0; 66 passed, 1 warning (store 5 / api 5 / agent console 56)
+
+five-file subset incl. adapters:
+tests/test_attempt_writer_gates.py 2 passed; tests/test_routea_adapter.py 2 passed
+-> 70 passed, exit 0
+
+git diff --stat b06dadc^ b06dadc           -> 5 files, +51/-2 (no tests)
+git diff --stat b06dadc 99d1550 -- <scope> -> empty (docs-only branch movement after the fix)
+Lead probes: is_secret_file matrix; required 8 vectors through both writers + ZIP branch
+  (both orders); .env/session.token alias matrix; custom-key env-mismatch subprocess;
+  route_bundle_ingest claim check; custom-env regression check; error-message scan.
+Verifier (independent, task-5): expanded matrix incl. ../ traversal, CLI end-to-end,
+  controls, full-suite attempt and targeted subsets; raw logs under
+  D:\BinRepair\.tmp\review-f2-b06dadc\ (not committed).
+```
+
+### 10.5 Residual limitations
+
+1. Symlink aliases and 8.3 short-name aliases were not executable on this host (symlink privilege `WinError 1314`; 8.3 names disabled); `is_secret_file`'s resolve/samefile logic should catch a symlink to the key file, but this is unverified.
+2. POSIX `mode-0600` plaintext fallback not exercised; `is_secret_file` is platform-neutral, but the real-copy exposure on POSIX was not run.
+3. The custom-`BINARYREPAIR_ASSISTANT_KEY_FILE` protection is env-dependent (N-10); worker env propagation and launcher configurations were not audited end to end.
+4. Full guest→adapter→artifact-download pipeline and `route_bundle_ingest.ingest()` full flow were not driven; the ZIP branch and `_register` primitives were tested directly.
+5. Real DPAPI key material was not used; only fake key bytes.
+6. The repository's full test suite is not green in this sandbox (12 environment e2e errors); the 740-test "full suite pass" claim remains unreproduced.
+
+### 10.6 Updated disposition
+
+- **F2 focused fix `b06dadc`: PASS** for the required stored-key-file vectors (8/8, pre-copy, 0 artifacts/ZIPs/rows).
+- **Overall F2 hardening: OPEN** — N-8 (`.env`/`session.token` aliases + ZIP plain-name copies) is HIGH and in the same leak class; N-9 is a MEDIUM regression; N-10 is an env-dependent coverage limitation; N-11's false claims must be corrected. Recommended before any stable `v1.2.1` tag (and before repeating a "F2 fixed" claim):
+  1. generalise the secret predicate to cover `.env`/`session.token` aliases (resolve/samefile/normalized name) and apply it to **every** evidence source, including the Route A ZIP loop (not only `is_secret_file`);
+  2. restore the unconditional `assistant.key` basename deny alongside `is_secret_file`, or canonicalise all sources against the configured key path;
+  3. wire `is_secret_file` into `route_bundle_ingest` or remove the import and correct `docs/handoffs/229`;
+  4. add committed regression tests for the 8 vectors and the `.env`/`session.token` aliases.
+  This is consistent with the earlier §9.5 recommendation to keep the stable tag held; an rc prerelease may proceed with these documented limitations.
+
+### 10.7 Submission gates (提交门槛)
+
+| Gate | Status | Evidence |
+|---|---|---|
+| All bypass attempts rejected | **PASS for the 8 required vectors** (8/8 ValueError, 0 artifacts, 0 zips containing the key, pre-copy) / **NOT CLEAN for the extra attempts** (` .env`/`session.token` aliases, routea ZIP plain names, custom-key env mismatch → N-8/N-9/N-10) | §10.1 table + §10.3; Lead and verifier probes |
+| No key leakage | **PASS for the stored `var/assistant.key`** (no copy in any required vector; no full key in repo/logs/responses) / **residual limitation**: `.env` (which may hold the real provider key) and `session.token` can still be copied via N-8 | §10.3 N-8 |
+| Unverified items explicit | **PASS** | §10.5 (6 items) |
+| P1/V5 evidence unmodified | **PASS** | `git diff --stat b06dadc^ b06dadc -- T8.3-* M4-v4-handoff-* delivery/p1-*` empty; no P1/V5 run repeated |
+| Tags/main not moved | **PASS** | `origin/main` still `472aa94b8d931e03a2b20a8e4f671ba64f832230`; no `v1.2.1` tag; release branch moved by M5 docs (`b06dadc`→`99d1550`), not by this review |
+| Independent re-review, not M5 self-review | **PASS** | M5 authored `b06dadc`; the fix was reviewed and probed by the M3 reviewer role plus a separately-run independent verifier agent (`task-5`), with separate raw logs. All agents are AI role windows operated by the same human owner: role-separated review, not a human-independent two-person signature — no such claim is made. |

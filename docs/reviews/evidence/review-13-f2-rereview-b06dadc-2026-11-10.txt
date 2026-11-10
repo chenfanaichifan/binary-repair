@@ -1,0 +1,141 @@
+Review 13 addendum §10 — F2 focused re-review of M5 commit b06dadc — evidence transcript
+Date: 2026-11-10
+Reviewer: M3 role (independent of M5, who authored the fix; independent of M2, who authored the feature)
+Reviewed commit: b06dadc40373b499f7ca46b338d2c6853cc0e86d  ("fix(m5): close F2 secret-file aliases and archive bypass")
+Parent: 78ac8d2
+Release branch head at review close: 99d15507a93aeecae511370ac3a2264f68c87782 (docs-only delta over b06dadc;
+  git diff --stat b06dadc 99d1550 -- <reviewed files> = empty)
+Review worktree: D:\BinRepair\.tmp\review-v121 (HEAD 2f15886 merge; reviewed code identical to b06dadc)
+Host: Windows; Python 3.12.15 (D:\Binary_Repair\.venv\Scripts\python.exe); pytest 9.2.0.
+Fake keys only; no provider/network call; no tracked file modified; no P1/V5 run repeated.
+
+Reviewed blob SHA-1s at b06dadc:
+  086994d707fecb2e8dc07e2d73bce262fb919d54  app/services/assistant_key_store.py  (is_secret_file, lines 229-246)
+  feb150546178781fac99d1ad662dd66a17c45a8a  app/services/attempt_writer.py        (line 58)
+  6e8888f332cf0a78db5fa6a5f8afdb0854731cf8  tools/routea_bundle_to_attempt.py    (lines 47, 135)
+  b0a6351f38c20eb7404da6b21ee1ab93e6faea3b  tools/route_bundle_ingest.py          (line 46: import only)
+  7351cea151b00e63c9c1ae0d65a7cd2217e8a136  docs/handoffs/229-v1.2.1-f2-hardening-2026-11-09.md
+
+Fix diff: 5 files, +51/-2; the commit adds NO tests (git diff --stat b06dadc^ b06dadc -- tests = empty).
+
+--------------------------------------------------------------------------------------------------
+1. Required adversarial vectors — 8/8 PASS (Lead probe; independently reproduced by verifier task-5)
+--------------------------------------------------------------------------------------------------
+Setup: fake assistant.key (plain fake key bytes) in scratch; BINARYREPAIR_ASSISTANT_KEY_FILE set to it
+for the same-process adapter checks. Expected: ValueError, 0 artifacts, 0 zips containing the key.
+
+vector                                                    is_secret_file  attempt_writer              routea single
+1 exact ...\assistant.key                                 True            ValueError, copied=[]      ValueError, copied=[]
+2 ASSISTANT.KEY (case alias)                              True            ValueError, copied=[]      ValueError, copied=[]
+3 assistant.key. (trailing dot)                           True            ValueError, copied=[]      ValueError, copied=[]
+4 "assistant.key " (trailing space)                       True            ValueError, copied=[]      ValueError, copied=[]
+5 assistant.key::$DATA (NTFS default stream)              True            ValueError, copied=[]      ValueError, copied=[]
+6 hardlink loot.bin -> assistant.key                      True            ValueError, copied=[]      ValueError, copied=[]
+7 custom mykey.dat (BINARYREPAIR_ASSISTANT_KEY_FILE set)  True            ValueError, copied=[]      ValueError, copied=[]
+
+8 Route A multi-evidence ZIP containing assistant.key:
+  evidence ["assistant.key", "other.txt"]   -> ValueError; artifact_files=[]; zip_count=0; no data registered
+  reversed ["other.txt", "assistant.key"]   -> ValueError; artifact_files=[]; zip_count=0
+  controls (benign evidence) still copy/register normally.
+
+Rejection-before-copy: artifact directory listing identical before/after every rejected vector
+(artifact_delta 0); jobs/ tree not created; DB rows 0.
+Error messages: exactly "refusing to copy secret material into evidence"; fake key bytes absent from
+all error messages and from the data dir. No path/value of the secret appears in the error text.
+
+is_secret_file matrix (Lead): exact/case/mixed case/trailing dot/trailing space/::$DATA/relative/
+./relative/subdir-../nonexistent-same-name/hardlink/custom-name-with-env -> True; unrelated file ->
+False; ".env" -> False (by design in this helper). Symlink creation not permitted on this host
+(WinError 1314) -> not verified. 8.3 short names disabled -> not verified.
+
+--------------------------------------------------------------------------------------------------
+2. New findings (residual; not part of the 8-vector scope)
+--------------------------------------------------------------------------------------------------
+N-8 HIGH (pre-existing, not closed): .env and session.token Windows aliases are still copied.
+  attempt_writer._register keeps only the exact-name set for these two:
+    ".ENV"            -> copied (artifact jobs/.../.ENV)
+    ".env."           -> copied
+    ".env "           -> copied
+    ".env::$DATA"     -> copied
+    hardlink loot.env.bin -> .env  -> copied
+    "SESSION.TOKEN" / "session.token." -> copied
+  Route A multi-evidence ZIP branch only calls is_secret_file per source, so even plain ".env" /
+  "session.token" evidence members are accepted: V0 evidence [".env","other.txt"] ->
+  registered V0-evidence.zip; zip members [".env","other.txt"]; .env plaintext key value inside zip.
+  var/session.token is the live GUI session credential; .env can hold the provider key.
+
+N-9 MEDIUM (regression vs 0d5791a): unconditional "assistant.key" name deny dropped.
+  With BINARYREPAIR_ASSISTANT_KEY_FILE=<custom mykey.dat> (or a missing custom path), a separate
+  file literally named assistant.key is is_secret_file=False and is copied by attempt_writer and
+  routea single (artifact .../assistant.key with the fake key bytes). Default config control:
+  env unset -> is_secret_file=True and ValueError (blocked).
+
+N-10 MEDIUM: custom-key protection depends on the adapter process seeing the same
+  BINARYREPAIR_ASSISTANT_KEY_FILE. Subprocess adapter with the variable removed copied custom
+  mykey.dat (artifact copy contained the fake key bytes). Worker env inheritance was not audited.
+
+N-11 LOW/MEDIUM (doc claim): docs/handoffs/229 says is_secret_file was "Applied to
+  tools/route_bundle_ingest.py"; that file only got an unused import (git grep: import at line 46,
+  0 call sites). _safe_file/_register_file accept/copy a bundle-local assistant.key/.env unchecked
+  (route_bundle_ingest reads only inside the bundle root; containment checks for absolute/../ are
+  intact, so this is defense-in-depth rather than host-key exfiltration, but the claim is false).
+  "Tests: full suite pass" was not reproduced: b06dadc adds no tests and no committed test
+  references the refusal; verifier full-suite attempt: 740 collected / 715 passed / 13 skipped /
+  12 environment errors (e2e Edge/CDP setup), exit 1.
+
+N-12 LOW (docstring): is_secret_file docstring claims the name fallback catches ::$DATA "even when
+  the target is momentarily missing"; verified False for a missing configured target
+  (is_secret_file("...missing.dat::$DATA") -> False). No security impact when the target exists.
+
+N-13 INFO: is_secret_file over-blocks any file whose normalized name equals the configured key name
+  even when the key file is absent (conservative, harmless); no regression tests were added.
+
+--------------------------------------------------------------------------------------------------
+3. Tests (Lead)
+--------------------------------------------------------------------------------------------------
+Required command (adapted as before: macOS binutils path not present; sandbox tmp_path shim used):
+  D:\Binary_Repair\.venv\Scripts\python.exe -m pytest -q -o addopts= \
+    -p dshenv_win_temp -p no:cacheprovider \
+    tests/test_assistant_key_store.py tests/test_assistant_key_api.py tests/test_agent_console.py
+  -> exit 0
+     66 passed, 1 warning
+     (store 5 / api 5 / agent console 56)
+
+Additional adapter tests:
+  tests/test_attempt_writer_gates.py -> 2 passed
+  tests/test_routea_adapter.py       -> 2 passed
+  five-file combined                 -> 70 passed, 1 warning, exit 0
+
+Verifier (independent): targeted subset 86/86 passed; full-suite attempt not green in this sandbox
+(12 environment e2e errors, see N-11).
+
+--------------------------------------------------------------------------------------------------
+4. Evidence-chain checks
+--------------------------------------------------------------------------------------------------
+git diff --stat b06dadc^ b06dadc -- T8.3-evidence-2026-11-06 T8.3-refresh-2026-11-06 \
+  T8.3-supplement-2026-11-06 M4-v4-handoff-2026-11-06 delivery/p1-real-window-2026-11-07 -> empty
+origin/main at review close: 472aa94b8d931e03a2b20a8e4f671ba64f832230 (unchanged)
+v1.2.1 tag on origin: none
+Release branch movement after the fix: b06dadc -> 99d1550 (docs 222/228 only), not by this review.
+
+--------------------------------------------------------------------------------------------------
+5. Verdict (focused re-review)
+--------------------------------------------------------------------------------------------------
+F2: PASS for the 8 required stored-key-file vectors (8/8 pre-copy ValueError, 0 artifacts,
+    0 ZIPs containing the key, 0 DB rows, clean error text).
+F2 overall hardening: NOT CLOSED — open N-8 (HIGH, .env/session.token aliases + ZIP plain names),
+    N-9 (MEDIUM regression), N-10 (MEDIUM env-dependent custom-key coverage), N-11 doc claims.
+Recommended before any "F2 fixed" statement/stable tag: generalise the secret predicate to
+.env/session.token aliases and apply it to every evidence source including the ZIP loop; restore
+the unconditional assistant.key basename deny; wire route_bundle_ingest or correct docs/229; add
+committed regression tests.
+
+--------------------------------------------------------------------------------------------------
+6. Reviewer working evidence (machine transcripts; not committed; under .tmp, gitignored)
+--------------------------------------------------------------------------------------------------
+D:\BinRepair\.tmp\review-f2-b06dadc\verifier-findings.md      (independent verifier, task-5)
+D:\BinRepair\.tmp\review-f2-b06dadc\probe-results.json / probe.log / supp-results.json / supp.log
+D:\BinRepair\.tmp\review-f2-b06dadc\targeted-tests.log / full-suite.log
+D:\BinRepair\.tmp\review-f2-b06dadc\lead-f2-probe.py / lead-f2-probe.log
+D:\BinRepair\.tmp\review-f2-b06dadc\lead-regression-check.py / (output)
+D:\BinRepair\.tmp\review-f2-b06dadc\official-run-b06dadc.log
