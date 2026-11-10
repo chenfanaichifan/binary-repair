@@ -1,28 +1,27 @@
-# BinaryRepair v1.2.1-rc1 candidate handoff
+# BinaryRepair v1.2.1-rc1 handoff
 
 ```text
-public base  94393403319a10acc00552a7ae62836699036518 (v1.2.0)
-source       657ef27a397dc70c457b3c6e16cf2eb5bc85b8d1
-docs head    ab25c179570940b65214ed06661b1778d47b4eeb
-candidate    d7d20f4ff2f920b5cfec5e81e3c4377529a9885a
-receipt      db99eb0 (signed M4 role record)
+source        ab25c17
+public candidate d7d20f4
+tag           v1.2.1-rc1
+tag object    f5346978b46622c6c582e13d7cf6330f72e638f3
+release       https://github.com/leesirleesirlee-star/Binary_Repair/releases/tag/v1.2.1-rc1
+public main   9439340 / v1.2.0
+v1.1.3        367d29b frozen
 ```
 
 Verification:
 
 ```text
-737 collected / 735 passed / 2 Linux-only skipped / 0 failed
+741 collected / 739 passed / 2 Linux-only skipped / 0 failed
 browser e2e 12 passed
-Linux real-key UI PASS
-real provider smoke ok (deepseek-flash, 38/5/43)
+signed receipt db99eb0
 ```
 
-Limitation:
+Limitations:
 
 ```text
-Windows DPAPI: PASS with fake key
-Windows real-key UI: NOT RUN
+N-10 accepted limitation
+Windows real-key cross-head 8f0908a
+0d/99d real-key NOT RUN
 ```
-
-This is a prerelease candidate, not public v1.2.1 stable. M4 owns any public
-prerelease tag/release.
