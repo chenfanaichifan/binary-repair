@@ -529,3 +529,33 @@ Verifier (independent, task-5): expanded matrix incl. ../ traversal, CLI end-to-
 | P1/V5 evidence unmodified | **PASS** | `git diff --stat b06dadc^ b06dadc -- T8.3-* M4-v4-handoff-* delivery/p1-*` empty; no P1/V5 run repeated |
 | Tags/main not moved | **PASS** | `origin/main` still `472aa94b8d931e03a2b20a8e4f671ba64f832230`; no `v1.2.1` tag; release branch moved by M5 docs (`b06dadc`→`99d1550`), not by this review |
 | Independent re-review, not M5 self-review | **PASS** | M5 authored `b06dadc`; the fix was reviewed and probed by the M3 reviewer role plus a separately-run independent verifier agent (`task-5`), with separate raw logs. All agents are AI role windows operated by the same human owner: role-separated review, not a human-independent two-person signature — no such claim is made. |
+
+### 10.8 Release-gate restatement (2026-11-10, M3 highest-priority request)
+
+No review work was repeated for this restatement; it records the same `b06dadc` evidence in the exact gate form requested.
+
+```text
+reviewed commit b06dadc
+F2: PASS
+
+PASS scope: the task-defined F2 bypass vectors against the stored API-key file
+(exact path, ASSISTANT.KEY case alias, trailing dot, trailing space, ::$DATA,
+hardlink, custom BINARYREPAIR_ASSISTANT_KEY_FILE in the same adapter env, and the
+Route A multi-evidence ZIP containing assistant.key). All were rejected with
+ValueError before any copy; artifact files = 0; ZIPs containing the key = 0;
+DB rows = 0; error text contains no key.
+```
+
+- **Windows DPAPI: cited from M2 evidence only.** This F2-focused re-review did not re-test DPAPI and makes **no independent DPAPI claim**; the only basis is M2's recorded evidence (`docs/handoffs/222-v1.2.1-rc-verification-2026-11-09.md` and `docs/handoffs/229-v1.2.1-f2-hardening-2026-11-09.md` / M2's DPAPI probe). Earlier DPAPI runs in this review (§3.5, §9) belong to the original review, not to this F2 gate.
+- **PASS/FAIL consequence:** M3 verdict is **PASS** for the F2 focused scope, so the rule "M3 FAIL ⇒ M4 must not publish rc1" is **not triggered** — M4 may publish **v1.2.1-rc1 prerelease only**, with the residuals below disclosed, and must **not** move `main`/tags or claim "F2 fully closed".
+- **Not covered by this PASS (stay open for the stable tag):** N-8 (`.env`/`session.token` Windows aliases and Route A ZIP plain-name copies — same leak class, pre-existing), N-9 (MEDIUM regression: unconditional `assistant.key` basename deny dropped under a custom/missing `BINARYREPAIR_ASSISTANT_KEY_FILE`), N-10 (custom-key protection depends on the adapter process seeing the same key-file env). These must be fixed or explicitly accepted before any stable `v1.2.1` tag or "F2 closed" statement.
+- **Test record for this request:** required command re-run on the current head: **66 passed, exit 0** (store 5 / api 5 / agent console 56; adapted only for the Windows host + sandbox tmp_path defect). The F2 adversarial probe matrix above is the evidence set (no re-run needed). **Full suite:** attempted by the independent verifier on this sandbox — 740 collected / 715 passed / 13 skipped / **12 environment errors** (all e2e Edge/CDP setup), exit 1; a full green full-suite run is not feasible in this headless sandbox and is not claimed. No P1/V5 run was repeated.
+
+| Gate | Status |
+|---|---|
+| F2 all bypasses rejected | **PASS** (task-defined 8/8; ValueError pre-copy, 0 artifacts, 0 keys in ZIP) — N-8/N-9/N-10 are outside this scope and remain open |
+| No key leakage | **PASS for the stored `var/assistant.key`** (no full key in repo/logs/responses; no copy in required vectors); residual `.env`/`session.token` alias copy = N-8 |
+| P1/V5 unmodified | **PASS** (diff empty; no P1/V5 run) |
+| Tag/main not moved | **PASS** (`origin/main` `472aa94…`; no `v1.2.1` tag; release head `99d1550` is M5 docs-only) |
+| Independent review, not M5 self-review | **PASS** (M3 role + independent verifier agent `task-5`; same human operator → role-separated only) |
+| PASS or FAIL explicit | **PASS** (focused F2 scope, as defined above); M4 rc1 rule not triggered; stable tag still held |
