@@ -1,96 +1,77 @@
-From 27173a5b5437f27e6769d0b23b9f4557786f9a9d Mon Sep 17 00:00:00 2001
+From d7d20f4ff2f920b5cfec5e81e3c4377529a9885a Mon Sep 17 00:00:00 2001
 From: M4 <m4@example.invalid>
-Date: Tue, 10 Nov 2026 10:05:40 +0800
-Subject: [PATCH] fix: close literal secret aliases N8/N9
+Date: Tue, 10 Nov 2026 10:22:22 +0800
+Subject: [PATCH] docs: disclose N10 and correct N11
 
 ---
- app/services/assistant_key_store.py           | 26 ++++++++++++++-----
- .../handoffs/219-v1.2.1-n8-n9-hardening.md    | 12 +++++++++
- tests/test_assistant_key_store.py             |  8 ++++++
- 3 files changed, 39 insertions(+), 7 deletions(-)
- create mode 100644 docs/development/handoffs/219-v1.2.1-n8-n9-hardening.md
+ .../handoffs/217-v1.2.1-f2-hardening.md       | 22 ++++++++++++++-----
+ .../handoffs/220-v1.2.1-n10-n11.md            | 14 ++++++++++++
+ 2 files changed, 31 insertions(+), 5 deletions(-)
+ create mode 100644 docs/development/handoffs/220-v1.2.1-n10-n11.md
 
-diff --git a/app/services/assistant_key_store.py b/app/services/assistant_key_store.py
-index 086994d..e48e653 100644
---- a/app/services/assistant_key_store.py
-+++ b/app/services/assistant_key_store.py
-@@ -226,13 +226,27 @@ def clear_key() -> bool:
+diff --git a/docs/development/handoffs/217-v1.2.1-f2-hardening.md b/docs/development/handoffs/217-v1.2.1-f2-hardening.md
+index 7351cea..1cdbb10 100644
+--- a/docs/development/handoffs/217-v1.2.1-f2-hardening.md
++++ b/docs/development/handoffs/217-v1.2.1-f2-hardening.md
+@@ -1,12 +1,13 @@
+-# 229 — F2 full hardening after M3 re-review
++# 229 — F2 hardening after M3 re-review
  
+-Date: 2026-11-09
++Date: 2026-11-09, corrected 2026-11-10
  
+ The initial basename denylist was bypassable. Replaced with key-file identity
+ checks:
  
-+_PROTECTED_NAMES = {"assistant.key", ".env", "session.token"}
+ ```text
+ is_secret_file(path):
++  literal protected names (assistant.key/.env/session.token) and aliases
+   resolve equality
+   os.path.samefile (hardlinks/case aliases)
+   normalized basename (Windows trailing dot/space/default stream spelling)
+@@ -17,8 +18,19 @@ Applied to:
+ ```text
+ app/services/attempt_writer.py
+ tools/routea_bundle_to_attempt.py (single and multi-evidence zip)
+-tools/route_bundle_ingest.py
++tools/route_bundle_ingest.py — guard added; this module has no active product
++                              call path (do not claim runtime coverage)
+ ```
+ 
+-Custom `BINARYREPAIR_ASSISTANT_KEY_FILE` paths and hardlinks are covered.
+-Tests: full suite pass.
++## N-10 (accepted limitation)
 +
++A custom `BINARYREPAIR_ASSISTANT_KEY_FILE` is protected only when the adapter
++process sees the same env. The default filename `assistant.key` is always
++rejected regardless of env. Multi-process custom-env deployments must set the
++same env or use the default path.
 +
-+def _normalized_secret_name(name: str) -> str:
-+    value = name.casefold()
-+    if "::" in value:
-+        value = value.split("::", 1)[0]
-+    return value.rstrip(" .")
++## N-11 correction
 +
-+
- def is_secret_file(path: Path) -> bool:
--    """True when ``path`` is the configured key file, including Windows aliases.
-+    """True for configured key files and literal secret files.
- 
--    ``samefile`` catches hardlinks and case/alias paths; the normalized-name
--    fallback catches Windows trailing-dot/space and default-stream spellings
--    even when the target is momentarily missing.
-+    The literal-name guard is intentionally independent of the environment so
-+    ``assistant.key`` / ``.env`` / ``session.token`` are always refused, even
-+    when the adapter runs with a different or missing key-file setting.
-+    ``samefile`` catches hardlinks and case/alias paths on Windows.
-     """
-+    name = _normalized_secret_name(path.name)
-+    if name in _PROTECTED_NAMES:
-+        return True
-     try:
-         target = key_path()
-         if path.resolve() == target.resolve():
-@@ -241,9 +255,7 @@ def is_secret_file(path: Path) -> bool:
-             return True
-     except OSError:
-         pass
--    name = path.name.rstrip(" .").casefold()
--    target_name = key_path().name.rstrip(" .").casefold()
--    return bool(name) and name == target_name
-+    return bool(name) and name == _normalized_secret_name(key_path().name)
- 
- def mask_key(key: str) -> str:
-     if not key:
-diff --git a/docs/development/handoffs/219-v1.2.1-n8-n9-hardening.md b/docs/development/handoffs/219-v1.2.1-n8-n9-hardening.md
++No claim that `route_bundle_ingest` is exercised by the product. Full-suite
++numbers are platform-scoped: 741/739/2 on this macOS run; Windows M3 used
++66/740 with e2e environment skips.
+diff --git a/docs/development/handoffs/220-v1.2.1-n10-n11.md b/docs/development/handoffs/220-v1.2.1-n10-n11.md
 new file mode 100644
-index 0000000..418e50c
+index 0000000..0f36217
 --- /dev/null
-+++ b/docs/development/handoffs/219-v1.2.1-n8-n9-hardening.md
-@@ -0,0 +1,12 @@
-+# 232 — N-8/N-9 hardening
++++ b/docs/development/handoffs/220-v1.2.1-n10-n11.md
+@@ -0,0 +1,14 @@
++# 233 — N-10/N-11 disclosure for v1.2.1-rc1
 +
 +Date: 2026-11-10
 +
-+- literal secret names are refused independent of key-file env:
-+  assistant.key, .env, session.token, plus case/trailing-dot/space/::$DATA aliases
-+- custom/missing key file no longer disables the literal-name guard
-+- hardlink/samefile remains covered
++```text
++N-8: FIXED (literal .env/session.token and aliases rejected)
++N-9: FIXED (literal assistant.key regardless of custom/missing env)
++N-10: ACCEPTED LIMITATION (custom key path requires adapter to see same env;
++      default path and literal name are always protected)
++N-11: FIXED (229 corrected: route_bundle_ingest has no active product call path;
++      full-suite numbers platform-scoped)
++```
 +
-+Tests: 741 collected; full pass.
-+N-10 (adapter env mismatch for custom names) and N-11 doc wording remain
-+limitations; stable tag must not claim full closure.
-diff --git a/tests/test_assistant_key_store.py b/tests/test_assistant_key_store.py
-index 4e22165..f83da02 100644
---- a/tests/test_assistant_key_store.py
-+++ b/tests/test_assistant_key_store.py
-@@ -62,3 +62,11 @@ def test_stale_temp_file_does_not_block_save(tmp_path, monkeypatch) -> None:
-     (tmp_path / "assistant.key.tmp").write_text("stale", encoding="utf-8")
-     assistant_key_store.save_key("sk-stale-0123456789abcdef")
-     assert assistant_key_store.load_key() == "sk-stale-0123456789abcdef"
-+
-+
-+def test_literal_secret_names_and_windows_aliases_are_rejected() -> None:
-+    from pathlib import Path
-+    for name in ("assistant.key", "ASSISTANT.KEY", "assistant.key.", "assistant.key ",
-+                 "assistant.key::$DATA", ".env", ".env.", "session.token",
-+                 "SESSION.TOKEN ", "session.token::$DATA"):
-+        assert assistant_key_store.is_secret_file(Path(name)), name
++Tests: 741 collected / 739 passed / 2 Linux-only skipped / 0 failed.
 -- 
 2.55.0
 
