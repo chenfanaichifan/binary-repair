@@ -43,6 +43,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app.db.connection import connect
+from app.services.assistant_key_store import is_secret_file
 from app.domain.analysis import ANALYSIS_ROLES, AnalysisArtifacts
 from app.domain.interface import InterfaceCheckError, check_interface
 from app.domain.v4 import V4EvidenceError, validate_v4_evidence
