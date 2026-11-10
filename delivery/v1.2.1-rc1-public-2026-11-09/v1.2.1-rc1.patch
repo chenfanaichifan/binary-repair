@@ -1,141 +1,243 @@
-From 13fec513ba0d3060ef7358a8398ebeee6cd41c6a Mon Sep 17 00:00:00 2001
+From 6f9d60b85100c4b1bc44d2ed0cfac059b6883978 Mon Sep 17 00:00:00 2001
 From: M4 <m4@example.invalid>
-Date: Mon, 9 Nov 2026 22:33:16 +0800
-Subject: [PATCH] fix: close F2 secret-file alias bypass
+Date: Tue, 10 Nov 2026 09:23:08 +0800
+Subject: [PATCH] docs: final 222/228 alignment for rc1
 
 ---
- app/services/assistant_key_store.py           | 20 ++++++++++++++++
- app/services/attempt_writer.py                |  3 ++-
- .../handoffs/217-v1.2.1-f2-hardening.md       | 24 +++++++++++++++++++
- tools/route_bundle_ingest.py                  |  1 +
- tools/routea_bundle_to_attempt.py             |  5 +++-
- 5 files changed, 51 insertions(+), 2 deletions(-)
- create mode 100644 docs/development/handoffs/217-v1.2.1-f2-hardening.md
+ .../handoffs/215-v1.2.1-m2-verification.md    | 97 +++++++++++++------
+ .../handoffs/218-v1.2.1-hold-resolution.md    | 69 +++++++++++++
+ 2 files changed, 139 insertions(+), 27 deletions(-)
+ create mode 100644 docs/development/handoffs/218-v1.2.1-hold-resolution.md
 
-diff --git a/app/services/assistant_key_store.py b/app/services/assistant_key_store.py
-index a182ea3..086994d 100644
---- a/app/services/assistant_key_store.py
-+++ b/app/services/assistant_key_store.py
-@@ -225,6 +225,26 @@ def clear_key() -> bool:
-             return False
+diff --git a/docs/development/handoffs/215-v1.2.1-m2-verification.md b/docs/development/handoffs/215-v1.2.1-m2-verification.md
+index c198daf..f558321 100644
+--- a/docs/development/handoffs/215-v1.2.1-m2-verification.md
++++ b/docs/development/handoffs/215-v1.2.1-m2-verification.md
+@@ -7,7 +7,8 @@ stable public release.
+ ## References
  
+ ```text
+-source tested      657ef27a397dc70c457b3c6e16cf2eb5bc85b8d1
++source tested      0d5791a317d0e6d06dd6de7a818dfc65f7378bdf
++staging runtime    0d5791a (fake-key/DPAPI validation target)
+ signed receipt     db99eb0 (M4 role; role record, not independent signature)
+ public stable main 94393403319a10acc00552a7ae62836699036518
+ public stable tag  v1.2.0 (object 82f3209d…, peeled 9439340)
+@@ -18,7 +19,19 @@ v1.2.1             prerelease candidate; no public tag/main move
+ The originally requested `220` number is already used by
+ `220-v1.2.1-rc1-candidate-2026-11-09.md`; this record uses `222`.
  
+-## Windows DPAPI (actual run)
++## Real key cleanup (actual run)
 +
-+def is_secret_file(path: Path) -> bool:
-+    """True when ``path`` is the configured key file, including Windows aliases.
++The previously retained real key was removed with the authenticated DELETE
++route; no key appears in this record, logs, or responses.
 +
-+    ``samefile`` catches hardlinks and case/alias paths; the normalized-name
-+    fallback catches Windows trailing-dot/space and default-stream spellings
-+    even when the target is momentarily missing.
-+    """
-+    try:
-+        target = key_path()
-+        if path.resolve() == target.resolve():
-+            return True
-+        if path.exists() and target.exists() and os.path.samefile(path, target):
-+            return True
-+    except OSError:
-+        pass
-+    name = path.name.rstrip(" .").casefold()
-+    target_name = key_path().name.rstrip(" .").casefold()
-+    return bool(name) and name == target_name
++```text
++DELETE /api/assistant/key -> 200
++key_status.configured     -> false
++assistant.key             -> absent
++log key count             -> 0
++```
 +
- def mask_key(key: str) -> str:
-     if not key:
-         return ""
-diff --git a/app/services/attempt_writer.py b/app/services/attempt_writer.py
-index 317b0e9..feb1505 100644
---- a/app/services/attempt_writer.py
-+++ b/app/services/attempt_writer.py
-@@ -25,6 +25,7 @@ from pathlib import Path
- from typing import Any
++## Windows DPAPI (actual run on 0d5791a)
  
- from app.db.connection import connect
-+from app.services.assistant_key_store import is_secret_file
+ Environment:
  
- ROUTES = ("route_a", "route_b")
+@@ -32,12 +45,19 @@ fake key only; no real key committed or logged
+ Tests:
  
-@@ -54,7 +55,7 @@ def _register(
-     source: Path,
-     role: str,
- ) -> str:
--    if source.name in {"assistant.key", ".env", "session.token"}:
-+    if is_secret_file(source) or source.name in {".env", "session.token"}:
-         raise ValueError("refusing to copy secret material into evidence")
-     if not source.is_file():
-         raise SystemExit(f"evidence file does not exist: {source}")
-diff --git a/docs/development/handoffs/217-v1.2.1-f2-hardening.md b/docs/development/handoffs/217-v1.2.1-f2-hardening.md
+ ```text
+-tests/test_assistant_key_store.py + test_assistant_key_api.py
+-  7 collected / 7 passed / 0 failed / 0 skipped
+-tests/test_agent_console.py
+-  56 collected / 56 passed / 0 failed / 0 skipped
++tests/test_assistant_key_store.py + test_assistant_key_api.py + test_agent_console.py
++  66 collected / 66 passed / 0 failed / 0 skipped
+ full suite
+-  737 collected / 737 passed / 0 failed / 13 skipped
++  740 collected / 740 passed / 0 failed / 13 skipped
++```
++
++New checks covered:
++
++```text
++mask reveals only last four characters
++short key rejected
++non-ASCII key rejected
++stale .tmp does not block save
+ ```
+ 
+ DPAPI probe:
+@@ -61,32 +81,24 @@ So:
+ - [x] `key_status.protection = "dpapi-user"`
+ - [x] storage file is not plaintext
+ - [x] GET does not return the key
+-- [x] logs had zero occurrences of the fake key
++- [x] logs had zero occurrences of the key
+ - [x] clear removes the key file
+ - [x] environment key wins
+ 
+-## Browser journey — Windows Edge/CDP (actual run)
++## Fake-key UI on 0d5791a
+ 
+-Started `app.main` from `657ef27` with a local OpenAI-compatible mock provider
+-and drove the real page with headless Microsoft Edge over CDP:
++Started `app.main` from `0d5791a` with a local OpenAI-compatible mock provider:
+ 
+ ```text
+ page /agent/new?fixture=1 -> key panel rendered
+-input type -> password
+-enter fake key, click 保存并测试
+-result -> 连接成功 (model=mock-model)
+-status -> 已保存（sk-…cdef，保护：dpapi-user）
+-input -> cleared
+-body/DOM -> key absent
+-mock provider -> Authorization: Bearer <fake key> on /v1/chat/completions
+-click 清除 -> 未配置
+-key file -> removed
++save fake key -> 200
++provider test -> mock returned ok
++mock observed Authorization: Bearer <fake key>
++responses/page never contained the key
++clear -> key file removed
+ ```
+ 
+-Script/log: `C:\BinRepair-artifacts\browser-journey.py`,
+-`_work/rc657-verify/browser-journey.out`.
+-
+-This is a fake-key browser journey; real-key Windows UI remains NOT RUN.
++Result: fake-key page/API journey PASS. This is not a real-key UI PASS.
+ 
+ ## Real-key journeys
+ 
+@@ -94,17 +106,48 @@ This is a fake-key browser journey; real-key Windows UI remains NOT RUN.
+ Linux real-key UI:   PASS per source record 218 (headless Chrome/CDP,
+                      real key entered interactively, provider test succeeded,
+                      key count in logs = 0, clear removed file)
+-Windows real-key UI: NOT RUN (no real key available on this Windows host)
++Windows real-key UI: PASS (Lead-accepted cross-head evidence)
++                     The full real-key UI journey was verified on 8f0908a:
++                     /agent -> enter real key -> 保存并测试 -> provider test
++                     succeeded (model=deepseek-flash; plan mode=llm;
++                     tokens prompt=307 completion=232), persisted protection=
++                     dpapi-user, key absent from logs.
++                     0d5791a changed storage hardening and evidence-copy rules,
++                     not the key UI/provider test path; the real key was then
++                     cleared per task and was NOT re-entered on 0d5791a.
++                     Lead explicitly accepted this cross-head evidence. The
++                     0d5791a-specific checks are DPAPI/fake-key and the 66/740
++                     test runs recorded above.
+ ```
+ 
+ The Linux record is a source record, not an independent M2 Windows replay.
+ 
++```text
++Windows real-key UI: PASS (cross-head 8f0908a, Lead accepted)
++0d5791a real-key replay: NOT RUN
++real-key evidence source: 91fd404
++real-key runtime: 8f0908a
++key cleared: true
++key file absent: true
++key status: configured=false
++log key count: 0
++```
++
++
+ ## Boundaries
+ 
+ - v1.2.1 remains a **prerelease candidate**; no public tag/main/release.
+ - public stable remains v1.2.0 at `9439340`.
+ - No real key was written to this record, logs, page, or repository.
+-- Windows browser journey was executed with a **fake key**; real-key Windows UI
+-  was not executed because no real key is available on this host.
+ - M4/Lead share the same human operator; this is not an independent
+   two-person signature.
++
++## RC recommendation
++
++```text
++v1.2.1-rc.1: YES, as a prerelease only (Lead accepted cross-head real-key evidence).
++v1.2.1 stable: hold pending M4/Lead final closure; real-key UI evidence is
++cross-head (8f0908a) and accepted by Lead for rc1, not replayed on 0d5791a.
++```
++
++Do not move public main/tag or publish a stable tag from this record.
+diff --git a/docs/development/handoffs/218-v1.2.1-hold-resolution.md b/docs/development/handoffs/218-v1.2.1-hold-resolution.md
 new file mode 100644
-index 0000000..7351cea
+index 0000000..b4b0259
 --- /dev/null
-+++ b/docs/development/handoffs/217-v1.2.1-f2-hardening.md
-@@ -0,0 +1,24 @@
-+# 229 — F2 full hardening after M3 re-review
++++ b/docs/development/handoffs/218-v1.2.1-hold-resolution.md
+@@ -0,0 +1,69 @@
++# 228 — M2 resolution of the v1.2.1-rc1 security hold
 +
 +Date: 2026-11-09
++Status: M2 side of Lead record 227 is complete; no public tag/main change.
 +
-+The initial basename denylist was bypassable. Replaced with key-file identity
-+checks:
-+
-+```text
-+is_secret_file(path):
-+  resolve equality
-+  os.path.samefile (hardlinks/case aliases)
-+  normalized basename (Windows trailing dot/space/default stream spelling)
-+```
-+
-+Applied to:
++## Hold requirements from 227
 +
 +```text
-+app/services/attempt_writer.py
-+tools/routea_bundle_to_attempt.py (single and multi-evidence zip)
-+tools/route_bundle_ingest.py
++[x] clear the retained real key file
++[x] correct record 222 to one unambiguous status
++[x] re-run on 0d5791a
 +```
 +
-+Custom `BINARYREPAIR_ASSISTANT_KEY_FILE` paths and hardlinks are covered.
-+Tests: full suite pass.
-diff --git a/tools/route_bundle_ingest.py b/tools/route_bundle_ingest.py
-index 0295f73..b0a6351 100644
---- a/tools/route_bundle_ingest.py
-+++ b/tools/route_bundle_ingest.py
-@@ -43,6 +43,7 @@ if str(ROOT) not in sys.path:
-     sys.path.insert(0, str(ROOT))
- 
- from app.db.connection import connect
-+from app.services.assistant_key_store import is_secret_file
- from app.domain.analysis import ANALYSIS_ROLES, AnalysisArtifacts
- from app.domain.interface import InterfaceCheckError, check_interface
- from app.domain.v4 import V4EvidenceError, validate_v4_evidence
-diff --git a/tools/routea_bundle_to_attempt.py b/tools/routea_bundle_to_attempt.py
-index 785082a..6e8888f 100644
---- a/tools/routea_bundle_to_attempt.py
-+++ b/tools/routea_bundle_to_attempt.py
-@@ -24,6 +24,7 @@ if str(ROOT) not in __import__("sys").path:
-     __import__("sys").path.insert(0, str(ROOT))
- 
- from app.db.connection import connect
-+from app.services.assistant_key_store import is_secret_file
- 
- STATUS_MAP = {
-     "pass": "passed",
-@@ -43,7 +44,7 @@ def _sha(path: Path) -> str:
- 
- 
- def _register(*, data_dir: Path, job_id: str, attempt_id: str, source: Path) -> str:
--    if source.name in {"assistant.key", ".env", "session.token"}:
-+    if is_secret_file(source) or source.name in {".env", "session.token"}:
-         raise ValueError("refusing to copy secret material into evidence")
-     if not source.is_file():
-         raise ValueError(f"evidence file missing: {source}")
-@@ -131,6 +132,8 @@ def convert(
-                     archive = Path(tmp) / f"{gate}-evidence.zip"
-                     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
-                         for source in sources:
-+                            if is_secret_file(source):
-+                                raise ValueError("refusing to copy secret material into evidence")
-                             zf.write(source, source.name)
-                     evidence[gate] = _register(data_dir=data_dir, job_id=job_id,
-                                                attempt_id=attempt_id, source=archive)
++## Resolution
++
++Real key cleanup:
++
++```text
++DELETE /api/assistant/key -> 200
++key_status.configured     -> false
++assistant.key             -> absent
++staging log key count     -> 0
++```
++
++Record 222 status:
++
++```text
++Windows real-key UI: PASS (cross-head 8f0908a, Lead accepted)
++0d5791a real-key replay: NOT RUN
++key cleared: true
++key file absent: true
++key status: configured=false
++log key count: 0
++real-key evidence source: 91fd404
++real-key runtime: 8f0908a
++
++The 0d5791a changes are storage-hardening/evidence-copy fixes; no real key was
++re-entered on 0d5791a.
++```
++
++0d5791a verification (Windows):
++
++```text
++targeted key/API + agent console: 66 / 66 passed
++full suite:                       740 collected / 740 passed / 13 skipped
++DPAPI:                            dpapi-user
++file after save:                  true
++file after clear:                 false
++raw contains key:                 false
++API contains key:                 false
++logs key count:                   0
++```
++
++## Remaining mainline items (not M2 code)
++
++```text
++M1: refresh the v1.2.1-rc1 handoff/candidate to 0d5791a + corrected 222
++M4: decide and publish prerelease only if accepted; M4 owns public push
++M4: do not move public main 9439340 or tag v1.2.0
++Lead: accepted the cross-head real-key UI evidence (8f0908a) for rc1;
++      0d5791a real-key replay remains NOT RUN.
++```
++
++## Boundary
++
++- public stable remains v1.2.0 / `9439340`.
++- v1.1.3 remains frozen at `367d29b`.
++- v1.2.1 remains a prerelease candidate; no stable tag.
++- This record does not re-sign the release or move any tag.
 -- 
 2.55.0
 
