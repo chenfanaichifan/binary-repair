@@ -62,3 +62,11 @@ def test_stale_temp_file_does_not_block_save(tmp_path, monkeypatch) -> None:
     (tmp_path / "assistant.key.tmp").write_text("stale", encoding="utf-8")
     assistant_key_store.save_key("sk-stale-0123456789abcdef")
     assert assistant_key_store.load_key() == "sk-stale-0123456789abcdef"
+
+
+def test_literal_secret_names_and_windows_aliases_are_rejected() -> None:
+    from pathlib import Path
+    for name in ("assistant.key", "ASSISTANT.KEY", "assistant.key.", "assistant.key ",
+                 "assistant.key::$DATA", ".env", ".env.", "session.token",
+                 "SESSION.TOKEN ", "session.token::$DATA"):
+        assert assistant_key_store.is_secret_file(Path(name)), name
