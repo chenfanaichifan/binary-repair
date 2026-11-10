@@ -3,8 +3,8 @@
 ```text
 public base  94393403319a10acc00552a7ae62836699036518 (v1.2.0)
 source       657ef27a397dc70c457b3c6e16cf2eb5bc85b8d1
-docs head    99d15507a93aeecae511370ac3a2264f68c87782
-candidate    6f9d60b85100c4b1bc44d2ed0cfac059b6883978
+docs head    079da829817c02fef99dd126a927d1bbec790cf0
+candidate    27173a5b5437f27e6769d0b23b9f4557786f9a9d
 receipt      db99eb0 (signed M4 role record)
 ```
 
