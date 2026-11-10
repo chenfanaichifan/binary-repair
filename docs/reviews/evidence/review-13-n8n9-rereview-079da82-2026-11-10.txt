@@ -1,8 +1,9 @@
-﻿Review 13 addendum Â§11 â€” N-8/N-9 fix re-review (079da82 / ab25c17) â€” evidence transcript
+Review 13 addendum Â§11 â€” N-8/N-9 fix re-review (079da82 / ab25c17) â€” evidence transcript
 Date: 2026-11-10
 Reviewer: M3 role (independent of M5, who authored the fix)
 Reviewed fix commit: 079da829817c02fef99dd126a927d1bbec790cf0  ("fix(m5): close literal secret aliases (N8/N9)")
 Reviewed docs commit: ab25c17  ("docs(m5): correct N11 and disclose N10 for rc1")
+Final N-11 correction reviewed: 3418491 ("docs: correct N11 wording in release branch", docs-only; release head)
 Parent of fix: 99d1550; release head at review close: a11178f (later 0f4196d docs-only)
   git diff --stat 079da82 <head> -- <reviewed code files> = empty (no code change after the fix)
 Review worktree: D:\BinRepair\.tmp\review-v121 (HEAD edbbc35 merge; contains 079da82; clean)
@@ -79,7 +80,15 @@ unchanged).
 Residual: wording "guard added" overstates an unused import; candidate docs (docs/development/handoffs/217)
 repeat it; platform-number wording is inconsistent. The material false-runtime-coverage claim was removed,
 but the corrected record is not fully accurate.
-N-11 = FAIL (partial, docs-only, LOW; not an rc1 blocker) — Lead and independent verifier agree.
+N-11 final = FIXED (docs-only) after correction 3418491:
+  229 now says "tools/route_bundle_ingest.py — NOT modified by this fix. It has no active
+  product call path and no runtime coverage claim." and scopes test numbers: "741/739/2 on
+  this macOS run; M3's required Windows target set is 67 passed; no Windows full-suite pass is
+  claimed here." Code truth is unchanged and consistent with that wording: is_secret_file is
+  imported only in route_bundle_ingest.py (0 call sites; no runtime guard).
+  The docs-only correction is NOT represented as a runtime guard. INFO: docs/handoffs/233 still
+  self-labels N-11 FAIL (partial, docs-only) — stale/conservative label to align later; it makes
+  no false runtime claim. The input's earlier "guard added" wording is gone.
 
 --------------------------------------------------------------------------------------------------
 5. Tests (Lead)
@@ -143,6 +152,7 @@ No tracked file modified by the probes (review worktree clean before/after).
 - 8.3 short-name aliases could not be resolved on this volume (unverified); symlink creation not
   permitted on this host (WinError 1314) â€” the resolve/samefile logic is expected to catch symlinks.
 - POSIX 0600 fallback not exercised here.
+- N-11 residual INFO: 233's stale 'FAIL (partial)' self-label; correct wording only, no false claim.
 - Full suite/741-test claim not re-run in this sandbox (environment-limited); targeted suites used.
 - Windows DPAPI not re-tested in this addendum: cited from M2 records only.
 
@@ -152,10 +162,37 @@ No tracked file modified by the probes (review worktree clean before/after).
 N-8: FIXED
 N-9: FIXED
 N-10: ACCEPTED LIMITATION (documented/disclosed; re-measured as described)
-N-11: FAIL (partial — docs-only, LOW; not an rc1 blocker)
+N-11: FIXED (docs-only, after correction 3418491; not a runtime guard)
 F2 overall: PASS WITH LIMITATION
 rc1: continue prerelease (no recall) â€” published rc1 tree contains the verified fixed code
 stable: HOLD
+
+11. Final N-11 review pass (docs-only correction 3418491)
+
+Reviewed commit: 3418491 ("docs: correct N11 wording in release branch").
+Diff 0f4196d..3418491: docs/handoffs/229 and docs/handoffs/233 only (+6/-6); no code, no tests.
+Current 229 relevant text:
+  "tools/route_bundle_ingest.py - NOT modified by this fix. It has no active product call path
+   and no runtime coverage claim."
+  "... 741/739/2 on this macOS run; M3's required Windows target set is 67 passed; no Windows
+   full-suite pass is claimed here."
+Code truth re-checked at 3418491: tools/route_bundle_ingest.py still has only the is_secret_file
+import (0 call sites); the fix did not modify it. The corrected record now says exactly this.
+No docs-only change is presented as a runtime guard.
+Re-ran at 3418491 (code identical to 079da82; git diff --stat 079da82 3418491 -- <reviewed files> empty):
+  N-8 matrix 10 paths x 3 sinks: all ValueError/0 artifacts/0 ZIPs with secret (still PASS)
+  N-9 matrix 6 aliases x 3 env variants x 3 sinks: all PASS; subprocess literal assistant.key blocked
+  N-10 residual unchanged = accepted limitation (not re-fixed, not re-claimed)
+  required 3-file pytest: 67 passed / exit 0 (store 6 / api 5 / agent console 56)
+  adapter subset: test_attempt_writer_gates 2 passed; test_routea_adapter 2 passed
+Verdicts after final pass:
+  N-8: FIXED; N-9: FIXED; N-10: ACCEPTED LIMITATION; N-11: FIXED (docs-only)
+  F2 overall: PASS WITH LIMITATION
+  rc1: continue prerelease (no recall)
+  stable: HOLD
+Note: 3418491 is a post-publication docs-only correction; the published rc1 predates it, so its
+docs retain the earlier wording. Docs-only, non-security: no recall trigger. rc1 code tree remains
+the verified fixed tree.
 
 Reviewer working evidence (machine transcripts, not committed; under .tmp, gitignored):
   D:\BinRepair\.tmp\review-n8n9-079da82\verifier-findings.md (independent verifier, task-6)
