@@ -2,6 +2,7 @@
 
 ```text
 source        ab25c17
+M2 public    0f4196d
 public candidate d7d20f4
 tag           v1.2.1-rc1
 tag object    f5346978b46622c6c582e13d7cf6330f72e638f3
