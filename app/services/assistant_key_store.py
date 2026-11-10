@@ -226,13 +226,27 @@ def clear_key() -> bool:
 
 
 
-def is_secret_file(path: Path) -> bool:
-    """True when ``path`` is the configured key file, including Windows aliases.
+_PROTECTED_NAMES = {"assistant.key", ".env", "session.token"}
 
-    ``samefile`` catches hardlinks and case/alias paths; the normalized-name
-    fallback catches Windows trailing-dot/space and default-stream spellings
-    even when the target is momentarily missing.
+
+def _normalized_secret_name(name: str) -> str:
+    value = name.casefold()
+    if "::" in value:
+        value = value.split("::", 1)[0]
+    return value.rstrip(" .")
+
+
+def is_secret_file(path: Path) -> bool:
+    """True for configured key files and literal secret files.
+
+    The literal-name guard is intentionally independent of the environment so
+    ``assistant.key`` / ``.env`` / ``session.token`` are always refused, even
+    when the adapter runs with a different or missing key-file setting.
+    ``samefile`` catches hardlinks and case/alias paths on Windows.
     """
+    name = _normalized_secret_name(path.name)
+    if name in _PROTECTED_NAMES:
+        return True
     try:
         target = key_path()
         if path.resolve() == target.resolve():
@@ -241,9 +255,7 @@ def is_secret_file(path: Path) -> bool:
             return True
     except OSError:
         pass
-    name = path.name.rstrip(" .").casefold()
-    target_name = key_path().name.rstrip(" .").casefold()
-    return bool(name) and name == target_name
+    return bool(name) and name == _normalized_secret_name(key_path().name)
 
 def mask_key(key: str) -> str:
     if not key:
