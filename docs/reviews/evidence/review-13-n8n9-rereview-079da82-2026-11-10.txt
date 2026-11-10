@@ -1,0 +1,166 @@
+﻿Review 13 addendum Â§11 â€” N-8/N-9 fix re-review (079da82 / ab25c17) â€” evidence transcript
+Date: 2026-11-10
+Reviewer: M3 role (independent of M5, who authored the fix)
+Reviewed fix commit: 079da829817c02fef99dd126a927d1bbec790cf0  ("fix(m5): close literal secret aliases (N8/N9)")
+Reviewed docs commit: ab25c17  ("docs(m5): correct N11 and disclose N10 for rc1")
+Parent of fix: 99d1550; release head at review close: a11178f (later 0f4196d docs-only)
+  git diff --stat 079da82 <head> -- <reviewed code files> = empty (no code change after the fix)
+Review worktree: D:\BinRepair\.tmp\review-v121 (HEAD edbbc35 merge; contains 079da82; clean)
+Host: Windows; Python 3.12.15 (D:\Binary_Repair\.venv\Scripts\python.exe); pytest 9.2.0.
+Fake keys only; no provider/network call; no tracked file modified; no P1/V5 rerun.
+
+Reviewed blob SHA-1s at 079da82 (identical to the public rc1 tree d7d20f4 â€” see Â§8):
+  e48e6533cd70204aa6be467cb9d5a8107f722794  app/services/assistant_key_store.py
+  feb150546178781fac99d1ad662dd66a17c45a8a  app/services/attempt_writer.py
+  6e8888f332cf0a78db5fa6a5f8afdb0854731cf8  tools/routea_bundle_to_attempt.py
+  b0a6351f38c20eb7404da6b21ee1ab93e6faea3b  tools/route_bundle_ingest.py  (import only, no call sites)
+  f83da025b62bef71bac2f60236bbde049dcb626c  tests/test_assistant_key_store.py
+
+Fix diff 079da82^..079da82: 3 files, +39/-7
+  app/services/assistant_key_store.py  +26/-7  (_PROTECTED_NAMES, _normalized_secret_name, literal guard)
+  docs/handoffs/232-v1.2.1-n8-n9-hardening-2026-11-10.md  new
+  tests/test_assistant_key_store.py    +8      (test_literal_secret_names_and_windows_aliases_are_rejected)
+Docs diff ab25c17^..ab25c17: 229 corrected + 233 N-10/N-11 disclosure (2 files, +31/-5)
+Docs 232 claims "741 collected; full pass" (platform-scoped; not reproduced in this sandbox).
+
+--------------------------------------------------------------------------------------------------
+1. N-8 matrix â€” .env / session.token Windows aliases (10 paths x 3 sinks) â€” ALL PASS
+--------------------------------------------------------------------------------------------------
+For every row: is_secret_file=True; attempt_writer._register -> ValueError("refusing to copy
+secret material into evidence"), copied=[]; routea_bundle_to_attempt._register -> ValueError,
+copied=[]; routea convert() multi-evidence V0 ZIP branch ["alias", "other.txt"] -> ValueError,
+artifact_files=[], zip_count=0, temp dir cleaned; artifact directory listing identical before/after
+(rejection before copy); jobs/ tree not created. Error messages contain no secret.
+
+  .env            exact / .ENV / .env. / ".env " / .env::$DATA            -> PASS (5/5)
+  session.token   exact / SESSION.TOKEN / session.token. / "session.token " /
+                  session.token::$DATA                                    -> PASS (5/5)
+  TOTAL: 10 paths x 3 sinks = 30/30 PASS; 0 artifacts; 0 ZIPs containing secret; 0 copyfile calls.
+Independent verifier (task-6): 30/30 PASS on the same matrix, plus reversed-order ZIP extra 10/10 PASS;
+instrumented shutil.copyfile calls = 0, jobs/ never created, temp archives cleaned, no secret in errors.
+
+--------------------------------------------------------------------------------------------------
+2. N-9 matrix â€” literal assistant.key independent of env â€” ALL PASS
+--------------------------------------------------------------------------------------------------
+6 alias spellings (assistant.key, ASSISTANT.KEY, Assistant.Key, assistant.key., "assistant.key ",
+assistant.key::$DATA) x 3 env variants:
+  a) BINARYREPAIR_ASSISTANT_KEY_FILE unset (default path)
+  b) custom existing ...\mykey.dat
+  c) custom missing ...\notcreated.dat
+=> 18/18 combinations: is_secret_file=True; attempt_writer -> ValueError 0 copied;
+   routea._register -> ValueError 0 copied; convert() ZIP -> ValueError 0 artifacts, temp cleaned.
+Subprocess with the env var removed at the process boundary: literal assistant.key -> ValueError,
+0 artifacts (6/6 alias rows). The Â§10 N-9 regression (custom/missing env re-enabling the literal
+name) is closed.
+
+--------------------------------------------------------------------------------------------------
+3. N-10 â€” ACCEPTED LIMITATION (documented + re-measured)
+--------------------------------------------------------------------------------------------------
+Docs: 229 "N-10 (accepted limitation)" section + 233 disclosure for rc1 ("custom key path requires
+adapter to see same env; default path and literal name are always protected").
+Measured:
+  same process, custom env mykey.dat        -> is_secret_file=True; both writers ValueError, 0 copied
+  adapter subprocess WITHOUT the env var     -> is_secret_file(mykey.dat)=False; the custom-named
+                                                file IS copied (bytes verified; fake-job FK error
+                                                occurs after copy); literal assistant.key still
+                                                ValueError, 0 copied.
+  => accepted, disclosed limitation; not a MUST-FIX for rc1.
+
+--------------------------------------------------------------------------------------------------
+4. N-11 â€” docs/229 corrected (FIXED); residual LOW wording note
+--------------------------------------------------------------------------------------------------
+Current 229 text: "tools/route_bundle_ingest.py â€” guard added; this module has no active product
+call path (do not claim runtime coverage)" and "No claim that route_bundle_ingest is exercised by
+the product. Full-suite numbers platform-scoped." 233 repeats the corrected status.
+Code truth: tools/route_bundle_ingest.py contains the is_secret_file IMPORT ONLY (line 46);
+git grep shows 0 call sites. _safe_file/_register_file still accept a bundle-local
+assistant.key/.env (defense-in-depth gap only; no active product call path; absolute/../ controls
+unchanged).
+Residual: wording "guard added" overstates an unused import; candidate docs (docs/development/handoffs/217)
+repeat it; platform-number wording is inconsistent. The material false-runtime-coverage claim was removed,
+but the corrected record is not fully accurate.
+N-11 = FAIL (partial, docs-only, LOW; not an rc1 blocker) — Lead and independent verifier agree.
+
+--------------------------------------------------------------------------------------------------
+5. Tests (Lead)
+--------------------------------------------------------------------------------------------------
+required command (adapted only for Windows host + sandbox tmp_path shim):
+  D:\Binary_Repair\.venv\Scripts\python.exe -m pytest -q -o addopts= \
+    -p dshenv_win_temp -p no:cacheprovider \
+    tests/test_assistant_key_store.py tests/test_assistant_key_api.py tests/test_agent_console.py
+  -> exit 0; 67 passed, 1 warning  (store 6 / api 5 / agent console 56)
+Verifier: required 3-file pytest 67 passed / 0 failed; full collection 741; published-rc1-candidate-tree
+targeted run 89 passed / 0 failed.
+adapter subset: tests/test_attempt_writer_gates.py 2 passed; tests/test_routea_adapter.py 2 passed.
+Verifier (independent agent, task-6): 100 aggregate probe rows PASS (N-8 30 rows, N-9 54 rows,
+subprocess/extra 16), 0 artifacts, 0 copyfile calls, 0 jobs dirs, 0 data-dir zips, 0 temp dirs left,
+0 secrets in messages. Full suite not re-run here (environment-limited in this headless sandbox;
+prior attempts gave 12 e2e environment errors â€” not a product result). Not claimed.
+
+--------------------------------------------------------------------------------------------------
+6. Error-message scan
+--------------------------------------------------------------------------------------------------
+All rejection messages are exactly "refusing to copy secret material into evidence"; none contain
+fake key / .env value / session-token value. The only non-refusal error observed in the N-10 residual
+copy path is a DB FK error (fake job harness) and contains no secret.
+
+--------------------------------------------------------------------------------------------------
+7. rc1 publication verification (read-only from this host)
+--------------------------------------------------------------------------------------------------
+git ls-remote https://github.com/leesirleesirlee-star/Binary_Repair.git:
+  refs/heads/main                      94393403319a10acc00552a7ae62836699036518  (public v1.2.0)
+  refs/heads/v1.2.1-rc1                d7d20f4ff2f920b5cfec5e81e3c4377529a9885a
+  refs/tags/v1.2.1-rc1                 f5346978b46622c6c582e13d7cf6330f72e638f3 (annotated)
+GitHub contents API at d7d20f4 (blob SHA-1):
+  app/services/assistant_key_store.py  e48e6533cd70204aa6be467cb9d5a8107f722794  == reviewed 079da82
+  app/services/attempt_writer.py       feb150546178781fac99d1ad662dd66a17c45a8a  == reviewed 079da82
+  tools/routea_bundle_to_attempt.py    6e8888f332cf0a78db5fa6a5f8afdb0854731cf8  == reviewed 079da82
+=> the published rc1 tree contains the exact N-8/N-9 fixed code reviewed here.
+Independent verifier: extracted the published rc1 candidate tree from the tracked rc1 git bundle;
+bundle SHA-256 matches the delivery SHA256SUMS, tag object f5346978 matches docs 236/237, candidate
+history contains the N-8/N-9 fix commit; the same 100-row matrix re-run on that candidate tree =
+100/100 PASS, and the candidate source files are byte-identical to the reviewed worktree.
+Delivery package (tracked): delivery/handoff-v1.2.1-rc1-2026-11-09.zip
+  SHA-256 actual == recorded 54e2759d3b77df8b116c3f74227e5bbafc52787676f0bf6a975c1f3dffb261bb (binary-safe)
+  31 members, includes docs/handoffs/229, 232 (N-8/N-9), 233 (N-10/N-11).
+Note: git fetch/clone to the public repo was intermittently blocked from this host; refs/API/raw
+were read successfully. This review moved no ref.
+
+--------------------------------------------------------------------------------------------------
+8. Evidence-chain / boundaries
+--------------------------------------------------------------------------------------------------
+No P1/V5 command run; P1/V5 evidence paths untouched.
+This review changed no tag/main: public main 9439340/v1.2.0 and published v1.2.1-rc1 unchanged;
+this workspace origin/main 472aa94 unchanged.
+No tracked file modified by the probes (review worktree clean before/after).
+
+--------------------------------------------------------------------------------------------------
+9. Residual limitations (not failures of the N-8/N-9 criteria)
+--------------------------------------------------------------------------------------------------
+- N-10 accepted limitation: custom-named key file requires the adapter process to see the same env.
+- Only exact literal protected names are guarded; derived env-file names (e.g. .env.local) are not
+  in _PROTECTED_NAMES (INFO; not part of the declared protected set).
+- 8.3 short-name aliases could not be resolved on this volume (unverified); symlink creation not
+  permitted on this host (WinError 1314) â€” the resolve/samefile logic is expected to catch symlinks.
+- POSIX 0600 fallback not exercised here.
+- Full suite/741-test claim not re-run in this sandbox (environment-limited); targeted suites used.
+- Windows DPAPI not re-tested in this addendum: cited from M2 records only.
+
+--------------------------------------------------------------------------------------------------
+10. Verdicts
+--------------------------------------------------------------------------------------------------
+N-8: FIXED
+N-9: FIXED
+N-10: ACCEPTED LIMITATION (documented/disclosed; re-measured as described)
+N-11: FAIL (partial — docs-only, LOW; not an rc1 blocker)
+F2 overall: PASS WITH LIMITATION
+rc1: continue prerelease (no recall) â€” published rc1 tree contains the verified fixed code
+stable: HOLD
+
+Reviewer working evidence (machine transcripts, not committed; under .tmp, gitignored):
+  D:\BinRepair\.tmp\review-n8n9-079da82\verifier-findings.md (independent verifier, task-6)
+  D:\BinRepair\.tmp\review-n8n9-079da82\verifier\matrix-results.json, tables.md, summary-out.txt
+  D:\BinRepair\.tmp\review-n8n9-079da82\lead-probe.py, lead-probe.log, lead-n8n9-results.json
+  D:\BinRepair\.tmp\review-n8n9-079da82\check-rc1-zip.py, rc1-handoff.zip (hash check copy)
+  D:\BinRepair\.tmp\review-n8n9-079da82\required-run-079da82.log
+

@@ -559,3 +559,88 @@ DB rows = 0; error text contains no key.
 | Tag/main not moved | **PASS** (`origin/main` `472aa94…`; no `v1.2.1` tag; release head `99d1550` is M5 docs-only) |
 | Independent review, not M5 self-review | **PASS** (M3 role + independent verifier agent `task-5`; same human operator → role-separated only) |
 | PASS or FAIL explicit | **PASS** (focused F2 scope, as defined above); M4 rc1 rule not triggered; stable tag still held |
+
+---
+
+## 11. N-8/N-9 focused addendum — commits `079da82` (fix) and `ab25c17` (docs) (2026-11-10)
+
+**reviewed fix commit `079da829817c02fef99dd126a927d1bbec790cf0`** ("fix(m5): close literal secret aliases (N8/N9)", M5, 2026-11-10 10:04 +0800; parent `99d1550`) and **docs commit `ab25c17`** ("docs(m5): correct N11 and disclose N10 for rc1"). Release branch head at review close: `0f4196d` (docs-only deltas after the fix — `a11178f` public prerelease verification and `0f4196d` public-tree verification record; `git diff --stat 079da82 0f4196d -- <reviewed files>` is empty).
+
+- **Fix scope:** `app/services/assistant_key_store.py` adds `_PROTECTED_NAMES = {"assistant.key", ".env", "session.token"}` (line 229), `_normalized_secret_name()` (lines 232-237: casefold, strip after `::`, right-strip spaces/dots) and an **environment-independent literal-name guard** in `is_secret_file()` (lines 239-258; guard at 247-249). The two writers were not changed because they already call `is_secret_file`: `app/services/attempt_writer.py:58`, `tools/routea_bundle_to_attempt.py:47` (single evidence) and `:135` (multi-evidence ZIP loop). One test added (`tests/test_assistant_key_store.py:49-54`).
+- **Docs scope (ab25c17):** `docs/handoffs/229` corrected (literal protected names; no claim that `route_bundle_ingest` is exercised; platform-scoped full-suite numbers) and new `docs/handoffs/233` N-10/N-11 disclosure for rc1.
+- **Method:** Lead static review + adversarial probe; one **independent** verifier agent (`n8n9-verifier`, Team task `task-6`) with separate logs. M5 wrote the fix and did not review its own work. Fake keys only; no provider/network call; no tracked file modified; no P1/V5 rerun.
+- **Windows DPAPI: not re-tested in this addendum.** Reference only to M2's records (`docs/handoffs/222`, `229`); no independent DPAPI claim is made here.
+
+### 11.1 N-8 matrix — `.env` / `session.token` Windows aliases: 10/10 PASS
+
+Each path was exercised against three sinks: `attempt_writer._register`, `routea_bundle_to_attempt._register` (single evidence), and `routea_bundle_to_attempt.convert()` multi-evidence **ZIP branch** (`[alias, other.txt]`). Counts are artifact files created and ZIPs containing secret bytes.
+
+| Alias | `.env` sink result | `session.token` sink result |
+|---|---|---|
+| exact name | ValueError; 0 copied; 0 zip | ValueError; 0 copied; 0 zip |
+| case alias (` .ENV` / `SESSION.TOKEN`) | ValueError; 0 copied; 0 zip | ValueError; 0 copied; 0 zip |
+| trailing dot (` .env.` / `session.token.`) | ValueError; 0 copied; 0 zip | ValueError; 0 copied; 0 zip |
+| trailing space (`".env "` / `"session.token "`) | ValueError; 0 copied; 0 zip | ValueError; 0 copied; 0 zip |
+| NTFS default stream (` .env::$DATA` / `session.token::$DATA`) | ValueError; 0 copied; 0 zip | ValueError; 0 copied; 0 zip |
+
+`is_secret_file` returned True for all ten paths (literal guard, independent of `BINARYREPAIR_ASSISTANT_KEY_FILE`). **Rejection happens before any copy** (artifact directory listing identical before/after; `jobs/` tree not created). Error messages are exactly `refusing to copy secret material into evidence` and contain no `.env`/session-token/key bytes. The Route A multi-evidence ZIP branch (the previous bypass) now rejects these members before `zf.write`, leaves no temp archive, and registers 0 artifacts.
+
+### 11.2 N-9 matrix — literal `assistant.key` independent of env: 18/18 PASS
+
+Six alias spellings (`assistant.key`, `ASSISTANT.KEY`, `Assistant.Key`, `assistant.key.`, `"assistant.key "`, `assistant.key::$DATA`) × three env configurations (env unset/default; custom existing `BINARYREPAIR_ASSISTANT_KEY_FILE=…\mykey.dat`; custom **missing** path) → all 18 combinations: `is_secret_file` True, `attempt_writer` ValueError with 0 copied, routea single ValueError with 0 copied, routea ZIP ValueError with 0 ZIP/artifact. The N-9 regression from §10 is closed: the literal-name guard no longer depends on the configured key path. A subprocess adapter **without** the env var also rejected the literal `assistant.key` (ValueError, 0 copied) — the env-independent part holds across processes.
+
+### 11.3 N-10 — ACCEPTED LIMITATION (confirmed as documented)
+
+- `docs/handoffs/229` now has an explicit "N-10 (accepted limitation)" section, and `docs/handoffs/233` discloses it for rc1: a **custom** `BINARYREPAIR_ASSISTANT_KEY_FILE` is protected only when the adapter process sees the same env; the default path and all literal names are always protected.
+- Re-measured behavior matches: same-process custom env → `is_secret_file(mykey.dat)=True`, both writers refuse; adapter subprocess with the env removed → the custom-named `mykey.dat` is copied (bytes verified in the artifact path; the fake-job harness then fails at the DB FK step, after the copy), while literal `assistant.key` is still refused. This is an accepted, disclosed limitation, **not a MUST-FIX** for the rc1 prerelease.
+
+### 11.4 N-11 — FAIL (partial, docs-only, LOW; not an rc1 blocker)
+
+- `docs/handoffs/229` was partially corrected: it no longer lists `route_bundle_ingest.py` as a product-applied path and now states "this module has no active product call path (do not claim runtime coverage)" and that full-suite numbers are platform-scoped. `docs/handoffs/233` repeats the corrected status.
+- **However, the corrected record still contains a false statement:** it says `route_bundle_ingest.py` "guard added", while the code has only an **unused import** (line 46) and **0 call sites** (`git grep`); `_safe_file`/`_register_file` still accept and copy a bundle-local `assistant.key`/`.env` unchecked (defense-in-depth gap only, because the module has no active product call path). The verifier independently reached the same finding, including the candidate-tree docs (`docs/development/handoffs/217` repeats the wording).
+- The corrected full-suite wording is also inconsistent/unsupported (`229` mentions a "macOS run" and "Windows 66/740" figures) while candidate records cite 741/739/2; numbers are platform-scoped but the record is not self-consistent.
+- **Verdict: N-11 = FAIL (partial — docs-only, LOW).** The material fix (removing the false product-runtime-coverage claim) landed, but the "guard added" wording and the inconsistent test-count wording are not corrected, so the task's "docs/229 已纠正" requirement is not fully met. This is not a recall or rc1 blocker; fix the wording (and optionally wire the guard somewhere real) before the stable tag. Both the Lead and the independent verifier reached this assessment.
+
+### 11.5 Tests and evidence
+
+```text
+required command (adapted only for the Windows host + sandbox tmp_path shim):
+D:\Binary_Repair\.venv\Scripts\python.exe -m pytest -q -o addopts= \
+  -p dshenv_win_temp -p no:cacheprovider \
+  tests/test_assistant_key_store.py tests/test_assistant_key_api.py tests/test_agent_console.py
+-> exit 0; 67 passed, 1 warning (store 6 / api 5 / agent console 56)
+adapter subset: tests/test_attempt_writer_gates.py 2 passed; tests/test_routea_adapter.py 2 passed
+
+Lead probe: N-8 10 paths x 3 sinks; N-9 6 aliases x 3 env variants x 3 sinks; custom-env
+  subprocess (N-10); docs/229 + route_bundle_ingest call-site check (N-11); error-message scan;
+  public rc1 refs/blob-SHA check via GitHub API; delivery-package SHA-256 check.
+Verifier (independent, task-6): instrumented 100-row matrix on the worktree -> 100/100 PASS;
+  the same 100-row matrix re-run on the published rc1 candidate tree -> 100/100 PASS; required
+  pytest 67 passed / 0 failed; full collection 741; candidate-tree targeted 89 passed / 0 failed.
+  Raw logs under D:\BinRepair\.tmp\review-n8n9-079da82\ (not committed).
+```
+
+### 11.6 rc1 publication evidence and decision
+
+- **Publication refs (verified read-only from this host):** the public repo is `leesirleesirlee-star/Binary_Repair` (not this workspace's `origin`). `git ls-remote` returned `refs/heads/main 9439340…` (public v1.2.0), `refs/heads/v1.2.1-rc1 → d7d20f4…` and annotated `refs/tags/v1.2.1-rc1` (object `f5346978…`). Records: `docs/handoffs/235` (Lead: rc1 approved, source `ab25c17`, candidate `d7d20f4`, stable HOLD) and `docs/handoffs/237`/`230` (published prerelease, stable boundaries; public main 9439340/v1.2.0, v1.1.3 frozen).
+- **Published-tree content verification:** the GitHub contents API at commit `d7d20f4` returned blob SHA-1s **identical** to the reviewed `079da82` blobs for `app/services/assistant_key_store.py` (`e48e6533cd70204aa6be467cb9d5a8107f722794`), `app/services/attempt_writer.py` (`feb150546178781fac99d1ad662dd66a17c45a8a`) and `tools/routea_bundle_to_attempt.py` (`6e8888f332cf0a78db5fa6a5f8afdb0854731cf8`); the raw public file also shows `_PROTECTED_NAMES`/literal-name guard. The independent verifier separately extracted the published rc1 candidate tree from the team's tracked rc1 git bundle (bundle SHA-256 matches the delivery `SHA256SUMS`; tag object matches `docs/handoffs/236/237`), confirmed the same source files byte-identical, found the "close literal secret aliases N8/N9" fix in the candidate history, and **re-ran the full 100-row N-8/N-9 matrix on that candidate tree: 100/100 PASS**. So the published rc1 tree contains the reviewed N-8/N-9 fixed code (git `fetch`/`clone` to the public repo was intermittently blocked from this host; the read-only GitHub API/raw endpoints served the primary verification).
+- **Package content:** the delivery branch `origin/delivery/all-hands-2026-11-07` (head `c86c9ab`) contains the refreshed rc1 package after the N-8/N-9 hardening (`05d37cb`) and the N-10/N-11 disclosure (`b3c39db`). The tracked `delivery/handoff-v1.2.1-rc1-2026-11-09.zip` was verified binary-safe: SHA-256 `54e2759d3b77df8b116c3f74227e5bbafc52787676f0bf6a975c1f3dffb261bb` matches its recorded `.sha256`; the ZIP (31 members) contains `docs/handoffs/229`, `232` (N-8/N-9 hardening) and `233` (N-10/N-11 disclosure).
+- **Decision:** **rc1: continue prerelease — no recall.** N-8/N-9 are fixed and independently verified on both the reviewed worktree and the published rc1 candidate tree; N-10 is disclosed as accepted; N-11 is a docs-only LOW residual (not an rc1 blocker, to correct before stable). **Stable: HOLD**.
+
+Residual observations for this addendum (not failures of the N-8/N-9 acceptance criteria): only the exact literal protected names/aliases are guarded — a derived env-file name such as `.env.local` is not in `_PROTECTED_NAMES` and is copied if an untrusted bundle names it (INFO; not part of the declared protected set — extend the set if the team treats env-file families as secret); 8.3 short-name aliases could not be resolved on this volume (unverified); the N-10 custom-env limitation remains accepted and disclosed; N-11 wording correction is still owed for the stable tag.
+
+### 11.7 Submission gates (提交门槛)
+
+| Gate | Status | Evidence |
+|---|---|---|
+| N-8/N-9 adversarial tests completed | **PASS** | N-8: 10/10 paths × 3 sinks (ValueError, pre-copy, 0 artifacts, 0 ZIPs with secret); N-9: 18/18 env×alias combos + cross-process literal case; both Lead and independent verifier |
+| No key leakage | **PASS** for the reviewed vectors | No `.env`/`session.token`/`assistant.key` bytes in any data dir, ZIP, or error text; fixed refusal message only; N-10 residual (custom-name adapter env mismatch) disclosed in 229/233 and copied bytes contain no key in this rc1 Windows config (it is the key file itself — see N-10 accepted limitation) |
+| P1/V5 not rerun | **PASS** | No P1/V5 command run; evidence directories untouched |
+| Tag/main not moved | **PASS** | This review moved no ref: public `main` `9439340…` (v1.2.0) and the published `v1.2.1-rc1` tag/commit (`f5346978…` → `d7d20f4…`) were observed read-only and unchanged; this workspace's `origin/main` `472aa94…` is also unchanged; no stable tag created |
+| rc1 / stable explicit | **PASS** | **rc1: continue prerelease (no recall); stable: HOLD** |
+| N-11 doc correction | **FAIL (partial — docs-only, LOW, not an rc1 blocker)** | 229 still says `route_bundle_ingest` "guard added" while code has 0 call sites (import only); platform-number wording inconsistent; correct before stable |
+| Independent review, not M5 self-review | **PASS** | M5 wrote `079da82`/`ab25c17`; M3 and a separate independent verifier agent (`task-6`) reviewed; verifier ran its own instrumented 100-row matrix (100/100 PASS) and re-ran it on the published rc1 candidate tree (100/100 PASS). All AI role windows share the same human operator: role-separated review only, no human-independent signature claim. |
+
+### 11.8 F2 overall status after this addendum
+
+**F2 overall: PASS WITH LIMITATION.** The stored-key and literal-secret-name bypass class (N-3/N-8/N-9) is now fixed and adversarially verified — by the Lead and by the independent verifier — across aliases, hardlinks, custom/missing env, and the Route A multi-evidence ZIP branch, on both the reviewed worktree and the published rc1 candidate tree. The remaining limitations are N-10 (custom-named key files require the adapter process to see the same `BINARYREPAIR_ASSISTANT_KEY_FILE`; documented as accepted for rc1) and N-11 (docs-only wording still overstates the `route_bundle_ingest` guard; LOW, not an rc1 blocker, to be corrected before stable), plus the derived-env-name/8.3/POSIX unverified items. **rc1: continue prerelease (no recall); stable: HOLD.**
