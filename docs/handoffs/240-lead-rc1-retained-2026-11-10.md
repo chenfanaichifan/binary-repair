@@ -35,5 +35,5 @@ public main/tag: unchanged
 
 ```text
 delivery/handoff-v1.2.1-rc1-2026-11-09.zip
-SHA256 8b27d97c0101a714557c40371473db7686b06a0ac567f05f19b7bb37a857f7d3
+SHA256 eef73002bf7701510c57b106b512907f0a66fe6ad22e24b10b98d8c07e5b7367
 ```
