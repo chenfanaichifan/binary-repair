@@ -5,7 +5,7 @@ Status: **aligned with public `v1.2.1-rc1` / `d7d20f4`.**
 ```text
 source        ab25c17
 M2 public    0f4196d
-public candidate d7d20f4
+public candidate d7d20f4ff2f920b5cfec5e81e3c4377529a9885a
 tag           v1.2.1-rc1
 tag object    f5346978b46622c6c582e13d7cf6330f72e638f3
 release       https://github.com/leesirleesirlee-star/Binary_Repair/releases/tag/v1.2.1-rc1
@@ -29,6 +29,11 @@ P0 acceptance 17/17 PASS
 browser e2e 12/12 passed (35.98s)
 Windows public-tree full: 741 collected / 0 failed / 13 skipped
 ```
+
+`SHA256SUMS` is LF-only and verifies 30/30 directly, without CRLF normalization.
+
+The handoff zip SHA-256 is in `../handoff-v1.2.1-rc1-2026-11-09.zip.sha256`
+(outside the archive to avoid a self-referential hash).
 
 Docs included:
 
