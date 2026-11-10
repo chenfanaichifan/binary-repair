@@ -3,7 +3,7 @@
 Status: **aligned with public `v1.2.1-rc1` / `d7d20f4`.**
 
 ```text
-source        ab25c17
+source        3418491
 M2 public    0f4196d
 public candidate d7d20f4ff2f920b5cfec5e81e3c4377529a9885a
 tag           v1.2.1-rc1
