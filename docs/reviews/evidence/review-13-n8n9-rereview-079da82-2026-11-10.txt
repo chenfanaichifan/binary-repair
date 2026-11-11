@@ -1,0 +1,397 @@
+Review 13 addendum Â§11 — N-8/N-9 fix re-review (079da82 / ab25c17) — evidence transcript
+Date: 2026-11-10
+Reviewer: M3 role (independent of M5, who authored the fix)
+Reviewed fix commit: 079da829817c02fef99dd126a927d1bbec790cf0  ("fix(m5): close literal secret aliases (N8/N9)")
+Reviewed docs commit: ab25c17  ("docs(m5): correct N11 and disclose N10 for rc1")
+Final N-11 correction reviewed: 3418491 ("docs: correct N11 wording in release branch", docs-only; release head)
+Parent of fix: 99d1550; release head at review close: a11178f (later 0f4196d docs-only)
+  git diff --stat 079da82 <head> -- <reviewed code files> = empty (no code change after the fix)
+Review worktree: D:\BinRepair\.tmp\review-v121 (HEAD edbbc35 merge; contains 079da82; clean)
+Host: Windows; Python 3.12.15 (D:\Binary_Repair\.venv\Scripts\python.exe); pytest 9.2.0.
+Fake keys only; no provider/network call; no tracked file modified; no P1/V5 rerun.
+
+Reviewed blob SHA-1s at 079da82 (identical to the public rc1 tree d7d20f4 — see Â§8):
+  e48e6533cd70204aa6be467cb9d5a8107f722794  app/services/assistant_key_store.py
+  feb150546178781fac99d1ad662dd66a17c45a8a  app/services/attempt_writer.py
+  6e8888f332cf0a78db5fa6a5f8afdb0854731cf8  tools/routea_bundle_to_attempt.py
+  b0a6351f38c20eb7404da6b21ee1ab93e6faea3b  tools/route_bundle_ingest.py  (import only, no call sites)
+  f83da025b62bef71bac2f60236bbde049dcb626c  tests/test_assistant_key_store.py
+
+Fix diff 079da82^..079da82: 3 files, +39/-7
+  app/services/assistant_key_store.py  +26/-7  (_PROTECTED_NAMES, _normalized_secret_name, literal guard)
+  docs/handoffs/232-v1.2.1-n8-n9-hardening-2026-11-10.md  new
+  tests/test_assistant_key_store.py    +8      (test_literal_secret_names_and_windows_aliases_are_rejected)
+Docs diff ab25c17^..ab25c17: 229 corrected + 233 N-10/N-11 disclosure (2 files, +31/-5)
+Docs 232 claims "741 collected; full pass" (platform-scoped; not reproduced in this sandbox).
+
+--------------------------------------------------------------------------------------------------
+1. N-8 matrix — .env / session.token Windows aliases (10 paths x 3 sinks) — ALL PASS
+--------------------------------------------------------------------------------------------------
+For every row: is_secret_file=True; attempt_writer._register -> ValueError("refusing to copy
+secret material into evidence"), copied=[]; routea_bundle_to_attempt._register -> ValueError,
+copied=[]; routea convert() multi-evidence V0 ZIP branch ["alias", "other.txt"] -> ValueError,
+artifact_files=[], zip_count=0, temp dir cleaned; artifact directory listing identical before/after
+(rejection before copy); jobs/ tree not created. Error messages contain no secret.
+
+  .env            exact / .ENV / .env. / ".env " / .env::$DATA            -> PASS (5/5)
+  session.token   exact / SESSION.TOKEN / session.token. / "session.token " /
+                  session.token::$DATA                                    -> PASS (5/5)
+  TOTAL: 10 paths x 3 sinks = 30/30 PASS; 0 artifacts; 0 ZIPs containing secret; 0 copyfile calls.
+Independent verifier (task-6): 30/30 PASS on the same matrix, plus reversed-order ZIP extra 10/10 PASS;
+instrumented shutil.copyfile calls = 0, jobs/ never created, temp archives cleaned, no secret in errors.
+
+--------------------------------------------------------------------------------------------------
+2. N-9 matrix — literal assistant.key independent of env — ALL PASS
+--------------------------------------------------------------------------------------------------
+6 alias spellings (assistant.key, ASSISTANT.KEY, Assistant.Key, assistant.key., "assistant.key ",
+assistant.key::$DATA) x 3 env variants:
+  a) BINARYREPAIR_ASSISTANT_KEY_FILE unset (default path)
+  b) custom existing ...\mykey.dat
+  c) custom missing ...\notcreated.dat
+=> 18/18 combinations: is_secret_file=True; attempt_writer -> ValueError 0 copied;
+   routea._register -> ValueError 0 copied; convert() ZIP -> ValueError 0 artifacts, temp cleaned.
+Subprocess with the env var removed at the process boundary: literal assistant.key -> ValueError,
+0 artifacts (6/6 alias rows). The Â§10 N-9 regression (custom/missing env re-enabling the literal
+name) is closed.
+
+--------------------------------------------------------------------------------------------------
+3. N-10 — ACCEPTED LIMITATION (documented + re-measured)
+--------------------------------------------------------------------------------------------------
+Docs: 229 "N-10 (accepted limitation)" section + 233 disclosure for rc1 ("custom key path requires
+adapter to see same env; default path and literal name are always protected").
+Measured:
+  same process, custom env mykey.dat        -> is_secret_file=True; both writers ValueError, 0 copied
+  adapter subprocess WITHOUT the env var     -> is_secret_file(mykey.dat)=False; the custom-named
+                                                file IS copied (bytes verified; fake-job FK error
+                                                occurs after copy); literal assistant.key still
+                                                ValueError, 0 copied.
+  => accepted, disclosed limitation; not a MUST-FIX for rc1.
+
+--------------------------------------------------------------------------------------------------
+4. N-11 — docs/229 corrected (FIXED); residual LOW wording note
+--------------------------------------------------------------------------------------------------
+Current 229 text: "tools/route_bundle_ingest.py — guard added; this module has no active product
+call path (do not claim runtime coverage)" and "No claim that route_bundle_ingest is exercised by
+the product. Full-suite numbers platform-scoped." 233 repeats the corrected status.
+Code truth: tools/route_bundle_ingest.py contains the is_secret_file IMPORT ONLY (line 46);
+git grep shows 0 call sites. _safe_file/_register_file still accept a bundle-local
+assistant.key/.env (defense-in-depth gap only; no active product call path; absolute/../ controls
+unchanged).
+Residual: wording "guard added" overstates an unused import; candidate docs (docs/development/handoffs/217)
+repeat it; platform-number wording is inconsistent. The material false-runtime-coverage claim was removed,
+but the corrected record is not fully accurate.
+N-11 final = FIXED (docs-only) after correction 3418491:
+  229 now says "tools/route_bundle_ingest.py — NOT modified by this fix. It has no active
+  product call path and no runtime coverage claim." and scopes test numbers: "741/739/2 on
+  this macOS run; M3's required Windows target set is 67 passed; no Windows full-suite pass is
+  claimed here." Code truth is unchanged and consistent with that wording: is_secret_file is
+  imported only in route_bundle_ingest.py (0 call sites; no runtime guard).
+  The docs-only correction is NOT represented as a runtime guard. INFO: docs/handoffs/233 still
+  self-labels N-11 FAIL (partial, docs-only) — stale/conservative label to align later; it makes
+  no false runtime claim. The input's earlier "guard added" wording is gone.
+
+--------------------------------------------------------------------------------------------------
+5. Tests (Lead)
+--------------------------------------------------------------------------------------------------
+required command (adapted only for Windows host + sandbox tmp_path shim):
+  D:\Binary_Repair\.venv\Scripts\python.exe -m pytest -q -o addopts= \
+    -p dshenv_win_temp -p no:cacheprovider \
+    tests/test_assistant_key_store.py tests/test_assistant_key_api.py tests/test_agent_console.py
+  -> exit 0; 67 passed, 1 warning  (store 6 / api 5 / agent console 56)
+Verifier: required 3-file pytest 67 passed / 0 failed; full collection 741; published-rc1-candidate-tree
+targeted run 89 passed / 0 failed.
+adapter subset: tests/test_attempt_writer_gates.py 2 passed; tests/test_routea_adapter.py 2 passed.
+Verifier (independent agent, task-6): 100 aggregate probe rows PASS (N-8 30 rows, N-9 54 rows,
+subprocess/extra 16), 0 artifacts, 0 copyfile calls, 0 jobs dirs, 0 data-dir zips, 0 temp dirs left,
+0 secrets in messages. Full suite not re-run here (environment-limited in this headless sandbox;
+prior attempts gave 12 e2e environment errors — not a product result). Not claimed.
+
+--------------------------------------------------------------------------------------------------
+6. Error-message scan
+--------------------------------------------------------------------------------------------------
+All rejection messages are exactly "refusing to copy secret material into evidence"; none contain
+fake key / .env value / session-token value. The only non-refusal error observed in the N-10 residual
+copy path is a DB FK error (fake job harness) and contains no secret.
+
+--------------------------------------------------------------------------------------------------
+7. rc1 publication verification (read-only from this host)
+--------------------------------------------------------------------------------------------------
+git ls-remote https://github.com/leesirleesirlee-star/Binary_Repair.git:
+  refs/heads/main                      94393403319a10acc00552a7ae62836699036518  (public v1.2.0)
+  refs/heads/v1.2.1-rc1                d7d20f4ff2f920b5cfec5e81e3c4377529a9885a
+  refs/tags/v1.2.1-rc1                 f5346978b46622c6c582e13d7cf6330f72e638f3 (annotated)
+GitHub contents API at d7d20f4 (blob SHA-1):
+  app/services/assistant_key_store.py  e48e6533cd70204aa6be467cb9d5a8107f722794  == reviewed 079da82
+  app/services/attempt_writer.py       feb150546178781fac99d1ad662dd66a17c45a8a  == reviewed 079da82
+  tools/routea_bundle_to_attempt.py    6e8888f332cf0a78db5fa6a5f8afdb0854731cf8  == reviewed 079da82
+=> the published rc1 tree contains the exact N-8/N-9 fixed code reviewed here.
+Independent verifier: extracted the published rc1 candidate tree from the tracked rc1 git bundle;
+bundle SHA-256 matches the delivery SHA256SUMS, tag object f5346978 matches docs 236/237, candidate
+history contains the N-8/N-9 fix commit; the same 100-row matrix re-run on that candidate tree =
+100/100 PASS, and the candidate source files are byte-identical to the reviewed worktree.
+Delivery package (tracked): delivery/handoff-v1.2.1-rc1-2026-11-09.zip
+  SHA-256 actual == recorded 54e2759d3b77df8b116c3f74227e5bbafc52787676f0bf6a975c1f3dffb261bb (binary-safe)
+  31 members, includes docs/handoffs/229, 232 (N-8/N-9), 233 (N-10/N-11).
+Note: git fetch/clone to the public repo was intermittently blocked from this host; refs/API/raw
+were read successfully. This review moved no ref.
+
+--------------------------------------------------------------------------------------------------
+8. Evidence-chain / boundaries
+--------------------------------------------------------------------------------------------------
+No P1/V5 command run; P1/V5 evidence paths untouched.
+This review changed no tag/main: public main 9439340/v1.2.0 and published v1.2.1-rc1 unchanged;
+this workspace origin/main 472aa94 unchanged.
+No tracked file modified by the probes (review worktree clean before/after).
+
+--------------------------------------------------------------------------------------------------
+9. Residual limitations (not failures of the N-8/N-9 criteria)
+--------------------------------------------------------------------------------------------------
+- N-10 accepted limitation: custom-named key file requires the adapter process to see the same env.
+- Only exact literal protected names are guarded; derived env-file names (e.g. .env.local) are not
+  in _PROTECTED_NAMES (INFO; not part of the declared protected set).
+- 8.3 short-name aliases could not be resolved on this volume (unverified); symlink creation not
+  permitted on this host (WinError 1314) — the resolve/samefile logic is expected to catch symlinks.
+- POSIX 0600 fallback not exercised here.
+- N-11: 233 keeps the accurate 'FAIL (partial, docs-only)' label for the code aspect (no runtime
+  guard); the documentation finding is FIXED(docs-only) and no runtime guard is claimed.
+- Full suite/741-test claim not re-run in this sandbox (environment-limited); targeted suites used.
+- Windows DPAPI not re-tested in this addendum: cited from M2 records only.
+
+--------------------------------------------------------------------------------------------------
+10. Verdicts
+--------------------------------------------------------------------------------------------------
+N-8: FIXED
+N-9: FIXED
+N-10: ACCEPTED LIMITATION (documented/disclosed; re-measured as described)
+N-11: FIXED (docs-only, after correction 3418491; not a runtime guard)
+F2 overall: PASS WITH LIMITATION
+rc1: RETAIN (no recall) - published rc1 tree contains the verified fixed code
+stable: ELIGIBLE from the M3 security-review view (conditions in §11.6/§11.9); tag/main
+        action remains M4/Lead's release process
+
+11. Final N-11 review pass (docs-only correction 3418491)
+
+Reviewed commit: 3418491 ("docs: correct N11 wording in release branch").
+Diff 0f4196d..3418491: docs/handoffs/229 and docs/handoffs/233 only (+6/-6); no code, no tests.
+Current 229 relevant text:
+  "tools/route_bundle_ingest.py - NOT modified by this fix. It has no active product call path
+   and no runtime coverage claim."
+  "... 741/739/2 on this macOS run; M3's required Windows target set is 67 passed; no Windows
+   full-suite pass is claimed here."
+Code truth re-checked at 3418491: tools/route_bundle_ingest.py still has only the is_secret_file
+import (0 call sites); the fix did not modify it. The corrected record now says exactly this.
+No docs-only change is presented as a runtime guard.
+Re-ran at 3418491 (code identical to 079da82; git diff --stat 079da82 3418491 -- <reviewed files> empty):
+  N-8 matrix 10 paths x 3 sinks: all ValueError/0 artifacts/0 ZIPs with secret (still PASS)
+  N-9 matrix 6 aliases x 3 env variants x 3 sinks: all PASS; subprocess literal assistant.key blocked
+  N-10 residual unchanged = accepted limitation (not re-fixed, not re-claimed)
+  required 3-file pytest: 67 passed / exit 0 (store 6 / api 5 / agent console 56)
+  adapter subset: test_attempt_writer_gates 2 passed; test_routea_adapter 2 passed
+Verdicts after final pass:
+  N-8: FIXED; N-9: FIXED; N-10: ACCEPTED LIMITATION; N-11: FIXED (docs-only)
+  F2 overall: PASS WITH LIMITATION
+  rc1: continue prerelease (no recall)
+stable: ELIGIBLE from the M3 security-review view (conditions in §11.6/§11.9); tag/main
+        action remains M4/Lead's release process
+Note: 3418491 is a post-publication docs-only correction; the published rc1 predates it, so its
+docs retain the earlier wording. Docs-only, non-security: no recall trigger. rc1 code tree remains
+the verified fixed tree.
+
+Reviewer working evidence (machine transcripts, not committed; under .tmp, gitignored):
+  D:\BinRepair\.tmp\review-n8n9-079da82\verifier-findings.md (independent verifier, task-6)
+  D:\BinRepair\.tmp\review-n8n9-079da82\verifier\matrix-results.json, tables.md, summary-out.txt
+  D:\BinRepair\.tmp\review-n8n9-079da82\lead-probe.py, lead-probe.log, lead-n8n9-results.json
+  D:\BinRepair\.tmp\review-n8n9-079da82\check-rc1-zip.py, rc1-handoff.zip (hash check copy)
+  D:\BinRepair\.tmp\review-n8n9-079da82\required-run-079da82.log
+  D:\BinRepair\.tmp\review-n8n9-079da82\check-handoff-1dbd34c6.py (handoff hash/doc check)
+  D:\BinRepair\.tmp\review-n8n9-079da82\required-run-2026-11-11.log
+
+--------------------------------------------------------------------------------------------------
+12. Final closure review 2026-11-11 - 3418491 + handoff 1dbd34c6
+--------------------------------------------------------------------------------------------------
+Reviewed: docs-only commit 3418491 (release head) + rebuilt handoff package SHA-256
+  1dbd34c64901324a70761cd0a33e569d6abb0ad6f0e4ea14429ed72a0f375cf8
+  (delivery branch origin/delivery/all-hands-2026-11-07 head b40e244; Lead record 245 hash matches).
+
+Handoff package verification (binary-safe):
+  delivery/handoff-v1.2.1-rc1-2026-11-09.zip SHA-256 == recorded .sha256 == 1dbd34c6...
+  members = 36, incl. docs/handoffs/229 and 233 (and rc1 README/SHA256SUMS)
+  inside 229: "tools/route_bundle_ingest.py - NOT modified by this fix. It has no active
+              product call path and no runtime coverage claim."
+              "... 741/739/2 on this macOS run; M3's required Windows target set is 67 passed;
+              no Windows full-suite pass is claimed here."
+  inside 233: "N-11: FAIL (partial, docs-only) - 229 wording corrected but no runtime guard;
+              full-suite numbers platform-scoped"
+
+Release-branch confirmation at 3418491: same texts; code delta 079da82..3418491 for the reviewed
+files = empty (N-8/N-9 fixes unchanged/intact). Required suite re-run 2026-11-11:
+  67 passed / exit 0 (store 6 / api 5 / agent console 56).
+
+Confirmations required by the task:
+  [x] 229 no longer presents route_bundle_ingest as a runtime guard (code truth: import only, 0 call sites)
+  [x] 233 explicitly states N-11 FAIL(partial), docs-only
+  [x] full-suite numbers are platform-limited (macOS 741/739/2; M3 Windows required target 67; no Windows full-suite claim)
+
+Judgments:
+  N-11: FIXED (docs-only) - documentation finding closed; no runtime guard exists or is claimed;
+        233's FAIL(partial, docs-only) label is retained as accurate for the code aspect.
+  rc1:  RETAIN (no recall) - rc1 code tree previously verified identical to the fixed code;
+        correction is post-publication docs-only.
+  stable: ELIGIBLE from the M3 security-review view, with conditions:
+        include 3418491 in the stable source; disclose N-10 accepted limitation; describe N-11 as
+        docs-only/no runtime guard; keep full-suite numbers platform-scoped; M4/Lead own tag/main.
+
+Gate verification for this review:
+  No P1/V5 modification: no P1/V5 command run; no P1/V5 path touched (review commits are docs-only).
+  No tag/main movement: this review created/moved no ref; public main 9439340/v1.2.0 and
+  v1.2.1-rc1 tag/peeled d7d20f4 observed read-only and unchanged; workspace origin/main 472aa94
+  unchanged; no stable tag created.
+  Docs-only not presented as runtime guard: explicit in 229, 233, and this review's verdicts.
+
+--------------------------------------------------------------------------------------------------
+13. Stable-candidate documentation confirmation request (2026-11-11)
+--------------------------------------------------------------------------------------------------
+Request context: a team member prepared a docs-only stable successor, local commit
+148d236d46bbd514dbb48f0a0f506ef2a2143fcc (based on public rc1 d7d20f4), and asked the Lead for the
+stable decision. M3's task = confirm whether the proposed public stable documentation satisfies the
+N-11 condition.
+
+Public rc1 tree d7d20f4 (read-only from https://github.com/leesirleesirlee-star/Binary_Repair):
+  README.md -> "Release v1.2.0 (2026-11-09)" (no v1.2.1 identity)
+  docs/development/handoffs/217-v1.2.1-f2-hardening.md ->
+      "tools/route_bundle_ingest.py - guard added; this module has no active product
+       call path (do not claim runtime coverage)"          <-- false guard claim still present
+      "... 741/739/2 on this macOS run; Windows M3 used 66/740 with e2e environment skips."
+  docs/development/handoffs/220-v1.2.1-n10-n11.md ->
+      "N-11: FIXED (229 corrected: route_bundle_ingest has no active product call path;
+       full-suite numbers platform-scoped)"                <-- overstates N-11 as FIXED
+  => d7d20f4 does NOT satisfy M3's corrected-documentation condition.
+
+Proposed successor 148d236... :
+  GitHub API commit lookup -> HTTP 422 "No commit found for SHA"
+  not present in this workspace's origin refs; message says local-only/unpushed.
+  => M3 cannot confirm it until the tree is pushed/provided (branch, bundle, patch).
+
+Accessible corrected artifact: origin/release/v1.2.1-candidate-2026-11-11 @
+612510dbdff5b71b39fe9fb82ae8ec6ef8e38abb
+  docs/handoffs/229 blob 388bfe9a89860a9e7675e47955c31f33a5f79a96 == 3418491 blob (corrected)
+  docs/handoffs/233 blob ffc204d5a2e41ce555311fff329c2f737138571f == 3418491 blob (corrected)
+  git diff --stat 3418491 612510d -> only SETUP.md (+197) and release/V1.2.1-RC1-CANDIDATE-2026-11-11.md (+81)
+  app code: git diff --stat 079da82 612510d -- app binaryrepair_ai routea routeb workers tools schemas -> empty
+  required target suite on this tree (candidate worktree): 67 passed / exit 0
+  gaps for a public stable snapshot: README has no v1.2.1 release line; source-tree doc paths
+  (docs/handoffs/229,233) differ from public paths (docs/development/handoffs/217,220).
+  Release notes in that branch: source 3418491, public d7d20f4, tag f5346978..., public main 9439340,
+  stable HOLD.
+
+M3 acceptance criteria before confirming the corrected stable tree:
+  (1) public tree README release = v1.2.1; 217/220 corrected to match 3418491 text;
+  (2) no app-code delta vs d7d20f4 (or full re-review + full tests); key/F2 surface byte-identical;
+  (3) N-10 accepted limitation disclosed; N-11 docs-only, no runtime guard claimed;
+  (4) M3 verifies the exact commit/tree (pushed/bundle/patch); M3 cannot sign for M1/M2/M4.
+
+M3 input to the three Lead questions:
+  1) Stable GO: conditional YES from M3 (N-10 documented limitation; N-11 docs-only/no runtime guard),
+     conditional on the public stable tree containing the corrected docs.
+  2) Target: corrected successor, NOT d7d20f4; 148d236 allowed after M3 verification; alternatively
+     build the public snapshot from corrected source 3418491/612510d and let M3 verify that commit.
+  3) Public main: M3 has no security objection to moving main to the same approved stable commit,
+     RC tag untouched; M2 verifies public tree, M4 owns publication.
+
+Status: M3 documentation confirmation = PENDING (d7d20f4 not confirmed; corrected successor not yet
+accessible). No P1/V5 run/modification; no tag/main movement by this review.
+
+--------------------------------------------------------------------------------------------------
+14. Stable-target doc sign-off attempt - BLOCKED (2026-11-11)
+--------------------------------------------------------------------------------------------------
+Task: fetch M4 branch release/v1.2.1-stable-candidate; diff 148d236 vs d7d20f4; confirm only
+README/217/220; no app-code change; sign stable docs PASS.
+
+Availability evidence:
+  origin (chenfanaichifan/binary-repair) heads: 88, no release/v1.2.1-stable-candidate
+    (variants tried: release/v1.2.1-stable, v1.2.1-stable-candidate, release/stable-v1.2.1,
+     stable/v1.2.1, release/v1.2.1-stable-candidate-2026-11-11 -> none)
+  public (leesirleesirlee-star/Binary_Repair) branches: main 9439340, v1.2.1-rc1 d7d20f4 only
+  public forks: [] (API returns empty list)
+  commit 148d236...: GitHub API 422 on both repos; git fetch -> "upload-pack: not our ref";
+    not in local objects/worktrees
+  stable v1.2.1 tag: absent on both remotes (only v1.2.1-rc1)
+
+Baseline (fetchable now):
+  public tag v1.2.1-rc1 -> object f5346978 -> commit d7d20f4 fetched locally; retained under
+  refs/review/public-rc1-d7d20f4 (local fetched public tags v1.2.0/v1.2.1-rc1 were deleted again;
+  no remote ref was changed).
+  d7d20f4 docs (pre-correction): README "Release v1.2.0 (2026-11-09)";
+    docs/development/handoffs/217: route_bundle_ingest "guard added", old 66/740 numbers;
+    docs/development/handoffs/220: "N-11: FIXED (229 corrected: ...)".
+  Corrected source texts available in 3418491 / 612510d (229: NOT modified/no runtime coverage;
+  233: N-11 FAIL(partial, docs-only); numbers 741/739/2 + M3 required Windows 67 + no Windows
+  full-suite claim).
+  Expected candidate diff (3 files only): README version; 217 guard+numbers sentences; 220 N-11 label.
+
+Sign-off: stable docs = PENDING/BLOCKED, not PASS. Cannot sign an unseen local-only commit.
+No P1/V5 change; no tag/main movement.
+Next: M4 pushes the branch (or provides bundle/patch + SHA); M3 then runs:
+  git diff --name-only d7d20f4 148d236   (expect exactly the 3 files)
+  git diff --quiet d7d20f4 148d236 -- app binaryrepair_ai routea routeb workers tools schemas tests fixtures artifacts
+  content check of the 3 files; optional targeted 67/67 rerun; then sign.
+
+--------------------------------------------------------------------------------------------------
+15. Stable-target candidate 148d236 - M3 sign-off evidence (2026-11-11)
+--------------------------------------------------------------------------------------------------
+Transfer:
+  bundle v1.2.1-stable-148d236.bundle
+  SHA-256 actual == expected c279ce826aeed1e02d074f0026642c0cb63810539627499013e0110e0dea6b3c
+  git bundle verify -> "is okay"; contains refs/heads/prep/v1.2.1-stable-docs -> 148d236;
+    requires d7d20f4
+  fetched to local review ref review/v1.2.1-stable-148d236
+  git rev-parse -> 148d236d46bbd514dbb48f0a0f506ef2a2143fcc (expected)
+  commit: Release preparation <release-preparation@users.noreply.github.com> 2026-11-11 20:02:36
+          "docs: prepare v1.2.1 stable documentation"
+  parent -> d7d20f4ff2f920b5cfec5e81e3c4377529a9885a
+  9439340 ancestor of candidate -> true
+
+Diff d7d20f4..148d236:
+  M README.md
+  M docs/development/handoffs/217-v1.2.1-f2-hardening.md
+  M docs/development/handoffs/220-v1.2.1-n10-n11.md
+  3 files changed, 9 insertions(+), 10 deletions(-)
+  git diff --check -> clean (exit 0)
+  git diff --quiet d7d20f4 148d236 -- app binaryrepair_ai routea routeb workers tools schemas
+      tests fixtures artifacts -> exit 0 (no application-code/test/evidence change)
+  only the three docs files are in the name-only diff.
+
+Key corrections:
+  README: "Release v1.2.0 (2026-11-09)" -> "Version v1.2.1";
+          source pin -> "release/v1.2.1 @ 3418491 (source and corrected documentation)";
+          old test total relabelled "historical v1.2.0 record".
+  217:    "tools/route_bundle_ingest.py - guard added; ..." ->
+          "tools/route_bundle_ingest.py - NOT modified by this fix. It has no active product
+           call path and no runtime coverage claim.";
+          old numbers -> "741/739/2 on this macOS run; M3's required Windows target set is
+          67 passed; no Windows full-suite pass is claimed here."
+          blob 388bfe9a... == corrected source 3418491:docs/handoffs/229... blob.
+  220:    "N-11: FIXED (229 corrected: ...)" ->
+          "N-11: FAIL (partial, docs-only) - 229 wording corrected but no runtime guard;
+           full-suite numbers platform-scoped";
+          N-10 "ACCEPTED LIMITATION (custom key path requires adapter to see same env;
+          default path and literal name are always protected)" retained.
+          blob ffc204d5... == corrected source 3418491:docs/handoffs/233... blob.
+  grep candidate tree: no "guard added" claim; only negative "no runtime coverage claim" /
+  "no runtime guard" statements.
+
+Verification run on the candidate tree (M3's own, new commit):
+  required targeted suite: 67 passed / exit 0 (store 6 / api 5 / agent console 56)
+  (Windows host + sandbox tmp_path shim; no browser run claimed)
+Public refs read-only at review time:
+  main 94393403319a10acc00552a7ae62836699036518 (v1.2.0)
+  tag v1.2.1-rc1 f5346978... -> d7d20f4ff2f920b5cfec5e81e3c4377529a9885a
+  branch v1.2.1-rc1 -> d7d20f4
+  candidate 148d236 local-only (bundle); no tag/main movement by M3.
+
+Sign-off: stable docs = PASS for the exact public candidate
+  148d236d46bbd514dbb48f0a0f506ef2a2143fcc
+  docs-only; no runtime guard claimed; no application code changed.
+No P1/V5 change; no tag/main move.
+Next per Lead: M4 re-read public refs/release conditions, then publish v1.2.1 and fast-forward
+public main to the exact SHA, preserve RC tag; M1 stable handoff + LF SHA256SUMS; M2 verifies.
