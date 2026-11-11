@@ -12,10 +12,9 @@ history and historical evidence remain in the source repository
 
 ```text
 Repository  https://github.com/leesirleesirlee-star/Binary_Repair
-Release     v1.2.0 (2026-11-09)
+Version     v1.2.1
 Source      chenfanaichifan/binary-repair
-            delivery/all-hands-2026-11-07 @ 60c4aab
-            release/v1.2.0 @ 24d88cb
+            release/v1.2.1 @ 3418491 (source and corrected documentation)
 ```
 
 ## Current status
@@ -25,7 +24,7 @@ Source      chenfanaichifan/binary-repair
 | T8.3 | **COMPLETE** |
 | P1 | **success_within_scope** |
 | P2 | **ACCEPTANCE PASSED** |
-| Test suite | **730 collected / 728 passed / 2 Linux-only skipped / 0 failed** (recorded, 2026-11-09) |
+| Test suite | **730 collected / 728 passed / 2 Linux-only skipped / 0 failed** (historical v1.2.0 record, 2026-11-09) |
 | Browser e2e | **12 passed** (Chrome CDP) |
 | Upload gate | **64 MiB client check + HTTP-only controls** |
 | V4 | **passed at model scope** (not binary-level proof) |
