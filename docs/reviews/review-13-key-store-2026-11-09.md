@@ -13,6 +13,7 @@
 - **Fix re-review (same day, reviewed source `0d5791a`):** M5 fixed F1/A-1/F3 and partially mitigated F2; independent re-verification found **F2 not fixed** (HIGH residual bypasses) plus residual F1/A-1 edges. See **§9 addendum** — it supersedes the per-finding statuses above but not the original evidence.
 - **F2 focused re-review (2026-11-10, reviewed commit `b06dadc`):** new `is_secret_file`-based fix passes all **8 required stored-key-file vectors** (pre-copy ValueError, 0 artifacts, 0 ZIPs with key), but is **not a full F2 closure**: `.env`/`session.token` aliases and a custom-env regression remain open. See **§10 addendum** (F2: PASS for the focused scope; overall F2 hardening still OPEN).
 - **N-8/N-9 focused addendum + final N-11 closure review (2026-11-10/11, reviewed commits `079da82`/`ab25c17`, docs correction `3418491`, handoff `1dbd34c6…`):** **N-8 FIXED, N-9 FIXED, N-10 ACCEPTED LIMITATION, N-11 FIXED (docs-only; no runtime guard claimed or implied)**; F2 overall **PASS WITH LIMITATION**; **rc1: RETAIN (no recall); stable: ELIGIBLE from this M3 security review, subject to the disclosures/conditions in §11.6 and §11.9**. See **§11** — it supersedes N-11's status in §10.3.
+- **Stable-candidate documentation confirmation (§11.10, 2026-11-11): PENDING.** Public rc1 `d7d20f4` still carries the pre-correction docs (`217` says the guard was added, `220` says N-11 FIXED, README says v1.2.0) and is **not** confirmed as the stable documentation target; the proposed corrected successor `148d236…` is local-only/unreachable to M3 (GitHub 422). Acceptance criteria and M3's input on the Lead's target/main questions are recorded in §11.10. No tag/main movement.
 
 ---
 
@@ -693,4 +694,41 @@ stable: ELIGIBLE (M3 security-review view; conditions in §11.6: build from a he
 | No tag/main movement | **PASS** | no ref created/moved by this review; public `main` 9439340/v1.2.0 and `v1.2.1-rc1` tag unchanged; workspace `origin/main` 472aa94 unchanged |
 | Docs-only not passed off as runtime guard | **PASS** | verdict and release conditions explicitly say docs-only/no runtime guard |
 | rc1 / stable explicit | **PASS** | **rc1: RETAIN (no recall); stable: ELIGIBLE (M3 security-review view)** |
+
+### 11.10 M3 confirmation for the proposed stable candidate (2026-11-11)
+
+**Context.** A team member prepared a docs-only stable successor, local commit `148d236d46bbd514dbb48f0a0f506ef2a2143fcc`, based on public rc1 `d7d20f4`, and asked the Lead for the stable decision. M3's condition for stable eligibility requires the corrected N-11 documentation in the stable artifact. **M3's task in that request is the documentation confirmation of the proposed public stable tree.**
+
+**Verified claims about public rc1 `d7d20f4` — it does NOT satisfy M3's condition.** Read directly from the public repo (`leesirleesirlee-star/Binary_Repair`, raw files at `d7d20f4`):
+
+- `docs/development/handoffs/217-v1.2.1-f2-hardening.md` still says: "`tools/route_bundle_ingest.py` — guard added; this module has no active product call path (do not claim runtime coverage)". Source `3418491` corrected exactly this to "NOT modified by this fix ... no runtime coverage claim". The false guard claim is still in the public rc1 tree.
+- `docs/development/handoffs/220-v1.2.1-n10-n11.md` still says "N-11: FIXED (229 corrected: route_bundle_ingest has no active product call path; full-suite numbers platform-scoped)", whereas corrected source `233` says "N-11: FAIL (partial, docs-only) — 229 wording corrected but no runtime guard". The public rc1 tree still overstates N-11 as fixed.
+- `README.md` on the public rc1 tree says "Release v1.2.0 (2026-11-09)" — no v1.2.1 identity.
+- (For continuity: the reviewed application code on the public rc1 tree was previously verified blob-identical to the fixed source for the key/F2 surface; the mismatch is documentation/version only.)
+
+**Proposed successor `148d236…` is not independently verifiable from this host.** GitHub API commit lookup returns `422 No commit found`; the hash is not in this workspace's `origin` refs, and the message states it is local-only and unpushed. M3 cannot confirm a documents-only claim without the tree — a docs-only diff must still be inspected. Once pushed to a branch / provided as a bundle/patch, M3 verification is a short, deterministic pass (below).
+
+**Accessible corrected artifact — M1 candidate branch `origin/release/v1.2.1-candidate-2026-11-11` @ `612510d`:**
+
+- `docs/handoffs/229` and `docs/handoffs/233` are **blob-identical** to corrected source `3418491` (`388bfe9a…` / `ffc204d5…`): 229 says route_bundle_ingest is NOT modified / no runtime coverage claim; 233 says N-11 FAIL(partial, docs-only); numbers platform-scoped.
+- **No application-code delta** vs reviewed fix commit `079da82` (`git diff --stat 079da82 612510d -- app binaryrepair_ai routea routeb workers tools schemas` empty).
+- Adds `SETUP.md` + `release/V1.2.1-RC1-CANDIDATE-2026-11-11.md` (pins source `3418491`, public `d7d20f4`, RC tag `f5346978…`, public main `9439340`; states stable HOLD).
+- M3 ran the required target suite on this tree: **67 passed / exit 0** (store 6 / api 5 / agent console 56; same host/tmp-path shim caveat as earlier passes).
+- **Gaps for a public stable snapshot:** its `README.md` has no v1.2.1 release/version line (public rc1 README says v1.2.0), and it uses source-tree doc paths (`docs/handoffs/229/233`) rather than the public-tree paths (`docs/development/handoffs/217/220`). A published stable tree therefore still needs the README version update plus the two public-path documentation corrections — the same three-file intent as `148d236…`.
+
+**M3 acceptance criteria for the corrected stable target (confirmation is currently PENDING, not given):**
+
+1. The **public tree** at the proposed stable commit has `docs/development/handoffs/217` and `220` corrected to match the `3418491` content (the quotes above) and `README.md` identifies the release as **v1.2.1** (not v1.2.0).
+2. **No application-code delta** vs `d7d20f4` (otherwise full re-review and full tests are required); if built from source `612510d`, the public snapshot's app files must remain byte-identical to the verified fixed code for the key/F2 surface (M2 confirms the broader tree).
+3. N-10 remains an accepted, disclosed limitation; N-11 remains docs-only and **no runtime guard is claimed** for `route_bundle_ingest`.
+4. M3 verifies the exact proposed commit/tree (pushed branch, bundle, or patch). M3 cannot sign for M1/M2/M4 and does not publish.
+
+**M3 input on the three Lead questions (recommendation only; publication authority is the Lead/M4):**
+
+1. **Stable GO:** **conditional YES from M3** — accept N-10 as a documented limitation and N-11 as a docs-only fix with no runtime guard; this match §11.9. The condition is criterion (1)/(4) above: the public stable tree must actually contain the corrected N-11 documentation.
+2. **Target:** **use the corrected successor, not `d7d20f4`** — `d7d20f4` fails M3's documentation condition as shown above. `148d236…` may be used **after** M3 verifies it against the criteria; if it cannot be made available quickly, produce the public stable snapshot from the corrected source (`3418491`/`612510d`) with the README/public-path doc fixes and have M3 verify that commit.
+3. **Public `main`:** M3 has **no security objection** to moving `main` to the same approved stable commit (single identity for release and main), with the RC tag left untouched; M2 must verify the public tree and M4 owns the publication.
+
+**Status:** M3 documentation confirmation = **PENDING** — public `d7d20f4` is **not confirmed**, and the corrected successor is not yet accessible. No P1/V5 run or modification; this review moved no tag/main.
+
 

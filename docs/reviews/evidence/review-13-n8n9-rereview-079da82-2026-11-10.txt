@@ -248,4 +248,58 @@ Gate verification for this review:
   unchanged; no stable tag created.
   Docs-only not presented as runtime guard: explicit in 229, 233, and this review's verdicts.
 
+--------------------------------------------------------------------------------------------------
+13. Stable-candidate documentation confirmation request (2026-11-11)
+--------------------------------------------------------------------------------------------------
+Request context: a team member prepared a docs-only stable successor, local commit
+148d236d46bbd514dbb48f0a0f506ef2a2143fcc (based on public rc1 d7d20f4), and asked the Lead for the
+stable decision. M3's task = confirm whether the proposed public stable documentation satisfies the
+N-11 condition.
+
+Public rc1 tree d7d20f4 (read-only from https://github.com/leesirleesirlee-star/Binary_Repair):
+  README.md -> "Release v1.2.0 (2026-11-09)" (no v1.2.1 identity)
+  docs/development/handoffs/217-v1.2.1-f2-hardening.md ->
+      "tools/route_bundle_ingest.py - guard added; this module has no active product
+       call path (do not claim runtime coverage)"          <-- false guard claim still present
+      "... 741/739/2 on this macOS run; Windows M3 used 66/740 with e2e environment skips."
+  docs/development/handoffs/220-v1.2.1-n10-n11.md ->
+      "N-11: FIXED (229 corrected: route_bundle_ingest has no active product call path;
+       full-suite numbers platform-scoped)"                <-- overstates N-11 as FIXED
+  => d7d20f4 does NOT satisfy M3's corrected-documentation condition.
+
+Proposed successor 148d236... :
+  GitHub API commit lookup -> HTTP 422 "No commit found for SHA"
+  not present in this workspace's origin refs; message says local-only/unpushed.
+  => M3 cannot confirm it until the tree is pushed/provided (branch, bundle, patch).
+
+Accessible corrected artifact: origin/release/v1.2.1-candidate-2026-11-11 @
+612510dbdff5b71b39fe9fb82ae8ec6ef8e38abb
+  docs/handoffs/229 blob 388bfe9a89860a9e7675e47955c31f33a5f79a96 == 3418491 blob (corrected)
+  docs/handoffs/233 blob ffc204d5a2e41ce555311fff329c2f737138571f == 3418491 blob (corrected)
+  git diff --stat 3418491 612510d -> only SETUP.md (+197) and release/V1.2.1-RC1-CANDIDATE-2026-11-11.md (+81)
+  app code: git diff --stat 079da82 612510d -- app binaryrepair_ai routea routeb workers tools schemas -> empty
+  required target suite on this tree (candidate worktree): 67 passed / exit 0
+  gaps for a public stable snapshot: README has no v1.2.1 release line; source-tree doc paths
+  (docs/handoffs/229,233) differ from public paths (docs/development/handoffs/217,220).
+  Release notes in that branch: source 3418491, public d7d20f4, tag f5346978..., public main 9439340,
+  stable HOLD.
+
+M3 acceptance criteria before confirming the corrected stable tree:
+  (1) public tree README release = v1.2.1; 217/220 corrected to match 3418491 text;
+  (2) no app-code delta vs d7d20f4 (or full re-review + full tests); key/F2 surface byte-identical;
+  (3) N-10 accepted limitation disclosed; N-11 docs-only, no runtime guard claimed;
+  (4) M3 verifies the exact commit/tree (pushed/bundle/patch); M3 cannot sign for M1/M2/M4.
+
+M3 input to the three Lead questions:
+  1) Stable GO: conditional YES from M3 (N-10 documented limitation; N-11 docs-only/no runtime guard),
+     conditional on the public stable tree containing the corrected docs.
+  2) Target: corrected successor, NOT d7d20f4; 148d236 allowed after M3 verification; alternatively
+     build the public snapshot from corrected source 3418491/612510d and let M3 verify that commit.
+  3) Public main: M3 has no security objection to moving main to the same approved stable commit,
+     RC tag untouched; M2 verifies public tree, M4 owns publication.
+
+Status: M3 documentation confirmation = PENDING (d7d20f4 not confirmed; corrected successor not yet
+accessible). No P1/V5 run/modification; no tag/main movement by this review.
+
+
 
