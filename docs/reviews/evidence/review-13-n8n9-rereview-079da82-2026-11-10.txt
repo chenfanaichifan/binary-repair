@@ -1,4 +1,4 @@
-Review 13 addendum Â§11 â€” N-8/N-9 fix re-review (079da82 / ab25c17) â€” evidence transcript
+Review 13 addendum Â§11 — N-8/N-9 fix re-review (079da82 / ab25c17) — evidence transcript
 Date: 2026-11-10
 Reviewer: M3 role (independent of M5, who authored the fix)
 Reviewed fix commit: 079da829817c02fef99dd126a927d1bbec790cf0  ("fix(m5): close literal secret aliases (N8/N9)")
@@ -10,7 +10,7 @@ Review worktree: D:\BinRepair\.tmp\review-v121 (HEAD edbbc35 merge; contains 079
 Host: Windows; Python 3.12.15 (D:\Binary_Repair\.venv\Scripts\python.exe); pytest 9.2.0.
 Fake keys only; no provider/network call; no tracked file modified; no P1/V5 rerun.
 
-Reviewed blob SHA-1s at 079da82 (identical to the public rc1 tree d7d20f4 â€” see Â§8):
+Reviewed blob SHA-1s at 079da82 (identical to the public rc1 tree d7d20f4 — see Â§8):
   e48e6533cd70204aa6be467cb9d5a8107f722794  app/services/assistant_key_store.py
   feb150546178781fac99d1ad662dd66a17c45a8a  app/services/attempt_writer.py
   6e8888f332cf0a78db5fa6a5f8afdb0854731cf8  tools/routea_bundle_to_attempt.py
@@ -25,7 +25,7 @@ Docs diff ab25c17^..ab25c17: 229 corrected + 233 N-10/N-11 disclosure (2 files, 
 Docs 232 claims "741 collected; full pass" (platform-scoped; not reproduced in this sandbox).
 
 --------------------------------------------------------------------------------------------------
-1. N-8 matrix â€” .env / session.token Windows aliases (10 paths x 3 sinks) â€” ALL PASS
+1. N-8 matrix — .env / session.token Windows aliases (10 paths x 3 sinks) — ALL PASS
 --------------------------------------------------------------------------------------------------
 For every row: is_secret_file=True; attempt_writer._register -> ValueError("refusing to copy
 secret material into evidence"), copied=[]; routea_bundle_to_attempt._register -> ValueError,
@@ -41,7 +41,7 @@ Independent verifier (task-6): 30/30 PASS on the same matrix, plus reversed-orde
 instrumented shutil.copyfile calls = 0, jobs/ never created, temp archives cleaned, no secret in errors.
 
 --------------------------------------------------------------------------------------------------
-2. N-9 matrix â€” literal assistant.key independent of env â€” ALL PASS
+2. N-9 matrix — literal assistant.key independent of env — ALL PASS
 --------------------------------------------------------------------------------------------------
 6 alias spellings (assistant.key, ASSISTANT.KEY, Assistant.Key, assistant.key., "assistant.key ",
 assistant.key::$DATA) x 3 env variants:
@@ -55,7 +55,7 @@ Subprocess with the env var removed at the process boundary: literal assistant.k
 name) is closed.
 
 --------------------------------------------------------------------------------------------------
-3. N-10 â€” ACCEPTED LIMITATION (documented + re-measured)
+3. N-10 — ACCEPTED LIMITATION (documented + re-measured)
 --------------------------------------------------------------------------------------------------
 Docs: 229 "N-10 (accepted limitation)" section + 233 disclosure for rc1 ("custom key path requires
 adapter to see same env; default path and literal name are always protected").
@@ -68,9 +68,9 @@ Measured:
   => accepted, disclosed limitation; not a MUST-FIX for rc1.
 
 --------------------------------------------------------------------------------------------------
-4. N-11 â€” docs/229 corrected (FIXED); residual LOW wording note
+4. N-11 — docs/229 corrected (FIXED); residual LOW wording note
 --------------------------------------------------------------------------------------------------
-Current 229 text: "tools/route_bundle_ingest.py â€” guard added; this module has no active product
+Current 229 text: "tools/route_bundle_ingest.py — guard added; this module has no active product
 call path (do not claim runtime coverage)" and "No claim that route_bundle_ingest is exercised by
 the product. Full-suite numbers platform-scoped." 233 repeats the corrected status.
 Code truth: tools/route_bundle_ingest.py contains the is_secret_file IMPORT ONLY (line 46);
@@ -104,7 +104,7 @@ adapter subset: tests/test_attempt_writer_gates.py 2 passed; tests/test_routea_a
 Verifier (independent agent, task-6): 100 aggregate probe rows PASS (N-8 30 rows, N-9 54 rows,
 subprocess/extra 16), 0 artifacts, 0 copyfile calls, 0 jobs dirs, 0 data-dir zips, 0 temp dirs left,
 0 secrets in messages. Full suite not re-run here (environment-limited in this headless sandbox;
-prior attempts gave 12 e2e environment errors â€” not a product result). Not claimed.
+prior attempts gave 12 e2e environment errors — not a product result). Not claimed.
 
 --------------------------------------------------------------------------------------------------
 6. Error-message scan
@@ -150,9 +150,10 @@ No tracked file modified by the probes (review worktree clean before/after).
 - Only exact literal protected names are guarded; derived env-file names (e.g. .env.local) are not
   in _PROTECTED_NAMES (INFO; not part of the declared protected set).
 - 8.3 short-name aliases could not be resolved on this volume (unverified); symlink creation not
-  permitted on this host (WinError 1314) â€” the resolve/samefile logic is expected to catch symlinks.
+  permitted on this host (WinError 1314) — the resolve/samefile logic is expected to catch symlinks.
 - POSIX 0600 fallback not exercised here.
-- N-11 residual INFO: 233's stale 'FAIL (partial)' self-label; correct wording only, no false claim.
+- N-11: 233 keeps the accurate 'FAIL (partial, docs-only)' label for the code aspect (no runtime
+  guard); the documentation finding is FIXED(docs-only) and no runtime guard is claimed.
 - Full suite/741-test claim not re-run in this sandbox (environment-limited); targeted suites used.
 - Windows DPAPI not re-tested in this addendum: cited from M2 records only.
 
@@ -164,8 +165,9 @@ N-9: FIXED
 N-10: ACCEPTED LIMITATION (documented/disclosed; re-measured as described)
 N-11: FIXED (docs-only, after correction 3418491; not a runtime guard)
 F2 overall: PASS WITH LIMITATION
-rc1: continue prerelease (no recall) â€” published rc1 tree contains the verified fixed code
-stable: HOLD
+rc1: RETAIN (no recall) - published rc1 tree contains the verified fixed code
+stable: ELIGIBLE from the M3 security-review view (conditions in §11.6/§11.9); tag/main
+        action remains M4/Lead's release process
 
 11. Final N-11 review pass (docs-only correction 3418491)
 
@@ -189,7 +191,8 @@ Verdicts after final pass:
   N-8: FIXED; N-9: FIXED; N-10: ACCEPTED LIMITATION; N-11: FIXED (docs-only)
   F2 overall: PASS WITH LIMITATION
   rc1: continue prerelease (no recall)
-  stable: HOLD
+stable: ELIGIBLE from the M3 security-review view (conditions in §11.6/§11.9); tag/main
+        action remains M4/Lead's release process
 Note: 3418491 is a post-publication docs-only correction; the published rc1 predates it, so its
 docs retain the earlier wording. Docs-only, non-security: no recall trigger. rc1 code tree remains
 the verified fixed tree.
@@ -200,4 +203,49 @@ Reviewer working evidence (machine transcripts, not committed; under .tmp, gitig
   D:\BinRepair\.tmp\review-n8n9-079da82\lead-probe.py, lead-probe.log, lead-n8n9-results.json
   D:\BinRepair\.tmp\review-n8n9-079da82\check-rc1-zip.py, rc1-handoff.zip (hash check copy)
   D:\BinRepair\.tmp\review-n8n9-079da82\required-run-079da82.log
+  D:\BinRepair\.tmp\review-n8n9-079da82\check-handoff-1dbd34c6.py (handoff hash/doc check)
+  D:\BinRepair\.tmp\review-n8n9-079da82\required-run-2026-11-11.log
+
+--------------------------------------------------------------------------------------------------
+12. Final closure review 2026-11-11 - 3418491 + handoff 1dbd34c6
+--------------------------------------------------------------------------------------------------
+Reviewed: docs-only commit 3418491 (release head) + rebuilt handoff package SHA-256
+  1dbd34c64901324a70761cd0a33e569d6abb0ad6f0e4ea14429ed72a0f375cf8
+  (delivery branch origin/delivery/all-hands-2026-11-07 head b40e244; Lead record 245 hash matches).
+
+Handoff package verification (binary-safe):
+  delivery/handoff-v1.2.1-rc1-2026-11-09.zip SHA-256 == recorded .sha256 == 1dbd34c6...
+  members = 36, incl. docs/handoffs/229 and 233 (and rc1 README/SHA256SUMS)
+  inside 229: "tools/route_bundle_ingest.py - NOT modified by this fix. It has no active
+              product call path and no runtime coverage claim."
+              "... 741/739/2 on this macOS run; M3's required Windows target set is 67 passed;
+              no Windows full-suite pass is claimed here."
+  inside 233: "N-11: FAIL (partial, docs-only) - 229 wording corrected but no runtime guard;
+              full-suite numbers platform-scoped"
+
+Release-branch confirmation at 3418491: same texts; code delta 079da82..3418491 for the reviewed
+files = empty (N-8/N-9 fixes unchanged/intact). Required suite re-run 2026-11-11:
+  67 passed / exit 0 (store 6 / api 5 / agent console 56).
+
+Confirmations required by the task:
+  [x] 229 no longer presents route_bundle_ingest as a runtime guard (code truth: import only, 0 call sites)
+  [x] 233 explicitly states N-11 FAIL(partial), docs-only
+  [x] full-suite numbers are platform-limited (macOS 741/739/2; M3 Windows required target 67; no Windows full-suite claim)
+
+Judgments:
+  N-11: FIXED (docs-only) - documentation finding closed; no runtime guard exists or is claimed;
+        233's FAIL(partial, docs-only) label is retained as accurate for the code aspect.
+  rc1:  RETAIN (no recall) - rc1 code tree previously verified identical to the fixed code;
+        correction is post-publication docs-only.
+  stable: ELIGIBLE from the M3 security-review view, with conditions:
+        include 3418491 in the stable source; disclose N-10 accepted limitation; describe N-11 as
+        docs-only/no runtime guard; keep full-suite numbers platform-scoped; M4/Lead own tag/main.
+
+Gate verification for this review:
+  No P1/V5 modification: no P1/V5 command run; no P1/V5 path touched (review commits are docs-only).
+  No tag/main movement: this review created/moved no ref; public main 9439340/v1.2.0 and
+  v1.2.1-rc1 tag/peeled d7d20f4 observed read-only and unchanged; workspace origin/main 472aa94
+  unchanged; no stable tag created.
+  Docs-only not presented as runtime guard: explicit in 229, 233, and this review's verdicts.
+
 
