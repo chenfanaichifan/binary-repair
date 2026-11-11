@@ -335,3 +335,63 @@ Next: M4 pushes the branch (or provides bundle/patch + SHA); M3 then runs:
   git diff --name-only d7d20f4 148d236   (expect exactly the 3 files)
   git diff --quiet d7d20f4 148d236 -- app binaryrepair_ai routea routeb workers tools schemas tests fixtures artifacts
   content check of the 3 files; optional targeted 67/67 rerun; then sign.
+
+--------------------------------------------------------------------------------------------------
+15. Stable-target candidate 148d236 - M3 sign-off evidence (2026-11-11)
+--------------------------------------------------------------------------------------------------
+Transfer:
+  bundle v1.2.1-stable-148d236.bundle
+  SHA-256 actual == expected c279ce826aeed1e02d074f0026642c0cb63810539627499013e0110e0dea6b3c
+  git bundle verify -> "is okay"; contains refs/heads/prep/v1.2.1-stable-docs -> 148d236;
+    requires d7d20f4
+  fetched to local review ref review/v1.2.1-stable-148d236
+  git rev-parse -> 148d236d46bbd514dbb48f0a0f506ef2a2143fcc (expected)
+  commit: Release preparation <release-preparation@users.noreply.github.com> 2026-11-11 20:02:36
+          "docs: prepare v1.2.1 stable documentation"
+  parent -> d7d20f4ff2f920b5cfec5e81e3c4377529a9885a
+  9439340 ancestor of candidate -> true
+
+Diff d7d20f4..148d236:
+  M README.md
+  M docs/development/handoffs/217-v1.2.1-f2-hardening.md
+  M docs/development/handoffs/220-v1.2.1-n10-n11.md
+  3 files changed, 9 insertions(+), 10 deletions(-)
+  git diff --check -> clean (exit 0)
+  git diff --quiet d7d20f4 148d236 -- app binaryrepair_ai routea routeb workers tools schemas
+      tests fixtures artifacts -> exit 0 (no application-code/test/evidence change)
+  only the three docs files are in the name-only diff.
+
+Key corrections:
+  README: "Release v1.2.0 (2026-11-09)" -> "Version v1.2.1";
+          source pin -> "release/v1.2.1 @ 3418491 (source and corrected documentation)";
+          old test total relabelled "historical v1.2.0 record".
+  217:    "tools/route_bundle_ingest.py - guard added; ..." ->
+          "tools/route_bundle_ingest.py - NOT modified by this fix. It has no active product
+           call path and no runtime coverage claim.";
+          old numbers -> "741/739/2 on this macOS run; M3's required Windows target set is
+          67 passed; no Windows full-suite pass is claimed here."
+          blob 388bfe9a... == corrected source 3418491:docs/handoffs/229... blob.
+  220:    "N-11: FIXED (229 corrected: ...)" ->
+          "N-11: FAIL (partial, docs-only) - 229 wording corrected but no runtime guard;
+           full-suite numbers platform-scoped";
+          N-10 "ACCEPTED LIMITATION (custom key path requires adapter to see same env;
+          default path and literal name are always protected)" retained.
+          blob ffc204d5... == corrected source 3418491:docs/handoffs/233... blob.
+  grep candidate tree: no "guard added" claim; only negative "no runtime coverage claim" /
+  "no runtime guard" statements.
+
+Verification run on the candidate tree (M3's own, new commit):
+  required targeted suite: 67 passed / exit 0 (store 6 / api 5 / agent console 56)
+  (Windows host + sandbox tmp_path shim; no browser run claimed)
+Public refs read-only at review time:
+  main 94393403319a10acc00552a7ae62836699036518 (v1.2.0)
+  tag v1.2.1-rc1 f5346978... -> d7d20f4ff2f920b5cfec5e81e3c4377529a9885a
+  branch v1.2.1-rc1 -> d7d20f4
+  candidate 148d236 local-only (bundle); no tag/main movement by M3.
+
+Sign-off: stable docs = PASS for the exact public candidate
+  148d236d46bbd514dbb48f0a0f506ef2a2143fcc
+  docs-only; no runtime guard claimed; no application code changed.
+No P1/V5 change; no tag/main move.
+Next per Lead: M4 re-read public refs/release conditions, then publish v1.2.1 and fast-forward
+public main to the exact SHA, preserve RC tag; M1 stable handoff + LF SHA256SUMS; M2 verifies.

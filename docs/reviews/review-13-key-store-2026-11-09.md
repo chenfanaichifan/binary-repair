@@ -13,7 +13,7 @@
 - **Fix re-review (same day, reviewed source `0d5791a`):** M5 fixed F1/A-1/F3 and partially mitigated F2; independent re-verification found **F2 not fixed** (HIGH residual bypasses) plus residual F1/A-1 edges. See **§9 addendum** — it supersedes the per-finding statuses above but not the original evidence.
 - **F2 focused re-review (2026-11-10, reviewed commit `b06dadc`):** new `is_secret_file`-based fix passes all **8 required stored-key-file vectors** (pre-copy ValueError, 0 artifacts, 0 ZIPs with key), but is **not a full F2 closure**: `.env`/`session.token` aliases and a custom-env regression remain open. See **§10 addendum** (F2: PASS for the focused scope; overall F2 hardening still OPEN).
 - **N-8/N-9 focused addendum + final N-11 closure review (2026-11-10/11, reviewed commits `079da82`/`ab25c17`, docs correction `3418491`, handoff `1dbd34c6…`):** **N-8 FIXED, N-9 FIXED, N-10 ACCEPTED LIMITATION, N-11 FIXED (docs-only; no runtime guard claimed or implied)**; F2 overall **PASS WITH LIMITATION**; **rc1: RETAIN (no recall); stable: ELIGIBLE from this M3 security review, subject to the disclosures/conditions in §11.6 and §11.9**. See **§11** — it supersedes N-11's status in §10.3.
-- **Stable-candidate documentation confirmation (§11.10) and stable-target doc sign-off (§11.11, 2026-11-11): BLOCKED/PENDING.** Public rc1 `d7d20f4` is not confirmed (pre-correction docs: README v1.2.0, 217 still claims the guard was added, 220 still says N-11 FIXED). The proposed corrected successor `148d236…` and M4's `release/v1.2.1-stable-candidate` branch are **not published to either reachable remote** (GitHub API 422 / `not our ref`; origin and public branch lists checked; no stable tag) → **`stable docs: PENDING/BLOCKED`, not PASS**. M3 sign-off criteria, expected 3-file diff and next action for M4 are in §11.11. No tag/main movement.
+- **Stable-target documentation sign-off (§11.12, 2026-11-11): `stable docs: PASS`.** Exact public candidate `148d236d46bbd514dbb48f0a0f506ef2a2143fcc` was delivered as bundle `v1.2.1-stable-148d236.bundle` (SHA-256 `c279ce…` verified) and reviewed against public RC `d7d20f4`: exactly 3 documentation files changed (README version, `217` N-11 wording, `220` N-11 label), **no application-code/test/evidence delta**, no runtime-guard claim, N-10 accepted limitation retained; targeted suite on the candidate tree 67/67 passed. Prior approvals applied only to earlier sources; this PASS is for this exact public commit. M4 may proceed with the ordered release workflow (publish `v1.2.1`, fast-forward public `main` to `148d236…` only, preserve RC tag); M3 moved no tag/main and made no P1/V5 change. See §11.12.
 
 ---
 
@@ -737,6 +737,8 @@ stable: ELIGIBLE (M3 security-review view; conditions in §11.6: build from a he
 
 **Result: BLOCKED — the branch and commit are not published to either repository reachable from this host. M3 cannot inspect the candidate and must not sign an unseen artifact.**
 
+*(Superseded: the bundle `v1.2.1-stable-148d236.bundle` was delivered on 2026-11-11 and the sign-off was completed in §11.12 — `stable docs: PASS` for the exact commit `148d236d46bbd514dbb48f0a0f506ef2a2143fcc`.)*
+
 Evidence:
 - `git ls-remote --heads origin` (chenfanaichifan/binary-repair, 88 heads incl. `release/v1.2.1`, `release/v1.2.1-candidate-2026-11-11`, `release/v1.2.1-handoff-2026-11-09`): **no `release/v1.2.1-stable-candidate`**. Branch-name variants tried: `release/v1.2.1-stable`, `v1.2.1-stable-candidate`, `release/stable-v1.2.1`, `stable/v1.2.1`, `release/v1.2.1-stable-candidate-2026-11-11` — none.
 - Public repo `leesirleesirlee-star/Binary_Repair`: branches are only `main` (9439340) and `v1.2.1-rc1` (d7d20f4); forks list is empty; no stable-candidate branch.
@@ -768,3 +770,52 @@ M3 sign-off checklist, to run once the branch/commit is available:
 Constraints respected: no docs-only change is described as a runtime guard; no P1/V5 command or modification; no tag/main movement (public `main` 9439340/v1.2.0 and `v1.2.1-rc1` tag unchanged; workspace `origin/main` 472aa94 unchanged; no stable tag; locally fetched public tags were removed and the rc1 commit retained only under a local `refs/review/…` ref for the pending comparison).
 
 **Next action for M4:** push `release/v1.2.1-stable-candidate` (or provide the commit/bundle/patch + SHA) so M3 can fetch `148d236…`; M3 then completes the diff/no-code-change checks and reports `stable docs: PASS/FAIL` in one pass.
+
+### 11.12 Stable-target documentation sign-off — `stable docs: PASS` (2026-11-11)
+
+**Task received:** review the exact public candidate delivered as `v1.2.1-stable-148d236.bundle`, specifically the N-10 disclosure and N-11 wording, and confirm or reject it in M3's own record. Prior approval (M3 review `f311086` of source `3418491`) does not sign this new public commit.
+
+**Candidate transfer verification:**
+- Bundle file: `v1.2.1-stable-148d236.bundle`; SHA-256 = `c279ce826aeed1e02d074f0026642c0cb63810539627499013e0110e0dea6b3c` — matches the expected value.
+- `git bundle verify` → "is okay"; bundle contains `refs/heads/prep/v1.2.1-stable-docs` → `148d236d46bbd514dbb48f0a0f506ef2a2143fcc`, requires parent `d7d20f4`.
+- Fetched into a local review ref (`review/v1.2.1-stable-148d236`); `git rev-parse` = `148d236d46bbd514dbb48f0a0f506ef2a2143fcc` (matches expected). Candidate commit: `Release preparation <release-preparation@users.noreply.github.com>`, 2026-11-11 20:02:36, "docs: prepare v1.2.1 stable documentation".
+- Parent = `d7d20f4ff2f920b5cfec5e81e3c4377529a9885a`; public main `9439340` is an ancestor of the candidate (`git merge-base --is-ancestor` true).
+
+**Diff vs public RC `d7d20f4` — exactly three documentation files, nothing else:**
+
+```text
+M README.md                                            7 +-    (Version v1.2.1; source pin; test-row label)
+M docs/development/handoffs/217-v1.2.1-f2-hardening.md 8 +-    (N-11 wording: NOT modified/no runtime coverage; Windows 67-pass/scoped numbers)
+M docs/development/handoffs/220-v1.2.1-n10-n11.md      4 +-    (N-11 label -> FAIL (partial, docs-only); N-10 retained)
+3 files changed, 9 insertions(+), 10 deletions(-)
+```
+
+- `git diff --check` on the candidate: **clean** (no whitespace errors).
+- **No application-code, test, fixture or evidence change:** the name-only diff is exactly the three docs files above; `git diff --quiet d7d20f4 148d236 -- app binaryrepair_ai routea routeb workers tools schemas tests fixtures artifacts` exits 0.
+- `docs/development/handoffs/217` blob = `388bfe9a89860a9e7675e47955c31f33a5f79a96` = corrected source `3418491:docs/handoffs/229…` blob (byte-identical corrected text); `220` blob = `ffc204d5a2e41ce555311fff329c2f737138571f` = corrected source `233` blob. The public candidate therefore carries exactly the N-11 corrections that M3 reviewed at source.
+
+**Content checks against M3's conditions (`f311086`/§11.9):**
+- `README.md`: "Version v1.2.1"; source pin "release/v1.2.1 @ 3418491 (source and corrected documentation)"; the old test-suite total is explicitly relabelled "historical v1.2.0 record" so it cannot be misread as a v1.2.1 result; browser-e2e row unchanged.
+- `217`: route_bundle_ingest is "NOT modified by this fix. It has no active product call path and no runtime coverage claim."; numbers are "741/739/2 on this macOS run; M3's required Windows target set is 67 passed; no Windows full-suite pass is claimed here."
+- `220`: "N-11: FAIL (partial, docs-only) — 229 wording corrected but no runtime guard; full-suite numbers platform-scoped"; N-10 "ACCEPTED LIMITATION (custom key path requires adapter to see same env; default path and literal name are always protected)" retained.
+- Candidate-tree grep finds no "guard added" claim; only the negative "no runtime coverage claim" / "no runtime guard" statements.
+- Verification run on the candidate tree: required targeted suite (`test_assistant_key_store.py` + `test_assistant_key_api.py` + `test_agent_console.py`) = **67 passed / exit 0** (store 6 / api 5 / agent console 56; same Windows-host/sandbox tmp_path shim caveat as prior passes). No RC/source result is re-attributed; the preparer's statement that no suite/browser run was performed on this comment is respected — this targeted run is M3's own, on the candidate tree, and no browser run is claimed.
+
+**Public refs at review time (read-only):** public `main` = `9439340` (v1.2.0); RC tag `v1.2.1-rc1` object `f5346978…` → `d7d20f4`; branch `v1.2.1-rc1` = `d7d20f4`. Candidate `148d236` is local-only (bundle) and has not been published; M3 performed no tag/main movement.
+
+**Sign-off:**
+
+```text
+reviewed public candidate: 148d236d46bbd514dbb48f0a0f506ef2a2143fcc
+parent:                    d7d20f4ff2f920b5cfec5e81e3c4377529a9885a
+bundle SHA-256:            c279ce826aeed1e02d074f0026642c0cb63810539627499013e0110e0dea6b3c (verified)
+diff scope:                README.md + docs/development/handoffs/217 + docs/development/handoffs/220 only
+application code:          unchanged (0 code/test/evidence delta)
+N-10:                      ACCEPTED LIMITATION, disclosed (custom key-file env requirement retained)
+N-11:                      docs-only correction; no runtime guard claimed
+stable docs:               PASS  (for this exact public commit; not a signature on a recreated commit)
+```
+
+**Boundaries:** this PASS is documentation sign-off for the exact SHA `148d236…`; it is not an attestation that a release occurred and it does not sign for M1/M2/M4. No docs-only change is described as a runtime guard; no P1/V5 command or modification was made; no tag/main was created or moved by this review (only local refs for the bundle/RC commits were kept for traceability). Prior approvals remain attributed to their original sources/platforms.
+
+**Next (per the Lead's ordered workflow):** M4 re-reads current public refs and release conditions and stops if they changed unexpectedly; publishes `v1.2.1` and fast-forwards public `main` to the exact target `148d236…` only after this acceptance, preserving the RC tag; M1 produces the stable handoff + LF SHA256SUMS from the actual published refs; M2 independently verifies the published stable tree and records its own results after release.
