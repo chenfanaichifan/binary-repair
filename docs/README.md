@@ -67,9 +67,13 @@ is against a canonical reconstruction, not verbatim original text.
 ## Assets
 
 ```text
-docs/assets/screenshots/   current UI screenshots
+docs/showcase/             current UI screenshots (start here)
+docs/assets/screenshots/   historical screenshots from earlier UI revisions
 docs/assets/demo/          earlier demo screenshots retained for history
 ```
+
+Use `docs/showcase/` when describing the current workbench. The older
+screenshots stay for provenance only; several show the retired form intake.
 
 ## Archive
 

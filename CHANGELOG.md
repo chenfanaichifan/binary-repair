@@ -76,6 +76,12 @@ simple semantic-versioning policy for delivery snapshots.
   foregrounds and the demo banner were audited against WCAG ratios. The
   full-width amber demo strip is now a slim, muted `演示数据` disclosure with a
   boundary link.
+- Team sharing: `START-HERE.md`, Windows `start-gui.ps1`/`.bat`, a current
+  `docs/showcase/` screenshot set and `SHARE-WECHAT.md`. The host gate accepts
+  explicit `BINARYREPAIR_ALLOWED_HOSTS` entries plus an opt-in
+  `BINARYREPAIR_ALLOW_TUNNEL=1` for temporary ngrok domains, so a dedicated
+  mock demo instance can be shared without weakening the default local-only
+  boundary. `start-gui.sh` honors `BINARYREPAIR_HOST` for LAN runs.
 
 ### Changed
 

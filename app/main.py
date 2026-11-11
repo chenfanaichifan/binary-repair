@@ -73,6 +73,19 @@ SESSION_TOKEN = _load_session_token()
 CSRF_TOKEN = hmac.new(SESSION_TOKEN.encode("utf-8"), b"gui-csrf", hashlib.sha256).hexdigest()
 SESSION_COOKIE = "br_session"
 ALLOWED_HOSTS = {"127.0.0.1", "localhost"}
+for _extra_host in os.environ.get("BINARYREPAIR_ALLOWED_HOSTS", "").split(","):
+    if _extra_host.strip():
+        ALLOWED_HOSTS.add(_extra_host.strip().lower())
+
+
+def _host_allowed(host: str) -> bool:
+    """Local-only by default; explicit env opts in LAN/temporary tunnel hosts."""
+    host = (host or "").split(":")[0].strip().lower()
+    if host in ALLOWED_HOSTS:
+        return True
+    if os.environ.get("BINARYREPAIR_ALLOW_TUNNEL") == "1":
+        return any(host.endswith(suffix) for suffix in (".ngrok-free.app", ".ngrok-free.dev", ".ngrok.app", ".ngrok.dev", ".ngrok.io"))
+    return False
 
 _UNSAFE_FILENAME_CHARS = re.compile(r"[^A-Za-z0-9._-]+")
 
@@ -129,7 +142,7 @@ async def backend_error_handler(request: Request, exc: BackendError) -> JSONResp
 async def security_gate(request: Request, call_next):
     """Enforce the local-only session/CSRF security boundary."""
     host = (request.headers.get("host") or "").split(":")[0].strip().lower()
-    if host not in ALLOWED_HOSTS:
+    if not _host_allowed(host):
         return JSONResponse({"detail": "Local access only (host check failed)."}, status_code=403)
 
     path = request.url.path
@@ -173,7 +186,7 @@ async def security_gate(request: Request, call_next):
         origin = request.headers.get("origin")
         if origin:
             parsed = urlparse(origin)
-            if parsed.scheme != "http" or (parsed.hostname or "") not in ALLOWED_HOSTS:
+            if parsed.scheme not in {"http", "https"} or not _host_allowed(parsed.hostname or ""):
                 return JSONResponse(
                     {"detail": "Cross-origin request rejected."}, status_code=403
                 )

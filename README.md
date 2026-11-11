@@ -10,6 +10,11 @@ This is a curated public snapshot of the accepted project. The development
 history and historical evidence remain in the source repository
 [`chenfanaichifan/binary-repair`](https://github.com/chenfanaichifan/binary-repair).
 
+> **给组员 / 第一次使用？** 先看
+> [`START-HERE.md`](START-HERE.md)；界面与当前功能截图在
+> [`docs/showcase/`](docs/showcase/)。Windows 双击 `start-gui.bat`，macOS/Linux
+> 运行 `./start-gui.sh`。
+
 ```text
 Repository  https://github.com/leesirleesirlee-star/Binary_Repair
 Version     v1.2.1
@@ -24,8 +29,8 @@ Source      chenfanaichifan/binary-repair
 | T8.3 | **COMPLETE** |
 | P1 | **success_within_scope** |
 | P2 | **ACCEPTANCE PASSED** |
-| Test suite | **730 collected / 728 passed / 2 Linux-only skipped / 0 failed** (historical v1.2.0 record, 2026-11-09) |
-| Browser e2e | **12 passed** (Chrome CDP) |
+| Test suite | **775 passed / 2 skipped / 1 known macOS `readelf` environment failure** (2026-11-12) |
+| Browser e2e | **12 passed** (Chrome CDP, included in the suite) |
 | Upload gate | **64 MiB client check + HTTP-only controls** |
 | V4 | **passed at model scope** (not binary-level proof) |
 | 118 | **VERIFIED** (independent) |
@@ -78,26 +83,25 @@ for a file-by-file guide.
 
 ## Quick start
 
+### macOS / Linux
+
+```bash
+./start-gui.sh
+```
+
 ### Windows
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\start.ps1
+.\start-gui.ps1
 ```
 
-### Linux
+The launcher creates `.venv`, installs `requirements.txt`, generates a local
+session token, and prints the authenticated URL
+`http://127.0.0.1:8123/?token=...`. Open that URL in a browser. No controller or
+worker process is required for the demo backend.
 
-```bash
-python3 -m venv .venv
-. .venv/bin/activate
-pip install -r requirements.txt
-./start.sh
-```
-
-Open the printed `http://127.0.0.1:8123/?token=...` URL. Controller and worker
-are separate loopback-only processes; see the start scripts in the repository
-root.
+The UI includes `/agent`, `/settings`, `/guide`, `/methods` and `/connectors`.
+For a quick tour, read `START-HERE.md`; for screenshots, see `docs/showcase/`.
 
 Run the test suite:
 
@@ -122,6 +126,15 @@ artifacts/m4/v4-2026-11-07/                    M4 V4 marker and five criteria
 artifacts/m4-revalidation-ebc92a8/             M4 revalidation
 artifacts/p1-v5-logs-2026-11-07/               original V5 replay logs
 ```
+
+## Sharing with a team (WeChat)
+
+For same-Wi-Fi teammates, run a dedicated demo instance on `0.0.0.0` with a
+share-only token and send the LAN URL. For remote teammates, send the ZIP plus
+`START-HERE.md`; or expose the demo instance through a temporary HTTPS tunnel.
+Do not expose the local instance with a real provider key or real task history.
+See [`SHARE-WECHAT.md`](SHARE-WECHAT.md) for the exact message template and
+safety checklist.
 
 ## Verification and limitations
 

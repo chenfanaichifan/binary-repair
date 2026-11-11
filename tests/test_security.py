@@ -102,3 +102,14 @@ def test_token_bootstrap_preserves_query_intent():
     assert "q=hello" in location
     assert "token=" not in location
     assert response.cookies.get("br_session") == SESSION_TOKEN
+
+
+def test_host_allowlist_can_be_extended_for_lan_or_tunnel(monkeypatch):
+    from app.main import _host_allowed
+
+    assert _host_allowed("127.0.0.1")
+    assert not _host_allowed("evil.example")
+    monkeypatch.setenv("BINARYREPAIR_ALLOW_TUNNEL", "1")
+    assert _host_allowed("demo.ngrok-free.dev")
+    assert _host_allowed("demo.ngrok-free.app")
+    assert not _host_allowed("evil.example")

@@ -6,6 +6,7 @@ cd "$(dirname "$0")"
 
 PYTHON="${PYTHON:-python3}"
 PORT="${BINARYREPAIR_PORT:-8123}"
+HOST="${BINARYREPAIR_HOST:-127.0.0.1}"
 VENV="${VENV:-.venv}"
 
 if [ ! -x "$VENV/bin/python" ]; then
@@ -24,4 +25,4 @@ export BINARYREPAIR_SESSION_TOKEN="$TOKEN"
 echo ""
 echo "  打开: http://127.0.0.1:${PORT}/?token=${TOKEN}"
 echo ""
-exec "$VENV/bin/python" -m uvicorn app.main:app --host 127.0.0.1 --port "$PORT"
+exec "$VENV/bin/python" -m uvicorn app.main:app --host "$HOST" --port "$PORT"
