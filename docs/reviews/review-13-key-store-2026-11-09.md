@@ -13,7 +13,7 @@
 - **Fix re-review (same day, reviewed source `0d5791a`):** M5 fixed F1/A-1/F3 and partially mitigated F2; independent re-verification found **F2 not fixed** (HIGH residual bypasses) plus residual F1/A-1 edges. See **§9 addendum** — it supersedes the per-finding statuses above but not the original evidence.
 - **F2 focused re-review (2026-11-10, reviewed commit `b06dadc`):** new `is_secret_file`-based fix passes all **8 required stored-key-file vectors** (pre-copy ValueError, 0 artifacts, 0 ZIPs with key), but is **not a full F2 closure**: `.env`/`session.token` aliases and a custom-env regression remain open. See **§10 addendum** (F2: PASS for the focused scope; overall F2 hardening still OPEN).
 - **N-8/N-9 focused addendum + final N-11 closure review (2026-11-10/11, reviewed commits `079da82`/`ab25c17`, docs correction `3418491`, handoff `1dbd34c6…`):** **N-8 FIXED, N-9 FIXED, N-10 ACCEPTED LIMITATION, N-11 FIXED (docs-only; no runtime guard claimed or implied)**; F2 overall **PASS WITH LIMITATION**; **rc1: RETAIN (no recall); stable: ELIGIBLE from this M3 security review, subject to the disclosures/conditions in §11.6 and §11.9**. See **§11** — it supersedes N-11's status in §10.3.
-- **Stable-target documentation sign-off (§11.12, 2026-11-11): `stable docs: PASS`.** Exact public candidate `148d236d46bbd514dbb48f0a0f506ef2a2143fcc` was delivered as bundle `v1.2.1-stable-148d236.bundle` (SHA-256 `c279ce…` verified) and reviewed against public RC `d7d20f4`: exactly 3 documentation files changed (README version, `217` N-11 wording, `220` N-11 label), **no application-code/test/evidence delta**, no runtime-guard claim, N-10 accepted limitation retained; targeted suite on the candidate tree 67/67 passed. Prior approvals applied only to earlier sources; this PASS is for this exact public commit. M4 may proceed with the ordered release workflow (publish `v1.2.1`, fast-forward public `main` to `148d236…` only, preserve RC tag); M3 moved no tag/main and made no P1/V5 change. See §11.12.
+- **Stable-target documentation sign-off (§11.12, 2026-11-11): `stable docs: PASS`.** Exact public candidate `148d236d46bbd514dbb48f0a0f506ef2a2143fcc` was delivered as bundle `v1.2.1-stable-148d236.bundle` (SHA-256 `c279ce…` verified) and reviewed against public RC `d7d20f4`: exactly 3 documentation files changed (README version, `217` N-11 wording, `220` N-11 label), **no application-code/test/evidence delta**, no runtime-guard claim, N-10 accepted limitation retained; targeted suite on the candidate tree 67/67 passed. Prior approvals applied only to earlier sources; this PASS is for this exact public commit. M4 may proceed with the ordered release workflow (publish `v1.2.1`, fast-forward public `main` to `148d236…` only, preserve RC tag); M3 moved no tag/main and made no P1/V5 change. See §11.12. **Post-release (§11.13, 2026-11-11): `stable release: PASS`** — published tag `v1.2.1` (annotated object `f687e14…`) peels to the exact signed commit `148d236…`; public `main` fast-forwarded to the same commit; RC tag preserved; docs-only three-file scope and no runtime code change re-confirmed; no P1/V5 rerun; M3 moved no tag/main.
 
 ---
 
@@ -819,3 +819,68 @@ stable docs:               PASS  (for this exact public commit; not a signature 
 **Boundaries:** this PASS is documentation sign-off for the exact SHA `148d236…`; it is not an attestation that a release occurred and it does not sign for M1/M2/M4. No docs-only change is described as a runtime guard; no P1/V5 command or modification was made; no tag/main was created or moved by this review (only local refs for the bundle/RC commits were kept for traceability). Prior approvals remain attributed to their original sources/platforms.
 
 **Next (per the Lead's ordered workflow):** M4 re-reads current public refs and release conditions and stops if they changed unexpectedly; publishes `v1.2.1` and fast-forwards public `main` to the exact target `148d236…` only after this acceptance, preserving the RC tag; M1 produces the stable handoff + LF SHA256SUMS from the actual published refs; M2 independently verifies the published stable tree and records its own results after release.
+
+### 11.13 Post-release stable security sign-off — `v1.2.1` published as the exact signed commit (2026-11-11)
+
+**Task:** after release, confirm the stable commit is still `148d236`, confirm the docs-only three-file scope, confirm N-8/N-9 FIXED, N-10 accepted, N-11 docs-only, record the stable-release sign-off, and do **not** rerun P1/V5.
+
+**Published refs verified read-only from the public repo (`leesirleesirlee-star/Binary_Repair`):**
+
+```text
+tag v1.2.1            object f687e14fa674e05e6e0520e67e82b788c7085355 (annotated)
+                      tagger "BinaryRepair release automation", message "BinaryRepair v1.2.1 stable"
+tag peeled commit     148d236d46bbd514dbb48f0a0f506ef2a2143fcc  == the M3-signed candidate
+public main           148d236d46bbd514dbb48f0a0f506ef2a2143fcc  (fast-forward; 9439340 is an ancestor)
+branch v1.2.1-stable  148d236d46bbd514dbb48f0a0f506ef2a2143fcc
+RC tag v1.2.1-rc1     f5346978… -> d7d20f4ff2f920b5cfec5e81e3c4377529a9885a (preserved, unchanged)
+v1.2.0 tag            82f3209d… -> 94393403319a10acc00552a7ae62836699036518 (unchanged)
+```
+
+All four stable identities (tag peeled commit, public main, `v1.2.1-stable` branch, M3-reviewed candidate) resolve to the **same exact commit `148d236d46bbd514dbb48f0a0f506ef2a2143fcc`** — the published release is the commit M3 signed in §11.12, not a recreated one.
+
+**Docs-only scope re-confirmed against public RC `d7d20f4` (same commit object as reviewed):**
+
+```text
+M README.md
+M docs/development/handoffs/217-v1.2.1-f2-hardening.md
+M docs/development/handoffs/220-v1.2.1-n10-n11.md
+3 files changed, 9 insertions(+), 10 deletions(-)
+git diff --check -> clean
+git diff --quiet d7d20f4 148d236 -- app binaryrepair_ai routea routeb workers tools schemas
+    tests fixtures artifacts -> exit 0 (no application-code/test/evidence change)
+```
+
+- No runtime code change vs the RC or vs the reviewed fix: `app/services/assistant_key_store.py` blob `e48e6533…`, `app/services/attempt_writer.py` `feb15054…`, `tools/routea_bundle_to_attempt.py` `6e8888f3…` are identical in RC, stable, and reviewed fix `079da82`.
+- Published tree docs: README `Version v1.2.1`; `217` = corrected text (`NOT modified by this fix … no runtime coverage claim`, Windows required-target 67 / no Windows full-suite claim; blob `388bfe9a…` = corrected source `3418491` doc); `220` = `N-11: FAIL (partial, docs-only) … no runtime guard` (blob `ffc204d5…`), N-10 accepted limitation retained.
+
+**Status confirmation (no code change, so the prior adversarial evidence still applies):**
+
+```text
+N-8:  FIXED  (literal .env/session.token and aliases rejected; code unchanged from 079da82)
+N-9:  FIXED  (literal assistant.key env-independent; code unchanged from 079da82)
+N-10: ACCEPTED LIMITATION (custom key path requires the adapter to see the same env; disclosed)
+N-11: docs-only correction; no runtime guard claimed
+```
+
+**Boundary checks:** no P1/V5 command was run and no P1/V5 path was touched by this sign-off; M3 moved no tag/main (the `v1.2.1` tag creation and the public-main fast-forward are M4's authorized publication — M3 only read/fetched the published refs into local review refs). No docs-only change is described as a runtime guard.
+
+**Sign-off:**
+
+```text
+stable release: PASS  (post-release security sign-off)
+exact commit:   148d236d46bbd514dbb48f0a0f506ef2a2143fcc
+tag:            v1.2.1 (annotated object f687e14…, peeled to the exact commit)
+public main:    fast-forwarded to the same exact commit; RC tag preserved
+scope:          docs-only (3 files); no runtime code change
+```
+
+Completion checklist:
+
+| Criterion | Result |
+|---|---|
+| exact commit `148d236` | **PASS** (tag peeled, public main, `v1.2.1-stable` branch, M3 candidate all equal) |
+| no runtime code change | **PASS** (name-only diff = 3 docs files; scoped quiet diff exit 0; key/F2 blobs identical) |
+| no tag/main movement by M3 | **PASS** (M3 only read; M4 published per Lead authorization; RC tag preserved; v1.2.0 unchanged) |
+| docs-only not written as runtime guard | **PASS** (docs and this record explicitly say no runtime guard / not modified) |
+
+M3's sign-off is a security/documentation sign-off of the published release refs; it is not a substitute for the still-ordered M1 stable handoff and M2 public-tree verification, and it does not claim a browser/test run on the stable commit beyond the targeted 67/67 run recorded in §11.12 (no new suite run was performed for this post-release check).

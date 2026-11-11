@@ -395,3 +395,40 @@ Sign-off: stable docs = PASS for the exact public candidate
 No P1/V5 change; no tag/main move.
 Next per Lead: M4 re-read public refs/release conditions, then publish v1.2.1 and fast-forward
 public main to the exact SHA, preserve RC tag; M1 stable handoff + LF SHA256SUMS; M2 verifies.
+
+--------------------------------------------------------------------------------------------------
+16. Post-release stable security sign-off - v1.2.1 (2026-11-11)
+--------------------------------------------------------------------------------------------------
+Published public refs (read-only; fresh ls-remote):
+  tag v1.2.1            f687e14fa674e05e6e0520e67e82b788c7085355 (annotated)
+                        tagger "BinaryRepair release automation" 1794400460 +0000
+                        message "BinaryRepair v1.2.1 stable"
+  tag peeled commit     148d236d46bbd514dbb48f0a0f506ef2a2143fcc
+  public main           148d236d46bbd514dbb48f0a0f506ef2a2143fcc
+  branch v1.2.1-stable  148d236d46bbd514dbb48f0a0f506ef2a2143fcc
+  tag v1.2.1-rc1        f5346978b46622c6c582e13d7cf6330f72e638f3 -> d7d20f4 (preserved)
+  tag v1.2.0            (unchanged) 82f3209d... -> 9439340
+  identity check: tag peeled == public main == v1.2.1-stable == reviewed candidate 148d236 -> True
+
+Docs-only scope vs public RC d7d20f4 (published commit):
+  M README.md                                           7 +-
+  M docs/development/handoffs/217-v1.2.1-f2-hardening.md 8 +-
+  M docs/development/handoffs/220-v1.2.1-n10-n11.md      4 +-
+  3 files changed, 9 insertions(+), 10 deletions(-)
+  git diff --check -> clean (exit 0)
+  git diff --quiet d7d20f4 148d236 -- app binaryrepair_ai routea routeb workers tools schemas
+      tests fixtures artifacts -> exit 0 (no change)
+  key/F2 blobs identical in RC / stable / reviewed fix 079da82:
+    app/services/assistant_key_store.py        e48e6533cd70204aa6be467cb9d5a8107f722794
+    app/services/attempt_writer.py             feb150546178781fac99d1ad662dd66a17c45a8a
+    tools/routea_bundle_to_attempt.py          6e8888f332cf0a78db5fa6a5f8afdb0854731cf8
+  published docs: README "Version v1.2.1"; 217 blob 388bfe9a... (corrected source 3418491 text);
+                  220 blob ffc204d5... ("N-11: FAIL (partial, docs-only) ... no runtime guard"), N-10 retained.
+  9439340 is ancestor of 148d236 -> public main fast-forward valid.
+
+Statuses: N-8 FIXED; N-9 FIXED; N-10 ACCEPTED LIMITATION; N-11 docs-only/no runtime guard.
+Boundaries: no P1/V5 command or path touched; M3 moved no tag/main (M4 published per Lead decision);
+  fetched public tags were kept only as local refs/review/* (local tag copies removed); no docs-only
+  change described as a runtime guard.
+Sign-off: stable release = PASS; exact commit 148d236...; docs-only 3-file scope; no runtime code change.
+M1 stable handoff and M2 public-tree verification remain part of the ordered workflow.
