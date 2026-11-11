@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   {% include "_theme_boot.html" %}
+  {% include "_settings_boot.html" %}
   <title>BinaryRepair · AI 二进制漏洞修复工作台</title>
   <script>
     (function () {
@@ -17,8 +18,8 @@
       } catch (error) { /* ignore */ }
     })();
   </script>
-  <link rel="stylesheet" href="/static/css/ds.css?v=20261112d">
-  <link rel="stylesheet" href="/static/css/home.css?v=20261111i">
+  <link rel="stylesheet" href="/static/css/ds.css?v=20261112i">
+  <link rel="stylesheet" href="/static/css/home.css?v=20261112l">
 </head>
 <body class="ds-home-body">
   <div class="boot" id="boot" aria-hidden="true">
@@ -42,6 +43,8 @@
         <a href="/agent">修复控制台</a>
         <a href="/connectors">连接器</a>
         <a href="/methods">方法</a>
+        <a href="/guide">使用说明</a>
+        <a href="/settings">设置</a>
         <a href="/agent?fixture=1">演示数据</a>
       </nav>
       <div class="home-actions">
@@ -151,10 +154,16 @@
       <span>仅绑定回环地址</span>
       <span class="home-foot-sep" aria-hidden="true">·</span>
       <span>不在本机执行上传的二进制</span>
+      <span class="home-foot-sep" aria-hidden="true">·</span>
+      <a href="/guide">使用说明</a>
+      <a href="/settings">设置</a>
     </footer>
   </main>
 
+  {% include "_palette.html" %}
+  <script src="/static/js/settings.js?v=20261112a"></script>
   <script src="/static/js/theme.js?v=20261111a"></script>
+  <script src="/static/js/palette.js?v=20261112b"></script>
   <script>
     (function () {
       "use strict";
@@ -210,6 +219,14 @@
       var savedMode = read(MODE_KEY);
       if (savedWs && find("workspace", savedWs)) { state.workspace = savedWs; }
       if (savedMode && find("mode", savedMode)) { state.mode = savedMode; }
+      var settings = null;
+      try { settings = JSON.parse(window.localStorage.getItem("br.settings.v1") || "{}"); } catch (error) { settings = null; }
+      if (!savedWs && settings && settings.defaultWorkspace && find("workspace", settings.defaultWorkspace)) {
+        state.workspace = settings.defaultWorkspace;
+      }
+      if (!savedMode && settings && settings.defaultMode && find("mode", settings.defaultMode)) {
+        state.mode = settings.defaultMode;
+      }
       apply();
 
       document.querySelectorAll("[data-select]").forEach(function (wrap) {

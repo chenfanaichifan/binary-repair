@@ -9,6 +9,27 @@
   var sidebar = document.getElementById("ds-sidebar");
   if (!toggle || !expand || !sidebar) return;
 
+  var workspaceButton = document.getElementById("ds-workspace-button");
+  var workspaceMenu = document.getElementById("ds-workspace-menu");
+  if (workspaceButton && workspaceMenu) {
+    var closeWorkspace = function () {
+      workspaceMenu.hidden = true;
+      workspaceButton.setAttribute("aria-expanded", "false");
+    };
+    workspaceButton.addEventListener("click", function (event) {
+      event.stopPropagation();
+      var open = !workspaceMenu.hidden;
+      workspaceMenu.hidden = open;
+      workspaceButton.setAttribute("aria-expanded", open ? "false" : "true");
+    });
+    document.addEventListener("click", function (event) {
+      if (!workspaceMenu.hidden && !workspaceMenu.contains(event.target)) { closeWorkspace(); }
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !workspaceMenu.hidden) { closeWorkspace(); }
+    });
+  }
+
   function persist(collapsed) {
     try { window.localStorage.setItem("br.sidebar", collapsed ? "collapsed" : "open"); } catch (e) {}
   }

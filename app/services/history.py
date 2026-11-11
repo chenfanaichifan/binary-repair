@@ -165,6 +165,12 @@ class HistoryStore:
             row = connection.execute("SELECT COUNT(*) FROM conversation_history").fetchone()
         return int(row[0]) if row else 0
 
+    def clear_all(self) -> int:
+        with self._connect() as connection:
+            row = connection.execute("SELECT COUNT(*) FROM conversation_history").fetchone()
+            connection.execute("DELETE FROM conversation_history")
+        return int(row[0]) if row else 0
+
 
 __all__ = [
     "HistoryStore",

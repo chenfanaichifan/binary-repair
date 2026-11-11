@@ -147,6 +147,14 @@
     });
   }
 
+  function pref(key, fallback) {
+    try {
+      return window.BRSettings ? window.BRSettings.get()[key] : fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
   var FIXTURE_MODE = root.dataset.fixture === "1";
   var CSRF = root.dataset.csrf || "";
   var FIXTURES = window.AGENT_FIXTURES || null;
@@ -268,6 +276,10 @@
   var serverSaveTimer = null;
 
   function scheduleServerSave() {
+    if (!pref("historySync", true)) {
+      setHistorySync("仅本地", "local");
+      return;
+    }
     var scope = historyScope();
     setHistorySync(scope === "draft" ? "草稿同步中…" : "同步中…", "syncing");
     if (serverSaveTimer) { window.clearTimeout(serverSaveTimer); }
@@ -310,6 +322,10 @@
   }
 
   function hydrateHistory(scope) {
+    if (!pref("historySync", true)) {
+      setHistorySync("仅本地", "local");
+      return Promise.resolve(readHistory());
+    }
     setHistorySync(scope === "draft" ? "草稿同步中…" : "同步中…", "syncing");
     return fetchServerHistory(scope).then(function (payload) {
       var local = readHistory();
@@ -440,6 +456,7 @@
   function shortHash(value) { return value ? String(value).slice(0, 16) + "…" : "—"; }
   function stream() { return $("agent-stream"); }
   function scrollStream() {
+    if (!pref("autoScroll", true)) return;
     var node = stream();
     if (node) node.scrollTop = node.scrollHeight;
   }
@@ -2140,7 +2157,12 @@
   $("agent-input").addEventListener("input", growComposer);
 
   $("agent-input").addEventListener("keydown", function (event) {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (event.key !== "Enter") return;
+    var sendWithCtrl = pref("sendKey", "enter") === "ctrl-enter";
+    var wantsSend = sendWithCtrl
+      ? (event.ctrlKey || event.metaKey)
+      : (!event.shiftKey && !event.ctrlKey && !event.metaKey);
+    if (wantsSend) {
       event.preventDefault();
       $("agent-composer").dispatchEvent(new Event("submit", { cancelable: true }));
     }
@@ -2151,13 +2173,161 @@
   if (preset) { $("agent-input").value = preset; }
 
   // composer 左侧 ＋：优先触发引导里的上传控件；没有上传步骤时回到输入框。
-  $("agent-attach").addEventListener("click", function () {
+  /* ---------- Composer 加号：文本文件、示例、模板、清空 ---------- */
+
+  function composerInsert(text) {
+    var input = $("agent-input");
+    var start = typeof input.selectionStart === "number" ? input.selectionStart : input.value.length;
+    var end = typeof input.selectionEnd === "number" ? input.selectionEnd : input.value.length;
+    input.value = input.value.slice(0, start) + text + input.value.slice(end);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.focus();
+    var position = start + text.length;
+    try { input.selectionStart = input.selectionEnd = position; } catch (error) { /* ignore */ }
+  }
+
+  var LANGS = {
+    py: "python", js: "javascript", ts: "typescript", c: "c", h: "c", cc: "cpp",
+    cpp: "cpp", go: "go", java: "java", rs: "rust", sh: "bash", sql: "sql",
+    json: "json", md: "markdown", html: "html", php: "php", yaml: "yaml", yml: "yaml"
+  };
+  var BINARY_EXT = /(^|\.)(bin|elf|so|o|a|exe|dll|dylib|apk|ipa|zip|gz|png|jpg|jpeg|gif|pdf)$/i;
+  var TEXT_LIMIT = 400 * 1024;
+
+  function notify(message) {
+    pushMessage("assistant", message, { replay: true });
+    scrollStream();
+  }
+
+  function loadTextFiles(files) {
+    var chosen = Array.prototype.slice.call(files || []).slice(0, 6);
+    if (!chosen.length) return;
+    var blocks = [];
+    var skipped = [];
+    var jobs = chosen.map(function (file) {
+      if (BINARY_EXT.test(file.name)) { skipped.push(file.name); return null; }
+      if (file.size > TEXT_LIMIT) { skipped.push(file.name + "（超过 400 KB）"); return null; }
+      return file.text().then(function (text) {
+        var ext = (file.name.split(".").pop() || "").toLowerCase();
+        var language = LANGS[ext] || "";
+        blocks.push("文件：" + file.name + "\n```" + language + "\n" + text.replace(/```/g, "``\u200b`") + "\n```");
+      });
+    }).filter(Boolean);
+    Promise.all(jobs).then(function () {
+      if (blocks.length) { composerInsert((blocks.length ? "\n\n" : "") + blocks.join("\n\n") + "\n"); }
+      if (skipped.length) { notify("有 " + skipped.length + " 个文件未载入：" + skipped.join("、") + "。二进制请使用「上传二进制样本」。"); }
+    });
+  }
+
+  var plusAttach = $("agent-attach");
+  var plusMenu = $("agent-plus-menu");
+  var plusFile = $("agent-text-file");
+  function closePlus() {
+    if (!plusMenu) return;
+    plusMenu.hidden = true;
+    if (plusAttach) plusAttach.setAttribute("aria-expanded", "false");
+  }
+  function openBinary() {
     var fileInput = document.querySelector('[data-testid="agent-file-input"]');
     if (fileInput) { fileInput.click(); return; }
     var zone = document.querySelector('[data-testid="agent-dropzone"]');
     if (zone) { zone.click(); return; }
-    $("agent-input").focus();
-  });
+    notify("要上传二进制样本，请先在对话里描述缺陷，生成引导计划后进入上传步骤。");
+  }
+  function clearConversation() {
+    if (!window.confirm("清空当前对话？这会删除本任务/草稿的本机与服务端对话记录。")) return;
+    var scope = historyScope();
+    try {
+      var key = "br.msg.v1." + scope;
+      window.localStorage.removeItem(key);
+    } catch (error) { /* ignore */ }
+    clearServerHistory(scope).catch(function () { /* local only */ }).then(function () {
+      window.location.href = state.jobId ? window.location.pathname : "/agent/new?new=1";
+    });
+  }
+  if (plusAttach && plusMenu) {
+    plusAttach.addEventListener("click", function (event) {
+      event.stopPropagation();
+      var open = plusMenu.hidden;
+      plusMenu.hidden = !open;
+      plusAttach.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    document.addEventListener("click", function (event) {
+      if (!plusMenu.hidden && !plusMenu.contains(event.target) && event.target !== plusAttach) closePlus();
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !plusMenu.hidden) closePlus();
+    });
+    plusMenu.querySelectorAll("[data-plus]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var action = button.dataset.plus;
+        closePlus();
+        if (action === "text" && plusFile) { plusFile.click(); return; }
+        if (action === "binary") { openBinary(); return; }
+        if (action === "code") {
+          var input = $("agent-input");
+          var selected = input.value.slice(input.selectionStart, input.selectionEnd);
+          composerInsert("```\n" + (selected || "# 在这里粘贴代码") + "\n```\n");
+          return;
+        }
+        if (action === "template") {
+          composerInsert("请审阅下面的代码，按「问题 / CWE / 影响 / 修复 / 警醒」输出，并给出可直接复制的补丁：\n\n```\n\n```\n");
+          return;
+        }
+        if (action === "clear") { clearConversation(); }
+      });
+    });
+    plusMenu.querySelectorAll("[data-snippet]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var snippets = {
+          py: "```python\nimport subprocess\n\ndef run(cmd):\n    return subprocess.check_output(cmd, shell=True)\n```\n",
+          flask: "```python\nfrom flask import Flask, request\napp = Flask(__name__)\n\n@app.route('/run')\ndef run():\n    return str(eval(request.args['expr']))\n\napp.run(debug=True)\n```\n",
+          c: "```c\n#include <string.h>\n\nvoid copy_name(char *input) {\n    char buf[32];\n    strcpy(buf, input);\n}\n```\n",
+          js: "```javascript\nconst el = document.getElementById('out');\nel.innerHTML = location.hash.slice(1);\n```\n"
+        };
+        if (snippets[button.dataset.snippet]) { composerInsert(snippets[button.dataset.snippet]); }
+        closePlus();
+      });
+    });
+  }
+  if (plusFile) {
+    plusFile.addEventListener("change", function () {
+      loadTextFiles(plusFile.files);
+      plusFile.value = "";
+    });
+  }
+  var composer = $("agent-composer");
+  if (composer) {
+    ["dragenter", "dragover"].forEach(function (name) {
+      composer.addEventListener(name, function (event) {
+        if (event.dataTransfer && event.dataTransfer.types && event.dataTransfer.types.indexOf("Files") >= 0) {
+          event.preventDefault();
+          composer.classList.add("is-dragover");
+        }
+      });
+    });
+    ["dragleave", "drop"].forEach(function (name) {
+      composer.addEventListener(name, function () { composer.classList.remove("is-dragover"); });
+    });
+    composer.addEventListener("drop", function (event) {
+      if (!event.dataTransfer || !event.dataTransfer.files.length) return;
+      event.preventDefault();
+      loadTextFiles(event.dataTransfer.files);
+    });
+  }
+  var composerInput = $("agent-input");
+  if (composerInput) {
+    composerInput.addEventListener("paste", function (event) {
+      var files = event.clipboardData && event.clipboardData.files;
+      if (files && files.length) {
+        event.preventDefault();
+        loadTextFiles(files);
+      }
+    });
+    if (pref("sendKey", "enter") === "ctrl-enter") {
+      composerInput.placeholder = "输入回答，或粘贴代码直接修复；Ctrl/Cmd+Enter 发送，Enter 换行，/ 调用指令";
+    }
+  }
 
   /* ---------- 场景与初始化 ---------- */
 

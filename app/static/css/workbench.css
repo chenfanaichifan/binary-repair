@@ -32,13 +32,13 @@
   padding: 10px 18px;
   border-radius: 999px;
   background: var(--ds-accent);
-  color: #fff;
+  color: #0a0d14;
   font-size: 13.5px;
   font-weight: 600;
   text-decoration: none;
   box-shadow: 0 10px 24px -12px var(--ds-accent);
 }
-.wb-cta:hover { background: var(--ds-accent-strong, #3d5ce8); color: #fff; text-decoration: none; }
+.wb-cta:hover { background: var(--ds-accent-strong, #3d5ce8); color: #0a0d14; text-decoration: none; }
 .wb-hero-hint { margin: 12px 0 0; font-size: 12px; color: var(--ds-muted); }
 .wb-hero-hint code { font-size: 11px; }
 
@@ -235,3 +235,4 @@
 @media (prefers-reduced-motion: reduce) {
   .wb-ring-a { animation: none; }
 }
+.wb-note code { color: var(--ds-text-2); }

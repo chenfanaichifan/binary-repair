@@ -51,6 +51,9 @@ this project as proof.
   [`docs/architecture/code-repair.md`](docs/architecture/code-repair.md),
   [`docs/architecture/history.md`](docs/architecture/history.md) and
   [`docs/reference/binary-repair-landscape.md`](docs/reference/binary-repair-landscape.md).
+  The workbench also ships a `/settings` preferences page, a complete `/guide`
+  operator manual, task search/pin/rename, a composer `+` menu for local
+  code/text files and vulnerable snippets, and a `Ctrl/Cmd+K` command palette.
 
 ## Repository layout
 

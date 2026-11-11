@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}使用说明{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/guide.css?v=20261112a">
+{% endblock %}
+
+{% block content %}
+<div class="guide" data-testid="guide-page">
+  <header class="guide-head">
+    <p class="guide-eyebrow">MANUAL / BINARYREPAIR</p>
+    <h1 class="ds-page-title">使用说明</h1>
+    <p class="ds-page-sub">
+      这是一份覆盖全部模块的操作手册：代码修复、二进制修复、任务与工作区、服务端历史、
+      设置、连接器、方法与验证、快捷键、故障排查和安全边界。
+    </p>
+    <div class="guide-meta">
+      <span>适用版本：本地预览版</span>
+      <span>界面中文 · 提交/导出 ASCII</span>
+      <a href="/settings">打开设置</a>
+    </div>
+  </header>
+
+  <div class="guide-layout">
+    <nav class="guide-toc" aria-label="本页目录">
+      <p class="guide-toc-title">目录</p>
+      <a href="#start">1 · 快速开始</a>
+      <a href="#code">2 · 代码修复</a>
+      <a href="#binary">3 · 二进制修复</a>
+      <a href="#tasks">4 · 任务与工作区</a>
+      <a href="#history">5 · 服务端历史</a>
+      <a href="#settings">6 · 设置</a>
+      <a href="#connectors">7 · 连接器与插件</a>
+      <a href="#methods">8 · 方法与验证</a>
+      <a href="#keys">9 · 快捷键</a>
+      <a href="#trouble">10 · 排查与边界</a>
+    </nav>
+
+    <article class="guide-body">
+      <section id="start">
+        <h2>1 · 快速开始</h2>
+        <p>打开控制台后，你有两条入口，最终都进入同一个「新建修复内容」会话：</p>
+        <ol>
+          <li><strong>粘贴代码</strong>：把带漏洞的源码贴进输入框，回车。系统给出静态修复建议卡，不执行代码。</li>
+          <li><strong>二进制修复</strong>：描述缺陷、上传样本、填写用例与契约，逐步确认后创建任务。</li>
+        </ol>
+        <p>助手只做引导与解释；创建任务、开始执行由你点击确认；结论由验收引擎给出。</p>
+      </section>
+
+      <section id="code">
+        <h2>2 · 代码修复</h2>
+        <p>支持 ``` 围栏代码，也支持不带围栏的多行代码（自动识别代码特征）。结果卡包含：</p>
+        <ul>
+          <li><strong>问题列表</strong>：标题、风险级别、CWE、行号、证据与修复建议；首条默认展开解释、影响与「警醒」。</li>
+          <li><strong>修复后代码</strong>：可复制；长代码块可展开/收起。</li>
+          <li><strong>差异</strong>：增/删/上下文着色；可复制差异。</li>
+          <li><strong>参考</strong>：CWE / OWASP 等官方链接。</li>
+          <li><strong>规则 / 模型</strong>：无 provider key 时只走本地规则；配置后模型失败会自动回退规则并标注。</li>
+        </ul>
+        <p class="guide-warn">静态建议不是验收结论；复杂漏洞仍需二进制/动态验证。粘贴的代码不会被执行。</p>
+      </section>
+
+      <section id="binary">
+        <h2>3 · 二进制修复</h2>
+        <ol>
+          <li>在对话里描述缺陷；后端返回引导计划。</li>
+          <li>按步骤提供样本、缺陷、有效/无效用例、环境与契约；每一步可返回修改。</li>
+          <li>复核后点击「创建任务」；任务页每 2 秒刷新状态。</li>
+          <li>结果与证据页逐条展示 V0–V5 义务；未回传显示等待占位，不显示 <code>not_run</code>。</li>
+          <li>导出 JSON/HTML 报告；导出不代表生产批准。</li>
+        </ol>
+      </section>
+
+      <section id="tasks">
+        <h2>4 · 任务与工作区</h2>
+        <p>侧栏「任务」只列本浏览器打开/创建过的任务，状态逐条向 controller 核对。支持：</p>
+        <ul>
+          <li><strong>搜索</strong>：按名称或任务号过滤。</li>
+          <li><strong>置顶 / 重命名 / 删除</strong>：悬停任务项出现操作；删除只移除本机列表，不删除后端任务。</li>
+          <li><strong>工作区</strong>：顶部工作区按钮可在服务端配置的工作区之间切换；新建会话会带上当前选择。</li>
+          <li><strong>后端不可查</strong>：服务重启或 demo 内存清空后，旧任务会标记「后端已不可查」，仍可从记录进入尝试。</li>
+        </ul>
+      </section>
+
+      <section id="history">
+        <h2>5 · 服务端历史</h2>
+        <p>任务与草稿对话会写入本机服务端 SQLite；同一服务实例内换浏览器可恢复。徽章表示
+          <code>服务端历史 / 同步中 / 本地暂存 / 草稿已同步</code>。</p>
+        <ul>
+          <li>「新建修复内容」带 <code>?new=1</code>，清空草稿后开始空白会话。</li>
+          <li>旧标签页的过期写入会被 generation 守卫拒绝，不会复活已清空的草稿。</li>
+          <li>默认只监听回环地址；跨设备访问需要你显式改变部署方式并保护会话令牌。</li>
+        </ul>
+      </section>
+
+      <section id="settings">
+        <h2>6 · 设置</h2>
+        <p>侧栏「设置」可调整：主题（浅色/深色/跟随系统）、密度、字号、动画、代码字号、
+          发送键、自动滚动、历史同步、默认工作区/模式、任务排序，以及导出/重置本机设置。
+          设置保存在浏览器，不会上传；历史同步关闭后只保留本机缓存。</p>
+      </section>
+
+      <section id="connectors">
+        <h2>7 · 连接器与插件</h2>
+        <p>连接器是运行时接入点（模型、Ghidra/Rizin/angr/Frida/QEMU、Git、Webhook 等）；
+          插件是只读 JSON 清单，两者在页面上分区展示。</p>
+        <ol>
+          <li>在连接器页复制环境变量名或按「接入步骤」安装工具。</li>
+          <li>重启 GUI，刷新页面；状态显示「已就绪」只代表具备条件。</li>
+          <li>插件模板保存到 <code>plugins/</code>；清单不会被加载执行。</li>
+        </ol>
+      </section>
+
+      <section id="methods">
+        <h2>8 · 方法与验证</h2>
+        <p>推荐证据链：复现定位 → 静态恢复 → 符号探索 → 动态确认 → 差分验证 → 回归/模糊。
+          每一层回答不同问题；「工具跑通」「模型说可以」都不是「补丁正确」。详见
+          <a href="/methods">方法与工具</a> 页面。</p>
+      </section>
+
+      <section id="keys">
+        <h2>9 · 快捷键</h2>
+        <ul class="guide-keys">
+          <li><kbd>Enter</kbd><span>发送（默认；可在设置改为 Ctrl/Cmd+Enter）</span></li>
+          <li><kbd>Shift</kbd><span>+ Enter 换行</span></li>
+          <li><kbd>Ctrl/Cmd</kbd><span>+ \ 收起/展开侧栏</span></li>
+          <li><kbd>Esc</kbd><span>退出专注对话 / 关闭弹层</span></li>
+          <li><kbd>/</kbd><span>在输入框开头调用 /skip /status /restart</span></li>
+          <li><kbd>Ctrl/Cmd</kbd><span>+ K 打开命令面板，跳转页面、切主题、收起侧栏</span></li>
+        </ul>
+      </section>
+
+      <section id="trouble">
+        <h2>10 · 排查与边界</h2>
+        <ul>
+          <li><strong>计划服务未接通</strong>：检查右侧模型 key/后端；页面会直说未接通，不会用占位内容冒充。</li>
+          <li><strong>任务 404</strong>：重启 mock 服务会清空内存任务；本地列表仍保留记录。</li>
+          <li><strong>工具未检测到</strong>：安装到 PATH、配置环境变量或安装 Python 模块后重启 GUI。</li>
+          <li><strong>文字看不清</strong>：切换主题/密度；若仍存在，请反馈具体页面与主题。</li>
+          <li><strong>边界</strong>：本机工具不执行上传/修复后的二进制；插件只读；导出不代表生产批准。</li>
+        </ul>
+      </section>
+    </article>
+  </div>
+</div>
+{% endblock %}

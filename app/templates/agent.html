@@ -3,7 +3,7 @@
 {% block title %}修复控制台{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/agent.css?v=20261112k">
+<link rel="stylesheet" href="/static/css/agent.css?v=20261112n">
 {% endblock %}
 
 {% block content %}
@@ -92,7 +92,28 @@
             placeholder="输入回答，或粘贴代码直接修复；Enter 发送，Shift+Enter 换行，/ 调用指令"
           ></textarea>
           <div class="ds-composer-bar">
-            <button type="button" class="ds-icon-btn" id="agent-attach" title="上传样本" aria-label="上传样本">＋</button>
+            <div class="agent-plus-wrap">
+              <button type="button" class="ds-icon-btn" id="agent-attach" title="添加内容" aria-label="添加内容" aria-haspopup="true" aria-expanded="false">＋</button>
+              <div class="agent-plus-menu" id="agent-plus-menu" hidden>
+                <p class="agent-plus-label">添加内容</p>
+                <button type="button" data-plus="text">上传代码 / 文本文件…</button>
+                <button type="button" data-plus="binary">上传二进制样本…</button>
+                <button type="button" data-plus="code">插入代码块</button>
+                <p class="agent-plus-label">漏洞示例</p>
+                <div class="agent-plus-snippets">
+                  <button type="button" data-snippet="py">Python shell</button>
+                  <button type="button" data-snippet="flask">Flask debug</button>
+                  <button type="button" data-snippet="c">C strcpy</button>
+                  <button type="button" data-snippet="js">JS innerHTML</button>
+                </div>
+                <button type="button" data-plus="template">插入审查模板</button>
+                <span class="agent-plus-sep" aria-hidden="true"></span>
+                <button type="button" data-plus="clear">清空当前对话</button>
+                <a href="/guide">使用说明</a>
+              </div>
+            </div>
+            <input type="file" id="agent-text-file" multiple hidden
+                   accept=".c,.h,.cc,.cpp,.py,.js,.ts,.txt,.json,.md,.html,.sql,.php,.go,.java,.rs,.sh,.yaml,.yml,.toml">
             <span class="ds-chip">本地工作区</span>
             <div class="ds-composer-meta">
               <span class="agent-composer-note">助手不发起执行</span>
@@ -214,5 +235,5 @@
 
 {% block scripts %}
 <script src="/static/js/agent.fixtures.js?v=20261104a"></script>
-<script src="/static/js/agent.js?v=20261112n"></script>
+<script src="/static/js/agent.js?v=20261112p"></script>
 {% endblock %}

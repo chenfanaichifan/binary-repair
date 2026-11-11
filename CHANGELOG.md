@@ -53,6 +53,29 @@ simple semantic-versioning policy for delivery snapshots.
 - Landing v3: orbital hero, compact connector strip, a one-time sci-fi boot
   overlay (session-scoped, skipped for reduced motion and `?nointro=1`), and a
   balanced layout that fits 1280×800 without scrolling.
+- Settings: `/settings` covers theme, density, body/code font size, animations,
+  send key, auto-scroll, task sort, history sync, default workspace/mode,
+  export/import, local-cache clearing and a generation-guarded server-history
+  reset. Preferences stay in `localStorage["br.settings.v1"]` and apply through
+  `data-density`, `data-motion`, `--chat-font-size` and `--code-font-size`.
+  See `docs/reference/ui-settings.md`.
+- Full usage guide: `/guide` is a ten-section operator manual (quick start,
+  code repair, binary flow, tasks/workspaces, history, settings, connectors,
+  methods, shortcuts, troubleshooting/boundaries), linked from the fixed
+  sidebar of every workbench page and from the landing nav/footer.
+- Task management: sidebar search, pin, rename and local-record delete;
+  pinned/recent/name sorting respects settings. The workspace control switches
+  the server-configured workspace for new sessions.
+- Composer tools: the `+` menu can load multiple code/text files (400 KB each),
+  accept drag/drop and paste files, insert fenced code, vulnerable snippets,
+  an audit template, clear the conversation, or open the guide. Binary samples
+  still go through the guided upload step.
+- Command palette (`Ctrl/Cmd+K`): jump to any page, switch themes, or toggle the
+  sidebar from every base page.
+- Contrast pass: dark ghost buttons/notes, secondary tokens, send/avatar
+  foregrounds and the demo banner were audited against WCAG ratios. The
+  full-width amber demo strip is now a slim, muted `演示数据` disclosure with a
+  boundary link.
 
 ### Changed
 

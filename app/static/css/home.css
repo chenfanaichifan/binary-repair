@@ -7,7 +7,7 @@
 .ds-home-body {
   --home-panel: rgba(255, 255, 255, 0.74);
   --home-hair: rgba(31, 35, 41, 0.055);
-  --home-link-quiet: #8a8f9a;
+  --home-link-quiet: var(--ds-muted);
   background:
     radial-gradient(1100px 560px at 50% -18%, rgba(76, 111, 255, 0.13), transparent 64%),
     radial-gradient(820px 480px at 88% 112%, rgba(240, 176, 63, 0.08), transparent 66%),
@@ -32,7 +32,7 @@
 :root[data-theme="dark"] .ds-home-body {
   --home-panel: rgba(18, 23, 34, 0.76);
   --home-hair: rgba(255, 255, 255, 0.055);
-  --home-link-quiet: #7b8494;
+  --home-link-quiet: var(--ds-muted);
   background:
     radial-gradient(1100px 560px at 50% -18%, rgba(90, 118, 255, 0.24), transparent 64%),
     radial-gradient(820px 480px at 88% 112%, rgba(240, 176, 63, 0.06), transparent 66%),
@@ -95,7 +95,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: var(--ds-faint);
+  color: var(--ds-muted);
   letter-spacing: 0.01em;
 }
 .home-dot {
@@ -317,7 +317,7 @@
   width: 40px;
   height: 40px;
   background: linear-gradient(180deg, #5f7dff, #4c6fff);
-  color: #fff;
+  color: #0a0d14;
   font-size: 17px;
   box-shadow: 0 8px 18px -8px rgba(76, 111, 255, 0.55);
 }
@@ -645,3 +645,5 @@ html[data-booted="1"] .boot { display: none; }
   .orbit { animation: none !important; }
   .boot { display: none !important; }
 }
+.home-foot a { color: var(--ds-muted); text-decoration: none; }
+.home-foot a:hover { color: var(--ds-accent-text); text-decoration: underline; }

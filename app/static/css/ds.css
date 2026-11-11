@@ -18,9 +18,9 @@
   --ds-border: #ececf1;
   --ds-border-strong: #e0e0e8;
   --ds-text: #1f2329;
-  --ds-text-2: #55585f;
-  --ds-muted: #8b8f98;
-  --ds-faint: #a6aab3;
+  --ds-text-2: #4b4f57;
+  --ds-muted: #5a606b;
+  --ds-faint: #6b717c;
   --ds-accent: #4c6fff;
   --ds-accent-soft: #eef1ff;
   --ds-accent-text: #4258c9;
@@ -31,7 +31,7 @@
   --ds-ok-soft: #e9f5ef;
   --ds-bad: #b4432f;
   --ds-bad-soft: #fdeeec;
-  --ds-wait: #8a6d1f;
+  --ds-wait: #7a5f14;
   --ds-wait-soft: #fdf6e3;
   --ds-radius: 14px;
   --ds-radius-lg: 22px;
@@ -289,12 +289,29 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.4; }
 }
 
 .ds-demo {
-  padding: 9px 20px;
-  background: var(--ds-wait-soft);
-  border-bottom: 1px solid #f0e6c8;
-  color: var(--ds-wait);
-  font-size: 12.5px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 20px;
+  background: transparent;
+  border-bottom: 1px solid var(--ds-border);
+  color: var(--ds-muted);
+  font-size: 11.5px;
+  line-height: 1.5;
 }
+.ds-demo-tag {
+  padding: 1px 6px;
+  border: 1px solid var(--ds-wait-soft);
+  border-radius: 4px;
+  background: var(--ds-wait-soft);
+  color: var(--ds-wait);
+  font-family: var(--ds-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+}
+.ds-demo-link { color: var(--ds-accent-text); text-decoration: none; font-size: 11px; }
+.ds-demo-link:hover { text-decoration: underline; }
 
 .ds-content {
   flex: 1;
@@ -900,8 +917,13 @@ tr[data-evidence-level="unknown"] .ev-scope { color: #8a5a1e; }
 :root[data-theme="dark"] body { background: var(--ds-bg); }
 
 :root[data-theme="dark"] .ds-demo {
-  background: #261f10;
-  border-bottom-color: #3a3018;
+  background: transparent;
+  border-bottom-color: var(--ds-border);
+  color: var(--ds-muted);
+}
+:root[data-theme="dark"] .ds-demo-tag {
+  background: rgba(226, 194, 122, 0.1);
+  border-color: rgba(226, 194, 122, 0.24);
   color: #e2c27a;
 }
 
@@ -1024,3 +1046,182 @@ tr[data-evidence-level="unknown"] .ev-scope { color: #8a5a1e; }
   .side-collapsed .ds-demo { padding-left: 52px; }
   .side-collapsed .ds-footer { padding-left: 52px; }
 }
+
+/* 用户偏好：密度、字号、代码字号与动效 */
+:root { --chat-font-size: 13.5px; --code-font-size: 12px; }
+.agent-msg-body { font-size: var(--chat-font-size); }
+.chat-code code { font-size: var(--code-font-size); }
+.guide-body p, .guide-body li { font-size: var(--chat-font-size); }
+html[data-density="compact"] .ds-content { padding: 16px 22px 28px; }
+html[data-density="compact"] .agent-stream { gap: 12px; }
+html[data-density="compact"] .agent-side { padding: 12px; }
+html[data-density="compact"] .wb-section,
+html[data-density="compact"] .methods-tools,
+html[data-density="compact"] .methods-questions,
+html[data-density="compact"] .plugin-section { margin-top: 20px; }
+html[data-density="compact"] .agent-msg { gap: 8px; }
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* 任务搜索、行内操作与工作区切换 */
+.ds-job-search { padding: 0 2px 6px; }
+.ds-job-search input {
+  width: 100%;
+  padding: 6px 9px;
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  background: var(--ds-surface-2);
+  color: var(--ds-text);
+  font: inherit;
+  font-size: 12px;
+}
+.ds-job-search input::placeholder { color: var(--ds-faint); }
+.ds-job-search input:focus { outline: none; border-color: var(--ds-accent); }
+.ds-job-row { position: relative; display: flex; align-items: center; gap: 2px; border-radius: 10px; }
+.ds-job-row .ds-job-item { flex: 1; min-width: 0; padding-right: 6px; }
+.ds-job-actions {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  display: flex;
+  gap: 1px;
+  padding: 0 2px 0 16px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, transparent, var(--ds-side) 36%);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition: opacity 0.12s ease;
+}
+.ds-job-row:hover .ds-job-actions,
+.ds-job-row:focus-within .ds-job-actions { opacity: 1; pointer-events: auto; }
+.ds-job-action {
+  width: 20px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ds-muted);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ds-job-action:hover { background: var(--ds-side-hover); color: var(--ds-text); }
+.ds-job-remove:hover { color: var(--ds-bad); }
+
+.ds-workspace-switch { position: relative; }
+button.ds-workspace {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ds-text-2);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.ds-workspace-caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 5px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--ds-faint);
+  vertical-align: middle;
+}
+button.ds-workspace:hover { background: var(--ds-side-hover); color: var(--ds-text); }
+.ds-ws-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  padding: 4px;
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-lg);
+}
+.ds-ws-menu a {
+  display: block;
+  padding: 7px 9px;
+  border-radius: 7px;
+  color: var(--ds-text-2);
+  text-decoration: none;
+}
+.ds-ws-menu a strong { display: block; font-size: 12px; font-weight: 600; }
+.ds-ws-menu a span { display: block; margin-top: 2px; font-size: 10.5px; line-height: 1.5; color: var(--ds-muted); }
+.ds-ws-menu a:hover, .ds-ws-menu a.is-active { background: var(--ds-surface-2); color: var(--ds-text); }
+.ds-ws-menu .ds-ws-manage { margin-top: 4px; border-top: 1px solid var(--ds-border); border-radius: 0 0 7px 7px; color: var(--ds-accent-text); font-size: 11px; }
+@media (max-width: 900px) {
+  .ds-job-actions { opacity: 1; pointer-events: auto; }
+}
+
+/* 命令面板 */
+.ds-palette {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 14vh 16px 16px;
+  background: rgba(10, 13, 20, 0.38);
+  backdrop-filter: blur(3px);
+}
+.ds-palette[hidden] { display: none; }
+.ds-palette-box {
+  width: min(560px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--ds-border-strong);
+  border-radius: 14px;
+  background: var(--ds-surface);
+  box-shadow: 0 24px 70px rgba(10, 13, 20, 0.28);
+}
+.ds-palette-box input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--ds-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ds-text);
+  font: inherit;
+  font-size: 14px;
+}
+.ds-palette-box input:focus { outline: none; box-shadow: none; }
+.ds-palette-list { max-height: 330px; overflow-y: auto; padding: 6px; }
+.ds-palette-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ds-text-2);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.ds-palette-item:hover, .ds-palette-item.is-active { background: var(--ds-surface-2); color: var(--ds-text); }
+.ds-palette-hint-inline { color: var(--ds-muted); font-size: 11px; }
+.ds-palette-empty { margin: 1.5rem 0; text-align: center; font-size: 12px; color: var(--ds-muted); }
+.ds-palette-hint { margin: 0; padding: 9px 14px; border-top: 1px solid var(--ds-border); color: var(--ds-muted); font-size: 10.5px; }
+.ds-side-link.ds-palette-open { display: flex; width: 100%; justify-content: space-between; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+.ds-side-link.ds-palette-open kbd { font-family: var(--ds-mono); font-size: 10px; color: var(--ds-faint); }
+body.palette-open { overflow: hidden; }

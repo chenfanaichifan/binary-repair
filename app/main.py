@@ -88,6 +88,7 @@ templates.env.globals.update(
     value_labels_zh=i18n.VALUE_LABELS_ZH,
     route_names_zh=i18n.ROUTE_NAMES_ZH,
     csrf_token=CSRF_TOKEN,
+    nav_ui=load_ui_config,
     display_verdict=status.display_verdict,
     order_obligations=status.order_obligations,
 )
@@ -280,6 +281,7 @@ def _agent_context(
         "job_id": job_id,
         "fixture": fixture_mode,
         "backend_note": backend_description(BACKEND),
+        "ui": ui,
         "workspace": selected_workspace,
         "mode": selected_mode,
         "assistant": assistant_status(
@@ -359,6 +361,35 @@ CONNECTOR_KIND_ZH = {
     "tool": "分析工具",
     "plugin": "插件",
 }
+
+
+@app.get("/settings", response_class=HTMLResponse, name="settings_page")
+async def settings_page(request: Request):
+    """Local operator preferences; values stay in the browser."""
+    ui = load_ui_config()
+    snapshot = connector_snapshot()
+    return templates.TemplateResponse(
+        request,
+        "settings.html",
+        {
+            "ui": ui,
+            "workspace": resolve_workspace(ui, None),
+            "mode": resolve_mode(ui, None),
+            "connector_counts": snapshot["counts"],
+            "plugin_total": snapshot["counts"]["plugins"],
+            "demo": BACKEND_MODE == "mock",
+        },
+    )
+
+
+@app.get("/guide", response_class=HTMLResponse, name="guide_page")
+async def guide_page(request: Request):
+    """Full operator manual, linked from the fixed sidebar of every page."""
+    return templates.TemplateResponse(
+        request,
+        "guide.html",
+        {"demo": BACKEND_MODE == "mock"},
+    )
 
 
 @app.get("/methods", response_class=HTMLResponse, name="methods_page")
@@ -967,6 +998,13 @@ async def assistant_plan(request: Request) -> JSONResponse:
             status_code=503,
         )
     return JSONResponse({"plan": plan})
+
+
+@app.delete("/api/history")
+async def history_clear_all(request: Request) -> JSONResponse:
+    """Clear every server-side task/draft conversation (settings only)."""
+    _require_csrf(request.headers.get("x-csrf-token", ""))
+    return JSONResponse({"deleted": HistoryStore().clear_all()})
 
 
 @app.delete("/api/history/{scope}")

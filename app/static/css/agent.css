@@ -287,7 +287,8 @@
 .agent-composer { width: 100%; margin-top: 6px; animation: none; }
 .agent-composer-note { color: var(--ds-faint); font-size: 12px; }
 
-.agent-hint { margin: 8px 2px 0; font-size: 12px; color: var(--ds-faint); }
+.agent-hint { margin: 8px 2px 0; font-size: 12px; color: var(--ds-muted); }
+.agent-hint code { color: var(--ds-text-2); }
 .agent-hint code { background: var(--ds-code-bg); }
 
 /* ---------------- 右栏状态面板 ---------------- */
@@ -452,7 +453,7 @@
 }
 .agent-avatar-assistant {
   background: linear-gradient(140deg, #6b86ff, #3f5fe8);
-  color: #fff;
+  color: #0a0d14;
   box-shadow: 0 4px 10px -4px rgba(76, 111, 255, 0.6);
 }
 .agent-avatar-user {
@@ -816,3 +817,63 @@ body.agent-focus .agent-side,
 body.agent-focus .agent-side-resizer { display: none !important; }
 body.agent-focus .agent-body { grid-template-columns: minmax(0, 1fr); }
 body.agent-focus .ds-sidebar-expand { display: none !important; }
+
+/* 夜间次要按钮/说明文字可读性 */
+:root[data-theme="dark"] .agent-btn.ghost {
+  background: var(--ds-surface-2);
+  border-color: var(--ds-border);
+  color: var(--ds-text-2);
+}
+:root[data-theme="dark"] .agent-btn.ghost:hover {
+  background: var(--ds-surface-3);
+  color: var(--ds-text);
+}
+:root[data-theme="dark"] .repair-notes summary { color: var(--ds-text); }
+:root[data-theme="dark"] .repair-foot { color: var(--ds-muted); }
+:root[data-theme="dark"] .repair-empty { color: var(--ds-text-2); }
+
+/* Composer 加号菜单：文本/代码载入、示例、模板与清空 */
+.agent-plus-wrap { position: relative; }
+.agent-plus-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: -4px;
+  width: 252px;
+  z-index: 80;
+  padding: 6px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-lg);
+}
+.agent-plus-menu button,
+.agent-plus-menu a {
+  display: block;
+  width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ds-text-2);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.agent-plus-menu button:hover,
+.agent-plus-menu a:hover { background: var(--ds-surface-2); color: var(--ds-text); }
+.agent-plus-label {
+  margin: 6px 8px 3px;
+  font-family: var(--ds-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--ds-faint);
+}
+.agent-plus-snippets { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.agent-plus-snippets button { font-size: 11px; }
+.agent-plus-sep { display: block; height: 1px; margin: 5px 4px; background: var(--ds-border); }
+.agent-composer.is-dragover { border-color: var(--ds-accent); box-shadow: 0 0 0 3px var(--ds-accent-soft); }
+@media (max-width: 640px) {
+  .agent-plus-menu { width: min(252px, calc(100vw - 48px)); }
+}
