@@ -102,6 +102,6 @@ def test_uploaded_filename_is_sanitized_to_ascii():
 
 
 def test_ui_pages_remain_chinese():
-    assert "新建任务与契约复核" in client.get("/jobs/new").text
+    assert "新建修复内容" in client.get("/agent/new").text
     job_id = _create_job()
     assert "进度与对比" in client.get(f"/jobs/{job_id}").text

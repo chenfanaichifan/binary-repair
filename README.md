@@ -45,6 +45,12 @@ this project as proof.
 - The host never executes uploaded or repaired binaries. Parsing, compilation,
   execution and symbolic analysis belong to the disposable guest under the
   broker.
+- The workbench also accepts pasted source for static code repair (CWE-tagged
+  findings, patch/diff, no execution), keeps task conversations server-side,
+  and exposes a connector/tool inventory with install guides. See
+  [`docs/architecture/code-repair.md`](docs/architecture/code-repair.md),
+  [`docs/architecture/history.md`](docs/architecture/history.md) and
+  [`docs/reference/binary-repair-landscape.md`](docs/reference/binary-repair-landscape.md).
 
 ## Repository layout
 

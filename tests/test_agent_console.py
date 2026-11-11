@@ -5,7 +5,8 @@ These tests pin the M2 boundary rather than backend behaviour:
 - the console never declares a repair verdict by itself;
 - obligations are rendered verbatim and "not_run" is not shown while the
   execution result has not been received (placeholder instead);
-- no model calls, no new write endpoints, no SSE/WebSocket, no frameworks;
+- model calls only through the backend; the browser holds no key and never executes code;
+- no new job-writing endpoints, no SSE/WebSocket, no frameworks;
 - UI copy is Chinese while every fixture value bound for submission is ASCII;
 - the pre-existing pages and the original landing CTA keep working.
 """
@@ -38,16 +39,16 @@ def test_agent_shell_renders():
         "agent-fallback",
         "agent-model-meta",
         "agent-side-execution",
+        "agent-history-sync",
         "agent-side-artifacts",
         "agent-timeline",
         "agent-before-after",
         "agent-diagnostics",
         "agent-downloads",
         "agent-receipt-placeholder",
-        "agent-switch-form",
     ):
         assert f'data-testid="{testid}"' in response.text, testid
-    assert "修复任务" in response.text
+    assert "新建修复内容" in response.text
     assert 'data-fixture="1"' in response.text
 
 
@@ -178,14 +179,26 @@ def test_route_without_evidence_says_unavailable():
     assert "证据不可用（attempt 未回传或端点未开通）" in AGENT_JS
 
 
+def test_pasted_code_has_a_reviewable_repair_path():
+    assert "extractCode" in AGENT_JS
+    assert "agent-repair-card" in AGENT_JS
+    assert "chat-code" in AGENT_JS
+    assert "复制补丁" in AGENT_JS
+    assert "粘贴代码" in AGENT_TEMPLATE
+    assert 'id="agent-code-repair"' in AGENT_TEMPLATE
+    # Advice only: the card must not look like an acceptance verdict.
+    assert "也不构成验收结论" in AGENT_JS
+
+
 def test_no_model_calls_or_new_transport():
     # Actual usage is banned (mentioning the rule in comments is fine).
     for banned in ("api.openai.com", "new WebSocket", "new EventSource", "Bearer ",
                    'setRequestHeader("Authorization'):
         assert banned not in AGENT_JS, banned
-    # Same-origin paths: snapshot, attempts, plan, evidence, comparison and the
-    # operator key status/save/test/clear endpoints (no external transport).
-    assert AGENT_JS.count("fetch(") == 11
+    # Same-origin paths: snapshot, attempts, plan, evidence, comparison, the
+    # operator key status/save/test/clear endpoints, static code repair and
+    # history get/put/delete.
+    assert AGENT_JS.count("fetch(") == 15
     assert "/artifacts" in AGENT_JS
     assert "/deliverables" in AGENT_JS
     assert 'fetch("/api/jobs/" + encodeURIComponent(state.jobId)' in AGENT_JS
@@ -194,6 +207,9 @@ def test_no_model_calls_or_new_transport():
     assert 'fetch("/api/assistant/plan"' in AGENT_JS
     assert 'fetch("/api/assistant/key"' in AGENT_JS
     assert 'fetch("/api/assistant/key/test"' in AGENT_JS
+    assert 'fetch("/api/code/repair"' in AGENT_JS
+    assert 'fetch(serverHistoryUrl(scope)' in AGENT_JS
+    assert '"/api/history/" + encodeURIComponent(scope)' in AGENT_JS
     assert 'fetch("/api/attempts/" + encodeURIComponent(attemptId) + "/evidence"' in AGENT_JS
     # Write path: the existing create-job form endpoint only, with CSRF.
     assert 'xhr.open("POST", "/jobs")' in AGENT_JS
@@ -225,24 +241,23 @@ def test_unknown_reason_code_is_not_guessed():
     assert "未登记，请把 status.json 发给 M1/M4" in AGENT_JS
 
 
-def test_landing_offers_console_without_breaking_original_cta():
+def test_landing_offers_one_intake_and_no_form_path():
     response = client.get("/")
     assert response.status_code == 200
-    assert 'data-testid="landing-cta"' in response.text
-    assert 'href="/jobs/new"' in response.text
     assert 'data-testid="landing-agent-cta"' in response.text
-    assert 'href="/agent?' in response.text
-    # T7.8: the console is the primary entry; the form is the fallback.
+    assert 'href="/agent/new?' in response.text
     assert 'data-primary="1"' in response.text
-    assert response.text.index('data-testid="landing-agent-cta"') < response.text.index(
-        'data-testid="landing-cta"'
-    )
+    # The form intake is retired: no form CTA or form link may remain.
+    assert 'landing-cta' not in response.text
+    assert 'href="/jobs/new"' not in response.text
+    assert "表单建单" not in response.text
+    assert "使用表单上传" not in response.text
 
 
-def test_existing_setup_and_job_pages_still_work():
-    setup = client.get("/jobs/new")
-    assert setup.status_code == 200
-    assert 'data-testid="setup-form"' in setup.text
+def test_retired_setup_page_redirects_and_job_creation_still_works():
+    setup = client.get("/jobs/new", follow_redirects=False)
+    assert setup.status_code == 303
+    assert setup.headers["location"] == "/agent/new?new=1"
 
     created = client.post(
         "/jobs",
@@ -308,7 +323,7 @@ def test_workspace_nav_does_not_repeat_the_landing_entry():
         assert 'class="ds-brand" href="/"' in page.text
         assert 'aria-label="返回起始页"' in page.text
         # Core entries remain: one new-task action, and the form as a secondary route.
-        assert 'href="/agent/new"' in page.text
+        assert 'href="/agent/new' in page.text
         assert 'data-testid="ds-job-list"' in page.text
 
 
@@ -337,7 +352,6 @@ def test_single_task_route_is_its_own_conversation():
     assert "该任务的独立会话" in page.text
     # A new task does not show the per-task links.
     fresh = client.get("/agent/new")
-    assert 'data-testid="agent-switch-form"' in fresh.text
     assert 'data-testid="agent-open-comparison"' not in fresh.text
 
 
@@ -361,6 +375,11 @@ def test_conversation_history_is_stored_per_job():
     assert "HISTORY_LIMIT" in AGENT_JS
     assert "state.entries" in AGENT_JS
     assert "writeHistoryFor(match[1], state.entries)" in AGENT_JS
+    assert "hydrateHistory" in AGENT_JS
+    assert "scheduleServerSave" in AGENT_JS
+    assert "historyGeneration" in AGENT_JS
+    assert "FRESH_SESSION" in AGENT_JS
+    assert "clearServerHistory" in AGENT_JS
     # History replay must not re-record what it replays.
     assert "{ replay: true }" in AGENT_JS
 
@@ -382,7 +401,39 @@ def test_plan_route_rejects_an_empty_description():
     assert response.json()["error"] == "invalid_request"
 
 
-def test_plan_route_says_unavailable_instead_of_inventing_a_plan():
+def test_plan_route_serves_the_real_planner_in_mock_mode(monkeypatch):
+    # Mock mode plans through the same seam as local mode: the steps are
+    # computed by the planner, not read from a fixture, and the page labels a
+    # deterministic answer as "no model call". Pin the no-key branch so the
+    # test never reaches the network.
+    import app.services.assistant_llm as assistant_llm
+
+    monkeypatch.setattr(assistant_llm, "client_from_env", lambda: None)
+    response = client.post(
+        "/api/assistant/plan",
+        json={"description": "fix it"},
+        headers={"X-CSRF-Token": CSRF_TOKEN},
+    )
+    assert response.status_code == 200
+    plan = response.json()["plan"]
+    assert plan["mode"] == "deterministic"
+    assert plan["fallback"] is False
+    assert plan["steps"] and plan["steps"][-1]["kind"] == "review"
+
+
+def test_plan_route_says_unavailable_when_the_backend_has_no_plan_route(monkeypatch):
+    # A controller that has not shipped the route still answers 503 instead of
+    # borrowing a plan from somewhere else.
+    import app.main as main_module
+
+    class _NoPlanBackend:
+        mode = "http"
+        base_url = ""
+
+        def get_plan(self, description, context=None):
+            return None
+
+    monkeypatch.setattr(main_module, "BACKEND", _NoPlanBackend())
     response = client.post(
         "/api/assistant/plan",
         json={"description": "fix it"},
@@ -392,6 +443,7 @@ def test_plan_route_says_unavailable_instead_of_inventing_a_plan():
     body = response.json()
     assert body["plan"] is None
     assert body["error"] == "assistant_unavailable"
+    assert body["fallback_reason"] == "assistant_endpoint_missing"
 
 
 def test_plan_route_forwards_the_backend_plan(monkeypatch):
@@ -665,3 +717,29 @@ def test_deliverable_upload_is_hidden_off_http_and_rejects_oversized_files():
     assert "DELIVERABLE_MAX_BYTES = 64 * 1024 * 1024" in AGENT_JS
     assert "if (file.size > DELIVERABLE_MAX_BYTES)" in AGENT_JS
     assert "64 MiB" in AGENT_JS
+
+
+def test_console_panels_are_resizable_and_the_sidebar_collapses():
+    assert 'id="agent-side-resizer"' in AGENT_TEMPLATE
+    assert 'aria-orientation="vertical"' in AGENT_TEMPLATE
+    assert "agent-side-resizer" in AGENT_JS
+    assert "br.agent.side.width" in AGENT_JS
+    assert 'id="agent-focus-toggle"' in AGENT_TEMPLATE
+    assert 'id="agent-focus-exit"' in AGENT_TEMPLATE
+    assert "br.agent.focus" in AGENT_JS
+    page = client.get("/agent/new")
+    assert "ds-sidebar-toggle" in page.text
+    assert "ds-sidebar-expand" in page.text
+    assert "/static/js/shell.js" in page.text
+
+
+def test_workbench_is_a_dashboard_not_an_empty_list():
+    page = client.get("/agent")
+    assert page.status_code == 200
+    assert "修复工作台" in page.text
+    assert "方法与工具" in page.text
+    assert "服务端会话" in page.text
+    assert "粘贴代码" in page.text
+    assert "wb-method" in page.text
+    assert "Ghidra" in page.text
+    assert "angr" in page.text

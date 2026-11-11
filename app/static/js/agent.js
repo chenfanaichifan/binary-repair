@@ -3,7 +3,8 @@
  *
  * 边界（Lead 87 号分配）：
  *  - 不实现 assistant planner，不定义 plan 内容；plan 来自 M5（开发期用 fixture）。
- *  - 不调用任何模型，不读写 API key。
+ *  - 模型调用只经由后端 /api（计划与代码修复）；key 只提交到后端，
+ *    不写入前端存储；粘贴的代码只用于静态建议，绝不执行。
  *  - 创建任务必须用户显式点击；助手不发起运行、不写 verdict。
  *  - 前端不计算 outcome；义务结果逐字渲染后端取值。
  *  - 未回传（receipt pending）时显示占位，不渲染 not_run。
@@ -57,6 +58,95 @@
     });
   }
 
+  /* ---------- 状态面板宽度：可拖动、可键盘调整、可持久化 ---------- */
+
+  var SIDE_WIDTH_KEY = "br.agent.side.width";
+  var SIDE_MIN = 220;
+  var SIDE_MAX = 460;
+  var sideResizer = document.getElementById("agent-side-resizer");
+
+  function clampSideWidth(value) {
+    var width = parseInt(value, 10);
+    if (isNaN(width)) { width = 264; }
+    return Math.max(SIDE_MIN, Math.min(SIDE_MAX, width));
+  }
+
+  function applySideWidth(value) {
+    if (!sideBody) return;
+    sideBody.style.setProperty("--agent-side-width", clampSideWidth(value) + "px");
+  }
+
+  if (sideResizer && sideBody) {
+    try {
+      var savedWidth = window.localStorage.getItem(SIDE_WIDTH_KEY);
+      if (savedWidth) { applySideWidth(savedWidth); }
+    } catch (error) { /* ignore */ }
+    var dragging = false;
+    var lastWidth = 264;
+
+    var persistWidth = function (value) {
+      lastWidth = clampSideWidth(value);
+      applySideWidth(lastWidth);
+      try { window.localStorage.setItem(SIDE_WIDTH_KEY, String(lastWidth)); } catch (error) {}
+    };
+
+    sideResizer.addEventListener("pointerdown", function (event) {
+      if (sideBody.classList.contains("is-side-collapsed")) return;
+      dragging = true;
+      sideResizer.setPointerCapture(event.pointerId);
+      document.body.classList.add("is-resizing-side");
+      event.preventDefault();
+    });
+    sideResizer.addEventListener("pointermove", function (event) {
+      if (!dragging) return;
+      var rect = sideBody.getBoundingClientRect();
+      persistWidth(rect.right - event.clientX);
+    });
+    var stopDrag = function (event) {
+      if (!dragging) return;
+      dragging = false;
+      document.body.classList.remove("is-resizing-side");
+      if (event && event.pointerId !== undefined && sideResizer.hasPointerCapture(event.pointerId)) {
+        sideResizer.releasePointerCapture(event.pointerId);
+      }
+    };
+    sideResizer.addEventListener("pointerup", stopDrag);
+    sideResizer.addEventListener("pointercancel", stopDrag);
+    sideResizer.addEventListener("keydown", function (event) {
+      var step = event.shiftKey ? 40 : 16;
+      var current = parseInt(getComputedStyle(sideBody).getPropertyValue("--agent-side-width"), 10) || lastWidth;
+      if (event.key === "ArrowLeft") { persistWidth(current - step); event.preventDefault(); }
+      if (event.key === "ArrowRight") { persistWidth(current + step); event.preventDefault(); }
+    });
+    sideResizer.addEventListener("dblclick", function () { persistWidth(264); });
+  }
+
+  /* ---------- 专注对话：临时收起页头与标签，放大对话区 ---------- */
+
+  var FOCUS_KEY = "br.agent.focus";
+  var focusToggle = document.getElementById("agent-focus-toggle");
+  var focusExit = document.getElementById("agent-focus-exit");
+
+  function setFocusMode(enabled, persist) {
+    document.body.classList.toggle("agent-focus", enabled);
+    if (focusToggle) { focusToggle.setAttribute("aria-pressed", enabled ? "true" : "false"); }
+    if (focusExit) { focusExit.hidden = !enabled; }
+    if (persist) {
+      try { window.localStorage.setItem(FOCUS_KEY, enabled ? "1" : "0"); } catch (error) {}
+    }
+  }
+
+  if (focusToggle && focusExit) {
+    try { setFocusMode(window.localStorage.getItem(FOCUS_KEY) === "1", false); } catch (error) {}
+    focusToggle.addEventListener("click", function () { setFocusMode(true, true); });
+    focusExit.addEventListener("click", function () { setFocusMode(false, true); });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && document.body.classList.contains("agent-focus")) {
+        setFocusMode(false, true);
+      }
+    });
+  }
+
   var FIXTURE_MODE = root.dataset.fixture === "1";
   var CSRF = root.dataset.csrf || "";
   var FIXTURES = window.AGENT_FIXTURES || null;
@@ -64,6 +154,7 @@
   /* ?plan=fixture：引导计划用占位 plan（M5 T8.1 未接入），但创建任务仍走真实
      POST /jobs、之后真实轮询。与 ?fixture=1（全演示、不创建）区分开。 */
   var PLAN_FIXTURE = !FIXTURE_MODE && QUERY.get("plan") === "fixture" && !!FIXTURES;
+  var FRESH_SESSION = root.dataset.fresh === "1" || QUERY.get("new") === "1";
 
   var ASSISTANT_MODE = root.dataset.assistantMode || "deterministic";
   var ASSISTANT_AVAILABLE = root.dataset.assistantAvailable === "1";
@@ -81,12 +172,14 @@
     submitting: false,
     replaying: false,
     planPending: null,
+    repairPending: null,
+    historyGeneration: 0,
     entries: []
   };
 
-  /* ---------- 单任务历史（本机） ----------
-   * 每个任务 id 一个键，只存对话与工具摘要，不存文件内容。
-   * 服务端历史要等 M5 的 T8.1 持久化；这里明确标注来源，不冒充跨设备记录。 */
+  /* ---------- 对话历史：本机缓存 + 服务端同步 ----------
+   * 任务按 job id 分键；新建草稿用固定 "draft" 作用域，创建任务后才归到任务 id。
+   * 服务端是同一实例内的权威副本，localStorage 只是离线/瞬时回退。 */
 
   var HISTORY_LIMIT = 120;
 
@@ -116,13 +209,136 @@
     }
   }
 
+  function historyScope() {
+    return state.jobId || "draft";
+  }
+
   function record(entry) {
     if (state.replaying || FIXTURE_MODE) return;
     state.entries.push(entry);
     if (state.entries.length > HISTORY_LIMIT) {
       state.entries = state.entries.slice(-HISTORY_LIMIT);
     }
-    if (state.jobId) writeHistoryFor(state.jobId, state.entries);
+    writeHistoryFor(historyScope(), state.entries);
+    scheduleServerSave();
+  }
+
+  /* ---------- 服务端历史（同一任务换浏览器可恢复） ---------- */
+
+  function setHistorySync(text, stateName) {
+    var node = $("agent-history-sync");
+    if (!node) return;
+    node.textContent = text;
+    node.dataset.state = stateName || "";
+  }
+
+  function serverHistoryUrl(scope) {
+    return "/api/history/" + encodeURIComponent(scope);
+  }
+
+  function fetchServerHistory(scope) {
+    return fetch(serverHistoryUrl(scope), {
+      headers: { Accept: "application/json" }
+    }).then(function (response) {
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return response.json();
+    });
+  }
+
+  function saveServerHistory(scope, entries, generation) {
+    return fetch(serverHistoryUrl(scope), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
+      body: JSON.stringify({ entries: entries, generation: generation || 0 })
+    }).then(function (response) {
+      return response.json().then(function (body) {
+        if (!response.ok) {
+          var error = new Error("HTTP " + response.status);
+          error.status = response.status;
+          error.body = body;
+          throw error;
+        }
+        return body;
+      }, function () {
+        throw new Error("HTTP " + response.status);
+      });
+    });
+  }
+
+  var serverSaveTimer = null;
+
+  function scheduleServerSave() {
+    var scope = historyScope();
+    setHistorySync(scope === "draft" ? "草稿同步中…" : "同步中…", "syncing");
+    if (serverSaveTimer) { window.clearTimeout(serverSaveTimer); }
+    serverSaveTimer = window.setTimeout(function () {
+      serverSaveTimer = null;
+      var entries = state.entries.slice(-HISTORY_LIMIT);
+      saveServerHistory(scope, entries, state.historyGeneration).then(function (payload) {
+        if (historyScope() === scope) {
+          state.historyGeneration = payload.generation || 0;
+          setHistorySync(scope === "draft" ? "草稿已同步" : "服务端已同步", "synced");
+        }
+      }, function () {
+        if (historyScope() === scope) {
+          setHistorySync(scope === "draft" ? "本地草稿" : "本地暂存", "local");
+        }
+      });
+    }, 420);
+  }
+
+  function clearServerHistory(scope) {
+    return fetch(serverHistoryUrl(scope), {
+      method: "DELETE",
+      headers: { "X-CSRF-Token": CSRF }
+    }).then(function (response) {
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return response.json();
+    }).then(function (payload) {
+      state.historyGeneration = payload.generation || 0;
+      return payload;
+    });
+  }
+
+  function lastEntryAt(entries) {
+    var last = 0;
+    (entries || []).forEach(function (entry) {
+      var value = entry && entry.at ? Date.parse(entry.at) : NaN;
+      if (!isNaN(value) && value > last) { last = value; }
+    });
+    return last;
+  }
+
+  function hydrateHistory(scope) {
+    setHistorySync(scope === "draft" ? "草稿同步中…" : "同步中…", "syncing");
+    return fetchServerHistory(scope).then(function (payload) {
+      var local = readHistory();
+      var server = payload && Array.isArray(payload.entries) ? payload.entries : [];
+      var useLocal = local.length && (
+        !server.length ||
+        lastEntryAt(local) > lastEntryAt(server) ||
+        (lastEntryAt(local) === lastEntryAt(server) && local.length > server.length)
+      );
+      state.historyGeneration = payload && typeof payload.generation === "number"
+        ? payload.generation : 0;
+      var chosen = useLocal ? local : server;
+      if (useLocal && lastEntryAt(local) >= lastEntryAt(server)) {
+        saveServerHistory(scope, local, state.historyGeneration).then(function (payload) {
+          state.historyGeneration = payload.generation || state.historyGeneration;
+          setHistorySync(scope === "draft" ? "草稿已同步" : "服务端已同步", "synced");
+        }, function () {
+          setHistorySync(scope === "draft" ? "本地草稿" : "本地暂存", "local");
+        });
+      } else {
+        setHistorySync(server.length ? "服务端历史" : (scope === "draft" ? "空白草稿" : "服务端为空"),
+          server.length ? "synced" : "empty");
+      }
+      writeHistoryFor(scope, chosen);
+      return chosen;
+    }).catch(function () {
+      setHistorySync(scope === "draft" ? "本地草稿" : "本地暂存", "local");
+      return readHistory();
+    });
   }
 
   function registerJob(label) {
@@ -446,13 +662,101 @@
     });
   }
 
+  /* ---------- 代码块与复制 ---------- */
+
+  var CODE_FENCE = /```([A-Za-z0-9_+.#-]*)[ \t]*\n([\s\S]*?)```/g;
+
+  function copyText(value, button) {
+    var done = function () {
+      if (!button) return;
+      var old = button.textContent;
+      button.textContent = "已复制";
+      window.setTimeout(function () { button.textContent = old; }, 1200);
+    };
+    var fallback = function () {
+      var area = document.createElement("textarea");
+      area.value = value;
+      area.setAttribute("readonly", "readonly");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      try { document.execCommand("copy"); } catch (error) { /* ignore */ }
+      document.body.removeChild(area);
+      done();
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(value).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  function codeBlockElement(language, code) {
+    var source = String(code).replace(/\n$/, "");
+    var wrap = el("div", "chat-code");
+    var head = el("div", "chat-code-head");
+    head.appendChild(el("span", "chat-code-lang", language || "code"));
+    var copy = el("button", "chat-code-copy", "复制");
+    copy.type = "button";
+    copy.addEventListener("click", function () { copyText(code, copy); });
+    head.appendChild(copy);
+    var pre = el("pre");
+    pre.appendChild(el("code", null, source));
+    wrap.appendChild(head);
+    wrap.appendChild(pre);
+    var lines = source.split("\n").length;
+    if (lines > 12) {
+      var more = el("button", "chat-code-more", "展开全部 · " + lines + " 行");
+      more.type = "button";
+      more.addEventListener("click", function () {
+        var expanded = wrap.classList.toggle("is-expanded");
+        more.textContent = expanded ? "收起" : "展开全部 · " + lines + " 行";
+      });
+      wrap.appendChild(more);
+    }
+    return wrap;
+  }
+
+  function renderMessageBody(body, text) {
+    var source = String(text || "");
+    var last = 0;
+    var match;
+    var found = false;
+    CODE_FENCE.lastIndex = 0;
+    while ((match = CODE_FENCE.exec(source))) {
+      found = true;
+      if (match.index > last) {
+        body.appendChild(document.createTextNode(source.slice(last, match.index)));
+      }
+      body.appendChild(codeBlockElement(match[1], match[2]));
+      last = CODE_FENCE.lastIndex;
+    }
+    if (!found) {
+      if (looksLikeCode(source)) {
+        body.appendChild(codeBlockElement("", source));
+      } else {
+        body.textContent = source;
+      }
+      return;
+    }
+    if (last < source.length) {
+      body.appendChild(document.createTextNode(source.slice(last)));
+    }
+  }
+
   /* ---------- 终端流渲染 ---------- */
 
   function pushMessage(role, text, options) {
     var item = el("li", "agent-msg agent-msg-" + role);
     var head = el("div", "agent-msg-head");
+    var avatar = el("span", "agent-avatar agent-avatar-" + role, role === "user" ? "你" : "B");
+    avatar.setAttribute("aria-hidden", "true");
+    head.appendChild(avatar);
     head.appendChild(el("span", "agent-msg-role", role === "user" ? "你" : "助手"));
-    var body = el("div", "agent-msg-body", text);
+    var body = el("div", "agent-msg-body");
+    renderMessageBody(body, text);
+    if (body.querySelector(".chat-code")) body.classList.add("has-code");
     item.appendChild(head);
     item.appendChild(body);
     stream().appendChild(item);
@@ -516,6 +820,8 @@
       if (!entry || typeof entry !== "object") return;
       if (entry.kind === "message" && typeof entry.text === "string") {
         pushMessage(entry.role === "user" ? "user" : "assistant", entry.text, { replay: true });
+      } else if (entry.kind === "repair" && entry.repair) {
+        pushRepairCard(entry.repair, { code: entry.code || "", language: entry.language || "" });
       } else if (entry.kind === "tool" && typeof entry.name === "string") {
         pushTool(entry.name, entry.summary || "", entry.fields || {}, null, { replay: true });
       }
@@ -528,6 +834,300 @@
     item.appendChild(cardElement);
     stream().appendChild(item);
     scrollStream();
+    return item;
+  }
+
+  /* ---------- 内联代码修复：粘贴代码 → 静态补丁 ---------- */
+
+  function repairLanguageLabel(language) {
+    var labels = {
+      python: "Python", c: "C", cpp: "C++", javascript: "JavaScript",
+      typescript: "TypeScript", html: "HTML", sql: "SQL", text: "代码"
+    };
+    return labels[language] || (language ? String(language) : "代码");
+  }
+
+  function repairConfidenceLabel(confidence) {
+    if (confidence === "high") { return "高置信"; }
+    if (confidence === "medium") { return "中置信"; }
+    return "低置信";
+  }
+
+  function pushRepairLoading() {
+    var card = el("div", "agent-card agent-repair is-loading");
+    card.dataset.testid = "agent-repair-loading";
+    card.appendChild(el("p", "agent-card-title", "正在分析代码…"));
+    card.appendChild(el("p", "repair-loading-note", "只做静态分析，不会执行这段代码。"));
+    var bar = el("div", "repair-loading-bar");
+    bar.appendChild(el("span"));
+    card.appendChild(bar);
+    return pushCard(card);
+  }
+
+  function pushRepairCard(repair, options) {
+    options = options || {};
+    var card = el("div", "agent-card agent-repair");
+    card.dataset.testid = "agent-repair-card";
+
+    var head = el("div", "repair-head");
+    var heading = el("div", "repair-heading");
+    var kicker = el("p", "repair-kicker");
+    var repairAvatar = el("span", "agent-avatar agent-avatar-assistant repair-avatar", "B");
+    repairAvatar.setAttribute("aria-hidden", "true");
+    kicker.appendChild(repairAvatar);
+    kicker.appendChild(document.createTextNode(
+      repair.mode === "llm" ? "CODE REPAIR · 模型建议" : "CODE REPAIR · 规则建议"));
+    heading.appendChild(kicker);
+    heading.appendChild(el("h3", "repair-title", repair.title || "修复建议"));
+    head.appendChild(heading);
+    var meta = el("div", "repair-meta");
+    meta.appendChild(el("span", "repair-chip", repairLanguageLabel(repair.language)));
+    if (repair.cwe) { meta.appendChild(el("span", "repair-chip", repair.cwe)); }
+    meta.appendChild(el("span", "repair-chip is-" + (repair.confidence || "low"),
+      repairConfidenceLabel(repair.confidence)));
+    if (repair.mode === "llm" && repair.model) {
+      meta.appendChild(el("span", "repair-chip", repair.model));
+    }
+    head.appendChild(meta);
+    card.appendChild(head);
+
+    card.appendChild(el("p", "repair-summary", repair.summary || ""));
+
+    if (repair.warning) {
+      var alert = el("div", "repair-alert");
+      alert.appendChild(el("span", "repair-alert-icon", "⚠"));
+      alert.appendChild(el("p", null, repair.warning));
+      card.appendChild(alert);
+    }
+
+    var findings = Array.isArray(repair.findings) ? repair.findings : [];
+    if (findings.length) {
+      var list = el("ul", "repair-findings");
+      findings.slice(0, 6).forEach(function (finding, index) {
+        var row = el("details", "repair-finding is-" + (finding.severity || "medium"));
+        if (index === 0) { row.open = true; }
+        var top = el("summary", "repair-finding-top");
+        top.appendChild(el("span", "repair-dot"));
+        top.appendChild(el("span", "repair-finding-title", finding.title || "问题"));
+        if (finding.cwe) { top.appendChild(el("span", "repair-cwe", finding.cwe)); }
+        if (finding.line) { top.appendChild(el("span", "repair-line", "L" + finding.line)); }
+        row.appendChild(top);
+
+        var body = el("div", "repair-finding-body");
+        if (finding.explanation) {
+          body.appendChild(el("p", "repair-explain", finding.explanation));
+        }
+        if (finding.impact) {
+          var impact = el("p", "repair-impact");
+          impact.appendChild(el("strong", null, "影响："));
+          impact.appendChild(document.createTextNode(finding.impact));
+          body.appendChild(impact);
+        }
+        if (finding.advice) {
+          var advice = el("p", "repair-advice");
+          advice.appendChild(el("strong", null, "修复："));
+          advice.appendChild(document.createTextNode(finding.advice));
+          body.appendChild(advice);
+        }
+        if (finding.warning) {
+          body.appendChild(el("p", "repair-warning", "警醒：" + finding.warning));
+        }
+        var refs = Array.isArray(finding.references) ? finding.references : [];
+        if (refs.length) {
+          var links = el("p", "repair-refs");
+          links.appendChild(el("span", "repair-refs-label", "参考："));
+          refs.forEach(function (ref, refIndex) {
+            if (!ref || !ref.url) { return; }
+            if (!/^https?:\/\//i.test(String(ref.url))) { return; }
+            if (refIndex) { links.appendChild(document.createTextNode(" · ")); }
+            var link = el("a", null, ref.label || ref.url);
+            link.href = ref.url;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            links.appendChild(link);
+          });
+          body.appendChild(links);
+        }
+        row.appendChild(body);
+        list.appendChild(row);
+      });
+      card.appendChild(list);
+    }
+
+    var panels = {};
+    if (repair.changed && repair.patched_code) {
+      var buttons = {};
+      var activate = function (name) {
+        Object.keys(panels).forEach(function (key) { panels[key].hidden = key !== name; });
+        Object.keys(buttons).forEach(function (key) {
+          if (key === name) { buttons[key].classList.add("is-active"); }
+          else { buttons[key].classList.remove("is-active"); }
+        });
+      };
+      var tabs = el("div", "repair-tabs");
+      var addTab = function (name, label, active) {
+        var button = el("button", "repair-tab" + (active ? " is-active" : ""), label);
+        button.type = "button";
+        button.dataset.repairTab = name;
+        button.addEventListener("click", function () { activate(name); });
+        buttons[name] = button;
+        tabs.appendChild(button);
+      };
+      addTab("patch", "修复后", true);
+      addTab("diff", "差异");
+      card.appendChild(tabs);
+
+      var patchPanel = el("div", "repair-panel");
+      patchPanel.appendChild(codeBlockElement(repair.language, repair.patched_code));
+      panels.patch = patchPanel;
+      card.appendChild(patchPanel);
+
+      var diffPanel = el("div", "repair-panel");
+      diffPanel.hidden = true;
+      var diff = el("div", "repair-diff");
+      var rows = Array.isArray(repair.diff) ? repair.diff : [];
+      rows.forEach(function (row) {
+        diff.appendChild(el("div", "diff-line is-" + row.kind, row.text));
+      });
+      if (!rows.length) { diff.appendChild(el("div", "diff-line is-ctx", "没有差异")); }
+      diffPanel.appendChild(diff);
+      panels.diff = diffPanel;
+      card.appendChild(diffPanel);
+    } else {
+      card.appendChild(el("p", "repair-empty",
+        findings.length
+          ? "没有可安全自动应用的补丁；请按上面的建议人工修改。"
+          : "没有匹配到可自动修复的模式。"));
+    }
+
+    var notes = Array.isArray(repair.notes) ? repair.notes : [];
+    if (notes.length) {
+      var details = el("details", "repair-notes");
+      details.appendChild(el("summary", null, "修复说明与残余风险"));
+      var noteList = el("ul");
+      notes.forEach(function (note) { noteList.appendChild(el("li", null, note)); });
+      details.appendChild(noteList);
+      card.appendChild(details);
+    }
+
+    var actions = el("div", "repair-actions");
+    if (repair.changed && repair.patched_code) {
+      var copyPatch = el("button", "agent-btn", "复制补丁");
+      copyPatch.type = "button";
+      copyPatch.addEventListener("click", function () { copyText(repair.patched_code, copyPatch); });
+      actions.appendChild(copyPatch);
+
+      var copyDiff = el("button", "agent-btn ghost", "复制差异");
+      copyDiff.type = "button";
+      copyDiff.addEventListener("click", function () {
+        var rows = Array.isArray(repair.diff) ? repair.diff : [];
+        var text = rows.map(function (row) {
+          var prefix = row.kind === "add" ? "+" : row.kind === "del" ? "-" : row.kind === "hunk" ? "" : " ";
+          return prefix + row.text;
+        }).join("\n");
+        copyText(text, copyDiff);
+      });
+      actions.appendChild(copyDiff);
+    }
+    if (options.code) {
+      var retry = el("button", "agent-btn ghost", "重新分析");
+      retry.type = "button";
+      retry.addEventListener("click", function () {
+        runCodeRepair(options.code, options.language || repair.language);
+      });
+      actions.appendChild(retry);
+    }
+    card.appendChild(actions);
+    card.appendChild(el("p", "repair-foot",
+      "静态建议：不执行代码，不写任务，也不构成验收结论。"));
+    pushCard(card);
+    return card;
+  }
+
+  function looksLikeCode(text) {
+    var value = String(text || "");
+    if (value.length < 30) { return false; }
+    if (value.split("\n").length < 3) { return false; }
+    var signals = 0;
+    if (/(^|\n)\s*(?:#include|import\s+\w|from\s+\w+\s+import|def\s+\w|class\s+\w|function\s+\w|const\s+\w|let\s+\w|var\s+\w|package\s+\w|using\s+\w)/.test(value)) { signals += 2; }
+    if (/[{};]\s*$/m.test(value)) { signals += 1; }
+    if (/(?:=>|::|->|\breturn\b|\bif\s*\(|\bfor\s*\()/.test(value)) { signals += 1; }
+    if (/(?:subprocess\.|app\.run\(|strcpy\s*\(|printf\s*\(|eval\s*\(|innerHTML|\bSELECT\b[\s\S]+\bFROM\b)/i.test(value)) { signals += 2; }
+    var nonCjk = (value.match(/[^\u4e00-\u9fff\s]/g) || []).length;
+    if (nonCjk / value.length > 0.55) { signals += 1; }
+    return signals >= 3;
+  }
+
+  function extractCode(text) {
+    var source = String(text || "");
+    var pattern = /```([A-Za-z0-9_+.#-]*)[ \t]*\n([\s\S]*?)```/g;
+    var blocks = [];
+    var language = "";
+    var match;
+    while ((match = pattern.exec(source))) {
+      if (!language) { language = match[1] || ""; }
+      blocks.push(match[2]);
+    }
+    if (blocks.length) {
+      return { code: blocks.join("\n\n"), language: language };
+    }
+    if (looksLikeCode(source)) {
+      return { code: source, language: "" };
+    }
+    return null;
+  }
+
+  function runCodeRepair(code, language) {
+    if (state.repairPending) {
+      pushMessage("assistant", "上一段代码还在分析中，请稍候。");
+      return state.repairPending;
+    }
+    var loading = pushRepairLoading();
+    setText("agent-side-step", "正在分析代码…");
+    setText("agent-poll", "请求修复中");
+    state.repairPending = fetch("/api/code/repair", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
+      body: JSON.stringify({ code: code, language: language || "" })
+    }).then(function (response) {
+      return response.json().then(function (data) {
+        return { ok: response.ok, status: response.status, data: data };
+      }, function () {
+        return { ok: false, status: response.status, data: null };
+      });
+    }, function () {
+      return { ok: false, status: 0, data: null };
+    }).then(function (result) {
+      if (loading && loading.parentNode) { loading.parentNode.removeChild(loading); }
+      if (!result.ok || !result.data || !result.data.repair) {
+        var detail = result.data && (result.data.detail || result.data.error);
+        pushMessage("assistant", "代码修复没有成功（HTTP " + result.status +
+          (detail ? "：" + detail : "") + "）。可以收紧代码片段后重试。");
+        setText("agent-side-step", "代码修复失败");
+        setText("agent-poll", "待命");
+        return null;
+      }
+      var repair = result.data.repair;
+      pushRepairCard(repair, { code: code, language: language || repair.language || "" });
+      record({
+        kind: "repair",
+        repair: repair,
+        code: code,
+        language: language || repair.language || "",
+        at: new Date().toISOString()
+      });
+      setText("agent-code-repair",
+        (repair.mode === "llm" ? "模型" : "规则") + " · " + repairConfidenceLabel(repair.confidence));
+      var shortTitle = repair.title && repair.title.length > 18
+        ? repair.title.slice(0, 18) + "…" : (repair.title || "已完成");
+      setText("agent-side-step", "代码修复 · " + shortTitle);
+      setText("agent-poll", "待命");
+      return repair;
+    }).then(function (value) {
+      state.repairPending = null;
+      return value;
+    });
+    return state.repairPending;
   }
 
   /* ---------- 引导流程（plan 驱动；plan 内容由 M5 提供） ---------- */
@@ -886,14 +1486,14 @@
         window.location.href = "/agent/" + encodeURIComponent(match[1]);
       } else {
         progressText.textContent = "创建失败";
-        pushMessage("assistant", "创建任务没有成功（HTTP " + xhr.status + "）。请检查必填项与英文 ASCII 要求，或切到表单页查看详细报错。");
+        pushMessage("assistant", "创建任务没有成功（HTTP " + xhr.status + "）。请检查必填项与英文 ASCII 要求后重试。");
       }
     };
     xhr.onerror = function () {
       state.submitting = false;
       button.disabled = false;
       progressText.textContent = "网络错误";
-      pushMessage("assistant", "网络错误，任务未创建。可以重试，或切到表单页。");
+      pushMessage("assistant", "网络错误，任务未创建，请重试。");
     };
     xhr.send(form);
   }
@@ -1406,7 +2006,7 @@
 
   function startPolling() {
     if (FIXTURE_MODE || !state.jobId) {
-      setText("agent-poll", FIXTURE_MODE ? "演示数据，不轮询" : "未选择任务");
+      setText("agent-poll", FIXTURE_MODE ? "演示数据，不轮询" : "待命");
       return;
     }
     stopPolling();
@@ -1482,10 +2082,16 @@
     var text = input.value.trim();
     if (!text) return;
     input.value = "";
+    input.style.height = "";
     if (text.charAt(0) === "/") {
       if (handleCommand(text)) return;
     }
     pushMessage("user", text);
+    var pasted = extractCode(text);
+    if (pasted) {
+      runCodeRepair(pasted.code, pasted.language);
+      return;
+    }
     var step = currentStep();
     if (step && step.questions && step.questions.length === 1) {
       var question = step.questions[0];
@@ -1502,9 +2108,9 @@
         var plan = result.ok && result.data ? result.data.plan : null;
         if (!plan || !plan.steps || !plan.steps.length) {
           setText("agent-side-step", "后端未提供");
-          setText("agent-poll", "未选择任务");
+          setText("agent-poll", "待命");
           pushMessage("assistant", planUnavailableText(result.data) +
-            "。你可以点上方「改用表单建单」，或打开 /agent/new?fixture=1 预览控制台。");
+            "。可以直接重新描述，或打开 /agent/new?fixture=1 预览控制台。");
           return;
         }
         state.plan = plan;
@@ -1523,6 +2129,16 @@
     }
   });
 
+  function growComposer() {
+    var input = $("agent-input");
+    if (!input) return;
+    input.style.height = "auto";
+    var max = Math.max(120, Math.round(window.innerHeight * 0.38));
+    input.style.height = Math.min(input.scrollHeight + 2, max) + "px";
+  }
+
+  $("agent-input").addEventListener("input", growComposer);
+
   $("agent-input").addEventListener("keydown", function (event) {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
@@ -1534,13 +2150,13 @@
   var preset = QUERY.get("q");
   if (preset) { $("agent-input").value = preset; }
 
-  // composer 左侧 ＋：优先触发引导里的上传控件，否则回退到表单页。
+  // composer 左侧 ＋：优先触发引导里的上传控件；没有上传步骤时回到输入框。
   $("agent-attach").addEventListener("click", function () {
     var fileInput = document.querySelector('[data-testid="agent-file-input"]');
     if (fileInput) { fileInput.click(); return; }
     var zone = document.querySelector('[data-testid="agent-dropzone"]');
     if (zone) { zone.click(); return; }
-    window.location.href = "/jobs/new";
+    $("agent-input").focus();
   });
 
   /* ---------- 场景与初始化 ---------- */
@@ -1706,6 +2322,7 @@
     var scenario = QUERY.get("scenario");
 
     if (FIXTURE_MODE) {
+      setHistorySync("演示数据", "local");
       loadScenario(scenario || (state.jobId ? "pending" : "fresh"));
       return;
     }
@@ -1714,14 +2331,17 @@
       clear(stream());
       state.entries = readHistory();
       registerJob();
-      replayHistory();
-      pushMessage(
-        "assistant",
-        "已打开任务 " + state.jobId + "。上面的对话来自本机保存的该任务记录；我会每 2 秒刷新状态。" +
-        "引导计划需要 M1 的 assistant 端点与 M5 的 planner 接入后才会出现在这里。",
-        { replay: true }
-      );
-      setText("agent-side-step", "后端未提供");
+      hydrateHistory(state.jobId).then(function (entries) {
+        state.entries = entries || [];
+        replayHistory();
+        pushMessage(
+          "assistant",
+          "已打开任务 " + state.jobId + "。对话已从服务端历史恢复；我会每 2 秒刷新状态。" +
+          "需要新的修复建议时，把缺陷描述或代码贴进输入框即可。",
+          { replay: true }
+        );
+      });
+      setText("agent-side-step", "等待输入");
       startPolling();
     } else if (PLAN_FIXTURE) {
       state.plan = FIXTURES.plan;
@@ -1729,12 +2349,41 @@
       pushMessage("assistant", "说明：本页的引导计划来自占位 fixture（真实计划需要 M1 的端点与 M5 的 planner），但你点击「创建任务」后会真实提交到本机后端。");
     } else {
       clear(stream());
-      pushMessage("assistant",
+      var fresh = FRESH_SESSION;
+      var greeting =
         "描述你想修的这个二进制问题，我会向后端请求一份引导计划。\n" +
-        "计划由后端生成；如果计划服务还没接通，我会直接说「未接通」，不会用占位内容代替。\n" +
-        "也可以点上方「改用表单建单」直接提交材料，或打开 /agent/new?fixture=1 预览控制台。");
-      setText("agent-side-step", "等待描述");
-      setText("agent-poll", "未选择任务");
+        "也可以直接粘贴一段带漏洞的代码（例如 shell=True、strcpy、eval），我会给出静态修复建议。\n" +
+        "如果计划服务还没接通，我会直接说「未接通」，不会用占位内容代替；" +
+        "创建任务、开始执行由你点击确认，结论由验收引擎给出。";
+      if (fresh) {
+        try { window.localStorage.removeItem(historyKey()); } catch (error) { /* ignore */ }
+        state.entries = [];
+        try {
+          var nextUrl = new URL(window.location.href);
+          nextUrl.searchParams.delete("new");
+          window.history.replaceState({}, "", nextUrl.toString());
+        } catch (error) { /* ignore */ }
+        clearServerHistory("draft").catch(function () { /* keep local empty */ }).then(function () {
+          setHistorySync("空白草稿", "local");
+          pushMessage("assistant", greeting);
+          setText("agent-side-step", "等待描述");
+          setText("agent-poll", "待命");
+        });
+      } else {
+        hydrateHistory("draft").then(function (entries) {
+          state.entries = entries || [];
+          replayHistory();
+          if (state.entries.length) {
+            pushMessage("assistant",
+              "已恢复服务端保存的草稿对话。要开始全新会话，点「新建修复内容」。",
+              { replay: true });
+          } else {
+            pushMessage("assistant", greeting);
+          }
+          setText("agent-side-step", "等待描述");
+          setText("agent-poll", "待命");
+        });
+      }
     }
     renderSide();
   }

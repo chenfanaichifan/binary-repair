@@ -13,6 +13,8 @@ message when Edge is not installed.
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 import re
 import time
@@ -70,36 +72,45 @@ def _bootstrap(page, base_url: str) -> None:
     page.navigate(base_url + "/?token=" + SESSION_TOKEN)
 
 
-def _create_job_via_ui(page, base_url: str, tmp_path) -> str:
+def _create_job_via_api(page, base_url: str, tmp_path) -> str:
+    """Create one job through the only remaining server path, then open it.
+
+    The GUI has no form any more; the console posts the same multipart body.
+    Driving that endpoint directly keeps these journeys focused on approval,
+    execution and evidence instead of replaying the whole conversation.
+    """
     _bootstrap(page, base_url)
-    page.navigate(base_url + "/jobs/new")
-    page.wait_js("!!document.querySelector('[data-testid=\"choice-input\"]')", timeout=10)
-    page.click('[data-testid="choice-input"]')
-    page.wait_js(
-        "!document.querySelector('[data-view=\"input\"]').classList.contains('is-hidden')",
-        timeout=5,
-    )
+    csrf = hmac.new(SESSION_TOKEN.encode("utf-8"), b"gui-csrf", hashlib.sha256).hexdigest()
     sample = tmp_path / "sample.bin"
     sample.write_bytes(b"\x7fELF e2e sample bytes")
-    page.set_file_input('[data-testid="binary-input"]', str(sample))
-    page.set_value('[data-testid="defect-input"]', DEFECT)
-    page.set_value('[data-testid="tests-input"]', "valid: hello\nboundary: 8 bytes")
-    page.set_value('[data-testid="env-input"]', "Ubuntu x86-64 VM (demo: execution disabled)")
-    page.click('[data-testid="wizard-next"]')
-    page.wait_js(
-        "!document.querySelector('[data-view=\"contract\"]').classList.contains('is-hidden')",
-        timeout=5,
-    )
-    page.click('[data-testid="create-job"]')
-    location = _wait_job_location(page)
-    return location.rstrip("/").rsplit("/", 1)[-1]
+    with httpx.Client(base_url=base_url, timeout=20.0) as client:
+        client.get("/?token=" + SESSION_TOKEN)
+        created = client.post(
+            "/jobs",
+            data={
+                "defect": DEFECT,
+                "valid_tests": "valid: hello\nboundary: 8 bytes",
+                "environment": "Ubuntu x86-64 VM (demo: execution disabled)",
+                "valid_domain": "Input length 0-64 bytes",
+                "forbidden": "Out-of-bounds write to the target buffer",
+                "invalid_outcome": "Return error code 1 without out-of-bounds access",
+                "assumptions": "Single process",
+                "csrf": csrf,
+            },
+            files={"binary": ("sample.bin", sample.read_bytes(), "application/octet-stream")},
+            follow_redirects=False,
+        )
+    assert created.status_code == 303, created.text
+    job_id = created.headers["location"].rstrip("/").rsplit("/", 1)[-1]
+    page.navigate(f"{base_url}/jobs/{job_id}")
+    page.wait_js("!!document.querySelector('[data-testid=\"contract-approval\"]')", timeout=10)
+    return job_id
 
 
 def test_http_mode_uses_the_real_controller(http_server, page, tmp_path):
-    """P0: setup submits to the real controller store; snapshot is demo:false."""
+    """P0: an API-created job reaches the real controller store; snapshot is demo:false."""
     base_url, controller_url = http_server
-    _bootstrap(page, base_url)
-    job_id = _create_job_via_ui(page, base_url, tmp_path)
+    job_id = _create_job_via_api(page, base_url, tmp_path)
 
     page.wait_js("!!document.querySelector('[data-testid=\"contract-approval\"]')", timeout=10)
     assert page.eval_js("!document.querySelector('.demo-banner')") is True
@@ -127,37 +138,8 @@ def test_landing_hero_leads_to_workbench(mock_server, page):
     assert "二进制漏洞" in page.text(".hero-h1")
     assert page.eval_js("!document.querySelector('.hero-sub') && !document.querySelector('.hero-meta')") is True
 
-    page.click('[data-testid="landing-cta"]')
-    page.wait_js("location.pathname.endsWith('/jobs/new')", timeout=10)
-
-
-def test_setup_wizard_has_two_choice_pages(mock_server, page):
-    _bootstrap(page, mock_server)
-    page.navigate(mock_server + "/jobs/new")
-    page.wait_js("!!document.querySelector('[data-testid=\"choice-input\"]')", timeout=10)
-
-    cards = page.eval_js("document.querySelectorAll('.choice-card').length")
-    assert cards == 2, cards
-
-    # Validation: next without a file keeps the user on the sample page.
-    page.click('[data-testid="choice-input"]')
-    page.click('[data-testid="wizard-next"]')
-    page.wait_js("!document.querySelector('[data-wizard-error]').classList.contains('is-hidden')", timeout=5)
-    assert "请先选择二进制样本文件" in page.text('[data-wizard-error]')
-
-    page.click('[data-testid="wizard-back"]')
-    page.wait_js("!document.querySelector('[data-view=\"home\"]').classList.contains('is-hidden')", timeout=5)
-
-    page.click('[data-testid="choice-contract"]')
-    page.wait_js(
-        "!document.querySelector('[data-view=\"contract\"]').classList.contains('is-hidden')",
-        timeout=5,
-    )
-    page.click('[data-testid="wizard-back-contract"]')
-    page.wait_js(
-        "!document.querySelector('[data-view=\"input\"]').classList.contains('is-hidden')",
-        timeout=5,
-    )
+    page.click('[data-testid="landing-agent-cta"]')
+    page.wait_js("location.pathname.endsWith('/agent/new')", timeout=10)
 
 
 def _stage_states(page, route: str) -> list[str]:
@@ -168,7 +150,7 @@ def _stage_states(page, route: str) -> list[str]:
 
 
 def test_full_journey_setup_to_export(mock_server, page, tmp_path):
-    job_id = _create_job_via_ui(page, mock_server, tmp_path)
+    job_id = _create_job_via_api(page, mock_server, tmp_path)
 
     sha = page.text('[data-testid="original-sha256"]')
     assert SHA_PATTERN.match(sha), sha
@@ -232,7 +214,7 @@ def test_full_journey_setup_to_export(mock_server, page, tmp_path):
 
 
 def test_refresh_keeps_state_and_shows_unfinished_stages(mock_server, page, tmp_path):
-    _create_job_via_ui(page, mock_server, tmp_path)
+    _create_job_via_api(page, mock_server, tmp_path)
     _approve_current_contract(page)
     page.click('[data-testid="start-run"]')
     _wait_job_location(page)
@@ -254,7 +236,7 @@ def test_refresh_keeps_state_and_shows_unfinished_stages(mock_server, page, tmp_
 
 
 def test_cancel_keeps_evidence(mock_server, page, tmp_path):
-    job_id = _create_job_via_ui(page, mock_server, tmp_path)
+    job_id = _create_job_via_api(page, mock_server, tmp_path)
     _approve_current_contract(page)
     page.click('[data-testid="start-run"]')
     _wait_job_location(page)
@@ -279,11 +261,7 @@ def test_cancel_keeps_evidence(mock_server, page, tmp_path):
 
 def test_local_mode_is_honest(local_server, page, tmp_path):
     base_url, data_dir = local_server
-    _bootstrap(page, base_url)
-    page.navigate(base_url + "/jobs/new")
-    assert "local controller" in page.text("body")
-
-    job_id = _create_job_via_ui(page, base_url, tmp_path)
+    job_id = _create_job_via_api(page, base_url, tmp_path)
     page.wait_js(
         "!!document.querySelector('[data-testid=\"start-unavailable\"]')", timeout=10
     )

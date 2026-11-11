@@ -34,19 +34,18 @@ def test_landing_page():
     response = client.get("/")
     assert response.status_code == 200
     assert "二进制漏洞修复" in response.text
-    assert 'data-testid="landing-cta"' in response.text
-    assert 'href="/jobs/new"' in response.text
+    assert 'data-testid="landing-agent-cta"' in response.text
+    assert 'href="/agent/new?' in response.text
 
 
-def test_setup_page():
-    response = client.get("/jobs/new")
-    assert response.status_code == 200
-    assert "新建任务与契约复核" in response.text
-    assert 'data-testid="setup-form"' in response.text
+def test_retired_form_intake_redirects_to_the_console():
+    response = client.get("/jobs/new", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/agent/new?new=1"
 
 
 def test_host_check_rejects_foreign_host():
-    response = client.get("/jobs/new", headers={"host": "evil.example"})
+    response = client.get("/agent/new", headers={"host": "evil.example"})
     assert response.status_code == 403
 
 

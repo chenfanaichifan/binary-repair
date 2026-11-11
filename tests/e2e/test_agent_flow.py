@@ -93,7 +93,7 @@ def test_success_shows_mode_fallback_metadata_and_diff(mock_server, page):
 
 
 def test_live_mode_without_plan_says_so(mock_server, page):
-    _open(page, mock_server, "/agent/new")
+    _open(page, mock_server, "/agent/new?new=1")
     page.wait_js(
         'document.querySelector(\'[data-testid="agent-stream"]\').textContent'
         '.indexOf("计划服务还没接通") >= 0'

@@ -3,15 +3,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include "_theme_boot.html" %}
+  <script>
+    (function () {
+      try {
+        if (window.localStorage.getItem("br.sidebar") === "collapsed") {
+          document.documentElement.classList.add("side-collapsed");
+        }
+      } catch (error) { /* ignore */ }
+    })();
+  </script>
   <title>{% block title %}BinaryRepair{% endblock %} · BinaryRepair</title>
-  <link rel="stylesheet" href="/static/css/ds.css?v=20261105a">
+  <link rel="stylesheet" href="/static/css/ds.css?v=20261112d">
   {% block head %}{% endblock %}
 </head>
 <body class="ds-body" data-job-id="{{ job.id if job else '' }}" data-demo="{{ '1' if demo else '0' }}">
   <div class="ds-app">
-    <aside class="ds-sidebar">
-      <a class="ds-brand" href="/" aria-label="返回起始页" title="返回起始页">BinaryRepair <span class="ds-badge">预览版</span></a>
-      <a class="ds-new" href="/agent/new" data-testid="sidebar-new-task">＋ 新任务</a>
+    <aside class="ds-sidebar" id="ds-sidebar">
+      <button class="ds-sidebar-toggle" id="ds-sidebar-toggle" type="button"
+              aria-controls="ds-sidebar" aria-expanded="true" aria-label="收起侧栏" title="收起侧栏">‹</button>
+      <a class="ds-brand" href="/" aria-label="返回起始页" title="返回起始页"><span class="ds-brand-mark" aria-hidden="true"></span>BinaryRepair <span class="ds-badge">预览版</span></a>
+      <a class="ds-new" href="/agent/new?new=1" data-testid="sidebar-new-task">＋ 新建修复内容</a>
+      <div class="ds-theme-row">
+        <span class="ds-theme-label">主题</span>
+        {% include "_theme_toggle.html" %}
+      </div>
 
       <div class="ds-group">任务</div>
       <nav class="ds-job-list" id="ds-job-list" data-testid="ds-job-list" aria-label="任务列表">
@@ -21,8 +37,12 @@
       <div class="ds-group">工作区</div>
       <div class="ds-workspace">{% if workspace %}{{ workspace.label }}{% else %}本地工作区 · 127.0.0.1{% endif %}</div>
       <p class="ds-side-hint">
-        任务列表保存在本机浏览器，逐条向后端核对状态；服务端全量列表待 controller 提供。
+        任务列表保存在本机浏览器；任务与草稿对话已同步本机服务端。
       </p>
+
+      <div class="ds-group">扩展</div>
+      <a class="ds-side-link" href="/connectors" data-testid="sidebar-connectors">连接器与插件</a>
+      <a class="ds-side-link" href="/methods" data-testid="sidebar-methods">方法与工具</a>
 
       <div class="ds-side-foot">
         阶段与结论是两条独立的轴。<br>
@@ -45,7 +65,11 @@
       <footer class="ds-footer">BinaryRepair · AI 二进制漏洞修复与正确性验证工作台</footer>
     </div>
   </div>
+  <button class="ds-sidebar-expand" id="ds-sidebar-expand" type="button"
+          aria-controls="ds-sidebar" aria-expanded="false" aria-label="展开侧栏" title="展开侧栏">›</button>
 
+  <script src="/static/js/theme.js?v=20261111a"></script>
+  <script src="/static/js/shell.js?v=20261112a"></script>
   <script src="/static/js/jobs-list.js?v=20261105a"></script>
   {% block scripts %}{% endblock %}
 </body>

@@ -3,7 +3,7 @@
 {% block title %}修复控制台{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/agent.css?v=20261104b">
+<link rel="stylesheet" href="/static/css/agent.css?v=20261112k">
 {% endblock %}
 
 {% block content %}
@@ -19,12 +19,13 @@
   data-assistant-mode="{{ assistant.mode }}"
   data-assistant-available="{{ '1' if assistant.available else '0' }}"
   data-csrf="{{ csrf_token }}"
+  data-fresh="{{ '1' if request.query_params.get('new') == '1' else '0' }}"
 >
   <div class="agent-top">
     <div class="agent-heading">
       <a class="agent-back" href="/agent" data-testid="agent-back">← 全部任务</a>
       <h1 class="ds-page-title">
-        {% if job_id %}修复任务 <code class="agent-job-id">{{ job_id[:8] }}</code>{% else %}新建修复任务{% endif %}
+        {% if job_id %}修复任务 <code class="agent-job-id">{{ job_id[:8] }}</code>{% else %}新建修复内容{% endif %}
       </h1>
       <p class="ds-page-sub">
         这是{% if job_id %}该任务{% else %}一次新任务{% endif %}的独立会话：对话与操作记录按任务分开保存。
@@ -35,7 +36,8 @@
       <span id="agent-workspace-chip" class="ds-chip" data-testid="agent-workspace-chip">{{ workspace.label }}</span>
       <span id="agent-mode-badge" class="ds-chip accent" data-testid="agent-mode-badge">助手模式：读取中…</span>
       <span id="agent-job-chip" class="ds-chip" data-testid="agent-job-chip">未选择任务</span>
-      <span id="agent-poll" class="agent-poll" data-testid="agent-poll">待连接</span>
+      <span id="agent-history-sync" class="ds-chip" data-testid="agent-history-sync" data-state="local">本机草稿</span>
+      <span id="agent-poll" class="agent-poll" data-testid="agent-poll">待命</span>
     </div>
   </div>
 
@@ -56,17 +58,25 @@
       aria-controls="agent-side"
       aria-expanded="true"
     >收起状态面板</button>
+    <button
+      type="button"
+      class="agent-side-toggle"
+      id="agent-focus-toggle"
+      data-testid="agent-focus-toggle"
+      title="隐藏页头与标签，放大对话区"
+      aria-pressed="false"
+    >专注对话</button>
     {% if job_id %}
     <a class="agent-tab agent-tab-link" href="/jobs/{{ job_id }}" data-testid="agent-open-comparison">对比页</a>
     <a class="agent-tab agent-tab-link" href="/jobs/{{ job_id }}/evidence" data-testid="agent-open-evidence">证据与导出</a>
-    {% else %}
-    <a class="agent-tab agent-tab-link" href="/jobs/new" data-testid="agent-switch-form">改用表单建单</a>
     {% endif %}
   </div>
 
   <p id="agent-history-note" class="agent-history-note" data-testid="agent-history-note">
-    对话与操作记录按任务保存在本机浏览器；服务端历史需要 M5 的 T8.1 持久化接入后才会跨设备可查。
+    任务与草稿对话都保存到本机服务端；换浏览器访问同一服务可恢复。要开始空白草稿，请使用「新建修复内容」。
   </p>
+
+  <button type="button" class="agent-focus-exit" id="agent-focus-exit" data-testid="agent-focus-exit" hidden>退出专注</button>
 
   <div class="agent-body">
     <section class="agent-main">
@@ -79,7 +89,7 @@
             id="agent-input"
             data-testid="agent-input"
             rows="2"
-            placeholder="输入回答；Enter 发送，Shift+Enter 换行，/ 调用指令"
+            placeholder="输入回答，或粘贴代码直接修复；Enter 发送，Shift+Enter 换行，/ 调用指令"
           ></textarea>
           <div class="ds-composer-bar">
             <button type="button" class="ds-icon-btn" id="agent-attach" title="上传样本" aria-label="上传样本">＋</button>
@@ -143,12 +153,20 @@
       </div>
     </section>
 
+    <div class="agent-side-resizer" id="agent-side-resizer" role="separator"
+         aria-orientation="vertical" tabindex="0" aria-label="拖动或使用方向键调整状态面板宽度"
+         title="拖动调整宽度；双击复位"></div>
+
     <aside class="agent-side" id="agent-side" aria-label="状态面板">
       <h2 class="agent-side-title">状态面板</h2>
       <dl class="agent-side-list">
         <div class="agent-side-row">
           <dt>当前步骤</dt>
           <dd id="agent-side-step" data-testid="agent-side-step">—</dd>
+        </div>
+        <div class="agent-side-row">
+          <dt>代码修复</dt>
+          <dd id="agent-code-repair" data-testid="agent-code-repair">—</dd>
         </div>
         <div class="agent-side-row">
           <dt>执行状态</dt>
@@ -196,5 +214,5 @@
 
 {% block scripts %}
 <script src="/static/js/agent.fixtures.js?v=20261104a"></script>
-<script src="/static/js/agent.js?v=20261104b"></script>
+<script src="/static/js/agent.js?v=20261112m"></script>
 {% endblock %}
