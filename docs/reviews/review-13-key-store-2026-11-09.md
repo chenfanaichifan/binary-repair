@@ -13,7 +13,7 @@
 - **Fix re-review (same day, reviewed source `0d5791a`):** M5 fixed F1/A-1/F3 and partially mitigated F2; independent re-verification found **F2 not fixed** (HIGH residual bypasses) plus residual F1/A-1 edges. See **§9 addendum** — it supersedes the per-finding statuses above but not the original evidence.
 - **F2 focused re-review (2026-11-10, reviewed commit `b06dadc`):** new `is_secret_file`-based fix passes all **8 required stored-key-file vectors** (pre-copy ValueError, 0 artifacts, 0 ZIPs with key), but is **not a full F2 closure**: `.env`/`session.token` aliases and a custom-env regression remain open. See **§10 addendum** (F2: PASS for the focused scope; overall F2 hardening still OPEN).
 - **N-8/N-9 focused addendum + final N-11 closure review (2026-11-10/11, reviewed commits `079da82`/`ab25c17`, docs correction `3418491`, handoff `1dbd34c6…`):** **N-8 FIXED, N-9 FIXED, N-10 ACCEPTED LIMITATION, N-11 FIXED (docs-only; no runtime guard claimed or implied)**; F2 overall **PASS WITH LIMITATION**; **rc1: RETAIN (no recall); stable: ELIGIBLE from this M3 security review, subject to the disclosures/conditions in §11.6 and §11.9**. See **§11** — it supersedes N-11's status in §10.3.
-- **Stable-candidate documentation confirmation (§11.10, 2026-11-11): PENDING.** Public rc1 `d7d20f4` still carries the pre-correction docs (`217` says the guard was added, `220` says N-11 FIXED, README says v1.2.0) and is **not** confirmed as the stable documentation target; the proposed corrected successor `148d236…` is local-only/unreachable to M3 (GitHub 422). Acceptance criteria and M3's input on the Lead's target/main questions are recorded in §11.10. No tag/main movement.
+- **Stable-candidate documentation confirmation (§11.10) and stable-target doc sign-off (§11.11, 2026-11-11): BLOCKED/PENDING.** Public rc1 `d7d20f4` is not confirmed (pre-correction docs: README v1.2.0, 217 still claims the guard was added, 220 still says N-11 FIXED). The proposed corrected successor `148d236…` and M4's `release/v1.2.1-stable-candidate` branch are **not published to either reachable remote** (GitHub API 422 / `not our ref`; origin and public branch lists checked; no stable tag) → **`stable docs: PENDING/BLOCKED`, not PASS**. M3 sign-off criteria, expected 3-file diff and next action for M4 are in §11.11. No tag/main movement.
 
 ---
 
@@ -731,4 +731,40 @@ stable: ELIGIBLE (M3 security-review view; conditions in §11.6: build from a he
 
 **Status:** M3 documentation confirmation = **PENDING** — public `d7d20f4` is **not confirmed**, and the corrected successor is not yet accessible. No P1/V5 run or modification; this review moved no tag/main.
 
+### 11.11 Stable-target documentation sign-off — BLOCKED: candidate not published (2026-11-11)
 
+**Task received:** fetch M4's `release/v1.2.1-stable-candidate`; diff `148d236…` against public `d7d20f4`; confirm only README/217/220 changed; confirm no application-code change; then sign `stable docs: PASS`.
+
+**Result: BLOCKED — the branch and commit are not published to either repository reachable from this host. M3 cannot inspect the candidate and must not sign an unseen artifact.**
+
+Evidence:
+- `git ls-remote --heads origin` (chenfanaichifan/binary-repair, 88 heads incl. `release/v1.2.1`, `release/v1.2.1-candidate-2026-11-11`, `release/v1.2.1-handoff-2026-11-09`): **no `release/v1.2.1-stable-candidate`**. Branch-name variants tried: `release/v1.2.1-stable`, `v1.2.1-stable-candidate`, `release/stable-v1.2.1`, `stable/v1.2.1`, `release/v1.2.1-stable-candidate-2026-11-11` — none.
+- Public repo `leesirleesirlee-star/Binary_Repair`: branches are only `main` (9439340) and `v1.2.1-rc1` (d7d20f4); forks list is empty; no stable-candidate branch.
+- Proposed commit `148d236d46bbd514dbb48f0a0f506ef2a2143fcc`: GitHub API returns `422 No commit found` on both repositories; `git fetch <remote> 148d236…` returns "upload-pack: not our ref"; the object is not in this workspace's git objects or worktrees.
+- No `v1.2.1` stable tag exists on either remote (only `v1.2.1-rc1`).
+
+Baseline verified meanwhile (so the sign-off is one pass once the artifact is visible):
+- Public rc1 `d7d20f4` was fetched locally via annotated tag `v1.2.1-rc1` (tag object `f5346978…`) and is retained under a local review ref; its documentation is confirmed to be the pre-correction state:
+  - `README.md`: "Release v1.2.0 (2026-11-09)".
+  - `docs/development/handoffs/217-v1.2.1-f2-hardening.md`: route_bundle_ingest "guard added"; old numbers "…Windows M3 used 66/740 with e2e environment skips."
+  - `docs/development/handoffs/220-v1.2.1-n10-n11.md`: "N-11: FIXED (229 corrected…)".
+- Corrected text is available in source `3418491` and M1 candidate `612510d`: docs `229` — "NOT modified by this fix. It has no active product call path and no runtime coverage claim."; docs `233` — "N-11: FAIL (partial, docs-only) — 229 wording corrected but no runtime guard; full-suite numbers platform-scoped"; numbers — "741/739/2 on this macOS run; M3's required Windows target set is 67 passed; no Windows full-suite pass is claimed here."
+- Public rc1's key/F2 application files were previously verified blob-identical to the reviewed fixed source (`assistant_key_store.py`, `attempt_writer.py`, `routea_bundle_to_attempt.py`); the stable candidate must preserve that (no application-code delta).
+- **Exact expected 3-file diff for the stable candidate:**
+  1. `README.md`: release identity v1.2.0 → v1.2.1.
+  2. `docs/development/handoffs/217-v1.2.1-f2-hardening.md`: replace the "guard added" sentence with the corrected one; replace the old Windows number sentence with "M3's required Windows target set is 67 passed; no Windows full-suite pass is claimed here."
+  3. `docs/development/handoffs/220-v1.2.1-n10-n11.md`: N-11 line → "N-11: FAIL (partial, docs-only) — 229 wording corrected but no runtime guard; full-suite numbers platform-scoped."
+  No other file may change (especially no `app/`, `tests/`, fixtures/evidence, P1/V5, tag/main).
+
+M3 sign-off checklist, to run once the branch/commit is available:
+1. `git diff --name-only d7d20f4 <candidate>` == exactly {`README.md`, `docs/development/handoffs/217-v1.2.1-f2-hardening.md`, `docs/development/handoffs/220-v1.2.1-n10-n11.md`}.
+2. `git diff --quiet d7d20f4 <candidate> -- app binaryrepair_ai routea routeb workers tools schemas tests fixtures artifacts` passes (no application-code/test/evidence changes).
+3. Contents match the corrected text above; README identifies v1.2.1; N-10 accepted limitation is retained; no runtime-guard claim is made.
+4. The candidate tree is reachable from this host (branch pushed to origin/public or a bundle/patch + SHA provided); M3 records the exact signed commit SHA.
+5. Optional: re-run the targeted key/API/console suite on the candidate tree; with no code delta the expected result is 67/67 (as measured on `3418491`/`612510d`).
+
+**Sign-off status: `stable docs: PENDING/BLOCKED` — not PASS.** An unreviewed local-only commit cannot be signed; missing is not passing. This is a missing-artifact block, not a content FAIL.
+
+Constraints respected: no docs-only change is described as a runtime guard; no P1/V5 command or modification; no tag/main movement (public `main` 9439340/v1.2.0 and `v1.2.1-rc1` tag unchanged; workspace `origin/main` 472aa94 unchanged; no stable tag; locally fetched public tags were removed and the rc1 commit retained only under a local `refs/review/…` ref for the pending comparison).
+
+**Next action for M4:** push `release/v1.2.1-stable-candidate` (or provide the commit/bundle/patch + SHA) so M3 can fetch `148d236…`; M3 then completes the diff/no-code-change checks and reports `stable docs: PASS/FAIL` in one pass.

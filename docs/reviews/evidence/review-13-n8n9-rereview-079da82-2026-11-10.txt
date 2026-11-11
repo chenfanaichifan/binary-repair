@@ -301,5 +301,37 @@ M3 input to the three Lead questions:
 Status: M3 documentation confirmation = PENDING (d7d20f4 not confirmed; corrected successor not yet
 accessible). No P1/V5 run/modification; no tag/main movement by this review.
 
+--------------------------------------------------------------------------------------------------
+14. Stable-target doc sign-off attempt - BLOCKED (2026-11-11)
+--------------------------------------------------------------------------------------------------
+Task: fetch M4 branch release/v1.2.1-stable-candidate; diff 148d236 vs d7d20f4; confirm only
+README/217/220; no app-code change; sign stable docs PASS.
 
+Availability evidence:
+  origin (chenfanaichifan/binary-repair) heads: 88, no release/v1.2.1-stable-candidate
+    (variants tried: release/v1.2.1-stable, v1.2.1-stable-candidate, release/stable-v1.2.1,
+     stable/v1.2.1, release/v1.2.1-stable-candidate-2026-11-11 -> none)
+  public (leesirleesirlee-star/Binary_Repair) branches: main 9439340, v1.2.1-rc1 d7d20f4 only
+  public forks: [] (API returns empty list)
+  commit 148d236...: GitHub API 422 on both repos; git fetch -> "upload-pack: not our ref";
+    not in local objects/worktrees
+  stable v1.2.1 tag: absent on both remotes (only v1.2.1-rc1)
 
+Baseline (fetchable now):
+  public tag v1.2.1-rc1 -> object f5346978 -> commit d7d20f4 fetched locally; retained under
+  refs/review/public-rc1-d7d20f4 (local fetched public tags v1.2.0/v1.2.1-rc1 were deleted again;
+  no remote ref was changed).
+  d7d20f4 docs (pre-correction): README "Release v1.2.0 (2026-11-09)";
+    docs/development/handoffs/217: route_bundle_ingest "guard added", old 66/740 numbers;
+    docs/development/handoffs/220: "N-11: FIXED (229 corrected: ...)".
+  Corrected source texts available in 3418491 / 612510d (229: NOT modified/no runtime coverage;
+  233: N-11 FAIL(partial, docs-only); numbers 741/739/2 + M3 required Windows 67 + no Windows
+  full-suite claim).
+  Expected candidate diff (3 files only): README version; 217 guard+numbers sentences; 220 N-11 label.
+
+Sign-off: stable docs = PENDING/BLOCKED, not PASS. Cannot sign an unseen local-only commit.
+No P1/V5 change; no tag/main movement.
+Next: M4 pushes the branch (or provides bundle/patch + SHA); M3 then runs:
+  git diff --name-only d7d20f4 148d236   (expect exactly the 3 files)
+  git diff --quiet d7d20f4 148d236 -- app binaryrepair_ai routea routeb workers tools schemas tests fixtures artifacts
+  content check of the 3 files; optional targeted 67/67 rerun; then sign.
