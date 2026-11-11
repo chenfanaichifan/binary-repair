@@ -130,7 +130,7 @@ Expected: configuration is printed redacted and the mock response contains a
   tests/test_agent_console.py
 ```
 
-Expected (public rc1): `66 passed`.
+Measured on source `3418491` (Windows 11, Python 3.14.6): `67 passed`.
 
 ### 4.3 Full suite, excluding browser e2e
 
@@ -138,16 +138,17 @@ Expected (public rc1): `66 passed`.
 .venv/bin/python -m pytest -q --ignore=tests/e2e
 ```
 
-Expected on the pinned public candidate:
+Measured on source `3418491` (Windows 11, Python 3.14.6):
 
 ```text
-741 collected / 739 passed / 2 Linux-only skipped / 0 failed
+729 collected / 717 passed / 12 skipped / 0 failed
 ```
 
-On Windows, the recorded public-tree result is:
+Recorded public candidate `d7d20f4`:
 
 ```text
-741 collected / 0 failed / 13 skipped
+741 collected / 739 passed / 2 Linux-only skipped / 0 failed  (Linux)
+741 collected / 0 failed / 13 skipped                          (Windows)
 ```
 
 ### 4.4 P0 GUI + controller acceptance
@@ -171,8 +172,11 @@ Requires the browser test dependency and a local browser:
 .venv/bin/python -m pytest -q tests/e2e
 ```
 
-Expected: `12 passed`. If the dependency is missing, record `NOT RUN
-(ModuleNotFoundError)`; do not rewrite it as passed.
+Expected on the public candidate: `12 passed`.
+
+On this source checkout (Windows, current venv) the run is `NOT RUN`:
+12 collection errors, `ModuleNotFoundError` (browser test dependency absent).
+Record it as `NOT RUN`, not as a pass.
 
 ## 5. Stop and clean
 
