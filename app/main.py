@@ -34,6 +34,9 @@ from app.services.assistant_key_store import clear_key, key_status, save_key
 from app.services.code_repair import repair_code
 from app.services.binary_datasets import dataset_status
 from app.services.binary_quick_repair import QuickRepairError, quick_repair_elf
+from app.services.binary_repair_engine import scan_elf
+from app.services.format_scan import scan_macho, scan_pe
+from app.services.pe_repair import scan_pe_copy_calls
 from app.services.ai_adjudication import (
     GateResult, PolicyViolation, adjudicate, guard_model_payload,
     preflight_key_binding, supervisor_step,
@@ -1191,6 +1194,32 @@ async def quick_binary_repair(
         "patched_base64": base64.b64encode(patched).decode("ascii"),
         "report": report.to_dict(),
     }, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/binary/scan")
+async def binary_scan(
+    binary: UploadFile = File(...),
+    csrf: str = Form(...),
+) -> JSONResponse:
+    """Non-mutating format scan for ELF, PE and Mach-O."""
+    _require_csrf(csrf)
+    raw = await binary.read()
+    if len(raw) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
+    if raw[:4] == b"\x7fELF":
+        payload = scan_elf(raw)
+        payload["backend"] = "elf"
+    elif raw[:2] == b"MZ":
+        payload = scan_pe(raw)
+        payload["copy_calls"] = scan_pe_copy_calls(raw)
+        payload["backend"] = "pe"
+    elif raw[:4] in {b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf",
+                     b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe"}:
+        payload = scan_macho(raw)
+        payload["backend"] = "macho"
+    else:
+        return JSONResponse({"ok": False, "detail": "unsupported binary format"}, status_code=422)
+    return JSONResponse({"ok": True, "scan": payload}, headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/datasets")

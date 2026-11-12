@@ -6,6 +6,8 @@ executed on the host.
 from __future__ import annotations
 
 import hashlib
+import re
+import struct
 import tempfile
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -156,3 +158,106 @@ def patch_pe_call_site(data: bytes, cave_code: bytes, *,
     except Exception as exc:  # noqa: BLE001
         report.limitations.append(f"PE call patch failed: {type(exc).__name__}: {exc}")
         return None, report
+
+
+def build_pe_strcpy_guard(capacity: int) -> bytes:
+    """Windows x64 strcpy guard: rcx=dst, rdx=src, capacity bounded.
+
+    The wrapper copies at most capacity bytes including the NUL.  On overflow it
+    terminates the destination at capacity-1 and returns 1; success returns 0.
+    It never falls through to the original import call.
+    """
+    if not 0 < capacity <= 0x7FFFFFFF:
+        raise ValueError("capacity out of range")
+    code = bytearray()
+    code += b"\x31\xC0"                              # xor eax,eax
+    code += b"\x3D" + struct.pack("<I", capacity)   # cmp eax,capacity
+    jae_at = len(code); code += b"\x73\x00"          # jae overflow
+    code += b"\x44\x8A\x14\x02"                      # mov r10b,[rdx+rax]
+    code += b"\x44\x88\x14\x01"                      # mov [rcx+rax],r10b
+    code += b"\xFF\xC0"                              # inc eax
+    code += b"\x45\x84\xD2"                          # test r10b,r10b
+    jne_at = len(code); code += b"\x75\x00"          # jne loop
+    code += b"\x31\xC0"                              # xor eax,eax
+    code += b"\xC3"                                  # ret
+    overflow = len(code)
+    code += b"\xC6\x44\x01\xFF\x00"                 # mov byte [rcx+rax-1],0
+    code += b"\xB8\x01\x00\x00\x00"                 # mov eax,1
+    code += b"\xC3"                                  # ret
+    code[jae_at + 1] = (overflow - (jae_at + 2)) & 0xFF
+    code[jne_at + 1] = (2 - (jne_at + 2)) & 0xFF
+    return bytes(code)
+
+
+def repair_pe_strcpy(data: bytes, *, call_va: int, capacity: int) -> tuple[bytes | None, PEWriteReport]:
+    """Replace one Windows-x64 strcpy call with a bounded cave wrapper."""
+    guard = build_pe_strcpy_guard(capacity)
+    patched, report = patch_pe_call_site(data, guard, call_va=call_va)
+    if patched is None:
+        return None, report
+    report.strategy = "strcpy-cave"
+    report.status = "patched"
+    report.limitations.append(
+        f"strcpy cave capacity={capacity}; overflow returns 1 and NUL-terminates "
+        f"at capacity-1; no Authenticode signature is forged."
+    )
+    return patched, report
+
+
+def scan_pe_copy_calls(data: bytes) -> dict[str, Any]:
+    """Find Windows-x64 strcpy/strcat calls through the IAT."""
+    out: dict[str, Any] = {"format": "pe", "arch": "unknown", "findings": []}
+    try:
+        pe = lief.PE.parse(list(data))
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = f"{type(exc).__name__}: {exc}"
+        return out
+    if pe is None:
+        return out
+    machine = str(pe.header.machine)
+    if "AMD64" not in machine:
+        out["arch"] = machine
+        return out
+    text = pe.get_section(".text")
+    if text is None:
+        return out
+    imagebase = int(pe.optional_header.imagebase)
+    iat: dict[int, str] = {}
+    for imp in pe.imports:
+        for entry in imp.entries:
+            try:
+                iat[imagebase + int(entry.iat_address)] = entry.name
+            except Exception:
+                continue
+    from capstone import CS_ARCH_X86, CS_MODE_64, Cs
+    md = Cs(CS_ARCH_X86, CS_MODE_64)
+    base = imagebase + int(text.virtual_address)
+    capacity = None
+    for ins in md.disasm(bytes(text.content), base):
+        op = (ins.op_str or "").replace(" ", "")
+        if ins.mnemonic == "sub" and op.startswith("rsp,"):
+            try:
+                capacity = int(op.split(",")[-1], 0)
+            except ValueError:
+                pass
+        elif ins.mnemonic == "call" and "rip" in op:
+            m = re.search(r"\[rip([+-]0x[0-9a-fA-F]+)\]", op)
+            if not m:
+                continue
+            disp = int(m.group(1), 16)
+            target = ins.address + ins.size + disp
+            name = iat.get(target)
+            if not name:
+                continue
+            low = name.lower()
+            if "strcpy" not in low and "strcat" not in low:
+                continue
+            if capacity and capacity > 0:
+                out["findings"].append({
+                    "kind": "copy_call", "address": hex(ins.address),
+                    "callee": name, "capacity": capacity,
+                    "patchable": True,
+                    "detail": "IAT call with stack capacity; cave candidate",
+                })
+    out["arch"] = "x86_64"
+    return out
