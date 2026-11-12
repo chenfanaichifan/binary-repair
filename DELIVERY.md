@@ -2,7 +2,7 @@
 
 Branch: `workbench-v3`  
 Final UI commit: `6eea41d`; i18n/theme fix commit follows  
-Test run: **851 passed / 2 skipped / 1 known macOS `readelf` failure**  
+Test run: **853 passed / 2 skipped / 1 known macOS `readelf` failure**  
 Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
 (macOS `readelf` is unavailable; not an application regression).
 
@@ -68,7 +68,7 @@ cd binary-repair-gui
 .venv/bin/python -m pytest
 ```
 
-- Unit/security/route tests: 851 passed, 2 skipped.
+- Unit/security/route tests: 853 passed, 2 skipped.
 - The one failure is the known macOS `readelf` environment limitation.
 - Browser smoke: language switch (zh/en/ja/zh), custom select, mobile drawer,
   page transition, live/demo launch modes, expanded result/evidence panel,
