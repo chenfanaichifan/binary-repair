@@ -32,6 +32,10 @@ from app.backend import (
 from app.evidence_domains import evidence_domain, scope_display
 from app.services.assistant_key_store import clear_key, key_status, save_key
 from app.services.code_repair import repair_code
+from app.services.ai_adjudication import (
+    GateResult, PolicyViolation, adjudicate, guard_model_payload,
+    preflight_key_binding, supervisor_step,
+)
 from app.services.connectors import connector_snapshot
 from app.services.history import HistoryConflict, HistoryError, HistoryStore
 from app.services.overflow_ai import memory as overflow_memory
@@ -1157,6 +1161,61 @@ async def code_repair_route(request: Request) -> JSONResponse:
     except ValueError as exc:
         return JSONResponse({"detail": str(exc)}, status_code=422)
     return JSONResponse({"repair": result})
+
+
+@app.get("/api/ai/boundary")
+async def ai_boundary_status() -> JSONResponse:
+    """Expose the one-way AI/evidence contract without any secrets."""
+    return JSONResponse(
+        {
+            "authority": "deterministic_gate",
+            "ai_may": ["accept", "reject", "repair"],
+            "ai_may_not": ["promote_gate_failure", "emit_verdict", "emit_evidence"],
+            "success_requires": "success_within_scope gate with complete evidence and hash",
+            "not_verdict": True,
+        },
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@app.post("/api/ai/adjudicate")
+async def ai_adjudicate_route(request: Request) -> JSONResponse:
+    """Simulate the one-way AI adjudication rule; no model is called."""
+    _require_csrf(request.headers.get("x-csrf-token", ""))
+    try:
+        body = await request.json()
+    except ValueError:
+        return JSONResponse({"detail": "JSON body required."}, status_code=422)
+    if not isinstance(body, dict):
+        return JSONResponse({"detail": "JSON object required."}, status_code=422)
+    gate_payload = body.get("gate")
+    ai_payload = body.get("ai") or {}
+    try:
+        guard_model_payload(ai_payload if isinstance(ai_payload, dict) else {})
+        if not isinstance(gate_payload, dict):
+            raise ValueError("gate object required")
+        gate = GateResult(
+            success=bool(gate_payload.get("success")),
+            outcome=str(gate_payload.get("outcome") or ""),
+            reason=str(gate_payload.get("reason") or ""),
+            required_checks=int(gate_payload.get("required_checks") or 0),
+            required_not_run=int(gate_payload.get("required_not_run") or 0),
+            evidence_sha256=gate_payload.get("evidence_sha256"),
+        )
+        action = str(ai_payload.get("action") or "")
+        decision = adjudicate(gate, action)
+        if body.get("supervisor"):
+            result = supervisor_step(
+                gate=gate, ai_action=action,
+                attempt=int(body.get("attempt") or 1),
+                max_attempts=int(body.get("max_attempts") or 3),
+            )
+            return JSONResponse({"supervisor": result, "simulation": True}, headers={"Cache-Control": "no-store"})
+        return JSONResponse({"decision": decision.as_dict(), "simulation": True}, headers={"Cache-Control": "no-store"})
+    except PolicyViolation as exc:
+        return JSONResponse({"detail": str(exc), "code": "policy_violation"}, status_code=422)
+    except (TypeError, ValueError) as exc:
+        return JSONResponse({"detail": str(exc)}, status_code=422)
 
 
 @app.get("/api/knowledge/overflow")

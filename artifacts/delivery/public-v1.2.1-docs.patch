@@ -1,0 +1,265 @@
+From 50f6047f37edd34a558057cf6f991bcc8dae0fdc Mon Sep 17 00:00:00 2001
+From: BinaryRepair reviewer <reviewer@example.invalid>
+Date: Thu, 12 Nov 2026 15:31:19 +0800
+Subject: [PATCH] docs: correct v1.2.1 stable status and AI boundary
+
+---
+ README.md                                     |  7 +-
+ docs/architecture/ai-adjudication-boundary.md | 84 +++++++++++++++++
+ docs/status/final-status.md                   | 94 ++++++++++++-------
+ 3 files changed, 149 insertions(+), 36 deletions(-)
+ create mode 100644 docs/architecture/ai-adjudication-boundary.md
+
+diff --git a/README.md b/README.md
+index dfa3bab..44f92a5 100644
+--- a/README.md
++++ b/README.md
+@@ -12,9 +12,9 @@ history and historical evidence remain in the source repository
+ 
+ ```text
+ Repository  https://github.com/leesirleesirlee-star/Binary_Repair
+-Version     v1.2.1
++Version     v1.2.1 (public tag f687e14 -> 148d236)
+ Source      chenfanaichifan/binary-repair
+-            release/v1.2.1 @ 3418491 (source and corrected documentation)
++            delivery 3f2bcba; release/v1.2.1 fe7cf79
+ ```
+ 
+ ## Current status
+@@ -24,8 +24,9 @@ Source      chenfanaichifan/binary-repair
+ | T8.3 | **COMPLETE** |
+ | P1 | **success_within_scope** |
+ | P2 | **ACCEPTANCE PASSED** |
+-| Test suite | **730 collected / 728 passed / 2 Linux-only skipped / 0 failed** (historical v1.2.0 record, 2026-11-09) |
++| Test suite | **741 collected / 739 passed / 2 Linux-only skipped / 0 failed** (v1.2.1 stable record) |
+ | Browser e2e | **12 passed** (Chrome CDP) |
++| AI key panel | **real provider test PASS** on Linux; Windows cross-head 8f0908a accepted |
+ | Upload gate | **64 MiB client check + HTTP-only controls** |
+ | V4 | **passed at model scope** (not binary-level proof) |
+ | 118 | **VERIFIED** (independent) |
+diff --git a/docs/architecture/ai-adjudication-boundary.md b/docs/architecture/ai-adjudication-boundary.md
+new file mode 100644
+index 0000000..39f06ac
+--- /dev/null
++++ b/docs/architecture/ai-adjudication-boundary.md
+@@ -0,0 +1,84 @@
++# AI adjudication boundary
++
++## Decision
++
++**BinaryRepair does not let a model's own words become the final success
++verdict.** The final authority is `app.domain.acceptance.decide_attempt_outcome`
++over V0–V5 evidence. AI may plan, propose, iterate and veto; it may not certify
++an unverified patch.
++
++This is not a temporary limitation to be removed by a stronger prompt. It is the
++only way the word `success_within_scope` remains meaningful.
++
++## What "AI final" can safely mean
++
++A fully autonomous loop is possible, but its final step must be one of:
++
++```text
++AI selects candidate
++  -> tool/guest applies it
++  -> deterministic obligations run
++  -> acceptance engine decides
++  -> AI writes a signed summary of that decision
++```
++
++The model can be the **final operator**:
++
++- choose what to inspect;
++- choose a candidate;
++- apply and re-run in the isolated guest;
++- continue repairing after failures;
++- stop and reject on its own;
++- write the final report.
++
++It cannot be the **final epistemic authority**:
++
++- no model-generated `success_within_scope`;
++- no model override of a failed/inconclusive obligation;
++- no model-supplied hash, evidence or token count;
++- no success when a required check is `not_run`.
++
++## One-way authority
++
++If product policy requires "AI has the final say", implement it as a **veto-only**
++authority:
++
++```text
++deterministic_verdict = accept(...)
++ai_decision = policy_model.assess(candidate, evidence)
++
++if ai_decision == "reject":
++    final = rejected_by_ai
++elif deterministic_verdict == success:
++    final = success_within_scope
++else:
++    final = deterministic_verdict
++```
++
++The AI can make the outcome stricter, never more permissive. This is safe,
++auditable and still allows fully autonomous repair loops.
++
++## Why raw model authority is rejected
++
++- A model can be prompt-injected by the binary, source, comments or tool output.
++- A model cannot prove that a required check actually ran.
++- A model can hallucinate hashes, test results or a `passed` obligation.
++- A model's confidence is not independent evidence.
++- A model failure must become `fallback`, `rejected` or `unsupported`, never
++  `success`.
++
++If a deployment truly wants raw model authority, it is a different product with
++different claims; it must not reuse BinaryRepair's V0–V5 acceptance label.
++
++## Required runtime guard for N-11
++
++N-11 is docs-only today. A real guard should, at the adjudication boundary:
++
++1. reject any AI payload containing a verdict/outcome/evidence field;
++2. require the verdict to be produced by the acceptance function, not parsed
++   from model text;
++3. verify the candidate hash and scope hash independently;
++4. record `model_calls` separately from `verdict`;
++5. fail closed if the evidence provider or guest is unavailable.
++
++Until that guard exists, do not describe the boundary document as enforced.
+diff --git a/docs/status/final-status.md b/docs/status/final-status.md
+index f9ed1a1..44c3029 100644
+--- a/docs/status/final-status.md
++++ b/docs/status/final-status.md
+@@ -1,13 +1,21 @@
+-# Final status — 2026-11-08
++# Final status — v1.2.1
+ 
+ This repository is the curated public snapshot of the accepted BinaryRepair MVP.
+ 
+-Current release: v1.2.0 (2026-11-09). The earlier v1.0.0 through v1.1.3 tags are historical snapshots and are not moved.
+-The source development repository remains
+-`chenfanaichifan/binary-repair`; the snapshot source is branch
+-`delivery/all-hands-2026-11-07` at
+-`60c4aab205850b8d477b47d31bb34a3a1e01f247` and
+-`release/v1.2.0` at `24d88cb6a2eb1b8ae4eb341330636525480d89b6`.
++```text
++Current public release: v1.2.1
++Public tag object:      f687e14fa674e05e6e0520e67e82b788c7085355
++Peeled public commit:   148d236d46bbd514dbb48f0a0f506ef2a2143fcc
++Source delivery:        3f2bcba
++Source release branch:  release/v1.2.1 @ fe7cf79
++Release URL:            https://github.com/leesirleesirlee-star/Binary_Repair/releases/tag/v1.2.1
++Prerelease:             false
++```
++
++The earlier `v1.2.1-rc1` (`f5346978 -> d7d20f4`), `v1.2.0`
++(`82f3209d -> 9439340`) and frozen `v1.1.3` (`1c5cacac -> 367d29b`)
++tags are historical snapshots and are not moved. The old `main` at
++`472aa94` is untouched.
+ 
+ ## Acceptance state
+ 
+@@ -22,44 +30,59 @@ upload gate    HTTP-only controls; 64 MiB client rejection
+ 118   VERIFIED (independent)
+ ```
+ 
+-Recorded acceptance run:
++Recorded stable run:
+ 
+ ```text
+-pytest -q   730 collected / 728 passed / 2 Linux-only skipped / 0 failed
++pytest -q   741 collected / 739 passed / 2 Linux-only skipped / 0 failed
+ e2e         12 passed (Chrome CDP)
++artifacts   201 / 201 sums verified
+ ```
+ 
+ The recorded run is Linux with Chrome CDP. Windows hosts are not the acceptance
+ record; they skip Linux-only cases and have POSIX-fixture differences. Use the
+ Linux run for the canonical count.
+ 
+-## Canonical evidence
++## v1.2.1 UI / AI additions
++
++### Assistant API-key panel
++
++```text
++password input, never echoed
++save -> masked key status
++test -> real provider test
++clear -> assistant returns to unconfigured
++no key -> never shown as enabled
++```
++
++Evidence:
+ 
+ ```text
+-artifacts/logs/v1.2.0-p1-replay-12-2026-11-09.txt
+-artifacts/p1-real-window-2026-11-07/
+-  controller/snapshot.json
+-  p2/p2-rc.txt
+-  p2/p2-result.txt
+-  v5-replay-2026-11-07/        16/16 HOST-SHA256SUMS
+-
+-artifacts/p1-routea-v4-symbolic-2026-11-07/
+-artifacts/p1-routea-real-v4-2026-11-07/
+-artifacts/p1-routea-v4-input-2026-11-07/
+-artifacts/v4-harness-2026-11-07/
+-artifacts/cwe416-124-v4-rerun-2026-11-06/
+-artifacts/m4/v4-2026-11-07/
+-artifacts/m4-revalidation-ebc92a8/
+-artifacts/p1-v5-logs-2026-11-07/
+-
+-docs/development/reviews/review-9-12-m4-verdict-2026-11-07.json
+-docs/development/handoffs/182-project-audit-2026-11-08.md
++Linux real-key UI journey        PASS
++  save -> provider test -> deepseek-flash
++  input cleared
++  clear -> unconfigured
++  key log count 0
++
++Windows DPAPI fake-key journey   PASS (protection=dpapi-user)
++Windows real-key UI              PASS (cross-head 8f0908a; Lead accepted)
++0d5791a / 99d1550 real-key replay NOT RUN
+ ```
+ 
+-P1 job: `9247357c54714546a7ff84891f7766f8`  
+-P2: exit 0, `synthetic=false`, both routes `success_within_scope`.
++### AI boundary
++
++The real DeepSeek provider is wired into:
++
++- assistant planner (`POST /api/assistant/plan`);
++- candidate repair provider (`binaryrepair_ai.provider`).
++
++A model response is still only a plan or candidate. It is schema-checked, staged
++as input, and then V0–V5 must pass. The model cannot set `verdict`, cannot write
++evidence, and cannot turn `not_run` into a pass.
++
++**This is deliberate. See
++[`docs/architecture/ai-adjudication-boundary.md`](../architecture/ai-adjudication-boundary.md).**
+ 
+-## Recorded limitations
++## Documented limitations
+ 
+ - **V4 is model scope.** It is not a binary-level proof or whole-program proof.
+ - **M4 verifier and Lead approver are the same operator.** Role-separated, not
+@@ -68,8 +91,13 @@ P2: exit 0, `synthetic=false`, both routes `success_within_scope`.
+   canonical reconstruction and must not be described as verbatim original.
+ - **Coverage is one public fixture family.** Other binaries, architectures,
+   compilers and stripped production binaries are not covered.
+-- **Windows is not the acceptance environment.** Linux-only tests and POSIX
+-  fixtures are skipped or differ there.
++- **Windows real-key evidence is cross-head.** The accepted run is `8f0908a`;
++  `0d5791a` and `99d1550` were not re-run with a real key.
++- **N-10 (accepted limitation).** A custom key path requires the adapter to see
++  the same environment variable; this is an environment contract, not silently
++  guessed.
++- **N-11 (docs-only, no runtime guard).** The documentation boundary is not a
++  substitute for a runtime policy check; do not cite it as an enforced gate.
+ - **No merge to the original development repository's main.** This public
+   repository is a curated delivery snapshot with its own release tags.
+ 
+-- 
+2.55.0
+

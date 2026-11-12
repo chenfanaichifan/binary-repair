@@ -86,6 +86,8 @@ for a file-by-file guide.
 
 Binary overflow surface limits: [`docs/reference/binary-overflow-surface.md`](docs/reference/binary-overflow-surface.md).
 
+Bounded AI adjudication: [`docs/architecture/ai-adjudication.md`](docs/architecture/ai-adjudication.md).
+
 Overflow AI upgrade report: [`docs/acceptance/overflow-ai-2026-11-12.md`](docs/acceptance/overflow-ai-2026-11-12.md).
 
 Overflow candidate memory and honest metrics: [`knowledge/README.md`](knowledge/README.md).

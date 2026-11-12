@@ -260,3 +260,8 @@ Initial public MVP snapshot imported from the original development repository's
   candidate memory, compile/surface validation and an honest held-out report.
   Synthetic accuracy is 1.0 but leave-one-seed-out is 0.25; rules remain the
   authoritative detector. See `docs/acceptance/overflow-ai-2026-11-12.md`.
+
+- Bounded AI adjudication: one-way veto, model-verdict guard, key-binding
+  preflight, bounded supervisor and simulation API; AI can never promote a
+  failed deterministic gate to success.
+- Public v1.2.1 docs patch carried in `artifacts/delivery/`.
