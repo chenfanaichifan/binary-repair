@@ -1286,6 +1286,7 @@
       state.contextCompleted = true;
       // Exactly one summary message; no per-step chat entries.
       pushMessage("user", contextSummary());
+      pushMessage("assistant", "任务信息已记录。请复核下面的任务单，确认无误后点「创建任务」。");
       var reviewIndex = -1;
       state.plan.steps.forEach(function (step, index) {
         if (reviewIndex < 0 && step.kind === "review") reviewIndex = index;
@@ -1689,7 +1690,11 @@
     card.appendChild(actions);
     card.appendChild(progress);
     card.appendChild(progressText);
-    pushCard(card);
+    var item = pushCard(card);
+    window.setTimeout(function () {
+      var target = item || card;
+      if (target && target.scrollIntoView) target.scrollIntoView({ block: "start", behavior: "smooth" });
+    }, 80);
   }
 
   /* ---------- 创建任务：用户显式动作 + 真实上传进度 ---------- */
@@ -2889,6 +2894,32 @@
     return false;
   }
 
+  function chatWithAssistant(text) {
+    pushMessage("user", text);
+    setText("agent-side-step", "正在回复…");
+    fetch("/api/assistant/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
+      body: JSON.stringify({ message: text })
+    }).then(function (response) {
+      return response.json().then(function (payload) {
+        return { ok: response.ok, payload: payload };
+      });
+    }).then(function (result) {
+      if (!result.ok || !result.payload || !result.payload.reply) {
+        var detail = result.payload && result.payload.detail ? result.payload.detail : "request_failed";
+        pushMessage("assistant", "聊天没有成功（" + detail + "）。请检查模型配置。");
+        setText("agent-side-step", "对话");
+        return;
+      }
+      pushMessage("assistant", result.payload.reply);
+      setText("agent-side-step", "对话");
+    }).catch(function () {
+      pushMessage("assistant", "聊天没有成功（网络错误）。请稍后重试。");
+      setText("agent-side-step", "对话");
+    });
+  }
+
   $("agent-composer").addEventListener("submit", function (event) {
     event.preventDefault();
     var input = $("agent-input");
@@ -2900,8 +2931,12 @@
       if (handleCommand(text)) return;
     }
     if (handleActionIntent(text)) return;
-    pushMessage("user", text);
     var pasted = extractCode(text);
+    if (!pasted && (state.contextCompleted || state.jobId)) {
+      chatWithAssistant(text);
+      return;
+    }
+    pushMessage("user", text);
     if (pasted) {
       runCodeRepair(pasted.code, pasted.language);
       return;

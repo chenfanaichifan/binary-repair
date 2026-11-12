@@ -1225,6 +1225,42 @@ async def assistant_key_test(request: Request) -> JSONResponse:
     return JSONResponse(result, status_code=200 if result.get("ok") else 503)
 
 
+@app.post("/api/assistant/chat")
+async def assistant_chat(request: Request) -> JSONResponse:
+    """Free-form workbench chat. Read-only conversation, never a verdict."""
+    _require_csrf(request.headers.get("x-csrf-token", ""))
+    try:
+        body = await request.json()
+    except ValueError:
+        return JSONResponse({"detail": "JSON body required."}, status_code=422)
+    message = body.get("message") if isinstance(body, dict) else None
+    if not isinstance(message, str) or not message.strip():
+        return JSONResponse({"detail": "message is required."}, status_code=422)
+    client = client_from_env()
+    if client is None:
+        return JSONResponse({"detail": "llm_client_not_configured"}, status_code=503)
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are the BinaryRepair workbench assistant. Reply concisely in Chinese. "
+                "Do not invent verdicts, hashes, evidence, token counts or execution results. "
+                "You may explain the workflow and suggest next steps; the acceptance engine owns verdicts."
+            ),
+        },
+        {"role": "user", "content": message.strip()},
+    ]
+    try:
+        reply = client.chat_text(messages)
+    except TimeoutError:
+        return JSONResponse({"detail": "llm_timeout"}, status_code=504)
+    except ConnectionError:
+        return JSONResponse({"detail": "llm_network_error"}, status_code=502)
+    except Exception:
+        return JSONResponse({"detail": "llm_chat_error"}, status_code=502)
+    return JSONResponse({"reply": reply, "model": getattr(client, "model", None)})
+
+
 @app.delete("/api/assistant/key")
 async def assistant_key_clear(request: Request) -> JSONResponse:
     """Delete the stored key; an environment key cannot be cleared from the UI."""

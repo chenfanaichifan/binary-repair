@@ -457,6 +457,49 @@ class HttpJsonClient:
         )
 
 
+    def chat_text(
+        self,
+        messages: Sequence[Mapping[str, str]],
+        *,
+        max_tokens: int = 800,
+        temperature: float = 0.2,
+    ) -> str:
+        """One plain-text completion for the conversational workbench.
+
+        This is intentionally separate from ``chat_json``: chat replies are
+        not JSON, but must obey the same key/no-log boundary.
+        """
+        payload: dict[str, Any] = {
+            "model": self._model,
+            "messages": [dict(message) for message in messages],
+            "max_tokens": int(max_tokens),
+            "temperature": float(temperature),
+        }
+        headers = {"Authorization": f"Bearer {self._api_key}"}
+        try:
+            with httpx.Client(timeout=self._timeout, transport=self._transport) as client:
+                response = client.post(
+                    f"{self._base_url}/chat/completions", json=payload, headers=headers
+                )
+        except httpx.TimeoutException as exc:
+            raise TimeoutError("provider timed out") from exc
+        except httpx.TransportError as exc:
+            raise ConnectionError("provider unreachable") from exc
+        if response.status_code >= 400:
+            raise _ProviderHTTPError(response.status_code)
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise _ProviderHTTPError(response.status_code) from exc
+        choices = data.get("choices") if isinstance(data, dict) else None
+        choice = choices[0] if isinstance(choices, list) and choices else {}
+        message = choice.get("message") if isinstance(choice, dict) else {}
+        content = message.get("content") if isinstance(message, dict) else None
+        if not isinstance(content, str) or not content.strip():
+            raise ValueError("empty chat content")
+        return content.strip()
+
+
 #: Documented aliases.  ``.env.example`` shipped these names for a while and
 #: the code never read them, so a filled-in ``.env`` silently produced the
 #: deterministic fallback.  Keep them accepted, but let the ``BINARYREPAIR_*``
