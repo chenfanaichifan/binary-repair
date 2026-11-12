@@ -86,8 +86,10 @@ def detect_binary_format(path: Path) -> BinaryFormat:
     except OSError:
         return BinaryFormat("unknown", None, None)
 
-    if len(head) >= 20 and head[:4] == b"\x7fELF":
-        bits = 64 if head[4] == 2 else 32 if head[4] == 1 else None
+    if head[:4] == b"\x7fELF":
+        bits = 64 if len(head) > 4 and head[4] == 2 else 32 if len(head) > 4 and head[4] == 1 else None
+        if len(head) < 20:
+            return BinaryFormat("elf", None, bits)
         endian = "<" if head[5] == 1 else ">" if head[5] == 2 else "<"
         machine = struct.unpack_from(endian + "H", head, 18)[0]
         return BinaryFormat("elf", ELF_MACHINES.get(machine, f"em_{machine}"), bits)

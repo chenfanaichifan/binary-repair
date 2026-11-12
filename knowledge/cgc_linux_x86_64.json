@@ -255,8 +255,91 @@
     }
   ],
   "execution": {
-    "status": "not_run",
-    "reason": "No Linux x86-64 guest has executed these binaries yet.",
-    "required": "Run each POV against <name> and <name>_patched in a Linux x86-64 guest; record crash/no-crash."
+    "status": "partial",
+    "date": "2026-11-12",
+    "environment": {
+      "host": "macOS 13.5 arm64",
+      "vm": "Lima 2.3.0, vmType=vz, Ubuntu 24.04 arm64",
+      "emulator": "qemu-x86_64-static 8.2.2 (Debian/Ubuntu package)",
+      "note": "User-mode emulation; not the hardened guest executor and not V0-V5 acceptance."
+    },
+    "harness": "scripts/cgc_pov_replay.py (fd 3 negotiation: type1/type2; fd 0/1 wired to challenge)",
+    "results": [
+      {
+        "challenge": "Palindrome",
+        "pov": "pov_1.pov",
+        "vulnerable": {
+          "signal": 11
+        },
+        "patched": {
+          "exit": 0
+        },
+        "repeats": 3,
+        "verdict": "clean_crash_differential"
+      },
+      {
+        "challenge": "basic_messaging",
+        "pov": "pov_1.pov",
+        "vulnerable": {
+          "signal": 11
+        },
+        "patched": {
+          "exit": 0
+        },
+        "repeats": 3,
+        "verdict": "clean_crash_differential"
+      },
+      {
+        "challenge": "Board_Game",
+        "pov": "pov_1.pov",
+        "vulnerable": {
+          "exit": 0
+        },
+        "patched": {
+          "exit": 1
+        },
+        "repeats": 3,
+        "verdict": "behavioral_only"
+      },
+      {
+        "challenge": "3D_Image_Toolkit",
+        "pov": "pov_1.pov",
+        "vulnerable": {
+          "timed_out": true
+        },
+        "patched": {
+          "signal": 11
+        },
+        "repeats": 2,
+        "verdict": "not_reproduced"
+      },
+      {
+        "challenge": "CGC_Hangman_Game",
+        "pov": "pov_1.pov,pov_2.pov,pov_3.pov",
+        "vulnerable": {
+          "signal": 11
+        },
+        "patched": {
+          "signal": 11
+        },
+        "repeats": 1,
+        "verdict": "not_reproduced",
+        "reason": "POV exits 1 with 'short read in match'; expectation mismatch on this port."
+      }
+    ],
+    "summary": {
+      "challenges": 5,
+      "povs": 7,
+      "clean_crash_differentials": 2,
+      "behavioral_only": 1,
+      "not_reproduced_challenges": 2
+    },
+    "evidence_doc": "docs/acceptance/cgc-pov-2026-11-12.md",
+    "caveats": [
+      "Cross-compiled with -O0 and libm math fallback; not the original CGC 32-bit syscall ABI.",
+      "qemu-user emulation, not the hardened guest with uid 1003/seccomp/netns.",
+      "A POV crash differential is not a patch-correctness proof; it only shows the two builds differ on that input."
+    ],
+    "log": "docs/acceptance/evidence/cgc-pov-2026-11-12.txt"
   }
 }

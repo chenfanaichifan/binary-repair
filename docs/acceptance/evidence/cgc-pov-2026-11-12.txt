@@ -1,0 +1,75 @@
+CGC POV replay — captured session excerpt
+Date: 2026-11-12
+Host: macOS 13.5 arm64
+VM: Lima 2.3.0, vmType=vz, Ubuntu 24.04 arm64
+Emulator: qemu-x86_64-static 8.2.2 (Ubuntu package)
+Harness: datasets/cgc-linux-src/tools/pov_replay.py
+Build: datasets/cgc-linux-build/challenges (zig 0.17.1, x86_64-linux-musl, -static)
+
+Command shape:
+  python3 .../pov_replay.py /usr/bin/qemu-x86_64-static \
+    <challenge> <pov> <timeout>
+
+Legend:
+  cb_signal=11  SIGSEGV in the challenge
+  timed_out=1   harness killed both processes after the timeout
+  negotiated=type1|type2  fd-3 negotiation observed
+
+--- Palindrome / pov_1, three repeats ---
+run 1:
+negotiated=type1 cb_exit=-1 cb_signal=11 pov_exit=0 pov_signal=0 timed_out=0 submitted=None
+vulnerable rc=4
+negotiated=type1 cb_exit=0 cb_signal=0 pov_exit=0 pov_signal=0 timed_out=0 submitted=None
+patched rc=0
+run 2:
+negotiated=type1 cb_exit=-1 cb_signal=11 pov_exit=0 pov_signal=0 timed_out=0 submitted=None
+vulnerable rc=4
+negotiated=type1 cb_exit=0 cb_signal=0 pov_exit=0 pov_signal=0 timed_out=0 submitted=None
+patched rc=0
+run 3:
+negotiated=type1 cb_exit=-1 cb_signal=11 pov_exit=0 pov_signal=0 timed_out=0 submitted=None
+vulnerable rc=4
+negotiated=type1 cb_exit=0 cb_signal=0 pov_exit=0 pov_signal=0 timed_out=0 submitted=None
+patched rc=0
+
+--- basic_messaging / pov_1, three repeats ---
+run 1:
+negotiated=type1 cb_exit=-1 cb_signal=11 pov_exit=-1 pov_signal=13 timed_out=0 submitted=None
+vulnerable rc=4
+negotiated=type1 cb_exit=0 cb_signal=0 pov_exit=0 pov_signal=0 timed_out=0 submitted=None
+patched rc=0
+run 2:
+negotiated=type1 cb_exit=-1 cb_signal=11 pov_exit=-1 pov_signal=13 timed_out=0 submitted=None
+vulnerable rc=4
+negotiated=type1 cb_exit=0 cb_signal=0 pov_exit=0 pov_signal=0 timed_out=0 submitted=None
+patched rc=0
+run 3:
+negotiated=type1 cb_exit=-1 cb_signal=11 pov_exit=-1 pov_signal=13 timed_out=0 submitted=None
+vulnerable rc=4
+negotiated=type1 cb_exit=0 cb_signal=0 pov_exit=0 pov_signal=0 timed_out=0 submitted=None
+patched rc=0
+
+--- Board_Game / pov_1, three repeats (behavioral only) ---
+vulnerable: negotiated=type1 cb_exit=0 cb_signal=0 pov_exit=0 pov_signal=0 timed_out=0
+patched:    negotiated=type1 cb_exit=1 cb_signal=0 pov_exit=0 pov_signal=0 timed_out=0
+(repeated 3x with identical exit codes)
+
+--- 3D_Image_Toolkit / pov_1 (type-2 leak, not reproduced) ---
+vulnerable:
+negotiated=type2 cb_exit=-1 cb_signal=9 pov_exit=0 pov_signal=0 timed_out=1 submitted=None
+patched:
+qemu: uncaught target signal 11 (Segmentation fault) - core dumped
+negotiated=type2 cb_exit=-1 cb_signal=11 pov_exit=0 pov_signal=0 timed_out=0 submitted=None
+
+--- CGC_Hangman_Game / pov_1..3 (not reproduced) ---
+Each of pov_1, pov_2, pov_3:
+qemu: uncaught target signal 11 (Segmentation fault) - core dumped
+short read in match
+negotiated=None cb_exit=-1 cb_signal=11 pov_exit=1 pov_signal=0 timed_out=0 submitted=None
+(identical for vulnerable and patched; POV exited 1 on its own match check)
+
+Notes:
+- These are console excerpts recorded during the replay, not a hardened-guest
+  V0-V5 acceptance record.
+- The VM used user-mode qemu-x86_64, not Rosetta (Rosetta failed with
+  "unhandled auxillary vector type 28" on this guest).
