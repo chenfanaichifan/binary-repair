@@ -182,6 +182,7 @@
     planPending: null,
     repairPending: null,
     repairLabel: "",
+    contextCompleted: false,
     historyGeneration: 0,
     entries: []
   };
@@ -1194,6 +1195,7 @@
     state.stepIndex = 0;
     state.answers = {};
     state.file = null;
+    state.contextCompleted = false;
     clear(stream());
     var titles = state.plan.steps.map(function (step) {
       return step.title || step.id;
@@ -1205,18 +1207,125 @@
     renderSide();
   }
 
+  function contextSummary() {
+    return "需求汇总\n" +
+      "缺陷描述：" + (state.answers.defect || "（未填）") + "\n" +
+      "合法/边界/越界用例：" + (state.answers.valid_tests || "（未填）") + "\n" +
+      "执行环境：" + (state.answers.environment || "（未填）");
+  }
+
+  function renderContextForm() {
+    var fields = [
+      { key: "defect", label: "缺陷描述（英文 ASCII）", input: "textarea", required: true, ascii: true },
+      { key: "valid_tests", label: "合法 / 边界 / 越界用例（每行一条，英文 ASCII）", input: "textarea", required: true, ascii: true },
+      { key: "environment", label: "执行环境", input: "text", required: false, ascii: true }
+    ];
+    var card = el("div", "agent-card");
+    card.dataset.testid = "agent-context-card";
+    card.appendChild(el("p", "agent-card-title", "任务信息"));
+    var inputs = {};
+
+    fields.forEach(function (field) {
+      var wrap = el("div", "agent-question");
+      var id = "agent-context-" + field.key;
+      var head = el("div", "agent-question-head");
+      var label = el("label", null, field.label);
+      label.setAttribute("for", id);
+      head.appendChild(label);
+
+      var defaults = el("button", "agent-btn ghost agent-field-default", "使用默认答案");
+      defaults.type = "button";
+      defaults.dataset.testid = "agent-context-default-" + field.key;
+      defaults.addEventListener("click", function () {
+        var value = LEGACY_DEFAULTS[field.key] || "";
+        inputs[field.key].input.value = value;
+        inputs[field.key].error.textContent = "";
+        state.answers[field.key] = value;
+        defaults.textContent = "已填入默认答案";
+        inputs[field.key].input.focus();
+      });
+      head.appendChild(defaults);
+      wrap.appendChild(head);
+
+      var input = el(field.input === "textarea" ? "textarea" : "input");
+      input.id = id;
+      input.dataset.key = field.key;
+      input.dataset.testid = "agent-context-" + field.key;
+      if (field.input === "textarea") input.rows = 3;
+      else input.type = "text";
+      // Existing draft/manual input wins; opening this card never auto-fills.
+      input.value = state.answers[field.key] || "";
+      var error = el("p", "agent-field-error");
+      error.dataset.testid = "agent-context-error-" + field.key;
+      input.addEventListener("input", function () {
+        state.answers[field.key] = input.value;
+        error.textContent = validateQuestion(field, input.value);
+      });
+      wrap.appendChild(input);
+      wrap.appendChild(error);
+      card.appendChild(wrap);
+      inputs[field.key] = { input: input, error: error, field: field };
+    });
+
+    var actions = el("div", "agent-card-actions");
+    var submit = el("button", "agent-btn", "确认并继续");
+    submit.type = "button";
+    submit.dataset.testid = "agent-context-submit";
+    submit.addEventListener("click", function () {
+      var valid = true;
+      fields.forEach(function (field) {
+        var entry = inputs[field.key];
+        var message = validateQuestion(field, entry.input.value);
+        entry.error.textContent = message;
+        if (message) valid = false;
+      });
+      if (!valid) return;
+      fields.forEach(function (field) {
+        state.answers[field.key] = inputs[field.key].input.value;
+      });
+      state.contextCompleted = true;
+      // Exactly one summary message; no per-step chat entries.
+      pushMessage("user", contextSummary());
+      var reviewIndex = -1;
+      state.plan.steps.forEach(function (step, index) {
+        if (reviewIndex < 0 && step.kind === "review") reviewIndex = index;
+      });
+      if (reviewIndex >= 0) {
+        state.stepIndex = reviewIndex;
+        state.skipNextPrompt = true;
+        renderCurrentStep();
+      } else {
+        pushMessage("assistant", "已记录任务信息；当前计划没有复核步骤。");
+      }
+    });
+    actions.appendChild(submit);
+    card.appendChild(actions);
+    pushCard(card);
+  }
+
   function renderCurrentStep() {
     var step = currentStep();
     if (!step) return;
+    if (!state.jobId && !state.contextCompleted && step.kind !== "upload") {
+      renderContextForm();
+      return;
+    }
     var stepTitle = step.title || step.id;
     var stepLabel = /^第\s*\d+\s*步/.test(stepTitle)
       ? stepTitle
       : "第 " + (state.stepIndex + 1) + " 步 · " + stepTitle;
     setText("agent-side-step", stepLabel);
     updateIntakeVisibility();
-    pushMessage("assistant", step.prompt);
+    if (step.kind === "question") {
+      var group = collectQuestionGroup(state.stepIndex);
+      if (group.length) {
+        pushQuestionGroup(group);
+        return;
+      }
+    }
+    if (!state.skipNextPrompt) pushMessage("assistant", step.prompt);
+    state.skipNextPrompt = false;
     if (step.kind === "upload") pushUploadCard(step);
-    else if (step.kind === "question") pushQuestionCard(step);
     else if (step.kind === "review") pushReviewCard();
   }
 
@@ -1229,42 +1338,119 @@
     return "";
   }
 
-  function pushQuestionCard(step) {
+  /* Old defaults, preserved verbatim from the three-step flow. They are
+     migrated by field semantics; they do not replace existing drafts. */
+  var LEGACY_DEFAULTS = {
+    defect: "strcpy in stack_buf does not check length; overlong input writes out of bounds",
+    valid_tests: "valid: hello\nboundary: 8 bytes\ninvalid: 512 bytes",
+    environment: "Ubuntu x86-64 VM (test: execution disabled)"
+  };
+
+  function legacyDefaultFor(question, step) {
+    var haystack = String(
+      (question.key || "") + " " + (question.label || "") + " " + ((step && step.title) || "")
+    ).toLowerCase();
+    // Known legacy fields keep their original values even when a new planner
+    // supplies a different generated default.
+    if (question.key === "defect" || question.key === "objective" || question.key === "trigger" ||
+        /defect|objective|trigger/.test(haystack) || haystack.indexOf("缺陷") >= 0) {
+      return LEGACY_DEFAULTS.defect;
+    }
+    if (question.key === "valid_tests" || question.key === "tests" || question.key === "success" ||
+        /valid.?test|\btests?\b/.test(haystack) || haystack.indexOf("用例") >= 0) {
+      return LEGACY_DEFAULTS.valid_tests;
+    }
+    if (question.key === "environment" || question.key === "platform" ||
+        /environment|platform|\benv\b/.test(haystack) || haystack.indexOf("环境") >= 0) {
+      return LEGACY_DEFAULTS.environment;
+    }
+    return (question.default && String(question.default).trim()) || "";
+  }
+
+  function collectQuestionGroup(startIndex) {
+    var steps = [];
+    var stepsList = state.plan && state.plan.steps ? state.plan.steps : [];
+    for (var i = startIndex; i < stepsList.length; i += 1) {
+      if (stepsList[i].kind !== "question") break;
+      steps.push({ step: stepsList[i], index: i });
+    }
+    return steps;
+  }
+
+  function summarizeGroup(group) {
+    var lines = ["需求汇总"];
+    group.forEach(function (item) {
+      var title = item.step.title || item.step.id;
+      item.step.questions.forEach(function (question) {
+        var value = (state.answers[question.key] || "").trim();
+        lines.push(title + " / " + question.label + "：" + (value || "（未填）"));
+      });
+    });
+    return lines.join("\n");
+  }
+
+  function pushQuestionGroup(group) {
     var card = el("div", "agent-card");
     card.dataset.testid = "agent-question-card";
-    card.appendChild(el("p", "agent-card-title", step.title));
+    card.appendChild(el("p", "agent-card-title", group.length > 1 ? "任务信息" : (group[0].step.title || "任务信息")));
     var inputs = {};
+    var nextQuestion = null;
 
-    step.questions.forEach(function (question) {
-      var wrap = el("div", "agent-question");
-      var id = "agent-q-" + question.key;
-      var label = el("label", null, question.label);
-      label.setAttribute("for", id);
-      var input = el(question.input === "textarea" ? "textarea" : "input");
-      input.id = id;
-      input.dataset.key = question.key;
-      input.dataset.testid = "agent-field-" + question.key;
-      if (question.input !== "textarea") input.type = "text";
-      else input.rows = 3;
-      input.value = state.answers[question.key] || "";
-      var error = el("p", "agent-field-error");
-      error.dataset.testid = "agent-error-" + question.key;
+    group.forEach(function (item) {
+      var step = item.step;
+      step.questions.forEach(function (question) {
+        var wrap = el("div", "agent-question");
+        var id = "agent-q-" + question.key;
+        if (document.getElementById(id)) id = "agent-q-" + item.index + "-" + question.key;
+        var labelRow = el("div", "agent-question-head");
+        var label = el("label", null, question.label);
+        label.setAttribute("for", id);
+        labelRow.appendChild(label);
 
-      input.addEventListener("input", function () {
-        state.answers[question.key] = input.value;
-        error.textContent = validateQuestion(question, input.value);
+        var defaultButton = el("button", "agent-btn ghost agent-field-default", "使用默认答案");
+        defaultButton.type = "button";
+        defaultButton.dataset.testid = "agent-question-default-" + question.key;
+        defaultButton.addEventListener("click", function () {
+          var value = legacyDefaultFor(question, step);
+          if (!String(value).trim()) {
+            defaultButton.textContent = "无默认答案";
+            return;
+          }
+          inputs[question.key].input.value = value;
+          inputs[question.key].error.textContent = "";
+          state.answers[question.key] = value;
+          defaultButton.textContent = "已填入默认答案";
+          nextQuestion = question.key;
+          inputs[question.key].input.focus();
+        });
+        labelRow.appendChild(defaultButton);
+        wrap.appendChild(labelRow);
+
+        var input = el(question.input === "textarea" ? "textarea" : "input");
+        input.id = id;
+        input.dataset.key = question.key;
+        input.dataset.testid = "agent-field-" + question.key;
+        if (question.input !== "textarea") input.type = "text";
+        else input.rows = 3;
+        // Existing drafts/manual input win; defaults are only applied by the
+        // explicit per-field button.
+        input.value = state.answers[question.key] || "";
+        var error = el("p", "agent-field-error");
+        error.dataset.testid = "agent-error-" + question.key;
+        input.addEventListener("input", function () {
+          state.answers[question.key] = input.value;
+          error.textContent = validateQuestion(question, input.value);
+        });
+        wrap.appendChild(input);
+        wrap.appendChild(error);
+        card.appendChild(wrap);
+        inputs[question.key] = { input: input, error: error, question: question };
       });
-
-      wrap.appendChild(label);
-      wrap.appendChild(input);
-      wrap.appendChild(error);
-      card.appendChild(wrap);
-      inputs[question.key] = { input: input, error: error, question: question };
     });
 
     var actions = el("div", "agent-card-actions");
-    var nextStep = state.plan.steps[state.stepIndex + 1];
-    var next = el("button", "agent-btn", nextStep && nextStep.kind === "review" ? "进入复核" : "保存并继续");
+    var nextStep = state.plan.steps[group[group.length - 1].index + 1];
+    var next = el("button", "agent-btn", nextStep && nextStep.kind === "review" ? "确认并进入复核" : "确认并继续");
     next.type = "button";
     next.dataset.testid = "agent-question-next";
     next.addEventListener("click", function () {
@@ -1279,41 +1465,12 @@
       Object.keys(inputs).forEach(function (key) {
         state.answers[key] = inputs[key].input.value;
       });
-      pushMessage("user", summarizeAnswers(step));
-      state.stepIndex += 1;
+      // One summary message only; no per-step assistant prompt/message.
+      pushMessage("user", summarizeGroup(group));
+      state.stepIndex = group[group.length - 1].index + 1;
       renderCurrentStep();
     });
-
-    var defaults = el("button", "agent-btn ghost", "使用默认答案");
-    defaults.type = "button";
-    defaults.dataset.testid = "agent-question-default";
-    defaults.addEventListener("click", function () {
-      var filled = 0;
-      Object.keys(inputs).forEach(function (key) {
-        var entry = inputs[key];
-        var value = entry.question.default || "";
-        entry.input.value = value;
-        entry.error.textContent = "";
-        state.answers[key] = value;
-        if (String(value).trim()) filled += 1;
-      });
-      defaults.textContent = filled ? "已填入默认答案" : "没有默认答案";
-      var feedback = card.querySelector(".agent-default-feedback");
-      if (!feedback) {
-        feedback = el("p", "agent-side-note agent-default-feedback");
-        feedback.setAttribute("aria-live", "polite");
-        card.appendChild(feedback);
-      }
-      feedback.textContent = filled
-        ? "已填入 " + filled + " 项默认值；请检查后点「保存并继续」。"
-        : "这一步没有默认答案，请手动填写。";
-      card.scrollIntoView({ block: "center", behavior: "smooth" });
-      var first = Object.keys(inputs)[0];
-      if (first && inputs[first].input) inputs[first].input.focus();
-    });
-
     actions.appendChild(next);
-    actions.appendChild(defaults);
     card.appendChild(actions);
     pushCard(card);
   }
@@ -2570,7 +2727,7 @@
       var step = currentStep();
       if (step && step.questions) {
         step.questions.forEach(function (question) {
-          state.answers[question.key] = question.default || "";
+          state.answers[question.key] = legacyDefaultFor(question, step);
         });
         pushMessage("user", "使用默认答案\n" + summarizeAnswers(step));
         state.stepIndex += 1;
