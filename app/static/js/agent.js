@@ -1287,15 +1287,19 @@
       pushMessage("user", contextSummary());
       pushMessage("assistant", "任务信息已记录。请复核下面的任务单，确认无误后点「创建任务」。");
       var reviewIndex = -1;
-      state.plan.steps.forEach(function (step, index) {
-        if (reviewIndex < 0 && step.kind === "review") reviewIndex = index;
-      });
+      if (state.plan && state.plan.steps) {
+        state.plan.steps.forEach(function (step, index) {
+          if (reviewIndex < 0 && step.kind === "review") reviewIndex = index;
+        });
+      }
       if (reviewIndex >= 0) {
         state.stepIndex = reviewIndex;
         state.skipNextPrompt = true;
         renderCurrentStep();
       } else {
-        pushMessage("assistant", "已记录任务信息；当前计划没有复核步骤。");
+        // Restored drafts may not have a plan; the stable form is still enough
+        // to review and create the task.
+        pushReviewCard();
       }
     });
     actions.appendChild(submit);
@@ -1524,6 +1528,8 @@
           if (step && step.kind === "upload") {
             state.stepIndex += 1;
             renderCurrentStep();
+          } else if (!state.plan && !state.contextCompleted) {
+            renderContextForm();
           }
         };
         if (window.crypto && crypto.subtle && crypto.subtle.digest) {
