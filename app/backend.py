@@ -694,11 +694,16 @@ class HttpBackend:
         return response.content, media_type, filename
 
 
+def jobs_iso_now() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat()
+
+
 class LocalBackend:
     """Data source backed by the local controller SQLite store."""
 
     mode = "local"
-    supports_start = False
+    supports_start = True
 
     def __init__(self, data_dir: str | Path | None = None) -> None:
         self.data_dir = Path(
@@ -846,31 +851,143 @@ class LocalBackend:
         )
         return record.id
 
+    def _local_execution_path(self, job_id: str) -> Path:
+        return self.data_dir / "jobs" / job_id / "local_execution.json"
+
+    def _read_local_execution(self, job_id: str) -> dict[str, Any]:
+        path = self._local_execution_path(job_id)
+        if not path.is_file():
+            return {}
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {}
+        return value if isinstance(value, dict) else {}
+
+    def get_artifact_metadata(self, artifact_id: str) -> dict[str, Any]:
+        row = job_store.get_artifact(artifact_id, data_dir=self.data_dir)
+        if row is None:
+            raise BackendError(404, "Artifact not found.")
+        return {
+            "id": row["id"],
+            "job_id": row["job_id"],
+            "name": Path(row["relative_path"]).name,
+            "role": row["role"],
+            "sha256": row["sha256"],
+            "size_bytes": row["size_bytes"],
+            "media_type": row["media_type"],
+        }
+
+    def get_artifact_bytes(self, artifact_id: str) -> tuple[bytes, str, str]:
+        row = job_store.get_artifact(artifact_id, data_dir=self.data_dir)
+        if row is None:
+            raise BackendError(404, "Artifact not found.")
+        path = (self.data_dir / row["relative_path"]).resolve()
+        try:
+            path.relative_to(self.data_dir.resolve())
+        except ValueError as exc:
+            raise BackendError(409, "Artifact path escapes the data directory.") from exc
+        if not path.is_file() or path.is_symlink():
+            raise BackendError(404, "Artifact bytes are unavailable.")
+        return path.read_bytes(), row["media_type"], Path(row["relative_path"]).name
+
     def get_snapshot(self, job_id: str) -> dict[str, Any]:
         record = self._record(job_id)
         meta = self._read_meta(job_id)
+        execution_info = self._read_local_execution(job_id)
+        execution = execution_info.get("execution") or "not_started"
+        phase = execution_info.get("phase") or record.phase
         return {
             "id": record.id,
             "demo": False,
             "data_source": "local-controller",
-            "execution": "not_started",
+            "execution": execution,
             "filename": record.filename,
             "original_sha256": record.original_sha256,
             "defect": record.defect_description,
             "valid_tests": meta.get("valid_tests", []),
             "environment": meta.get("environment", ""),
             "created_at": record.created_at,
-            "phase": record.phase,
+            "phase": phase,
             "cancelled": False,
             "contract": meta.get("contract") or self._contract(),
-            "routes": self._placeholder_routes(record.phase),
+            "routes": self._placeholder_routes(phase),
+            "repair": execution_info.get("repair") or None,
         }
 
     def start(self, job_id: str) -> None:
-        self._record(job_id)
-        raise BackendError(
-            409, "Local controller mode does not implement run execution yet."
-        )
+        record = self._record(job_id)
+        meta = self._read_meta(job_id)
+        contract = meta.get("contract") or {}
+        if not contract.get("approved"):
+            raise BackendError(409, "Contract must be approved before starting the repair.")
+        source = self.data_dir / "jobs" / job_id / "original.bin"
+        if not source.is_file():
+            raise BackendError(404, "Original binary is missing from the job store.")
+        execution_path = self._local_execution_path(job_id)
+        execution_path.parent.mkdir(parents=True, exist_ok=True)
+        execution_path.write_text(json.dumps({
+            "phase": "running",
+            "execution": {
+                "status": "running",
+                "status_label": "修复中",
+                "started_at": jobs_iso_now(),
+                "receipt_pending": False,
+            },
+        }, ensure_ascii=True, indent=2), encoding="utf-8")
+        import threading
+        worker = threading.Thread(target=self._execute_local_repair, args=(job_id,), daemon=True)
+        worker.start()
+
+    def _write_local_execution(self, job_id: str, payload: dict[str, Any]) -> None:
+        path = self._local_execution_path(job_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, ensure_ascii=True, indent=2), encoding="utf-8")
+
+    def _execute_local_repair(self, job_id: str) -> None:
+        from app.services.binary_repair_engine import repair_elf
+        import time
+
+        # A brief real running window makes the assistant's "正在修复中" state
+        # observable; the engine work itself is synchronous and fast.
+        time.sleep(0.8)
+        try:
+            source = self.data_dir / "jobs" / job_id / "original.bin"
+            patched, report = repair_elf(source.read_bytes())
+            if patched is None or not report.supported:
+                self._write_local_execution(job_id, {
+                    "phase": "finished",
+                    "execution": {"status": "failed", "status_label": "失败", "finished_at": jobs_iso_now()},
+                    "repair": report.to_dict(),
+                })
+                return
+            relative = f"jobs/{job_id}/artifacts/repaired.elf"
+            output = self.data_dir / relative
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_bytes(patched)
+            artifact = job_store.add_artifact(
+                job_id,
+                relative_path=relative,
+                role="repaired_binary",
+                data_dir=self.data_dir,
+                media_type="application/octet-stream",
+            )
+            self._write_local_execution(job_id, {
+                "phase": "finished",
+                "execution": {
+                    "status": "finished", "status_label": "完成",
+                    "started_at": jobs_iso_now(), "finished_at": jobs_iso_now(),
+                    "receipt_pending": False,
+                },
+                "repair": report.to_dict(),
+                "artifact": artifact,
+            })
+        except Exception as exc:
+            self._write_local_execution(job_id, {
+                "phase": "finished",
+                "execution": {"status": "failed", "status_label": "失败", "finished_at": jobs_iso_now()},
+                "repair": {"status": "error", "error": type(exc).__name__},
+            })
 
     def cancel(self, job_id: str) -> None:
         self._record(job_id)
@@ -1022,7 +1139,21 @@ class LocalBackend:
 
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         self._record(job_id)
-        return {"A": [], "B": []}
+        rows = job_store.list_artifacts(job_id, data_dir=self.data_dir)
+        repaired = []
+        for row in rows:
+            if row.get("role") != "repaired_binary":
+                continue
+            repaired.append({
+                "id": row["id"],
+                "name": Path(row["relative_path"]).name,
+                "role": row["role"],
+                "sha256": row["sha256"],
+                "size_bytes": row["size_bytes"],
+                "media_type": row["media_type"],
+                "available": True,
+            })
+        return {"A": repaired, "B": []}
 
     def get_visuals(self, job_id: str) -> dict[str, Any]:
         self._record(job_id)

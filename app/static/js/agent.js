@@ -2014,6 +2014,10 @@
         shortHash(view.contract.sha256) + (view.contract.approved ? " · 已审批" : " · 未审批"));
     }
 
+    if (view.execution && /running|queued|repairing|screening|analyzing|roundtrip|generating|applying|validating/.test(String(view.execution.status || ""))) {
+      setText("agent-side-step", "正在修复");
+    }
+
     // Approved but no run has started (local mode or before start): show the
     // contract state instead of the backend's draft "waiting" label.
     if (view.contract && view.contract.approved &&
@@ -2021,6 +2025,9 @@
          view.execution.status === "unknown" || view.execution.status === "not_started")) {
       setText("agent-side-step", "契约已批准");
       setText("agent-side-execution", "待执行");
+    }
+    if (view.execution && /finished|success|succeeded|verified/.test(String(view.execution.status || ""))) {
+      setText("agent-side-step", "修复完成");
     }
 
     // A created task whose contract is not approved has a deterministic next

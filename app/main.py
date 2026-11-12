@@ -841,7 +841,8 @@ async def start_run(request: Request, job_id: str, csrf: str = Form("")):
         BACKEND.start(job_id)
     except BackendError as exc:
         return _comparison_response(request, job_id, error=exc.detail, status_code=exc.status_code)
-    return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
+    # The assistant owns the repair timeline and the finished-file panel.
+    return RedirectResponse(url=f"/agent/{job_id}", status_code=303)
 
 
 @app.post("/jobs/{job_id}/cancel")
