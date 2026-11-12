@@ -25,6 +25,7 @@ this page saying it was:
 | `a436b64` | [43248544193](https://github.com/chenfanaichifan/binary-repair/actions/runs/43248544193) | success | **failure** |
 | `9a451fd` | [43249875815](https://github.com/chenfanaichifan/binary-repair/actions/runs/43249875815) | success | **success (docs-only; flake did not reproduce)** |
 | `774c584` | [43256190605](https://github.com/chenfanaichifan/binary-repair/actions/runs/43256190605) | — | **success (compiler-timeout fix)** |
+| `aa580bb` | [43256481655](https://github.com/chenfanaichifan/binary-repair/actions/runs/43256481655) | — | **success (counts published)** |
 
 ### What failed at `a436b64`
 
@@ -59,17 +60,23 @@ compiler timeout is load-dependent and not deterministic.
 - Regression tests simulate the timeout and a real compiler error without
   invoking the host compiler.
 
-The post-fix Ubuntu run at `774c584` is green:
+The post-fix Ubuntu runs are green:
 
 ```text
-run:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43256190605
-job:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43256190605/job/131314939685
-result:   success
+fix:     774c584
+run:     https://github.com/chenfanaichifan/binary-repair/actions/runs/43256190605
+result:  success
+
+counts:  aa580bb
+run:     https://github.com/chenfanaichifan/binary-repair/actions/runs/43256481655
+job:     https://github.com/chenfanaichifan/binary-repair/actions/runs/43256481655/job/131315970646
+result:  success
 ```
 
 From `774c584` onward the workflow also publishes a public
 `Ubuntu test counts` check annotation and job-summary counts for the fixture
-regression and the full suite, including skip reasons. Earlier green runs,
+regression and the full suite, including skip reasons; `aa580bb` adds the
+explicit notice and corrected history. Earlier green runs,
 including the `df82b6c` feature run, remain valid for what they covered, but
 `a436b64` is **not** evidence of a green full suite.
 
@@ -104,6 +111,25 @@ python -m pytest -q --ignore=tests/e2e \
 The workflow runs the targeted step first and the full suite with
 `if: always()`, so a targeted failure still produces a complete-suite result.
 Both logs are uploaded with the `ubuntu-verification` artifact.
+
+## Skip reasons
+
+The four macOS skips are:
+
+```text
+tests/test_fixture_v3_manifest.py::test_original_is_v0_on_invalid_inputs_if_binary_present
+  Linux ELF execution; runs on Ubuntu
+tests/test_fixture_v3_manifest.py::test_repaired_candidate_matches_v3_if_provided
+  requires BINARYREPAIR_CANDIDATE_ELF; remains skipped on Ubuntu
+tests/test_native_linux_runtime.py::test_vulnerable_fixture_native_linux
+  Linux ELF execution; runs on Ubuntu
+tests/test_native_linux_runtime.py::test_strict_fixture_native_linux_blocks_long_input
+  Linux ELF execution; runs on Ubuntu
+```
+
+On Ubuntu the fixture V0 test and the two native runtime tests run; only the
+optional candidate-env test stays skipped. The job summary and JUnit artifact
+report the exact pass/skip/fail counts.
 
 ## Fixture staging rule
 

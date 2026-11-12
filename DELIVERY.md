@@ -2,7 +2,7 @@
 
 Branch: `workbench-v3`  
 Final UI commit: `6eea41d`; i18n/theme fix commit follows  
-Test run: **Ubuntu 24.04 CI passed** ([run 43256190605](https://github.com/chenfanaichifan/binary-repair/actions/runs/43256190605)); macOS local: 885 passed / 4 skipped / 1 Route B view-count failure; Ubuntu counts and skip reasons are in the job summary  
+Test run: **Ubuntu 24.04 CI passed** ([run 43256481655](https://github.com/chenfanaichifan/binary-repair/actions/runs/43256481655)); macOS local: 885 passed / 4 skipped / 1 Route B view-count failure; Ubuntu counts, skip reasons and the JUnit artifact are published by the workflow  
 Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
 (macOS lacks `readelf`; Ubuntu installs binutils and passes the full non-browser suite).
 
