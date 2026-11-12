@@ -1,6 +1,6 @@
-# BinaryRepair MVP
+﻿# BinaryRepair MVP
 
-Current delivery status (2026-11-08):
+Current delivery status (main integration, 2026-11-12):
 
 ```text
 T8.3: COMPLETE
@@ -8,13 +8,12 @@ P1: success_within_scope
 P2: ACCEPTANCE PASSED
 ```
 
-Repaired ELF upload: `/agent` → 下载面板 → 上传修复文件。
-Canonical evidence: `delivery/INDEX.md`.
+Repaired ELF upload: `/agent` 鈫?涓嬭浇闈㈡澘 鈫?涓婁紶淇鏂囦欢銆?Canonical evidence: `delivery/INDEX.md`.
 Current records: `docs/INDEX.md`.
 
 ```text
 Repository: https://github.com/chenfanaichifan/binary-repair
-Branch:     delivery/all-hands-2026-11-07
+Branch:     main
 ```
 
 # BinaryRepair
@@ -60,12 +59,12 @@ bytes count.
 | FastAPI + Jinja GUI (setup / comparison / evidence) | `app/main.py`, `app/backend.py`, `app/templates/`, `app/static/` | three screens; mock/http/local data adapter; demo mode labelled |
 | Job controller: create / get / approve / start / cancel / retry | `app/services/jobs.py` | identity + state tests pass |
 | HTTP controller API + canonical routes | `app/controller_api.py` | `/api/jobs/{id}/runs`, `/api/attempts/{id}/evidence`; `/start` aliases |
-| Acceptance engine and V0–V5 decision rules | `app/domain/acceptance.py`, `outcomes.py` | unit tests |
+| Acceptance engine and V0鈥揤5 decision rules | `app/domain/acceptance.py`, `outcomes.py` | unit tests |
 | Security contract v2 + canonical manifest hash | `app/domain/contracts.py`, `manifests.py` | schema_version=2, shared suite |
 | AI candidate boundary + DeepSeek provider | `app/domain/candidates.py`, `app/services/provider.py`, `binaryrepair_ai/`, `schemas/` | typed failures, fake transport |
 | SQLite v1 baseline + 002/003 | `app/db/schema.sql`, `app/db/migrations/` | jobs+artifacts baseline; AI tables; verdict columns |
 | Route B kit | `routeb/`, `docs/route-b/` | feasibility scripts and notes |
-| Public candidate fixture | `fixtures/public/CWE121_src_char_declare_cpy_51b/` | NOT FROZEN; gates 3–5 in progress |
+| Public candidate fixture | `fixtures/public/CWE121_src_char_declare_cpy_51b/` | NOT FROZEN; gates 3鈥? in progress |
 | Member-4 acceptance unit suite | `tests/unit/test_acceptance.py` | 29 tests, **29 passed** on this Windows host (measured 2026-10-29) |
 | Controller evidence endpoints | `app/controller_api.py` | serve **persisted** obligation rows with `evidence: persisted` / `not_persisted`; no static `V0 passed` placeholder |
 | Governance and instruction docs | `AGENTS.md`, `MEMORY.md`, `REVIEW-CHECKLIST.md`, `agent_docs/` | consolidation copies; `agent/` kept as the frozen archive |
@@ -81,7 +80,7 @@ bytes count.
 - Gate 4 (Route B formal): **NOT RUN (guest access + gate4-harness)**. The
   supplementary GitHub Actions run (6/6 unchanged round trip) is recorded in
   `docs/route-b/09-gate4-evidence.md`; it is not the formal run.
-- Contract revision: `24bfe568…4e37` is the recorded reviewed scope. This tree does
+- Contract revision: `24bfe568鈥?e37` is the recorded reviewed scope. This tree does
   not re-verify the Gate 3 signature chain.
 - Real repair execution. The controller queues runs and stores evidence; it does
   not execute uploaded binaries on the host.
@@ -171,15 +170,15 @@ POST forms also carry a CSRF token derived from it.
 
 Acceptance helpers:
 
-- `python tools/p0_acceptance.py` — live GUI + controller journey: session
+- `python tools/p0_acceptance.py` 鈥?live GUI + controller journey: session
   bootstrap, controller health, real job creation, `demo: false`, no demo banner,
   contract edit, approval, start, cancel, and "cancelled is not success". Needs
   both servers running.
-- `python tools/p2_acceptance.py` — verdict pipeline gate; drives (or verifies
+- `python tools/p2_acceptance.py` 鈥?verdict pipeline gate; drives (or verifies
   with `--job-id`) a `finished` run and checks the run verdict, both route
   outcomes, and the V0-V5 obligation set. It exits `2 BLOCKED` while no result
   bundle reaches the worker, which is the honest current state.
-- `python -m pytest -q tests/e2e` — headless Microsoft Edge + DevTools protocol
+- `python -m pytest -q tests/e2e` 鈥?headless Microsoft Edge + DevTools protocol
   journeys; skips with a clear message when Edge is not installed.
 
 Screenshots of the mock-mode journey are in `docs/screenshots/`.
@@ -209,7 +208,7 @@ them to LF/exact bytes so checkout line endings cannot change the reviewed hash.
 These are the only verified test numbers; they were measured at `986a49f` and
 independently re-measured in
 `docs/analysis/VERIFICATION.md`
-(§1 items 6-7). The environment is Windows 11 with Python
+(搂1 items 6-7). The environment is Windows 11 with Python
 3.14.6; `capstone` and `pyelftools` are not installed.
 
 ```powershell
@@ -255,8 +254,8 @@ installed the affected tests are uncollectable, which is `not_run`, not `passed`
   schema change; a new revision changes `contracts.sha256` /
   `reviewed_scope_sha256`.
 - **V3 manifest line endings**: the fixture JSON is pinned as exact bytes; a fresh
-  checkout keeps `valid.json` `17b2ee39…`, `invalid.json` `d493f370…`, manifest-set
-  `a564f039…`. Older Windows checkouts that produced `7f984a…` are recorded as a
+  checkout keeps `valid.json` `17b2ee39鈥, `invalid.json` `d493f370鈥, manifest-set
+  `a564f039鈥. Older Windows checkouts that produced `7f984a鈥 are recorded as a
   line-ending artifact, not an oracle change.
 
 ## Documentation
@@ -288,3 +287,4 @@ installed the affected tests are uncollectable, which is `not_run`, not `passed`
 branch and a PR. Stale or merged branches should be deleted after their tip is
 tagged under `archive/<date>/<name>`; `main` should stay free of full branch-tree
 copies.
+
