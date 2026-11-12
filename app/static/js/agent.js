@@ -2825,6 +2825,9 @@
   }
 
   function handleActionIntent(text) {
+    // Questions such as "怎么审批" belong to FAQ/chat, not to an imperative
+    // navigation action.
+    if (/(怎么|如何|为什么|在哪|哪里|是什么|什么意思|吗|呢|？|\?)/.test(text)) return false;
     var approval = parseApprovalIntent(text);
     if (approval) {
       pushMessage("user", text);
@@ -2906,6 +2909,19 @@
     return false;
   }
 
+  function assistantStatePayload() {
+    var snapshot = state.snapshot || null;
+    var contract = snapshot && snapshot.contract ? snapshot.contract : null;
+    var execution = snapshot && snapshot.execution ? snapshot.execution : null;
+    return {
+      job_id: state.jobId || "",
+      has_sample: !!state.file,
+      context_completed: !!state.contextCompleted,
+      contract_approved: !!(contract && contract.approved),
+      execution_status: execution && execution.status ? String(execution.status) : ""
+    };
+  }
+
   function chatWithAssistant(text) {
     var history = [];
     try {
@@ -2921,7 +2937,7 @@
     fetch("/api/assistant/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
-      body: JSON.stringify({ message: text, history: history })
+      body: JSON.stringify({ message: text, history: history, state: assistantStatePayload() })
     }).then(function (response) {
       return response.json().then(function (payload) {
         return { ok: response.ok, payload: payload };
@@ -2935,6 +2951,27 @@
       }
       pushMessage("assistant", result.payload.reply);
       setText("agent-side-step", "对话");
+      var action = result.payload.action;
+      if (action && action.type) {
+        var label = action.label || "打开下一步";
+        pushActionCard("下一步", [{
+          label: label,
+          run: function () {
+            if (action.type === "open_approval") {
+              var jobId = action.job_id || state.jobId;
+              if (jobId) openApprovalView({ id: jobId, label: "当前任务" });
+            } else if (action.url) {
+              window.location.href = action.url;
+            } else if (action.type === "new_task") {
+              window.location.href = "/agent/new?new=1";
+            } else if (action.type === "open_evidence" && (action.job_id || state.jobId)) {
+              window.location.href = "/jobs/" + encodeURIComponent(action.job_id || state.jobId) + "/evidence";
+            } else if (action.type === "rename_task") {
+              pushMessage("assistant", "请在左侧任务列表使用重命名入口。");
+            }
+          }
+        }]);
+      }
     }).catch(function () {
       pushMessage("assistant", "聊天没有成功（网络错误）。请稍后重试。");
       setText("agent-side-step", "对话");

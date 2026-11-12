@@ -1,0 +1,368 @@
+[
+  {
+    "id": "approval-01",
+    "message": "怎么审批",
+    "state": {
+      "job_id": "job-demo",
+      "contract_approved": false
+    },
+    "expect": {
+      "next_action": "open_approval",
+      "action_type": "open_approval",
+      "answer_contains": [
+        "审批"
+      ]
+    }
+  },
+  {
+    "id": "approval-02",
+    "message": "契约怎么批准",
+    "state": {
+      "job_id": "job-demo",
+      "contract_approved": false
+    },
+    "expect": {
+      "next_action": "open_approval",
+      "action_type": "open_approval",
+      "answer_contains": [
+        "批准"
+      ]
+    }
+  },
+  {
+    "id": "next-01",
+    "message": "然后呢",
+    "state": {
+      "context_completed": true,
+      "has_sample": true
+    },
+    "expect": {
+      "next_action": "review_and_create",
+      "answer_contains": [
+        "下一步"
+      ]
+    }
+  },
+  {
+    "id": "next-02",
+    "message": "下一步做什么",
+    "state": {
+      "has_sample": true
+    },
+    "expect": {
+      "next_action": "fill_context",
+      "answer_contains": [
+        "下一步"
+      ]
+    }
+  },
+  {
+    "id": "execute-01",
+    "message": "为什么不能执行",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "local"
+      ]
+    }
+  },
+  {
+    "id": "key-01",
+    "message": "模型未配置怎么办",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "配置"
+      ]
+    }
+  },
+  {
+    "id": "evidence-01",
+    "message": "证据在哪里",
+    "state": {
+      "job_id": "job-demo",
+      "execution_status": "success",
+      "contract_approved": true
+    },
+    "expect": {
+      "next_action": "view_evidence",
+      "action_type": "open_evidence",
+      "answer_contains": [
+        "证据"
+      ]
+    }
+  },
+  {
+    "id": "upload-01",
+    "message": "怎么上传样本",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "action_type": "new_task",
+      "answer_contains": [
+        "上传"
+      ]
+    }
+  },
+  {
+    "id": "upload-02",
+    "message": "上传 zip 行不行",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "ELF"
+      ]
+    }
+  },
+  {
+    "id": "chat-01",
+    "message": "聊天能做什么",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "解释"
+      ]
+    }
+  },
+  {
+    "id": "memory-01",
+    "message": "你能记住多少轮",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "10"
+      ]
+    }
+  },
+  {
+    "id": "status-01",
+    "message": "状态面板是什么意思",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "状态"
+      ]
+    }
+  },
+  {
+    "id": "restore-01",
+    "message": "为什么恢复了草稿",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "action_type": "new_task",
+      "answer_contains": [
+        "新建"
+      ]
+    }
+  },
+  {
+    "id": "fallback-01",
+    "message": "为什么显示助手降级",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "降级"
+      ]
+    }
+  },
+  {
+    "id": "contract-01",
+    "message": "安全契约填什么",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "契约"
+      ]
+    }
+  },
+  {
+    "id": "export-01",
+    "message": "导出代表什么",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "导出"
+      ]
+    }
+  },
+  {
+    "id": "n10-01",
+    "message": "N-10 是什么",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "N-10"
+      ]
+    }
+  },
+  {
+    "id": "n11-01",
+    "message": "N-11 是什么",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "N-11"
+      ]
+    }
+  },
+  {
+    "id": "new-01",
+    "message": "怎么新建任务",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "action_type": "new_task",
+      "answer_contains": [
+        "新建"
+      ]
+    }
+  },
+  {
+    "id": "sample-01",
+    "message": "有测试样本吗",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "CWE-121"
+      ]
+    }
+  },
+  {
+    "id": "rename-01",
+    "message": "怎么重命名任务",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "action_type": "rename_task",
+      "answer_contains": [
+        "命名"
+      ]
+    }
+  },
+  {
+    "id": "approval-03",
+    "message": "审批界面在哪",
+    "state": {
+      "job_id": "job-demo",
+      "contract_approved": false
+    },
+    "expect": {
+      "next_action": "open_approval",
+      "action_type": "open_approval",
+      "answer_contains": [
+        "审批"
+      ]
+    }
+  },
+  {
+    "id": "next-03",
+    "message": "接下来",
+    "state": {
+      "has_sample": true,
+      "context_completed": true
+    },
+    "expect": {
+      "next_action": "review_and_create",
+      "answer_contains": [
+        "下一步"
+      ]
+    }
+  },
+  {
+    "id": "next-04",
+    "message": "现在做什么",
+    "state": {
+      "has_sample": true
+    },
+    "expect": {
+      "next_action": "fill_context",
+      "answer_contains": [
+        "下一步"
+      ]
+    }
+  },
+  {
+    "id": "evidence-02",
+    "message": "实验数据在哪",
+    "state": {
+      "job_id": "job-demo",
+      "execution_status": "success",
+      "contract_approved": true
+    },
+    "expect": {
+      "next_action": "view_evidence",
+      "action_type": "open_evidence",
+      "answer_contains": [
+        "证据"
+      ]
+    }
+  },
+  {
+    "id": "report-01",
+    "message": "怎么导出报告",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "报告"
+      ]
+    }
+  },
+  {
+    "id": "key-02",
+    "message": "怎么配置 key",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "配置"
+      ]
+    }
+  },
+  {
+    "id": "contract-02",
+    "message": "valid domain 是什么",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "契约"
+      ]
+    }
+  },
+  {
+    "id": "evidence-03",
+    "message": "not_run 是什么",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "not_run"
+      ]
+    }
+  },
+  {
+    "id": "approval-04",
+    "message": "为什么状态是待创建任务",
+    "state": {},
+    "expect": {
+      "next_action": "upload_sample",
+      "answer_contains": [
+        "待创建"
+      ]
+    }
+  }
+]

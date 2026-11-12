@@ -41,6 +41,7 @@ from app.services.assistant_llm import (
     client_from_env,
     test_provider_connection,
 )
+from app.services.workbench_assistant import guidance_context
 from app.ui_config import load_ui_config, resolve_mode, resolve_workspace
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -1240,6 +1241,37 @@ async def assistant_chat(request: Request) -> JSONResponse:
     if client is None:
         return JSONResponse({"detail": "llm_client_not_configured"}, status_code=503)
 
+    state = body.get("state") if isinstance(body, dict) else None
+    guidance = guidance_context(message.strip(), state if isinstance(state, dict) else None)
+    faq_lines = [
+        "- " + entry["answer"]
+        for entry in guidance["faq"][:2]
+    ]
+    stage = guidance["state"]
+    facts = (
+        "Known product facts:\n"
+        + ("\n".join(faq_lines) if faq_lines else "- No FAQ match; say you are not sure when needed.")
+        + "\n\nCurrent workbench state:\n"
+        + "- stage: " + str(stage["stage"]) + "\n"
+        + "- next action: " + str(stage["next_label"]) + "\n"
+        + "- has sample: " + str(stage["has_sample"]).lower() + "\n"
+        + "- context completed: " + str(stage["context_completed"]).lower() + "\n"
+        + "- job created: " + str(stage["job_created"]).lower() + "\n"
+        + "- contract approved: " + str(stage["contract_approved"]).lower()
+    )
+    system_prompt = (
+        "You are the BinaryRepair workbench assistant. Reply concisely in Chinese.\n"
+        "Use only the known facts and current state below; if they do not answer the question, "
+        "say what is missing. Never invent verdicts, hashes, evidence, token counts or execution results.\n"
+        "Always end with one concrete next step when the state provides one. Do not auto-execute writes.\n"
+        "Few-shot examples:\n"
+        "User: 怎么审批\nAssistant: 创建任务后会自动进入契约审批区；核对后点击批准。当前下一步是打开审批界面。\n"
+        "User: 然后呢\nAssistant: 我会根据当前阶段提示下一步；如果任务信息已填，请复核并创建任务。\n"
+        "User: 为什么不能执行\nAssistant: 当前 local 模式只建单和审批契约，不执行修复；执行需要 controller + worker/guest。\n"
+        "User: 这个错误怎么办\nAssistant: 请补充错误码或报错文本；当前信息不足，我不会猜测。\n\n"
+        + facts
+    )
+
     # The client owns the visible conversation. Keep only the last 10 rounds
     # (20 messages) so long chats stay bounded and do not leak old context.
     history = body.get("history") if isinstance(body, dict) else None
@@ -1253,15 +1285,7 @@ async def assistant_chat(request: Request) -> JSONResponse:
             if role in {"user", "assistant"} and isinstance(content, str) and content.strip():
                 clean_history.append({"role": role, "content": content.strip()[:4000]})
     messages = [
-        {
-            "role": "system",
-            "content": (
-                "You are the BinaryRepair workbench assistant. Reply concisely in Chinese. "
-                "Use the recent conversation for context, but never invent verdicts, hashes, "
-                "evidence, token counts or execution results. You may explain the workflow and "
-                "suggest next steps; the acceptance engine owns verdicts."
-            ),
-        },
+        {"role": "system", "content": system_prompt},
     ] + clean_history + [{"role": "user", "content": message.strip()}]
     try:
         reply = client.chat_text(messages)
@@ -1271,7 +1295,18 @@ async def assistant_chat(request: Request) -> JSONResponse:
         return JSONResponse({"detail": "llm_network_error"}, status_code=502)
     except Exception:
         return JSONResponse({"detail": "llm_chat_error"}, status_code=502)
-    return JSONResponse({"reply": reply, "model": getattr(client, "model", None)})
+    action = stage.get("action")
+    if action is None:
+        for entry in guidance["faq"]:
+            if entry.get("action"):
+                action = dict(entry["action"])
+                break
+    return JSONResponse({
+        "reply": reply,
+        "model": getattr(client, "model", None),
+        "state": stage,
+        "action": action,
+    })
 
 
 @app.delete("/api/assistant/key")
