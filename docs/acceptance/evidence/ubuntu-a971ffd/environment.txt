@@ -1,0 +1,5 @@
+runner: ubuntu-24.04
+python: 3.11
+binutils: installed (readelf, objdump)
+command: python -m pytest -q --ignore=tests/e2e
+isolated guest: not_verified

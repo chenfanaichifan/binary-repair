@@ -1,0 +1,29 @@
+{
+  "workflow": "Ubuntu verification",
+  "run_id": 43248090960,
+  "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43248090960",
+  "job_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43248090960/job/131286118473",
+  "head_sha": "a971ffd",
+  "head_branch": "workbench-v3",
+  "runner": "ubuntu-24.04",
+  "python": "3.11",
+  "status": "completed",
+  "conclusion": "success",
+  "command": "python -m pytest -q --ignore=tests/e2e --junitxml=artifacts/ubuntu-verification/junit.xml",
+  "steps": {
+    "Set up job": "success",
+    "Checkout": "success",
+    "Set up Python": "success",
+    "Install system tools": "success",
+    "Install Python dependencies": "success",
+    "Run fixture staging regression": "success",
+    "Run non-browser test suite": "success",
+    "Annotate first pytest failure": "skipped",
+    "Capture environment": "success",
+    "Checksums": "success",
+    "Upload verification evidence": "success"
+  },
+  "artifact": {"name": "ubuntu-verification", "note": "requires GitHub auth"},
+  "guest": "native Linux x86-64 passed; isolated guest not_verified",
+  "note": "Full non-browser suite passed after PE strcat/memcpy, Mach-O cave, relocation audit and repair API."
+}
