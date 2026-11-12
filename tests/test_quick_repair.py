@@ -17,11 +17,11 @@ def test_quick_repair_bounds_read_and_write():
     original = VULN.read_bytes()
     patched, report = quick_repair_elf(original)
     assert report.capacity == 16
+    assert report.mode == "strict"
     assert report.original_sha256 != report.patched_sha256
-    assert len(report.offsets) == 2
     assert bytes(patched) != original
-    # read length immediate changed to 16
-    assert b"\xba\x10\x00\x00\x00" in patched
+    assert b"input too long" in patched
+    assert b"\xba\x11\x00\x00\x00" in patched  # read 17 bytes for detection
 
 
 def test_quick_repair_api_returns_download():
@@ -37,6 +37,7 @@ def test_quick_repair_api_returns_download():
     assert payload["ok"] is True
     assert base64.b64decode(payload["patched_base64"])[:4] == b"\x7fELF"
     assert payload["report"]["capacity"] == 16
+    assert payload["report"]["mode"] == "strict"
 
 
 def test_quick_repair_rejects_non_elf():

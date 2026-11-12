@@ -1,0 +1,65 @@
+{
+  "binary": "vuln-strict-fixed.elf",
+  "sha256": "5d6afd84a930bd3416689bc8dd6bf51c19fe629391e6902ee3b304651ca94e58",
+  "engine": "unicorn 2.1.4 x86-64 emulation; syscalls modeled",
+  "cases": [
+    {
+      "input_len": 0,
+      "exit_code": 0,
+      "stdout_hex": "696e7075743e20",
+      "stderr_hex": "",
+      "stack_sentinel_intact": true,
+      "instructions": 4,
+      "error": null
+    },
+    {
+      "input_len": 3,
+      "exit_code": 0,
+      "stdout_hex": "696e7075743e20414141",
+      "stderr_hex": "",
+      "stack_sentinel_intact": true,
+      "instructions": 4,
+      "error": null
+    },
+    {
+      "input_len": 16,
+      "exit_code": 0,
+      "stdout_hex": "696e7075743e2041414141414141414141414141414141",
+      "stderr_hex": "",
+      "stack_sentinel_intact": true,
+      "instructions": 4,
+      "error": null
+    },
+    {
+      "input_len": 17,
+      "exit_code": 1,
+      "stdout_hex": "696e7075743e20",
+      "stderr_hex": "696e70757420746f6f206c6f6e6720286d6178203136206279746573290a",
+      "stack_sentinel_intact": true,
+      "instructions": 4,
+      "error": null
+    },
+    {
+      "input_len": 32,
+      "exit_code": 1,
+      "stdout_hex": "696e7075743e20",
+      "stderr_hex": "696e70757420746f6f206c6f6e6720286d6178203136206279746573290a",
+      "stack_sentinel_intact": true,
+      "instructions": 4,
+      "error": null
+    },
+    {
+      "input_len": 256,
+      "exit_code": 1,
+      "stdout_hex": "696e7075743e20",
+      "stderr_hex": "696e70757420746f6f206c6f6e6720286d6178203136206279746573290a",
+      "stack_sentinel_intact": true,
+      "instructions": 4,
+      "error": null
+    }
+  ],
+  "limits": [
+    "Emulated syscalls, not a host kernel.",
+    "No network/filesystem syscalls; fixtures use read/write/exit only."
+  ]
+}

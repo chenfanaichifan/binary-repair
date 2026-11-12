@@ -1525,7 +1525,8 @@
       "已把危险读长度改为栈缓冲区容量，并同步收窄输出长度。"));
     var meta = el("div", "repair-meta");
     meta.appendChild(el("span", "repair-chip", "capacity " + payload.report.capacity));
-    meta.appendChild(el("span", "repair-chip", "static rewrite"));
+    meta.appendChild(el("span", "repair-chip",
+      payload.report.mode === "strict" ? "严格修复 · 超长拒绝" : "static rewrite"));
     card.appendChild(meta);
     var details = el("details", "repair-notes");
     details.open = true;

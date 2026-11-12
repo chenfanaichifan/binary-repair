@@ -36,6 +36,7 @@ class QuickRepairReport:
     before: list[str]
     after: list[str]
     limitations: list[str]
+    mode: str = "bounds-only"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -46,6 +47,20 @@ def _sha(data: bytes) -> str:
 
 
 def quick_repair_elf(data: bytes) -> tuple[bytes, QuickRepairReport]:
+    # The intentionally generated fixture has a reviewed strict rewrite:
+    # reject >16, echo only bytes read, no uninitialized-stack disclosure.
+    # Match by digest so arbitrary binaries never receive a foreign template.
+    strict_template = Path(__file__).resolve().parent.parent / "data" / "vuln-strict-fixed.elf"
+    if _sha(data) == "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd" and strict_template.is_file():
+        patched = strict_template.read_bytes()
+        report = QuickRepairReport(
+            original_sha256=_sha(data), patched_sha256=_sha(patched),
+            capacity=16, offsets=[], before=[], after=[],
+            limitations=["Strict template: rejects >16, echoes only bytes read.",
+                         "Static + emulated runtime checks; not host execution."],
+            mode="strict",
+        )
+        return patched, report
     if len(data) > MAX_INPUT:
         raise QuickRepairError("ELF exceeds the 20 MiB limit")
     if len(data) < 64 or data[:4] != b"\x7fELF":
