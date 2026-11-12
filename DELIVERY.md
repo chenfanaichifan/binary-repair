@@ -2,7 +2,7 @@
 
 Branch: `workbench-v3`  
 Final UI commit: `6eea41d`; i18n/theme fix commit follows  
-Test run: **Ubuntu 24.04 CI: post-fix run pending** — see [CI history](docs/operations/ubuntu-verification.md); macOS local: 878 passed / 4 skipped / 1 Route B view-count failure  
+Test run: **Ubuntu 24.04 CI passed** ([run 43256190605](https://github.com/chenfanaichifan/binary-repair/actions/runs/43256190605)); macOS local: 885 passed / 4 skipped / 1 Route B view-count failure; Ubuntu counts and skip reasons are in the job summary  
 Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
 (macOS lacks `readelf`; Ubuntu installs binutils and passes the full non-browser suite).
 
@@ -69,7 +69,7 @@ cd binary-repair-gui
 ```
 
 - Ubuntu 24.04 CI: full non-browser suite and native Linux x86-64 fixture execution passed.
-- macOS local: 878 passed, 4 skipped; the one failure is the Route B view-count check because `readelf` is absent.
+- macOS local: 885 passed, 4 skipped; the one failure is the Route B view-count check because `readelf` is absent.
 - Direct-ELF verification: structured checks plus the existing acceptance rules;
   a missing runtime case is `inconclusive` and cannot be downloaded. The optional
   read-only AI review cannot promote a failed gate. See

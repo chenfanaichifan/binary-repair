@@ -24,6 +24,7 @@ this page saying it was:
 | `5d8d006` | [43248395728](https://github.com/chenfanaichifan/binary-repair/actions/runs/43248395728) | success | **success** |
 | `a436b64` | [43248544193](https://github.com/chenfanaichifan/binary-repair/actions/runs/43248544193) | success | **failure** |
 | `9a451fd` | [43249875815](https://github.com/chenfanaichifan/binary-repair/actions/runs/43249875815) | success | **success (docs-only; flake did not reproduce)** |
+| `774c584` | [43256190605](https://github.com/chenfanaichifan/binary-repair/actions/runs/43256190605) | — | **success (compiler-timeout fix)** |
 
 ### What failed at `a436b64`
 
@@ -58,9 +59,19 @@ compiler timeout is load-dependent and not deterministic.
 - Regression tests simulate the timeout and a real compiler error without
   invoking the host compiler.
 
-The post-fix Ubuntu run is recorded below once it completes. Earlier green
-runs, including the `df82b6c` feature run, remain valid for what they covered,
-but `a436b64` is **not** evidence of a green full suite.
+The post-fix Ubuntu run at `774c584` is green:
+
+```text
+run:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43256190605
+job:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43256190605/job/131314939685
+result:   success
+```
+
+From `774c584` onward the workflow also publishes a public
+`Ubuntu test counts` check annotation and job-summary counts for the fixture
+regression and the full suite, including skip reasons. Earlier green runs,
+including the `df82b6c` feature run, remain valid for what they covered, but
+`a436b64` is **not** evidence of a green full suite.
 
 The earlier pinned baseline (before the review feature) remains:
 

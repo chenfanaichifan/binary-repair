@@ -84,10 +84,13 @@ jobs:
               errors = sum(int(item.get("errors", 0)) for item in suites)
               skipped = sum(int(item.get("skipped", 0)) for item in suites)
               passed = tests - failures - errors - skipped
-              lines.append(
-                  f"- `{name}`: {passed} passed / {skipped} skipped / "
+              summary_line = (
+                  f"{name}: {passed} passed / {skipped} skipped / "
                   f"{failures + errors} failed / {tests} total"
               )
+              lines.append(f"- `{name}`: {passed} passed / {skipped} skipped / "
+                           f"{failures + errors} failed / {tests} total")
+              print(f"::notice title=Ubuntu test counts::{summary_line}")
               for case in root.iter("testcase"):
                   skipped_node = case.find("skipped")
                   if skipped_node is not None:
