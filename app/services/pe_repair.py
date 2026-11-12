@@ -93,3 +93,66 @@ def add_rx_section(data: bytes, code: bytes, *, name: str = ".brfix") -> tuple[b
     except Exception as exc:  # noqa: BLE001
         report.limitations.append(f"PE writeback failed: {type(exc).__name__}: {exc}")
         return None, report
+
+
+def patch_pe_call_site(data: bytes, cave_code: bytes, *,
+                       call_va: int | None = None) -> tuple[bytes | None, PEWriteReport]:
+    """Append an R-X cave and redirect one direct call.
+
+    This is a writeback primitive; the caller is responsible for supplying a
+    semantically correct wrapper.  The cave bytes are written verbatim.
+    """
+    patched, report = add_rx_section(data, cave_code)
+    if patched is None:
+        return None, report
+    try:
+        pe = lief.PE.parse(list(patched))
+        text = pe.get_section(".text")
+        if text is None:
+            report.limitations.append("patched PE has no .text")
+            return None, report
+        text_va = int(pe.optional_header.imagebase) + int(text.virtual_address)
+        raw = int(text.pointerto_raw_data)
+        if call_va is None:
+            # First direct call in .text, for a deterministic smoke test.
+            from capstone import CS_ARCH_X86, CS_MODE_64, Cs
+            ins = Cs(CS_ARCH_X86, CS_MODE_64).disasm(bytes(text.content), text_va)
+            call = next((x for x in ins if x.mnemonic == "call"), None)
+            if call is None:
+                report.limitations.append("no call instruction found")
+                return None, report
+            call_va = call.address
+        off = raw + (call_va - text_va)
+        if off < 0 or off + 6 > len(patched):
+            report.limitations.append("call site outside file")
+            return None, report
+        original = patched[off:off + 6]
+        if original[0] == 0xE8:
+            size = 5
+        elif original[0] == 0xFF and original[1] == 0x15:
+            size = 6
+        else:
+            report.limitations.append("call site is not E8 rel32 or FF15 IAT")
+            return None, report
+        cave_va = int(pe.optional_header.imagebase) + int(report.section_va)
+        report.section_va = cave_va
+        disp = cave_va - (call_va + 5)
+        if not -(1 << 31) <= disp < (1 << 31):
+            report.limitations.append("call target out of rel32 range")
+            return None, report
+        out = bytearray(patched)
+        out[off:off + 5] = b"\xE8" + disp.to_bytes(4, "little", signed=True)
+        if size == 6:
+            out[off + 5] = 0x90
+        check = lief.PE.parse(list(out))
+        if check is None:
+            report.limitations.append("patched PE did not reparse")
+            return None, report
+        report.status = "patched"
+        report.strategy = "call-cave"
+        report.patched_sha256 = _sha(bytes(out))
+        report.limitations.append("Call-site primitive only; wrapper semantics must be validated separately.")
+        return bytes(out), report
+    except Exception as exc:  # noqa: BLE001
+        report.limitations.append(f"PE call patch failed: {type(exc).__name__}: {exc}")
+        return None, report
