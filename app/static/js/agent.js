@@ -2161,8 +2161,17 @@
     var host = $("agent-scorecard");
     clear(host);
     if (!payload) {
-      host.appendChild(el("p", "agent-muted", "正在计算证据覆盖…"));
-      $("agent-bottlenecks").textContent = "";
+      host.appendChild(scoreCard("验收结论", "—", "尚未选择任务", "verdict"));
+      host.appendChild(scoreCard("可观测性指数", "N/A", "选择任务后计算", "accent"));
+      host.appendChild(scoreCard("证据覆盖 V0–V5", "N/A", "未回传证据层", ""));
+      host.appendChild(scoreCard("义务通过率", "N/A", "无义务结果", ""));
+      host.appendChild(scoreCard("用例通过率", "N/A", "无有效分母", ""));
+      host.appendChild(scoreCard("产物 / 尝试", "0 / 0", "仅登记，不证明正确", ""));
+      host.appendChild(scoreCard("耗时", "N/A", "等待任务快照", ""));
+      host.appendChild(scoreCard("AI 用量", "0 calls", "未调用", ""));
+      var gaps = $("agent-bottlenecks");
+      clear(gaps);
+      gaps.appendChild(el("span", "agent-gap agent-gap-local", "选择左侧任务或新建修复内容后显示证据缺口"));
       return;
     }
     var counts = payload.counts || {};
@@ -2201,7 +2210,26 @@
   function renderEvidenceMatrix(payload) {
     var host = $("agent-evidence-matrix");
     clear(host);
-    if (!payload) { host.appendChild(el("p", "agent-muted", "正在读取证据层…")); return; }
+    if (!payload) {
+      var emptyTable = el("table", "agent-result-table");
+      var emptyHead = el("thead"); var emptyHr = el("tr");
+      ["层级", "证据", "状态", "关联路线", "含义"].forEach(function (label) { emptyHr.appendChild(el("th", null, label)); });
+      emptyHead.appendChild(emptyHr); emptyTable.appendChild(emptyHead);
+      var emptyBody = el("tbody");
+      ["V0", "V1", "V2", "V3", "V4", "V5"].forEach(function (level) {
+        var tr = el("tr");
+        tr.appendChild(el("td", null, level));
+        tr.appendChild(el("td", "agent-result-mono", levelLabel(level)));
+        var status = el("td");
+        status.appendChild(el("span", "agent-status-badge is-missing", "未回传"));
+        tr.appendChild(status);
+        tr.appendChild(el("td", "agent-result-mono", "—"));
+        tr.appendChild(el("td", "agent-result-muted", "尚未选择任务；选择任务后读取"));
+        emptyBody.appendChild(tr);
+      });
+      emptyTable.appendChild(emptyBody); host.appendChild(emptyTable);
+      return;
+    }
     var table = el("table", "agent-result-table");
     var head = el("thead");
     var hr = el("tr");
@@ -2231,7 +2259,10 @@
       return obligationFilter === "all" || String(item.result).toLowerCase() === obligationFilter;
     });
     if (!rows.length) {
-      host.appendChild(el("p", "agent-muted", view.obligations && view.obligations.length ? "没有匹配该筛选的义务" : "后端未提供义务结果"));
+      host.appendChild(el("p", "agent-muted",
+        view.obligations && view.obligations.length
+          ? "没有匹配该筛选的义务"
+          : (state.jobId ? "后端未提供义务结果" : "尚未选择任务；选择任务后显示后端逐字结果")));
       return;
     }
     var table = el("table", "agent-result-table");
@@ -2385,7 +2416,7 @@
   function renderResult() {
     var view = state.snapshot ? normalize(state.snapshot) : null;
     if (!view) {
-      setText("agent-verdict", "结论：—");
+      setText("agent-verdict", "结论：尚未选择任务");
       clear($("agent-timeline"));
       $("agent-timeline").appendChild(el("li", "agent-muted", "尚无执行记录"));
       clear($("agent-diagnostics"));
@@ -2399,7 +2430,7 @@
       renderArtifactTable({ artifacts: [] });
       renderAttemptTable();
       renderRawJson();
-      show("agent-receipt-placeholder", false);
+      show("agent-receipt-placeholder", Boolean(state.jobId));
       return;
     }
     renderResultActions(view);
