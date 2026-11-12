@@ -61,3 +61,20 @@ def test_realloc_capacity_is_updated_after_pointer_assignment():
     assert result.get("patch_rejected") is not True
     assert "cap = need;" in result["patched_code"]
     assert "snprintf(buf, need," in result["patched_code"]
+
+
+def test_unconfigured_model_says_ai_was_not_called(monkeypatch):
+    from fastapi.testclient import TestClient
+    from app.main import CSRF_TOKEN, SESSION_TOKEN, app
+    monkeypatch.delenv("BINARYREPAIR_ASSISTANT_PROVIDER_KEY", raising=False)
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    client = TestClient(app, base_url="http://127.0.0.1")
+    client.get("/?token=" + SESSION_TOKEN)
+    response = client.post(
+        "/api/code/repair",
+        json={"code": "void f(char *p){sprintf(p, \"%s\", \"x\");}", "language": "c"},
+        headers={"X-CSRF-Token": CSRF_TOKEN},
+    )
+    assert response.status_code == 200
+    notes = response.json()["repair"]["notes"]
+    assert any("AI 没有被调用" in note for note in notes)

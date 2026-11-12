@@ -1158,9 +1158,14 @@ async def code_repair_route(request: Request) -> JSONResponse:
     if language is not None and not isinstance(language, str):
         return JSONResponse({"detail": "'language' must be a string."}, status_code=422)
     try:
-        result = repair_code(code, language, client=client_from_env())
+        client = client_from_env()
+        result = repair_code(code, language, client=client)
     except ValueError as exc:
         return JSONResponse({"detail": str(exc)}, status_code=422)
+    if client is None:
+        result["notes"] = list(result.get("notes") or []) + [
+            "未配置模型 API Key：本次仅使用确定性规则，AI 没有被调用。"
+        ]
     return JSONResponse({"repair": result})
 
 
