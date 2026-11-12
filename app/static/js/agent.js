@@ -1213,6 +1213,7 @@
       ? stepTitle
       : "第 " + (state.stepIndex + 1) + " 步 · " + stepTitle;
     setText("agent-side-step", stepLabel);
+    updateIntakeVisibility();
     pushMessage("assistant", step.prompt);
     if (step.kind === "upload") pushUploadCard(step);
     else if (step.kind === "question") pushQuestionCard(step);
@@ -1323,6 +1324,75 @@
       return question.label + "：" + (value || "（未填）");
     }).join("\n");
   }
+
+  function updateIntakeVisibility() {
+    var intake = $("agent-intake");
+    if (!intake) return;
+    var step = currentStep();
+    intake.hidden = !!state.jobId || !!(step && step.kind === "upload");
+  }
+
+  function bindIntakeCard() {
+    var drop = $("agent-intake-drop");
+    var fileInput = $("agent-intake-file");
+    var status = $("agent-intake-status");
+    if (!drop || !fileInput) return;
+
+    function show(text) { if (status) status.textContent = text; }
+
+    function readFile(file) {
+      if (!file) return;
+      if (!file.size) { show("文件为空，请重新选择。"); return; }
+      if (file.size > 20 * 1024 * 1024) { show("文件超过 20 MiB，无法提交。"); return; }
+      show("本机读取中…");
+      var reader = new FileReader();
+      reader.onerror = function () { show("读取失败，请重试。"); };
+      reader.onload = function () {
+        var bytes = new Uint8Array(reader.result);
+        var isElf = bytes.length > 4 && bytes[0] === 0x7f && bytes[1] === 0x45 &&
+                    bytes[2] === 0x4c && bytes[3] === 0x46;
+        var finish = function (hex) {
+          state.file = { file: file, name: file.name, size: file.size, sha256: hex, isElf: isElf };
+          show("已选择 " + file.name + " · " + file.size + " B · SHA-256 " + hex.slice(0, 16) + "…" +
+            (isElf ? "" : "（未检测到 ELF 头）") + "；创建任务时上传。");
+          var step = currentStep();
+          if (step && step.kind === "upload") {
+            state.stepIndex += 1;
+            renderCurrentStep();
+          }
+        };
+        if (window.crypto && crypto.subtle && crypto.subtle.digest) {
+          crypto.subtle.digest("SHA-256", reader.result).then(function (digest) {
+            finish(Array.prototype.map.call(new Uint8Array(digest), function (b) {
+              return ("0" + b.toString(16)).slice(-2);
+            }).join(""));
+          }).catch(function () { finish("unavailable"); });
+        } else {
+          finish("unavailable");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    drop.addEventListener("click", function () { fileInput.click(); });
+    drop.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); fileInput.click(); }
+    });
+    drop.addEventListener("dragover", function (event) {
+      event.preventDefault(); drop.classList.add("is-over");
+    });
+    drop.addEventListener("dragleave", function () { drop.classList.remove("is-over"); });
+    drop.addEventListener("drop", function (event) {
+      event.preventDefault(); drop.classList.remove("is-over");
+      if (event.dataTransfer.files && event.dataTransfer.files[0]) readFile(event.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener("change", function () {
+      if (fileInput.files && fileInput.files[0]) readFile(fileInput.files[0]);
+    });
+  }
+
+  bindIntakeCard();
+  updateIntakeVisibility();
 
   function pushUploadCard() {
     var card = el("div", "agent-card");

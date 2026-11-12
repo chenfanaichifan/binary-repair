@@ -64,6 +64,17 @@
   <div class="agent-body">
     <section class="agent-main">
       <div id="agent-view-chat" data-testid="agent-view-chat">
+        <section id="agent-intake" class="agent-card agent-intake" data-testid="agent-intake">
+          <p class="agent-card-title">上传样本</p>
+          <div id="agent-intake-drop" class="agent-dropzone" data-testid="agent-intake-drop" tabindex="0">
+            把要修复的二进制拖到这里，或点击选择（≤ 20 MiB）
+          </div>
+          <input id="agent-intake-file" type="file" hidden data-testid="agent-intake-file">
+          <p id="agent-intake-status" class="agent-side-note" data-testid="agent-intake-status">
+            本机读取并核对 SHA-256；真正上传发生在创建任务时。
+          </p>
+        </section>
+
         <ol id="agent-stream" class="agent-stream" data-testid="agent-stream" aria-live="polite"></ol>
 
         <form id="agent-composer" class="ds-composer agent-composer" data-testid="agent-composer">
@@ -312,5 +323,5 @@
 
 {% block scripts %}
 <script src="/static/js/agent.fixtures.js?v=20261114b"></script>
-<script src="/static/js/agent.js?v=20261114f"></script>
+<script src="/static/js/agent.js?v=20261114g"></script>
 {% endblock %}
