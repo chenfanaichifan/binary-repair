@@ -1014,6 +1014,15 @@ def _result(code: str, patched: str, findings: list[Finding], notes: list[str], 
             summary = "没有匹配到内置规则；可以配置模型密钥后重试，或继续走二进制验收流程。"
     if not findings:
         notes = notes + ["静态规则只覆盖少量常见模式，未匹配不代表代码安全。"]
+    unique_findings = []
+    seen_findings = set()
+    for item in findings:
+        key = (item.line, item.cwe, item.title)
+        if key in seen_findings:
+            continue
+        seen_findings.add(key)
+        unique_findings.append(item)
+    findings = unique_findings
     warning = next((item.warning for item in findings if item.warning), "")
     cwe = findings[0].cwe if findings else ""
     return {
@@ -1154,12 +1163,17 @@ def _llm_repair(code: str, language: str, client: Any,
     if meta is not None:
         meta["ai_attempted"] = True
     try:
+        # A full-file patched_code is expensive. A 1k-token cap truncates
+        # medium/large files and looks like "model failed"; scale the budget
+        # and deadline with the input, while keeping a hard ceiling.
+        max_tokens = min(6000, max(1400, len(code) // 2))
+        timeout_s = max(20.0, min(90.0, len(code) / 250.0))
         response = client.chat_json([
             {"role": "system", "content": _LLM_SYSTEM},
             {"role": "user", "content": json.dumps(
                 {"language": language, "code": code}, ensure_ascii=False
             )},
-        ], max_tokens=1000, timeout=20)
+        ], max_tokens=max_tokens, timeout=timeout_s)
     except Exception as exc:  # noqa: BLE001 - transport failures downgrade, never raise
         if meta is not None:
             meta["ai_error"] = type(exc).__name__
@@ -1207,8 +1221,10 @@ def repair_code(code: str, language: str | None = None, *, client: Any = None) -
         rule.update(meta)
         rule["repair_origin"] = "rule"
         rule["ai_fallback"] = True
+        reason = meta.get("ai_error")
         rule["notes"] = rule["notes"] + [
             "模型修复不可用或返回格式不合法，已回退到规则修复。"
+            + (f"（原因：{reason}）" if reason else "")
         ]
         return _finalize_patch(normalized, detected, rule)
     rule = _rule_repair(normalized, detected)
