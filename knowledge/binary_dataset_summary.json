@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "generated_at": "2026-11-12T08:57:11.136136+00:00",
+  "binpool": {
+    "cves": 586,
+    "binary_paths_claimed": 536,
+    "unique_binary_paths": 536,
+    "cwe_counts": {
+      "CWE-119": 72,
+      "CWE-787": 71,
+      "CWE-476": 61,
+      "CWE-125": 54,
+      "CWE-190": 34,
+      "CWE-20": 28,
+      "CWE-416": 27,
+      "CWE-400": 20,
+      "CWE-79": 17,
+      "CWE-835": 14,
+      "CWE-200": 11,
+      "CWE-415": 11,
+      "CWE-120": 10,
+      "CWE-189": 10,
+      "CWE-401": 10,
+      "CWE-122": 7,
+      "CWE-770": 7,
+      "CWE-22": 6,
+      "CWE-264": 6,
+      "CWE-399": 6
+    },
+    "metadata_sha256": "faf8f5cf647548ba214cb98f5a58e48018f1b26488aaf912c9a6cf56861b87f5",
+    "source": "https://github.com/SimaArasteh/binpool",
+    "binaries": "external Zenodo archive; not downloaded by this script"
+  },
+  "cvebinarysheet": {
+    "cve_json_files": 1334,
+    "entries": 2622,
+    "components": 36,
+    "source": "https://github.com/xmoezzz/CveBinarySheet",
+    "binaries": "external Kaggle/OneDrive archives; not downloaded by this script"
+  },
+  "nvd": {
+    "status": "not downloaded",
+    "use": "CVE description/CVSS/CWE/CPE enrichment; fetch via NVD API or local cache"
+  },
+  "limits": [
+    "Metadata counts are not evidence that a binary is vulnerable.",
+    "Binaries must be obtained from the dataset's official archive and handled in an isolated guest.",
+    "No execution, decompilation or model training was performed by this metadata script."
+  ]
+}

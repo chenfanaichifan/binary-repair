@@ -29,7 +29,7 @@ Source      chenfanaichifan/binary-repair
 | T8.3 | **COMPLETE** |
 | P1 | **success_within_scope** |
 | P2 | **ACCEPTANCE PASSED** |
-| Test suite | **806 passed / 2 skipped / 1 known macOS `readelf` environment failure** (2026-11-12) |
+| Test suite | **810 passed / 2 skipped / 1 known macOS `readelf` environment failure** (2026-11-12) |
 | Browser e2e | **12 passed** (Chrome CDP, included in the suite) |
 | Upload gate | **64 MiB client check + HTTP-only controls** |
 | V4 | **passed at model scope** (not binary-level proof) |
@@ -89,6 +89,8 @@ Binary overflow surface limits: [`docs/reference/binary-overflow-surface.md`](do
 Fixed LAN access: [`docs/reference/lan-fixed-access.md`](docs/reference/lan-fixed-access.md).
 
 Bounded AI adjudication: [`docs/architecture/ai-adjudication.md`](docs/architecture/ai-adjudication.md).
+
+Binary dataset/tool selection: [`docs/reference/binary-vulnerability-datasets.md`](docs/reference/binary-vulnerability-datasets.md).
 
 Overflow AI upgrade report: [`docs/acceptance/overflow-ai-2026-11-12.md`](docs/acceptance/overflow-ai-2026-11-12.md).
 

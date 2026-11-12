@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "commands": {
+    "ghidra": null,
+    "analyzeHeadless": null,
+    "radare2": null,
+    "r2": null,
+    "rizin": null,
+    "gdb": null,
+    "objdump": "/usr/bin/objdump",
+    "readelf": null,
+    "nm": "/Users/huageorge/anaconda3/bin/nm",
+    "strings": "/Users/huageorge/anaconda3/bin/strings",
+    "clang": "/usr/bin/clang",
+    "gcc": "/usr/bin/gcc",
+    "docker": null,
+    "ollama": null,
+    "node": "/Users/huageorge/.nvm/versions/node/v20.20.2/bin/node",
+    "npx": "/Users/huageorge/.nvm/versions/node/v20.20.2/bin/npx",
+    "mutagen": null,
+    "raverse": null
+  },
+  "modules": {
+    "angr": false,
+    "capstone": true,
+    "lief": true,
+    "z3": false,
+    "elftools": true,
+    "tree_sitter": false,
+    "r2pipe": false
+  },
+  "notes": [
+    "Absence is reported as unavailable, not installed automatically.",
+    "Ghidra/Mutagen/RAVERSE require separate installation and, for LLM calls, API/Ollama access.",
+    "Binary execution must happen in an isolated guest, never the host."
+  ]
+}

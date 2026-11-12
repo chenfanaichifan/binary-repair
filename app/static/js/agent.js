@@ -2216,7 +2216,7 @@
       ["层级", "证据", "状态", "关联路线", "含义"].forEach(function (label) { emptyHr.appendChild(el("th", null, label)); });
       emptyHead.appendChild(emptyHr); emptyTable.appendChild(emptyHead);
       var emptyBody = el("tbody");
-      ["V0", "V1", "V2", "V3", "V4", "V5"].forEach(function (level) {
+      Array.apply(null, Array(6)).map(function (_, index) { return "V" + index; }).forEach(function (level) {
         var tr = el("tr");
         tr.appendChild(el("td", null, level));
         tr.appendChild(el("td", "agent-result-mono", levelLabel(level)));

@@ -32,6 +32,7 @@ from app.backend import (
 from app.evidence_domains import evidence_domain, scope_display
 from app.services.assistant_key_store import clear_key, key_status, save_key
 from app.services.code_repair import repair_code
+from app.services.binary_datasets import dataset_status
 from app.services.ai_adjudication import (
     GateResult, PolicyViolation, adjudicate, guard_model_payload,
     preflight_key_binding, supervisor_step,
@@ -1161,6 +1162,12 @@ async def code_repair_route(request: Request) -> JSONResponse:
     except ValueError as exc:
         return JSONResponse({"detail": str(exc)}, status_code=422)
     return JSONResponse({"repair": result})
+
+
+@app.get("/api/datasets")
+async def binary_datasets_status() -> JSONResponse:
+    """Read-only, env-configured inventory of BinPool / CveBinarySheet."""
+    return JSONResponse(dataset_status(), headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/ai/boundary")
