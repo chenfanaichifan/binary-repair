@@ -41,6 +41,11 @@ def jcc(label: str, opcode: int = 0x87) -> None:
     patches.append(("rel32", len(code) - 4, label))
 
 
+def jmp(label: str) -> None:
+    emit(b"\xe9\x00\x00\x00\x00")
+    patches.append(("rel32", len(code) - 4, label))
+
+
 def mov_edx(value: int) -> None:
     emit(b"\xba" + struct.pack("<I", value))
 
@@ -52,16 +57,26 @@ lea_rsi("prompt")
 mov_edx(len(PROMPT))
 emit(b"\x0f\x05")
 
-# read up to 17 into a 32-byte area
+# Read until EOF or 17 bytes into a 32-byte area.  A single read(17) can
+# return a short count on a pipe; looping makes the boundary decision robust.
 emit(b"\x48\x83\xec\x20")      # sub rsp, 32
+emit(b"\x45\x31\xe4")          # xor r12d, r12d  (total)
+mark("read_loop")
 emit(b"\x31\xc0")               # xor eax, eax (read)
 emit(b"\x31\xff")               # xor edi, edi
 emit(b"\x48\x89\xe6")          # mov rsi, rsp
-mov_edx(17)                     # read at most 17
+emit(b"\x4c\x01\xe6")          # add rsi, r12
+mov_edx(17)                     # read at most 17 more
 emit(b"\x0f\x05")               # syscall
-emit(b"\x48\x83\xf8\x10")      # cmp rax, 16
-jcc("reject")                   # ja reject (unsigned, also catches -errno)
-emit(b"\x48\x89\xc2")          # mov rdx, rax  (write exactly bytes read)
+emit(b"\x48\x85\xc0")          # test rax, rax
+jcc("reject", opcode=0x88)      # js reject (read error)
+jcc("done", opcode=0x84)        # jz done (EOF)
+emit(b"\x49\x01\xc4")          # add r12, rax
+emit(b"\x49\x83\xfc\x10")      # cmp r12, 16
+jcc("reject")                   # ja reject
+jmp("read_loop")                # keep reading until EOF/17
+mark("done")
+emit(b"\x4c\x89\xe2")          # mov rdx, r12 (write exactly bytes read)
 emit(b"\xb8\x01\x00\x00\x00")  # mov eax, 1
 emit(b"\xbf\x01\x00\x00\x00")  # mov edi, 1
 emit(b"\x48\x89\xe6")          # mov rsi, rsp

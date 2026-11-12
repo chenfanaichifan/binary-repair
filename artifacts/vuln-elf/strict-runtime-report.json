@@ -1,6 +1,6 @@
 {
   "binary": "vuln-strict-fixed.elf",
-  "sha256": "5d6afd84a930bd3416689bc8dd6bf51c19fe629391e6902ee3b304651ca94e58",
+  "sha256": "c88517664f86755cc31b36a8f7603773fb0a9ac2ff597e3a24f3e0118dbf4432",
   "engine": "unicorn 2.1.4 x86-64 emulation; syscalls modeled",
   "cases": [
     {
@@ -18,7 +18,7 @@
       "stdout_hex": "696e7075743e20414141",
       "stderr_hex": "",
       "stack_sentinel_intact": true,
-      "instructions": 4,
+      "instructions": 5,
       "error": null
     },
     {
@@ -27,7 +27,7 @@
       "stdout_hex": "696e7075743e2041414141414141414141414141414141",
       "stderr_hex": "",
       "stack_sentinel_intact": true,
-      "instructions": 4,
+      "instructions": 5,
       "error": null
     },
     {
@@ -60,6 +60,6 @@
   ],
   "limits": [
     "Emulated syscalls, not a host kernel.",
-    "No network/filesystem syscalls; fixtures use read/write/exit only."
+    "Read loop handles partial reads up to EOF/17 bytes."
   ]
 }
