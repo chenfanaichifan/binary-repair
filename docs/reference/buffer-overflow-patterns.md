@@ -211,3 +211,13 @@ if (len >= 0 && (size_t)len < sizeof(local_buf)) {
 - CWE-120 Buffer Copy without Checking Size
 - CERT C: STR31-C, ARR30-C, INT31-C
 - NIST SP 800-218 SSDF
+
+
+## 六类 / 十二种训练种子
+
+`data/overflow-corpus/` 现在包含 6 类根因、12 个带标签种子（每类两个），以及
+`labels.json` 中的 CWE、触发条件、根因和修复说明。
+
+候选记忆的诚实指标、留一种子评估、编译验证和限制见
+[`knowledge/README.md`](../../knowledge/README.md)。规则命中 12/12，但模型的
+leave-one-seed-out 准确率只有约 0.25；因此规则是主检测器，模型只做候选排序。

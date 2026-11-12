@@ -254,3 +254,9 @@ Initial public MVP snapshot imported from the original development repository's
 - `v1.2.0` is the current upload-gate / P1 replay snapshot.
 - Future changes that alter accepted behavior or evidence scope should use a new
   version and a new annotated tag rather than moving an existing tag.
+
+- Overflow AI upgrade: 12 labeled seeds across six CWE families, 1,200
+  synthetic variants, offline pseudo-label training, a pure-Python runtime
+  candidate memory, compile/surface validation and an honest held-out report.
+  Synthetic accuracy is 1.0 but leave-one-seed-out is 0.25; rules remain the
+  authoritative detector. See `docs/acceptance/overflow-ai-2026-11-12.md`.

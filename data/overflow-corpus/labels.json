@@ -1,0 +1,122 @@
+[
+  {
+    "id": "stack_strcpy",
+    "file": "01_stack_strcpy.c",
+    "group": "stack",
+    "cwe": "CWE-121",
+    "expected_rule": "c.strcpy",
+    "trigger": "100 A characters as argv[1]",
+    "root_cause": "strcpy has no destination capacity",
+    "fix": "snprintf(buffer, sizeof buffer, ...)"
+  },
+  {
+    "id": "stack_adjacent",
+    "file": "02_stack_adjacent.c",
+    "group": "stack",
+    "cwe": "CWE-121",
+    "expected_rule": "c.stack-adjacent-overwrite",
+    "trigger": "40 A characters as argv[1]",
+    "root_cause": "strcpy overwrites an adjacent local is_admin",
+    "fix": "bounded copy and explicit permission object"
+  },
+  {
+    "id": "heap_memcpy",
+    "file": "03_heap_memcpy.c",
+    "group": "heap",
+    "cwe": "CWE-122",
+    "expected_rule": "c.heap-length",
+    "trigger": "200 A characters as argv[1]",
+    "root_cause": "memcpy length exceeds malloc(128)",
+    "fix": "validate len <= 128 before copy"
+  },
+  {
+    "id": "heap_node",
+    "file": "04_heap_node_strcpy.c",
+    "group": "heap",
+    "cwe": "CWE-122",
+    "expected_rule": "c.strcpy",
+    "trigger": "32 A characters as argv[1]",
+    "root_cause": "strcpy overflows Node.data[16] into next",
+    "fix": "snprintf(new_node->data, sizeof new_node->data, ...)"
+  },
+  {
+    "id": "global_pointer",
+    "file": "05_global_function_pointer.c",
+    "group": "global",
+    "cwe": "CWE-119",
+    "expected_rule": "c.global-pointer-overwrite",
+    "trigger": "100 A characters as argv[1]",
+    "root_cause": "global_buf overflow reaches callback_func",
+    "fix": "bounded copy and separate data from code pointers"
+  },
+  {
+    "id": "global_strcat",
+    "file": "06_global_strcat.c",
+    "group": "global",
+    "cwe": "CWE-119",
+    "expected_rule": "c.strcat",
+    "trigger": "100 A characters as argv[1], called twice",
+    "root_cause": "strcat appends without remaining capacity",
+    "fix": "strncat/snprintf with remaining space"
+  },
+  {
+    "id": "mul_wrap",
+    "file": "07_mul_wrap.c",
+    "group": "integer",
+    "cwe": "CWE-190",
+    "expected_rule": "c.mul-overflow",
+    "trigger": "0x40000001 as argv[1]",
+    "root_cause": "count*4 wraps to 4, loop still uses count",
+    "fix": "check count > UINT32_MAX/size before malloc"
+  },
+  {
+    "id": "add_wrap",
+    "file": "08_add_wrap.c",
+    "group": "integer",
+    "cwe": "CWE-190",
+    "expected_rule": "c.add-overflow",
+    "trigger": "input_len = SIZE_MAX",
+    "root_cause": "base_len+input_len wraps and passes check",
+    "fix": "compare input_len > limit - base_len after base_len bound"
+  },
+  {
+    "id": "stack_off_by_one",
+    "file": "09_stack_off_by_one.c",
+    "group": "off_by_one",
+    "cwe": "CWE-193",
+    "expected_rule": "c.off-by-one-loop",
+    "trigger": "32 A characters (no NUL within buffer)",
+    "root_cause": "i <= len writes one byte past buffer[32]",
+    "fix": "capacity check and memcpy of len+1"
+  },
+  {
+    "id": "heap_poison",
+    "file": "10_heap_poison_null.c",
+    "group": "off_by_one",
+    "cwe": "CWE-193",
+    "expected_rule": "c.heap-off-by-one",
+    "trigger": "32 A characters as argv[1]",
+    "root_cause": "malloc(len) then buf[len]=0 writes one byte past",
+    "fix": "malloc(len+1), check SIZE_MAX"
+  },
+  {
+    "id": "format_direct",
+    "file": "11_format_direct.c",
+    "group": "format_string",
+    "cwe": "CWE-134",
+    "expected_rule": "c.format-string",
+    "trigger": "%x.%x.%x as argv[1]",
+    "root_cause": "printf(user_input) interprets user data as format",
+    "fix": "printf(\"%s\", user_input)"
+  },
+  {
+    "id": "format_via_buffer",
+    "file": "12_format_via_buffer.c",
+    "group": "format_string",
+    "cwe": "CWE-134",
+    "expected_rule": "c.format-string",
+    "trigger": "%n as argv[1]",
+    "root_cause": "printf(log_buf) re-interprets copied percent escapes",
+    "fix": "printf(\"%s\", log_buf) / fputs"
+  }
+]

@@ -1,0 +1,221 @@
+{
+  "schema": 1,
+  "source": "data/overflow-corpus",
+  "compiler": "clang -fsanitize=address -g -O0",
+  "seeds": 12,
+  "original_compile_pass": 12,
+  "patched_compile_pass": 12,
+  "records": [
+    {
+      "id": "stack_strcpy",
+      "cwe": "CWE-121",
+      "rules": [
+        "c.strcpy"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "printf",
+        "strcpy"
+      ],
+      "patched_unsafe_import_surface": [
+        "printf"
+      ]
+    },
+    {
+      "id": "stack_adjacent",
+      "cwe": "CWE-121",
+      "rules": [
+        "c.strcpy",
+        "c.stack-adjacent-overwrite"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "printf",
+        "strcpy"
+      ],
+      "patched_unsafe_import_surface": [
+        "printf"
+      ]
+    },
+    {
+      "id": "heap_memcpy",
+      "cwe": "CWE-122",
+      "rules": [
+        "c.heap-length",
+        "c.memcpy"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "malloc",
+        "printf"
+      ],
+      "patched_unsafe_import_surface": [
+        "malloc",
+        "printf"
+      ]
+    },
+    {
+      "id": "heap_node",
+      "cwe": "CWE-122",
+      "rules": [
+        "c.heap-member-overflow",
+        "c.strcpy"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "malloc",
+        "printf",
+        "strcpy"
+      ],
+      "patched_unsafe_import_surface": [
+        "malloc",
+        "printf"
+      ]
+    },
+    {
+      "id": "global_pointer",
+      "cwe": "CWE-119",
+      "rules": [
+        "c.global-pointer-overwrite",
+        "c.strcpy"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "printf",
+        "strcpy"
+      ],
+      "patched_unsafe_import_surface": [
+        "printf"
+      ]
+    },
+    {
+      "id": "global_strcat",
+      "cwe": "CWE-119",
+      "rules": [
+        "c.strcat",
+        "c.strcat"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "printf",
+        "strcat"
+      ],
+      "patched_unsafe_import_surface": [
+        "printf"
+      ]
+    },
+    {
+      "id": "mul_wrap",
+      "cwe": "CWE-190",
+      "rules": [
+        "c.mul-overflow"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "malloc"
+      ],
+      "patched_unsafe_import_surface": [
+        "malloc"
+      ]
+    },
+    {
+      "id": "add_wrap",
+      "cwe": "CWE-190",
+      "rules": [
+        "c.add-overflow",
+        "c.memcpy"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "printf"
+      ],
+      "patched_unsafe_import_surface": [
+        "printf"
+      ]
+    },
+    {
+      "id": "stack_off_by_one",
+      "cwe": "CWE-193",
+      "rules": [
+        "c.off-by-one-loop"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [],
+      "patched_unsafe_import_surface": []
+    },
+    {
+      "id": "heap_poison",
+      "cwe": "CWE-193",
+      "rules": [
+        "c.heap-off-by-one",
+        "c.memcpy"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "malloc",
+        "printf"
+      ],
+      "patched_unsafe_import_surface": [
+        "malloc",
+        "printf"
+      ]
+    },
+    {
+      "id": "format_direct",
+      "cwe": "CWE-134",
+      "rules": [
+        "c.format-string"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "printf"
+      ],
+      "patched_unsafe_import_surface": [
+        "printf"
+      ]
+    },
+    {
+      "id": "format_via_buffer",
+      "cwe": "CWE-134",
+      "rules": [
+        "c.format-string"
+      ],
+      "original_compile": true,
+      "patched_compile": true,
+      "patched_changed": true,
+      "unsafe_import_surface": [
+        "printf"
+      ],
+      "patched_unsafe_import_surface": [
+        "printf"
+      ]
+    }
+  ],
+  "limits": [
+    "Compile-only: no vulnerable program was executed.",
+    "Unsafe imports are attack surface, not proof of vulnerability.",
+    "Dynamic ASan/fuzz and symbolic checks remain required before calling a patch verified."
+  ]
+}

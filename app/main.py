@@ -34,6 +34,7 @@ from app.services.assistant_key_store import clear_key, key_status, save_key
 from app.services.code_repair import repair_code
 from app.services.connectors import connector_snapshot
 from app.services.history import HistoryConflict, HistoryError, HistoryStore
+from app.services.overflow_ai import memory as overflow_memory
 from app.services.evaluation import evaluate as evaluate_evidence
 from app.services.assistant_llm import (
     ASSISTANT_MODE_ENV,
@@ -1156,6 +1157,31 @@ async def code_repair_route(request: Request) -> JSONResponse:
     except ValueError as exc:
         return JSONResponse({"detail": str(exc)}, status_code=422)
     return JSONResponse({"repair": result})
+
+
+@app.get("/api/knowledge/overflow")
+async def overflow_knowledge_status() -> JSONResponse:
+    """Read-only candidate-memory inventory; never a vulnerability verdict."""
+    return JSONResponse(overflow_memory().status(), headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/knowledge/classify")
+async def overflow_knowledge_classify(request: Request) -> JSONResponse:
+    """Classify a C snippet with the synthetic token memory (candidate only)."""
+    _require_csrf(request.headers.get("x-csrf-token", ""))
+    try:
+        body = await request.json()
+    except ValueError:
+        return JSONResponse({"detail": "JSON body required."}, status_code=422)
+    if not isinstance(body, dict) or not isinstance(body.get("code"), str) or not body["code"].strip():
+        return JSONResponse({"detail": "'code' is required."}, status_code=422)
+    if len(body["code"]) > 20000:
+        return JSONResponse({"detail": "code is too large"}, status_code=422)
+    result = overflow_memory().classify(body["code"])
+    return JSONResponse(
+        {"classification": result, "not_verdict": True},
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 @app.get("/api/assistant/key")

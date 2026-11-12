@@ -180,6 +180,73 @@ _META: dict[str, dict[str, Any]] = {
         "refs": (("CWE-195: Signed to Unsigned Conversion Error", "https://cwe.mitre.org/data/definitions/195.html"),
                  ("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html")),
     },
+    "c.strcat": {
+        "cwe": "CWE-119",
+        "impact": "无界追加会写穿全局/静态缓冲区，覆盖相邻函数指针或数据。",
+        "explanation": "strcat 不接收目标容量，也没有为终止符留位；每次调用都会在现有字符串末尾继续写。",
+        "warning": "全局/静态缓冲区没有栈 canary 保护，溢出可能直接改写函数指针。",
+        "refs": (("CWE-119: Buffer Copy without Size Check", "https://cwe.mitre.org/data/definitions/119.html"),
+                 ("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html")),
+    },
+    "c.heap-length": {
+        "cwe": "CWE-122",
+        "impact": "调用方长度超过 malloc 容量时，memcpy 覆盖堆块元数据/相邻对象。",
+        "explanation": "堆分配使用固定容量，但拷贝长度来自参数；分配大小与拷贝长度没有建立约束。",
+        "warning": "堆目标不能用 sizeof(pointer) 当容量；必须保存 malloc 的实际字节数。",
+        "refs": (("CWE-122: Heap-based Buffer Overflow", "https://cwe.mitre.org/data/definitions/122.html"),
+                 ("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html")),
+    },
+    "c.heap-member-overflow": {
+        "cwe": "CWE-122",
+        "impact": "对象成员 data[16] 被超长字符串覆盖，破坏堆对象内部的 next 指针。",
+        "explanation": "strcpy 只看到成员地址，看不到成员容量；malloc(sizeof(Node)) 分配了对象，却没有为 data 提供边界。",
+        "warning": "结构体成员溢出经常先破坏同对象的指针，再在后续链表遍历时触发任意地址访问。",
+        "refs": (("CWE-122: Heap-based Buffer Overflow", "https://cwe.mitre.org/data/definitions/122.html"),),
+    },
+    "c.stack-adjacent-overwrite": {
+        "cwe": "CWE-121",
+        "impact": "超长 username 可覆盖相邻的 is_admin 等控制变量，绕过权限判断。",
+        "explanation": "局部数组与局部标志的栈布局由编译器决定；strcpy 无界写会破坏这种隐式布局。",
+        "warning": "不要依赖局部变量排列；安全代码必须显式定义权限对象，而不是靠“名字在下方”。",
+        "refs": (("CWE-121: Stack-based Buffer Overflow", "https://cwe.mitre.org/data/definitions/121.html"),),
+    },
+    "c.global-pointer-overwrite": {
+        "cwe": "CWE-119",
+        "impact": "全局数组溢出可覆盖相邻的全局函数指针，导致控制流劫持。",
+        "explanation": "global_buf 与 callback_func 可能位于同一 .bss/.data 段；strcpy 不检查 global_buf 容量。",
+        "warning": "全局函数指针是高风险目标；应把可变数据与可执行指针分离，并使用边界拷贝。",
+        "refs": (("CWE-119: Buffer Copy without Size Check", "https://cwe.mitre.org/data/definitions/119.html"),),
+    },
+    "c.mul-overflow": {
+        "cwe": "CWE-190",
+        "impact": "乘法回绕使 malloc 分配极小内存，后续按原 count 写入造成堆溢出。",
+        "explanation": "count * size 在 32 位无符号运算中回绕；分配大小与循环次数使用了不同的数学事实。",
+        "warning": "所有 size * count 都必须先检查上界，再分配、再写入。",
+        "refs": (("CWE-190: Integer Overflow or Wraparound", "https://cwe.mitre.org/data/definitions/190.html"),
+                 ("CWE-122: Heap-based Buffer Overflow", "https://cwe.mitre.org/data/definitions/122.html")),
+    },
+    "c.add-overflow": {
+        "cwe": "CWE-190",
+        "impact": "base_len + input_len 回绕后绕过检查，memcpy 仍按巨大 input_len 写入。",
+        "explanation": "加法在 size_t 中回绕；检查的是回绕后的和，而不是两个操作数的真实关系。",
+        "warning": "长度检查应先验证 base_len <= limit，再用 limit - base_len 比较 input_len。",
+        "refs": (("CWE-190: Integer Overflow or Wraparound", "https://cwe.mitre.org/data/definitions/190.html"),),
+    },
+    "c.heap-off-by-one": {
+        "cwe": "CWE-193",
+        "impact": "malloc(len) 后写 buf[len] 越界 1 字节，可污染相邻堆块 size 字段（Poison Null Byte）。",
+        "explanation": "分配大小等于输入长度，但字符串还需要一个 NUL 终止字节；终止符写在分配区之外。",
+        "warning": "堆上的 1 字节空字符溢出足以改变 chunk 元数据，不能按“只多一个字节”低估。",
+        "refs": (("CWE-193: Off-by-one Error", "https://cwe.mitre.org/data/definitions/193.html"),
+                 ("CWE-122: Heap-based Buffer Overflow", "https://cwe.mitre.org/data/definitions/122.html")),
+    },
+    "c.format-string": {
+        "cwe": "CWE-134",
+        "impact": "攻击者可用 %x 泄露栈数据、%s 解引用任意指针、%n 写入内存。",
+        "explanation": "printf 的第一个参数被当作格式串；用户数据中的格式符会被解释，而不是原样输出。",
+        "warning": "永远不要把用户输入作为格式串；固定格式应为 printf(\"%s\", user_input)。",
+        "refs": (("CWE-134: Use of Externally-Controlled Format String", "https://cwe.mitre.org/data/definitions/134.html"),),
+    },
     "c.command": {
         "cwe": "CWE-78",
         "impact": "拼接后的命令可被 shell 解释，导致任意命令执行。",
@@ -345,9 +412,10 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
     # 1) Classic off-by-one loop: fixed buffer + `i <= len` + buffer[i] write.
     array_decl = re.search(r"\bchar\s+([A-Za-z_]\w*)\s*\[\s*(\d+)\s*\]", code)
     loop = re.search(
-        r"(?P<indent>[ \t]*)for\s*\(\s*(?:size_t\s+)?(?P<i>[A-Za-z_]\w*)\s*=\s*0\s*;\s*"
+        r"(?P<indent>[ \t]*)for\s*\(\s*(?:[A-Za-z_]\w*\s+)?(?P<i>[A-Za-z_]\w*)\s*=\s*0\s*;\s*"
         r"(?P=i)\s*<=\s*(?P<bound>[^;]+?)\s*;\s*(?P=i)\s*\+\+\s*\)\s*\{"
-        r"(?P<body>[^{}]*?(?P<arr>[A-Za-z_]\w*)\s*\[\s*(?P=i)\s*\][^{}]*?)\}",
+        r"(?P<body>[^{}]*?(?P<arr>[A-Za-z_]\w*)\s*\[\s*(?P=i)\s*\]\s*=\s*"
+        r"(?P<src>[A-Za-z_]\w*)\s*\[\s*(?P=i)\s*\][^{}]*?)\}",
         code, re.S,
     )
     if array_decl and loop and array_decl.group(1) == loop.group("arr"):
@@ -366,7 +434,7 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
             f'{loop.group("indent")}    fprintf(stderr, "input too long\\n");\n'
             f'{loop.group("indent")}    return;\n'
             f'{loop.group("indent")}}}\n'
-            f'{loop.group("indent")}memcpy({arr}, input, {bound} + 1);'
+            f'{loop.group("indent")}memcpy({arr}, {loop.group("src")}, {bound} + 1);'
         )
         patched = patched[:loop.start()] + replacement + patched[loop.end():]
         notes.append(
@@ -421,7 +489,7 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
         if not mem:
             continue
         length = mem.group("len").strip()
-        if "->" not in length and not re.search(r"payload|len|size", length, re.I):
+        if "->" not in length and "payload" not in length.lower() and "field" not in length.lower():
             continue
         line = _line_of(code, mem.start())
         findings.append(_finding(
@@ -464,12 +532,28 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
             )
             notes.append("有符号长度已显式检查 >=0 并转为 size_t；仍需在调用方限制 len 上界。")
 
-    strcpy_pattern = re.compile(r"\bstrcpy\s*\(\s*([A-Za-z_]\w*)\s*,\s*([^;]+?)\s*\)\s*;")
+    strcpy_pattern = re.compile(
+        r"\bstrcpy\s*\(\s*([A-Za-z_]\w*(?:\s*(?:->|\.)\s*[A-Za-z_]\w*)?)\s*,\s*([^;]+?)\s*\)\s*;"
+    )
 
     def strcpy_repl(match: re.Match[str]) -> str:
+        target = match.group(1)
+        line = _line_of(code, match.start())
+        if ("->" in target or "." in target) and "malloc(" in code:
+            findings.append(_finding(
+                "c.heap-member-overflow", "结构体成员 strcpy 溢出堆对象", "high",
+                line, match.group(0),
+                "改为 snprintf(target, sizeof(target), \"%s\", src)；并验证对象布局与容量。",
+            ))
+        elif re.search(r"void\s*\(\s*\*\s*\w+\s*\)\s*\(\s*void\s*\)", code):
+            findings.append(_finding(
+                "c.global-pointer-overwrite", "全局函数指针可能被全局数组溢出覆盖", "high",
+                line, match.group(0),
+                "把函数指针与可变数据分离，使用边界拷贝，并在调用前校验指针白名单/签名。",
+            ))
         findings.append(_finding(
             "c.strcpy", "strcpy 没有长度限制（栈/堆溢出）", "high",
-            _line_of(code, match.start()), match.group(0),
+            line, match.group(0),
             "改为 snprintf 并传入目标缓冲区大小。",
         ))
         return 'snprintf(%s, sizeof(%s), "%%s", %s);' % (
@@ -505,6 +589,112 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
         return "fgets(%s, sizeof(%s), stdin);" % (match.group(1), match.group(1))
 
     patched = gets_pattern.sub(gets_repl, patched)
+
+    # Global/static strcat: unbounded append.
+    strcat_pattern = re.compile(r"\bstrcat\s*\(\s*([A-Za-z_]\w*(?:\s*(?:->|\.)\s*[A-Za-z_]\w*)?)\s*,\s*([^;]+?)\s*\)\s*;")
+    def strcat_repl(match: re.Match[str]) -> str:
+        target = match.group(1)
+        findings.append(_finding(
+            "c.strcat", "strcat 无界追加（全局/静态/成员缓冲区溢出）", "high",
+            _line_of(code, match.start()), match.group(0),
+            "改为 strncat(dst, src, sizeof(dst) - strlen(dst) - 1) 或 snprintf；每次追加后重新计算剩余容量。",
+        ))
+        return f"strncat({target}, {match.group(2)}, sizeof({target}) - strlen({target}) - 1);"
+    patched = strcat_pattern.sub(strcat_repl, patched)
+
+    # Sensitive local/global/adjacent overwrite hints (specific, still evidence-based).
+    if re.search(r"\bint\s+is_admin\b", code) and re.search(r"\bstrcpy\s*\(\s*name\s*,", code):
+        line = _line_of(code, code.index("strcpy"))
+        findings.append(_finding(
+            "c.stack-adjacent-overwrite", "栈上相邻控制变量可能被 strcpy 覆盖", "high",
+            line, lines[line - 1].strip(),
+            "不要依赖局部变量布局；改用明确权限对象/边界拷贝，并把 is_admin 放到不可由输入覆盖的独立结构。",
+        ))
+
+    # Heap copy with a caller-controlled length and fixed malloc capacity.
+    for alloc in re.finditer(
+        r"(?P<var>[A-Za-z_]\w*)\s*=\s*(?:\([^;]*?\)\s*)?malloc\s*\(\s*(?P<cap>[A-Za-z_]\w*|\d+)\s*\)\s*;",
+        code,
+    ):
+        var, cap = alloc.group("var"), alloc.group("cap")
+        mem = re.search(
+            r"(?P<stmt>memcpy\s*\(\s*" + re.escape(var) + r"\s*,[^;]*?,\s*(?P<len>[^;]+?)\s*\)\s*;)",
+            code,
+        )
+        if not mem or "->" in mem.group("len"):
+            continue
+        length = mem.group("len").strip()
+        if length == cap or not re.search(r"len|size|count", length, re.I):
+            continue
+        line = _line_of(code, mem.start())
+        findings.append(_finding(
+            "c.heap-length", "堆拷贝使用未校验的长度", "high",
+            line, lines[line - 1].strip(),
+            f"在 memcpy 前检查 if ((size_t){length} > {cap}) 并拒绝；堆目标不能用 sizeof(pointer) 当容量。",
+        ))
+        guard = f"if ((size_t){length} > {cap}) {{ free({var}); return; }}\n"
+        if guard.strip() not in patched:
+            indent = re.match(r"[ \t]*", code[code.rfind("\n", 0, mem.start()) + 1:]).group(0)
+            patched = patched.replace(mem.group("stmt"), guard + indent + mem.group("stmt"), 1)
+
+    # Multiplication/allocation wraparound.
+    mul = re.search(r"(?P<total>[A-Za-z_]\w*)\s*=\s*(?P<a>[A-Za-z_]\w*)\s*\*\s*(?P<b>[A-Za-z_]\w*)\s*;", code)
+    if mul and "malloc(" in code and re.search(r"malloc\s*\(\s*" + re.escape(mul.group("total")) + r"\s*\)", code):
+        line = _line_of(code, mul.start())
+        findings.append(_finding(
+            "c.mul-overflow", "乘法长度可能回绕后分配过小内存", "high",
+            line, lines[line - 1].strip(),
+            f"分配前检查 if ({mul.group('b')} != 0 && {mul.group('a')} > SIZE_MAX / {mul.group('b')}) 拒绝；用 size_t 并验证乘法。",
+        ))
+        guard = f"if ({mul.group('b')} != 0 && {mul.group('a')} > UINT32_MAX / {mul.group('b')}) return;"
+        if guard not in patched:
+            idx = patched.find(mul.group(0))
+            if idx >= 0:
+                pos = idx + len(mul.group(0))
+                indent = re.match(r"[ \t]*", code[code.rfind("\n", 0, mul.start()) + 1:]).group(0)
+                patched = patched[:pos] + "\n" + indent + guard + patched[pos:]
+
+    # Addition-based length check wrap.
+    addcheck = re.search(r"if\s*\(\s*(?P<a>[A-Za-z_]\w*)\s*\+\s*(?P<b>[A-Za-z_]\w*)\s*>\s*(?P<limit>\d+)\s*\)", code)
+    if addcheck:
+        line = _line_of(code, addcheck.start())
+        a, b, limit = addcheck.group("a"), addcheck.group("b"), addcheck.group("limit")
+        findings.append(_finding(
+            "c.add-overflow", "长度检查中的加法可能回绕", "high",
+            line, lines[line - 1].strip(),
+            f"改为先检查 {a} > {limit}，再用 {b} > {limit} - {a}；不要先做可能回绕的加法。",
+        ))
+        old = addcheck.group(0)
+        new = f"if ({a} > {limit} || {b} > {limit} - {a})"
+        patched = patched.replace(old, new, 1)
+
+    # Heap off-by-one: malloc(len), memcpy(len), buf[len] = 0.
+    heap_alloc = re.search(r"(?P<buf>[A-Za-z_]\w*)\s*=\s*(?:\([^;]*?\)\s*)?malloc\s*\(\s*(?P<len>[A-Za-z_]\w*)\s*\)\s*;", code)
+    if heap_alloc:
+        buf, length = heap_alloc.group("buf"), heap_alloc.group("len")
+        if re.search(r"memcpy\s*\(\s*" + re.escape(buf) + r"\s*,[^;]*?,\s*" + re.escape(length) + r"\s*\)", code) and re.search(
+            r"\b" + re.escape(buf) + r"\s*\[\s*" + re.escape(length) + r"\s*\]\s*=\s*(?:'\\0'|0)", code
+        ):
+            line = _line_of(code, heap_alloc.start())
+            findings.append(_finding(
+                "c.heap-off-by-one", "malloc 长度没有为终止符留位（Poison Null Byte）", "high",
+                line, lines[line - 1].strip(),
+                "分配 len + 1（并检查 len == SIZE_MAX），或在 len 范围内复制并拒绝无终止符的输入。",
+            ))
+            patched = patched.replace(
+                f"malloc({length})", f"malloc(({length}) + 1)", 1
+            )
+
+    # Format string: printf(identifier) is interpreted at runtime.
+    for match in re.finditer(r"\bprintf\s*\(\s*(?P<arg>[A-Za-z_]\w*)\s*\)\s*;", code):
+        arg = match.group("arg")
+        line = _line_of(code, match.start())
+        findings.append(_finding(
+            "c.format-string", "用户可控字符串被当作 printf 格式串", "high",
+            line, lines[line - 1].strip(),
+            f'改为 printf("%s", {arg}) 或 fputs({arg}, stdout)；绝不能让数据成为格式串。',
+        ))
+        patched = patched.replace(match.group(0), f'printf("%s", {arg});', 1)
 
     for pattern, rule, title, severity, advice in (
         (re.compile(r"\b(?:memcpy|memmove)\s*\("), "c.memcpy",

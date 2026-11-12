@@ -97,3 +97,19 @@ def test_signed_length_patch_rejects_negative_and_casts():
     assert "len >= 0" in patch
     assert "(size_t)len < sizeof(local_buf)" in patch
     assert "(size_t)len" in patch
+
+
+def test_labeled_twelve_seed_corpus_matches_cwe_and_rule():
+    import json
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "data" / "overflow-corpus"
+    labels = json.loads((root / "labels.json").read_text(encoding="utf-8"))
+    assert len(labels) == 12
+    for item in labels:
+        code = (root / "seeds" / item["file"]).read_text(encoding="utf-8")
+        result = repair_code(code, "c")
+        rules = {finding["rule"] for finding in result["findings"]}
+        assert item["expected_rule"] in rules, (item["id"], rules)
+        assert result["cwe"] == item["cwe"], (item["id"], result["cwe"])
+        assert result["changed"] is True, item["id"]
