@@ -93,6 +93,10 @@ simple semantic-versioning policy for delivery snapshots.
   V0–V5 matrix, scorecard, obligation filters, attempt history, artifact
   fingerprints, raw JSON/export links and a resilient local fallback. Zero or
   missing denominators show N/A; `not_run` never becomes a pass.
+- Light palette compromise: the first rainbow-style ambient was too busy; the
+  final light theme uses a warm-to-cool porcelain paper, one faint iris wash,
+  a barely-there sage undertone and quiet glass cards. Dark keeps the midnight
+  identity. Semantic green/amber/red remain the only saturated colors in data.
 - Light/dark material pass: warm porcelain/iris/teal ambient with translucent
   glass cards and an animated aurora in light mode; midnight/cyan-violet ambient
   in dark mode. Page transitions respect reduced motion.

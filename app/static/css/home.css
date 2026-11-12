@@ -671,3 +671,33 @@ html[data-booted="1"] .boot { display: none; }
   filter: blur(12px);
   opacity: 0.9;
 }
+
+/* Restrained porcelain landing: one iris wash, one sage hint, nothing else. */
+:root:not([data-theme="dark"]) .ds-home-body {
+  --home-panel: rgba(255, 255, 255, 0.76);
+  --home-hair: rgba(53, 67, 94, 0.045);
+  background:
+    radial-gradient(1020px 600px at 50% -18%, rgba(110, 132, 220, 0.14), transparent 66%),
+    radial-gradient(820px 520px at 96% 16%, rgba(116, 166, 158, 0.06), transparent 64%),
+    linear-gradient(168deg, #f3f5fa 0%, #e9edf4 56%, #eef2f6 100%);
+}
+:root:not([data-theme="dark"]) .ds-home-body::before {
+  background-image:
+    linear-gradient(rgba(53, 67, 94, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(53, 67, 94, 0.04) 1px, transparent 1px);
+}
+:root:not([data-theme="dark"]) .home-hero::before {
+  background:
+    radial-gradient(closest-side, rgba(255, 255, 255, 0.4), transparent 72%),
+    conic-gradient(from 220deg at 50% 50%, rgba(110, 132, 220, 0.12), transparent 36%, rgba(116, 166, 158, 0.07) 66%, transparent 88%);
+  filter: blur(14px);
+  opacity: 0.75;
+}
+
+
+:root:not([data-theme="dark"]) .ds-home-body {
+  background:
+    radial-gradient(1000px 580px at 48% -18%, rgba(106, 126, 212, 0.12), transparent 66%),
+    radial-gradient(780px 500px at 96% 18%, rgba(112, 156, 150, 0.05), transparent 64%),
+    linear-gradient(160deg, #f4f2ee 0%, #eef1f6 48%, #e9edf4 100%);
+}
