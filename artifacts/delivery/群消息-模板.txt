@@ -3,10 +3,14 @@
 一个本地运行的 AI 二进制漏洞修复工作台：粘贴代码即可看 CWE、风险、修复补丁与差异；也可以按引导创建二进制修复任务、查看证据与验证义务。
 
 ① 在线体验（临时演示，推荐先点这个）
-https://dandelion-copious-hydration.ngrok-free.dev/?token=<SHARE_TOKEN>
+https://dandelion-copious-hydration.ngrok-free.dev/?token=<LAN_TOKEN>
 
 同一 Wi-Fi 也可用局域网地址：
-http://10.11.0.237:8124/?token=<SHARE_TOKEN>
+http://10.11.0.237:8124/?token=<LAN_TOKEN>
+
+固定局域网入口（Bonjour）：
+http://huademacbook-pro.local:8124/?token=<LAN_TOKEN>
+
 
 （ngrok 首次打开会出现 "You are about to visit..."，点 "Visit Site" 即可。演示实例使用合成 fixture，不执行真实修复，不构成「补丁已验证」的证据。）
 
