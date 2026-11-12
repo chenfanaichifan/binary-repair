@@ -2,7 +2,7 @@
 
 Branch: `workbench-v3`  
 Final UI commit: `6eea41d`; i18n/theme fix commit follows  
-Test run: **Ubuntu 24.04 CI passed** ([run 43248090960](https://github.com/chenfanaichifan/binary-repair/actions/runs/43246391510)); macOS local: 857 passed / 2 skipped / 1 Route B view-count failure  
+Test run: **Ubuntu 24.04 CI passed** ([run 43248544193](https://github.com/chenfanaichifan/binary-repair/actions/runs/43248544193)); macOS local: 878 passed / 4 skipped / 1 Route B view-count failure  
 Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
 (macOS lacks `readelf`; Ubuntu installs binutils and passes the full non-browser suite).
 
@@ -69,7 +69,12 @@ cd binary-repair-gui
 ```
 
 - Ubuntu 24.04 CI: full non-browser suite and native Linux x86-64 fixture execution passed.
-- macOS local: 857 passed, 2 skipped; the one failure is the Route B view-count check because `readelf` is absent.
+- macOS local: 878 passed, 4 skipped; the one failure is the Route B view-count check because `readelf` is absent.
+- Direct-ELF verification: structured checks plus the existing acceptance rules;
+  a missing runtime case is `inconclusive` and cannot be downloaded. The optional
+  read-only AI review cannot promote a failed gate. See
+  [`docs/architecture/ai-adjudication.md`](docs/architecture/ai-adjudication.md)
+  and [`docs/acceptance/binary-ai-review-2026-11-12.md`](docs/acceptance/binary-ai-review-2026-11-12.md).
 - Browser smoke: language switch (zh/en/ja/zh), custom select, mobile drawer,
   page transition, live/demo launch modes, expanded result/evidence panel,
   public health and landing.

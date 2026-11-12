@@ -19,6 +19,15 @@ command:  python -m pytest -q --ignore=tests/e2e
 result:   success (all non-browser tests passed)
 ```
 
+The final documentation commit for this milestone was also verified:
+
+```text
+commit:   a436b642537149b3ae54890a51f9fca064b868b2
+run:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43248544193
+job:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43248544193/job/131287740337
+result:   success
+```
+
 The earlier pinned baseline (before the review feature) remains:
 
 ```text

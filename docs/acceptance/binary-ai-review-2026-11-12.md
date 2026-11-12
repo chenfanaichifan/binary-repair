@@ -33,7 +33,7 @@ The workflow ran the targeted fixture-staging regression first and the full
 non-browser suite with `if: always()`. The macOS host still shows the known
 `readelf` Route B view-count failure; Ubuntu is the canonical baseline.
 
-Local suite before the AI experiment:
+Local suite after the review changes:
 
 ```text
 1 failed, 878 passed, 4 skipped
