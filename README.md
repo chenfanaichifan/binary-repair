@@ -29,7 +29,7 @@ Source      chenfanaichifan/binary-repair
 | T8.3 | **COMPLETE** |
 | P1 | **success_within_scope** |
 | P2 | **ACCEPTANCE PASSED** |
-| Test suite | **828 passed / 2 skipped / 1 known macOS `readelf` environment failure** (2026-11-12) |
+| Test suite | **830 passed / 2 skipped / 1 known macOS `readelf` environment failure** (2026-11-12) |
 | Browser e2e | **12 passed** (Chrome CDP, included in the suite) |
 | Upload gate | **64 MiB client check + HTTP-only controls** |
 | V4 | **passed at model scope** (not binary-level proof) |
@@ -86,7 +86,7 @@ for a file-by-file guide.
 
 Binary overflow surface limits: [`docs/reference/binary-overflow-surface.md`](docs/reference/binary-overflow-surface.md).
 
-CGC subset (static inventory only): [`docs/reference/cgc-access.md`](docs/reference/cgc-access.md).
+CGC subset (small sample, not acceptance): [`docs/reference/cgc-access.md`](docs/reference/cgc-access.md); POV replay: [`docs/acceptance/cgc-pov-2026-11-12.md`](docs/acceptance/cgc-pov-2026-11-12.md).
 
 Fixed LAN access: [`docs/reference/lan-fixed-access.md`](docs/reference/lan-fixed-access.md).
 
