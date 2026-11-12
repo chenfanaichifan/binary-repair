@@ -1,7 +1,7 @@
 # Final delivery snapshot
 
 Branch: `workbench-v3`  
-Final UI commit: `17d9ed4`  
+Final UI commit: `6eea41d` (delivery ZIP commit follows)  
 Test run: **781 passed / 2 skipped / 1 known macOS `readelf` failure**  
 Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
 (macOS `readelf` is unavailable; not an application regression).
@@ -45,7 +45,8 @@ WeChat-Share/BinaryRepair-Workbench-2026-11-12.zip
 ```
 
 It was smoke-tested from a fresh directory on port 8125: `/healthz`, landing,
-`/agent` launch card, `/guide` SVG and i18n assets all load. The package excludes
+`/agent` launch card, expanded result/evidence markup, `/guide` SVG and
+i18n assets all load. The package excludes
 `.git`, `.venv`, history databases, tests, caches and provider keys.
 
 ## Public demo
