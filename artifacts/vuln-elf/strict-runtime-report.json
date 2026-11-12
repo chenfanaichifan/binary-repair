@@ -1,6 +1,6 @@
 {
   "binary": "vuln-strict-fixed.elf",
-  "sha256": "c88517664f86755cc31b36a8f7603773fb0a9ac2ff597e3a24f3e0118dbf4432",
+  "sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
   "engine": "unicorn 2.1.4 x86-64 emulation; syscalls modeled",
   "cases": [
     {
@@ -58,8 +58,40 @@
       "error": null
     }
   ],
+  "partial_read_cases": [
+    {
+      "input_len": 33,
+      "read_chunk": 1,
+      "exit_code": 1,
+      "sentinel_intact": true
+    },
+    {
+      "input_len": 33,
+      "read_chunk": 3,
+      "exit_code": 1,
+      "sentinel_intact": true
+    },
+    {
+      "input_len": 33,
+      "read_chunk": 7,
+      "exit_code": 1,
+      "sentinel_intact": true
+    },
+    {
+      "input_len": 33,
+      "read_chunk": 16,
+      "exit_code": 1,
+      "sentinel_intact": true
+    },
+    {
+      "input_len": 33,
+      "read_chunk": 17,
+      "exit_code": 1,
+      "sentinel_intact": true
+    }
+  ],
   "limits": [
     "Emulated syscalls, not a host kernel.",
-    "Read loop handles partial reads up to EOF/17 bytes."
+    "Read loop caps each read to the remaining capacity+1 byte."
   ]
 }

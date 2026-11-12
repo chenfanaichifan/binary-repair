@@ -14,8 +14,8 @@ PROMPT = b"input> "
 ERROR = b"input too long (max 16 bytes)\n"
 
 
-def run(path, data):
-    return emulate_elf(path.read_bytes(), data)
+def run(path, data, **kwargs):
+    return emulate_elf(path.read_bytes(), data, **kwargs)
 
 
 def test_strict_accepts_zero_short_and_boundary_inputs_without_leak():
@@ -40,3 +40,12 @@ def test_original_binary_really_overwrites_stack_sentinel():
     result = run(VULN, b"A" * 32)
     assert result.exit_code == 0
     assert result.stack_tail != b"Z" * 16
+
+
+def test_strict_partial_reads_cannot_overrun_buffer():
+    # 16 then 16 bytes: the second read must be capped to the 1 remaining slot.
+    for chunk in (1, 3, 7, 16, 17):
+        result = run(STRICT, b"A" * 33, read_chunk=chunk)
+        assert result.exit_code == 1, (chunk, result.error)
+        assert result.stderr == ERROR
+        assert result.stack_tail == b"Z" * 16

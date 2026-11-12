@@ -31,7 +31,8 @@ class EmulationResult:
     maps: list[tuple[int, int]] = field(default_factory=list)
 
 
-def emulate_elf(raw: bytes, stdin: bytes = b"", *, limit: int = 2000) -> EmulationResult:
+def emulate_elf(raw: bytes, stdin: bytes = b"", *, limit: int = 2000,
+                read_chunk: int | None = None) -> EmulationResult:
     result = EmulationResult()
     try:
         elf = ELFFile(io.BytesIO(raw))
@@ -67,7 +68,8 @@ def emulate_elf(raw: bytes, stdin: bytes = b"", *, limit: int = 2000) -> Emulati
             rsi = uc.reg_read(UC_X86_REG_RSI)
             rdx = uc.reg_read(UC_X86_REG_RDX)
             if rax == 0:  # read(0, rsi, rdx)
-                chunk = state["stdin"][state["pos"]:state["pos"] + rdx]
+                want = rdx if read_chunk is None else min(rdx, read_chunk)
+                chunk = state["stdin"][state["pos"]:state["pos"] + want]
                 state["pos"] += len(chunk)
                 uc.mem_write(rsi, chunk)
                 uc.reg_write(UC_X86_REG_RAX, len(chunk))
