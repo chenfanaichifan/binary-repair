@@ -2,8 +2,13 @@
 
 {% block title %}设置{% endblock %}
 
+{% block scripts %}
+<script src="/static/js/custom-select.js?v=20261113a"></script>
+{% endblock %}
+
 {% block head %}
 <link rel="stylesheet" href="/static/css/settings.css?v=20261112b">
+<link rel="stylesheet" href="/static/css/custom-select.css?v=20261113a">
 {% endblock %}
 
 {% block content %}
@@ -49,6 +54,10 @@
           <output id="code-font-value">12 px</output>
         </span>
       </label>
+      <div class="settings-row">
+        <span><strong>界面语言</strong><p>导航、主要控件与说明标题可切换九种语言；证据与技术原文保留原语言，避免误译。</p></span>
+        {% include "_lang_switch.html" %}
+      </div>
       <label class="settings-row">
         <span><strong>界面动画</strong><p>关闭后停用开场、悬停与扫描动画。</p></span>
         <input type="checkbox" data-setting="animations">

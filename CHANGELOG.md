@@ -76,6 +76,26 @@ simple semantic-versioning policy for delivery snapshots.
   foregrounds and the demo banner were audited against WCAG ratios. The
   full-width amber demo strip is now a slim, muted `演示数据` disclosure with a
   boundary link.
+- Launch consolidation: the workbench’s separate “新建修复内容” and “打开演示
+  会话” entries are now one launch card with real/demo mode, demo scenarios
+  (fresh/pending/success/failure) and an inline difference explainer. The
+  landing page’s demo link is folded into the existing mode selector
+  (`fixture=1` is carried automatically).
+- Custom selects: settings uses an accessible sci-fi listbox (`custom-select.js`)
+  instead of native `<select>` chrome, with keyboard navigation and dark/light
+  styling; the underlying select stays as the settings value source.
+- Nine-language UI shell: 简体中文/繁體中文/English/日本語/한국어/Français/
+  Italiano/Português/Español, selected from the sidebar, landing or settings.
+  Navigation, primary controls, headings and settings labels are localized;
+  evidence and technical source text remain original to avoid mistranslation.
+  See `docs/reference/i18n.md`.
+- Rich manual: `/guide` now has twelve sections, an inline evidence-chain SVG,
+  step tables, verification-level table, troubleshooting matrix, security
+  checklist and official tool links.
+- Responsive structure: a mobile top bar + off-canvas drawer replaces the
+  stacked full sidebar; desktop spacing/labels were tightened. Page navigation
+  uses a restrained scan/iris transition (disabled by reduced motion or the
+  animations-off setting).
 - Team sharing: `START-HERE.md`, Windows `start-gui.ps1`/`.bat`, a current
   `docs/showcase/` screenshot set and `SHARE-WECHAT.md`. The host gate accepts
   explicit `BINARYREPAIR_ALLOWED_HOSTS` entries plus an opt-in

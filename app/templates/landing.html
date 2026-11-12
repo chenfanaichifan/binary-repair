@@ -18,7 +18,7 @@
       } catch (error) { /* ignore */ }
     })();
   </script>
-  <link rel="stylesheet" href="/static/css/ds.css?v=20261112i">
+  <link rel="stylesheet" href="/static/css/ds.css?v=20261113i">
   <link rel="stylesheet" href="/static/css/home.css?v=20261112l">
 </head>
 <body class="ds-home-body">
@@ -45,9 +45,9 @@
         <a href="/methods">方法</a>
         <a href="/guide">使用说明</a>
         <a href="/settings">设置</a>
-        <a href="/agent?fixture=1">演示数据</a>
       </nav>
       <div class="home-actions">
+        {% include "_lang_switch.html" %}
         {% include "_theme_toggle.html" %}
         <p class="home-status"><span class="home-dot" aria-hidden="true"></span>本地运行 · 127.0.0.1</p>
       </div>
@@ -103,6 +103,7 @@
             <input type="hidden" name="workspace" id="home-workspace" value="{{ default_workspace.id }}">
             <input type="hidden" name="mode" id="home-mode" value="{{ default_mode.id }}">
             <input type="hidden" name="new" value="1">
+            <input type="hidden" name="fixture" id="home-fixture" value="">
             <label class="visually-hidden" for="home-q" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">缺陷描述</label>
             <textarea id="home-q" name="q" rows="3" placeholder="描述二进制缺陷，或粘贴一段带漏洞的代码；/ 调用指令，@ 选择样本"></textarea>
             <div class="ds-composer-bar">
@@ -117,7 +118,7 @@
 
           <div class="ds-home-links">
             <a class="ds-link-primary" href="/agent/new?workspace={{ default_workspace.id }}&amp;mode={{ default_mode.id }}&amp;new=1" data-testid="landing-agent-cta" data-primary="1">新建修复内容 <span class="arrow" aria-hidden="true">→</span></a>
-            <a class="ds-link-quiet" href="/agent?fixture=1" data-testid="home-demo-link">查看演示数据</a>
+            <a class="ds-link-quiet" href="/guide">使用说明</a>
           </div>
         </section>
       </section>
@@ -164,6 +165,9 @@
   <script src="/static/js/settings.js?v=20261112a"></script>
   <script src="/static/js/theme.js?v=20261111a"></script>
   <script src="/static/js/palette.js?v=20261112b"></script>
+  <script src="/static/js/i18n-data.js?v=20261113f"></script>
+  <script src="/static/js/i18n.js?v=20261113g"></script>
+  <script src="/static/js/transitions.js?v=20261113a"></script>
   <script>
     (function () {
       "use strict";
@@ -199,6 +203,8 @@
 
         workspaceInput.value = state.workspace;
         modeInput.value = state.mode;
+        var fixtureInput = document.getElementById("home-fixture");
+        if (fixtureInput) { fixtureInput.value = state.mode === "demo" ? "1" : ""; }
         if (workspaceChip && ws) { workspaceChip.textContent = ws.dataset.value; }
 
         var selects = document.querySelectorAll("[data-select]");

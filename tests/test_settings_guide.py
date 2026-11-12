@@ -28,6 +28,14 @@ def test_settings_page_exposes_all_controls_and_assets():
         'data-setting="defaultMode"',
         'id="settings-clear-server"',
         "/static/js/settings.js",
+        "/static/css/custom-select.css",
+        "/static/js/custom-select.js",
+        "data-lang-set=\"ja\"",
+        "data-lang-set=\"ko\"",
+        "data-lang-set=\"fr\"",
+        "data-lang-set=\"it\"",
+        "data-lang-set=\"pt\"",
+        "data-lang-set=\"es\"",
         'name="csrf"',
     ):
         assert marker in page.text
@@ -54,6 +62,11 @@ def test_guide_is_complete_and_linked_from_the_sidebar():
         assert marker in guide.text
     assert "命令面板" in guide.text
     assert "Ctrl/Cmd" in guide.text
+    assert "<svg" in guide.text
+    assert "guide-table" in guide.text
+    assert "guide-steps" in guide.text
+    assert "guide-figure" in guide.text
+    assert "https://cwe.mitre.org/" in guide.text
     for path in ("/agent", "/connectors", "/methods", "/settings"):
         page = client.get(path)
         assert page.status_code == 200
@@ -73,6 +86,19 @@ def test_task_management_and_composer_controls_are_shipped():
     assert "renameTask" in js
     assert "removeTask" in js
     assert "taskSort" in js
+    assert 'id="ds-mobile-menu"' in agent.text
+    assert 'id="ds-drawer-close"' in agent.text
+    assert 'id="ds-lang-switch"' not in agent.text
+    assert "data-lang-set=\"en\"" in agent.text
+    i18n = client.get("/static/js/i18n-data.js").text
+    assert "简体中文" in i18n and "繁體中文" in i18n and "日本語" in i18n
+    assert "한국어" in i18n and "Français" in i18n and "Español" in i18n
+    launch = client.get("/agent")
+    assert 'data-testid="launch-card"' in launch.text
+    assert 'data-launch-mode="live"' in launch.text
+    assert 'data-launch-mode="demo"' in launch.text
+    assert 'data-scenario="success"' in launch.text
+    assert 'data-scenario="failure"' in launch.text
     agent_js = client.get("/static/js/agent.js").text
     assert 'id="agent-plus-menu"' in agent.text
     assert "loadTextFiles" in agent_js

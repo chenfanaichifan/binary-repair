@@ -3,7 +3,7 @@
 {% block title %}修复工作台{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/workbench.css?v=20261112c">
+<link rel="stylesheet" href="/static/css/workbench.css?v=20261113d">
 {% endblock %}
 
 {% block content %}
@@ -16,11 +16,43 @@
         从一段带漏洞的代码，或一个待修复的二进制开始。对话、工具证据与验收结论分开保存：
         助手只做引导与解释，创建任务和开始执行由你点击确认。
       </p>
-      <div class="wb-hero-actions">
-        <a class="wb-cta" href="/agent/new?new=1" data-testid="agent-start-new">
-          ＋ 新建修复内容 <span aria-hidden="true">→</span>
-        </a>
-        <a class="ds-btn ghost" href="/agent/new?fixture=1&new=1">打开演示会话</a>
+      <div class="wb-launch" data-testid="launch-card">
+        <div class="wb-launch-tabs" role="tablist" aria-label="选择会话模式">
+          <button type="button" class="is-active" data-launch-mode="live" role="tab" aria-selected="true">
+            真实任务
+          </button>
+          <button type="button" data-launch-mode="demo" role="tab" aria-selected="false">
+            演示会话
+          </button>
+        </div>
+        <div class="wb-launch-body">
+          <div class="wb-launch-copy">
+            <p class="wb-launch-kicker" id="wb-launch-kicker">REAL SESSION</p>
+            <h2 id="wb-launch-title">新建一次真实修复</h2>
+            <p id="wb-launch-desc">
+              对话、历史与任务结果都写入本机服务端；创建任务、开始执行由你确认。
+            </p>
+          </div>
+          <a class="wb-cta" id="wb-launch-cta" href="/agent/new?new=1" data-testid="agent-start-new">
+            ＋ 新建修复内容 <span aria-hidden="true">→</span>
+          </a>
+        </div>
+        <div class="wb-launch-demo" id="wb-launch-demo" hidden>
+          <span class="wb-launch-demo-label">演示场景</span>
+          <div class="wb-scenario-tabs" role="group" aria-label="演示场景">
+            <button type="button" class="is-active" data-scenario="fresh">全新</button>
+            <button type="button" data-scenario="pending">待执行</button>
+            <button type="button" data-scenario="success">成功</button>
+            <button type="button" data-scenario="failure">失败</button>
+          </div>
+        </div>
+        <details class="wb-launch-diff">
+          <summary>真实任务与演示会话有什么区别？</summary>
+          <div class="wb-launch-diff-grid">
+            <p><strong>真实任务</strong>：会创建任务、写入服务端历史，可上传样本并走完整引导；当前 mock 后端仍使用合成数据。</p>
+            <p><strong>演示会话</strong>：只读 fixture，不创建任务、不执行真实修复；适合快速查看成功/失败/待执行界面。</p>
+          </div>
+        </details>
       </div>
       <p class="wb-hero-hint">
         也可以直接粘贴 <code>shell=True</code>、<code>strcpy</code>、<code>eval</code> 等代码片段，
@@ -253,5 +285,64 @@
     phase.textContent = detail.text || PHASE_LABELS[detail.state] || detail.state;
   });
 })();
+</script>
+<script>
+  (function () {
+    var card = document.querySelector("[data-testid='launch-card']");
+    if (!card) return;
+    var tabs = card.querySelectorAll("[data-launch-mode]");
+    var scenarios = card.querySelectorAll("[data-scenario]");
+    var cta = document.getElementById("wb-launch-cta");
+    var kicker = document.getElementById("wb-launch-kicker");
+    var title = document.getElementById("wb-launch-title");
+    var desc = document.getElementById("wb-launch-desc");
+    var demoRow = document.getElementById("wb-launch-demo");
+    var mode = "live";
+    var scenario = "fresh";
+    var COPY = {
+      live: {
+        kicker: "REAL SESSION",
+        title: "新建一次真实修复",
+        desc: "对话、历史与任务结果都写入本机服务端；创建任务、开始执行由你确认。",
+        label: "＋ 新建修复内容"
+      },
+      demo: {
+        kicker: "FIXTURE SESSION",
+        title: "打开一段演示会话",
+        desc: "使用合成 fixture 查看完整界面与成功/失败状态；不创建任务、不执行真实修复。",
+        label: "打开演示会话"
+      }
+    };
+    function render() {
+      var copy = COPY[mode];
+      kicker.textContent = copy.kicker;
+      title.textContent = copy.title;
+      desc.textContent = copy.desc;
+      cta.innerHTML = copy.label + ' <span aria-hidden="true">→</span>';
+      if (mode === "demo") {
+        cta.href = "/agent/new?new=1&fixture=1" + (scenario === "fresh" ? "" : "&scenario=" + scenario);
+        demoRow.hidden = false;
+      } else {
+        cta.href = "/agent/new?new=1";
+        demoRow.hidden = true;
+      }
+      tabs.forEach(function (tab) {
+        var active = tab.dataset.launchMode === mode;
+        tab.classList.toggle("is-active", active);
+        tab.setAttribute("aria-selected", active ? "true" : "false");
+      });
+    }
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () { mode = tab.dataset.launchMode; render(); });
+    });
+    scenarios.forEach(function (button) {
+      button.addEventListener("click", function () {
+        scenario = button.dataset.scenario;
+        scenarios.forEach(function (item) { item.classList.toggle("is-active", item === button); });
+        render();
+      });
+    });
+    render();
+  })();
 </script>
 {% endblock %}

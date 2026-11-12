@@ -29,7 +29,7 @@ Source      chenfanaichifan/binary-repair
 | T8.3 | **COMPLETE** |
 | P1 | **success_within_scope** |
 | P2 | **ACCEPTANCE PASSED** |
-| Test suite | **775 passed / 2 skipped / 1 known macOS `readelf` environment failure** (2026-11-12) |
+| Test suite | **776 passed / 2 skipped / 1 known macOS `readelf` environment failure** (2026-11-12) |
 | Browser e2e | **12 passed** (Chrome CDP, included in the suite) |
 | Upload gate | **64 MiB client check + HTTP-only controls** |
 | V4 | **passed at model scope** (not binary-level proof) |
@@ -58,7 +58,10 @@ this project as proof.
   [`docs/reference/binary-repair-landscape.md`](docs/reference/binary-repair-landscape.md).
   The workbench also ships a `/settings` preferences page, a complete `/guide`
   operator manual, task search/pin/rename, a composer `+` menu for local
-  code/text files and vulnerable snippets, and a `Ctrl/Cmd+K` command palette.
+  code/text files and vulnerable snippets, a `Ctrl/Cmd+K` command palette,
+  nine UI languages, a responsive drawer sidebar and restrained page-transition
+  effects. Language coverage and precision boundaries are documented in
+  [`docs/reference/i18n.md`](docs/reference/i18n.md).
 
 ## Repository layout
 
