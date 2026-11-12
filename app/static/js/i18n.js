@@ -36,6 +36,16 @@
     });
   });
 
+  var OVERRIDES = window.BR_I18N_OVERRIDES || {};
+  Object.keys(OVERRIDES).forEach(function (source) {
+    var normalized = source.replace(/\s+/g, " ").trim();
+    Object.keys(OVERRIDES[source]).forEach(function (lang) {
+      if (!DICTS[lang]) return;
+      DICTS[lang][normalized] = OVERRIDES[source][lang];
+      COMPACT[lang][normalized.replace(/\s+/g, "")] = OVERRIDES[source][lang];
+    });
+  });
+
   var originals = new WeakMap();
   var attrOriginals = new WeakMap();
   var current = "zh-Hans";
@@ -223,6 +233,12 @@
   });
   observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 
-  window.I18N = { apply: apply, get: function () { return current; }, names: NAMES };
+  function translate(text) {
+    if (current === "zh-Hans" || !text) return text;
+    return translateString(String(text), current) || String(text);
+  }
+  window.I18N = {
+    apply: apply, translate: translate, get: function () { return current; }, names: NAMES
+  };
   apply(preferred());
 })();

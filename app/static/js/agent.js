@@ -724,11 +724,11 @@
     wrap.appendChild(pre);
     var lines = source.split("\n").length;
     if (lines > 12) {
-      var more = el("button", "chat-code-more", "展开全部 · " + lines + " 行");
+      var more = el("button", "chat-code-more", tr("展开全部") + " · " + lines + (window.I18N && window.I18N.get() === "zh-Hans" ? " 行" : ""));
       more.type = "button";
       more.addEventListener("click", function () {
         var expanded = wrap.classList.toggle("is-expanded");
-        more.textContent = expanded ? "收起" : "展开全部 · " + lines + " 行";
+        more.textContent = expanded ? tr("收起") : tr("展开全部") + " · " + lines + (window.I18N && window.I18N.get() === "zh-Hans" ? " 行" : "");
       });
       wrap.appendChild(more);
     }
@@ -765,6 +765,9 @@
   /* ---------- 终端流渲染 ---------- */
 
   function pushMessage(role, text, options) {
+    if (role === "assistant" && window.I18N && typeof text === "string") {
+      text = window.I18N.translate(text);
+    }
     var item = el("li", "agent-msg agent-msg-" + role);
     var head = el("div", "agent-msg-head");
     var avatar = el("span", "agent-avatar agent-avatar-" + role, role === "user" ? "你" : "B");
@@ -864,6 +867,21 @@
     return labels[language] || (language ? String(language) : "代码");
   }
 
+  function tr(value) {
+    return window.I18N && typeof value === "string" ? window.I18N.translate(value) : value;
+  }
+
+  function trRepairSummary(value) {
+    var direct = tr(value);
+    if (direct !== value) return direct;
+    var match = /^发现 (\d+) 处问题，(.+)$/.exec(value || "");
+    if (!match) return value;
+    var suffix = match[2];
+    if (suffix === "并生成了补丁。") return "Found " + match[1] + " issue(s) and generated a patch.";
+    if (suffix === "但未能生成补丁。") return "Found " + match[1] + " issue(s), but no patch could be generated.";
+    return "Found " + match[1] + " issue(s), " + tr(suffix);
+  }
+
   function repairConfidenceLabel(confidence) {
     if (confidence === "high") { return "高置信"; }
     if (confidence === "medium") { return "中置信"; }
@@ -892,28 +910,29 @@
     var repairAvatar = el("span", "agent-avatar agent-avatar-assistant repair-avatar", "B");
     repairAvatar.setAttribute("aria-hidden", "true");
     kicker.appendChild(repairAvatar);
+    kicker.appendChild(document.createTextNode(" "));
     kicker.appendChild(document.createTextNode(
-      repair.mode === "llm" ? "CODE REPAIR · 模型建议" : "CODE REPAIR · 规则建议"));
+      tr(repair.mode === "llm" ? "CODE REPAIR · 模型建议" : "CODE REPAIR · 规则建议")));
     heading.appendChild(kicker);
-    heading.appendChild(el("h3", "repair-title", repair.title || "修复建议"));
+    heading.appendChild(el("h3", "repair-title", tr(repair.title || "修复建议")));
     head.appendChild(heading);
     var meta = el("div", "repair-meta");
-    meta.appendChild(el("span", "repair-chip", repairLanguageLabel(repair.language)));
+    meta.appendChild(el("span", "repair-chip", tr(repairLanguageLabel(repair.language))));
     if (repair.cwe) { meta.appendChild(el("span", "repair-chip", repair.cwe)); }
     meta.appendChild(el("span", "repair-chip is-" + (repair.confidence || "low"),
-      repairConfidenceLabel(repair.confidence)));
+      tr(repairConfidenceLabel(repair.confidence))));
     if (repair.mode === "llm" && repair.model) {
       meta.appendChild(el("span", "repair-chip", repair.model));
     }
     head.appendChild(meta);
     card.appendChild(head);
 
-    card.appendChild(el("p", "repair-summary", repair.summary || ""));
+    card.appendChild(el("p", "repair-summary", trRepairSummary(repair.summary || "")));
 
     if (repair.warning) {
       var alert = el("div", "repair-alert");
       alert.appendChild(el("span", "repair-alert-icon", "⚠"));
-      alert.appendChild(el("p", null, repair.warning));
+      alert.appendChild(el("p", null, tr(repair.warning)));
       card.appendChild(alert);
     }
 
@@ -925,34 +944,34 @@
         if (index === 0) { row.open = true; }
         var top = el("summary", "repair-finding-top");
         top.appendChild(el("span", "repair-dot"));
-        top.appendChild(el("span", "repair-finding-title", finding.title || "问题"));
+        top.appendChild(el("span", "repair-finding-title", tr(finding.title || "问题")));
         if (finding.cwe) { top.appendChild(el("span", "repair-cwe", finding.cwe)); }
         if (finding.line) { top.appendChild(el("span", "repair-line", "L" + finding.line)); }
         row.appendChild(top);
 
         var body = el("div", "repair-finding-body");
         if (finding.explanation) {
-          body.appendChild(el("p", "repair-explain", finding.explanation));
+          body.appendChild(el("p", "repair-explain", tr(finding.explanation)));
         }
         if (finding.impact) {
           var impact = el("p", "repair-impact");
-          impact.appendChild(el("strong", null, "影响："));
-          impact.appendChild(document.createTextNode(finding.impact));
+          impact.appendChild(el("strong", null, tr("影响：") + " "));
+          impact.appendChild(document.createTextNode(tr(finding.impact)));
           body.appendChild(impact);
         }
         if (finding.advice) {
           var advice = el("p", "repair-advice");
-          advice.appendChild(el("strong", null, "修复："));
-          advice.appendChild(document.createTextNode(finding.advice));
+          advice.appendChild(el("strong", null, tr("修复：") + " "));
+          advice.appendChild(document.createTextNode(tr(finding.advice)));
           body.appendChild(advice);
         }
         if (finding.warning) {
-          body.appendChild(el("p", "repair-warning", "警醒：" + finding.warning));
+          body.appendChild(el("p", "repair-warning", tr("警醒：") + " " + tr(finding.warning)));
         }
         var refs = Array.isArray(finding.references) ? finding.references : [];
         if (refs.length) {
           var links = el("p", "repair-refs");
-          links.appendChild(el("span", "repair-refs-label", "参考："));
+          links.appendChild(el("span", "repair-refs-label", tr("参考：") + " "));
           refs.forEach(function (ref, refIndex) {
             if (!ref || !ref.url) { return; }
             if (!/^https?:\/\//i.test(String(ref.url))) { return; }
@@ -1134,10 +1153,11 @@
         at: new Date().toISOString()
       });
       setText("agent-code-repair",
-        (repair.mode === "llm" ? "模型" : "规则") + " · " + repairConfidenceLabel(repair.confidence));
-      var shortTitle = repair.title && repair.title.length > 18
-        ? repair.title.slice(0, 18) + "…" : (repair.title || "已完成");
-      setText("agent-side-step", "代码修复 · " + shortTitle);
+        tr(repair.mode === "llm" ? "模型" : "规则") + " · " + tr(repairConfidenceLabel(repair.confidence)));
+      var repairTitle = tr(repair.title || "已完成");
+      var shortTitle = repairTitle.length > 18
+        ? repairTitle.slice(0, 18) + "…" : repairTitle;
+      setText("agent-side-step", tr("代码修复") + " · " + shortTitle);
       setText("agent-poll", "待命");
       return repair;
     }).then(function (value) {
@@ -1191,12 +1211,14 @@
     state.answers = {};
     state.file = null;
     clear(stream());
+    var tr = window.I18N ? window.I18N.translate : function (value) { return value; };
     var titles = state.plan.steps.map(function (step) {
-      return step.title || step.id;
+      return tr(step.title || step.id);
     }).join(" → ");
     pushMessage("assistant",
-      "你好，我是这个工作台的引导助手。这次按「" + titles + "」带你填完任务单。\n" +
-      "两件事先说清楚：我只做引导和解释，不会替你创建任务或开始执行；修复结论由验收引擎给出，不由我判断。");
+      tr("你好，我是这个工作台的引导助手。这次按「") + titles +
+      tr("」带你填完任务单。") + "\n" +
+      tr("两件事先说清楚：我只做引导和解释，不会替你创建任务或开始执行；修复结论由验收引擎给出，不由我判断。"));
     renderCurrentStep();
     renderSide();
   }

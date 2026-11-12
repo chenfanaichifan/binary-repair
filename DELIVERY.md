@@ -1,7 +1,7 @@
 # Final delivery snapshot
 
 Branch: `workbench-v3`  
-Final UI commit: `6eea41d` (delivery ZIP commit follows)  
+Final UI commit: `6eea41d`; i18n/theme fix commit follows  
 Test run: **781 passed / 2 skipped / 1 known macOS `readelf` failure**  
 Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
 (macOS `readelf` is unavailable; not an application regression).
@@ -20,7 +20,7 @@ Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
   attempt history, artifacts/fingerprints, raw JSON and export links; backed by
   a read-only `/api/jobs/{id}/evaluation` coverage endpoint. It never derives a
   verdict; missing denominators stay N/A.
-- Full-shell localization: 799 auto-extracted rendered segments plus curated
+- Full-shell localization: 1274 auto-extracted rendered segments plus curated
   labels across nine languages. Technical identifiers, code and verdict values
   stay original.
 - Rebuilt **`/guide`** with twelve sections, an evidence-chain SVG, step tables,

@@ -100,7 +100,7 @@ simple semantic-versioning policy for delivery snapshots.
 - Light/dark material pass: warm porcelain/iris/teal ambient with translucent
   glass cards and an animated aurora in light mode; midnight/cyan-violet ambient
   in dark mode. Page transitions respect reduced motion.
-- Full UI copy localization: auto-extracted long-form page strings (799 source
+- Full UI copy localization: auto-extracted long-form page strings (1274 source
   segments) now translate alongside curated nav/settings labels, including the
   guide, methods, connectors, result/evidence and agent guidance. Technical
   values, code and evidence identifiers stay original.
