@@ -6,10 +6,10 @@
 http://huademacbook-pro.local:8124/?token=<LAN_TOKEN>
 ```
 
-IP 备用入口（DHCP 可能变化）：
+IP 备用入口（当前若为 10.13.1.188；DHCP 可能变化）：
 
 ```text
-http://10.11.0.237:8124/?token=<LAN_TOKEN>
+http://<CURRENT_LAN_IP>:8124/?token=<LAN_TOKEN>
 ```
 
 token 保存在本机：
@@ -28,7 +28,7 @@ var/lan.token   (chmod 0600, git-ignored)
 
 - 使用固定端口 `8124`，绑定 `0.0.0.0`；
 - 复用 `var/lan.token`，不会每次重启换 token；
-- 允许 `huademacbook-pro.local`、`10.11.0.237` 和 localhost；
+- 允许 `huademacbook-pro.local`、当前局域网 IP 和 localhost；
 - 数据目录固定为 `var/lan-data`；
 - 打印 hostname 与 IP 两个入口。
 
