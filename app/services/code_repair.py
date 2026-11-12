@@ -148,6 +148,38 @@ _META: dict[str, dict[str, Any]] = {
         "refs": (("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html"),
                  ("OWASP: Buffer Overflow", "https://owasp.org/www-community/vulnerabilities/Buffer_Overflow")),
     },
+    "c.off-by-one-loop": {
+        "cwe": "CWE-193",
+        "impact": "循环多写一个字节，可能覆盖栈上的返回地址/相邻变量，造成崩溃或代码执行。",
+        "explanation": "len 恰好等于缓冲区大小时，i <= len 的最后一次迭代写到 buffer[len]，越界 1 字节；随后若再用 %s 读取，还会缺少 \\0 终止。",
+        "warning": "差一错误不是“只多一个字节”的小问题；在栈上它足以改变控制流。",
+        "refs": (("CWE-193: Off-by-one Error", "https://cwe.mitre.org/data/definitions/193.html"),
+                 ("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html")),
+    },
+    "c.safe-copy-off-by-one": {
+        "cwe": "CWE-193",
+        "impact": "自定义“安全拷贝”在目标满时把 \\0 写到 dest[dest_size]，越界 1 字节。",
+        "explanation": "循环允许 i 到达 dest_size，随后 dest[i] = '\\0' 写到边界之外；dest_size 没有为终止符预留位置。",
+        "warning": "“自己写的安全函数”仍需证明每个写操作都满足 0 <= index < capacity。",
+        "refs": (("CWE-193: Off-by-one Error", "https://cwe.mitre.org/data/definitions/193.html"),
+                 ("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html")),
+    },
+    "c.length-field-heap": {
+        "cwe": "CWE-190",
+        "impact": "报文长度字段可超过堆块容量，memcpy 直接覆盖堆元数据/相邻对象，可能导致任意写。",
+        "explanation": "分配使用固定 MAX_PAYLOAD，但拷贝长度完全信任 header->payload_len；两个容量事实没有建立关系。",
+        "warning": "长度字段是攻击面，不是可信元数据；拷贝前必须验证 len <= capacity。",
+        "refs": (("CWE-190: Integer Overflow or Wraparound", "https://cwe.mitre.org/data/definitions/190.html"),
+                 ("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html")),
+    },
+    "c.signed-length": {
+        "cwe": "CWE-195",
+        "impact": "负数长度通过 int 检查后转换为巨大的 size_t，memcpy 会破坏栈并崩溃/可被利用。",
+        "explanation": "if (len < 1024) 对负数成立；memcpy 的第三个参数是 size_t，len=-1 变为 SIZE_MAX。",
+        "warning": "有符号/无符号转换必须在调用前显式检查 len >= 0 并限定上界。",
+        "refs": (("CWE-195: Signed to Unsigned Conversion Error", "https://cwe.mitre.org/data/definitions/195.html"),
+                 ("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html")),
+    },
     "c.command": {
         "cwe": "CWE-78",
         "impact": "拼接后的命令可被 shell 解释，导致任意命令执行。",
@@ -308,6 +340,129 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
     findings: list[Finding] = []
     notes: list[str] = []
     patched = code
+    lines = code.splitlines()
+
+    # 1) Classic off-by-one loop: fixed buffer + `i <= len` + buffer[i] write.
+    array_decl = re.search(r"\bchar\s+([A-Za-z_]\w*)\s*\[\s*(\d+)\s*\]", code)
+    loop = re.search(
+        r"(?P<indent>[ \t]*)for\s*\(\s*(?:size_t\s+)?(?P<i>[A-Za-z_]\w*)\s*=\s*0\s*;\s*"
+        r"(?P=i)\s*<=\s*(?P<bound>[^;]+?)\s*;\s*(?P=i)\s*\+\+\s*\)\s*\{"
+        r"(?P<body>[^{}]*?(?P<arr>[A-Za-z_]\w*)\s*\[\s*(?P=i)\s*\][^{}]*?)\}",
+        code, re.S,
+    )
+    if array_decl and loop and array_decl.group(1) == loop.group("arr"):
+        arr = array_decl.group(1)
+        bound = loop.group("bound").strip()
+        line = _line_of(code, loop.start())
+        findings.append(_finding(
+            "c.off-by-one-loop",
+            "循环边界使用 <= 导致差一越界写",
+            "high", line, lines[line - 1].strip() + " …",
+            "改为 len >= sizeof(buffer) 时拒绝/截断；用 memcpy(buffer, input, len + 1) 或 snprintf，并保留 \\0。",
+        ))
+        # Only rewrite the exact copy-loop shape; never guess a general loop.
+        replacement = (
+            f'{loop.group("indent")}if ({bound} >= sizeof({arr})) {{\n'
+            f'{loop.group("indent")}    fprintf(stderr, "input too long\\n");\n'
+            f'{loop.group("indent")}    return;\n'
+            f'{loop.group("indent")}}}\n'
+            f'{loop.group("indent")}memcpy({arr}, input, {bound} + 1);'
+        )
+        patched = patched[:loop.start()] + replacement + patched[loop.end():]
+        notes.append(
+            "差一循环已改为显式容量检查 + 带终止符的 memcpy；若 input 不是 NUL 结尾，需改为 len 限制并手动补 \\0。"
+        )
+
+    # 2) Custom safe-copy off-by-one: loop bound dest_size then dest[i] = '\0'.
+    copy_loop = re.search(
+        r"for\s*\(\s*(?P<i>[A-Za-z_]\w*)\s*=\s*0\s*;\s*(?P=i)\s*<\s*(?P<bound>[A-Za-z_]\w*)\s*&&"
+        r"[^)]*;\s*(?P=i)\s*\+\+\s*\)\s*\{[^{}]*?(?P<dest>[A-Za-z_]\w*)\s*\[\s*(?P=i)\s*\][^{}]*\}",
+        code, re.S,
+    )
+    null_write = re.search(r"(?P<dest>[A-Za-z_]\w*)\s*\[\s*(?P<i>[A-Za-z_]\w*)\s*\]\s*=\s*'\\0'\s*;", code)
+    if copy_loop and null_write and copy_loop.group("dest") == null_write.group("dest") and copy_loop.group("i") == null_write.group("i"):
+        line = _line_of(code, copy_loop.start())
+        findings.append(_finding(
+            "c.safe-copy-off-by-one",
+            "自定义安全拷贝未为 \\0 预留空间",
+            "high", line, lines[line - 1].strip() + " …",
+            "把循环条件改为 i + 1 < dest_size（或 i < dest_size - 1），保证 dest[i] = '\\0' 落在容量内。",
+        ))
+        old_header = copy_loop.group(0).split("{", 1)[0] + "{"
+        new_header = old_header.replace(
+            f'{copy_loop.group("i")} < {copy_loop.group("bound")}',
+            f'{copy_loop.group("i")} + 1 < {copy_loop.group("bound")}',
+            1,
+        )
+        patched = patched.replace(old_header, new_header, 1)
+        sig = re.search(r"void\s+" + re.escape(copy_loop.group("dest")) if False else r"", code)
+        # For void copy helpers (the common shape), reject zero capacity before
+        # touching dest[0]; the loop alone cannot protect the final NUL write.
+        func = re.search(r"\bvoid\s+[A-Za-z_]\w*\s*\([^)]*\b" + re.escape(copy_loop.group("bound")) + r"\b[^)]*\)", code)
+        if func:
+            start = patched.find(new_header)
+            line_start = patched.rfind("\n", 0, start) + 1
+            indent = patched[line_start:start]
+            guard = f'{indent}if ({copy_loop.group("bound")} == 0) return;\n'
+            patched = patched[:line_start] + guard + patched[line_start:]
+            notes.append("已加入 dest_size == 0 的提前返回；调用方仍应拒绝零容量。")
+        notes.append("自定义拷贝循环改为 i + 1 < dest_size；dest_size == 0 时不会写终止符，调用方仍需拒绝零容量。")
+
+    # 3) Heap length-field overflow: malloc(cap) then memcpy(..., field->len).
+    for alloc in re.finditer(
+        r"(?P<var>[A-Za-z_]\w*)\s*=\s*(?:\([^;]*?\)\s*)?malloc\s*\(\s*(?P<cap>[A-Za-z_]\w*|\d+)\s*\)\s*;",
+        code,
+    ):
+        var, cap = alloc.group("var"), alloc.group("cap")
+        mem = re.search(
+            r"(?P<stmt>memcpy\s*\(\s*" + re.escape(var) + r"\s*,[^;]*?,\s*(?P<len>[^;]+?)\s*\)\s*;)",
+            code,
+        )
+        if not mem:
+            continue
+        length = mem.group("len").strip()
+        if "->" not in length and not re.search(r"payload|len|size", length, re.I):
+            continue
+        line = _line_of(code, mem.start())
+        findings.append(_finding(
+            "c.length-field-heap",
+            "报文长度字段未校验即用于堆拷贝",
+            "high", line, lines[line - 1].strip(),
+            f"在 memcpy 前检查 if ({length} > {cap}) 并拒绝/截断；不要把对端长度直接当成本地容量。",
+        ))
+        guard = f"if ({length} > {cap}) {{ free({var}); return; }}\n"
+        if guard.strip() not in patched:
+            indent = re.match(r"[ \t]*", code[code.rfind("\n", 0, mem.start()) + 1:]).group(0)
+            patched = patched.replace(mem.group("stmt"), guard + indent + mem.group("stmt"), 1)
+
+    # 4) Signed int length converted to size_t in memcpy.
+    signed_param = re.search(r"\bint\s+(?P<len>[A-Za-z_]\w*)\b", code)
+    if signed_param:
+        length = signed_param.group("len")
+        mem = re.search(
+            r"memcpy\s*\(\s*(?P<dest>[A-Za-z_]\w*)\s*,\s*(?P<src>[^;]+?),\s*" + re.escape(length) + r"\s*\)\s*;",
+            code,
+        )
+        if mem and re.search(r"\bchar\s+" + re.escape(mem.group("dest")) + r"\s*\[", code):
+            line = _line_of(code, mem.start())
+            findings.append(_finding(
+                "c.signed-length",
+                "有符号长度直接传入 memcpy（负数变巨大 size_t）",
+                "high", line, lines[line - 1].strip(),
+                f"在拷贝前加 if ({length} < 0) 拒绝，并用 (size_t){length} 且校验 < sizeof({mem.group('dest')})。",
+            ))
+            patched = patched.replace(
+                f"memcpy({mem.group('dest')}, {mem.group('src')}, {length})",
+                f"memcpy({mem.group('dest')}, {mem.group('src')}, (size_t){length})",
+                1,
+            )
+            patched = re.sub(
+                r"if\s*\(\s*" + re.escape(length) + r"\s*<\s*\d+\s*\)",
+                f"if ({length} >= 0 && (size_t){length} < sizeof({mem.group('dest')}))",
+                patched,
+                count=1,
+            )
+            notes.append("有符号长度已显式检查 >=0 并转为 size_t；仍需在调用方限制 len 上界。")
 
     strcpy_pattern = re.compile(r"\bstrcpy\s*\(\s*([A-Za-z_]\w*)\s*,\s*([^;]+?)\s*\)\s*;")
 

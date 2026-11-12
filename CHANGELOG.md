@@ -104,6 +104,11 @@ simple semantic-versioning policy for delivery snapshots.
   segments) now translate alongside curated nav/settings labels, including the
   guide, methods, connectors, result/evidence and agent guidance. Technical
   values, code and evidence identifiers stay original.
+- C overflow coverage: five deterministic rules for off-by-one loops, custom
+  safe-copy NUL off-by-one, heap length-field copies, sprintf, and signed-to-
+  unsigned memcpy lengths. Each emits a CWE and a reviewable patch; the
+  limits of regex-level analysis are documented in
+  `docs/reference/buffer-overflow-patterns.md`.
 - Rich manual: `/guide` now has twelve sections, an inline evidence-chain SVG,
   step tables, verification-level table, troubleshooting matrix, security
   checklist and official tool links.

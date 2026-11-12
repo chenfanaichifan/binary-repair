@@ -94,4 +94,4 @@ cd binary-repair-gui
 .venv/bin/python -m pytest
 ```
 
-Current suite: **781 passed / 2 skipped / 1 known macOS `readelf` failure**.
+Current suite: **787 passed / 2 skipped / 1 known macOS `readelf` failure**.

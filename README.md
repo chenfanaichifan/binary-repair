@@ -29,7 +29,7 @@ Source      chenfanaichifan/binary-repair
 | T8.3 | **COMPLETE** |
 | P1 | **success_within_scope** |
 | P2 | **ACCEPTANCE PASSED** |
-| Test suite | **781 passed / 2 skipped / 1 known macOS `readelf` environment failure** (2026-11-12) |
+| Test suite | **787 passed / 2 skipped / 1 known macOS `readelf` environment failure** (2026-11-12) |
 | Browser e2e | **12 passed** (Chrome CDP, included in the suite) |
 | Upload gate | **64 MiB client check + HTTP-only controls** |
 | V4 | **passed at model scope** (not binary-level proof) |
@@ -83,6 +83,8 @@ docs/                 product, architecture, acceptance, operations, reviews
 See [`docs/README.md`](docs/README.md) for the documentation map and
 [`docs/development/repository-layout.md`](docs/development/repository-layout.md)
 for a file-by-file guide.
+
+C overflow patterns and repair principles: [`docs/reference/buffer-overflow-patterns.md`](docs/reference/buffer-overflow-patterns.md).
 
 Repair quality/efficiency re-evaluation: [`docs/acceptance/repair-evaluation-2026-11-12.md`](docs/acceptance/repair-evaluation-2026-11-12.md).
 
