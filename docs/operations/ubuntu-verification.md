@@ -45,7 +45,9 @@ infrastructure failure. `validate_c_patch` treated that as a rejected patch, so
 then saw `patched_code == original` even though the rule had detected the
 off-by-one. The failure was therefore a **transient compiler-infrastructure
 failure presented as a functional test failure**, not a regression caused by
-the documentation commit.
+the documentation commit. The test calls `repair_code(code, "c")` without a
+client: it is a rule-only path and does not call a model or depend on provider
+state.
 
 This also explains green -> red -> green between docs-only commits: the
 compiler timeout is load-dependent and not deterministic.
