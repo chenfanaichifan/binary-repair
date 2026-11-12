@@ -149,8 +149,10 @@ def scan_elf(data: bytes) -> dict[str, Any]:
     if text is None:
         return result
     symbols = _symbol_names(elf)
+    text_addr = int(text["sh_addr"])
+    text_off = int(text["sh_offset"])
     try:
-        ins = list(MD.disasm(text.data(), int(text["sh_addr"])))
+        ins = list(MD.disasm(text.data(), text_addr))
     except Exception as exc:  # noqa: BLE001
         result["error"] = f"{type(exc).__name__}: {exc}"
         return result
@@ -193,11 +195,18 @@ def scan_elf(data: bytes) -> dict[str, Any]:
                     })
             elif low in {"strcpy", "strcat", "sprintf"} or low.endswith("@plt") and any(
                     x in low for x in ("strcpy", "strcat", "sprintf")):
+                writable = any(token in low for token in ("strcpy", "strcat"))
+                effective = (capacity - dest_offset) if (
+                    capacity is not None and dest_offset is not None) else None
                 result["findings"].append({
                     "kind": "unbounded_copy", "address": hex(item.address),
                     "callee": name, "before": 0, "after": 0,
-                    "capacity": capacity, "patchable": False,
-                    "detail": "unbounded string call; needs a code cave/contract, not an immediate patch",
+                    "capacity": capacity, "dest_offset": dest_offset,
+                    "effective_capacity": effective,
+                    "call_file_offset": text_off + (item.address - text_addr),
+                    "patchable": bool(writable and effective and effective > 0),
+                    "detail": "unbounded string call; strcpy/strcat can use a cave, "
+                              "sprintf needs format-aware handling",
                 })
     seen = set()
     unique = []
@@ -233,7 +242,7 @@ def _runtime_summary(patched: bytes, capacity: int | None) -> dict[str, Any]:
     return {"available": True, "engine": "unicorn-x86-64", "cases": cases}
 
 
-def repair_elf(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
+def _repair_elf_immediate(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
     """Return patched bytes + report, or (None, report) when fail-closed."""
     fmt, arch, elf = _format(data)
     report = BinaryRepairReport(
@@ -375,3 +384,67 @@ def repair_elf(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
         "Static rewrite only; run the candidate in an isolated x86-64 Linux guest.",
     ])
     return bytes(patched), report
+
+
+def _apply_copy_caves(patched: bytes, scan: dict[str, Any],
+                      report: BinaryRepairReport) -> bytes:
+    """Apply strcpy/strcat cave wrappers for patchable call sites."""
+    from app.services.code_cave import (
+        CaveError, inject_strcat_guard, inject_strcpy_guard,
+    )
+    current = patched
+    for item in scan.get("findings", []):
+        if item.get("kind") != "unbounded_copy" or not item.get("patchable"):
+            continue
+        name = str(item.get("callee") or "").lower()
+        capacity = item.get("effective_capacity")
+        call_vaddr = int(item["address"], 16)
+        call_off = int(item["call_file_offset"])
+        if not capacity or capacity <= 0:
+            continue
+        try:
+            if "strcpy" in name:
+                cave = inject_strcpy_guard(current, call_vaddr=call_vaddr,
+                                           call_file_offset=call_off,
+                                           capacity=capacity)
+            elif "strcat" in name:
+                cave = inject_strcat_guard(current, call_vaddr=call_vaddr,
+                                           call_file_offset=call_off,
+                                           capacity=capacity)
+            else:
+                continue
+        except (CaveError, ValueError, IndexError) as exc:
+            report.limitations.append(f"cave injection failed at {hex(call_vaddr)}: {exc}")
+            continue
+        current = cave.data
+        report.findings.append(RepairFinding(
+            "code_cave", hex(call_vaddr), 0, capacity,
+            f"{cave.report.get('wrapper')} via {cave.method}",
+        ))
+        report.limitations.append(
+            f"code cave: {cave.report.get('wrapper')} at {hex(call_vaddr)}, "
+            f"{cave.method}, capacity={capacity}"
+        )
+    return current
+
+
+def repair_elf(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
+    """Immediate patcher + strcpy/strcat cave pass."""
+    patched, report = _repair_elf_immediate(data)
+    scan = scan_elf(data)
+    if patched is None:
+        # A cave can handle a binary that has no immediate-length finding.
+        current = data
+    else:
+        current = patched
+    updated = _apply_copy_caves(current, scan, report)
+    if updated != current:
+        report.supported = True
+        report.mode = "cave" if not report.findings or any(
+            item.kind == "code_cave" for item in report.findings) else report.mode
+        report.patched_sha256 = _sha(updated)
+        report.capacity = next((item.effective_capacity for item in scan.get("findings", [])
+                                if item.get("effective_capacity")), report.capacity)
+        report.runtime = _runtime_summary(updated, report.capacity)
+        return updated, report
+    return patched, report

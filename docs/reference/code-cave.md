@@ -65,3 +65,11 @@ wrapper: strcpy-guard
 - call-site capacity must be recoverable from a nearby stack allocation;
 - multiple call sites need multiple caves or a dispatcher;
 - relocation-aware rewriting for PIE/shared libraries is still future work.
+
+
+## Engine integration
+
+`binary_repair_engine.repair_elf()` now runs a second pass:
+`scan_elf()` finds patchable `strcpy`/`strcat` stack-destination calls, then
+`_apply_copy_caves()` injects the wrapper and patches the call.  The returned
+report contains `kind=code_cave` findings and a cave-specific mode.

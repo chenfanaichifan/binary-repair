@@ -5,6 +5,7 @@ import struct
 from pathlib import Path
 
 from app.services.code_cave import inject_strcat_guard, inject_strcpy_guard
+from app.services.binary_repair_engine import BinaryRepairReport, _apply_copy_caves
 from app.services.x86_runtime import emulate_elf
 
 BASE = 0x400000
@@ -107,3 +108,22 @@ def test_cave_works_for_et_dyn_pie_style_image():
     assert cave.method == "new-pt-load"
     result = emulate_elf(cave.data)
     assert result.exit_code == 0
+
+
+def test_engine_cave_pass_integrates_strcpy_call():
+    original, call_vaddr, call_off = _build(b"A" * 32)
+    scan = {"findings": [{
+        "kind": "unbounded_copy", "address": hex(call_vaddr),
+        "callee": "strcpy", "patchable": True, "effective_capacity": 16,
+        "call_file_offset": call_off,
+    }]}
+    report = BinaryRepairReport(
+        original_sha256="x", patched_sha256="x", format="elf64-little",
+        arch="x86_64", mode="unsupported", supported=False,
+    )
+    patched = _apply_copy_caves(original, scan, report)
+    assert patched != original
+    assert report.supported is False  # caller decides after this pass
+    result = emulate_elf(patched)
+    assert result.exit_code == 1
+    assert b"copy exceeds capacity" in result.stderr
