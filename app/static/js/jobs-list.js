@@ -212,15 +212,23 @@
     render();
   }
 
+  function renameTo(id, name) {
+    var list = read();
+    var entry = findEntry(list, id);
+    if (!entry) return false;
+    entry.label = String(name || "").trim().slice(0, 60);
+    write(list);
+    render();
+    return true;
+  }
+
   function renameTask(id) {
     var list = read();
     var entry = findEntry(list, id);
     if (!entry) return;
     var value = window.prompt("任务名称（留空恢复默认）", labelOf(entry));
     if (value === null) return;
-    entry.label = value.trim().slice(0, 60);
-    write(list);
-    render();
+    renameTo(id, value);
   }
 
   function removeTask(id) {
@@ -240,6 +248,7 @@
     list: function () { return sortList(read()); },
     togglePin: togglePin,
     rename: renameTask,
+    renameTo: renameTo,
     remove: removeTask,
     states: states
   };

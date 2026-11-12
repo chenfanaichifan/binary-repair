@@ -2501,6 +2501,122 @@
     return false;
   }
 
+  /* ---------- 第一版受控动作：明确目标的打开/重命名 ---------- */
+
+  function pushActionCard(title, buttons) {
+    var card = el("div", "agent-card");
+    card.appendChild(el("p", "agent-card-title", title));
+    var actions = el("div", "agent-card-actions");
+    buttons.forEach(function (item) {
+      var button = el("button", "agent-btn" + (item.ghost ? " ghost" : ""), item.label);
+      button.type = "button";
+      button.addEventListener("click", function () {
+        button.disabled = true;
+        item.run();
+      });
+      actions.appendChild(button);
+    });
+    card.appendChild(actions);
+    pushCard(card);
+  }
+
+  function parseRenameIntent(text) {
+    var value = String(text || "").trim();
+    var patterns = [
+      /^(?:请|帮我|我要|我想)?\s*(?:把|将)?\s*(?:当前|这个|此)?\s*任务(?:名称|名字)?\s*(?:重命名|命名|改名)\s*(?:为|成)?\s*[「"']?(.+?)[」"']?$/,
+      /^(?:请|帮我|我要|我想)?\s*(?:命名|重命名|改名)\s*(?:当前|这个|此)?\s*任务(?:名称|名字)?\s*(?:为|成)?\s*[「"']?(.+?)[」"']?$/
+    ];
+    for (var i = 0; i < patterns.length; i += 1) {
+      var match = value.match(patterns[i]);
+      if (match && match[1] && match[1].trim()) return match[1].trim();
+    }
+    return "";
+  }
+
+  function parseOpenIntent(text) {
+    var value = String(text || "").trim();
+    var match = value.match(/^(?:请|帮我|我要|我想)?\s*(?:打开|查看|跳到|看看|显示)\s*(?:任务\s*)?(.+?)\s*(?:的)?\s*(实验数据|证据|evidence|报告)\s*[*。！!]*$/i);
+    if (!match) return null;
+    return { target: match[1].trim(), view: /报告/.test(match[2]) ? "report" : "evidence" };
+  }
+
+  function findJobs(query) {
+    var list = window.BRJobs && window.BRJobs.list ? window.BRJobs.list() : [];
+    var q = String(query || "").trim().toLowerCase().replace(/^[「"']|[」"']$/g, "");
+    if (!q) return [];
+    return list.filter(function (entry) {
+      var label = String(entry.label || "").toLowerCase();
+      var id = String(entry.id || "").toLowerCase();
+      return id === q || label.indexOf(q) >= 0 || id.indexOf(q) >= 0;
+    });
+  }
+
+  function openJobView(entry, view) {
+    var label = entry.label || entry.id;
+    pushMessage("assistant", "打开「" + label + "」的" + (view === "report" ? "报告" : "实验数据") + "。");
+    var url = "/jobs/" + encodeURIComponent(entry.id) + (view === "report" ? "/report" : "/evidence");
+    window.setTimeout(function () { window.location.href = url; }, 250);
+  }
+
+  function handleActionIntent(text) {
+    var renameName = parseRenameIntent(text);
+    if (renameName) {
+      pushMessage("user", text);
+      if (!state.jobId) {
+        pushMessage("assistant", "当前还没有任务。先创建任务后，我才能重命名它。");
+        return true;
+      }
+      pushActionCard("将当前任务重命名为「" + renameName + "」？", [
+        {
+          label: "确认重命名",
+          run: function () {
+            var ok = window.BRJobs && window.BRJobs.renameTo
+              ? window.BRJobs.renameTo(state.jobId, renameName)
+              : false;
+            if (!ok && window.BRJobs && window.BRJobs.register) {
+              window.BRJobs.register(state.jobId, renameName);
+              ok = true;
+            }
+            if (ok) {
+              setText("agent-job-chip", renameName);
+              var heading = document.querySelector(".ds-page-title");
+              if (heading) heading.textContent = renameName;
+              pushMessage("assistant", "已重命名为「" + renameName + "」。");
+            } else {
+              pushMessage("assistant", "重命名失败：当前任务不在本机任务列表中。");
+            }
+          }
+        },
+        { label: "取消", ghost: true, run: function () { pushMessage("assistant", "已取消重命名。"); } }
+      ]);
+      return true;
+    }
+
+    var open = parseOpenIntent(text);
+    if (open) {
+      pushMessage("user", text);
+      var query = open.target;
+      if (/^当前任务$|^当前$|^这个任务$|^这个$/.test(query) && state.jobId) {
+        openJobView({ id: state.jobId, label: "当前任务" }, open.view);
+        return true;
+      }
+      var matches = findJobs(query);
+      if (!matches.length) {
+        pushMessage("assistant", "没有找到匹配的任务：「" + query + "」。可以先在左侧任务列表里确认名称或任务号。");
+        return true;
+      }
+      if (matches.length > 1) {
+        pushMessage("assistant", "找到多个匹配任务，请指定一个：\n" + matches.slice(0, 8).map(function (entry) {
+          return "· " + (entry.label || entry.id) + "（" + entry.id + "）";
+        }).join("\n"));
+        return true;
+      }
+      openJobView(matches[0], open.view);
+      return true;
+    }
+    return false;
+  }
+
   $("agent-composer").addEventListener("submit", function (event) {
     event.preventDefault();
     var input = $("agent-input");
@@ -2511,6 +2627,7 @@
     if (text.charAt(0) === "/") {
       if (handleCommand(text)) return;
     }
+    if (handleActionIntent(text)) return;
     pushMessage("user", text);
     var pasted = extractCode(text);
     if (pasted) {
