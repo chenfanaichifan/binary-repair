@@ -1753,7 +1753,9 @@
         // 把本次会话（创建前的问答）一并归档到新任务，避免历史断在创建那一步。
         writeHistoryFor(match[1], state.entries);
         registerJob((state.answers.defect || "").slice(0, 40));
-        window.location.href = "/agent/" + encodeURIComponent(match[1]);
+        // Creation lands on the contract approval section, not the chat shell.
+        try { window.sessionStorage.setItem("br.focus.contract", "1"); } catch (error) { /* ignore */ }
+        window.location.href = "/jobs/" + encodeURIComponent(match[1]);
       } else {
         progressText.textContent = "创建失败";
         pushMessage("assistant", "创建任务没有成功（HTTP " + xhr.status + "）。请检查必填项与英文 ASCII 要求后重试。");
