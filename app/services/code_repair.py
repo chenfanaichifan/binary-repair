@@ -182,6 +182,13 @@ _META: dict[str, dict[str, Any]] = {
         "refs": (("CWE-195: Signed to Unsigned Conversion Error", "https://cwe.mitre.org/data/definitions/195.html"),
                  ("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html")),
     },
+    "c.realloc-cap": {
+        "cwe": "CWE-787",
+        "impact": "realloc 扩大了缓冲区，但容量变量仍指向旧值，后续边界判断/拷贝会误判。",
+        "explanation": "指针更新成功，容量事实没有同步更新；代码依赖过期的 cap。",
+        "warning": "realloc 成功后必须使用新的容量；不要用 sizeof(pointer) 或旧 cap。",
+        "refs": (("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html"),),
+    },
     "c.stack-memcpy": {
         "cwe": "CWE-121",
         "impact": "调用者控制的 len 超过栈数组容量时，memcpy 覆盖栈帧/返回地址。",
@@ -776,6 +783,27 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
             f'改为 printf("%s", {arg}) 或 fputs({arg}, stdout)；绝不能让数据成为格式串。',
         ))
         patched = patched.replace(match.group(0), f'printf("%s", {arg});', 1)
+
+    # realloc succeeded but the tracked capacity was not updated.
+    realloc = re.search(
+        r"(?P<buf>[A-Za-z_]\w*)\s*=\s*\(?[^;]*?\)?\s*realloc\s*\([^,]+,\s*(?P<need>[^;)]+)\)\s*;",
+        code,
+    )
+    if realloc and re.search(r"\bsize_t\s+cap\b", code):
+        new_var, need = realloc.group("buf"), realloc.group("need").strip()
+        assign = re.search(r"\b(?P<orig>[A-Za-z_]\w*)\s*=\s*" + re.escape(new_var) + r"\s*;", code)
+        if assign and not re.search(r"\bcap\s*=\s*" + re.escape(need) + r"\s*;", code):
+            line = _line_of(code, realloc.start())
+            findings.append(_finding(
+                "c.realloc-cap", "realloc 后未同步更新容量变量", "medium",
+                line, lines[line - 1].strip(),
+                f"在 {assign.group(0)} 后加入 cap = {need};，并用 cap 作为后续拷贝上限。",
+            ))
+            patched = patched.replace(
+                assign.group(0),
+                assign.group(0) + " cap = " + need + ";",
+                1,
+            )
 
     # Stack array + caller-controlled memcpy length.
     for mem in re.finditer(

@@ -49,3 +49,15 @@ def test_changed_line_comment_is_updated_not_left_misleading():
     assert result.get("patch_rejected") is not True
     assert "✅ patched:" in result["patched_code"]
     assert "/* ❌ overflow */" not in result["patched_code"]
+
+
+def test_realloc_capacity_is_updated_after_pointer_assignment():
+    code = (
+        "void f(const char*input){size_t cap=8;char*buf=malloc(cap);if(!buf)return;"
+        "size_t need=strlen(input)+1;if(need>cap){char*nb=realloc(buf,need);if(!nb){free(buf);return;}buf=nb;}"
+        "strcpy(buf,input);free(buf);}"
+    )
+    result = repair_code(code, "c")
+    assert result.get("patch_rejected") is not True
+    assert "cap = need;" in result["patched_code"]
+    assert "snprintf(buf, need," in result["patched_code"]
