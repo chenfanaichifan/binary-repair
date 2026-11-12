@@ -949,9 +949,8 @@
     var findings = Array.isArray(repair.findings) ? repair.findings : [];
     if (findings.length) {
       var list = el("ul", "repair-findings");
-      findings.slice(0, 6).forEach(function (finding, index) {
+      findings.forEach(function (finding, index) {
         var row = el("details", "repair-finding is-" + (finding.severity || "medium"));
-        if (index === 0) { row.open = true; }
         var top = el("summary", "repair-finding-top");
         top.appendChild(el("span", "repair-dot"));
         top.appendChild(el("span", "repair-finding-title", tr(finding.title || "问题")));
