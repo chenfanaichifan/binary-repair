@@ -1810,13 +1810,23 @@
         progressText.textContent = "上传完成，已创建任务";
         pushTool("创建任务", match[1], { "job_id": match[1], "http_status": xhr.status });
         state.jobId = match[1];
-        setDraftSide("契约待批准", "待审批", "契约待批准", "待批准");
-        // 把本次会话（创建前的问答）一并归档到新任务，避免历史断在创建那一步。
-        writeHistoryFor(match[1], state.entries);
-        registerJob((state.answers.defect || "").slice(0, 40));
-        // Creation lands on the contract approval section, not the chat shell.
+        // Keep every success side effect independent: a storage/history error
+        // must not prevent the contract navigation.
+        try { setDraftSide("契约待批准", "待审批", "契约待批准", "待批准"); } catch (error) { /* ignore */ }
+        try { writeHistoryFor(match[1], state.entries); } catch (error) { /* ignore */ }
+        try { registerJob((state.answers.defect || "").slice(0, 40)); } catch (error) { /* ignore */ }
+        try { renderSide(); } catch (error) { /* ignore */ }
+        try { startPolling(); } catch (error) { /* ignore */ }
+        try {
+          pushActionCard("任务已创建", [{
+            label: "打开契约审批",
+            run: function () { openApprovalView({ id: match[1], label: "当前任务" }); }
+          }]);
+        } catch (error) { /* ignore */ }
         try { window.sessionStorage.setItem("br.focus.contract", "1"); } catch (error) { /* ignore */ }
-        window.location.href = "/jobs/" + encodeURIComponent(match[1]) + "#contract-form";
+        window.setTimeout(function () {
+          window.location.assign("/jobs/" + encodeURIComponent(match[1]) + "#contract-form");
+        }, 120);
       } else {
         progressText.textContent = "创建失败";
         setDraftSide("创建失败", "未创建任务", "草稿", "未创建");
