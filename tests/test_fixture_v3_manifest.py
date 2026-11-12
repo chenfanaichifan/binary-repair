@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -136,12 +137,55 @@ def _run(elf: Path, arg: str) -> subprocess.CompletedProcess[bytes]:
     )
 
 
-def test_original_is_v0_on_invalid_inputs_if_binary_present() -> None:
+def _stage_executable(source: Path, directory: Path) -> Path:
+    """Copy ``source`` into an isolated directory and mark the copy executable.
+
+    The checked-in fixture must not be executed in place.  Git records it as
+    100644, and an Ubuntu checkout therefore raises ``PermissionError`` when the
+    binary is launched directly.  The test runner owns this copy, its mode, and
+    its lifetime; the source bytes and hash stay unchanged.
+    """
+    directory.mkdir(parents=True, exist_ok=True)
+    staged = directory / source.name
+    shutil.copyfile(source, staged)
+    staged.chmod(0o755)
+    assert staged.read_bytes() == source.read_bytes()
+    assert os.access(staged, os.X_OK)
+    return staged
+
+
+def test_stage_executable_ignores_the_source_mode(tmp_path: Path) -> None:
+    if os.name == "nt":
+        pytest.skip("POSIX mode bits are not available on Windows")
+    source = tmp_path / "source" / "original.elf"
+    source.parent.mkdir(parents=True)
+    source.write_bytes(b"not an ELF; staging only")
+    source.chmod(0o644)
+    assert source.stat().st_mode & 0o777 == 0o644
+    staged = _stage_executable(source, tmp_path / "stage")
+    assert staged.stat().st_mode & 0o111
+    assert staged.read_bytes() == source.read_bytes()
+    assert source.stat().st_mode & 0o777 == 0o644
+
+
+def test_original_is_v0_on_invalid_inputs_if_binary_present(tmp_path: Path) -> None:
     if not sys.platform.startswith("linux"):
         pytest.skip("ELF execution requires Linux")
-    elf = FIXTURE / "original.elf"
-    if not elf.exists():
+    fixture = FIXTURE / "original.elf"
+    if not fixture.exists():
         pytest.skip("original.elf is not in the shared tree")
+
+    # Start from a 0644 source even if a checkout or a previous commit marked
+    # the fixture executable.  This is the regression for the Ubuntu
+    # PermissionError: execution must depend on the staged copy, not Git mode.
+    source = tmp_path / "source" / "original.elf"
+    source.parent.mkdir(parents=True)
+    source.write_bytes(fixture.read_bytes())
+    source.chmod(0o644)
+    assert source.stat().st_mode & 0o777 == 0o644
+    elf = _stage_executable(source, tmp_path / "stage")
+    assert hashlib.sha256(elf.read_bytes()).hexdigest() == ORIGINAL_SHA256
+
     for name in ("valid.json", "invalid.json"):
         for case in _load(name)["tests"]:
             got = _run(elf, case["argv"][1])
@@ -158,15 +202,16 @@ def test_original_is_v0_on_invalid_inputs_if_binary_present() -> None:
                 )
 
 
-def test_repaired_candidate_matches_v3_if_provided() -> None:
+def test_repaired_candidate_matches_v3_if_provided(tmp_path: Path) -> None:
     if not sys.platform.startswith("linux"):
         pytest.skip("ELF execution requires Linux")
     raw = os.environ.get("BINARYREPAIR_CANDIDATE_ELF")
     if not raw:
         pytest.skip("set BINARYREPAIR_CANDIDATE_ELF to run V3 on a repaired candidate")
-    elf = Path(raw)
-    if not elf.exists():
-        pytest.fail(f"candidate ELF not found: {elf}")
+    source = Path(raw)
+    if not source.exists():
+        pytest.fail(f"candidate ELF not found: {source}")
+    elf = _stage_executable(source, tmp_path / "candidate-stage")
     for _, case in _cases():
         got = _run(elf, case["argv"][1])
         expected = case["expected"]

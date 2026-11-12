@@ -4,9 +4,11 @@ from __future__ import annotations
 import base64
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import CSRF_TOKEN, SESSION_TOKEN, app
+from app.services import binary_repair_engine as engine
 from app.services.binary_quick_repair import QuickRepairError, quick_repair_elf
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,6 +40,33 @@ def test_quick_repair_api_returns_download():
     assert base64.b64decode(payload["patched_base64"])[:4] == b"\x7fELF"
     assert payload["report"]["capacity"] == 16
     assert payload["report"]["mode"] == "strict"
+
+
+def test_quick_repair_fails_closed_without_runtime_evidence(monkeypatch):
+    monkeypatch.setattr(
+        engine,
+        "_runtime_summary",
+        lambda patched, capacity: {"available": False, "error": "simulated evidence gap"},
+    )
+    with pytest.raises(QuickRepairError, match="verification did not pass"):
+        quick_repair_elf(VULN.read_bytes())
+
+
+def test_quick_repair_api_fails_closed_without_runtime_evidence(monkeypatch):
+    monkeypatch.setattr(
+        engine,
+        "_runtime_summary",
+        lambda patched, capacity: {"available": False, "error": "simulated evidence gap"},
+    )
+    client = TestClient(app, base_url="http://127.0.0.1")
+    client.get("/?token=" + SESSION_TOKEN)
+    response = client.post(
+        "/api/binary/quick-repair",
+        files={"binary": ("vuln.elf", VULN.read_bytes(), "application/octet-stream")},
+        data={"csrf": CSRF_TOKEN},
+    )
+    assert response.status_code == 422
+    assert "verification did not pass" in response.json()["detail"].lower()
 
 
 def test_quick_repair_rejects_non_elf():

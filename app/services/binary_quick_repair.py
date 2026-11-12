@@ -7,7 +7,9 @@ This is deliberately narrow and fail-closed.  It recognizes:
     xor eax,eax / xor edi,edi / mov rsi,rsp / mov edx,BIG / syscall
 
 and rewrites the read (and following write) length to N.  It never executes the
-input and never claims runtime validation.
+input.  The returned candidate must also pass the structured verification gate
+(including Unicorn runtime evidence) before this legacy API hands it back; a
+candidate with missing evidence is not a success.
 """
 from __future__ import annotations
 
@@ -20,6 +22,7 @@ from capstone import Cs, CS_ARCH_X86, CS_MODE_64
 from elftools.elf.elffile import ELFFile
 
 from app.services.binary_repair_engine import repair_elf
+from app.services.binary_verification import build_verification
 
 MD = Cs(CS_ARCH_X86, CS_MODE_64)
 MAX_INPUT = 20 * 1024 * 1024
@@ -56,6 +59,11 @@ def quick_repair_elf(data: bytes) -> tuple[bytes, QuickRepairReport]:
     if patched is None:
         detail = report.limitations[-1] if report.limitations else "unsupported binary"
         raise QuickRepairError(detail)
+    verification = build_verification(report, original=data, patched=patched)
+    if not verification.gate.success:
+        raise QuickRepairError(
+            f"verification did not pass: {verification.gate.reason}"
+        )
     return patched, QuickRepairReport(
         original_sha256=report.original_sha256,
         patched_sha256=report.patched_sha256,

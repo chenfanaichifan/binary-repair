@@ -7,6 +7,22 @@ simple semantic-versioning policy for delivery snapshots.
 
 ### Added
 
+- Direct-ELF verification packet and read-only AI review: the engine report is
+  turned into stable checks plus a `GateResult` from the existing acceptance
+  rules, and `POST /api/binary/repair-review` can send that same packet to a
+  configured model. The model may recommend `accept`/`hold`/`needs_more_checks`;
+  an accept cannot promote a failed gate, a hold can veto a passing gate, and a
+  candidate with missing runtime evidence is non-successful and not
+  downloadable. The legacy `/api/binary/quick-repair` now fails closed on a
+  failed gate. See `docs/architecture/ai-adjudication.md`.
+- Reproducible direct-ELF AI review experiment:
+  `scripts/demo_binary_ai_review.py` records baseline, with-review and scripted
+  accept/hold controls for a passing case, an unsupported input, and a
+  missing-evidence case. See
+  `docs/acceptance/binary-ai-review-2026-11-12.md`.
+- Ubuntu verification baseline documentation:
+  `docs/operations/ubuntu-verification.md`.
+
 - Inline code repair: paste a fenced (or code-like) snippet in the console and
   get a reviewable patch card with findings, a before/after diff, copy actions
   and a residual-risk note. Rules cover Python `shell=True`/Flask debug/yaml,
@@ -138,6 +154,11 @@ simple semantic-versioning policy for delivery snapshots.
 
 ### Fixed
 
+- Ubuntu fixture execution no longer depends on Git mode. The CWE121 V0 test
+  writes a 0644 source copy, stages it with `chmod 0755`, verifies bytes/hash and
+  runs only the staged copy; the workflow reruns that targeted case before the
+  `if: always()` full suite. This removes the `PermissionError` on `original.elf`
+  without changing the fixture or skipping the test.
 - `/agent/new` no longer answers "计划服务未接通 (assistant_endpoint_missing)"
   in the default `mock` backend. `MockBackend.get_plan` now uses the same
   in-process planner seam as `local` (deterministic without a provider key, the

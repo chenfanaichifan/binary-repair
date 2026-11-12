@@ -101,6 +101,9 @@ def _host_allowed(host: str) -> bool:
 _UNSAFE_FILENAME_CHARS = re.compile(r"[^A-Za-z0-9._-]+")
 
 app = FastAPI(title="BinaryRepair MVP - GUI slice")
+from app.services.binary_review_api import router as binary_review_router  # noqa: E402
+
+app.include_router(binary_review_router)
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 

@@ -1498,11 +1498,21 @@
     progress.appendChild(bar);
     var progressText = el("p", "agent-progress-text", "");
 
+    var aiWrap = el("label", "agent-ai-review");
+    var aiToggle = document.createElement("input");
+    aiToggle.type = "checkbox";
+    aiToggle.dataset.testid = "agent-ai-review-toggle";
+    aiWrap.appendChild(aiToggle);
+    aiWrap.appendChild(el("span", null, "请求 AI 复核（只读；不改变验收结论）"));
+    card.appendChild(aiWrap);
+    card.appendChild(el("p", "agent-ai-note",
+      "AI 只收到结构化验证报告（哈希、地址、限制），不接收二进制或源码；验收仍由确定性 gate 决定。"));
+
     var actions = el("div", "agent-card-actions");
     var quick = el("button", "agent-btn", "一键修复（自动推断安全界）");
     quick.type = "button";
     quick.dataset.testid = "agent-quick-repair";
-    quick.addEventListener("click", function () { quickRepair(quick, progress, bar, progressText); });
+    quick.addEventListener("click", function () { quickRepair(quick, progress, bar, progressText, aiToggle); });
     actions.appendChild(quick);
     var create = el("button", "agent-btn ghost", "创建严格任务（高级）");
     create.type = "button";
@@ -1517,63 +1527,208 @@
 
   /* ---------- 创建任务：用户显式动作 + 真实上传进度 ---------- */
 
+  function reviewStatusLabel(review) {
+    if (!review || review.requested === false || review.status === "review_not_requested") {
+      return "未请求 AI 复核";
+    }
+    if (!review.called && review.status === "review_not_configured") {
+      return "AI 未调用（未配置模型 Key）";
+    }
+    if (review.mode === "scripted") { return "脚本复核（不是 AI 调用）"; }
+    if (review.status === "review_ok") { return "AI 已复核"; }
+    if (review.status === "review_invalid_response") { return "AI 返回无效，已忽略"; }
+    if (review.status === "review_timeout") { return "AI 超时，未参与结论"; }
+    if (review.status === "review_network_error" || review.status === "review_http_error") {
+      return "AI 通道失败，未参与结论";
+    }
+    return "AI 状态：" + (review.status || "unknown");
+  }
+
+  function recommendationLabel(value) {
+    return ({
+      accept: "同意（仅供参考）",
+      hold: "建议扣留",
+      reject: "建议扣留",
+      needs_more_checks: "建议补充检查"
+    })[value] || "—";
+  }
+
+  function appendCheckTable(card, verification) {
+    var checks = (verification && verification.checks) || [];
+    if (!checks.length) { return; }
+    var table = el("table", "repair-checks");
+    var thead = el("thead");
+    var headRow = el("tr");
+    ["检查", "状态", "说明"].forEach(function (text) {
+      headRow.appendChild(el("th", null, text));
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+    var tbody = el("tbody");
+    checks.forEach(function (check) {
+      var tr = el("tr");
+      tr.dataset.checkId = check.id;
+      tr.appendChild(el("td", null, check.id));
+      var statusCell = el("td");
+      var status = el("span", "repair-check-status is-" + String(check.status || "unknown"));
+      status.textContent = check.status || "unknown";
+      statusCell.appendChild(status);
+      tr.appendChild(statusCell);
+      tr.appendChild(el("td", null, check.detail || ""));
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    card.appendChild(table);
+  }
+
+  function appendAiReview(card, payload) {
+    var review = payload.review || {};
+    var block = el("div", "repair-ai");
+    block.dataset.testid = "agent-ai-review";
+    block.appendChild(el("p", "repair-ai-title", "AI 复核 · " + reviewStatusLabel(review)));
+    if (review.summary) {
+      block.appendChild(el("p", "repair-ai-summary", review.summary));
+    }
+    if (review.recommendation) {
+      var meta = el("div", "repair-meta");
+      meta.appendChild(el("span", "repair-chip", "建议：" + recommendationLabel(review.recommendation)));
+      if (review.model) {
+        meta.appendChild(el("span", "repair-chip", "model " + review.model));
+      }
+      block.appendChild(meta);
+    }
+    if (review.concerns && review.concerns.length) {
+      block.appendChild(el("p", "repair-ai-label", "关注项"));
+      var concerns = el("ul");
+      review.concerns.forEach(function (item) {
+        concerns.appendChild(el("li", null,
+          (item.check_id ? "[" + item.check_id + "] " : "") + (item.why || "")));
+      });
+      block.appendChild(concerns);
+    }
+    if (review.missing_evidence && review.missing_evidence.length) {
+      block.appendChild(el("p", "repair-ai-label", "缺失证据"));
+      var missing = el("ul");
+      review.missing_evidence.forEach(function (item) { missing.appendChild(el("li", null, item)); });
+      block.appendChild(missing);
+    }
+    if (review.further_checks && review.further_checks.length) {
+      block.appendChild(el("p", "repair-ai-label", "建议进一步检查"));
+      var further = el("ul");
+      review.further_checks.forEach(function (item) { further.appendChild(el("li", null, item)); });
+      block.appendChild(further);
+    }
+    if (review.contribution) {
+      var contribution = review.contribution;
+      block.appendChild(el("p", "repair-ai-note",
+        "对结论的影响：" + (contribution.changed ? "改变了最终结论" : "未改变最终结论") +
+        "；新增关注 " + (contribution.new_concerns || 0) +
+        "，新增缺失证据 " + (contribution.new_missing_evidence || 0) +
+        "，新增建议检查 " + (contribution.new_further_checks || 0) + "。"));
+    }
+    block.appendChild(el("p", "repair-ai-note",
+      "AI 只做复核；验收由确定性 gate 决定，AI 同意不能把失败变成成功。"));
+    card.appendChild(block);
+  }
+
   function pushQuickResult(payload) {
+    var decision = payload.decision || {};
+    var success = decision.success === true;
     var card = el("div", "agent-card agent-repair");
     card.dataset.testid = "agent-quick-result";
-    card.appendChild(el("p", "agent-card-title", "一键修复完成"));
+    card.appendChild(el("p", "agent-card-title",
+      success ? "一键修复完成（通过确定性验收）" : "候选被扣留（未通过验收）"));
     card.appendChild(el("p", "repair-summary",
-      "已把危险读长度改为栈缓冲区容量，并同步收窄输出长度。"));
+      success
+        ? "候选通过了结构化验证；AI 复核（如请求）只作参考，不改变 gate 结论。"
+        : "验证未通过或证据不完整，因此不提供修复后二进制的下载。"));
     var meta = el("div", "repair-meta");
-    meta.appendChild(el("span", "repair-chip", "capacity " + payload.report.capacity));
-    meta.appendChild(el("span", "repair-chip",
-      payload.report.mode === "strict" ? "严格修复 · 超长拒绝" : "static rewrite"));
+    if (payload.report && payload.report.capacity) {
+      meta.appendChild(el("span", "repair-chip", "capacity " + payload.report.capacity));
+    }
+    if (payload.report && payload.report.mode) {
+      meta.appendChild(el("span", "repair-chip",
+        payload.report.mode === "strict" ? "严格修复 · 超长拒绝" : payload.report.mode));
+    }
+    if (payload.verification && payload.verification.gate) {
+      meta.appendChild(el("span", "repair-chip",
+        "gate " + payload.verification.gate.outcome));
+    }
     card.appendChild(meta);
+
+    if (payload.verification) {
+      appendCheckTable(card, payload.verification);
+    }
+
+    if (!success) {
+      var why = (payload.verification && payload.verification.missing) || [];
+      if (why.length) {
+        card.appendChild(el("p", "repair-ai-label", "未通过的 required checks"));
+        var missingList = el("ul");
+        why.forEach(function (item) {
+          missingList.appendChild(el("li", null,
+            (item.check_id || "check") + " · " + (item.status || "unknown") +
+            " · " + (item.reason || "")));
+        });
+        card.appendChild(missingList);
+      }
+    }
+
     var details = el("details", "repair-notes");
-    details.open = true;
-    details.appendChild(el("summary", null, "验证与残余风险"));
-    var list = el("ul");
-    list.appendChild(el("li", null, "original sha256: " + payload.report.original_sha256));
-    list.appendChild(el("li", null, "patched sha256: " + payload.report.patched_sha256));
-    (payload.report.limitations || []).forEach(function (note) {
-      list.appendChild(el("li", null, note));
-    });
-    details.appendChild(list);
+    details.open = false;
+    details.appendChild(el("summary", null, "验证报告（与 AI 复核看到的是同一份）"));
+    var pre = el("pre", "repair-report-json");
+    pre.textContent = JSON.stringify(payload.verification || {}, null, 2);
+    details.appendChild(pre);
     card.appendChild(details);
-    var link = el("a", "agent-btn", "下载修复后的 ELF");
-    link.href = "data:application/octet-stream;base64," + payload.patched_base64;
-    link.download = payload.filename || "fixed.elf";
-    link.dataset.testid = "agent-quick-download";
-    card.appendChild(link);
+
+    appendAiReview(card, payload);
+
+    if (success && payload.patched_base64) {
+      var link = el("a", "agent-btn", "下载修复后的 ELF");
+      link.href = "data:application/octet-stream;base64," + payload.patched_base64;
+      link.download = payload.filename || "fixed.elf";
+      link.dataset.testid = "agent-quick-download";
+      card.appendChild(link);
+    } else {
+      var held = el("p", "repair-held");
+      held.dataset.testid = "agent-quick-held";
+      held.textContent = "未通过验收：不提供下载。原因：" +
+        (decision.reason || (payload.verification && payload.verification.gate && payload.verification.gate.reason) || "unknown");
+      card.appendChild(held);
+    }
     pushCard(card);
   }
 
-  function quickRepair(button, progress, bar, progressText) {
+  function quickRepair(button, progress, bar, progressText, aiToggle) {
     if (!state.file) { pushMessage("assistant", "还没有样本文件，请先上传。"); return; }
     if (state.submitting) return;
     if (FIXTURE_MODE) { pushMessage("assistant", "演示模式不会生成文件。"); return; }
     state.submitting = true;
     button.disabled = true;
     progress.hidden = false;
-    progressText.textContent = "上传并修复中…";
+    progressText.textContent = "上传并验证中…";
     var form = new FormData();
     form.append("binary", state.file.file, state.file.name);
     form.append("csrf", CSRF);
-    fetch("/api/binary/quick-repair", { method: "POST", body: form })
+    form.append("ai_review", aiToggle && aiToggle.checked ? "1" : "0");
+    fetch("/api/binary/repair-review", { method: "POST", body: form })
       .then(function (response) {
         return response.json().then(function (data) { return { ok: response.ok, data: data }; });
       })
       .then(function (result) {
         state.submitting = false;
         button.disabled = false;
-        if (!result.ok || !result.data || !result.data.ok) {
-          progressText.textContent = "无法一键修复";
-          pushMessage("assistant", "一键修复未应用：" +
-            ((result.data && result.data.detail) || "unsupported pattern") +
+        var payload = result.data || {};
+        if (!payload.decision) {
+          progressText.textContent = "无法验证";
+          pushMessage("assistant", "直接修复未完成：" +
+            (payload.detail || "HTTP " + (result.ok ? "200" : "error")) +
             "。这是 fail-closed，不会输出未经验证的二进制。");
           return;
         }
-        progressText.textContent = "修复完成";
-        pushQuickResult(result.data);
+        progressText.textContent = payload.decision.success ? "验证通过" : "候选被扣留";
+        pushQuickResult(payload);
       })
       .catch(function () {
         state.submitting = false;

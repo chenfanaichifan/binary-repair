@@ -37,6 +37,7 @@ docs/architecture/host-importer-broker.md
 ```text
 docs/operations/run-worker.md
 docs/operations/fixtures.md
+docs/operations/ubuntu-verification.md
 ```
 
 ## Reference

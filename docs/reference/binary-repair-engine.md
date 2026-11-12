@@ -37,20 +37,64 @@ Scan without writing:
 
 ## API / GUI
 
-`POST /api/binary/quick-repair` accepts an ELF and returns:
+### Structured review path
+
+`POST /api/binary/repair-review` accepts a binary plus optional `ai_review=1`
+and returns a verified packet even for unsupported inputs:
 
 ```json
 {
   "ok": true,
-  "patched_base64": "...",
-  "report": {
-    "mode": "strict" | "bounds-only" | "unsupported",
-    "capacity": 16,
-    "findings": [...],
-    "limitations": [...]
+  "candidate_available": true,
+  "download_allowed": true,
+  "filename": "vuln-fixed.elf",
+  "patched_base64": "... only when the gate succeeded ...",
+  "report": { "schema_version": 2, "mode": "strict", "capacity": 16, "...": "..." },
+  "verification": {
+    "schema_version": 1,
+    "scope": { "format": "elf64-little", "arch": "x86_64", "mode": "strict", "...": "..." },
+    "checks": [{"id": "runtime.no_overflow", "status": "passed", "...": "..."}],
+    "missing": [],
+    "report_sha256": "...",
+    "gate": { "success": true, "outcome": "success_within_scope", "...": "..." }
+  },
+  "review": {
+    "requested": true,
+    "called": true,
+    "status": "review_ok",
+    "recommendation": "accept",
+    "summary": "...",
+    "concerns": [],
+    "missing_evidence": [],
+    "further_checks": [],
+    "contribution": {"changed": false, "effect": "concurred"}
+  },
+  "decision": {
+    "success": true,
+    "outcome": "success_within_scope",
+    "authority": "deterministic_gate",
+    "gate_outcome": "success_within_scope"
   }
 }
 ```
+
+The gate is derived from the engine report and the Unicorn runtime evidence
+using `app.domain.acceptance.decide_attempt_outcome()`. Missing runtime evidence
+is `inconclusive`; a failed check is `rejected`; an unsupported format/pattern is
+`unsupported`. `patched_base64` is absent unless the gate succeeded.
+
+`POST /api/binary/quick-repair` remains as the legacy one-click API. It now
+fails closed (422) when the structured gate does not pass, so it cannot return a
+candidate with missing evidence. `GET /api/binary/review-contract` describes the
+review-only boundary.
+
+### AI review
+
+`ai_review=1` sends only the structured packet above to the configured provider;
+it never sends the binary bytes or source. The model may recommend `accept`,
+`hold` or `needs_more_checks`. A hold can veto a passing gate; an accept cannot
+promote a failed gate. The full decision table is in
+[`docs/architecture/ai-adjudication.md`](../architecture/ai-adjudication.md).
 
 ## Supported
 

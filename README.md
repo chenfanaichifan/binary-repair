@@ -47,6 +47,11 @@ this project as proof.
   `success_within_scope`, `inconclusive`, `rejected`, `unsupported`, `error`, or
   `cancelled`.
 - The GUI/API only render verdicts; they never decide them.
+- Direct ELF repair exposes a structured verification packet and an optional
+  **read-only** AI review (`POST /api/binary/repair-review`). The model sees the
+  same packet a human sees; it may hold a candidate or ask for more checks, but
+  an AI acceptance cannot promote a failed gate. A candidate with missing
+  runtime evidence is never downloadable.
 - The host never executes uploaded or repaired binaries. Parsing, compilation,
   execution and symbolic analysis belong to the disposable guest under the
   broker.
@@ -90,7 +95,11 @@ CGC subset (small sample, not acceptance): [`docs/reference/cgc-access.md`](docs
 
 Fixed LAN access: [`docs/reference/lan-fixed-access.md`](docs/reference/lan-fixed-access.md).
 
-Bounded AI adjudication: [`docs/architecture/ai-adjudication.md`](docs/architecture/ai-adjudication.md).
+Bounded AI adjudication and direct-ELF review: [`docs/architecture/ai-adjudication.md`](docs/architecture/ai-adjudication.md).
+
+Ubuntu verification baseline: [`docs/operations/ubuntu-verification.md`](docs/operations/ubuntu-verification.md).
+
+Direct-ELF AI review experiment: [`docs/acceptance/binary-ai-review-2026-11-12.md`](docs/acceptance/binary-ai-review-2026-11-12.md).
 
 Binary dataset/tool selection: [`docs/reference/binary-vulnerability-datasets.md`](docs/reference/binary-vulnerability-datasets.md).
 
