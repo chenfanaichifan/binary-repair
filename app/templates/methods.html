@@ -3,7 +3,7 @@
 {% block title %}方法与工具{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/methods.css?v=20261112a">
+<link rel="stylesheet" href="/static/css/methods.css?v=20261113a">
 {% endblock %}
 
 {% block content %}
@@ -127,12 +127,59 @@
     </div>
   </section>
 
+  <section class="methods-maturity" aria-labelledby="methods-maturity-title">
+    <h2 id="methods-maturity-title">证据成熟度与高级方法</h2>
+    <p class="methods-sub">
+      全球修复研究正在从「生成一个补丁」转向「证明补丁在什么范围内、用什么证据成立」。
+      本工作台采用同一方向：先记录可复核的观察，再谈覆盖与验收。
+    </p>
+    <table class="methods-matrix">
+      <thead><tr><th>层级</th><th>回答的问题</th><th>本工作台实现</th><th>仍不能证明</th></tr></thead>
+      <tbody>
+        <tr><td>V0</td><td>缺陷是否真实存在？调用点/边界是否正确？</td><td>原始 SHA、契约、静态 gate、修改区域</td><td>运行时可达性</td></tr>
+        <tr><td>V1–V2</td><td>哪些输入能到达危险点？约束是否可满足？</td><td>symbolic/dynamic gate 透传；缺失保持 unknown</td><td>全覆盖路径、并发/外部调用</td></tr>
+        <tr><td>V3</td><td>真实运行时是否触发、修复后是否消失？</td><td>动态 gate、valid/invalid 用例、ASan 类观察</td><td>所有输入、所有环境</td></tr>
+        <tr><td>V4</td><td>目标函数内的安全性是否成立？</td><td>verification/compatibility 字段；模型级结论只读</td><td>全程序形式化等价</td></tr>
+        <tr><td>V5</td><td>只改目标行为吗？其他行为是否异常？</td><td>行为对比 cases、summary、not_claimed</td><td>完整行为等价/生产批准</td></tr>
+      </tbody>
+    </table>
+    <div class="methods-uplift">
+      <article>
+        <h3>已落地的升级</h3>
+        <ul>
+          <li><strong>证据控制室</strong>：总览、V0–V5 矩阵、义务筛选、Attempts、产物指纹、原始 JSON。</li>
+          <li><strong>只读评估 API</strong>：<code>/api/jobs/{id}/evaluation</code> 输出覆盖率、缺口与可观测性指数；不是 verdict。</li>
+          <li><strong>失败即显式</strong>：缺失、not_run、无分母均为 N/A/缺口，绝不折叠成通过。</li>
+          <li><strong>研究映射</strong>：把 SSDF、CWE、SLSA、in-toto、差分/符号/模糊测试映射到可检查字段。</li>
+        </ul>
+      </article>
+      <article>
+        <h3>下一步的工程化路线</h3>
+        <ul>
+          <li>接入 <strong>Alive2/CBMC</strong> 做补丁等价/内存安全证明，而不是只靠测试。</li>
+          <li>把 <strong>SLSA/in-toto</strong>  provenance 与证据包绑定，支持可复现构建。</li>
+          <li>建立 <strong>ARVO/CVEfixes/Vul4J</strong> 回归基准，报告 precision/recall/成本/时延。</li>
+          <li>符号/动态/模糊工具由本机连接器按需启用；未安装时保持 unknown。</li>
+        </ul>
+      </article>
+    </div>
+    <p class="methods-foot">
+      评估口径：可观测性指数 = 0.35×证据覆盖 + 0.25×义务通过率 + 0.20×用例通过率 +
+      0.10×产物完备 + 0.10×行为对比。它只衡量证据覆盖，不替代验收引擎。
+    </p>
+  </section>
+
   <section class="methods-refs" aria-labelledby="methods-refs-title">
     <h2 id="methods-refs-title">参考与延伸</h2>
     <ul>
-      <li><a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a>：漏洞类型与分类口径。</li>
-      <li><a href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener noreferrer">OWASP Top 10</a>：Web/应用层风险与修复建议。</li>
-      <li><a href="https://github.com/google/oss-fuzz" target="_blank" rel="noopener noreferrer">OSS-Fuzz</a>：持续模糊测试的工程实践。</li>
+      <li><a href="https://csrc.nist.gov/pubs/sp/800/218/final" target="_blank" rel="noopener noreferrer">NIST SP 800-218 SSDF</a>：安全软件开发生命周期与验证实践。</li>
+      <li><a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a> / <a href="https://cwe.mitre.org/top25/" target="_blank" rel="noopener noreferrer">CWE Top 25</a>：漏洞分类与修复口径。</li>
+      <li><a href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener noreferrer">OWASP Top 10</a>：应用层风险与修复建议。</li>
+      <li><a href="https://slsa.dev/spec/v1.0/" target="_blank" rel="noopener noreferrer">SLSA v1.0</a> / <a href="https://in-toto.io/" target="_blank" rel="noopener noreferrer">in-toto</a>：构建来源与供应链证据。</li>
+      <li><a href="https://github.com/ossf/scorecard" target="_blank" rel="noopener noreferrer">OpenSSF Scorecard</a>：开源项目安全实践度量。</li>
+      <li><a href="https://github.com/google/oss-fuzz" target="_blank" rel="noopener noreferrer">OSS-Fuzz</a> / <a href="https://aflplus.plus/" target="_blank" rel="noopener noreferrer">AFL++</a>：持续模糊与回归。</li>
+      <li><a href="https://github.com/secureIT-project/CVEfixes" target="_blank" rel="noopener noreferrer">CVEfixes</a> / <a href="https://github.com/tuhh-softsec/vul4j" target="_blank" rel="noopener noreferrer">Vul4J</a> / <a href="https://github.com/rjust/defects4j" target="_blank" rel="noopener noreferrer">Defects4J</a>：修复基准与回归数据。</li>
+      <li><a href="https://github.com/AliveToolkit/alive2" target="_blank" rel="noopener noreferrer">Alive2</a> / <a href="https://www.cprover.org/cbmc/" target="_blank" rel="noopener noreferrer">CBMC</a>：翻译验证/有界模型检查。</li>
       <li><a href="https://github.com/chenfanaichifan/binary-repair" target="_blank" rel="noopener noreferrer">本项目仓库</a>：实现、测试与架构说明。</li>
     </ul>
     <p class="methods-foot">

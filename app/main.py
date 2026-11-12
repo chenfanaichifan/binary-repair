@@ -34,6 +34,7 @@ from app.services.assistant_key_store import clear_key, key_status, save_key
 from app.services.code_repair import repair_code
 from app.services.connectors import connector_snapshot
 from app.services.history import HistoryConflict, HistoryError, HistoryStore
+from app.services.evaluation import evaluate as evaluate_evidence
 from app.services.assistant_llm import (
     ASSISTANT_MODE_ENV,
     assistant_status,
@@ -905,6 +906,70 @@ async def evidence_page(request: Request, job_id: str):
 async def job_status(job_id: str):
     """Return the polling status JSON."""
     return JSONResponse(BACKEND.get_snapshot(job_id))
+
+
+@app.get("/api/jobs/{job_id}/evaluation")
+async def job_evaluation(job_id: str):
+    """Read-only evidence observability scorecard.
+
+    This endpoint never derives a verdict. It reports coverage, missing
+    denominators and bottlenecks over whatever the controller returned.
+    """
+    try:
+        snapshot = BACKEND.get_snapshot(job_id)
+    except BackendError as exc:
+        return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+    except Exception as exc:  # noqa: BLE001 - backend boundary is untrusted
+        return JSONResponse({"detail": f"snapshot unavailable: {type(exc).__name__}"}, status_code=502)
+
+    attempts = {"available": False, "attempts": []}
+    getter = getattr(BACKEND, "get_attempts", None)
+    if getter is not None:
+        try:
+            payload = getter(job_id)
+            if isinstance(payload, dict):
+                attempts = payload
+        except Exception:  # noqa: BLE001
+            attempts = {"available": False, "attempts": []}
+
+    evidence_by_attempt: dict[str, object] = {}
+    evidence_getter = getattr(BACKEND, "get_attempt_evidence", None)
+    if evidence_getter is not None:
+        for item in attempts.get("attempts", []) if isinstance(attempts, dict) else []:
+            attempt_id = item.get("id") if isinstance(item, dict) else None
+            if not isinstance(attempt_id, str) or not attempt_id:
+                continue
+            try:
+                evidence = evidence_getter(attempt_id)
+            except Exception:  # noqa: BLE001
+                continue
+            if evidence:
+                evidence_by_attempt[attempt_id] = evidence
+
+    try:
+        artifacts = BACKEND.get_artifacts(job_id)
+    except Exception:  # noqa: BLE001
+        artifacts = []
+    artifact_rows: list[dict] = []
+    if isinstance(artifacts, dict):
+        for value in artifacts.values():
+            if isinstance(value, list):
+                artifact_rows.extend(item for item in value if isinstance(item, dict))
+    elif isinstance(artifacts, list):
+        artifact_rows = [item for item in artifacts if isinstance(item, dict)]
+    comparison_available = any(
+        str(item.get("role") or "") == "behavior_comparison" for item in artifact_rows
+    )
+
+    payload = evaluate_evidence(
+        snapshot,
+        attempts=attempts if isinstance(attempts, dict) else None,
+        artifacts=artifacts,
+        evidence_by_attempt=evidence_by_attempt,
+        comparison_available=comparison_available,
+    )
+    payload["available"] = True
+    return JSONResponse(payload)
 
 
 @app.get("/api/jobs/{job_id}/attempts")

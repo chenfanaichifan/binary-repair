@@ -22,6 +22,20 @@
     });
   });
 
+  // Auto-extracted page strings (Google-translated offline) fill the long tail
+  // of rendered copy; curated strings above always win.
+  var AUTO = window.BR_I18N_AUTO || {};
+  Object.keys(AUTO).forEach(function (source) {
+    var normalized = source.replace(/\s+/g, " ").trim();
+    Object.keys(AUTO[source]).forEach(function (lang) {
+      if (!DICTS[lang]) return;
+      if (DICTS[lang][normalized] === undefined) DICTS[lang][normalized] = AUTO[source][lang];
+      if (COMPACT[lang] && COMPACT[lang][normalized.replace(/\s+/g, "")] === undefined) {
+        COMPACT[lang][normalized.replace(/\s+/g, "")] = AUTO[source][lang];
+      }
+    });
+  });
+
   var originals = new WeakMap();
   var attrOriginals = new WeakMap();
   var current = "zh-Hans";

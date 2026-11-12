@@ -647,3 +647,27 @@ html[data-booted="1"] .boot { display: none; }
 }
 .home-foot a { color: var(--ds-muted); text-decoration: none; }
 .home-foot a:hover { color: var(--ds-accent-text); text-decoration: underline; }
+
+
+/* Light ambient overhaul: off-white porcelain, not a flat white page. */
+:root:not([data-theme="dark"]) .ds-home-body {
+  --home-panel: rgba(255, 255, 255, 0.68);
+  --home-hair: rgba(47, 66, 112, 0.055);
+  background:
+    radial-gradient(1100px 620px at 50% -16%, rgba(182, 198, 255, 0.7), transparent 64%),
+    radial-gradient(900px 560px at 96% 8%, rgba(255, 219, 190, 0.56), transparent 60%),
+    radial-gradient(1000px 700px at 8% 110%, rgba(188, 238, 223, 0.54), transparent 64%),
+    linear-gradient(135deg, #eef2fb 0%, #f7f2eb 48%, #eaf5f1 100%);
+}
+:root:not([data-theme="dark"]) .ds-home-body::before {
+  background-image:
+    linear-gradient(rgba(54, 75, 124, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(54, 75, 124, 0.05) 1px, transparent 1px);
+}
+:root:not([data-theme="dark"]) .home-hero::before {
+  background:
+    radial-gradient(closest-side, rgba(255, 255, 255, 0.5), transparent 70%),
+    conic-gradient(from 220deg at 50% 50%, rgba(127, 150, 255, 0.2), transparent 32%, rgba(255, 196, 154, 0.18) 62%, transparent 84%);
+  filter: blur(12px);
+  opacity: 0.9;
+}

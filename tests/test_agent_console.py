@@ -46,6 +46,13 @@ def test_agent_shell_renders():
         "agent-diagnostics",
         "agent-downloads",
         "agent-receipt-placeholder",
+        "agent-scorecard",
+        "agent-evidence-matrix",
+        "agent-obligation-table",
+        "agent-artifact-table",
+        "agent-raw-json",
+        "agent-attempt-table",
+        "agent-result-refresh",
     ):
         assert f'data-testid="{testid}"' in response.text, testid
     assert "新建修复内容" in response.text
@@ -198,7 +205,7 @@ def test_no_model_calls_or_new_transport():
     # Same-origin paths: snapshot, attempts, plan, evidence, comparison, the
     # operator key status/save/test/clear endpoints, static code repair and
     # history get/put/delete.
-    assert AGENT_JS.count("fetch(") == 15
+    assert AGENT_JS.count("fetch(") == 16
     assert "/artifacts" in AGENT_JS
     assert "/deliverables" in AGENT_JS
     assert 'fetch("/api/jobs/" + encodeURIComponent(state.jobId)' in AGENT_JS
@@ -613,6 +620,14 @@ def test_invalid_is_na_when_input_mode_is_none():
 
 def test_valid_ratio_comes_from_the_v3_summary():
     assert '" · valid " + v3.valid.passed + "/" + v3.valid.total' in AGENT_JS
+
+
+def test_result_screen_exposes_coverage_and_raw_evidence():
+    assert "/api/jobs/" in AGENT_JS and "/evaluation" in AGENT_JS
+    assert "buildLocalEvaluation" in AGENT_JS
+    assert "not_verdict: true" in AGENT_JS  # explicit coverage-only marker
+    assert "observability_index" in AGENT_JS
+    assert "agent-result-table" in AGENT_JS
 
 
 def test_result_screen_does_not_hardcode_the_evidence_sample():

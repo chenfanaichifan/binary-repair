@@ -2,7 +2,7 @@
 
 Branch: `workbench-v3`  
 Final UI commit: `17d9ed4`  
-Test run: **776 passed / 2 skipped / 1 known macOS `readelf` failure**  
+Test run: **781 passed / 2 skipped / 1 known macOS `readelf` failure**  
 Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
 (macOS `readelf` is unavailable; not an application regression).
 
@@ -16,12 +16,21 @@ Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
   Français / Italiano / Português / Español. Navigation, primary controls,
   headings, settings labels and descriptions are localized; evidence and
   technical source text stay original. See `docs/reference/i18n.md`.
+- Evidence control room: scorecard, V0–V5 matrix, obligations/filters,
+  attempt history, artifacts/fingerprints, raw JSON and export links; backed by
+  a read-only `/api/jobs/{id}/evaluation` coverage endpoint. It never derives a
+  verdict; missing denominators stay N/A.
+- Full-shell localization: 799 auto-extracted rendered segments plus curated
+  labels across nine languages. Technical identifiers, code and verdict values
+  stay original.
 - Rebuilt **`/guide`** with twelve sections, an evidence-chain SVG, step tables,
   V0–V5 verification levels, troubleshooting, security checklist and official
   CWE/Ghidra/angr/Frida/QEMU links.
 - Responsive **top bar + off-canvas drawer** replaces the stacked mobile
   sidebar; desktop type/spacing was tightened around a ChatGPT/Claude-like
   hierarchy.
+- Ambient material: light porcelain/iris/teal translucent glass, dark
+  midnight/cyan-violet aurora; both animated and reduced-motion aware.
 - Restrained **page-transition** scan/iris effect, respecting reduced motion and
   the animations-off setting.
 - Current screenshots in `docs/showcase/`.
@@ -58,7 +67,10 @@ cd binary-repair-gui
 .venv/bin/python -m pytest
 ```
 
-- Unit/security/route tests: 776 passed, 2 skipped.
+- Unit/security/route tests: 781 passed, 2 skipped.
 - The one failure is the known macOS `readelf` environment limitation.
 - Browser smoke: language switch (zh/en/ja/zh), custom select, mobile drawer,
-  page transition, live/demo launch modes, public health and landing.
+  page transition, live/demo launch modes, expanded result/evidence panel,
+  public health and landing.
+- Quality/efficiency probe: `scripts/benchmark_repair.py`;
+  report [`docs/acceptance/repair-evaluation-2026-11-12.md`](docs/acceptance/repair-evaluation-2026-11-12.md).

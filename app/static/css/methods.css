@@ -78,3 +78,16 @@
 @media (max-width: 640px) {
   .methods-head { flex-direction: column; }
 }
+
+/* Research-backed maturity section */
+.methods-maturity { margin: 28px 0; padding: 18px; border: 1px solid var(--ds-border); border-radius: 16px; background: var(--ds-surface); }
+.methods-sub { margin: 0 0 12px; color: var(--ds-muted); font-size: 12px; line-height: 1.75; }
+.methods-matrix { width: 100%; border-collapse: collapse; font-size: 11px; }
+.methods-matrix th, .methods-matrix td { padding: 8px 9px; border-bottom: 1px solid var(--ds-border); text-align: left; vertical-align: top; line-height: 1.6; }
+.methods-matrix th { color: var(--ds-faint); font-family: var(--ds-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+.methods-matrix td:first-child { color: var(--ds-accent-text); font-family: var(--ds-mono); font-weight: 600; }
+.methods-uplift { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+.methods-uplift article { padding: 12px 13px; border: 1px solid var(--ds-border); border-radius: 11px; background: var(--ds-surface-2); }
+.methods-uplift h3 { margin: 0 0 6px; font-size: 12px; }
+.methods-uplift ul { margin: 0; padding-left: 16px; color: var(--ds-text-2); font-size: 11px; line-height: 1.75; }
+@media (max-width: 720px) { .methods-uplift { grid-template-columns: 1fr; } .methods-matrix { min-width: 620px; } .methods-maturity { overflow-x: auto; } }

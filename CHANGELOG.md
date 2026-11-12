@@ -89,6 +89,17 @@ simple semantic-versioning policy for delivery snapshots.
   Navigation, primary controls, headings and settings labels are localized;
   evidence and technical source text remain original to avoid mistranslation.
   See `docs/reference/i18n.md`.
+- Evidence control room: `/api/jobs/{id}/evaluation` (coverage-only, no verdict),
+  V0–V5 matrix, scorecard, obligation filters, attempt history, artifact
+  fingerprints, raw JSON/export links and a resilient local fallback. Zero or
+  missing denominators show N/A; `not_run` never becomes a pass.
+- Light/dark material pass: warm porcelain/iris/teal ambient with translucent
+  glass cards and an animated aurora in light mode; midnight/cyan-violet ambient
+  in dark mode. Page transitions respect reduced motion.
+- Full UI copy localization: auto-extracted long-form page strings (799 source
+  segments) now translate alongside curated nav/settings labels, including the
+  guide, methods, connectors, result/evidence and agent guidance. Technical
+  values, code and evidence identifiers stay original.
 - Rich manual: `/guide` now has twelve sections, an inline evidence-chain SVG,
   step tables, verification-level table, troubleshooting matrix, security
   checklist and official tool links.

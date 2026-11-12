@@ -1979,6 +1979,387 @@
     });
   }
 
+
+  /* ---------- 结果与证据：覆盖总览、矩阵、义务、产物、原始 JSON ---------- */
+
+  var evaluationCache = { jobId: "", payload: null, loading: false, error: "" };
+  var obligationFilter = "all";
+
+  function levelLabel(level) {
+    return ({
+      V0: "静态/字节观察", V1: "符号/约束", V2: "路径/输入可达",
+      V3: "动态执行", V4: "模型级验证", V5: "差分/行为对比"
+    })[level] || level;
+  }
+
+  function ownArtifacts(view) {
+    var seen = {};
+    var out = [];
+    (view.artifacts || []).concat(state.artifacts || []).forEach(function (item) {
+      if (!item || typeof item !== "object") return;
+      var key = item.id || item.name || JSON.stringify(item).slice(0, 80);
+      if (seen[key]) return;
+      seen[key] = true;
+      out.push(item);
+    });
+    return out;
+  }
+
+  function computeEvidenceLevels(view) {
+    var levels = { V0: false, V1: false, V2: false, V3: false, V4: false, V5: false };
+    var routes = {};
+    if (view.originalSha256 || (view.routes && Object.keys(view.routes).length)) levels.V0 = true;
+    (view.routeKeys || []).forEach(function (key) {
+      var route = view.routes[key] || {};
+      var evidence = route.__evidence || {};
+      ["v1", "v2", "v3", "v4"].forEach(function (field) {
+        if (evidence[field]) levels[field.toUpperCase()] = true;
+      });
+      if (route.verification && route.verification !== "not_run") levels.V4 = true;
+      (evidence.gates || []).forEach(function (gate) {
+        var name = String(gate.gate || "").toUpperCase();
+        Object.keys(levels).forEach(function (level) {
+          if (name.indexOf(level) === 0) levels[level] = true;
+        });
+      });
+      Object.keys(levels).forEach(function (level) {
+        if (levels[level]) {
+          routes[level] = routes[level] || [];
+          if (routes[level].indexOf(key) < 0) routes[level].push(key);
+        }
+      });
+    });
+    if (comparisonCache && comparisonCache.status === "available") levels.V5 = true;
+    return { levels: levels, routes: routes };
+  }
+
+  function countObligations(view) {
+    var counts = { total: 0, pass: 0, fail: 0, not_run: 0, unknown: 0, pass_rate: null };
+    (view.obligations || []).forEach(function (item) {
+      var result = String(item.result || "unknown").toLowerCase();
+      counts.total += 1;
+      if (["pass", "passed", "ok", "success", "met"].indexOf(result) >= 0) counts.pass += 1;
+      else if (["fail", "failed", "error", "violated", "unmet"].indexOf(result) >= 0) counts.fail += 1;
+      else if (["not_run", "pending", "skipped"].indexOf(result) >= 0) counts.not_run += 1;
+      else counts.unknown += 1;
+    });
+    if (counts.total) counts.pass_rate = Math.round((counts.pass / counts.total) * 1000) / 10;
+    return counts;
+  }
+
+  function computeTests(view) {
+    var passed = 0, total = 0;
+    (view.routeKeys || []).forEach(function (key) {
+      var route = view.routes[key] || {};
+      var tests = route.tests || {};
+      var candidate = route.__evidence && route.__evidence.v3 && route.__evidence.v3.valid;
+      var p = candidate && typeof candidate.passed === "number" ? candidate.passed : tests.passed;
+      var t = candidate && typeof candidate.total === "number" ? candidate.total : tests.total;
+      if (typeof p === "number" && typeof t === "number") { passed += p; total += t; }
+    });
+    return { passed: passed, total: total, pass_rate: total ? Math.round((passed / total) * 1000) / 10 : null };
+  }
+
+  function buildLocalEvaluation(view) {
+    var obligations = countObligations(view);
+    var tests = computeTests(view);
+    var evidence = computeEvidenceLevels(view);
+    var artifacts = ownArtifacts(view);
+    var routes = view.routeKeys || [];
+    var changed = 0;
+    var elapsed = 0;
+    var ai = { calls: 0, tokens: 0, cost_usd: 0 };
+    routes.forEach(function (key) {
+      var route = view.routes[key] || {};
+      changed += (route.changed_regions || []).length;
+      try { elapsed += Number(route.elapsed_s || 0); } catch (error) { /* ignore */ }
+      var usage = route.ai_usage || {};
+      ai.calls += Number(usage.calls || usage.requests || 0);
+      ai.tokens += Number(usage.tokens || usage.total_tokens || 0);
+      ai.cost_usd += Number(usage.cost_usd || usage.cost || 0);
+    });
+    var availableLevels = Object.keys(evidence.levels).filter(function (level) { return evidence.levels[level]; });
+    var coverage = Math.round((availableLevels.length / 6) * 1000) / 10;
+    var observable = Math.round((
+      coverage * 0.35 +
+      (obligations.pass_rate || 0) * 0.25 +
+      (tests.pass_rate || 0) * 0.20 +
+      (artifacts.length ? 100 : 0) * 0.10 +
+      (evidence.levels.V5 ? 100 : 0) * 0.10
+    ) * 10) / 10;
+    var bottlenecks = [];
+    if (obligations.fail) bottlenecks.push({ kind: "failed_obligations", label: obligations.fail + " 条义务失败", severity: "high" });
+    if (obligations.not_run) bottlenecks.push({ kind: "not_run", label: obligations.not_run + " 条义务未执行", severity: "medium" });
+    if (!obligations.total) bottlenecks.push({ kind: "no_obligations", label: "未回传义务结果", severity: "high" });
+    if (!tests.total) bottlenecks.push({ kind: "no_tests", label: "未回传有效用例/测试分母", severity: "high" });
+    if (!artifacts.length) bottlenecks.push({ kind: "no_artifacts", label: "未注册补丁或证据产物", severity: "medium" });
+    if (!evidence.levels.V5) bottlenecks.push({ kind: "no_comparison", label: "未提供 V5 行为对比", severity: "medium" });
+    if (!view.verdict) bottlenecks.push({ kind: "no_verdict", label: "验收引擎尚未给出 verdict", severity: "high" });
+    return {
+      job_id: view.jobId,
+      local: true,
+      not_verdict: true,
+      verdict: view.verdict,
+      counts: {
+        routes: routes.length, obligations: obligations, tests: tests,
+        artifacts: artifacts.length, attempts: (attemptsCache.items || []).length,
+        changed_regions: changed, ai: ai
+      },
+      scorecard: {
+        evidence_coverage: coverage,
+        obligation_pass_rate: obligations.pass_rate,
+        test_pass_rate: tests.pass_rate,
+        artifact_completeness: artifacts.length ? 100 : 0,
+        comparison_coverage: evidence.levels.V5 ? 100 : 0,
+        observability_index: observable,
+        elapsed_seconds: Math.round(elapsed * 100) / 100,
+        formula: "本地覆盖估算；0.35*证据 + 0.25*义务 + 0.20*用例 + 0.10*产物 + 0.10*对比"
+      },
+      levels: Object.keys(evidence.levels).map(function (level) {
+        return { level: level, label: levelLabel(level), available: evidence.levels[level], routes: evidence.routes[level] || [] };
+      }),
+      bottlenecks: bottlenecks,
+      limitations: ["本地估算；后端评估接口不可用时生成", "缺失分母不计为通过"]
+    };
+  }
+
+  function scoreCard(label, value, sub, tone) {
+    var card = el("div", "agent-score" + (tone ? " agent-score-" + tone : ""));
+    card.appendChild(el("span", "agent-score-label", label));
+    card.appendChild(el("strong", "agent-score-value", value));
+    if (sub) card.appendChild(el("small", "agent-score-sub", sub));
+    return card;
+  }
+
+  function pct(value) {
+    return value === null || value === undefined ? "N/A" : value + "%";
+  }
+
+  function renderScorecard(payload, view) {
+    var host = $("agent-scorecard");
+    clear(host);
+    if (!payload) {
+      host.appendChild(el("p", "agent-muted", "正在计算证据覆盖…"));
+      $("agent-bottlenecks").textContent = "";
+      return;
+    }
+    var counts = payload.counts || {};
+    var score = payload.scorecard || {};
+    var outcome = view.verdict && view.verdict.outcome ? view.verdict.outcome : "尚无 verdict";
+    host.appendChild(scoreCard("验收结论", outcome, "只读；不由此页推断", "verdict"));
+    host.appendChild(scoreCard("可观测性指数", (score.observability_index === undefined ? "N/A" : score.observability_index), "覆盖度，不是修复判决", "accent"));
+    host.appendChild(scoreCard("证据覆盖 V0–V5", pct(score.evidence_coverage), "已回传层数 / 6", ""));
+    host.appendChild(scoreCard("义务通过率", pct(score.obligation_pass_rate),
+      (counts.obligations ? counts.obligations.pass + " / " + counts.obligations.total + " 条" : "未回传"), ""));
+    host.appendChild(scoreCard("用例通过率", pct(score.test_pass_rate),
+      (counts.tests ? counts.tests.passed + " / " + counts.tests.total : "无有效分母"), ""));
+    host.appendChild(scoreCard("产物 / 尝试", (counts.artifacts || 0) + " / " + (counts.attempts || 0),
+      "仅登记，不证明正确", ""));
+    host.appendChild(scoreCard("耗时", (score.elapsed_seconds === undefined ? "N/A" : score.elapsed_seconds + " s"),
+      "路由累计 / 时间戳", ""));
+    var ai = counts.ai || {};
+    host.appendChild(scoreCard("AI 用量", (ai.calls || 0) + " calls",
+      (ai.tokens || 0) + " tokens · $" + (ai.cost_usd || 0), ""));
+
+    var gaps = $("agent-bottlenecks");
+    clear(gaps);
+    var list = payload.bottlenecks || [];
+    if (!list.length) {
+      gaps.appendChild(el("span", "agent-gap agent-gap-ok", "未发现结构性证据缺口；仍需 verdict 才能谈验收"));
+    } else {
+      list.forEach(function (gap) {
+        gaps.appendChild(el("span", "agent-gap agent-gap-" + (gap.severity || "medium"), gap.label));
+      });
+    }
+    if (payload.local) {
+      gaps.appendChild(el("span", "agent-gap agent-gap-local", "本地覆盖估算（后端评估不可用）"));
+    }
+  }
+
+  function renderEvidenceMatrix(payload) {
+    var host = $("agent-evidence-matrix");
+    clear(host);
+    if (!payload) { host.appendChild(el("p", "agent-muted", "正在读取证据层…")); return; }
+    var table = el("table", "agent-result-table");
+    var head = el("thead");
+    var hr = el("tr");
+    ["层级", "证据", "状态", "关联路线", "含义"].forEach(function (label) { hr.appendChild(el("th", null, label)); });
+    head.appendChild(hr); table.appendChild(head);
+    var body = el("tbody");
+    (payload.levels || []).forEach(function (row) {
+      var tr = el("tr");
+      tr.dataset.level = row.level;
+      tr.appendChild(el("td", null, row.level));
+      tr.appendChild(el("td", "agent-result-mono", row.label || levelLabel(row.level)));
+      var status = el("td");
+      status.appendChild(el("span", "agent-status-badge " + (row.available ? "is-ok" : "is-missing"),
+        row.available ? "已回传" : "未回传"));
+      tr.appendChild(status);
+      tr.appendChild(el("td", "agent-result-mono", (row.routes || []).join(", ") || "—"));
+      tr.appendChild(el("td", "agent-result-muted", row.available ? "可复核该层证据" : "缺失不等于通过"));
+      body.appendChild(tr);
+    });
+    table.appendChild(body); host.appendChild(table);
+  }
+
+  function renderObligationTable(view) {
+    var host = $("agent-obligation-table");
+    clear(host);
+    var rows = (view.obligations || []).filter(function (item) {
+      return obligationFilter === "all" || String(item.result).toLowerCase() === obligationFilter;
+    });
+    if (!rows.length) {
+      host.appendChild(el("p", "agent-muted", view.obligations && view.obligations.length ? "没有匹配该筛选的义务" : "后端未提供义务结果"));
+      return;
+    }
+    var table = el("table", "agent-result-table");
+    var head = el("thead"); var hr = el("tr");
+    ["Route", "义务 ID", "类型", "结果（逐字）", "原因 / 详情"].forEach(function (label) { hr.appendChild(el("th", null, label)); });
+    head.appendChild(hr); table.appendChild(head);
+    var body = el("tbody");
+    rows.forEach(function (item) {
+      var result = String(item.result || "unknown");
+      var tr = el("tr");
+      tr.dataset.result = result.toLowerCase();
+      tr.appendChild(el("td", "agent-result-mono", item.route));
+      tr.appendChild(el("td", "agent-result-mono", item.id));
+      tr.appendChild(el("td", "agent-result-mono", item.kind || "—"));
+      var td = el("td");
+      td.appendChild(el("span", "agent-result-badge result-" + result.toLowerCase().replace(/[^a-z_]/g, ""), result));
+      tr.appendChild(td);
+      tr.appendChild(el("td", "agent-result-muted", item.reason || "—"));
+      body.appendChild(tr);
+    });
+    table.appendChild(body); host.appendChild(table);
+  }
+
+  function renderAttemptTable() {
+    var host = $("agent-attempt-table");
+    if (!host) return;
+    clear(host);
+    var items = attemptsCache.items || [];
+    if (!items.length) {
+      host.appendChild(el("p", "agent-muted", attemptsCache.available === false ? "控制器未提供 attempts 端点" : "尚无尝试记录"));
+      return;
+    }
+    var table = el("table", "agent-result-table");
+    var head = el("thead"); var hr = el("tr");
+    ["Attempt", "路线", "阶段", "结果", "时间"].forEach(function (label) { hr.appendChild(el("th", null, label)); });
+    head.appendChild(hr); table.appendChild(head);
+    var body = el("tbody");
+    items.forEach(function (item) {
+      item = item || {};
+      var tr = el("tr");
+      tr.appendChild(el("td", "agent-result-mono", item.id || item.attempt_id || "—"));
+      tr.appendChild(el("td", "agent-result-mono", item.route || item.route_key || "—"));
+      tr.appendChild(el("td", "agent-result-mono", item.phase || item.status || "—"));
+      tr.appendChild(el("td", null, item.outcome || item.result || item.verdict || "—"));
+      tr.appendChild(el("td", "agent-result-muted", item.created_at || item.finished_at || "—"));
+      body.appendChild(tr);
+    });
+    table.appendChild(body); host.appendChild(table);
+  }
+
+  function renderArtifactTable(view) {
+    var host = $("agent-artifact-table");
+    clear(host);
+    var artifacts = ownArtifacts(view);
+    if (!artifacts.length) { host.appendChild(el("p", "agent-muted", "暂无登记产物")); return; }
+    var table = el("table", "agent-result-table");
+    var head = el("thead"); var hr = el("tr");
+    ["产物", "角色", "SHA-256", "动作"].forEach(function (label) { hr.appendChild(el("th", null, label)); });
+    head.appendChild(hr); table.appendChild(head);
+    var body = el("tbody");
+    artifacts.forEach(function (item) {
+      var tr = el("tr");
+      tr.appendChild(el("td", null, item.name || item.label || item.id || "artifact"));
+      tr.appendChild(el("td", "agent-result-mono", item.role || "—"));
+      var sha = item.sha256 || item.digest || "";
+      tr.appendChild(el("td", "agent-result-mono agent-result-sha", sha || "—"));
+      var action = el("td");
+      if (state.jobId && item.id) {
+        var link = el("a", null, "下载");
+        link.href = "/api/jobs/" + encodeURIComponent(state.jobId) + "/artifacts/" + encodeURIComponent(item.id) + "/download";
+        action.appendChild(link);
+      } else {
+        action.textContent = "—";
+      }
+      tr.appendChild(action); body.appendChild(tr);
+    });
+    table.appendChild(body); host.appendChild(table);
+  }
+
+  function renderRawJson() {
+    var host = $("agent-raw-json");
+    clear(host);
+    if (!state.snapshot) { host.appendChild(el("p", "agent-muted", "尚无可导出的原始快照")); return; }
+    var details = el("details", "agent-raw");
+    details.open = true;
+    var summary = el("summary", null, "完整任务快照 JSON（" + (new Blob([JSON.stringify(state.snapshot)]).size) + " bytes）");
+    details.appendChild(summary);
+    var pre = el("pre", "agent-raw-pre", JSON.stringify(state.snapshot, null, 2));
+    details.appendChild(pre);
+    var bar = el("div", "agent-raw-actions");
+    var copy = el("button", null, "复制 JSON");
+    copy.type = "button";
+    copy.addEventListener("click", function () { copyText(pre.textContent, copy); });
+    bar.appendChild(copy);
+    if (evaluationCache.payload) {
+      var copyEval = el("button", null, "复制评估 JSON");
+      copyEval.type = "button";
+      copyEval.addEventListener("click", function () { copyText(JSON.stringify(evaluationCache.payload, null, 2), copyEval); });
+      bar.appendChild(copyEval);
+    }
+    details.appendChild(bar);
+    host.appendChild(details);
+  }
+
+  function renderResultActions(view) {
+    var id = view.jobId || state.jobId;
+    var exportLink = $("agent-result-export");
+    var reportLink = $("agent-result-report");
+    if (exportLink) exportLink.href = id ? "/api/jobs/" + encodeURIComponent(id) + "/export" : "#";
+    if (reportLink) reportLink.href = id ? "/jobs/" + encodeURIComponent(id) + "/report" : "#";
+    if (!id) { exportLink.setAttribute("aria-disabled", "true"); reportLink.setAttribute("aria-disabled", "true"); }
+  }
+
+  function applyEvaluation(view, payload) {
+    evaluationCache.payload = payload;
+    renderScorecard(payload, view);
+    renderEvidenceMatrix(payload);
+    renderRawJson();
+  }
+
+  function loadEvaluation(view, force) {
+    var id = view.jobId || state.jobId;
+    if (!id || FIXTURE_MODE) {
+      applyEvaluation(view, buildLocalEvaluation(view));
+      return;
+    }
+    if (!force && evaluationCache.jobId === id && evaluationCache.payload) {
+      applyEvaluation(view, evaluationCache.payload);
+      return;
+    }
+    var local = buildLocalEvaluation(view);
+    applyEvaluation(view, local);
+    if (evaluationCache.loading && evaluationCache.jobId === id) return;
+    evaluationCache = { jobId: id, payload: evaluationCache.payload, loading: true, error: "" };
+    fetch("/api/jobs/" + encodeURIComponent(id) + "/evaluation", { headers: { Accept: "application/json" } })
+      .then(function (response) {
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        if (state.jobId !== id || !payload || payload.available === false) throw new Error("unavailable");
+        evaluationCache = { jobId: id, payload: payload, loading: false, error: "" };
+        if (state.view === "result") applyEvaluation(view, payload);
+      })
+      .catch(function () {
+        evaluationCache = { jobId: id, payload: local, loading: false, error: "evaluation unavailable" };
+        if (state.view === "result") applyEvaluation(view, local);
+      });
+  }
+
   function renderResult() {
     var view = state.snapshot ? normalize(state.snapshot) : null;
     if (!view) {
@@ -1989,13 +2370,29 @@
       $("agent-diagnostics").appendChild(el("p", "agent-muted", "尚未选择任务"));
       clear($("agent-downloads"));
       $("agent-downloads").appendChild(el("li", "agent-muted", "尚未创建任务"));
+      renderResultActions({ jobId: state.jobId });
+      renderScorecard(null, { verdict: null });
+      renderEvidenceMatrix(null);
+      renderObligationTable({ obligations: [] });
+      renderArtifactTable({ artifacts: [] });
+      renderAttemptTable();
+      renderRawJson();
       show("agent-receipt-placeholder", false);
       return;
     }
+    renderResultActions(view);
+    var localEvaluation = buildLocalEvaluation(view);
+    renderScorecard(localEvaluation, view);
+    renderEvidenceMatrix(localEvaluation);
+    renderObligationTable(view);
+    renderArtifactTable(view);
+    renderAttemptTable();
+    renderRawJson();
     renderTimeline(view);
     renderBeforeAfter(view);
     renderDiagnostics(view);
     renderDownloads(view);
+    loadEvaluation(view, false);
   }
 
   /* ---------- 轮询 ---------- */
@@ -2557,6 +2954,30 @@
     }
     renderSide();
   }
+
+  document.addEventListener("click", function (event) {
+    var filter = event.target.closest ? event.target.closest("[data-obligation-filter]") : null;
+    if (filter) {
+      obligationFilter = filter.dataset.obligationFilter || "all";
+      document.querySelectorAll("[data-obligation-filter]").forEach(function (button) {
+        button.classList.toggle("is-active", button === filter);
+      });
+      var view = state.snapshot ? normalize(state.snapshot) : null;
+      if (view) renderObligationTable(view);
+      return;
+    }
+    var refresh = event.target.closest ? event.target.closest("#agent-result-refresh") : null;
+    if (refresh) {
+      evaluationCache = { jobId: "", payload: null, loading: false, error: "" };
+      var current = state.snapshot ? normalize(state.snapshot) : null;
+      if (current) {
+        var local = buildLocalEvaluation(current);
+        renderScorecard(local, current);
+        renderEvidenceMatrix(local);
+        loadEvaluation(current, true);
+      }
+    }
+  });
 
   init();
 })();

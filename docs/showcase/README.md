@@ -20,3 +20,6 @@ Additional current views:
 |---|---|
 | `08-language-en.png` | English UI (nine-language switch) |
 | `09-mobile.png` | responsive top bar + drawer layout |
+
+| `10-results-evidence.png` | result/evidence control room |
+| `11-ambient-light.png` | light ambient landing |

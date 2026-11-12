@@ -67,6 +67,10 @@ def test_guide_is_complete_and_linked_from_the_sidebar():
     assert "guide-steps" in guide.text
     assert "guide-figure" in guide.text
     assert "https://cwe.mitre.org/" in guide.text
+    methods = client.get("/methods")
+    assert "证据成熟度与高级方法" in methods.text
+    assert "https://slsa.dev/spec/v1.0/" in methods.text
+    assert "https://github.com/AliveToolkit/alive2" in methods.text
     for path in ("/agent", "/connectors", "/methods", "/settings"):
         page = client.get(path)
         assert page.status_code == 200
