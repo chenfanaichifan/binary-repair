@@ -38,9 +38,22 @@ jobs:
         run: |
           mkdir -p artifacts/ubuntu-verification
           set -o pipefail
-          python -m pytest -q --ignore=tests/e2e \
+          python -m pytest -q -x -vv --ignore=tests/e2e \
             --junitxml=artifacts/ubuntu-verification/junit.xml \
             2>&1 | tee artifacts/ubuntu-verification/pytest.log
+
+      - name: Publish failure tail to job summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Ubuntu verification failure tail"
+            if [ -f artifacts/ubuntu-verification/pytest.log ]; then
+              tail -n 200 artifacts/ubuntu-verification/pytest.log
+            else
+              echo "pytest.log was not created"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Capture environment
         if: always()
