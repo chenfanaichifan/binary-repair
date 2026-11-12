@@ -10,19 +10,21 @@ ELF coverage.
 
 ## Baseline
 
-Code commit:
+Code commit (feature + experiment script):
 
 ```text
-be9564f1256f2d0693aed0f036b84b4a2f1827d2
-feat(review): deterministic verification packet and read-only AI review
+df82b6c40d78b5eb643a16e0123e10a76b44475a
+docs(evidence): record direct-ELF AI review experiment
 ```
 
-Ubuntu 24.04 non-browser verification:
+The feature itself landed in `be9564f`; `df82b6c` adds the reproducible
+experiment script and the first evidence record. Ubuntu 24.04 non-browser
+verification of `df82b6c`:
 
 ```text
-run:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43247530842
-job:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43247530842/job/131284112819
-head:     be9564f1256f2d0693aed0f036b84b4a2f1827d2
+run:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43248205593
+job:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43248205593/job/131286534110
+head:     df82b6c40d78b5eb643a16e0123e10a76b44475a
 result:   completed / success
 command:  python -m pytest -q --ignore=tests/e2e
 ```
@@ -84,8 +86,8 @@ Provider:
 requested model: deepseek-chat
 returned model:  deepseek-flash
 calls:           3 (one per case)
-tokens:          4,432 prompt / 711 completion / 5,143 total
-latency:         ~1.9–2.8 s per call
+tokens:          4,432 prompt / 716 completion / 5,148 total
+latency:         ~2.0–2.3 s per call
 ```
 
 | case | gate | no AI | with AI | AI called | recommendation | changed |
