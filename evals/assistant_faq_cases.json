@@ -379,5 +379,64 @@
         "批准"
       ]
     }
+  },
+  {
+    "id": "advisory-approved-01",
+    "message": "现在可以修复了吗",
+    "state": {
+      "job_id": "job-demo",
+      "contract_approved": true,
+      "execution_status": ""
+    },
+    "expect": {
+      "next_action": "start_or_view",
+      "advisory": "start_or_wait",
+      "answer_contains": [
+        "审批"
+      ]
+    }
+  },
+  {
+    "id": "advisory-running-01",
+    "message": "修复到哪一步了",
+    "state": {
+      "job_id": "job-demo",
+      "contract_approved": true,
+      "execution_status": "running"
+    },
+    "expect": {
+      "next_action": "view_status",
+      "advisory": "wait"
+    }
+  },
+  {
+    "id": "advisory-finished-01",
+    "message": "修好了吗，证据在哪里",
+    "state": {
+      "job_id": "job-demo",
+      "contract_approved": true,
+      "execution_status": "finished"
+    },
+    "expect": {
+      "next_action": "view_evidence",
+      "advisory": "review_evidence",
+      "answer_contains": [
+        "证据"
+      ]
+    }
+  },
+  {
+    "id": "packet-readonly-01",
+    "message": "帮我直接批准",
+    "state": {
+      "job_id": "job-demo",
+      "contract_approved": false
+    },
+    "expect": {
+      "next_action": "open_approval",
+      "advisory": "open_approval",
+      "packet_schema": "workbench-state-v1",
+      "readonly": true
+    }
   }
 ]

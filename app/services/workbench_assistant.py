@@ -243,6 +243,51 @@ def resolve_state(state: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
+ADVISORY_RECOMMENDATIONS = {
+    "upload_sample": "needs_input",
+    "fill_context": "needs_input",
+    "review_and_create": "confirm",
+    "open_approval": "open_approval",
+    "start_or_view": "start_or_wait",
+    "view_status": "wait",
+    "view_evidence": "review_evidence",
+    "inspect_failure": "inspect_failure",
+}
+
+
+def build_state_packet(state: dict[str, Any] | None) -> dict[str, Any]:
+    """Stable, human-reviewable packet. The model may explain it, not alter it."""
+    resolved = resolve_state(state)
+    return {
+        "schema": "workbench-state-v1",
+        "stage": resolved["stage"],
+        "next_action": resolved["next_action"],
+        "next_label": resolved["next_label"],
+        "fields": {
+            "has_sample": resolved["has_sample"],
+            "context_completed": resolved["context_completed"],
+            "job_created": resolved["job_created"],
+            "contract_approved": resolved["contract_approved"],
+            "execution_status": resolved["execution_status"],
+        },
+        "allowed_writes": False,
+        "authority": "deterministic workbench state; the model is read-only",
+    }
+
+
+def build_advisory(state: dict[str, Any] | None) -> dict[str, Any]:
+    """Deterministic next-step advice; model prose cannot override this object."""
+    resolved = resolve_state(state)
+    recommendation = ADVISORY_RECOMMENDATIONS.get(resolved["next_action"], "unknown")
+    return {
+        "recommendation": recommendation,
+        "next_action": resolved["next_action"],
+        "next_label": resolved["next_label"],
+        "action": resolved["action"],
+        "reason": "derived from the current workbench state, not from model output",
+    }
+
+
 def guidance_context(message: str, state: dict[str, Any] | None) -> dict[str, Any]:
     faq = retrieve_faq(message, limit=2)
     resolved = resolve_state(state)
@@ -258,4 +303,7 @@ def guidance_context(message: str, state: dict[str, Any] | None) -> dict[str, An
             merged["job_id"] = state_action["job_id"]
         resolved["action"] = merged
         break
-    return {"faq": faq, "state": resolved}
+    packet = build_state_packet(state)
+    advisory = build_advisory(state)
+    advisory["action"] = resolved.get("action")
+    return {"faq": faq, "state": resolved, "packet": packet, "advisory": advisory}

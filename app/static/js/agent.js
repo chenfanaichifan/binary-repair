@@ -3101,12 +3101,21 @@
     var snapshot = state.snapshot || null;
     var contract = snapshot && snapshot.contract ? snapshot.contract : null;
     var execution = snapshot && snapshot.execution ? snapshot.execution : null;
+    var executionStatus = "";
+    if (typeof execution === "string") executionStatus = execution;
+    else if (execution && execution.status) executionStatus = String(execution.status);
     return {
       job_id: state.jobId || "",
       has_sample: !!state.file,
       context_completed: !!state.contextCompleted,
       contract_approved: !!(contract && contract.approved),
-      execution_status: execution && execution.status ? String(execution.status) : ""
+      contract_revision: contract && contract.revision !== undefined ? contract.revision : null,
+      contract_sha256: contract && contract.sha256 ? String(contract.sha256) : "",
+      execution_status: executionStatus,
+      execution_phase: snapshot && snapshot.phase ? String(snapshot.phase) : "",
+      artifacts: (state.artifacts || []).slice(0, 8).map(function (item) {
+        return { id: item.id || "", name: item.name || item.label || "", role: item.role || "" };
+      })
     };
   }
 
@@ -3139,7 +3148,8 @@
       }
       pushMessage("assistant", result.payload.reply);
       setText("agent-side-step", "对话");
-      var action = result.payload.action;
+      var action = result.payload.action ||
+        (result.payload.advisory && result.payload.advisory.action) || null;
       if (action && action.type) {
         var label = action.label || "打开下一步";
         pushActionCard("下一步", [{

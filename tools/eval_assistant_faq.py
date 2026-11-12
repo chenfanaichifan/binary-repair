@@ -37,6 +37,16 @@ def run() -> tuple[int, list[dict]]:
         actual_action = (resolved.get("action") or {}).get("type")
         if expected_action and actual_action != expected_action:
             problems.append(f"action={actual_action} expected={expected_action}")
+        expected_advisory = expect.get("advisory")
+        actual_advisory = (guidance.get("advisory") or {}).get("recommendation")
+        if expected_advisory and actual_advisory != expected_advisory:
+            problems.append(f"advisory={actual_advisory} expected={expected_advisory}")
+        expected_schema = expect.get("packet_schema")
+        actual_schema = (guidance.get("packet") or {}).get("schema")
+        if expected_schema and actual_schema != expected_schema:
+            problems.append(f"packet={actual_schema} expected={expected_schema}")
+        if expect.get("readonly") and (guidance.get("packet") or {}).get("allowed_writes") is not False:
+            problems.append("packet is not read-only")
         for needle in expect.get("answer_contains", []):
             if needle not in answers:
                 problems.append(f"answer missing {needle!r}")
@@ -48,6 +58,7 @@ def run() -> tuple[int, list[dict]]:
             "stage": resolved["stage"],
             "next_action": resolved["next_action"],
             "action": actual_action,
+            "advisory": actual_advisory,
             "problems": problems,
         })
     return failures, results

@@ -1243,7 +1243,30 @@ async def assistant_chat(request: Request) -> JSONResponse:
         return JSONResponse({"detail": "llm_client_not_configured"}, status_code=503)
 
     state = body.get("state") if isinstance(body, dict) else None
+    if isinstance(state, dict) and isinstance(state.get("job_id"), str) and state.get("job_id"):
+        # The packet is authoritative: prefer the backend's persisted contract
+        # and execution state over client-supplied booleans when a job exists.
+        try:
+            snapshot = BACKEND.get_snapshot(state["job_id"])
+            merged = dict(state)
+            contract = snapshot.get("contract") if isinstance(snapshot, dict) else None
+            if isinstance(contract, dict):
+                merged["contract_approved"] = bool(contract.get("approved"))
+            execution = snapshot.get("execution") if isinstance(snapshot, dict) else None
+            if isinstance(execution, str):
+                merged["execution_status"] = execution
+            elif isinstance(execution, dict) and isinstance(execution.get("status"), str):
+                merged["execution_status"] = execution["status"]
+            if isinstance(snapshot, dict) and isinstance(snapshot.get("phase"), str):
+                merged["execution_phase"] = snapshot["phase"]
+            state = merged
+        except Exception:
+            # A missing/unavailable job must not turn chat into a 500; keep the
+            # client state and let the guidance layer report the gap.
+            pass
     guidance = guidance_context(message.strip(), state if isinstance(state, dict) else None)
+    state_packet = guidance["packet"]
+    advisory = guidance["advisory"]
     faq_lines = [
         "- " + entry["answer"]
         for entry in guidance["faq"][:2]
@@ -1272,6 +1295,10 @@ async def assistant_chat(request: Request) -> JSONResponse:
         "User: 我累了，等一下再审批\nAssistant: 好，先休息。契约保持待批准，不会自动执行；回来后在任务页打开审批界面即可。\n"
         "User: 这个错误怎么办\nAssistant: 请补充错误码或报错文本；当前信息不足，我不会猜测。\n\n"
         + facts
+        + "\n\nAuthoritative state packet (JSON; do not modify):\n"
+        + json.dumps(state_packet, ensure_ascii=False, sort_keys=True)
+        + "\n\nDeterministic advisory (JSON; the model may explain but not overwrite):\n"
+        + json.dumps(advisory, ensure_ascii=False, sort_keys=True)
     )
 
     # The client owns the visible conversation. Keep only the last 10 rounds
@@ -1310,6 +1337,8 @@ async def assistant_chat(request: Request) -> JSONResponse:
         "state": stage,
         "action": action,
         "settings": {"temperature": chat_temperature, "max_tokens": chat_max_tokens},
+        "packet": state_packet,
+        "advisory": advisory,
     })
 
 
