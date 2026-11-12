@@ -172,8 +172,29 @@ python scripts/demo_binary_ai_review.py --provider real \
 - One checked-in fixture family; not broad ELF coverage.
 - Runtime evidence is Unicorn emulation with modeled syscalls, not a host-kernel
   run or an isolated guest.
-- One model run per case; model output is non-deterministic.
+- One model run per case; model output is non-deterministic, and the provider
+  returned `deepseek-flash` even though `deepseek-chat` was requested. Three
+  calls / 5,148 tokens is a small sample; the zero result is not evidence that
+  AI review is generally useless, nor that a stronger model would add nothing.
+- The three required cases are gate-trivial: the deterministic gate already
+  clearly succeeds, is unsupported, or is missing evidence. The experiment does
+  not yet include a **gate-blind** candidate where the sentinel/exit checks pass
+  but the semantics are wrong.
+- The runtime packet records `stdout_len` and `stderr_len`, not the actual
+  bytes. A candidate that preserves lengths while changing output content would
+  pass the current gate; this is a known blind spot.
 - The missing-evidence case is deliberate and simulated; it is not evidence that
   a real deployment lost runtime evidence.
 - The model's follow-up checks overlap with the report's limitations; no
   measured precision/recall claim is made.
+
+## Next experiment
+
+The next round should add a gate-blind candidate: take a bounds-only candidate
+and change an output byte outside the recorded patch offsets so the runtime
+exit codes, lengths and stack sentinel still pass. The gate would accept it. The
+review should be judged on whether it flags that the packet records lengths but
+not output bytes (a real evidence gap), or recommends a byte-level differential
+check. This is the case that can actually distinguish "AI repeats the gate" from
+"AI adds review value". A stronger model and multiple runs are required before
+making any general claim.
