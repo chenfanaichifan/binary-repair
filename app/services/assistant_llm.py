@@ -409,6 +409,7 @@ class HttpJsonClient:
             "model": self._model,
             "messages": [dict(message) for message in messages],
             "max_tokens": int(max_tokens),
+            "temperature": 0,
             "response_format": {"type": "json_object"},
         }
         headers = {"Authorization": f"Bearer {self._api_key}"}
