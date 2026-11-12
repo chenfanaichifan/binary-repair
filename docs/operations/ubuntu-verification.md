@@ -7,16 +7,27 @@ environment for this baseline.
 
 ## Current recorded run
 
+The direct-ELF AI review feature was verified at:
+
 ```text
-commit:   bb21913c39a04d9e5777a2aed269b5a038398112
-run:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43246391510
+commit:   df82b6c40d78b5eb643a16e0123e10a76b44475a
+run:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43248205593
+job:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43248205593/job/131286534110
 runner:   ubuntu-24.04
 python:   3.11
 command:  python -m pytest -q --ignore=tests/e2e
 result:   success (all non-browser tests passed)
 ```
 
-The recorded evidence is in
+The earlier pinned baseline (before the review feature) remains:
+
+```text
+commit:   bb21913c39a04d9e5777a2aed269b5a038398112
+run:      https://github.com/chenfanaichifan/binary-repair/actions/runs/43246391510
+result:   success (all non-browser tests passed)
+```
+
+Recorded baseline evidence:
 [`docs/acceptance/evidence/ubuntu-bb21913/`](../acceptance/evidence/ubuntu-bb21913/README.md).
 
 ## Commands
