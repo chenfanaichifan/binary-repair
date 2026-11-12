@@ -17,10 +17,18 @@ from app.services.binary_repair_engine import repair_elf
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("input", type=Path)
-    ap.add_argument("output", type=Path)
+    ap.add_argument("output", type=Path, nargs="?")
     ap.add_argument("--report", type=Path)
+    ap.add_argument("--scan-only", action="store_true")
     args = ap.parse_args()
     data = args.input.read_bytes()
+    if args.scan_only:
+        from app.services.binary_repair_engine import scan_elf
+        print(json.dumps(scan_elf(data), indent=2))
+        return 0
+    if args.output is None:
+        print("output is required unless --scan-only is used", file=sys.stderr)
+        return 2
     patched, report = repair_elf(data)
     if patched is None:
         print(json.dumps({"supported": False, "report": report.to_dict()}, indent=2))

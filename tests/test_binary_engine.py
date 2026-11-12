@@ -1,7 +1,7 @@
 """Direct byte-level engine: no disassembly text is reassembled."""
 from pathlib import Path
 
-from app.services.binary_repair_engine import repair_elf
+from app.services.binary_repair_engine import repair_elf, scan_elf
 from app.services.x86_runtime import emulate_elf
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,3 +56,16 @@ def test_generic_capacity_is_not_hardcoded_to_16():
     assert report.mode == "bounds-only"
     assert report.capacity == 32
     assert all(item.after == 32 for item in report.findings)
+
+
+def test_scan_reports_patchable_lengths_and_formats():
+    scan = scan_elf(VULN.read_bytes())
+    assert scan["format"] == "elf64-little"
+    assert scan["arch"] == "x86_64"
+    assert len(scan["findings"]) == 2
+    assert all(item["patchable"] for item in scan["findings"])
+    pe = scan_elf(b"MZ" + b"\x00" * 100)
+    assert pe["format"] == "pe"
+    assert pe["supported"] is False
+    macho = scan_elf(b"\xcf\xfa\xed\xfe" + b"\x00" * 100)
+    assert macho["format"] == "macho"

@@ -29,6 +29,12 @@ from text.
 For the known fixture it returns the reviewed **strict** binary.  For a modified
 ELF with the same immediate pattern it returns a **bounds-only** patch.
 
+Scan without writing:
+
+```bash
+.venv/bin/python scripts/repair_binary.py artifacts/vuln-elf/vuln.elf --scan-only
+```
+
 ## API / GUI
 
 `POST /api/binary/quick-repair` accepts an ELF and returns:
@@ -51,8 +57,11 @@ ELF with the same immediate pattern it returns a **bounds-only** patch.
 - little-endian **ELF64 x86-64**;
 - `.text` section;
 - `sub rsp, N` followed by a syscall whose `edx` is an **immediate** larger than
-  `N`;
-- read (`eax=0`) and write (`eax=1`) syscalls.
+  `N` (read/write);
+- `call memcpy` with an immediate `edx` and a stack destination derived from
+  `rdi = rsp` / `lea rdi, [rsp+off]`;
+- ELF64 x86-64 format detection; PE/Mach-O are reported as unsupported rather
+  than patched.
 
 It patches the immediate in place.  That is a genuine binary-level fix for the
 buffer length; it does **not** rewrite the whole control flow.

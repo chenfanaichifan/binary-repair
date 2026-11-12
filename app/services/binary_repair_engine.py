@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -51,6 +52,7 @@ class BinaryRepairReport:
     offsets: list[int] = field(default_factory=list)
     limitations: list[str] = field(default_factory=list)
     strict: bool = False
+    runtime: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -79,6 +81,12 @@ def _format(data: bytes) -> tuple[str, str, ELFFile | None]:
     if len(data) < 20:
         return "unknown", "unknown", None
     if data[:4] != b"\x7fELF":
+        if data[:2] == b"MZ":
+            return "pe", "unknown", None
+        if data[:4] in {b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf",
+                        b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe",
+                        b"\xca\xfe\xba\xbe"}:
+            return "macho", "unknown", None
         return "unknown", "unknown", None
     bits = 64 if data[4] == 2 else 32 if data[4] == 1 else 0
     endian = "little" if data[5] == 1 else "big" if data[5] == 2 else "unknown"
@@ -98,6 +106,131 @@ def _format(data: bytes) -> tuple[str, str, ELFFile | None]:
 def _strict_template() -> bytes | None:
     path = Path(__file__).resolve().parent.parent / "data" / "vuln-strict-fixed.elf"
     return path.read_bytes() if path.is_file() else None
+
+
+def _symbol_names(elf: ELFFile) -> dict[int, str]:
+    names: dict[int, str] = {}
+    for section in elf.iter_sections():
+        if section.name not in {".symtab", ".dynsym"}:
+            continue
+        try:
+            for sym in section.iter_symbols():
+                if sym.name:
+                    names.setdefault(int(sym["st_value"]), sym.name)
+        except Exception:
+            continue
+    return names
+
+
+def _call_target(item: Any) -> int | None:
+    match = re.search(r"0x([0-9a-fA-F]+)", item.op_str or "")
+    return int(match.group(1), 16) if match else None
+
+
+def _stack_dest(op_str: str) -> int | None:
+    text = (op_str or "").replace(" ", "")
+    if text in {"rdi,rsp"}:
+        return 0
+    match = re.search(r"rdi,\[rsp\+0x([0-9a-fA-F]+)\]", text)
+    if match:
+        return int(match.group(1), 16)
+    return None
+
+
+def scan_elf(data: bytes) -> dict[str, Any]:
+    """Non-mutating scan of known risky immediate/call patterns."""
+    fmt, arch, elf = _format(data)
+    result: dict[str, Any] = {"format": fmt, "arch": arch,
+                              "supported": fmt == "elf64-little" and arch == "x86_64",
+                              "findings": []}
+    if elf is None or not result["supported"]:
+        return result
+    text = elf.get_section_by_name(".text")
+    if text is None:
+        return result
+    symbols = _symbol_names(elf)
+    try:
+        ins = list(MD.disasm(text.data(), int(text["sh_addr"])))
+    except Exception as exc:  # noqa: BLE001
+        result["error"] = f"{type(exc).__name__}: {exc}"
+        return result
+    capacity: int | None = None
+    edx_imm: int | None = None
+    edx_addr: int | None = None
+    dest_offset: int | None = None
+    for item in ins:
+        norm = (item.op_str or "").replace(" ", "")
+        if item.mnemonic == "sub" and item.op_str.startswith("rsp,"):
+            value = _imm(item.op_str)
+            if value and value > 0:
+                capacity = value
+        elif item.mnemonic == "mov" and norm.startswith("edx,"):
+            edx_imm = _imm(item.op_str)
+            edx_addr = item.address
+        elif item.mnemonic in {"mov", "lea"} and norm.startswith("rdi,"):
+            dest_offset = _stack_dest(item.op_str)
+        elif item.mnemonic == "syscall":
+            if capacity is not None and edx_imm is not None and edx_imm > capacity:
+                result["findings"].append({
+                    "kind": "read_or_write_length", "address": hex(edx_addr),
+                    "before": edx_imm, "after": capacity,
+                    "capacity": capacity, "patchable": True,
+                    "detail": "immediate syscall length exceeds stack capacity",
+                })
+        elif item.mnemonic == "call":
+            target = _call_target(item)
+            name = symbols.get(target, "") if target is not None else ""
+            low = name.lower()
+            if "memcpy" in low and capacity is not None and dest_offset is not None and edx_imm is not None:
+                effective = capacity - dest_offset
+                if effective > 0 and edx_imm > effective:
+                    result["findings"].append({
+                        "kind": "memcpy_length", "address": hex(edx_addr),
+                        "callee": name, "before": edx_imm, "after": effective,
+                        "capacity": capacity, "dest_offset": dest_offset,
+                        "patchable": True,
+                        "detail": "immediate memcpy length exceeds stack destination capacity",
+                    })
+            elif low in {"strcpy", "strcat", "sprintf"} or low.endswith("@plt") and any(
+                    x in low for x in ("strcpy", "strcat", "sprintf")):
+                result["findings"].append({
+                    "kind": "unbounded_copy", "address": hex(item.address),
+                    "callee": name, "before": 0, "after": 0,
+                    "capacity": capacity, "patchable": False,
+                    "detail": "unbounded string call; needs a code cave/contract, not an immediate patch",
+                })
+    seen = set()
+    unique = []
+    for item in result["findings"]:
+        key = (item.get("kind"), item.get("address"))
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(item)
+    result["findings"] = unique
+    return result
+
+
+def _runtime_summary(patched: bytes, capacity: int | None) -> dict[str, Any]:
+    if capacity is None:
+        return {}
+    try:
+        from app.services.x86_runtime import emulate_elf
+    except Exception as exc:  # noqa: BLE001
+        return {"available": False, "error": type(exc).__name__}
+    cases = []
+    for size in (0, 1, capacity, capacity + 1):
+        try:
+            out = emulate_elf(patched, b"A" * size)
+            cases.append({
+                "input_len": size, "exit_code": out.exit_code,
+                "stdout_len": len(out.stdout), "stderr_len": len(out.stderr),
+                "stack_sentinel_intact": out.stack_tail == b"Z" * 16,
+                "error": out.error,
+            })
+        except Exception as exc:  # noqa: BLE001
+            cases.append({"input_len": size, "error": type(exc).__name__})
+    return {"available": True, "engine": "unicorn-x86-64", "cases": cases}
 
 
 def repair_elf(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
@@ -128,6 +261,7 @@ def repair_elf(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
         report.strict = True
         report.capacity = 16
         report.patched_sha256 = _sha(template)
+        report.runtime = _runtime_summary(template, 16)
         report.limitations.extend([
             "Reviewed strict template: over-limit input is rejected, short input is echoed exactly.",
             "Runtime evidence is emulated (Unicorn), not a host-kernel run.",
@@ -180,6 +314,21 @@ def repair_elf(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
             # The next syscall normally reloads eax; leave edx alone because the
             # following write may reuse it without a new mov edx.
             eax_value = None
+    # Add direct memcpy-length patches found by the non-mutating scanner.
+    scan = scan_elf(data)
+    for item in scan.get("findings", []):
+        if item.get("kind") != "memcpy_length" or not item.get("patchable"):
+            continue
+        addr = int(item["address"], 16)
+        off = text_off + (addr - text_addr) + 1
+        expected = int(item["after"])
+        patches.append((off, expected.to_bytes(4, "little"), RepairFinding(
+            "memcpy_length", item["address"], int(item["before"]), expected,
+            item.get("detail", "memcpy length exceeds stack capacity"),
+        )))
+    if any(item.get("kind") == "unbounded_copy" for item in scan.get("findings", [])):
+        report.limitations.append("Unbounded strcpy/strcat/sprintf call found; no automatic byte patch was attempted.")
+
     # De-duplicate identical offsets (a read and write often have separate ones).
     unique: dict[int, tuple[bytes, RepairFinding]] = {}
     for off, blob, finding in patches:
@@ -202,7 +351,7 @@ def repair_elf(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
     for off, (blob, finding) in unique.items():
         addr = int(finding.address, 16)
         item = by_addr.get(addr)
-        if item is None or _imm(item.op_str) != capacity:
+        if item is None or _imm(item.op_str) != finding.after:
             report.limitations.append("Post-patch immediate verification failed; no patch written.")
             return None, report
 
@@ -212,6 +361,7 @@ def repair_elf(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
     report.offsets = sorted(unique)
     report.findings = [item[1] for item in unique.values()]
     report.patched_sha256 = _sha(bytes(patched))
+    report.runtime = _runtime_summary(bytes(patched), capacity)
     report.limitations.extend([
         "Direct immediate rewrite only; no source/assembly round-trip.",
         "Bounds are fixed, but short-read stack disclosure and reject semantics still need strict review.",
