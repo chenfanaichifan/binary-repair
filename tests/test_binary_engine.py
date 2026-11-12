@@ -122,3 +122,13 @@ def test_indirect_register_length_is_propagated_and_patched():
     result = emulate_elf(patched, b"A" * 32)
     assert result.exit_code == 0
     assert result.stack_tail == b"Z" * 16
+
+
+def test_report_v2_has_backend_strategy_status_verification():
+    patched, report = repair_elf(VULN.read_bytes())
+    payload = report.to_dict()
+    assert payload["schema_version"] == 2
+    assert payload["backend"] == "elf"
+    assert payload["strategy"] == "strict-template"
+    assert payload["status"] == "patched"
+    assert "emulated" in payload["verification"]

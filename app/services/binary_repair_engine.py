@@ -53,6 +53,11 @@ class BinaryRepairReport:
     limitations: list[str] = field(default_factory=list)
     strict: bool = False
     runtime: dict[str, Any] = field(default_factory=dict)
+    schema_version: int = 2
+    backend: str = ""
+    strategy: str = ""
+    status: str = ""
+    verification: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -248,6 +253,8 @@ def _repair_elf_immediate(data: bytes) -> tuple[bytes | None, BinaryRepairReport
     report = BinaryRepairReport(
         original_sha256=_sha(data), patched_sha256=_sha(data), format=fmt,
         arch=arch, mode="unsupported", supported=False,
+        backend=("elf" if fmt.startswith("elf") else fmt),
+        strategy="none", status="unsupported",
     )
     if data[:4] != b"\x7fELF":
         report.limitations.append("Not an ELF file; Mach-O/PE are not repaired by this engine yet.")
@@ -268,9 +275,12 @@ def _repair_elf_immediate(data: bytes) -> tuple[bytes | None, BinaryRepairReport
         report.mode = "strict"
         report.supported = True
         report.strict = True
+        report.strategy = "strict-template"
+        report.status = "patched"
         report.capacity = 16
         report.patched_sha256 = _sha(template)
         report.runtime = _runtime_summary(template, 16)
+        report.verification = {"emulated": report.runtime}
         report.limitations.extend([
             "Reviewed strict template: over-limit input is rejected, short input is echoed exactly.",
             "Runtime evidence is emulated (Unicorn), not a host-kernel run.",
@@ -373,11 +383,14 @@ def _repair_elf_immediate(data: bytes) -> tuple[bytes | None, BinaryRepairReport
 
     report.mode = "bounds-only"
     report.supported = True
+    report.strategy = "immediate"
+    report.status = "patched"
     report.capacity = capacity
     report.offsets = sorted(unique)
     report.findings = [item[1] for item in unique.values()]
     report.patched_sha256 = _sha(bytes(patched))
     report.runtime = _runtime_summary(bytes(patched), capacity)
+    report.verification = {"emulated": report.runtime}
     report.limitations.extend([
         "Direct immediate rewrite only; no source/assembly round-trip.",
         "Bounds are fixed, but short-read stack disclosure and reject semantics still need strict review.",
@@ -443,6 +456,9 @@ def repair_elf(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
         report.mode = "cave" if not report.findings or any(
             item.kind == "code_cave" for item in report.findings) else report.mode
         report.patched_sha256 = _sha(updated)
+        report.strategy = "code-cave"
+        report.status = "patched"
+        report.verification = {"emulated": _runtime_summary(updated, report.capacity)}
         report.capacity = next((item.effective_capacity for item in scan.get("findings", [])
                                 if item.get("effective_capacity")), report.capacity)
         report.runtime = _runtime_summary(updated, report.capacity)
