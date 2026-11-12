@@ -84,6 +84,8 @@ See [`docs/README.md`](docs/README.md) for the documentation map and
 [`docs/development/repository-layout.md`](docs/development/repository-layout.md)
 for a file-by-file guide.
 
+Final delivery notes: [`DELIVERY.md`](DELIVERY.md).
+
 ## Quick start
 
 ### macOS / Linux

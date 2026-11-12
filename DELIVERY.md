@@ -1,0 +1,64 @@
+# Final delivery snapshot
+
+Branch: `workbench-v3`  
+Final UI commit: `17d9ed4`  
+Test run: **776 passed / 2 skipped / 1 known macOS `readelf` failure**  
+Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
+(macOS `readelf` is unavailable; not an application regression).
+
+## What changed in this delivery
+
+- One launch card for **live task / demo session**, with fresh/pending/success/failure
+  demo scenarios and an inline difference explainer; the old separate demo entry
+  is gone. The landing demo link is folded into the existing mode selector.
+- Accessible **sci-fi custom selects** replace native select chrome in Settings.
+- **Nine UI languages**: 简体中文 / 繁體中文 / English / 日本語 / 한국어 /
+  Français / Italiano / Português / Español. Navigation, primary controls,
+  headings, settings labels and descriptions are localized; evidence and
+  technical source text stay original. See `docs/reference/i18n.md`.
+- Rebuilt **`/guide`** with twelve sections, an evidence-chain SVG, step tables,
+  V0–V5 verification levels, troubleshooting, security checklist and official
+  CWE/Ghidra/angr/Frida/QEMU links.
+- Responsive **top bar + off-canvas drawer** replaces the stacked mobile
+  sidebar; desktop type/spacing was tightened around a ChatGPT/Claude-like
+  hierarchy.
+- Restrained **page-transition** scan/iris effect, respecting reduced motion and
+  the animations-off setting.
+- Current screenshots in `docs/showcase/`.
+
+## Share package
+
+The clean runtime ZIP is built outside this repository (it contains a `.venv`-free
+runtime tree, not git metadata):
+
+```text
+WeChat-Share/BinaryRepair-Workbench-2026-11-12.zip
+```
+
+It was smoke-tested from a fresh directory on port 8125: `/healthz`, landing,
+`/agent` launch card, `/guide` SVG and i18n assets all load. The package excludes
+`.git`, `.venv`, history databases, tests, caches and provider keys.
+
+## Public demo
+
+A dedicated mock instance runs separately from the local 8123 instance:
+
+- data directory: `/tmp/binaryrepair-wechat-demo`
+- port: `8124`
+- public tunnel: ngrok, token-gated
+- backend: `mock` (synthetic fixtures; no real repair execution)
+
+The token and live URL are intentionally **not** committed to Git; they are in
+`WeChat-Share/群消息-可直接粘贴.txt` for the actual group share.
+
+## Verification
+
+```bash
+cd binary-repair-gui
+.venv/bin/python -m pytest
+```
+
+- Unit/security/route tests: 776 passed, 2 skipped.
+- The one failure is the known macOS `readelf` environment limitation.
+- Browser smoke: language switch (zh/en/ja/zh), custom select, mobile drawer,
+  page transition, live/demo launch modes, public health and landing.
