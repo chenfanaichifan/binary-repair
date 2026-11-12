@@ -261,3 +261,172 @@ def scan_pe_copy_calls(data: bytes) -> dict[str, Any]:
                 })
     out["arch"] = "x86_64"
     return out
+
+
+def build_pe_strcat_guard(capacity: int) -> bytes:
+    """Windows x64 strcat guard: rcx=dst, rdx=src, total size bounded."""
+    if not 1 < capacity <= 0x7FFFFFFF:
+        raise ValueError("capacity out of range")
+    code = bytearray()
+    code += b"\x31\xC0"                              # xor eax,eax
+    find = len(code)
+    code += b"\x3D" + struct.pack("<I", capacity)   # cmp eax,capacity
+    jae_find = len(code); code += b"\x73\x00"        # jae overflow
+    code += b"\x80\x3C\x01\x00"                      # cmp byte [rcx+rax],0
+    je_append = len(code); code += b"\x74\x00"       # je append
+    code += b"\xFF\xC0"                              # inc eax
+    jmp_find = len(code); code += b"\xEB\x00"        # jmp find
+    append = len(code)
+    code += b"\x3D" + struct.pack("<I", capacity)   # cmp eax,capacity
+    jae_append = len(code); code += b"\x73\x00"      # jae overflow
+    code += b"\x44\x8A\x12"                          # mov r10b,[rdx]
+    code += b"\x48\xFF\xC2"                          # inc rdx
+    code += b"\x44\x88\x14\x01"                      # mov [rcx+rax],r10b
+    code += b"\xFF\xC0"                              # inc eax
+    code += b"\x45\x84\xD2"                          # test r10b,r10b
+    jne_append = len(code); code += b"\x75\x00"      # jne append
+    code += b"\x31\xC0"                              # xor eax,eax
+    code += b"\xC3"                                  # ret
+    overflow = len(code)
+    code += b"\xC6\x44\x01\xFF\x00"                 # mov byte [rcx+rax-1],0
+    code += b"\xB8\x01\x00\x00\x00"                 # mov eax,1
+    code += b"\xC3"                                  # ret
+    code[jae_find + 1] = (overflow - (jae_find + 2)) & 0xFF
+    code[je_append + 1] = (append - (je_append + 2)) & 0xFF
+    code[jmp_find + 1] = (find - (jmp_find + 2)) & 0xFF
+    code[jae_append + 1] = (overflow - (jae_append + 2)) & 0xFF
+    code[jne_append + 1] = (append - (jne_append + 2)) & 0xFF
+    return bytes(code)
+
+
+def repair_pe_strcat(data: bytes, *, call_va: int, capacity: int) -> tuple[bytes | None, PEWriteReport]:
+    """Replace one Windows-x64 strcat call with a bounded cave wrapper."""
+    guard = build_pe_strcat_guard(capacity)
+    patched, report = patch_pe_call_site(data, guard, call_va=call_va)
+    if patched is None:
+        return None, report
+    report.strategy = "strcat-cave"
+    report.status = "patched"
+    report.limitations.append(
+        f"strcat cave capacity={capacity}; total destination length is bounded; "
+        f"overflow NUL-terminates at capacity-1 and returns 1."
+    )
+    return patched, report
+
+
+def repair_pe(data: bytes, *, capacity: int | None = None) -> tuple[bytes | None, PEWriteReport]:
+    """Auto-apply the supported PE copy-call repairs."""
+    scan = scan_pe_copy_calls(data)
+    findings = [f for f in scan.get("findings", []) if f.get("patchable")]
+    if not findings:
+        report = PEWriteReport(original_sha256=_sha(data), patched_sha256=_sha(data))
+        report.limitations.append("No supported PE strcpy/strcat call found.")
+        return None, report
+    current = data
+    last: PEWriteReport | None = None
+    applied = 0
+    for item in findings:
+        cap = int(capacity or item.get("capacity") or 0)
+        if cap <= 0:
+            continue
+        call_va = int(str(item["address"]), 16)
+        low = str(item.get("callee", "")).lower()
+        if "strcat" in low:
+            patched, report = repair_pe_strcat(current, call_va=call_va, capacity=cap)
+        else:
+            patched, report = repair_pe_strcpy(current, call_va=call_va, capacity=cap)
+        if patched is None:
+            return None, report
+        current = patched
+        last = report
+        applied += 1
+    if last is None:
+        report = PEWriteReport(original_sha256=_sha(data), patched_sha256=_sha(data))
+        report.limitations.append("No supported PE copy-call with a positive capacity.")
+        return None, report
+    last.patched_sha256 = _sha(current)
+    last.limitations.append(f"Applied {applied} PE copy-call cave(s).")
+    return current, last
+
+
+def scan_pe_memcpy_calls(data: bytes) -> dict[str, Any]:
+    """Find Windows-x64 memcpy calls with immediate length arguments."""
+    out: dict[str, Any] = {"format": "pe", "arch": "unknown", "findings": []}
+    try:
+        pe = lief.PE.parse(list(data))
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = f"{type(exc).__name__}: {exc}"
+        return out
+    if pe is None or "AMD64" not in str(pe.header.machine):
+        return out
+    text = pe.get_section(".text")
+    if text is None:
+        return out
+    imagebase = int(pe.optional_header.imagebase)
+    iat: dict[int, str] = {}
+    for imp in pe.imports:
+        for entry in imp.entries:
+            try:
+                iat[imagebase + int(entry.iat_address)] = entry.name
+            except Exception:
+                continue
+    from capstone import CS_ARCH_X86, CS_MODE_64, Cs
+    md = Cs(CS_ARCH_X86, CS_MODE_64)
+    base = imagebase + int(text.virtual_address)
+    text_off = int(text.pointerto_raw_data)
+    capacity = None
+    length = None
+    length_ins = None
+    for ins in md.disasm(bytes(text.content), base):
+        op = (ins.op_str or "").replace(" ", "")
+        if ins.mnemonic == "sub" and op.startswith("rsp,"):
+            try:
+                capacity = int(op.split(",")[-1], 0)
+            except ValueError:
+                pass
+        elif ins.mnemonic == "mov" and op.startswith(("r8d,#", "edx,#")):
+            try:
+                length = int(op.split("#")[-1], 0)
+                length_ins = ins
+            except ValueError:
+                length = None
+        elif ins.mnemonic == "call" and "rip" in op and capacity and length_ins:
+            m = re.search(r"\[rip([+-]0x[0-9a-fA-F]+)\]", op)
+            if not m:
+                continue
+            target = ins.address + ins.size + int(m.group(1), 16)
+            name = iat.get(target)
+            if name and "memcpy" in name.lower() and length and length > capacity:
+                imm_at = 2 if (length_ins.bytes and length_ins.bytes[0] == 0x41) else 1
+                out["findings"].append({
+                    "kind": "memcpy_length", "address": hex(length_ins.address),
+                    "callee": name, "before": length, "after": capacity,
+                    "capacity": capacity, "patchable": True,
+                    "offset": text_off + (length_ins.address - base) + imm_at,
+                })
+            length = None
+            length_ins = None
+    out["arch"] = "x86_64"
+    return out
+
+
+def repair_pe_memcpy(data: bytes) -> tuple[bytes | None, PEWriteReport]:
+    """Patch the immediate length of Windows-x64 memcpy calls."""
+    scan = scan_pe_memcpy_calls(data)
+    findings = [f for f in scan.get("findings", []) if f.get("patchable")]
+    report = PEWriteReport(original_sha256=_sha(data), patched_sha256=_sha(data))
+    if not findings:
+        report.limitations.append("No supported PE memcpy immediate-length call found.")
+        return None, report
+    patched = bytearray(data)
+    for item in findings:
+        off = int(item["offset"])
+        if off < 0 or off + 4 > len(patched):
+            report.limitations.append("memcpy immediate outside file")
+            return None, report
+        patched[off:off + 4] = struct.pack("<I", int(item["after"]))
+    report.patched_sha256 = _sha(bytes(patched))
+    report.status = "patched"
+    report.strategy = "immediate"
+    report.limitations.append("PE memcpy immediate length rewrite; no runtime executed.")
+    return bytes(patched), report

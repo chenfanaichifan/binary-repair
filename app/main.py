@@ -36,7 +36,9 @@ from app.services.binary_datasets import dataset_status
 from app.services.binary_quick_repair import QuickRepairError, quick_repair_elf
 from app.services.binary_repair_engine import scan_elf
 from app.services.format_scan import scan_macho, scan_pe
-from app.services.pe_repair import scan_pe_copy_calls
+from app.services.pe_repair import repair_pe, scan_pe_copy_calls
+from app.services.macho_repair import repair_macho
+from app.services.binary_repair_engine import repair_elf
 from app.services.ai_adjudication import (
     GateResult, PolicyViolation, adjudicate, guard_model_payload,
     preflight_key_binding, supervisor_step,
@@ -1223,6 +1225,43 @@ async def binary_scan(
     else:
         return JSONResponse({"ok": False, "detail": "unsupported binary format"}, status_code=422)
     return JSONResponse({"ok": True, "scan": payload}, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/binary/repair")
+async def binary_repair(
+    binary: UploadFile = File(...),
+    csrf: str = Form(...),
+) -> JSONResponse:
+    """Dispatch a bounded repair by format; unsupported inputs return 422."""
+    _require_csrf(csrf)
+    raw = await binary.read()
+    if len(raw) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
+    import base64
+    if raw[:4] == b"\x7fELF":
+        patched, report = repair_elf(raw)
+        suffix = "-fixed.elf"
+        payload = report.to_dict()
+    elif raw[:2] == b"MZ":
+        patched, report = repair_pe(raw)
+        suffix = "-fixed.exe"
+        payload = report.to_dict()
+    elif raw[:4] in {b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf",
+                     b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe"}:
+        patched, report = repair_macho(raw)
+        suffix = "-fixed.macho"
+        payload = report.to_dict()
+    else:
+        return JSONResponse({"ok": False, "detail": "unsupported binary format"}, status_code=422)
+    if patched is None:
+        return JSONResponse({"ok": False, "detail": payload.get("limitations") or ["unsupported"]},
+                            status_code=422)
+    return JSONResponse({
+        "ok": True,
+        "filename": (Path(binary.filename or "sample").stem + suffix),
+        "patched_base64": base64.b64encode(patched).decode("ascii"),
+        "report": payload,
+    }, headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/datasets")

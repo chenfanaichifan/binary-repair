@@ -34,6 +34,15 @@ def _align(value: int, alignment: int = 16) -> int:
     return (value + alignment - 1) & ~(alignment - 1)
 
 
+def _reloc_count(data: bytes) -> int:
+    elf = ELFFile(io.BytesIO(data))
+    total = 0
+    for sec in elf.iter_sections():
+        if sec["sh_type"] in ("SHT_RELA", "SHT_REL"):
+            total += sec.num_relocations()
+    return total
+
+
 def _elf_layout(data: bytes):
     elf = ELFFile(io.BytesIO(data))
     loads = []
@@ -76,10 +85,15 @@ def add_rx_segment(data: bytes, code: bytes) -> CaveResult:
             raise CaveError("program header table has no room")
         body[at:at + len(new_ph)] = new_ph
         struct.pack_into("<H", body, 0x38, phnum + 1)  # e_phnum
+        before = _reloc_count(data)
+        after = _reloc_count(bytes(body))
         return CaveResult(bytes(body), vaddr, file_off, "new-pt-load", {
             "segment": {"p_offset": file_off, "p_vaddr": vaddr,
                         "p_filesz": len(code), "p_flags": "R-X"},
             "phnum": phnum + 1,
+            "relocations_before": before,
+            "relocations_after": after,
+            "relocations_unchanged": before == after,
         })
 
     # Fallback: extend a writable-header R-X segment.  This is still a binary
@@ -98,10 +112,15 @@ def add_rx_segment(data: bytes, code: bytes) -> CaveResult:
     ph_at = phoff + seg["index"] * phentsize
     struct.pack_into("<Q", body, ph_at + 32, new_filesz)
     struct.pack_into("<Q", body, ph_at + 40, max(seg["memsz"], new_filesz))
+    before = _reloc_count(data)
+    after = _reloc_count(bytes(body))
     return CaveResult(bytes(body), vaddr, file_off, "extend-rx", {
         "segment": {"p_offset": seg["offset"], "p_vaddr": seg["vaddr"],
                     "p_filesz": new_filesz, "p_flags": "R-X"},
         "extended_index": seg["index"],
+        "relocations_before": before,
+        "relocations_after": after,
+        "relocations_unchanged": before == after,
     })
 
 

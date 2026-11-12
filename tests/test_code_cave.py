@@ -127,3 +127,11 @@ def test_engine_cave_pass_integrates_strcpy_call():
     result = emulate_elf(patched)
     assert result.exit_code == 1
     assert b"copy exceeds capacity" in result.stderr
+
+
+def test_cave_reports_relocations_unchanged():
+    original, call_vaddr, call_off = _build(b"hi", etype=3)
+    cave = inject_strcpy_guard(original, call_vaddr=call_vaddr,
+                               call_file_offset=call_off, capacity=16)
+    assert cave.report["relocations_before"] == cave.report["relocations_after"]
+    assert cave.report["relocations_unchanged"] is True

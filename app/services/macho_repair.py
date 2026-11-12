@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import hashlib
 import struct
+import tempfile
+from pathlib import Path
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -29,6 +31,9 @@ class MachoReport:
     offsets: list[int] = field(default_factory=list)
     limitations: list[str] = field(default_factory=list)
     codesign_invalidated: bool = False
+    section: str = ""
+    section_va: int = 0
+    section_offset: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -152,3 +157,108 @@ def repair_macho(data: bytes) -> tuple[bytes | None, MachoReport]:
         "Code signature is not forged; modification invalidates it.",
     ])
     return bytes(patched), report
+
+
+def add_macho_rx_section(data: bytes, code: bytes, *, name: str = "__brfix") -> tuple[bytes | None, MachoReport]:
+    """Add an executable section to __TEXT and reparse it with LIEF."""
+    report = MachoReport(original_sha256=_sha(data), patched_sha256=_sha(data))
+    try:
+        binary = lief.MachO.parse(list(data))
+    except Exception as exc:  # noqa: BLE001
+        report.limitations.append(f"Mach-O parse failed: {type(exc).__name__}")
+        return None, report
+    if binary is None:
+        report.limitations.append("not a Mach-O image")
+        return None, report
+    try:
+        b = binary.at(0)
+        report.codesign_invalidated = bool(getattr(b, "has_code_signature", False))
+        sec = lief.MachO.Section.create(name, list(code))
+        if sec is None:
+            report.limitations.append("LIEF could not create Mach-O section")
+            return None, report
+        b.add_section(sec)
+        with tempfile.TemporaryDirectory(prefix="macho-repair-") as tmp:
+            path = Path(tmp) / "out.macho"
+            b.write(str(path))
+            patched = path.read_bytes()
+        check = lief.MachO.parse(list(patched))
+        if check is None:
+            report.limitations.append("LIEF could not reparse patched Mach-O")
+            return None, report
+        cb = check.at(0)
+        found = next((x for x in cb.sections if x.name == name), None)
+        if found is None:
+            report.limitations.append("new Mach-O section missing after writeback")
+            return None, report
+        report.status = "written"
+        report.strategy = "section"
+        report.section = name
+        report.section_va = int(found.virtual_address)
+        report.section_offset = int(found.offset)
+        report.patched_sha256 = _sha(patched)
+        report.limitations.append("Static Mach-O section writeback; code signature is not forged.")
+        return patched, report
+    except Exception as exc:  # noqa: BLE001
+        report.limitations.append(f"Mach-O section writeback failed: {type(exc).__name__}: {exc}")
+        return None, report
+
+
+def patch_macho_call_site(data: bytes, cave_code: bytes, *, call_va: int | None = None) -> tuple[bytes | None, MachoReport]:
+    """Add a __brfix section and redirect one BL/E8 call to it."""
+    patched, report = add_macho_rx_section(data, cave_code)
+    if patched is None:
+        return None, report
+    try:
+        binary = lief.MachO.parse(list(patched)).at(0)
+        text = next((s for s in binary.sections if s.name == "__text"), None)
+        if text is None:
+            report.limitations.append("patched Mach-O has no __text")
+            return None, report
+        text_va = int(text.virtual_address)
+        text_off = int(text.offset)
+        code = bytes(text.content)
+        if call_va is None:
+            md = MD
+            ins = next((x for x in md.disasm(code, text_va) if x.mnemonic in ("bl", "call")), None)
+            if ins is None:
+                report.limitations.append("no BL/E8 call found")
+                return None, report
+            call_va = ins.address
+        off = text_off + (call_va - text_va)
+        if off < 0 or off + 4 > len(patched):
+            report.limitations.append("call site outside file")
+            return None, report
+        word = struct.unpack_from("<I", patched, off)[0]
+        if (word & 0xFC000000) == 0x94000000:  # ARM64 BL
+            imm = word & 0x03FFFFFF
+            if imm & 0x02000000:
+                imm -= 0x04000000
+            old_target = call_va + imm * 4
+            delta = int(report.section_va) - call_va
+            if delta % 4 or not -(1 << 27) <= delta < (1 << 27):
+                report.limitations.append("ARM64 BL target out of range/alignment")
+                return None, report
+            new_word = 0x94000000 | ((delta >> 2) & 0x03FFFFFF)
+            out = bytearray(patched); struct.pack_into("<I", out, off, new_word)
+            report.limitations.append(f"BL redirected from {hex(old_target)}")
+        elif patched[off] == 0xE8:
+            delta = int(report.section_va) - (call_va + 5)
+            if not -(1 << 31) <= delta < (1 << 31):
+                report.limitations.append("x86-64 E8 target out of range")
+                return None, report
+            out = bytearray(patched); out[off:off + 5] = b"\xE8" + struct.pack("<i", delta)
+        else:
+            report.limitations.append("call site is not ARM64 BL or E8")
+            return None, report
+        check = lief.MachO.parse(list(out))
+        if check is None:
+            report.limitations.append("patched Mach-O did not reparse")
+            return None, report
+        report.status = "patched"
+        report.strategy = "call-cave"
+        report.patched_sha256 = _sha(bytes(out))
+        return bytes(out), report
+    except Exception as exc:  # noqa: BLE001
+        report.limitations.append(f"Mach-O call patch failed: {type(exc).__name__}: {exc}")
+        return None, report
