@@ -810,6 +810,26 @@
     return body;
   }
 
+  function pushWelcomeMessage(greeting) {
+    var intake = document.getElementById("agent-intake");
+    var item = el("li", "agent-msg agent-msg-assistant agent-msg-welcome");
+    var head = el("div", "agent-msg-head");
+    var avatar = el("span", "agent-avatar agent-avatar-assistant", "B");
+    avatar.setAttribute("aria-hidden", "true");
+    head.appendChild(avatar);
+    head.appendChild(el("span", "agent-msg-role", "助手"));
+    var body = el("div", "agent-msg-body agent-msg-welcome-body");
+    if (intake) body.appendChild(intake);
+    var intro = el("p", "agent-welcome-text", greeting);
+    body.appendChild(intro);
+    item.appendChild(head);
+    item.appendChild(body);
+    stream().appendChild(item);
+    scrollStream();
+    record({ kind: "message", role: "assistant", text: greeting, at: new Date().toISOString() });
+    return body;
+  }
+
   function pushTool(name, summary, fields, raw, options) {
     var item = el("li", "agent-msg");
     var tool = el("div", "agent-tool");
@@ -3597,7 +3617,7 @@
         } catch (error) { /* ignore */ }
         clearServerHistory("draft").catch(function () { /* keep local empty */ }).then(function () {
           setHistorySync("空白草稿", "local");
-          pushMessage("assistant", greeting);
+          pushWelcomeMessage(greeting);
           setText("agent-side-step", "等待描述");
           setText("agent-poll", "待命");
         });
@@ -3610,7 +3630,7 @@
               "已恢复服务端保存的草稿对话。要开始全新会话，点「新建修复内容」。",
               { replay: true });
           } else {
-            pushMessage("assistant", greeting);
+            pushWelcomeMessage(greeting);
           }
           setText("agent-side-step", "等待描述");
           setText("agent-poll", "待命");

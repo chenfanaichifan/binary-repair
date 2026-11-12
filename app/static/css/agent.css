@@ -1191,3 +1191,20 @@ body.agent-focus .ds-sidebar-expand { display: none !important; }
   padding: 10px 0 2px;
   background: var(--ds-surface);
 }
+
+
+/* The first assistant message owns the upload area; it must not float above
+   the conversation stream as a separate panel. */
+.agent-msg-welcome .agent-msg-body {
+  max-width: 100%;
+  white-space: normal;
+}
+.agent-msg-welcome .agent-intake {
+  margin: 0 0 12px;
+  width: 100%;
+}
+.agent-welcome-text {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.85;
+}
