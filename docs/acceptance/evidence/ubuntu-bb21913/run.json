@@ -1,0 +1,32 @@
+{
+  "workflow": "Ubuntu verification",
+  "run_id": 43246391510,
+  "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43246391510",
+  "job_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43246391510/job/131280077578",
+  "head_sha": "bb21913c39a04d9e5777a2aed269b5a038398112",
+  "head_branch": "workbench-v3",
+  "runner": "ubuntu-24.04",
+  "python": "3.11",
+  "status": "completed",
+  "conclusion": "success",
+  "command": "python -m pytest -q --ignore=tests/e2e --junitxml=artifacts/ubuntu-verification/junit.xml",
+  "steps": {
+    "Set up job": "success",
+    "Checkout": "success",
+    "Set up Python": "success",
+    "Install system tools": "success",
+    "Install Python dependencies": "success",
+    "Run fixture staging regression": "success",
+    "Run non-browser test suite": "success",
+    "Annotate first pytest failure": "skipped",
+    "Capture environment": "success",
+    "Checksums": "success",
+    "Upload verification evidence": "success"
+  },
+  "artifact": {
+    "name": "ubuntu-verification",
+    "note": "Actions artifact; GitHub authentication is required to download it."
+  },
+  "guest": "native Linux x86-64 fixture execution passed; isolated guest remains not_verified",
+  "note": "Full non-browser suite passed. Native Linux tests ran on Ubuntu; macOS Route B view-count failure did not reproduce."
+}

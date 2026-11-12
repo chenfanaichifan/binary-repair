@@ -1,0 +1,6 @@
+runner: ubuntu-24.04
+python: 3.11
+binutils: installed by workflow (readelf, objdump)
+command: python -m pytest -q --ignore=tests/e2e --junitxml=artifacts/ubuntu-verification/junit.xml
+native Linux x86-64 fixture execution: passed
+isolated guest: not_verified

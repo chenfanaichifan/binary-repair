@@ -29,13 +29,13 @@ Source      chenfanaichifan/binary-repair
 | T8.3 | **COMPLETE** |
 | P1 | **success_within_scope** |
 | P2 | **ACCEPTANCE PASSED** |
-| Test suite | **Ubuntu 24.04 CI passed** ([run 43244713385](https://github.com/chenfanaichifan/binary-repair/actions/runs/43244713385)); macOS local: 857 passed / 2 skipped / 1 Route B view-count failure because `readelf` is absent |
+| Test suite | **Ubuntu 24.04 CI passed** ([run 43246391510](https://github.com/chenfanaichifan/binary-repair/actions/runs/43246391510)); macOS local: 857 passed / 2 skipped / 1 Route B view-count failure because `readelf` is absent |
 | Browser e2e | **12 passed** (Chrome CDP, included in the suite) |
 | Upload gate | **64 MiB client check + HTTP-only controls** |
 | V4 | **passed at model scope** (not binary-level proof) |
 | 118 | **VERIFIED** (independent) |
 
-See [`docs/acceptance/evidence/ubuntu-3400a13/README.md`](docs/acceptance/evidence/ubuntu-3400a13/README.md) and [`docs/status/final-status.md`](docs/status/final-status.md) and
+See [`docs/acceptance/evidence/ubuntu-bb21913/README.md`](docs/acceptance/evidence/ubuntu-bb21913/README.md) and [`docs/status/final-status.md`](docs/status/final-status.md) and
 [`docs/acceptance/LIMITATIONS.md`](docs/acceptance/LIMITATIONS.md) before citing
 this project as proof.
 
