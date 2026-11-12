@@ -1486,7 +1486,7 @@
     var intake = $("agent-intake");
     if (!intake) return;
     var step = currentStep();
-    intake.hidden = !!state.jobId || !!(step && step.kind === "upload");
+    intake.hidden = !!state.jobId || !!state.file || !!(step && step.kind === "upload");
   }
 
   function bindIntakeCard() {
@@ -1510,8 +1510,11 @@
                     bytes[2] === 0x4c && bytes[3] === 0x46;
         var finish = function (hex) {
           state.file = { file: file, name: file.name, size: file.size, sha256: hex, isElf: isElf };
-          show("已选择 " + file.name + " · " + file.size + " B · SHA-256 " + hex.slice(0, 16) + "…" +
-            (isElf ? "" : "（未检测到 ELF 头）") + "；创建任务时上传。");
+          show("已选择 " + file.name + " · " + file.size + " B · SHA-256 " + hex.slice(0, 16) + "…");
+          pushMessage("assistant", "已读取样本 " + file.name + "（" + file.size + " B）· SHA-256 " +
+            hex + (isElf ? "" : "（未检测到 ELF 头）") + "；创建任务时上传。");
+          var intakeCard = $("agent-intake");
+          if (intakeCard) intakeCard.hidden = true;
           var step = currentStep();
           if (step && step.kind === "upload") {
             state.stepIndex += 1;
@@ -1618,11 +1621,9 @@
           bar.style.width = "100%";
           progressText.textContent = "读取完成 100%";
           if (!isElf) warning.textContent = "未检测到 ELF 文件头；仍可作为演示样本提交，实际执行可能被判为 unsupported。";
-          pushTool("读取样本", file.name, {
-            "size_bytes": file.size,
-            "sha256": hex,
-            "elf_magic": isElf ? "present" : "absent"
-          });
+          pushMessage("assistant", "已读取样本 " + file.name + "（" + file.size + " B）· SHA-256 " +
+            hex + (isElf ? "" : "（未检测到 ELF 头）") + "；创建任务时上传。");
+          card.hidden = true;
           state.stepIndex += 1;
           renderCurrentStep();
         };
@@ -1655,18 +1656,12 @@
 
     var table = el("table", "agent-table");
     var tbody = el("tbody");
-    var rows = [["样本", state.file ? state.file.name + "（" + state.file.size + " B）" : "（未选择）", 0]];
-    var labels = {
-      defect: "缺陷描述", valid_tests: "用例", environment: "环境",
-      valid_domain: "合法输入域", forbidden: "禁止行为",
-      invalid_outcome: "非法输入期望", assumptions: "假设条件"
-    };
-    state.plan.steps.forEach(function (step, index) {
-      (step.questions || []).forEach(function (question) {
-        // The plan owns the wording; the legacy map is only a fallback.
-        rows.push([question.label || labels[question.key] || question.key, state.answers[question.key] || "（未填）", index]);
-      });
-    });
+    var rows = [
+      ["样本", state.file ? state.file.name + "（" + state.file.size + " B）" : "（未选择）"],
+      ["Defect (ASCII)", state.answers.defect || "（未填）"],
+      ["Valid tests (ASCII)", state.answers.valid_tests || "（未填）"],
+      ["Environment (ASCII)", state.answers.environment || "（未填）"]
+    ];
 
     rows.forEach(function (row) {
       var tr = el("tr");
@@ -1674,16 +1669,6 @@
       var value = el("td");
       value.appendChild(el("code", null, row[1]));
       tr.appendChild(value);
-      var action = el("td");
-      var edit = el("button", "agent-btn ghost", "修改");
-      edit.type = "button";
-      edit.addEventListener("click", function () {
-        state.stepIndex = row[2];
-        pushMessage("assistant", "回到「" + (state.plan.steps[row[2]].title || "该步骤") + "」，已填内容保留，改完继续即可。");
-        renderCurrentStep();
-      });
-      action.appendChild(edit);
-      tr.appendChild(action);
       tbody.appendChild(tr);
     });
     table.appendChild(tbody);
