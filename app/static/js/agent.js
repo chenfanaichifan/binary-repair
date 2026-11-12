@@ -2905,12 +2905,21 @@
   }
 
   function chatWithAssistant(text) {
+    var history = [];
+    try {
+      history = state.entries.filter(function (entry) {
+        return entry && entry.kind === "message" && (entry.role === "user" || entry.role === "assistant") &&
+          typeof entry.text === "string" && entry.text.trim();
+      }).slice(-20).map(function (entry) {
+        return { role: entry.role, content: entry.text };
+      });
+    } catch (error) { history = []; }
     pushMessage("user", text);
     setText("agent-side-step", "正在回复…");
     fetch("/api/assistant/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
-      body: JSON.stringify({ message: text })
+      body: JSON.stringify({ message: text, history: history })
     }).then(function (response) {
       return response.json().then(function (payload) {
         return { ok: response.ok, payload: payload };

@@ -1239,17 +1239,30 @@ async def assistant_chat(request: Request) -> JSONResponse:
     client = client_from_env()
     if client is None:
         return JSONResponse({"detail": "llm_client_not_configured"}, status_code=503)
+
+    # The client owns the visible conversation. Keep only the last 10 rounds
+    # (20 messages) so long chats stay bounded and do not leak old context.
+    history = body.get("history") if isinstance(body, dict) else None
+    clean_history = []
+    if isinstance(history, list):
+        for item in history[-20:]:
+            if not isinstance(item, dict):
+                continue
+            role = item.get("role")
+            content = item.get("content")
+            if role in {"user", "assistant"} and isinstance(content, str) and content.strip():
+                clean_history.append({"role": role, "content": content.strip()[:4000]})
     messages = [
         {
             "role": "system",
             "content": (
                 "You are the BinaryRepair workbench assistant. Reply concisely in Chinese. "
-                "Do not invent verdicts, hashes, evidence, token counts or execution results. "
-                "You may explain the workflow and suggest next steps; the acceptance engine owns verdicts."
+                "Use the recent conversation for context, but never invent verdicts, hashes, "
+                "evidence, token counts or execution results. You may explain the workflow and "
+                "suggest next steps; the acceptance engine owns verdicts."
             ),
         },
-        {"role": "user", "content": message.strip()},
-    ]
+    ] + clean_history + [{"role": "user", "content": message.strip()}]
     try:
         reply = client.chat_text(messages)
     except TimeoutError:
