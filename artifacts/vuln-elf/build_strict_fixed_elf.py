@@ -66,7 +66,8 @@ emit(b"\x31\xc0")               # xor eax, eax (read)
 emit(b"\x31\xff")               # xor edi, edi
 emit(b"\x48\x89\xe6")          # mov rsi, rsp
 emit(b"\x4c\x01\xe6")          # add rsi, r12
-mov_edx(17)                     # read at most 17 more
+mov_edx(17)                     # read at most 17 total
+emit(b"\x44\x29\xe2")          # sub edx, r12d  (never overrun the 32-byte buffer)
 emit(b"\x0f\x05")               # syscall
 emit(b"\x48\x85\xc0")          # test rax, rax
 jcc("reject", opcode=0x88)      # js reject (read error)
