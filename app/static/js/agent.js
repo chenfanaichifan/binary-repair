@@ -1306,9 +1306,15 @@
     });
 
     var actions = el("div", "agent-card-actions");
-    var submit = el("button", "agent-btn", "确认并继续");
+    var actions = el("div", "agent-card-actions");
+    var submit = el("button", "agent-btn", "确认并创建任务");
     submit.type = "button";
     submit.dataset.testid = "agent-context-submit";
+    var progress = el("div", "agent-progress");
+    progress.hidden = true;
+    var bar = el("div", "agent-progress-bar");
+    progress.appendChild(bar);
+    var progressText = el("p", "agent-progress-text", "");
     submit.addEventListener("click", function () {
       var valid = true;
       fields.forEach(function (field) {
@@ -1322,27 +1328,16 @@
         state.answers[field.key] = inputs[field.key].input.value;
       });
       state.contextCompleted = true;
-      // Exactly one summary message; no per-step chat entries.
+      // One visible requirement summary, then create and open the contract
+      // approval page directly; the review card is no longer an extra stop.
       pushMessage("user", contextSummary());
-      pushMessage("assistant", "任务信息已记录。请复核下面的任务单，确认无误后点「创建任务」。");
-      var reviewIndex = -1;
-      if (state.plan && state.plan.steps) {
-        state.plan.steps.forEach(function (step, index) {
-          if (reviewIndex < 0 && step.kind === "review") reviewIndex = index;
-        });
-      }
-      if (reviewIndex >= 0) {
-        state.stepIndex = reviewIndex;
-        state.skipNextPrompt = true;
-        renderCurrentStep();
-      } else {
-        // Restored drafts may not have a plan; the stable form is still enough
-        // to review and create the task.
-        pushReviewCard();
-      }
+      pushMessage("assistant", "任务信息已记录，正在创建任务并打开契约审批界面…");
+      createJob(submit, progress, bar, progressText);
     });
     actions.appendChild(submit);
     card.appendChild(actions);
+    card.appendChild(progress);
+    card.appendChild(progressText);
     pushCard(card);
     window.setTimeout(function () {
       card.scrollIntoView({ block: "start", behavior: "auto" });
