@@ -19,7 +19,7 @@
       <h1 class="ds-page-title">设置</h1>
       <p class="ds-page-sub">
         这些偏好只保存在本浏览器，不会上传。历史同步、发送键与密度会立即作用于工作台；
-        模型 key 仍只保存在服务端。
+        模型 Key 与用户名只保存在服务端；用户名会进入模型请求上下文。
       </p>
     </div>
     <span class="settings-saved" id="settings-saved" data-testid="settings-saved" hidden>已保存</span>
@@ -118,7 +118,7 @@
       <div class="settings-links">
         <a href="/connectors#connector-assistant">模型与计划服务 <span>{{ connector_counts.ready }}/{{ connector_counts.total }} 就绪</span></a>
         <a href="/connectors#plugins">插件清单 <span>{{ plugin_total }} 个</span></a>
-        <a href="/agent">在控制台右侧配置模型 key</a>
+        <a href="/agent">在顶部「配置模型」中配置模型 Key</a>
         <a href="/methods">方法与工具</a>
         <a href="/guide">完整使用说明</a>
       </div>
