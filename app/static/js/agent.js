@@ -50,19 +50,43 @@
 
   if (sideToggle && sideBody) {
     var storedSide = readSidePref();
-    var narrowSide = window.matchMedia("(max-width: 1100px)").matches;
-    /* 窄屏默认收起；用户显式选择过就尊重它。 */
-    setSideCollapsed(storedSide === null ? narrowSide : storedSide === "1", false);
+    var sideMq = window.matchMedia("(max-width: 1180px)");
+    var sideClose = document.getElementById("agent-side-close");
+
+    function syncSideForViewport() {
+      /* Below the three-column threshold the panel is a drawer, never a column. */
+      setSideCollapsed(sideMq.matches, false);
+    }
+
+    syncSideForViewport();
     sideToggle.addEventListener("click", function () {
       setSideCollapsed(!sideBody.classList.contains("is-side-collapsed"), true);
     });
+    if (sideClose) {
+      sideClose.addEventListener("click", function () {
+        setSideCollapsed(true, true);
+        sideToggle.focus();
+      });
+    }
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && sideMq.matches &&
+          !sideBody.classList.contains("is-side-collapsed")) {
+        setSideCollapsed(true, true);
+        sideToggle.focus();
+      }
+    });
+    if (sideMq.addEventListener) {
+      sideMq.addEventListener("change", syncSideForViewport);
+    } else if (sideMq.addListener) {
+      sideMq.addListener(syncSideForViewport);
+    }
   }
 
   /* ---------- 状态面板宽度：可拖动、可键盘调整、可持久化 ---------- */
 
   var SIDE_WIDTH_KEY = "br.agent.side.width";
   var SIDE_MIN = 220;
-  var SIDE_MAX = 460;
+  var SIDE_MAX = 360;
   var sideResizer = document.getElementById("agent-side-resizer");
 
   function clampSideWidth(value) {
@@ -1213,13 +1237,28 @@
       "执行环境：" + (state.answers.environment || "（未填）");
   }
 
+  function fitContextCard() {
+    var card = document.querySelector(".agent-context-card");
+    var stream = $("agent-stream");
+    if (!card || !stream) return;
+    var available = Math.max(160, stream.clientHeight - 8);
+    card.style.maxHeight = Math.min(available, 620) + "px";
+    // Align the form top with the stream so the sticky submit action is in
+    // view even when earlier chat messages occupy the scroll position.
+    var cardRect = card.getBoundingClientRect();
+    var streamRect = stream.getBoundingClientRect();
+    stream.scrollTop += cardRect.top - streamRect.top;
+  }
+
+  window.addEventListener("resize", fitContextCard);
+
   function renderContextForm() {
     var fields = [
       { key: "defect", label: "缺陷描述（英文 ASCII）", input: "textarea", required: true, ascii: true },
       { key: "valid_tests", label: "合法 / 边界 / 越界用例（每行一条，英文 ASCII）", input: "textarea", required: true, ascii: true },
       { key: "environment", label: "执行环境", input: "text", required: false, ascii: true }
     ];
-    var card = el("div", "agent-card");
+    var card = el("div", "agent-card agent-context-card");
     card.dataset.testid = "agent-context-card";
     card.appendChild(el("p", "agent-card-title", "任务信息"));
     var inputs = {};
@@ -1305,6 +1344,10 @@
     actions.appendChild(submit);
     card.appendChild(actions);
     pushCard(card);
+    window.setTimeout(function () {
+      card.scrollIntoView({ block: "start", behavior: "auto" });
+      fitContextCard();
+    }, 40);
   }
 
   function renderCurrentStep() {
@@ -3448,7 +3491,7 @@
   if (assistantKeyCancel) assistantKeyCancel.addEventListener("click", cancelAssistantKeyEditor);
 
   function isNarrowModel() {
-    return !!(window.matchMedia && window.matchMedia("(max-width: 720px)").matches);
+    return !!(window.matchMedia && window.matchMedia("(max-width: 1180px)").matches);
   }
 
   function syncModelConfigState() {

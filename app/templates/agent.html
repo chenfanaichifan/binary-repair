@@ -3,7 +3,7 @@
 {% block title %}修复控制台{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/agent.css?v=20261113b">
+<link rel="stylesheet" href="/static/css/agent.css?v=20261114f">
 {% endblock %}
 
 {% block content %}
@@ -47,6 +47,13 @@
       <button type="button" class="agent-tab is-active" data-view="chat" data-testid="agent-tab-chat" role="tab" aria-selected="true">对话引导</button>
       <button type="button" class="agent-tab" data-view="result" data-testid="agent-tab-result" role="tab" aria-selected="false">结果与证据</button>
     </div>
+    <button
+      type="button"
+      class="agent-side-toggle"
+      id="agent-side-toggle"
+      data-testid="agent-side-toggle"
+      aria-expanded="true"
+    >收起状态面板</button>
     <button
       type="button"
       class="agent-side-toggle"
@@ -245,6 +252,7 @@
 
     <aside class="agent-side" id="agent-side" aria-label="状态面板">
       <h2 class="agent-side-title">状态面板</h2>
+      <button id="agent-side-close" class="agent-side-close" type="button" aria-label="关闭状态面板">×</button>
       <button id="agent-key-close" class="agent-key-close" type="button" aria-label="关闭模型配置">×</button>
       <div class="agent-key-panel" id="assistant-key-panel" data-testid="assistant-key-panel"
            style="margin:12px 0;padding:10px;border:1px solid rgba(44,41,37,.18);border-radius:10px">
@@ -323,5 +331,5 @@
 
 {% block scripts %}
 <script src="/static/js/agent.fixtures.js?v=20261114b"></script>
-<script src="/static/js/agent.js?v=20261114q"></script>
+<script src="/static/js/agent.js?v=20261114w"></script>
 {% endblock %}
