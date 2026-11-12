@@ -1185,11 +1185,9 @@ body.agent-focus .ds-sidebar-expand { display: none !important; }
   overscroll-behavior: contain;
 }
 .agent-context-card .agent-card-actions {
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
+  position: static;
   padding: 10px 0 2px;
-  background: var(--ds-surface);
+  background: transparent;
 }
 
 

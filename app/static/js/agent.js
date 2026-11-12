@@ -1273,6 +1273,7 @@
   window.addEventListener("resize", fitContextCard);
 
   function renderContextForm() {
+    setDraftSide("填写任务信息", "待创建任务", "草稿", "未创建");
     var fields = [
       { key: "defect", label: "缺陷描述（英文 ASCII）", input: "textarea", required: true, ascii: true },
       { key: "valid_tests", label: "合法 / 边界 / 越界用例（每行一条，英文 ASCII）", input: "textarea", required: true, ascii: true },
@@ -1577,6 +1578,7 @@
                     bytes[2] === 0x4c && bytes[3] === 0x46;
         var finish = function (hex) {
           state.file = { file: file, name: file.name, size: file.size, sha256: hex, isElf: isElf };
+          setDraftSide("样本已选择", "待创建任务", "草稿", "未创建");
           show("已选择 " + file.name + " · " + file.size + " B · SHA-256 " + hex.slice(0, 16) + "…");
           pushMessage("assistant", "已读取样本 " + file.name + "（" + file.size + " B）· SHA-256 " +
             hex + (isElf ? "" : "（未检测到 ELF 头）") + "；创建任务时上传。");
@@ -1687,6 +1689,7 @@
                     bytes[2] === 0x4c && bytes[3] === 0x46;
         var finish = function (hex) {
           state.file = { file: file, name: file.name, size: file.size, sha256: hex, isElf: isElf };
+          setDraftSide("样本已选择", "待创建任务", "草稿", "未创建");
           bar.style.width = "100%";
           progressText.textContent = "读取完成 100%";
           if (!isElf) warning.textContent = "未检测到 ELF 文件头；仍可作为演示样本提交，实际执行可能被判为 unsupported。";
@@ -1787,8 +1790,7 @@
     button.disabled = true;
     progress.hidden = false;
     progressText.textContent = "上传中 0%";
-    setText("agent-side-execution", "创建中…");
-    setText("agent-side-phase", "创建任务");
+    setDraftSide("创建任务", "创建中…", "创建任务", "未创建");
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/jobs");
@@ -1808,6 +1810,7 @@
         progressText.textContent = "上传完成，已创建任务";
         pushTool("创建任务", match[1], { "job_id": match[1], "http_status": xhr.status });
         state.jobId = match[1];
+        setDraftSide("契约待批准", "待审批", "契约待批准", "待批准");
         // 把本次会话（创建前的问答）一并归档到新任务，避免历史断在创建那一步。
         writeHistoryFor(match[1], state.entries);
         registerJob((state.answers.defect || "").slice(0, 40));
@@ -1816,6 +1819,7 @@
         window.location.href = "/jobs/" + encodeURIComponent(match[1]) + "#contract-form";
       } else {
         progressText.textContent = "创建失败";
+        setDraftSide("创建失败", "未创建任务", "草稿", "未创建");
         pushMessage("assistant", "创建任务没有成功（HTTP " + xhr.status + "）。请检查必填项与英文 ASCII 要求后重试。");
       }
     };
@@ -1829,6 +1833,23 @@
   }
 
   /* ---------- 状态面板与结果屏 ---------- */
+
+  function setDraftSide(step, execution, phase, contract) {
+    if (step) setText("agent-side-step", step);
+    if (execution) setText("agent-side-execution", execution);
+    if (phase) setText("agent-side-phase", phase);
+    if (contract) setText("agent-side-contract", contract);
+  }
+
+  function jobIdFromHistory(entries) {
+    var found = "";
+    (entries || []).forEach(function (entry) {
+      if (!entry || entry.kind !== "tool" || entry.name !== "创建任务") return;
+      var id = entry.fields && entry.fields.job_id;
+      if (typeof id === "string" && id) found = id;
+    });
+    return found;
+  }
 
   function renderSide() {
     var view = state.snapshot ? normalize(state.snapshot) : null;
@@ -1907,6 +1928,14 @@
     if (view.contract) {
       setText("agent-side-contract",
         shortHash(view.contract.sha256) + (view.contract.approved ? " · 已审批" : " · 未审批"));
+    }
+
+    // A created task whose contract is not approved has a deterministic next
+    // state even if the local controller reports execution=unknown.
+    if (view.contract && !view.contract.approved &&
+        (!view.execution || !view.execution.status || view.execution.status === "unknown")) {
+      setText("agent-side-step", "契约待批准");
+      setText("agent-side-execution", "待审批");
     }
 
     var artifacts = $("agent-side-artifacts");
@@ -3625,6 +3654,12 @@
         hydrateHistory("draft").then(function (entries) {
           state.entries = entries || [];
           replayHistory();
+          var restoredJob = jobIdFromHistory(state.entries);
+          if (!state.jobId && restoredJob) {
+            state.jobId = restoredJob;
+            registerJob();
+            startPolling();
+          }
           if (state.entries.length) {
             pushMessage("assistant",
               "已恢复服务端保存的草稿对话。要开始全新会话，点「新建修复内容」。",
@@ -3632,8 +3667,11 @@
           } else {
             pushWelcomeMessage(greeting);
           }
-          setText("agent-side-step", "等待描述");
-          setText("agent-poll", "待命");
+          if (!restoredJob) {
+            setText("agent-side-step", "等待描述");
+            setText("agent-poll", "待命");
+          }
+          renderSide();
         });
       }
     }
