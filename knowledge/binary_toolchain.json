@@ -33,5 +33,20 @@
     "Absence is reported as unavailable, not installed automatically.",
     "Ghidra/Mutagen/RAVERSE require separate installation and, for LLM calls, API/Ollama access.",
     "Binary execution must happen in an isolated guest, never the host."
-  ]
+  ],
+  "local_installs": {
+    "mutagen_venv": "tools/mutagen/.venv",
+    "raverse_clone": "tools/RAVERSE",
+    "ghidra_zip": "../tools/ghidra.zip",
+    "jdk_archive": "../tools/jdk21.tar.gz"
+  },
+  "executions": {
+    "mutagen_static_sample": {
+      "target": "tools/mutagen/targets/01_buffer_overflow.c",
+      "result": "pipeline started; Ollama unavailable; fallback mutation engine produced payloads; no AI patch claimed",
+      "sandbox": "host unsandboxed (no Docker)"
+    },
+    "raverse": "not executed: requires Python 3.13 + PostgreSQL/Redis; not installed",
+    "ghidra": "download in progress; not claimed runnable until JDK + analyzeHeadless verified"
+  }
 }

@@ -1,0 +1,722 @@
+{
+  "schema": 1,
+  "kind": "synthetic-local",
+  "rows": [
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/stack_strcpy_O0",
+      "size": 34124,
+      "sha256": "e0fb7684873195ce47a41c6e5ac3db075c5dfb37d20b6949c2f4bd35009e29fc",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___stack_chk_fail",
+        "___stack_chk_guard",
+        "___strcpy_chk",
+        "_printf"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [
+        "Copied: %s"
+      ],
+      "limitations": [],
+      "id": "stack_strcpy",
+      "cwe": "CWE-121",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/stack_strcpy_O3",
+      "size": 34124,
+      "sha256": "5894d1a6222d364f2a390a92514fea3bbf1c31e3b7f3015d9f2695f06372af72",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___stack_chk_fail",
+        "___stack_chk_guard",
+        "___strcpy_chk",
+        "_printf"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [
+        "Copied: %s"
+      ],
+      "limitations": [],
+      "id": "stack_strcpy",
+      "cwe": "CWE-121",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/stack_adjacent_O0",
+      "size": 34142,
+      "sha256": "23e9200c353d44d1a10563e4611c0e3740cbe84a427ad20dbb3c5e92c53bd16a",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___stack_chk_fail",
+        "___stack_chk_guard",
+        "___strcpy_chk",
+        "_printf"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [
+        "Access Granted to Admin!",
+        "Access Denied."
+      ],
+      "limitations": [],
+      "id": "stack_adjacent",
+      "cwe": "CWE-121",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/stack_adjacent_O3",
+      "size": 34126,
+      "sha256": "e1d124f1e163440be58ff5763933eac662ee9a9622edb76134ee2086edab2d4f",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___stack_chk_fail",
+        "___stack_chk_guard",
+        "___strcpy_chk",
+        "_puts"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [],
+      "strings_sample": [
+        "Access Denied."
+      ],
+      "limitations": [],
+      "id": "stack_adjacent",
+      "cwe": "CWE-121",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/heap_memcpy_O0",
+      "size": 34107,
+      "sha256": "45590be7bf762d878aef73be450f6bc33306060c51fb02643496d4a72df96601",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___memcpy_chk",
+        "_free",
+        "_malloc",
+        "_printf",
+        "_strlen"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "free",
+        "malloc",
+        "printf"
+      ],
+      "strings_sample": [
+        "Data processed."
+      ],
+      "limitations": [],
+      "id": "heap_memcpy",
+      "cwe": "CWE-122",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/heap_memcpy_O3",
+      "size": 34107,
+      "sha256": "cf2c980e256ad031e96a4f6d76bb26529a0697f6e1b97c68538ae783d2a202cd",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___memcpy_chk",
+        "_free",
+        "_malloc",
+        "_puts",
+        "_strlen"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "free",
+        "malloc"
+      ],
+      "strings_sample": [
+        "Data processed."
+      ],
+      "limitations": [],
+      "id": "heap_memcpy",
+      "cwe": "CWE-122",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/heap_node_O0",
+      "size": 34025,
+      "sha256": "45247d6afec35a0869803255cfcc65570ba095a2c2497e1b845c8f9af663a6d2",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___strcpy_chk",
+        "_malloc",
+        "_printf"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "malloc",
+        "printf"
+      ],
+      "strings_sample": [
+        "Node added."
+      ],
+      "limitations": [],
+      "id": "heap_node",
+      "cwe": "CWE-122",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/heap_node_O3",
+      "size": 34025,
+      "sha256": "38d98ce0136277ff79add9f5bc6143b6e26022555d95a2e941153b987a1d39b1",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___strcpy_chk",
+        "_malloc",
+        "_puts"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "malloc"
+      ],
+      "strings_sample": [
+        "Node added."
+      ],
+      "limitations": [],
+      "id": "heap_node",
+      "cwe": "CWE-122",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/global_pointer_O0",
+      "size": 34270,
+      "sha256": "d66436a7332715bf781a8d820590c04079f87aa90b6dfd10e898d64104722175",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got",
+        "__common"
+      ],
+      "imports": [
+        "_callback_func",
+        "_global_buf",
+        "___strcpy_chk",
+        "_printf"
+      ],
+      "symbols": 6,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [
+        "Default function executed."
+      ],
+      "limitations": [],
+      "id": "global_pointer",
+      "cwe": "CWE-119",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/global_pointer_O3",
+      "size": 34270,
+      "sha256": "758502f239fa8734aeaa0d99f1b309113889f9e7ecf30d4398bb6c159f3fa098",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got",
+        "__common"
+      ],
+      "imports": [
+        "_callback_func",
+        "_global_buf",
+        "___strcpy_chk",
+        "_puts"
+      ],
+      "symbols": 6,
+      "dangerous_imports": [],
+      "strings_sample": [
+        "Default function executed."
+      ],
+      "limitations": [],
+      "id": "global_pointer",
+      "cwe": "CWE-119",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/global_strcat_O0",
+      "size": 34045,
+      "sha256": "eeda5450a9e15dc9ccf5d9d0fb5b0a0e04cfbdf2a8b832e2b0cab144a35ad110",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got",
+        "__bss"
+      ],
+      "imports": [
+        "___strcat_chk",
+        "_printf"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [
+        "Log: %s"
+      ],
+      "limitations": [],
+      "id": "global_strcat",
+      "cwe": "CWE-119",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/global_strcat_O3",
+      "size": 34045,
+      "sha256": "07848ce3d45285dc3be4504400e45d83f06b74ea16808d74301f74c31382d38f",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got",
+        "__bss"
+      ],
+      "imports": [
+        "___strcat_chk",
+        "_printf"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [
+        "Log: %s"
+      ],
+      "limitations": [],
+      "id": "global_strcat",
+      "cwe": "CWE-119",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/mul_wrap_O0",
+      "size": 33992,
+      "sha256": "32f337f71dca38e38289d29fac1b694a783a9d20bc38157a12e1f2008181ee42",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "_free",
+        "_malloc",
+        "_strtoul"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "free",
+        "malloc"
+      ],
+      "strings_sample": [],
+      "limitations": [],
+      "id": "mul_wrap",
+      "cwe": "CWE-190",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/mul_wrap_O3",
+      "size": 33912,
+      "sha256": "8a0101472089ad35a7edef710fe7ff74487e276967d17cca6b18e8c839f94534",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "_strtoul"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [],
+      "strings_sample": [],
+      "limitations": [],
+      "id": "mul_wrap",
+      "cwe": "CWE-190",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/add_wrap_O0",
+      "size": 34136,
+      "sha256": "d5f716c8d2a6fce55f8e586be0ab0762aa297a02ab0209328d6e43450b1c88c3",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__const",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___memcpy_chk",
+        "___stack_chk_fail",
+        "___stack_chk_guard",
+        "_bzero",
+        "_printf"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [
+        "Data too large!",
+        "evil_data"
+      ],
+      "limitations": [],
+      "id": "add_wrap",
+      "cwe": "CWE-190",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/add_wrap_O3",
+      "size": 34136,
+      "sha256": "f89e46effc12e361b3b132ae0a71ad963899e8a9244eb50577fe98fc79232d00",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__const",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___memcpy_chk",
+        "___stack_chk_fail",
+        "___stack_chk_guard",
+        "_memcpy",
+        "_puts"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "memcpy"
+      ],
+      "strings_sample": [
+        "evil_data",
+        "Data too large!"
+      ],
+      "limitations": [],
+      "id": "add_wrap",
+      "cwe": "CWE-190",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/stack_off_by_one_O0",
+      "size": 34064,
+      "sha256": "e4ab7b5a791813a3ef7944451d6930ed5efea43e5dc32ae90116c32ba5f698ab",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___stack_chk_fail",
+        "___stack_chk_guard",
+        "_strlen"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [],
+      "strings_sample": [],
+      "limitations": [],
+      "id": "stack_off_by_one",
+      "cwe": "CWE-193",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/stack_off_by_one_O3",
+      "size": 17344,
+      "sha256": "49d6bb12730748e6592b303340d3b567efdf1d39aa238f421eb09b6e415adec3",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__unwind_info"
+      ],
+      "imports": [],
+      "symbols": 3,
+      "dangerous_imports": [],
+      "strings_sample": [],
+      "limitations": [],
+      "id": "stack_off_by_one",
+      "cwe": "CWE-193",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/heap_poison_O0",
+      "size": 34139,
+      "sha256": "85c2b4094d5532826c19c708a0d1b8b4df2e55f0514f694a9762486e7869b00d",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___memcpy_chk",
+        "_free",
+        "_malloc",
+        "_printf",
+        "_strlen"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "free",
+        "malloc",
+        "printf"
+      ],
+      "strings_sample": [],
+      "limitations": [],
+      "id": "heap_poison",
+      "cwe": "CWE-193",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/heap_poison_O3",
+      "size": 34123,
+      "sha256": "c57400bf3fbff6c1d31b97f2b25a532777afe01140f430d396b0c081fe32e45d",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "_free",
+        "_malloc",
+        "_memcpy",
+        "_puts",
+        "_strlen"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "free",
+        "malloc",
+        "memcpy"
+      ],
+      "strings_sample": [],
+      "limitations": [],
+      "id": "heap_poison",
+      "cwe": "CWE-193",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/format_direct_O0",
+      "size": 33949,
+      "sha256": "f3ccb95e4cc00d0d60ce355c14e309a7aa82b8d1074d4fd1ece796daaee1eac7",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "_printf"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [],
+      "limitations": [],
+      "id": "format_direct",
+      "cwe": "CWE-134",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/format_direct_O3",
+      "size": 33997,
+      "sha256": "1815e7c04c2e94ff3e7cee437171fab6686a100a2e42eef289c953e8e73e0a65",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "_printf",
+        "_putchar"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [],
+      "limitations": [],
+      "id": "format_direct",
+      "cwe": "CWE-134",
+      "optimization": "O3"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/format_via_buffer_O0",
+      "size": 34129,
+      "sha256": "868052b51ec8ebbc9fb9e072b7cb54cce1cd573030d05f0e5de6aea9094717ef",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___snprintf_chk",
+        "___stack_chk_fail",
+        "___stack_chk_guard",
+        "_printf"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [
+        "Error: %s"
+      ],
+      "limitations": [],
+      "id": "format_via_buffer",
+      "cwe": "CWE-134",
+      "optimization": "O0"
+    },
+    {
+      "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/var/binary-corpus/format_via_buffer_O3",
+      "size": 34113,
+      "sha256": "5ceb912dc84048dc57526a8cfea86041ca7332d7615566399b42b9b260e1836a",
+      "format": "macho",
+      "arch": "CPU_TYPE.ARM64",
+      "sections": [
+        "__text",
+        "__stubs",
+        "__cstring",
+        "__unwind_info",
+        "__got"
+      ],
+      "imports": [
+        "___stack_chk_fail",
+        "___stack_chk_guard",
+        "_printf",
+        "_snprintf"
+      ],
+      "symbols": 3,
+      "dangerous_imports": [
+        "printf"
+      ],
+      "strings_sample": [
+        "Error: %s"
+      ],
+      "limitations": [],
+      "id": "format_via_buffer",
+      "cwe": "CWE-134",
+      "optimization": "O3"
+    }
+  ],
+  "limits": [
+    "Not BinPool/CveBinarySheet; Mach-O arm64 only; no execution."
+  ]
+}
