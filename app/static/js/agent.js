@@ -181,6 +181,7 @@
     replaying: false,
     planPending: null,
     repairPending: null,
+    repairLabel: "",
     historyGeneration: 0,
     entries: []
   };
@@ -1148,6 +1149,8 @@
       return state.repairPending;
     }
     var loading = pushRepairLoading();
+    state.repairLabel = "分析中";
+    setText("agent-code-repair", "分析中");
     setText("agent-side-step", "正在分析代码…");
     setText("agent-poll", "请求修复中");
     state.repairPending = fetch("/api/code/repair", {
@@ -1168,7 +1171,9 @@
         var detail = result.data && (result.data.detail || result.data.error);
         pushMessage("assistant", "代码修复没有成功（HTTP " + result.status +
           (detail ? "：" + detail : "") + "）。可以收紧代码片段后重试。");
-        setText("agent-side-step", "代码修复失败");
+        state.repairLabel = "失败";
+      setText("agent-code-repair", "失败");
+      setText("agent-side-step", "代码修复失败");
         setText("agent-poll", "待命");
         return null;
       }
@@ -1181,8 +1186,8 @@
         language: language || repair.language || "",
         at: new Date().toISOString()
       });
-      setText("agent-code-repair",
-        tr(repair.mode === "llm" ? "模型" : "规则") + " · " + tr(repairConfidenceLabel(repair.confidence)));
+      state.repairLabel = tr(repair.mode === "llm" ? "模型" : "规则") + " · " + tr(repairConfidenceLabel(repair.confidence));
+      setText("agent-code-repair", state.repairLabel);
       var repairTitle = tr(repair.title || "已完成");
       var shortTitle = repairTitle.length > 18
         ? repairTitle.slice(0, 18) + "…" : repairTitle;
@@ -1255,7 +1260,11 @@
   function renderCurrentStep() {
     var step = currentStep();
     if (!step) return;
-    setText("agent-side-step", step.title || step.id);
+    var stepTitle = step.title || step.id;
+    var stepLabel = /^第\s*\d+\s*步/.test(stepTitle)
+      ? stepTitle
+      : "第 " + (state.stepIndex + 1) + " 步 · " + stepTitle;
+    setText("agent-side-step", stepLabel);
     pushMessage("assistant", step.prompt);
     if (step.kind === "upload") pushUploadCard(step);
     else if (step.kind === "question") pushQuestionCard(step);
@@ -1529,6 +1538,8 @@
     button.disabled = true;
     progress.hidden = false;
     progressText.textContent = "上传中 0%";
+    setText("agent-side-execution", "创建中…");
+    setText("agent-side-phase", "创建任务");
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/jobs");
@@ -1622,10 +1633,13 @@
       setText("agent-model-meta", "未提供");
     }
 
+    setText("agent-code-repair", state.repairLabel || "未使用");
+
     if (!view) {
-      setText("agent-side-execution", "—");
-      setText("agent-side-phase", "—");
-      setText("agent-side-contract", "—");
+      setText("agent-side-execution", state.jobId ? "读取中…" : "待创建任务");
+      setText("agent-side-phase", state.jobId ? "读取中…" : "草稿");
+      setText("agent-side-contract", state.jobId ? "读取中…" : "未创建");
+      if (!state.plan) setText("agent-side-step", "等待填写");
       return;
     }
 
