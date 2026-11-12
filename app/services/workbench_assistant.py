@@ -33,6 +33,13 @@ FAQ_ENTRIES: tuple[dict[str, Any], ...] = (
         "action": {"type": "open_approval", "label": "打开审批界面"},
     },
     {
+        "id": "postpone_approval",
+        "questions": ["等一下再审批", "我累了", "稍后审批", "明天再批"],
+        "keywords": ["累了", "休息", "等一下", "等会", "稍后", "晚点", "明天", "再审批"],
+        "answer": "可以稍后再批准。契约会保持待批准，不会自动执行；你回来后在任务页打开审批界面即可。",
+        "action": {"type": "open_approval", "label": "稍后打开审批界面"},
+    },
+    {
         "id": "execute_local",
         "questions": ["为什么不能执行", "为什么开始执行没反应", "local 模式能跑吗"],
         "keywords": ["执行", "运行", "local", "run", "启动"],

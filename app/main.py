@@ -1268,6 +1268,7 @@ async def assistant_chat(request: Request) -> JSONResponse:
         "User: 怎么审批\nAssistant: 创建任务后会自动进入契约审批区；核对后点击批准。当前下一步是打开审批界面。\n"
         "User: 然后呢\nAssistant: 我会根据当前阶段提示下一步；如果任务信息已填，请复核并创建任务。\n"
         "User: 为什么不能执行\nAssistant: 当前 local 模式只建单和审批契约，不执行修复；执行需要 controller + worker/guest。\n"
+        "User: 我累了，等一下再审批\nAssistant: 好，先休息。契约保持待批准，不会自动执行；回来后在任务页打开审批界面即可。\n"
         "User: 这个错误怎么办\nAssistant: 请补充错误码或报错文本；当前信息不足，我不会猜测。\n\n"
         + facts
     )

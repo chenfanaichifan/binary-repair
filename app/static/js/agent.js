@@ -2921,7 +2921,14 @@
     }, 250);
   }
 
+  function looksConversational(text) {
+    return /(累了|休息|等一下|等会|稍后|晚点|先不|暂时|明天|回头|有空|不急|不想)/.test(text);
+  }
+
   function handleActionIntent(text) {
+    // Questions and conversational pauses such as "我累了，等一下再审批"
+    // belong to chat/FAQ, not to an imperative navigation action.
+    if (looksConversational(text)) return false;
     // Questions such as "怎么审批" belong to FAQ/chat, not to an imperative
     // navigation action.
     if (/(怎么|如何|为什么|在哪|哪里|是什么|什么意思|吗|呢|？|\?)/.test(text)) return false;
@@ -3087,7 +3094,7 @@
     }
     if (handleActionIntent(text)) return;
     var pasted = extractCode(text);
-    if (!pasted && (state.contextCompleted || state.jobId)) {
+    if (!pasted && (state.contextCompleted || state.jobId || looksConversational(text))) {
       chatWithAssistant(text);
       return;
     }
