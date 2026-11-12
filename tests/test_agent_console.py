@@ -183,15 +183,17 @@ def test_no_model_calls_or_new_transport():
     for banned in ("api.openai.com", "new WebSocket", "new EventSource", "Bearer ",
                    'setRequestHeader("Authorization'):
         assert banned not in AGENT_JS, banned
-    # Read paths: the snapshot, the attempts timeline, the job-less plan
-    # route, and per-attempt evidence (all same-origin GETs).
-    assert AGENT_JS.count("fetch(") == 7
+    # Same-origin paths: snapshot, attempts, plan, evidence, comparison and the
+    # operator key status/save/test/clear endpoints (no external transport).
+    assert AGENT_JS.count("fetch(") == 11
     assert "/artifacts" in AGENT_JS
     assert "/deliverables" in AGENT_JS
     assert 'fetch("/api/jobs/" + encodeURIComponent(state.jobId)' in AGENT_JS
     assert 'fetch("/api/jobs/" + encodeURIComponent(jobId) + "/attempts"' in AGENT_JS
     assert 'fetch("/api/jobs/" + encodeURIComponent(jobId) + "/comparison"' in AGENT_JS
     assert 'fetch("/api/assistant/plan"' in AGENT_JS
+    assert 'fetch("/api/assistant/key"' in AGENT_JS
+    assert 'fetch("/api/assistant/key/test"' in AGENT_JS
     assert 'fetch("/api/attempts/" + encodeURIComponent(attemptId) + "/evidence"' in AGENT_JS
     # Write path: the existing create-job form endpoint only, with CSRF.
     assert 'xhr.open("POST", "/jobs")' in AGENT_JS
@@ -650,3 +652,16 @@ def test_deliverable_upload_controls_exist():
     assert "uploadDeliverable" in AGENT_JS
     assert '"/deliverables"' in AGENT_JS
     assert "/artifacts" in AGENT_JS
+
+
+def test_deliverable_upload_is_hidden_off_http_and_rejects_oversized_files():
+    """The upload control must not be offered without an HTTP origin, and a file
+    above the server limit must be refused before any request leaves the page."""
+    assert 'window.location.protocol === "http:"' in AGENT_JS
+    assert 'window.location.protocol === "https:"' in AGENT_JS
+    assert "if (!UPLOAD_AVAILABLE)" in AGENT_JS
+    assert "uploadButton.hidden = true" in AGENT_JS
+    assert "uploadInput.hidden = true" in AGENT_JS
+    assert "DELIVERABLE_MAX_BYTES = 64 * 1024 * 1024" in AGENT_JS
+    assert "if (file.size > DELIVERABLE_MAX_BYTES)" in AGENT_JS
+    assert "64 MiB" in AGENT_JS

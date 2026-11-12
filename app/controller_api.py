@@ -1687,18 +1687,33 @@ def plan_from_description(payload: StandalonePlanRequest) -> Any:
     if payload.job_id:
         _job_or_404(payload.job_id)
         if mode == "llm":
-            return _assistant_unavailable(
-                "no LLM client is configured on this host"
-            )
-        try:
-            plan = generate_plan(
-                payload.description,
-                job_id=payload.job_id,
-                data_dir=_data_dir(),
-                mode="deterministic",
-            )
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
+            from app.services.assistant_llm import client_from_env
+
+            client = client_from_env()
+            if client is None:
+                return _assistant_unavailable(
+                    "no LLM client is configured on this host"
+                )
+            try:
+                plan = generate_plan(
+                    payload.description,
+                    job_id=payload.job_id,
+                    data_dir=_data_dir(),
+                    client=client,
+                    mode="llm",
+                )
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+        else:
+            try:
+                plan = generate_plan(
+                    payload.description,
+                    job_id=payload.job_id,
+                    data_dir=_data_dir(),
+                    mode="deterministic",
+                )
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
         record = get_plan(payload.job_id, data_dir=_data_dir())
         if record is None:
             raise HTTPException(status_code=500, detail="Plan was not persisted.")
@@ -1715,7 +1730,24 @@ def plan_from_description(payload: StandalonePlanRequest) -> Any:
             status_code=422, detail="description or job_id is required."
         )
     if mode == "llm":
-        return _assistant_unavailable("no LLM client is configured on this host")
+        from app.services.assistant_llm import client_from_env
+
+        client = client_from_env()
+        if client is None:
+            return _assistant_unavailable("no LLM client is configured on this host")
+        plan = generate_plan(
+            description,
+            context=payload.context,
+            client=client,
+            data_dir=_data_dir(),
+            mode="llm",
+        )
+        return {
+            "plan": plan.model_dump(mode="json"),
+            "job_id": None,
+            "persisted": False,
+            "agent": _agent_block(plan),
+        }
 
     plan = deterministic_plan(description)
     return {

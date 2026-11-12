@@ -30,7 +30,13 @@ from app.backend import (
     get_backend,
 )
 from app.evidence_domains import evidence_domain, scope_display
-from app.services.assistant_llm import ASSISTANT_MODE_ENV, assistant_status, client_from_env
+from app.services.assistant_key_store import clear_key, key_status, save_key
+from app.services.assistant_llm import (
+    ASSISTANT_MODE_ENV,
+    assistant_status,
+    client_from_env,
+    test_provider_connection,
+)
 from app.ui_config import load_ui_config, resolve_mode, resolve_workspace
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -811,6 +817,77 @@ async def assistant_plan(request: Request) -> JSONResponse:
             status_code=503,
         )
     return JSONResponse({"plan": plan})
+
+
+@app.get("/api/assistant/key")
+async def assistant_key_status() -> JSONResponse:
+    """Return masked key status; never return the key itself."""
+    return JSONResponse({"key": key_status(), "assistant": assistant_status()})
+
+
+@app.post("/api/assistant/key")
+async def assistant_key_save(request: Request) -> JSONResponse:
+    """Save the operator-supplied provider key server-side.
+
+    The key is accepted only over the local session, is never echoed, and is
+    persisted by ``assistant_key_store`` (DPAPI on Windows).
+    """
+    _require_csrf(request.headers.get("x-csrf-token", ""))
+    try:
+        body = await request.json()
+    except ValueError:
+        return JSONResponse({"detail": "JSON body required."}, status_code=422)
+    if not isinstance(body, dict):
+        return JSONResponse({"detail": "JSON object required."}, status_code=422)
+    candidate = body.get("key")
+    if not isinstance(candidate, str) or not candidate.strip():
+        return JSONResponse({"detail": "key is required."}, status_code=422)
+    current = key_status()
+    if current["source"] == "environment":
+        return JSONResponse(
+            {"detail": "A provider key is already configured through the environment."},
+            status_code=409,
+        )
+    try:
+        saved = save_key(candidate)
+    except ValueError as exc:
+        return JSONResponse({"detail": str(exc)}, status_code=422)
+    except OSError:
+        return JSONResponse({"detail": "could not persist the key."}, status_code=500)
+    # Make the current process usable immediately; an explicit env value wins.
+    os.environ.setdefault(ASSISTANT_MODE_ENV, "llm")
+    if (os.environ.get(ASSISTANT_MODE_ENV) or "").strip().lower() != "llm":
+        os.environ[ASSISTANT_MODE_ENV] = "llm"
+    return JSONResponse(
+        {
+            "saved": saved,
+            "key": key_status(),
+            "assistant": assistant_status(mode="llm"),
+        }
+    )
+
+
+@app.post("/api/assistant/key/test")
+async def assistant_key_test(request: Request) -> JSONResponse:
+    """Make one small real provider call to verify the configured key."""
+    _require_csrf(request.headers.get("x-csrf-token", ""))
+    result = test_provider_connection()
+    return JSONResponse(result, status_code=200 if result.get("ok") else 503)
+
+
+@app.delete("/api/assistant/key")
+async def assistant_key_clear(request: Request) -> JSONResponse:
+    """Delete the stored key; an environment key cannot be cleared from the UI."""
+    _require_csrf(request.headers.get("x-csrf-token", ""))
+    current = key_status()
+    if current["source"] == "environment":
+        return JSONResponse(
+            {"detail": "The provider key is managed by the environment."},
+            status_code=409,
+        )
+    clear_key()
+    os.environ[ASSISTANT_MODE_ENV] = "deterministic"
+    return JSONResponse({"key": key_status(), "assistant": assistant_status(mode="deterministic")})
 
 
 @app.get("/api/jobs/{job_id}/export")

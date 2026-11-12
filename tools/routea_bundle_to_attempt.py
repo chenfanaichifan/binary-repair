@@ -24,6 +24,7 @@ if str(ROOT) not in __import__("sys").path:
     __import__("sys").path.insert(0, str(ROOT))
 
 from app.db.connection import connect
+from app.services.assistant_key_store import is_secret_file
 
 STATUS_MAP = {
     "pass": "passed",
@@ -43,6 +44,8 @@ def _sha(path: Path) -> str:
 
 
 def _register(*, data_dir: Path, job_id: str, attempt_id: str, source: Path) -> str:
+    if is_secret_file(source) or source.name in {".env", "session.token"}:
+        raise ValueError("refusing to copy secret material into evidence")
     if not source.is_file():
         raise ValueError(f"evidence file missing: {source}")
     artifact_id = uuid.uuid4().hex
@@ -129,6 +132,8 @@ def convert(
                     archive = Path(tmp) / f"{gate}-evidence.zip"
                     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
                         for source in sources:
+                            if is_secret_file(source):
+                                raise ValueError("refusing to copy secret material into evidence")
                             zf.write(source, source.name)
                     evidence[gate] = _register(data_dir=data_dir, job_id=job_id,
                                                attempt_id=attempt_id, source=archive)
