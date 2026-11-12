@@ -64,7 +64,7 @@
 </div>
 {% endif %}
 
-<div class="contract-strip">
+<div class="contract-strip" id="contract">
   <details>
     <summary>
       安全契约（r{{ job.contract.revision }} ·
@@ -279,4 +279,17 @@
 {% block scripts %}
 <script src="/static/js/poll.js" defer></script>
 <script src="/static/js/codeview.js" defer></script>
+<script>
+  (function () {
+    try {
+      if (window.sessionStorage.getItem("br.focus.contract") === "1") {
+        window.sessionStorage.removeItem("br.focus.contract");
+        window.setTimeout(function () {
+          var section = document.getElementById("contract");
+          if (section) section.scrollIntoView({ block: "start" });
+        }, 100);
+      }
+    } catch (error) { /* ignore */ }
+  })();
+</script>
 {% endblock %}

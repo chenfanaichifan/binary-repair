@@ -2558,7 +2558,51 @@
     window.setTimeout(function () { window.location.href = url; }, 250);
   }
 
+  function parseApprovalIntent(text) {
+    var value = String(text || "").trim();
+    if (!/(审批|批准|approval)/i.test(value)) return null;
+    // This action only opens the approval page. It never submits approval.
+    var target = value
+      .replace(/^(?:请|帮我|我要|我想)?\s*(?:打开|进入|显示|跳到|看看)?\s*/, "")
+      .replace(/^(?:审批|批准)\s*/, "")
+      .replace(/(?:的)?\s*(?:审批|批准)?\s*(?:界面|页面)?\s*[*。！!]*$/i, "")
+      .trim();
+    return { target: target };
+  }
+
+  function openApprovalView(entry) {
+    var label = entry.label || entry.id;
+    pushMessage("assistant", "打开「" + label + "」的契约审批界面；请在页面中自行核对并点击批准。");
+    window.setTimeout(function () {
+      try { window.sessionStorage.setItem("br.focus.contract", "1"); } catch (error) { /* ignore */ }
+      window.location.href = "/jobs/" + encodeURIComponent(entry.id);
+    }, 250);
+  }
+
   function handleActionIntent(text) {
+    var approval = parseApprovalIntent(text);
+    if (approval) {
+      pushMessage("user", text);
+      var approvalQuery = approval.target;
+      if (/^$|^当前任务$|^当前$|^当前契约$|^这个任务$|^这个文件$|^这个$/.test(approvalQuery) && state.jobId) {
+        openApprovalView({ id: state.jobId, label: "当前任务" });
+        return true;
+      }
+      var approvalMatches = findJobs(approvalQuery);
+      if (!approvalMatches.length) {
+        pushMessage("assistant", "没有找到匹配的任务；请先打开一个任务，或给出任务名/job id。");
+        return true;
+      }
+      if (approvalMatches.length > 1) {
+        pushMessage("assistant", "找到多个匹配任务，请指定一个：\n" + approvalMatches.slice(0, 8).map(function (entry) {
+          return "· " + (entry.label || entry.id) + "（" + entry.id + "）";
+        }).join("\n"));
+        return true;
+      }
+      openApprovalView(approvalMatches[0]);
+      return true;
+    }
+
     var renameName = parseRenameIntent(text);
     if (renameName) {
       pushMessage("user", text);
