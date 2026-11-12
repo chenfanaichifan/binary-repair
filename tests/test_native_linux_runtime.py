@@ -28,8 +28,11 @@ def test_vulnerable_fixture_native_linux():
     assert short.returncode == 0
     assert short.stdout.startswith(b"input> ")
     assert b"hi" in short.stdout
+    # The deliberately vulnerable fixture does not reject long input; it
+    # overflows and still exits 0.  The strict-fixed fixture is the one that
+    # returns 1.  This test proves native Linux execution, not rejection.
     long = _run(VULN, b"A" * 32)
-    assert long.returncode != 0
+    assert long.returncode == 0
 
 
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux x86-64 execution")
