@@ -1,0 +1,57 @@
+{
+  "original_sha256": "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd",
+  "patched_sha256": "7704c048ad6a333ef4537125b5f90221408e7837f04c20c156b51370b433771a",
+  "capacity": 16,
+  "offsets": [
+    4132,
+    4152
+  ],
+  "before": [
+    "401000: mov eax, 1",
+    "401005: mov edi, 1",
+    "40100a: lea rsi, [rip + 0x36]",
+    "401011: mov edx, 7",
+    "401016: syscall ",
+    "401018: sub rsp, 0x10",
+    "40101c: xor eax, eax",
+    "40101e: xor edi, edi",
+    "401020: mov rsi, rsp",
+    "401023: mov edx, 0x100",
+    "401028: syscall ",
+    "40102a: mov eax, 1",
+    "40102f: mov edi, 1",
+    "401034: mov rsi, rsp",
+    "401037: mov edx, 0x100",
+    "40103c: syscall ",
+    "40103e: mov eax, 0x3c",
+    "401043: xor edi, edi",
+    "401045: syscall ",
+    "401047: imul ebp, dword ptr [rsi + 0x70], 0x203e7475"
+  ],
+  "after": [
+    "401000: mov eax, 1",
+    "401005: mov edi, 1",
+    "40100a: lea rsi, [rip + 0x36]",
+    "401011: mov edx, 7",
+    "401016: syscall ",
+    "401018: sub rsp, 0x10",
+    "40101c: xor eax, eax",
+    "40101e: xor edi, edi",
+    "401020: mov rsi, rsp",
+    "401023: mov edx, 0x10",
+    "401028: syscall ",
+    "40102a: mov eax, 1",
+    "40102f: mov edi, 1",
+    "401034: mov rsi, rsp",
+    "401037: mov edx, 0x10",
+    "40103c: syscall ",
+    "40103e: mov eax, 0x3c",
+    "401043: xor edi, edi",
+    "401045: syscall ",
+    "401047: imul ebp, dword ptr [rsi + 0x70], 0x203e7475"
+  ],
+  "limitations": [
+    "Static immediate rewrite only; no runtime execution.",
+    "Does not prove all inputs are safe; run in an isolated guest."
+  ]
+}

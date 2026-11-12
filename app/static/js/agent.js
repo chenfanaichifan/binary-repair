@@ -1487,7 +1487,10 @@
       tbody.appendChild(tr);
     });
     table.appendChild(tbody);
-    card.appendChild(table);
+    var advanced = el("details", "agent-review-advanced");
+    advanced.appendChild(el("summary", null, "高级契约字段（严格验收时使用；一键修复不需要填写）"));
+    advanced.appendChild(table);
+    card.appendChild(advanced);
 
     var progress = el("div", "agent-progress");
     progress.hidden = true;
@@ -1496,7 +1499,12 @@
     var progressText = el("p", "agent-progress-text", "");
 
     var actions = el("div", "agent-card-actions");
-    var create = el("button", "agent-btn", "创建任务（由你确认）");
+    var quick = el("button", "agent-btn", "一键修复（自动推断安全界）");
+    quick.type = "button";
+    quick.dataset.testid = "agent-quick-repair";
+    quick.addEventListener("click", function () { quickRepair(quick, progress, bar, progressText); });
+    actions.appendChild(quick);
+    var create = el("button", "agent-btn ghost", "创建严格任务（高级）");
     create.type = "button";
     create.dataset.testid = "agent-create-job";
     create.addEventListener("click", function () { createJob(create, progress, bar, progressText); });
@@ -1508,6 +1516,70 @@
   }
 
   /* ---------- 创建任务：用户显式动作 + 真实上传进度 ---------- */
+
+  function pushQuickResult(payload) {
+    var card = el("div", "agent-card agent-repair");
+    card.dataset.testid = "agent-quick-result";
+    card.appendChild(el("p", "agent-card-title", "一键修复完成"));
+    card.appendChild(el("p", "repair-summary",
+      "已把危险读长度改为栈缓冲区容量，并同步收窄输出长度。"));
+    var meta = el("div", "repair-meta");
+    meta.appendChild(el("span", "repair-chip", "capacity " + payload.report.capacity));
+    meta.appendChild(el("span", "repair-chip", "static rewrite"));
+    card.appendChild(meta);
+    var details = el("details", "repair-notes");
+    details.open = true;
+    details.appendChild(el("summary", null, "验证与残余风险"));
+    var list = el("ul");
+    list.appendChild(el("li", null, "original sha256: " + payload.report.original_sha256));
+    list.appendChild(el("li", null, "patched sha256: " + payload.report.patched_sha256));
+    (payload.report.limitations || []).forEach(function (note) {
+      list.appendChild(el("li", null, note));
+    });
+    details.appendChild(list);
+    card.appendChild(details);
+    var link = el("a", "agent-btn", "下载修复后的 ELF");
+    link.href = "data:application/octet-stream;base64," + payload.patched_base64;
+    link.download = payload.filename || "fixed.elf";
+    link.dataset.testid = "agent-quick-download";
+    card.appendChild(link);
+    pushCard(card);
+  }
+
+  function quickRepair(button, progress, bar, progressText) {
+    if (!state.file) { pushMessage("assistant", "还没有样本文件，请先上传。"); return; }
+    if (state.submitting) return;
+    if (FIXTURE_MODE) { pushMessage("assistant", "演示模式不会生成文件。"); return; }
+    state.submitting = true;
+    button.disabled = true;
+    progress.hidden = false;
+    progressText.textContent = "上传并修复中…";
+    var form = new FormData();
+    form.append("binary", state.file.file, state.file.name);
+    form.append("csrf", CSRF);
+    fetch("/api/binary/quick-repair", { method: "POST", body: form })
+      .then(function (response) {
+        return response.json().then(function (data) { return { ok: response.ok, data: data }; });
+      })
+      .then(function (result) {
+        state.submitting = false;
+        button.disabled = false;
+        if (!result.ok || !result.data || !result.data.ok) {
+          progressText.textContent = "无法一键修复";
+          pushMessage("assistant", "一键修复未应用：" +
+            ((result.data && result.data.detail) || "unsupported pattern") +
+            "。这是 fail-closed，不会输出未经验证的二进制。");
+          return;
+        }
+        progressText.textContent = "修复完成";
+        pushQuickResult(result.data);
+      })
+      .catch(function () {
+        state.submitting = false;
+        button.disabled = false;
+        progressText.textContent = "网络错误";
+      });
+  }
 
   function createJob(button, progress, bar, progressText) {
     if (state.submitting) return;

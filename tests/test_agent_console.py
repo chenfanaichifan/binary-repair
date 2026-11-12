@@ -205,7 +205,7 @@ def test_no_model_calls_or_new_transport():
     # Same-origin paths: snapshot, attempts, plan, evidence, comparison, the
     # operator key status/save/test/clear endpoints, static code repair and
     # history get/put/delete.
-    assert AGENT_JS.count("fetch(") == 16
+    assert AGENT_JS.count("fetch(") == 17  # one-click binary repair adds one same-origin call
     assert "/artifacts" in AGENT_JS
     assert "/deliverables" in AGENT_JS
     assert 'fetch("/api/jobs/" + encodeURIComponent(state.jobId)' in AGENT_JS
@@ -227,7 +227,7 @@ def test_no_model_calls_or_new_transport():
 def test_job_creation_is_an_explicit_user_action():
     """The assistant must not auto-submit: creation is bound to a button click."""
     assert 'create.addEventListener("click", function () { createJob(' in AGENT_JS
-    assert "创建任务（由你确认）" in AGENT_JS
+    assert "创建严格任务（高级）" in AGENT_JS
 
 
 def test_fixture_defaults_bound_for_submission_are_ascii():

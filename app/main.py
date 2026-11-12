@@ -33,6 +33,7 @@ from app.evidence_domains import evidence_domain, scope_display
 from app.services.assistant_key_store import clear_key, key_status, save_key
 from app.services.code_repair import repair_code
 from app.services.binary_datasets import dataset_status
+from app.services.binary_quick_repair import QuickRepairError, quick_repair_elf
 from app.services.ai_adjudication import (
     GateResult, PolicyViolation, adjudicate, guard_model_payload,
     preflight_key_binding, supervisor_step,
@@ -1167,6 +1168,29 @@ async def code_repair_route(request: Request) -> JSONResponse:
             "未配置模型 API Key：本次仅使用确定性规则，AI 没有被调用。"
         ]
     return JSONResponse({"repair": result})
+
+
+@app.post("/api/binary/quick-repair")
+async def quick_binary_repair(
+    binary: UploadFile = File(...),
+    csrf: str = Form(...),
+) -> JSONResponse:
+    """One-click narrow binary repair; returns a downloadable candidate ELF."""
+    _require_csrf(csrf)
+    raw = await binary.read()
+    if len(raw) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
+    try:
+        patched, report = quick_repair_elf(raw)
+    except QuickRepairError as exc:
+        return JSONResponse({"ok": False, "detail": str(exc)}, status_code=422)
+    import base64
+    return JSONResponse({
+        "ok": True,
+        "filename": (Path(binary.filename or "sample.elf").stem + "-fixed.elf"),
+        "patched_base64": base64.b64encode(patched).decode("ascii"),
+        "report": report.to_dict(),
+    }, headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/datasets")
