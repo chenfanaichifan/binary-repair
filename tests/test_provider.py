@@ -103,8 +103,9 @@ def test_accepts_valid_candidate_and_records_cost() -> None:
 
     payload = transport.posts[0]["json"]
     assert payload["response_format"] == {"type": "json_object"}
-    assert payload["thinking"] == {"type": "disabled"}
-    assert payload["temperature"] == 0.0
+    assert payload["thinking"] == {"type": "enabled"}
+    assert "temperature" not in payload
+    assert payload["max_tokens"] == 32768
     assert payload["stream"] is False
 
 

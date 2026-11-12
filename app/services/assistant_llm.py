@@ -64,7 +64,7 @@ PROVIDER_TIMEOUT_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_TIMEOUT"
 DEFAULT_MODEL = "deepseek-chat"
 DEFAULT_PROVIDER_BASE = "https://api.deepseek.com/v1"
 DEFAULT_TIMEOUT = 30.0
-MAX_OUTPUT_TOKENS = 1200
+MAX_OUTPUT_TOKENS = 32768
 
 MODES = ("llm", "deterministic", "fixture")
 
@@ -247,7 +247,7 @@ def _invoke(client: Any, messages: Sequence[Mapping[str, str]], model: str) -> A
     chat_json = getattr(client, "chat_json", None)
     if callable(chat_json):
         # The provider adapter used by M5: returns content/model/usage.
-        return chat_json(messages, max_tokens=MAX_OUTPUT_TOKENS, thinking=False)
+        return chat_json(messages, max_tokens=MAX_OUTPUT_TOKENS, thinking=True)
     complete = getattr(client, "complete", None)
     if callable(complete):
         return complete(messages, model=model)
@@ -409,9 +409,13 @@ class HttpJsonClient:
             "model": self._model,
             "messages": [dict(message) for message in messages],
             "max_tokens": int(max_tokens),
-            "temperature": 0,
             "response_format": {"type": "json_object"},
+            "thinking": {"type": "enabled" if thinking else "disabled"},
         }
+        if not thinking:
+            # DeepSeek ignores temperature in thinking mode; only send it
+            # where it applies, so the request stays valid.
+            payload["temperature"] = 0
         headers = {"Authorization": f"Bearer {self._api_key}"}
         started = time.perf_counter()
         try:

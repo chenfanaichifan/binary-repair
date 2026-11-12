@@ -32,10 +32,10 @@ class Settings:
     api_key: str
     base_url: str = "https://api.deepseek.com"
     model: str = "deepseek-flash"
-    thinking: bool = False
+    thinking: bool = True
     timeout_s: float = 120.0
     max_retries: int = 1
-    max_output_tokens: int = 4000
+    max_output_tokens: int = 32768
     budget_usd: float = 2.0
     store_raw_responses: bool = False
 
@@ -51,7 +51,7 @@ class Settings:
                 "or export the variable in this shell only."
             )
 
-        thinking = os.environ.get("DEEPSEEK_THINKING", "disabled").lower() in {
+        thinking = os.environ.get("DEEPSEEK_THINKING", "enabled").lower() in {
             "1",
             "true",
             "yes",
@@ -65,7 +65,7 @@ class Settings:
             thinking=thinking,
             timeout_s=float(os.environ.get("DEEPSEEK_TIMEOUT_S", "120")),
             max_retries=int(os.environ.get("DEEPSEEK_MAX_RETRIES", "1")),
-            max_output_tokens=int(os.environ.get("DEEPSEEK_MAX_OUTPUT_TOKENS", "4000")),
+            max_output_tokens=int(os.environ.get("DEEPSEEK_MAX_OUTPUT_TOKENS", "32768")),
             budget_usd=float(os.environ.get("BINARYREPAIR_AI_BUDGET_USD", "2.0")),
             store_raw_responses=os.environ.get("BINARYREPAIR_STORE_RAW", "0") == "1",
         )

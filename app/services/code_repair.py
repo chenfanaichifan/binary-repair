@@ -1166,14 +1166,15 @@ def _llm_repair(code: str, language: str, client: Any,
         # A full-file patched_code is expensive. A 1k-token cap truncates
         # medium/large files and looks like "model failed"; scale the budget
         # and deadline with the input, while keeping a hard ceiling.
-        max_tokens = min(6000, max(1400, len(code) // 2))
-        timeout_s = max(20.0, min(90.0, len(code) / 250.0))
+        # 32K output budget: a full-file patch for large snippets must fit.
+        max_tokens = 32768
+        timeout_s = max(60.0, min(300.0, len(code) / 100.0))
         response = client.chat_json([
             {"role": "system", "content": _LLM_SYSTEM},
             {"role": "user", "content": json.dumps(
                 {"language": language, "code": code}, ensure_ascii=False
             )},
-        ], max_tokens=max_tokens, timeout=timeout_s)
+        ], max_tokens=max_tokens, thinking=True, timeout=timeout_s)
     except Exception as exc:  # noqa: BLE001 - transport failures downgrade, never raise
         if meta is not None:
             meta["ai_error"] = type(exc).__name__

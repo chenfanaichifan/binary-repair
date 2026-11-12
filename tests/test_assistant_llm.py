@@ -109,7 +109,7 @@ def test_fake_transport_returns_a_validated_plan():
     assert plan.model == "fake-model"
     assert plan.tokens == {"prompt": 11, "completion": 4}
     assert plan.steps[-1].kind == "review"
-    assert transport.calls[0]["thinking"] is False
+    assert transport.calls[0]["thinking"] is True
 
 
 def test_legacy_complete_transport_still_works():
