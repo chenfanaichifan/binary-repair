@@ -82,7 +82,7 @@ def test_c_strcpy_becomes_bounded_snprintf():
     result = repair_code(C_SAMPLE, "c")
     assert 'snprintf(buf, sizeof(buf), "%s", input);' in result["patched_code"]
     assert any(finding["rule"] == "c.strcpy" for finding in result["findings"])
-    assert any("堆指针" in note for note in result["notes"])
+    assert any("数组 sizeof" in note or "已声明的堆容量" in note for note in result["notes"])
 
 
 def test_javascript_findings_do_not_claim_an_unreviewed_rewrite():

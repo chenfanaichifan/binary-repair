@@ -20,6 +20,8 @@ import re
 from dataclasses import dataclass, asdict
 from typing import Any
 
+from app.services.patch_validation import validate_c_patch
+
 MAX_CODE_CHARS = 20000
 MAX_PATCH_CHARS = 60000
 
@@ -179,6 +181,34 @@ _META: dict[str, dict[str, Any]] = {
         "warning": "有符号/无符号转换必须在调用前显式检查 len >= 0 并限定上界。",
         "refs": (("CWE-195: Signed to Unsigned Conversion Error", "https://cwe.mitre.org/data/definitions/195.html"),
                  ("CWE-787: Out-of-bounds Write", "https://cwe.mitre.org/data/definitions/787.html")),
+    },
+    "c.stack-memcpy": {
+        "cwe": "CWE-121",
+        "impact": "调用者控制的 len 超过栈数组容量时，memcpy 覆盖栈帧/返回地址。",
+        "explanation": "目标容量是固定的 sizeof(buf)，但拷贝长度来自参数；两者没有比较。",
+        "warning": "栈数组不能 free；容量检查必须用 sizeof(buf)，不是 sizeof(pointer)。",
+        "refs": (("CWE-121: Stack-based Buffer Overflow", "https://cwe.mitre.org/data/definitions/121.html"),),
+    },
+    "c.unbounded-loop": {
+        "cwe": "CWE-121",
+        "impact": "逐字节循环没有目标容量上界，超长输入会一路写穿栈数组。",
+        "explanation": "循环只以源字符串 NUL 为终止条件，没有同时检查 i < sizeof(buf) - 1。",
+        "warning": "字符串终止符本身也会越界；循环条件必须同时约束目标容量。",
+        "refs": (("CWE-121: Stack-based Buffer Overflow", "https://cwe.mitre.org/data/definitions/121.html"),),
+    },
+    "c.array-index": {
+        "cwe": "CWE-129",
+        "impact": "未校验的 idx 可写入数组边界之外，覆盖相邻栈数据。",
+        "explanation": "table[idx] 的 idx 来自参数，代码没有 0 <= idx < sizeof(table) 的检查。",
+        "warning": "数组索引是外部输入时，必须同时检查下界和上界。",
+        "refs": (("CWE-129: Improper Validation of Array Index", "https://cwe.mitre.org/data/definitions/129.html"),),
+    },
+    "c.integer-promotion": {
+        "cwe": "CWE-190",
+        "impact": "该示例在常见平台上因整型提升并不会回绕；但依赖隐式提升的容量计算不可移植。",
+        "explanation": "unsigned short 参与 len + 1 时提升为 int；0xFFFF + 1 = 65536，不会变成 0，malloc(65536) 足够容纳 65535 字节。",
+        "warning": "这不是可复现的溢出；应显式使用 size_t 并检查 SIZE_MAX，避免把演示代码当成真实漏洞。",
+        "refs": (("CWE-190: Integer Overflow or Wraparound", "https://cwe.mitre.org/data/definitions/190.html"),),
     },
     "c.strcat": {
         "cwe": "CWE-119",
@@ -409,6 +439,45 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
     patched = code
     lines = code.splitlines()
 
+    def function_at(position: int) -> str:
+        """Best-effort enclosing function body for capacity/scope checks."""
+        best = code
+        for match in re.finditer(r"\b[A-Za-z_][\w\s\*]*\([^;{}]*\)\s*\{", code):
+            start = match.end() - 1
+            depth = 0
+            for index in range(start, len(code)):
+                if code[index] == "{":
+                    depth += 1
+                elif code[index] == "}":
+                    depth -= 1
+                    if depth == 0:
+                        if start <= position <= index:
+                            return code[start + 1:index]
+                        break
+        return best
+
+    def capacity_for(target: str, position: int = 0) -> str | None:
+        """Return a safe capacity expression for an array/member or known heap pointer."""
+        target = target.strip()
+        base = re.split(r"\s*(?:->|\.)\s*", target)[0]
+        scope = function_at(position) if position else code
+        if ("->" in target or "." in target or
+                re.search(r"\b" + re.escape(base) + r"\s*\[\s*\d+\s*\]", scope) or
+                re.search(r"(?m)^(?:char|uint8_t|unsigned\s+char)\s+" + re.escape(base) + r"\s*\[\s*\d+\s*\]", code)):
+            return f"sizeof({target})"
+        # A realloc establishes the latest usable capacity at its call site.
+        realloc = re.search(
+            r"\brealloc\s*\(\s*" + re.escape(base) + r"\s*,\s*([^;)]+)\)", scope
+        )
+        if realloc:
+            return realloc.group(1).strip()
+        malloc = re.search(
+            r"\b" + re.escape(base) + r"\s*=\s*(?:\([^;]*?\)\s*)?malloc\s*\(\s*([^;)]+)\)", scope
+        )
+        if malloc:
+            return malloc.group(1).strip()
+        return None
+
     # 1) Classic off-by-one loop: fixed buffer + `i <= len` + buffer[i] write.
     array_decl = re.search(r"\bchar\s+([A-Za-z_]\w*)\s*\[\s*(\d+)\s*\]", code)
     loop = re.search(
@@ -482,9 +551,10 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
         code,
     ):
         var, cap = alloc.group("var"), alloc.group("cap")
+        scope = function_at(alloc.start())
         mem = re.search(
             r"(?P<stmt>memcpy\s*\(\s*" + re.escape(var) + r"\s*,[^;]*?,\s*(?P<len>[^;]+?)\s*\)\s*;)",
-            code,
+            scope,
         )
         if not mem:
             continue
@@ -551,30 +621,36 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
                 line, match.group(0),
                 "把函数指针与可变数据分离，使用边界拷贝，并在调用前校验指针白名单/签名。",
             ))
+        capacity = capacity_for(target, match.start())
         findings.append(_finding(
             "c.strcpy", "strcpy 没有长度限制（栈/堆溢出）", "high",
             line, match.group(0),
-            "改为 snprintf 并传入目标缓冲区大小。",
+            "改为 snprintf 并传入目标缓冲区大小。" if capacity else
+            "目标指针的实际容量未知；不能自动改写，需人工提供 malloc/realloc 容量。",
         ))
-        return 'snprintf(%s, sizeof(%s), "%%s", %s);' % (
-            match.group(1), match.group(1), match.group(2),
-        )
+        if not capacity:
+            notes.append("strcpy 目标指针容量未知，自动补丁已放弃；不会用 sizeof(pointer) 冒充容量。")
+            return match.group(0)
+        return f'snprintf({target}, {capacity}, "%s", {match.group(2)});' 
 
     patched = strcpy_pattern.sub(strcpy_repl, patched)
     if findings:
-        notes.append("snprintf + sizeof 仅对数组目标成立；若目标是堆指针，请改用手工容量检查。")
+        notes.append("补丁使用数组 sizeof 或已声明的堆容量；未知指针容量不会自动改写。")
 
     sprintf_pattern = re.compile(r"\bsprintf\s*\(\s*([A-Za-z_]\w*)\s*,\s*([^;]+?)\s*\)\s*;")
 
     def sprintf_repl(match: re.Match[str]) -> str:
+        capacity = capacity_for(match.group(1), match.start())
         findings.append(_finding(
             "c.sprintf", "sprintf 没有长度限制（缓冲区溢出）", "high",
             _line_of(code, match.start()), match.group(0),
-            "改为 snprintf 并传入目标缓冲区大小。",
+            "改为 snprintf 并传入目标缓冲区大小。" if capacity else
+            "目标指针容量未知；不能自动改写，需人工提供容量。",
         ))
-        return "snprintf(%s, sizeof(%s), %s);" % (
-            match.group(1), match.group(1), match.group(2),
-        )
+        if not capacity:
+            notes.append("sprintf 目标指针容量未知，自动补丁已放弃。")
+            return match.group(0)
+        return f"snprintf({match.group(1)}, {capacity}, {match.group(2)});" 
 
     patched = sprintf_pattern.sub(sprintf_repl, patched)
 
@@ -594,12 +670,16 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
     strcat_pattern = re.compile(r"\bstrcat\s*\(\s*([A-Za-z_]\w*(?:\s*(?:->|\.)\s*[A-Za-z_]\w*)?)\s*,\s*([^;]+?)\s*\)\s*;")
     def strcat_repl(match: re.Match[str]) -> str:
         target = match.group(1)
+        capacity = capacity_for(target, match.start())
         findings.append(_finding(
             "c.strcat", "strcat 无界追加（全局/静态/成员缓冲区溢出）", "high",
             _line_of(code, match.start()), match.group(0),
-            "改为 strncat(dst, src, sizeof(dst) - strlen(dst) - 1) 或 snprintf；每次追加后重新计算剩余容量。",
+            "改为 strncat(dst, src, capacity - strlen(dst) - 1) 或 snprintf；每次追加后重新计算剩余容量。",
         ))
-        return f"strncat({target}, {match.group(2)}, sizeof({target}) - strlen({target}) - 1);"
+        if not capacity:
+            notes.append("strcat 目标指针容量未知，自动补丁已放弃。")
+            return match.group(0)
+        return f"strncat({target}, {match.group(2)}, {capacity} - strlen({target}) - 1);"
     patched = strcat_pattern.sub(strcat_repl, patched)
 
     # Sensitive local/global/adjacent overwrite hints (specific, still evidence-based).
@@ -617,9 +697,10 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
         code,
     ):
         var, cap = alloc.group("var"), alloc.group("cap")
+        scope = function_at(alloc.start())
         mem = re.search(
             r"(?P<stmt>memcpy\s*\(\s*" + re.escape(var) + r"\s*,[^;]*?,\s*(?P<len>[^;]+?)\s*\)\s*;)",
-            code,
+            scope,
         )
         if not mem or "->" in mem.group("len"):
             continue
@@ -695,6 +776,126 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
             f'改为 printf("%s", {arg}) 或 fputs({arg}, stdout)；绝不能让数据成为格式串。',
         ))
         patched = patched.replace(match.group(0), f'printf("%s", {arg});', 1)
+
+    # Stack array + caller-controlled memcpy length.
+    for mem in re.finditer(
+        r"(?P<stmt>memcpy\s*\(\s*(?P<buf>[A-Za-z_]\w*)\s*,[^;]*?,\s*(?P<len>[A-Za-z_]\w*)\s*\)\s*;)",
+        code,
+    ):
+        buf, length = mem.group("buf"), mem.group("len")
+        scope = function_at(mem.start())
+        decl = re.search(r"\bchar\s+" + re.escape(buf) + r"\s*\[\s*(\d+)\s*\]", scope)
+        if not decl:
+            continue
+        line = _line_of(code, mem.start())
+        findings.append(_finding(
+            "c.stack-memcpy", "栈数组 memcpy 长度来自调用者且未校验", "high",
+            line, lines[line - 1].strip(),
+            f"在 memcpy 前检查 if ({length} > sizeof({buf})) return; 栈数组不能 free。",
+        ))
+        guard = f"if ({length} > sizeof({buf})) return;\n"
+        if guard.strip() not in patched:
+            indent = re.match(r"[ \t]*", code[code.rfind("\n", 0, mem.start()) + 1:]).group(0)
+            patched = patched.replace(mem.group("stmt"), guard + indent + mem.group("stmt"), 1)
+
+    # Byte-at-a-time copy loop with no destination bound.
+    loop_copy = re.search(
+        r"(?P<indent>[ \t]*)while\s*\(\s*(?P<src>[A-Za-z_]\w*)\s*\[\s*(?P<i>[A-Za-z_]\w*)\s*\]\s*!=\s*'\\0'\s*\)\s*\{"
+        r"(?P<body>[^{}]*?(?P<arr>[A-Za-z_]\w*)\s*\[\s*(?P=i)\s*\]\s*=\s*(?P=src)\s*\[\s*(?P=i)\s*\][^{}]*?)\}\s*"
+        r"(?P=arr)\s*\[\s*(?P=i)\s*\]\s*=\s*'\\0'\s*;",
+        code, re.S,
+    )
+    if loop_copy:
+        arr = loop_copy.group("arr")
+        capacity = capacity_for(arr, loop_copy.start())
+        line = _line_of(code, loop_copy.start())
+        findings.append(_finding(
+            "c.unbounded-loop", "逐字节拷贝循环没有目标容量上界", "high",
+            line, lines[line - 1].strip(),
+            "循环条件加入 i + 1 < sizeof(buf)，或在入口用 snprintf 做有界复制并显式截断。",
+        ))
+        if capacity:
+            patched = patched.replace(
+                loop_copy.group(0),
+                f'{loop_copy.group("indent")}snprintf({arr}, {capacity}, "%s", {loop_copy.group("src")});',
+                1,
+            )
+
+    # User-controlled format argument to snprintf.
+    for match in re.finditer(
+        r"\bsnprintf\s*\(\s*(?P<buf>[A-Za-z_]\w*)\s*,\s*sizeof\s*\(\s*(?P=buf)\s*\)\s*,\s*(?P<fmt>[A-Za-z_]\w*)\s*\)\s*;",
+        code,
+    ):
+        buf, fmt = match.group("buf"), match.group("fmt")
+        line = _line_of(code, match.start())
+        findings.append(_finding(
+            "c.format-string", "用户可控变量被当作 snprintf 格式串", "high",
+            line, lines[line - 1].strip(),
+            f'改为 snprintf({buf}, sizeof({buf}), "%s", {fmt})；格式串必须由程序控制。',
+        ))
+        patched = patched.replace(
+            match.group(0),
+            f'snprintf({buf}, sizeof({buf}), "%s", {fmt});',
+            1,
+        )
+
+    # Unchecked array write.
+    loop_arr = loop_copy.group("arr") if loop_copy else None
+    for array in re.finditer(r"\bchar\s+(?P<arr>[A-Za-z_]\w*)\s*\[\s*(?P<n>\d+)\s*\]", code):
+        arr = array.group("arr")
+        if loop_arr == arr:
+            continue
+        write = re.search(r"(?P<indent>[ \t]*)" + re.escape(arr) + r"\s*\[\s*(?P<idx>[A-Za-z_]\w*)\s*\]\s*=\s*(?P<val>[^;]+)\s*;", code)
+        if not write:
+            continue
+        idx = write.group("idx")
+        if re.search(r"\b" + re.escape(idx) + r"\s*<\s*\(?\s*(?:int\s*\)?\s*)?sizeof\s*\(\s*" + re.escape(arr), code):
+            continue
+        line = _line_of(code, write.start())
+        findings.append(_finding(
+            "c.array-index", "数组下标未做边界检查", "high",
+            line, lines[line - 1].strip(),
+            f"写入前检查 if ({idx} < 0 || (size_t){idx} >= sizeof({arr})) return;",
+        ))
+        guard = f"if ({idx} < 0 || (size_t){idx} >= sizeof({arr})) return;\n"
+        if guard.strip() not in patched:
+            patched = patched.replace(write.group(0), write.group("indent") + guard + write.group(0), 1)
+
+    # Signed strlen cast to int, then back to size_t in memcpy.
+    signed = re.search(
+        r"\bint\s+(?P<len>[A-Za-z_]\w*)\s*=\s*\(\s*int\s*\)\s*strlen\s*\(\s*(?P<arg>[A-Za-z_]\w*)\s*\)\s*;",
+        code,
+    )
+    if signed:
+        length = signed.group("len")
+        if re.search(r"memcpy\s*\([^;]*\(size_t\)\s*" + re.escape(length) + r"\s*\)", code):
+            line = _line_of(code, signed.start())
+            findings.append(_finding(
+                "c.signed-length", "strlen 强转 int 后再作为 size_t 长度", "high",
+                line, lines[line - 1].strip(),
+                "直接用 size_t len = strlen(input)；若业务需要 int，先检查 len >= 0 且 <= INT_MAX，再转 size_t。",
+            ))
+            patched = patched.replace(
+                signed.group(0),
+                f"size_t {length} = strlen({signed.group('arg')});",
+                1,
+            )
+            patched = re.sub(
+                r"if\s*\(\s*" + re.escape(length) + r"\s*<\s*\(\s*int\s*\)\s*sizeof",
+                f"if ({length} < sizeof",
+                patched,
+                count=1,
+            )
+            notes.append("已去掉 int 截断，并把容量比较改为 size_t；容量条件仍需显式检查。")
+
+    # Integer-promotion trap: unsigned short len + 1 is actually int, not a wrap.
+    if re.search(r"\bunsigned\s+short\s+(?P<len>\w+)", code) and re.search(r"malloc\s*\(\s*\w+\s*\+\s*1\s*\)", code):
+        line = _line_of(code, code.index("malloc"))
+        findings.append(_finding(
+            "c.integer-promotion", "整数回绕演示依赖整型提升，实际不会回绕", "medium",
+            line, lines[line - 1].strip(),
+            "该示例在常见平台不触发回绕；用 size_t 并检查 len == SIZE_MAX 才能正确演示/防护。",
+        ))
 
     for pattern, rule, title, severity, advice in (
         (re.compile(r"\b(?:memcpy|memmove)\s*\("), "c.memcpy",
@@ -947,13 +1148,54 @@ def repair_code(code: str, language: str | None = None, *, client: Any = None) -
     if client is not None:
         llm = _llm_repair(normalized, detected, client)
         if llm is not None:
-            return llm
+            return _finalize_patch(normalized, detected, llm)
         rule = _rule_repair(normalized, detected)
         rule["notes"] = rule["notes"] + [
             "模型修复不可用或返回格式不合法，已回退到规则修复。"
         ]
-        return rule
-    return _rule_repair(normalized, detected)
+        return _finalize_patch(normalized, detected, rule)
+    return _finalize_patch(normalized, detected, _rule_repair(normalized, detected))
+
+
+def _update_patch_markers(original: str, patched: str) -> str:
+    """Mark changed lines whose old ❌ comment no longer describes the code."""
+    if patched == original:
+        return patched
+    original_lines = set(original.splitlines())
+    out = []
+    for line in patched.splitlines():
+        if "❌" in line and line not in original_lines:
+            line = line.replace("❌", "✅ patched:", 1)
+        out.append(line)
+    newline = "\n"
+    return newline.join(out) + (newline if patched.endswith(newline) else "")
+
+
+def _finalize_patch(original: str, language: str, result: dict[str, Any]) -> dict[str, Any]:
+    """Reject non-compiling/unsafe C patches before returning them to the UI."""
+    if language not in {"c", "cpp"}:
+        return result
+    patched = result.get("patched_code")
+    if not isinstance(patched, str) or patched == original:
+        return result
+    ok, reason = validate_c_patch(original, patched, language=language)
+    if not ok:
+        result["patched_code"] = original
+        result["changed"] = False
+        result["diff"] = []
+        result["confidence"] = "low"
+        result["patch_rejected"] = True
+        result["notes"] = list(result.get("notes") or []) + [
+            "自动补丁未通过编译/静态校验，已拒绝展示：" + reason
+        ]
+        result["summary"] = (
+            "发现 %d 处问题，但自动补丁未通过编译/静态校验（%s），"
+            "已拒绝；请按建议人工修复。" % (len(result.get("findings") or []), reason)
+        )
+        return result
+    result["patched_code"] = _update_patch_markers(original, patched)
+    result["notes"] = list(result.get("notes") or []) + ["补丁通过 C 语法/静态安全校验。"]
+    return result
 
 
 __all__ = ["MAX_CODE_CHARS", "detect_language", "repair_code"]
