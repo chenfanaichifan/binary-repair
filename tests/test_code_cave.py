@@ -4,14 +4,14 @@ from __future__ import annotations
 import struct
 from pathlib import Path
 
-from app.services.code_cave import inject_strcpy_guard
+from app.services.code_cave import inject_strcat_guard, inject_strcpy_guard
 from app.services.x86_runtime import emulate_elf
 
 BASE = 0x400000
 ENTRY = BASE + 0x1000
 
 
-def _build(src: bytes) -> tuple[bytes, int, int]:
+def _build(src: bytes, etype: int = 2) -> tuple[bytes, int, int]:
     code = bytearray()
     code += b"\x48\x83\xec\x10"                 # sub rsp,16
     code += b"\x48\x8d\x3c\x24"                 # lea rdi,[rsp]
@@ -45,7 +45,7 @@ def _build(src: bytes) -> tuple[bytes, int, int]:
     shoff = (shstr_off + len(shstr) + 7) & ~7
     body = bytearray(shoff)
     eh = bytearray(64); eh[:4] = b"\x7fELF"; eh[4] = 2; eh[5] = 1; eh[6] = 1
-    struct.pack_into("<HHIQQQIHHHHHH", eh, 16, 2, 62, 1, ENTRY, 64, 0, 0, 64, 56, 1, 0, 0, 0)
+    struct.pack_into("<HHIQQQIHHHHHH", eh, 16, etype, 62, 1, ENTRY, 64, 0, 0, 64, 56, 1, 0, 0, 0)
     ph = bytearray(56)
     struct.pack_into("<IIQQQQQQ", ph, 0, 1, 5, 0, BASE, BASE, 0x1000 + len(code), 0x1000 + len(code), 0x1000)
     sh = bytearray(3 * 64)
@@ -80,3 +80,30 @@ def test_new_pt_load_cave_blocks_long_strcpy_and_keeps_short():
     assert result.exit_code == 1
     assert b"copy exceeds capacity" in result.stderr
     assert result.stack_tail == b"Z" * 16
+
+
+def test_strcat_guard_blocks_overflow_and_keeps_short():
+    original, call_vaddr, call_off = _build(b"!")
+    cave = inject_strcat_guard(original, call_vaddr=call_vaddr,
+                               call_file_offset=call_off, capacity=16)
+    assert cave.report["wrapper"] == "strcat-guard"
+    result = emulate_elf(cave.data)
+    assert result.exit_code == 0
+    assert result.stack_tail == b"Z" * 16
+
+    original, call_vaddr, call_off = _build(b"A" * 32)
+    cave = inject_strcat_guard(original, call_vaddr=call_vaddr,
+                               call_file_offset=call_off, capacity=16)
+    result = emulate_elf(cave.data)
+    assert result.exit_code == 1
+    assert b"concat exceeds capacity" in result.stderr
+    assert result.stack_tail == b"Z" * 16
+
+
+def test_cave_works_for_et_dyn_pie_style_image():
+    original, call_vaddr, call_off = _build(b"hi", etype=3)
+    cave = inject_strcpy_guard(original, call_vaddr=call_vaddr,
+                               call_file_offset=call_off, capacity=16)
+    assert cave.method == "new-pt-load"
+    result = emulate_elf(cave.data)
+    assert result.exit_code == 0

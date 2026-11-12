@@ -44,8 +44,11 @@ The original `call strcpy` is replaced by a `call` to the cave.
 call, injects the cave, then runs the patched ELF under Unicorn:
 
 ```text
-short source  -> exit 0, buffer intact
-32-byte source -> exit 1, "copy exceeds capacity", stack sentinel intact
+strcpy short  -> exit 0, buffer intact
+strcpy 32     -> exit 1, "copy exceeds capacity", stack sentinel intact
+strcat short  -> exit 0, buffer intact
+strcat 32     -> exit 1, "concat exceeds capacity", stack sentinel intact
+ET_DYN/PIE style image also passes the cave/runtime test
 ```
 
 Actual result:
@@ -58,7 +61,7 @@ wrapper: strcpy-guard
 ## Limits
 
 - x86-64 ELF only;
-- one wrapper shape (`strcpy`); `strcat`/`sprintf` need their own wrappers;
+- wrappers implemented: `strcpy`, `strcat`; `sprintf` still needs format-aware work;
 - call-site capacity must be recoverable from a nearby stack allocation;
 - multiple call sites need multiple caves or a dispatcher;
 - relocation-aware rewriting for PIE/shared libraries is still future work.

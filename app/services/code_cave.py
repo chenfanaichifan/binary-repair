@@ -184,3 +184,79 @@ def inject_strcpy_guard(data: bytes, *, call_vaddr: int, call_file_offset: int,
     result.report["cave_size"] = len(cave)
     result.report["wrapper"] = "strcpy-guard"
     return result
+
+
+def build_strcat_guard(capacity: int, *, message: bytes = b"concat exceeds capacity\n") -> bytes:
+    """Machine-code strcat guard. rdi=dst, rsi=src; returns or exits(1)."""
+    if not 0 < capacity <= 0x7FFFFFFF:
+        raise CaveError("invalid capacity")
+    code = bytearray()
+    labels: dict[str, int] = {}
+    patches: list[tuple[int, str]] = []
+
+    def emit(b: bytes) -> None:
+        code.extend(b)
+
+    def mark(name: str) -> None:
+        labels[name] = len(code)
+
+    def jcc(label: str, opcode: int) -> None:
+        emit(bytes([0x0F, opcode, 0, 0, 0, 0]))
+        patches.append((len(code) - 4, label))
+
+    def jmp(label: str) -> None:
+        emit(b"\xE9\x00\x00\x00\x00")
+        patches.append((len(code) - 4, label))
+
+    emit(b"\x48\xC7\xC1" + struct.pack("<I", capacity))  # mov rcx,capacity
+    mark("find_end")
+    emit(b"\x8A\x07")                  # mov al,[rdi]
+    emit(b"\x84\xC0")                  # test al,al
+    jcc("append", 0x84)                # jz append
+    emit(b"\x48\xFF\xC7")             # inc rdi
+    emit(b"\x48\xFF\xC9")             # dec rcx
+    jcc("overflow", 0x84)             # jz overflow
+    jmp("find_end")
+    mark("append")
+    emit(b"\x8A\x06")                  # mov al,[rsi]
+    emit(b"\x84\xC0")
+    jcc("done", 0x84)                  # jz done
+    emit(b"\x48\xFF\xC9")             # dec rcx
+    jcc("overflow", 0x84)
+    emit(b"\x88\x07")                  # mov [rdi],al
+    emit(b"\x48\xFF\xC7")
+    emit(b"\x48\xFF\xC6")
+    jmp("append")
+    mark("done")
+    emit(b"\xC6\x07\x00")             # mov byte [rdi],0
+    emit(b"\xC3")
+    mark("overflow")
+    emit(b"\xB8\x01\x00\x00\x00")
+    emit(b"\xBF\x02\x00\x00\x00")
+    emit(b"\x48\x8D\x35\x00\x00\x00\x00")
+    patches.append((len(code) - 4, "message"))
+    emit(b"\xBA" + struct.pack("<I", len(message)))
+    emit(b"\x0F\x05")
+    emit(b"\xB8\x3C\x00\x00\x00")
+    emit(b"\xBF\x01\x00\x00\x00")
+    emit(b"\x0F\x05")
+    mark("message")
+    code.extend(message)
+    for at, name in patches:
+        code[at:at + 4] = struct.pack("<i", labels[name] - (at + 4))
+    return bytes(code)
+
+
+def inject_strcat_guard(data: bytes, *, call_vaddr: int, call_file_offset: int,
+                        capacity: int) -> CaveResult:
+    cave = build_strcat_guard(capacity)
+    added = add_rx_segment(data, cave)
+    patched = bytearray(added.data)
+    patch_call(patched, call_vaddr, added.cave_vaddr, file_offset=call_file_offset)
+    result = CaveResult(bytes(patched), added.cave_vaddr, added.cave_offset,
+                        added.method, dict(added.report))
+    result.report["call_site"] = hex(call_vaddr)
+    result.report["capacity"] = capacity
+    result.report["cave_size"] = len(cave)
+    result.report["wrapper"] = "strcat-guard"
+    return result
