@@ -3,7 +3,7 @@
 {% block title %}修复控制台{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/agent.css?v=20261114i">
+<link rel="stylesheet" href="/static/css/agent.css?v=20261114j">
 {% endblock %}
 
 {% block content %}
@@ -327,9 +327,28 @@
     </aside>
   </div>
 </div>
+  <div id="agent-artifact-modal" class="agent-artifact-modal" hidden data-testid="agent-artifact-modal">
+    <div class="agent-artifact-backdrop" data-artifact-close></div>
+    <div class="agent-artifact-dialog" role="dialog" aria-modal="true" aria-labelledby="agent-artifact-title">
+      <button type="button" class="agent-artifact-close" id="agent-artifact-close" aria-label="关闭">×</button>
+      <p class="agent-artifact-kicker">REPAIR COMPLETE</p>
+      <h2 id="agent-artifact-title">修复完成</h2>
+      <p class="agent-artifact-lede" id="agent-artifact-lede">已生成修复后的文件。</p>
+      <dl class="agent-artifact-meta">
+        <div><dt>文件</dt><dd id="agent-artifact-name">—</dd></div>
+        <div><dt>SHA-256</dt><dd id="agent-artifact-sha">—</dd></div>
+        <div><dt>大小</dt><dd id="agent-artifact-size">—</dd></div>
+      </dl>
+      <div class="agent-artifact-actions">
+        <a class="btn primary" id="agent-artifact-download" href="#" download>下载修复文件</a>
+        <button type="button" class="btn ghost" id="agent-artifact-dismiss">关闭</button>
+      </div>
+    </div>
+  </div>
+
 {% endblock %}
 
 {% block scripts %}
 <script src="/static/js/agent.fixtures.js?v=20261114b"></script>
-<script src="/static/js/agent.js?v=20261114ae"></script>
+<script src="/static/js/agent.js?v=20261114ah"></script>
 {% endblock %}

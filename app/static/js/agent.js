@@ -1861,6 +1861,80 @@
     return found;
   }
 
+  function repairExecutionStatus(snapshot) {
+    if (!snapshot || typeof snapshot !== "object") return "";
+    var execution = snapshot.execution;
+    if (typeof execution === "string") return execution;
+    if (execution && typeof execution.status === "string") return execution.status;
+    return "";
+  }
+
+  function repairArtifact(view) {
+    var artifacts = ownArtifacts(view || {});
+    var preferred = artifacts.filter(function (item) {
+      if (!item || !item.id) return false;
+      var text = String((item.role || "") + " " + (item.name || "") + " " + (item.label || "")).toLowerCase();
+      return /repair|patched|fixed|output|candidate|binary/.test(text);
+    });
+    return preferred[0] || artifacts.filter(function (item) { return !!item.id; })[0] || null;
+  }
+
+  function showRepairArtifact(artifact) {
+    if (!artifact || !artifact.id) return;
+    var modal = document.getElementById("agent-artifact-modal");
+    if (!modal) return;
+    var name = artifact.name || artifact.label || artifact.id;
+    var sha = artifact.sha256 || artifact.hash || "未提供";
+    var size = artifact.size_bytes !== undefined ? artifact.size_bytes + " B" : (artifact.size || "未提供");
+    setText("agent-artifact-name", name);
+    setText("agent-artifact-sha", sha);
+    setText("agent-artifact-size", String(size));
+    var download = document.getElementById("agent-artifact-download");
+    if (download) download.href = "/api/artifacts/" + encodeURIComponent(artifact.id) + "/download";
+    setText("agent-artifact-lede", "已生成修复后的文件：" + name + "。请下载后复核，页面不会自动执行它。");
+    modal.hidden = false;
+    var close = document.getElementById("agent-artifact-close");
+    if (close) close.focus();
+  }
+
+  function closeRepairArtifact() {
+    var modal = document.getElementById("agent-artifact-modal");
+    if (modal) modal.hidden = true;
+  }
+
+  function maybeAnnounceRepair(snapshot) {
+    if (!snapshot || !state.jobId) return;
+    var view = normalize(snapshot);
+    var approved = !!(snapshot.contract && snapshot.contract.approved) ||
+      !!(view && view.contract && view.contract.approved);
+    if (!approved) return;
+    var status = repairExecutionStatus(snapshot);
+    var phase = String(snapshot.phase || (view && view.phase) || "");
+    var running = /running|queued|repairing|screening|analyzing|roundtrip|generating|applying|validating/.test(status + " " + phase);
+    var finished = /success|succeeded|finished|verified/.test(status) || phase === "finished";
+    var artifact = repairArtifact(view);
+    var key = state.jobId + ":" + (running ? "running" : (finished ? "finished" : status || "unknown"));
+    if (state.repairNoticeKey === key) {
+      if (finished && artifact && !state.repairFileShown) {
+        state.repairFileShown = true;
+        showRepairArtifact(artifact);
+      }
+      return;
+    }
+    state.repairNoticeKey = key;
+    if (running) {
+      pushMessage("assistant", "契约已批准，正在修复中…完成后我会提示，并自动弹出修复后的文件。");
+    } else if (finished) {
+      if (!state.repairFileShown) {
+        state.repairFileShown = true;
+        pushMessage("assistant", "修复结束，已生成修复后的文件。我已自动打开文件下载面板。");
+        if (artifact) showRepairArtifact(artifact);
+      }
+    } else if (status === "not_started" || status === "unknown" || !status) {
+      pushMessage("assistant", "契约已批准。当前 local 模式未接入执行器，不会实际修复或生成文件；接入 controller/worker 后，这里会显示“正在修复中”，完成时自动弹出修复文件。");
+    }
+  }
+
   function renderSide() {
     var view = state.snapshot ? normalize(state.snapshot) : null;
     setText("agent-job-chip", state.jobId ? "任务 " + state.jobId.slice(0, 8) : "未选择任务");
@@ -1938,6 +2012,15 @@
     if (view.contract) {
       setText("agent-side-contract",
         shortHash(view.contract.sha256) + (view.contract.approved ? " · 已审批" : " · 未审批"));
+    }
+
+    // Approved but no run has started (local mode or before start): show the
+    // contract state instead of the backend's draft "waiting" label.
+    if (view.contract && view.contract.approved &&
+        (!view.execution || !view.execution.status ||
+         view.execution.status === "unknown" || view.execution.status === "not_started")) {
+      setText("agent-side-step", "契约已批准");
+      setText("agent-side-execution", "待执行");
     }
 
     // A created task whose contract is not approved has a deterministic next
@@ -2761,6 +2844,7 @@
       setText("agent-poll", "轮询中 · " + new Date().toLocaleTimeString());
       renderSide();
       renderResult();
+      maybeAnnounceRepair(data);
       if ((data.phase === "finished" || data.cancelled) && timer) {
         clearInterval(timer);
         timer = null;
@@ -3247,6 +3331,8 @@
       plusAttach.setAttribute("aria-expanded", open ? "true" : "false");
     });
     document.addEventListener("click", function (event) {
+    var close = event.target.closest ? event.target.closest("[data-artifact-close], #agent-artifact-dismiss, #agent-artifact-close") : null;
+    if (close) { closeRepairArtifact(); return; }
       if (!plusMenu.hidden && !plusMenu.contains(event.target) && event.target !== plusAttach) closePlus();
     });
     document.addEventListener("keydown", function (event) {
@@ -3718,6 +3804,8 @@
       }
     }
   });
+
+  document.addEventListener("keydown", function (event) { if (event.key === "Escape") closeRepairArtifact(); });
 
   init();
 })();
