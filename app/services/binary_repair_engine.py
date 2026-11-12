@@ -290,22 +290,29 @@ def repair_elf(data: bytes) -> tuple[bytes | None, BinaryRepairReport]:
     edx_imm: int | None = None
     edx_ins = None
     eax_value: int | None = None
+    eax_ins = None
     for i, item in enumerate(ins):
         if item.mnemonic == "sub" and item.op_str.startswith("rsp,"):
             value = _imm(item.op_str)
             if value and 0 < value <= 0x100000:
                 capacity = value
-        if item.mnemonic == "xor" and item.op_str.replace(" ", "") in {"eax,eax", "rax,rax"}:
+        norm = item.op_str.replace(" ", "")
+        if item.mnemonic == "xor" and norm in {"eax,eax", "rax,rax"}:
             eax_value = 0
-        elif item.mnemonic == "mov" and item.op_str.replace(" ", "").startswith("eax,"):
+            eax_ins = item
+        elif item.mnemonic == "mov" and norm.startswith("eax,"):
             eax_value = _imm(item.op_str)
-        elif item.mnemonic == "mov" and item.op_str.replace(" ", "").startswith("edx,"):
+            eax_ins = item
+        elif item.mnemonic == "mov" and norm == "edx,eax" and eax_value is not None:
+            edx_imm = eax_value
+            edx_ins = eax_ins
+        elif item.mnemonic == "mov" and norm.startswith("edx,"):
             edx_imm = _imm(item.op_str)
             edx_ins = item
         if item.mnemonic == "syscall" and capacity and edx_imm is not None and edx_ins is not None:
             if eax_value in (0, 1) and edx_imm > capacity:
                 enc = bytes(edx_ins.bytes)
-                if len(enc) == 5 and enc[0] == 0xBA:
+                if len(enc) == 5 and enc[0] in (0xBA, 0xB8):
                     off = text_off + (edx_ins.address - text_addr) + 1
                     patches.append((off, capacity.to_bytes(4, "little"), RepairFinding(
                         "read_or_write_length", hex(edx_ins.address), edx_imm, capacity,

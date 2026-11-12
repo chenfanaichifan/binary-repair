@@ -8,6 +8,47 @@ ROOT = Path(__file__).resolve().parents[1]
 VULN = ROOT / "artifacts" / "vuln-elf" / "vuln.elf"
 
 
+def _indirect_read_elf():
+    import struct
+    base = 0x400000
+    entry = base + 0x1000
+    code = bytearray()
+    code += b"\x48\x83\xec\x10"       # sub rsp,16
+    code += b"\xb8\x00\x01\x00\x00"   # mov eax,256
+    code += b"\x89\xc2"                 # mov edx,eax
+    code += b"\x31\xc0"                 # xor eax,eax (read)
+    code += b"\x31\xff"
+    code += b"\x48\x89\xe6"
+    code += b"\x0f\x05"
+    code += b"\xb8\x01\x00\x00\x00"   # write(1,rsp,16)
+    code += b"\xbf\x01\x00\x00\x00"
+    code += b"\x48\x89\xe6"
+    code += b"\xba\x10\x00\x00\x00"
+    code += b"\x0f\x05"
+    code += b"\xb8\x3c\x00\x00\x00"
+    code += b"\x31\xff"
+    code += b"\x0f\x05"
+    shstr = b"\x00.text\x00.shstrtab\x00"
+    off = 0x1000
+    shstr_off = off + len(code)
+    shoff = (shstr_off + len(shstr) + 7) & ~7
+    data = bytearray(shoff)
+    eh = bytearray(64); eh[:4] = b"\x7fELF"; eh[4] = 2; eh[5] = 1; eh[6] = 1
+    struct.pack_into("<HHIQQQIHHHHHH", eh, 16, 2, 62, 1, entry, 64, 0, 0, 64, 56, 1, 0, 0, 0)
+    ph = bytearray(56); struct.pack_into("<IIQQQQQQ", ph, 0, 1, 5, 0, base, base, 0x1000 + len(code), 0x1000 + len(code), 0x1000)
+    sh = bytearray(3 * 64)
+    struct.pack_into("<IIQQQQIIQQ", sh, 64, 1, 1, 6, entry, off, len(code), 0, 0, 16, 0)
+    struct.pack_into("<IIQQQQIIQQ", sh, 128, 7, 3, 0, 0, shstr_off, len(shstr), 0, 0, 1, 0)
+    eh[0x28:0x30] = struct.pack("<Q", shoff); eh[0x3A:0x3C] = struct.pack("<H", 64)
+    eh[0x3C:0x3E] = struct.pack("<H", 3); eh[0x3E:0x40] = struct.pack("<H", 2)
+    data[:64] = eh; data[64:120] = ph
+    data[off:off + len(code)] = code
+    data[shstr_off:shstr_off + len(shstr)] = shstr
+    data[shoff:shoff + 3 * 64] = sh
+    return bytes(data)
+
+
+
 def test_known_fixture_gets_reviewed_strict_repair():
     patched, report = repair_elf(VULN.read_bytes())
     assert patched is not None
@@ -69,3 +110,15 @@ def test_scan_reports_patchable_lengths_and_formats():
     assert pe["supported"] is False
     macho = scan_elf(b"\xcf\xfa\xed\xfe" + b"\x00" * 100)
     assert macho["format"] == "macho"
+
+
+def test_indirect_register_length_is_propagated_and_patched():
+    data = _indirect_read_elf()
+    patched, report = repair_elf(data)
+    assert patched is not None
+    assert report.mode == "bounds-only"
+    assert report.capacity == 16
+    assert report.findings
+    result = emulate_elf(patched, b"A" * 32)
+    assert result.exit_code == 0
+    assert result.stack_tail == b"Z" * 16
