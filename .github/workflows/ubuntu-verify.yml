@@ -42,6 +42,14 @@ jobs:
             --junitxml=artifacts/ubuntu-verification/junit.xml \
             2>&1 | tee artifacts/ubuntu-verification/pytest.log
 
+      - name: Annotate first pytest failure
+        if: failure()
+        shell: bash
+        run: |
+          line="$(grep -m1 '^FAILED ' artifacts/ubuntu-verification/pytest.log || true)"
+          if [ -z "$line" ]; then line="$(tail -n 5 artifacts/ubuntu-verification/pytest.log | tr '\n' ' ')"; fi
+          echo "::error title=Ubuntu pytest failure::${line}"
+
       - name: Commit failure log for triage
         if: failure()
         continue-on-error: true
