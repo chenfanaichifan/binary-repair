@@ -152,6 +152,53 @@ def inventory_bin_pool(root: str | Path, *, max_files: int = MAX_FILES_DEFAULT) 
     }
 
 
+
+
+def inventory_cgc(root: str | Path, *, max_files: int = 5000) -> dict[str, Any]:
+    """Inventory CGC cb-multios 'challenge' + 'challenge_patched' pairs."""
+    base = Path(root).expanduser().resolve()
+    if not base.is_dir():
+        return {"available": False, "reason": "root_not_found", "root": str(base), "records": [], "pairs": []}
+    challenges_dir = base / "challenges" if (base / "challenges").is_dir() else base
+    records: list[BinaryRecord] = []
+    pair_rows: list[dict[str, Any]] = []
+    for directory in sorted(p for p in challenges_dir.iterdir() if p.is_dir()):
+        name = directory.name
+        vulnerable = directory / name
+        patched = directory / (name + "_patched")
+        if not vulnerable.is_file() and not patched.is_file():
+            continue
+        vars_ = {"vulnerable": vulnerable, "patched": patched}
+        hashes: dict[str, str] = {}
+        for variant, path in vars_.items():
+            if not path.is_file() or len(records) >= max_files:
+                continue
+            digest = sha256_file(path)
+            hashes[variant] = digest
+            records.append(BinaryRecord(
+                dataset="cgc", cve="", variant=variant, optimization=None,
+                arch=_arch_from_path(path), path=str(path), size=path.stat().st_size,
+                sha256=digest, pair_key=name, cwes=[], functions=[],
+            ))
+        pair_rows.append({
+            "challenge": name,
+            "vulnerable_sha256": hashes.get("vulnerable"),
+            "patched_sha256": hashes.get("patched"),
+            "paired": bool(hashes.get("vulnerable") and hashes.get("patched")),
+        })
+    return {
+        "available": True, "root": str(base), "records": [asdict(r) for r in records],
+        "pairs": pair_rows,
+        "counts": {
+            "binaries": len(records),
+            "challenges": len(pair_rows),
+            "paired": sum(1 for row in pair_rows if row["paired"]),
+        },
+        "limitations": ["CGC has no CVE/CWE labels; labels come from POV/CMake metadata separately.",
+                        "Only static inventory; no execution or binary patching."],
+    }
+
+
 def inventory_cvebinarysheet(root: str | Path, *, max_metadata: int = 5000) -> dict[str, Any]:
     """Inventory CveBinarySheet's cve-map JSON; binaries live in external datasets."""
     base = Path(root).expanduser().resolve()
@@ -205,9 +252,15 @@ def dataset_status() -> dict[str, Any]:
     else:
         out["datasets"]["binpool"] = {"available": False, "reason": "not_configured",
                                        "hint": "set BINARYREPAIR_BINPOOL_ROOT"}
+    cgc = os.environ.get("BINARYREPAIR_CGC_ROOT", "").strip()
     if cvebs:
         out["datasets"]["cvebinarysheet"] = inventory_cvebinarysheet(cvebs)
     else:
         out["datasets"]["cvebinarysheet"] = {"available": False, "reason": "not_configured",
                                               "hint": "set BINARYREPAIR_CVEBINARYSHEET_ROOT"}
+    if cgc:
+        out["datasets"]["cgc"] = inventory_cgc(cgc)
+    else:
+        out["datasets"]["cgc"] = {"available": False, "reason": "not_configured",
+                                   "hint": "set BINARYREPAIR_CGC_ROOT"}
     return out

@@ -26,6 +26,10 @@ from config import SESSION_TOKEN
 
 ROOT = Path(__file__).resolve().parents[2]
 
+# macOS system proxies can intercept loopback in this environment.
+os.environ.setdefault("NO_PROXY", "127.0.0.1,localhost")
+os.environ.setdefault("no_proxy", "127.0.0.1,localhost")
+
 
 def _free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:

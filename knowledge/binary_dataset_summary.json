@@ -46,5 +46,19 @@
     "Metadata counts are not evidence that a binary is vulnerable.",
     "Binaries must be obtained from the dataset's official archive and handled in an isolated guest.",
     "No execution, decompilation or model training was performed by this metadata script."
-  ]
+  ],
+  "cgc": {
+    "source": "https://github.com/trailofbits/cb-multios",
+    "challenges_built": 5,
+    "binaries": 10,
+    "paired": 5,
+    "sample": [
+      "3D_Image_Toolkit",
+      "Board_Game",
+      "CGC_Hangman_Game",
+      "Palindrome",
+      "basic_messaging"
+    ],
+    "note": "Mach-O arm64; built locally with C math compatibility; static inventory only."
+  }
 }

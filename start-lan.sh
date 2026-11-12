@@ -25,6 +25,9 @@ export BINARYREPAIR_SESSION_TOKEN="$TOKEN"
 LOCAL_HOST=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
 MDNS_HOST="${LOCAL_HOST}.local"
 IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true)
+if [ -z "${BINARYREPAIR_CGC_ROOT:-}" ] && [ -d "$HOME/cb-multios/build64/challenges" ]; then
+  export BINARYREPAIR_CGC_ROOT="$HOME/cb-multios/build64/challenges"
+fi
 HOSTS="127.0.0.1,localhost,${MDNS_HOST}"
 [ -n "$IP" ] && HOSTS="$HOSTS,$IP"
 export BINARYREPAIR_ALLOWED_HOSTS="$HOSTS"

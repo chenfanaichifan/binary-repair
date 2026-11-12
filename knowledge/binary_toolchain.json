@@ -40,7 +40,8 @@
     "ghidra_zip": "../tools/ghidra.zip",
     "jdk_archive": "../tools/jdk21.tar.gz",
     "ghidra_extracted": "../tools/ghidra_12.2_PUBLIC",
-    "jdk25_archive_bytes": 34074624
+    "jdk25_archive_bytes": 34074624,
+    "cgc_build": "/Users/huageorge/cb-multios/build64"
   },
   "executions": {
     "mutagen_static_sample": {
@@ -49,6 +50,7 @@
       "sandbox": "host unsandboxed (no Docker)"
     },
     "raverse": "not executed: requires Python 3.13 + PostgreSQL/Redis; not installed",
-    "ghidra": "Ghidra 12.2 downloaded/extracted; requires JDK 25; JDK download incomplete at last check, so no analyzeHeadless claim"
+    "ghidra": "Ghidra 12.2 downloaded/extracted; requires JDK 25; JDK download incomplete at last check, so no analyzeHeadless claim",
+    "cgc": "5 challenge pairs built successfully; not executed."
   }
 }
