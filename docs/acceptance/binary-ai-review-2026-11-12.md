@@ -33,6 +33,11 @@ The workflow ran the targeted fixture-staging regression first and the full
 non-browser suite with `if: always()`. The macOS host still shows the known
 `readelf` Route B view-count failure; Ubuntu is the canonical baseline.
 
+A later docs-only run (`a436b64`, run `43248544193`) failed in an unrelated
+`code_repair` compiler-timeout flake; see the corrected
+[CI history](../operations/ubuntu-verification.md). The review experiment below
+ran at `df82b6c`, whose run was genuinely green.
+
 Local suite after the review changes:
 
 ```text

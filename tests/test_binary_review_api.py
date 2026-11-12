@@ -115,6 +115,8 @@ def test_ai_hold_vetoes_download_but_keeps_gate_success(tmp_path, monkeypatch):
     assert payload["decision"]["outcome"] == "rejected"
     assert payload["decision"]["authority"] == "ai_veto"
     assert payload["verification"]["gate"]["success"] is True
+    assert payload["candidate_available"] is True
+    assert payload["download_allowed"] is False
     assert "patched_base64" not in payload
 
 
@@ -149,3 +151,10 @@ def test_review_contract_is_review_only():
     assert payload["review_only"] is True
     assert payload["authority"] == "deterministic_gate"
     assert "promote_gate_failure" in payload["ai_may_not"]
+    assert payload["hold_effect"] == "veto_gate_success"
+    assert payload["accept_effect"] == "cannot_promote_failed_gate"
+    assert payload["review_unavailable_effect"] == "gate_outcome_unchanged"
+    assert payload["review_can_only_tighten"] is True
+    assert payload["download_requires"] == "decision.success"
+    assert payload["patched_bytes_requires"] == "decision.success"
+    assert payload["gate_evidence_immutable"] is True

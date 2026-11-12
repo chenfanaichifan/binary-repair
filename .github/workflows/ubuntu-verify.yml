@@ -40,6 +40,7 @@ jobs:
           set -o pipefail
           python -m pytest -q -vv \
             tests/test_fixture_v3_manifest.py::test_original_is_v0_on_invalid_inputs_if_binary_present \
+            --junitxml=artifacts/ubuntu-verification/fixture-junit.xml \
             2>&1 | tee artifacts/ubuntu-verification/fixture-regression.log
 
       - name: Run non-browser test suite
@@ -59,6 +60,46 @@ jobs:
           line="$(grep -m1 '^FAILED ' artifacts/ubuntu-verification/pytest.log || true)"
           if [ -z "$line" ]; then line="$(tail -n 8 artifacts/ubuntu-verification/pytest.log | tr '\n' ' ')"; fi
           echo "::error title=Ubuntu pytest failure::${line}"
+
+      - name: Publish test counts
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          lines = ["## Ubuntu test counts", ""]
+          for name in ("fixture-junit.xml", "junit.xml"):
+              path = Path("artifacts/ubuntu-verification") / name
+              try:
+                  root = ET.parse(path).getroot()
+              except (OSError, ET.ParseError) as exc:
+                  lines.append(f"- `{name}`: unavailable ({type(exc).__name__})")
+                  continue
+              suites = [root] if root.tag == "testsuite" else root.findall("testsuite")
+              tests = sum(int(item.get("tests", 0)) for item in suites)
+              failures = sum(int(item.get("failures", 0)) for item in suites)
+              errors = sum(int(item.get("errors", 0)) for item in suites)
+              skipped = sum(int(item.get("skipped", 0)) for item in suites)
+              passed = tests - failures - errors - skipped
+              lines.append(
+                  f"- `{name}`: {passed} passed / {skipped} skipped / "
+                  f"{failures + errors} failed / {tests} total"
+              )
+              for case in root.iter("testcase"):
+                  skipped_node = case.find("skipped")
+                  if skipped_node is not None:
+                      message = (skipped_node.get("message") or "").strip()
+                      lines.append(f"  - skipped: `{case.get('classname')}::{case.get('name')}`"
+                                   + (f" — {message}" if message else ""))
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          PY
 
       - name: Capture environment
         if: always()

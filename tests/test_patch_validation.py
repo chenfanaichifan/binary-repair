@@ -1,6 +1,20 @@
 """No invalid patch may be presented as a fix."""
+import subprocess
+from types import SimpleNamespace
+
+from app.services import patch_validation
 from app.services.code_repair import repair_code
 from app.services.patch_validation import validate_c_patch
+
+OFF_BY_ONE = '''#include <string.h>
+void process_string(const char *input) {
+    char buffer[32];
+    size_t len = strlen(input);
+    for (size_t i = 0; i <= len; i++) {
+        buffer[i] = input[i];
+    }
+}
+'''
 
 
 def test_rejects_free_on_stack_array():
@@ -101,3 +115,46 @@ def test_rule_only_path_is_not_labelled_as_ai():
     result = repair_code("void f(char *p){strcpy(p, \"x\");}", "c")
     assert result["repair_origin"] == "rule"
     assert result["ai_attempted"] is False
+
+
+def test_compiler_timeout_is_not_a_patch_rejection(monkeypatch):
+    """A transient compiler problem must not erase a statically valid rule patch.
+
+    This is the regression for the Ubuntu #15 flake: an 8 s syntax-check timeout
+    made ``_finalize_patch`` revert the off-by-one patch, so the test saw
+    ``patched_code == original`` and reported a false functional failure.
+    """
+    monkeypatch.setattr(patch_validation.shutil, "which", lambda name: "/usr/bin/fake-clang")
+
+    def timeout(*args, **kwargs):
+        raise subprocess.TimeoutExpired("clang", 20)
+
+    monkeypatch.setattr(patch_validation.subprocess, "run", timeout)
+    ok, reason = validate_c_patch("void f(void){}", "void f(void){return;}")
+    assert ok is True
+    assert "compiler validation unavailable" in reason
+
+    result = repair_code(OFF_BY_ONE, "c")
+    assert result.get("patch_rejected") is not True
+    assert result["patched_code"] != OFF_BY_ONE
+    assert result.get("patch_validation") == "compiler_unavailable"
+    assert any("编译器校验不可用" in note for note in result["notes"])
+
+
+def test_actual_compiler_error_still_rejects(monkeypatch):
+    monkeypatch.setattr(patch_validation.shutil, "which", lambda name: "/usr/bin/fake-clang")
+    monkeypatch.setattr(
+        patch_validation.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(
+            returncode=1,
+            stderr="x.c:1:1: error: definitely not C\n",
+        ),
+    )
+    ok, reason = validate_c_patch("void f(void){}", "void f(void){return;}")
+    assert ok is False
+    assert "compile failed" in reason
+
+    result = repair_code(OFF_BY_ONE, "c")
+    assert result.get("patch_rejected") is True
+    assert result["patched_code"] == OFF_BY_ONE

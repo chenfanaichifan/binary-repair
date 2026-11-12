@@ -112,16 +112,52 @@ review not requested              -> gate outcome
 ```
 
 A scripted reviewer used by tests/demos is marked `mode="scripted"`,
-`called=false`, and is never presented as AI evidence.
+`called=false`, and is never presented as AI evidence. It uses the same
+decision rule as a real review, but its authority is `scripted_veto` (or
+`scripted_requested_more_checks`) rather than `ai_veto`, so the artifact never
+claims a model made the decision.
+
+### One-way veto contract
+
+The review is a **tighten-only** channel:
+
+- an `accept` is only a concurrence; it cannot promote a failed or incomplete
+  gate;
+- a `hold` can withhold a gate success (`success_within_scope` -> `rejected`);
+- `needs_more_checks` can withhold a gate success
+  (`success_within_scope` -> `inconclusive`);
+- the gate's `outcome`, checks and `evidence_sha256` are immutable; a review
+  never rewrites them;
+- if the provider is unavailable or returns an invalid payload, the gate outcome
+  stands and `review.status` reports why.
+
+`GET /api/binary/review-contract` pins the machine-readable contract:
+
+```json
+{
+  "authority": "deterministic_gate",
+  "hold_effect": "veto_gate_success",
+  "accept_effect": "cannot_promote_failed_gate",
+  "review_unavailable_effect": "gate_outcome_unchanged",
+  "review_can_only_tighten": true,
+  "download_requires": "decision.success",
+  "patched_bytes_requires": "decision.success",
+  "gate_evidence_immutable": true,
+  "scripted_control": "scripted reviewers use the same rule but report called=false and an authority prefixed scripted_"
+}
+```
 
 ### API/UI
 
 `POST /api/binary/repair-review` returns 200 for a valid upload even when the
 gate is non-successful; the body's `ok`, `decision`, `verification` and `review`
-carry the truth. `patched_base64` is included only when `decision.success` is
-true. The legacy `POST /api/binary/quick-repair` now fails closed when
-verification does not pass, so it cannot hand back a candidate with missing
-evidence.
+carry the truth. `candidate_available` can be true while `download_allowed` is
+false. `patched_base64` is included only when the **final**
+`decision.success` is true — not merely when the gate succeeded. This is the
+important case where a gate success is withheld by an AI hold: the bytes remain
+available for review but cannot be downloaded. The legacy
+`POST /api/binary/quick-repair` fails closed when verification does not pass, so
+it cannot hand back a candidate with missing evidence.
 
 The workbench checkbox is opt-in, explains that the structured report is sent
 to the configured provider, and states that AI is review-only.

@@ -21,7 +21,7 @@ import time
 from dataclasses import dataclass, asdict
 from typing import Any
 
-from app.services.patch_validation import validate_c_patch
+from app.services.patch_validation import COMPILER_UNAVAILABLE_PREFIX, validate_c_patch
 
 MAX_CODE_CHARS = 20000
 MAX_PATCH_CHARS = 120000
@@ -1442,7 +1442,14 @@ def _finalize_patch(original: str, language: str, result: dict[str, Any]) -> dic
         )
         return result
     result["patched_code"] = _update_patch_markers(original, patched)
-    result["notes"] = list(result.get("notes") or []) + ["补丁通过 C 语法/静态安全校验。"]
+    if reason.startswith(COMPILER_UNAVAILABLE_PREFIX) or reason.startswith("compiler unavailable"):
+        result["patch_validation"] = "compiler_unavailable"
+        result["notes"] = list(result.get("notes") or []) + [
+            "静态校验通过；编译器校验不可用（" + reason + "）。"
+        ]
+    else:
+        result["patch_validation"] = "compiled"
+        result["notes"] = list(result.get("notes") or []) + ["补丁通过 C 语法/静态安全校验。"]
     return result
 
 

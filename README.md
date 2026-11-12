@@ -29,7 +29,7 @@ Source      chenfanaichifan/binary-repair
 | T8.3 | **COMPLETE** |
 | P1 | **success_within_scope** |
 | P2 | **ACCEPTANCE PASSED** |
-| Test suite | **Ubuntu 24.04 CI passed** ([run 43248544193](https://github.com/chenfanaichifan/binary-repair/actions/runs/43248544193)); macOS local: 878 passed / 4 skipped / 1 Route B view-count failure because `readelf` is absent |
+| Test suite | **Ubuntu 24.04 CI: post-fix run pending** — see [CI history](docs/operations/ubuntu-verification.md); macOS local: 878 passed / 4 skipped / 1 Route B view-count failure because `readelf` is absent |
 | Browser e2e | **12 passed** (Chrome CDP, included in the suite) |
 | Upload gate | **64 MiB client check + HTTP-only controls** |
 | V4 | **passed at model scope** (not binary-level proof) |

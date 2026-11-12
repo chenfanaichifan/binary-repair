@@ -71,8 +71,18 @@ def _static_reason(code: str) -> str | None:
     return None
 
 
+COMPILER_UNAVAILABLE_PREFIX = "compiler validation unavailable"
+
+
 def validate_c_patch(original: str, patched: str, *, language: str = "c") -> tuple[bool, str]:
-    """Return ``(ok, reason)``. Fails closed for static/compile errors."""
+    """Return ``(ok, reason)``. Fails closed for static/compile errors.
+
+    A compiler that is installed but cannot complete (timeout or OS error) is
+    *infrastructure unavailable*, not proof that the patch is invalid.  This is
+    the same policy already used when no compiler is installed: the static
+    checks still gate the patch, and the caller records that the compiler was
+    unavailable.  A real non-zero compiler exit remains a rejection.
+    """
     if patched == original:
         return True, "unchanged"
     if len(patched.encode("utf-8")) > MAX_VALIDATE_BYTES:
@@ -90,10 +100,10 @@ def validate_c_patch(original: str, patched: str, *, language: str = "c") -> tup
             input=PRELUDE + patched,
             text=True,
             capture_output=True,
-            timeout=8,
+            timeout=20,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
-        return False, f"compiler validation failed: {type(exc).__name__}"
+        return True, f"{COMPILER_UNAVAILABLE_PREFIX}: {type(exc).__name__}; static checks only"
     if proc.returncode != 0:
         detail = (proc.stderr or "").strip().splitlines()
         first = next((line for line in detail if "error:" in line), detail[0] if detail else "unknown compile error")

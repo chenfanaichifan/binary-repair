@@ -106,6 +106,17 @@ async def binary_review_contract() -> JSONResponse:
                 "success_within_scope gate with every required check passed and "
                 "a complete evidence hash"
             ),
+            "hold_effect": "veto_gate_success",
+            "accept_effect": "cannot_promote_failed_gate",
+            "review_unavailable_effect": "gate_outcome_unchanged",
+            "review_can_only_tighten": True,
+            "download_requires": "decision.success",
+            "patched_bytes_requires": "decision.success",
+            "gate_evidence_immutable": True,
+            "scripted_control": (
+                "scripted reviewers use the same rule but report called=false "
+                "and an authority prefixed scripted_"
+            ),
             "not_verdict": True,
         },
         headers={"Cache-Control": "no-store"},
