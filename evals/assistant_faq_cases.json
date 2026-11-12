@@ -364,5 +364,20 @@
         "待创建"
       ]
     }
+  },
+  {
+    "id": "pause-approval-01",
+    "message": "我累了等一下在审批",
+    "state": {
+      "job_id": "job-demo",
+      "contract_approved": false
+    },
+    "expect": {
+      "next_action": "open_approval",
+      "action_type": "open_approval",
+      "answer_contains": [
+        "批准"
+      ]
+    }
   }
 ]

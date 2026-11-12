@@ -53,12 +53,19 @@ __all__ = [
     "generate_plan",
     "resolve_mode",
     "resolve_model",
+    "chat_settings_from_env",
+    "CHAT_TEMPERATURE_ENV",
+    "CHAT_MAX_TOKENS_ENV",
     "operator_username",
     "validate_plan",
 ]
 
 ASSISTANT_MODE_ENV = "BINARYREPAIR_ASSISTANT_MODE"
 ASSISTANT_MODEL_ENV = "BINARYREPAIR_ASSISTANT_MODEL"
+CHAT_TEMPERATURE_ENV = "BINARYREPAIR_ASSISTANT_CHAT_TEMPERATURE"
+CHAT_MAX_TOKENS_ENV = "BINARYREPAIR_ASSISTANT_CHAT_MAX_TOKENS"
+DEFAULT_CHAT_TEMPERATURE = 0.3
+DEFAULT_CHAT_MAX_TOKENS = 1200
 PROVIDER_KEY_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_KEY"
 PROVIDER_BASE_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_BASE_URL"
 PROVIDER_TIMEOUT_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_TIMEOUT"
@@ -106,6 +113,28 @@ def resolve_mode(value: str | None = None) -> str:
     """Read the assistant mode; unknown values are deterministic, never llm."""
     raw = (value if value is not None else os.environ.get(ASSISTANT_MODE_ENV, "")).strip().lower()
     return raw if raw in MODES else "deterministic"
+
+
+def chat_settings_from_env(environ: Mapping[str, str] | None = None) -> tuple[float, int]:
+    """Return bounded chat temperature/max-token settings from the environment.
+
+    The values are intentionally local configuration, not model output. Bad or
+    out-of-range values fall back to safe defaults instead of failing chat.
+    """
+    env = os.environ if environ is None else environ
+    try:
+        temperature = float(env.get(CHAT_TEMPERATURE_ENV, "") or DEFAULT_CHAT_TEMPERATURE)
+    except (TypeError, ValueError):
+        temperature = DEFAULT_CHAT_TEMPERATURE
+    if not (0.0 <= temperature <= 1.2):
+        temperature = DEFAULT_CHAT_TEMPERATURE
+    try:
+        max_tokens = int(env.get(CHAT_MAX_TOKENS_ENV, "") or DEFAULT_CHAT_MAX_TOKENS)
+    except (TypeError, ValueError):
+        max_tokens = DEFAULT_CHAT_MAX_TOKENS
+    if not (128 <= max_tokens <= 4096):
+        max_tokens = DEFAULT_CHAT_MAX_TOKENS
+    return temperature, max_tokens
 
 
 def resolve_model(value: str | None = None) -> str:

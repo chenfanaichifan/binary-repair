@@ -198,6 +198,7 @@
           <li><strong>重命名</strong>：“把这个任务命名为 X” / “重命名当前任务为 X”。先显示确认卡，确认后只改本机任务列表记录。</li>
           <li><strong>明确目标</strong>：复杂指代（“刚才那个”“上一个”）或一句话多个动作暂不自动执行；请给出任务名或 job id。</li>
           <li><strong>聊天</strong>：填完任务信息或打开任务后，可直接在输入框和助手自由对话；保留最近 10 轮作为上下文，超过后由服务端截断。聊天只解释和建议，不产生 verdict、哈希或执行结果。</li>
+          <li><strong>模型调优</strong>：聊天默认 temperature 0.3、max_tokens 1200；可用 <code>BINARYREPAIR_ASSISTANT_CHAT_TEMPERATURE</code>、<code>BINARYREPAIR_ASSISTANT_CHAT_MAX_TOKENS</code> 调整，模型用 <code>BINARYREPAIR_ASSISTANT_MODEL</code> 切换。</li>
         </ul>
       </section>
 

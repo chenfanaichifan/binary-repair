@@ -38,6 +38,7 @@ from app.services.evaluation import evaluate as evaluate_evidence
 from app.services.assistant_llm import (
     ASSISTANT_MODE_ENV,
     assistant_status,
+    chat_settings_from_env,
     client_from_env,
     test_provider_connection,
 )
@@ -1288,8 +1289,9 @@ async def assistant_chat(request: Request) -> JSONResponse:
     messages = [
         {"role": "system", "content": system_prompt},
     ] + clean_history + [{"role": "user", "content": message.strip()}]
+    chat_temperature, chat_max_tokens = chat_settings_from_env()
     try:
-        reply = client.chat_text(messages)
+        reply = client.chat_text(messages, max_tokens=chat_max_tokens, temperature=chat_temperature)
     except TimeoutError:
         return JSONResponse({"detail": "llm_timeout"}, status_code=504)
     except ConnectionError:
@@ -1307,6 +1309,7 @@ async def assistant_chat(request: Request) -> JSONResponse:
         "model": getattr(client, "model", None),
         "state": stage,
         "action": action,
+        "settings": {"temperature": chat_temperature, "max_tokens": chat_max_tokens},
     })
 
 
