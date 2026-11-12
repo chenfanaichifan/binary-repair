@@ -26,8 +26,8 @@ def test_httpx_payload_enables_thinking_and_32k():
         model="deepseek-test",
         transport=httpx.MockTransport(handler),
     )
-    client.chat_json([{"role": "user", "content": "hi"}], max_tokens=32768, thinking=True)
-    assert seen["max_tokens"] == 32768
+    client.chat_json([{"role": "user", "content": "hi"}], max_tokens=262144, thinking=True)
+    assert seen["max_tokens"] == 262144
     assert seen["thinking"] == {"type": "enabled"}
     assert "temperature" not in seen
 
@@ -38,8 +38,10 @@ def test_code_repair_requests_thinking_and_32k():
     class FakeClient:
         def chat_json(self, messages, **kwargs):
             seen.update(kwargs)
-            return type("Response", (), {
-                "content": json.dumps({
+            if "independent reviewer agent" in messages[0]["content"]:
+                payload = {"verdict": "pass", "issues": [], "notes": []}
+            else:
+                payload = {
                     "language": "c",
                     "title": "bounded copy",
                     "summary": "Use snprintf.",
@@ -47,11 +49,13 @@ def test_code_repair_requests_thinking_and_32k():
                     "findings": [{"title": "unbounded copy", "severity": "high", "line": 1}],
                     "patched_code": 'void f(char *p, size_t n) { snprintf(p, n, "%s", "x"); }',
                     "notes": ["caller must pass capacity"],
-                }),
+                }
+            return type("Response", (), {
+                "content": json.dumps(payload),
                 "model": "fake",
             })()
 
     result = repair_code("void f(char *p){strcpy(p, \"x\");}", "c", client=FakeClient())
-    assert seen["max_tokens"] == 32768
+    assert seen["max_tokens"] == 262144
     assert seen["thinking"] is True
     assert result["repair_origin"] == "ai"

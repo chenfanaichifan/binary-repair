@@ -105,7 +105,7 @@ def test_accepts_valid_candidate_and_records_cost() -> None:
     assert payload["response_format"] == {"type": "json_object"}
     assert payload["thinking"] == {"type": "enabled"}
     assert "temperature" not in payload
-    assert payload["max_tokens"] == 32768
+    assert payload["max_tokens"] == 262144
     assert payload["stream"] is False
 
 

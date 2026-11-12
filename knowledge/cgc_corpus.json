@@ -7,130 +7,150 @@
       "cve": "",
       "variant": "vulnerable",
       "optimization": null,
-      "arch": null,
+      "arch": "arm64",
       "path": "/Users/huageorge/cb-multios/build64/challenges/3D_Image_Toolkit/3D_Image_Toolkit",
       "size": 80205,
       "sha256": "ada39345ad5bf8bf42faa059bacc15c02615ef952169e8dcb3ad9fa9ef9526cd",
       "pair_key": "3D_Image_Toolkit",
       "cwes": [],
-      "functions": []
+      "functions": [],
+      "format": "macho",
+      "repair_supported": false
     },
     {
       "dataset": "cgc",
       "cve": "",
       "variant": "patched",
       "optimization": null,
-      "arch": null,
+      "arch": "arm64",
       "path": "/Users/huageorge/cb-multios/build64/challenges/3D_Image_Toolkit/3D_Image_Toolkit_patched",
       "size": 80293,
       "sha256": "c2afc1f0c5f8611fe79ca58f65043451e5e2410d4c6444ef69a7f6d804d0f8fc",
       "pair_key": "3D_Image_Toolkit",
       "cwes": [],
-      "functions": []
+      "functions": [],
+      "format": "macho",
+      "repair_supported": false
     },
     {
       "dataset": "cgc",
       "cve": "",
       "variant": "vulnerable",
       "optimization": null,
-      "arch": null,
+      "arch": "arm64",
       "path": "/Users/huageorge/cb-multios/build64/challenges/Board_Game/Board_Game",
       "size": 58647,
       "sha256": "58a80df87cebae1896373fee2162ae121c5d74c31d9fa8f9fce562ea77b6f49f",
       "pair_key": "Board_Game",
       "cwes": [],
-      "functions": []
+      "functions": [],
+      "format": "macho",
+      "repair_supported": false
     },
     {
       "dataset": "cgc",
       "cve": "",
       "variant": "patched",
       "optimization": null,
-      "arch": null,
+      "arch": "arm64",
       "path": "/Users/huageorge/cb-multios/build64/challenges/Board_Game/Board_Game_patched",
       "size": 58719,
       "sha256": "26af9b33b17686bebbcd393e571bd1b5d94db894b13fbc45e2c349e5f2c6c0ef",
       "pair_key": "Board_Game",
       "cwes": [],
-      "functions": []
+      "functions": [],
+      "format": "macho",
+      "repair_supported": false
     },
     {
       "dataset": "cgc",
       "cve": "",
       "variant": "vulnerable",
       "optimization": null,
-      "arch": null,
+      "arch": "arm64",
       "path": "/Users/huageorge/cb-multios/build64/challenges/CGC_Hangman_Game/CGC_Hangman_Game",
       "size": 7703549,
       "sha256": "c4da2233b369a36ac0c610fe773292edd736d1e96ec880b8f6fee4f1a72e8321",
       "pair_key": "CGC_Hangman_Game",
       "cwes": [],
-      "functions": []
+      "functions": [],
+      "format": "macho",
+      "repair_supported": false
     },
     {
       "dataset": "cgc",
       "cve": "",
       "variant": "patched",
       "optimization": null,
-      "arch": null,
+      "arch": "arm64",
       "path": "/Users/huageorge/cb-multios/build64/challenges/CGC_Hangman_Game/CGC_Hangman_Game_patched",
       "size": 7703589,
       "sha256": "d524cecd3ca51068874fb81579336c3200d8508fb0b573107754e216d60e2de0",
       "pair_key": "CGC_Hangman_Game",
       "cwes": [],
-      "functions": []
+      "functions": [],
+      "format": "macho",
+      "repair_supported": false
     },
     {
       "dataset": "cgc",
       "cve": "",
       "variant": "vulnerable",
       "optimization": null,
-      "arch": null,
+      "arch": "arm64",
       "path": "/Users/huageorge/cb-multios/build64/challenges/Palindrome/Palindrome",
       "size": 34487,
       "sha256": "c4cc09a04823d0d899bd0c9272f806964df69885911066c30e4ca87df3d22073",
       "pair_key": "Palindrome",
       "cwes": [],
-      "functions": []
+      "functions": [],
+      "format": "macho",
+      "repair_supported": false
     },
     {
       "dataset": "cgc",
       "cve": "",
       "variant": "patched",
       "optimization": null,
-      "arch": null,
+      "arch": "arm64",
       "path": "/Users/huageorge/cb-multios/build64/challenges/Palindrome/Palindrome_patched",
       "size": 34511,
       "sha256": "95f3998bba24a4bca6c9175d8b4c2f77c985f86cee3e1622fb4e751f5f675e63",
       "pair_key": "Palindrome",
       "cwes": [],
-      "functions": []
+      "functions": [],
+      "format": "macho",
+      "repair_supported": false
     },
     {
       "dataset": "cgc",
       "cve": "",
       "variant": "vulnerable",
       "optimization": null,
-      "arch": null,
+      "arch": "arm64",
       "path": "/Users/huageorge/cb-multios/build64/challenges/basic_messaging/basic_messaging",
       "size": 39628,
       "sha256": "013862d71d957dc42f3396a943a7b4b4195db2b3f441fb1ea0b7410f7b8756d9",
       "pair_key": "basic_messaging",
       "cwes": [],
-      "functions": []
+      "functions": [],
+      "format": "macho",
+      "repair_supported": false
     },
     {
       "dataset": "cgc",
       "cve": "",
       "variant": "patched",
       "optimization": null,
-      "arch": null,
+      "arch": "arm64",
       "path": "/Users/huageorge/cb-multios/build64/challenges/basic_messaging/basic_messaging_patched",
       "size": 39668,
       "sha256": "9ccd5d636dfd4b1e456212ace83158d38c9413c4272b905484abdf8cbec8efec",
       "pair_key": "basic_messaging",
       "cwes": [],
-      "functions": []
+      "functions": [],
+      "format": "macho",
+      "repair_supported": false
     }
   ],
   "pairs": [
@@ -168,10 +188,15 @@
   "counts": {
     "binaries": 10,
     "challenges": 5,
-    "paired": 5
+    "paired": 5,
+    "formats": [
+      "macho"
+    ],
+    "repair_supported": 0
   },
   "limitations": [
     "CGC has no CVE/CWE labels; labels come from POV/CMake metadata separately.",
-    "Only static inventory; no execution or binary patching."
+    "Only static inventory; no execution or binary patching.",
+    "repair_supported=false means the repair routes cannot consume it (the routes accept Linux x86-64 ELF only)."
   ]
 }

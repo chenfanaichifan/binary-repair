@@ -927,6 +927,12 @@
     if (repair.mode === "llm" && repair.model) {
       meta.appendChild(el("span", "repair-chip", repair.model));
     }
+    if (repair.agent_rounds) {
+      meta.appendChild(el("span", "repair-chip", "多 Agent · " + repair.agent_rounds + " 轮"));
+    }
+    if (Array.isArray(repair.residual_risks) && repair.residual_risks.length) {
+      meta.appendChild(el("span", "repair-chip", "残余风险 " + repair.residual_risks.length));
+    }
     head.appendChild(meta);
     card.appendChild(head);
 
@@ -1040,6 +1046,22 @@
         emptyText = "AI 已分析，但没有返回可安全应用的补丁；原因见下方“修复说明与残余风险”。";
       }
       card.appendChild(el("p", "repair-empty", tr(emptyText)));
+    }
+
+    var reviewHistory = Array.isArray(repair.review_history) ? repair.review_history : [];
+    if (reviewHistory.length) {
+      var reviewBox = el("details", "repair-notes");
+      reviewBox.appendChild(el("summary", null, "二次检验记录"));
+      var reviewList = el("ul");
+      reviewHistory.forEach(function (round) {
+        var blocking = Array.isArray(round.blocking_issues) ? round.blocking_issues.length : 0;
+        var residual = Array.isArray(round.residual_risks) ? round.residual_risks.length : 0;
+        reviewList.appendChild(el("li", null,
+          "第 " + round.round + " 轮 · " + round.verdict +
+          " · blocking " + blocking + " / residual " + residual));
+      });
+      reviewBox.appendChild(reviewList);
+      card.appendChild(reviewBox);
     }
 
     var notes = Array.isArray(repair.notes) ? repair.notes : [];

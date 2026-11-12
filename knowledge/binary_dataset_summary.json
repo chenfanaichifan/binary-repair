@@ -59,6 +59,7 @@
       "Palindrome",
       "basic_messaging"
     ],
-    "note": "Mach-O arm64; built locally with C math compatibility; static inventory only."
+    "note": "Mach-O arm64; built locally with C math compatibility; static inventory only; not acceptance evidence (repair routes accept Linux x86-64 ELF only).",
+    "repair_supported": 0
   }
 }

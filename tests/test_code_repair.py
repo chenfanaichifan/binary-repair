@@ -118,7 +118,11 @@ class _FakeClient:
     def chat_json(self, messages, **kwargs):
         if self.fail:
             raise TimeoutError("nope")
-        return type("Result", (), {"content": self.content, "model": self.model})()
+        if "independent reviewer agent" in messages[0]["content"]:
+            content = '{"verdict":"pass","issues":[],"notes":[]}'
+        else:
+            content = self.content
+        return type("Result", (), {"content": content, "model": self.model})()
 
 
 def test_model_failure_falls_back_to_rules():

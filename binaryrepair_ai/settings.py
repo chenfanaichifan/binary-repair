@@ -35,7 +35,7 @@ class Settings:
     thinking: bool = True
     timeout_s: float = 120.0
     max_retries: int = 1
-    max_output_tokens: int = 32768
+    max_output_tokens: int = 262144
     budget_usd: float = 2.0
     store_raw_responses: bool = False
 
@@ -65,7 +65,7 @@ class Settings:
             thinking=thinking,
             timeout_s=float(os.environ.get("DEEPSEEK_TIMEOUT_S", "120")),
             max_retries=int(os.environ.get("DEEPSEEK_MAX_RETRIES", "1")),
-            max_output_tokens=int(os.environ.get("DEEPSEEK_MAX_OUTPUT_TOKENS", "32768")),
+            max_output_tokens=int(os.environ.get("DEEPSEEK_MAX_OUTPUT_TOKENS", "262144")),
             budget_usd=float(os.environ.get("BINARYREPAIR_AI_BUDGET_USD", "2.0")),
             store_raw_responses=os.environ.get("BINARYREPAIR_STORE_RAW", "0") == "1",
         )
