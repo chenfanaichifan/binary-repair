@@ -68,6 +68,7 @@ def test_unconfigured_model_says_ai_was_not_called(monkeypatch):
     from app.main import CSRF_TOKEN, SESSION_TOKEN, app
     monkeypatch.delenv("BINARYREPAIR_ASSISTANT_PROVIDER_KEY", raising=False)
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.setattr("app.services.assistant_key_store.load_key", lambda: "")
     client = TestClient(app, base_url="http://127.0.0.1")
     client.get("/?token=" + SESSION_TOKEN)
     response = client.post(

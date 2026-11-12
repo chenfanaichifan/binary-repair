@@ -44,7 +44,7 @@ def _function_at(text: str, position: int) -> str:
                 depth -= 1
                 if depth == 0:
                     if start <= position <= index:
-                        return text[start + 1:index]
+                        return text[match.start():index + 1]
                     break
     return text
 

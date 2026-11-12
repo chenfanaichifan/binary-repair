@@ -1039,6 +1039,7 @@
     var notes = Array.isArray(repair.notes) ? repair.notes : [];
     if (notes.length) {
       var details = el("details", "repair-notes");
+      if (repair.mode === "llm" && !repair.changed) { details.open = true; }
       details.appendChild(el("summary", null, "修复说明与残余风险"));
       var noteList = el("ul");
       notes.forEach(function (note) { noteList.appendChild(el("li", null, note)); });

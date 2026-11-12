@@ -403,6 +403,7 @@ class HttpJsonClient:
         *,
         max_tokens: int = MAX_OUTPUT_TOKENS,
         thinking: bool = False,
+        timeout: float | None = None,
     ) -> _ProviderResult:
         payload: dict[str, Any] = {
             "model": self._model,
@@ -413,7 +414,7 @@ class HttpJsonClient:
         headers = {"Authorization": f"Bearer {self._api_key}"}
         started = time.perf_counter()
         try:
-            with httpx.Client(timeout=self._timeout, transport=self._transport) as client:
+            with httpx.Client(timeout=timeout or self._timeout, transport=self._transport) as client:
                 response = client.post(
                     f"{self._base_url}/chat/completions", json=payload, headers=headers
                 )
