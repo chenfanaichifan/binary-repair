@@ -6,7 +6,7 @@
 https://dandelion-copious-hydration.ngrok-free.dev/?token=<LAN_TOKEN>
 
 同一 Wi-Fi 也可用局域网地址：
-http://10.11.0.237:8124/?token=<LAN_TOKEN>
+http://10.13.1.188:8124/?token=<LAN_TOKEN>
 
 固定局域网入口（Bonjour）：
 http://huademacbook-pro.local:8124/?token=<LAN_TOKEN>
