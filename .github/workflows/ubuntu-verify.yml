@@ -6,7 +6,7 @@ on:
     branches: [workbench-v3]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   test:
@@ -38,42 +38,9 @@ jobs:
         run: |
           mkdir -p artifacts/ubuntu-verification
           set -o pipefail
-          python -m pytest -q -x -vv --ignore=tests/e2e \
+          python -m pytest -q --ignore=tests/e2e \
             --junitxml=artifacts/ubuntu-verification/junit.xml \
             2>&1 | tee artifacts/ubuntu-verification/pytest.log
-
-      - name: Annotate first pytest failure
-        if: failure()
-        shell: bash
-        run: |
-          line="$(grep -m1 '^FAILED ' artifacts/ubuntu-verification/pytest.log || true)"
-          if [ -z "$line" ]; then line="$(tail -n 5 artifacts/ubuntu-verification/pytest.log | tr '\n' ' ')"; fi
-          echo "::error title=Ubuntu pytest failure::${line}"
-
-      - name: Commit failure log for triage
-        if: failure()
-        continue-on-error: true
-        shell: bash
-        run: |
-          cp artifacts/ubuntu-verification/pytest.log "ci-failure-${GITHUB_RUN_ID}.log"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "ci-failure-${GITHUB_RUN_ID}.log"
-          git commit -m "ci: capture failure ${GITHUB_RUN_ID} [skip ci]"
-          git push
-
-      - name: Publish failure tail to job summary
-        if: always()
-        shell: bash
-        run: |
-          {
-            echo "## Ubuntu verification failure tail"
-            if [ -f artifacts/ubuntu-verification/pytest.log ]; then
-              tail -n 200 artifacts/ubuntu-verification/pytest.log
-            else
-              echo "pytest.log was not created"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Capture environment
         if: always()
