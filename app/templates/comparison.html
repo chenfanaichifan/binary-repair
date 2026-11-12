@@ -82,7 +82,7 @@
       <div><dt>假设</dt><dd>{{ job.contract.assumptions | join("; ") }}</dd></div>
     </dl>
 
-    <form class="card form" method="post" action="/jobs/{{ job.id }}/contract" data-testid="contract-form">
+    <form class="card form" id="contract-form" method="post" action="/jobs/{{ job.id }}/contract" data-testid="contract-form">
       <input type="hidden" name="csrf" value="{{ csrf_token }}">
       <h3>更新契约（会生成新 revision 并清除批准）</h3>
       <input type="hidden" name="expected_revision" value="{{ job.contract.revision }}">
@@ -285,7 +285,7 @@
       if (window.sessionStorage.getItem("br.focus.contract") === "1") {
         window.sessionStorage.removeItem("br.focus.contract");
         window.setTimeout(function () {
-          var section = document.getElementById("contract");
+          var section = document.getElementById("contract-form") || document.getElementById("contract");
           if (section) section.scrollIntoView({ block: "start" });
         }, 100);
       }

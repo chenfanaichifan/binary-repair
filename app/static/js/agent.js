@@ -1793,7 +1793,7 @@
         registerJob((state.answers.defect || "").slice(0, 40));
         // Creation lands on the contract approval section, not the chat shell.
         try { window.sessionStorage.setItem("br.focus.contract", "1"); } catch (error) { /* ignore */ }
-        window.location.href = "/jobs/" + encodeURIComponent(match[1]);
+        window.location.href = "/jobs/" + encodeURIComponent(match[1]) + "#contract-form";
       } else {
         progressText.textContent = "创建失败";
         pushMessage("assistant", "创建任务没有成功（HTTP " + xhr.status + "）。请检查必填项与英文 ASCII 要求后重试。");
@@ -2858,7 +2858,7 @@
     pushMessage("assistant", "打开「" + label + "」的契约审批界面；请在页面中自行核对并点击批准。");
     window.setTimeout(function () {
       try { window.sessionStorage.setItem("br.focus.contract", "1"); } catch (error) { /* ignore */ }
-      window.location.href = "/jobs/" + encodeURIComponent(entry.id);
+      window.location.href = "/jobs/" + encodeURIComponent(entry.id) + "#contract-form";
     }, 250);
   }
 
