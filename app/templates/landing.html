@@ -18,7 +18,7 @@
       } catch (error) { /* ignore */ }
     })();
   </script>
-  <link rel="stylesheet" href="/static/css/ds.css?v=20261113o">
+  <link rel="stylesheet" href="/static/css/ds.css?v=20261114a">
   <link rel="stylesheet" href="/static/css/home.css?v=20261113d">
 </head>
 <body class="ds-home-body">
@@ -166,7 +166,7 @@
   <script src="/static/js/i18n-curated.js?v=20261113d"></script>
   <script src="/static/js/i18n-curated-extra.js?v=20261113b"></script>
   <script src="/static/js/i18n.js?v=20261113m"></script>
-  <script src="/static/js/transitions.js?v=20261113a"></script>
+  <script src="/static/js/transitions.js?v=20261114a"></script>
   <script>
     (function () {
       "use strict";
@@ -274,6 +274,15 @@
         }, 1900);
       }
     })();
+  </script>
+<script id="br:clear-warp">
+    window.addEventListener("pageshow", function () {
+      try {
+        document.body.classList.remove("page-leaving", "page-enter");
+        var warp = document.querySelector(".ds-warp");
+        if (warp) warp.parentNode.removeChild(warp);
+      } catch (error) { /* ignore */ }
+    });
   </script>
 </body>
 </html>
