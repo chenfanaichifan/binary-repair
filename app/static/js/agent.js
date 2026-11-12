@@ -1194,7 +1194,6 @@
   function startGuidedFlow() {
     state.stepIndex = 0;
     state.answers = {};
-    state.file = null;
     state.contextCompleted = false;
     clear(stream());
     var titles = state.plan.steps.map(function (step) {
@@ -1306,6 +1305,11 @@
 
   function renderCurrentStep() {
     var step = currentStep();
+    if (!step) return;
+    while (step && step.kind === "upload" && state.file) {
+      state.stepIndex += 1;
+      step = currentStep();
+    }
     if (!step) return;
     if (!state.jobId && !state.contextCompleted && step.kind !== "upload") {
       renderContextForm();
