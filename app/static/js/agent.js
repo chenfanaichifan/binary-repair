@@ -1287,12 +1287,28 @@
     defaults.type = "button";
     defaults.dataset.testid = "agent-question-default";
     defaults.addEventListener("click", function () {
+      var filled = 0;
       Object.keys(inputs).forEach(function (key) {
         var entry = inputs[key];
-        entry.input.value = entry.question.default || "";
+        var value = entry.question.default || "";
+        entry.input.value = value;
         entry.error.textContent = "";
-        state.answers[key] = entry.input.value;
+        state.answers[key] = value;
+        if (String(value).trim()) filled += 1;
       });
+      defaults.textContent = filled ? "已填入默认答案" : "没有默认答案";
+      var feedback = card.querySelector(".agent-default-feedback");
+      if (!feedback) {
+        feedback = el("p", "agent-side-note agent-default-feedback");
+        feedback.setAttribute("aria-live", "polite");
+        card.appendChild(feedback);
+      }
+      feedback.textContent = filled
+        ? "已填入 " + filled + " 项默认值；请检查后点「保存并继续」。"
+        : "这一步没有默认答案，请手动填写。";
+      card.scrollIntoView({ block: "center", behavior: "smooth" });
+      var first = Object.keys(inputs)[0];
+      if (first && inputs[first].input) inputs[first].input.focus();
     });
 
     actions.appendChild(next);
