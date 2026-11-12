@@ -1,0 +1,30 @@
+{
+  "workflow": "Ubuntu verification",
+  "run_id": 43244713385,
+  "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43244713385",
+  "job_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43244713385/job/131274169865",
+  "head_sha": "3400a13f26836e809ca3cff67929ee6f5189dc9a",
+  "head_branch": "workbench-v3",
+  "runner": "ubuntu-24.04",
+  "python": "3.11",
+  "status": "completed",
+  "conclusion": "success",
+  "command": "python -m pytest -q --ignore=tests/e2e --junitxml=artifacts/ubuntu-verification/junit.xml",
+  "steps": {
+    "Set up job": "success",
+    "Checkout": "success",
+    "Set up Python": "success",
+    "Install system tools": "success",
+    "Install Python dependencies": "success",
+    "Run non-browser test suite": "success",
+    "Capture environment": "success",
+    "Checksums": "success",
+    "Upload verification evidence": "success"
+  },
+  "artifact": {
+    "name": "ubuntu-verification",
+    "note": "Actions artifact; GitHub authentication is required to download it."
+  },
+  "guest": "not_verified",
+  "note": "All non-browser tests passed. The macOS-only Route B view-count failure did not reproduce on Ubuntu."
+}

@@ -2,9 +2,9 @@
 
 Branch: `workbench-v3`  
 Final UI commit: `6eea41d`; i18n/theme fix commit follows  
-Test run: **857 passed / 2 skipped / 1 known macOS `readelf` failure**  
+Test run: **Ubuntu 24.04 CI passed** ([run 43244713385](https://github.com/chenfanaichifan/binary-repair/actions/runs/43244713385)); macOS local: 857 passed / 2 skipped / 1 Route B view-count failure  
 Known failure: `tests/test_routeb_executor.py::test_static_routeb_bundle`
-(macOS `readelf` is unavailable; not an application regression).
+(macOS lacks `readelf`; Ubuntu installs binutils and passes the full non-browser suite).
 
 ## What changed in this delivery
 
@@ -68,8 +68,8 @@ cd binary-repair-gui
 .venv/bin/python -m pytest
 ```
 
-- Unit/security/route tests: 857 passed, 2 skipped.
-- The one failure is the known macOS `readelf` environment limitation.
+- Ubuntu 24.04 CI: full non-browser suite passed.
+- macOS local: 857 passed, 2 skipped; the one failure is the Route B view-count check because `readelf` is absent.
 - Browser smoke: language switch (zh/en/ja/zh), custom select, mobile drawer,
   page transition, live/demo launch modes, expanded result/evidence panel,
   public health and landing.

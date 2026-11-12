@@ -1,0 +1,5 @@
+runner: ubuntu-24.04
+python: 3.11
+binutils: installed by workflow (readelf, objdump)
+command: python -m pytest -q --ignore=tests/e2e --junitxml=artifacts/ubuntu-verification/junit.xml
+guest: not_verified (no qemu-user/Wine in this job)
