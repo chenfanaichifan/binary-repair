@@ -55,3 +55,6 @@ worklogs/
 # Canonical V5 replay logs are tracked evidence (four original logs).
 !artifacts/**/*.log
 
+
+# Local dataset binaries (large; fetched separately)
+datasets/

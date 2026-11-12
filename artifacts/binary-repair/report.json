@@ -1,0 +1,492 @@
+{
+  "schema": 1,
+  "original": "artifacts/binary-repair/cave-original.elf",
+  "patched": "artifacts/binary-repair/cave-patched.elf",
+  "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "patched_sha256": "2e5952987014c576b57094f3f5b302be40a701f83db404b076cb63054eb97910",
+  "changed": true,
+  "target": "0x4012b0",
+  "call_site": "0x401304",
+  "cave": {
+    "vaddr": "0x4018e9",
+    "size": 113
+  },
+  "assembly": {
+    "before": {
+      "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+      "entry": "0x4012b0",
+      "size": 104,
+      "instructions": [
+        {
+          "address": "0x4012b0",
+          "size": 4,
+          "bytes": "f30f1efa",
+          "mnemonic": "endbr64",
+          "op_str": ""
+        },
+        {
+          "address": "0x4012b4",
+          "size": 1,
+          "bytes": "55",
+          "mnemonic": "push",
+          "op_str": "rbp"
+        },
+        {
+          "address": "0x4012b5",
+          "size": 3,
+          "bytes": "4889e5",
+          "mnemonic": "mov",
+          "op_str": "rbp, rsp"
+        },
+        {
+          "address": "0x4012b8",
+          "size": 4,
+          "bytes": "4883ec50",
+          "mnemonic": "sub",
+          "op_str": "rsp, 0x50"
+        },
+        {
+          "address": "0x4012bc",
+          "size": 4,
+          "bytes": "48897db8",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x48], rdi"
+        },
+        {
+          "address": "0x4012c0",
+          "size": 8,
+          "bytes": "48c745c000000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x40], 0"
+        },
+        {
+          "address": "0x4012c8",
+          "size": 8,
+          "bytes": "48c745c800000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x38], 0"
+        },
+        {
+          "address": "0x4012d0",
+          "size": 8,
+          "bytes": "48c745d000000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x30], 0"
+        },
+        {
+          "address": "0x4012d8",
+          "size": 8,
+          "bytes": "48c745d800000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x28], 0"
+        },
+        {
+          "address": "0x4012e0",
+          "size": 8,
+          "bytes": "48c745e000000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x20], 0"
+        },
+        {
+          "address": "0x4012e8",
+          "size": 8,
+          "bytes": "48c745e800000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x18], 0"
+        },
+        {
+          "address": "0x4012f0",
+          "size": 6,
+          "bytes": "66c745f00000",
+          "mnemonic": "mov",
+          "op_str": "word ptr [rbp - 0x10], 0"
+        },
+        {
+          "address": "0x4012f6",
+          "size": 4,
+          "bytes": "488b55b8",
+          "mnemonic": "mov",
+          "op_str": "rdx, qword ptr [rbp - 0x48]"
+        },
+        {
+          "address": "0x4012fa",
+          "size": 4,
+          "bytes": "488d45c0",
+          "mnemonic": "lea",
+          "op_str": "rax, [rbp - 0x40]"
+        },
+        {
+          "address": "0x4012fe",
+          "size": 3,
+          "bytes": "4889d6",
+          "mnemonic": "mov",
+          "op_str": "rsi, rdx"
+        },
+        {
+          "address": "0x401301",
+          "size": 3,
+          "bytes": "4889c7",
+          "mnemonic": "mov",
+          "op_str": "rdi, rax"
+        },
+        {
+          "address": "0x401304",
+          "size": 5,
+          "bytes": "e8c7fdffff",
+          "mnemonic": "call",
+          "op_str": "0x4010d0"
+        },
+        {
+          "address": "0x401309",
+          "size": 4,
+          "bytes": "488b45b8",
+          "mnemonic": "mov",
+          "op_str": "rax, qword ptr [rbp - 0x48]"
+        },
+        {
+          "address": "0x40130d",
+          "size": 3,
+          "bytes": "4889c7",
+          "mnemonic": "mov",
+          "op_str": "rdi, rax"
+        },
+        {
+          "address": "0x401310",
+          "size": 5,
+          "bytes": "e86b000000",
+          "mnemonic": "call",
+          "op_str": "0x401380"
+        },
+        {
+          "address": "0x401315",
+          "size": 1,
+          "bytes": "90",
+          "mnemonic": "nop",
+          "op_str": ""
+        },
+        {
+          "address": "0x401316",
+          "size": 1,
+          "bytes": "c9",
+          "mnemonic": "leave",
+          "op_str": ""
+        },
+        {
+          "address": "0x401317",
+          "size": 1,
+          "bytes": "c3",
+          "mnemonic": "ret",
+          "op_str": ""
+        }
+      ]
+    },
+    "after": {
+      "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+      "entry": "0x4012b0",
+      "size": 104,
+      "instructions": [
+        {
+          "address": "0x4012b0",
+          "size": 4,
+          "bytes": "f30f1efa",
+          "mnemonic": "endbr64",
+          "op_str": ""
+        },
+        {
+          "address": "0x4012b4",
+          "size": 1,
+          "bytes": "55",
+          "mnemonic": "push",
+          "op_str": "rbp"
+        },
+        {
+          "address": "0x4012b5",
+          "size": 3,
+          "bytes": "4889e5",
+          "mnemonic": "mov",
+          "op_str": "rbp, rsp"
+        },
+        {
+          "address": "0x4012b8",
+          "size": 4,
+          "bytes": "4883ec50",
+          "mnemonic": "sub",
+          "op_str": "rsp, 0x50"
+        },
+        {
+          "address": "0x4012bc",
+          "size": 4,
+          "bytes": "48897db8",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x48], rdi"
+        },
+        {
+          "address": "0x4012c0",
+          "size": 8,
+          "bytes": "48c745c000000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x40], 0"
+        },
+        {
+          "address": "0x4012c8",
+          "size": 8,
+          "bytes": "48c745c800000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x38], 0"
+        },
+        {
+          "address": "0x4012d0",
+          "size": 8,
+          "bytes": "48c745d000000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x30], 0"
+        },
+        {
+          "address": "0x4012d8",
+          "size": 8,
+          "bytes": "48c745d800000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x28], 0"
+        },
+        {
+          "address": "0x4012e0",
+          "size": 8,
+          "bytes": "48c745e000000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x20], 0"
+        },
+        {
+          "address": "0x4012e8",
+          "size": 8,
+          "bytes": "48c745e800000000",
+          "mnemonic": "mov",
+          "op_str": "qword ptr [rbp - 0x18], 0"
+        },
+        {
+          "address": "0x4012f0",
+          "size": 6,
+          "bytes": "66c745f00000",
+          "mnemonic": "mov",
+          "op_str": "word ptr [rbp - 0x10], 0"
+        },
+        {
+          "address": "0x4012f6",
+          "size": 4,
+          "bytes": "488b55b8",
+          "mnemonic": "mov",
+          "op_str": "rdx, qword ptr [rbp - 0x48]"
+        },
+        {
+          "address": "0x4012fa",
+          "size": 4,
+          "bytes": "488d45c0",
+          "mnemonic": "lea",
+          "op_str": "rax, [rbp - 0x40]"
+        },
+        {
+          "address": "0x4012fe",
+          "size": 3,
+          "bytes": "4889d6",
+          "mnemonic": "mov",
+          "op_str": "rsi, rdx"
+        },
+        {
+          "address": "0x401301",
+          "size": 3,
+          "bytes": "4889c7",
+          "mnemonic": "mov",
+          "op_str": "rdi, rax"
+        },
+        {
+          "address": "0x401304",
+          "size": 5,
+          "bytes": "e8e0050000",
+          "mnemonic": "call",
+          "op_str": "0x4018e9"
+        },
+        {
+          "address": "0x401309",
+          "size": 4,
+          "bytes": "488b45b8",
+          "mnemonic": "mov",
+          "op_str": "rax, qword ptr [rbp - 0x48]"
+        },
+        {
+          "address": "0x40130d",
+          "size": 3,
+          "bytes": "4889c7",
+          "mnemonic": "mov",
+          "op_str": "rdi, rax"
+        },
+        {
+          "address": "0x401310",
+          "size": 5,
+          "bytes": "e86b000000",
+          "mnemonic": "call",
+          "op_str": "0x401380"
+        },
+        {
+          "address": "0x401315",
+          "size": 1,
+          "bytes": "90",
+          "mnemonic": "nop",
+          "op_str": ""
+        },
+        {
+          "address": "0x401316",
+          "size": 1,
+          "bytes": "c9",
+          "mnemonic": "leave",
+          "op_str": ""
+        },
+        {
+          "address": "0x401317",
+          "size": 1,
+          "bytes": "c3",
+          "mnemonic": "ret",
+          "op_str": ""
+        }
+      ]
+    },
+    "before_file": "artifacts/binary-repair/asm/before.asm",
+    "after_file": "artifacts/binary-repair/asm/after.asm"
+  },
+  "elf": {
+    "entry_unchanged": true,
+    "segments_unchanged_except_rx_growth": true,
+    "no_wx": true
+  },
+  "audit": {
+    "checks": {
+      "redirect_bytes": true,
+      "cave_code": true,
+      "message_bytes": true,
+      "harness_unchanged": true,
+      "no_new_segments": true,
+      "relocations_unchanged": true,
+      "no_wx": true,
+      "rx_extended": true
+    },
+    "pass": true,
+    "original_size": 26792,
+    "patched_size": 26792
+  },
+  "manifest": {
+    "schema_version": 2,
+    "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+    "patched_sha256": "2e5952987014c576b57094f3f5b302be40a701f83db404b076cb63054eb97910",
+    "function": {
+      "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+      "entry": "0x4012b0",
+      "size": 104
+    },
+    "displaced": [
+      {
+        "vaddr": "0x401304",
+        "file_offset": "0x1304",
+        "size": 5,
+        "original_hex": "e8c7fdffff",
+        "new_hex": "e8e0050000",
+        "purpose": "displaced strcpy call"
+      }
+    ],
+    "added": [
+      {
+        "kind": "code",
+        "vaddr": "0x4018e9",
+        "file_offset": "0x18e9",
+        "size": 71,
+        "sha256": "cd0326946d931b2566d888e7244a917ef90f97e62be60c87805d4d03bbd7203e",
+        "purpose": "guard length and branch"
+      },
+      {
+        "kind": "data",
+        "vaddr": "0x401930",
+        "file_offset": "0x1930",
+        "size": 42,
+        "sha256": "083d3bfb2d9e1fa4978aabdd2318d60c67bd54f2a34d0086b0a9d11f6f84f69b",
+        "purpose": "exact invalid stderr"
+      }
+    ],
+    "intervals": {
+      "changed": [
+        [
+          "0x401304",
+          "0x401309"
+        ]
+      ],
+      "added": [
+        [
+          "0x4018e9",
+          "0x40195a"
+        ]
+      ]
+    },
+    "header_changes": {
+      "rx_load": {
+        "phdr_file_offset": "0xe8",
+        "vaddr": "0x401000",
+        "p_offset": "0x1000",
+        "old_filesz": "0x8e9",
+        "new_filesz": "0x95a",
+        "old_memsz": "0x8e9",
+        "new_memsz": "0x95a",
+        "align": "0x1000",
+        "page_congruent": true,
+        "no_overlap": true,
+        "beyond_original_p_filesz": true
+      },
+      "original_size": 26792,
+      "patched_size": 26792
+    },
+    "writer": "write(2, msg, 42) syscall",
+    "termination": "exit_group(1)",
+    "tool_versions": {
+      "python": "3.11.8",
+      "pyelftools": "0.33",
+      "capstone": "5.0.9",
+      "build_script": "regen_c4a159.py",
+      "build_script_kind": "stdlib-only"
+    },
+    "edits": [
+      {
+        "kind": "call_redirect",
+        "vaddr": "0x401304",
+        "size": 5,
+        "new_hex": "e8e0050000",
+        "purpose": "redirect strcpy call to cave"
+      }
+    ],
+    "mappings": [
+      {
+        "vaddr": "0x4018e9",
+        "perm": "R-X",
+        "size": 113,
+        "purpose": "guard + exact stderr in existing cave"
+      }
+    ],
+    "relocations_added": [],
+    "scope_authorized": true,
+    "audit": {
+      "checks": {
+        "redirect_bytes": true,
+        "cave_code": true,
+        "message_bytes": true,
+        "harness_unchanged": true,
+        "no_new_segments": true,
+        "relocations_unchanged": true,
+        "no_wx": true,
+        "rx_extended": true
+      },
+      "pass": true,
+      "original_size": 26792,
+      "patched_size": 26792
+    }
+  },
+  "limits": [
+    "This is a call-site trampoline for the exact contracted function, not whole-binary reassembly.",
+    "The candidate is static evidence; execution must happen in a disposable guest.",
+    "A non-empty cave/segment extension is an explicit binary-layout edit."
+  ],
+  "passed": true
+}

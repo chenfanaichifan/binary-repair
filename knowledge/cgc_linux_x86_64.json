@@ -1,0 +1,262 @@
+{
+  "available": true,
+  "root": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges",
+  "records": [
+    {
+      "dataset": "cgc",
+      "cve": "",
+      "variant": "vulnerable",
+      "optimization": null,
+      "arch": "x86_64",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/3D_Image_Toolkit/3D_Image_Toolkit",
+      "size": 1674000,
+      "sha256": "b5c08512d5e4846530522e1c6648179382de5ea19c122173abae40a5b256a617",
+      "pair_key": "3D_Image_Toolkit",
+      "cwes": [],
+      "functions": [],
+      "format": "elf",
+      "repair_supported": true
+    },
+    {
+      "dataset": "cgc",
+      "cve": "",
+      "variant": "patched",
+      "optimization": null,
+      "arch": "x86_64",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/3D_Image_Toolkit/3D_Image_Toolkit_patched",
+      "size": 1674024,
+      "sha256": "93f51ebed3eca32bde3804a3699de83a787615a3f2e665cde5ced3f8b63477c3",
+      "pair_key": "3D_Image_Toolkit",
+      "cwes": [],
+      "functions": [],
+      "format": "elf",
+      "repair_supported": true
+    },
+    {
+      "dataset": "cgc",
+      "cve": "",
+      "variant": "vulnerable",
+      "optimization": null,
+      "arch": "x86_64",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/Board_Game/Board_Game",
+      "size": 1650752,
+      "sha256": "cb161ad956b0546c2ba7366a55c4a6f00e4778d8f0bb4acf2f2de353aa6024f1",
+      "pair_key": "Board_Game",
+      "cwes": [],
+      "functions": [],
+      "format": "elf",
+      "repair_supported": true
+    },
+    {
+      "dataset": "cgc",
+      "cve": "",
+      "variant": "patched",
+      "optimization": null,
+      "arch": "x86_64",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/Board_Game/Board_Game_patched",
+      "size": 1650752,
+      "sha256": "390039e25532a94a51c7ff59b5f19ea9a2c3bcd6de13fdadbd41645614ca9571",
+      "pair_key": "Board_Game",
+      "cwes": [],
+      "functions": [],
+      "format": "elf",
+      "repair_supported": true
+    },
+    {
+      "dataset": "cgc",
+      "cve": "",
+      "variant": "vulnerable",
+      "optimization": null,
+      "arch": "x86_64",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/CGC_Hangman_Game/CGC_Hangman_Game",
+      "size": 16697680,
+      "sha256": "7f47d9fb5702a02b60d0d6cc36aeddf286c2ce7b0f75da2fcce7a3f2a9ae64d1",
+      "pair_key": "CGC_Hangman_Game",
+      "cwes": [],
+      "functions": [],
+      "format": "elf",
+      "repair_supported": true
+    },
+    {
+      "dataset": "cgc",
+      "cve": "",
+      "variant": "patched",
+      "optimization": null,
+      "arch": "x86_64",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/CGC_Hangman_Game/CGC_Hangman_Game_patched",
+      "size": 16697728,
+      "sha256": "661d23c06194c07eec5da51e76bee5251eb29b17405662fd3f10e7c93a7200bc",
+      "pair_key": "CGC_Hangman_Game",
+      "cwes": [],
+      "functions": [],
+      "format": "elf",
+      "repair_supported": true
+    },
+    {
+      "dataset": "cgc",
+      "cve": "",
+      "variant": "vulnerable",
+      "optimization": null,
+      "arch": "x86_64",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/Palindrome/Palindrome",
+      "size": 1504920,
+      "sha256": "6738c0c083dbefbf71a71ce1a02db91b9e48b50a5a40e60058331422f65d87a5",
+      "pair_key": "Palindrome",
+      "cwes": [],
+      "functions": [],
+      "format": "elf",
+      "repair_supported": true
+    },
+    {
+      "dataset": "cgc",
+      "cve": "",
+      "variant": "patched",
+      "optimization": null,
+      "arch": "x86_64",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/Palindrome/Palindrome_patched",
+      "size": 1504920,
+      "sha256": "f270c16c4c3b10d4a0d4a7c8ebfa5e07f7f4ef8e49e912cf3baa2f81670cea2e",
+      "pair_key": "Palindrome",
+      "cwes": [],
+      "functions": [],
+      "format": "elf",
+      "repair_supported": true
+    },
+    {
+      "dataset": "cgc",
+      "cve": "",
+      "variant": "vulnerable",
+      "optimization": null,
+      "arch": "x86_64",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/basic_messaging/basic_messaging",
+      "size": 1583296,
+      "sha256": "89cd22c98a6eea08d9ab4b923966b9379fd385a79b9d21ded2a6cf6647a3f25d",
+      "pair_key": "basic_messaging",
+      "cwes": [],
+      "functions": [],
+      "format": "elf",
+      "repair_supported": true
+    },
+    {
+      "dataset": "cgc",
+      "cve": "",
+      "variant": "patched",
+      "optimization": null,
+      "arch": "x86_64",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/basic_messaging/basic_messaging_patched",
+      "size": 1583288,
+      "sha256": "5814db11f890c80916b9af3dab4d138e12cebecf26370e9d0f4eff568c0b18ff",
+      "pair_key": "basic_messaging",
+      "cwes": [],
+      "functions": [],
+      "format": "elf",
+      "repair_supported": true
+    }
+  ],
+  "pairs": [
+    {
+      "challenge": "3D_Image_Toolkit",
+      "vulnerable_sha256": "b5c08512d5e4846530522e1c6648179382de5ea19c122173abae40a5b256a617",
+      "patched_sha256": "93f51ebed3eca32bde3804a3699de83a787615a3f2e665cde5ced3f8b63477c3",
+      "paired": true
+    },
+    {
+      "challenge": "Board_Game",
+      "vulnerable_sha256": "cb161ad956b0546c2ba7366a55c4a6f00e4778d8f0bb4acf2f2de353aa6024f1",
+      "patched_sha256": "390039e25532a94a51c7ff59b5f19ea9a2c3bcd6de13fdadbd41645614ca9571",
+      "paired": true
+    },
+    {
+      "challenge": "CGC_Hangman_Game",
+      "vulnerable_sha256": "7f47d9fb5702a02b60d0d6cc36aeddf286c2ce7b0f75da2fcce7a3f2a9ae64d1",
+      "patched_sha256": "661d23c06194c07eec5da51e76bee5251eb29b17405662fd3f10e7c93a7200bc",
+      "paired": true
+    },
+    {
+      "challenge": "Palindrome",
+      "vulnerable_sha256": "6738c0c083dbefbf71a71ce1a02db91b9e48b50a5a40e60058331422f65d87a5",
+      "patched_sha256": "f270c16c4c3b10d4a0d4a7c8ebfa5e07f7f4ef8e49e912cf3baa2f81670cea2e",
+      "paired": true
+    },
+    {
+      "challenge": "basic_messaging",
+      "vulnerable_sha256": "89cd22c98a6eea08d9ab4b923966b9379fd385a79b9d21ded2a6cf6647a3f25d",
+      "patched_sha256": "5814db11f890c80916b9af3dab4d138e12cebecf26370e9d0f4eff568c0b18ff",
+      "paired": true
+    }
+  ],
+  "counts": {
+    "binaries": 10,
+    "challenges": 5,
+    "paired": 5,
+    "formats": [
+      "elf"
+    ],
+    "repair_supported": 10
+  },
+  "limitations": [
+    "CGC has no CVE/CWE labels; labels come from POV/CMake metadata separately.",
+    "Only static inventory; no execution or binary patching.",
+    "repair_supported=false means the repair routes cannot consume it (the routes accept Linux x86-64 ELF only).",
+    "Cross-compiled, not executed at the time of this inventory.",
+    "The CGC build is -O0 and includes source/debug info; not a stripped production binary."
+  ],
+  "schema": 1,
+  "source": "https://github.com/trailofbits/cb-multios",
+  "build": {
+    "toolchain": "zig 0.17.1 (clang 22.1.8), target x86_64-linux-musl",
+    "source_root": "datasets/cgc-linux-src",
+    "build_root": "datasets/cgc-linux-build/challenges",
+    "cmake": "CMAKE_TOOLCHAIN_FILE=.../zig-x86_64-linux.cmake; BUILD_SHARED_LIBS=OFF; BUILD_STATIC_LIBS=ON; -O0 per challenge CMakeLists",
+    "patch": "maths.S -> maths_compat.c for x86_64; mmap pointer cast; UBSan disabled; implicit declarations allowed for legacy POV"
+  },
+  "povs": [
+    {
+      "challenge": "3D_Image_Toolkit",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/3D_Image_Toolkit/pov_1.pov",
+      "size": 1745712,
+      "sha256": "8566b97e37da83e5537cd5baf9af6d2d585f3f8b7aa904be7a3e53b62a2d8a90"
+    },
+    {
+      "challenge": "Board_Game",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/Board_Game/pov_1.pov",
+      "size": 1741720,
+      "sha256": "1e4c21d0fc93a1250a0feb0a1033df015b59abf889eeefddb2b7ecee2382dbcd"
+    },
+    {
+      "challenge": "CGC_Hangman_Game",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/CGC_Hangman_Game/pov_1.pov",
+      "size": 1551552,
+      "sha256": "014e048d4d3d2505782ece81a109ba9ac0ae0699e2c286205ced89306f02bd9c"
+    },
+    {
+      "challenge": "CGC_Hangman_Game",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/CGC_Hangman_Game/pov_2.pov",
+      "size": 1550568,
+      "sha256": "cfdf1499802a3151076a0fe3f4475f47532ac1de4f6667f29f71b5ec83bdee64"
+    },
+    {
+      "challenge": "CGC_Hangman_Game",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/CGC_Hangman_Game/pov_3.pov",
+      "size": 1550096,
+      "sha256": "425e2b3b7f8a29aca80c2641f1a543bb09f4c89351690c9f9955995a92e27999"
+    },
+    {
+      "challenge": "Palindrome",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/Palindrome/pov_1.pov",
+      "size": 1741104,
+      "sha256": "12ae39882c0e46ed98c81c9504c7887a222e00a04d6d8295e575dc2722769e60"
+    },
+    {
+      "challenge": "basic_messaging",
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/datasets/cgc-linux-build/challenges/basic_messaging/pov_1.pov",
+      "size": 3408368,
+      "sha256": "42e70edc1c556979c6fcf1b085049a3e35bd635604ad7a5a875b905b29facd32"
+    }
+  ],
+  "execution": {
+    "status": "not_run",
+    "reason": "No Linux x86-64 guest has executed these binaries yet.",
+    "required": "Run each POV against <name> and <name>_patched in a Linux x86-64 guest; record crash/no-crash."
+  }
+}
