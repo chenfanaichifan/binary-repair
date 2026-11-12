@@ -911,8 +911,11 @@
     repairAvatar.setAttribute("aria-hidden", "true");
     kicker.appendChild(repairAvatar);
     kicker.appendChild(document.createTextNode(" "));
-    kicker.appendChild(document.createTextNode(
-      tr(repair.mode === "llm" ? "CODE REPAIR · 模型建议" : "CODE REPAIR · 规则建议")));
+    var origin = repair.repair_origin || (repair.mode === "llm" ? "ai" : "rule");
+    var originLabel = origin === "ai"
+      ? "CODE REPAIR · AI 补丁"
+      : (repair.ai_attempted ? "CODE REPAIR · AI 失败，规则回退" : "CODE REPAIR · 规则补丁");
+    kicker.appendChild(document.createTextNode(tr(originLabel)));
     heading.appendChild(kicker);
     heading.appendChild(el("h3", "repair-title", tr(repair.title || "修复建议")));
     head.appendChild(heading);
@@ -1030,10 +1033,13 @@
       panels.diff = diffPanel;
       card.appendChild(diffPanel);
     } else {
-      card.appendChild(el("p", "repair-empty",
-        findings.length
-          ? "没有可安全自动应用的补丁；请按上面的建议人工修改。"
-          : "没有匹配到可自动修复的模式。"));
+      var emptyText = findings.length
+        ? "没有可安全自动应用的补丁；请按上面的建议人工修改。"
+        : "没有匹配到可自动修复的模式。";
+      if (repair.ai_attempted && !repair.changed) {
+        emptyText = "AI 已分析，但没有返回可安全应用的补丁；原因见下方“修复说明与残余风险”。";
+      }
+      card.appendChild(el("p", "repair-empty", tr(emptyText)));
     }
 
     var notes = Array.isArray(repair.notes) ? repair.notes : [];

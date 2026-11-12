@@ -17,6 +17,7 @@ from __future__ import annotations
 import difflib
 import json
 import re
+import time
 from dataclasses import dataclass, asdict
 from typing import Any
 
@@ -636,7 +637,7 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
             "目标指针的实际容量未知；不能自动改写，需人工提供 malloc/realloc 容量。",
         ))
         if not capacity:
-            notes.append("strcpy 目标指针容量未知，自动补丁已放弃；不会用 sizeof(pointer) 冒充容量。")
+            notes.append("strcpy 目标指针容量未知，规则补丁已放弃；不会用 sizeof(pointer) 冒充容量。")
             return match.group(0)
         return f'snprintf({target}, {capacity}, "%s", {match.group(2)});' 
 
@@ -655,7 +656,7 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
             "目标指针容量未知；不能自动改写，需人工提供容量。",
         ))
         if not capacity:
-            notes.append("sprintf 目标指针容量未知，自动补丁已放弃。")
+            notes.append("sprintf 目标指针容量未知，规则补丁已放弃。")
             return match.group(0)
         return f"snprintf({match.group(1)}, {capacity}, {match.group(2)});" 
 
@@ -684,7 +685,7 @@ def _c_rules(code: str) -> tuple[str, list[Finding], list[str]]:
             "改为 strncat(dst, src, capacity - strlen(dst) - 1) 或 snprintf；每次追加后重新计算剩余容量。",
         ))
         if not capacity:
-            notes.append("strcat 目标指针容量未知，自动补丁已放弃。")
+            notes.append("strcat 目标指针容量未知，规则补丁已放弃。")
             return match.group(0)
         return f"strncat({target}, {match.group(2)}, {capacity} - strlen({target}) - 1);"
     patched = strcat_pattern.sub(strcat_repl, patched)
@@ -1147,7 +1148,11 @@ def _parse_llm_payload(text: Any) -> dict[str, Any] | None:
     }
 
 
-def _llm_repair(code: str, language: str, client: Any) -> dict[str, Any] | None:
+def _llm_repair(code: str, language: str, client: Any,
+                meta: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    started = time.perf_counter()
+    if meta is not None:
+        meta["ai_attempted"] = True
     try:
         response = client.chat_json([
             {"role": "system", "content": _LLM_SYSTEM},
@@ -1155,10 +1160,16 @@ def _llm_repair(code: str, language: str, client: Any) -> dict[str, Any] | None:
                 {"language": language, "code": code}, ensure_ascii=False
             )},
         ], max_tokens=1000, timeout=20)
-    except Exception:  # noqa: BLE001 - transport failures downgrade, never raise
+    except Exception as exc:  # noqa: BLE001 - transport failures downgrade, never raise
+        if meta is not None:
+            meta["ai_error"] = type(exc).__name__
+            meta["ai_latency_ms"] = round((time.perf_counter() - started) * 1000)
         return None
     payload = _parse_llm_payload(getattr(response, "content", None))
     if payload is None:
+        if meta is not None:
+            meta["ai_error"] = "invalid_response"
+            meta["ai_latency_ms"] = round((time.perf_counter() - started) * 1000)
         return None
     model = getattr(response, "model", None)
     result = _result(
@@ -1166,6 +1177,8 @@ def _llm_repair(code: str, language: str, client: Any) -> dict[str, Any] | None:
         language=payload["language"] or language, mode="llm", model=model,
         confidence=payload["confidence"], title=payload["title"], summary=payload["summary"],
     )
+    if meta is not None:
+        meta["ai_latency_ms"] = round((time.perf_counter() - started) * 1000)
     if result["patched_code"].strip() == code.strip() and result["findings"]:
         result["notes"] = list(result["notes"]) + [
             "AI 已分析，但没有给出可安全自动应用的补丁。"
@@ -1184,15 +1197,24 @@ def repair_code(code: str, language: str | None = None, *, client: Any = None) -
         raise ValueError("code exceeds the %d character limit" % MAX_CODE_CHARS)
     detected = detect_language(normalized, language)
     if client is not None:
-        llm = _llm_repair(normalized, detected, client)
+        meta: dict[str, Any] = {}
+        llm = _llm_repair(normalized, detected, client, meta)
         if llm is not None:
+            llm.update(meta)
+            llm["repair_origin"] = "ai"
             return _finalize_patch(normalized, detected, llm)
         rule = _rule_repair(normalized, detected)
+        rule.update(meta)
+        rule["repair_origin"] = "rule"
+        rule["ai_fallback"] = True
         rule["notes"] = rule["notes"] + [
             "模型修复不可用或返回格式不合法，已回退到规则修复。"
         ]
         return _finalize_patch(normalized, detected, rule)
-    return _finalize_patch(normalized, detected, _rule_repair(normalized, detected))
+    rule = _rule_repair(normalized, detected)
+    rule["repair_origin"] = "rule"
+    rule["ai_attempted"] = False
+    return _finalize_patch(normalized, detected, rule)
 
 
 def _update_patch_markers(original: str, patched: str) -> str:
@@ -1224,10 +1246,10 @@ def _finalize_patch(original: str, language: str, result: dict[str, Any]) -> dic
         result["confidence"] = "low"
         result["patch_rejected"] = True
         result["notes"] = list(result.get("notes") or []) + [
-            "自动补丁未通过编译/静态校验，已拒绝展示：" + reason
+            "候选补丁未通过编译/静态校验，已拒绝展示：" + reason
         ]
         result["summary"] = (
-            "发现 %d 处问题，但自动补丁未通过编译/静态校验（%s），"
+            "发现 %d 处问题，但候选补丁未通过编译/静态校验（%s），"
             "已拒绝；请按建议人工修复。" % (len(result.get("findings") or []), reason)
         )
         return result

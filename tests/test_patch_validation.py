@@ -79,3 +79,25 @@ def test_unconfigured_model_says_ai_was_not_called(monkeypatch):
     assert response.status_code == 200
     notes = response.json()["repair"]["notes"]
     assert any("AI 没有被调用" in note for note in notes)
+
+
+def test_ai_transport_failure_is_visible_and_falls_back_to_rule():
+    from app.services.code_repair import repair_code
+
+    class FailingClient:
+        def chat_json(self, *args, **kwargs):
+            raise TimeoutError("provider timeout")
+
+    result = repair_code("void f(char *p){strcpy(p, \"x\");}", "c", client=FailingClient())
+    assert result["repair_origin"] == "rule"
+    assert result["ai_attempted"] is True
+    assert result["ai_error"] == "TimeoutError"
+    assert result["ai_fallback"] is True
+
+
+def test_rule_only_path_is_not_labelled_as_ai():
+    from app.services.code_repair import repair_code
+
+    result = repair_code("void f(char *p){strcpy(p, \"x\");}", "c")
+    assert result["repair_origin"] == "rule"
+    assert result["ai_attempted"] is False
