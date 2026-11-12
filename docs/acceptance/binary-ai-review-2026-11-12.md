@@ -41,7 +41,14 @@ ran at `df82b6c`, whose run was genuinely green.
 Local suite after the review changes:
 
 ```text
-1 failed, 878 passed, 4 skipped
+1 failed, 885 passed, 4 skipped
+```
+
+Post-fix Ubuntu run (compiler-timeout fix and counts):
+
+```text
+889 passed / 1 skipped / 0 failed / 890 total
+run: https://github.com/chenfanaichifan/binary-repair/actions/runs/43256887551
 ```
 
 The only failure is `tests/test_routeb_executor.py::test_static_routeb_bundle`

@@ -26,6 +26,7 @@ this page saying it was:
 | `9a451fd` | [43249875815](https://github.com/chenfanaichifan/binary-repair/actions/runs/43249875815) | success | **success (docs-only; flake did not reproduce)** |
 | `774c584` | [43256190605](https://github.com/chenfanaichifan/binary-repair/actions/runs/43256190605) | — | **success (compiler-timeout fix)** |
 | `aa580bb` | [43256481655](https://github.com/chenfanaichifan/binary-repair/actions/runs/43256481655) | — | **success (counts published)** |
+| `0fe9241` | [43256887551](https://github.com/chenfanaichifan/binary-repair/actions/runs/43256887551) | — | **success: 889 passed / 1 skipped / 0 failed** |
 
 ### What failed at `a436b64`
 
@@ -70,6 +71,12 @@ result:  success
 counts:  aa580bb
 run:     https://github.com/chenfanaichifan/binary-repair/actions/runs/43256481655
 job:     https://github.com/chenfanaichifan/binary-repair/actions/runs/43256481655/job/131315970646
+result:  success
+
+final:   0fe9241
+run:     https://github.com/chenfanaichifan/binary-repair/actions/runs/43256887551
+job:     https://github.com/chenfanaichifan/binary-repair/actions/runs/43256887551/job/131317401154
+counts:  889 passed / 1 skipped / 0 failed / 890 total
 result:  success
 ```
 
