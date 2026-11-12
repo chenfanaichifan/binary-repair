@@ -1,0 +1,84 @@
+name: Ubuntu verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [workbench-v3]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binutils
+          readelf --version
+          objdump --version
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Run non-browser test suite
+        shell: bash
+        run: |
+          mkdir -p artifacts/ubuntu-verification
+          set -o pipefail
+          python -m pytest -q --ignore=tests/e2e \
+            --junitxml=artifacts/ubuntu-verification/junit.xml \
+            2>&1 | tee artifacts/ubuntu-verification/pytest.log
+
+      - name: Capture environment
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p artifacts/ubuntu-verification
+          {
+            echo "commit=$(git rev-parse HEAD)"
+            echo "python=$(python --version 2>&1)"
+            echo "uname=$(uname -a)"
+            echo "readelf=$(readelf --version | head -1)"
+            echo "objdump=$(objdump --version | head -1)"
+          } > artifacts/ubuntu-verification/environment.txt
+          python -m pip freeze > artifacts/ubuntu-verification/pip-freeze.txt
+          python - <<'PY'
+          import json, platform, subprocess
+          payload = {
+              "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+              "python": platform.python_version(),
+              "platform": platform.platform(),
+              "machine": platform.machine(),
+              "readelf": subprocess.check_output(["readelf", "--version"], text=True).splitlines()[0],
+          }
+          open("artifacts/ubuntu-verification/environment.json", "w").write(json.dumps(payload, indent=2) + "\n")
+          PY
+
+      - name: Checksums
+        if: always()
+        shell: bash
+        run: |
+          cd artifacts/ubuntu-verification
+          find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS || true
+          cat SHA256SUMS
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-verification
+          path: artifacts/ubuntu-verification
+          if-no-files-found: warn

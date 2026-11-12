@@ -5,7 +5,7 @@ import lief
 from app.services.pe_repair import patch_pe_call_site
 
 ROOT = Path(__file__).resolve().parents[1]
-PE = ROOT.parent / "tools/mutagen/.venv/lib/python3.11/site-packages/setuptools/cli-64.exe"
+PE = ROOT / "fixtures" / "pe" / "cli-64.exe"
 
 
 def test_pe_call_site_is_redirected_and_reparsed():

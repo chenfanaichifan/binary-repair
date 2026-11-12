@@ -4,8 +4,8 @@ from pathlib import Path
 from app.services.format_scan import scan_macho, scan_pe
 
 ROOT = Path(__file__).resolve().parents[1]
-PE = ROOT.parent / "tools/mutagen/.venv/lib/python3.11/site-packages/setuptools/cli-64.exe"
-MACHO = Path("/Users/huageorge/cb-multios/build64/challenges/3D_Image_Toolkit/3D_Image_Toolkit")
+PE = ROOT / "fixtures" / "pe" / "cli-64.exe"
+MACHO = ROOT / "fixtures" / "macho" / "3D_Image_Toolkit"
 
 
 def test_pe_scan_metadata():

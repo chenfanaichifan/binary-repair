@@ -6,7 +6,7 @@ import lief
 from app.services.pe_repair import add_rx_section
 
 ROOT = Path(__file__).resolve().parents[1]
-PE = ROOT.parent / "tools/mutagen/.venv/lib/python3.11/site-packages/setuptools/cli-64.exe"
+PE = ROOT / "fixtures" / "pe" / "cli-64.exe"
 
 
 def test_add_rx_section_roundtrips_through_lief():

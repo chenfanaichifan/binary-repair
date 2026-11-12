@@ -4,7 +4,7 @@ import lief
 
 from app.services.macho_repair import repair_macho, scan_macho
 
-MACHO = Path("/Users/huageorge/cb-multios/build64/challenges/3D_Image_Toolkit/3D_Image_Toolkit")
+MACHO = Path(__file__).resolve().parents[1] / "fixtures" / "macho" / "3D_Image_Toolkit"
 CODE = bytes.fromhex(
     "ff8300d1" "02208052" "e8078052" "010000d4"
     "08088052" "010000d4" "a80b8052" "010000d4"
