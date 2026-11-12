@@ -205,6 +205,35 @@ def _table(rows: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
+def _what_added(rows: list[dict[str, Any]]) -> str:
+    lines: list[str] = []
+    for row in rows:
+        review = row["with_review"]["review"]
+        comp = row["comparison"]
+        lines.append(f"### {row['case_id']}")
+        lines.append("")
+        lines.append(f"- AI called: {comp['ai_called']} ({comp['ai_mode']}, {comp['ai_status']})")
+        lines.append(f"- recommendation: `{comp['recommendation']}`")
+        lines.append(f"- decision changed: {comp['decision_changed']}")
+        if review.get("summary"):
+            lines.append(f"- summary: {review['summary']}")
+        if review.get("concerns"):
+            lines.append("- concerns: " + "; ".join(
+                f"[{item.get('check_id')}] {item.get('why')}" for item in review["concerns"][:6]
+            ))
+        if review.get("missing_evidence"):
+            lines.append("- missing evidence: " + "; ".join(review["missing_evidence"][:6]))
+        if review.get("further_checks"):
+            lines.append("- further checks: " + "; ".join(review["further_checks"][:6]))
+        lines.append("")
+    lines.append(
+        "The `new_*` counts in the table are a wording heuristic: a phrase that "
+        "repeats a gate limitation is not new, but a rephrasing may still be "
+        "counted. Read the lists above, not only the counts."
+    )
+    return "\n".join(lines)
+
+
 def _write_readme(
     out: Path,
     *,
@@ -226,7 +255,8 @@ def _write_readme(
 - commit: `{payload.get('commit') or 'unknown'}`
 - provider requested: `{provider['requested']}`
 - reviewer mode: `{provider['mode']}`
-- reviewer model: `{provider.get('model') or '—'}`
+- reviewer model requested: `{provider.get('model') or '—'}`
+- reviewer model returned: `{provider.get('returned_model') or '—'}`
 - command: `python scripts/demo_binary_ai_review.py --provider {provider['requested']}`
 
 ## Result
@@ -238,6 +268,10 @@ control returns `accept` for every case; the unsupported and missing-evidence
 cases stay non-successful with reason `review_accept_cannot_promote_gate`. The
 strict case also has a scripted `hold` control to show that a review can veto a
 passing gate.
+
+## What the review added
+
+{_what_added(rows)}
 
 ## Files
 
@@ -278,6 +312,14 @@ def _write_comparison(out: Path, rows: list[dict[str, Any]]) -> None:
                 "",
             ]
         )
+        review = row["with_review"]["review"]
+        if review.get("summary"):
+            lines.append(f"- summary: {review['summary']}")
+        if review.get("missing_evidence"):
+            lines.append("- missing evidence: " + "; ".join(review["missing_evidence"][:6]))
+        if review.get("further_checks"):
+            lines.append("- further checks: " + "; ".join(review["further_checks"][:6]))
+        lines.append("")
     (out / "comparison.md").write_text("\n".join(lines), encoding="utf-8")
 
 
@@ -321,10 +363,19 @@ def main() -> int:
     for case in CASES:
         rows.append(_run_case(case, reviewer=reviewer))
 
+    returned_model = next(
+        (
+            row["with_review"]["review"].get("model")
+            for row in rows
+            if row["comparison"]["ai_called"] and row["with_review"]["review"].get("model")
+        ),
+        None,
+    )
     provider = {
         "requested": args.provider,
         "mode": reviewer_mode,
         "model": reviewer_model,
+        "returned_model": returned_model,
         "called": any(row["comparison"]["ai_called"] for row in rows),
         "base_url": getattr(real_client, "base_url", None) if real_client is not None else None,
     }

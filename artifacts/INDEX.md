@@ -92,6 +92,22 @@ canonical 124      = artifacts/cwe416-124-v4-rerun-2026-11-06/
 old candidate      = cwe416-124-candidate-2026-11-05 (not current)
 ```
 
+## Experiment evidence (not acceptance)
+
+```text
+artifacts/binary-ai-review-2026-11-12/
+  README.md       method, provider/model, result and honest limitations
+  comparison.md   baseline vs with-review per case
+  run.json        full packet, decisions, reviews and usage
+  SHA256SUMS      integrity of the three files above
+```
+
+This is a reproducible experiment on one public fixture family, not a new
+acceptance authority. It records a real `deepseek-flash` review where AI agreed
+with the passing gate, held the unsupported and missing-evidence cases, and
+changed no decision. See
+[`docs/acceptance/binary-ai-review-2026-11-12.md`](../docs/acceptance/binary-ai-review-2026-11-12.md).
+
 ## Not stored
 
 ```text

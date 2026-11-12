@@ -1,0 +1,1348 @@
+{
+  "cases": [
+    {
+      "accept_control": {
+        "candidate_available": true,
+        "decision": {
+          "ai_action": "accept",
+          "ai_effect": "concurred",
+          "authority": "deterministic_gate",
+          "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "gate_outcome": "success_within_scope",
+          "outcome": "success_within_scope",
+          "reason": "gate_success_scripted_review_concurred",
+          "review_called": false,
+          "review_mode": "scripted",
+          "review_status": "review_scripted",
+          "success": true
+        },
+        "download_allowed": true,
+        "gate": {
+          "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "outcome": "success_within_scope",
+          "reason": "all_required_checks_passed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "success": true
+        },
+        "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+        "review": {
+          "call_id": null,
+          "called": false,
+          "concerns": [],
+          "contribution": {
+            "changed": false,
+            "effect": "concurred",
+            "heuristic": true,
+            "new_concerns": 0,
+            "new_further_checks": 0,
+            "new_missing_evidence": 0
+          },
+          "error": null,
+          "further_checks": [],
+          "missing_evidence": [],
+          "mode": "scripted",
+          "model": "scripted-reviewer",
+          "provider": "scripted",
+          "recommendation": "accept",
+          "recorded": false,
+          "request_id": null,
+          "requested": true,
+          "review_sha256": "85d6bc9a3315ea56748666addfb81de1fe2a9b9d6fd80d09fc7078f3c7e2be59",
+          "reviewed_packet_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "status": "review_scripted",
+          "summary": "Scripted contract control, not an AI call.",
+          "usage": {
+            "completion_tokens": 0,
+            "latency_ms": 0,
+            "prompt_tokens": 0
+          }
+        }
+      },
+      "baseline": {
+        "candidate_available": true,
+        "decision": {
+          "ai_action": null,
+          "ai_effect": "none",
+          "authority": "deterministic_gate",
+          "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "gate_outcome": "success_within_scope",
+          "outcome": "success_within_scope",
+          "reason": "all_required_checks_passed",
+          "review_called": false,
+          "review_mode": "off",
+          "review_status": "review_not_requested",
+          "success": true
+        },
+        "download_allowed": true,
+        "gate": {
+          "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "outcome": "success_within_scope",
+          "reason": "all_required_checks_passed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "success": true
+        },
+        "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+        "review": {
+          "call_id": null,
+          "called": false,
+          "concerns": [],
+          "contribution": {
+            "changed": false,
+            "effect": "none",
+            "heuristic": true,
+            "new_concerns": 0,
+            "new_further_checks": 0,
+            "new_missing_evidence": 0
+          },
+          "error": null,
+          "further_checks": [],
+          "missing_evidence": [],
+          "mode": "off",
+          "model": null,
+          "provider": null,
+          "recommendation": null,
+          "recorded": false,
+          "request_id": null,
+          "requested": false,
+          "review_sha256": null,
+          "reviewed_packet_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "status": "review_not_requested",
+          "summary": "",
+          "usage": null
+        }
+      },
+      "case_id": "strict_ok",
+      "comparison": {
+        "accept_control_reason": "gate_success_scripted_review_concurred",
+        "accept_control_success": true,
+        "ai_called": true,
+        "ai_effect": "concurred",
+        "ai_mode": "llm",
+        "ai_model": "deepseek-flash",
+        "ai_provider": "deepseek-chat",
+        "ai_status": "review_ok",
+        "baseline_success": true,
+        "decision_changed": false,
+        "gate_outcome": "success_within_scope",
+        "gate_outcome_same": true,
+        "hold_control_reason": "scripted_veto",
+        "hold_control_success": false,
+        "new_concerns": 0,
+        "new_further_checks": 3,
+        "new_missing_evidence": 0,
+        "recommendation": "accept",
+        "with_review_success": true
+      },
+      "engine_report": {
+        "arch": "x86_64",
+        "backend": "elf",
+        "capacity": 16,
+        "findings": [],
+        "format": "elf64-little",
+        "limitations": [
+          "Reviewed strict template: over-limit input is rejected, short input is echoed exactly.",
+          "Runtime evidence is emulated (Unicorn), not a host-kernel run."
+        ],
+        "mode": "strict",
+        "offsets": [],
+        "original_sha256": "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd",
+        "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+        "runtime": {
+          "available": true,
+          "cases": [
+            {
+              "error": null,
+              "exit_code": 0,
+              "input_len": 0,
+              "stack_sentinel_intact": true,
+              "stderr_len": 0,
+              "stdout_len": 7
+            },
+            {
+              "error": null,
+              "exit_code": 0,
+              "input_len": 1,
+              "stack_sentinel_intact": true,
+              "stderr_len": 0,
+              "stdout_len": 8
+            },
+            {
+              "error": null,
+              "exit_code": 0,
+              "input_len": 16,
+              "stack_sentinel_intact": true,
+              "stderr_len": 0,
+              "stdout_len": 23
+            },
+            {
+              "error": null,
+              "exit_code": 1,
+              "input_len": 17,
+              "stack_sentinel_intact": true,
+              "stderr_len": 30,
+              "stdout_len": 7
+            }
+          ],
+          "engine": "unicorn-x86-64"
+        },
+        "schema_version": 2,
+        "status": "patched",
+        "strategy": "strict-template",
+        "strict": true,
+        "supported": true,
+        "verification": {
+          "emulated": {
+            "available": true,
+            "cases": [
+              {
+                "error": null,
+                "exit_code": 0,
+                "input_len": 0,
+                "stack_sentinel_intact": true,
+                "stderr_len": 0,
+                "stdout_len": 7
+              },
+              {
+                "error": null,
+                "exit_code": 0,
+                "input_len": 1,
+                "stack_sentinel_intact": true,
+                "stderr_len": 0,
+                "stdout_len": 8
+              },
+              {
+                "error": null,
+                "exit_code": 0,
+                "input_len": 16,
+                "stack_sentinel_intact": true,
+                "stderr_len": 0,
+                "stdout_len": 23
+              },
+              {
+                "error": null,
+                "exit_code": 1,
+                "input_len": 17,
+                "stack_sentinel_intact": true,
+                "stderr_len": 30,
+                "stdout_len": 7
+              }
+            ],
+            "engine": "unicorn-x86-64"
+          }
+        }
+      },
+      "evidence_gap": false,
+      "hold_control": {
+        "candidate_available": true,
+        "decision": {
+          "ai_action": "reject",
+          "ai_effect": "veto",
+          "authority": "scripted_veto",
+          "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "gate_outcome": "success_within_scope",
+          "outcome": "rejected",
+          "reason": "scripted_veto",
+          "review_called": false,
+          "review_mode": "scripted",
+          "review_status": "review_scripted",
+          "success": false
+        },
+        "download_allowed": false,
+        "gate": {
+          "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "outcome": "success_within_scope",
+          "reason": "all_required_checks_passed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "success": true
+        },
+        "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+        "review": {
+          "call_id": null,
+          "called": false,
+          "concerns": [],
+          "contribution": {
+            "changed": true,
+            "effect": "veto",
+            "heuristic": true,
+            "new_concerns": 0,
+            "new_further_checks": 0,
+            "new_missing_evidence": 0
+          },
+          "error": null,
+          "further_checks": [],
+          "missing_evidence": [],
+          "mode": "scripted",
+          "model": "scripted-reviewer",
+          "provider": "scripted",
+          "recommendation": "hold",
+          "recorded": false,
+          "request_id": null,
+          "requested": true,
+          "review_sha256": "bb3493866b4662f3ecbdd1ac9d9608cf6a8ad60afccd33cfa42339407e846063",
+          "reviewed_packet_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "status": "review_scripted",
+          "summary": "Scripted contract control, not an AI call.",
+          "usage": {
+            "completion_tokens": 0,
+            "latency_ms": 0,
+            "prompt_tokens": 0
+          }
+        }
+      },
+      "input": {
+        "path": "artifacts/vuln-elf/vuln.elf",
+        "sha256": "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd",
+        "size": 8576
+      },
+      "verification": {
+        "candidate": {
+          "original_sha256": "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd",
+          "patched_equals_original": false,
+          "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+          "present": true,
+          "size_bytes": 8800
+        },
+        "checks": [
+          {
+            "detail": "format=elf64-little arch=x86_64 supported=True",
+            "id": "format",
+            "required": true,
+            "status": "passed",
+            "title": "Input is a supported ELF64 little-endian x86-64 file"
+          },
+          {
+            "detail": "candidate_bytes=8800",
+            "id": "candidate.present",
+            "required": true,
+            "status": "passed",
+            "title": "A candidate byte sequence was produced"
+          },
+          {
+            "detail": "original hash matches input",
+            "id": "candidate.identity.original",
+            "required": true,
+            "status": "passed",
+            "title": "The report hash matches the input bytes"
+          },
+          {
+            "detail": "candidate hash matches produced bytes",
+            "id": "candidate.identity.patched",
+            "required": true,
+            "status": "passed",
+            "title": "The candidate hash matches the produced bytes and differs from the input"
+          },
+          {
+            "detail": "candidate matches the reviewed strict template",
+            "id": "patch.scope",
+            "required": true,
+            "status": "passed",
+            "title": "The patch stays inside the reviewed byte range or template"
+          },
+          {
+            "detail": "engine=unicorn-x86-64 cases=4",
+            "id": "runtime.available",
+            "required": true,
+            "status": "passed",
+            "title": "Runtime emulation evidence is present"
+          },
+          {
+            "detail": "runtime cases=[0, 1, 16, 17]",
+            "id": "runtime.cases",
+            "required": true,
+            "status": "passed",
+            "title": "Boundary runtime cases are present and error-free"
+          },
+          {
+            "detail": "stack sentinel intact for every runtime case",
+            "id": "runtime.no_overflow",
+            "required": true,
+            "status": "passed",
+            "title": "No runtime case damaged the stack sentinel"
+          },
+          {
+            "detail": "valid sizes exit 0 with output; over-limit size rejects with stderr",
+            "id": "runtime.boundary_semantics",
+            "required": true,
+            "status": "passed",
+            "title": "Strict boundary behaviour matches the reviewed contract"
+          },
+          {
+            "detail": "template_sha256=565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+            "id": "strict.reviewed_template",
+            "required": true,
+            "status": "passed",
+            "title": "The candidate is the reviewed strict template"
+          }
+        ],
+        "gate": {
+          "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "outcome": "success_within_scope",
+          "reason": "all_required_checks_passed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "success": true
+        },
+        "limitations": [
+          "Reviewed strict template: over-limit input is rejected, short input is echoed exactly.",
+          "Runtime evidence is emulated (Unicorn), not a host-kernel run.",
+          "Runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run.",
+          "Runtime coverage is limited to four input sizes around the capacity; partial reads and other architectures are not covered.",
+          "Success is within the stated scope only; this is not a whole-program proof.",
+          "Reviewed strict template: over-limit input is rejected and valid input is echoed exactly for the tested sizes."
+        ],
+        "missing": [],
+        "patch": {
+          "capacity": 16,
+          "findings": [],
+          "mode": "strict",
+          "offsets": [],
+          "strategy": "strict-template",
+          "strict": true,
+          "template_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c"
+        },
+        "report_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+        "runtime": {
+          "available": true,
+          "cases": [
+            {
+              "error": null,
+              "exit_code": 0,
+              "input_len": 0,
+              "stack_sentinel_intact": true,
+              "stderr_len": 0,
+              "stdout_len": 7
+            },
+            {
+              "error": null,
+              "exit_code": 0,
+              "input_len": 1,
+              "stack_sentinel_intact": true,
+              "stderr_len": 0,
+              "stdout_len": 8
+            },
+            {
+              "error": null,
+              "exit_code": 0,
+              "input_len": 16,
+              "stack_sentinel_intact": true,
+              "stderr_len": 0,
+              "stdout_len": 23
+            },
+            {
+              "error": null,
+              "exit_code": 1,
+              "input_len": 17,
+              "stack_sentinel_intact": true,
+              "stderr_len": 30,
+              "stdout_len": 7
+            }
+          ],
+          "engine": "unicorn-x86-64",
+          "error": null
+        },
+        "schema_version": 1,
+        "scope": {
+          "arch": "x86_64",
+          "capacity": 16,
+          "claim": "Over-limit input is rejected and valid input is echoed exactly for the tested sizes; the candidate matches the reviewed strict template.",
+          "format": "elf64-little",
+          "mode": "strict",
+          "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+          "strategy": "strict-template",
+          "strict": true
+        }
+      },
+      "with_review": {
+        "candidate_available": true,
+        "decision": {
+          "ai_action": "accept",
+          "ai_effect": "concurred",
+          "authority": "deterministic_gate",
+          "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "gate_outcome": "success_within_scope",
+          "outcome": "success_within_scope",
+          "reason": "gate_success_ai_review_concurred",
+          "review_called": true,
+          "review_mode": "llm",
+          "review_status": "review_ok",
+          "success": true
+        },
+        "download_allowed": true,
+        "gate": {
+          "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "outcome": "success_within_scope",
+          "reason": "all_required_checks_passed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "success": true
+        },
+        "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+        "review": {
+          "call_id": null,
+          "called": true,
+          "concerns": [],
+          "contribution": {
+            "changed": false,
+            "effect": "concurred",
+            "heuristic": true,
+            "new_concerns": 0,
+            "new_further_checks": 3,
+            "new_missing_evidence": 0
+          },
+          "error": null,
+          "further_checks": [
+            "Runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel execution; a native run would strengthen confidence.",
+            "Coverage is limited to four input sizes around capacity 16; partial reads, larger inputs, and other architectures are untested.",
+            "No guest replay or independent reproduction of the template hash beyond the packet's own report."
+          ],
+          "missing_evidence": [],
+          "mode": "llm",
+          "model": "deepseek-flash",
+          "provider": "deepseek-chat",
+          "recommendation": "accept",
+          "recorded": false,
+          "request_id": null,
+          "requested": true,
+          "review_sha256": "949382a65387e280373d21598579d8c626ed7414cb3ef2d3fbcf9cb4b4940b49",
+          "reviewed_packet_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+          "status": "review_ok",
+          "summary": "All 10 required checks passed; candidate matches the reviewed strict template and boundary runtime cases (0,1,16,17) behave per the stated contract with intact stack sentinels.",
+          "usage": {
+            "completion_tokens": 142,
+            "latency_ms": 1936,
+            "prompt_tokens": 1600,
+            "total_tokens": 1742
+          }
+        }
+      }
+    },
+    {
+      "accept_control": {
+        "candidate_available": false,
+        "decision": {
+          "ai_action": "accept",
+          "ai_effect": "no_promotion",
+          "authority": "deterministic_gate",
+          "evidence_sha256": null,
+          "gate_outcome": "unsupported",
+          "outcome": "unsupported",
+          "reason": "review_accept_cannot_promote_gate",
+          "review_called": false,
+          "review_mode": "scripted",
+          "review_status": "review_scripted",
+          "success": false
+        },
+        "download_allowed": false,
+        "gate": {
+          "evidence_sha256": null,
+          "outcome": "unsupported",
+          "reason": "unsupported_profile",
+          "required_checks": 8,
+          "required_not_run": 3,
+          "success": false
+        },
+        "patched_sha256": "28b001bb9a72ae7a24242bfab248d767a1ac5dec981c672a3944f7a072375e9a",
+        "review": {
+          "call_id": null,
+          "called": false,
+          "concerns": [],
+          "contribution": {
+            "changed": false,
+            "effect": "no_promotion",
+            "heuristic": true,
+            "new_concerns": 0,
+            "new_further_checks": 0,
+            "new_missing_evidence": 0
+          },
+          "error": null,
+          "further_checks": [],
+          "missing_evidence": [],
+          "mode": "scripted",
+          "model": "scripted-reviewer",
+          "provider": "scripted",
+          "recommendation": "accept",
+          "recorded": false,
+          "request_id": null,
+          "requested": true,
+          "review_sha256": "85d6bc9a3315ea56748666addfb81de1fe2a9b9d6fd80d09fc7078f3c7e2be59",
+          "reviewed_packet_sha256": "2f077fc54507a321003a09b2e39c9a11a2e6d94ee61f9ec948df73e2018659d0",
+          "status": "review_scripted",
+          "summary": "Scripted contract control, not an AI call.",
+          "usage": {
+            "completion_tokens": 0,
+            "latency_ms": 0,
+            "prompt_tokens": 0
+          }
+        }
+      },
+      "baseline": {
+        "candidate_available": false,
+        "decision": {
+          "ai_action": null,
+          "ai_effect": "none",
+          "authority": "deterministic_gate",
+          "evidence_sha256": null,
+          "gate_outcome": "unsupported",
+          "outcome": "unsupported",
+          "reason": "unsupported_profile",
+          "review_called": false,
+          "review_mode": "off",
+          "review_status": "review_not_requested",
+          "success": false
+        },
+        "download_allowed": false,
+        "gate": {
+          "evidence_sha256": null,
+          "outcome": "unsupported",
+          "reason": "unsupported_profile",
+          "required_checks": 8,
+          "required_not_run": 3,
+          "success": false
+        },
+        "patched_sha256": "28b001bb9a72ae7a24242bfab248d767a1ac5dec981c672a3944f7a072375e9a",
+        "review": {
+          "call_id": null,
+          "called": false,
+          "concerns": [],
+          "contribution": {
+            "changed": false,
+            "effect": "none",
+            "heuristic": true,
+            "new_concerns": 0,
+            "new_further_checks": 0,
+            "new_missing_evidence": 0
+          },
+          "error": null,
+          "further_checks": [],
+          "missing_evidence": [],
+          "mode": "off",
+          "model": null,
+          "provider": null,
+          "recommendation": null,
+          "recorded": false,
+          "request_id": null,
+          "requested": false,
+          "review_sha256": null,
+          "reviewed_packet_sha256": "2f077fc54507a321003a09b2e39c9a11a2e6d94ee61f9ec948df73e2018659d0",
+          "status": "review_not_requested",
+          "summary": "",
+          "usage": null
+        }
+      },
+      "case_id": "unsupported",
+      "comparison": {
+        "accept_control_reason": "review_accept_cannot_promote_gate",
+        "accept_control_success": false,
+        "ai_called": true,
+        "ai_effect": "reviewed_failure",
+        "ai_mode": "llm",
+        "ai_model": "deepseek-flash",
+        "ai_provider": "deepseek-chat",
+        "ai_status": "review_ok",
+        "baseline_success": false,
+        "decision_changed": false,
+        "gate_outcome": "unsupported",
+        "gate_outcome_same": true,
+        "hold_control_reason": null,
+        "hold_control_success": null,
+        "new_concerns": 0,
+        "new_further_checks": 3,
+        "new_missing_evidence": 4,
+        "recommendation": "hold",
+        "with_review_success": false
+      },
+      "engine_report": {
+        "arch": "unknown",
+        "backend": "pe",
+        "capacity": null,
+        "findings": [],
+        "format": "pe",
+        "limitations": [
+          "Not an ELF file; Mach-O/PE are not repaired by this engine yet."
+        ],
+        "mode": "unsupported",
+        "offsets": [],
+        "original_sha256": "28b001bb9a72ae7a24242bfab248d767a1ac5dec981c672a3944f7a072375e9a",
+        "patched_sha256": "28b001bb9a72ae7a24242bfab248d767a1ac5dec981c672a3944f7a072375e9a",
+        "runtime": {},
+        "schema_version": 2,
+        "status": "unsupported",
+        "strategy": "none",
+        "strict": false,
+        "supported": false,
+        "verification": {}
+      },
+      "evidence_gap": false,
+      "hold_control": null,
+      "input": {
+        "path": "fixtures/pe/cli-64.exe",
+        "sha256": "28b001bb9a72ae7a24242bfab248d767a1ac5dec981c672a3944f7a072375e9a",
+        "size": 74752
+      },
+      "verification": {
+        "candidate": {
+          "original_sha256": "28b001bb9a72ae7a24242bfab248d767a1ac5dec981c672a3944f7a072375e9a",
+          "patched_equals_original": false,
+          "patched_sha256": "28b001bb9a72ae7a24242bfab248d767a1ac5dec981c672a3944f7a072375e9a",
+          "present": false,
+          "size_bytes": 0
+        },
+        "checks": [
+          {
+            "detail": "format=pe arch=unknown supported=False",
+            "id": "format",
+            "required": true,
+            "status": "failed",
+            "title": "Input is a supported ELF64 little-endian x86-64 file"
+          },
+          {
+            "detail": "candidate_bytes=0",
+            "id": "candidate.present",
+            "required": true,
+            "status": "failed",
+            "title": "A candidate byte sequence was produced"
+          },
+          {
+            "detail": "original hash matches input",
+            "id": "candidate.identity.original",
+            "required": true,
+            "status": "passed",
+            "title": "The report hash matches the input bytes"
+          },
+          {
+            "detail": "candidate hash mismatch, missing candidate, or unchanged bytes",
+            "id": "candidate.identity.patched",
+            "required": true,
+            "status": "failed",
+            "title": "The candidate hash matches the produced bytes and differs from the input"
+          },
+          {
+            "detail": "unsupported mode=unsupported",
+            "id": "patch.scope",
+            "required": true,
+            "status": "failed",
+            "title": "The patch stays inside the reviewed byte range or template"
+          },
+          {
+            "detail": "runtime unavailable: no cases",
+            "id": "runtime.available",
+            "required": true,
+            "status": "not_run",
+            "title": "Runtime emulation evidence is present"
+          },
+          {
+            "detail": "runtime evidence is not available",
+            "id": "runtime.cases",
+            "required": true,
+            "status": "not_run",
+            "title": "Boundary runtime cases are present and error-free"
+          },
+          {
+            "detail": "runtime evidence is not available",
+            "id": "runtime.no_overflow",
+            "required": true,
+            "status": "not_run",
+            "title": "No runtime case damaged the stack sentinel"
+          }
+        ],
+        "gate": {
+          "evidence_sha256": null,
+          "outcome": "unsupported",
+          "reason": "unsupported_profile",
+          "required_checks": 8,
+          "required_not_run": 3,
+          "success": false
+        },
+        "limitations": [
+          "Not an ELF file; Mach-O/PE are not repaired by this engine yet.",
+          "Runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run.",
+          "Runtime coverage is limited to four input sizes around the capacity; partial reads and other architectures are not covered.",
+          "Success is within the stated scope only; this is not a whole-program proof."
+        ],
+        "missing": [
+          {
+            "check_id": "format",
+            "reason": "format=pe arch=unknown supported=False",
+            "status": "failed"
+          },
+          {
+            "check_id": "candidate.present",
+            "reason": "candidate_bytes=0",
+            "status": "failed"
+          },
+          {
+            "check_id": "candidate.identity.patched",
+            "reason": "candidate hash mismatch, missing candidate, or unchanged bytes",
+            "status": "failed"
+          },
+          {
+            "check_id": "patch.scope",
+            "reason": "unsupported mode=unsupported",
+            "status": "failed"
+          },
+          {
+            "check_id": "runtime.available",
+            "reason": "runtime unavailable: no cases",
+            "status": "not_run"
+          },
+          {
+            "check_id": "runtime.cases",
+            "reason": "runtime evidence is not available",
+            "status": "not_run"
+          },
+          {
+            "check_id": "runtime.no_overflow",
+            "reason": "runtime evidence is not available",
+            "status": "not_run"
+          }
+        ],
+        "patch": {
+          "capacity": null,
+          "findings": [],
+          "mode": "unsupported",
+          "offsets": [],
+          "strategy": "none",
+          "strict": false,
+          "template_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c"
+        },
+        "report_sha256": "2f077fc54507a321003a09b2e39c9a11a2e6d94ee61f9ec948df73e2018659d0",
+        "runtime": {
+          "available": false,
+          "cases": [],
+          "engine": null,
+          "error": null
+        },
+        "schema_version": 1,
+        "scope": {
+          "arch": "unknown",
+          "capacity": null,
+          "claim": "No supported repair claim.",
+          "format": "pe",
+          "mode": "unsupported",
+          "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+          "strategy": "none",
+          "strict": false
+        }
+      },
+      "with_review": {
+        "candidate_available": false,
+        "decision": {
+          "ai_action": "reject",
+          "ai_effect": "reviewed_failure",
+          "authority": "deterministic_gate",
+          "evidence_sha256": null,
+          "gate_outcome": "unsupported",
+          "outcome": "unsupported",
+          "reason": "unsupported_profile",
+          "review_called": true,
+          "review_mode": "llm",
+          "review_status": "review_ok",
+          "success": false
+        },
+        "download_allowed": false,
+        "gate": {
+          "evidence_sha256": null,
+          "outcome": "unsupported",
+          "reason": "unsupported_profile",
+          "required_checks": 8,
+          "required_not_run": 3,
+          "success": false
+        },
+        "patched_sha256": "28b001bb9a72ae7a24242bfab248d767a1ac5dec981c672a3944f7a072375e9a",
+        "review": {
+          "call_id": null,
+          "called": true,
+          "concerns": [
+            {
+              "check_id": "format",
+              "why": "Input is PE with unknown arch, not supported ELF64 little-endian x86-64."
+            },
+            {
+              "check_id": "candidate.present",
+              "why": "Zero candidate bytes were produced."
+            },
+            {
+              "check_id": "candidate.identity.patched",
+              "why": "No candidate bytes and hash equals original, so no patch was applied."
+            },
+            {
+              "check_id": "patch.scope",
+              "why": "Patch mode is unsupported with no offsets or findings."
+            },
+            {
+              "check_id": "runtime.available",
+              "why": "No runtime emulation evidence present."
+            },
+            {
+              "check_id": "runtime.cases",
+              "why": "No boundary runtime cases were run."
+            },
+            {
+              "check_id": "runtime.no_overflow",
+              "why": "Stack sentinel check could not be evaluated without runtime cases."
+            }
+          ],
+          "contribution": {
+            "changed": false,
+            "effect": "reviewed_failure",
+            "heuristic": true,
+            "new_concerns": 0,
+            "new_further_checks": 3,
+            "new_missing_evidence": 4
+          },
+          "error": null,
+          "further_checks": [
+            "Confirm input format and architecture before repair",
+            "Re-run gate after producing a candidate for a supported ELF target",
+            "Add runtime boundary cases and guest replay if a repair is later attempted"
+          ],
+          "missing_evidence": [
+            "Supported ELF64 x86-64 input file",
+            "Produced candidate bytes distinct from original",
+            "Patch offsets within reviewed scope",
+            "Runtime emulation cases and stack sentinel results"
+          ],
+          "mode": "llm",
+          "model": "deepseek-flash",
+          "provider": "deepseek-chat",
+          "recommendation": "hold",
+          "recorded": false,
+          "request_id": null,
+          "requested": true,
+          "review_sha256": "cca4199e0a3e3befd0276657130fb6b0912a7629861e1d2268a2a173facd13d2",
+          "reviewed_packet_sha256": "2f077fc54507a321003a09b2e39c9a11a2e6d94ee61f9ec948df73e2018659d0",
+          "status": "review_ok",
+          "summary": "Candidate is a PE file with no produced bytes; format, candidate presence, patched identity, patch scope, and all runtime checks failed or were not run. No supported repair claim exists, so the candidate is outside the reviewed ELF64 x86-64 scope.",
+          "usage": {
+            "completion_tokens": 303,
+            "latency_ms": 2786,
+            "prompt_tokens": 1350,
+            "total_tokens": 1653
+          }
+        }
+      }
+    },
+    {
+      "accept_control": {
+        "candidate_available": true,
+        "decision": {
+          "ai_action": "accept",
+          "ai_effect": "no_promotion",
+          "authority": "deterministic_gate",
+          "evidence_sha256": null,
+          "gate_outcome": "inconclusive",
+          "outcome": "inconclusive",
+          "reason": "review_accept_cannot_promote_gate",
+          "review_called": false,
+          "review_mode": "scripted",
+          "review_status": "review_scripted",
+          "success": false
+        },
+        "download_allowed": false,
+        "gate": {
+          "evidence_sha256": null,
+          "outcome": "inconclusive",
+          "reason": "required_check_not_run",
+          "required_checks": 10,
+          "required_not_run": 4,
+          "success": false
+        },
+        "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+        "review": {
+          "call_id": null,
+          "called": false,
+          "concerns": [],
+          "contribution": {
+            "changed": false,
+            "effect": "no_promotion",
+            "heuristic": true,
+            "new_concerns": 0,
+            "new_further_checks": 0,
+            "new_missing_evidence": 0
+          },
+          "error": null,
+          "further_checks": [],
+          "missing_evidence": [],
+          "mode": "scripted",
+          "model": "scripted-reviewer",
+          "provider": "scripted",
+          "recommendation": "accept",
+          "recorded": false,
+          "request_id": null,
+          "requested": true,
+          "review_sha256": "85d6bc9a3315ea56748666addfb81de1fe2a9b9d6fd80d09fc7078f3c7e2be59",
+          "reviewed_packet_sha256": "faa97c8f35395b594feb87fb4e50653d8dd5973ec5afd8ddc32bfc151d21c72b",
+          "status": "review_scripted",
+          "summary": "Scripted contract control, not an AI call.",
+          "usage": {
+            "completion_tokens": 0,
+            "latency_ms": 0,
+            "prompt_tokens": 0
+          }
+        }
+      },
+      "baseline": {
+        "candidate_available": true,
+        "decision": {
+          "ai_action": null,
+          "ai_effect": "none",
+          "authority": "deterministic_gate",
+          "evidence_sha256": null,
+          "gate_outcome": "inconclusive",
+          "outcome": "inconclusive",
+          "reason": "required_check_not_run",
+          "review_called": false,
+          "review_mode": "off",
+          "review_status": "review_not_requested",
+          "success": false
+        },
+        "download_allowed": false,
+        "gate": {
+          "evidence_sha256": null,
+          "outcome": "inconclusive",
+          "reason": "required_check_not_run",
+          "required_checks": 10,
+          "required_not_run": 4,
+          "success": false
+        },
+        "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+        "review": {
+          "call_id": null,
+          "called": false,
+          "concerns": [],
+          "contribution": {
+            "changed": false,
+            "effect": "none",
+            "heuristic": true,
+            "new_concerns": 0,
+            "new_further_checks": 0,
+            "new_missing_evidence": 0
+          },
+          "error": null,
+          "further_checks": [],
+          "missing_evidence": [],
+          "mode": "off",
+          "model": null,
+          "provider": null,
+          "recommendation": null,
+          "recorded": false,
+          "request_id": null,
+          "requested": false,
+          "review_sha256": null,
+          "reviewed_packet_sha256": "faa97c8f35395b594feb87fb4e50653d8dd5973ec5afd8ddc32bfc151d21c72b",
+          "status": "review_not_requested",
+          "summary": "",
+          "usage": null
+        }
+      },
+      "case_id": "missing_evidence",
+      "comparison": {
+        "accept_control_reason": "review_accept_cannot_promote_gate",
+        "accept_control_success": false,
+        "ai_called": true,
+        "ai_effect": "reviewed_failure",
+        "ai_mode": "llm",
+        "ai_model": "deepseek-flash",
+        "ai_provider": "deepseek-chat",
+        "ai_status": "review_ok",
+        "baseline_success": false,
+        "decision_changed": false,
+        "gate_outcome": "inconclusive",
+        "gate_outcome_same": true,
+        "hold_control_reason": null,
+        "hold_control_success": null,
+        "new_concerns": 0,
+        "new_further_checks": 4,
+        "new_missing_evidence": 4,
+        "recommendation": "hold",
+        "with_review_success": false
+      },
+      "engine_report": {
+        "arch": "x86_64",
+        "backend": "elf",
+        "capacity": 16,
+        "findings": [],
+        "format": "elf64-little",
+        "limitations": [
+          "Reviewed strict template: over-limit input is rejected, short input is echoed exactly.",
+          "Runtime evidence is emulated (Unicorn), not a host-kernel run."
+        ],
+        "mode": "strict",
+        "offsets": [],
+        "original_sha256": "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd",
+        "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+        "runtime": {
+          "available": false,
+          "error": "evidence unavailable (simulated for this experiment)"
+        },
+        "schema_version": 2,
+        "status": "patched",
+        "strategy": "strict-template",
+        "strict": true,
+        "supported": true,
+        "verification": {
+          "emulated": {
+            "available": false,
+            "error": "evidence unavailable (simulated for this experiment)"
+          }
+        }
+      },
+      "evidence_gap": true,
+      "hold_control": null,
+      "input": {
+        "path": "artifacts/vuln-elf/vuln.elf",
+        "sha256": "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd",
+        "size": 8576
+      },
+      "verification": {
+        "candidate": {
+          "original_sha256": "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd",
+          "patched_equals_original": false,
+          "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+          "present": true,
+          "size_bytes": 8800
+        },
+        "checks": [
+          {
+            "detail": "format=elf64-little arch=x86_64 supported=True",
+            "id": "format",
+            "required": true,
+            "status": "passed",
+            "title": "Input is a supported ELF64 little-endian x86-64 file"
+          },
+          {
+            "detail": "candidate_bytes=8800",
+            "id": "candidate.present",
+            "required": true,
+            "status": "passed",
+            "title": "A candidate byte sequence was produced"
+          },
+          {
+            "detail": "original hash matches input",
+            "id": "candidate.identity.original",
+            "required": true,
+            "status": "passed",
+            "title": "The report hash matches the input bytes"
+          },
+          {
+            "detail": "candidate hash matches produced bytes",
+            "id": "candidate.identity.patched",
+            "required": true,
+            "status": "passed",
+            "title": "The candidate hash matches the produced bytes and differs from the input"
+          },
+          {
+            "detail": "candidate matches the reviewed strict template",
+            "id": "patch.scope",
+            "required": true,
+            "status": "passed",
+            "title": "The patch stays inside the reviewed byte range or template"
+          },
+          {
+            "detail": "runtime unavailable: evidence unavailable (simulated for this experiment)",
+            "id": "runtime.available",
+            "required": true,
+            "status": "not_run",
+            "title": "Runtime emulation evidence is present"
+          },
+          {
+            "detail": "runtime evidence is not available",
+            "id": "runtime.cases",
+            "required": true,
+            "status": "not_run",
+            "title": "Boundary runtime cases are present and error-free"
+          },
+          {
+            "detail": "runtime evidence is not available",
+            "id": "runtime.no_overflow",
+            "required": true,
+            "status": "not_run",
+            "title": "No runtime case damaged the stack sentinel"
+          },
+          {
+            "detail": "boundary cases are missing",
+            "id": "runtime.boundary_semantics",
+            "required": true,
+            "status": "not_run",
+            "title": "Strict boundary behaviour matches the reviewed contract"
+          },
+          {
+            "detail": "template_sha256=565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+            "id": "strict.reviewed_template",
+            "required": true,
+            "status": "passed",
+            "title": "The candidate is the reviewed strict template"
+          }
+        ],
+        "gate": {
+          "evidence_sha256": null,
+          "outcome": "inconclusive",
+          "reason": "required_check_not_run",
+          "required_checks": 10,
+          "required_not_run": 4,
+          "success": false
+        },
+        "limitations": [
+          "Reviewed strict template: over-limit input is rejected, short input is echoed exactly.",
+          "Runtime evidence is emulated (Unicorn), not a host-kernel run.",
+          "Runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run.",
+          "Runtime coverage is limited to four input sizes around the capacity; partial reads and other architectures are not covered.",
+          "Success is within the stated scope only; this is not a whole-program proof.",
+          "Reviewed strict template: over-limit input is rejected and valid input is echoed exactly for the tested sizes."
+        ],
+        "missing": [
+          {
+            "check_id": "runtime.available",
+            "reason": "runtime unavailable: evidence unavailable (simulated for this experiment)",
+            "status": "not_run"
+          },
+          {
+            "check_id": "runtime.cases",
+            "reason": "runtime evidence is not available",
+            "status": "not_run"
+          },
+          {
+            "check_id": "runtime.no_overflow",
+            "reason": "runtime evidence is not available",
+            "status": "not_run"
+          },
+          {
+            "check_id": "runtime.boundary_semantics",
+            "reason": "boundary cases are missing",
+            "status": "not_run"
+          }
+        ],
+        "patch": {
+          "capacity": 16,
+          "findings": [],
+          "mode": "strict",
+          "offsets": [],
+          "strategy": "strict-template",
+          "strict": true,
+          "template_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c"
+        },
+        "report_sha256": "faa97c8f35395b594feb87fb4e50653d8dd5973ec5afd8ddc32bfc151d21c72b",
+        "runtime": {
+          "available": false,
+          "cases": [],
+          "engine": null,
+          "error": "evidence unavailable (simulated for this experiment)"
+        },
+        "schema_version": 1,
+        "scope": {
+          "arch": "x86_64",
+          "capacity": 16,
+          "claim": "Over-limit input is rejected and valid input is echoed exactly for the tested sizes; the candidate matches the reviewed strict template.",
+          "format": "elf64-little",
+          "mode": "strict",
+          "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+          "strategy": "strict-template",
+          "strict": true
+        }
+      },
+      "with_review": {
+        "candidate_available": true,
+        "decision": {
+          "ai_action": "reject",
+          "ai_effect": "reviewed_failure",
+          "authority": "deterministic_gate",
+          "evidence_sha256": null,
+          "gate_outcome": "inconclusive",
+          "outcome": "inconclusive",
+          "reason": "required_check_not_run",
+          "review_called": true,
+          "review_mode": "llm",
+          "review_status": "review_ok",
+          "success": false
+        },
+        "download_allowed": false,
+        "gate": {
+          "evidence_sha256": null,
+          "outcome": "inconclusive",
+          "reason": "required_check_not_run",
+          "required_checks": 10,
+          "required_not_run": 4,
+          "success": false
+        },
+        "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+        "review": {
+          "call_id": null,
+          "called": true,
+          "concerns": [
+            {
+              "check_id": "runtime.available",
+              "why": "Required runtime emulation evidence is absent, so no dynamic behavior was verified."
+            },
+            {
+              "check_id": "runtime.cases",
+              "why": "No boundary runtime cases were executed or recorded."
+            },
+            {
+              "check_id": "runtime.no_overflow",
+              "why": "Stack sentinel integrity was never exercised."
+            },
+            {
+              "check_id": "runtime.boundary_semantics",
+              "why": "Over-limit rejection and exact echo behavior remain unverified."
+            }
+          ],
+          "contribution": {
+            "changed": false,
+            "effect": "reviewed_failure",
+            "heuristic": true,
+            "new_concerns": 0,
+            "new_further_checks": 4,
+            "new_missing_evidence": 4
+          },
+          "error": null,
+          "further_checks": [
+            "Re-run with runtime evidence enabled and confirm all four runtime checks pass",
+            "Confirm emulation results against a host-kernel execution for the same inputs",
+            "Extend coverage to partial reads and additional input sizes",
+            "Verify behavior on architectures beyond x86_64 if in scope"
+          ],
+          "missing_evidence": [
+            "Unicorn emulation run of the candidate with modeled syscalls",
+            "Boundary input cases around capacity 16 (under, at, over limit)",
+            "Stack sentinel check results",
+            "Evidence that over-limit input is rejected and valid input echoed exactly"
+          ],
+          "mode": "llm",
+          "model": "deepseek-flash",
+          "provider": "deepseek-chat",
+          "recommendation": "hold",
+          "recorded": false,
+          "request_id": null,
+          "requested": true,
+          "review_sha256": "1c793235d61b51351688da84902218fa8dbfcc2588974c840ea938864d5186c0",
+          "reviewed_packet_sha256": "faa97c8f35395b594feb87fb4e50653d8dd5973ec5afd8ddc32bfc151d21c72b",
+          "status": "review_ok",
+          "summary": "Static identity, format, and strict-template checks passed, but all four required runtime checks were not run, so the gate is inconclusive and the stated scope (boundary rejection and exact echo) is unsupported by evidence.",
+          "usage": {
+            "completion_tokens": 266,
+            "latency_ms": 2434,
+            "prompt_tokens": 1482,
+            "total_tokens": 1748
+          }
+        }
+      }
+    }
+  ],
+  "commit": "be9564f1256f2d0693aed0f036b84b4a2f1827d2",
+  "date": "2026-11-12",
+  "generated_at": "2026-11-12T15:27:18+00:00",
+  "platform": "macOS-13.5-arm64-arm-64bit",
+  "provider": {
+    "base_url": "https://api.deepseek.com/v1",
+    "called": true,
+    "mode": "llm",
+    "model": "deepseek-chat",
+    "requested": "real",
+    "returned_model": "deepseek-flash"
+  },
+  "python": "3.11.8",
+  "schema_version": 1
+}

@@ -42,6 +42,16 @@ Large historical distribution snapshots (`dist/`,
 source repository. This public snapshot selects only the current canonical
 evidence.
 
+## Experiment evidence (not acceptance)
+
+```text
+artifacts/binary-ai-review-2026-11-12/
+```
+
+Read-only direct-ELF AI review experiment on one public fixture family. It is
+not a new acceptance authority; see
+[`docs/acceptance/binary-ai-review-2026-11-12.md`](../docs/acceptance/binary-ai-review-2026-11-12.md).
+
 ## Verification
 
 Every `artifacts/**/SHA256SUMS` verifies in a clean checkout. The four original
