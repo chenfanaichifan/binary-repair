@@ -79,7 +79,15 @@ Targeted coverage includes:
 
 ## 5. CI
 
-`__AI_CI_RESULT__`
+- Workflow: `Ubuntu verification` (`.github/workflows/ubuntu-verify.yml`,
+  `ubuntu-24.04`, Python 3.11, full non-browser suite).
+- Run: [43418024120](https://github.com/chenfanaichifan/binary-repair/actions/runs/43418024120)
+  on `abeab27` (`workbench-v3`) — **success**.
+- `feature/ai-binary-repair` and the CI-trigger branch `workbench-v3` are both
+  pushed to `chenfanaichifan/binary-repair` at the same commit; `main` and
+  `handoff-v4-local` are untouched.
+- This acceptance record is a docs-only commit after that run; the workflow
+  re-runs the same suite and its branch history records the final conclusion.
 
 ## 5. Boundaries
 
