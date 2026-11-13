@@ -162,3 +162,59 @@ Object.assign(window.BR_I18N_OVERRIDES, {
   "是": { en: "Yes" },
   "否": { en: "No" }
 });
+
+/* /binary "two direct-AI repair paths" (ai_plan / ai_bytes) section: new keys only. */
+Object.assign(window.BR_I18N_OVERRIDES, {
+  "4 · AI 直接修复（两条路径）": { en: "4 · Direct AI repair (two paths)" },
+  "模型只提议 · 结论仍由确定性验证门给出": { en: "The model only proposes · the deterministic gate still gives the verdict" },
+  "两条路径都直接作用于二进制，并各自独立选择文件、独立运行。路径一由 AI 规划、确定性代码写回字节；路径二由 AI 直接输出机器码或就地字节补丁，再由服务端做严格静态校验。两者都不改变「AI 不参与判定」：候选能否下载仍由确定性报告的 delivery.download_allowed 决定。": {
+    en: "Both paths act on the binary directly, each with its own file picker and run button. Path 1 has the AI plan while deterministic code performs the byte write-back; path 2 has the AI emit machine code or in-place byte patches, which the server then validates strictly. Neither path changes \"AI does not decide the verdict\": whether a candidate can be downloaded still depends on delivery.download_allowed in the deterministic report."
+  },
+  "AI 规划 + 确定性字节写回": { en: "AI planning + deterministic byte write-back" },
+  "AI 从分析器给出的受支持动作中选择 sink 与策略，由确定性 writer 负责实际写回，随后进入运行时验证门。": {
+    en: "The AI chooses a sink and a strategy from the analyzer's supported actions; the deterministic writer performs the actual write-back, then the candidate enters the runtime verification gate."
+  },
+  "AI 直出机器码 / 字节补丁": { en: "AI emits machine code / byte patches directly" },
+  "AI 直接给出 guard 机器码（注入可执行区并重定向调用点）或 immediate sink 的就地字节编辑；服务端完成解码、白名单、重定位与容器重解析等严格校验后才产出候选。": {
+    en: "The AI emits either guard machine code (injected into an executable region with the call site redirected) or in-place byte edits for an immediate sink; a candidate is produced only after the server completes strict decoding, mnemonic allow-list, relocation and container-reparse validation."
+  },
+  "拖入文件，或点击选择（两条 AI 路径共用）": { en: "Drop a file here, or click to choose (shared by both AI paths)" },
+  "任意二进制容器 · 单文件 ≤ 20 MiB · 独立于上方单路径扫描": { en: "Any binary container · single file ≤ 20 MiB · independent of the single-path scan above" },
+  "AI 路径同样受确定性门约束；未验证候选需人工复核，不构成成功。": {
+    en: "The AI paths are bound by the same deterministic gate; an unverified candidate needs manual review and is not a success."
+  },
+  "运行路径一（AI 规划）": { en: "Run path 1 (AI plan)" },
+  "运行路径二（AI 字节）": { en: "Run path 2 (AI bytes)" },
+  "路径一 · AI 规划": { en: "Path 1 · AI plan" },
+  "路径二 · AI 字节": { en: "Path 2 · AI bytes" },
+  "路径 path": { en: "Path" },
+  "AI 已调用 called": { en: "AI called" },
+  "AI 状态 status": { en: "AI status" },
+  "模式 mode": { en: "Mode" },
+  "提供方 provider": { en: "Provider" },
+  "模型 model": { en: "Model" },
+  "延迟 latency_ms": { en: "Latency (ms)" },
+  "下载路径一候选": { en: "Download path 1 candidate" },
+  "下载路径二候选": { en: "Download path 2 candidate" },
+  "两条 AI 路径的边界。": { en: "Boundary of the two AI paths." },
+  "ai_plan 只允许 AI 从分析器已确认的受支持动作中选择，实际写回由确定性代码完成；ai_bytes 由 AI 直接给出机器码或字节，但必须通过解码、指令白名单、重定位与容器重解析校验。两条路径都不赋予模型判定权，下载仍只看 delivery.download_allowed。": {
+    en: "ai_plan lets the AI choose only among the analyzer's confirmed supported actions, and deterministic code performs the actual write-back; ai_bytes lets the AI emit machine code or bytes directly, but they must pass decoding, instruction allow-list, relocation and container-reparse validation. Neither path gives the model decision authority: downloads still depend solely on delivery.download_allowed."
+  },
+  "路径一（AI 规划）": { en: "Path 1 (AI plan)" },
+  "路径二（AI 字节）": { en: "Path 2 (AI bytes)" },
+  "已选择文件，选择一条 AI 路径运行。": { en: "File selected; choose one AI path to run." },
+  "路径一运行中…": { en: "Path 1 running…" },
+  "路径二运行中…": { en: "Path 2 running…" },
+  "路径一完成": { en: "Path 1 complete" },
+  "路径二完成": { en: "Path 2 complete" },
+  "路径一运行失败": { en: "Path 1 failed" },
+  "路径二运行失败": { en: "Path 2 failed" },
+  "请先选择或拖入一个二进制文件（AI 路径）。": { en: "Choose or drop a binary file first (AI paths)." },
+  "AI 服务未配置（未设置 provider）": { en: "AI service is not configured (no provider set)" },
+  "AI 修复未通过校验": { en: "AI repair failed validation" },
+  "AI 修复请求失败": { en: "AI repair request failed" }
+});
+
+Object.assign(window.BR_I18N_OVERRIDES, {
+  "AI 路径契约 JSON": { en: "AI paths contract JSON" }
+});

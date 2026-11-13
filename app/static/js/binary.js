@@ -1,8 +1,12 @@
 /* Universal binary repair page (/binary).
  *
- * Two calls only:
+ * Deterministic single path:
  *   POST /api/binary/scan   multipart(binary, csrf)  -> read-only matrix/sink report
  *   POST /api/binary/repair multipart(binary, csrf, allow_static_only=1) -> candidate
+ *
+ * Two direct-AI paths (independent file picker, shared best-effort opt-in):
+ *   POST /api/binary/ai-repair multipart(binary, csrf, path=ai_plan|ai_bytes,
+ *                                        allow_static_only=1) -> candidate
  *
  * The page never derives a verdict on its own: the disposition badge, the
  * verified flag and the download permission all come from the server report.
@@ -28,41 +32,43 @@
     invalid: { label: "无效输入", cls: "is-invalid" }
   };
 
+  function byId(id) { return document.getElementById(id); }
+
   var els = {
-    drop: document.getElementById("binary-drop"),
-    file: document.getElementById("binary-file"),
-    fileName: document.getElementById("binary-file-name"),
-    scan: document.getElementById("binary-scan"),
-    repair: document.getElementById("binary-repair"),
-    allowStatic: document.getElementById("binary-allow-static"),
-    status: document.getElementById("binary-scan-status"),
-    error: document.getElementById("binary-error"),
-    scanSection: document.getElementById("binary-scan-result"),
-    scanVerdict: document.getElementById("binary-scan-verdict"),
-    fmt: document.getElementById("binary-scan-format"),
-    arch: document.getElementById("binary-scan-arch"),
-    bits: document.getElementById("binary-scan-bits"),
-    endian: document.getElementById("binary-scan-endian"),
-    cell: document.getElementById("binary-scan-cell"),
-    repairable: document.getElementById("binary-scan-repairable"),
-    findingsCount: document.getElementById("binary-scan-findings-count"),
-    findings: document.getElementById("binary-findings"),
-    limitationsBlock: document.getElementById("binary-limitations-block"),
-    limitations: document.getElementById("binary-limitations"),
-    repairSection: document.getElementById("binary-repair-result"),
-    disposition: document.getElementById("binary-disposition"),
-    dispositionCode: document.getElementById("binary-disposition-code"),
-    verified: document.getElementById("binary-verified"),
-    tier: document.getElementById("binary-tier"),
-    downloadAllowed: document.getElementById("binary-download-allowed"),
-    repairDetail: document.getElementById("binary-repair-detail"),
-    download: document.getElementById("binary-download"),
-    candidateName: document.getElementById("binary-candidate-name"),
-    downloadNote: document.getElementById("binary-download-note"),
-    warningsBlock: document.getElementById("binary-warnings-block"),
-    warnings: document.getElementById("binary-warnings"),
-    report: document.getElementById("binary-report"),
-    reportJson: document.getElementById("binary-report-json")
+    drop: byId("binary-drop"),
+    file: byId("binary-file"),
+    fileName: byId("binary-file-name"),
+    scan: byId("binary-scan"),
+    repair: byId("binary-repair"),
+    allowStatic: byId("binary-allow-static"),
+    status: byId("binary-scan-status"),
+    error: byId("binary-error"),
+    scanSection: byId("binary-scan-result"),
+    scanVerdict: byId("binary-scan-verdict"),
+    fmt: byId("binary-scan-format"),
+    arch: byId("binary-scan-arch"),
+    bits: byId("binary-scan-bits"),
+    endian: byId("binary-scan-endian"),
+    cell: byId("binary-scan-cell"),
+    repairable: byId("binary-scan-repairable"),
+    findingsCount: byId("binary-scan-findings-count"),
+    findings: byId("binary-findings"),
+    limitationsBlock: byId("binary-limitations-block"),
+    limitations: byId("binary-limitations"),
+    repairSection: byId("binary-repair-result"),
+    disposition: byId("binary-disposition"),
+    dispositionCode: byId("binary-disposition-code"),
+    verified: byId("binary-verified"),
+    tier: byId("binary-tier"),
+    downloadAllowed: byId("binary-download-allowed"),
+    repairDetail: byId("binary-repair-detail"),
+    download: byId("binary-download"),
+    candidateName: byId("binary-candidate-name"),
+    downloadNote: byId("binary-download-note"),
+    warningsBlock: byId("binary-warnings-block"),
+    warnings: byId("binary-warnings"),
+    report: byId("binary-report"),
+    reportJson: byId("binary-report-json")
   };
 
   var state = {
@@ -166,7 +172,7 @@
   }
 
   function fillList(list, items, line) {
-    if (!list) return;
+    if (!list) return 0;
     while (list.firstChild) list.removeChild(list.firstChild);
     var values = Array.isArray(items) ? items.slice(0, 200) : [];
     values.forEach(function (item) {
@@ -218,13 +224,11 @@
       ];
       return parts.filter(Boolean).join(" · ");
     });
-    if (els.findings) {
-      if (findingLines === 0) {
-        var empty = document.createElement("li");
-        empty.className = "binary-list-empty";
-        empty.textContent = tx("没有发现可修补的 sink。");
-        els.findings.appendChild(empty);
-      }
+    if (els.findings && findingLines === 0) {
+      var empty = document.createElement("li");
+      empty.className = "binary-list-empty";
+      empty.textContent = tx("没有发现可修补的 sink。");
+      els.findings.appendChild(empty);
     }
 
     var limitations = Array.isArray(scan.limitations) ? scan.limitations : [];
@@ -232,77 +236,105 @@
     setHidden(els.limitationsBlock, limitationLines === 0);
   }
 
-  function renderDisposition(disposition) {
-    if (!els.disposition) return;
-    var meta = DISPOSITIONS[disposition];
-    els.disposition.textContent = meta ? tx(meta.label) : (disposition || tx("未知"));
-    els.disposition.className = "binary-badge " + (meta ? meta.cls : "is-unknown");
-    els.disposition.hidden = false;
+  function dispositionMeta(disposition) {
+    return DISPOSITIONS[disposition] || null;
   }
 
-  function renderRepair(payload) {
-    state.repair = payload || null;
-    if (!payload || !els.repairSection) {
-      setHidden(els.repairSection, true);
-      setHidden(els.download, true);
-      return;
-    }
-    setHidden(els.repairSection, false);
+  function paintBadge(element, disposition) {
+    if (!element) return;
+    var meta = dispositionMeta(disposition);
+    element.textContent = meta ? tx(meta.label) : (disposition || tx("未知"));
+    element.className = "binary-badge " + (meta ? meta.cls : "is-unknown");
+    element.hidden = false;
+  }
 
+  /* Shared report renderer for the deterministic path and the two AI cards. */
+  function applyResult(target, payload) {
     var report = payload.report && typeof payload.report === "object" ? payload.report : null;
     var delivery = (payload.delivery && typeof payload.delivery === "object")
       ? payload.delivery
       : (report && report.delivery && typeof report.delivery === "object" ? report.delivery : {});
     var disposition = payload.disposition || (report && report.disposition) || "";
     var verified = payload.verified === true ? true : (payload.verified === false ? false : null);
+    var allowed = delivery.download_allowed === true
+      && typeof payload.patched_base64 === "string"
+      && payload.patched_base64.length > 0;
 
-    renderDisposition(disposition);
-    if (els.dispositionCode) els.dispositionCode.textContent = disposition || EMPTY;
-    if (els.verified) els.verified.textContent = yesNo(verified == null ? undefined : verified);
-    if (els.tier) els.tier.textContent = delivery.tier || EMPTY;
-    if (els.downloadAllowed) {
-      els.downloadAllowed.textContent = yesNo(
+    target.disposition = disposition;
+    target.verified = verified;
+    target.delivery = delivery;
+    target.allowed = allowed;
+    target.candidate = allowed
+      ? { base64: payload.patched_base64, filename: safeFilename(payload.filename) }
+      : null;
+
+    paintBadge(target.badge, disposition);
+    if (target.dispositionCode) target.dispositionCode.textContent = disposition || EMPTY;
+    if (target.verifiedEl) target.verifiedEl.textContent = yesNo(verified);
+    if (target.tier) target.tier.textContent = delivery.tier || EMPTY;
+    if (target.downloadAllowed) {
+      target.downloadAllowed.textContent = yesNo(
         delivery.download_allowed === true ? true : (delivery.download_allowed === false ? false : undefined)
       );
     }
 
     var detail = payload.detail || (report && report.error) || "";
-    if (els.repairDetail) {
-      els.repairDetail.textContent = detail ? String(detail) : "";
-      els.repairDetail.hidden = !detail;
+    if (target.detail) {
+      target.detail.textContent = detail ? String(detail) : "";
+      target.detail.hidden = !detail;
     }
 
-    var allowed = delivery.download_allowed === true
-      && typeof payload.patched_base64 === "string"
-      && payload.patched_base64.length > 0;
-    state.candidate = allowed
-      ? { base64: payload.patched_base64, filename: safeFilename(payload.filename) }
-      : null;
-
-    if (els.download) {
-      els.download.hidden = !allowed;
-      els.download.disabled = !allowed;
-      els.download.textContent = verified === true
-        ? tx("下载已验证修复候选")
-        : tx("下载未验证候选");
+    if (target.download) {
+      target.download.hidden = !allowed;
+      target.download.disabled = !allowed;
+      target.download.textContent = verified === true
+        ? tx(target.verifiedDownloadLabel || "下载已验证修复候选")
+        : tx(target.downloadLabel || "下载未验证候选");
     }
-    if (els.candidateName) {
-      els.candidateName.textContent = allowed ? state.candidate.filename : "";
-      els.candidateName.hidden = !allowed;
+    if (target.filename) {
+      target.filename.textContent = allowed ? target.candidate.filename : "";
+      target.filename.hidden = !allowed;
     }
-    setHidden(els.downloadNote, allowed);
 
     var warnings = Array.isArray(payload.warnings)
       ? payload.warnings
       : (report && Array.isArray(report.warnings) ? report.warnings : []);
-    var warningLines = fillList(els.warnings, warnings, function (item) { return String(item); });
-    setHidden(els.warningsBlock, warningLines === 0);
+    var warningLines = fillList(target.warnings, warnings, function (item) { return String(item); });
+    setHidden(target.warningsBlock, warningLines === 0);
 
-    if (els.report && els.reportJson) {
-      var shown = report || payload;
-      els.reportJson.textContent = JSON.stringify(shown, null, 2);
-      els.report.hidden = false;
+    if (target.report && target.reportJson) {
+      target.reportJson.textContent = JSON.stringify(report || payload, null, 2);
+      target.report.hidden = false;
     }
+  }
+
+  function renderRepair(payload) {
+    state.repair = payload || null;
+    if (!payload || !els.repairSection) {
+      state.candidate = null;
+      setHidden(els.repairSection, true);
+      setHidden(els.download, true);
+      return;
+    }
+    setHidden(els.repairSection, false);
+    var target = {
+      badge: els.disposition,
+      dispositionCode: els.dispositionCode,
+      verifiedEl: els.verified,
+      tier: els.tier,
+      downloadAllowed: els.downloadAllowed,
+      detail: els.repairDetail,
+      download: els.download,
+      filename: els.candidateName,
+      warningsBlock: els.warningsBlock,
+      warnings: els.warnings,
+      report: els.report,
+      reportJson: els.reportJson,
+      downloadLabel: "下载修复候选"
+    };
+    applyResult(target, payload);
+    state.candidate = target.candidate;
+    if (els.downloadNote) setHidden(els.downloadNote, !!target.allowed);
   }
 
   function renderRepairError(payload, httpStatus) {
@@ -324,13 +356,7 @@
     });
   }
 
-  function request(url, file) {
-    var form = new FormData();
-    form.append("binary", file, file.name);
-    form.append("csrf", csrfToken());
-    if (url.indexOf("/api/binary/repair") === 0 && els.allowStatic && els.allowStatic.checked) {
-      form.append("allow_static_only", "1");
-    }
+  function postForm(url, form) {
     var controller = typeof AbortController === "function" ? new AbortController() : null;
     var timer = null;
     if (controller) {
@@ -352,6 +378,21 @@
       if (timer) window.clearTimeout(timer);
       throw error;
     });
+  }
+
+  function newForm(file) {
+    var form = new FormData();
+    form.append("binary", file, file.name);
+    form.append("csrf", csrfToken());
+    return form;
+  }
+
+  function request(url, file) {
+    var form = newForm(file);
+    if (url.indexOf("/api/binary/repair") === 0 && els.allowStatic && els.allowStatic.checked) {
+      form.append("allow_static_only", "1");
+    }
+    return postForm(url, form);
   }
 
   function requestFailure(error) {
@@ -448,23 +489,295 @@
     }
   }
 
-  function downloadCandidate() {
-    if (!state.candidate) return;
-    var bytes = decodeBase64(state.candidate.base64);
+  function triggerDownload(candidate) {
+    var bytes = decodeBase64(candidate.base64);
     if (!bytes) {
       showError(tx("下载失败：候选数据无法解码。"));
-      return;
+      return false;
     }
     var blob = new Blob([bytes], { type: "application/octet-stream" });
     var url = URL.createObjectURL(blob);
     var anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = state.candidate.filename;
+    anchor.download = candidate.filename;
     anchor.rel = "noopener";
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
     window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    return true;
+  }
+
+  function downloadCandidate() {
+    if (state.candidate) triggerDownload(state.candidate);
+  }
+
+  /* ==================== 两条 AI 直接二进制修复路径 ==================== */
+
+  function cardElements(prefix) {
+    return {
+      result: byId(prefix + "-result"),
+      badge: byId(prefix + "-badge"),
+      path: byId(prefix + "-path"),
+      called: byId(prefix + "-called"),
+      aiStatus: byId(prefix + "-ai-status"),
+      mode: byId(prefix + "-mode"),
+      provider: byId(prefix + "-provider"),
+      model: byId(prefix + "-model"),
+      sha: byId(prefix + "-sha"),
+      latency: byId(prefix + "-latency"),
+      dispositionCode: byId(prefix + "-disposition"),
+      verifiedEl: byId(prefix + "-verified"),
+      tier: byId(prefix + "-tier"),
+      downloadAllowed: byId(prefix + "-download-allowed"),
+      detail: byId(prefix + "-detail"),
+      error: byId(prefix + "-error"),
+      download: byId(prefix + "-download"),
+      filename: byId(prefix + "-filename"),
+      warningsBlock: byId(prefix + "-warnings-block"),
+      warnings: byId(prefix + "-warnings"),
+      report: byId(prefix + "-report"),
+      reportJson: byId(prefix + "-report-json")
+    };
+  }
+
+  var aiEls = {
+    section: document.querySelector('[data-testid="binary-ai-section"]'),
+    drop: byId("binary-ai-drop"),
+    file: byId("binary-ai-file"),
+    fileName: byId("binary-ai-file-name"),
+    allowStatic: byId("binary-ai-allow-static"),
+    runPlan: byId("binary-ai-run-plan"),
+    runBytes: byId("binary-ai-run-bytes"),
+    status: byId("binary-ai-status"),
+    error: byId("binary-ai-error"),
+    plan: cardElements("binary-ai-plan"),
+    bytes: cardElements("binary-ai-bytes")
+  };
+
+  function aiCard(pathName) {
+    return pathName === "ai_bytes" ? aiEls.bytes : aiEls.plan;
+  }
+
+  var aiState = {
+    file: null,
+    busy: false,
+    statusKey: "idle",
+    statusData: "",
+    results: { ai_plan: null, ai_bytes: null },
+    candidates: { ai_plan: null, ai_bytes: null }
+  };
+
+  function aiPathLabel(pathName) {
+    return pathName === "ai_bytes" ? tx("路径二（AI 字节）") : tx("路径一（AI 规划）");
+  }
+
+  function aiStatusText() {
+    switch (aiState.statusKey) {
+      case "ai-ready": return tx("已选择文件，选择一条 AI 路径运行。") +
+        (aiState.statusData ? " · " + aiState.statusData : "");
+      case "ai-running": return tx(aiState.statusData === "ai_bytes" ? "路径二运行中…" : "路径一运行中…");
+      case "ai-done": return tx(aiState.statusData.indexOf("ai_bytes") === 0 ? "路径二完成" : "路径一完成") +
+        (aiState.statusData.indexOf(" · ") >= 0 ? " · " + aiState.statusData.split(" · ").slice(1).join(" · ") : "");
+      case "ai-failed": return tx(aiState.statusData === "ai_bytes" ? "路径二运行失败" : "路径一运行失败");
+      case "empty": return aiState.statusData || "";
+      default: return "";
+    }
+  }
+
+  function setAiStatus(key, data) {
+    aiState.statusKey = key;
+    aiState.statusData = data || "";
+    if (aiEls.status) aiEls.status.textContent = aiStatusText();
+  }
+
+  function setAiBusy(busy) {
+    aiState.busy = !!busy;
+    if (aiEls.runPlan) aiEls.runPlan.disabled = aiState.busy;
+    if (aiEls.runBytes) aiEls.runBytes.disabled = aiState.busy;
+    if (aiEls.section) aiEls.section.setAttribute("aria-busy", aiState.busy ? "true" : "false");
+  }
+
+  function clearAiError() {
+    if (!aiEls.error) return;
+    aiEls.error.textContent = "";
+    aiEls.error.hidden = true;
+  }
+
+  function showAiError(message) {
+    if (!aiEls.error) return;
+    aiEls.error.textContent = message ? tx(message) : "";
+    aiEls.error.hidden = !message;
+  }
+
+  function renderAiFileName() {
+    if (!aiEls.fileName) return;
+    if (!aiState.file) {
+      aiEls.fileName.textContent = "";
+      aiEls.fileName.hidden = true;
+      return;
+    }
+    aiEls.fileName.textContent = aiState.file.name + " · " + formatBytes(aiState.file.size);
+    aiEls.fileName.hidden = false;
+  }
+
+  function renderAi(pathName, payload, httpStatus) {
+    aiState.results[pathName] = payload
+      ? { payload: payload, status: httpStatus || 0 }
+      : null;
+    var card = aiCard(pathName);
+    if (!payload || !card || !card.result) {
+      if (card) setHidden(card.result, true);
+      return;
+    }
+    setHidden(card.result, false);
+    var ok = httpStatus === 200 && payload.ok === true;
+
+    var ai = payload.ai && typeof payload.ai === "object" ? payload.ai : {};
+    var called = ai.called === true ? true : (ai.called === false ? false : undefined);
+    if (card.path) card.path.textContent = payload.path || pathName;
+    if (card.called) card.called.textContent = yesNo(called);
+    if (card.aiStatus) card.aiStatus.textContent = ai.status ? String(ai.status) : EMPTY;
+    if (card.mode) card.mode.textContent = ai.mode ? String(ai.mode) : EMPTY;
+    if (card.provider) card.provider.textContent = ai.provider ? String(ai.provider) : EMPTY;
+    if (card.model) card.model.textContent = ai.model ? String(ai.model) : EMPTY;
+    if (card.sha) card.sha.textContent = ai.plan_sha256 ? String(ai.plan_sha256) : EMPTY;
+    if (card.latency) {
+      card.latency.textContent = ai.latency_ms == null ? EMPTY : String(ai.latency_ms) + " ms";
+    }
+
+    applyResult(card, payload);
+    aiState.candidates[pathName] = card.candidate;
+
+    var disposition = payload.disposition || "";
+    var verified = payload.verified === true ? true : (payload.verified === false ? false : null);
+    card.result.dataset.state = ok ? "ok" : "error";
+    card.result.dataset.disposition = disposition || "unset";
+    card.result.dataset.verified =
+      verified === true ? "true" : (verified === false ? "false" : "unknown");
+    card.result.dataset.report = card.report && card.report.hidden ? "hidden" : "shown";
+    card.result.dataset.download = card.allowed ? "allowed" : "blocked";
+    if (card.download) card.download.dataset.state = card.allowed ? "allowed" : "blocked";
+
+    if (card.error) {
+      var aiError = ai.error ? String(ai.error) : "";
+      card.error.textContent = aiError;
+      card.error.hidden = !aiError;
+    }
+  }
+
+  function aiErrorText(status, payload) {
+    var detail = payload && payload.detail;
+    if (Array.isArray(detail)) detail = detail.join("；");
+    var suffix = detail ? " · " + String(detail) : "";
+    if (status === 503) return tx("AI 服务未配置（未设置 provider）") + suffix;
+    if (status === 422) return tx("AI 修复未通过校验") + suffix;
+    return (detail ? String(detail) : tx("AI 修复请求失败")) + " · HTTP " + status;
+  }
+
+  function runAiPath(pathName) {
+    if (aiState.busy) return Promise.resolve();
+    if (!aiState.file) {
+      showAiError(tx("请先选择或拖入一个二进制文件（AI 路径）。"));
+      return Promise.resolve();
+    }
+    clearAiError();
+    setAiBusy(true);
+    setAiStatus("ai-running", pathName);
+    var form = newForm(aiState.file);
+    form.append("path", pathName);
+    form.append(
+      "allow_static_only",
+      aiEls.allowStatic && aiEls.allowStatic.checked ? "1" : "0"
+    );
+    return postForm("/api/binary/ai-repair", form).then(function (result) {
+      var payload = result.payload || {};
+      renderAi(pathName, payload, result.status);
+      if (result.status === 200 && payload.ok === true) {
+        var delivery = payload.delivery || {};
+        setAiStatus("ai-done", pathName + " · " +
+          (payload.disposition || "") + (delivery.tier ? " · " + delivery.tier : ""));
+        return;
+      }
+      showAiError(aiErrorText(result.status, payload));
+      setAiStatus("ai-failed", pathName);
+    }).catch(function (error) {
+      showAiError(requestFailure(error));
+      setAiStatus("ai-failed", pathName);
+    }).finally(function () {
+      setAiBusy(false);
+    });
+  }
+
+  function downloadAi(pathName) {
+    var candidate = aiState.candidates[pathName];
+    if (candidate) triggerDownload(candidate);
+  }
+
+  function handleAiFile(file) {
+    if (!file) return;
+    aiState.file = file;
+    aiState.results = { ai_plan: null, ai_bytes: null };
+    aiState.candidates = { ai_plan: null, ai_bytes: null };
+    renderAiFileName();
+    clearAiError();
+    [aiEls.plan, aiEls.bytes].forEach(function (card) {
+      setHidden(card.result, true);
+      if (card.result) {
+        card.result.dataset.state = "idle";
+        card.result.dataset.disposition = "unset";
+        card.result.dataset.verified = "unknown";
+        card.result.dataset.report = "hidden";
+        card.result.dataset.download = "blocked";
+      }
+      if (card.download) card.download.dataset.state = "blocked";
+    });
+    if (file.size > MAX_BYTES) {
+      showAiError(tx("文件超过 20 MiB 上限，请换一个更小的样本。"));
+      setAiStatus("empty", "");
+      return;
+    }
+    if (file.size === 0) {
+      showAiError(tx("文件为空，请重新选择。"));
+      setAiStatus("empty", "");
+      return;
+    }
+    setAiStatus("ai-ready", file.name);
+  }
+
+  /* ==================== 共享交互 ==================== */
+
+  function wireDrop(drop, input, onFile) {
+    if (input) {
+      input.addEventListener("change", function () {
+        var files = input.files;
+        onFile(files && files.length ? files[0] : null);
+      });
+    }
+    if (!drop) return;
+    ["dragenter", "dragover"].forEach(function (name) {
+      drop.addEventListener(name, function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        drop.classList.add("is-dragover");
+      });
+    });
+    ["dragleave", "dragend"].forEach(function (name) {
+      drop.addEventListener(name, function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.relatedTarget && drop.contains(event.relatedTarget)) return;
+        drop.classList.remove("is-dragover");
+      });
+    });
+    drop.addEventListener("drop", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      drop.classList.remove("is-dragover");
+      var transfer = event.dataTransfer;
+      var files = transfer && transfer.files;
+      if (files && files.length) onFile(files[0]);
+    });
   }
 
   function refreshTexts() {
@@ -472,14 +785,17 @@
     if (state.statusKey !== "idle") setStatus(state.statusKey, state.statusData);
     if (state.scan) renderScan(state.scan);
     if (state.repair) renderRepair(state.repair);
+    if (aiEls.section) {
+      renderAiFileName();
+      if (aiState.statusKey !== "idle") setAiStatus(aiState.statusKey, aiState.statusData);
+      var planEntry = aiState.results.ai_plan;
+      var bytesEntry = aiState.results.ai_bytes;
+      if (planEntry) renderAi("ai_plan", planEntry.payload, planEntry.status);
+      if (bytesEntry) renderAi("ai_bytes", bytesEntry.payload, bytesEntry.status);
+    }
   }
 
-  if (els.file) {
-    els.file.addEventListener("change", function () {
-      var files = els.file.files;
-      handleFile(files && files.length ? files[0] : null);
-    });
-  }
+  wireDrop(els.drop, els.file, handleFile);
 
   if (els.scan) {
     els.scan.addEventListener("click", function () {
@@ -505,30 +821,22 @@
     els.download.addEventListener("click", downloadCandidate);
   }
 
-  if (els.drop) {
-    ["dragenter", "dragover"].forEach(function (name) {
-      els.drop.addEventListener(name, function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        els.drop.classList.add("is-dragover");
-      });
-    });
-    ["dragleave", "dragend"].forEach(function (name) {
-      els.drop.addEventListener(name, function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (event.relatedTarget && els.drop.contains(event.relatedTarget)) return;
-        els.drop.classList.remove("is-dragover");
-      });
-    });
-    els.drop.addEventListener("drop", function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      els.drop.classList.remove("is-dragover");
-      var transfer = event.dataTransfer;
-      var files = transfer && transfer.files;
-      if (files && files.length) handleFile(files[0]);
-    });
+  if (aiEls.section) {
+    wireDrop(aiEls.drop, aiEls.file, handleAiFile);
+    if (aiEls.runPlan) {
+      aiEls.runPlan.addEventListener("click", function () { runAiPath("ai_plan"); });
+    }
+    if (aiEls.runBytes) {
+      aiEls.runBytes.addEventListener("click", function () { runAiPath("ai_bytes"); });
+    }
+    if (aiEls.plan.download) {
+      aiEls.plan.download.addEventListener("click", function () { downloadAi("ai_plan"); });
+    }
+    if (aiEls.bytes.download) {
+      aiEls.bytes.download.addEventListener("click", function () { downloadAi("ai_bytes"); });
+    }
+    setHidden(aiEls.plan.result, true);
+    setHidden(aiEls.bytes.result, true);
   }
 
   document.addEventListener("brlang:change", refreshTexts);

@@ -128,6 +128,7 @@
             "stderr_len": 0,
             "canary_intact": null,
             "output_len": 0,
+            "buffer_match": null,
             "error": null
           },
           {
@@ -138,6 +139,7 @@
             "stderr_len": 0,
             "canary_intact": null,
             "output_len": 1,
+            "buffer_match": null,
             "error": null
           },
           {
@@ -148,6 +150,7 @@
             "stderr_len": 0,
             "canary_intact": null,
             "output_len": 15,
+            "buffer_match": null,
             "error": null
           },
           {
@@ -158,6 +161,7 @@
             "stderr_len": 0,
             "canary_intact": null,
             "output_len": 15,
+            "buffer_match": null,
             "error": null
           },
           {
@@ -168,6 +172,7 @@
             "stderr_len": 0,
             "canary_intact": null,
             "output_len": 15,
+            "buffer_match": null,
             "error": null
           },
           {
@@ -178,6 +183,7 @@
             "stderr_len": 0,
             "canary_intact": null,
             "output_len": 15,
+            "buffer_match": null,
             "error": null
           }
         ],
@@ -186,7 +192,7 @@
           "The candidate was ad-hoc re-signed for loading; the original signature is not preserved."
         ]
       },
-      "report_sha256": "9c49ec4e0371edb316e8b9943549683ebd1d75c67ddebf260949a9e721a086b6"
+      "report_sha256": "d2a90afbed396e8dfaa394f3b0caa07d68d888e70b4a514a928fe46815c831ce"
     },
     "gate": {
       "success": true,
@@ -194,7 +200,7 @@
       "reason": "",
       "required_checks": 8,
       "required_not_run": 0,
-      "evidence_sha256": "9c49ec4e0371edb316e8b9943549683ebd1d75c67ddebf260949a9e721a086b6"
+      "evidence_sha256": "d2a90afbed396e8dfaa394f3b0caa07d68d888e70b4a514a928fe46815c831ce"
     },
     "tier": "native_run",
     "engine": "macho-native",
@@ -213,6 +219,7 @@
         "stderr_len": 0,
         "canary_intact": null,
         "output_len": 0,
+        "buffer_match": null,
         "error": null
       },
       {
@@ -223,6 +230,7 @@
         "stderr_len": 0,
         "canary_intact": null,
         "output_len": 1,
+        "buffer_match": null,
         "error": null
       },
       {
@@ -233,6 +241,7 @@
         "stderr_len": 0,
         "canary_intact": null,
         "output_len": 15,
+        "buffer_match": null,
         "error": null
       },
       {
@@ -243,6 +252,7 @@
         "stderr_len": 0,
         "canary_intact": null,
         "output_len": 15,
+        "buffer_match": null,
         "error": null
       },
       {
@@ -253,6 +263,7 @@
         "stderr_len": 0,
         "canary_intact": null,
         "output_len": 15,
+        "buffer_match": null,
         "error": null
       },
       {
@@ -263,6 +274,7 @@
         "stderr_len": 0,
         "canary_intact": null,
         "output_len": 15,
+        "buffer_match": null,
         "error": null
       }
     ],
@@ -332,5 +344,6 @@
     ]
   },
   "slices": [],
-  "warnings": []
+  "warnings": [],
+  "ai": {}
 }

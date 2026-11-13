@@ -37,6 +37,11 @@ from app.services.binary_quick_repair import QuickRepairError, quick_repair_elf
 from app.services.binary_pipeline import repair_any as repair_any_pipeline
 from app.services.binary_pipeline import repair_binary as repair_binary_pipeline
 from app.services.binary_pipeline import scan_binary
+from app.services.ai_binary_repair import (
+    AI_PATHS,
+    ai_paths_contract,
+    ai_repair as ai_binary_repair,
+)
 from app.services.repair_matrix import matrix_payload
 from app.services.ai_adjudication import (
     GateResult, PolicyViolation, adjudicate, guard_model_payload,
@@ -474,6 +479,12 @@ async def binary_page(request: Request):
         "binary.html",
         {"matrix": matrix_payload()},
     )
+
+
+@app.get("/api/binary/ai-paths", name="binary_ai_paths_api")
+async def binary_ai_paths() -> JSONResponse:
+    """Describe the two AI direct-binary repair paths (English ASCII)."""
+    return JSONResponse(ai_paths_contract(), headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/binary/matrix", name="binary_matrix_api")
@@ -1292,6 +1303,79 @@ async def binary_repair(
         "report": payload,
         "verification": payload.get("verification", {}),
         "delivery": payload.get("delivery", {}),
+        "warnings": list(report.warnings),
+    }, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/binary/ai-repair")
+async def binary_ai_repair(
+    binary: UploadFile = File(...),
+    csrf: str = Form(...),
+    path: str = Form(...),
+    allow_static_only: str = Form("0"),
+) -> JSONResponse:
+    """Run one AI direct-binary repair path; the deterministic gate decides."""
+    _require_csrf(csrf)
+    raw = await binary.read()
+    if len(raw) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
+    requested = str(path or "").strip()
+    if requested not in AI_PATHS:
+        raise HTTPException(
+            status_code=422,
+            detail="path must be one of: " + ", ".join(AI_PATHS),
+        )
+    import base64
+
+    static_ok = str(allow_static_only or "").strip().lower() in {"1", "true", "yes", "on"}
+    client = client_from_env()
+    outcome = ai_binary_repair(
+        raw, path=requested, client=client,
+        verify=True, allow_static_only=static_ok,
+    )
+    report = outcome.report
+    ai = dict(outcome.ai)
+    payload = report.to_dict()
+    if ai.get("status") == "unavailable":
+        return JSONResponse(
+            {
+                "ok": False,
+                "path": requested,
+                "detail": "AI provider not configured",
+                "ai": ai,
+                "report": payload,
+            },
+            status_code=503,
+        )
+    if not outcome.download_allowed or outcome.candidate is None:
+        detail = (
+            report.error
+            or (report.limitations[-1] if report.limitations else "no repaired candidate")
+        )
+        return JSONResponse(
+            {
+                "ok": False,
+                "path": requested,
+                "disposition": report.disposition,
+                "detail": detail,
+                "ai": ai,
+                "report": payload,
+                "warnings": list(report.warnings),
+            },
+            status_code=422,
+        )
+    suffix = {"elf": "-fixed.elf", "pe": "-fixed.exe", "macho": "-fixed.macho"}.get(report.format, "-fixed.bin")
+    return JSONResponse({
+        "ok": True,
+        "path": requested,
+        "verified": bool(outcome.verified),
+        "disposition": report.disposition,
+        "filename": (Path(binary.filename or "sample").stem + suffix),
+        "patched_base64": base64.b64encode(outcome.candidate).decode("ascii"),
+        "report": payload,
+        "verification": payload.get("verification", {}),
+        "delivery": payload.get("delivery", {}),
+        "ai": ai,
         "warnings": list(report.warnings),
     }, headers={"Cache-Control": "no-store"})
 

@@ -1,0 +1,697 @@
+{
+  "path": "ai_plan",
+  "input": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/pe/vuln-strcpy-x64.exe",
+  "input_sha256": "1dcafa9d93e010e7da787e3323376be6b8ac79c792a556ff2f5269ca20463fae",
+  "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
+  "verified": true,
+  "download_allowed": true,
+  "disposition": "verified_patch",
+  "status": "patched",
+  "strategy": "guard",
+  "actions": [
+    {
+      "kind": "guard",
+      "site": "0x1400010d0",
+      "callee": "strcpy",
+      "capacity": 16,
+      "cave_va": "0x1400d1000",
+      "method": "pe-section"
+    }
+  ],
+  "ai": {
+    "schema_version": 1,
+    "path": "ai_plan",
+    "requested": true,
+    "called": true,
+    "mode": "scripted",
+    "provider": "scripted",
+    "model": "scripted-binary-repair",
+    "status": "accepted",
+    "latency_ms": 0,
+    "plan_sha256": "76eed09a90b5f2198d69f6159f8739c90ff22a661bac6573ffe5b8b4383a220f",
+    "error": null,
+    "validation": {
+      "sink_index": 0,
+      "strategy": "guard",
+      "reason": "scripted acceptance: choose the deterministic strategy for this sink"
+    },
+    "usage": {
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    "request_id": "scripted",
+    "authority": "deterministic_gate",
+    "may_not": [
+      "promote_gate_failure",
+      "emit_verdict",
+      "emit_evidence",
+      "change_gate_evidence"
+    ],
+    "disposition": "verified_patch",
+    "verified": true
+  },
+  "verification": {
+    "packet": {
+      "schema_version": 2,
+      "scope": {
+        "format": "pe",
+        "arch": "x86_64",
+        "runtime_tier": "emulated_run",
+        "runtime_verdict": "pass",
+        "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof."
+      },
+      "checks": [
+        {
+          "id": "format",
+          "title": "Container and architecture are in the repair matrix",
+          "status": "passed",
+          "required": true,
+          "detail": "pe/x86_64"
+        },
+        {
+          "id": "candidate.present",
+          "title": "A repaired candidate was produced",
+          "status": "passed",
+          "required": true,
+          "detail": "candidate_bytes=827904"
+        },
+        {
+          "id": "candidate.identity.original",
+          "title": "The report hash matches the input bytes",
+          "status": "passed",
+          "required": true,
+          "detail": "hash matches input"
+        },
+        {
+          "id": "candidate.identity.patched",
+          "title": "The candidate hash matches the produced bytes and differs from the input",
+          "status": "passed",
+          "required": true,
+          "detail": "candidate hash matches produced bytes"
+        },
+        {
+          "id": "container.reparse",
+          "title": "The patched candidate re-parses as the same container",
+          "status": "passed",
+          "required": true,
+          "detail": "reparse ok"
+        },
+        {
+          "id": "repair.action",
+          "title": "At least one repair action was applied",
+          "status": "passed",
+          "required": true,
+          "detail": "actions=1"
+        },
+        {
+          "id": "runtime.tier",
+          "title": "Runtime evidence is native or emulated (not static-only)",
+          "status": "passed",
+          "required": true,
+          "detail": "tier=emulated_run engine=unicorn-x86_64"
+        },
+        {
+          "id": "runtime.contract",
+          "title": "All runtime cases stay inside the capacity",
+          "status": "passed",
+          "required": true,
+          "detail": "verdict=pass cases=6"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "guard",
+          "site": "0x1400010d0",
+          "callee": "strcpy",
+          "capacity": 16,
+          "cave_va": "0x1400d1000",
+          "method": "pe-section"
+        }
+      ],
+      "runtime": {
+        "tier": "emulated_run",
+        "engine": "unicorn-x86_64",
+        "verdict": "pass",
+        "cases": [
+          {
+            "input_len": 0,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 0,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 1,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 1,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 15,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 16,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 17,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 64,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          }
+        ],
+        "limitations": [
+          "Emulated execution with modeled imports; not a native Windows/Linux run.",
+          "Only the repaired function is executed; unrelated code paths are not covered."
+        ]
+      },
+      "report_sha256": "212ce78e335a52c6b72e9fe82a0cb4d28847f34732e89e7685a79df29e60642e"
+    },
+    "gate": {
+      "success": true,
+      "outcome": "success_within_scope",
+      "reason": "",
+      "required_checks": 8,
+      "required_not_run": 0,
+      "evidence_sha256": "212ce78e335a52c6b72e9fe82a0cb4d28847f34732e89e7685a79df29e60642e"
+    },
+    "tier": "emulated_run",
+    "engine": "unicorn-x86_64",
+    "static_reparse": true
+  },
+  "runtime": {
+    "tier": "emulated_run",
+    "engine": "unicorn-x86_64",
+    "verdict": "pass",
+    "cases": [
+      {
+        "input_len": 0,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 0,
+        "buffer_match": true,
+        "error": null
+      },
+      {
+        "input_len": 1,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 1,
+        "buffer_match": true,
+        "error": null
+      },
+      {
+        "input_len": 15,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 15,
+        "buffer_match": true,
+        "error": null
+      },
+      {
+        "input_len": 16,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 15,
+        "buffer_match": true,
+        "error": null
+      },
+      {
+        "input_len": 17,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 15,
+        "buffer_match": true,
+        "error": null
+      },
+      {
+        "input_len": 64,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 15,
+        "buffer_match": true,
+        "error": null
+      }
+    ],
+    "limitations": [
+      "Emulated execution with modeled imports; not a native Windows/Linux run.",
+      "Only the repaired function is executed; unrelated code paths are not covered."
+    ]
+  },
+  "limitations": [],
+  "warnings": [],
+  "report": {
+    "schema_version": 4,
+    "format": "pe",
+    "arch": "x86_64",
+    "backend": "pe",
+    "strategy": "guard",
+    "status": "patched",
+    "supported": true,
+    "original_sha256": "1dcafa9d93e010e7da787e3323376be6b8ac79c792a556ff2f5269ca20463fae",
+    "patched_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
+    "mode": "guard",
+    "capacity": 16,
+    "findings": [
+      {
+        "kind": "unbounded_copy",
+        "address": "0x1400010d0",
+        "callee": "strcpy",
+        "capacity": 16,
+        "dest_offset": -16,
+        "before": null,
+        "after": 16,
+        "patchable": true,
+        "confidence": "medium",
+        "strategy": "guard",
+        "detail": "strcpy into stack destination bounded to 16 bytes"
+      }
+    ],
+    "offsets": [],
+    "actions": [
+      {
+        "kind": "guard",
+        "site": "0x1400010d0",
+        "callee": "strcpy",
+        "capacity": 16,
+        "cave_va": "0x1400d1000",
+        "method": "pe-section"
+      }
+    ],
+    "limitations": [],
+    "verification": {
+      "packet": {
+        "schema_version": 2,
+        "scope": {
+          "format": "pe",
+          "arch": "x86_64",
+          "runtime_tier": "emulated_run",
+          "runtime_verdict": "pass",
+          "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof."
+        },
+        "checks": [
+          {
+            "id": "format",
+            "title": "Container and architecture are in the repair matrix",
+            "status": "passed",
+            "required": true,
+            "detail": "pe/x86_64"
+          },
+          {
+            "id": "candidate.present",
+            "title": "A repaired candidate was produced",
+            "status": "passed",
+            "required": true,
+            "detail": "candidate_bytes=827904"
+          },
+          {
+            "id": "candidate.identity.original",
+            "title": "The report hash matches the input bytes",
+            "status": "passed",
+            "required": true,
+            "detail": "hash matches input"
+          },
+          {
+            "id": "candidate.identity.patched",
+            "title": "The candidate hash matches the produced bytes and differs from the input",
+            "status": "passed",
+            "required": true,
+            "detail": "candidate hash matches produced bytes"
+          },
+          {
+            "id": "container.reparse",
+            "title": "The patched candidate re-parses as the same container",
+            "status": "passed",
+            "required": true,
+            "detail": "reparse ok"
+          },
+          {
+            "id": "repair.action",
+            "title": "At least one repair action was applied",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=1"
+          },
+          {
+            "id": "runtime.tier",
+            "title": "Runtime evidence is native or emulated (not static-only)",
+            "status": "passed",
+            "required": true,
+            "detail": "tier=emulated_run engine=unicorn-x86_64"
+          },
+          {
+            "id": "runtime.contract",
+            "title": "All runtime cases stay inside the capacity",
+            "status": "passed",
+            "required": true,
+            "detail": "verdict=pass cases=6"
+          }
+        ],
+        "actions": [
+          {
+            "kind": "guard",
+            "site": "0x1400010d0",
+            "callee": "strcpy",
+            "capacity": 16,
+            "cave_va": "0x1400d1000",
+            "method": "pe-section"
+          }
+        ],
+        "runtime": {
+          "tier": "emulated_run",
+          "engine": "unicorn-x86_64",
+          "verdict": "pass",
+          "cases": [
+            {
+              "input_len": 0,
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout_len": 0,
+              "stderr_len": 0,
+              "canary_intact": true,
+              "output_len": 0,
+              "buffer_match": true,
+              "error": null
+            },
+            {
+              "input_len": 1,
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout_len": 0,
+              "stderr_len": 0,
+              "canary_intact": true,
+              "output_len": 1,
+              "buffer_match": true,
+              "error": null
+            },
+            {
+              "input_len": 15,
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout_len": 0,
+              "stderr_len": 0,
+              "canary_intact": true,
+              "output_len": 15,
+              "buffer_match": true,
+              "error": null
+            },
+            {
+              "input_len": 16,
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout_len": 0,
+              "stderr_len": 0,
+              "canary_intact": true,
+              "output_len": 15,
+              "buffer_match": true,
+              "error": null
+            },
+            {
+              "input_len": 17,
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout_len": 0,
+              "stderr_len": 0,
+              "canary_intact": true,
+              "output_len": 15,
+              "buffer_match": true,
+              "error": null
+            },
+            {
+              "input_len": 64,
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout_len": 0,
+              "stderr_len": 0,
+              "canary_intact": true,
+              "output_len": 15,
+              "buffer_match": true,
+              "error": null
+            }
+          ],
+          "limitations": [
+            "Emulated execution with modeled imports; not a native Windows/Linux run.",
+            "Only the repaired function is executed; unrelated code paths are not covered."
+          ]
+        },
+        "report_sha256": "212ce78e335a52c6b72e9fe82a0cb4d28847f34732e89e7685a79df29e60642e"
+      },
+      "gate": {
+        "success": true,
+        "outcome": "success_within_scope",
+        "reason": "",
+        "required_checks": 8,
+        "required_not_run": 0,
+        "evidence_sha256": "212ce78e335a52c6b72e9fe82a0cb4d28847f34732e89e7685a79df29e60642e"
+      },
+      "tier": "emulated_run",
+      "engine": "unicorn-x86_64",
+      "static_reparse": true
+    },
+    "runtime": {
+      "tier": "emulated_run",
+      "engine": "unicorn-x86_64",
+      "verdict": "pass",
+      "cases": [
+        {
+          "input_len": 0,
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout_len": 0,
+          "stderr_len": 0,
+          "canary_intact": true,
+          "output_len": 0,
+          "buffer_match": true,
+          "error": null
+        },
+        {
+          "input_len": 1,
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout_len": 0,
+          "stderr_len": 0,
+          "canary_intact": true,
+          "output_len": 1,
+          "buffer_match": true,
+          "error": null
+        },
+        {
+          "input_len": 15,
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout_len": 0,
+          "stderr_len": 0,
+          "canary_intact": true,
+          "output_len": 15,
+          "buffer_match": true,
+          "error": null
+        },
+        {
+          "input_len": 16,
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout_len": 0,
+          "stderr_len": 0,
+          "canary_intact": true,
+          "output_len": 15,
+          "buffer_match": true,
+          "error": null
+        },
+        {
+          "input_len": 17,
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout_len": 0,
+          "stderr_len": 0,
+          "canary_intact": true,
+          "output_len": 15,
+          "buffer_match": true,
+          "error": null
+        },
+        {
+          "input_len": 64,
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout_len": 0,
+          "stderr_len": 0,
+          "canary_intact": true,
+          "output_len": 15,
+          "buffer_match": true,
+          "error": null
+        }
+      ],
+      "limitations": [
+        "Emulated execution with modeled imports; not a native Windows/Linux run.",
+        "Only the repaired function is executed; unrelated code paths are not covered."
+      ]
+    },
+    "container": {
+      "format": "pe",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "image_base": 5368709120,
+      "slices": 1,
+      "imports": 207,
+      "sections": 7
+    },
+    "universal": {
+      "detected": true,
+      "repairable": true,
+      "reason": ""
+    },
+    "signature_invalidated": true,
+    "codesign_invalidated": false,
+    "candidate_available": true,
+    "error": null,
+    "disposition": "verified_patch",
+    "matrix": {
+      "cell": "pe/x86_64/64/little",
+      "repairable": true,
+      "strategies": [
+        "immediate",
+        "guard"
+      ],
+      "runtime_tiers": [
+        "emulated_run"
+      ],
+      "sink_classes": [
+        "checked_copy",
+        "immediate_length",
+        "memcpy_length",
+        "syscall_length",
+        "unbounded_copy"
+      ]
+    },
+    "delivery": {
+      "download_allowed": true,
+      "verified": true,
+      "tier": "emulated_run"
+    },
+    "coverage": {
+      "schema_version": 1,
+      "sink_classes": [
+        "checked_copy",
+        "immediate_length",
+        "memcpy_length",
+        "syscall_length",
+        "unbounded_copy"
+      ],
+      "non_goals": [
+        "heap, global and non-imported inline copy sinks",
+        "sprintf/format-string expansion, UAF, integer and loop defects",
+        "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+        "32-bit Mach-O and fat Mach-O rewriting",
+        "Windows / macOS native execution beyond the existing Mach-O path"
+      ]
+    },
+    "slices": [],
+    "warnings": [],
+    "ai": {
+      "schema_version": 1,
+      "path": "ai_plan",
+      "requested": true,
+      "called": true,
+      "mode": "scripted",
+      "provider": "scripted",
+      "model": "scripted-binary-repair",
+      "status": "accepted",
+      "latency_ms": 0,
+      "plan_sha256": "76eed09a90b5f2198d69f6159f8739c90ff22a661bac6573ffe5b8b4383a220f",
+      "error": null,
+      "validation": {
+        "sink_index": 0,
+        "strategy": "guard",
+        "reason": "scripted acceptance: choose the deterministic strategy for this sink"
+      },
+      "usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0
+      },
+      "request_id": "scripted",
+      "authority": "deterministic_gate",
+      "may_not": [
+        "promote_gate_failure",
+        "emit_verdict",
+        "emit_evidence",
+        "change_gate_evidence"
+      ],
+      "disposition": "verified_patch",
+      "verified": true
+    }
+  },
+  "fixture": "pe-x86_64-guard",
+  "client_packet_keys": [
+    "allowed_strategies",
+    "analysis_limitations",
+    "arch",
+    "binary_sha256",
+    "bits",
+    "endian",
+    "findings",
+    "format",
+    "matrix",
+    "path",
+    "rules",
+    "schema_version",
+    "size"
+  ]
+}

@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-11-13 — v6: two AI direct-binary repair paths
+
+- New `ai_plan` path: bounded model planning over the deterministic writer
+  (guard / immediate), no raw bytes sent, no assembly or decompiled-C round trip.
+- New `ai_bytes` path: raw machine-code guard injection or same-length byte
+  edits, fronted by a fail-closed Capstone/allowlist/injection/edits validator;
+  at least one edit must hit the selected sink's length immediate.
+- `POST /api/binary/ai-repair`, `GET /api/binary/ai-paths`, CLI `--ai-path`, and
+  two `/binary` UI cards.  The deterministic gate remains the only acceptance
+  authority; AI cannot promote a failed or incomplete gate.
+- Runtime `buffer_match` evidence for bounded copies rejects structurally valid
+  but semantically empty guards (for example a lone `ret`).
+- Tests: `test_ai_binary_repair.py`, `test_ai_patch_validation.py`,
+  `test_binary_ai_ui.py`, `test_ai_evidence_script.py`; scripted evidence
+  `artifacts/ai-direct-binary-2026-11-13/` and acceptance record
+  `docs/acceptance/ai-binary-repair-2026-11-13.md`.
+
 All notable changes to this project are documented here. This project follows a
 simple semantic-versioning policy for delivery snapshots.
 

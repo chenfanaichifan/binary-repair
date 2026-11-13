@@ -369,6 +369,12 @@ def emulate(
         return evidence
 
     length_hint = _length_hint(copy_kind, callee)
+    expect_copy = ""
+    copy_family = _copy_family(callee) if callee else ""
+    if length_hint:
+        expect_copy = "length"
+    elif copy_family in {"strcpy", "stpcpy"}:
+        expect_copy = "strcpy"
     imports = _imports_for(data, container)
     copy_targets: list[tuple[int, str]] = []
     puts_targets: list[int] = []
@@ -445,7 +451,7 @@ def emulate(
             abi=abi, argument=b"A" * length,
             copy_targets=copy_targets, puts_targets=puts_targets,
             copy_calls=copy_calls, puts_calls=puts_calls,
-            length_hint=length_hint,
+            length_hint=length_hint, expect_copy=expect_copy,
         ))
     evidence.verdict = judge(evidence.cases, capacity)
     evidence.limitations.extend([
@@ -470,6 +476,7 @@ def _run_case(
     copy_calls: dict[int, tuple[int, str]],
     puts_calls: dict[int, int],
     length_hint: bool = False,
+    expect_copy: str = "",
 ) -> RuntimeCase:
     is_arm = container.arch == "arm64"
     is_i386 = container.arch == "i386"
@@ -564,6 +571,7 @@ def _run_case(
     uc.mem_write(input_base, argument + b"\x00")
 
     copy_overflow = [False]
+    modeled_len: list[int | None] = [None]
     length_used = [False]
 
     def complete(uc_obj: Uc, ret: int, sp: int | None) -> None:
@@ -604,6 +612,7 @@ def _run_case(
     def model_length(uc_obj: Uc, dst: int, src: int, length: int, bits: int) -> None:
         """Copy exactly ``length`` bytes, flagging any write past ``capacity``."""
         length &= (1 << bits) - 1
+        modeled_len[0] = length
         if length > capacity:
             copy_overflow[0] = True
         count = length if length <= MAX_MODEL_COPY else capacity + 96
@@ -738,6 +747,27 @@ def _run_case(
         sentinel_ok = False
         marker_ok = False
         output_len = None
+    buffer_match: bool | None = None
+    if error is None and expect_copy and capacity > 0:
+        try:
+            if expect_copy == "strcpy":
+                if len(argument) < capacity:
+                    expected = argument + b"\x00"
+                else:
+                    expected = argument[:max(capacity - 1, 0)] + b"\x00"
+            else:
+                # Length-aware copies are not NUL-terminated.  Only compare
+                # when the ABI length was actually observed and is in range; a
+                # patched code path that never reaches the modelled callee is
+                # an evidence gap, not a pass.
+                if modeled_len[0] is None or modeled_len[0] > capacity:
+                    expected = None
+                else:
+                    expected = (argument + b"\x00" * capacity)[:modeled_len[0]]
+            if expected is not None:
+                buffer_match = bytes(uc.mem_read(dest, len(expected))) == expected
+        except Exception:  # noqa: BLE001 - evidence gap, never a crash
+            buffer_match = None
     return RuntimeCase(
         input_len=len(argument),
         exit_code=0 if error is None else 1,
@@ -748,5 +778,6 @@ def _run_case(
             and not copy_overflow[0]
         ),
         output_len=output_len,
+        buffer_match=buffer_match,
         error=error,
     )

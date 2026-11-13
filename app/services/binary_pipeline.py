@@ -89,6 +89,7 @@ class UnifiedBinaryReport:
     coverage: dict[str, Any] = field(default_factory=dict)
     slices: list[dict[str, Any]] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    ai: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -489,24 +490,55 @@ def _generic_repair(
         _set_disposition(report, "unsupported")
         return RepairOutcome(None, report)
 
-    patched = result.patched
-    report.actions = [dict(action) for action in result.actions]
+    return finish_candidate(
+        data, container, result.patched, sinks, [dict(a) for a in result.actions],
+        report=report, requested_strategy=strategy,
+        verify=verify, allow_static_only=allow_static_only,
+    )
+
+
+def finish_candidate(
+    data: bytes,
+    container: ContainerInfo,
+    patched: bytes,
+    sinks: list[Sink],
+    actions: list[dict[str, Any]],
+    *,
+    report: UnifiedBinaryReport,
+    requested_strategy: str = "auto",
+    strategy_check: bool = True,
+    verify: bool,
+    allow_static_only: bool,
+) -> RepairOutcome:
+    """Apply the shared reparse/runtime/gate tail to any produced candidate.
+
+    Used by the deterministic writer and by both AI binary-repair paths.  The
+    candidate bytes may come from a template writer or from an AI-supplied
+    machine-code/byte patch; the deterministic gate is the only authority that
+    can turn them into ``verified_patch``.
+    """
+    report.actions = [dict(action) for action in actions]
     report.offsets = [
-        int(action["offset"]) for action in result.actions
+        int(action["offset"]) for action in actions
         if isinstance(action.get("offset"), int)
     ]
     report.patched_sha256 = _sha(patched)
     report.candidate_available = True
-    has_guard = any(action["kind"] == "guard" for action in result.actions)
-    report.strategy = "guard" if has_guard else "immediate"
+    kinds = {str(action.get("kind")) for action in actions}
+    if "guard" in kinds:
+        report.strategy = "guard"
+    elif kinds and kinds <= {"immediate"}:
+        report.strategy = "immediate"
+    elif not report.strategy or report.strategy == "none":
+        report.strategy = "ai-bytes"
     report.mode = report.strategy
     guard_sink = next((sink for sink in sinks if sink.kind == "unbounded_copy"), None)
     report.capacity = guard_sink.capacity if guard_sink is not None else sinks[0].capacity
 
-    if not plans_strategy(repair_cell(container) or _NO_CELL, strategy):
+    if strategy_check and not plans_strategy(repair_cell(container) or _NO_CELL, requested_strategy):
         report.supported = False
         report.candidate_available = False
-        report.error = f"requested strategy {strategy} is not in the repair matrix"
+        report.error = f"requested strategy {requested_strategy} is not in the repair matrix"
         _set_disposition(report, "unsupported")
         return RepairOutcome(None, report)
 

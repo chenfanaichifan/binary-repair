@@ -130,6 +130,7 @@
             "stderr_len": 0,
             "canary_intact": true,
             "output_len": null,
+            "buffer_match": true,
             "error": null
           },
           {
@@ -140,6 +141,7 @@
             "stderr_len": 0,
             "canary_intact": true,
             "output_len": null,
+            "buffer_match": true,
             "error": null
           },
           {
@@ -150,6 +152,7 @@
             "stderr_len": 0,
             "canary_intact": true,
             "output_len": null,
+            "buffer_match": true,
             "error": null
           },
           {
@@ -160,6 +163,7 @@
             "stderr_len": 0,
             "canary_intact": true,
             "output_len": null,
+            "buffer_match": true,
             "error": null
           },
           {
@@ -170,6 +174,7 @@
             "stderr_len": 0,
             "canary_intact": true,
             "output_len": null,
+            "buffer_match": true,
             "error": null
           },
           {
@@ -180,6 +185,7 @@
             "stderr_len": 0,
             "canary_intact": true,
             "output_len": null,
+            "buffer_match": true,
             "error": null
           }
         ],
@@ -189,7 +195,7 @@
           "Only the repaired function is executed; unrelated code paths are not covered."
         ]
       },
-      "report_sha256": "34d82bee06c359ce7fd29d1a9ae049f549886bf32dee977cbb326f5e9dc42d7b"
+      "report_sha256": "92258b555eb6abfd611920c2f09fd4769a3f229ca572136dcc49aefd1b20bb55"
     },
     "gate": {
       "success": true,
@@ -197,7 +203,7 @@
       "reason": "",
       "required_checks": 8,
       "required_not_run": 0,
-      "evidence_sha256": "34d82bee06c359ce7fd29d1a9ae049f549886bf32dee977cbb326f5e9dc42d7b"
+      "evidence_sha256": "92258b555eb6abfd611920c2f09fd4769a3f229ca572136dcc49aefd1b20bb55"
     },
     "tier": "emulated_run",
     "engine": "unicorn-i386",
@@ -216,6 +222,7 @@
         "stderr_len": 0,
         "canary_intact": true,
         "output_len": null,
+        "buffer_match": true,
         "error": null
       },
       {
@@ -226,6 +233,7 @@
         "stderr_len": 0,
         "canary_intact": true,
         "output_len": null,
+        "buffer_match": true,
         "error": null
       },
       {
@@ -236,6 +244,7 @@
         "stderr_len": 0,
         "canary_intact": true,
         "output_len": null,
+        "buffer_match": true,
         "error": null
       },
       {
@@ -246,6 +255,7 @@
         "stderr_len": 0,
         "canary_intact": true,
         "output_len": null,
+        "buffer_match": true,
         "error": null
       },
       {
@@ -256,6 +266,7 @@
         "stderr_len": 0,
         "canary_intact": true,
         "output_len": null,
+        "buffer_match": true,
         "error": null
       },
       {
@@ -266,6 +277,7 @@
         "stderr_len": 0,
         "canary_intact": true,
         "output_len": null,
+        "buffer_match": true,
         "error": null
       }
     ],
@@ -336,5 +348,6 @@
     ]
   },
   "slices": [],
-  "warnings": []
+  "warnings": [],
+  "ai": {}
 }

@@ -15,6 +15,7 @@
       "stderr_len": 0,
       "canary_intact": true,
       "output_len": 0,
+      "buffer_match": true,
       "error": null
     },
     {
@@ -25,6 +26,7 @@
       "stderr_len": 0,
       "canary_intact": true,
       "output_len": 1,
+      "buffer_match": true,
       "error": null
     },
     {
@@ -35,6 +37,7 @@
       "stderr_len": 0,
       "canary_intact": true,
       "output_len": 15,
+      "buffer_match": true,
       "error": null
     },
     {
@@ -45,6 +48,7 @@
       "stderr_len": 0,
       "canary_intact": false,
       "output_len": 16,
+      "buffer_match": false,
       "error": null
     },
     {
@@ -55,6 +59,7 @@
       "stderr_len": 0,
       "canary_intact": false,
       "output_len": 17,
+      "buffer_match": false,
       "error": null
     },
     {
@@ -65,6 +70,7 @@
       "stderr_len": 0,
       "canary_intact": false,
       "output_len": 64,
+      "buffer_match": null,
       "error": "UcError: Invalid memory fetch (UC_ERR_FETCH_UNMAPPED) at 0x4010c9 -> 0x4010ca -> 0x47ca38 -> 0x4010cf -> 0x4010d2 -> 0x4010d3"
     }
   ],

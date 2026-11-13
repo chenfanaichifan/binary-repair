@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app.services.binary_pipeline import repair_any, scan_binary
+from app.services.ai_binary_repair import AI_PATHS, ai_repair
 
 SUFFIX = {"elf": ".elf", "pe": ".exe", "macho": ".macho"}
 
@@ -35,6 +36,51 @@ def _repair_one(source: Path, output: Path | None, args) -> dict:
         return {"input": str(source), "scan": scan_binary(data)}
     if output is None:
         return {"input": str(source), "error": "output is required unless --scan-only is used"}
+    if getattr(args, "ai_path", None):
+        from app.services.assistant_llm import client_from_env
+
+        ai_outcome = ai_repair(
+            data, path=str(args.ai_path), client=client_from_env(),
+            verify=args.verify, allow_static_only=args.allow_static_only,
+        )
+        report = ai_outcome.report
+        payload = report.to_dict()
+        if args.report:
+            args.report.write_text(
+                json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+        if ai_outcome.candidate is None or not ai_outcome.download_allowed:
+            return {
+                "input": str(source),
+                "supported": False,
+                "path": args.ai_path,
+                "disposition": report.disposition,
+                "verified": False,
+                "status": report.status,
+                "error": report.error,
+                "ai": ai_outcome.ai,
+                "report": payload,
+            }
+        _write_candidate(output, ai_outcome.candidate)
+        return {
+            "input": str(source),
+            "output": str(output),
+            "supported": True,
+            "path": args.ai_path,
+            "verified": bool(ai_outcome.verified),
+            "disposition": report.disposition,
+            "format": report.format,
+            "arch": report.arch,
+            "strategy": report.strategy,
+            "status": report.status,
+            "mode": report.mode,
+            "capacity": report.capacity,
+            "delivery": payload.get("delivery", {}),
+            "ai": ai_outcome.ai,
+            "warnings": list(report.warnings),
+            "report": payload,
+        }
     outcome = repair_any(
         data,
         backend=args.backend,
@@ -146,6 +192,8 @@ def main() -> int:
     ap.add_argument("--scan-only", action="store_true")
     ap.add_argument("--backend", choices=("auto", "elf", "pe", "macho"), default="auto")
     ap.add_argument("--strategy", default="auto")
+    ap.add_argument("--ai-path", choices=AI_PATHS,
+                    help="run one AI direct-binary path (ai_plan or ai_bytes)")
     ap.add_argument("--verify", dest="verify", action="store_true", default=True)
     ap.add_argument("--no-verify", dest="verify", action="store_false")
     ap.add_argument("--allow-static-only", action="store_true",
@@ -156,6 +204,9 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.batch is not None:
+        if args.ai_path:
+            print("--ai-path is single-file only; do not combine with --batch", file=sys.stderr)
+            return 2
         if not args.batch.is_dir():
             print("--batch must be a directory", file=sys.stderr)
             return 2

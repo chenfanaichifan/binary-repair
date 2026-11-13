@@ -55,6 +55,13 @@ this project as proof.
   `success_within_scope`, `inconclusive`, `rejected`, `unsupported`, `error`, or
   `cancelled`.
 - The GUI/API only render verdicts; they never decide them.
+- **Two AI direct-binary repair paths** (post-v5): `ai_plan` (the model selects
+  one deterministic writer action; no raw bytes leave the process for planning)
+  and `ai_bytes` (the model emits raw machine-code guard bytes or same-length
+  byte edits, validated by a fail-closed Capstone/allowlist/injection checker).
+  Neither path converts to assembly text and reassembles, nor decompiles to C
+  and recompiles; the deterministic runtime/gate remains the only acceptance
+  authority.  See [docs/architecture/ai-binary-repair-paths.md](docs/architecture/ai-binary-repair-paths.md).
 - Direct binary repair spans **ELF, PE and Mach-O** (x86-64 and arm64) and,
   since v5, **32-bit x86 (ELF32/PE32)**: static/dynamic ELF32 (PLT), PE32
   import-thunk and direct-IAT (`FF15`) calls, stack-capacity analysis, immediate

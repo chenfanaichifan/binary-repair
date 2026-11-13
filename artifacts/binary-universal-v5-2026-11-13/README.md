@@ -1,6 +1,6 @@
 # BinaryRepair v5 — universal repair evidence (2026-11-13)
 
-Generated: `2026-11-13T10:40:53Z` by `scripts/capture_binary_evidence.py`.
+Generated: `2026-11-13T11:22:45Z` by `scripts/capture_binary_evidence.py`.
 
 | fixture | format/arch | disposition | verified | strategy | runtime tier | gate |
 |---|---|---|---|---|---|
@@ -32,15 +32,9 @@ hardened guest or a Windows kernel run.
 
 This committed bundle keeps the machine-readable evidence (scan/repair report
 v4 JSON for all 11 positive fixtures, baseline runtime cases for ELF/PE,
-negative controls, macOS + Linux JUnit XML) and `SHA256SUMS`. Repaired
-candidate binaries (`*-fixed.*`, several MB each) are not committed; they are
-byte-for-byte reproducible from the fixtures with:
+negative controls, macOS + Linux JUnit XML) and `SHA256SUMS`. Repaired candidate
+binaries (`*-fixed.*`, several MB each) are not committed; they are reproducible
+with `python scripts/capture_binary_evidence.py`.
 
-```bash
-python scripts/capture_binary_evidence.py
-```
-
-`baseline-*.json` records the instruction-level runtime behaviour of the
-*original* fixtures (guard and length-aware memcpy cases). macOS native Mach-O
-cases are verified on the macOS acceptance host only; on Linux those tests skip
-by design.
+The v6 AI direct-binary evidence lives separately in
+`artifacts/ai-direct-binary-2026-11-13/`.

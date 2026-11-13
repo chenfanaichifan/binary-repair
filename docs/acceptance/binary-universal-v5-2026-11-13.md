@@ -150,7 +150,7 @@ Raw records: `negative-*.json`, plus `tests/test_repair_any.py`,
   --junitxml=artifacts/binary-universal-v5-2026-11-13/macos-junit.xml
 ```
 
-**1039 tests, 0 failures, 0 errors, 4 skipped** (162.8 s). Skips are the
+**1118 tests, 0 failures, 0 errors, 4 skipped** (217.2 s; post-v6 suite including the two AI direct-binary paths; the v5-only tree had 1039). Skips are the
 platform-gated Linux-execution cases:
 
 - `tests/test_fixture_v3_manifest.py::test_original_is_v0_on_invalid_inputs_if_binary_present` (ELF execution requires Linux)
@@ -168,7 +168,7 @@ cd /tmp/br-v5/binary-repair-gui
   --junitxml=artifacts/binary-universal-v5-2026-11-13/linux-junit.xml
 ```
 
-**1039 tests, 0 failures, 0 errors, 7 skipped** (178.4 s). Skips are the
+**1118 tests, 0 failures, 0 errors, 7 skipped** (209.2 s; post-v6 suite including the two AI direct-binary paths). Skips are the
 platform-gated cases:
 
 - `tests/test_binary_pipeline_v4.py::test_positive_matrix_returns_verified_candidate[macho-arm64]` (Mach-O native runtime is macOS-only)

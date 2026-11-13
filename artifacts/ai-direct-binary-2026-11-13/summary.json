@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "provider": "scripted",
+  "note": "Scripted deterministic model; proves the two AI repair protocols, validators, direct byte writeback and deterministic gate.  It does not measure LLM quality and performs no network call.",
+  "paths": [
+    "ai_plan",
+    "ai_bytes"
+  ],
+  "no_assembly_or_decompile_roundtrip": true,
+  "negative_control": {
+    "fixture": "pe-x86_64-guard",
+    "verified": false,
+    "disposition": "rejected",
+    "candidate_sha256": null
+  },
+  "records": {
+    "ai_plan:pe-x86_64-guard": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350"
+    },
+    "ai_bytes:pe-x86_64-guard": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350"
+    },
+    "ai_plan:elf-arm64-guard": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d"
+    },
+    "ai_bytes:elf-arm64-guard": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d"
+    },
+    "ai_plan:elf-i386-memcpy": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88"
+    },
+    "ai_bytes:elf-i386-memcpy": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88"
+    }
+  }
+}

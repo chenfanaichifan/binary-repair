@@ -14,6 +14,7 @@ class RuntimeCase:
     stderr_len: int = 0
     canary_intact: bool | None = None
     output_len: int | None = None
+    buffer_match: bool | None = None
     error: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -48,6 +49,8 @@ def judge(cases: list[RuntimeCase], capacity: int) -> str:
         if case.exit_code != 0:
             return "fail"
         if case.canary_intact is False:
+            return "fail"
+        if case.buffer_match is False:
             return "fail"
         limit = min(case.input_len, max(capacity - 1, 0))
         if case.output_len is not None and case.output_len > limit:
