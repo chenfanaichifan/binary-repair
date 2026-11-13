@@ -60,12 +60,16 @@ def test_positive_scan_reports_patchable_sink(name):
     assert payload["findings"][0]["patchable"] is True
 
 
-def test_i386_pe_fails_closed():
+def test_i386_pe_is_in_the_repair_matrix():
+    """v5 adds PE/i386; it must never return an ungated candidate."""
     path = ROOT / "fixtures" / "pe" / "i386-control.exe"
     patched, report = repair_binary(_require(path), verify=True)
-    assert patched is None
-    assert report.status == "unsupported"
-    assert "no repair backend" in (report.error or "")
+    assert report.matrix["cell"] == "pe/i386/32/little"
+    if patched is not None:
+        assert report.disposition == "verified_patch"
+        assert report.verification["gate"]["success"] is True
+    else:
+        assert report.disposition in {"analysis_only", "unsupported", "not_verified", "rejected"}
 
 
 def test_unknown_and_malformed_fail_closed():

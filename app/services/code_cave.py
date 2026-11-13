@@ -1,9 +1,13 @@
-"""Minimal ELF x86-64 code-cave/segment injection for repaired wrappers.
+"""Minimal ELF code-cave/segment injection for repaired wrappers.
 
 This is deliberately narrow but real: a new R-X PT_LOAD is appended when the
 program-header table has room; otherwise the last R-X PT_LOAD is extended.  The
 wrapper is machine code written directly into the new bytes; no assembly text
 is parsed or reassembled.
+
+ELF32 (i386) and ELF64 (x86-64/AArch64) are both supported: the program header
+encoding, ``e_phnum`` offset and ``p_filesz``/``p_memsz`` offsets are selected
+from the ELF class.  Existing ELF64 behavior is unchanged.
 """
 from __future__ import annotations
 
@@ -15,6 +19,12 @@ from typing import Any
 from elftools.elf.elffile import ELFFile
 
 PAGE = 0x1000
+
+_ELF32_PHDR = "<IIIIIIII"
+_ELF64_PHDR = "<IIQQQQQQ"
+_E_PHNUM_OFF = {32: 0x2C, 64: 0x38}
+_P_FILESZ_OFF = {32: 16, 64: 32}
+_P_MEMSZ_OFF = {32: 20, 64: 40}
 
 
 @dataclass
@@ -63,6 +73,9 @@ def add_rx_segment(data: bytes, code: bytes) -> CaveResult:
         raise CaveError("empty cave code")
     elf, loads = _elf_layout(data)
     eh = elf.header
+    bits = 32 if elf.elfclass == 32 else 64
+    if bits not in _E_PHNUM_OFF:
+        raise CaveError(f"unsupported ELF class: {bits}-bit")
     phoff = int(eh["e_phoff"])
     phentsize = int(eh["e_phentsize"])
     phnum = int(eh["e_phnum"])
@@ -77,17 +90,24 @@ def add_rx_segment(data: bytes, code: bytes) -> CaveResult:
         if len(body) < file_off:
             body.extend(b"\x00" * (file_off - len(body)))
         body.extend(code)
-        # new program header
-        new_ph = struct.pack("<IIQQQQQQ", 1, 5, file_off, vaddr, vaddr,
-                             len(code), len(code), PAGE)
+        # new program header (class-specific encoding)
+        if bits == 32:
+            if max(file_off, vaddr, len(code)) > 0xFFFFFFFF:
+                raise CaveError("ELF32 cave exceeds 32-bit address space")
+            new_ph = struct.pack(_ELF32_PHDR, 1, file_off, vaddr, vaddr,
+                                 len(code), len(code), 5, PAGE)
+        else:
+            new_ph = struct.pack(_ELF64_PHDR, 1, 5, file_off, vaddr, vaddr,
+                                 len(code), len(code), PAGE)
         at = phoff + phnum * phentsize
         if at + len(new_ph) > len(body):
             raise CaveError("program header table has no room")
         body[at:at + len(new_ph)] = new_ph
-        struct.pack_into("<H", body, 0x38, phnum + 1)  # e_phnum
+        struct.pack_into("<H", body, _E_PHNUM_OFF[bits], phnum + 1)  # e_phnum
         before = _reloc_count(data)
         after = _reloc_count(bytes(body))
         return CaveResult(bytes(body), vaddr, file_off, "new-pt-load", {
+            "class": bits,
             "segment": {"p_offset": file_off, "p_vaddr": vaddr,
                         "p_filesz": len(code), "p_flags": "R-X"},
             "phnum": phnum + 1,
@@ -110,11 +130,20 @@ def add_rx_segment(data: bytes, code: bytes) -> CaveResult:
     body.extend(code)
     new_filesz = max(seg["filesz"], file_off + len(code) - seg["offset"])
     ph_at = phoff + seg["index"] * phentsize
-    struct.pack_into("<Q", body, ph_at + 32, new_filesz)
-    struct.pack_into("<Q", body, ph_at + 40, max(seg["memsz"], new_filesz))
+    if bits == 32:
+        if new_filesz > 0xFFFFFFFF:
+            raise CaveError("ELF32 segment extension exceeds 32-bit range")
+        struct.pack_into("<I", body, ph_at + _P_FILESZ_OFF[32], new_filesz)
+        struct.pack_into("<I", body, ph_at + _P_MEMSZ_OFF[32],
+                         max(seg["memsz"], new_filesz))
+    else:
+        struct.pack_into("<Q", body, ph_at + _P_FILESZ_OFF[64], new_filesz)
+        struct.pack_into("<Q", body, ph_at + _P_MEMSZ_OFF[64],
+                         max(seg["memsz"], new_filesz))
     before = _reloc_count(data)
     after = _reloc_count(bytes(body))
     return CaveResult(bytes(body), vaddr, file_off, "extend-rx", {
+        "class": bits,
         "segment": {"p_offset": seg["offset"], "p_vaddr": seg["vaddr"],
                     "p_filesz": new_filesz, "p_flags": "R-X"},
         "extended_index": seg["index"],

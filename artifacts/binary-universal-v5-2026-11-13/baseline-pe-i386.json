@@ -1,0 +1,74 @@
+{
+  "fixture": "pe-i386",
+  "original_sha256": "5c801c4563dabf1bfd7619fe9d0537594e0708f17a7014e1641b84e6cece4634",
+  "tier": "emulated_run",
+  "engine": "unicorn-i386",
+  "verdict": "fail",
+  "capacity": 16,
+  "cases": [
+    {
+      "input_len": 0,
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": true,
+      "output_len": 0,
+      "error": null
+    },
+    {
+      "input_len": 1,
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": true,
+      "output_len": 1,
+      "error": null
+    },
+    {
+      "input_len": 15,
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": true,
+      "output_len": 15,
+      "error": null
+    },
+    {
+      "input_len": 16,
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": 16,
+      "error": null
+    },
+    {
+      "input_len": 17,
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": 17,
+      "error": null
+    },
+    {
+      "input_len": 64,
+      "exit_code": 1,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": 64,
+      "error": "UcError: Invalid memory fetch (UC_ERR_FETCH_UNMAPPED) at 0x4010c9 -> 0x4010ca -> 0x47ca38 -> 0x4010cf -> 0x4010d2 -> 0x4010d3"
+    }
+  ],
+  "limitations": [
+    "Emulated execution with modeled imports; not a native Windows/Linux run.",
+    "Only the repaired function is executed; unrelated code paths are not covered."
+  ]
+}

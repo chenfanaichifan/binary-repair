@@ -222,6 +222,10 @@ def build_guard(abi: str, op: str, capacity: int) -> bytes:
     """Return the machine code for one bounded-copy guard."""
     if capacity <= 0:
         raise ValueError("capacity must be positive")
+    if abi == "cdecl_x86":
+        from app.services.repair.guards_i386 import build_i386_guard
+
+        return build_i386_guard(op, capacity)
     if abi == "aapcs64":
         if op == "strcpy":
             return _arm64_strcpy(capacity)
@@ -244,6 +248,8 @@ def abi_for(format_name: str, arch: str) -> str:
     """Return the guard ABI for a container/architecture pair."""
     if arch == "arm64":
         return "aapcs64"
+    if arch == "i386":
+        return "cdecl_x86"
     if format_name == "pe":
         return "win64_x86_64"
     return "sysv_x86_64"

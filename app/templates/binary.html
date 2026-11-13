@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}任意二进制修复{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/binary.css?v=20261113a">
+{% endblock %}
+
+{% block content %}
+<div class="binary" data-testid="binary-page" data-csrf="{{ csrf_token }}">
+  <header class="binary-head">
+    <div class="binary-head-copy">
+      <p class="binary-eyebrow">REPAIR / ANY BINARY</p>
+      <h1 class="ds-page-title">任意二进制修复</h1>
+      <p class="ds-page-sub">
+        上传任意 ELF / PE / Mach-O（≤ 20 MiB）先做只读扫描，确认命中的修复矩阵单元与可修补 sink；
+        再按确定性矩阵发起修复。只有通过运行时验证的候选才能下载；未验证候选需显式允许，且永远不计为成功。
+      </p>
+    </div>
+    <div class="binary-head-actions">
+      <a class="ds-btn" href="/api/binary/matrix" target="_blank" rel="noopener">矩阵 JSON</a>
+      <a class="ds-btn" href="/guide#binary">使用说明</a>
+    </div>
+  </header>
+
+  <section class="binary-panel" aria-labelledby="binary-step-1">
+    <header class="binary-panel-head">
+      <h2 class="binary-section-title" id="binary-step-1">1 · 选择并扫描</h2>
+      <span class="binary-step-hint">扫描只读：不写文件、不执行样本。</span>
+    </header>
+
+    <label class="binary-drop" id="binary-drop" for="binary-file">
+      <input class="binary-file-input" id="binary-file" data-testid="binary-file" type="file"
+             aria-label="选择任意二进制文件">
+      <span class="binary-drop-mark" aria-hidden="true">↓</span>
+      <span class="binary-drop-title">拖入文件，或点击选择</span>
+      <span class="binary-drop-hint">任意二进制容器 · 单文件 ≤ 20 MiB · 选择后自动扫描</span>
+    </label>
+    <p class="binary-file-name" id="binary-file-name" hidden></p>
+
+    <div class="binary-toolbar">
+      <button class="ds-btn" id="binary-scan" data-testid="binary-scan" type="button">重新扫描</button>
+      <label class="binary-check" for="binary-allow-static">
+        <input id="binary-allow-static" data-testid="binary-allow-static" type="checkbox">
+        <span class="binary-check-copy">
+          <strong>允许未验证候选（best-effort）</strong>
+          <small>仅静态证据；未通过运行时验证，不计为成功，需人工复核。</small>
+        </span>
+      </label>
+      <button class="ds-btn primary" id="binary-repair" data-testid="binary-repair" type="button">发起修复</button>
+    </div>
+
+    <p class="binary-status" id="binary-scan-status" role="status" aria-live="polite"></p>
+    <p class="binary-error" id="binary-error" data-testid="binary-error" role="alert" hidden></p>
+  </section>
+
+  <section class="binary-panel" id="binary-scan-result" hidden aria-labelledby="binary-step-2">
+    <header class="binary-panel-head">
+      <h2 class="binary-section-title" id="binary-step-2">2 · 扫描结果</h2>
+      <span class="binary-pill" id="binary-scan-verdict">—</span>
+    </header>
+    <dl class="binary-facts">
+      <div><dt>格式 format</dt><dd><code id="binary-scan-format">—</code></dd></div>
+      <div><dt>架构 arch</dt><dd><code id="binary-scan-arch">—</code></dd></div>
+      <div><dt>位数 bits</dt><dd><code id="binary-scan-bits">—</code></dd></div>
+      <div><dt>字节序 endian</dt><dd><code id="binary-scan-endian">—</code></dd></div>
+      <div><dt>矩阵单元 cell</dt><dd><code id="binary-scan-cell">—</code></dd></div>
+      <div><dt>矩阵内可修复 repairable</dt><dd><span id="binary-scan-repairable">—</span></dd></div>
+      <div><dt>sink 数量 findings</dt><dd><span id="binary-scan-findings-count">—</span></dd></div>
+    </dl>
+
+    <div class="binary-subblock">
+      <h3>sink 明细 findings</h3>
+      <ul class="binary-findings" id="binary-findings"></ul>
+    </div>
+
+    <div class="binary-subblock" id="binary-limitations-block" hidden>
+      <h3>限制 limitations</h3>
+      <ul class="binary-limitations" id="binary-limitations"></ul>
+    </div>
+  </section>
+
+  <section class="binary-panel" id="binary-repair-result" hidden aria-labelledby="binary-step-3">
+    <header class="binary-panel-head">
+      <h2 class="binary-section-title" id="binary-step-3">3 · 修复结果</h2>
+      <span class="binary-badge" id="binary-disposition" data-testid="binary-disposition" hidden>—</span>
+    </header>
+    <dl class="binary-facts">
+      <div><dt>结论 disposition</dt><dd><code id="binary-disposition-code">—</code></dd></div>
+      <div><dt>已验证 verified</dt><dd><span id="binary-verified">—</span></dd></div>
+      <div><dt>证据层级 tier</dt><dd><code id="binary-tier">—</code></dd></div>
+      <div><dt>下载许可 download_allowed</dt><dd><span id="binary-download-allowed">—</span></dd></div>
+    </dl>
+
+    <p class="binary-detail" id="binary-repair-detail" hidden></p>
+
+    <div class="binary-actions">
+      <button class="ds-btn primary" id="binary-download" data-testid="binary-download" type="button" hidden>下载修复候选</button>
+      <span class="binary-candidate-name" id="binary-candidate-name" hidden></span>
+    </div>
+    <p class="binary-download-note" id="binary-download-note" hidden>
+      只有 delivery.download_allowed 为 true 时才会显示下载按钮；未验证候选不构成修复结论。
+    </p>
+
+    <div class="binary-subblock" id="binary-warnings-block" hidden>
+      <h3>警告 warnings</h3>
+      <ul class="binary-warnings" id="binary-warnings"></ul>
+    </div>
+
+    <details class="binary-report" id="binary-report" data-testid="binary-report" hidden>
+      <summary>展开 report JSON</summary>
+      <pre class="binary-json" id="binary-report-json"></pre>
+    </details>
+  </section>
+
+  <section class="binary-panel binary-matrix" aria-labelledby="binary-matrix-title">
+    <header class="binary-panel-head">
+      <h2 class="binary-section-title" id="binary-matrix-title">确定性矩阵（覆盖范围）</h2>
+      <span class="binary-step-hint">英文 ASCII 技术数据 · 与 GET /api/binary/matrix 一致</span>
+    </header>
+
+    {% if matrix is defined and matrix and matrix.cells %}
+    <div class="binary-matrix-block">
+      <h3>修复单元 cells</h3>
+      <div class="binary-table-wrap">
+        <table class="binary-table">
+          <thead>
+            <tr><th>cell</th><th>strategies</th><th>runtime_tiers</th></tr>
+          </thead>
+          <tbody>
+            {% for cell in matrix.cells %}
+            <tr>
+              <td><code>{{ cell.container }}/{{ cell.arch }}/{{ cell.bits }}/{{ cell.endian }}</code></td>
+              <td><code>{{ cell.strategies|join(', ') }}</code></td>
+              <td><code>{{ cell.runtime_tiers|join(', ') }}</code></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if matrix.sink_classes %}
+    <div class="binary-matrix-block">
+      <h3>sink 类别 sink_classes</h3>
+      <ul class="binary-chips">
+        {% for key, meta in matrix.sink_classes.items() %}
+        <li><code>{{ key }}</code><span>→ {{ meta.strategy }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if matrix.dispositions %}
+    <div class="binary-matrix-block">
+      <h3>结论取值 dispositions</h3>
+      <ul class="binary-chips">
+        {% for disposition in matrix.dispositions %}
+        <li><code>{{ disposition }}</code></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if matrix.non_goals %}
+    <div class="binary-matrix-block">
+      <h3>非目标 non_goals</h3>
+      <ul class="binary-nongoals">
+        {% for goal in matrix.non_goals %}
+        <li>{{ goal }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    {% endif %}
+  </section>
+
+  <section class="binary-boundary" aria-labelledby="binary-boundary-title">
+    <h2 class="binary-section-title" id="binary-boundary-title">边界说明</h2>
+    <ul>
+      <li>
+        <strong>确定性矩阵。</strong>
+        <span>只有矩阵单元命中且分析器发现可修补 sink 时才会产出候选；矩阵外输入（含大端、32 位 Mach-O、fat Mach-O）只做分析，明确返回 analysis_only 或 unsupported。</span>
+      </li>
+      <li>
+        <strong>非目标。</strong>
+        <span>堆/全局/非导入的内联拷贝、格式化字符串展开、UAF、整数与循环缺陷、arm32/riscv/mips/powerpc 与大端机器码、32 位与 fat Mach-O 改写、超出既有 Mach-O 路径的 Windows/macOS 原生执行，均不在本页承诺范围内。</span>
+      </li>
+      <li>
+        <strong>AI 不参与判定。</strong>
+        <span>结论由确定性验证门给出；模型可以提议修复，但不能把失败提升为成功，也不能生成结论或证据。页面的 disposition 与 verified 完全取自服务端报告。</span>
+      </li>
+      <li>
+        <strong>已验证不等于全程序证明。</strong>
+        <span>verified_patch 表示声明范围内的容器重解析、修复动作与运行时用例通过；它不覆盖未声明的路径、输入与并发行为。</span>
+      </li>
+      <li>
+        <strong>未验证候选不是成功。</strong>
+        <span>static_only_patch 只在显式勾选 best-effort 时返回，只有静态证据、没有运行时证据，必须人工复核后才能使用。</span>
+      </li>
+    </ul>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/binary.js?v=20261113a"></script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{
+  "fixture": "unknown-bytes",
+  "candidate_available": false,
+  "download_allowed": false,
+  "disposition": "invalid",
+  "status": "unsupported",
+  "error": "unrecognized container magic",
+  "report": {
+    "schema_version": 4,
+    "format": "unknown",
+    "arch": "unknown",
+    "backend": "unknown",
+    "strategy": "none",
+    "status": "unsupported",
+    "supported": false,
+    "original_sha256": "e1cbeb5f5fea046d8fcac0959438e34267447a264aedb71ae7fcc38ca6050bfb",
+    "patched_sha256": "e1cbeb5f5fea046d8fcac0959438e34267447a264aedb71ae7fcc38ca6050bfb",
+    "mode": "unsupported",
+    "capacity": null,
+    "findings": [],
+    "offsets": [],
+    "actions": [],
+    "limitations": [
+      "unrecognized container magic"
+    ],
+    "verification": {},
+    "runtime": {},
+    "container": {
+      "format": "unknown",
+      "arch": "unknown",
+      "bits": null,
+      "endian": "little",
+      "image_base": 0,
+      "slices": 1,
+      "imports": 0,
+      "sections": 0
+    },
+    "universal": {
+      "detected": false,
+      "repairable": false,
+      "reason": ""
+    },
+    "signature_invalidated": false,
+    "codesign_invalidated": false,
+    "candidate_available": false,
+    "error": "unrecognized container magic",
+    "disposition": "invalid",
+    "matrix": {
+      "cell": null,
+      "repairable": false,
+      "strategies": [],
+      "runtime_tiers": [],
+      "sink_classes": []
+    },
+    "delivery": {
+      "download_allowed": false,
+      "verified": false,
+      "tier": "static_only"
+    },
+    "coverage": {
+      "schema_version": 1,
+      "sink_classes": [
+        "checked_copy",
+        "immediate_length",
+        "memcpy_length",
+        "syscall_length",
+        "unbounded_copy"
+      ],
+      "non_goals": [
+        "heap, global and non-imported inline copy sinks",
+        "sprintf/format-string expansion, UAF, integer and loop defects",
+        "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+        "32-bit Mach-O and fat Mach-O rewriting",
+        "Windows / macOS native execution beyond the existing Mach-O path"
+      ]
+    },
+    "slices": [],
+    "warnings": []
+  }
+}

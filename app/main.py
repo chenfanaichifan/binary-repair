@@ -34,8 +34,10 @@ from app.services.assistant_key_store import clear_key, key_status, save_key
 from app.services.code_repair import repair_code
 from app.services.binary_datasets import dataset_status
 from app.services.binary_quick_repair import QuickRepairError, quick_repair_elf
+from app.services.binary_pipeline import repair_any as repair_any_pipeline
 from app.services.binary_pipeline import repair_binary as repair_binary_pipeline
 from app.services.binary_pipeline import scan_binary
+from app.services.repair_matrix import matrix_payload
 from app.services.ai_adjudication import (
     GateResult, PolicyViolation, adjudicate, guard_model_payload,
     preflight_key_binding, supervisor_step,
@@ -462,6 +464,22 @@ async def connectors_page(request: Request):
             "demo": BACKEND_MODE == "mock",
         },
     )
+
+
+@app.get("/binary", response_class=HTMLResponse, name="binary_page")
+async def binary_page(request: Request):
+    """Render the universal binary repair page (any input, explicit disposition)."""
+    return templates.TemplateResponse(
+        request,
+        "binary.html",
+        {"matrix": matrix_payload()},
+    )
+
+
+@app.get("/api/binary/matrix", name="binary_matrix_api")
+async def binary_matrix() -> JSONResponse:
+    """Expose the deterministic repair matrix as English ASCII JSON."""
+    return JSONResponse(matrix_payload(), headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/connectors", name="connectors_api")
@@ -1228,25 +1246,53 @@ async def binary_scan(
 async def binary_repair(
     binary: UploadFile = File(...),
     csrf: str = Form(...),
+    allow_static_only: str = Form("0"),
+    backend: str = Form("auto"),
+    strategy: str = Form("auto"),
 ) -> JSONResponse:
-    """Dispatch a bounded repair by format; unsupported inputs return 422."""
+    """Repair any input; verified or (opt-in) static-only candidate or 422."""
     _require_csrf(csrf)
     raw = await binary.read()
     if len(raw) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
     import base64
-    patched, report = repair_binary_pipeline(raw, verify=True)
+
+    static_ok = str(allow_static_only or "").strip().lower() in {"1", "true", "yes", "on"}
+    outcome = repair_any_pipeline(
+        raw,
+        backend=backend or "auto",
+        strategy=strategy or "auto",
+        verify=True,
+        allow_static_only=static_ok,
+    )
+    report = outcome.report
     payload = report.to_dict()
-    if patched is None:
-        return JSONResponse({"ok": False, "detail": payload.get("limitations") or ["unsupported"],
-                             "report": payload}, status_code=422)
+    if not outcome.download_allowed or outcome.candidate is None:
+        detail = (
+            report.error
+            or (report.limitations[-1] if report.limitations else "no repaired candidate")
+        )
+        return JSONResponse(
+            {
+                "ok": False,
+                "detail": detail,
+                "disposition": report.disposition,
+                "report": payload,
+                "warnings": list(report.warnings),
+            },
+            status_code=422,
+        )
     suffix = {"elf": "-fixed.elf", "pe": "-fixed.exe", "macho": "-fixed.macho"}.get(report.format, "-fixed.bin")
     return JSONResponse({
         "ok": True,
+        "verified": bool(outcome.verified),
+        "disposition": report.disposition,
         "filename": (Path(binary.filename or "sample").stem + suffix),
-        "patched_base64": base64.b64encode(patched).decode("ascii"),
+        "patched_base64": base64.b64encode(outcome.candidate).decode("ascii"),
         "report": payload,
         "verification": payload.get("verification", {}),
+        "delivery": payload.get("delivery", {}),
+        "warnings": list(report.warnings),
     }, headers={"Cache-Control": "no-store"})
 
 

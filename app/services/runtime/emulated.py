@@ -5,6 +5,12 @@ AArch64 on macOS).  The harness maps the image, builds a controlled stack and
 input buffer, stubs the non-copy imports (``puts``), and records whether the
 copy stays inside ``capacity``.
 
+Arches: ``x86_64`` (SysV/Win64), ``arm64`` (AAPCS64) and ``i386`` (cdecl /
+32-bit x86, ``UC_ARCH_X86`` + ``UC_MODE_32``).  For i386 the harness reserves a
+4-byte synthetic return address, passes the source pointer as the cdecl stack
+argument at ``[esp+4]`` and intercepts imports at their thunk/PLT address (or,
+for ``call [IAT]`` sites, at the call instruction itself).
+
 This is emulation, not a Windows/Linux kernel run; the report says so.
 """
 from __future__ import annotations
@@ -16,14 +22,15 @@ from typing import Any
 import lief
 from elftools.elf.elffile import ELFFile
 from unicorn import (
-    UC_ARCH_ARM64, UC_ARCH_X86, UC_HOOK_CODE, UC_MODE_64, UC_MODE_ARM,
-    UC_PROT_ALL, Uc,
+    UC_ARCH_ARM64, UC_ARCH_X86, UC_HOOK_CODE, UC_MODE_32, UC_MODE_64,
+    UC_MODE_ARM, UC_PROT_ALL, Uc,
 )
 from unicorn.arm64_const import (
     UC_ARM64_REG_PC, UC_ARM64_REG_SP, UC_ARM64_REG_X0, UC_ARM64_REG_X1,
     UC_ARM64_REG_X30,
 )
 from unicorn.x86_const import (
+    UC_X86_REG_EAX, UC_X86_REG_EBP, UC_X86_REG_EIP, UC_X86_REG_ESP,
     UC_X86_REG_RAX, UC_X86_REG_RCX, UC_X86_REG_RDI, UC_X86_REG_RDX,
     UC_X86_REG_RIP, UC_X86_REG_RSI, UC_X86_REG_RSP,
 )
@@ -32,13 +39,26 @@ from app.services.containers import ContainerInfo
 from app.services.runtime.evidence import RuntimeCase, RuntimeEvidence, judge
 
 PAGE = 0x1000
+# 64-bit (x86_64 / arm64) scratch windows.
 STACK_BASE = 0x7000000000
 STACK_SIZE = 0x20000
 INPUT_BASE = 0x6000000000
 SENTINEL_BASE = 0x5000000000
+# 32-bit x86 cannot address the 64-bit windows above, so i386 uses its own.
+I386_STACK_BASE = 0x70000000
+I386_INPUT_BASE = 0x60000000
+I386_SENTINEL_BASE = 0x50000000
 CANARY = b"\xAA" * 32
 FILL = b"\xCC"
 MAX_INSNS = 2_000_000
+# cdecl callees keep the destination pointer on the stack; for frames that
+# reserve the slot just below the return address (the usual ``push ebp``
+# prologue) the first byte past ``capacity`` is the saved-EBP slot.  The prologue
+# writes EBP there, so the register is seeded with a marker and the slot is
+# checked afterwards: a NUL past the buffer shows up as a changed marker.
+I386_BOUNDARY_MARK = 0xA5A5A5A5
+_COPY_NAMES = {"strcpy", "strcat", "stpcpy"}
+_STOP_NAMES = {"puts", "fputs", "printf", "putchar"}
 
 
 @dataclass
@@ -110,18 +130,107 @@ def _merge(mappings: list[_Mapping]) -> list[_Mapping]:
     return merged
 
 
-def _callable_address(container: ContainerInfo, names: set[str]) -> int | None:
+def _short_name(name: str) -> str:
+    """Normalize an import/symbol name to its libc-facing short form.
+
+    Static libc symbols can be namespaced (``c.string.strcpy``) and Windows
+    import symbols carry a leading underscore and ``@n`` decoration.
+    """
+    short = name.strip().lower().split("@")[0]
+    short = short.rsplit(".", 1)[-1]
+    return short.lstrip("_")
+
+
+def _i386_import_edges(
+    data: bytes, container: ContainerInfo,
+) -> tuple[dict[int, str], dict[int, tuple[str, int]]]:
+    """Discover i386 import thunks and direct ``call [IAT]`` sites.
+
+    ``ff 25 <abs32>`` is ``jmp dword ptr [IAT]`` (the MinGW/ELF-PLT thunk a
+    ``call`` reaches); ``ff 15 <abs32>`` is ``call dword ptr [IAT]`` (an inline
+    call site).  Both reference the IAT/GOT address recorded in
+    ``container.imports``.
+    """
+    thunks: dict[int, str] = {}
+    calls: dict[int, tuple[str, int]] = {}
+    for section in container.sections:
+        if not section.executable or section.size <= 0 or section.offset < 0:
+            continue
+        raw = data[section.offset:section.offset + section.size]
+        for index in range(max(0, len(raw) - 5)):
+            if raw[index] != 0xFF or raw[index + 1] not in (0x25, 0x15):
+                continue
+            target = struct.unpack_from("<I", raw, index + 2)[0]
+            name = container.imports.get(target)
+            if not name:
+                continue
+            va = section.va + index
+            if raw[index + 1] == 0x25:
+                thunks[va] = name
+            else:
+                calls[va] = (name, 6)
+    return thunks, calls
+
+
+def _imports_for(data: bytes, container: ContainerInfo) -> dict[int, str]:
+    imports = dict(container.imports)
+    if container.arch == "i386":
+        thunks, _calls = _i386_import_edges(data, container)
+        for va, name in thunks.items():
+            imports.setdefault(va, name)
+    return imports
+
+
+def _i386_hook_targets(
+    data: bytes, container: ContainerInfo,
+) -> tuple[list[int], list[int], dict[int, int], dict[int, int]]:
+    """Resolve every i386 copy/stop entry the target function could reach.
+
+    A static i386 libc namespaces its symbols (``c.string.strcpy``,
+    ``c.string.stpcpy``, ...); the fixture's call target is one of them.  Hooking
+    all candidate entries keeps the harness correct without guessing which
+    alias the emitted call instruction refers to.
+    """
+    imports = _imports_for(data, container)
+    copy_targets: set[int] = set()
+    puts_targets: set[int] = set()
+    for table in (imports, container.symbols):
+        for va, name in table.items():
+            section = container.section_at(va)
+            if section is None or not section.executable:
+                continue
+            short = _short_name(name)
+            if short in _COPY_NAMES:
+                copy_targets.add(va)
+            elif short in _STOP_NAMES:
+                puts_targets.add(va)
+    _thunks, direct_calls = _i386_import_edges(data, container)
+    copy_calls: dict[int, int] = {}
+    puts_calls: dict[int, int] = {}
+    for va, (name, size) in direct_calls.items():
+        short = _short_name(name)
+        if short in _COPY_NAMES:
+            copy_calls[va] = size
+        elif short in _STOP_NAMES:
+            puts_calls[va] = size
+    return sorted(copy_targets), sorted(puts_targets), copy_calls, puts_calls
+
+
+def _callable_address(
+    container: ContainerInfo,
+    names: set[str],
+    imports: dict[int, str] | None = None,
+) -> int | None:
+    table = container.imports if imports is None else imports
     candidates: list[int] = []
-    for va, name in container.imports.items():
-        short = name.lower().lstrip("_").split("@")[0]
+    for va, name in table.items():
         section = container.section_at(va)
-        if short in names and section is not None and section.executable:
+        if _short_name(name) in names and section is not None and section.executable:
             candidates.append(va)
     if candidates:
         return min(candidates)
     for va, name in container.symbols.items():
-        short = name.lower().lstrip("_").split("@")[0]
-        if short in names:
+        if _short_name(name) in names:
             return va
     return None
 
@@ -138,6 +247,14 @@ def _read_cstr(uc: Uc, address: int, limit: int = 8192) -> bytes:
         if value == 0:
             break
     return bytes(out)
+
+
+def _read_u32(uc: Uc, address: int) -> int:
+    return struct.unpack("<I", bytes(uc.mem_read(address, 4)))[0]
+
+
+def _write_u32(uc: Uc, address: int, value: int) -> None:
+    uc.mem_write(address, struct.pack("<I", value & 0xFFFFFFFF))
 
 
 def emulate(
@@ -163,9 +280,21 @@ def emulate(
         evidence.limitations.append(f"no mapping strategy for {container.format}")
         return evidence
 
-    copy_target = _callable_address(container, {"strcpy", "strcat"})
-    puts_target = _callable_address(container, {"puts", "fputs", "printf", "putchar"})
-    if copy_target is None and puts_target is None:
+    imports = _imports_for(data, container)
+    copy_targets: list[int] = []
+    puts_targets: list[int] = []
+    copy_calls: dict[int, int] = {}
+    puts_calls: dict[int, int] = {}
+    if container.arch == "i386":
+        copy_targets, puts_targets, copy_calls, puts_calls = _i386_hook_targets(
+            data, container,
+        )
+    else:
+        copy_target = _callable_address(container, _COPY_NAMES, imports)
+        puts_target = _callable_address(container, _STOP_NAMES, imports)
+        copy_targets = [copy_target] if copy_target is not None else []
+        puts_targets = [puts_target] if puts_target is not None else []
+    if not copy_targets and not puts_targets and not copy_calls and not puts_calls:
         evidence.tier = "unavailable"
         evidence.verdict = "unavailable"
         evidence.limitations.append("could not resolve the copy/puts imports")
@@ -177,8 +306,9 @@ def emulate(
         evidence.cases.append(_run_case(
             data, container, mappings,
             function_va=function_va, dest_rel=dest_rel, capacity=capacity,
-            abi=abi, argument=b"A" * length, copy_target=copy_target,
-            puts_target=puts_target,
+            abi=abi, argument=b"A" * length,
+            copy_targets=copy_targets, puts_targets=puts_targets,
+            copy_calls=copy_calls, puts_calls=puts_calls,
         ))
     evidence.verdict = judge(evidence.cases, capacity)
     evidence.limitations.extend([
@@ -198,11 +328,29 @@ def _run_case(
     capacity: int,
     abi: str,
     argument: bytes,
-    copy_target: int | None,
-    puts_target: int | None,
+    copy_targets: list[int],
+    puts_targets: list[int],
+    copy_calls: dict[int, int],
+    puts_calls: dict[int, int],
 ) -> RuntimeCase:
     is_arm = container.arch == "arm64"
-    uc = Uc(UC_ARCH_ARM64, UC_MODE_ARM) if is_arm else Uc(UC_ARCH_X86, UC_MODE_64)
+    is_i386 = container.arch == "i386"
+    if is_arm:
+        uc = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
+    elif is_i386:
+        uc = Uc(UC_ARCH_X86, UC_MODE_32)
+    else:
+        uc = Uc(UC_ARCH_X86, UC_MODE_64)
+    if is_i386:
+        stack_base, input_base, sentinel_base = (
+            I386_STACK_BASE, I386_INPUT_BASE, I386_SENTINEL_BASE,
+        )
+        ret_size = 4
+    else:
+        stack_base, input_base, sentinel_base = (
+            STACK_BASE, INPUT_BASE, SENTINEL_BASE,
+        )
+        ret_size = 0 if is_arm else 8
     mapped: list[tuple[int, int]] = []
 
     def map_range(va: int, size: int, fill: bytes = b"\x00") -> None:
@@ -233,50 +381,85 @@ def _run_case(
             if chunk:
                 uc.mem_write(start, chunk)
 
-    map_range(STACK_BASE, STACK_SIZE, b"\x00")
-    map_range(INPUT_BASE, len(argument) + 64, b"\x00")
-    map_range(SENTINEL_BASE, PAGE, b"\x00")
-    uc.mem_write(SENTINEL_BASE, b"\xF4" if not is_arm else b"\x00\x00\x20\xD4")
+    map_range(stack_base, STACK_SIZE, b"\x00")
+    map_range(input_base, len(argument) + 64, b"\x00")
+    map_range(sentinel_base, PAGE, b"\x00")
+    uc.mem_write(sentinel_base, b"\xF4" if not is_arm else b"\x00\x00\x20\xD4")
 
-    entry_sp = STACK_BASE + STACK_SIZE - 0x200
-    if not is_arm:
-        entry_sp -= 8  # the synthetic return address lives at the entry RSP
+    entry_sp = stack_base + STACK_SIZE - 0x200
+    if ret_size:
+        entry_sp -= ret_size  # the synthetic return address lives at [esp]
     dest = entry_sp + dest_rel
     map_range(dest, capacity + 96, FILL)
-    # On x86 the synthetic return address occupies [entry_sp, entry_sp+8), so
-    # the canary starts above it and the return slot itself is checked too.
-    canary_addr = dest + capacity + (0 if is_arm else 8)
-    uc.mem_write(canary_addr, CANARY)
-    uc.mem_write(INPUT_BASE, argument + b"\x00")
-
-    sentinel = SENTINEL_BASE
-    if is_arm:
+    boundary = dest + capacity
+    i386_marker = False
+    if is_i386:
+        # [esp] is the 4-byte synthetic return address and [esp+4] the cdecl
+        # argument; the canary starts in the caller-owned slot above both.
+        canary_addr = entry_sp + 8
+        i386_marker = boundary + 4 <= entry_sp
+        if i386_marker:
+            _write_u32(uc, boundary, I386_BOUNDARY_MARK)
+        uc.mem_write(canary_addr, CANARY)
+        _write_u32(uc, entry_sp, sentinel_base)
+        _write_u32(uc, entry_sp + 4, input_base)  # cdecl argument at [esp+4]
+        uc.reg_write(UC_X86_REG_ESP, entry_sp)
+        uc.reg_write(UC_X86_REG_EBP, I386_BOUNDARY_MARK)
+        uc.reg_write(UC_X86_REG_EAX, 0)
+    elif is_arm:
+        canary_addr = dest + capacity
+        uc.mem_write(canary_addr, CANARY)
         uc.reg_write(UC_ARM64_REG_SP, entry_sp)
-        uc.reg_write(UC_ARM64_REG_X0, INPUT_BASE)
-        uc.reg_write(UC_ARM64_REG_X30, sentinel)
+        uc.reg_write(UC_ARM64_REG_X0, input_base)
+        uc.reg_write(UC_ARM64_REG_X30, sentinel_base)
     else:
-        uc.mem_write(entry_sp, struct.pack("<Q", sentinel))
+        # On x86-64 the synthetic return address occupies [entry_sp, entry_sp+8),
+        # so the canary starts above it and the return slot itself is checked too.
+        canary_addr = dest + capacity + 8
+        uc.mem_write(canary_addr, CANARY)
+        uc.mem_write(entry_sp, struct.pack("<Q", sentinel_base))
         uc.reg_write(UC_X86_REG_RSP, entry_sp)
         if abi == "win64_x86_64":
-            uc.reg_write(UC_X86_REG_RCX, INPUT_BASE)
+            uc.reg_write(UC_X86_REG_RCX, input_base)
         else:
-            uc.reg_write(UC_X86_REG_RDI, INPUT_BASE)
+            uc.reg_write(UC_X86_REG_RDI, input_base)
+    uc.mem_write(input_base, argument + b"\x00")
+
+    copy_overflow = [False]
 
     def finish(uc_obj: Uc) -> None:
         if is_arm:
             uc_obj.reg_write(UC_ARM64_REG_PC, uc_obj.reg_read(UC_ARM64_REG_X30))
             uc_obj.reg_write(UC_ARM64_REG_X0, 0)
         else:
-            sp_now = uc_obj.reg_read(UC_X86_REG_RSP)
-            ret = struct.unpack("<Q", bytes(uc_obj.mem_read(sp_now, 8)))[0]
-            uc_obj.reg_write(UC_X86_REG_RSP, sp_now + 8)
-            uc_obj.reg_write(UC_X86_REG_RIP, ret)
-            uc_obj.reg_write(UC_X86_REG_RAX, 0)
+            sp_now = uc_obj.reg_read(UC_X86_REG_RSP if not is_i386 else UC_X86_REG_ESP)
+            ret = bytes(uc_obj.mem_read(sp_now, ret_size))
+            uc_obj.reg_write(
+                UC_X86_REG_RSP if not is_i386 else UC_X86_REG_ESP, sp_now + ret_size,
+            )
+            uc_obj.reg_write(
+                UC_X86_REG_RIP if not is_i386 else UC_X86_REG_EIP,
+                struct.unpack("<Q" if ret_size == 8 else "<I", ret)[0],
+            )
+            uc_obj.reg_write(UC_X86_REG_RAX if not is_i386 else UC_X86_REG_EAX, 0)
+
+    def model_i386_copy(uc_obj: Uc, dst: int, src: int) -> None:
+        payload = _read_cstr(uc_obj, src, limit=8192)
+        if len(payload) > capacity:
+            copy_overflow[0] = True
+        uc_obj.mem_write(dst, payload)
 
     def hook_puts(uc_obj: Uc, address: int, size: int, _user: Any) -> None:
         finish(uc_obj)
 
     def hook_copy(uc_obj: Uc, address: int, size: int, _user: Any) -> None:
+        if is_i386:
+            # Import thunk/PLT entry: the callee's cdecl arguments live above
+            # the return address pushed by the call.
+            sp = uc_obj.reg_read(UC_X86_REG_ESP)
+            model_i386_copy(uc_obj, _read_u32(uc_obj, sp + 4), _read_u32(uc_obj, sp + 8))
+            finish(uc_obj)
+            return
         if is_arm:
             dst = uc_obj.reg_read(UC_ARM64_REG_X0)
             src = uc_obj.reg_read(UC_ARM64_REG_X1)
@@ -290,10 +473,25 @@ def _run_case(
         uc_obj.mem_write(dst, payload)
         finish(uc_obj)
 
-    if puts_target is not None:
-        uc.hook_add(UC_HOOK_CODE, hook_puts, begin=puts_target, end=puts_target)
-    if copy_target is not None:
-        uc.hook_add(UC_HOOK_CODE, hook_copy, begin=copy_target, end=copy_target)
+    def hook_copy_site(uc_obj: Uc, address: int, size: int, _user: Any) -> None:
+        # ``call dword ptr [IAT]`` site: the call has not pushed a return
+        # address yet, so [esp]/[esp+4] are dst/src and skipping the instruction
+        # leaves the caller's stack exactly as a completed callee would.
+        sp = uc_obj.reg_read(UC_X86_REG_ESP)
+        model_i386_copy(uc_obj, _read_u32(uc_obj, sp), _read_u32(uc_obj, sp + 4))
+        uc_obj.reg_write(UC_X86_REG_EIP, address + size)
+
+    def hook_puts_site(uc_obj: Uc, address: int, size: int, _user: Any) -> None:
+        uc_obj.reg_write(UC_X86_REG_EIP, address + size)
+
+    for target in puts_targets:
+        uc.hook_add(UC_HOOK_CODE, hook_puts, begin=target, end=target)
+    for site in puts_calls:
+        uc.hook_add(UC_HOOK_CODE, hook_puts_site, begin=site, end=site)
+    for target in copy_targets:
+        uc.hook_add(UC_HOOK_CODE, hook_copy, begin=target, end=target)
+    for site in copy_calls:
+        uc.hook_add(UC_HOOK_CODE, hook_copy_site, begin=site, end=site)
 
     trace: list[int] = []
 
@@ -305,7 +503,7 @@ def _run_case(
     uc.hook_add(UC_HOOK_CODE, hook_trace)
     error = None
     try:
-        uc.emu_start(function_va, sentinel, count=MAX_INSNS)
+        uc.emu_start(function_va, sentinel_base, count=MAX_INSNS)
     except Exception as exc:  # noqa: BLE001
         error = f"{type(exc).__name__}: {exc}"
         error += " at " + " -> ".join(hex(pc) for pc in trace[-6:])
@@ -313,18 +511,39 @@ def _run_case(
     try:
         canary = bytes(uc.mem_read(canary_addr, len(CANARY)))
         sentinel_ok = True
-        if not is_arm:
-            sentinel_ok = bytes(uc.mem_read(entry_sp, 8)) == struct.pack("<Q", sentinel)
+        marker_ok = True
+        if is_arm:
+            pass
+        elif is_i386:
+            sentinel_ok = (
+                bytes(uc.mem_read(entry_sp, 4)) == struct.pack("<I", sentinel_base)
+            )
+            if i386_marker:
+                marker_ok = (
+                    bytes(uc.mem_read(boundary, 4))
+                    == struct.pack("<I", I386_BOUNDARY_MARK)
+                )
+        else:
+            sentinel_ok = (
+                bytes(uc.mem_read(entry_sp, 8))
+                == struct.pack("<Q", sentinel_base)
+            )
         output = _read_cstr(uc, dest, limit=capacity + 64)
         output_len = len(output) - 1 if output.endswith(b"\x00") else capacity + 64
     except Exception:  # noqa: BLE001
         canary = b""
         sentinel_ok = False
+        marker_ok = False
         output_len = None
     return RuntimeCase(
         input_len=len(argument),
         exit_code=0 if error is None else 1,
-        canary_intact=(canary == CANARY) and sentinel_ok,
+        canary_intact=(
+            (canary == CANARY)
+            and sentinel_ok
+            and marker_ok
+            and not copy_overflow[0]
+        ),
         output_len=output_len,
         error=error,
     )

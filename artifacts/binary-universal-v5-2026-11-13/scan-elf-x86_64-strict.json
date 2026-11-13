@@ -1,0 +1,86 @@
+{
+  "schema_version": 4,
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "little",
+  "backend": "elf",
+  "supported": true,
+  "repair_supported": true,
+  "findings": [
+    {
+      "kind": "syscall_length",
+      "address": "0x401028",
+      "callee": "syscall read/write",
+      "capacity": 16,
+      "dest_offset": null,
+      "before": 256,
+      "after": 16,
+      "patchable": true,
+      "confidence": "medium",
+      "strategy": "immediate",
+      "detail": "immediate syscall length exceeds stack capacity"
+    },
+    {
+      "kind": "syscall_length",
+      "address": "0x40103c",
+      "callee": "syscall read/write",
+      "capacity": 16,
+      "dest_offset": null,
+      "before": 256,
+      "after": 16,
+      "patchable": true,
+      "confidence": "medium",
+      "strategy": "immediate",
+      "detail": "immediate syscall length exceeds stack capacity"
+    }
+  ],
+  "limitations": [],
+  "container": {
+    "format": "elf",
+    "arch": "x86_64",
+    "bits": 64,
+    "endian": "little",
+    "image_base": 4194304,
+    "slices": 1,
+    "imports": 0,
+    "sections": 3
+  },
+  "matrix": {
+    "cell": "elf/x86_64/64/little",
+    "repairable": true,
+    "strategies": [
+      "strict-template",
+      "immediate",
+      "guard"
+    ],
+    "runtime_tiers": [
+      "emulated_run"
+    ],
+    "sink_classes": [
+      "checked_copy",
+      "immediate_length",
+      "memcpy_length",
+      "syscall_length",
+      "unbounded_copy"
+    ]
+  },
+  "coverage": {
+    "schema_version": 1,
+    "sink_classes": [
+      "checked_copy",
+      "immediate_length",
+      "memcpy_length",
+      "syscall_length",
+      "unbounded_copy"
+    ],
+    "non_goals": [
+      "heap, global and non-imported inline copy sinks",
+      "sprintf/format-string expansion, UAF, integer and loop defects",
+      "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+      "32-bit Mach-O and fat Mach-O rewriting",
+      "Windows / macOS native execution beyond the existing Mach-O path"
+    ]
+  },
+  "slices": []
+}

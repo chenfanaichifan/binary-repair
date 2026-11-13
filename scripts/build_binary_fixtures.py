@@ -9,9 +9,10 @@ it.  That makes the repair engine's frame model exact:
 
 Toolchains:
   * Mach-O arm64 / x86-64: system ``clang`` (ad-hoc signed by the linker);
-  * PE x86-64 / arm64 and ELF AArch64: Zig 0.17.1.  The toolchain is **not**
-    shipped; ``--check`` works offline, but rebuilding needs Zig 0.17.1 at
-    ``.tmp/zigpkg/site/ziglang/zig`` (or edit ``ZIG_DEFAULT``).
+  * PE x86 / x86-64 / arm64 and ELF AArch64 / i386: Zig 0.17.1.  The
+    toolchain is **not** shipped; ``--check`` works offline, but rebuilding
+    needs Zig 0.17.1 at ``.tmp/zigpkg/site/ziglang/zig`` (or edit
+    ``ZIG_DEFAULT``).
 
 Usage:
   python3 scripts/build_binary_fixtures.py --check
@@ -124,6 +125,18 @@ def _targets(zig: dict[str, object]) -> list[dict[str, object]]:
             "expect": ("pe", "arm64"),
         },
         {
+            "name": "pe-x86",
+            "path": OUT / "pe" / "vuln-strcpy-x86.exe",
+            "cmd": [
+                *zig["base"], "-target", "x86-windows-gnu", "-O0", "-g0",
+                "-o", "TMP", str(SRC / "main.c"),
+                str(SRC / "vuln_copy_win32_x86.S"),
+            ],
+            "env": zig["env"],
+            "tool": zig["version"],
+            "expect": ("pe", "i386"),
+        },
+        {
             "name": "elf-arm64",
             "path": OUT / "elf" / "vuln-strcpy-arm64.elf",
             "cmd": [
@@ -134,6 +147,18 @@ def _targets(zig: dict[str, object]) -> list[dict[str, object]]:
             "env": zig["env"],
             "tool": zig["version"],
             "expect": ("elf", "arm64"),
+        },
+        {
+            "name": "elf-x86",
+            "path": OUT / "elf" / "vuln-strcpy-x86.elf",
+            "cmd": [
+                *zig["base"], "-target", "x86-linux-musl", "-O0", "-g0",
+                "-fno-pie", "-no-pie", "-o", "TMP", str(SRC / "main.c"),
+                str(SRC / "vuln_copy_elf32_x86.S"),
+            ],
+            "env": zig["env"],
+            "tool": zig["version"],
+            "expect": ("elf", "i386"),
         },
         {
             "name": "pe-i386-control",

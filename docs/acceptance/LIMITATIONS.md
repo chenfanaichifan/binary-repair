@@ -58,19 +58,31 @@ This is a course/MVP deliverable, not a supported commercial vulnerability
 remediation service. No client binaries, credentials, private keys or private
 logs are included.
 
-## 9. v4 "arbitrary binary" scope
+## 9. v5 "arbitrary binary" scope
 
-The v4 pipeline repairs ELF, PE and Mach-O (x86-64 / arm64) when a stack-copy
-sink has a recoverable capacity. It is not universal vulnerability discovery:
+v5 adds a universal binary-repair entry (`/binary`, CLI, `/api/binary/*`) and
+explicit dispositions, but it is still not universal vulnerability repair:
 
+- the deterministic repair matrix is ELF/PE/Mach-O on x86-64/arm64 plus 32-bit
+  x86 (ELF32/PE32). Only copy sinks with a recoverable capacity are repaired
+  (`strcpy`/`strcat`/`stpcpy` guards; constant-length `memcpy`/`memmove`/syscall
+  clamps). Heap/global destinations, `sprintf` format expansion, UAF, integer
+  and loop defects, and obfuscated/inlined copies are **analysis-only**;
+- 32-bit x86 analysis models **push-materialised cdecl arguments**; argument
+  setup such as `mov [esp+K], reg` is not analysed in v1 (fail-closed, keeps the
+  i386 negative control honest);
+- 32-bit Mach-O, fat Mach-O rewriting, arm32, riscv, mips, powerpc and
+  big-endian containers are detected and analysed but never rewritten;
 - capacity is frame geometry (`frame_top - destination`) or an explicit
   `_chk`/immediate size, not DWARF object size; buffers that do not sit at the
   frame top can be over-estimated;
-- 32-bit x86/ARM, big-endian binaries and fat Mach-O rewriting are detected but
-  fail closed;
-- heap/global buffers, `sprintf` format expansion and obfuscated code are not
-  repaired;
-- PE and AArch64 ELF runtime evidence is Unicorn emulation of the repaired
-  function, not a Windows/Linux kernel run;
-- Mach-O native evidence exists only on macOS; on Linux those candidates are
-  `not_verified`, not success.
+- PE and ELF runtime evidence is Unicorn instruction-level emulation of the
+  repaired function, not a Windows/Linux kernel run. Mach-O native evidence
+  exists only on macOS; elsewhere those candidates are `not_verified`;
+- `static_only_patch` is explicit opt-in, unverified, and never reported as
+  success. A failed gate drops the candidate (`rejected`); matrix-outside input
+  returns `unsupported`/`analysis_only` and no bytes;
+- report v4 dispositions are bounded claims: no whole-program proof, no
+  arbitrary-vulnerability discovery, no claim that a repaired binary is safe for
+  production use. See
+  [`docs/acceptance/binary-universal-v5-2026-11-13.md`](binary-universal-v5-2026-11-13.md).

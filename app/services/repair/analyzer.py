@@ -115,6 +115,11 @@ def analyze(data: bytes) -> Analysis:
     try:
         if container.arch == "x86_64":
             _scan_x86_64(analysis, container, text, code)
+        elif container.arch == "i386":
+            # Imported lazily: analyzer_i386 needs this module's Sink type.
+            from app.services.repair.analyzer_i386 import scan_i386
+
+            scan_i386(analysis, container, text, code)
         elif container.arch == "arm64":
             _scan_arm64(analysis, container, text, code)
         else:

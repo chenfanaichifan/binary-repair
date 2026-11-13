@@ -5,6 +5,30 @@ simple semantic-versioning policy for delivery snapshots.
 
 ## [Unreleased]
 
+### Added — v5 universal repair entry (2026-11-13)
+
+- `app/services/repair_matrix.py`: single source of truth for the deterministic
+  repair matrix, dispositions, sink classes and non-goals; `/api/binary/matrix`
+  exposes it as English ASCII.
+- Universal repair entry: `repair_any` / `scan_any` with explicit dispositions
+  (`verified_patch`, `static_only_patch`, `not_verified`, `analysis_only`,
+  `unsupported`, `rejected`, `invalid`), report schema v4 (`matrix`, `delivery`,
+  `coverage`, `slices`, `warnings`; prior fields kept).
+- **32-bit x86 repair** for ELF32 and PE32: Capstone x86-32 analyzer (cdecl
+  frame/capacity), cdecl_x86 bounded-copy guards, ELF32 `PT_LOAD` / PE32
+  `.brfix` injection, `E8`/`FF15` call resolution, and Unicorn x86-32 runtime
+  evidence (`tier=emulated_run`, `engine=unicorn-i386`).
+- Explicit opt-in **static-only delivery** for in-matrix candidates without
+  runtime evidence; never counted as success and clearly labelled in API/CLI/UI.
+- `/binary`「任意二进制修复」page (upload → scan → repair → disposition badge →
+  download/report), sidebar entry, curated English i18n strings.
+- CLI `scripts/repair_binary.py`: dispositions/verified/delivery in single and
+  batch output, `--allow-static-only` semantics made explicit.
+- New fixtures `elf-x86`, `pe-x86` and provenance; v5 acceptance record
+  `docs/acceptance/binary-universal-v5-2026-11-13.md`.
+- Removed the historical ELF x86-64 verification fail-open path: a failed gate
+  now clears `candidate_available` and returns no candidate.
+
 ### Added — v4 container-neutral repair (2026-11-13)
 
 - `app/services/containers.py`: ELF/PE/Mach-O detection and imported-call

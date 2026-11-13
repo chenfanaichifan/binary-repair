@@ -39,6 +39,14 @@ See [`docs/acceptance/evidence/ubuntu-a971ffd/README.md`](docs/acceptance/eviden
 [`docs/acceptance/LIMITATIONS.md`](docs/acceptance/LIMITATIONS.md) before citing
 this project as proof.
 
+> **v5 universal-repair feature branch (unreleased).** The
+> [`feature/universal-repair`](docs/acceptance/binary-universal-v5-2026-11-13.md)
+> work adds a universal binary-repair entry (`/binary` page, CLI, `/api/binary/*`),
+> deterministic dispositions, 32-bit x86 (ELF32/PE32) guard repair with Unicorn
+> x86-32 evidence, and explicit opt-in static-only delivery. It is not part of
+> the v1.2.1 release snapshot above; the v5 acceptance record is the local
+> macOS + Linux VM run documented in that file.
+
 ## What it does
 
 - **Route A** redirects the vulnerable call into a reviewed code cave.
@@ -47,11 +55,19 @@ this project as proof.
   `success_within_scope`, `inconclusive`, `rejected`, `unsupported`, `error`, or
   `cancelled`.
 - The GUI/API only render verdicts; they never decide them.
-- Direct binary repair spans **ELF, PE and Mach-O** (x86-64 and arm64):
-  container/import detection, stack-capacity analysis, immediate clamping and
-  bounded-copy guard injection, with native Mach-O or Unicorn runtime evidence.
-  See [`docs/acceptance/binary-universal-v4-2026-11-13.md`](docs/acceptance/binary-universal-v4-2026-11-13.md)
+- Direct binary repair spans **ELF, PE and Mach-O** (x86-64 and arm64) and,
+  since v5, **32-bit x86 (ELF32/PE32)**: container/import detection,
+  stack-capacity analysis, immediate clamping and bounded-copy guard injection,
+  with native Mach-O or Unicorn runtime evidence.
+  See [`docs/acceptance/binary-universal-v4-2026-11-13.md`](docs/acceptance/binary-universal-v4-2026-11-13.md),
+  [`docs/acceptance/binary-universal-v5-2026-11-13.md`](docs/acceptance/binary-universal-v5-2026-11-13.md)
   and [`docs/reference/binary-repair-engine.md`](docs/reference/binary-repair-engine.md).
+- **Universal repair entry (`/binary`, CLI, `/api/binary/*`)** triages any
+  ≤20 MiB ELF/PE/Mach-O input against a deterministic matrix and returns one
+  explicit disposition: `verified_patch`, `static_only_patch` (opt-in,
+  unverified), `analysis_only`, `unsupported`, `rejected` or `invalid`.
+  Anything outside the matrix returns no candidate; a static-only candidate is
+  never reported as a successful repair.
 - Direct ELF repair exposes a structured verification packet and an optional
   **read-only** AI review (`POST /api/binary/repair-review`). The model sees the
   same packet a human sees; it may hold a candidate or ask for more checks, but
@@ -139,7 +155,7 @@ session token, and prints the authenticated URL
 `http://127.0.0.1:8123/?token=...`. Open that URL in a browser. No controller or
 worker process is required for the demo backend.
 
-The UI includes `/agent`, `/settings`, `/guide`, `/methods` and `/connectors`.
+The UI includes `/agent`, `/binary`, `/settings`, `/guide`, `/methods` and `/connectors`.
 For a quick tour, read `START-HERE.md`; for screenshots, see `docs/showcase/`.
 
 Run the test suite:

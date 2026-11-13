@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.services.binary_pipeline import repair_binary, scan_binary
+from app.services.binary_pipeline import repair_any, scan_binary
 
 SUFFIX = {"elf": ".elf", "pe": ".exe", "macho": ".macho"}
 
@@ -35,22 +35,36 @@ def _repair_one(source: Path, output: Path | None, args) -> dict:
         return {"input": str(source), "scan": scan_binary(data)}
     if output is None:
         return {"input": str(source), "error": "output is required unless --scan-only is used"}
-    verify = args.verify and not args.allow_static_only
-    patched, report = repair_binary(
-        data, backend=args.backend, strategy=args.strategy, verify=verify
+    outcome = repair_any(
+        data,
+        backend=args.backend,
+        strategy=args.strategy,
+        verify=args.verify,
+        allow_static_only=args.allow_static_only,
     )
+    report = outcome.report
     payload = report.to_dict()
-    if patched is None:
-        return {"input": str(source), "supported": False, "report": payload}
-    _write_candidate(output, patched)
     if args.report:
         args.report.write_text(
             json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
         )
+    if outcome.candidate is None or not outcome.download_allowed:
+        return {
+            "input": str(source),
+            "supported": False,
+            "disposition": report.disposition,
+            "verified": False,
+            "status": report.status,
+            "error": report.error,
+            "report": payload,
+        }
+    _write_candidate(output, outcome.candidate)
     return {
         "input": str(source),
         "output": str(output),
         "supported": True,
+        "verified": bool(outcome.verified),
+        "disposition": report.disposition,
         "format": report.format,
         "arch": report.arch,
         "backend": report.backend,
@@ -59,12 +73,17 @@ def _repair_one(source: Path, output: Path | None, args) -> dict:
         # legacy top-level keys used by earlier consumers/tests
         "mode": report.mode,
         "capacity": report.capacity,
+        "delivery": payload.get("delivery", {}),
+        "warnings": list(report.warnings),
         "report": payload,
     }
 
 
 def _batch(source_dir: Path, out_dir: Path, args) -> int:
-    counts = {"ok": 0, "unsupported": 0, "error": 0}
+    counts = {
+        "verified": 0, "static_only": 0, "analysis_only": 0,
+        "unsupported": 0, "rejected": 0, "invalid": 0, "error": 0,
+    }
     records = []
     for source in sorted(path for path in source_dir.rglob("*") if path.is_file()):
         if any(part.startswith(".") for part in source.relative_to(source_dir).parts):
@@ -72,38 +91,50 @@ def _batch(source_dir: Path, out_dir: Path, args) -> int:
         data = source.read_bytes()
         if args.scan_only:
             record = {"input": str(source), "scan": scan_binary(data)}
-            counts["ok"] += 1
-        else:
-            patched, report = repair_binary(
-                data, backend=args.backend, strategy=args.strategy,
-                verify=args.verify and not args.allow_static_only,
-            )
-            suffix = SUFFIX.get(report.format, ".bin")
-            target = out_dir / (source.stem + "-fixed" + suffix)
-            if patched is None:
-                status = report.status
-                record = {
-                    "input": str(source), "format": report.format,
-                    "arch": report.arch, "status": status,
-                    "error": report.error or (report.limitations[-1] if report.limitations else ""),
-                }
-                counts["unsupported" if status in {"unsupported", "not_verified", "rejected"} else "error"] += 1
+            counts["verified"] += 1
+            records.append(record)
+            if args.json:
+                print(json.dumps(record, ensure_ascii=False))
             else:
-                _write_candidate(target, patched)
-                record = {
-                    "input": str(source), "output": str(target),
-                    "format": report.format, "arch": report.arch,
-                    "strategy": report.strategy, "status": report.status,
-                    "verification_tier": (report.verification or {}).get("tier"),
-                }
-                counts["ok"] += 1
+                print(f"{'scan':12} {record['input']}")
+            continue
+        outcome = repair_any(
+            data, backend=args.backend, strategy=args.strategy,
+            verify=args.verify, allow_static_only=args.allow_static_only,
+        )
+        report = outcome.report
+        suffix = SUFFIX.get(report.format, ".bin")
+        target = out_dir / (source.stem + "-fixed" + suffix)
+        disposition = report.disposition
+        if outcome.candidate is None or not outcome.download_allowed:
+            record = {
+                "input": str(source), "format": report.format,
+                "arch": report.arch, "status": report.status,
+                "disposition": disposition,
+                "error": report.error or (report.limitations[-1] if report.limitations else ""),
+            }
+            key = disposition if disposition in counts else "error"
+            counts[key] += 1
+        else:
+            _write_candidate(target, outcome.candidate)
+            record = {
+                "input": str(source), "output": str(target),
+                "format": report.format, "arch": report.arch,
+                "strategy": report.strategy, "status": report.status,
+                "disposition": disposition,
+                "verified": bool(outcome.verified),
+                "verification_tier": (report.verification or {}).get("tier"),
+            }
+            counts["verified" if outcome.verified else "static_only"] += 1
         records.append(record)
         if args.json:
             print(json.dumps(record, ensure_ascii=False))
         else:
-            status = record.get("status") or "scan"
-            print(f"{status:12} {record['input']}")
-    print(json.dumps({"summary": counts, "files": len(records)}, ensure_ascii=False))
+            status = record.get("disposition") or "scan"
+            print(f"{status:16} {record['input']}")
+    summary = dict(counts)
+    summary["ok"] = counts["verified"] + counts["static_only"]
+    print(json.dumps({"summary": summary, "files": len(records)}, ensure_ascii=False))
     return 0 if counts["error"] == 0 else 1
 
 
@@ -138,7 +169,7 @@ def main() -> int:
     print(json.dumps(record, indent=2, ensure_ascii=False))
     if "scan" in record:
         return 0
-    return 0 if record.get("supported") else 2
+    return 0 if record.get("output") else 2
 
 
 if __name__ == "__main__":

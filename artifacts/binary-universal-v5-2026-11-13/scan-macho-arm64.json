@@ -1,0 +1,72 @@
+{
+  "schema_version": 4,
+  "format": "macho",
+  "arch": "arm64",
+  "bits": 64,
+  "endian": "little",
+  "backend": "macho",
+  "supported": true,
+  "repair_supported": true,
+  "findings": [
+    {
+      "kind": "unbounded_copy",
+      "address": "0x100003f80",
+      "callee": "strcpy",
+      "capacity": 16,
+      "dest_offset": -16,
+      "before": null,
+      "after": 16,
+      "patchable": true,
+      "confidence": "medium",
+      "strategy": "guard",
+      "detail": "strcpy into stack destination bounded to 16 bytes"
+    }
+  ],
+  "limitations": [],
+  "container": {
+    "format": "macho",
+    "arch": "arm64",
+    "bits": 64,
+    "endian": "little",
+    "image_base": 4294967296,
+    "slices": 1,
+    "imports": 4,
+    "sections": 4
+  },
+  "matrix": {
+    "cell": "macho/arm64/64/little",
+    "repairable": true,
+    "strategies": [
+      "immediate",
+      "guard"
+    ],
+    "runtime_tiers": [
+      "native_run"
+    ],
+    "sink_classes": [
+      "checked_copy",
+      "immediate_length",
+      "memcpy_length",
+      "syscall_length",
+      "unbounded_copy"
+    ]
+  },
+  "coverage": {
+    "schema_version": 1,
+    "sink_classes": [
+      "checked_copy",
+      "immediate_length",
+      "memcpy_length",
+      "syscall_length",
+      "unbounded_copy"
+    ],
+    "non_goals": [
+      "heap, global and non-imported inline copy sinks",
+      "sprintf/format-string expansion, UAF, integer and loop defects",
+      "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+      "32-bit Mach-O and fat Mach-O rewriting",
+      "Windows / macOS native execution beyond the existing Mach-O path"
+    ]
+  },
+  "slices": []
+}

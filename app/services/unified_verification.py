@@ -14,6 +14,7 @@ from dataclasses import asdict, dataclass
 from typing import Any
 
 from app.services.ai_adjudication import GateResult
+from app.services.repair_matrix import supported_pairs
 from app.services.runtime.evidence import RuntimeEvidence
 
 CHECK_PASSED = "passed"
@@ -54,11 +55,7 @@ def build(
     patched_sha256: str,
 ) -> UnifiedVerification:
     checks: list[dict[str, Any]] = []
-    supported = (format_name, arch) in {
-        ("elf", "x86_64"), ("elf", "arm64"),
-        ("pe", "x86_64"), ("pe", "arm64"),
-        ("macho", "arm64"), ("macho", "x86_64"),
-    }
+    supported = (format_name, arch) in supported_pairs()
     checks.append(_check(
         "format", "Container and architecture are in the repair matrix",
         CHECK_PASSED if supported else CHECK_FAILED,

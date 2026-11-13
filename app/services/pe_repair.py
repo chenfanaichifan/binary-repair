@@ -54,8 +54,11 @@ def add_rx_section(data: bytes, code: bytes, *, name: str = ".brfix") -> tuple[b
         report.limitations.append("not a PE image")
         return None, report
     report.arch = str(pe.header.machine)
-    if "AMD64" not in report.arch and "ARM64" not in report.arch:
-        report.limitations.append("only PE32+ x86-64/arm64 is supported")
+    if ("AMD64" not in report.arch and "ARM64" not in report.arch
+            and "I386" not in report.arch):
+        report.limitations.append(
+            "only PE32 x86, PE32+ x86-64 and PE32+ arm64 are supported"
+        )
         return None, report
     if pe.has_signatures:
         report.signature_invalidated = True

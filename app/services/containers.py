@@ -150,9 +150,17 @@ def _decode_arm64_stub(code: bytes, va: int) -> int | None:
 
 
 def _decode_x86_stub(code: bytes, va: int) -> int | None:
+    """x86-64 ``jmp *GOT(%rip)`` (FF 25 rel32)."""
     if len(code) >= 6 and code[0] == 0xFF and code[1] == 0x25:
         disp = struct.unpack_from("<i", code, 2)[0]
         return va + 6 + disp
+    return None
+
+
+def _decode_x86_abs_stub(code: bytes) -> int | None:
+    """i386 ``jmp *GOT`` (FF 25 abs32): the GOT slot is an absolute address."""
+    if len(code) >= 6 and code[0] == 0xFF and code[1] == 0x25:
+        return struct.unpack_from("<I", code, 2)[0]
     return None
 
 
@@ -163,7 +171,15 @@ def _decode_elf_plt_stub(code: bytes, va: int, arch: str) -> int | None:
             offset = ((ldr >> 10) & 0xFFF) * 8
             if (adrp & 0x9F00001F) == 0x90000010:
                 return _adrp_target(va, adrp) + offset
-    if arch in {"x86_64", "i386"}:
+    if arch == "i386":
+        # i386 PLT entries are 16 bytes: ``jmp *GOT`` (FF 25 abs32) at +0,
+        # optionally after a 4-byte ``endbr32`` when the image is IBT-enabled.
+        for start in range(0, max(len(code) - 5, 0)):
+            target = _decode_x86_abs_stub(code[start:])
+            if target is not None:
+                return target
+        return None
+    if arch == "x86_64":
         # Standard lazy PLT entry: jmp *GOT(%rip) at +6 / +2.
         for start in (6, 2):
             if len(code) >= start + 6:
@@ -249,8 +265,14 @@ def _elf_imports(elf: ELFFile, info: ContainerInfo) -> None:
             continue
     if not reloc_names:
         return
-    plt = elf.get_section_by_name(".plt")
-    if plt is not None and plt.data_size():
+    plt_names = [".plt"]
+    if info.arch == "i386":
+        # IBT-enabled i386 images keep the FF 25 abs32 jump in .plt.sec.
+        plt_names.append(".plt.sec")
+    for plt_name in plt_names:
+        plt = elf.get_section_by_name(plt_name)
+        if plt is None or not plt.data_size():
+            continue
         base = int(plt["sh_addr"])
         raw = plt.data()
         step = 16
@@ -304,8 +326,9 @@ def _pe_info(data: bytes) -> ContainerInfo:
                 except Exception:  # noqa: BLE001
                     continue
         info.imports.update(iat)
-        # Direct calls may target a `jmp [rip+disp]` thunk (x86-64) or an
-        # `adrp/ldr/br x16` thunk (arm64) in .text.
+        # Direct calls may target a `jmp [rip+disp]` thunk (x86-64), an
+        # `jmp [abs32]` thunk (i386) or an `adrp/ldr/br x16` thunk (arm64) in
+        # .text.
         text = next((s for s in info.sections if s.name == ".text"), None)
         if text is not None and text.size:
             raw = data[text.offset:text.offset + text.size]
@@ -315,6 +338,15 @@ def _pe_info(data: bytes) -> ContainerInfo:
                         va = text.va + index
                         disp = struct.unpack_from("<i", raw, index + 2)[0]
                         target = va + 6 + disp
+                        if target in iat:
+                            info.imports[va] = iat[target]
+            elif info.arch == "i386":
+                # 32-bit PE import thunks are ``jmp dword ptr [__imp_x]``:
+                # FF 25 <absolute IAT VA>.
+                for index in range(len(raw) - 6):
+                    if raw[index] == 0xFF and raw[index + 1] == 0x25:
+                        va = text.va + index
+                        target = struct.unpack_from("<I", raw, index + 2)[0]
                         if target in iat:
                             info.imports[va] = iat[target]
             elif info.arch == "arm64":

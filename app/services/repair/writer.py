@@ -42,7 +42,7 @@ def _patch_immediate(data: bytes, sink: Sink, value: int) -> bytes | None:
         return None
     out = bytearray(data)
     loc = sink.length_offset
-    if sink.arch == "x86_64":
+    if sink.arch in {"x86_64", "i386"}:
         if loc < 0 or loc + 4 > len(out):
             return None
         out[loc:loc + 4] = struct.pack("<I", value & 0xFFFFFFFF)
@@ -79,12 +79,14 @@ def _inject_blob(container: ContainerInfo, data: bytes, blob: bytes) -> tuple[by
             return None, None, report.limitations[-1] if report.limitations else "Mach-O injection failed"
         return patched, int(report.section_va), "macho-section"
     if container.format == "elf":
-        from app.services.code_cave import CaveError, add_rx_segment
+        from app.services.code_cave import add_rx_segment
 
         try:
             cave = add_rx_segment(data, blob)
-        except (CaveError, ValueError, IndexError) as exc:
-            return None, None, f"ELF segment injection failed: {exc}"
+        except Exception as exc:  # noqa: BLE001 - fail closed on any parse error
+            return None, None, (
+                f"ELF segment injection failed: {type(exc).__name__}: {exc}"
+            )
         return cave.data, int(cave.cave_vaddr), cave.method
     return None, None, f"no injection adapter for {container.format}"
 
@@ -99,6 +101,26 @@ def _redirect_call(data: bytes, sink: Sink, target_va: int) -> bytes | None:
             return None
         original = bytes(out[off:off + sink.call_size])
         if not original or original[0] not in (0xE8, 0xFF):
+            return None
+        delta = target_va - (sink.call_va + 5) if sink.call_va is not None else None
+        if delta is None or not -(1 << 31) <= delta < (1 << 31):
+            return None
+        out[off:off + 5] = b"\xE8" + struct.pack("<i", delta)
+        if sink.call_size == 6:
+            out[off + 5] = 0x90
+        return bytes(out)
+    if sink.arch == "i386":
+        if off < 0 or off + 5 > len(out):
+            return None
+        original = bytes(out[off:off + sink.call_size])
+        if not original:
+            return None
+        if original[0] == 0xE8:
+            pass
+        elif len(original) >= 2 and original[0] == 0xFF and original[1] == 0x15:
+            # i386 PE: ``call dword ptr [__imp_x]`` (FF 15 abs32) -> E8 rel32.
+            pass
+        else:
             return None
         delta = target_va - (sink.call_va + 5) if sink.call_va is not None else None
         if delta is None or not -(1 << 31) <= delta < (1 << 31):

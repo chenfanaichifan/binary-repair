@@ -1,0 +1,92 @@
+{
+  "fixture": "pe-i386-no-sink",
+  "candidate_available": false,
+  "download_allowed": false,
+  "disposition": "analysis_only",
+  "status": "unsupported",
+  "error": "no patchable copy sink with a recoverable capacity was found",
+  "report": {
+    "schema_version": 4,
+    "format": "pe",
+    "arch": "i386",
+    "backend": "pe",
+    "strategy": "none",
+    "status": "unsupported",
+    "supported": false,
+    "original_sha256": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+    "patched_sha256": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+    "mode": "unsupported",
+    "capacity": null,
+    "findings": [],
+    "offsets": [],
+    "actions": [],
+    "limitations": [
+      "cdecl arguments materialised with mov to stack are not analysed in v1",
+      "no patchable copy sink with a recoverable capacity was found"
+    ],
+    "verification": {},
+    "runtime": {},
+    "container": {
+      "format": "pe",
+      "arch": "i386",
+      "bits": 32,
+      "endian": "little",
+      "image_base": 4194304,
+      "slices": 1,
+      "imports": 79,
+      "sections": 7
+    },
+    "universal": {
+      "detected": true,
+      "repairable": true,
+      "reason": "no patchable copy sink with a recoverable capacity was found"
+    },
+    "signature_invalidated": false,
+    "codesign_invalidated": false,
+    "candidate_available": false,
+    "error": "no patchable copy sink with a recoverable capacity was found",
+    "disposition": "analysis_only",
+    "matrix": {
+      "cell": "pe/i386/32/little",
+      "repairable": true,
+      "strategies": [
+        "immediate",
+        "guard"
+      ],
+      "runtime_tiers": [
+        "emulated_run"
+      ],
+      "sink_classes": [
+        "checked_copy",
+        "immediate_length",
+        "memcpy_length",
+        "syscall_length",
+        "unbounded_copy"
+      ]
+    },
+    "delivery": {
+      "download_allowed": false,
+      "verified": false,
+      "tier": "static_only"
+    },
+    "coverage": {
+      "schema_version": 1,
+      "sink_classes": [
+        "checked_copy",
+        "immediate_length",
+        "memcpy_length",
+        "syscall_length",
+        "unbounded_copy"
+      ],
+      "non_goals": [
+        "heap, global and non-imported inline copy sinks",
+        "sprintf/format-string expansion, UAF, integer and loop defects",
+        "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+        "32-bit Mach-O and fat Mach-O rewriting",
+        "Windows / macOS native execution beyond the existing Mach-O path"
+      ]
+    },
+    "slices": [],
+    "warnings": []
+  }
+}
