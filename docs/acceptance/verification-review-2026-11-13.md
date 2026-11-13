@@ -78,9 +78,9 @@ cd binary-repair-gui
 Observed on the final tree:
 
 ```text
-fixtures: 11 rows, sources: 110 rows -> PASS
+fixtures: 12 rows, sources: 132 rows -> PASS
 bundle artifacts/binary-universal-v5-2026-11-13: 38 files -> PASS
-bundle artifacts/ai-direct-binary-2026-11-13: 9 files -> PASS
+bundle artifacts/ai-direct-binary-2026-11-13: 14 files -> PASS
 overall: PASS
 ```
 
@@ -106,40 +106,39 @@ Stale statements in older LIMITATIONS sections (v4-era "714 tests" and "one
 fixture family") were updated to the current v5/v6 state; historical V4 claims
 that still apply are retained.
 
-## 6. AI status: two B+AI paths implemented, increment not yet measured
+## 6. AI status: exactly two product paths, increment still not measured
 
-The review's recommendation was "B + AI": keep deterministic instruction-level
-rewriting (B), but let AI enter the generation loop and keep the gate as the
-acceptance authority.  That is now implemented on
-`feature/ai-binary-repair` (fast-forwarded to `workbench-v3`):
+The product's original two paths are now implemented and exposed:
 
-1. `ai_plan`: AI selects/instantiates one deterministic writer action
-   (`sink_index`, `strategy`) from a metadata-only packet.
-2. `ai_bytes`: AI emits raw machine-code guard bytes or same-length in-place
-   edits; a fail-closed Capstone/allowlist/injection validator constrains them,
-   then the same deterministic runtime/gate decides.
+1. **Path 1 `asm_roundtrip`** — ELF binary → Capstone disassembly of the target
+   function → AI returns repaired **assembly** → clang assembles it back to
+   machine code → injected executable block + function-entry redirect → patched
+   ELF.  This is the "translate to assembly, repair, assemble back" path.
+2. **Path 2 `binary_direct`** — binary → AI emits raw machine-code bytes or
+   same-length byte edits → strict validator → existing writer patches directly
+   → patched binary.  **No assembly text and no decompiled-C round trip.**
 
-Neither path emits assembly text or decompiled C.  AI still cannot promote a
-failed/incomplete gate; `static_only` is explicit opt-in.
+Both paths end in the same deterministic reparse/runtime/gate; AI cannot promote
+a failed/incomplete gate.  The previous prototype names `ai_plan`/`ai_bytes` are
+internal-only and are no longer in `AI_PATHS`, the API contract or the UI.
 
-Scripted acceptance evidence (`artifacts/ai-direct-binary-2026-11-13/`) shows
-six positive `verified_patch` candidates (PE x86-64, ELF arm64, ELF i386; both
-paths) and one rejected structurally-valid no-op injected guard.  Importantly,
-**no AI increment is measured on these fixtures**: the scripted model
-instantiates the same deterministic actions, so each AI candidate equals the v5
-deterministic baseline candidate (`same_candidate_as_deterministic` in
-`summary.json`).  This proves protocol/validator/writeback/gate integration, not
-LLM repair quality or incremental capability.
+Scripted acceptance evidence (`artifacts/ai-direct-binary-2026-11-13/`) contains
+11 positive records on macOS (9 on Linux where Mach-O native is skipped):
+asm_roundtrip for ELF i386/x86_64/arm64, and binary_direct for PE x86-64/arm64,
+ELF i386/x86_64/arm64, ELF i386 memcpy, plus **Mach-O x86-64/arm64 native
+verified** on macOS.  The no-op injected guard is rejected by the gate.
 
-The next milestone remains: PoC-failure as a gate predicate, plus a gate-blind
-case suite that can distinguish AI-generated repairs from the deterministic
-baseline.  Until then, do not claim "AI repaired arbitrary binaries" or
+**No AI increment is measured.**  The scripted model is a deterministic stand-in;
+direct-path candidates coincide with the v5 deterministic baseline, and
+assembly-path candidates differ in representation but do not prove extra
+vulnerability coverage.  A real-provider, gate-blind/PoC increment experiment
+remains future work.  Do not claim "AI repaired arbitrary binaries" or
 "AI increment demonstrated."
 
 ## 7. Final local verification
 
-- macOS 13.5 arm64: **1119 tests, 0 failed, 0 errors, 4 skipped** (233.8 s).
-- Linux VM Ubuntu 24.04 arm64: **1119 tests, 0 failed, 0 errors, 7 skipped** (249.5 s).
+- macOS 13.5 arm64: **1128 tests, 0 failed, 0 errors, 4 skipped** (250.1 s).
+- Linux VM Ubuntu 24.04 arm64: **1128 tests, 0 failed, 0 errors, 7 skipped** (258.0 s).
 - `scripts/verify_evidence.py`: 11 fixture rows + 110 source rows PASS;
   v5 bundle 38 files PASS; AI bundle 9 files PASS.
 - CI: [43421008873](https://github.com/chenfanaichifan/binary-repair/actions/runs/43421008873) on `136ac6e` — **success**; this record is a docs-only follow-up, and the workflow re-runs the same suite for it.

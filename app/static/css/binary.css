@@ -545,3 +545,13 @@
   white-space: nowrap;
 }
 .binary-api-link:hover { text-decoration: underline; }
+
+.binary-ai-card-status {
+  min-height: 16px;
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  color: var(--ds-muted);
+}
+.binary-ai-card[data-state="running"] .binary-ai-card-status { color: var(--ds-accent-text); }
+.binary-ai-card[data-state="ok"] .binary-ai-card-status { color: var(--ds-ok); }
+.binary-ai-card[data-state="error"] .binary-ai-card-status { color: var(--ds-bad); }

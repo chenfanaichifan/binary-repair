@@ -558,9 +558,11 @@ def _run_case(
         uc.reg_write(UC_ARM64_REG_X0, input_base)
         uc.reg_write(UC_ARM64_REG_X30, sentinel_base)
     else:
-        # On x86-64 the synthetic return address occupies [entry_sp, entry_sp+8),
-        # so the canary starts above it and the return slot itself is checked too.
-        canary_addr = dest + capacity + 8
+        # On x86-64 the synthetic return address occupies [entry_sp, entry_sp+8).
+        # Keep the canary above both the buffer and the return slot; for a frame
+        # whose buffer ends just below the saved RBP the naive
+        # dest+capacity+8 address would land on the return slot itself.
+        canary_addr = max(dest + capacity + 8, entry_sp + 8)
         uc.mem_write(canary_addr, CANARY)
         uc.mem_write(entry_sp, struct.pack("<Q", sentinel_base))
         uc.reg_write(UC_X86_REG_RSP, entry_sp)

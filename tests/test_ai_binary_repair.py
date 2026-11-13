@@ -16,6 +16,8 @@ from app.services.ai_binary_repair import (
     AI_PATH_BYTES,
     AI_PATH_PLAN,
     AI_PATHS,
+    ASM_PATH,
+    DIRECT_PATH,
     ai_paths_contract,
     ai_repair,
     build_bytes_packet,
@@ -78,7 +80,7 @@ def test_plan_packet_has_no_raw_binary_bytes():
 def test_bytes_packet_lists_safe_regions_and_limits():
     data = _read(ELF_MEMCPY)
     packet = build_bytes_packet(data)
-    assert packet["path"] == AI_PATH_BYTES
+    assert packet["path"] == DIRECT_PATH
     assert packet["executable_sections"]
     assert packet["limits"]["max_injected_code_bytes"] == 4096
     finding = packet["findings"][0]
@@ -193,7 +195,7 @@ def _post(client: TestClient, path: str, **extra):
 
 def test_api_ai_repair_requires_provider(monkeypatch):
     monkeypatch.setattr(main_module, "client_from_env", lambda: None)
-    response = _post(_client(), AI_PATH_PLAN)
+    response = _post(_client(), DIRECT_PATH)
     assert response.status_code == 503
     body = response.json()
     assert body["ok"] is False
@@ -203,15 +205,15 @@ def test_api_ai_repair_requires_provider(monkeypatch):
 def test_api_ai_repair_verified(monkeypatch):
     monkeypatch.setattr(
         main_module, "client_from_env",
-        lambda: FakeClient({"schema_version": 1, "sink_index": 0, "strategy": "guard"}),
+        lambda: FakeClient(_bytes_guard_payload()),
     )
-    response = _post(_client(), AI_PATH_PLAN)
+    response = _post(_client(), DIRECT_PATH)
     assert response.status_code == 200
     body = response.json()
     assert body["ok"] is True
     assert body["verified"] is True
     assert body["disposition"] == "verified_patch"
-    assert body["path"] == AI_PATH_PLAN
+    assert body["path"] == DIRECT_PATH
     assert body["ai"]["status"] == "accepted"
     assert base64.b64decode(body["patched_base64"])[:2] == b"MZ"
 
@@ -219,9 +221,9 @@ def test_api_ai_repair_verified(monkeypatch):
 def test_api_ai_repair_invalid_plan_is_422(monkeypatch):
     monkeypatch.setattr(
         main_module, "client_from_env",
-        lambda: FakeClient({"schema_version": 1, "sink_index": -1, "strategy": "guard"}),
+        lambda: FakeClient({"schema_version": 1, "sink_index": -1, "inject": {"code_hex": "c3"}}),
     )
-    response = _post(_client(), AI_PATH_PLAN)
+    response = _post(_client(), DIRECT_PATH)
     assert response.status_code == 422
     assert response.json()["ai"]["status"] == "invalid"
 
@@ -248,18 +250,18 @@ def test_cli_ai_path_writes_verified_candidate(monkeypatch, tmp_path, capsys):
 
     monkeypatch.setattr(
         assistant_llm, "client_from_env",
-        lambda: FakeClient({"schema_version": 1, "sink_index": 0, "strategy": "guard"}),
+        lambda: FakeClient(_bytes_guard_payload()),
     )
     cli = _load_cli()
     out = tmp_path / "ai-fixed.exe"
     monkeypatch.setattr(
         "sys.argv",
-        ["repair_binary.py", str(PE_GUARD), str(out), "--ai-path", "ai_plan"],
+        ["repair_binary.py", str(PE_GUARD), str(out), "--ai-path", "binary_direct"],
     )
     assert cli.main() == 0
     assert out.is_file()
     record = json.loads(capsys.readouterr().out)
-    assert record["path"] == "ai_plan"
+    assert record["path"] == "binary_direct"
     assert record["verified"] is True
     assert record["ai"]["status"] == "accepted"
 
@@ -272,7 +274,7 @@ def test_cli_ai_path_requires_provider(monkeypatch, tmp_path):
     out = tmp_path / "ai-fixed.exe"
     monkeypatch.setattr(
         "sys.argv",
-        ["repair_binary.py", str(PE_GUARD), str(out), "--ai-path", "ai_plan"],
+        ["repair_binary.py", str(PE_GUARD), str(out), "--ai-path", "binary_direct"],
     )
     assert cli.main() == 2
     assert not out.exists()
@@ -283,7 +285,7 @@ def test_cli_ai_path_rejects_batch(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "sys.argv",
         ["repair_binary.py", "--batch", str(tmp_path), "--out", str(tmp_path / "out"),
-         "--ai-path", "ai_plan"],
+         "--ai-path", "binary_direct"],
     )
     assert cli.main() == 2
 
@@ -392,10 +394,10 @@ def test_api_ai_bytes_verified(monkeypatch):
         main_module, "client_from_env",
         lambda: FakeClient(_bytes_guard_payload()),
     )
-    response = _post(_client(), AI_PATH_BYTES)
+    response = _post(_client(), DIRECT_PATH)
     assert response.status_code == 200
     body = response.json()
-    assert body["path"] == AI_PATH_BYTES
+    assert body["path"] == DIRECT_PATH
     assert body["verified"] is True
     assert body["ai"]["status"] == "accepted"
     assert base64.b64decode(body["patched_base64"])[:2] == b"MZ"
@@ -407,7 +409,7 @@ def test_api_ai_bytes_syscall_is_422(monkeypatch):
         lambda: FakeClient({"schema_version": 1, "sink_index": 0,
                             "inject": {"code_hex": "0f05"}}),
     )
-    response = _post(_client(), AI_PATH_BYTES)
+    response = _post(_client(), DIRECT_PATH)
     assert response.status_code == 422
     assert response.json()["ai"]["status"] == "invalid"
 

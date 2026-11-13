@@ -161,6 +161,18 @@ def _targets(zig: dict[str, object]) -> list[dict[str, object]]:
             "expect": ("elf", "arm64"),
         },
         {
+            "name": "elf-x86_64",
+            "path": OUT / "elf" / "vuln-strcpy-x86_64.elf",
+            "cmd": [
+                *zig["base"], "-target", "x86_64-linux-musl", "-O0", "-g0",
+                "-fno-pie", "-no-pie", "-o", "TMP", str(SRC / "main.c"),
+                str(SRC / "vuln_copy_elf_x86_64.S"),
+            ],
+            "env": zig["env"],
+            "tool": zig["version"],
+            "expect": ("elf", "x86_64"),
+        },
+        {
             "name": "elf-x86",
             "path": OUT / "elf" / "vuln-strcpy-x86.elf",
             "cmd": [

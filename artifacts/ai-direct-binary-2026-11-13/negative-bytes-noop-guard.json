@@ -1,5 +1,5 @@
 {
-  "path": "ai_bytes",
+  "path": "binary_direct",
   "input": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/pe/vuln-strcpy-x64.exe",
   "input_sha256": "1dcafa9d93e010e7da787e3323376be6b8ac79c792a556ff2f5269ca20463fae",
   "candidate_sha256": null,
@@ -19,7 +19,7 @@
   ],
   "ai": {
     "schema_version": 1,
-    "path": "ai_bytes",
+    "path": "binary_direct",
     "requested": true,
     "called": true,
     "mode": "scripted",
@@ -652,7 +652,7 @@
     "warnings": [],
     "ai": {
       "schema_version": 1,
-      "path": "ai_bytes",
+      "path": "binary_direct",
       "requested": true,
       "called": true,
       "mode": "scripted",

@@ -43,7 +43,8 @@ this project as proof.
 > [`feature/universal-repair`](docs/acceptance/binary-universal-v5-2026-11-13.md)
 > work adds a bounded binary-repair entry (`/binary` page, CLI, `/api/binary/*`),
 > deterministic dispositions, 32-bit x86 (ELF32/PE32) repair with Unicorn x86-32
-> evidence, explicit opt-in static-only delivery, and two AI direct-binary paths.
+> evidence, explicit opt-in static-only delivery, and two AI binary-repair paths
+> (assembly round-trip and direct binary bytes).
 > "100%" in the acceptance records means the approved plan G1–G5 / deterministic
 > matrix is complete; it does **not** mean arbitrary-vulnerability repair or a
 > measured AI increment.  See
@@ -59,12 +60,16 @@ this project as proof.
   `success_within_scope`, `inconclusive`, `rejected`, `unsupported`, `error`, or
   `cancelled`.
 - The GUI/API only render verdicts; they never decide them.
-- **Two AI direct-binary repair paths** (post-v5): `ai_plan` (the model selects
-  one deterministic writer action; no raw bytes leave the process for planning)
-  and `ai_bytes` (the model emits raw machine-code guard bytes or same-length
-  byte edits, validated by a fail-closed Capstone/allowlist/injection checker).
-  Neither path converts to assembly text and reassembles, nor decompiles to C
-  and recompiles; the deterministic runtime/gate remains the only acceptance
+- **Two AI binary repair paths** (post-v5):
+  1. `asm_roundtrip` — disassemble the target ELF function to assembly text, let
+     the model repair the assembly, assemble it back to machine code with clang,
+     inject it and redirect the function entry, producing a patched ELF.
+     ELF i386/x86_64/arm64 only.
+  2. `binary_direct` — the model emits raw machine-code bytes or same-length
+     byte edits; a fail-closed Capstone/allowlist/injection validator constrains
+     them and the existing writer patches the binary directly.  No assembly text
+     and no decompiled-C round-trip.
+  Both end in the deterministic runtime/gate, which is the only acceptance
   authority.  See [docs/architecture/ai-binary-repair-paths.md](docs/architecture/ai-binary-repair-paths.md).
 - Direct binary repair spans **ELF, PE and Mach-O** (x86-64 and arm64) and,
   since v5, **32-bit x86 (ELF32/PE32)**: static/dynamic ELF32 (PLT), PE32

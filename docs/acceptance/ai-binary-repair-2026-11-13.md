@@ -1,110 +1,79 @@
-# Acceptance: two AI direct-binary repair paths (2026-11-13)
+# Acceptance: two AI binary repair paths (2026-11-13)
 
-Branch: `feature/ai-binary-repair` (post-v5, base `72db891`).
-Scope: two AI-assisted repair paths that operate directly on binary bytes,
-without creating an assembly-text or decompiled-C round trip.
+Branch: `feature/ai-binary-repair` (post-v5).  Product requirement: two AI
+paths, one via an **assembly round-trip**, one **directly on binary bytes**,
+both producing a patched binary and both bounded by the deterministic gate.
 
-## 1. What was added
+## 1. The two paths
 
-- `app/services/ai_binary_repair.py` — protocol, packets, plan validation, AI
-  metadata and the shared finish/gate path.
-- `app/services/ai_patch_validation.py` — fail-closed static validator for the
-  raw `ai_bytes` patch (Capstone decode + allowlist + injection/redirect/edits
-  checks).
-- `app/services/binary_pipeline.py` — shared `finish_candidate()` tail extracted
-  so deterministic and AI candidates use exactly the same reparse/runtime/gate.
-- `app/services/runtime/emulated.py` + `runtime/evidence.py` — `buffer_match`
-  evidence for bounded copies, closing the "structurally valid no-op guard"
-  gate gap.
-- `GET /api/binary/ai-paths`, `POST /api/binary/ai-repair`;
-  `scripts/repair_binary.py --ai-path`;
-  `/binary` UI section with two path cards (product-owned template/JS/CSS/i18n).
-- Tests: `tests/test_ai_binary_repair.py`,
-  `tests/test_ai_patch_validation.py`, `tests/test_binary_ai_ui.py`,
-  `tests/test_ai_evidence_script.py`.
-- Scripted evidence: `scripts/capture_ai_binary_repair.py` and
-  `artifacts/ai-direct-binary-2026-11-13/` (no network/provider used).
+| Path | Input → intermediate | AI output | Binary write | Gate |
+|---|---|---|---|---|
+| `asm_roundtrip` | binary → **assembly text** | replacement function assembly | clang assembles to a block; inject + function-entry redirect | same deterministic gate |
+| `binary_direct` | binary → no assembly text | raw machine-code bytes or same-length byte edits | existing writer inject/redirect or in-place patch | same deterministic gate |
 
-## 2. The two paths
+Path 1 supports ELF i386/x86_64/arm64.  Path 2 covers ELF/PE/Mach-O
+x86_64/arm64 and ELF32/PE32 i386.  Neither path decompiles to C and recompiles;
+path 1 does use assembly by design, path 2 does not.
 
-| Path | AI output | Binary write | Deterministic gate |
-|---|---|---|---|
-| `ai_plan` | `{sink_index, strategy}` only | v5 writer action (guard/immediate) | same runtime/gate as v5 |
-| `ai_bytes` | raw `code_hex` (guard) or same-length `edits` | validator + writer inject/redirect or in-place edit | same runtime/gate as v5 |
-
-No assembly text and no decompiled C are produced, reassembled or recompiled.
-The model may not promote a failed or incomplete gate; `static_only` remains
-explicit opt-in and never success.
-
-## 3. Scripted evidence (both paths, no real provider)
+## 2. Scripted acceptance evidence
 
 Command: `python scripts/capture_ai_binary_repair.py --out artifacts/ai-direct-binary-2026-11-13`
 
-| fixture | format/arch | `ai_plan` | `ai_bytes` | candidate SHA-256 |
-|---|---|---|---|---|
-| `fixtures/pe/vuln-strcpy-x64.exe` | PE x86-64 guard | `verified_patch` | `verified_patch` | `179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350` |
-| `fixtures/elf/vuln-strcpy-arm64.elf` | ELF arm64 guard | `verified_patch` | `verified_patch` | `ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d` |
-| `fixtures/elf/vuln-memcpy-x86.elf` | ELF i386 memcpy immediate | `verified_patch` | `verified_patch` | `e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88` |
+The model in this bundle is a deterministic **scripted stand-in**; no network or
+provider is used.  It proves protocol/assembler/validator/direct-writeback/gate
+integration, not real-LLM repair quality.
 
-Negative control: an `ai_bytes` guard of `c3` (`ret`) is structurally valid but
-semantically empty; the deterministic gate rejects it: `verified=false`,
-`disposition=rejected` (`negative-bytes-noop-guard.json`).
+| fixture | format/arch | path | result |
+|---|---|---|---|
+| `fixtures/pe/vuln-strcpy-x64.exe` | PE x86-64 guard | `binary_direct` | `verified_patch` |
+| `fixtures/pe/vuln-strcpy-arm64.exe` | PE arm64 guard | `binary_direct` | `verified_patch` |
+| `fixtures/elf/vuln-strcpy-x86.elf` | ELF i386 guard | `asm_roundtrip` + `binary_direct` | both `verified_patch` |
+| `fixtures/elf/vuln-strcpy-x86_64.elf` | ELF x86-64 guard | `asm_roundtrip` + `binary_direct` | both `verified_patch` |
+| `fixtures/elf/vuln-strcpy-arm64.elf` | ELF arm64 guard | `asm_roundtrip` + `binary_direct` | both `verified_patch` |
+| `fixtures/elf/vuln-memcpy-x86.elf` | ELF i386 memcpy immediate | `binary_direct` | `verified_patch` |
+| `fixtures/macho/vuln-strcpy-x86_64` | Mach-O x86-64 guard | `binary_direct` | `verified_patch` via **native** gate (macOS) |
+| `fixtures/macho/vuln-strcpy-arm64` | Mach-O arm64 guard | `binary_direct` | `verified_patch` via **native** gate (macOS) |
 
-The scripted model is a deterministic stand-in.  It proves the protocol, the
-validator, the direct binary writeback and the gate integration; it does not
-measure LLM repair quality and makes no network call.
+Negative control: structurally valid but semantically empty injected guard
+(`c3` = `ret`) → deterministic gate rejects it (`verified=false`,
+`disposition=rejected`).  Scripted evidence contains 11 positive records on
+macOS (9 on Linux, where Mach-O native cases are skipped by platform).
 
-## 4. Tests
+**No AI increment is measured.**  Direct-path scripted candidates coincide with
+the v5 deterministic baseline; assembly-path candidates differ in representation
+but do not prove extra vulnerability coverage.  Real-provider quality and a
+gate-blind/PoC increment experiment remain future work.
+
+## 3. Tests
 
 | Environment | Result |
 |---|---|
-| macOS 13.5 arm64 / Python 3.11.8 | **1119 tests, 0 failed, 0 errors, 4 skipped** (233.8 s) |
-| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1119 tests, 0 failed, 0 errors, 7 skipped** (249.5 s) |
+| macOS 13.5 arm64 / Python 3.11.8 | **1128 tests, 0 failed, 0 errors, 4 skipped** (250.1 s) |
+| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1128 tests, 0 failed, 0 errors, 7 skipped** (258.0 s) |
 
-The 4/7 skips are the same platform-gated Mach-O/Linux-execution cases as v5.
 Targeted coverage includes:
 
-- plan path: valid guard/immediate selection -> `verified_patch`; out-of-range/
-  wrong-strategy/schema/unknown-field/invalid-JSON/provider-error/no-provider
-  -> no candidate + typed AI status;
-- bytes path: valid PE x86-64 guard injection, ELF i386 immediate edit ->
-  `verified_patch`; syscall/undecodable code, missing sink, before mismatch,
-  unrelated edit, no-op guard -> fail closed; no-op guard specifically rejected
-  by the deterministic `buffer_match` gate rather than the AI;
-- API: `503` no provider, `422` invalid/blocked, `200` verified candidate,
-  `ai-paths` contract is ASCII; CLI success and by-path failure cases;
-- UI: 13 tests for the two path cards, endpoint contract with a fake client,
-  download gating, textContent rendering and no regression of the original
-  single-path `/binary` flow.
+- assembly path: i386/x86_64/arm64 scripted assembly → `verified_patch`;
+  forbidden instructions (call/syscall), bad assembly, missing provider and
+  non-ELF input fail closed; API returns 200/422/503 accordingly;
+- direct path: guard injection and in-place edit verified; invalid code,
+  before mismatch, unrelated edit, no-op guard fail closed;
+- API/CLI/UI: two-path contract, provider absent 503, invalid 422, verified 200,
+  CLI by-path success/failure, two UI cards and download gating;
+- fixtures/provenance: `scripts/build_binary_fixtures.py --check`; content
+  SHA-256 verifier `scripts/verify_evidence.py`.
 
-## 5. CI
+## 4. CI
 
-- Workflow: `Ubuntu verification` (`.github/workflows/ubuntu-verify.yml`,
-  `ubuntu-24.04`, Python 3.11, full non-browser suite).
-- Run: [43418024120](https://github.com/chenfanaichifan/binary-repair/actions/runs/43418024120)
-  on `abeab27` (`workbench-v3`) — **success**.
-- `feature/ai-binary-repair` and the CI-trigger branch `workbench-v3` are both
-  pushed to `chenfanaichifan/binary-repair` at the same commit; `main` and
-  `handoff-v4-local` are untouched.
-- Verification follow-up commit `136ac6e`: run
-  [43421008873](https://github.com/chenfanaichifan/binary-repair/actions/runs/43421008873)
-  — **success**; this record is a docs-only follow-up and the workflow re-runs
-  the same suite for it.
+`__AI_CI__`
 
-## 6. Boundaries
+## 5. Boundaries
 
-**No AI increment is measured on the current fixtures.**  The scripted model
-instantiates the same deterministic actions, so each AI candidate equals the v5
-deterministic baseline candidate; `summary.json` records this explicitly.  This
-bundle proves protocol/validator/direct-byte-writeback/gate integration, not
-LLM repair quality or incremental capability.  A gate-blind/PoC increment
-experiment remains the next milestone.  See
-[`verification-review-2026-11-13.md`](verification-review-2026-11-13.md).
-
-- One sink per AI candidate; multi-function selection remains a limitation.
-- `ai_plan` cannot exceed the v5 action matrix.
-- `ai_bytes` structural validation is not a semantic proof; the runtime gate
-  decides.  Guard injection positive evidence covers PE x86-64/arm64 and ELF
-  i386/arm64; Mach-O injection is not in the scripted positive matrix.
-- Scripted evidence is not real-LLM evidence; provider quality is out of scope.
-- AI never owns acceptance; `verified_patch` requires the deterministic gate.
+- Assembly path: ELF i386/x86_64/arm64 only; requires host `clang`; no
+  PE/Mach-O assembly path.
+- Direct path: existing matrix only; Mach-O native evidence is macOS-only and
+  skipped on Linux.
+- One sink/target function per AI candidate.
+- AI output is untrusted: structural validation only; semantics are decided by
+  the deterministic runtime gate, not the model.
+- No real-LLM quality/increment claim; PoC-failure is not yet a gate predicate.

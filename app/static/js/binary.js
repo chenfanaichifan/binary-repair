@@ -4,9 +4,15 @@
  *   POST /api/binary/scan   multipart(binary, csrf)  -> read-only matrix/sink report
  *   POST /api/binary/repair multipart(binary, csrf, allow_static_only=1) -> candidate
  *
- * Two direct-AI paths (independent file picker, shared best-effort opt-in):
- *   POST /api/binary/ai-repair multipart(binary, csrf, path=ai_plan|ai_bytes,
- *                                        allow_static_only=1) -> candidate
+ * Two product AI paths (independent file picker, shared best-effort opt-in):
+ *   POST /api/binary/ai-repair multipart(binary, csrf,
+ *        path=asm_roundtrip|binary_direct, allow_static_only=1) -> candidate
+ *
+ *   asm_roundtrip : disassemble the target ELF function, let the model return
+ *                   replacement assembly, assemble it with clang, inject the
+ *                   machine-code block and redirect the function entry.
+ *   binary_direct : the model emits raw machine-code bytes / same-length edits;
+ *                   a strict validator decides, then the deterministic gate.
  *
  * The page never derives a verdict on its own: the disposition badge, the
  * verified flag and the download permission all come from the server report.
@@ -512,12 +518,16 @@
     if (state.candidate) triggerDownload(state.candidate);
   }
 
-  /* ==================== 两条 AI 直接二进制修复路径 ==================== */
+  /* ============ 两条 AI 直接二进制修复路径（汇编往返 / 直接二进制） ============ */
+
+  var ASM_PATH = "asm_roundtrip";
+  var DIRECT_PATH = "binary_direct";
 
   function cardElements(prefix) {
     return {
       result: byId(prefix + "-result"),
       badge: byId(prefix + "-badge"),
+      status: byId(prefix + "-status"),
       path: byId(prefix + "-path"),
       called: byId(prefix + "-called"),
       aiStatus: byId(prefix + "-ai-status"),
@@ -526,6 +536,11 @@
       model: byId(prefix + "-model"),
       sha: byId(prefix + "-sha"),
       latency: byId(prefix + "-latency"),
+      assemblySha: byId(prefix + "-assembly-sha"),
+      codeBytes: byId(prefix + "-code-bytes"),
+      method: byId(prefix + "-method"),
+      caveVa: byId(prefix + "-cave-va"),
+      actionsCount: byId(prefix + "-actions-count"),
       dispositionCode: byId(prefix + "-disposition"),
       verifiedEl: byId(prefix + "-verified"),
       tier: byId(prefix + "-tier"),
@@ -547,16 +562,16 @@
     file: byId("binary-ai-file"),
     fileName: byId("binary-ai-file-name"),
     allowStatic: byId("binary-ai-allow-static"),
-    runPlan: byId("binary-ai-run-plan"),
-    runBytes: byId("binary-ai-run-bytes"),
+    runAsm: byId("binary-ai-run-asm"),
+    runDirect: byId("binary-ai-run-direct"),
     status: byId("binary-ai-status"),
     error: byId("binary-ai-error"),
-    plan: cardElements("binary-ai-plan"),
-    bytes: cardElements("binary-ai-bytes")
+    asm: cardElements("binary-ai-asm"),
+    direct: cardElements("binary-ai-direct")
   };
 
   function aiCard(pathName) {
-    return pathName === "ai_bytes" ? aiEls.bytes : aiEls.plan;
+    return pathName === DIRECT_PATH ? aiEls.direct : aiEls.asm;
   }
 
   var aiState = {
@@ -564,24 +579,29 @@
     busy: false,
     statusKey: "idle",
     statusData: "",
-    results: { ai_plan: null, ai_bytes: null },
-    candidates: { ai_plan: null, ai_bytes: null }
+    results: {},
+    candidates: {}
   };
-
-  function aiPathLabel(pathName) {
-    return pathName === "ai_bytes" ? tx("路径二（AI 字节）") : tx("路径一（AI 规划）");
-  }
 
   function aiStatusText() {
     switch (aiState.statusKey) {
-      case "ai-ready": return tx("已选择文件，选择一条 AI 路径运行。") +
-        (aiState.statusData ? " · " + aiState.statusData : "");
-      case "ai-running": return tx(aiState.statusData === "ai_bytes" ? "路径二运行中…" : "路径一运行中…");
-      case "ai-done": return tx(aiState.statusData.indexOf("ai_bytes") === 0 ? "路径二完成" : "路径一完成") +
-        (aiState.statusData.indexOf(" · ") >= 0 ? " · " + aiState.statusData.split(" · ").slice(1).join(" · ") : "");
-      case "ai-failed": return tx(aiState.statusData === "ai_bytes" ? "路径二运行失败" : "路径一运行失败");
-      case "empty": return aiState.statusData || "";
-      default: return "";
+      case "ai-ready":
+        return tx("已选择文件，选择一条 AI 路径运行。") +
+          (aiState.statusData ? " · " + aiState.statusData : "");
+      case "ai-running":
+        return tx(aiState.statusData === DIRECT_PATH ? "路径二运行中…" : "路径一运行中…");
+      case "ai-done": {
+        var doneParts = String(aiState.statusData || "").split(" · ");
+        var doneLabel = tx(doneParts[0] === DIRECT_PATH ? "路径二完成" : "路径一完成");
+        return doneLabel +
+          (doneParts.length > 1 ? " · " + doneParts.slice(1).join(" · ") : "");
+      }
+      case "ai-failed":
+        return tx(aiState.statusData === DIRECT_PATH ? "路径二运行失败" : "路径一运行失败");
+      case "empty":
+        return aiState.statusData || "";
+      default:
+        return "";
     }
   }
 
@@ -593,8 +613,8 @@
 
   function setAiBusy(busy) {
     aiState.busy = !!busy;
-    if (aiEls.runPlan) aiEls.runPlan.disabled = aiState.busy;
-    if (aiEls.runBytes) aiEls.runBytes.disabled = aiState.busy;
+    if (aiEls.runAsm) aiEls.runAsm.disabled = aiState.busy;
+    if (aiEls.runDirect) aiEls.runDirect.disabled = aiState.busy;
     if (aiEls.section) aiEls.section.setAttribute("aria-busy", aiState.busy ? "true" : "false");
   }
 
@@ -619,6 +639,11 @@
     }
     aiEls.fileName.textContent = aiState.file.name + " · " + formatBytes(aiState.file.size);
     aiEls.fileName.hidden = false;
+  }
+
+  function setCardStatus(card, text) {
+    if (!card || !card.status) return;
+    card.status.textContent = text || "";
   }
 
   function renderAi(pathName, payload, httpStatus) {
@@ -646,6 +671,22 @@
       card.latency.textContent = ai.latency_ms == null ? EMPTY : String(ai.latency_ms) + " ms";
     }
 
+    var validation = ai.validation && typeof ai.validation === "object" ? ai.validation : {};
+    if (card.assemblySha) {
+      card.assemblySha.textContent = validation.assembly_sha256
+        ? String(validation.assembly_sha256) : EMPTY;
+    }
+    if (card.codeBytes) {
+      card.codeBytes.textContent = validation.code_bytes == null
+        ? EMPTY : String(validation.code_bytes);
+    }
+    if (card.method) card.method.textContent = validation.method ? String(validation.method) : EMPTY;
+    if (card.caveVa) card.caveVa.textContent = validation.cave_va ? String(validation.cave_va) : EMPTY;
+    if (card.actionsCount) {
+      card.actionsCount.textContent = Array.isArray(validation.actions)
+        ? String(validation.actions.length) : EMPTY;
+    }
+
     applyResult(card, payload);
     aiState.candidates[pathName] = card.candidate;
 
@@ -659,10 +700,34 @@
     card.result.dataset.download = card.allowed ? "allowed" : "blocked";
     if (card.download) card.download.dataset.state = card.allowed ? "allowed" : "blocked";
 
+    if (card.status) {
+      var statusParts = [ok ? tx("完成") : tx("失败")];
+      if (disposition) statusParts.push(disposition);
+      if (card.delivery && card.delivery.tier) statusParts.push(String(card.delivery.tier));
+      card.status.textContent = statusParts.join(" · ");
+    }
     if (card.error) {
       var aiError = ai.error ? String(ai.error) : "";
       card.error.textContent = aiError;
       card.error.hidden = !aiError;
+    }
+  }
+
+  function markAiFailure(card, message) {
+    if (!card || !card.result) return;
+    setHidden(card.result, false);
+    card.result.dataset.state = "error";
+    card.result.dataset.report = "hidden";
+    card.result.dataset.download = "blocked";
+    if (card.download) {
+      card.download.hidden = true;
+      card.download.disabled = true;
+      card.download.dataset.state = "blocked";
+    }
+    setCardStatus(card, tx("失败"));
+    if (card.error && message) {
+      card.error.textContent = message;
+      card.error.hidden = false;
     }
   }
 
@@ -683,6 +748,17 @@
     }
     clearAiError();
     setAiBusy(true);
+    var card = aiCard(pathName);
+    if (card && card.result) {
+      setHidden(card.result, false);
+      card.result.dataset.state = "running";
+      card.result.dataset.download = "blocked";
+      if (card.error) {
+        card.error.textContent = "";
+        card.error.hidden = true;
+      }
+      setCardStatus(card, tx("运行中…"));
+    }
     setAiStatus("ai-running", pathName);
     var form = newForm(aiState.file);
     form.append("path", pathName);
@@ -695,14 +771,16 @@
       renderAi(pathName, payload, result.status);
       if (result.status === 200 && payload.ok === true) {
         var delivery = payload.delivery || {};
-        setAiStatus("ai-done", pathName + " · " +
-          (payload.disposition || "") + (delivery.tier ? " · " + delivery.tier : ""));
+        setAiStatus("ai-done", pathName + " · " + (payload.disposition || "") +
+          (delivery.tier ? " · " + delivery.tier : ""));
         return;
       }
       showAiError(aiErrorText(result.status, payload));
       setAiStatus("ai-failed", pathName);
     }).catch(function (error) {
-      showAiError(requestFailure(error));
+      var message = requestFailure(error);
+      showAiError(message);
+      markAiFailure(card, message);
       setAiStatus("ai-failed", pathName);
     }).finally(function () {
       setAiBusy(false);
@@ -717,12 +795,17 @@
   function handleAiFile(file) {
     if (!file) return;
     aiState.file = file;
-    aiState.results = { ai_plan: null, ai_bytes: null };
-    aiState.candidates = { ai_plan: null, ai_bytes: null };
+    aiState.results = {};
+    aiState.candidates = {};
     renderAiFileName();
     clearAiError();
-    [aiEls.plan, aiEls.bytes].forEach(function (card) {
+    [aiEls.asm, aiEls.direct].forEach(function (card) {
       setHidden(card.result, true);
+      setCardStatus(card, "");
+      if (card.error) {
+        card.error.textContent = "";
+        card.error.hidden = true;
+      }
       if (card.result) {
         card.result.dataset.state = "idle";
         card.result.dataset.disposition = "unset";
@@ -788,10 +871,10 @@
     if (aiEls.section) {
       renderAiFileName();
       if (aiState.statusKey !== "idle") setAiStatus(aiState.statusKey, aiState.statusData);
-      var planEntry = aiState.results.ai_plan;
-      var bytesEntry = aiState.results.ai_bytes;
-      if (planEntry) renderAi("ai_plan", planEntry.payload, planEntry.status);
-      if (bytesEntry) renderAi("ai_bytes", bytesEntry.payload, bytesEntry.status);
+      var asmEntry = aiState.results[ASM_PATH];
+      var directEntry = aiState.results[DIRECT_PATH];
+      if (asmEntry) renderAi(ASM_PATH, asmEntry.payload, asmEntry.status);
+      if (directEntry) renderAi(DIRECT_PATH, directEntry.payload, directEntry.status);
     }
   }
 
@@ -823,20 +906,20 @@
 
   if (aiEls.section) {
     wireDrop(aiEls.drop, aiEls.file, handleAiFile);
-    if (aiEls.runPlan) {
-      aiEls.runPlan.addEventListener("click", function () { runAiPath("ai_plan"); });
+    if (aiEls.runAsm) {
+      aiEls.runAsm.addEventListener("click", function () { runAiPath(ASM_PATH); });
     }
-    if (aiEls.runBytes) {
-      aiEls.runBytes.addEventListener("click", function () { runAiPath("ai_bytes"); });
+    if (aiEls.runDirect) {
+      aiEls.runDirect.addEventListener("click", function () { runAiPath(DIRECT_PATH); });
     }
-    if (aiEls.plan.download) {
-      aiEls.plan.download.addEventListener("click", function () { downloadAi("ai_plan"); });
+    if (aiEls.asm.download) {
+      aiEls.asm.download.addEventListener("click", function () { downloadAi(ASM_PATH); });
     }
-    if (aiEls.bytes.download) {
-      aiEls.bytes.download.addEventListener("click", function () { downloadAi("ai_bytes"); });
+    if (aiEls.direct.download) {
+      aiEls.direct.download.addEventListener("click", function () { downloadAi(DIRECT_PATH); });
     }
-    setHidden(aiEls.plan.result, true);
-    setHidden(aiEls.bytes.result, true);
+    setHidden(aiEls.asm.result, true);
+    setHidden(aiEls.direct.result, true);
   }
 
   document.addEventListener("brlang:change", refreshTexts);

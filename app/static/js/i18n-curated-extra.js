@@ -163,30 +163,30 @@ Object.assign(window.BR_I18N_OVERRIDES, {
   "否": { en: "No" }
 });
 
-/* /binary "two direct-AI repair paths" (ai_plan / ai_bytes) section: new keys only. */
+/* /binary "two product AI paths" (asm_roundtrip / binary_direct) section. */
 Object.assign(window.BR_I18N_OVERRIDES, {
   "4 · AI 直接修复（两条路径）": { en: "4 · Direct AI repair (two paths)" },
   "模型只提议 · 结论仍由确定性验证门给出": { en: "The model only proposes · the deterministic gate still gives the verdict" },
-  "两条路径都直接作用于二进制，并各自独立选择文件、独立运行。路径一由 AI 规划、确定性代码写回字节；路径二由 AI 直接输出机器码或就地字节补丁，再由服务端做严格静态校验。两者都不改变「AI 不参与判定」：候选能否下载仍由确定性报告的 delivery.download_allowed 决定。": {
-    en: "Both paths act on the binary directly, each with its own file picker and run button. Path 1 has the AI plan while deterministic code performs the byte write-back; path 2 has the AI emit machine code or in-place byte patches, which the server then validates strictly. Neither path changes \"AI does not decide the verdict\": whether a candidate can be downloaded still depends on delivery.download_allowed in the deterministic report."
+  "两条路径对应产品要求的两种直接二进制修复方式，各自独立选择文件、独立运行。路径一通过汇编往返修复（反汇编目标函数 → AI 修改汇编 → clang 汇编回机器码 → 注入并重定向入口）；路径二由 AI 直接给出机器码或字节补丁（不生成汇编文本、不反编译 C）。两者都不改变「AI 不参与判定」：候选能否下载仍由确定性报告的 delivery.download_allowed 决定。": {
+    en: "The two paths are the product's two direct binary repair modes, each with its own file picker and run button. Path 1 is an assembly round-trip: disassemble the target function, let the AI rewrite the assembly, assemble it back with clang, then inject and redirect the entry. Path 2 has the AI emit machine-code or byte patches directly, with no assembly text and no decompiled C. Neither path changes \"AI does not decide the verdict\": whether a candidate can be downloaded still depends on delivery.download_allowed in the deterministic report."
   },
-  "AI 规划 + 确定性字节写回": { en: "AI planning + deterministic byte write-back" },
-  "AI 从分析器给出的受支持动作中选择 sink 与策略，由确定性 writer 负责实际写回，随后进入运行时验证门。": {
-    en: "The AI chooses a sink and a strategy from the analyzer's supported actions; the deterministic writer performs the actual write-back, then the candidate enters the runtime verification gate."
+  "路径一：汇编往返修复": { en: "Path 1: assembly round-trip repair" },
+  "反汇编目标函数 → AI 修改汇编 → clang 汇编回机器码 → 注入可执行区并重定向函数入口 → 输出 patch 后的 ELF。当前支持 ELF i386 / arm64；PE / Mach-O 返回 unsupported。": {
+    en: "Disassemble the target function, let the AI rewrite the assembly, assemble it back to machine code with clang, inject it into an executable region and redirect the function entry, then output the patched ELF. Currently supports ELF i386 / arm64; PE and Mach-O return unsupported."
   },
-  "AI 直出机器码 / 字节补丁": { en: "AI emits machine code / byte patches directly" },
-  "AI 直接给出 guard 机器码（注入可执行区并重定向调用点）或 immediate sink 的就地字节编辑；服务端完成解码、白名单、重定位与容器重解析等严格校验后才产出候选。": {
-    en: "The AI emits either guard machine code (injected into an executable region with the call site redirected) or in-place byte edits for an immediate sink; a candidate is produced only after the server completes strict decoding, mnemonic allow-list, relocation and container-reparse validation."
+  "路径二：直接二进制修复": { en: "Path 2: direct binary repair" },
+  "不生成汇编文本、不反编译 C；AI 直接输出机器码字节（guard 注入）或同长度字节编辑（immediate sink）→ 严格 validator → 确定性 gate → 输出 patch 后的二进制。覆盖 ELF / PE / Mach-O 修复矩阵。": {
+    en: "No assembly text and no decompiled C: the AI emits machine-code bytes for guard injection or same-length byte edits for an immediate sink, then a strict validator and the deterministic gate decide, and the patched binary is returned. Covers the ELF / PE / Mach-O repair matrix."
   },
   "拖入文件，或点击选择（两条 AI 路径共用）": { en: "Drop a file here, or click to choose (shared by both AI paths)" },
-  "任意二进制容器 · 单文件 ≤ 20 MiB · 独立于上方单路径扫描": { en: "Any binary container · single file ≤ 20 MiB · independent of the single-path scan above" },
+  "任意二进制容器 · 单文件 ≤ 20 MiB · 汇编路径仅支持 ELF i386/arm64": { en: "Any binary container · single file ≤ 20 MiB · the assembly path only supports ELF i386/arm64" },
   "AI 路径同样受确定性门约束；未验证候选需人工复核，不构成成功。": {
     en: "The AI paths are bound by the same deterministic gate; an unverified candidate needs manual review and is not a success."
   },
-  "运行路径一（AI 规划）": { en: "Run path 1 (AI plan)" },
-  "运行路径二（AI 字节）": { en: "Run path 2 (AI bytes)" },
-  "路径一 · AI 规划": { en: "Path 1 · AI plan" },
-  "路径二 · AI 字节": { en: "Path 2 · AI bytes" },
+  "运行路径一（汇编往返）": { en: "Run path 1 (assembly round-trip)" },
+  "运行路径二（直接二进制）": { en: "Run path 2 (direct binary)" },
+  "路径一 · 汇编往返修复": { en: "Path 1 · Assembly round-trip repair" },
+  "路径二 · 直接二进制修复": { en: "Path 2 · Direct binary repair" },
   "路径 path": { en: "Path" },
   "AI 已调用 called": { en: "AI called" },
   "AI 状态 status": { en: "AI status" },
@@ -194,14 +194,17 @@ Object.assign(window.BR_I18N_OVERRIDES, {
   "提供方 provider": { en: "Provider" },
   "模型 model": { en: "Model" },
   "延迟 latency_ms": { en: "Latency (ms)" },
+  "汇编 sha256 assembly_sha256": { en: "Assembly sha256" },
+  "代码字节 code_bytes": { en: "Code bytes" },
+  "注入方法 method": { en: "Injection method" },
+  "cave 地址 cave_va": { en: "Cave VA" },
+  "动作数 actions": { en: "Actions" },
   "下载路径一候选": { en: "Download path 1 candidate" },
   "下载路径二候选": { en: "Download path 2 candidate" },
   "两条 AI 路径的边界。": { en: "Boundary of the two AI paths." },
-  "ai_plan 只允许 AI 从分析器已确认的受支持动作中选择，实际写回由确定性代码完成；ai_bytes 由 AI 直接给出机器码或字节，但必须通过解码、指令白名单、重定位与容器重解析校验。两条路径都不赋予模型判定权，下载仍只看 delivery.download_allowed。": {
-    en: "ai_plan lets the AI choose only among the analyzer's confirmed supported actions, and deterministic code performs the actual write-back; ai_bytes lets the AI emit machine code or bytes directly, but they must pass decoding, instruction allow-list, relocation and container-reparse validation. Neither path gives the model decision authority: downloads still depend solely on delivery.download_allowed."
+  "asm_roundtrip 只对 ELF i386/arm64 反汇编目标函数，AI 修改后的汇编由 clang 汇编成机器码块并注入、重定向函数入口；PE / Mach-O 直接返回 unsupported。binary_direct 由 AI 直接给出机器码或同长度字节，必须通过解码、指令白名单、重定位与容器重解析校验。两条路径都不赋予模型判定权，下载仍只看 delivery.download_allowed。": {
+    en: "asm_roundtrip only disassembles the target function of ELF i386/arm64 inputs; the AI-repaired assembly is assembled by clang into a machine-code block that is injected and function-entry redirected, while PE and Mach-O return unsupported. binary_direct has the AI emit machine code or same-length bytes, which must pass decoding, instruction allow-list, relocation and container-reparse validation. Neither path gives the model decision authority: downloads still depend solely on delivery.download_allowed."
   },
-  "路径一（AI 规划）": { en: "Path 1 (AI plan)" },
-  "路径二（AI 字节）": { en: "Path 2 (AI bytes)" },
   "已选择文件，选择一条 AI 路径运行。": { en: "File selected; choose one AI path to run." },
   "路径一运行中…": { en: "Path 1 running…" },
   "路径二运行中…": { en: "Path 2 running…" },
@@ -209,6 +212,9 @@ Object.assign(window.BR_I18N_OVERRIDES, {
   "路径二完成": { en: "Path 2 complete" },
   "路径一运行失败": { en: "Path 1 failed" },
   "路径二运行失败": { en: "Path 2 failed" },
+  "运行中…": { en: "Running…" },
+  "完成": { en: "Complete" },
+  "失败": { en: "Failed" },
   "请先选择或拖入一个二进制文件（AI 路径）。": { en: "Choose or drop a binary file first (AI paths)." },
   "AI 服务未配置（未设置 provider）": { en: "AI service is not configured (no provider set)" },
   "AI 修复未通过校验": { en: "AI repair failed validation" },

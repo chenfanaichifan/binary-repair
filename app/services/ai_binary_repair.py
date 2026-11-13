@@ -44,9 +44,19 @@ from app.services.binary_pipeline import (
 from app.services.repair.analyzer import Sink
 from app.services.repair_matrix import DISPOSITIONS, is_repairable
 
+# The two public paths requested by the product:
+#   1. asm_roundtrip : binary -> assembly text -> repair in assembly -> assemble
+#                      -> injected machine-code block -> patched binary
+#   2. binary_direct : binary -> AI-authored raw bytes edit/injection -> patched
+#                      binary (no assembly text and no decompiled-C round trip)
+ASM_PATH = "asm_roundtrip"
+DIRECT_PATH = "binary_direct"
+AI_PATHS = (ASM_PATH, DIRECT_PATH)
+
+# Internal/legacy protocol names retained for unit tests and internal helpers;
+# they are not exposed by the API contract or the UI.
 AI_PATH_PLAN = "ai_plan"
 AI_PATH_BYTES = "ai_bytes"
-AI_PATHS = (AI_PATH_PLAN, AI_PATH_BYTES)
 
 AI_SCHEMA_VERSION = 1
 PLAN_MAX_TOKENS = 700
@@ -77,7 +87,7 @@ PLAN_SYSTEM_PROMPT = (
 )
 
 BYTES_SYSTEM_PROMPT = (
-    "You are a binary patch generator for the AI_PATH=ai_bytes direct-byte path.\n"
+    "You are a binary patch generator for the AI_PATH=binary_direct direct-byte path.\n"
     "Return ONLY one JSON object describing a patch for exactly one finding.\n"
     "For an unbounded_copy finding (guard sink) return a machine-code block:\n"
     '{"schema_version":1,"sink_index":0,'
@@ -282,7 +292,7 @@ def build_bytes_packet(data: bytes) -> dict[str, Any]:
     container = detect_container(data)
     analysis = analyze(data)
     sinks = [s for s in analysis.patchable()]
-    packet = _packet_base(data, container, analysis, sinks, AI_PATH_BYTES)
+    packet = _packet_base(data, container, analysis, sinks, DIRECT_PATH)
     packet["executable_sections"] = [
         {
             "name": section.name,
@@ -483,7 +493,13 @@ def ai_repair(
     allow_static_only: bool = False,
 ) -> AiRepairOutcome:
     """Run one AI binary-repair path; the deterministic gate still decides."""
-    if path not in AI_PATHS:
+    if path == ASM_PATH:
+        from app.services.ai_assembly_repair import asm_repair
+
+        return asm_repair(
+            data, client=client, verify=verify, allow_static_only=allow_static_only,
+        )
+    if path not in {DIRECT_PATH, AI_PATH_PLAN, AI_PATH_BYTES}:
         container = detect_container(data)
         report = _base_report(data, container)
         ai = _ai_base(str(path))
@@ -538,6 +554,8 @@ def ai_repair(
             ai["error"] = validation["error"]
         ai["validation"] = validation
         outcome.report.limitations.extend(limitations)
+    if path == DIRECT_PATH:
+        ai["path"] = DIRECT_PATH
     outcome.report.ai = ai
     ai["disposition"] = outcome.report.disposition
     ai["verified"] = outcome.verified
@@ -553,30 +571,34 @@ def ai_paths_contract() -> dict[str, Any]:
         "schema_version": 1,
         "paths": [
             {
-                "id": AI_PATH_PLAN,
-                "title": "AI plan + deterministic byte writeback",
+                "id": ASM_PATH,
+                "title": "Assembly round-trip: disassemble, repair in assembly, assemble and inject",
                 "description": (
-                    "The model selects one engine-supported action (sink index "
-                    "and guard/immediate strategy); the deterministic writer "
-                    "emits bytes and the deterministic gate decides success."
+                    "The target ELF function is disassembled to assembly text; the "
+                    "model returns replacement assembly; clang assembles it to a "
+                    "machine-code block that is injected and function-entry "
+                    "redirected; the deterministic gate decides success."
                 ),
-                "ai_outputs": ["sink_index", "strategy", "reason"],
+                "ai_outputs": ["assembly"],
+                "formats": ["elf"],
+                "arches": ["i386", "arm64"],
             },
             {
-                "id": AI_PATH_BYTES,
-                "title": "AI raw byte/machine-code patch + strict validation",
+                "id": DIRECT_PATH,
+                "title": "Direct binary repair: AI-authored bytes, no assembly round-trip",
                 "description": (
-                    "The model emits a raw machine-code guard block (injected and "
+                    "The model emits raw machine-code guard bytes (injected and "
                     "call-redirected) or same-length in-place edits; a strict "
                     "validator decodes/constrains the bytes and the deterministic "
-                    "gate decides success."
+                    "gate decides success.  No assembly text is generated and no "
+                    "decompiled C is recompiled."
                 ),
-                "ai_outputs": ["sink_index", "inject.code_hex | edits[]"],
+                "ai_outputs": ["inject.code_hex | edits[]"],
             },
         ],
         "invariants": [
-            "no assembly text is generated or reassembled",
-            "no decompilation / C recompilation round-trip",
+            "no decompilation to C and no recompilation round-trip",
+            "path 1 does use assembly text by design; path 2 does not",
             "ai may not promote a failed or incomplete deterministic gate",
             "static_only is opt-in and never success",
         ],

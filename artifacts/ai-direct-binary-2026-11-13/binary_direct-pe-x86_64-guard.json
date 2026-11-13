@@ -1,26 +1,25 @@
 {
-  "path": "ai_plan",
-  "input": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/elf/vuln-strcpy-arm64.elf",
-  "input_sha256": "9f0fc0b44edea4b8b5b00327e8873d247e142596844777e608a808b92f251755",
-  "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
+  "path": "binary_direct",
+  "input": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/pe/vuln-strcpy-x64.exe",
+  "input_sha256": "1dcafa9d93e010e7da787e3323376be6b8ac79c792a556ff2f5269ca20463fae",
+  "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
   "verified": true,
   "download_allowed": true,
   "disposition": "verified_patch",
   "status": "patched",
-  "strategy": "guard",
+  "strategy": "ai-bytes",
   "actions": [
     {
-      "kind": "guard",
-      "site": "0x10352a8",
-      "callee": "strcpy",
-      "capacity": 16,
-      "cave_va": "0x10e9000",
-      "method": "new-pt-load"
+      "kind": "ai-injected-guard",
+      "site": "0x1400010d0",
+      "cave_va": "0x1400d1000",
+      "method": "pe-section",
+      "code_bytes": 38
     }
   ],
   "ai": {
     "schema_version": 1,
-    "path": "ai_plan",
+    "path": "binary_direct",
     "requested": true,
     "called": true,
     "mode": "scripted",
@@ -28,12 +27,20 @@
     "model": "scripted-binary-repair",
     "status": "accepted",
     "latency_ms": 0,
-    "plan_sha256": "76eed09a90b5f2198d69f6159f8739c90ff22a661bac6573ffe5b8b4383a220f",
+    "plan_sha256": "855c13dce892be5d8ac59f2880a20cb886ec2485a09efdf997349d3e676468a1",
     "error": null,
     "validation": {
-      "sink_index": 0,
-      "strategy": "guard",
-      "reason": "scripted acceptance: choose the deterministic strategy for this sink"
+      "actions": [
+        {
+          "kind": "ai-injected-guard",
+          "site": "0x1400010d0",
+          "cave_va": "0x1400d1000",
+          "method": "pe-section",
+          "code_bytes": 38
+        }
+      ],
+      "limitations": [],
+      "error": null
     },
     "usage": {
       "prompt_tokens": 0,
@@ -54,8 +61,8 @@
     "packet": {
       "schema_version": 2,
       "scope": {
-        "format": "elf",
-        "arch": "arm64",
+        "format": "pe",
+        "arch": "x86_64",
         "runtime_tier": "emulated_run",
         "runtime_verdict": "pass",
         "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof."
@@ -66,14 +73,14 @@
           "title": "Container and architecture are in the repair matrix",
           "status": "passed",
           "required": true,
-          "detail": "elf/arm64"
+          "detail": "pe/x86_64"
         },
         {
           "id": "candidate.present",
           "title": "A repaired candidate was produced",
           "status": "passed",
           "required": true,
-          "detail": "candidate_bytes=4812852"
+          "detail": "candidate_bytes=827904"
         },
         {
           "id": "candidate.identity.original",
@@ -108,7 +115,7 @@
           "title": "Runtime evidence is native or emulated (not static-only)",
           "status": "passed",
           "required": true,
-          "detail": "tier=emulated_run engine=unicorn-arm64"
+          "detail": "tier=emulated_run engine=unicorn-x86_64"
         },
         {
           "id": "runtime.contract",
@@ -120,17 +127,16 @@
       ],
       "actions": [
         {
-          "kind": "guard",
-          "site": "0x10352a8",
-          "callee": "strcpy",
-          "capacity": 16,
-          "cave_va": "0x10e9000",
-          "method": "new-pt-load"
+          "kind": "ai-injected-guard",
+          "site": "0x1400010d0",
+          "cave_va": "0x1400d1000",
+          "method": "pe-section",
+          "code_bytes": 38
         }
       ],
       "runtime": {
         "tier": "emulated_run",
-        "engine": "unicorn-arm64",
+        "engine": "unicorn-x86_64",
         "verdict": "pass",
         "cases": [
           {
@@ -205,7 +211,7 @@
           "Only the repaired function is executed; unrelated code paths are not covered."
         ]
       },
-      "report_sha256": "f029c5522fa793bc452d2fa49fab046fd13a9703bb540d9ee7aaddbb7fd63f88"
+      "report_sha256": "1b6b7e40393c8b963208d53a98e48fb8354e55b70a92030d7fe60f4b9b969ddb"
     },
     "gate": {
       "success": true,
@@ -213,15 +219,15 @@
       "reason": "",
       "required_checks": 8,
       "required_not_run": 0,
-      "evidence_sha256": "f029c5522fa793bc452d2fa49fab046fd13a9703bb540d9ee7aaddbb7fd63f88"
+      "evidence_sha256": "1b6b7e40393c8b963208d53a98e48fb8354e55b70a92030d7fe60f4b9b969ddb"
     },
     "tier": "emulated_run",
-    "engine": "unicorn-arm64",
+    "engine": "unicorn-x86_64",
     "static_reparse": true
   },
   "runtime": {
     "tier": "emulated_run",
-    "engine": "unicorn-arm64",
+    "engine": "unicorn-x86_64",
     "verdict": "pass",
     "cases": [
       {
@@ -301,24 +307,24 @@
   "deterministic_baseline": {
     "disposition": "verified_patch",
     "verified": true,
-    "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d"
+    "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350"
   },
   "report": {
     "schema_version": 4,
-    "format": "elf",
-    "arch": "arm64",
-    "backend": "elf",
-    "strategy": "guard",
+    "format": "pe",
+    "arch": "x86_64",
+    "backend": "pe",
+    "strategy": "ai-bytes",
     "status": "patched",
     "supported": true,
-    "original_sha256": "9f0fc0b44edea4b8b5b00327e8873d247e142596844777e608a808b92f251755",
-    "patched_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
-    "mode": "guard",
+    "original_sha256": "1dcafa9d93e010e7da787e3323376be6b8ac79c792a556ff2f5269ca20463fae",
+    "patched_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
+    "mode": "ai-bytes",
     "capacity": 16,
     "findings": [
       {
         "kind": "unbounded_copy",
-        "address": "0x10352a8",
+        "address": "0x1400010d0",
         "callee": "strcpy",
         "capacity": 16,
         "dest_offset": -16,
@@ -333,12 +339,11 @@
     "offsets": [],
     "actions": [
       {
-        "kind": "guard",
-        "site": "0x10352a8",
-        "callee": "strcpy",
-        "capacity": 16,
-        "cave_va": "0x10e9000",
-        "method": "new-pt-load"
+        "kind": "ai-injected-guard",
+        "site": "0x1400010d0",
+        "cave_va": "0x1400d1000",
+        "method": "pe-section",
+        "code_bytes": 38
       }
     ],
     "limitations": [],
@@ -346,8 +351,8 @@
       "packet": {
         "schema_version": 2,
         "scope": {
-          "format": "elf",
-          "arch": "arm64",
+          "format": "pe",
+          "arch": "x86_64",
           "runtime_tier": "emulated_run",
           "runtime_verdict": "pass",
           "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof."
@@ -358,14 +363,14 @@
             "title": "Container and architecture are in the repair matrix",
             "status": "passed",
             "required": true,
-            "detail": "elf/arm64"
+            "detail": "pe/x86_64"
           },
           {
             "id": "candidate.present",
             "title": "A repaired candidate was produced",
             "status": "passed",
             "required": true,
-            "detail": "candidate_bytes=4812852"
+            "detail": "candidate_bytes=827904"
           },
           {
             "id": "candidate.identity.original",
@@ -400,7 +405,7 @@
             "title": "Runtime evidence is native or emulated (not static-only)",
             "status": "passed",
             "required": true,
-            "detail": "tier=emulated_run engine=unicorn-arm64"
+            "detail": "tier=emulated_run engine=unicorn-x86_64"
           },
           {
             "id": "runtime.contract",
@@ -412,17 +417,16 @@
         ],
         "actions": [
           {
-            "kind": "guard",
-            "site": "0x10352a8",
-            "callee": "strcpy",
-            "capacity": 16,
-            "cave_va": "0x10e9000",
-            "method": "new-pt-load"
+            "kind": "ai-injected-guard",
+            "site": "0x1400010d0",
+            "cave_va": "0x1400d1000",
+            "method": "pe-section",
+            "code_bytes": 38
           }
         ],
         "runtime": {
           "tier": "emulated_run",
-          "engine": "unicorn-arm64",
+          "engine": "unicorn-x86_64",
           "verdict": "pass",
           "cases": [
             {
@@ -497,7 +501,7 @@
             "Only the repaired function is executed; unrelated code paths are not covered."
           ]
         },
-        "report_sha256": "f029c5522fa793bc452d2fa49fab046fd13a9703bb540d9ee7aaddbb7fd63f88"
+        "report_sha256": "1b6b7e40393c8b963208d53a98e48fb8354e55b70a92030d7fe60f4b9b969ddb"
       },
       "gate": {
         "success": true,
@@ -505,15 +509,15 @@
         "reason": "",
         "required_checks": 8,
         "required_not_run": 0,
-        "evidence_sha256": "f029c5522fa793bc452d2fa49fab046fd13a9703bb540d9ee7aaddbb7fd63f88"
+        "evidence_sha256": "1b6b7e40393c8b963208d53a98e48fb8354e55b70a92030d7fe60f4b9b969ddb"
       },
       "tier": "emulated_run",
-      "engine": "unicorn-arm64",
+      "engine": "unicorn-x86_64",
       "static_reparse": true
     },
     "runtime": {
       "tier": "emulated_run",
-      "engine": "unicorn-arm64",
+      "engine": "unicorn-x86_64",
       "verdict": "pass",
       "cases": [
         {
@@ -589,27 +593,27 @@
       ]
     },
     "container": {
-      "format": "elf",
-      "arch": "arm64",
+      "format": "pe",
+      "arch": "x86_64",
       "bits": 64,
       "endian": "little",
-      "image_base": 16777216,
+      "image_base": 5368709120,
       "slices": 1,
-      "imports": 0,
-      "sections": 23
+      "imports": 207,
+      "sections": 7
     },
     "universal": {
       "detected": true,
       "repairable": true,
       "reason": ""
     },
-    "signature_invalidated": false,
+    "signature_invalidated": true,
     "codesign_invalidated": false,
     "candidate_available": true,
     "error": null,
     "disposition": "verified_patch",
     "matrix": {
-      "cell": "elf/arm64/64/little",
+      "cell": "pe/x86_64/64/little",
       "repairable": true,
       "strategies": [
         "immediate",
@@ -652,7 +656,7 @@
     "warnings": [],
     "ai": {
       "schema_version": 1,
-      "path": "ai_plan",
+      "path": "binary_direct",
       "requested": true,
       "called": true,
       "mode": "scripted",
@@ -660,12 +664,20 @@
       "model": "scripted-binary-repair",
       "status": "accepted",
       "latency_ms": 0,
-      "plan_sha256": "76eed09a90b5f2198d69f6159f8739c90ff22a661bac6573ffe5b8b4383a220f",
+      "plan_sha256": "855c13dce892be5d8ac59f2880a20cb886ec2485a09efdf997349d3e676468a1",
       "error": null,
       "validation": {
-        "sink_index": 0,
-        "strategy": "guard",
-        "reason": "scripted acceptance: choose the deterministic strategy for this sink"
+        "actions": [
+          {
+            "kind": "ai-injected-guard",
+            "site": "0x1400010d0",
+            "cave_va": "0x1400d1000",
+            "method": "pe-section",
+            "code_bytes": 38
+          }
+        ],
+        "limitations": [],
+        "error": null
       },
       "usage": {
         "prompt_tokens": 0,
@@ -683,19 +695,19 @@
       "verified": true
     }
   },
-  "fixture": "elf-arm64-guard",
+  "fixture": "pe-x86_64-guard",
   "client_packet_keys": [
-    "allowed_strategies",
     "analysis_limitations",
     "arch",
     "binary_sha256",
     "bits",
     "endian",
+    "executable_sections",
     "findings",
     "format",
+    "limits",
     "matrix",
     "path",
-    "rules",
     "schema_version",
     "size"
   ]

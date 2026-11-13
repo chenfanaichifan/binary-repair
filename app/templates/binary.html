@@ -3,7 +3,7 @@
 {% block title %}任意二进制修复{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/binary.css?v=20261113b">
+<link rel="stylesheet" href="/static/css/binary.css?v=20261113c">
 {% endblock %}
 
 {% block content %}
@@ -122,19 +122,19 @@
       </span>
     </header>
     <p class="binary-ai-intro">
-      <span>两条路径都直接作用于二进制，并各自独立选择文件、独立运行。路径一由 AI 规划、确定性代码写回字节；路径二由 AI 直接输出机器码或就地字节补丁，再由服务端做严格静态校验。两者都不改变「AI 不参与判定」：候选能否下载仍由确定性报告的 delivery.download_allowed 决定。</span>
+      <span>两条路径对应产品要求的两种直接二进制修复方式，各自独立选择文件、独立运行。路径一通过汇编往返修复（反汇编目标函数 → AI 修改汇编 → clang 汇编回机器码 → 注入并重定向入口）；路径二由 AI 直接给出机器码或字节补丁（不生成汇编文本、不反编译 C）。两者都不改变「AI 不参与判定」：候选能否下载仍由确定性报告的 delivery.download_allowed 决定。</span>
     </p>
 
     <div class="binary-ai-paths">
       <article class="binary-ai-path">
-        <p class="binary-ai-path-tag">PATH 1 · ai_plan</p>
-        <h3>AI 规划 + 确定性字节写回</h3>
-        <p>AI 从分析器给出的受支持动作中选择 sink 与策略，由确定性 writer 负责实际写回，随后进入运行时验证门。</p>
+        <p class="binary-ai-path-tag">PATH 1 · asm_roundtrip</p>
+        <h3>路径一：汇编往返修复</h3>
+        <p>反汇编目标函数 → AI 修改汇编 → clang 汇编回机器码 → 注入可执行区并重定向函数入口 → 输出 patch 后的 ELF。当前支持 ELF i386 / arm64；PE / Mach-O 返回 unsupported。</p>
       </article>
       <article class="binary-ai-path">
-        <p class="binary-ai-path-tag">PATH 2 · ai_bytes</p>
-        <h3>AI 直出机器码 / 字节补丁</h3>
-        <p>AI 直接给出 guard 机器码（注入可执行区并重定向调用点）或 immediate sink 的就地字节编辑；服务端完成解码、白名单、重定位与容器重解析等严格校验后才产出候选。</p>
+        <p class="binary-ai-path-tag">PATH 2 · binary_direct</p>
+        <h3>路径二：直接二进制修复</h3>
+        <p>不生成汇编文本、不反编译 C；AI 直接输出机器码字节（guard 注入）或同长度字节编辑（immediate sink）→ 严格 validator → 确定性 gate → 输出 patch 后的二进制。覆盖 ELF / PE / Mach-O 修复矩阵。</p>
       </article>
     </div>
 
@@ -143,7 +143,7 @@
              aria-label="选择 AI 修复路径使用的二进制文件">
       <span class="binary-drop-mark" aria-hidden="true">↓</span>
       <span class="binary-drop-title">拖入文件，或点击选择（两条 AI 路径共用）</span>
-      <span class="binary-drop-hint">任意二进制容器 · 单文件 ≤ 20 MiB · 独立于上方单路径扫描</span>
+      <span class="binary-drop-hint">任意二进制容器 · 单文件 ≤ 20 MiB · 汇编路径仅支持 ELF i386/arm64</span>
     </label>
     <p class="binary-file-name" id="binary-ai-file-name" hidden></p>
 
@@ -155,87 +155,96 @@
           <small>AI 路径同样受确定性门约束；未验证候选需人工复核，不构成成功。</small>
         </span>
       </label>
-      <button class="ds-btn primary" id="binary-ai-run-plan" data-testid="binary-ai-run-plan" type="button">运行路径一（AI 规划）</button>
-      <button class="ds-btn" id="binary-ai-run-bytes" data-testid="binary-ai-run-bytes" type="button">运行路径二（AI 字节）</button>
+      <button class="ds-btn primary" id="binary-ai-run-asm" data-testid="binary-ai-run-asm" type="button">运行路径一（汇编往返）</button>
+      <button class="ds-btn" id="binary-ai-run-direct" data-testid="binary-ai-run-direct" type="button">运行路径二（直接二进制）</button>
     </div>
 
     <p class="binary-status" id="binary-ai-status" data-testid="binary-ai-status" role="status" aria-live="polite"></p>
     <p class="binary-error" id="binary-ai-error" data-testid="binary-ai-error" role="alert" hidden></p>
 
     <div class="binary-ai-results">
-      <article class="binary-ai-card" id="binary-ai-plan-result" data-testid="binary-ai-plan-result" hidden
+      <article class="binary-ai-card" id="binary-ai-asm-result" data-testid="binary-ai-asm-result" hidden
                data-state="idle" data-disposition="unset" data-verified="unknown"
                data-report="hidden" data-download="blocked"
-               aria-labelledby="binary-ai-plan-title">
+               aria-labelledby="binary-ai-asm-title">
         <header class="binary-ai-card-head">
-          <h3 id="binary-ai-plan-title">路径一 · AI 规划</h3>
-          <span class="binary-badge" id="binary-ai-plan-badge" hidden>—</span>
+          <h3 id="binary-ai-asm-title">路径一 · 汇编往返修复</h3>
+          <span class="binary-badge" id="binary-ai-asm-badge" hidden>—</span>
         </header>
+        <p class="binary-ai-card-status" id="binary-ai-asm-status" data-testid="binary-ai-asm-status"
+           role="status" aria-live="polite"></p>
         <dl class="binary-facts binary-ai-facts">
-          <div><dt>路径 path</dt><dd><code id="binary-ai-plan-path">ai_plan</code></dd></div>
-          <div><dt>AI 已调用 called</dt><dd><span id="binary-ai-plan-called">—</span></dd></div>
-          <div><dt>AI 状态 status</dt><dd><code id="binary-ai-plan-ai-status">—</code></dd></div>
-          <div><dt>模式 mode</dt><dd><code id="binary-ai-plan-mode">—</code></dd></div>
-          <div><dt>提供方 provider</dt><dd><code id="binary-ai-plan-provider">—</code></dd></div>
-          <div><dt>模型 model</dt><dd><code id="binary-ai-plan-model">—</code></dd></div>
-          <div><dt>plan sha256</dt><dd><code id="binary-ai-plan-sha">—</code></dd></div>
-          <div><dt>延迟 latency_ms</dt><dd><code id="binary-ai-plan-latency">—</code></dd></div>
-          <div><dt>结论 disposition</dt><dd><code id="binary-ai-plan-disposition">—</code></dd></div>
-          <div><dt>已验证 verified</dt><dd><span id="binary-ai-plan-verified">—</span></dd></div>
-          <div><dt>证据层级 tier</dt><dd><code id="binary-ai-plan-tier">—</code></dd></div>
-          <div><dt>下载许可 download_allowed</dt><dd><span id="binary-ai-plan-download-allowed">—</span></dd></div>
+          <div><dt>路径 path</dt><dd><code id="binary-ai-asm-path">asm_roundtrip</code></dd></div>
+          <div><dt>AI 已调用 called</dt><dd><span id="binary-ai-asm-called">—</span></dd></div>
+          <div><dt>AI 状态 status</dt><dd><code id="binary-ai-asm-ai-status">—</code></dd></div>
+          <div><dt>模式 mode</dt><dd><code id="binary-ai-asm-mode">—</code></dd></div>
+          <div><dt>提供方 provider</dt><dd><code id="binary-ai-asm-provider">—</code></dd></div>
+          <div><dt>模型 model</dt><dd><code id="binary-ai-asm-model">—</code></dd></div>
+          <div><dt>plan sha256</dt><dd><code id="binary-ai-asm-sha">—</code></dd></div>
+          <div><dt>延迟 latency_ms</dt><dd><code id="binary-ai-asm-latency">—</code></dd></div>
+          <div><dt>汇编 sha256 assembly_sha256</dt><dd><code id="binary-ai-asm-assembly-sha">—</code></dd></div>
+          <div><dt>代码字节 code_bytes</dt><dd><code id="binary-ai-asm-code-bytes">—</code></dd></div>
+          <div><dt>注入方法 method</dt><dd><code id="binary-ai-asm-method">—</code></dd></div>
+          <div><dt>cave 地址 cave_va</dt><dd><code id="binary-ai-asm-cave-va">—</code></dd></div>
+          <div><dt>结论 disposition</dt><dd><code id="binary-ai-asm-disposition">—</code></dd></div>
+          <div><dt>已验证 verified</dt><dd><span id="binary-ai-asm-verified">—</span></dd></div>
+          <div><dt>证据层级 tier</dt><dd><code id="binary-ai-asm-tier">—</code></dd></div>
+          <div><dt>下载许可 download_allowed</dt><dd><span id="binary-ai-asm-download-allowed">—</span></dd></div>
         </dl>
-        <p class="binary-detail" id="binary-ai-plan-detail" hidden></p>
-        <p class="binary-error" id="binary-ai-plan-error" role="alert" hidden></p>
+        <p class="binary-detail" id="binary-ai-asm-detail" hidden></p>
+        <p class="binary-error" id="binary-ai-asm-error" role="alert" hidden></p>
         <div class="binary-actions">
-          <button class="ds-btn primary" id="binary-ai-plan-download" data-testid="binary-ai-download" type="button" hidden>下载路径一候选</button>
-          <span class="binary-candidate-name" id="binary-ai-plan-filename" hidden></span>
+          <button class="ds-btn primary" id="binary-ai-asm-download" data-testid="binary-ai-download" type="button" hidden>下载路径一候选</button>
+          <span class="binary-candidate-name" id="binary-ai-asm-filename" hidden></span>
         </div>
-        <div class="binary-subblock" id="binary-ai-plan-warnings-block" hidden>
+        <div class="binary-subblock" id="binary-ai-asm-warnings-block" hidden>
           <h3>警告 warnings</h3>
-          <ul class="binary-warnings" id="binary-ai-plan-warnings"></ul>
+          <ul class="binary-warnings" id="binary-ai-asm-warnings"></ul>
         </div>
-        <details class="binary-report" id="binary-ai-plan-report" hidden>
+        <details class="binary-report" id="binary-ai-asm-report" hidden>
           <summary>展开 report JSON</summary>
-          <pre class="binary-json" id="binary-ai-plan-report-json"></pre>
+          <pre class="binary-json" id="binary-ai-asm-report-json"></pre>
         </details>
       </article>
 
-      <article class="binary-ai-card" id="binary-ai-bytes-result" data-testid="binary-ai-bytes-result" hidden
+      <article class="binary-ai-card" id="binary-ai-direct-result" data-testid="binary-ai-direct-result" hidden
                data-state="idle" data-disposition="unset" data-verified="unknown"
                data-report="hidden" data-download="blocked"
-               aria-labelledby="binary-ai-bytes-title">
+               aria-labelledby="binary-ai-direct-title">
         <header class="binary-ai-card-head">
-          <h3 id="binary-ai-bytes-title">路径二 · AI 字节</h3>
-          <span class="binary-badge" id="binary-ai-bytes-badge" hidden>—</span>
+          <h3 id="binary-ai-direct-title">路径二 · 直接二进制修复</h3>
+          <span class="binary-badge" id="binary-ai-direct-badge" hidden>—</span>
         </header>
+        <p class="binary-ai-card-status" id="binary-ai-direct-status" data-testid="binary-ai-direct-status"
+           role="status" aria-live="polite"></p>
         <dl class="binary-facts binary-ai-facts">
-          <div><dt>路径 path</dt><dd><code id="binary-ai-bytes-path">ai_bytes</code></dd></div>
-          <div><dt>AI 已调用 called</dt><dd><span id="binary-ai-bytes-called">—</span></dd></div>
-          <div><dt>AI 状态 status</dt><dd><code id="binary-ai-bytes-ai-status">—</code></dd></div>
-          <div><dt>模式 mode</dt><dd><code id="binary-ai-bytes-mode">—</code></dd></div>
-          <div><dt>提供方 provider</dt><dd><code id="binary-ai-bytes-provider">—</code></dd></div>
-          <div><dt>模型 model</dt><dd><code id="binary-ai-bytes-model">—</code></dd></div>
-          <div><dt>plan sha256</dt><dd><code id="binary-ai-bytes-sha">—</code></dd></div>
-          <div><dt>延迟 latency_ms</dt><dd><code id="binary-ai-bytes-latency">—</code></dd></div>
-          <div><dt>结论 disposition</dt><dd><code id="binary-ai-bytes-disposition">—</code></dd></div>
-          <div><dt>已验证 verified</dt><dd><span id="binary-ai-bytes-verified">—</span></dd></div>
-          <div><dt>证据层级 tier</dt><dd><code id="binary-ai-bytes-tier">—</code></dd></div>
-          <div><dt>下载许可 download_allowed</dt><dd><span id="binary-ai-bytes-download-allowed">—</span></dd></div>
+          <div><dt>路径 path</dt><dd><code id="binary-ai-direct-path">binary_direct</code></dd></div>
+          <div><dt>AI 已调用 called</dt><dd><span id="binary-ai-direct-called">—</span></dd></div>
+          <div><dt>AI 状态 status</dt><dd><code id="binary-ai-direct-ai-status">—</code></dd></div>
+          <div><dt>模式 mode</dt><dd><code id="binary-ai-direct-mode">—</code></dd></div>
+          <div><dt>提供方 provider</dt><dd><code id="binary-ai-direct-provider">—</code></dd></div>
+          <div><dt>模型 model</dt><dd><code id="binary-ai-direct-model">—</code></dd></div>
+          <div><dt>plan sha256</dt><dd><code id="binary-ai-direct-sha">—</code></dd></div>
+          <div><dt>延迟 latency_ms</dt><dd><code id="binary-ai-direct-latency">—</code></dd></div>
+          <div><dt>动作数 actions</dt><dd><span id="binary-ai-direct-actions-count">—</span></dd></div>
+          <div><dt>结论 disposition</dt><dd><code id="binary-ai-direct-disposition">—</code></dd></div>
+          <div><dt>已验证 verified</dt><dd><span id="binary-ai-direct-verified">—</span></dd></div>
+          <div><dt>证据层级 tier</dt><dd><code id="binary-ai-direct-tier">—</code></dd></div>
+          <div><dt>下载许可 download_allowed</dt><dd><span id="binary-ai-direct-download-allowed">—</span></dd></div>
         </dl>
-        <p class="binary-detail" id="binary-ai-bytes-detail" hidden></p>
-        <p class="binary-error" id="binary-ai-bytes-error" role="alert" hidden></p>
+        <p class="binary-detail" id="binary-ai-direct-detail" hidden></p>
+        <p class="binary-error" id="binary-ai-direct-error" role="alert" hidden></p>
         <div class="binary-actions">
-          <button class="ds-btn primary" id="binary-ai-bytes-download" data-testid="binary-ai-download" type="button" hidden>下载路径二候选</button>
-          <span class="binary-candidate-name" id="binary-ai-bytes-filename" hidden></span>
+          <button class="ds-btn primary" id="binary-ai-direct-download" data-testid="binary-ai-download" type="button" hidden>下载路径二候选</button>
+          <span class="binary-candidate-name" id="binary-ai-direct-filename" hidden></span>
         </div>
-        <div class="binary-subblock" id="binary-ai-bytes-warnings-block" hidden>
+        <div class="binary-subblock" id="binary-ai-direct-warnings-block" hidden>
           <h3>警告 warnings</h3>
-          <ul class="binary-warnings" id="binary-ai-bytes-warnings"></ul>
+          <ul class="binary-warnings" id="binary-ai-direct-warnings"></ul>
         </div>
-        <details class="binary-report" id="binary-ai-bytes-report" hidden>
+        <details class="binary-report" id="binary-ai-direct-report" hidden>
           <summary>展开 report JSON</summary>
-          <pre class="binary-json" id="binary-ai-bytes-report-json"></pre>
+          <pre class="binary-json" id="binary-ai-direct-report-json"></pre>
         </details>
       </article>
     </div>
@@ -320,7 +329,7 @@
       </li>
       <li>
         <strong>两条 AI 路径的边界。</strong>
-        <span>ai_plan 只允许 AI 从分析器已确认的受支持动作中选择，实际写回由确定性代码完成；ai_bytes 由 AI 直接给出机器码或字节，但必须通过解码、指令白名单、重定位与容器重解析校验。两条路径都不赋予模型判定权，下载仍只看 delivery.download_allowed。</span>
+        <span>asm_roundtrip 只对 ELF i386/arm64 反汇编目标函数，AI 修改后的汇编由 clang 汇编成机器码块并注入、重定向函数入口；PE / Mach-O 直接返回 unsupported。binary_direct 由 AI 直接给出机器码或同长度字节，必须通过解码、指令白名单、重定位与容器重解析校验。两条路径都不赋予模型判定权，下载仍只看 delivery.download_allowed。</span>
       </li>
       <li>
         <strong>已验证不等于全程序证明。</strong>
@@ -336,5 +345,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/binary.js?v=20261113b"></script>
+<script src="/static/js/binary.js?v=20261113c"></script>
 {% endblock %}

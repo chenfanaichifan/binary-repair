@@ -23,8 +23,8 @@ work.  See section 9 for the exact matrix/sink boundary.
 Current acceptance is the non-browser suite:
 
 ```text
-macOS 13.5 arm64: 1119 tests, 0 failed, 0 errors, 4 skipped (233.8 s)
-Linux VM Ubuntu 24.04 arm64: 1119 tests, 0 failed, 0 errors, 7 skipped (249.5 s)
+macOS 13.5 arm64: 1128 tests, 0 failed, 0 errors, 4 skipped (250.1 s)
+Linux VM Ubuntu 24.04 arm64: 1128 tests, 0 failed, 0 errors, 7 skipped (258.0 s)
 GitHub Actions Ubuntu 24.04: workflow success on the final commits
 ```
 
@@ -123,18 +123,25 @@ deterministic actions, so candidates coincide with the v5 baseline and no AI
 increment is measured.  Real-LLM quality, a gate-blind increment suite and
 PoC-based evaluation remain future work; AI never owns acceptance.
 
-## AI direct-binary paths (v6)
+## AI binary-repair paths (v6)
 
-- One sink per AI candidate; multi-function/multi-sink model selection is not
-  implemented.
-- `ai_plan` can only choose actions already supported by the v5 matrix/writer.
-- `ai_bytes` validates structure (complete Capstone decode, instruction
+- Exactly two product paths: `asm_roundtrip` (ELF i386/x86_64/arm64; requires
+  host `clang`; assembly text is intentionally used) and `binary_direct`
+  (ELF/PE/Mach-O x86_64/arm64 and ELF32/PE32 i386; no assembly text).
+- Neither path decompiles to C and recompiles.  `ai_plan`/`ai_bytes` are
+  internal prototype names only, not API/UI paths.
+- One sink/target function per AI candidate; multi-function model selection is
+  not implemented.
+- `binary_direct` validates structure (complete Capstone decode, instruction
   allowlist, injection/redirect ranges, same-length executable edits, container
   reparse); semantic correctness is still decided by the deterministic runtime
-  gate.  A structurally valid but semantically wrong guard can therefore be
-  rejected by the gate, never promoted by the model.
-- Scripted evidence measures protocol/validator/gate integration, not real-LLM
-  repair quality; provider availability and model quality remain outside the
-  deterministic claim.
-- Mach-O AI guard injection is routed through the existing writer adapter but
-  is not part of the scripted positive evidence matrix.
+  gate.  A structurally valid but semantically wrong block can be rejected by
+  the gate, never promoted by the model.
+- `asm_roundtrip` also validates assembled machine code with the same kind of
+  allowlist and the shim only redirects the analysed function entry; it requires
+  clang and an ELF target.
+- Mach-O direct-path positive evidence exists only on macOS (native gate); on
+  Linux those tests/evidence entries are platform-skipped.
+- Scripted evidence measures protocol/assembler/validator/gate integration, not
+  real-LLM repair quality; **no AI increment is measured on the current
+  fixtures**.  PoC-failure is not yet a gate predicate.

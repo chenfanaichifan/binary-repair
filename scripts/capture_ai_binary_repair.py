@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import platform
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -19,8 +20,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app.services.ai_binary_repair import (  # noqa: E402
-    AI_PATH_BYTES,
-    AI_PATH_PLAN,
+    AI_PATHS,
+    ASM_PATH,
+    DIRECT_PATH,
     ai_repair,
 )
 from app.services.binary_pipeline import repair_any  # noqa: E402
@@ -30,9 +32,90 @@ from app.services.repair.guards import abi_for, build_guard  # noqa: E402
 
 FIXTURES = (
     ("pe-x86_64-guard", ROOT / "fixtures" / "pe" / "vuln-strcpy-x64.exe"),
+    ("pe-arm64-guard", ROOT / "fixtures" / "pe" / "vuln-strcpy-arm64.exe"),
+    ("elf-i386-guard", ROOT / "fixtures" / "elf" / "vuln-strcpy-x86.elf"),
+    ("elf-x86_64-guard", ROOT / "fixtures" / "elf" / "vuln-strcpy-x86_64.elf"),
     ("elf-arm64-guard", ROOT / "fixtures" / "elf" / "vuln-strcpy-arm64.elf"),
     ("elf-i386-memcpy", ROOT / "fixtures" / "elf" / "vuln-memcpy-x86.elf"),
 )
+if platform.system() == "Darwin":
+    FIXTURES += (
+        ("macho-x86_64-guard", ROOT / "fixtures" / "macho" / "vuln-strcpy-x86_64"),
+        ("macho-arm64-guard", ROOT / "fixtures" / "macho" / "vuln-strcpy-arm64"),
+    )
+
+ASM_I386 = r"""
+.intel_syntax noprefix
+.text
+.globl repair_entry
+repair_entry:
+    push ebp
+    mov ebp, esp
+    sub esp, 32
+    mov eax, dword ptr [ebp+8]
+    lea edx, [ebp-16]
+    xor ecx, ecx
+.Lloop:
+    cmp ecx, 15
+    jae .Ldone
+    mov bl, byte ptr [eax+ecx]
+    mov byte ptr [edx+ecx], bl
+    test bl, bl
+    je .Ldone
+    inc ecx
+    jmp .Lloop
+.Ldone:
+    mov byte ptr [edx+ecx], 0
+    leave
+    ret
+"""
+
+ASM_X86_64 = r"""
+.intel_syntax noprefix
+.text
+.globl repair_entry
+repair_entry:
+    push rbp
+    mov rbp, rsp
+    sub rsp, 32
+    mov rsi, rdi
+    lea rdi, [rbp-16]
+    xor ecx, ecx
+.Lloop:
+    cmp ecx, 15
+    jae .Ldone
+    mov al, byte ptr [rsi+rcx]
+    mov byte ptr [rdi+rcx], al
+    test al, al
+    je .Ldone
+    inc ecx
+    jmp .Lloop
+.Ldone:
+    mov byte ptr [rdi+rcx], 0
+    leave
+    ret
+"""
+
+ASM_ARM64 = r"""
+.text
+.globl repair_entry
+repair_entry:
+    sub sp, sp, #32
+    add x2, sp, #16
+    mov x3, #0
+.Lloop:
+    cmp x3, #15
+    b.hs .Ldone
+    ldrb w4, [x0, x3]
+    strb w4, [x2, x3]
+    cbz w4, .Ldone
+    add x3, x3, #1
+    b .Lloop
+.Ldone:
+    strb wzr, [x2, x3]
+    add sp, sp, #32
+    ret
+"""
 
 
 class ScriptedClient:
@@ -56,15 +139,19 @@ class ScriptedClient:
         )
 
 
-def _plan_payload(data: bytes) -> dict:
-    sinks = analyze(data).patchable()
-    sink = sinks[0]
-    return {
-        "schema_version": 1,
-        "sink_index": 0,
-        "strategy": "guard" if sink.kind == "unbounded_copy" else "immediate",
-        "reason": "scripted acceptance: choose the deterministic strategy for this sink",
-    }
+def _asm_payload(data: bytes) -> dict | None:
+    container = detect_container(data)
+    if container.format != "elf" or container.arch not in {"i386", "x86_64", "arm64"}:
+        return None
+    sink = analyze(data).patchable()[0]
+    if sink.kind != "unbounded_copy":
+        return None
+    assembly = {
+        "i386": ASM_I386,
+        "x86_64": ASM_X86_64,
+        "arm64": ASM_ARM64,
+    }[container.arch]
+    return {"schema_version": 1, "assembly": assembly}
 
 
 def _bytes_payload(data: bytes) -> dict:
@@ -130,7 +217,7 @@ def main() -> int:
     args = ap.parse_args()
     out = args.out
     out.mkdir(parents=True, exist_ok=True)
-    paths = [AI_PATH_PLAN, AI_PATH_BYTES]
+    paths = list(AI_PATHS)
     records: dict[str, dict] = {}
     for name, fixture in FIXTURES:
         if not fixture.is_file():
@@ -148,7 +235,12 @@ def main() -> int:
             "candidate_sha256": baseline_sha,
         }
         for path in paths:
-            payload = _plan_payload(data) if path == AI_PATH_PLAN else _bytes_payload(data)
+            if path == ASM_PATH:
+                payload = _asm_payload(data)
+                if payload is None:
+                    continue
+            else:
+                payload = _bytes_payload(data)
             client = ScriptedClient(payload)
             outcome = ai_repair(data, path=path, client=client)
             record = _record(path, data, outcome, fixture, deterministic)
@@ -170,8 +262,8 @@ def main() -> int:
     if pe.is_file():
         client = ScriptedClient({"schema_version": 1, "sink_index": 0,
                                  "inject": {"code_hex": "c3"}})
-        outcome = ai_repair(pe.read_bytes(), path=AI_PATH_BYTES, client=client)
-        record = _record(AI_PATH_BYTES, pe.read_bytes(), outcome, pe)
+        outcome = ai_repair(pe.read_bytes(), path=DIRECT_PATH, client=client)
+        record = _record(DIRECT_PATH, pe.read_bytes(), outcome, pe)
         record["fixture"] = "pe-x86_64-guard"
         record["negative_control"] = "no-op injected guard must not be verified"
         (out / "negative-bytes-noop-guard.json").write_text(
@@ -200,9 +292,11 @@ def main() -> int:
         "no_assembly_or_decompile_roundtrip": True,
         "negative_control": summary_negative,
         "measured_increment": (
-            "none on the current fixtures: the scripted model instantiates the "
-            "same deterministic actions, so candidates coincide with the v5 "
-            "baseline.  A gate-blind/PoC increment experiment remains future work."
+            "not measured: the scripted model is a deterministic stand-in.  "
+            "Direct-path candidates coincide with the v5 deterministic baseline; "
+            "assembly-path candidates differ in representation but do not prove "
+            "extra vulnerability coverage.  A real-provider, gate-blind/PoC "
+            "increment experiment remains future work."
         ),
         "records": {
             key: {

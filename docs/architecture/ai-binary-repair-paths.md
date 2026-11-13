@@ -1,113 +1,102 @@
-# Two AI direct-binary repair paths
+# Two AI binary repair paths
 
-Status: implemented on `feature/ai-binary-repair` (post-v5).  See the
-acceptance record [`docs/acceptance/ai-binary-repair-2026-11-13.md`](../acceptance/ai-binary-repair-2026-11-13.md).
+Status: implemented on `feature/ai-binary-repair` (post-v5).  Acceptance:
+[`docs/acceptance/ai-binary-repair-2026-11-13.md`](../acceptance/ai-binary-repair-2026-11-13.md).
 
-## Rule kept from the workbench
+These are the two product paths requested for fixing a binary such as an ELF:
 
-The AI may plan, propose, generate bytes, accept, reject and stop.  It may
-**never** turn a failed, incomplete or missing deterministic gate into
-`verified_patch`.  Both paths therefore end in the same deterministic
-reparse/runtime/gate code (`app/services/binary_pipeline.py::finish_candidate`)
-and the same report schema v4 disposition vocabulary.
+| # | Path ID | What happens |
+|---|---|---|
+| 1 | `asm_roundtrip` | binary → disassemble the target function to **assembly text** → AI repairs the assembly → host assembler turns it back into machine code → inject into a new executable block → redirect the original function entry → patched binary |
+| 2 | `binary_direct` | binary → AI emits **raw bytes** (machine-code guard bytes or same-length in-place edits) → validator → existing writer injects/patches directly → patched binary; **no assembly text and no decompiled-C round-trip** |
 
-Neither path converts the file to assembly text and reassembles it, and neither
-decompiles to C and recompiles it.  The model's output is either a bounded
-choice over already-reviewed actions (path 1) or raw bytes that a static
-validator constrains before the writer touches the image (path 2).
+Both end in the same deterministic reparse/runtime/gate.  The AI never owns the
+acceptance decision: it cannot promote a failed, incomplete or missing gate.
+Path 1 deliberately uses assembly text; path 2 deliberately does not.
 
-## Path 1 — `ai_plan`: plan then deterministic byte writeback
+## Path 1 — `asm_roundtrip`
 
 ```text
-original bytes
+original ELF
   -> deterministic container/import/stack analysis
-  -> bounded JSON packet (metadata only: format/arch/matrix, findings, limits)
-  -> model returns {schema_version:1, sink_index, strategy: guard|immediate}
-  -> strict plan validation (index, patchability, sink-kind/strategy match)
-  -> existing deterministic writer emits the bytes
+  -> Capstone disassembly of the target function (read-only)
+  -> bounded packet: disassembly, sink (kind/callee/capacity/dest_rel), ABI
+  -> model returns {schema_version:1, assembly:"<replacement function>"}
+  -> fail-closed text validation (no calls/syscalls/privileged/indirect jumps)
+  -> clang integrated assembler (target triple) -> machine-code bytes
+  -> Capstone validation of the assembled block (complete decode, allowlist,
+     internal branch targets, terminating instruction)
+  -> existing ELF injection primitive allocates a new R-X block
+  -> x86/i386: E9 rel32 at the original function entry; arm64: B imm26
   -> reparse + runtime + deterministic gate
 ```
 
-- The packet contains **no raw binary bytes**; it carries the binary SHA-256,
-  format/architecture, repair-matrix cell, patchable findings (kind, callee,
-  capacity, length, call address/function address) and analysis limitations.
-- `guard` is accepted only for an `unbounded_copy` sink; `immediate` only for an
-  immediate-length sink whose length exceeds capacity.  The model cannot invent
-  offsets, capacities, instruction bytes or hashes.
-- The output action vocabulary is the v5 engine's own: `guard` injection with
-  the deterministic guard template, or immediate clamping.  No new machine code
-  is authored by the model on this path.
-- Invalid/unknown/unsupported plans fail closed: no candidate, `ai.status =
-  invalid`, report disposition `unsupported`.  A provider exception is
-  `ai.status = error`; no provider is `ai.status = unavailable` (HTTP 503).
+- Supported inputs: ELF i386, x86_64, arm64.  PE/Mach-O return `unsupported` for
+  this path (path 2 covers them).
+- The model **writes assembly**, not bytes/C.  The assembler is the host `clang`
+  (cross-target `i386-linux-gnu`, `x86_64-linux-gnu`, `aarch64-linux-gnu`); when
+  clang is absent the path fails closed.
+- The replacement function is injected as a block and the original function
+  entry is redirected to it.  The original body is not preserved; this is
+  reported as a limitation/action (`assembly-function`).
+- The gate executes the patched function entry (jump → assembled block) and
+  checks canary/return-slot/buffer semantics exactly like the deterministic path.
 
-## Path 2 — `ai_bytes`: raw machine code / same-length byte edits
+## Path 2 — `binary_direct`
 
 ```text
-original bytes
-  -> bounded packet (metadata + executable section ranges + sink call/length offsets + limits)
-  -> model returns raw binary patch
+original binary
+  -> bounded analysis packet (metadata + executable ranges + sink offsets)
+  -> model returns raw patch
        guard sink:    {schema_version:1, sink_index, inject:{code_hex}}
        immediate sink:{schema_version:1, sink_index, edits:[{offset,before_hex,after_hex}]}
-  -> static validator (untrusted bytes)
-  -> existing writer injects + call-redirects, or rewrites same-length bytes
+  -> fail-closed validator: Capstone decode, instruction allowlist, no
+     calls/syscalls/privileged/indirect jumps, internal branches, injection/
+     redirect ranges, same-length executable edits, container reparse
+  -> existing writer injects/call-redirects or rewrites bytes
   -> reparse + runtime + deterministic gate
 ```
 
-The model emits bytes, never assembly or C.  The validator
-(`app/services/ai_patch_validation.py`) enforces:
+Supported by the existing repair matrix: ELF/PE/Mach-O x86_64/arm64 and
+ELF32/PE32 i386.  On macOS, Mach-O candidates are checked by the native runtime
+gate; on Linux they are reported as not verified (native Mach-O execution is a
+macOS-only capability).
 
-- `schema_version == 1`, a valid patchable `sink_index`, sink/container
-  architecture match;
-- guard sink: exactly one injected machine-code block, no edits; the block must
-  decode **completely** with Capstone for the container architecture, may only
-  contain whitelisted mnemonics, may not contain calls, syscalls, privileged
-  instructions, indirect jumps or parameterised returns, must end in a
-  terminating instruction, and every direct branch must stay inside the block;
-- the original call site must be the writer-redirectable form (`E8`, `FF15`,
-  `FF25`, or arm64 `BL`) with the expected size/architecture; the block is
-  injected with the existing writer adapter and the call is redirected only if
-  the displacement is encodable;
-- immediate sink: only same-length in-place edits, each `before_hex` must match
-  the original file byte-for-byte, offsets must lie inside an executable
-  section, at most 16 edits / 256 bytes, no overlaps or no-ops; at least one
-  edit must hit the selected sink's `length_offset` (unrelated executable edits
-  are not a repair);
-- the resulting candidate must reparse as the same container format and
-  architecture;
-- PE guard injection marks the Authenticode signature invalidated; Mach-O guard
-  injection marks the code signature invalidated.
+## Shared properties
 
-The validator proves structural safety only.  Semantic correctness is decided
-by the deterministic runtime gate, which includes destination-buffer matching
-for bounded copies (`buffer_match`): a structurally valid but semantically
-empty guard (for example a lone `ret`) is rejected instead of sampled as a
-success.
+- **No C decompilation and no C recompilation** on either path.
+- **No model-owned verdict**: the deterministic gate is the only authority.
+- `static_only` remains explicit opt-in, unverified and never success.
+- Invalid AI output (parse error, forbidden assembly/bytes, bad offsets, bad
+  injection) returns no candidate with a typed `ai.status`.
+- The runtime `buffer_match` check rejects a structurally valid but semantically
+  empty injected guard (e.g. a lone `ret`).
 
-## Shared surface
+## Surfaces
 
 | Surface | Value |
 |---|---|
-| API | `GET /api/binary/ai-paths` (English ASCII contract), `POST /api/binary/ai-repair` (multipart: `binary`, `csrf`, `path=ai_plan|ai_bytes`, optional `allow_static_only=1`) |
-| CLI | `scripts/repair_binary.py <input> <output> --ai-path ai_plan|ai_bytes` (single-file; provider from the existing environment/key-store client) |
-| UI | `/binary` page section "AI 直接修复（两条路径）": independent file selector, shared best-effort opt-in, one result card per path, AI metadata, disposition/verified, report JSON, download only when `delivery.download_allowed` is true |
-| Report | existing report schema v4 plus `ai` metadata (`path`, `called`, `mode`, `provider`, `model`, `status`, `plan_sha256`, `latency_ms`, `validation`, `authority`) |
-| Provider | existing `app/services/assistant_llm.py` client (`client.chat_json(messages, max_tokens=..., thinking=False)`); tests and scripted evidence inject a fake/scripted client and perform no network call |
-
-HTTP semantics: `503` when no provider is configured; `422` when the AI payload
-is invalid, no candidate is produced, or the deterministic gate refuses the
-candidate; `200` only with a downloadable candidate (which can be
-`verified=false` only when static-only was explicitly requested).
+| API | `GET /api/binary/ai-paths`, `POST /api/binary/ai-repair` (`path=asm_roundtrip|binary_direct`) |
+| CLI | `scripts/repair_binary.py ... --ai-path asm_roundtrip|binary_direct` |
+| UI | `/binary` AI section: path 1 assembly round-trip card, path 2 direct binary card |
+| Evidence | `scripts/capture_ai_binary_repair.py` → `artifacts/ai-direct-binary-2026-11-13/` |
+| Provider | existing `client_from_env` client; tests/scripted evidence inject a fake client and do no network I/O |
 
 ## Boundaries
 
-- One sink per AI candidate; multi-function/multi-sink selection remains a
-  limitation.  The deterministic v5 one-function-per-candidate policy still
-  applies to the surrounding report.
-- `ai_plan` cannot exceed the v5 engine's supported action matrix.
-- `ai_bytes` guard injection currently has positive coverage for PE x86-64/
-  arm64 and ELF i386/arm64; Mach-O injection is structurally routed through the
-  existing writer adapter but is not part of the scripted acceptance matrix.
-- The model can be adversarial or wrong; all model bytes are untrusted and the
-  gate, not the model, owns the verdict.  Scripted evidence measures protocol/
-  validator/gate integration, not real-LLM repair quality.
+- Assembly path is ELF i386/x86_64/arm64 only; no PE/Mach-O assembly round-trip.
+- Assembly path needs host `clang`; CI Ubuntu installs it and macOS has it.
+- One sink/target function per AI candidate; multi-function selection remains
+  future work.
+- Scripted evidence proves protocol/assembler/validator/writeback/gate
+  integration, not real-LLM repair quality; **no AI increment is measured on
+  the current fixtures**.  PoC-failure is not yet a gate predicate.
+- Mach-O direct-path positive evidence is native and macOS-only; on Linux those
+  tests skip by platform design.
+
+## Previous protocol names
+
+The earlier prototype exposed internal names `ai_plan` and `ai_bytes`.  They are
+retained only for internal unit tests/helpers and are not in `AI_PATHS`, the API
+contract or the UI.  The product paths are exactly `asm_roundtrip` and
+`binary_direct`.

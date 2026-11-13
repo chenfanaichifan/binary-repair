@@ -350,7 +350,10 @@ def _from_elf_legacy(
     report.supported = bool(raw.supported and patched is not None)
     report.mode = raw.mode
     report.capacity = raw.capacity
-    report.findings = [dict(item) for item in raw.findings]
+    raw_findings = getattr(raw, "findings", [])
+    if isinstance(raw_findings, (str, bytes)) or not hasattr(raw_findings, "__iter__"):
+        raw_findings = [raw_findings] if raw_findings else []
+    report.findings = [dict(item) for item in raw_findings]
     report.offsets = list(raw.offsets)
     report.limitations = list(raw.limitations)
     report.runtime = dict(raw.runtime or {})
@@ -414,8 +417,12 @@ def _select_runtime(data: bytes, container: ContainerInfo, sink: Sink):
             abi=abi,
             copy_kind=kind, callee=callee,
         )
-    if container.format == "elf" and container.arch in {"arm64", "i386"}:
-        abi = "cdecl_x86" if container.arch == "i386" else "aapcs64"
+    if container.format == "elf" and container.arch in {"arm64", "i386", "x86_64"}:
+        abi = (
+            "cdecl_x86" if container.arch == "i386"
+            else "aapcs64" if container.arch == "arm64"
+            else "sysv_x86_64"
+        )
         return emulated.emulate(
             data, container,
             function_va=sink.function_va,
@@ -721,6 +728,15 @@ def repair_any(
         return RepairOutcome(None, report)
 
     if fmt == "elf" and arch == "x86_64":
+        # The legacy ELF x86-64 engine repairs the old syscall fixture.  The v4/v5
+        # generic analyzer owns guard/immediate repair for the new ELF x86-64
+        # fixture; route those sinks through the container-neutral writer so the
+        # same deterministic one-function policy and runtime gate apply.
+        if any(sink.kind == "unbounded_copy" for sink in analyze(data).patchable()):
+            return _generic_repair(
+                data, container, strategy=strategy, verify=verify,
+                allow_static_only=allow_static_only,
+            )
         from app.services.binary_repair_engine import repair_elf
 
         patched, raw = repair_elf(data)

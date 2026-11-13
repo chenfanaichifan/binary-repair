@@ -1,24 +1,26 @@
 {
-  "path": "ai_bytes",
-  "input": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/elf/vuln-memcpy-x86.elf",
-  "input_sha256": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
-  "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
+  "path": "asm_roundtrip",
+  "input": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/elf/vuln-strcpy-x86_64.elf",
+  "input_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+  "candidate_sha256": "811e65781fe24150afbca7677754d19d291300d2f4e774a9ee556432f1580741",
   "verified": true,
   "download_allowed": true,
   "disposition": "verified_patch",
   "status": "patched",
-  "strategy": "ai-bytes",
+  "strategy": "assembly-roundtrip",
   "actions": [
     {
-      "kind": "ai-edit",
-      "offset": 142294,
-      "before_hex": "40000000",
-      "after_hex": "10000000"
+      "kind": "assembly-function",
+      "site": "0x102bab4",
+      "cave_va": "0x10cb000",
+      "method": "new-pt-load",
+      "code_bytes": 42,
+      "assembly_sha256": "fdc5c7d4bcec3f3993d261be0df9b0e7f4249d594a1570629e2d724fb4a586be"
     }
   ],
   "ai": {
     "schema_version": 1,
-    "path": "ai_bytes",
+    "path": "asm_roundtrip",
     "requested": true,
     "called": true,
     "mode": "scripted",
@@ -26,19 +28,14 @@
     "model": "scripted-binary-repair",
     "status": "accepted",
     "latency_ms": 0,
-    "plan_sha256": "a20ba86b03ee41c3bdd17c86fa33db9b8378cb6f0eb7cb4a61c6ab4006422012",
+    "plan_sha256": "10001cdcaabe3e3c2bcab7e3490c0a38b7f084570ea86bb887853bf645730b91",
     "error": null,
     "validation": {
-      "actions": [
-        {
-          "kind": "ai-edit",
-          "offset": 142294,
-          "before_hex": "40000000",
-          "after_hex": "10000000"
-        }
-      ],
-      "limitations": [],
-      "error": null
+      "assembly_sha256": "fdc5c7d4bcec3f3993d261be0df9b0e7f4249d594a1570629e2d724fb4a586be",
+      "code_bytes": 42,
+      "method": "new-pt-load",
+      "cave_va": "0x10cb000",
+      "sink_kind": "unbounded_copy"
     },
     "usage": {
       "prompt_tokens": 0,
@@ -60,7 +57,7 @@
       "schema_version": 2,
       "scope": {
         "format": "elf",
-        "arch": "i386",
+        "arch": "x86_64",
         "runtime_tier": "emulated_run",
         "runtime_verdict": "pass",
         "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof."
@@ -71,14 +68,14 @@
           "title": "Container and architecture are in the repair matrix",
           "status": "passed",
           "required": true,
-          "detail": "elf/i386"
+          "detail": "elf/x86_64"
         },
         {
           "id": "candidate.present",
           "title": "A repaired candidate was produced",
           "status": "passed",
           "required": true,
-          "detail": "candidate_bytes=3930224"
+          "detail": "candidate_bytes=4915242"
         },
         {
           "id": "candidate.identity.original",
@@ -113,7 +110,7 @@
           "title": "Runtime evidence is native or emulated (not static-only)",
           "status": "passed",
           "required": true,
-          "detail": "tier=emulated_run engine=unicorn-i386"
+          "detail": "tier=emulated_run engine=unicorn-x86_64"
         },
         {
           "id": "runtime.contract",
@@ -125,15 +122,17 @@
       ],
       "actions": [
         {
-          "kind": "ai-edit",
-          "offset": 142294,
-          "before_hex": "40000000",
-          "after_hex": "10000000"
+          "kind": "assembly-function",
+          "site": "0x102bab4",
+          "cave_va": "0x10cb000",
+          "method": "new-pt-load",
+          "code_bytes": 42,
+          "assembly_sha256": "fdc5c7d4bcec3f3993d261be0df9b0e7f4249d594a1570629e2d724fb4a586be"
         }
       ],
       "runtime": {
         "tier": "emulated_run",
-        "engine": "unicorn-i386",
+        "engine": "unicorn-x86_64",
         "verdict": "pass",
         "cases": [
           {
@@ -143,7 +142,7 @@
             "stdout_len": 0,
             "stderr_len": 0,
             "canary_intact": true,
-            "output_len": null,
+            "output_len": 0,
             "buffer_match": true,
             "error": null
           },
@@ -154,7 +153,7 @@
             "stdout_len": 0,
             "stderr_len": 0,
             "canary_intact": true,
-            "output_len": null,
+            "output_len": 1,
             "buffer_match": true,
             "error": null
           },
@@ -165,7 +164,7 @@
             "stdout_len": 0,
             "stderr_len": 0,
             "canary_intact": true,
-            "output_len": null,
+            "output_len": 15,
             "buffer_match": true,
             "error": null
           },
@@ -176,7 +175,7 @@
             "stdout_len": 0,
             "stderr_len": 0,
             "canary_intact": true,
-            "output_len": null,
+            "output_len": 15,
             "buffer_match": true,
             "error": null
           },
@@ -187,7 +186,7 @@
             "stdout_len": 0,
             "stderr_len": 0,
             "canary_intact": true,
-            "output_len": null,
+            "output_len": 15,
             "buffer_match": true,
             "error": null
           },
@@ -198,18 +197,17 @@
             "stdout_len": 0,
             "stderr_len": 0,
             "canary_intact": true,
-            "output_len": null,
+            "output_len": 15,
             "buffer_match": true,
             "error": null
           }
         ],
         "limitations": [
-          "Length-aware copy model: memcpy/memmove copies the ABI length argument exactly; output_len is not reported because the result is not a NUL-terminated string (the gate uses canary/return-slot checks).",
           "Emulated execution with modeled imports; not a native Windows/Linux run.",
           "Only the repaired function is executed; unrelated code paths are not covered."
         ]
       },
-      "report_sha256": "5888ba94284eb5c5735329e15cbb2832685dbc23aa7bb5a07abbc9f3bab06e8d"
+      "report_sha256": "2c34eddf39a918e8f6a577a07228db3f76f5a0d6a12e1043795e10dc0ff4e38f"
     },
     "gate": {
       "success": true,
@@ -217,15 +215,15 @@
       "reason": "",
       "required_checks": 8,
       "required_not_run": 0,
-      "evidence_sha256": "5888ba94284eb5c5735329e15cbb2832685dbc23aa7bb5a07abbc9f3bab06e8d"
+      "evidence_sha256": "2c34eddf39a918e8f6a577a07228db3f76f5a0d6a12e1043795e10dc0ff4e38f"
     },
     "tier": "emulated_run",
-    "engine": "unicorn-i386",
+    "engine": "unicorn-x86_64",
     "static_reparse": true
   },
   "runtime": {
     "tier": "emulated_run",
-    "engine": "unicorn-i386",
+    "engine": "unicorn-x86_64",
     "verdict": "pass",
     "cases": [
       {
@@ -235,7 +233,7 @@
         "stdout_len": 0,
         "stderr_len": 0,
         "canary_intact": true,
-        "output_len": null,
+        "output_len": 0,
         "buffer_match": true,
         "error": null
       },
@@ -246,7 +244,7 @@
         "stdout_len": 0,
         "stderr_len": 0,
         "canary_intact": true,
-        "output_len": null,
+        "output_len": 1,
         "buffer_match": true,
         "error": null
       },
@@ -257,7 +255,7 @@
         "stdout_len": 0,
         "stderr_len": 0,
         "canary_intact": true,
-        "output_len": null,
+        "output_len": 15,
         "buffer_match": true,
         "error": null
       },
@@ -268,7 +266,7 @@
         "stdout_len": 0,
         "stderr_len": 0,
         "canary_intact": true,
-        "output_len": null,
+        "output_len": 15,
         "buffer_match": true,
         "error": null
       },
@@ -279,7 +277,7 @@
         "stdout_len": 0,
         "stderr_len": 0,
         "canary_intact": true,
-        "output_len": null,
+        "output_len": 15,
         "buffer_match": true,
         "error": null
       },
@@ -290,69 +288,72 @@
         "stdout_len": 0,
         "stderr_len": 0,
         "canary_intact": true,
-        "output_len": null,
+        "output_len": 15,
         "buffer_match": true,
         "error": null
       }
     ],
     "limitations": [
-      "Length-aware copy model: memcpy/memmove copies the ABI length argument exactly; output_len is not reported because the result is not a NUL-terminated string (the gate uses canary/return-slot checks).",
       "Emulated execution with modeled imports; not a native Windows/Linux run.",
       "Only the repaired function is executed; unrelated code paths are not covered."
     ]
   },
-  "limitations": [],
+  "limitations": [
+    "assembly round-trip candidate: the original function entry is redirected to an assembled replacement block; the original body is not preserved"
+  ],
   "warnings": [],
   "deterministic_baseline": {
     "disposition": "verified_patch",
     "verified": true,
-    "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88"
+    "candidate_sha256": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4"
   },
   "report": {
     "schema_version": 4,
     "format": "elf",
-    "arch": "i386",
+    "arch": "x86_64",
     "backend": "elf",
-    "strategy": "ai-bytes",
+    "strategy": "assembly-roundtrip",
     "status": "patched",
     "supported": true,
-    "original_sha256": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
-    "patched_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
-    "mode": "ai-bytes",
+    "original_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+    "patched_sha256": "811e65781fe24150afbca7677754d19d291300d2f4e774a9ee556432f1580741",
+    "mode": "assembly-roundtrip",
     "capacity": 16,
     "findings": [
       {
-        "kind": "memcpy_length",
-        "address": "0x33bdf",
-        "callee": "memcpy",
+        "kind": "unbounded_copy",
+        "address": "0x102bac3",
+        "callee": "strcpy",
         "capacity": 16,
-        "dest_offset": -20,
-        "before": 64,
+        "dest_offset": -24,
+        "before": null,
         "after": 16,
         "patchable": true,
         "confidence": "medium",
-        "strategy": "immediate",
-        "detail": "immediate copy length exceeds stack capacity (i386 cdecl)"
+        "strategy": "guard",
+        "detail": "strcpy into stack destination bounded to 16 bytes"
       }
     ],
-    "offsets": [
-      142294
-    ],
+    "offsets": [],
     "actions": [
       {
-        "kind": "ai-edit",
-        "offset": 142294,
-        "before_hex": "40000000",
-        "after_hex": "10000000"
+        "kind": "assembly-function",
+        "site": "0x102bab4",
+        "cave_va": "0x10cb000",
+        "method": "new-pt-load",
+        "code_bytes": 42,
+        "assembly_sha256": "fdc5c7d4bcec3f3993d261be0df9b0e7f4249d594a1570629e2d724fb4a586be"
       }
     ],
-    "limitations": [],
+    "limitations": [
+      "assembly round-trip candidate: the original function entry is redirected to an assembled replacement block; the original body is not preserved"
+    ],
     "verification": {
       "packet": {
         "schema_version": 2,
         "scope": {
           "format": "elf",
-          "arch": "i386",
+          "arch": "x86_64",
           "runtime_tier": "emulated_run",
           "runtime_verdict": "pass",
           "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof."
@@ -363,14 +364,14 @@
             "title": "Container and architecture are in the repair matrix",
             "status": "passed",
             "required": true,
-            "detail": "elf/i386"
+            "detail": "elf/x86_64"
           },
           {
             "id": "candidate.present",
             "title": "A repaired candidate was produced",
             "status": "passed",
             "required": true,
-            "detail": "candidate_bytes=3930224"
+            "detail": "candidate_bytes=4915242"
           },
           {
             "id": "candidate.identity.original",
@@ -405,7 +406,7 @@
             "title": "Runtime evidence is native or emulated (not static-only)",
             "status": "passed",
             "required": true,
-            "detail": "tier=emulated_run engine=unicorn-i386"
+            "detail": "tier=emulated_run engine=unicorn-x86_64"
           },
           {
             "id": "runtime.contract",
@@ -417,15 +418,17 @@
         ],
         "actions": [
           {
-            "kind": "ai-edit",
-            "offset": 142294,
-            "before_hex": "40000000",
-            "after_hex": "10000000"
+            "kind": "assembly-function",
+            "site": "0x102bab4",
+            "cave_va": "0x10cb000",
+            "method": "new-pt-load",
+            "code_bytes": 42,
+            "assembly_sha256": "fdc5c7d4bcec3f3993d261be0df9b0e7f4249d594a1570629e2d724fb4a586be"
           }
         ],
         "runtime": {
           "tier": "emulated_run",
-          "engine": "unicorn-i386",
+          "engine": "unicorn-x86_64",
           "verdict": "pass",
           "cases": [
             {
@@ -435,7 +438,7 @@
               "stdout_len": 0,
               "stderr_len": 0,
               "canary_intact": true,
-              "output_len": null,
+              "output_len": 0,
               "buffer_match": true,
               "error": null
             },
@@ -446,7 +449,7 @@
               "stdout_len": 0,
               "stderr_len": 0,
               "canary_intact": true,
-              "output_len": null,
+              "output_len": 1,
               "buffer_match": true,
               "error": null
             },
@@ -457,7 +460,7 @@
               "stdout_len": 0,
               "stderr_len": 0,
               "canary_intact": true,
-              "output_len": null,
+              "output_len": 15,
               "buffer_match": true,
               "error": null
             },
@@ -468,7 +471,7 @@
               "stdout_len": 0,
               "stderr_len": 0,
               "canary_intact": true,
-              "output_len": null,
+              "output_len": 15,
               "buffer_match": true,
               "error": null
             },
@@ -479,7 +482,7 @@
               "stdout_len": 0,
               "stderr_len": 0,
               "canary_intact": true,
-              "output_len": null,
+              "output_len": 15,
               "buffer_match": true,
               "error": null
             },
@@ -490,18 +493,17 @@
               "stdout_len": 0,
               "stderr_len": 0,
               "canary_intact": true,
-              "output_len": null,
+              "output_len": 15,
               "buffer_match": true,
               "error": null
             }
           ],
           "limitations": [
-            "Length-aware copy model: memcpy/memmove copies the ABI length argument exactly; output_len is not reported because the result is not a NUL-terminated string (the gate uses canary/return-slot checks).",
             "Emulated execution with modeled imports; not a native Windows/Linux run.",
             "Only the repaired function is executed; unrelated code paths are not covered."
           ]
         },
-        "report_sha256": "5888ba94284eb5c5735329e15cbb2832685dbc23aa7bb5a07abbc9f3bab06e8d"
+        "report_sha256": "2c34eddf39a918e8f6a577a07228db3f76f5a0d6a12e1043795e10dc0ff4e38f"
       },
       "gate": {
         "success": true,
@@ -509,15 +511,15 @@
         "reason": "",
         "required_checks": 8,
         "required_not_run": 0,
-        "evidence_sha256": "5888ba94284eb5c5735329e15cbb2832685dbc23aa7bb5a07abbc9f3bab06e8d"
+        "evidence_sha256": "2c34eddf39a918e8f6a577a07228db3f76f5a0d6a12e1043795e10dc0ff4e38f"
       },
       "tier": "emulated_run",
-      "engine": "unicorn-i386",
+      "engine": "unicorn-x86_64",
       "static_reparse": true
     },
     "runtime": {
       "tier": "emulated_run",
-      "engine": "unicorn-i386",
+      "engine": "unicorn-x86_64",
       "verdict": "pass",
       "cases": [
         {
@@ -527,7 +529,7 @@
           "stdout_len": 0,
           "stderr_len": 0,
           "canary_intact": true,
-          "output_len": null,
+          "output_len": 0,
           "buffer_match": true,
           "error": null
         },
@@ -538,7 +540,7 @@
           "stdout_len": 0,
           "stderr_len": 0,
           "canary_intact": true,
-          "output_len": null,
+          "output_len": 1,
           "buffer_match": true,
           "error": null
         },
@@ -549,7 +551,7 @@
           "stdout_len": 0,
           "stderr_len": 0,
           "canary_intact": true,
-          "output_len": null,
+          "output_len": 15,
           "buffer_match": true,
           "error": null
         },
@@ -560,7 +562,7 @@
           "stdout_len": 0,
           "stderr_len": 0,
           "canary_intact": true,
-          "output_len": null,
+          "output_len": 15,
           "buffer_match": true,
           "error": null
         },
@@ -571,7 +573,7 @@
           "stdout_len": 0,
           "stderr_len": 0,
           "canary_intact": true,
-          "output_len": null,
+          "output_len": 15,
           "buffer_match": true,
           "error": null
         },
@@ -582,23 +584,22 @@
           "stdout_len": 0,
           "stderr_len": 0,
           "canary_intact": true,
-          "output_len": null,
+          "output_len": 15,
           "buffer_match": true,
           "error": null
         }
       ],
       "limitations": [
-        "Length-aware copy model: memcpy/memmove copies the ABI length argument exactly; output_len is not reported because the result is not a NUL-terminated string (the gate uses canary/return-slot checks).",
         "Emulated execution with modeled imports; not a native Windows/Linux run.",
         "Only the repaired function is executed; unrelated code paths are not covered."
       ]
     },
     "container": {
       "format": "elf",
-      "arch": "i386",
-      "bits": 32,
+      "arch": "x86_64",
+      "bits": 64,
       "endian": "little",
-      "image_base": 65536,
+      "image_base": 16777216,
       "slices": 1,
       "imports": 0,
       "sections": 21
@@ -614,9 +615,10 @@
     "error": null,
     "disposition": "verified_patch",
     "matrix": {
-      "cell": "elf/i386/32/little",
+      "cell": "elf/x86_64/64/little",
       "repairable": true,
       "strategies": [
+        "strict-template",
         "immediate",
         "guard"
       ],
@@ -657,7 +659,7 @@
     "warnings": [],
     "ai": {
       "schema_version": 1,
-      "path": "ai_bytes",
+      "path": "asm_roundtrip",
       "requested": true,
       "called": true,
       "mode": "scripted",
@@ -665,19 +667,14 @@
       "model": "scripted-binary-repair",
       "status": "accepted",
       "latency_ms": 0,
-      "plan_sha256": "a20ba86b03ee41c3bdd17c86fa33db9b8378cb6f0eb7cb4a61c6ab4006422012",
+      "plan_sha256": "10001cdcaabe3e3c2bcab7e3490c0a38b7f084570ea86bb887853bf645730b91",
       "error": null,
       "validation": {
-        "actions": [
-          {
-            "kind": "ai-edit",
-            "offset": 142294,
-            "before_hex": "40000000",
-            "after_hex": "10000000"
-          }
-        ],
-        "limitations": [],
-        "error": null
+        "assembly_sha256": "fdc5c7d4bcec3f3993d261be0df9b0e7f4249d594a1570629e2d724fb4a586be",
+        "code_bytes": 42,
+        "method": "new-pt-load",
+        "cave_va": "0x10cb000",
+        "sink_kind": "unbounded_copy"
       },
       "usage": {
         "prompt_tokens": 0,
@@ -695,20 +692,18 @@
       "verified": true
     }
   },
-  "fixture": "elf-i386-memcpy",
+  "fixture": "elf-x86_64-guard",
   "client_packet_keys": [
-    "analysis_limitations",
+    "abi",
     "arch",
     "binary_sha256",
     "bits",
-    "endian",
-    "executable_sections",
-    "findings",
     "format",
-    "limits",
-    "matrix",
+    "function_va",
+    "original_disassembly",
     "path",
+    "rules",
     "schema_version",
-    "size"
+    "sink"
   ]
 }

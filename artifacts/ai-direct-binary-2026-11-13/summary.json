@@ -3,8 +3,8 @@
   "provider": "scripted",
   "note": "Scripted deterministic model; proves the two AI repair protocols, validators, direct byte writeback and deterministic gate.  It does not measure LLM quality and performs no network call.",
   "paths": [
-    "ai_plan",
-    "ai_bytes"
+    "asm_roundtrip",
+    "binary_direct"
   ],
   "no_assembly_or_decompile_roundtrip": true,
   "negative_control": {
@@ -13,9 +13,9 @@
     "disposition": "rejected",
     "candidate_sha256": null
   },
-  "measured_increment": "none on the current fixtures: the scripted model instantiates the same deterministic actions, so candidates coincide with the v5 baseline.  A gate-blind/PoC increment experiment remains future work.",
+  "measured_increment": "not measured: the scripted model is a deterministic stand-in.  Direct-path candidates coincide with the v5 deterministic baseline; assembly-path candidates differ in representation but do not prove extra vulnerability coverage.  A real-provider, gate-blind/PoC increment experiment remains future work.",
   "records": {
-    "ai_plan:pe-x86_64-guard": {
+    "binary_direct:pe-x86_64-guard": {
       "disposition": "verified_patch",
       "verified": true,
       "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
@@ -23,15 +23,55 @@
       "deterministic_candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
       "same_candidate_as_deterministic": true
     },
-    "ai_bytes:pe-x86_64-guard": {
+    "binary_direct:pe-arm64-guard": {
       "disposition": "verified_patch",
       "verified": true,
-      "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
+      "candidate_sha256": "d5f2a392f2ad6fc21086838d69e4f849deb74b0fac31d0e7bc2746dfd00fbd49",
       "deterministic_disposition": "verified_patch",
-      "deterministic_candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
+      "deterministic_candidate_sha256": "d5f2a392f2ad6fc21086838d69e4f849deb74b0fac31d0e7bc2746dfd00fbd49",
       "same_candidate_as_deterministic": true
     },
-    "ai_plan:elf-arm64-guard": {
+    "asm_roundtrip:elf-i386-guard": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "2325899a5eac296dd24de357e812a2b7ad988239c92895e1e9a2df0978855ace",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "6fc774d2371225d5cf63160841e22e6fe34f750a6d6b16489cf3ffaba43d1a22",
+      "same_candidate_as_deterministic": false
+    },
+    "binary_direct:elf-i386-guard": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "6fc774d2371225d5cf63160841e22e6fe34f750a6d6b16489cf3ffaba43d1a22",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "6fc774d2371225d5cf63160841e22e6fe34f750a6d6b16489cf3ffaba43d1a22",
+      "same_candidate_as_deterministic": true
+    },
+    "asm_roundtrip:elf-x86_64-guard": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "811e65781fe24150afbca7677754d19d291300d2f4e774a9ee556432f1580741",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4",
+      "same_candidate_as_deterministic": false
+    },
+    "binary_direct:elf-x86_64-guard": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4",
+      "same_candidate_as_deterministic": true
+    },
+    "asm_roundtrip:elf-arm64-guard": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "0f1f11b1570a88f065b3440cfe66998230ccdd7b8fe73e1064dc751a8e0ae4b8",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
+      "same_candidate_as_deterministic": false
+    },
+    "binary_direct:elf-arm64-guard": {
       "disposition": "verified_patch",
       "verified": true,
       "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
@@ -39,15 +79,7 @@
       "deterministic_candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
       "same_candidate_as_deterministic": true
     },
-    "ai_bytes:elf-arm64-guard": {
-      "disposition": "verified_patch",
-      "verified": true,
-      "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
-      "deterministic_disposition": "verified_patch",
-      "deterministic_candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
-      "same_candidate_as_deterministic": true
-    },
-    "ai_plan:elf-i386-memcpy": {
+    "binary_direct:elf-i386-memcpy": {
       "disposition": "verified_patch",
       "verified": true,
       "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
@@ -55,12 +87,20 @@
       "deterministic_candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
       "same_candidate_as_deterministic": true
     },
-    "ai_bytes:elf-i386-memcpy": {
+    "binary_direct:macho-x86_64-guard": {
       "disposition": "verified_patch",
       "verified": true,
-      "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
+      "candidate_sha256": "ca73bcfa5464d246bb72b6025a2877b996466dca708ed8f927096f39fff31d0a",
       "deterministic_disposition": "verified_patch",
-      "deterministic_candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
+      "deterministic_candidate_sha256": "ca73bcfa5464d246bb72b6025a2877b996466dca708ed8f927096f39fff31d0a",
+      "same_candidate_as_deterministic": true
+    },
+    "binary_direct:macho-arm64-guard": {
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "e5545b698f91998e995b22002e0951a54d859e172af377fc38f8785001a7567d",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "e5545b698f91998e995b22002e0951a54d859e172af377fc38f8785001a7567d",
       "same_candidate_as_deterministic": true
     }
   }

@@ -1,12 +1,18 @@
 # Changelog
 
-## 2026-11-13 — v6: two AI direct-binary repair paths
+## 2026-11-13 — v6: two AI binary repair paths (assembly round-trip / direct bytes)
 
-- New `ai_plan` path: bounded model planning over the deterministic writer
-  (guard / immediate), no raw bytes sent, no assembly or decompiled-C round trip.
-- New `ai_bytes` path: raw machine-code guard injection or same-length byte
+- New `asm_roundtrip` path: CAPSTONE disassembles the target ELF function to
+  assembly text, the model returns replacement assembly, clang assembles it to
+  a machine-code block, which is injected and function-entry redirected; then
+  the deterministic gate verifies the patched ELF.  Supports ELF
+  i386/x86_64/arm64.
+- New `binary_direct` path: raw machine-code guard injection or same-length byte
   edits, fronted by a fail-closed Capstone/allowlist/injection/edits validator;
-  at least one edit must hit the selected sink's length immediate.
+  at least one edit must hit the selected sink's length immediate.  No assembly
+  text and no decompiled-C round trip.
+- New ELF x86-64 guard fixture and runtime selection; x86-64 canary placement
+  fixed for frames whose buffer ends just below the saved RBP.
 - `POST /api/binary/ai-repair`, `GET /api/binary/ai-paths`, CLI `--ai-path`, and
   two `/binary` UI cards.  The deterministic gate remains the only acceptance
   authority; AI cannot promote a failed or incomplete gate.

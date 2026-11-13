@@ -18,13 +18,24 @@ def test_scripted_ai_evidence_has_both_paths_and_negative_control(tmp_path: Path
     )
     assert result.returncode == 0, result.stderr
     summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
-    assert summary["paths"] == ["ai_plan", "ai_bytes"]
+    assert summary["paths"] == ["asm_roundtrip", "binary_direct"]
     assert summary["no_assembly_or_decompile_roundtrip"] is True
-    assert len(summary["records"]) == 6
-    assert all(row["verified"] for row in summary["records"].values())
+    records = summary["records"]
+    assert len(records) in (9, 11)  # Mach-O records exist only on macOS
+    assert all(row["verified"] for row in records.values())
+    assert any(key.startswith("asm_roundtrip:") for key in records)
+    assert any(key.startswith("binary_direct:") for key in records)
+    assert any("pe-arm64" in key for key in records)
+    if __import__("sys").platform == "darwin":
+        assert any("macho-x86_64" in key for key in records)
+        assert any("macho-arm64" in key for key in records)
+    # Direct-path scripted bytes coincide with the deterministic writer;
+    # assembly path is a different representation and is allowed to differ.
+    for key, row in records.items():
+        if key.startswith("binary_direct:"):
+            assert row["same_candidate_as_deterministic"] is True
     assert summary["negative_control"]["verified"] is False
-    assert "none on the current fixtures" in summary["measured_increment"]
-    assert all(row["same_candidate_as_deterministic"] for row in summary["records"].values())
+    assert "not measured" in summary["measured_increment"]
     assert summary["negative_control"]["disposition"] == "rejected"
     # Both paths ran on every fixture; the scripted guard bytes may coincide
     # with the deterministic guard candidate, which is expected and honest.
