@@ -197,15 +197,21 @@ JUnit: `artifacts/binary-universal-v5-2026-11-13/linux-junit.xml`.
 
 - Workflow: `Ubuntu verification` (`.github/workflows/ubuntu-verify.yml`,
   `ubuntu-24.04`, Python 3.11, full non-browser suite).
-- Run: [43411767923](https://github.com/chenfanaichifan/binary-repair/actions/runs/43411767923)
-  on commit `47465e0` (`workbench-v3`) — **success**.
+- Feature commit `47465e0`: run
+  [43411767923](https://github.com/chenfanaichifan/binary-repair/actions/runs/43411767923)
+  — **success** (15 steps, `test` job).
+- Evidence-doc commit `f65c2dc`: run
+  [43412399232](https://github.com/chenfanaichifan/binary-repair/actions/runs/43412399232)
+  — **success**. Because this acceptance record itself is committed after that
+  run, the workflow re-runs the same non-browser suite for the docs-only
+  commit; the branch run history records the final conclusion.
 - The workflow publishes its own JUnit/artifacts (`artifacts/ubuntu-verification/`);
   local macOS/Linux VM counts above are the authoritative detailed counts, and
   the CI conclusion covers the same `pytest -q --ignore=tests/e2e` command on
   Ubuntu 24.04 x86-64.
 - The branch `feature/universal-repair` and the CI-trigger branch
-  `workbench-v3` are both pushed to
-  `chenfanaichifan/binary-repair` at the same commit.
+  `workbench-v3` are both pushed to `chenfanaichifan/binary-repair` at the
+  same commit; `main` and `handoff-v4-local` are untouched.
 
 ## 7. Reproduce
 
