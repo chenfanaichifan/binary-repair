@@ -3,10 +3,11 @@
 This list is for a member with a Linux VM, Windows runtime and/or macOS arm64 VM.
 All commands assume the repository root is `binary-repair-gui/` unless stated.
 
-Current local baseline (macOS, v4 tree, GNU readelf installed):
+Current local baseline (v4 tree):
 
 ```text
-950 collected / 946 passed / 4 skipped / 0 failed
+macOS (GNU readelf): 950 collected / 946 passed / 4 skipped / 0 failed
+Linux VM:            950 collected / 943 passed / 7 skipped / 0 failed
 ```
 
 v4 note: ELF/PE/Mach-O repair now has container-neutral analysis and guard
@@ -28,10 +29,10 @@ python3 -m venv .venv
   --junitxml=artifacts/ubuntu-verification/junit.xml
 ```
 
-Expected: **0 failed**. Current collection is 900; Linux should run the fixture
-V0 test and the two native runtime tests, leaving only the optional
-`BINARYREPAIR_CANDIDATE_ELF` test skipped. Record the actual JUnit counts; do not
-copy a fixed pass count.
+Expected: **0 failed**. Current collection is 950; on Linux the Mach-O native
+tests and two Mach-O positive pipeline cases skip, leaving 7 skips and 943
+passes in the local VM. Record the actual JUnit counts; do not copy a fixed
+pass count.
 
 Evidence to return:
 

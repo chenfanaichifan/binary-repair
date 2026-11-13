@@ -2,8 +2,8 @@
 
 ## Scope
 
-This record covers the **local macOS** run of the container-neutral repair
-pipeline:
+This record covers the **local macOS and Linux VM** runs of the
+container-neutral repair pipeline:
 
 - ELF, PE and Mach-O detection (thin; fat detected but not rewritten);
 - imported call resolution: ELF PLT/GOT and symbols, PE IAT and
@@ -83,16 +83,19 @@ artifacts/binary-universal-v4-2026-11-13/
 
 ## Test result
 
-The full local run is recorded in `junit.xml` / `pytest.log` in
+The full local runs are recorded under
 `artifacts/binary-universal-v4-2026-11-13/`:
 
 ```text
-950 collected / 946 passed / 4 skipped / 0 failed
+macOS arm64 (GNU readelf): 950 collected / 946 passed / 4 skipped / 0 failed
+Linux VM (Ubuntu 24.04 arm64 + binfmt/qemu-x86_64):
+                            950 collected / 943 passed / 7 skipped / 0 failed
 ```
 
-This host has GNU `readelf` installed, so the historical Route B view-count
-failure does not appear. Record the actual JUnit on the target Linux host
-instead of copying this count.
+The 7 Linux skips are: 1 optional candidate-env test, 4 native Mach-O tests, and
+2 Mach-O positive pipeline cases. Mach-O native candidates are `not_verified`
+on Linux, not success. Record the actual JUnit on the target Linux host instead
+of copying this count.
 
 ## Limitations
 

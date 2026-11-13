@@ -1,0 +1,3 @@
+Linux lima-binaryrepair 6.8.0-147-generic #147-Ubuntu SMP PREEMPT_DYNAMIC Thu Sep 24 11:39:52 UTC 2026 aarch64 aarch64 aarch64 GNU/Linux
+qemu-x86_64 version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)
+GNU readelf (GNU Binutils for Ubuntu) 2.42
