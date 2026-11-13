@@ -195,7 +195,17 @@ JUnit: `artifacts/binary-universal-v5-2026-11-13/linux-junit.xml`.
 
 ### GitHub Actions (Ubuntu verification)
 
-`__CI_RESULT__`
+- Workflow: `Ubuntu verification` (`.github/workflows/ubuntu-verify.yml`,
+  `ubuntu-24.04`, Python 3.11, full non-browser suite).
+- Run: [43411767923](https://github.com/chenfanaichifan/binary-repair/actions/runs/43411767923)
+  on commit `47465e0` (`workbench-v3`) — **success**.
+- The workflow publishes its own JUnit/artifacts (`artifacts/ubuntu-verification/`);
+  local macOS/Linux VM counts above are the authoritative detailed counts, and
+  the CI conclusion covers the same `pytest -q --ignore=tests/e2e` command on
+  Ubuntu 24.04 x86-64.
+- The branch `feature/universal-repair` and the CI-trigger branch
+  `workbench-v3` are both pushed to
+  `chenfanaichifan/binary-repair` at the same commit.
 
 ## 7. Reproduce
 
