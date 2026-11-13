@@ -65,7 +65,14 @@ Targeted coverage includes:
 
 ## 4. CI
 
-`__AI_CI__`
+- Workflow: `Ubuntu verification` (`ubuntu-24.04`, Python 3.11, clang installed
+  for the assembly path).
+- Run: [43426508766](https://github.com/chenfanaichifan/binary-repair/actions/runs/43426508766)
+  on `61287fd` (`workbench-v3`) — **success**.
+- `feature/ai-binary-repair` and `workbench-v3` are both pushed at this commit;
+  `main` and `handoff-v4-local` are untouched.
+- This acceptance record is a docs-only follow-up; the workflow re-runs the same
+  suite for it.
 
 ## 5. Boundaries
 
