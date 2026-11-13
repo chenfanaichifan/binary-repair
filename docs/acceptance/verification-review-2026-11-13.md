@@ -161,6 +161,7 @@ remains future work.  Do not claim "AI repaired arbitrary binaries" or
 - Linux VM Ubuntu 24.04 arm64: **1133 tests, 0 failed, 0 errors, 7 skipped** (345.0 s).
 - `scripts/verify_evidence.py`: 11 fixture rows + 110 source rows PASS;
   v5 bundle 38 files PASS; AI bundle 9 files PASS.
-- CI: [43426508766](https://github.com/chenfanaichifan/binary-repair/actions/runs/43426508766)
-  on `61287fd` — **success** (two product paths; clang installed for path 1).
-  This record is a docs-only follow-up; the workflow re-runs the same suite.
+- CI: [43435227438](https://github.com/chenfanaichifan/binary-repair/actions/runs/43435227438)
+  on `60362a9` — **success** (PoC differential gate, blind-spot and real-provider
+  experiment tests; clang installed for path 1).  This record is a docs-only
+  follow-up; the workflow re-runs the same suite.
