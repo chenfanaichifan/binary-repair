@@ -303,6 +303,11 @@
   },
   "limitations": [],
   "warnings": [],
+  "deterministic_baseline": {
+    "disposition": "verified_patch",
+    "verified": true,
+    "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88"
+  },
   "report": {
     "schema_version": 4,
     "format": "elf",

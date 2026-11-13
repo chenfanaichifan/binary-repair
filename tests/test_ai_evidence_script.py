@@ -23,6 +23,8 @@ def test_scripted_ai_evidence_has_both_paths_and_negative_control(tmp_path: Path
     assert len(summary["records"]) == 6
     assert all(row["verified"] for row in summary["records"].values())
     assert summary["negative_control"]["verified"] is False
+    assert "none on the current fixtures" in summary["measured_increment"]
+    assert all(row["same_candidate_as_deterministic"] for row in summary["records"].values())
     assert summary["negative_control"]["disposition"] == "rejected"
     # Both paths ran on every fixture; the scripted guard bytes may coincide
     # with the deterministic guard candidate, which is expected and honest.

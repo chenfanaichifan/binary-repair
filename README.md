@@ -39,13 +39,17 @@ See [`docs/acceptance/evidence/ubuntu-a971ffd/README.md`](docs/acceptance/eviden
 [`docs/acceptance/LIMITATIONS.md`](docs/acceptance/LIMITATIONS.md) before citing
 this project as proof.
 
-> **v5 universal-repair feature branch (unreleased).** The
+> **v5/v6 feature branch (pushed, not a release).** The
 > [`feature/universal-repair`](docs/acceptance/binary-universal-v5-2026-11-13.md)
-> work adds a universal binary-repair entry (`/binary` page, CLI, `/api/binary/*`),
-> deterministic dispositions, 32-bit x86 (ELF32/PE32) guard repair with Unicorn
-> x86-32 evidence, and explicit opt-in static-only delivery. It is not part of
-> the v1.2.1 release snapshot above; the v5 acceptance record is the local
-> macOS + Linux VM run documented in that file.
+> work adds a bounded binary-repair entry (`/binary` page, CLI, `/api/binary/*`),
+> deterministic dispositions, 32-bit x86 (ELF32/PE32) repair with Unicorn x86-32
+> evidence, explicit opt-in static-only delivery, and two AI direct-binary paths.
+> "100%" in the acceptance records means the approved plan G1–G5 / deterministic
+> matrix is complete; it does **not** mean arbitrary-vulnerability repair or a
+> measured AI increment.  See
+> [`docs/acceptance/verification-review-2026-11-13.md`](docs/acceptance/verification-review-2026-11-13.md),
+> [`docs/acceptance/LIMITATIONS.md`](docs/acceptance/LIMITATIONS.md), and the
+> v5 acceptance record for the local macOS + Linux VM runs.
 
 ## What it does
 

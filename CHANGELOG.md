@@ -16,6 +16,10 @@
   `test_binary_ai_ui.py`, `test_ai_evidence_script.py`; scripted evidence
   `artifacts/ai-direct-binary-2026-11-13/` and acceptance record
   `docs/acceptance/ai-binary-repair-2026-11-13.md`.
+- Verification follow-up: `scripts/verify_evidence.py` (reproducible fixture/
+  source/bundle SHA-256 checks), readelf root-cause/claim-scope review
+  (`docs/acceptance/verification-review-2026-11-13.md`), updated LIMITATIONS
+  for the current matrix, PoC-not-in-gate and "no AI increment measured yet".
 
 All notable changes to this project are documented here. This project follows a
 simple semantic-versioning policy for delivery snapshots.

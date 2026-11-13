@@ -23,6 +23,7 @@ from app.services.ai_binary_repair import (  # noqa: E402
     AI_PATH_PLAN,
     ai_repair,
 )
+from app.services.binary_pipeline import repair_any  # noqa: E402
 from app.services.containers import detect_container  # noqa: E402
 from app.services.repair.analyzer import analyze  # noqa: E402
 from app.services.repair.guards import abi_for, build_guard  # noqa: E402
@@ -96,7 +97,8 @@ def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _record(path: str, data: bytes, outcome, fixture: Path | None = None) -> dict:
+def _record(path: str, data: bytes, outcome, fixture: Path | None = None,
+            deterministic: dict | None = None) -> dict:
     report = outcome.report
     packet_sha = None
     if isinstance(report.ai.get("validation"), dict):
@@ -117,6 +119,7 @@ def _record(path: str, data: bytes, outcome, fixture: Path | None = None) -> dic
         "runtime": report.runtime,
         "limitations": report.limitations,
         "warnings": report.warnings,
+        "deterministic_baseline": deterministic,
         "report": report.to_dict(),
     }
 
@@ -134,11 +137,21 @@ def main() -> int:
             print(json.dumps({"skipped": str(fixture)}))
             continue
         data = fixture.read_bytes()
+        baseline = repair_any(data)
+        baseline_sha = (
+            hashlib.sha256(baseline.candidate).hexdigest()
+            if baseline.candidate is not None else None
+        )
+        deterministic = {
+            "disposition": baseline.report.disposition,
+            "verified": baseline.verified,
+            "candidate_sha256": baseline_sha,
+        }
         for path in paths:
             payload = _plan_payload(data) if path == AI_PATH_PLAN else _bytes_payload(data)
             client = ScriptedClient(payload)
             outcome = ai_repair(data, path=path, client=client)
-            record = _record(path, data, outcome, fixture)
+            record = _record(path, data, outcome, fixture, deterministic)
             record["fixture"] = name
             record["client_packet_keys"] = sorted(client.packet or {})
             target = out / f"{path}-{name}.json"
@@ -186,11 +199,22 @@ def main() -> int:
         "paths": list(paths),
         "no_assembly_or_decompile_roundtrip": True,
         "negative_control": summary_negative,
+        "measured_increment": (
+            "none on the current fixtures: the scripted model instantiates the "
+            "same deterministic actions, so candidates coincide with the v5 "
+            "baseline.  A gate-blind/PoC increment experiment remains future work."
+        ),
         "records": {
             key: {
                 "disposition": value["disposition"],
                 "verified": value["verified"],
                 "candidate_sha256": value["candidate_sha256"],
+                "deterministic_disposition": (value.get("deterministic_baseline") or {}).get("disposition"),
+                "deterministic_candidate_sha256": (value.get("deterministic_baseline") or {}).get("candidate_sha256"),
+                "same_candidate_as_deterministic": (
+                    value["candidate_sha256"] is not None
+                    and value["candidate_sha256"] == (value.get("deterministic_baseline") or {}).get("candidate_sha256")
+                ),
             }
             for key, value in records.items()
         },

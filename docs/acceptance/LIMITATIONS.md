@@ -9,25 +9,29 @@ V4 is a typed symbolic claim over the target function. It is not binary-level
 symbolic execution and not a whole-program proof. The result is `passed` at
 `scope=model`; the binary-level claim is not made.
 
-## 2. Coverage is one public fixture family
+## 2. Coverage is a bounded fixture/matrix, not arbitrary binaries
 
-The delivery covers the public CWE-416 no-input repair path and the historical
-CWE-121 MVP fixture. It is not evidence that arbitrary binaries, other
+The historical V4 delivery covered the public CWE-416 no-input path and the
+CWE-121 MVP fixture.  v5/v6 add a deterministic matrix over 11 synthetic
+fixtures (ELF/PE/Mach-O x86-64/arm64, ELF32/PE32 i386) and two AI direct-binary
+protocols, but this is still not evidence that arbitrary binaries, other
 architectures, other compilers, stripped production binaries, or client binaries
-work.
+work.  See section 9 for the exact matrix/sink boundary.
 
 ## 3. Test environment
 
-The canonical full-suite record is a Linux run with Chrome CDP:
+Current acceptance is the non-browser suite:
 
 ```text
-714 passed / 2 Linux-only skipped / 0 failed
-e2e 12 passed
+macOS 13.5 arm64: 1119 tests, 0 failed, 0 errors, 4 skipped (233.8 s)
+Linux VM Ubuntu 24.04 arm64: 1119 tests, 0 failed, 0 errors, 7 skipped (249.5 s)
+GitHub Actions Ubuntu 24.04: workflow success on the final commits
 ```
 
-Windows hosts are not the acceptance record. They skip Linux-only cases and
-have POSIX-fixture differences; a Windows exploratory run is not a substitute
-for the Linux record.
+The platform-gated skips are recorded in the acceptance files (Mach-O native
+cases on Linux; Linux execution cases on macOS).  E2E/browser tests remain a
+separate command and are not part of these counts.  Windows hosts are not the
+acceptance record.
 
 ## 4. M4 verifier and Lead approver are the same operator
 
@@ -92,6 +96,32 @@ explicit dispositions, but it is still not universal vulnerability repair:
   arbitrary-vulnerability discovery, no claim that a repaired binary is safe for
   production use. See
   [`docs/acceptance/binary-universal-v5-2026-11-13.md`](binary-universal-v5-2026-11-13.md).
+
+## 10. readelf dependency (Route B static audit)
+
+`tests/test_routeb_executor.py` requires either all five independent views
+(`readelf` + `objdump`) or none; a host with `objdump` but no GNU `readelf`
+produces one view and fails the view-count assertion.  The earlier macOS failure
+was fixed by installing Homebrew GNU readelf 2.47, **not** by replacing the
+backend or weakening the test.  Stock macOS without GNU readelf can reproduce
+it; Ubuntu CI installs binutils.  Historical failing JUnit is preserved in
+`artifacts/binary-universal-2026-11-13/junit.xml`.
+
+## 11. PoC failure is not yet a gate predicate
+
+The deterministic gate checks container reparse, runtime canary/return-slot,
+bounded-copy `buffer_match` and output semantics.  A separate PoC replay/PoC
+failure predicate (method suggestion §4.1) is **not** yet part of the gate;
+PoC-style differential tests exist only in test/evidence layers.  Do not cite
+the current gate as PoC-failure proof.
+
+## 12. AI increment is not measured
+
+The two AI direct-binary paths prove protocol/validator/writeback/gate
+integration with a scripted client.  The scripted model instantiates the same
+deterministic actions, so candidates coincide with the v5 baseline and no AI
+increment is measured.  Real-LLM quality, a gate-blind increment suite and
+PoC-based evaluation remain future work; AI never owns acceptance.
 
 ## AI direct-binary paths (v6)
 

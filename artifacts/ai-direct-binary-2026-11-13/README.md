@@ -16,4 +16,9 @@ positive records are `verified_patch`.  `negative-bytes-noop-guard.json` shows a
 structurally valid but semantically empty guard (`c3` = `ret`) rejected by the
 deterministic runtime gate (`verified=false`, `rejected`).
 
-Candidate binaries are not stored; reproduce with the command above.
+**No AI increment is measured on these fixtures.**  The scripted model
+instantiates the same deterministic actions, so each AI candidate SHA-256 equals
+the v5 deterministic baseline candidate (see
+`same_candidate_as_deterministic` in `summary.json`).  This bundle proves the
+protocol, validator, direct-byte writeback and gate integration; a gate-blind/
+PoC increment experiment remains future work.

@@ -58,8 +58,8 @@ measure LLM repair quality and makes no network call.
 
 | Environment | Result |
 |---|---|
-| macOS 13.5 arm64 / Python 3.11.8 | **1118 tests, 0 failed, 0 errors, 4 skipped** (217.2 s) |
-| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1118 tests, 0 failed, 0 errors, 7 skipped** (209.2 s) |
+| macOS 13.5 arm64 / Python 3.11.8 | **1119 tests, 0 failed, 0 errors, 4 skipped** (233.8 s) |
+| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1119 tests, 0 failed, 0 errors, 7 skipped** (249.5 s) |
 
 The 4/7 skips are the same platform-gated Mach-O/Linux-execution cases as v5.
 Targeted coverage includes:
@@ -89,7 +89,15 @@ Targeted coverage includes:
 - This acceptance record is a docs-only commit after that run; the workflow
   re-runs the same suite and its branch history records the final conclusion.
 
-## 5. Boundaries
+## 6. Boundaries
+
+**No AI increment is measured on the current fixtures.**  The scripted model
+instantiates the same deterministic actions, so each AI candidate equals the v5
+deterministic baseline candidate; `summary.json` records this explicitly.  This
+bundle proves protocol/validator/direct-byte-writeback/gate integration, not
+LLM repair quality or incremental capability.  A gate-blind/PoC increment
+experiment remains the next milestone.  See
+[`verification-review-2026-11-13.md`](verification-review-2026-11-13.md).
 
 - One sink per AI candidate; multi-function selection remains a limitation.
 - `ai_plan` cannot exceed the v5 action matrix.

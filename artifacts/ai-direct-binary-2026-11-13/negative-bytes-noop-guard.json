@@ -304,6 +304,7 @@
   },
   "limitations": [],
   "warnings": [],
+  "deterministic_baseline": null,
   "report": {
     "schema_version": 4,
     "format": "pe",

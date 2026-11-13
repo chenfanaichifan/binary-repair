@@ -1,8 +1,16 @@
 # BinaryRepair v5 — universal binary repair acceptance (2026-11-13)
 
-Status: **feature-branch acceptance** on `feature/universal-repair` (local
-commit history; not pushed, no CI run). The v1.2.1 release snapshot and the v7
-handoff package are unchanged.
+Status: **feature-branch acceptance**, pushed on `feature/universal-repair`
+and fast-forwarded to `workbench-v3`; Ubuntu verification CI is green on the
+final commit.  The v1.2.1 release snapshot, `main` and the v7 handoff package
+are unchanged.
+
+**Claim discipline:** "100%" below means the approved plan G1–G5 (dynamic
+ELF32, PE32 `FF15`, i386 memcpy-immediate, ELF32 extend-rx, fat Mach-O input)
+and the deterministic repair matrix are complete.  It does **not** mean
+arbitrary-binary/vulnerability repair, and it is **not** a proof of AI repair
+increment.  See [`verification-review-2026-11-13.md`](verification-review-2026-11-13.md)
+and [`LIMITATIONS.md`](LIMITATIONS.md).
 
 This record documents the v5 "universal binary repair entry" implemented on top
 of the v4 container-neutral pipeline. It is a bounded engineering claim: any
@@ -150,7 +158,7 @@ Raw records: `negative-*.json`, plus `tests/test_repair_any.py`,
   --junitxml=artifacts/binary-universal-v5-2026-11-13/macos-junit.xml
 ```
 
-**1118 tests, 0 failures, 0 errors, 4 skipped** (217.2 s; post-v6 suite including the two AI direct-binary paths; the v5-only tree had 1039). Skips are the
+**1119 tests, 0 failures, 0 errors, 4 skipped** (233.8 s; post-v6 suite including the two AI direct-binary paths and the evidence verifier; the v5-only tree had 1039). Skips are the
 platform-gated Linux-execution cases:
 
 - `tests/test_fixture_v3_manifest.py::test_original_is_v0_on_invalid_inputs_if_binary_present` (ELF execution requires Linux)
@@ -168,7 +176,7 @@ cd /tmp/br-v5/binary-repair-gui
   --junitxml=artifacts/binary-universal-v5-2026-11-13/linux-junit.xml
 ```
 
-**1118 tests, 0 failures, 0 errors, 7 skipped** (209.2 s; post-v6 suite including the two AI direct-binary paths). Skips are the
+**1119 tests, 0 failures, 0 errors, 7 skipped** (249.5 s; post-v6 suite including the two AI direct-binary paths and the evidence verifier). Skips are the
 platform-gated cases:
 
 - `tests/test_binary_pipeline_v4.py::test_positive_matrix_returns_verified_candidate[macho-arm64]` (Mach-O native runtime is macOS-only)
@@ -209,9 +217,27 @@ JUnit: `artifacts/binary-universal-v5-2026-11-13/linux-junit.xml`.
   local macOS/Linux VM counts above are the authoritative detailed counts, and
   the CI conclusion covers the same `pytest -q --ignore=tests/e2e` command on
   Ubuntu 24.04 x86-64.
-- The branch `feature/universal-repair` and the CI-trigger branch
-  `workbench-v3` are both pushed to `chenfanaichifan/binary-repair` at the
-  same commit; `main` and `handoff-v4-local` are untouched.
+- At the time of the v5 CI runs, `feature/universal-repair` and the
+  CI-trigger branch `workbench-v3` both pointed at `72db891`; `workbench-v3`
+  was later fast-forwarded to the AI-path feature commit.  `main` and
+  `handoff-v4-local` are untouched.
+
+### macOS readelf / Route B note
+
+The earlier macOS `test_static_routeb_bundle` one-view failure was caused by
+GNU `readelf` being absent; it was resolved by installing Homebrew GNU readelf
+2.47, **not** by replacing the backend or weakening the assertion.  The test's
+0-or-5-view logic has been unchanged since `5932df3`; a stock macOS without
+GNU readelf can still reproduce the failure.  Ubuntu CI installs binutils and
+takes the five-view path.  Historical failing JUnit remains in
+`artifacts/binary-universal-2026-11-13/junit.xml`.
+
+### Content hashes
+
+`python scripts/verify_evidence.py` recomputes fixture/source SHA-256 and every
+bundle `SHA256SUMS` entry.  On the final tree: 11 fixture rows + 110 source
+rows PASS; v5 bundle 38 files PASS; AI bundle 9 files PASS.  Git blob object ids
+are SHA-1 and are not compared with content SHA-256.
 
 ## 7. Reproduce
 
@@ -238,8 +264,8 @@ runtime JSON and `SHA256SUMS` over all files. Rebuild fixtures with
 - v5 repairs **one function per candidate**: additional vulnerable functions
   are reported as limitations and left unpatched, so that every shipped action
   is covered by the runtime case that executes that function.
-- No CI record and no new handoff package for this branch; v1.2.1/v7 records
-  remain the released artifacts.
+- No new release tag or v8 handoff package for this branch; v1.2.1/v7
+  records remain the released artifacts.  CI exists and is recorded above.
 
 ## 9. Changed surfaces
 

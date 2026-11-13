@@ -13,36 +13,55 @@
     "disposition": "rejected",
     "candidate_sha256": null
   },
+  "measured_increment": "none on the current fixtures: the scripted model instantiates the same deterministic actions, so candidates coincide with the v5 baseline.  A gate-blind/PoC increment experiment remains future work.",
   "records": {
     "ai_plan:pe-x86_64-guard": {
       "disposition": "verified_patch",
       "verified": true,
-      "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350"
+      "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
+      "same_candidate_as_deterministic": true
     },
     "ai_bytes:pe-x86_64-guard": {
       "disposition": "verified_patch",
       "verified": true,
-      "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350"
+      "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350",
+      "same_candidate_as_deterministic": true
     },
     "ai_plan:elf-arm64-guard": {
       "disposition": "verified_patch",
       "verified": true,
-      "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d"
+      "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
+      "same_candidate_as_deterministic": true
     },
     "ai_bytes:elf-arm64-guard": {
       "disposition": "verified_patch",
       "verified": true,
-      "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d"
+      "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d",
+      "same_candidate_as_deterministic": true
     },
     "ai_plan:elf-i386-memcpy": {
       "disposition": "verified_patch",
       "verified": true,
-      "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88"
+      "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
+      "same_candidate_as_deterministic": true
     },
     "ai_bytes:elf-i386-memcpy": {
       "disposition": "verified_patch",
       "verified": true,
-      "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88"
+      "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
+      "deterministic_disposition": "verified_patch",
+      "deterministic_candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
+      "same_candidate_as_deterministic": true
     }
   }
 }
