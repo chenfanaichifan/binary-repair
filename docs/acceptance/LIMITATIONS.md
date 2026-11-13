@@ -12,7 +12,7 @@ symbolic execution and not a whole-program proof. The result is `passed` at
 ## 2. Coverage is a bounded fixture/matrix, not arbitrary binaries
 
 The historical V4 delivery covered the public CWE-416 no-input path and the
-CWE-121 MVP fixture.  v5/v6 add a deterministic matrix over 11 synthetic
+CWE-121 MVP fixture.  v5/v6 add a deterministic matrix over 12 synthetic
 fixtures (ELF/PE/Mach-O x86-64/arm64, ELF32/PE32 i386) and two AI direct-binary
 protocols, but this is still not evidence that arbitrary binaries, other
 architectures, other compilers, stripped production binaries, or client binaries
@@ -23,8 +23,8 @@ work.  See section 9 for the exact matrix/sink boundary.
 Current acceptance is the non-browser suite:
 
 ```text
-macOS 13.5 arm64: 1133 tests, 0 failed, 0 errors, 4 skipped (335.4 s)
-Linux VM Ubuntu 24.04 arm64: 1133 tests, 0 failed, 0 errors, 7 skipped (345.0 s)
+macOS 13.5 arm64: 1141 tests, 0 failed, 0 errors, 6 skipped (389.3 s)
+Linux VM Ubuntu 24.04 arm64: 1141 tests, 0 failed, 0 errors, 9 skipped (466.7 s)
 GitHub Actions Ubuntu 24.04: workflow success on the final commits
 ```
 
@@ -107,13 +107,12 @@ backend or weakening the test.  Stock macOS without GNU readelf can reproduce
 it; Ubuntu CI installs binutils.  Historical failing JUnit is preserved in
 `artifacts/binary-universal-2026-11-13/junit.xml`.
 
-## 11. PoC failure is not yet a gate predicate
 
-The deterministic gate checks container reparse, runtime canary/return-slot,
-bounded-copy `buffer_match` and output semantics.  A separate PoC replay/PoC
-failure predicate (method suggestion §4.1) is **not** yet part of the gate;
-PoC-style differential tests exist only in test/evidence layers.  Do not cite
-the current gate as PoC-failure proof.
+When original runtime evidence exists, the unified gate requires
+`poc.original_fails` / `poc.candidate_passes` on the same capacity/input probe;
+this is a function-level runtime differential, not a full guest/kernel PoC
+replay.  Full native/guest PoC replay with per-fixture manifests and regression
+suites remains future work for every path.
 
 ## 12. AI increment is not measured
 
@@ -154,3 +153,16 @@ PoC-based evaluation remain future work; AI never owns acceptance.
   `artifacts/ai-real-provider-2026-11-13/`.  Real-LLM quality is not a CI
   guarantee, and no AI increment is demonstrated on cases the baseline already
   repairs.
+
+
+## 12. Native PoC manifest gate
+
+When a PoC manifest is supplied (`fixtures/poc/*.json`, API multipart field
+`poc_manifest`, CLI `--poc`), the candidate is executed against the original
+and candidate binaries in a temporary directory with a scrubbed environment and
+timeout.  The gate requires the original to fail the PoC, the candidate to pass,
+and regression outputs to match.  On macOS, ELF x86-64 PoC execution needs
+qemu-user; without it the result is `unavailable` and never verified.  PE and
+32-bit Mach-O PoC execution remain unavailable.  Native execution is only
+enabled for trusted fixtures/CI in this delivery; executing arbitrary uploaded
+binaries natively is not a security boundary.

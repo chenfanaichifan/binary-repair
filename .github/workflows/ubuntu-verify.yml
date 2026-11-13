@@ -21,6 +21,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Static syntax gate (no dependencies)
+        run: python scripts/check_static_syntax.py
+      - name: CI evidence claims (offline)
+        run: python scripts/verify_ci_evidence.py
+
       - name: Install system tools
         run: |
           sudo apt-get update

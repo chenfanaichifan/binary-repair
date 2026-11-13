@@ -396,6 +396,7 @@ def _validate_plan(parsed: Mapping[str, Any], sinks: list[Sink]) -> tuple[Sink, 
 def _apply_plan(
     data: bytes, container: Any, sink: Sink, strategy: str,
     *, verify: bool, allow_static_only: bool,
+    poc_manifest: dict[str, Any] | None = None,
 ) -> RepairOutcome:
     report = _base_report(data, container)
     report.findings = [_sink_to_finding(sink)]
@@ -414,12 +415,14 @@ def _apply_plan(
         [dict(action) for action in result.actions],
         report=report, requested_strategy="auto", strategy_check=False,
         verify=verify, allow_static_only=allow_static_only,
+        poc_manifest=poc_manifest,
     )
 
 
 def _apply_bytes(
     data: bytes, container: Any, sinks: list[Sink], parsed: Mapping[str, Any],
     *, verify: bool, allow_static_only: bool,
+    poc_manifest: dict[str, Any] | None = None,
 ) -> tuple[RepairOutcome, list[str], dict[str, Any]]:
     try:
         from app.services.ai_patch_validation import apply_ai_patch
@@ -485,6 +488,7 @@ def _apply_bytes(
         [dict(action) for action in validated.actions],
         report=report, requested_strategy="auto", strategy_check=False,
         verify=verify, allow_static_only=allow_static_only,
+        poc_manifest=poc_manifest,
     )
     return outcome, list(validated.limitations), validation
 
@@ -496,6 +500,7 @@ def ai_repair(
     client: Any | None,
     verify: bool = True,
     allow_static_only: bool = False,
+    poc_manifest: dict[str, Any] | None = None,
 ) -> AiRepairOutcome:
     """Run one AI binary-repair path; the deterministic gate still decides."""
     if path == ASM_PATH:
@@ -503,6 +508,7 @@ def ai_repair(
 
         return asm_repair(
             data, client=client, verify=verify, allow_static_only=allow_static_only,
+            poc_manifest=poc_manifest,
         )
     if path not in {DIRECT_PATH, AI_PATH_PLAN, AI_PATH_BYTES}:
         container = detect_container(data)
@@ -539,6 +545,7 @@ def ai_repair(
         outcome = _apply_plan(
             data, container, sink, strategy,
             verify=verify, allow_static_only=allow_static_only,
+            poc_manifest=poc_manifest,
         )
     else:
         packet = build_bytes_packet(data)
@@ -551,6 +558,7 @@ def ai_repair(
         outcome, limitations, validation = _apply_bytes(
             data, container, sinks, parsed,
             verify=verify, allow_static_only=allow_static_only,
+            poc_manifest=poc_manifest,
         )
         patch_applied = validation.get("error") is None and bool(outcome.report.actions)
         ai["status"] = "accepted" if patch_applied else "invalid"

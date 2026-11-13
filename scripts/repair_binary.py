@@ -42,6 +42,7 @@ def _repair_one(source: Path, output: Path | None, args) -> dict:
         ai_outcome = ai_repair(
             data, path=str(args.ai_path), client=client_from_env(),
             verify=args.verify, allow_static_only=args.allow_static_only,
+            poc_manifest=getattr(args, "poc_manifest", None),
         )
         report = ai_outcome.report
         payload = report.to_dict()
@@ -87,6 +88,7 @@ def _repair_one(source: Path, output: Path | None, args) -> dict:
         strategy=args.strategy,
         verify=args.verify,
         allow_static_only=args.allow_static_only,
+        poc_manifest=getattr(args, "poc_manifest", None),
     )
     report = outcome.report
     payload = report.to_dict()
@@ -147,6 +149,7 @@ def _batch(source_dir: Path, out_dir: Path, args) -> int:
         outcome = repair_any(
             data, backend=args.backend, strategy=args.strategy,
             verify=args.verify, allow_static_only=args.allow_static_only,
+            poc_manifest=getattr(args, "poc_manifest", None),
         )
         report = outcome.report
         suffix = SUFFIX.get(report.format, ".bin")
@@ -193,7 +196,9 @@ def main() -> int:
     ap.add_argument("--backend", choices=("auto", "elf", "pe", "macho"), default="auto")
     ap.add_argument("--strategy", default="auto")
     ap.add_argument("--ai-path", choices=AI_PATHS,
-                    help="run one AI direct-binary path (ai_plan or ai_bytes)")
+                    help="run one AI path (asm_roundtrip or binary_direct)")
+    ap.add_argument("--poc", type=Path,
+                    help="optional PoC/regression manifest JSON for the output")
     ap.add_argument("--verify", dest="verify", action="store_true", default=True)
     ap.add_argument("--no-verify", dest="verify", action="store_false")
     ap.add_argument("--allow-static-only", action="store_true",
@@ -202,6 +207,14 @@ def main() -> int:
     ap.add_argument("--out", type=Path, help="output directory for --batch")
     ap.add_argument("--json", action="store_true", help="one JSON record per file")
     args = ap.parse_args()
+    args.poc_manifest = None
+    if args.poc:
+        try:
+            args.poc_manifest = json.loads(args.poc.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"--poc is not a readable JSON manifest: {type(exc).__name__}: {exc}",
+                  file=sys.stderr)
+            return 2
 
     if args.batch is not None:
         if args.ai_path:

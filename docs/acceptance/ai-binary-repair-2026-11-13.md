@@ -48,8 +48,8 @@ gate-blind/PoC increment experiment remain future work.
 
 | Environment | Result |
 |---|---|
-| macOS 13.5 arm64 / Python 3.11.8 | **1133 tests, 0 failed, 0 errors, 4 skipped** (335.4 s) |
-| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1133 tests, 0 failed, 0 errors, 7 skipped** (345.0 s) |
+| macOS 13.5 arm64 / Python 3.11.8 | **1141 tests, 0 failed, 0 errors, 6 skipped** (389.3 s) |
+| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1141 tests, 0 failed, 0 errors, 9 skipped** (466.7 s) |
 
 Targeted coverage includes:
 
@@ -100,7 +100,18 @@ structurally valid but semantically deviant candidates:
 Summary: 4/5 caught, one residual blind spot recorded honestly in
 `artifacts/gate-blind-spots-2026-11-13/`.
 
-## 6. Real-provider experiment
+## 6. Native PoC/regression gate
+
+A real PoC manifest is supported for the ELF x86-64 guard fixture
+(`fixtures/poc/elf-x86_64-strcpy.json`): 64/256-byte inputs crash the original,
+the repaired candidate exits 0, and short inputs/15-byte boundary regressions
+match.  The API accepts an optional multipart `poc_manifest`; the CLI accepts
+`--poc`.  On Linux the runner executes natively; on macOS it needs qemu-user and
+otherwise reports `unavailable` (never verified).  This is the first end-to-end
+native PoC gate, not a universal PoC capability; PE/32-bit Mach-O and arbitrary
+untrusted native execution remain unavailable.
+
+## 7. Real-provider experiment
 
 `scripts/run_ai_provider_experiment.py` was run once with the operator's
 configured provider (no key/raw prompt/response stored):
@@ -118,7 +129,7 @@ fall-through block (validator rejected).  All benchmark fixtures are also
 repairable deterministically, so this set cannot show coverage increment; a
 gate-blind/PoC benchmark on deterministic failures is still required.
 
-## 7. Boundaries
+## 8. Boundaries
 
 - Assembly path: ELF i386/x86_64/arm64 only; requires host `clang`; no
   PE/Mach-O assembly path.
@@ -127,4 +138,5 @@ gate-blind/PoC benchmark on deterministic failures is still required.
 - One sink/target function per AI candidate.
 - AI output is untrusted: structural validation only; semantics are decided by
   the deterministic runtime gate, not the model.
-- No real-LLM quality/increment claim; PoC-failure is not yet a gate predicate.
+- No real-LLM quality/increment claim; the function-level PoC differential is a
+  gate predicate, but full guest/native PoC replay is not implemented for every path.

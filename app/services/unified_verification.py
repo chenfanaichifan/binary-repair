@@ -54,6 +54,7 @@ def build(
     original_sha256: str,
     patched_sha256: str,
     poc: dict[str, Any] | None = None,
+    external_poc: dict[str, Any] | None = None,
 ) -> UnifiedVerification:
     checks: list[dict[str, Any]] = []
     supported = (format_name, arch) in supported_pairs()
@@ -117,6 +118,53 @@ def build(
         runtime_tier = runtime.tier
         runtime_verdict = runtime.verdict
 
+    if external_poc is not None:
+        external_status = str(external_poc.get("status") or "not_run")
+        poc_cases = [
+            case for case in (external_poc.get("poc") or [])
+            if isinstance(case, dict)
+        ]
+        regression = [
+            case for case in (external_poc.get("regression") or [])
+            if isinstance(case, dict)
+        ]
+        original_cases = [c for c in poc_cases if c.get("executable") == "original"]
+        candidate_cases = [c for c in poc_cases if c.get("executable") == "candidate"]
+        available = external_status in {"pass", "fail"}
+        checks.append(_check(
+            "poc.native.available",
+            "PoC manifest was executed by a native/qemu runner",
+            CHECK_PASSED if available else CHECK_NOT_RUN,
+            f"status={external_status} runner={external_poc.get('runner') or 'none'}",
+        ))
+        original_fails = bool(original_cases) and all(
+            bool(case.get("expected_ok")) for case in original_cases
+        )
+        checks.append(_check(
+            "poc.native.original_failure",
+            "The original binary fails the supplied PoC",
+            CHECK_PASSED if original_fails else CHECK_FAILED,
+            f"cases={len(original_cases)}",
+        ))
+        candidate_passes = bool(candidate_cases) and all(
+            bool(case.get("expected_ok")) for case in candidate_cases
+        )
+        checks.append(_check(
+            "poc.native.candidate_pass",
+            "The candidate passes the supplied PoC",
+            CHECK_PASSED if candidate_passes else CHECK_FAILED,
+            f"cases={len(candidate_cases)}",
+        ))
+        regression_ok = bool(regression) and all(
+            bool(case.get("expected_ok")) for case in regression
+        )
+        checks.append(_check(
+            "poc.native.regression",
+            "Original and candidate agree on regression inputs",
+            CHECK_PASSED if regression_ok else CHECK_FAILED,
+            f"cases={len(regression)}",
+        ))
+
     if poc is not None:
         original_verdict = str(poc.get("original_verdict") or "not_run")
         candidate_verdict = str(poc.get("candidate_verdict") or "not_run")
@@ -158,6 +206,8 @@ def build(
     }
     if poc is not None:
         packet["poc"] = poc
+    if external_poc is not None:
+        packet["poc_native"] = external_poc
     if success:
         outcome = "success_within_scope"
     elif failed:

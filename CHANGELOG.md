@@ -35,12 +35,31 @@
 - Verification follow-up: `scripts/verify_evidence.py` (reproducible fixture/
   source/bundle SHA-256 checks), readelf root-cause/claim-scope review
   (`docs/acceptance/verification-review-2026-11-13.md`), updated LIMITATIONS
-  for the current matrix, PoC-not-in-gate and "no AI increment measured yet".
+  for the current matrix and "no AI increment measured yet"; the follow-up
+  PoC differential gate is recorded in the v6 entry below.
 
 All notable changes to this project are documented here. This project follows a
 simple semantic-versioning policy for delivery snapshots.
 
 ## [Unreleased]
+
+### Added — native PoC/regression gate and static robustness
+
+- `app/services/poc_runner.py`: manifest-bound native/qemu PoC execution with
+  scrubbed environment, timeout, original-failure/candidate-pass/regression
+  gate checks; unavailable on hosts without a runner (never verified).
+- First real native PoC fixture manifest
+  `fixtures/poc/elf-x86-64-strcpy.json`: original crashes on 64/256-byte
+  inputs; repaired candidate exits 0; short/boundary regressions match.
+- API multipart `poc_manifest`, CLI `--poc`, and report `poc` evidence.
+- `scripts/check_static_syntax.py` plus `tests/test_static_syntax.py`: AST
+  (BOM-aware), JSON, JS, HTML and shell syntax gate in CI.
+- `scripts/verify_ci_evidence.py` + `docs/status/claims.json`: offline CI claim
+  consistency and optional GitHub API verification.
+- `tests/test_input_robustness.py`: bounded arbitrary/mutated-input contract;
+  malformed legacy ELF parse failures now return a typed `invalid` report
+  instead of raising.
+
 
 ### Added — v5 universal repair entry (2026-11-13)
 

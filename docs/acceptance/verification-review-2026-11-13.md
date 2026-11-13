@@ -102,7 +102,7 @@ The verifier recomputes `fixtures/PROVENANCE.json` path/size/SHA-256 and every
 | `ai_plan` only selects deterministic actions | `ai_binary_repair.py`, AI tests |
 | `ai_bytes` is structurally validated only; gate owns semantics | `ai_patch_validation.py`, no-op guard gate test |
 | Mach-O AI injection not in scripted positive matrix | AI acceptance §5 |
-| PoC-failure is not yet a gate predicate | this review, `LIMITATIONS.md`; runtime gate is canary/output/buffer-match, not a separate PoC replay |
+| PoC differential is a gate predicate; full PoC replay is not | this review, `LIMITATIONS.md`; `poc.original_fails`/`poc.candidate_passes` are required, but native/guest PoC manifests are future work |
 
 Stale statements in older LIMITATIONS sections (v4-era "714 tests" and "one
 fixture family") were updated to the current v5/v6 state; historical V4 claims
@@ -157,8 +157,8 @@ remains future work.  Do not claim "AI repaired arbitrary binaries" or
 
 ## 8. Final local verification
 
-- macOS 13.5 arm64: **1133 tests, 0 failed, 0 errors, 4 skipped** (335.4 s).
-- Linux VM Ubuntu 24.04 arm64: **1133 tests, 0 failed, 0 errors, 7 skipped** (345.0 s).
+- macOS 13.5 arm64: **1141 tests, 0 failed, 0 errors, 6 skipped** (389.3 s).
+- Linux VM Ubuntu 24.04 arm64: **1141 tests, 0 failed, 0 errors, 9 skipped** (466.7 s).
 - `scripts/verify_evidence.py`: 11 fixture rows + 110 source rows PASS;
   v5 bundle 38 files PASS; AI bundle 9 files PASS.
 - CI: [43435227438](https://github.com/chenfanaichifan/binary-repair/actions/runs/43435227438)

@@ -90,6 +90,7 @@ class UnifiedBinaryReport:
     slices: list[dict[str, Any]] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     ai: dict[str, Any] = field(default_factory=dict)
+    poc: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -460,6 +461,7 @@ def _generic_repair(
     strategy: str,
     verify: bool,
     allow_static_only: bool,
+    poc_manifest: dict[str, Any] | None = None,
 ) -> RepairOutcome:
     analysis = analyze(data)
     all_sinks = analysis.patchable()
@@ -501,6 +503,7 @@ def _generic_repair(
         data, container, result.patched, sinks, [dict(a) for a in result.actions],
         report=report, requested_strategy=strategy,
         verify=verify, allow_static_only=allow_static_only,
+        poc_manifest=poc_manifest,
     )
 
 
@@ -516,6 +519,7 @@ def finish_candidate(
     strategy_check: bool = True,
     verify: bool,
     allow_static_only: bool,
+    poc_manifest: dict[str, Any] | None = None,
 ) -> RepairOutcome:
     """Apply the shared reparse/runtime/gate tail to any produced candidate.
 
@@ -620,6 +624,25 @@ def finish_candidate(
                 "PoC differential predicate was not added: original runtime "
                 "evidence is unavailable for this sink"
             )
+    external_poc = None
+    if poc_manifest is not None:
+        try:
+            from app.services.poc_runner import run_poc
+
+            external_poc = run_poc(data, patched, poc_manifest).to_dict()
+            report.poc = external_poc
+            if external_poc.get("status") == "unavailable":
+                report.limitations.append(
+                    "PoC manifest was supplied but no runtime runner is available "
+                    "on this host; the gate will not claim verification"
+                )
+        except Exception as exc:  # noqa: BLE001
+            external_poc = {
+                "schema_version": 1, "status": "fail", "runner": "",
+                "limitations": [f"PoC runner error: {type(exc).__name__}: {exc}"],
+            }
+            report.poc = external_poc
+            report.limitations.append(external_poc["limitations"][0])
     verification = build_unified(
         format_name=container.format,
         arch=container.arch,
@@ -631,6 +654,7 @@ def finish_candidate(
         original_sha256=report.original_sha256,
         patched_sha256=report.patched_sha256,
         poc=poc,
+        external_poc=external_poc,
     )
     report.verification = {
         "packet": verification.packet,
@@ -697,6 +721,7 @@ def repair_any(
     strategy: str = "auto",
     verify: bool = True,
     allow_static_only: bool = False,
+    poc_manifest: dict[str, Any] | None = None,
 ) -> RepairOutcome:
     """Repair any input; return a deterministic disposition and optional bytes.
 
@@ -764,10 +789,18 @@ def repair_any(
             return _generic_repair(
                 data, container, strategy=strategy, verify=verify,
                 allow_static_only=allow_static_only,
+                poc_manifest=poc_manifest,
             )
         from app.services.binary_repair_engine import repair_elf
 
-        patched, raw = repair_elf(data)
+        try:
+            patched, raw = repair_elf(data)
+        except Exception as exc:  # noqa: BLE001 - malformed input is evidence, not a crash
+            report.status = "unsupported"
+            report.error = f"ELF parse failure: {type(exc).__name__}: {exc}"
+            report.limitations = [report.error]
+            _set_disposition(report, "invalid")
+            return RepairOutcome(None, report)
         report = _from_elf_legacy(container, data, patched, raw, verify=verify)
         if strategy != "auto" and (
             report.strategy != strategy or not plans_strategy(cell, strategy)

@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "vuln_copy",
+  "poc": [
+    {
+      "id": "overflow-64",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false,
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "overflow-256",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false,
+        "exit_code": 0
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "short-hi",
+      "argv": [
+        "hi"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      }
+    },
+    {
+      "id": "boundary-15",
+      "argv": [
+        "AAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "exit_code": 0
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "AAAAAAAAAAAAAAA\n"
+      }
+    }
+  ]
+}

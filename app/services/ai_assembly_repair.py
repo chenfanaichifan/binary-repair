@@ -305,6 +305,7 @@ def asm_repair(
     client: Any | None,
     verify: bool = True,
     allow_static_only: bool = False,
+    poc_manifest: dict[str, Any] | None = None,
 ) -> AiRepairOutcome:
     """Run path 1 (assembly round-trip); the deterministic gate decides."""
     ai = _ai_base(ASM_PATH)
@@ -392,6 +393,7 @@ def asm_repair(
         data, container, patched, [sink], actions,
         report=report, requested_strategy="auto", strategy_check=False,
         verify=verify, allow_static_only=allow_static_only,
+        poc_manifest=poc_manifest,
     )
     outcome.report.ai = ai
     ai["disposition"] = outcome.report.disposition

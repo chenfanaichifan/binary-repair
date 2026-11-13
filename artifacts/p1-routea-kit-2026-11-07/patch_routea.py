@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Route A candidate for CWE416 no-input: move read before free.
 
 Original bad():

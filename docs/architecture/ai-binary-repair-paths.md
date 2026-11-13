@@ -96,6 +96,17 @@ macOS-only capability).
 | Evidence | `scripts/capture_ai_binary_repair.py` → `artifacts/ai-direct-binary-2026-11-13/` |
 | Provider | existing `client_from_env` client; tests/scripted evidence inject a fake client and do no network I/O |
 
+## Native PoC/regression gate
+
+A caller may attach a PoC manifest.  `app/services/poc_runner.py` executes the
+original and candidate with the manifest's argv/stdin in a temporary directory,
+scrubbed environment and timeout.  The gate requires original PoC failure,
+candidate PoC pass, and regression output equality.  A manifest whose
+`fixture_sha256` does not match the input is rejected.  PE and 32-bit Mach-O
+replay are unavailable; ELF x86-64 runs natively on Linux and via qemu-user when
+available (macOS).  Native execution is not a sandbox for untrusted uploads in
+this delivery.
+
 ## Boundaries
 
 - Assembly path is ELF i386/x86_64/arm64 only; no PE/Mach-O assembly round-trip.
@@ -104,7 +115,8 @@ macOS-only capability).
   future work.
 - Scripted evidence proves protocol/assembler/validator/writeback/gate
   integration, not real-LLM repair quality; **no AI increment is measured on
-  the current fixtures**.  PoC-failure is not yet a gate predicate.
+  the current fixtures**.  A function-level PoC differential is a gate predicate,
+  but full guest/native PoC replay is not yet implemented for every path.
 - Mach-O direct-path positive evidence is native and macOS-only; on Linux those
   tests skip by platform design.
 

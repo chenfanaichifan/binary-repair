@@ -1253,6 +1253,24 @@ async def binary_scan(
     return JSONResponse({"ok": True, "scan": payload}, headers={"Cache-Control": "no-store"})
 
 
+async def _read_poc_manifest(upload: UploadFile | None) -> tuple[dict | None, str | None]:
+    """Read an optional PoC manifest JSON; fail closed on size/shape errors."""
+    if upload is None:
+        return None, None
+    raw = await upload.read()
+    if len(raw) > 64 * 1024:
+        return None, "PoC manifest exceeds the 64 KiB limit."
+    try:
+        import json as _json
+
+        parsed = _json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, _json.JSONDecodeError) as exc:
+        return None, f"PoC manifest is not valid UTF-8 JSON: {type(exc).__name__}"
+    if not isinstance(parsed, dict):
+        return None, "PoC manifest must be a JSON object."
+    return parsed, None
+
+
 @app.post("/api/binary/repair")
 async def binary_repair(
     binary: UploadFile = File(...),
@@ -1260,6 +1278,7 @@ async def binary_repair(
     allow_static_only: str = Form("0"),
     backend: str = Form("auto"),
     strategy: str = Form("auto"),
+    poc_manifest: UploadFile | None = File(None),
 ) -> JSONResponse:
     """Repair any input; verified or (opt-in) static-only candidate or 422."""
     _require_csrf(csrf)
@@ -1269,12 +1288,16 @@ async def binary_repair(
     import base64
 
     static_ok = str(allow_static_only or "").strip().lower() in {"1", "true", "yes", "on"}
+    parsed_poc, poc_error = await _read_poc_manifest(poc_manifest)
+    if poc_error:
+        raise HTTPException(status_code=422, detail=poc_error)
     outcome = repair_any_pipeline(
         raw,
         backend=backend or "auto",
         strategy=strategy or "auto",
         verify=True,
         allow_static_only=static_ok,
+        poc_manifest=parsed_poc,
     )
     report = outcome.report
     payload = report.to_dict()
@@ -1313,6 +1336,7 @@ async def binary_ai_repair(
     csrf: str = Form(...),
     path: str = Form(...),
     allow_static_only: str = Form("0"),
+    poc_manifest: UploadFile | None = File(None),
 ) -> JSONResponse:
     """Run one AI direct-binary repair path; the deterministic gate decides."""
     _require_csrf(csrf)
@@ -1328,10 +1352,14 @@ async def binary_ai_repair(
     import base64
 
     static_ok = str(allow_static_only or "").strip().lower() in {"1", "true", "yes", "on"}
+    parsed_poc, poc_error = await _read_poc_manifest(poc_manifest)
+    if poc_error:
+        raise HTTPException(status_code=422, detail=poc_error)
     client = client_from_env()
     outcome = ai_binary_repair(
         raw, path=requested, client=client,
         verify=True, allow_static_only=static_ok,
+        poc_manifest=parsed_poc,
     )
     report = outcome.report
     ai = dict(outcome.ai)

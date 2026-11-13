@@ -71,7 +71,9 @@ this project as proof.
      and no decompiled-C round-trip.
   Both end in the deterministic runtime/gate, which is the only acceptance
   authority.  When the original runtime is available, the gate also requires a
-  PoC-style differential (original fails / candidate passes).  See
+  PoC-style differential (original fails / candidate passes) and, if a PoC
+  manifest is supplied (`--poc`, API `poc_manifest`), a real native/qemu
+  PoC + regression execution.  See
   [docs/architecture/ai-binary-repair-paths.md](docs/architecture/ai-binary-repair-paths.md).
   Experiments: `artifacts/ai-real-provider-2026-11-13/` (3/6 AI verified vs 6/6
   baseline, 0 coverage increments) and `artifacts/gate-blind-spots-2026-11-13/`.
