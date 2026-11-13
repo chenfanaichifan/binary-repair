@@ -8,8 +8,10 @@
     "fixtures/src/vuln_copy_macho_aarch64.S",
     "fixtures/src/vuln_copy_macho_x86_64.S",
     "fixtures/src/vuln_copy_win32_x86.S",
+    "fixtures/src/vuln_copy_win32_x86_iat.S",
     "fixtures/src/vuln_copy_win_aarch64.S",
-    "fixtures/src/vuln_copy_win_x86_64.S"
+    "fixtures/src/vuln_copy_win_x86_64.S",
+    "fixtures/src/vuln_memcpy_elf32_x86.S"
   ],
   "fixtures": [
     {
@@ -35,8 +37,10 @@
         "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
         "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
         "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
         "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
-        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
       }
     },
     {
@@ -64,8 +68,10 @@
         "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
         "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
         "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
         "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
-        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
       }
     },
     {
@@ -93,8 +99,10 @@
         "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
         "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
         "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
         "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
-        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
       }
     },
     {
@@ -122,8 +130,10 @@
         "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
         "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
         "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
         "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
-        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
       }
     },
     {
@@ -151,8 +161,41 @@
         "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
         "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
         "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
         "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
-        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
+      }
+    },
+    {
+      "name": "pe-x86-iat",
+      "path": "fixtures/pe/vuln-strcpy-x86-iat.exe",
+      "sha256": "59351c0bc2a3b681bd61f130d796bd8690b96b5bba7fae1d1ee58a8baff3471a",
+      "size": 847872,
+      "command": [
+        ".tmp/zigpkg/site/ziglang/zig",
+        "cc",
+        "-target",
+        "x86-windows-gnu",
+        "-O0",
+        "-g0",
+        "-o",
+        "TMP",
+        "fixtures/src/main.c",
+        "fixtures/src/vuln_copy_win32_x86_iat.S"
+      ],
+      "tool": "0.17.1",
+      "source_sha256": {
+        "control_i386.c": "644c2c71177e2c08d44fc19d35404e8eb3544f604a0070cbe107eccd9910825a",
+        "main.c": "c28a5bd6ca51c5f74a888b2f3128bbc99e2627d60923dcb1e94ca9503f65cfae",
+        "vuln_copy_elf32_x86.S": "f41004026b62bc08e0d8170db89473163584d559089bfb7e216f1cc8f8bc2a03",
+        "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
+        "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
+        "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
+        "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
       }
     },
     {
@@ -180,8 +223,10 @@
         "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
         "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
         "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
         "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
-        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
       }
     },
     {
@@ -211,8 +256,76 @@
         "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
         "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
         "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
         "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
-        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
+      }
+    },
+    {
+      "name": "elf-x86-dyn",
+      "path": "fixtures/elf/vuln-strcpy-x86-dyn.elf",
+      "sha256": "de051d8a470bbda653c1d17af1efa1b46d53a3b271f2d04b4f5b4202e4b080c8",
+      "size": 3405212,
+      "command": [
+        ".tmp/zigpkg/site/ziglang/zig",
+        "cc",
+        "-target",
+        "x86-linux-gnu",
+        "-O0",
+        "-g0",
+        "-fno-pie",
+        "-no-pie",
+        "-o",
+        "TMP",
+        "fixtures/src/main.c",
+        "fixtures/src/vuln_copy_elf32_x86.S"
+      ],
+      "tool": "0.17.1",
+      "source_sha256": {
+        "control_i386.c": "644c2c71177e2c08d44fc19d35404e8eb3544f604a0070cbe107eccd9910825a",
+        "main.c": "c28a5bd6ca51c5f74a888b2f3128bbc99e2627d60923dcb1e94ca9503f65cfae",
+        "vuln_copy_elf32_x86.S": "f41004026b62bc08e0d8170db89473163584d559089bfb7e216f1cc8f8bc2a03",
+        "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
+        "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
+        "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
+        "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
+      }
+    },
+    {
+      "name": "elf-x86-memcpy",
+      "path": "fixtures/elf/vuln-memcpy-x86.elf",
+      "sha256": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
+      "size": 3930224,
+      "command": [
+        ".tmp/zigpkg/site/ziglang/zig",
+        "cc",
+        "-target",
+        "x86-linux-musl",
+        "-O0",
+        "-g0",
+        "-fno-pie",
+        "-no-pie",
+        "-o",
+        "TMP",
+        "fixtures/src/main.c",
+        "fixtures/src/vuln_memcpy_elf32_x86.S"
+      ],
+      "tool": "0.17.1",
+      "source_sha256": {
+        "control_i386.c": "644c2c71177e2c08d44fc19d35404e8eb3544f604a0070cbe107eccd9910825a",
+        "main.c": "c28a5bd6ca51c5f74a888b2f3128bbc99e2627d60923dcb1e94ca9503f65cfae",
+        "vuln_copy_elf32_x86.S": "f41004026b62bc08e0d8170db89473163584d559089bfb7e216f1cc8f8bc2a03",
+        "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
+        "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
+        "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
+        "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
       }
     },
     {
@@ -239,8 +352,10 @@
         "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
         "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
         "vuln_copy_win32_x86.S": "daa59a2cb5855734f7352b28c1e1effe4edb03645ecdc07c8440230a5143c4e4",
+        "vuln_copy_win32_x86_iat.S": "6cffc4ae1617e78427ed373cb0e472e97a914a820aacc686bf6e1d7193472fc2",
         "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
-        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b",
+        "vuln_memcpy_elf32_x86.S": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
       }
     }
   ]

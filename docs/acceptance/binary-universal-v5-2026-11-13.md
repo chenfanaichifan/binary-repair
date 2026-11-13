@@ -56,16 +56,21 @@ bytes).
 ## 2. Fixtures and provenance
 
 New v5 fixtures are built by `scripts/build_binary_fixtures.py` (Zig 0.17.1) and
-covered by `fixtures/PROVENANCE.json` (`--check` reports 8 fixtures OK).
+covered by `fixtures/PROVENANCE.json` (`--check` reports 11 fixtures OK).
 
 | fixture | format/arch | sha256 | size |
 |---|---|---|---|
-| `fixtures/elf/vuln-strcpy-x86.elf` | ELF32 i386 | `a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d` | 3,955,228 |
-| `fixtures/pe/vuln-strcpy-x86.exe` | PE32 i386 | `5c801c4563dabf1bfd7619fe9d0537594e0708f17a7014e1641b84e6cece4634` | 847,872 |
+| `fixtures/elf/vuln-strcpy-x86.elf` | ELF32 i386 (static musl) | `a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d` | 3,955,228 |
+| `fixtures/pe/vuln-strcpy-x86.exe` | PE32 i386 (E8→thunk) | `5c801c4563dabf1bfd7619fe9d0537594e0708f17a7014e1641b84e6cece4634` | 847,872 |
+| `fixtures/elf/vuln-strcpy-x86-dyn.elf` | dynamic ELF32 i386 (PLT) | `de051d8a470bbda6...` (see PROVENANCE) | 3,405,212 |
+| `fixtures/pe/vuln-strcpy-x86-iat.exe` | PE32 i386 (direct `FF15` IAT call) | `59351c0bc2a3b681...` (see PROVENANCE) | 847,872 |
+| `fixtures/elf/vuln-memcpy-x86.elf` | ELF32 i386 (memcpy immediate 64) | `0bbe1c86f88d0646...` (see PROVENANCE) | 3,930,224 |
 
-Both declare a 16-byte stack buffer at the top of the callee frame
-(`capacity = frame_top - destination = 0x10`). Existing ELF x86-64, PE
-x86-64/arm64 and Mach-O x86-64/arm64 fixtures are unchanged.
+All five i386 fixtures declare the same 16-byte stack geometry
+(`capacity = frame_top - destination = 0x10`) and cover the distinct resolver
+and repair paths: static musl direct symbol, dynamic glibc PLT, PE import
+thunk (`E8`), PE direct IAT (`FF15`) and immediate-length memcpy. Existing ELF
+x86-64, PE x86-64/arm64 and Mach-O x86-64/arm64 fixtures are unchanged.
 
 ## 3. Runtime evidence (i386)
 
@@ -76,6 +81,9 @@ Captured by `scripts/capture_binary_evidence.py`; raw JSON in
 |---|---|---|---|---|---|
 | ELF32 i386 | `elf-i386-fixed.elf` | guard at `0x33e9a` (cap 16) | ELF32 PT_LOAD `0xda000` | success_within_scope | emulated_run / unicorn-i386 |
 | PE32 i386 | `pe-i386-fixed.exe` | guard at `0x4010be` (cap 16) | PE32 `.brfix` `0x4d4000` | success_within_scope | emulated_run / unicorn-i386 |
+| dynamic ELF32 i386 | `elf-i386-dyn-fixed.elf` | guard at `0x2f5c2` (cap 16) | ELF32 PT_LOAD `0xc7000` | success_within_scope | emulated_run / unicorn-i386 |
+| PE32 i386 direct IAT | `pe-i386-iat-fixed.exe` | guard at `0x4010be` (cap 16) | PE32 `.brfix` `0x4d4000` | success_within_scope | emulated_run / unicorn-i386 |
+| ELF32 i386 memcpy | `elf-i386-memcpy-fixed.elf` | immediate 64→16 at `0x33bdf` | in-place imm32 | success_within_scope | emulated_run / unicorn-i386 |
 
 Unicorn cases (patched vs original; `canary_intact`):
 
@@ -88,9 +96,15 @@ Unicorn cases (patched vs original; `canary_intact`):
 | 17 | intact, output 15 | **broken** |
 | 64 | intact, output 15 | **broken** |
 
-Baseline JSON: `baseline-elf-i386.json`, `baseline-pe-i386.json`. This is
-instruction-level emulation of the repaired function, not a native Linux/Windows
-kernel run; it is labelled `emulated_run` everywhere.
+Baseline JSON: `baseline-elf-i386.json`, `baseline-pe-i386.json`,
+`baseline-elf-i386-dyn.json`, `baseline-pe-i386-iat.json`,
+`baseline-elf-i386-memcpy.json`. The dynamic/PLT and direct-IAT originals break
+the canary at 16/17/64 input bytes; the memcpy original uses a fixed 64-byte
+copy and breaks the canary for every input length, while the patched candidate
+(immediate 16) is clean. This is instruction-level emulation of the repaired
+function, not a native Linux/Windows kernel run; it is labelled
+`emulated_run` everywhere. Length-aware modelling reads the copy-length argument
+per ABI for memcpy/memmove; `strcpy`/`strcat` keep C-string semantics.
 
 ## 4. Negative controls and fail-closed behavior
 
@@ -104,9 +118,12 @@ kernel run; it is labelled `emulated_run` everywhere.
 | malformed `MZ` header | `invalid` | no | unsupported |
 | runtime unavailable, no opt-in | `not_verified` | no | verification inconclusive |
 | runtime unavailable, `allow_static_only=1` | `static_only_patch` | yes, `verified=false` | warning on every surface |
+| synthetic fat Mach-O (arm64 + x86_64 slices) | `unsupported` | no | slices reported, `container_rewrite=false` |
+| synthetic big-endian ELF32 | `unsupported` | no | `matrix.cell=null` |
 
 Raw records: `negative-*.json`, plus `tests/test_repair_any.py`,
-`tests/test_binary_pipeline_v4.py`, `tests/test_container_robustness.py`.
+`tests/test_binary_pipeline_v4.py`, `tests/test_container_robustness.py` and
+`tests/test_binary_pipeline_v5_advanced.py`.
 
 ## 5. Surfaces verified
 
@@ -133,7 +150,7 @@ Raw records: `negative-*.json`, plus `tests/test_repair_any.py`,
   --junitxml=artifacts/binary-universal-v5-2026-11-13/macos-junit.xml
 ```
 
-**1014 tests, 0 failures, 0 errors, 4 skipped** (149.2 s, final run on the committed tree; an earlier run gave the same counts). Skips are the
+**1039 tests, 0 failures, 0 errors, 4 skipped** (162.8 s). Skips are the
 platform-gated Linux-execution cases:
 
 - `tests/test_fixture_v3_manifest.py::test_original_is_v0_on_invalid_inputs_if_binary_present` (ELF execution requires Linux)
@@ -151,7 +168,7 @@ cd /tmp/br-v5/binary-repair-gui
   --junitxml=artifacts/binary-universal-v5-2026-11-13/linux-junit.xml
 ```
 
-**1014 tests, 0 failures, 0 errors, 7 skipped** (181.4 s). Skips are the
+**1039 tests, 0 failures, 0 errors, 7 skipped** (178.4 s). Skips are the
 platform-gated cases:
 
 - `tests/test_binary_pipeline_v4.py::test_positive_matrix_returns_verified_candidate[macho-arm64]` (Mach-O native runtime is macOS-only)
@@ -176,6 +193,10 @@ Environment notes for reproducing the Linux number:
 
 JUnit: `artifacts/binary-universal-v5-2026-11-13/linux-junit.xml`.
 
+### GitHub Actions (Ubuntu verification)
+
+`__CI_RESULT__`
+
 ## 7. Reproduce
 
 ```bash
@@ -198,6 +219,9 @@ runtime JSON and `SHA256SUMS` over all files. Rebuild fixtures with
   native Windows/Linux run. Mach-O native evidence exists only on macOS.
 - The Linux VM is arm64; it runs the Unicorn-backed cases and the full test
   suite, not a native x86-64 execution.
+- v5 repairs **one function per candidate**: additional vulnerable functions
+  are reported as limitations and left unpatched, so that every shipped action
+  is covered by the runtime case that executes that function.
 - No CI record and no new handoff package for this branch; v1.2.1/v7 records
   remain the released artifacts.
 

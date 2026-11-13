@@ -1,0 +1,76 @@
+{
+  "fixture": "elf-i386-memcpy",
+  "tier": "emulated_run",
+  "engine": "unicorn-i386",
+  "verdict": "fail",
+  "copy_kind": "memcpy_length",
+  "callee": "memcpy",
+  "capacity": 16,
+  "cases": [
+    {
+      "input_len": 0,
+      "exit_code": 1,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": null,
+      "error": "UcError: Invalid memory fetch (UC_ERR_FETCH_UNMAPPED) at 0x33bde -> 0x33bdf -> 0x33be9 -> 0x33be4 -> 0x33be7 -> 0x33be8"
+    },
+    {
+      "input_len": 1,
+      "exit_code": 1,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": null,
+      "error": "UcError: Invalid memory fetch (UC_ERR_FETCH_UNMAPPED) at 0x33bde -> 0x33bdf -> 0x33be9 -> 0x33be4 -> 0x33be7 -> 0x33be8"
+    },
+    {
+      "input_len": 15,
+      "exit_code": 1,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": null,
+      "error": "UcError: Invalid memory fetch (UC_ERR_FETCH_UNMAPPED) at 0x33bde -> 0x33bdf -> 0x33be9 -> 0x33be4 -> 0x33be7 -> 0x33be8"
+    },
+    {
+      "input_len": 16,
+      "exit_code": 1,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": null,
+      "error": "UcError: Invalid memory fetch (UC_ERR_FETCH_UNMAPPED) at 0x33bde -> 0x33bdf -> 0x33be9 -> 0x33be4 -> 0x33be7 -> 0x33be8"
+    },
+    {
+      "input_len": 17,
+      "exit_code": 1,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": null,
+      "error": "UcError: Invalid memory fetch (UC_ERR_FETCH_UNMAPPED) at 0x33bde -> 0x33bdf -> 0x33be9 -> 0x33be4 -> 0x33be7 -> 0x33be8"
+    },
+    {
+      "input_len": 64,
+      "exit_code": 1,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": null,
+      "error": "UcError: Invalid memory fetch (UC_ERR_FETCH_UNMAPPED) at 0x33bde -> 0x33bdf -> 0x33be9 -> 0x33be4 -> 0x33be7 -> 0x33be8"
+    }
+  ],
+  "limitations": [
+    "Length-aware copy model: memcpy/memmove copies the ABI length argument exactly; output_len is not reported because the result is not a NUL-terminated string (the gate uses canary/return-slot checks).",
+    "Emulated execution with modeled imports; not a native Windows/Linux run.",
+    "Only the repaired function is executed; unrelated code paths are not covered."
+  ]
+}

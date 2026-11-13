@@ -70,9 +70,15 @@ explicit dispositions, but it is still not universal vulnerability repair:
   and loop defects, and obfuscated/inlined copies are **analysis-only**;
 - 32-bit x86 analysis models **push-materialised cdecl arguments**; argument
   setup such as `mov [esp+K], reg` is not analysed in v1 (fail-closed, keeps the
-  i386 negative control honest);
+  i386 negative control honest); static-libc alias names not ending in a plain
+  copy alias (for example `compiler_rt.memcpy.memcpyFast`) are also fail-closed;
+- a candidate repairs **one function per run**; other vulnerable functions found
+  in the image are reported as limitations and not patched, so every shipped
+  action stays covered by the runtime case for that function;
 - 32-bit Mach-O, fat Mach-O rewriting, arm32, riscv, mips, powerpc and
-  big-endian containers are detected and analysed but never rewritten;
+  big-endian containers are detected and analysed but never rewritten; fat
+  Mach-O slices are reported individually (`slices[]`) but no fat binary is
+  rebuilt;
 - capacity is frame geometry (`frame_top - destination`) or an explicit
   `_chk`/immediate size, not DWARF object size; buffers that do not sit at the
   frame top can be over-estimated;

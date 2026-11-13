@@ -1,9 +1,10 @@
 {
   "fixture": "elf-i386",
-  "original_sha256": "a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d",
   "tier": "emulated_run",
   "engine": "unicorn-i386",
   "verdict": "fail",
+  "copy_kind": "unbounded_copy",
+  "callee": "strcpy",
   "capacity": 16,
   "cases": [
     {
@@ -68,6 +69,7 @@
     }
   ],
   "limitations": [
+    "Length-aware copy model: memcpy/memmove copies the ABI length argument exactly; output_len is not reported because the result is not a NUL-terminated string (the gate uses canary/return-slot checks).",
     "Emulated execution with modeled imports; not a native Windows/Linux run.",
     "Only the repaired function is executed; unrelated code paths are not covered."
   ]

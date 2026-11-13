@@ -182,11 +182,12 @@
           }
         ],
         "limitations": [
+          "Length-aware copy model: memcpy/memmove copies the ABI length argument exactly; output_len is not reported because the result is not a NUL-terminated string (the gate uses canary/return-slot checks).",
           "Emulated execution with modeled imports; not a native Windows/Linux run.",
           "Only the repaired function is executed; unrelated code paths are not covered."
         ]
       },
-      "report_sha256": "06575401b62abc40076d956b20260fd4dba4cead8c221118c4696fc22ef73191"
+      "report_sha256": "22679f639aecef836daab3386ea0418b3c76f71826bc205b27278b7a17582af0"
     },
     "gate": {
       "success": true,
@@ -194,7 +195,7 @@
       "reason": "",
       "required_checks": 8,
       "required_not_run": 0,
-      "evidence_sha256": "06575401b62abc40076d956b20260fd4dba4cead8c221118c4696fc22ef73191"
+      "evidence_sha256": "22679f639aecef836daab3386ea0418b3c76f71826bc205b27278b7a17582af0"
     },
     "tier": "emulated_run",
     "engine": "unicorn-i386",
@@ -267,6 +268,7 @@
       }
     ],
     "limitations": [
+      "Length-aware copy model: memcpy/memmove copies the ABI length argument exactly; output_len is not reported because the result is not a NUL-terminated string (the gate uses canary/return-slot checks).",
       "Emulated execution with modeled imports; not a native Windows/Linux run.",
       "Only the repaired function is executed; unrelated code paths are not covered."
     ]

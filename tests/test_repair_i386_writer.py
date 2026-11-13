@@ -16,6 +16,7 @@ from unicorn.x86_const import (
     UC_X86_REG_ESP,
 )
 
+from app.services.code_cave import add_rx_segment
 from app.services.containers import detect_container
 from app.services.repair.analyzer import Sink, analyze
 from app.services.repair.guards import abi_for, build_guard
@@ -23,7 +24,10 @@ from app.services.repair.writer import _patch_immediate, repair_with_sinks
 
 ROOT = Path(__file__).resolve().parents[1]
 ELF = ROOT / "fixtures" / "elf" / "vuln-strcpy-x86.elf"
+ELF_DYN = ROOT / "fixtures" / "elf" / "vuln-strcpy-x86-dyn.elf"
+ELF_MEMCPY = ROOT / "fixtures" / "elf" / "vuln-memcpy-x86.elf"
 PE = ROOT / "fixtures" / "pe" / "vuln-strcpy-x86.exe"
+PE_IAT = ROOT / "fixtures" / "pe" / "vuln-strcpy-x86-iat.exe"
 
 CODE = 0x1000
 STACK = 0x7000
@@ -305,3 +309,132 @@ def test_i386_guard_skipped_for_unsupported_copy_op():
     result = repair_with_sinks(data, container, [bad])
     assert result.patched is None
     assert any("guard skipped" in item for item in result.limitations)
+
+
+def test_i386_elf32_dynamic_guard_injection_redirects_and_reparses():
+    """Dynamic ELF32: the guard cave is appended and E8 -> .plt is redirected."""
+    data, container, sink = _sink_for(ELF_DYN)
+    assert sink.call_size == 5
+    result = repair_with_sinks(data, container, [sink])
+    assert result.ok, result.limitations
+    assert result.injected_va is not None
+    assert result.actions and result.actions[0]["kind"] == "guard"
+    assert result.actions[0]["method"] == "new-pt-load"
+    patched = result.patched
+    assert patched is not None and patched != data
+
+    check = detect_container(patched)
+    assert (check.format, check.arch, check.bits) == ("elf", "i386", 32)
+    assert check.limitations == []
+
+    off = sink.call_offset
+    assert patched[off] == 0xE8
+    delta = struct.unpack_from("<i", patched, off + 1)[0]
+    assert sink.call_va + 5 + delta == result.injected_va
+
+    elf = ELFFile(io.BytesIO(patched))
+    loads = [seg for seg in elf.iter_segments() if seg["p_type"] == "PT_LOAD"]
+    cave = [seg for seg in loads if int(seg["p_vaddr"]) == result.injected_va]
+    assert cave
+    seg = cave[0]
+    assert int(seg["p_flags"]) & 0x5 == 0x5
+    raw = patched[int(seg["p_offset"]):int(seg["p_offset"]) + int(seg["p_filesz"])]
+    guard = build_guard(abi_for("elf", "i386"), sink.callee, int(sink.capacity))
+    assert raw[:len(guard)] == guard
+
+
+def test_i386_pe32_direct_iat_ff15_redirects_with_nop_and_reparses():
+    """PE32 FF 15 abs32 call site becomes E8 rel32 + one NOP (end-to-end)."""
+    import lief
+
+    data, container, sink = _sink_for(PE_IAT)
+    assert sink.call_size == 6
+    assert data[sink.call_offset:sink.call_offset + 2] == b"\xFF\x15"
+    result = repair_with_sinks(data, container, [sink])
+    assert result.ok, result.limitations
+    assert result.injected_va is not None
+    assert result.actions and result.actions[0]["kind"] == "guard"
+    assert result.actions[0]["method"] == "pe-section"
+    patched = result.patched
+    assert patched is not None
+
+    off = sink.call_offset
+    assert patched[off] == 0xE8
+    assert patched[off + 5] == 0x90  # original 6-byte FF15 -> E8 + NOP
+    delta = struct.unpack_from("<i", patched, off + 1)[0]
+    assert sink.call_va + 5 + delta == result.injected_va
+
+    check = detect_container(patched)
+    assert (check.format, check.arch, check.bits) == ("pe", "i386", 32)
+    assert check.limitations == []
+    pe = lief.PE.parse(list(patched))
+    section = pe.get_section(".brfix")
+    assert section is not None
+    guard = build_guard(abi_for("pe", "i386"), sink.callee, int(sink.capacity))
+    assert bytes(section.content)[:len(guard)] == guard
+
+
+def test_i386_memcpy_immediate_patch_end_to_end():
+    """The writer clamps memcpy's push imm32 from 64 to the 16-byte capacity."""
+    data, container, sink = _sink_for(ELF_MEMCPY)
+    assert sink.kind == "memcpy_length"
+    assert sink.length == 64
+    assert sink.capacity == 16
+    assert sink.length_offset is not None
+    result = repair_with_sinks(data, container, [sink])
+    assert result.ok, result.limitations
+    assert result.actions and result.actions[0]["kind"] == "immediate"
+    assert result.actions[0]["before"] == 64
+    assert result.actions[0]["after"] == 16
+    patched = result.patched
+    assert patched is not None
+    assert patched[sink.length_offset:sink.length_offset + 4] == struct.pack("<I", 16)
+    check = detect_container(patched)
+    assert (check.format, check.arch, check.bits) == ("elf", "i386", 32)
+    assert check.limitations == []
+
+
+def _synthetic_elf32_full_phdr_page() -> bytes:
+    """ELF32 whose phdr table fills the first page, forcing extend-rx."""
+    entry = 0x08048000
+    phoff = 0x40
+    phnum = 127  # (127 + 1) * 32 + 0x40 = 0x1040 > 0x1000
+    body = bytearray(0x2000)
+    eh = bytearray(52)
+    eh[:4] = b"\x7fELF"
+    eh[4] = 1  # ELFCLASS32
+    eh[5] = 1  # little endian
+    eh[6] = 1  # current version
+    struct.pack_into("<HHIIIIIHHHHHH", eh, 16, 2, 3, 1, entry, phoff, 0, 0,
+                     52, 32, phnum, 40, 0, 0)
+    ph = struct.pack("<IIIIIIII", 1, 0, entry, entry, 0x2000, 0x2000, 5, 0x1000)
+    body[:52] = eh
+    body[phoff:phoff + 32] = ph
+    body[0x1100] = 0xC3  # ret
+    return bytes(body)
+
+
+def test_elf32_extend_rx_fallback_when_phdr_table_is_full():
+    """ELF32 with no room for one more phdr extends the last R-X PT_LOAD."""
+    original = _synthetic_elf32_full_phdr_page()
+    cave = add_rx_segment(original, b"\xC3")
+    assert cave.method == "extend-rx"
+    assert cave.report["class"] == 32
+    assert cave.report["extended_index"] == 0
+    assert cave.report["segment"]["p_flags"] == "R-X"
+    assert cave.cave_vaddr == 0x08048000 + 0x2000
+    assert cave.cave_offset == 0x2000
+
+    assert detect_container(original).format == "elf"
+    reparsed = detect_container(cave.data)
+    assert (reparsed.format, reparsed.arch, reparsed.bits) == ("elf", "i386", 32)
+    assert reparsed.limitations == []
+    elf = ELFFile(io.BytesIO(cave.data))
+    loads = [seg for seg in elf.iter_segments() if seg["p_type"] == "PT_LOAD"]
+    assert len(loads) == 1
+    seg = loads[0]
+    assert int(seg["p_flags"]) & 0x1  # executable
+    assert int(seg["p_filesz"]) == 0x2001
+    assert int(seg["p_memsz"]) == 0x2001
+    assert cave.data.endswith(b"\xC3")
+    assert cave.data[cave.cave_offset:] == b"\xC3"

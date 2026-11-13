@@ -1,0 +1,340 @@
+{
+  "schema_version": 4,
+  "format": "elf",
+  "arch": "i386",
+  "backend": "elf",
+  "strategy": "immediate",
+  "status": "patched",
+  "supported": true,
+  "original_sha256": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
+  "patched_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
+  "mode": "immediate",
+  "capacity": 16,
+  "findings": [
+    {
+      "kind": "memcpy_length",
+      "address": "0x33bdf",
+      "callee": "memcpy",
+      "capacity": 16,
+      "dest_offset": -20,
+      "before": 64,
+      "after": 16,
+      "patchable": true,
+      "confidence": "medium",
+      "strategy": "immediate",
+      "detail": "immediate copy length exceeds stack capacity (i386 cdecl)"
+    }
+  ],
+  "offsets": [
+    142294
+  ],
+  "actions": [
+    {
+      "kind": "immediate",
+      "site": "0x33bdf",
+      "offset": 142294,
+      "before": 64,
+      "after": 16,
+      "callee": "memcpy"
+    }
+  ],
+  "limitations": [],
+  "verification": {
+    "packet": {
+      "schema_version": 2,
+      "scope": {
+        "format": "elf",
+        "arch": "i386",
+        "runtime_tier": "emulated_run",
+        "runtime_verdict": "pass",
+        "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof."
+      },
+      "checks": [
+        {
+          "id": "format",
+          "title": "Container and architecture are in the repair matrix",
+          "status": "passed",
+          "required": true,
+          "detail": "elf/i386"
+        },
+        {
+          "id": "candidate.present",
+          "title": "A repaired candidate was produced",
+          "status": "passed",
+          "required": true,
+          "detail": "candidate_bytes=3930224"
+        },
+        {
+          "id": "candidate.identity.original",
+          "title": "The report hash matches the input bytes",
+          "status": "passed",
+          "required": true,
+          "detail": "hash matches input"
+        },
+        {
+          "id": "candidate.identity.patched",
+          "title": "The candidate hash matches the produced bytes and differs from the input",
+          "status": "passed",
+          "required": true,
+          "detail": "candidate hash matches produced bytes"
+        },
+        {
+          "id": "container.reparse",
+          "title": "The patched candidate re-parses as the same container",
+          "status": "passed",
+          "required": true,
+          "detail": "reparse ok"
+        },
+        {
+          "id": "repair.action",
+          "title": "At least one repair action was applied",
+          "status": "passed",
+          "required": true,
+          "detail": "actions=1"
+        },
+        {
+          "id": "runtime.tier",
+          "title": "Runtime evidence is native or emulated (not static-only)",
+          "status": "passed",
+          "required": true,
+          "detail": "tier=emulated_run engine=unicorn-i386"
+        },
+        {
+          "id": "runtime.contract",
+          "title": "All runtime cases stay inside the capacity",
+          "status": "passed",
+          "required": true,
+          "detail": "verdict=pass cases=6"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "immediate",
+          "site": "0x33bdf",
+          "offset": 142294,
+          "before": 64,
+          "after": 16,
+          "callee": "memcpy"
+        }
+      ],
+      "runtime": {
+        "tier": "emulated_run",
+        "engine": "unicorn-i386",
+        "verdict": "pass",
+        "cases": [
+          {
+            "input_len": 0,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "error": null
+          },
+          {
+            "input_len": 1,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "error": null
+          },
+          {
+            "input_len": 15,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "error": null
+          },
+          {
+            "input_len": 16,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "error": null
+          },
+          {
+            "input_len": 17,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "error": null
+          },
+          {
+            "input_len": 64,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "error": null
+          }
+        ],
+        "limitations": [
+          "Length-aware copy model: memcpy/memmove copies the ABI length argument exactly; output_len is not reported because the result is not a NUL-terminated string (the gate uses canary/return-slot checks).",
+          "Emulated execution with modeled imports; not a native Windows/Linux run.",
+          "Only the repaired function is executed; unrelated code paths are not covered."
+        ]
+      },
+      "report_sha256": "34d82bee06c359ce7fd29d1a9ae049f549886bf32dee977cbb326f5e9dc42d7b"
+    },
+    "gate": {
+      "success": true,
+      "outcome": "success_within_scope",
+      "reason": "",
+      "required_checks": 8,
+      "required_not_run": 0,
+      "evidence_sha256": "34d82bee06c359ce7fd29d1a9ae049f549886bf32dee977cbb326f5e9dc42d7b"
+    },
+    "tier": "emulated_run",
+    "engine": "unicorn-i386",
+    "static_reparse": true
+  },
+  "runtime": {
+    "tier": "emulated_run",
+    "engine": "unicorn-i386",
+    "verdict": "pass",
+    "cases": [
+      {
+        "input_len": 0,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": null,
+        "error": null
+      },
+      {
+        "input_len": 1,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": null,
+        "error": null
+      },
+      {
+        "input_len": 15,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": null,
+        "error": null
+      },
+      {
+        "input_len": 16,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": null,
+        "error": null
+      },
+      {
+        "input_len": 17,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": null,
+        "error": null
+      },
+      {
+        "input_len": 64,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": null,
+        "error": null
+      }
+    ],
+    "limitations": [
+      "Length-aware copy model: memcpy/memmove copies the ABI length argument exactly; output_len is not reported because the result is not a NUL-terminated string (the gate uses canary/return-slot checks).",
+      "Emulated execution with modeled imports; not a native Windows/Linux run.",
+      "Only the repaired function is executed; unrelated code paths are not covered."
+    ]
+  },
+  "container": {
+    "format": "elf",
+    "arch": "i386",
+    "bits": 32,
+    "endian": "little",
+    "image_base": 65536,
+    "slices": 1,
+    "imports": 0,
+    "sections": 21
+  },
+  "universal": {
+    "detected": true,
+    "repairable": true,
+    "reason": ""
+  },
+  "signature_invalidated": false,
+  "codesign_invalidated": false,
+  "candidate_available": true,
+  "error": null,
+  "disposition": "verified_patch",
+  "matrix": {
+    "cell": "elf/i386/32/little",
+    "repairable": true,
+    "strategies": [
+      "immediate",
+      "guard"
+    ],
+    "runtime_tiers": [
+      "emulated_run"
+    ],
+    "sink_classes": [
+      "checked_copy",
+      "immediate_length",
+      "memcpy_length",
+      "syscall_length",
+      "unbounded_copy"
+    ]
+  },
+  "delivery": {
+    "download_allowed": true,
+    "verified": true,
+    "tier": "emulated_run"
+  },
+  "coverage": {
+    "schema_version": 1,
+    "sink_classes": [
+      "checked_copy",
+      "immediate_length",
+      "memcpy_length",
+      "syscall_length",
+      "unbounded_copy"
+    ],
+    "non_goals": [
+      "heap, global and non-imported inline copy sinks",
+      "sprintf/format-string expansion, UAF, integer and loop defects",
+      "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+      "32-bit Mach-O and fat Mach-O rewriting",
+      "Windows / macOS native execution beyond the existing Mach-O path"
+    ]
+  },
+  "slices": [],
+  "warnings": []
+}

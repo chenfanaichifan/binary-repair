@@ -271,10 +271,12 @@ def _elf_imports(elf: ELFFile, info: ContainerInfo) -> None:
         plt_names.append(".plt.sec")
     for plt_name in plt_names:
         plt = elf.get_section_by_name(plt_name)
-        if plt is None or not plt.data_size():
+        if plt is None:
+            continue
+        raw = plt.data()
+        if not raw:
             continue
         base = int(plt["sh_addr"])
-        raw = plt.data()
         step = 16
         for index in range(0, len(raw) // step):
             va = base + index * step

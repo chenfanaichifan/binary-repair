@@ -1,9 +1,10 @@
 {
   "fixture": "pe-i386",
-  "original_sha256": "5c801c4563dabf1bfd7619fe9d0537594e0708f17a7014e1641b84e6cece4634",
   "tier": "emulated_run",
   "engine": "unicorn-i386",
   "verdict": "fail",
+  "copy_kind": "unbounded_copy",
+  "callee": "strcpy",
   "capacity": 16,
   "cases": [
     {

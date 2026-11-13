@@ -24,8 +24,14 @@ simple semantic-versioning policy for delivery snapshots.
   download/report), sidebar entry, curated English i18n strings.
 - CLI `scripts/repair_binary.py`: dispositions/verified/delivery in single and
   batch output, `--allow-static-only` semantics made explicit.
-- New fixtures `elf-x86`, `pe-x86` and provenance; v5 acceptance record
+- New fixtures `elf-x86`, `pe-x86`, dynamic `elf-x86-dyn`, direct-IAT
+  `pe-x86-iat`, `elf-x86-memcpy` and provenance; v5 acceptance record
   `docs/acceptance/binary-universal-v5-2026-11-13.md`.
+- v5.1 follow-up: length-aware Unicorn modelling for memcpy/memmove immediate
+  repairs (i386 verified path), dynamic ELF32 PLT and PE32 `FF15` direct-IAT
+  coverage, ELF32 `extend-rx` fallback test, fat Mach-O slice reporting, and a
+  one-function-per-candidate policy so every shipped action is covered by the
+  runtime case that executes that function.
 - Removed the historical ELF x86-64 verification fail-open path: a failed gate
   now clears `candidate_available` and returns no candidate.
 

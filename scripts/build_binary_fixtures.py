@@ -137,6 +137,18 @@ def _targets(zig: dict[str, object]) -> list[dict[str, object]]:
             "expect": ("pe", "i386"),
         },
         {
+            "name": "pe-x86-iat",
+            "path": OUT / "pe" / "vuln-strcpy-x86-iat.exe",
+            "cmd": [
+                *zig["base"], "-target", "x86-windows-gnu", "-O0", "-g0",
+                "-o", "TMP", str(SRC / "main.c"),
+                str(SRC / "vuln_copy_win32_x86_iat.S"),
+            ],
+            "env": zig["env"],
+            "tool": zig["version"],
+            "expect": ("pe", "i386"),
+        },
+        {
             "name": "elf-arm64",
             "path": OUT / "elf" / "vuln-strcpy-arm64.elf",
             "cmd": [
@@ -155,6 +167,30 @@ def _targets(zig: dict[str, object]) -> list[dict[str, object]]:
                 *zig["base"], "-target", "x86-linux-musl", "-O0", "-g0",
                 "-fno-pie", "-no-pie", "-o", "TMP", str(SRC / "main.c"),
                 str(SRC / "vuln_copy_elf32_x86.S"),
+            ],
+            "env": zig["env"],
+            "tool": zig["version"],
+            "expect": ("elf", "i386"),
+        },
+        {
+            "name": "elf-x86-dyn",
+            "path": OUT / "elf" / "vuln-strcpy-x86-dyn.elf",
+            "cmd": [
+                *zig["base"], "-target", "x86-linux-gnu", "-O0", "-g0",
+                "-fno-pie", "-no-pie", "-o", "TMP", str(SRC / "main.c"),
+                str(SRC / "vuln_copy_elf32_x86.S"),
+            ],
+            "env": zig["env"],
+            "tool": zig["version"],
+            "expect": ("elf", "i386"),
+        },
+        {
+            "name": "elf-x86-memcpy",
+            "path": OUT / "elf" / "vuln-memcpy-x86.elf",
+            "cmd": [
+                *zig["base"], "-target", "x86-linux-musl", "-O0", "-g0",
+                "-fno-pie", "-no-pie", "-o", "TMP", str(SRC / "main.c"),
+                str(SRC / "vuln_memcpy_elf32_x86.S"),
             ],
             "env": zig["env"],
             "tool": zig["version"],

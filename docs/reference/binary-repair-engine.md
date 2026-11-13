@@ -344,3 +344,22 @@ Report `schema_version` is 4. New additive fields: `disposition`, `matrix`
 
 See [`docs/acceptance/binary-universal-v5-2026-11-13.md`](../acceptance/binary-universal-v5-2026-11-13.md)
 for the v5 acceptance matrix and evidence.
+
+### v5.1 advanced i386 coverage
+
+- dynamic ELF32: `PT_INTERP` + `.plt` images resolve imports through the
+  i386 `FF25 abs32` PLT stub decoder (glibc `x86-linux-gnu` fixture);
+- PE32 direct IAT: `call dword ptr [__imp_x]` (`FF 15 abs32`) is resolved and
+  rewritten to `E8 rel32` + one NOP (6-byte call site; fixture
+  `vuln-strcpy-x86-iat.exe`);
+- immediate-length i386: `memcpy(dst, src, 64)` with a `push imm32` length is
+  clamped in place to the recovered stack capacity; the Unicorn runtime is
+  length-aware for memcpy/memmove (reads the length argument per ABI) so the
+  patched candidate can pass the deterministic gate as `verified_patch`;
+- fat Mach-O is detected, each slice is reported with per-slice architecture
+  support (`slices[].supported`) but the container is `analysis_only`
+  (`container_rewrite=false`); fat rewriting remains outside v5;
+- a candidate repairs **one function**: the guard sink (or earliest call site)
+  chooses the function, and only sinks in that function are patched. Other
+  function sinks are reported as a limitation, keeping every shipped action
+  inside the runtime-verified function.

@@ -164,6 +164,20 @@ def _coverage_dict() -> dict[str, Any]:
     }
 
 
+class _SliceContainer:
+    """Duck-typed container used only for per-slice matrix lookups."""
+
+    def __init__(self, arch: str, bits: int) -> None:
+        self.format = "macho"
+        self.arch = arch
+        self.bits = bits
+        self.endian = "little"
+
+
+def _slice_container(arch: str, bits: int) -> _SliceContainer:
+    return _SliceContainer(arch, bits)
+
+
 def _macho_slices(data: bytes) -> list[dict[str, Any]]:
     """Best-effort per-slice metadata for a fat Mach-O; never raises."""
     try:
@@ -186,12 +200,19 @@ def _macho_slices(data: bytes) -> list[dict[str, Any]]:
                 "i386" if "X86" in cpu or "I386" in cpu else
                 "arm" if "ARM" in cpu else "unknown"
             )
+            bits = 64 if "64" in cpu else 32
+            slice_supported = repair_cell(
+                _slice_container(arch, bits)
+            ) is not None
             rows.append({
                 "index": index,
                 "cpu": cpu,
                 "arch": arch,
-                "bits": 64 if "64" in cpu else 32,
-                "supported": False,
+                "bits": bits,
+                # Per-slice architecture support, not a fat-rewrite claim:
+                # fat Mach-O rewriting remains outside the repair matrix.
+                "supported": slice_supported,
+                "container_rewrite": False,
             })
         return rows
     except Exception:  # noqa: BLE001
@@ -369,7 +390,15 @@ def _from_elf_legacy(
 
 
 def _select_runtime(data: bytes, container: ContainerInfo, sink: Sink):
+    """Select native/emulated evidence for the sink that was repaired.
+
+    Both guard sinks (strcpy/strcat) and length-aware immediate sinks
+    (memcpy/memmove, syscall/checked copies) are passed to the runtime; the
+    runtime's copy hook is length-aware when ``copy_kind``/``callee`` say so.
+    """
     capacity = int(sink.capacity or 0)
+    kind = sink.kind
+    callee = sink.callee
     if container.format == "macho":
         if not macho_native.available():
             return None
@@ -382,6 +411,7 @@ def _select_runtime(data: bytes, container: ContainerInfo, sink: Sink):
             dest_rel=int(sink.dest_rel or 0),
             capacity=capacity,
             abi=abi,
+            copy_kind=kind, callee=callee,
         )
     if container.format == "elf" and container.arch in {"arm64", "i386"}:
         abi = "cdecl_x86" if container.arch == "i386" else "aapcs64"
@@ -391,8 +421,28 @@ def _select_runtime(data: bytes, container: ContainerInfo, sink: Sink):
             dest_rel=int(sink.dest_rel or 0),
             capacity=capacity,
             abi=abi,
+            copy_kind=kind, callee=callee,
         )
     return None
+
+
+def _primary_repair_function(sinks: list[Sink]) -> int | None:
+    """Pick one deterministic function for the repaired candidate.
+
+    v5 runtime evidence executes exactly one repaired function.  Patching
+    unrelated functions discovered by a whole-image scan (for example a
+    statically linked C runtime's own memcpy wrapper) would ship patches that
+    the native/emulated cases never execute.  Prefer an unbounded-copy guard
+    sink, then the earliest call site, and keep every action inside that one
+    function.  Additional vulnerable functions are left for a later pass and
+    are reported as a limitation.
+    """
+    if not sinks:
+        return None
+    preferred = [sink for sink in sinks if sink.kind == "unbounded_copy"]
+    pool = preferred or sinks
+    chosen = min(pool, key=lambda sink: (int(sink.function_va or 0), int(sink.call_va or 0)))
+    return int(chosen.function_va or 0)
 
 
 def _generic_repair(
@@ -404,14 +454,27 @@ def _generic_repair(
     allow_static_only: bool,
 ) -> RepairOutcome:
     analysis = analyze(data)
-    sinks = analysis.patchable()
+    all_sinks = analysis.patchable()
     report = _base_report(data, container)
-    if not sinks:
+    if not all_sinks:
         report.limitations = list(analysis.limitations)
         report.error = report.limitations[-1] if report.limitations else "unsupported"
         report.universal["reason"] = report.error
         _set_disposition(report, "analysis_only")
         return RepairOutcome(None, report)
+
+    function_va = _primary_repair_function(all_sinks)
+    sinks = [
+        sink for sink in all_sinks
+        if int(sink.function_va or 0) == function_va
+    ] or all_sinks[:1]
+    skipped = len(all_sinks) - len(sinks)
+    if skipped:
+        report.limitations.append(
+            f"{skipped} patchable sink(s) in other functions were not patched; "
+            "v5 repairs one function per candidate and the runtime gate executes "
+            "that function only"
+        )
 
     report.findings = [_sink_to_finding(sink) for sink in sinks]
     result = repair_with_sinks(data, container, sinks)
@@ -485,9 +548,10 @@ def _generic_repair(
 
     from app.services.unified_verification import build as build_unified
 
+    runtime_sink = guard_sink if guard_sink is not None else (sinks[0] if sinks else None)
     runtime = None
-    if guard_sink is not None:
-        runtime = _select_runtime(patched, patched_container, guard_sink)
+    if runtime_sink is not None:
+        runtime = _select_runtime(patched, patched_container, runtime_sink)
     if runtime is not None:
         report.runtime = runtime.to_dict()
     verification = build_unified(

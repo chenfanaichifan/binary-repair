@@ -1,0 +1,13 @@
+{
+  "fixture": "elf-x86_64-strict",
+  "tier": "unavailable",
+  "engine": "unicorn-x86_64",
+  "verdict": "unavailable",
+  "copy_kind": "syscall_length",
+  "callee": "syscall read/write",
+  "capacity": 16,
+  "cases": [],
+  "limitations": [
+    "could not resolve the copy/puts imports"
+  ]
+}

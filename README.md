@@ -56,9 +56,10 @@ this project as proof.
   `cancelled`.
 - The GUI/API only render verdicts; they never decide them.
 - Direct binary repair spans **ELF, PE and Mach-O** (x86-64 and arm64) and,
-  since v5, **32-bit x86 (ELF32/PE32)**: container/import detection,
-  stack-capacity analysis, immediate clamping and bounded-copy guard injection,
-  with native Mach-O or Unicorn runtime evidence.
+  since v5, **32-bit x86 (ELF32/PE32)**: static/dynamic ELF32 (PLT), PE32
+  import-thunk and direct-IAT (`FF15`) calls, stack-capacity analysis, immediate
+  clamping (including memcpy lengths) and bounded-copy guard injection, with
+  native Mach-O or Unicorn runtime evidence.
   See [`docs/acceptance/binary-universal-v4-2026-11-13.md`](docs/acceptance/binary-universal-v4-2026-11-13.md),
   [`docs/acceptance/binary-universal-v5-2026-11-13.md`](docs/acceptance/binary-universal-v5-2026-11-13.md)
   and [`docs/reference/binary-repair-engine.md`](docs/reference/binary-repair-engine.md).

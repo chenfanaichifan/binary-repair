@@ -1,0 +1,74 @@
+{
+  "schema_version": 4,
+  "format": "elf",
+  "arch": "i386",
+  "bits": 32,
+  "endian": "little",
+  "backend": "elf",
+  "supported": true,
+  "repair_supported": true,
+  "findings": [
+    {
+      "kind": "unbounded_copy",
+      "address": "0x2f5c2",
+      "callee": "strcpy",
+      "capacity": 16,
+      "dest_offset": -20,
+      "before": null,
+      "after": 16,
+      "patchable": true,
+      "confidence": "medium",
+      "strategy": "guard",
+      "detail": "strcpy into stack destination bounded to 16 bytes (i386 cdecl)"
+    }
+  ],
+  "limitations": [
+    "cdecl arguments materialised with mov to stack are not analysed in v1"
+  ],
+  "container": {
+    "format": "elf",
+    "arch": "i386",
+    "bits": 32,
+    "endian": "little",
+    "image_base": 65536,
+    "slices": 1,
+    "imports": 160,
+    "sections": 36
+  },
+  "matrix": {
+    "cell": "elf/i386/32/little",
+    "repairable": true,
+    "strategies": [
+      "immediate",
+      "guard"
+    ],
+    "runtime_tiers": [
+      "emulated_run"
+    ],
+    "sink_classes": [
+      "checked_copy",
+      "immediate_length",
+      "memcpy_length",
+      "syscall_length",
+      "unbounded_copy"
+    ]
+  },
+  "coverage": {
+    "schema_version": 1,
+    "sink_classes": [
+      "checked_copy",
+      "immediate_length",
+      "memcpy_length",
+      "syscall_length",
+      "unbounded_copy"
+    ],
+    "non_goals": [
+      "heap, global and non-imported inline copy sinks",
+      "sprintf/format-string expansion, UAF, integer and loop defects",
+      "arm32, riscv, mips, powerpc and big-endian machine-code repair",
+      "32-bit Mach-O and fat Mach-O rewriting",
+      "Windows / macOS native execution beyond the existing Mach-O path"
+    ]
+  },
+  "slices": []
+}

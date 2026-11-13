@@ -11,13 +11,20 @@ Arches: ``x86_64`` (SysV/Win64), ``arm64`` (AAPCS64) and ``i386`` (cdecl /
 argument at ``[esp+4]`` and intercepts imports at their thunk/PLT address (or,
 for ``call [IAT]`` sites, at the call instruction itself).
 
+Copy modelling is either C-string (``strcpy``/``strcat``/``stpcpy``) or
+length-aware (``memcpy``/``memmove`` and the ``__*_chk``/``*_s`` variants): a
+length-aware run reads the ABI length argument and copies exactly that many
+bytes, so an immediate-length candidate is judged by whether its patched length
+fits ``capacity``.  Length-aware cases report ``output_len=None`` because the
+result is not a NUL-terminated string.
+
 This is emulation, not a Windows/Linux kernel run; the report says so.
 """
 from __future__ import annotations
 
 import struct
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import lief
 from elftools.elf.elffile import ELFFile
@@ -27,12 +34,12 @@ from unicorn import (
 )
 from unicorn.arm64_const import (
     UC_ARM64_REG_PC, UC_ARM64_REG_SP, UC_ARM64_REG_X0, UC_ARM64_REG_X1,
-    UC_ARM64_REG_X30,
+    UC_ARM64_REG_X2, UC_ARM64_REG_X30,
 )
 from unicorn.x86_const import (
     UC_X86_REG_EAX, UC_X86_REG_EBP, UC_X86_REG_EIP, UC_X86_REG_ESP,
-    UC_X86_REG_RAX, UC_X86_REG_RCX, UC_X86_REG_RDI, UC_X86_REG_RDX,
-    UC_X86_REG_RIP, UC_X86_REG_RSI, UC_X86_REG_RSP,
+    UC_X86_REG_R8, UC_X86_REG_RAX, UC_X86_REG_RCX, UC_X86_REG_RDI,
+    UC_X86_REG_RDX, UC_X86_REG_RIP, UC_X86_REG_RSI, UC_X86_REG_RSP,
 )
 
 from app.services.containers import ContainerInfo
@@ -57,8 +64,28 @@ MAX_INSNS = 2_000_000
 # writes EBP there, so the register is seeded with a marker and the slot is
 # checked afterwards: a NUL past the buffer shows up as a changed marker.
 I386_BOUNDARY_MARK = 0xA5A5A5A5
-_COPY_NAMES = {"strcpy", "strcat", "stpcpy"}
 _STOP_NAMES = {"puts", "fputs", "printf", "putchar"}
+# Sink kinds whose runtime model is length-aware (the repair patches an
+# immediate/AArch64 length operand instead of replacing the call).
+_LENGTH_KINDS = {
+    "immediate_length", "memcpy_length", "syscall_length", "checked_copy",
+}
+_LENGTH_FAMILIES = {"memcpy", "memmove"}
+_STR_FAMILIES = {"strcpy", "strcat", "stpcpy"}
+# Name classifiers: namespaced static-libc symbols and Zig compiler-rt aliases
+# (``compiler_rt.memcpy.memcpyFast``) must still resolve to the libc family.
+_FAMILY_TOKENS = (
+    ("__memmove_chk", "memmove"),
+    ("__memcpy_chk", "memcpy"),
+    ("memmove", "memmove"),
+    ("memcpy", "memcpy"),
+    ("strcpy", "strcpy"),
+    ("strcat", "strcat"),
+    ("stpcpy", "stpcpy"),
+)
+# Modeled memcpy writes are exact for realistic lengths; very large lengths are
+# only written up to this many bytes (the overflow flag is still exact).
+MAX_MODEL_COPY = 1 << 16
 
 
 @dataclass
@@ -141,6 +168,39 @@ def _short_name(name: str) -> str:
     return short.lstrip("_")
 
 
+def _copy_family(name: str | None) -> str | None:
+    """Classify a resolved copy symbol name as strcpy/memcpy family, if any."""
+    if not name:
+        return None
+    low = name.strip().lower().split("@")[0]
+    short = low.rsplit(".", 1)[-1].lstrip("_")
+    for token, family in _FAMILY_TOKENS:
+        if token in short or token in low:
+            return family
+    return None
+
+
+def _stop_family(name: str | None) -> str | None:
+    """Classify a resolved print symbol name as a terminating call, if any."""
+    if not name:
+        return None
+    low = name.strip().lower().split("@")[0]
+    short = low.rsplit(".", 1)[-1].lstrip("_")
+    for token in _STOP_NAMES:
+        if token in short or token in low:
+            return token
+    return None
+
+
+def _copy_mode(family: str) -> str:
+    return "length" if family in _LENGTH_FAMILIES else "cstr"
+
+
+def _length_hint(copy_kind: str, callee: str) -> bool:
+    """Whether the caller classified this sink as length-aware."""
+    return copy_kind in _LENGTH_KINDS or _copy_family(callee) in _LENGTH_FAMILIES
+
+
 def _i386_import_edges(
     data: bytes, container: ContainerInfo,
 ) -> tuple[dict[int, str], dict[int, tuple[str, int]]]:
@@ -183,54 +243,63 @@ def _imports_for(data: bytes, container: ContainerInfo) -> dict[int, str]:
 
 def _i386_hook_targets(
     data: bytes, container: ContainerInfo,
-) -> tuple[list[int], list[int], dict[int, int], dict[int, int]]:
+) -> tuple[
+    list[tuple[int, str]], list[int], dict[int, tuple[int, str]], dict[int, int],
+]:
     """Resolve every i386 copy/stop entry the target function could reach.
 
     A static i386 libc namespaces its symbols (``c.string.strcpy``,
-    ``c.string.stpcpy``, ...); the fixture's call target is one of them.  Hooking
-    all candidate entries keeps the harness correct without guessing which
-    alias the emitted call instruction refers to.
+    ``compiler_rt.memcpy.memcpyFast``, ...); the fixture's call target is one of
+    them.  Hooking all candidate entries keeps the harness correct without
+    guessing which alias the emitted call instruction refers to, and each
+    target carries its model mode (C-string vs length-aware).
     """
     imports = _imports_for(data, container)
-    copy_targets: set[int] = set()
+    copy_targets: dict[int, str] = {}
     puts_targets: set[int] = set()
     for table in (imports, container.symbols):
         for va, name in table.items():
             section = container.section_at(va)
             if section is None or not section.executable:
                 continue
-            short = _short_name(name)
-            if short in _COPY_NAMES:
-                copy_targets.add(va)
-            elif short in _STOP_NAMES:
+            family = _copy_family(name)
+            if family is not None:
+                copy_targets[va] = _copy_mode(family)
+            elif _stop_family(name) is not None:
                 puts_targets.add(va)
     _thunks, direct_calls = _i386_import_edges(data, container)
-    copy_calls: dict[int, int] = {}
+    copy_calls: dict[int, tuple[int, str]] = {}
     puts_calls: dict[int, int] = {}
     for va, (name, size) in direct_calls.items():
-        short = _short_name(name)
-        if short in _COPY_NAMES:
-            copy_calls[va] = size
-        elif short in _STOP_NAMES:
+        family = _copy_family(name)
+        if family is not None:
+            copy_calls[va] = (size, _copy_mode(family))
+        elif _stop_family(name) is not None:
             puts_calls[va] = size
-    return sorted(copy_targets), sorted(puts_targets), copy_calls, puts_calls
+    ordered = sorted(copy_targets.items())
+    return ordered, sorted(puts_targets), copy_calls, puts_calls
 
 
-def _callable_address(
+def _resolve_callable(
     container: ContainerInfo,
-    names: set[str],
+    predicate: Callable[[str], bool],
     imports: dict[int, str] | None = None,
 ) -> int | None:
+    """Resolve a callable import/symbol entry whose name matches ``predicate``.
+
+    An executable import thunk/PLT entry is preferred over a raw symbol address
+    because the emulator intercepts the address the call instruction reaches.
+    """
     table = container.imports if imports is None else imports
     candidates: list[int] = []
     for va, name in table.items():
         section = container.section_at(va)
-        if _short_name(name) in names and section is not None and section.executable:
+        if section is not None and section.executable and predicate(name):
             candidates.append(va)
     if candidates:
         return min(candidates)
     for va, name in container.symbols.items():
-        if _short_name(name) in names:
+        if predicate(name):
             return va
     return None
 
@@ -253,6 +322,23 @@ def _read_u32(uc: Uc, address: int) -> int:
     return struct.unpack("<I", bytes(uc.mem_read(address, 4)))[0]
 
 
+def _read_mem(uc: Uc, address: int, length: int) -> bytes:
+    """Read ``length`` bytes, returning the readable prefix on a partial map."""
+    if length <= 0:
+        return b""
+    try:
+        return bytes(uc.mem_read(address, length))
+    except Exception:  # noqa: BLE001
+        pass
+    out = bytearray()
+    for index in range(length):
+        try:
+            out += bytes(uc.mem_read(address + index, 1))
+        except Exception:  # noqa: BLE001
+            break
+    return bytes(out)
+
+
 def _write_u32(uc: Uc, address: int, value: int) -> None:
     uc.mem_write(address, struct.pack("<I", value & 0xFFFFFFFF))
 
@@ -266,6 +352,8 @@ def emulate(
     capacity: int,
     abi: str,
     lengths: list[int] | None = None,
+    copy_kind: str = "",
+    callee: str = "",
 ) -> RuntimeEvidence:
     evidence = RuntimeEvidence(tier="emulated_run", engine=f"unicorn-{container.arch}")
     if capacity <= 0:
@@ -280,27 +368,75 @@ def emulate(
         evidence.limitations.append(f"no mapping strategy for {container.format}")
         return evidence
 
+    length_hint = _length_hint(copy_kind, callee)
     imports = _imports_for(data, container)
-    copy_targets: list[int] = []
+    copy_targets: list[tuple[int, str]] = []
     puts_targets: list[int] = []
-    copy_calls: dict[int, int] = {}
+    copy_calls: dict[int, tuple[int, str]] = {}
     puts_calls: dict[int, int] = {}
     if container.arch == "i386":
         copy_targets, puts_targets, copy_calls, puts_calls = _i386_hook_targets(
             data, container,
         )
     else:
-        copy_target = _callable_address(container, _COPY_NAMES, imports)
-        puts_target = _callable_address(container, _STOP_NAMES, imports)
-        copy_targets = [copy_target] if copy_target is not None else []
+        puts_target = _resolve_callable(
+            container, lambda name: _stop_family(name) is not None, imports,
+        )
         puts_targets = [puts_target] if puts_target is not None else []
+        if length_hint:
+            # Length-aware immediate patches keep the original callee; hook the
+            # memcpy-family entry in addition to any strcpy-family alias.
+            mem_target = _resolve_callable(
+                container,
+                lambda name: _copy_family(name) in _LENGTH_FAMILIES,
+                imports,
+            )
+            if mem_target is not None:
+                copy_targets.append((mem_target, "length"))
+            str_target = _resolve_callable(
+                container,
+                lambda name: _copy_family(name) in _STR_FAMILIES,
+                imports,
+            )
+            if str_target is not None and str_target != mem_target:
+                copy_targets.append((str_target, "cstr"))
+        else:
+            str_target = _resolve_callable(
+                container,
+                lambda name: _copy_family(name) in _STR_FAMILIES,
+                imports,
+            )
+            if str_target is not None:
+                copy_targets.append((str_target, "cstr"))
     if not copy_targets and not puts_targets and not copy_calls and not puts_calls:
         evidence.tier = "unavailable"
         evidence.verdict = "unavailable"
         evidence.limitations.append("could not resolve the copy/puts imports")
         return evidence
+    length_targets = [mode for _va, mode in copy_targets]
+    length_targets += [mode for _size, mode in copy_calls.values()]
+    length_modelled = "length" in length_targets
+    if length_hint and not length_modelled:
+        evidence.limitations.append(
+            "Length-aware sink was requested but no memcpy/memmove entry could "
+            "be resolved; the real callee executes unmodeled."
+        )
 
     probe = [0, 1, capacity - 1, capacity, capacity + 1, capacity * 4]
+    if length_hint or length_modelled:
+        evidence.limitations.append(
+            "Length-aware copy model: memcpy/memmove copies the ABI length "
+            "argument exactly; output_len is not reported because the result is "
+            "not a NUL-terminated string (the gate uses canary/return-slot "
+            "checks)."
+        )
+        if dest_rel == 0:
+            evidence.limitations.append(
+                "Length-aware sink has no recorded destination offset; the "
+                "modeled copy uses the callee's runtime destination and the "
+                "canary is placed conservatively."
+            )
+
     selected = sorted({value for value in (lengths or probe) if value >= 0})
     for length in selected:
         evidence.cases.append(_run_case(
@@ -309,6 +445,7 @@ def emulate(
             abi=abi, argument=b"A" * length,
             copy_targets=copy_targets, puts_targets=puts_targets,
             copy_calls=copy_calls, puts_calls=puts_calls,
+            length_hint=length_hint,
         ))
     evidence.verdict = judge(evidence.cases, capacity)
     evidence.limitations.extend([
@@ -328,10 +465,11 @@ def _run_case(
     capacity: int,
     abi: str,
     argument: bytes,
-    copy_targets: list[int],
+    copy_targets: list[tuple[int, str]],
     puts_targets: list[int],
-    copy_calls: dict[int, int],
+    copy_calls: dict[int, tuple[int, str]],
     puts_calls: dict[int, int],
+    length_hint: bool = False,
 ) -> RuntimeCase:
     is_arm = container.arch == "arm64"
     is_i386 = container.arch == "i386"
@@ -426,8 +564,24 @@ def _run_case(
     uc.mem_write(input_base, argument + b"\x00")
 
     copy_overflow = [False]
+    length_used = [False]
+
+    def complete(uc_obj: Uc, ret: int, sp: int | None) -> None:
+        """Return from a modeled callee, exactly like its own epilogue would."""
+        if is_arm:
+            uc_obj.reg_write(UC_ARM64_REG_PC, ret)
+            uc_obj.reg_write(UC_ARM64_REG_X0, 0)
+        elif is_i386:
+            uc_obj.reg_write(UC_X86_REG_ESP, (sp or 0) + 4)
+            uc_obj.reg_write(UC_X86_REG_EIP, ret)
+            uc_obj.reg_write(UC_X86_REG_EAX, 0)
+        else:
+            uc_obj.reg_write(UC_X86_REG_RSP, (sp or 0) + 8)
+            uc_obj.reg_write(UC_X86_REG_RIP, ret)
+            uc_obj.reg_write(UC_X86_REG_RAX, 0)
 
     def finish(uc_obj: Uc) -> None:
+        """Return from a modeled print/spill callee (unchanged legacy path)."""
         if is_arm:
             uc_obj.reg_write(UC_ARM64_REG_PC, uc_obj.reg_read(UC_ARM64_REG_X30))
             uc_obj.reg_write(UC_ARM64_REG_X0, 0)
@@ -443,43 +597,83 @@ def _run_case(
             )
             uc_obj.reg_write(UC_X86_REG_RAX if not is_i386 else UC_X86_REG_EAX, 0)
 
-    def model_i386_copy(uc_obj: Uc, dst: int, src: int) -> None:
+    def model_cstr(uc_obj: Uc, dst: int, src: int) -> None:
         payload = _read_cstr(uc_obj, src, limit=8192)
-        if len(payload) > capacity:
-            copy_overflow[0] = True
         uc_obj.mem_write(dst, payload)
+
+    def model_length(uc_obj: Uc, dst: int, src: int, length: int, bits: int) -> None:
+        """Copy exactly ``length`` bytes, flagging any write past ``capacity``."""
+        length &= (1 << bits) - 1
+        if length > capacity:
+            copy_overflow[0] = True
+        count = length if length <= MAX_MODEL_COPY else capacity + 96
+        payload = _read_mem(uc_obj, src, count)
+        if payload:
+            uc_obj.mem_write(dst, payload)
 
     def hook_puts(uc_obj: Uc, address: int, size: int, _user: Any) -> None:
         finish(uc_obj)
 
-    def hook_copy(uc_obj: Uc, address: int, size: int, _user: Any) -> None:
-        if is_i386:
-            # Import thunk/PLT entry: the callee's cdecl arguments live above
-            # the return address pushed by the call.
-            sp = uc_obj.reg_read(UC_X86_REG_ESP)
-            model_i386_copy(uc_obj, _read_u32(uc_obj, sp + 4), _read_u32(uc_obj, sp + 8))
-            finish(uc_obj)
-            return
-        if is_arm:
-            dst = uc_obj.reg_read(UC_ARM64_REG_X0)
-            src = uc_obj.reg_read(UC_ARM64_REG_X1)
-        elif abi == "win64_x86_64":
-            dst = uc_obj.reg_read(UC_X86_REG_RCX)
-            src = uc_obj.reg_read(UC_X86_REG_RDX)
-        else:
-            dst = uc_obj.reg_read(UC_X86_REG_RDI)
-            src = uc_obj.reg_read(UC_X86_REG_RSI)
-        payload = _read_cstr(uc_obj, src, limit=8192)
-        uc_obj.mem_write(dst, payload)
-        finish(uc_obj)
+    def make_copy_hook(mode: str):
+        def hook_copy(uc_obj: Uc, address: int, size: int, _user: Any) -> None:
+            if is_i386:
+                # Import thunk/PLT entry: the callee's cdecl arguments live
+                # above the return address pushed by the call.
+                sp = uc_obj.reg_read(UC_X86_REG_ESP)
+                ret = _read_u32(uc_obj, sp)
+                dst = _read_u32(uc_obj, sp + 4)
+                src = _read_u32(uc_obj, sp + 8)
+                if mode == "length":
+                    length_used[0] = True
+                    model_length(uc_obj, dst, src, _read_u32(uc_obj, sp + 12), 32)
+                else:
+                    model_cstr(uc_obj, dst, src)
+                complete(uc_obj, ret, sp)
+                return
+            sp = None
+            if is_arm:
+                ret = uc_obj.reg_read(UC_ARM64_REG_X30)
+                dst = uc_obj.reg_read(UC_ARM64_REG_X0)
+                src = uc_obj.reg_read(UC_ARM64_REG_X1)
+            elif abi == "win64_x86_64":
+                sp = uc_obj.reg_read(UC_X86_REG_RSP)
+                ret = struct.unpack("<Q", bytes(uc_obj.mem_read(sp, 8)))[0]
+                dst = uc_obj.reg_read(UC_X86_REG_RCX)
+                src = uc_obj.reg_read(UC_X86_REG_RDX)
+            else:
+                sp = uc_obj.reg_read(UC_X86_REG_RSP)
+                ret = struct.unpack("<Q", bytes(uc_obj.mem_read(sp, 8)))[0]
+                dst = uc_obj.reg_read(UC_X86_REG_RDI)
+                src = uc_obj.reg_read(UC_X86_REG_RSI)
+            if mode == "length":
+                length_used[0] = True
+                if is_arm:
+                    length = uc_obj.reg_read(UC_ARM64_REG_X2)
+                elif abi == "win64_x86_64":
+                    length = uc_obj.reg_read(UC_X86_REG_R8)
+                else:
+                    length = uc_obj.reg_read(UC_X86_REG_RDX)
+                model_length(uc_obj, dst, src, length, 64)
+            else:
+                model_cstr(uc_obj, dst, src)
+            complete(uc_obj, ret, sp)
+        return hook_copy
 
-    def hook_copy_site(uc_obj: Uc, address: int, size: int, _user: Any) -> None:
-        # ``call dword ptr [IAT]`` site: the call has not pushed a return
-        # address yet, so [esp]/[esp+4] are dst/src and skipping the instruction
-        # leaves the caller's stack exactly as a completed callee would.
-        sp = uc_obj.reg_read(UC_X86_REG_ESP)
-        model_i386_copy(uc_obj, _read_u32(uc_obj, sp), _read_u32(uc_obj, sp + 4))
-        uc_obj.reg_write(UC_X86_REG_EIP, address + size)
+    def make_copy_site_hook(mode: str):
+        def hook_copy_site(uc_obj: Uc, address: int, size: int, _user: Any) -> None:
+            # ``call dword ptr [IAT]`` site: the call has not pushed a return
+            # address yet, so [esp]/[esp+4]/[esp+8] are the cdecl arguments and
+            # skipping the instruction leaves the caller's stack unchanged.
+            sp = uc_obj.reg_read(UC_X86_REG_ESP)
+            dst = _read_u32(uc_obj, sp)
+            src = _read_u32(uc_obj, sp + 4)
+            if mode == "length":
+                length_used[0] = True
+                model_length(uc_obj, dst, src, _read_u32(uc_obj, sp + 8), 32)
+            else:
+                model_cstr(uc_obj, dst, src)
+            uc_obj.reg_write(UC_X86_REG_EIP, address + size)
+        return hook_copy_site
 
     def hook_puts_site(uc_obj: Uc, address: int, size: int, _user: Any) -> None:
         uc_obj.reg_write(UC_X86_REG_EIP, address + size)
@@ -488,10 +682,12 @@ def _run_case(
         uc.hook_add(UC_HOOK_CODE, hook_puts, begin=target, end=target)
     for site in puts_calls:
         uc.hook_add(UC_HOOK_CODE, hook_puts_site, begin=site, end=site)
-    for target in copy_targets:
-        uc.hook_add(UC_HOOK_CODE, hook_copy, begin=target, end=target)
-    for site in copy_calls:
-        uc.hook_add(UC_HOOK_CODE, hook_copy_site, begin=site, end=site)
+    for target, mode in copy_targets:
+        uc.hook_add(UC_HOOK_CODE, make_copy_hook(mode), begin=target, end=target)
+    for site, (_size, mode) in copy_calls.items():
+        uc.hook_add(
+            UC_HOOK_CODE, make_copy_site_hook(mode), begin=site, end=site,
+        )
 
     trace: list[int] = []
 
@@ -528,8 +724,15 @@ def _run_case(
                 bytes(uc.mem_read(entry_sp, 8))
                 == struct.pack("<Q", sentinel_base)
             )
-        output = _read_cstr(uc, dest, limit=capacity + 64)
-        output_len = len(output) - 1 if output.endswith(b"\x00") else capacity + 64
+        if length_hint or length_used[0]:
+            # memcpy-style results are not NUL-terminated strings; the gate
+            # relies on the canary/return-slot checks instead.
+            output_len = None
+        else:
+            output = _read_cstr(uc, dest, limit=capacity + 64)
+            output_len = (
+                len(output) - 1 if output.endswith(b"\x00") else capacity + 64
+            )
     except Exception:  # noqa: BLE001
         canary = b""
         sentinel_ok = False

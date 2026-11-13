@@ -23,13 +23,19 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.services.binary_pipeline import repair_any, scan_binary
+from app.services.binary_pipeline import detect_container, repair_any, scan_binary
+from app.services.repair.analyzer import analyze
+from app.services.repair.guards import abi_for
+from app.services.runtime import emulated
 
 SESSION_DATE = "2026-11-13"
 
 POSITIVE = [
     ("elf-i386", ROOT / "fixtures" / "elf" / "vuln-strcpy-x86.elf", ".elf"),
+    ("elf-i386-dyn", ROOT / "fixtures" / "elf" / "vuln-strcpy-x86-dyn.elf", ".elf"),
+    ("elf-i386-memcpy", ROOT / "fixtures" / "elf" / "vuln-memcpy-x86.elf", ".elf"),
     ("pe-i386", ROOT / "fixtures" / "pe" / "vuln-strcpy-x86.exe", ".exe"),
+    ("pe-i386-iat", ROOT / "fixtures" / "pe" / "vuln-strcpy-x86-iat.exe", ".exe"),
     ("elf-x86_64-strict", ROOT / "artifacts" / "vuln-elf" / "vuln.elf", ".elf"),
     ("macho-arm64", ROOT / "fixtures" / "macho" / "vuln-strcpy-arm64", ".macho"),
     ("macho-x86_64", ROOT / "fixtures" / "macho" / "vuln-strcpy-x86_64", ".macho"),
@@ -55,6 +61,47 @@ def _write_json(path: Path, payload: object) -> None:
                     encoding="utf-8")
 
 
+def _baseline_runtime(name: str, data: bytes) -> dict | None:
+    """Instruction-level runtime evidence for the *original* input.
+
+    Only ELF/PE candidates are captured here (Mach-O native baseline is a
+    separate macOS runner and is not needed to prove the emulated 32-bit path).
+    """
+    try:
+        container = detect_container(data)
+        if container.format == "macho":
+            return None
+        sinks = analyze(data).patchable()
+        if not sinks:
+            return None
+        preferred = [sink for sink in sinks if sink.kind == "unbounded_copy"] or sinks
+        sink = preferred[0]
+        abi = "cdecl_x86" if container.arch == "i386" else abi_for(container.format, container.arch)
+        evidence = emulated.emulate(
+            data, container,
+            function_va=sink.function_va,
+            dest_rel=int(sink.dest_rel or 0),
+            capacity=int(sink.capacity or 0),
+            abi=abi,
+            copy_kind=sink.kind,
+            callee=sink.callee,
+            lengths=[0, 1, 15, 16, 17, 64],
+        )
+        return {
+            "fixture": name,
+            "tier": evidence.tier,
+            "engine": evidence.engine,
+            "verdict": evidence.verdict,
+            "copy_kind": sink.kind,
+            "callee": sink.callee,
+            "capacity": sink.capacity,
+            "cases": [case.to_dict() for case in evidence.cases],
+            "limitations": evidence.limitations,
+        }
+    except Exception as exc:  # noqa: BLE001 - evidence capture must not abort
+        return {"fixture": name, "error": f"{type(exc).__name__}: {exc}"}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path,
@@ -70,6 +117,9 @@ def main() -> int:
         data = path.read_bytes()
         scan = scan_binary(data)
         _write_json(out / f"scan-{name}.json", scan)
+        baseline = _baseline_runtime(name, data)
+        if baseline is not None:
+            _write_json(out / f"baseline-{name}.json", baseline)
         outcome = repair_any(data, verify=True)
         report = outcome.report
         _write_json(out / f"repair-{name}.json", report.to_dict())

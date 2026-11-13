@@ -20,15 +20,18 @@ FIXTURES = {
     "pe-x64": ROOT / "fixtures" / "pe" / "vuln-strcpy-x64.exe",
     "pe-arm64": ROOT / "fixtures" / "pe" / "vuln-strcpy-arm64.exe",
     "pe-x86": ROOT / "fixtures" / "pe" / "vuln-strcpy-x86.exe",
+    "pe-x86-iat": ROOT / "fixtures" / "pe" / "vuln-strcpy-x86-iat.exe",
     "elf-arm64": ROOT / "fixtures" / "elf" / "vuln-strcpy-arm64.elf",
     "elf-x86": ROOT / "fixtures" / "elf" / "vuln-strcpy-x86.elf",
+    "elf-x86-dyn": ROOT / "fixtures" / "elf" / "vuln-strcpy-x86-dyn.elf",
+    "elf-x86-memcpy": ROOT / "fixtures" / "elf" / "vuln-memcpy-x86.elf",
     "pe-i386": ROOT / "fixtures" / "pe" / "i386-control.exe",
 }
 
 
 @pytest.mark.parametrize("name", ["macho-arm64", "macho-x86_64", "pe-x64",
-                                  "pe-arm64", "pe-x86", "elf-arm64",
-                                  "elf-x86"])
+                                  "pe-arm64", "pe-x86", "pe-x86-iat",
+                                  "elf-arm64", "elf-x86", "elf-x86-dyn"])
 def test_stack_copy_sink_has_exact_capacity(name):
     path = FIXTURES[name]
     if not path.is_file():
@@ -47,8 +50,9 @@ def test_stack_copy_sink_has_exact_capacity(name):
 
 
 @pytest.mark.parametrize("name", ["macho-arm64", "macho-x86_64", "pe-x64",
-                                  "pe-arm64", "pe-x86", "elf-arm64",
-                                  "elf-x86", "pe-i386"])
+                                  "pe-arm64", "pe-x86", "pe-x86-iat",
+                                  "elf-arm64", "elf-x86", "elf-x86-dyn",
+                                  "elf-x86-memcpy", "pe-i386"])
 def test_detection_matrix(name):
     path = FIXTURES[name]
     if not path.is_file():
@@ -120,6 +124,84 @@ def test_i386_elf_plt_stub_decodes_absolute_target():
     endbr32 = b"\xF3\x0F\x1E\xFB"
     ibt_stub = endbr32 + b"\xFF\x25" + struct.pack("<I", got) + b"\x00" * 6
     assert _decode_elf_plt_stub(ibt_stub, 0x402000, "i386") == got
+
+
+def test_i386_dynamic_elf32_uses_plt_and_interp():
+    """Dynamic ELF32: E8 -> .plt stub, resolved through rel.plt / .plt."""
+    import io
+
+    from elftools.elf.elffile import ELFFile
+
+    path = FIXTURES["elf-x86-dyn"]
+    if not path.is_file():
+        pytest.skip(f"fixture missing: {path}")
+    data = path.read_bytes()
+    container = detect_container(data)
+    assert (container.format, container.arch, container.bits) == ("elf", "i386", 32)
+    assert container.limitations == []
+    elf = ELFFile(io.BytesIO(data))
+    assert any(seg["p_type"] == "PT_INTERP" for seg in elf.iter_segments())
+    interp = elf.get_section_by_name(".interp")
+    assert interp is not None and b"ld-linux" in interp.data()
+    plt = elf.get_section_by_name(".plt")
+    assert plt is not None and int(plt["sh_size"]) > 0
+    assert any(name.endswith("strcpy") for name in container.imports.values())
+
+    analysis = analyze(data)
+    sinks = analysis.patchable()
+    assert len(sinks) == 1, analysis.limitations
+    sink = sinks[0]
+    assert sink.kind == "unbounded_copy"
+    assert sink.callee == "strcpy"
+    assert sink.capacity == 16
+    assert sink.call_size == 5
+    delta = struct.unpack_from("<i", data, sink.call_offset + 1)[0]
+    target = sink.call_va + sink.call_size + delta
+    assert target in container.imports, hex(target)
+    assert container.imports[target].endswith("strcpy")  # E8 -> .plt stub
+
+
+def test_i386_pe32_direct_iat_call_is_six_bytes():
+    """PE32 ``call *__imp__strcpy`` is a 6-byte FF 15 <abs32 IAT slot>."""
+    path = FIXTURES["pe-x86-iat"]
+    if not path.is_file():
+        pytest.skip(f"fixture missing: {path}")
+    data = path.read_bytes()
+    container = detect_container(data)
+    assert (container.format, container.arch, container.bits) == ("pe", "i386", 32)
+    analysis = analyze(data)
+    sinks = analysis.patchable()
+    assert len(sinks) == 1, analysis.limitations
+    sink = sinks[0]
+    assert sink.kind == "unbounded_copy"
+    assert sink.callee == "strcpy"
+    assert sink.capacity == 16
+    assert sink.call_size == 6
+    raw = data[sink.call_offset:sink.call_offset + 6]
+    assert raw[:2] == b"\xFF\x15"
+    slot = struct.unpack_from("<I", raw, 2)[0]
+    assert container.imports[slot].endswith("strcpy")
+
+
+def test_i386_memcpy_immediate_sink_is_patchable():
+    """Static i386 memcpy(dst, src, 64) is a single imm32-length sink."""
+    path = FIXTURES["elf-x86-memcpy"]
+    if not path.is_file():
+        pytest.skip(f"fixture missing: {path}")
+    data = path.read_bytes()
+    analysis = analyze(data)
+    assert (analysis.container.format, analysis.container.arch) == ("elf", "i386")
+    sinks = analysis.patchable()
+    assert len(sinks) == 1, analysis.limitations
+    sink = sinks[0]
+    assert sink.kind == "memcpy_length"
+    assert sink.callee == "memcpy"
+    assert sink.capacity == 16
+    assert sink.length == 64
+    assert sink.length_offset is not None
+    assert data[sink.length_offset:sink.length_offset + 4] == struct.pack("<I", 64)
+    assert sink.call_size == 5
+    assert sink.arch == "i386"
 
 
 def test_truncated_inputs_do_not_raise():

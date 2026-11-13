@@ -1,0 +1,75 @@
+{
+  "fixture": "pe-x86_64",
+  "tier": "emulated_run",
+  "engine": "unicorn-x86_64",
+  "verdict": "fail",
+  "copy_kind": "unbounded_copy",
+  "callee": "strcpy",
+  "capacity": 16,
+  "cases": [
+    {
+      "input_len": 0,
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": true,
+      "output_len": 0,
+      "error": null
+    },
+    {
+      "input_len": 1,
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": true,
+      "output_len": 1,
+      "error": null
+    },
+    {
+      "input_len": 15,
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": true,
+      "output_len": 15,
+      "error": null
+    },
+    {
+      "input_len": 16,
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": true,
+      "output_len": 16,
+      "error": null
+    },
+    {
+      "input_len": 17,
+      "exit_code": 1,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": 17,
+      "error": "UcError: Invalid memory read (UC_ERR_READ_UNMAPPED) at 0x1400010d5 -> 0x1400010da -> 0x140074e60 -> 0x1400010df -> 0x1400010e3 -> 0x5000000041"
+    },
+    {
+      "input_len": 64,
+      "exit_code": 1,
+      "timed_out": false,
+      "stdout_len": 0,
+      "stderr_len": 0,
+      "canary_intact": false,
+      "output_len": 64,
+      "error": "UcError: Invalid memory fetch (UC_ERR_FETCH_UNMAPPED) at 0x140074e80 -> 0x1400010d5 -> 0x1400010da -> 0x140074e60 -> 0x1400010df -> 0x1400010e3"
+    }
+  ],
+  "limitations": [
+    "Emulated execution with modeled imports; not a native Windows/Linux run.",
+    "Only the repaired function is executed; unrelated code paths are not covered."
+  ]
+}

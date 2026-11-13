@@ -42,7 +42,7 @@ class _Arg:
 
     kind: str = "unknown"          # "ptr" | "imm" | "unknown"
     value: int | None = None       # destination offset (ptr) or immediate
-    imm_offset: int | None = None  # file offset of an encodable imm32
+    imm_offset: int | None = None  # absolute file offset of an encodable imm32
 
 
 def _call_name(container: ContainerInfo, ins) -> str | None:
@@ -96,7 +96,6 @@ def scan_i386(analysis, container: ContainerInfo, text, code: bytes) -> None:
     # Imported lazily: analyzer.py imports this module for dispatch only.
     from app.services.repair.analyzer import (  # noqa: PLC0415
         _copy_name,
-        _emit_immediate,
         Sink,
     )
 
@@ -129,16 +128,31 @@ def scan_i386(analysis, container: ContainerInfo, text, code: bytes) -> None:
             continue
         if mnemonic == "push":
             state["esp_rel"] -= 4
-            value, imm_offset = state["dest"].get(op_text), None
-            if value is not None:
-                state["pushed"].insert(0, _Arg("ptr", value, None))
-            elif op_text in state["consts"]:
-                const, imm_offset = state["consts"][op_text]
-                state["pushed"].insert(0, _Arg("imm", const, imm_offset))
+            operand = ins.operands[0] if ins.operands else None
+            if operand is not None and operand.type == X86_OP_REG:
+                reg = ins.reg_name(operand.reg)
+                value = state["dest"].get(reg)
+                if value is not None:
+                    state["pushed"].insert(0, _Arg("ptr", value, None))
+                elif reg in state["consts"]:
+                    const, imm_offset = state["consts"][reg]
+                    state["pushed"].insert(0, _Arg("imm", const, imm_offset))
+                else:
+                    state["pushed"].insert(0, _Arg("unknown"))
+                if reg == "ebp" and state["frame_start"] is None:
+                    state["frame_start"] = ins.address
+            elif operand is not None and operand.type == X86_OP_IMM:
+                # ``push imm32`` (68 id) is patchable in place; imm8 (6A ib)
+                # is not, so it stays an unencodable immediate argument.
+                raw = bytes(ins.bytes)
+                imm_offset = None
+                if len(raw) == 5 and raw[0] == 0x68:
+                    imm_offset = text.offset + (ins.address - text.va) + 1
+                state["pushed"].insert(0, _Arg(
+                    "imm", int(operand.imm) & 0xFFFFFFFF, imm_offset,
+                ))
             else:
                 state["pushed"].insert(0, _Arg("unknown"))
-            if op_text == "ebp" and state["frame_start"] is None:
-                state["frame_start"] = ins.address
             continue
         if mnemonic == "pop":
             state["esp_rel"] += 4
@@ -196,9 +210,11 @@ def scan_i386(analysis, container: ContainerInfo, text, code: bytes) -> None:
                 reg = ins.reg_name(dst.reg)
                 if reg in _PTR_REGS:
                     state["dest"].pop(reg, None)
+                    body_offset = _imm32_body_offset(ins)
                     state["consts"][reg] = (
                         int(src.imm) & 0xFFFFFFFF,
-                        _imm32_body_offset(ins),
+                        None if body_offset is None else
+                        text.offset + (ins.address - text.va) + body_offset,
                     )
                 continue
             continue
@@ -270,17 +286,31 @@ def scan_i386(analysis, container: ContainerInfo, text, code: bytes) -> None:
                     length_arg.kind == "imm"
                     and length_arg.imm_offset is not None
                     and length_arg.value is not None
-                    and capacity is not None
+                    and int(length_arg.value) > capacity
                     and 0 < capacity <= MAX_CAPACITY
                 ):
-                    _emit_immediate(
-                        analysis, container, text, ins, "memcpy_length", copy,
-                        int(length_arg.value), length_arg.imm_offset, capacity,
-                        state["frame_start"],
+                    # Built here (not via the x86-64 _emit_immediate helper) so
+                    # the i386 sink carries dest_rel: the pipeline needs it to
+                    # place its runtime canary for length-aware copies.
+                    analysis.sinks.append(Sink(
+                        kind="memcpy_length",
+                        arch="i386",
+                        function_va=state["frame_start"] or 0,
+                        call_va=ins.address,
+                        callee=copy,
+                        capacity=capacity,
+                        length=int(length_arg.value),
+                        length_offset=length_arg.imm_offset,
+                        length_width=4,
+                        dest_rel=dst_rel,
+                        call_offset=call_off,
+                        call_size=ins.size,
+                        patchable=True,
+                        confidence="medium",
                         detail=(
                             "immediate copy length exceeds stack capacity "
-                            "(i386 cdecl)"
+                            f"(i386 cdecl)"
                         ),
-                    )
+                    ))
         state["pushed"].clear()
         continue
