@@ -32,15 +32,25 @@
     </form>
     {% endif %}
     <a class="btn ghost" href="/jobs/{{ job.id }}/evidence" data-testid="open-evidence">查看证据</a>
+    {% if can_start and job.contract.approved and job.execution and job.execution.status %}{% if job.execution.status not in ["not_started", "running"] %}
+    <form method="post" action="/jobs/{{ job.id }}/repair/retry">
+      <input type="hidden" name="csrf" value="{{ csrf_token }}">
+      <button class="btn ghost" type="submit" data-testid="retry-repair">重新修复当前任务</button>
+    </form>
+    {% endif %}{% endif %}
+    <a class="btn ghost" href="/agent/new?new=1" data-testid="new-repair">新建修复</a>
   </div>
 </section>
 
 {% if error %}
 <p class="diagnostic" data-testid="job-error">{{ error }}</p>
 {% endif %}
+{% if job.repair and job.repair.status and job.repair.status != "patched" %}
+<p class="diagnostic" data-testid="repair-unsupported">当前文件不在本地严格模板支持范围；未生成修复产物。</p>
+{% endif %}
 
 <div class="statusbar">
-  <span class="status-item">任务阶段：<span class="badge" id="job-phase" data-testid="job-phase">{{ phase_labels_zh.get(job.phase, job.phase) }}</span></span>
+  <span class="status-item">任务阶段：<span class="badge" id="job-phase" data-testid="job-phase">{{ phase_label or phase_labels_zh.get(job.phase, job.phase) }}</span></span>
   <span class="status-item">整体结论：
     {% set overall = display_verdict(job) %}
     <span class="badge outcome-{{ overall.key | replace('_', '-') }}" id="job-outcome" data-testid="job-outcome">{{ overall.label_zh }}</span>
@@ -117,6 +127,22 @@
     </form>
   </details>
 </div>
+
+{% if repair_artifacts %}
+<section class="card form" data-testid="repair-artifacts">
+  <h3>修复产物</h3>
+  <p class="muted">产物已生成；V3–V5 行为验证尚未运行，不能当作验收通过。</p>
+  <ul class="artifacts">
+    {% for art in repair_artifacts %}
+    <li data-testid="repair-artifact-{{ loop.index }}">
+      <code>{{ art.name or art.id }}</code>
+      <span class="muted"> · {{ art.role or "artifact" }} · {{ art.sha256[:16] }}… · {{ art.size_bytes or "?" }} B</span>
+      {% if art.id %}<a href="/api/artifacts/{{ art.id }}/download" data-testid="repair-artifact-download-{{ loop.index }}">下载</a>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
 
 {% if visuals and visuals.available %}
 <section class="code-view" data-testid="code-view">
@@ -277,7 +303,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/poll.js" defer></script>
+<script src="/static/js/poll.js?v=20261113b" defer></script>
 <script src="/static/js/codeview.js" defer></script>
 <script>
   (function () {

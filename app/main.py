@@ -625,6 +625,22 @@ def _comparison_response(
         code_visuals = BACKEND.get_visuals(job_id)
     except BackendError:
         code_visuals = {"available": False, "note": "Code view is unavailable from the controller."}
+    phase_label = None
+    execution = snapshot.get("execution")
+    execution_status = execution.get("status") if isinstance(execution, dict) else execution
+    if execution_status == "failed" or (isinstance(execution, dict) and execution.get("status") == "failed"):
+        phase_label = "修复未完成（未验收）"
+    elif snapshot.get("phase") == "finished" and not snapshot.get("verdict"):
+        phase_label = "修复完成（未验收）"
+    repair_artifacts = []
+    try:
+        raw_artifacts = BACKEND.get_artifacts(job_id)
+    except Exception:
+        raw_artifacts = {}
+    if isinstance(raw_artifacts, dict):
+        for rows in raw_artifacts.values():
+            if isinstance(rows, list):
+                repair_artifacts.extend(item for item in rows if isinstance(item, dict) and item.get("id"))
     return templates.TemplateResponse(
         request,
         "comparison.html",
@@ -632,6 +648,8 @@ def _comparison_response(
             "demo": bool(snapshot.get("demo")),
             "job": snapshot,
             "visuals": code_visuals,
+            "repair_artifacts": repair_artifacts,
+            "phase_label": phase_label,
             "can_start": BACKEND.supports_start,
             "backend_note": backend_description(BACKEND),
             "error": error,
@@ -845,6 +863,19 @@ async def start_run(request: Request, job_id: str, csrf: str = Form("")):
     return RedirectResponse(url=f"/agent/{job_id}", status_code=303)
 
 
+@app.post("/jobs/{job_id}/repair/retry")
+async def retry_repair(request: Request, job_id: str, csrf: str = Form("")):
+    _require_csrf(csrf)
+    getter = getattr(BACKEND, "retry_repair", None)
+    if getter is None:
+        return _comparison_response(request, job_id, error="Retry is not supported by this backend.", status_code=409)
+    try:
+        getter(job_id)
+    except BackendError as exc:
+        return _comparison_response(request, job_id, error=exc.detail, status_code=exc.status_code)
+    return RedirectResponse(url=f"/agent/{job_id}", status_code=303)
+
+
 @app.post("/jobs/{job_id}/cancel")
 async def cancel_run(request: Request, job_id: str, csrf: str = Form("")):
     """Cancel the current run."""
@@ -911,6 +942,18 @@ async def evidence_page(request: Request, job_id: str):
             "scope_display": scope_display,
         },
     )
+
+
+@app.get("/api/jobs")
+async def jobs_list() -> JSONResponse:
+    """List local/controller jobs for the workspace navigation."""
+    getter = getattr(BACKEND, "list_jobs", None)
+    if getter is None:
+        return JSONResponse([])
+    try:
+        return JSONResponse(getter())
+    except Exception:
+        return JSONResponse([])
 
 
 @app.get("/api/jobs/{job_id}")

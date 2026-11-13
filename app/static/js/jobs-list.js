@@ -11,6 +11,7 @@
   var KEY = "br.jobs.v1";
   var LIMIT = 50;
   var query = "";
+  var serverEntries = [];
 
   var PHASE_LABELS = {
     draft: "草稿", queued: "排队中", running: "执行中", screening: "输入筛查",
@@ -71,10 +72,49 @@
     return button;
   }
 
+  function mergedList() {
+    var byId = {};
+    read().forEach(function (entry) { byId[entry.id] = entry; });
+    serverEntries.forEach(function (entry) {
+      var local = byId[entry.id] || {};
+      byId[entry.id] = {
+        id: entry.id,
+        label: local.label || entry.filename || ("任务 " + entry.id.slice(0, 8)),
+        added_at: local.added_at || entry.created_at || "",
+        pinned: !!local.pinned,
+        phase: entry.phase || "",
+        server: true,
+        has_repair_artifact: !!entry.has_repair_artifact
+      };
+    });
+    return Object.keys(byId).map(function (id) { return byId[id]; });
+  }
+
+  function refreshServerJobs() {
+    return fetch("/api/jobs", { headers: { Accept: "application/json" } })
+      .then(function (response) {
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        serverEntries = Array.isArray(payload) ? payload.filter(function (item) {
+          return item && typeof item.id === "string" && item.id;
+        }) : [];
+        render();
+        document.dispatchEvent(new CustomEvent("brjobs:server", { detail: { count: serverEntries.length } }));
+        return serverEntries;
+      })
+      .catch(function () {
+        serverEntries = [];
+        render();
+        return [];
+      });
+  }
+
   function render() {
     var nav = document.getElementById("ds-job-list");
     if (!nav) return;
-    var list = sortList(read()).filter(function (entry) {
+    var list = sortList(mergedList()).filter(function (entry) {
       if (!query) return true;
       return (labelOf(entry) + " " + entry.id).toLowerCase().indexOf(query) >= 0;
     });
@@ -245,7 +285,9 @@
     register: register,
     render: render,
     currentId: currentId,
-    list: function () { return sortList(read()); },
+    list: function () { return sortList(mergedList()); },
+    refreshServer: refreshServerJobs,
+    serverCount: function () { return serverEntries.length; },
     togglePin: togglePin,
     rename: renameTask,
     renameTo: renameTo,
@@ -263,6 +305,7 @@
   document.addEventListener("brsettings:change", render);
 
   render();
+  refreshServerJobs();
 
   window.addEventListener("storage", function (event) {
     if (event.key === KEY) render();

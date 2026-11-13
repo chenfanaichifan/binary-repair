@@ -330,6 +330,9 @@ def key_status() -> dict[str, Any]:
         "masked": mask_key(key),
         "protection": protection,
         "can_clear": bool(stored and not env_key),
-        "mode": (os.environ.get("BINARYREPAIR_ASSISTANT_MODE") or "deterministic").strip().lower(),
+        "mode": (
+            os.environ.get("BINARYREPAIR_ASSISTANT_MODE")
+            or ("llm" if key and not env_key else "deterministic")
+        ).strip().lower(),
         "model": (os.environ.get("BINARYREPAIR_ASSISTANT_MODEL") or "deepseek-chat").strip(),
     }

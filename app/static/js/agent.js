@@ -1902,6 +1902,20 @@
     if (modal) modal.hidden = true;
   }
 
+  function retryCurrentRepair() {
+    if (!state.jobId) return;
+    fetch("/jobs/" + encodeURIComponent(state.jobId) + "/repair/retry", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "csrf=" + encodeURIComponent(CSRF)
+    }).then(function (response) {
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      window.location.href = "/agent/" + encodeURIComponent(state.jobId);
+    }).catch(function () {
+      pushMessage("assistant", "重新修复没有成功，请稍后重试。");
+    });
+  }
+
   function maybeAnnounceRepair(snapshot) {
     if (!snapshot || !state.jobId) return;
     var view = normalize(snapshot);
@@ -1911,7 +1925,8 @@
     var status = repairExecutionStatus(snapshot);
     var phase = String(snapshot.phase || (view && view.phase) || "");
     var running = /running|queued|repairing|screening|analyzing|roundtrip|generating|applying|validating/.test(status + " " + phase);
-    var finished = /success|succeeded|finished|verified/.test(status) || phase === "finished";
+    var failed = /failed|error|timed_out/.test(status) || /failed|error/.test(phase);
+    var finished = !failed && (/success|succeeded|finished|verified/.test(status) || phase === "finished");
     var artifact = repairArtifact(view);
     var key = state.jobId + ":" + (running ? "running" : (finished ? "finished" : status || "unknown"));
     if (state.repairNoticeKey === key) {
@@ -1930,6 +1945,12 @@
         pushMessage("assistant", "修复结束，已生成修复后的文件。我已自动打开文件下载面板。");
         if (artifact) showRepairArtifact(artifact);
       }
+    } else if (status === "failed" || status === "error" || /failed|error/.test(phase)) {
+      pushMessage("assistant", "当前文件不在本地严格模板支持范围；未生成修复产物。你可以重新修复，或新建一个修复任务。");
+      pushActionCard("修复未完成", [
+        { label: "重新修复当前任务", run: retryCurrentRepair },
+        { label: "新建修复", run: function () { window.location.href = "/agent/new?new=1"; } }
+      ]);
     } else if (status === "not_started" || status === "unknown" || !status) {
       pushMessage("assistant", "契约已批准。当前 local 模式未接入执行器，不会实际修复或生成文件；接入 controller/worker 后，这里会显示“正在修复中”，完成时自动弹出修复文件。");
     }
@@ -2017,6 +2038,9 @@
     if (view.execution && /running|queued|repairing|screening|analyzing|roundtrip|generating|applying|validating/.test(String(view.execution.status || ""))) {
       setText("agent-side-step", "正在修复");
     }
+    if (view.execution && /failed|error|timed_out/.test(String(view.execution.status || ""))) {
+      setText("agent-side-step", "修复未完成");
+    }
 
     // Approved but no run has started (local mode or before start): show the
     // contract state instead of the backend's draft "waiting" label.
@@ -2040,18 +2064,23 @@
 
     var artifacts = $("agent-side-artifacts");
     clear(artifacts);
-    if (!view.artifacts.length) {
+    var artifactRows = ownArtifacts(view);
+    if (!artifactRows.length) {
       artifacts.appendChild(el("li", "agent-muted", "尚无产物"));
     } else {
-      view.artifacts.forEach(function (artifact) {
+      artifactRows.forEach(function (artifact) {
         var li = el("li");
+        var label = artifact.label || artifact.name || artifact.id;
         if (FIXTURE_MODE) {
-          li.textContent = (artifact.label || artifact.id) + "（演示数据，不可下载）";
+          li.textContent = label + "（演示数据，不可下载）";
+        } else if (!artifact.id || artifact.available === false) {
+          li.textContent = label + "（not_available）";
         } else {
-          var link = el("a", null, artifact.label || artifact.id);
+          var link = el("a", null, label);
           link.href = "/api/artifacts/" + encodeURIComponent(artifact.id) + "/download";
           li.appendChild(link);
         }
+        if (artifact.role) li.appendChild(el("span", "agent-muted", " · " + artifact.role));
         artifacts.appendChild(li);
       });
     }

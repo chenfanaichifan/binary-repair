@@ -110,9 +110,26 @@ class _Response:
 
 
 def resolve_mode(value: str | None = None) -> str:
-    """Read the assistant mode; unknown values are deterministic, never llm."""
+    """Read the assistant mode; unknown values are deterministic, never llm.
+
+    A key saved from the local UI is an explicit intent to use the provider.
+    Only the absence of an explicit mode falls back to the stored key; an
+    explicit ``deterministic`` still wins.
+    """
     raw = (value if value is not None else os.environ.get(ASSISTANT_MODE_ENV, "")).strip().lower()
-    return raw if raw in MODES else "deterministic"
+    if raw in MODES:
+        return raw
+    if value is not None:
+        return "deterministic"
+    if not (os.environ.get(ASSISTANT_MODE_ENV) or "").strip():
+        try:
+            from app.services.assistant_key_store import load_key
+
+            if (load_key() or "").strip():
+                return "llm"
+        except Exception:
+            pass
+    return "deterministic"
 
 
 def chat_settings_from_env(environ: Mapping[str, str] | None = None) -> tuple[float, int]:

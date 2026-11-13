@@ -71,7 +71,7 @@
   <section class="wb-stats" aria-label="工作台摘要">
     <div class="wb-stat">
       <strong id="wb-stat-local">—</strong>
-      <span>本机任务</span>
+      <span>任务</span>
     </div>
     <div class="wb-stat">
       <strong>{{ history_tasks }}</strong>
@@ -219,7 +219,7 @@
     return date.toLocaleString("zh-CN", { hour12: false });
   }
 
-  function phaseNode(id) {
+  function phaseNode(id, phaseText) {
     var node = document.createElement("span");
     node.className = "job-card-phase";
     node.dataset.state = "";
@@ -228,10 +228,14 @@
     if (known) {
       node.dataset.state = known.state;
       node.textContent = known.text;
+    } else if (phaseText) {
+      node.dataset.state = phaseText;
+      node.textContent = PHASE_LABELS[phaseText] || phaseText;
     }
     return node;
   }
 
+  function renderRecent() {
   var list = window.BRJobs.list();
   var counter = document.getElementById("wb-stat-local");
   if (counter) counter.textContent = String(list.length);
@@ -263,7 +267,7 @@
 
     var foot = document.createElement("span");
     foot.className = "job-card-foot";
-    foot.appendChild(phaseNode(entry.id));
+    foot.appendChild(phaseNode(entry.id, entry.phase));
     var when = document.createElement("span");
     when.className = "job-card-time";
     when.textContent = timeLabel(entry.added_at);
@@ -274,6 +278,10 @@
     card.appendChild(foot);
     host.appendChild(card);
   });
+  }
+
+  renderRecent();
+  document.addEventListener("brjobs:server", renderRecent);
 
   document.addEventListener("brjobs:state", function (event) {
     var detail = event.detail || {};

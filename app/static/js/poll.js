@@ -175,7 +175,13 @@ function setText(id, text) {
   }
 
   function updateJob(data) {
-    setText("job-phase", PHASE_LABELS[data.phase] || data.phase);
+    var phaseLabel = PHASE_LABELS[data.phase] || data.phase;
+    if (data.phase === "finished" && !data.verdict) {
+      var execution = data.execution;
+      var executionStatus = execution && typeof execution === "object" ? execution.status : execution;
+      phaseLabel = executionStatus === "failed" ? "修复未完成（未验收）" : "修复完成（未验收）";
+    }
+    setText("job-phase", phaseLabel);
 
     // Render the controller/acceptance verdict only. Never aggregate routes here.
     var overallBadge = $("job-outcome");
