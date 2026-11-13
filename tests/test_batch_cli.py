@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-PYTHON = ROOT / ".venv" / "bin" / "python"
+PYTHON = Path(sys.executable)
 PE = ROOT / "fixtures" / "pe" / "vuln-strcpy-x64.exe"
 I386 = ROOT / "fixtures" / "pe" / "i386-control.exe"
 

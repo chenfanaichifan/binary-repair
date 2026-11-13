@@ -22,8 +22,8 @@
         "-Wno-unused-command-line-argument",
         "-o",
         "TMP",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/main.c",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/vuln_copy_macho_aarch64.S"
+        "fixtures/src/main.c",
+        "fixtures/src/vuln_copy_macho_aarch64.S"
       ],
       "tool": "Apple clang version 14.0.3 (clang-1403.0.22.14.1)",
       "source_sha256": {
@@ -49,8 +49,8 @@
         "x86_64",
         "-o",
         "TMP",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/main.c",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/vuln_copy_macho_x86_64.S"
+        "fixtures/src/main.c",
+        "fixtures/src/vuln_copy_macho_x86_64.S"
       ],
       "tool": "Apple clang version 14.0.3 (clang-1403.0.22.14.1)",
       "source_sha256": {
@@ -68,7 +68,7 @@
       "sha256": "1dcafa9d93e010e7da787e3323376be6b8ac79c792a556ff2f5269ca20463fae",
       "size": 827392,
       "command": [
-        "<zig>",
+        ".tmp/zigpkg/site/ziglang/zig",
         "cc",
         "-target",
         "x86_64-windows-gnu",
@@ -76,8 +76,8 @@
         "-g0",
         "-o",
         "TMP",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/main.c",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/vuln_copy_win_x86_64.S"
+        "fixtures/src/main.c",
+        "fixtures/src/vuln_copy_win_x86_64.S"
       ],
       "tool": "0.17.1",
       "source_sha256": {
@@ -95,7 +95,7 @@
       "sha256": "49ec2b4ec019fa754efa99d4adcf7e0ff369d59a623a6cd22a2e084a8e475c8d",
       "size": 913920,
       "command": [
-        "<zig>",
+        ".tmp/zigpkg/site/ziglang/zig",
         "cc",
         "-target",
         "aarch64-windows-gnu",
@@ -103,8 +103,8 @@
         "-g0",
         "-o",
         "TMP",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/main.c",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/vuln_copy_win_aarch64.S"
+        "fixtures/src/main.c",
+        "fixtures/src/vuln_copy_win_aarch64.S"
       ],
       "tool": "0.17.1",
       "source_sha256": {
@@ -122,7 +122,7 @@
       "sha256": "9f0fc0b44edea4b8b5b00327e8873d247e142596844777e608a808b92f251755",
       "size": 4810688,
       "command": [
-        "<zig>",
+        ".tmp/zigpkg/site/ziglang/zig",
         "cc",
         "-target",
         "aarch64-linux-musl",
@@ -130,8 +130,8 @@
         "-g0",
         "-o",
         "TMP",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/main.c",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/vuln_copy_win_aarch64.S"
+        "fixtures/src/main.c",
+        "fixtures/src/vuln_copy_win_aarch64.S"
       ],
       "tool": "0.17.1",
       "source_sha256": {
@@ -149,7 +149,7 @@
       "sha256": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
       "size": 272896,
       "command": [
-        "<zig>",
+        ".tmp/zigpkg/site/ziglang/zig",
         "cc",
         "-target",
         "x86-windows-gnu",
@@ -157,7 +157,7 @@
         "-g0",
         "-o",
         "TMP",
-        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/control_i386.c"
+        "fixtures/src/control_i386.c"
       ],
       "tool": "0.17.1",
       "source_sha256": {

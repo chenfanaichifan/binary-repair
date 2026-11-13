@@ -150,7 +150,13 @@ def _targets(zig: dict[str, object]) -> list[dict[str, object]]:
 
 def _record(target: dict[str, object]) -> dict[str, object]:
     path = Path(target["path"])
-    cmd = [str(part) for part in target["cmd"]]
+    # Commands are recorded relative to the repository so the provenance file
+    # (and every handoff package built from it) carries no host paths.
+    cmd = [
+        str(part).replace(str(ROOT) + "/", "").replace(str(ROOT), ".")
+        if str(part).startswith(str(ROOT)) else str(part)
+        for part in target["cmd"]
+    ]
     return {
         "name": target["name"],
         "path": str(path.relative_to(ROOT)),

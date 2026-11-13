@@ -1,6 +1,7 @@
 """End-to-end v4 pipeline matrix: six positives and the fail-closed controls."""
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
@@ -26,6 +27,8 @@ def _require(path: Path) -> bytes:
 @pytest.mark.parametrize("name", sorted(POSITIVE))
 def test_positive_matrix_returns_verified_candidate(name):
     path, fmt, arch, tier = POSITIVE[name]
+    if fmt == "macho" and sys.platform != "darwin":
+        pytest.skip("Mach-O native runtime is macOS-only")
     data = _require(path)
     assert detect_format(data)[:2] == (fmt, arch)
     patched, report = repair_binary(data, verify=True)
