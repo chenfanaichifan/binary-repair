@@ -168,7 +168,7 @@ def _execute(
 
 
 def _expected_ok(actual_exit: int | None, crashed: bool, actual_stdout: str,
-                 expected: dict[str, Any], *, is_poc: bool) -> bool:
+                 actual_stderr: str, expected: dict[str, Any], *, is_poc: bool) -> bool:
     if "crashed" in expected:
         want = bool(expected["crashed"])
         if is_poc and want:
@@ -188,12 +188,12 @@ def _expected_ok(actual_exit: int | None, crashed: bool, actual_stdout: str,
     if "stdout_contains" in expected:
         if str(expected["stdout_contains"]) not in actual_stdout:
             return False
+    if "stderr" in expected:
+        if actual_stderr != str(expected["stderr"]):
+            return False
     if "stderr_contains" in expected:
-        # The runner's actual stderr is not passed here; callers use
-        # stderr_contains only for candidate-native checks where the caller
-        # already has the text.  Keep this conservative and fail if requested
-        # without a stderr value.
-        return False
+        if str(expected["stderr_contains"]) not in actual_stderr:
+            return False
     return True
 
 
@@ -251,7 +251,10 @@ def run_poc(
                     argv=list(case["argv"]), stdin=stdin, timeout=timeout,
                 )
                 expected = case.get("original" if is_original else "candidate") or {}
-                ok = _expected_ok(exit_code, crashed, stdout, expected, is_poc=run_group == "poc")
+                ok = _expected_ok(
+                    exit_code, crashed, stdout, stderr, expected,
+                    is_poc=run_group == "poc",
+                )
                 results.append(CaseResult(
                     case_id=case["id"], kind=run_group, executable="original" if is_original else "candidate",
                     exit_code=exit_code, crashed=crashed, stdout=stdout, stderr=stderr,
@@ -302,6 +305,7 @@ def _regression_equal(original: CaseResult, candidate: CaseResult) -> bool:
         and not original.crashed
         and not candidate.crashed
         and original.stdout == candidate.stdout
+        and original.stderr == candidate.stderr
     )
 
 

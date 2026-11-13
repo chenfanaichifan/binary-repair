@@ -48,8 +48,8 @@ gate-blind/PoC increment experiment remain future work.
 
 | Environment | Result |
 |---|---|
-| macOS 13.5 arm64 / Python 3.11.8 | **1141 tests, 0 failed, 0 errors, 6 skipped** (389.3 s) |
-| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1141 tests, 0 failed, 0 errors, 9 skipped** (466.7 s) |
+| macOS 13.5 arm64 / Python 3.11.8 | **1143 tests, 0 failed, 0 errors, 7 skipped** (307.4 s) |
+| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1143 tests, 0 failed, 0 errors, 10 skipped** (288.2 s) |
 
 Targeted coverage includes:
 
@@ -131,7 +131,24 @@ fall-through block (validator rejected).  All benchmark fixtures are also
 repairable deterministically, so this set cannot show coverage increment; a
 gate-blind/PoC benchmark on deterministic failures is still required.
 
-## 8. Boundaries
+## 8. Hard-case AI increment benchmark
+
+`scripts/run_hard_benchmark.py` + `fixtures/hard-cases/cases.json` measure the
+only question that matters: cases where the deterministic baseline explicitly
+fails while a correct repair exists, with PoC/regression as the gate.
+
+| case | baseline | AI |
+|---|---|---|
+| `inline-byte-loop` (inlined byte copy, analyzer sees no sink) | `rejected` | **verified via native PoC** |
+| `cwe121-unchecked-strcpy` (semantic bounds check, external printLine) | `analysis_only` | assembly contained `call`; leaf-only validator rejected |
+
+Result: baseline **0/2**, AI **1/2**, increment **1** on this initial hard set.
+The CWE121 failure is preserved honestly: it needs external calls/behavior and
+therefore the paradigm-A route.  Evidence:
+`artifacts/hard-case-benchmark-2026-11-13/`.  This is one case, not a general
+capability claim; the benchmark must be expanded before headline conclusions.
+
+## 9. Boundaries
 
 - Assembly path: ELF i386/x86_64/arm64 only; requires host `clang`; no
   PE/Mach-O assembly path.

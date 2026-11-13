@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+  "poc": [
+    {
+      "id": "cwe121-invalid-51",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "exit_code": 0
+      },
+      "candidate": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "ERROR: input exceeds destination capacity\n"
+      }
+    },
+    {
+      "id": "cwe121-invalid-101",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "ERROR: input exceeds destination capacity\n"
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "cwe121-valid-0",
+      "argv": [
+        ""
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "\n"
+      }
+    },
+    {
+      "id": "cwe121-valid-1",
+      "argv": [
+        "a"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "a\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "a\n"
+      }
+    },
+    {
+      "id": "cwe121-valid-10",
+      "argv": [
+        "hello"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "hello\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "hello\n"
+      }
+    },
+    {
+      "id": "cwe121-valid-49",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n"
+      }
+    }
+  ]
+}

@@ -20,13 +20,14 @@
     "native PoC replay for every path/fixture; PE and 32-bit Mach-O PoC are unavailable",
     "arm32, 32-bit Mach-O, fat Mach-O rewrite, big-endian, riscv/mips/ppc repair",
     "heap/global/sprintf/UAF/integer/loop repair templates",
-    "real-provider coverage increment on deterministic-hard/gate-blind cases"
+    "general/large hard-case benchmark and AI increment beyond the single inline-loop case"
   ],
   "implemented": [
     "two product AI paths (asm_roundtrip, binary_direct)",
     "static syntax gate and arbitrary-input robustness contract",
     "native/qemu PoC+regression gate for the ELF x86-64 guard fixture (API/CLI optional manifest)",
     "function-level PoC differential gate",
-    "real-provider exploratory benchmark (no measured coverage increment)"
+    "real-provider exploratory benchmark (no measured coverage increment)",
+    "hard-case AI increment benchmark: inline byte-loop case baseline rejected, real-provider AI assembly verified by native PoC (1 hard-case increment)"
   ]
 }

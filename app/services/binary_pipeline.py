@@ -352,9 +352,15 @@ def _from_elf_legacy(
     report.mode = raw.mode
     report.capacity = raw.capacity
     raw_findings = getattr(raw, "findings", [])
-    if isinstance(raw_findings, (str, bytes)) or not hasattr(raw_findings, "__iter__"):
+    if isinstance(raw_findings, (str, bytes)) or not isinstance(raw_findings, (list, tuple)):
         raw_findings = [raw_findings] if raw_findings else []
-    report.findings = [dict(item) for item in raw_findings]
+    normalized = []
+    for item in raw_findings:
+        if hasattr(item, "to_dict"):
+            normalized.append(dict(item.to_dict()))
+        elif isinstance(item, dict):
+            normalized.append(dict(item))
+    report.findings = normalized
     report.offsets = list(raw.offsets)
     report.limitations = list(raw.limitations)
     report.runtime = dict(raw.runtime or {})

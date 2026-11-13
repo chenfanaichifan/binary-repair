@@ -12,7 +12,7 @@ symbolic execution and not a whole-program proof. The result is `passed` at
 ## 2. Coverage is a bounded fixture/matrix, not arbitrary binaries
 
 The historical V4 delivery covered the public CWE-416 no-input path and the
-CWE-121 MVP fixture.  v5/v6 add a deterministic matrix over 12 synthetic
+CWE-121 MVP fixture.  v5/v6 add a deterministic matrix over 13 synthetic
 fixtures (ELF/PE/Mach-O x86-64/arm64, ELF32/PE32 i386) and two AI direct-binary
 protocols, but this is still not evidence that arbitrary binaries, other
 architectures, other compilers, stripped production binaries, or client binaries
@@ -23,8 +23,8 @@ work.  See section 9 for the exact matrix/sink boundary.
 Current acceptance is the non-browser suite:
 
 ```text
-macOS 13.5 arm64: 1141 tests, 0 failed, 0 errors, 6 skipped (389.3 s)
-Linux VM Ubuntu 24.04 arm64: 1141 tests, 0 failed, 0 errors, 9 skipped (466.7 s)
+macOS 13.5 arm64: 1143 tests, 0 failed, 0 errors, 7 skipped (307.4 s)
+Linux VM Ubuntu 24.04 arm64: 1143 tests, 0 failed, 0 errors, 10 skipped (288.2 s)
 GitHub Actions Ubuntu 24.04: workflow success on the final commits
 ```
 
@@ -166,3 +166,12 @@ qemu-user; without it the result is `unavailable` and never verified.  PE and
 32-bit Mach-O PoC execution remain unavailable.  Native execution is only
 enabled for trusted fixtures/CI in this delivery; executing arbitrary uploaded
 binaries natively is not a security boundary.
+
+
+## 13. Hard-case benchmark is initial
+
+The first hard-case AI-increment benchmark has two cases.  One inline-copy case
+was repaired by the real provider and passed native PoC; the CWE121 semantic
+case failed because the leaf-only assembly path cannot call external functions.
+This is evidence, not a general AI-increment claim; the benchmark and paradigm A
+remain future work.

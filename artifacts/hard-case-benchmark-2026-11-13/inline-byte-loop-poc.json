@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "runner": "native",
+  "original_sha256": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+  "candidate_sha256": "12aa3371ac22ea93a87cdebf619184cc3f34b45289fe37e7f53030520cd4945e",
+  "poc": [
+    {
+      "case_id": "loop-overflow-64",
+      "kind": "poc",
+      "executable": "original",
+      "exit_code": -11,
+      "crashed": true,
+      "stdout": "",
+      "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+      "timed_out": false,
+      "error": null,
+      "expected_ok": true
+    },
+    {
+      "case_id": "loop-overflow-256",
+      "kind": "poc",
+      "executable": "original",
+      "exit_code": -11,
+      "crashed": true,
+      "stdout": "",
+      "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+      "timed_out": false,
+      "error": null,
+      "expected_ok": true
+    },
+    {
+      "case_id": "loop-overflow-64",
+      "kind": "poc",
+      "executable": "candidate",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "",
+      "stderr": "",
+      "timed_out": false,
+      "error": null,
+      "expected_ok": true
+    },
+    {
+      "case_id": "loop-overflow-256",
+      "kind": "poc",
+      "executable": "candidate",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "",
+      "stderr": "",
+      "timed_out": false,
+      "error": null,
+      "expected_ok": true
+    }
+  ],
+  "regression": [
+    {
+      "case_id": "loop-short",
+      "kind": "regression",
+      "executable": "original",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "",
+      "stderr": "",
+      "timed_out": false,
+      "error": null,
+      "expected_ok": true
+    },
+    {
+      "case_id": "loop-boundary",
+      "kind": "regression",
+      "executable": "original",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "",
+      "stderr": "",
+      "timed_out": false,
+      "error": null,
+      "expected_ok": true
+    },
+    {
+      "case_id": "loop-short",
+      "kind": "regression",
+      "executable": "candidate",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "",
+      "stderr": "",
+      "timed_out": false,
+      "error": null,
+      "expected_ok": true
+    },
+    {
+      "case_id": "loop-boundary",
+      "kind": "regression",
+      "executable": "candidate",
+      "exit_code": 0,
+      "crashed": false,
+      "stdout": "",
+      "stderr": "",
+      "timed_out": false,
+      "error": null,
+      "expected_ok": true
+    }
+  ],
+  "limitations": []
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "inline-byte-loop",
+      "binary": "fixtures/elf/vuln-loop-x86_64.elf",
+      "target": "vuln_copy",
+      "capacity": 16,
+      "poc": "fixtures/poc/elf-x86_64-loop.json",
+      "reference_fix": "fixtures/hard-cases/loop_fix.S",
+      "baseline_expected": "rejected",
+      "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
+      "family": "non-template inline copy"
+    },
+    {
+      "id": "cwe121-unchecked-strcpy",
+      "binary": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+      "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+      "capacity": 50,
+      "poc": "fixtures/poc/cwe121.json",
+      "reference_fix": "fixtures/hard-cases/cwe121_fix.c",
+      "baseline_expected": "analysis_only",
+      "contract": "CWE121 stack overflow: strcpy into char[50] without validation; repaired path must reject inputs with length+1>50 (exit 1, exact stderr) and preserve valid stdout",
+      "family": "non-template semantic validation"
+    }
+  ]
+}

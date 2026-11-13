@@ -43,6 +43,19 @@ simple semantic-versioning policy for delivery snapshots.
 
 ## [Unreleased]
 
+### Added — hard-case AI increment benchmark
+
+- `scripts/run_hard_benchmark.py` and `fixtures/hard-cases/cases.json`: cases
+  where the deterministic baseline fails but a correct repair exists, gated by
+  native PoC+regression.
+- First inline-byte-loop hard case: deterministic `rejected`, real-provider AI
+  assembly candidate verified by native PoC (Linux); CWE121 semantic case
+  honestly failed (leaf-only assembly cannot call/behave externally).
+- Candidate/evidence bundle `artifacts/hard-case-benchmark-2026-11-13/`.
+- New ELF x86-64 inlined-loop fixture and PoC manifest; fixture provenance
+  expanded to 13 fixtures / 12 sources.
+
+
 ### Added — native PoC/regression gate and static robustness
 
 - `app/services/poc_runner.py`: manifest-bound native/qemu PoC execution with

@@ -64,7 +64,7 @@ bytes).
 ## 2. Fixtures and provenance
 
 New v5 fixtures are built by `scripts/build_binary_fixtures.py` (Zig 0.17.1) and
-covered by `fixtures/PROVENANCE.json` (`--check` reports 12 fixtures OK; the v5 bundle remains the historical 11-fixture set, with the new ELF x86-64 guard covered by the v6 AI bundle).
+covered by `fixtures/PROVENANCE.json` (`--check` reports 13 fixtures OK; the v5 bundle remains the historical 11-fixture set, with new fixtures covered by v6 evidence bundles).
 
 | fixture | format/arch | sha256 | size |
 |---|---|---|---|
@@ -158,7 +158,7 @@ Raw records: `negative-*.json`, plus `tests/test_repair_any.py`,
   --junitxml=artifacts/binary-universal-v5-2026-11-13/macos-junit.xml
 ```
 
-**1141 tests, 0 failures, 0 errors, 6 skipped** (389.3 s; post-v6 suite including the two AI binary-repair paths, native PoC/regression gate, static syntax and robustness gates; the v5-only tree had 1039). Skips are the
+**1143 tests, 0 failures, 0 errors, 7 skipped** (307.4 s; post-v6 suite including the two AI binary-repair paths, native PoC/regression gate, hard-case AI benchmark, static syntax and robustness gates; the v5-only tree had 1039). Skips are the
 platform-gated Linux-execution cases:
 
 - `tests/test_fixture_v3_manifest.py::test_original_is_v0_on_invalid_inputs_if_binary_present` (ELF execution requires Linux)
@@ -176,7 +176,7 @@ cd /tmp/br-v5/binary-repair-gui
   --junitxml=artifacts/binary-universal-v5-2026-11-13/linux-junit.xml
 ```
 
-**1141 tests, 0 failures, 0 errors, 9 skipped** (466.7 s; post-v6 suite including the two AI binary-repair paths, native PoC/regression gate, static syntax and robustness gates). Skips are the
+**1143 tests, 0 failures, 0 errors, 10 skipped** (288.2 s; post-v6 suite including the two AI binary-repair paths, native PoC/regression gate, hard-case AI benchmark, static syntax and robustness gates). Skips are the
 platform-gated cases:
 
 - `tests/test_binary_pipeline_v4.py::test_positive_matrix_returns_verified_candidate[macho-arm64]` (Mach-O native runtime is macOS-only)

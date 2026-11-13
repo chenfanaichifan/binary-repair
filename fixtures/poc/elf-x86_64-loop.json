@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "vuln_copy",
+  "poc": [
+    {
+      "id": "loop-overflow-64",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false,
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "loop-overflow-256",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false,
+        "exit_code": 0
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "loop-short",
+      "argv": [
+        "hi"
+      ],
+      "original": {
+        "exit_code": 0
+      },
+      "candidate": {
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "loop-boundary",
+      "argv": [
+        "AAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "exit_code": 0
+      },
+      "candidate": {
+        "exit_code": 0
+      }
+    }
+  ]
+}

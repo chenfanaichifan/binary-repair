@@ -78,11 +78,12 @@ cd binary-repair-gui
 Observed on the final tree:
 
 ```text
-fixtures: 12 rows, sources: 132 rows -> PASS
+fixtures: 13 rows, sources: 156 rows -> PASS
 bundle artifacts/binary-universal-v5-2026-11-13: 38 files -> PASS
 bundle artifacts/ai-direct-binary-2026-11-13: 14 files -> PASS
 bundle artifacts/ai-real-provider-2026-11-13: 2 files -> PASS
 bundle artifacts/gate-blind-spots-2026-11-13: 2 files -> PASS
+bundle artifacts/hard-case-benchmark-2026-11-13: 4 files -> PASS
 overall: PASS
 ```
 
@@ -157,11 +158,21 @@ remains future work.  Do not claim "AI repaired arbitrary binaries" or
 
 ## 8. Final local verification
 
-- macOS 13.5 arm64: **1141 tests, 0 failed, 0 errors, 6 skipped** (389.3 s).
-- Linux VM Ubuntu 24.04 arm64: **1141 tests, 0 failed, 0 errors, 9 skipped** (466.7 s).
+- macOS 13.5 arm64: **1143 tests, 0 failed, 0 errors, 7 skipped** (307.4 s).
+- Linux VM Ubuntu 24.04 arm64: **1143 tests, 0 failed, 0 errors, 10 skipped** (288.2 s).
 - `scripts/verify_evidence.py`: 11 fixture rows + 110 source rows PASS;
   v5 bundle 38 files PASS; AI bundle 9 files PASS.
 - CI: [43449603578](https://github.com/chenfanaichifan/binary-repair/actions/runs/43449603578)
   on `2fb9317` — **success** (native PoC/regression gate, static syntax and
   CI-evidence gates; clang installed for path 1).  This record is a docs-only
   follow-up; the workflow re-runs the same suite.
+
+
+## 9. Hard-case AI increment benchmark
+
+Initial two-case benchmark (`artifacts/hard-case-benchmark-2026-11-13/`):
+deterministic baseline 0/2; real-provider AI 1/2 (inline byte-loop case
+verified by native PoC), CWE121 semantic case failed at the leaf-only assembly
+validator.  This is the first measured hard-case increment, not a general claim;
+expanding the benchmark and implementing paradigm A remain open.  Candidate and
+PoC evidence are hashed in the bundle; raw provider response is not stored.

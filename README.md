@@ -76,7 +76,9 @@ this project as proof.
   PoC + regression execution.  See
   [docs/architecture/ai-binary-repair-paths.md](docs/architecture/ai-binary-repair-paths.md).
   Experiments: `artifacts/ai-real-provider-2026-11-13/` (3/6 AI verified vs 6/6
-  baseline, 0 coverage increments) and `artifacts/gate-blind-spots-2026-11-13/`.
+  baseline on easy fixtures), `artifacts/gate-blind-spots-2026-11-13/`, and
+  `artifacts/hard-case-benchmark-2026-11-13/` (initial hard-case increment: 1/2
+  AI vs 0/2 deterministic).
 - Direct binary repair spans **ELF, PE and Mach-O** (x86-64 and arm64) and,
   since v5, **32-bit x86 (ELF32/PE32)**: static/dynamic ELF32 (PLT), PE32
   import-thunk and direct-IAT (`FF15`) calls, stack-capacity analysis, immediate
