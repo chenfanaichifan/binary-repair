@@ -1,0 +1,102 @@
+{
+  "schema_version": 2,
+  "format": "elf",
+  "arch": "x86_64",
+  "backend": "elf",
+  "strategy": "strict-template",
+  "status": "patched",
+  "supported": true,
+  "original_sha256": "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd",
+  "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+  "mode": "strict",
+  "capacity": 16,
+  "findings": [],
+  "offsets": [],
+  "limitations": [
+    "Reviewed strict template: over-limit input is rejected, short input is echoed exactly.",
+    "Runtime evidence is emulated (Unicorn), not a host-kernel run."
+  ],
+  "verification": {
+    "emulated": {
+      "available": true,
+      "engine": "unicorn-x86-64",
+      "cases": [
+        {
+          "input_len": 0,
+          "exit_code": 0,
+          "stdout_len": 7,
+          "stderr_len": 0,
+          "stack_sentinel_intact": true,
+          "error": null
+        },
+        {
+          "input_len": 1,
+          "exit_code": 0,
+          "stdout_len": 8,
+          "stderr_len": 0,
+          "stack_sentinel_intact": true,
+          "error": null
+        },
+        {
+          "input_len": 16,
+          "exit_code": 0,
+          "stdout_len": 23,
+          "stderr_len": 0,
+          "stack_sentinel_intact": true,
+          "error": null
+        },
+        {
+          "input_len": 17,
+          "exit_code": 1,
+          "stdout_len": 7,
+          "stderr_len": 30,
+          "stack_sentinel_intact": true,
+          "error": null
+        }
+      ]
+    },
+    "static_reparse": true
+  },
+  "runtime": {
+    "available": true,
+    "engine": "unicorn-x86-64",
+    "cases": [
+      {
+        "input_len": 0,
+        "exit_code": 0,
+        "stdout_len": 7,
+        "stderr_len": 0,
+        "stack_sentinel_intact": true,
+        "error": null
+      },
+      {
+        "input_len": 1,
+        "exit_code": 0,
+        "stdout_len": 8,
+        "stderr_len": 0,
+        "stack_sentinel_intact": true,
+        "error": null
+      },
+      {
+        "input_len": 16,
+        "exit_code": 0,
+        "stdout_len": 23,
+        "stderr_len": 0,
+        "stack_sentinel_intact": true,
+        "error": null
+      },
+      {
+        "input_len": 17,
+        "exit_code": 1,
+        "stdout_len": 7,
+        "stderr_len": 30,
+        "stack_sentinel_intact": true,
+        "error": null
+      }
+    ]
+  },
+  "signature_invalidated": false,
+  "codesign_invalidated": false,
+  "candidate_available": true,
+  "error": null
+}

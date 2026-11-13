@@ -1,0 +1,12 @@
+c808bec975e1e878b0c53405472a4eafc5d61f0adeb73e622b7e2ae1e20f9844  artifacts/binary-universal-2026-11-13/README.md
+3b2e7269ba2e4792c3c86a15008ef9680853e3f65b4f7fb7eecaab33ab038340  artifacts/binary-universal-2026-11-13/cli-output.json
+1de2b80825b71395d5f3162b6193f881066008506f50b3b58015c5f11235b73e  artifacts/binary-universal-2026-11-13/cli-report.json
+af33a37d6b09d9d4b65f173efdc12d35f82a4a5ceecff40c00bb6609d7a7a96b  artifacts/binary-universal-2026-11-13/junit.xml
+02f87bb5c0ddcfa2579e90e73f826281aa9da7e3a8dfd52b3a7a9492eaa3b33d  artifacts/binary-universal-2026-11-13/pytest.log
+f6bc03769dc726938f5cd18eb8f36d777065a290446fdf941bc15ee4b4e51d7c  artifacts/binary-universal-2026-11-13/repair-elf.json
+637343355930016b0c96b56e76d5ff7ef3647499298e04bf9cdbc00e1d65f559  artifacts/binary-universal-2026-11-13/repair-macho.json
+4d214657bf15eee77ebadb5f88642df4bb6cbf51c5a61ad8b20bd3a513458843  artifacts/binary-universal-2026-11-13/repair-pe.json
+d7e6caf535fde17d325838b168b984831866f5bb2345a48220e8702d1be5f5a7  artifacts/binary-universal-2026-11-13/scan-elf.json
+3896b5e9cb5d234f1b7fd89a9a86ad01b7d9507d3f1edbc3088f3262ae54d23a  artifacts/binary-universal-2026-11-13/scan-macho.json
+0b269797667dc255783b3a93f903fabdc49f2a464cceaed8ea47d3748e127408  artifacts/binary-universal-2026-11-13/scan-pe.json
+565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c  artifacts/binary-universal-2026-11-13/vuln-fixed.elf

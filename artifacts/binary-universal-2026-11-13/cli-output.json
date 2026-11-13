@@ -1,0 +1,240 @@
+{
+  "supported": true,
+  "format": "elf",
+  "arch": "x86_64",
+  "backend": "elf",
+  "strategy": "strict-template",
+  "status": "patched",
+  "mode": "strict",
+  "capacity": 16,
+  "report": {
+    "schema_version": 2,
+    "format": "elf",
+    "arch": "x86_64",
+    "backend": "elf",
+    "strategy": "strict-template",
+    "status": "patched",
+    "supported": true,
+    "original_sha256": "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd",
+    "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+    "mode": "strict",
+    "capacity": 16,
+    "findings": [],
+    "offsets": [],
+    "limitations": [
+      "Reviewed strict template: over-limit input is rejected, short input is echoed exactly.",
+      "Runtime evidence is emulated (Unicorn), not a host-kernel run."
+    ],
+    "verification": {
+      "packet": {
+        "schema_version": 1,
+        "scope": {
+          "format": "elf64-little",
+          "arch": "x86_64",
+          "mode": "strict",
+          "strategy": "strict-template",
+          "capacity": 16,
+          "strict": true,
+          "claim": "Over-limit input is rejected and valid input is echoed exactly for the tested sizes; the candidate matches the reviewed strict template.",
+          "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only."
+        },
+        "candidate": {
+          "present": true,
+          "original_sha256": "363da163094bdb58f4ff43a93868ab03e5c4ea1e1587296fbb64037471639acd",
+          "patched_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c",
+          "size_bytes": 8800,
+          "patched_equals_original": false
+        },
+        "patch": {
+          "mode": "strict",
+          "strategy": "strict-template",
+          "strict": true,
+          "capacity": 16,
+          "offsets": [],
+          "findings": [],
+          "template_sha256": "565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c"
+        },
+        "runtime": {
+          "available": true,
+          "engine": "unicorn-x86-64",
+          "cases": [
+            {
+              "input_len": 0,
+              "exit_code": 0,
+              "stdout_len": 7,
+              "stderr_len": 0,
+              "stack_sentinel_intact": true,
+              "error": null
+            },
+            {
+              "input_len": 1,
+              "exit_code": 0,
+              "stdout_len": 8,
+              "stderr_len": 0,
+              "stack_sentinel_intact": true,
+              "error": null
+            },
+            {
+              "input_len": 16,
+              "exit_code": 0,
+              "stdout_len": 23,
+              "stderr_len": 0,
+              "stack_sentinel_intact": true,
+              "error": null
+            },
+            {
+              "input_len": 17,
+              "exit_code": 1,
+              "stdout_len": 7,
+              "stderr_len": 30,
+              "stack_sentinel_intact": true,
+              "error": null
+            }
+          ],
+          "error": null
+        },
+        "checks": [
+          {
+            "id": "format",
+            "title": "Input is a supported ELF64 little-endian x86-64 file",
+            "required": true,
+            "status": "passed",
+            "detail": "format=elf64-little arch=x86_64 supported=True"
+          },
+          {
+            "id": "candidate.present",
+            "title": "A candidate byte sequence was produced",
+            "required": true,
+            "status": "passed",
+            "detail": "candidate_bytes=8800"
+          },
+          {
+            "id": "candidate.identity.original",
+            "title": "The report hash matches the input bytes",
+            "required": true,
+            "status": "passed",
+            "detail": "original hash matches input"
+          },
+          {
+            "id": "candidate.identity.patched",
+            "title": "The candidate hash matches the produced bytes and differs from the input",
+            "required": true,
+            "status": "passed",
+            "detail": "candidate hash matches produced bytes"
+          },
+          {
+            "id": "patch.scope",
+            "title": "The patch stays inside the reviewed byte range or template",
+            "required": true,
+            "status": "passed",
+            "detail": "candidate matches the reviewed strict template"
+          },
+          {
+            "id": "runtime.available",
+            "title": "Runtime emulation evidence is present",
+            "required": true,
+            "status": "passed",
+            "detail": "engine=unicorn-x86-64 cases=4"
+          },
+          {
+            "id": "runtime.cases",
+            "title": "Boundary runtime cases are present and error-free",
+            "required": true,
+            "status": "passed",
+            "detail": "runtime cases=[0, 1, 16, 17]"
+          },
+          {
+            "id": "runtime.no_overflow",
+            "title": "No runtime case damaged the stack sentinel",
+            "required": true,
+            "status": "passed",
+            "detail": "stack sentinel intact for every runtime case"
+          },
+          {
+            "id": "runtime.boundary_semantics",
+            "title": "Strict boundary behaviour matches the reviewed contract",
+            "required": true,
+            "status": "passed",
+            "detail": "valid sizes exit 0 with output; over-limit size rejects with stderr"
+          },
+          {
+            "id": "strict.reviewed_template",
+            "title": "The candidate is the reviewed strict template",
+            "required": true,
+            "status": "passed",
+            "detail": "template_sha256=565d46e6dd28424b1dad6425b494da74ef28b770902c43970747c1ad9d4d086c"
+          }
+        ],
+        "missing": [],
+        "limitations": [
+          "Reviewed strict template: over-limit input is rejected, short input is echoed exactly.",
+          "Runtime evidence is emulated (Unicorn), not a host-kernel run.",
+          "Runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run.",
+          "Runtime coverage is limited to four input sizes around the capacity; partial reads and other architectures are not covered.",
+          "Success is within the stated scope only; this is not a whole-program proof.",
+          "Reviewed strict template: over-limit input is rejected and valid input is echoed exactly for the tested sizes."
+        ],
+        "report_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585",
+        "gate": {
+          "success": true,
+          "outcome": "success_within_scope",
+          "reason": "all_required_checks_passed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585"
+        }
+      },
+      "gate": {
+        "success": true,
+        "outcome": "success_within_scope",
+        "reason": "all_required_checks_passed",
+        "required_checks": 10,
+        "required_not_run": 0,
+        "evidence_sha256": "cfc98c9d229809959add66bda61b8fd8086b76b8ba0ba1828d5a775c73513585"
+      },
+      "static_reparse": true
+    },
+    "runtime": {
+      "available": true,
+      "engine": "unicorn-x86-64",
+      "cases": [
+        {
+          "input_len": 0,
+          "exit_code": 0,
+          "stdout_len": 7,
+          "stderr_len": 0,
+          "stack_sentinel_intact": true,
+          "error": null
+        },
+        {
+          "input_len": 1,
+          "exit_code": 0,
+          "stdout_len": 8,
+          "stderr_len": 0,
+          "stack_sentinel_intact": true,
+          "error": null
+        },
+        {
+          "input_len": 16,
+          "exit_code": 0,
+          "stdout_len": 23,
+          "stderr_len": 0,
+          "stack_sentinel_intact": true,
+          "error": null
+        },
+        {
+          "input_len": 17,
+          "exit_code": 1,
+          "stdout_len": 7,
+          "stderr_len": 30,
+          "stack_sentinel_intact": true,
+          "error": null
+        }
+      ]
+    },
+    "signature_invalidated": false,
+    "codesign_invalidated": false,
+    "candidate_available": true,
+    "error": null
+  }
+}

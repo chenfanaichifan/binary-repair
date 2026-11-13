@@ -1,0 +1,69 @@
+{
+  "schema_version": 2,
+  "format": "macho",
+  "arch": "arm64",
+  "bits": 64,
+  "backend": "macho",
+  "supported": true,
+  "repair_supported": true,
+  "findings": [],
+  "limitations": [],
+  "sections": [
+    {
+      "name": "__text",
+      "segment": "__TEXT",
+      "va": "0x100001f04",
+      "size": 23760,
+      "offset": 7940
+    },
+    {
+      "name": "__stubs",
+      "segment": "__TEXT",
+      "va": "0x100007bd4",
+      "size": 108,
+      "offset": 31700
+    },
+    {
+      "name": "__cstring",
+      "segment": "__TEXT",
+      "va": "0x100007c40",
+      "size": 671,
+      "offset": 31808
+    },
+    {
+      "name": "__const",
+      "segment": "__TEXT",
+      "va": "0x100007ee0",
+      "size": 40,
+      "offset": 32480
+    },
+    {
+      "name": "__unwind_info",
+      "segment": "__TEXT",
+      "va": "0x100007f08",
+      "size": 248,
+      "offset": 32520
+    },
+    {
+      "name": "__got",
+      "segment": "__DATA_CONST",
+      "va": "0x100008000",
+      "size": 80,
+      "offset": 32768
+    },
+    {
+      "name": "__data",
+      "segment": "__DATA",
+      "va": "0x10000c000",
+      "size": 48,
+      "offset": 49152
+    },
+    {
+      "name": "__common",
+      "segment": "__DATA",
+      "va": "0x10000c030",
+      "size": 1432,
+      "offset": 0
+    }
+  ]
+}

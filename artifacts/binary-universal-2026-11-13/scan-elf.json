@@ -1,0 +1,30 @@
+{
+  "schema_version": 2,
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "backend": "elf",
+  "supported": true,
+  "repair_supported": true,
+  "findings": [
+    {
+      "kind": "read_or_write_length",
+      "address": "0x401023",
+      "before": 256,
+      "after": 16,
+      "capacity": 16,
+      "patchable": true,
+      "detail": "immediate syscall length exceeds stack capacity"
+    },
+    {
+      "kind": "read_or_write_length",
+      "address": "0x401037",
+      "before": 256,
+      "after": 16,
+      "capacity": 16,
+      "patchable": true,
+      "detail": "immediate syscall length exceeds stack capacity"
+    }
+  ],
+  "limitations": []
+}

@@ -165,3 +165,33 @@ instructions with modeled `read`/`write`/`exit` syscalls.  It checks:
 
 It is a test oracle, not a host sandbox.  Final acceptance still belongs in a
 disposable x86-64 Linux guest.
+
+## Unified pipeline (2026-11-13)
+
+`app/services/binary_pipeline.py` is the format-detecting entry point:
+
+```python
+from app.services.binary_pipeline import scan_binary, repair_binary
+
+scan = scan_binary(data)                 # ELF / PE / Mach-O metadata + findings
+patched, report = repair_binary(data)    # fail-closed candidate + report v2
+```
+
+Routing:
+
+```text
+ELF64 x86-64   -> repair_elf (immediate + strcpy/strcat cave)
+ELF64 arm64    -> repair_arm64 (MOVZ immediate)
+PE32+ x86-64   -> repair_pe (IAT strcpy/strcat cave; memcpy fallback)
+Mach-O 64      -> repair_macho (MOVZ immediate)
+other          -> unsupported, no output
+```
+
+The pipeline re-parses every candidate before returning it and, for ELF x86-64,
+reuses the structured verification gate (Unicorn evidence). A failed gate or a
+failed reparse returns no candidate. The CLI (`scripts/repair_binary.py`) and
+`/api/binary/scan` / `/api/binary/repair` call the same functions.
+
+This is still a **supported-pattern matrix**, not universal binary repair. PE
+arm64, ELF32, PE32 and packed/obfuscated inputs are scan-only unless a future
+backend explicitly supports them.

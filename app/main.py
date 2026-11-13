@@ -34,11 +34,8 @@ from app.services.assistant_key_store import clear_key, key_status, save_key
 from app.services.code_repair import repair_code
 from app.services.binary_datasets import dataset_status
 from app.services.binary_quick_repair import QuickRepairError, quick_repair_elf
-from app.services.binary_repair_engine import scan_elf
-from app.services.format_scan import scan_macho, scan_pe
-from app.services.pe_repair import repair_pe, scan_pe_copy_calls
-from app.services.macho_repair import repair_macho
-from app.services.binary_repair_engine import repair_elf
+from app.services.binary_pipeline import repair_binary as repair_binary_pipeline
+from app.services.binary_pipeline import scan_binary
 from app.services.ai_adjudication import (
     GateResult, PolicyViolation, adjudicate, guard_model_payload,
     preflight_key_binding, supervisor_step,
@@ -1211,19 +1208,10 @@ async def binary_scan(
     raw = await binary.read()
     if len(raw) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
-    if raw[:4] == b"\x7fELF":
-        payload = scan_elf(raw)
-        payload["backend"] = "elf"
-    elif raw[:2] == b"MZ":
-        payload = scan_pe(raw)
-        payload["copy_calls"] = scan_pe_copy_calls(raw)
-        payload["backend"] = "pe"
-    elif raw[:4] in {b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf",
-                     b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe"}:
-        payload = scan_macho(raw)
-        payload["backend"] = "macho"
-    else:
-        return JSONResponse({"ok": False, "detail": "unsupported binary format"}, status_code=422)
+    payload = scan_binary(raw)
+    if not payload.get("supported"):
+        return JSONResponse({"ok": False, "detail": payload.get("limitations") or ["unsupported binary format"],
+                             "scan": payload}, status_code=422)
     return JSONResponse({"ok": True, "scan": payload}, headers={"Cache-Control": "no-store"})
 
 
@@ -1238,29 +1226,18 @@ async def binary_repair(
     if len(raw) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
     import base64
-    if raw[:4] == b"\x7fELF":
-        patched, report = repair_elf(raw)
-        suffix = "-fixed.elf"
-        payload = report.to_dict()
-    elif raw[:2] == b"MZ":
-        patched, report = repair_pe(raw)
-        suffix = "-fixed.exe"
-        payload = report.to_dict()
-    elif raw[:4] in {b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf",
-                     b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe"}:
-        patched, report = repair_macho(raw)
-        suffix = "-fixed.macho"
-        payload = report.to_dict()
-    else:
-        return JSONResponse({"ok": False, "detail": "unsupported binary format"}, status_code=422)
+    patched, report = repair_binary_pipeline(raw, verify=True)
+    payload = report.to_dict()
     if patched is None:
-        return JSONResponse({"ok": False, "detail": payload.get("limitations") or ["unsupported"]},
-                            status_code=422)
+        return JSONResponse({"ok": False, "detail": payload.get("limitations") or ["unsupported"],
+                             "report": payload}, status_code=422)
+    suffix = {"elf": "-fixed.elf", "pe": "-fixed.exe"}.get(report.format, "-fixed.bin")
     return JSONResponse({
         "ok": True,
         "filename": (Path(binary.filename or "sample").stem + suffix),
         "patched_base64": base64.b64encode(patched).decode("ascii"),
         "report": payload,
+        "verification": payload.get("verification", {}),
     }, headers={"Cache-Control": "no-store"})
 
 

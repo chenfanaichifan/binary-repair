@@ -1,0 +1,24 @@
+{
+  "schema_version": 2,
+  "format": "macho",
+  "arch": "arm64",
+  "backend": "macho",
+  "strategy": "immediate",
+  "status": "unsupported",
+  "supported": false,
+  "original_sha256": "ada39345ad5bf8bf42faa059bacc15c02615ef952169e8dcb3ad9fa9ef9526cd",
+  "patched_sha256": "ada39345ad5bf8bf42faa059bacc15c02615ef952169e8dcb3ad9fa9ef9526cd",
+  "mode": "immediate",
+  "capacity": null,
+  "findings": [],
+  "offsets": [],
+  "limitations": [
+    "No supported Mach-O immediate read/write pattern."
+  ],
+  "verification": {},
+  "runtime": {},
+  "signature_invalidated": false,
+  "codesign_invalidated": false,
+  "candidate_available": false,
+  "error": "No supported Mach-O immediate read/write pattern."
+}
