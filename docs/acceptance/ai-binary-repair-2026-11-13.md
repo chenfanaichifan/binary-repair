@@ -86,8 +86,10 @@ Targeted coverage includes:
 - `feature/ai-binary-repair` and the CI-trigger branch `workbench-v3` are both
   pushed to `chenfanaichifan/binary-repair` at the same commit; `main` and
   `handoff-v4-local` are untouched.
-- This acceptance record is a docs-only commit after that run; the workflow
-  re-runs the same suite and its branch history records the final conclusion.
+- Verification follow-up commit `136ac6e`: run
+  [43421008873](https://github.com/chenfanaichifan/binary-repair/actions/runs/43421008873)
+  — **success**; this record is a docs-only follow-up and the workflow re-runs
+  the same suite for it.
 
 ## 6. Boundaries
 
