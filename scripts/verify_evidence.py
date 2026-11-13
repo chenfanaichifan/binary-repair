@@ -22,6 +22,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BUNDLES = (
     "artifacts/binary-universal-v5-2026-11-13",
     "artifacts/ai-direct-binary-2026-11-13",
+    "artifacts/ai-real-provider-2026-11-13",
+    "artifacts/gate-blind-spots-2026-11-13",
 )
 
 

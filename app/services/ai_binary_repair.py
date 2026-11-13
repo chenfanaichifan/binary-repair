@@ -454,17 +454,22 @@ def _apply_bytes(
     report.strategy = "ai-bytes"
     if sink.kind in _IMMEDIATE_KINDS:
         required = int(sink.length_offset) if sink.length_offset is not None else None
+        width = int(getattr(sink, "length_width", 4) or 4)
         touched = {
             int(action.get("offset"))
             for action in validated.actions
             if isinstance(action.get("offset"), int)
         }
-        if required is None or required not in touched:
+        unrelated = [
+            offset for offset in touched
+            if required is None or not (required <= offset < required + width)
+        ]
+        if required is None or required not in touched or unrelated:
             report.status = "unsupported"
             report.supported = False
             report.error = (
-                "AI byte patch does not edit the selected sink's length "
-                "immediate; unrelated byte edits are not a repair"
+                "AI byte patch must only edit the selected sink's length "
+                "immediate; unrelated executable edits are not a repair"
             )
             report.limitations.append(report.error)
             _set_disposition(report, "unsupported")

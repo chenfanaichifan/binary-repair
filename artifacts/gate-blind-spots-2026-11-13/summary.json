@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "note": "Structurally valid but semantically deviant candidates.  gate_caught=True means the deterministic runtime/gate rejected or did not verify the candidate; blind_spot=True means it was verified.",
+  "cases": [
+    {
+      "case": "asm_correct_copy_without_puts_side_effect",
+      "path": "asm_roundtrip",
+      "semantic_deviation": true,
+      "candidate_sha256": "2325899a5eac296dd24de357e812a2b7ad988239c92895e1e9a2df0978855ace",
+      "disposition": "verified_patch",
+      "verified": true,
+      "ai_status": "accepted",
+      "error": null,
+      "gate": "success_within_scope",
+      "gate_caught": false,
+      "blind_spot": true
+    },
+    {
+      "case": "asm_noop_ret",
+      "path": "asm_roundtrip",
+      "semantic_deviation": true,
+      "candidate_sha256": null,
+      "disposition": "rejected",
+      "verified": false,
+      "ai_status": "accepted",
+      "error": "verification gate did not pass: verdict=fail cases=6",
+      "gate": "rejected",
+      "gate_caught": true,
+      "blind_spot": false
+    },
+    {
+      "case": "asm_copy_without_terminator",
+      "path": "asm_roundtrip",
+      "semantic_deviation": true,
+      "candidate_sha256": null,
+      "disposition": "rejected",
+      "verified": false,
+      "ai_status": "accepted",
+      "error": "verification gate did not pass: verdict=fail cases=6",
+      "gate": "rejected",
+      "gate_caught": true,
+      "blind_spot": false
+    },
+    {
+      "case": "asm_wrong_destination",
+      "path": "asm_roundtrip",
+      "semantic_deviation": true,
+      "candidate_sha256": null,
+      "disposition": "rejected",
+      "verified": false,
+      "ai_status": "accepted",
+      "error": "verification gate did not pass: verdict=fail cases=6",
+      "gate": "rejected",
+      "gate_caught": true,
+      "blind_spot": false
+    },
+    {
+      "case": "direct_extra_unrelated_executable_edit",
+      "path": "binary_direct",
+      "semantic_deviation": true,
+      "candidate_sha256": null,
+      "disposition": "unsupported",
+      "verified": false,
+      "ai_status": "invalid",
+      "error": "AI byte patch must only edit the selected sink's length immediate; unrelated executable edits are not a repair",
+      "gate": null,
+      "gate_caught": true,
+      "blind_spot": false,
+      "extra_offset": 142032
+    }
+  ],
+  "caught": 4,
+  "blind_spots": 1
+}

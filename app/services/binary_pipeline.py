@@ -593,6 +593,33 @@ def finish_candidate(
         runtime = _select_runtime(patched, patched_container, runtime_sink)
     if runtime is not None:
         report.runtime = runtime.to_dict()
+    poc = None
+    if runtime is not None and runtime_sink is not None:
+        # PoC-style differential predicate: the same runtime probe must fail on
+        # the original bytes and pass on the candidate.  This is still
+        # instruction-level emulation/native function execution, not a guest
+        # kernel replay; it is a required predicate when the original runtime is
+        # available for the selected sink.
+        original_runtime = _select_runtime(data, container, runtime_sink)
+        if (
+            original_runtime is not None
+            and original_runtime.verdict in {"pass", "fail"}
+            and original_runtime.cases
+        ):
+            poc = {
+                "kind": "capacity_overflow_differential",
+                "engine": original_runtime.engine,
+                "tier": original_runtime.tier,
+                "inputs": sorted({case.input_len for case in original_runtime.cases}),
+                "original_verdict": original_runtime.verdict,
+                "candidate_verdict": runtime.verdict,
+                "original_cases": [case.to_dict() for case in original_runtime.cases],
+            }
+        else:
+            report.limitations.append(
+                "PoC differential predicate was not added: original runtime "
+                "evidence is unavailable for this sink"
+            )
     verification = build_unified(
         format_name=container.format,
         arch=container.arch,
@@ -603,6 +630,7 @@ def finish_candidate(
         reparse_ok=reparse_ok,
         original_sha256=report.original_sha256,
         patched_sha256=report.patched_sha256,
+        poc=poc,
     )
     report.verification = {
         "packet": verification.packet,

@@ -53,6 +53,7 @@ def build(
     reparse_ok: bool,
     original_sha256: str,
     patched_sha256: str,
+    poc: dict[str, Any] | None = None,
 ) -> UnifiedVerification:
     checks: list[dict[str, Any]] = []
     supported = (format_name, arch) in supported_pairs()
@@ -116,6 +117,25 @@ def build(
         runtime_tier = runtime.tier
         runtime_verdict = runtime.verdict
 
+    if poc is not None:
+        original_verdict = str(poc.get("original_verdict") or "not_run")
+        candidate_verdict = str(poc.get("candidate_verdict") or "not_run")
+        inputs = poc.get("inputs") or []
+        original_fails = original_verdict == "fail" and bool(inputs)
+        candidate_passes = candidate_verdict == "pass"
+        checks.append(_check(
+            "poc.original_fails",
+            "The original binary fails the PoC/reproduction cases",
+            CHECK_PASSED if original_fails else CHECK_FAILED,
+            f"original_verdict={original_verdict} inputs={len(inputs)}",
+        ))
+        checks.append(_check(
+            "poc.candidate_passes",
+            "The repaired candidate passes the same PoC/reproduction cases",
+            CHECK_PASSED if candidate_passes else CHECK_FAILED,
+            f"candidate_verdict={candidate_verdict}",
+        ))
+
     failed = [check for check in checks if check["status"] == CHECK_FAILED]
     not_run = [check for check in checks if check["status"] == CHECK_NOT_RUN]
     success = not failed and not not_run
@@ -136,6 +156,8 @@ def build(
         "actions": actions,
         "runtime": runtime.to_dict() if runtime is not None else None,
     }
+    if poc is not None:
+        packet["poc"] = poc
     if success:
         outcome = "success_within_scope"
     elif failed:

@@ -1,0 +1,595 @@
+{
+  "schema_version": 1,
+  "provider_available": true,
+  "provider": "https://api.deepseek.com/v1",
+  "model": "deepseek-chat",
+  "note": "Exploratory real-provider run. No API key, raw prompt or raw model response is stored. All fixtures are also repairable by the deterministic baseline, so coverage increment on this set is expected to be zero; quality/candidate differences and AI failures are still recorded honestly.",
+  "records": [
+    {
+      "task": "asm-i386-guard",
+      "path": "asm_roundtrip",
+      "fixture": "fixtures/elf/vuln-strcpy-x86.elf",
+      "input_sha256": "a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d",
+      "ai": {
+        "status": "accepted",
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "latency_ms": 1489,
+        "usage": {
+          "prompt_tokens": 693,
+          "completion_tokens": 224,
+          "total_tokens": 917,
+          "latency_ms": 1489
+        },
+        "plan_sha256": "b48cc757fb0930a27cce09123dae81a6441524141aaaa1dc00c71f75ac10f945",
+        "error": null,
+        "validation": {
+          "assembly_sha256": "87b8b4cdd4923b6cad6cde7e8829fc8c57165ce8875873c14ce38eccce95e533",
+          "code_bytes": 53,
+          "method": "new-pt-load",
+          "cave_va": "0xda000",
+          "sink_kind": "unbounded_copy"
+        }
+      },
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "2c5e0a1394f17977760e1791195d58d15d06d47d7975418adc319c23dfe9f595",
+      "report_error": null,
+      "gate": {
+        "success": true,
+        "outcome": "success_within_scope",
+        "reason": "",
+        "required_checks": 10,
+        "required_not_run": 0,
+        "evidence_sha256": "ed7c6e205c58a49536115ad00c260d81ffda0cebb2b99bd8f89f572f209d3ae4"
+      },
+      "runtime": {
+        "verdict": "pass",
+        "tier": "emulated_run",
+        "cases": [
+          {
+            "input_len": 0,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 0,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 1,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 1,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 15,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 16,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 17,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 64,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          }
+        ]
+      },
+      "baseline": {
+        "disposition": "verified_patch",
+        "verified": true,
+        "candidate_sha256": "6fc774d2371225d5cf63160841e22e6fe34f750a6d6b16489cf3ffaba43d1a22"
+      },
+      "increment": "no_coverage_increment",
+      "limitations": [
+        "assembly round-trip candidate: the original function entry is redirected to an assembled replacement block; the original body is not preserved"
+      ]
+    },
+    {
+      "task": "asm-x86_64-guard",
+      "path": "asm_roundtrip",
+      "fixture": "fixtures/elf/vuln-strcpy-x86_64.elf",
+      "input_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+      "ai": {
+        "status": "accepted",
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "latency_ms": 1329,
+        "usage": {
+          "prompt_tokens": 628,
+          "completion_tokens": 137,
+          "total_tokens": 765,
+          "latency_ms": 1329
+        },
+        "plan_sha256": "e68a3be00ddfca15f80fd0f7ea2ee6242f59ecce91d894838092af7d005797cb",
+        "error": null,
+        "validation": {
+          "assembly_sha256": "3a4b4310953c0174ce5db88eaa71d30cafed9f22cae74fd519b903b15714a779",
+          "code_bytes": 37,
+          "method": "new-pt-load",
+          "cave_va": "0x10cb000",
+          "sink_kind": "unbounded_copy"
+        }
+      },
+      "disposition": "rejected",
+      "verified": false,
+      "candidate_sha256": null,
+      "report_error": "verification gate did not pass: verdict=fail cases=6",
+      "gate": {
+        "success": false,
+        "outcome": "rejected",
+        "reason": "verdict=fail cases=6",
+        "required_checks": 10,
+        "required_not_run": 0,
+        "evidence_sha256": "71675f26d46bd51e72dfdf7e22dd203b0bf87c594c3ceb20858123f176eab54a"
+      },
+      "runtime": {
+        "verdict": "fail",
+        "tier": "emulated_run",
+        "cases": [
+          {
+            "input_len": 0,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 0,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 1,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 1,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 15,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 16,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 16,
+            "buffer_match": false,
+            "error": null
+          },
+          {
+            "input_len": 17,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 17,
+            "buffer_match": false,
+            "error": null
+          },
+          {
+            "input_len": 64,
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": false,
+            "output_len": 64,
+            "buffer_match": null,
+            "error": "UcError: Invalid memory fetch (UC_ERR_FETCH_UNMAPPED) at 0x10cb011 -> 0x10cb013 -> 0x10cb015 -> 0x10cb01f -> 0x10cb023 -> 0x10cb024"
+          }
+        ]
+      },
+      "baseline": {
+        "disposition": "verified_patch",
+        "verified": true,
+        "candidate_sha256": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4"
+      },
+      "increment": "ai_failed_baseline_verified",
+      "limitations": [
+        "assembly round-trip candidate: the original function entry is redirected to an assembled replacement block; the original body is not preserved"
+      ]
+    },
+    {
+      "task": "asm-arm64-guard",
+      "path": "asm_roundtrip",
+      "fixture": "fixtures/elf/vuln-strcpy-arm64.elf",
+      "input_sha256": "9f0fc0b44edea4b8b5b00327e8873d247e142596844777e608a808b92f251755",
+      "ai": {
+        "status": "accepted",
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "latency_ms": 1011,
+        "usage": {
+          "prompt_tokens": 643,
+          "completion_tokens": 184,
+          "total_tokens": 827,
+          "latency_ms": 1011
+        },
+        "plan_sha256": "3a751bc5f390a7df0fbce8fb642a14acbd391233742cb72cb3c816f4e98c2c7a",
+        "error": null,
+        "validation": {
+          "assembly_sha256": "26f8c9cfb1d87034aeaac64375dc0b3a1704c3811f46b2010983ffa79c1dcb87",
+          "code_bytes": 64,
+          "method": "new-pt-load",
+          "cave_va": "0x10e9000",
+          "sink_kind": "unbounded_copy"
+        }
+      },
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "bf8d2aadd6bb39984e51e8b0a2cb69c018d426151028f67a13087d0339873745",
+      "report_error": null,
+      "gate": {
+        "success": true,
+        "outcome": "success_within_scope",
+        "reason": "",
+        "required_checks": 10,
+        "required_not_run": 0,
+        "evidence_sha256": "9ad2c3ac42a6bfcc95360c61507c2d771906f6320e3948d936fefce472f80587"
+      },
+      "runtime": {
+        "verdict": "pass",
+        "tier": "emulated_run",
+        "cases": [
+          {
+            "input_len": 0,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 0,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 1,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 1,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 15,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 16,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 17,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 64,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "buffer_match": true,
+            "error": null
+          }
+        ]
+      },
+      "baseline": {
+        "disposition": "verified_patch",
+        "verified": true,
+        "candidate_sha256": "ce1e3e190c09d7e12dfde50dfb696e8d2e168e632f623e1f32e719d38ca6610d"
+      },
+      "increment": "no_coverage_increment",
+      "limitations": [
+        "assembly round-trip candidate: the original function entry is redirected to an assembled replacement block; the original body is not preserved"
+      ]
+    },
+    {
+      "task": "direct-pe-x86_64-guard",
+      "path": "binary_direct",
+      "fixture": "fixtures/pe/vuln-strcpy-x64.exe",
+      "input_sha256": "1dcafa9d93e010e7da787e3323376be6b8ac79c792a556ff2f5269ca20463fae",
+      "ai": {
+        "status": "invalid",
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "latency_ms": 1296,
+        "usage": {
+          "prompt_tokens": 600,
+          "completion_tokens": 50,
+          "total_tokens": 650,
+          "latency_ms": 1296
+        },
+        "plan_sha256": "ca0d30677546bbe0522310f898dda702c0138765f28f33603a2bd5ed1898f22e",
+        "error": "injected code uses forbidden instruction 'call' at block offset 0x11",
+        "validation": {
+          "actions": [],
+          "limitations": [],
+          "error": "injected code uses forbidden instruction 'call' at block offset 0x11"
+        }
+      },
+      "disposition": "unsupported",
+      "verified": false,
+      "candidate_sha256": null,
+      "report_error": "injected code uses forbidden instruction 'call' at block offset 0x11",
+      "gate": {},
+      "runtime": {
+        "verdict": null,
+        "tier": null,
+        "cases": null
+      },
+      "baseline": {
+        "disposition": "verified_patch",
+        "verified": true,
+        "candidate_sha256": "179724b99dacd799a8640a4e451b6e06fe6e271882de32b5afc6fd106e0dd350"
+      },
+      "increment": "ai_failed_baseline_verified",
+      "limitations": [
+        "injected code uses forbidden instruction 'call' at block offset 0x11"
+      ]
+    },
+    {
+      "task": "direct-pe-arm64-guard",
+      "path": "binary_direct",
+      "fixture": "fixtures/pe/vuln-strcpy-arm64.exe",
+      "input_sha256": "49ec2b4ec019fa754efa99d4adcf7e0ff369d59a623a6cd22a2e084a8e475c8d",
+      "ai": {
+        "status": "invalid",
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "latency_ms": 1118,
+        "usage": {
+          "prompt_tokens": 596,
+          "completion_tokens": 62,
+          "total_tokens": 658,
+          "latency_ms": 1118
+        },
+        "plan_sha256": "2df656c301c326f64cc2229670fbb923845e5572e3a325ed76e6d4e9bc98178e",
+        "error": "injected code ends with 'mov' and would fall through past the end of the block; the last instruction must be one of ['b', 'ret']",
+        "validation": {
+          "actions": [],
+          "limitations": [],
+          "error": "injected code ends with 'mov' and would fall through past the end of the block; the last instruction must be one of ['b', 'ret']"
+        }
+      },
+      "disposition": "unsupported",
+      "verified": false,
+      "candidate_sha256": null,
+      "report_error": "injected code ends with 'mov' and would fall through past the end of the block; the last instruction must be one of ['b', 'ret']",
+      "gate": {},
+      "runtime": {
+        "verdict": null,
+        "tier": null,
+        "cases": null
+      },
+      "baseline": {
+        "disposition": "verified_patch",
+        "verified": true,
+        "candidate_sha256": "d5f2a392f2ad6fc21086838d69e4f849deb74b0fac31d0e7bc2746dfd00fbd49"
+      },
+      "increment": "ai_failed_baseline_verified",
+      "limitations": [
+        "injected code ends with 'mov' and would fall through past the end of the block; the last instruction must be one of ['b', 'ret']"
+      ]
+    },
+    {
+      "task": "direct-i386-memcpy",
+      "path": "binary_direct",
+      "fixture": "fixtures/elf/vuln-memcpy-x86.elf",
+      "input_sha256": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
+      "ai": {
+        "status": "accepted",
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "latency_ms": 868,
+        "usage": {
+          "prompt_tokens": 613,
+          "completion_tokens": 39,
+          "total_tokens": 652,
+          "latency_ms": 868
+        },
+        "plan_sha256": "a20ba86b03ee41c3bdd17c86fa33db9b8378cb6f0eb7cb4a61c6ab4006422012",
+        "error": null,
+        "validation": {
+          "actions": [
+            {
+              "kind": "ai-edit",
+              "offset": 142294,
+              "before_hex": "40000000",
+              "after_hex": "10000000"
+            }
+          ],
+          "limitations": [],
+          "error": null
+        }
+      },
+      "disposition": "verified_patch",
+      "verified": true,
+      "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88",
+      "report_error": null,
+      "gate": {
+        "success": true,
+        "outcome": "success_within_scope",
+        "reason": "",
+        "required_checks": 10,
+        "required_not_run": 0,
+        "evidence_sha256": "2940bcd11e6400ff78405e2b1671edd95b3da77846f356e119069acc818a7902"
+      },
+      "runtime": {
+        "verdict": "pass",
+        "tier": "emulated_run",
+        "cases": [
+          {
+            "input_len": 0,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 1,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 15,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 16,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 17,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "buffer_match": true,
+            "error": null
+          },
+          {
+            "input_len": 64,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": null,
+            "buffer_match": true,
+            "error": null
+          }
+        ]
+      },
+      "baseline": {
+        "disposition": "verified_patch",
+        "verified": true,
+        "candidate_sha256": "e5670ebc9643533607604554a19447e2b2a3cab43479a4485628a4245c3cac88"
+      },
+      "increment": "no_coverage_increment",
+      "limitations": []
+    }
+  ],
+  "verified": 3,
+  "baseline_verified": 6,
+  "coverage_increments": 0
+}

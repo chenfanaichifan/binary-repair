@@ -70,7 +70,11 @@ this project as proof.
      them and the existing writer patches the binary directly.  No assembly text
      and no decompiled-C round-trip.
   Both end in the deterministic runtime/gate, which is the only acceptance
-  authority.  See [docs/architecture/ai-binary-repair-paths.md](docs/architecture/ai-binary-repair-paths.md).
+  authority.  When the original runtime is available, the gate also requires a
+  PoC-style differential (original fails / candidate passes).  See
+  [docs/architecture/ai-binary-repair-paths.md](docs/architecture/ai-binary-repair-paths.md).
+  Experiments: `artifacts/ai-real-provider-2026-11-13/` (3/6 AI verified vs 6/6
+  baseline, 0 coverage increments) and `artifacts/gate-blind-spots-2026-11-13/`.
 - Direct binary repair spans **ELF, PE and Mach-O** (x86-64 and arm64) and,
   since v5, **32-bit x86 (ELF32/PE32)**: static/dynamic ELF32 (PLT), PE32
   import-thunk and direct-IAT (`FF15`) calls, stack-capacity analysis, immediate

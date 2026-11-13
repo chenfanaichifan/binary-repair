@@ -23,8 +23,8 @@ work.  See section 9 for the exact matrix/sink boundary.
 Current acceptance is the non-browser suite:
 
 ```text
-macOS 13.5 arm64: 1128 tests, 0 failed, 0 errors, 4 skipped (250.1 s)
-Linux VM Ubuntu 24.04 arm64: 1128 tests, 0 failed, 0 errors, 7 skipped (258.0 s)
+macOS 13.5 arm64: 1133 tests, 0 failed, 0 errors, 4 skipped (335.4 s)
+Linux VM Ubuntu 24.04 arm64: 1133 tests, 0 failed, 0 errors, 7 skipped (345.0 s)
 GitHub Actions Ubuntu 24.04: workflow success on the final commits
 ```
 
@@ -142,6 +142,15 @@ PoC-based evaluation remain future work; AI never owns acceptance.
   clang and an ELF target.
 - Mach-O direct-path positive evidence exists only on macOS (native gate); on
   Linux those tests/evidence entries are platform-skipped.
-- Scripted evidence measures protocol/assembler/validator/gate integration, not
-  real-LLM repair quality; **no AI increment is measured on the current
-  fixtures**.  PoC-failure is not yet a gate predicate.
+- When the original runtime is available, a PoC-style differential
+  (original fails / candidate passes) is now a required gate predicate; it is a
+  function-level runtime differential, not a full guest/kernel PoC replay.
+- Gate blind-spot experiment: 4/5 semantically deviant scripted candidates are
+  caught; one residual blind spot remains (stdout/`puts` side effects are not
+  compared by the runtime oracle).  See
+  `artifacts/gate-blind-spots-2026-11-13/`.
+- Real-provider experiment (six tasks) measured **3/6 AI verified vs 6/6
+  deterministic baseline, 0 coverage increments**; see
+  `artifacts/ai-real-provider-2026-11-13/`.  Real-LLM quality is not a CI
+  guarantee, and no AI increment is demonstrated on cases the baseline already
+  repairs.

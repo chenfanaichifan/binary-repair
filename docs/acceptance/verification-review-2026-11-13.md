@@ -81,6 +81,8 @@ Observed on the final tree:
 fixtures: 12 rows, sources: 132 rows -> PASS
 bundle artifacts/binary-universal-v5-2026-11-13: 38 files -> PASS
 bundle artifacts/ai-direct-binary-2026-11-13: 14 files -> PASS
+bundle artifacts/ai-real-provider-2026-11-13: 2 files -> PASS
+bundle artifacts/gate-blind-spots-2026-11-13: 2 files -> PASS
 overall: PASS
 ```
 
@@ -135,10 +137,28 @@ vulnerability coverage.  A real-provider, gate-blind/PoC increment experiment
 remains future work.  Do not claim "AI repaired arbitrary binaries" or
 "AI increment demonstrated."
 
-## 7. Final local verification
+## 7. Real-provider, PoC gate and gate blind spots (2026-11-13 follow-up)
 
-- macOS 13.5 arm64: **1128 tests, 0 failed, 0 errors, 4 skipped** (250.1 s).
-- Linux VM Ubuntu 24.04 arm64: **1128 tests, 0 failed, 0 errors, 7 skipped** (258.0 s).
+- **PoC-style differential gate**: when the original runtime is available, the
+  gate now requires `poc.original_fails` and `poc.candidate_passes` for the
+  same capacity/input probe.  This is function-level runtime differential, not
+  full guest PoC replay.  Reports include `verification.packet.poc`.
+- **Gate blind-spot experiment**: 4/5 structurally valid but semantically
+  deviant candidates are caught after hardening (destination fill, edit
+  restriction); one residual blind spot remains (stdout/`puts` side effect).
+  Evidence: `artifacts/gate-blind-spots-2026-11-13/`.
+- **Real-provider experiment**: provider configured (DeepSeek model), six tasks:
+  **3/6 AI verified vs 6/6 deterministic baseline; 0 coverage increments**.
+  Failures recorded honestly (one assembly runtime rejection, two direct
+  validator rejections).  Evidence: `artifacts/ai-real-provider-2026-11-13/`.
+- This still does **not** answer "AI increment" on cases the deterministic
+  baseline cannot repair; a gate-blind/PoC benchmark on those cases is the next
+  concrete experiment.
+
+## 8. Final local verification
+
+- macOS 13.5 arm64: **1133 tests, 0 failed, 0 errors, 4 skipped** (335.4 s).
+- Linux VM Ubuntu 24.04 arm64: **1133 tests, 0 failed, 0 errors, 7 skipped** (345.0 s).
 - `scripts/verify_evidence.py`: 11 fixture rows + 110 source rows PASS;
   v5 bundle 38 files PASS; AI bundle 9 files PASS.
 - CI: [43426508766](https://github.com/chenfanaichifan/binary-repair/actions/runs/43426508766)

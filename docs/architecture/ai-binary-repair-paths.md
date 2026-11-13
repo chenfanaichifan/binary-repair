@@ -71,6 +71,20 @@ macOS-only capability).
   injection) returns no candidate with a typed `ai.status`.
 - The runtime `buffer_match` check rejects a structurally valid but semantically
   empty injected guard (e.g. a lone `ret`).
+- **PoC-style differential predicate**: when the original candidate's runtime is
+  available, the gate now requires the same input/capacity probe to fail on the
+  original bytes (`poc.original_fails`) and pass on the candidate
+  (`poc.candidate_passes`).  This is a function-level runtime differential, not
+  a full guest/kernel PoC replay; it is required when available.
+- **Gate blind-spot experiment** (`scripts/gate_blind_spot_experiment.py`)
+  records structurally valid but semantically deviant candidates: no-op, wrong
+  destination, missing NUL and unrelated executable edits are caught; one
+  residual blind spot remains (stdout/`puts` side effects are not compared).
+  See `artifacts/gate-blind-spots-2026-11-13/`.
+- **Real-provider experiment** (`scripts/run_ai_provider_experiment.py`) is an
+  exploratory, network-using run: 3/6 tasks verified vs 6/6 deterministic
+  baseline on the same set, 0 coverage increments.  See
+  `artifacts/ai-real-provider-2026-11-13/`.
 
 ## Surfaces
 

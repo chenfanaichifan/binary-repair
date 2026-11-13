@@ -22,6 +22,16 @@
   `test_binary_ai_ui.py`, `test_ai_evidence_script.py`; scripted evidence
   `artifacts/ai-direct-binary-2026-11-13/` and acceptance record
   `docs/acceptance/ai-binary-repair-2026-11-13.md`.
+- Gate hardening / evaluation: PoC-style differential (`poc.original_fails` /
+  `poc.candidate_passes`) is now a required gate predicate when original runtime
+  evidence exists; destination fill makes missing-NUL guards observable; direct
+  immediate edits are restricted to the selected length immediate.
+- New experiments: `scripts/gate_blind_spot_experiment.py` (4/5 semantically
+  deviant cases caught, 1 residual stdout/puts blind spot) and
+  `scripts/run_ai_provider_experiment.py` (real provider: 3/6 AI verified vs
+  6/6 deterministic baseline, 0 coverage increments).  Evidence under
+  `artifacts/gate-blind-spots-2026-11-13/` and
+  `artifacts/ai-real-provider-2026-11-13/`.
 - Verification follow-up: `scripts/verify_evidence.py` (reproducible fixture/
   source/bundle SHA-256 checks), readelf root-cause/claim-scope review
   (`docs/acceptance/verification-review-2026-11-13.md`), updated LIMITATIONS

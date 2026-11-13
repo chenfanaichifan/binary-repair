@@ -48,8 +48,8 @@ gate-blind/PoC increment experiment remain future work.
 
 | Environment | Result |
 |---|---|
-| macOS 13.5 arm64 / Python 3.11.8 | **1128 tests, 0 failed, 0 errors, 4 skipped** (250.1 s) |
-| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1128 tests, 0 failed, 0 errors, 7 skipped** (258.0 s) |
+| macOS 13.5 arm64 / Python 3.11.8 | **1133 tests, 0 failed, 0 errors, 4 skipped** (335.4 s) |
+| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1133 tests, 0 failed, 0 errors, 7 skipped** (345.0 s) |
 
 Targeted coverage includes:
 
@@ -74,7 +74,48 @@ Targeted coverage includes:
 - This acceptance record is a docs-only follow-up; the workflow re-runs the same
   suite for it.
 
-## 5. Boundaries
+## 5. PoC differential gate and gate blind spots
+
+When the original function's runtime is available, the deterministic gate now
+includes a required **PoC-style differential**: the same capacity/input probe
+must fail on the original bytes and pass on the candidate.  This is a
+function-level runtime differential, not a guest/kernel PoC replay.  Reports
+include `verification.packet.poc` and checks `poc.original_fails` /
+`poc.candidate_passes`.
+
+`scripts/gate_blind_spot_experiment.py` (scripted, no network) constructs
+structurally valid but semantically deviant candidates:
+
+| case | result |
+|---|---|
+| assembly no-op `ret` | caught |
+| assembly wrong destination | caught |
+| assembly missing NUL terminator | caught after explicit destination-fill hardening |
+| direct extra unrelated executable edit | caught after restricting direct edits to the selected length immediate |
+| assembly correct copy but no original `puts` side effect | **residual blind spot** (I/O side effects outside the runtime contract) |
+
+Summary: 4/5 caught, one residual blind spot recorded honestly in
+`artifacts/gate-blind-spots-2026-11-13/`.
+
+## 6. Real-provider experiment
+
+`scripts/run_ai_provider_experiment.py` was run once with the operator's
+configured provider (no key/raw prompt/response stored):
+
+| metric | result |
+|---|---|
+| tasks | 3 assembly + 3 direct |
+| AI verified | 3/6 |
+| deterministic baseline verified | 6/6 |
+| coverage increment | 0 |
+
+Failures were honest and typed: assembly x86-64 candidate failed the runtime
+gate; direct PE x86-64 emitted forbidden `call`; direct PE arm64 emitted a
+fall-through block (validator rejected).  All benchmark fixtures are also
+repairable deterministically, so this set cannot show coverage increment; a
+gate-blind/PoC benchmark on deterministic failures is still required.
+
+## 7. Boundaries
 
 - Assembly path: ELF i386/x86_64/arm64 only; requires host `clang`; no
   PE/Mach-O assembly path.

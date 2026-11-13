@@ -536,6 +536,14 @@ def _run_case(
         entry_sp -= ret_size  # the synthetic return address lives at [esp]
     dest = entry_sp + dest_rel
     map_range(dest, capacity + 96, FILL)
+    # ``dest`` often lies inside the already-mapped stack page, so map_range()
+    # keeps the page's zero fill.  Write the destination fill marker explicitly:
+    # otherwise a missing NUL terminator is indistinguishable from a zeroed
+    # buffer and a semantically wrong guard can pass the runtime oracle.
+    try:
+        uc.mem_write(dest, FILL * (capacity + 96))
+    except Exception:  # noqa: BLE001 - evidence gap, never a crash
+        pass
     boundary = dest + capacity
     i386_marker = False
     if is_i386:

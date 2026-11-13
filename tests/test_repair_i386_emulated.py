@@ -123,7 +123,7 @@ def _synthetic_vulnerable_code(text_va: int = TEXT_VA) -> bytes:
 
 def _synthetic_bounded_code() -> bytes:
     """Same frame, but only NUL-terminates the destination (safe stand-in)."""
-    return bytes.fromhex("5589e583ec208b4508c60000c9c3")
+    return bytes.fromhex("5589e583ec208d45f0c60000c9c3")
 
 
 _MEMCPY_IMM_OFFSET = 13  # imm32 of ``mov ecx, imm32`` in the code below
