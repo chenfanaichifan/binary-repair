@@ -863,6 +863,19 @@ async def start_run(request: Request, job_id: str, csrf: str = Form("")):
     return RedirectResponse(url=f"/agent/{job_id}", status_code=303)
 
 
+@app.post("/jobs/{job_id}/archive")
+async def archive_job(request: Request, job_id: str, csrf: str = Form("")):
+    _require_csrf(csrf)
+    getter = getattr(BACKEND, "archive_job", None)
+    if getter is None:
+        return RedirectResponse(url="/agent", status_code=303)
+    try:
+        getter(job_id)
+    except BackendError as exc:
+        return _comparison_response(request, job_id, error=exc.detail, status_code=exc.status_code)
+    return RedirectResponse(url="/agent", status_code=303)
+
+
 @app.post("/jobs/{job_id}/repair/retry")
 async def retry_repair(request: Request, job_id: str, csrf: str = Form("")):
     _require_csrf(csrf)

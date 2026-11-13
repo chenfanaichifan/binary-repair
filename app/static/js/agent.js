@@ -1928,9 +1928,11 @@
     var failed = /failed|error|timed_out/.test(status) || /failed|error/.test(phase);
     var finished = !failed && (/success|succeeded|finished|verified/.test(status) || phase === "finished");
     var artifact = repairArtifact(view);
-    var key = state.jobId + ":" + (running ? "running" : (finished ? "finished" : status || "unknown"));
+    var attempt = snapshot.repair_attempt || 1;
+    var attemptPrefix = attempt > 1 ? "第 " + attempt + " 次" : "";
+    var key = state.jobId + ":" + (running ? "running" : (finished ? "finished" : status || "unknown")) + ":" + attempt;
     if (state.repairNoticeKey === key) {
-      if (finished && artifact && !state.repairFileShown) {
+      if (finished && artifact && state.repairWasRunning && !state.repairFileShown) {
         state.repairFileShown = true;
         showRepairArtifact(artifact);
       }
@@ -1938,15 +1940,21 @@
     }
     state.repairNoticeKey = key;
     if (running) {
-      pushMessage("assistant", "契约已批准，正在修复中…完成后我会提示，并自动弹出修复后的文件。");
+      state.repairWasRunning = true;
+      pushMessage("assistant", attemptPrefix + "修复：契约已批准，正在修复中…完成后我会提示，并自动弹出修复后的文件。");
     } else if (finished) {
+      if (!state.repairWasRunning) {
+        // Opening an already-finished job must not pop the file panel again.
+        return;
+      }
       if (!state.repairFileShown) {
         state.repairFileShown = true;
-        pushMessage("assistant", "修复结束，已生成修复后的文件。我已自动打开文件下载面板。");
+        pushMessage("assistant", attemptPrefix + "修复结束，已生成修复后的文件。我已自动打开文件下载面板。");
         if (artifact) showRepairArtifact(artifact);
       }
     } else if (status === "failed" || status === "error" || /failed|error/.test(phase)) {
-      pushMessage("assistant", "当前文件不在本地严格模板支持范围；未生成修复产物。你可以重新修复，或新建一个修复任务。");
+      state.repairWasRunning = false;
+      pushMessage("assistant", attemptPrefix + "修复未完成：当前文件不在本地严格模板支持范围；未生成修复产物。你可以重新修复，或新建一个修复任务。");
       pushActionCard("修复未完成", [
         { label: "重新修复当前任务", run: retryCurrentRepair },
         { label: "新建修复", run: function () { window.location.href = "/agent/new?new=1"; } }

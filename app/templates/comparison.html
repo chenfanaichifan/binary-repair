@@ -38,6 +38,12 @@
       <button class="btn ghost" type="submit" data-testid="retry-repair">重新修复当前任务</button>
     </form>
     {% endif %}{% endif %}
+    {% if can_start %}
+    <form method="post" action="/jobs/{{ job.id }}/archive">
+      <input type="hidden" name="csrf" value="{{ csrf_token }}">
+      <button class="btn ghost" type="submit" data-testid="archive-job">归档任务</button>
+    </form>
+    {% endif %}
     <a class="btn ghost" href="/agent/new?new=1" data-testid="new-repair">新建修复</a>
   </div>
 </section>
@@ -267,7 +273,7 @@
     </ol>
 
     <dl class="facts">
-      <div><dt>有效输入测试</dt><dd id="tests-{{ key }}">{{ route.tests.passed }}/{{ route.tests.total }}</dd></div>
+      <div><dt>有效输入测试</dt><dd id="tests-{{ key }}">{% if route.verification == "not_run" and route.tests.passed == 0 %}未运行（not_run）{% else %}{{ route.tests.passed }}/{{ route.tests.total }}{% endif %}</dd></div>
       <div><dt>有界验证</dt><dd id="verification-{{ key }}">{{ value_labels_zh.get(route.verification, route.verification) }}</dd></div>
       <div><dt>兼容性</dt><dd id="compatibility-{{ key }}">{{ value_labels_zh.get(route.compatibility, route.compatibility) }}</dd></div>
       <div><dt>耗时</dt><dd id="elapsed-{{ key }}">{{ route.elapsed_s }} s</dd></div>

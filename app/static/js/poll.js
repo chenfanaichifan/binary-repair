@@ -94,7 +94,11 @@ function setText(id, text) {
       });
     }
 
-    setText("tests-" + key, route.tests.passed + "/" + route.tests.total);
+    if (route.verification === "not_run" && route.tests.passed === 0) {
+      setText("tests-" + key, "未运行（not_run）");
+    } else {
+      setText("tests-" + key, route.tests.passed + "/" + route.tests.total);
+    }
     setText("verification-" + key, VALUE_LABELS[route.verification] || route.verification);
     setText("compatibility-" + key, VALUE_LABELS[route.compatibility] || route.compatibility);
     setText("elapsed-" + key, route.elapsed_s + " s");

@@ -195,7 +195,7 @@ def list_jobs(*, data_dir: str | Path, limit: int = 200) -> list[dict[str, Any]]
     connection = connect(data_dir)
     try:
         rows = connection.execute(
-            "SELECT j.id, j.original_sha256, j.filename, j.phase, j.created_at, "
+            "SELECT j.id, j.original_sha256, j.filename, j.defect_description, j.phase, j.created_at, "
             "       (SELECT COUNT(*) FROM artifacts a WHERE a.job_id = j.id AND a.role = 'repaired_binary') AS repaired_count "
             "FROM jobs j ORDER BY j.created_at DESC LIMIT ?",
             (max(1, min(int(limit), 500)),),
@@ -207,6 +207,7 @@ def list_jobs(*, data_dir: str | Path, limit: int = 200) -> list[dict[str, Any]]
             "id": row["id"],
             "original_sha256": row["original_sha256"],
             "filename": row["filename"],
+            "defect": row["defect_description"],
             "phase": row["phase"],
             "created_at": row["created_at"],
             "has_repair_artifact": bool(row["repaired_count"]),

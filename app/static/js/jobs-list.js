@@ -79,12 +79,13 @@
       var local = byId[entry.id] || {};
       byId[entry.id] = {
         id: entry.id,
-        label: local.label || entry.filename || ("任务 " + entry.id.slice(0, 8)),
+        label: local.label || ((entry.filename || "任务") + " · " + entry.id.slice(0, 8)),
         added_at: local.added_at || entry.created_at || "",
         pinned: !!local.pinned,
         phase: entry.phase || "",
         server: true,
-        has_repair_artifact: !!entry.has_repair_artifact
+        has_repair_artifact: !!entry.has_repair_artifact,
+        defect: entry.defect || ""
       };
     });
     return Object.keys(byId).map(function (id) { return byId[id]; });

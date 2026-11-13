@@ -866,6 +866,7 @@ class LocalBackend:
 
     def list_jobs(self) -> list[dict[str, Any]]:
         rows = job_store.list_jobs(data_dir=self.data_dir)
+        rows = [row for row in rows if not (self.data_dir / "jobs" / row["id"] / "archived").exists()]
         for row in rows:
             execution = self._read_local_execution(row["id"])
             execution_info = execution.get("execution") if isinstance(execution.get("execution"), dict) else {}
@@ -919,6 +920,15 @@ class LocalBackend:
             route["artifacts"] = [artifact]
             route["verification"] = "not_run"
             route["compatibility"] = "not_run"
+            stage_states = {
+                "screening": "pending", "analyzing": "done", "generating": "done",
+                "applying": "done", "validating": "pending", "roundtrip": "pending",
+            }
+            route["stages"] = [
+                {"name": name, "state": stage_states.get(name, "pending")}
+                for name in ROUTE_STAGES.get("A", [])
+            ]
+            route["tests"] = {"passed": 0, "total": 8}
             route_b = routes.setdefault("B", {})
             route_b["phase"] = "draft"
             route_b["outcome"] = None
@@ -941,6 +951,7 @@ class LocalBackend:
             "contract": meta.get("contract") or self._contract(),
             "routes": routes,
             "repair": repair,
+            "repair_attempt": execution_info.get("attempt") or None,
             "repair_artifacts": [artifact] if artifact else [],
         }
 
@@ -953,10 +964,13 @@ class LocalBackend:
         source = self.data_dir / "jobs" / job_id / "original.bin"
         if not source.is_file():
             raise BackendError(404, "Original binary is missing from the job store.")
+        previous = job_store.list_artifacts(job_id, data_dir=self.data_dir)
+        attempt = 1 + sum(1 for row in previous if row.get("role") == "repaired_binary")
         execution_path = self._local_execution_path(job_id)
         execution_path.parent.mkdir(parents=True, exist_ok=True)
         execution_path.write_text(json.dumps({
             "phase": "running",
+            "attempt": attempt,
             "execution": {
                 "status": "running",
                 "status_label": "修复中",
@@ -965,7 +979,7 @@ class LocalBackend:
             },
         }, ensure_ascii=True, indent=2), encoding="utf-8")
         import threading
-        worker = threading.Thread(target=self._execute_local_repair, args=(job_id,), daemon=True)
+        worker = threading.Thread(target=self._execute_local_repair, args=(job_id, attempt), daemon=True)
         worker.start()
 
     def _write_local_execution(self, job_id: str, payload: dict[str, Any]) -> None:
@@ -973,7 +987,7 @@ class LocalBackend:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload, ensure_ascii=True, indent=2), encoding="utf-8")
 
-    def _execute_local_repair(self, job_id: str) -> None:
+    def _execute_local_repair(self, job_id: str, attempt: int = 1) -> None:
         from app.services.binary_repair_engine import repair_elf
         import time
 
@@ -986,6 +1000,7 @@ class LocalBackend:
             if patched is None or not report.supported:
                 self._write_local_execution(job_id, {
                     "phase": "finished",
+                    "attempt": attempt,
                     "execution": {"status": "failed", "status_label": "失败", "finished_at": jobs_iso_now()},
                     "repair": report.to_dict(),
                 })
@@ -1004,6 +1019,7 @@ class LocalBackend:
             )
             self._write_local_execution(job_id, {
                 "phase": "finished",
+                "attempt": attempt,
                 "execution": {
                     "status": "finished", "status_label": "完成",
                     "started_at": jobs_iso_now(), "finished_at": jobs_iso_now(),
@@ -1015,9 +1031,16 @@ class LocalBackend:
         except Exception as exc:
             self._write_local_execution(job_id, {
                 "phase": "finished",
+                "attempt": attempt,
                 "execution": {"status": "failed", "status_label": "失败", "finished_at": jobs_iso_now()},
                 "repair": {"status": "error", "error": type(exc).__name__},
             })
+
+    def archive_job(self, job_id: str) -> None:
+        self._record(job_id)
+        marker = self.data_dir / "jobs" / job_id / "archived"
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text("archived", encoding="utf-8")
 
     def retry_repair(self, job_id: str) -> None:
         self._record(job_id)
