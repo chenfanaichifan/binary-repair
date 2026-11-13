@@ -5,6 +5,25 @@ simple semantic-versioning policy for delivery snapshots.
 
 ## [Unreleased]
 
+### Added — v4 container-neutral repair (2026-11-13)
+
+- `app/services/containers.py`: ELF/PE/Mach-O detection and imported-call
+  resolution (ELF PLT/GOT, PE IAT + `jmp [rip+disp]`/`adrp-ldr-br` thunks,
+  Mach-O stubs + bindings).
+- `app/services/repair/`: frame-capacity analyzer, bounded-copy guards for
+  SysV x86-64 / Win64 / AArch64, immediate clamping, executable-section
+  injection and call redirection.
+- PE x86-64/arm64 and Mach-O arm64/x86-64 now produce real repaired candidates
+  (previously fail-closed); AArch64 ELF gains a guard strategy.
+- `app/services/runtime/`: native Mach-O execution (ad-hoc re-sign) and
+  Unicorn instruction-level evidence for PE/AArch64, plus a unified gate.
+- Report schema v3 with actions, runtime cases and `verification.tier`.
+- CLI `--batch`/`--allow-static-only`; `/api/binary/quick-repair` and the
+  review path now accept every supported container.
+- Reproducible fixtures (`fixtures/src`, `scripts/build_binary_fixtures.py`)
+  and evidence (`scripts/capture_binary_evidence.py`). See
+  `docs/acceptance/binary-universal-v4-2026-11-13.md`.
+
 ### Added
 
 - Direct-ELF verification packet and read-only AI review: the engine report is

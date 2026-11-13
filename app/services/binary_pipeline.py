@@ -1,56 +1,37 @@
-"""Unified, fail-closed dispatch for direct binary repair.
+"""Unified, fail-closed dispatch for direct binary repair (v4).
 
-The concrete byte-rewriting engines live in ``binary_repair_engine`` (ELF),
-``arm64_repair`` (AArch64 ELF), ``pe_repair`` and ``macho_repair``.  This module
-only chooses a backend, normalizes the result and records static verification.
+The pipeline is container-neutral:
 
-It is deliberately not a universal decompiler/recompiler.  Any format,
-architecture or pattern outside the declared matrix returns ``unsupported``
-without writing a candidate.
+* ``containers.detect_container`` identifies ELF / PE / Mach-O and resolves
+  imported call targets (PLT, IAT/thunk, Mach-O stubs);
+* ``repair.analyzer`` recovers stack-buffer copy sinks and their capacity;
+* ``repair.writer`` applies in-place immediate patches or injects an executable
+  guard section and redirects the call;
+* Mach-O candidates are verified by native execution on macOS; PE and AArch64
+  ELF candidates by Unicorn instruction-level execution.
+
+Anything outside the declared matrix returns ``unsupported`` without writing a
+candidate.
 """
 from __future__ import annotations
 
 import hashlib
-import io
-import struct
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-import lief
-from elftools.elf.elffile import ELFFile
-
-from app.services.arm64_repair import repair_arm64, scan_arm64
-from app.services.binary_repair_engine import (
-    BinaryRepairReport,
-    repair_elf,
-    scan_elf,
-)
-from app.services.format_scan import scan_macho as scan_macho_meta
-from app.services.format_scan import scan_pe as scan_pe_meta
-from app.services.macho_repair import repair_macho, scan_macho
-from app.services.pe_repair import (
-    repair_pe,
-    repair_pe_memcpy,
-    scan_pe_copy_calls,
-    scan_pe_memcpy_calls,
-)
+from app.services.containers import ContainerInfo, detect_container
+from app.services.repair.analyzer import Analysis, Sink, analyze
+from app.services.repair.guards import abi_for
+from app.services.repair.writer import repair_with_sinks
+from app.services.runtime import emulated, macho_native
 
 MAX_INPUT_BYTES = 20 * 1024 * 1024
-
-ELF_MACHINES = {
-    3: "i386",
-    8: "mips",
-    20: "powerpc",
-    40: "arm",
-    62: "x86_64",
-    183: "arm64",
-    243: "riscv",
-}
 
 SUPPORTED_REPAIR = {
     ("elf", "x86_64"),
     ("elf", "arm64"),
     ("pe", "x86_64"),
+    ("pe", "arm64"),
     ("macho", "arm64"),
     ("macho", "x86_64"),
 }
@@ -58,9 +39,9 @@ SUPPORTED_REPAIR = {
 
 @dataclass
 class UnifiedBinaryReport:
-    """One report shape for ELF, PE and Mach-O."""
+    """One report shape for ELF, PE and Mach-O (schema v3)."""
 
-    schema_version: int = 2
+    schema_version: int = 3
     format: str = "unknown"
     arch: str = "unknown"
     backend: str = "unknown"
@@ -73,9 +54,12 @@ class UnifiedBinaryReport:
     capacity: int | None = None
     findings: list[dict[str, Any]] = field(default_factory=list)
     offsets: list[int] = field(default_factory=list)
+    actions: list[dict[str, Any]] = field(default_factory=list)
     limitations: list[str] = field(default_factory=list)
     verification: dict[str, Any] = field(default_factory=dict)
     runtime: dict[str, Any] = field(default_factory=dict)
+    container: dict[str, Any] = field(default_factory=dict)
+    universal: dict[str, Any] = field(default_factory=dict)
     signature_invalidated: bool = False
     codesign_invalidated: bool = False
     candidate_available: bool = False
@@ -85,6 +69,7 @@ class UnifiedBinaryReport:
         return {
             **asdict(self),
             "findings": [dict(item) for item in self.findings],
+            "actions": [dict(item) for item in self.actions],
         }
 
 
@@ -92,93 +77,49 @@ def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _elf_arch(data: bytes) -> tuple[str, str, int | None]:
-    if data[:4] != b"\x7fELF" or len(data) < 20:
-        return "unknown", "unknown", None
-    bits = 64 if data[4] == 2 else 32 if data[4] == 1 else None
-    endian = "<" if data[5] == 1 else ">" if data[5] == 2 else "<"
-    try:
-        machine = struct.unpack_from(endian + "H", data, 18)[0]
-    except struct.error:
-        return "elf", "unknown", bits
-    return "elf", ELF_MACHINES.get(machine, f"em_{machine}"), bits
+def _container_dict(container: ContainerInfo) -> dict[str, Any]:
+    return {
+        "format": container.format,
+        "arch": container.arch,
+        "bits": container.bits,
+        "endian": container.endian,
+        "image_base": container.image_base,
+        "slices": container.slices,
+        "imports": len(container.imports),
+        "sections": len(container.sections),
+    }
 
 
 def detect_format(data: bytes) -> tuple[str, str, int | None]:
     """Return ``(format, arch, bits)`` without executing the file."""
-    fmt, arch, bits = _elf_arch(data)
-    if fmt == "elf":
-        return fmt, arch, bits
-
-    if data[:2] == b"MZ":
-        try:
-            pe = lief.PE.parse(list(data))
-        except Exception:  # noqa: BLE001
-            return "pe", "unknown", None
-        if pe is None:
-            return "pe", "unknown", None
-        machine = str(getattr(pe.header, "machine", ""))
-        arch = (
-            "x86_64" if "AMD64" in machine else
-            "arm64" if "ARM64" in machine else
-            "i386" if "I386" in machine or "386" in machine else
-            "unknown"
-        )
-        magic = int(getattr(pe.optional_header, "magic", 0) or 0)
-        bits = 64 if magic == 0x20B else 32 if magic == 0x10B else None
-        return "pe", arch, bits
-
-    if data[:4] == b"\xca\xfe\xba\xbe":
-        try:
-            parsed = lief.MachO.parse(list(data))
-            first = parsed.at(0) if parsed is not None else None
-        except Exception:  # noqa: BLE001
-            first = None
-        if first is None:
-            return "macho-fat", "unknown", None
-        return "macho-fat", _macho_arch(first), 64
-
-    if data[:4] in {
-        b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf",
-        b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe",
-    }:
-        try:
-            parsed = lief.MachO.parse(list(data))
-            first = parsed.at(0) if parsed is not None else None
-        except Exception:  # noqa: BLE001
-            first = None
-        if first is None:
-            return "macho", "unknown", None
-        return "macho", _macho_arch(first), 64 if data[:4] in {
-            b"\xcf\xfa\xed\xfe", b"\xfe\xed\xfa\xcf",
-        } else 32
-
-    return "unknown", "unknown", None
+    container = detect_container(data)
+    fmt = container.format if container.format in {
+        "elf", "pe", "macho", "macho-fat",
+    } else "unknown"
+    arch = container.arch if fmt != "unknown" else "unknown"
+    return fmt, arch, container.bits
 
 
-def _macho_arch(binary: Any) -> str:
-    cpu = str(getattr(getattr(binary, "header", None), "cpu_type", ""))
-    if "ARM64" in cpu:
-        return "arm64"
-    if "X86_64" in cpu:
-        return "x86_64"
-    if "ARM" in cpu:
-        return "arm"
-    if "X86" in cpu or "I386" in cpu:
-        return "i386"
-    return "unknown"
-
-
-def _limits_from(scan: dict[str, Any]) -> list[str]:
-    limits = scan.get("limits") or scan.get("limitations") or []
-    return [str(item) for item in limits]
+def _sink_to_finding(sink: Sink) -> dict[str, Any]:
+    return {
+        "kind": sink.kind,
+        "address": hex(sink.call_va or 0),
+        "callee": sink.callee,
+        "capacity": sink.capacity,
+        "dest_offset": sink.dest_rel,
+        "before": sink.length,
+        "after": sink.capacity,
+        "patchable": sink.patchable,
+        "confidence": sink.confidence,
+        "detail": sink.detail,
+    }
 
 
 def scan_binary(data: bytes) -> dict[str, Any]:
     """Scan any supported container; never writes or executes."""
     if len(data) > MAX_INPUT_BYTES:
         return {
-            "schema_version": 2,
+            "schema_version": 3,
             "format": "unknown",
             "arch": "unknown",
             "backend": "none",
@@ -187,79 +128,57 @@ def scan_binary(data: bytes) -> dict[str, Any]:
             "findings": [],
             "limitations": [f"input exceeds {MAX_INPUT_BYTES} bytes"],
         }
-
-    fmt, arch, bits = detect_format(data)
+    analysis: Analysis = analyze(data)
+    container = analysis.container
+    repair_supported = bool(analysis.patchable()) and (
+        (container.format, container.arch) in SUPPORTED_REPAIR
+    )
     result: dict[str, Any] = {
-        "schema_version": 2,
-        "format": fmt,
-        "arch": arch,
-        "bits": bits,
-        "backend": fmt,
-        "supported": fmt in {"elf", "pe", "macho", "macho-fat"},
-        "repair_supported": (fmt, arch) in SUPPORTED_REPAIR,
-        "findings": [],
-        "limitations": [],
+        "schema_version": 3,
+        "format": container.format,
+        "arch": container.arch,
+        "bits": container.bits,
+        "backend": container.format,
+        "supported": container.format in {"elf", "pe", "macho", "macho-fat"},
+        "repair_supported": repair_supported,
+        "findings": [_sink_to_finding(sink) for sink in analysis.sinks],
+        "limitations": list(analysis.limitations),
+        "container": _container_dict(container),
     }
-
-    try:
-        if fmt == "elf" and arch == "x86_64":
-            scan = scan_elf(data)
-            result["findings"] = scan.get("findings", [])
-            result["limitations"] = _limits_from(scan)
-        elif fmt == "elf" and arch == "arm64":
-            scan = scan_arm64(data)
-            result["findings"] = scan.get("findings", [])
-            result["limitations"] = _limits_from(scan)
-        elif fmt == "pe" and arch == "x86_64":
-            meta = scan_pe_meta(data)
-            copies = scan_pe_copy_calls(data).get("findings", [])
-            memcpy = scan_pe_memcpy_calls(data).get("findings", [])
-            result["findings"] = list(copies) + list(memcpy)
-            result["limitations"] = [
-                item for item in _limits_from(meta)
-                if "not enabled" not in item.lower()
-            ]
-            result["sections"] = meta.get("sections", [])
-            result["imports"] = meta.get("imports", [])
-        elif fmt == "macho":
-            scan = scan_macho(data)
-            result["findings"] = scan.get("findings", [])
-            result["limitations"] = [
-                item for item in _limits_from(scan)
-                if "not enabled" not in item.lower()
-            ]
-            meta = scan_macho_meta(data)
-            result["sections"] = meta.get("sections", [])
-        else:
-            result["limitations"] = [
-                f"{fmt}/{arch} is outside the repair scan matrix"
-            ]
-    except Exception as exc:  # noqa: BLE001
-        result["supported"] = False
-        result["limitations"] = [f"scan failed: {type(exc).__name__}: {exc}"]
-
-    if not result["repair_supported"]:
+    if not result["supported"]:
         result["limitations"].append(
-            f"no repair backend for {fmt}/{arch}; candidate will not be written"
+            f"{container.format}/{container.arch} is outside the repair matrix"
         )
     return result
 
 
-def _base_report(data: bytes, fmt: str, arch: str) -> UnifiedBinaryReport:
+def _base_report(data: bytes, container: ContainerInfo) -> UnifiedBinaryReport:
     return UnifiedBinaryReport(
-        format=fmt,
-        arch=arch,
-        backend=fmt,
+        format=container.format if container.format != "unknown" else "unknown",
+        arch=container.arch,
+        backend=container.format,
         original_sha256=_sha(data),
         patched_sha256=_sha(data),
+        container=_container_dict(container),
+        universal={
+            "detected": container.format in {"elf", "pe", "macho", "macho-fat"},
+            "repairable": (container.format, container.arch) in SUPPORTED_REPAIR,
+            "reason": "",
+        },
     )
 
 
-def _from_elf(
-    data: bytes, patched: bytes | None, raw: BinaryRepairReport,
-    *, verify: bool,
-) -> UnifiedBinaryReport:
-    report = _base_report(data, "elf", raw.arch or "unknown")
+def _unsupported(container: ContainerInfo, data: bytes, reason: str) -> UnifiedBinaryReport:
+    report = _base_report(data, container)
+    report.limitations = [reason]
+    report.error = reason
+    report.universal["reason"] = reason
+    return report
+
+
+def _from_elf_legacy(container: ContainerInfo, data: bytes, patched: bytes | None,
+                     raw: Any, *, verify: bool) -> UnifiedBinaryReport:
+    report = _base_report(data, container)
     report.backend = raw.backend or "elf"
     report.strategy = raw.strategy or "none"
     report.status = raw.status or ("patched" if patched else "unsupported")
@@ -282,6 +201,8 @@ def _from_elf(
             report.verification = {
                 "packet": verification.packet,
                 "gate": asdict(verification.gate),
+                "tier": "emulated_run",
+                "engine": "unicorn-x86-64",
             }
             if not verification.gate.success:
                 report.status = "not_verified"
@@ -293,62 +214,34 @@ def _from_elf(
             report.limitations.append(
                 f"verification unavailable: {type(exc).__name__}: {exc}"
             )
-    return report
-
-
-def _from_pe(data: bytes, patched: bytes | None, raw: Any) -> UnifiedBinaryReport:
-    report = _base_report(data, "pe", detect_format(data)[1] or "x86_64")
-    report.backend = raw.backend or "pe"
-    report.strategy = raw.strategy or "none"
-    report.status = raw.status or ("patched" if patched else "unsupported")
-    report.supported = bool(patched is not None)
-    report.mode = report.strategy
-    report.findings = [dict(item) for item in raw.findings] if getattr(raw, "findings", None) else []
-    report.offsets = list(getattr(raw, "offsets", []) or [])
-    report.limitations = list(getattr(raw, "limitations", []) or [])
-    report.signature_invalidated = bool(getattr(raw, "signature_invalidated", False))
     if patched is not None:
-        report.patched_sha256 = _sha(patched)
-        report.candidate_available = True
+        report.verification.setdefault("static_reparse", True)
     return report
 
 
-def _from_macho(data: bytes, patched: bytes | None, raw: Any) -> UnifiedBinaryReport:
-    report = _base_report(data, "macho", detect_format(data)[1] or "arm64")
-    report.backend = "macho"
-    report.strategy = raw.strategy or "none"
-    report.status = raw.status or ("patched" if patched else "unsupported")
-    report.supported = bool(patched is not None)
-    report.mode = report.strategy
-    report.findings = [dict(item) for item in getattr(raw, "findings", []) or []]
-    report.offsets = list(getattr(raw, "offsets", []) or [])
-    report.limitations = list(getattr(raw, "limitations", []) or [])
-    report.codesign_invalidated = bool(getattr(raw, "codesign_invalidated", False))
-    if patched is not None:
-        report.patched_sha256 = _sha(patched)
-        report.candidate_available = True
-    return report
-
-
-def _unsupported(data: bytes, fmt: str, arch: str, reason: str) -> UnifiedBinaryReport:
-    report = _base_report(data, fmt, arch)
-    report.limitations = [reason]
-    report.error = reason
-    return report
-
-
-def _reparse(data: bytes, fmt: str) -> bool:
-    try:
-        if fmt == "elf":
-            ELFFile(io.BytesIO(data))
-            return True
-        if fmt == "pe":
-            return lief.PE.parse(list(data)) is not None
-        if fmt in {"macho", "macho-fat"}:
-            return lief.MachO.parse(list(data)) is not None
-    except Exception:  # noqa: BLE001
-        return False
-    return False
+def _select_runtime(data: bytes, container: ContainerInfo, sink: Sink):
+    capacity = int(sink.capacity or 0)
+    if container.format == "macho":
+        if not macho_native.available():
+            return None
+        return macho_native.run(data, arch=container.arch, capacity=capacity)
+    if container.format == "pe" and container.arch in {"x86_64", "arm64"}:
+        return emulated.emulate(
+            data, container,
+            function_va=sink.function_va,
+            dest_rel=int(sink.dest_rel or 0),
+            capacity=capacity,
+            abi=abi_for(container.format, container.arch),
+        )
+    if container.format == "elf" and container.arch == "arm64":
+        return emulated.emulate(
+            data, container,
+            function_va=sink.function_va,
+            dest_rel=int(sink.dest_rel or 0),
+            capacity=capacity,
+            abi="aapcs64",
+        )
+    return None
 
 
 def repair_binary(
@@ -358,69 +251,133 @@ def repair_binary(
     strategy: str = "auto",
     verify: bool = True,
 ) -> tuple[bytes | None, UnifiedBinaryReport]:
-    """Dispatch to a supported byte-rewrite backend; fail closed otherwise."""
-    fmt, arch, _bits = detect_format(data)
-    base = _base_report(data, fmt, arch)
+    """Dispatch to a supported repair backend; fail closed otherwise."""
+    container = detect_container(data)
+    fmt, arch = container.format, container.arch
 
     if len(data) > MAX_INPUT_BYTES:
-        return None, _unsupported(data, fmt, arch, f"input exceeds {MAX_INPUT_BYTES} bytes")
+        return None, _unsupported(container, data, f"input exceeds {MAX_INPUT_BYTES} bytes")
     if backend != "auto" and backend != fmt:
-        return None, _unsupported(data, fmt, arch, f"requested backend {backend} does not match {fmt}")
+        return None, _unsupported(
+            container, data, f"requested backend {backend} does not match {fmt}"
+        )
     if (fmt, arch) not in SUPPORTED_REPAIR:
-        return None, _unsupported(data, fmt, arch, f"no repair backend for {fmt}/{arch}")
+        return None, _unsupported(container, data, f"no repair backend for {fmt}/{arch}")
 
-    patched: bytes | None = None
-    report: UnifiedBinaryReport = base
+    # The reviewed ELF x86-64 engine keeps its strict-template and immediate
+    # strategies and its existing structured gate.
+    if fmt == "elf" and arch == "x86_64":
+        from app.services.binary_repair_engine import repair_elf
 
-    try:
-        if fmt == "elf" and arch == "x86_64":
-            patched, raw = repair_elf(data)
-            report = _from_elf(data, patched, raw, verify=verify)
-        elif fmt == "elf" and arch == "arm64":
-            patched, raw = repair_arm64(data)
-            report = _from_elf(data, patched, raw, verify=False)
-        elif fmt == "pe" and arch == "x86_64":
-            patched, raw = repair_pe(data)
-            if patched is None:
-                patched, raw = repair_pe_memcpy(data)
-            report = _from_pe(data, patched, raw)
-        elif fmt == "macho":
-            patched, raw = repair_macho(data)
-            report = _from_macho(data, patched, raw)
-        else:
-            return None, _unsupported(data, fmt, arch, f"no repair backend for {fmt}/{arch}")
-    except Exception as exc:  # noqa: BLE001
-        return None, _unsupported(data, fmt, arch, f"repair failed: {type(exc).__name__}: {exc}")
+        patched, raw = repair_elf(data)
+        report = _from_elf_legacy(container, data, patched, raw, verify=verify)
+        if strategy != "auto" and report.strategy != strategy:
+            return None, _unsupported(
+                container, data,
+                f"requested strategy {strategy} does not match selected {report.strategy}",
+            )
+        if patched is None:
+            report.supported = False
+            report.error = report.limitations[-1] if report.limitations else "unsupported"
+            report.universal["reason"] = report.error
+            return None, report
+        if not report.candidate_available:
+            report.error = "candidate is unchanged"
+            return None, report
+        return patched, report
+
+    analysis = analyze(data)
+    sinks = analysis.patchable()
+    report = _base_report(data, container)
+    if not sinks:
+        report.limitations = list(analysis.limitations)
+        report.error = report.limitations[-1] if report.limitations else "unsupported"
+        report.universal["reason"] = report.error
+        return None, report
+    report.findings = [_sink_to_finding(sink) for sink in sinks]
+
+    result = repair_with_sinks(data, container, sinks)
+    report.limitations.extend(result.limitations)
+    report.signature_invalidated = result.signature_invalidated
+    report.codesign_invalidated = result.codesign_invalidated
+    if not result.ok or result.patched is None:
+        report.status = "unsupported"
+        report.supported = False
+        report.error = report.limitations[-1] if report.limitations else "repair failed"
+        report.universal["reason"] = report.error
+        return None, report
+
+    patched = result.patched
+    report.actions = [dict(action) for action in result.actions]
+    report.offsets = [
+        int(action["offset"]) for action in result.actions
+        if isinstance(action.get("offset"), int)
+    ]
+    report.patched_sha256 = _sha(patched)
+    report.candidate_available = True
+    report.status = "patched"
+    report.supported = True
+    has_guard = any(action["kind"] == "guard" for action in result.actions)
+    report.strategy = "guard" if has_guard else "immediate"
+    report.mode = report.strategy
+    guard_sink = next((sink for sink in sinks if sink.kind == "unbounded_copy"), None)
+    report.capacity = guard_sink.capacity if guard_sink is not None else sinks[0].capacity
 
     if strategy != "auto" and report.strategy != strategy:
         return None, _unsupported(
-            data, fmt, arch,
+            container, data,
             f"requested strategy {strategy} does not match selected {report.strategy}",
         )
 
-    if patched is None:
-        report.supported = False
-        report.error = report.limitations[-1] if report.limitations else "unsupported"
-        return None, report
-    if patched == data:
-        report.supported = False
-        report.error = "candidate is unchanged"
-        report.candidate_available = False
-        return None, report
-    if not _reparse(patched, fmt):
+    patched_container = detect_container(patched)
+    reparse_ok = (
+        patched_container.format == container.format
+        and patched_container.arch == container.arch
+        and not patched_container.limitations
+    )
+    if not reparse_ok:
         report.supported = False
         report.candidate_available = False
         report.status = "rejected"
-        report.error = "patched candidate failed static reparse"
+        report.error = "patched candidate failed container reparse"
+        report.patched_sha256 = _sha(data)
         return None, report
 
-    gate = report.verification.get("gate") if isinstance(report.verification, dict) else None
-    if isinstance(gate, dict) and gate.get("success") is False:
-        report.supported = False
-        report.candidate_available = False
-        report.status = "not_verified"
-        report.error = f"verification gate did not pass: {gate.get('reason') or 'incomplete evidence'}"
-        return None, report
+    if verify:
+        from app.services.unified_verification import build as build_unified
 
-    report.verification.setdefault("static_reparse", True)
+        runtime = None
+        if guard_sink is not None:
+            runtime = _select_runtime(patched, patched_container, guard_sink)
+        if runtime is not None:
+            report.runtime = runtime.to_dict()
+        verification = build_unified(
+            format_name=container.format,
+            arch=container.arch,
+            original=data,
+            candidate=patched,
+            actions=report.actions,
+            runtime=runtime,
+            reparse_ok=reparse_ok,
+            original_sha256=report.original_sha256,
+            patched_sha256=report.patched_sha256,
+        )
+        report.verification = {
+            "packet": verification.packet,
+            "gate": asdict(verification.gate),
+            "tier": verification.packet["scope"]["runtime_tier"],
+            "engine": runtime.engine if runtime is not None else "",
+            "static_reparse": True,
+        }
+        if not verification.gate.success:
+            report.supported = False
+            report.candidate_available = False
+            report.status = "not_verified"
+            report.error = f"verification gate did not pass: {verification.gate.reason}"
+            return None, report
+    else:
+        report.verification.setdefault("tier", "static_only")
+        report.verification.setdefault("static_reparse", True)
+
+    report.status = "patched"
     return patched, report

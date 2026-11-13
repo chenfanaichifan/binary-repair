@@ -1509,7 +1509,7 @@
       "AI 只收到结构化验证报告（哈希、地址、限制），不接收二进制或源码；验收仍由确定性 gate 决定。"));
 
     var actions = el("div", "agent-card-actions");
-    var quick = el("button", "agent-btn", "一键修复（自动推断安全界）");
+    var quick = el("button", "agent-btn", "一键修复（自动识别格式）");
     quick.type = "button";
     quick.dataset.testid = "agent-quick-repair";
     quick.addEventListener("click", function () { quickRepair(quick, progress, bar, progressText, aiToggle); });

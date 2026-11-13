@@ -1180,19 +1180,28 @@ async def quick_binary_repair(
     binary: UploadFile = File(...),
     csrf: str = Form(...),
 ) -> JSONResponse:
-    """One-click narrow binary repair; returns a downloadable candidate ELF."""
+    """One-click binary repair; returns a downloadable candidate for any supported container."""
     _require_csrf(csrf)
     raw = await binary.read()
     if len(raw) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
-    try:
-        patched, report = quick_repair_elf(raw)
-    except QuickRepairError as exc:
-        return JSONResponse({"ok": False, "detail": str(exc)}, status_code=422)
+    patched, report = repair_binary_pipeline(raw, verify=True)
+    gate = (report.verification or {}).get("gate") or {}
+    if patched is None or gate.get("success") is not True:
+        if isinstance(gate, dict) and gate and gate.get("success") is not True:
+            detail = f"verification did not pass: {gate.get('reason') or 'incomplete evidence'}"
+        else:
+            detail = (
+                report.error
+                or (report.limitations[-1] if report.limitations else "unsupported binary")
+            )
+        return JSONResponse({"ok": False, "detail": detail, "report": report.to_dict()},
+                            status_code=422)
     import base64
+    suffix = {"elf": ".elf", "pe": ".exe", "macho": ".macho"}.get(report.format, ".bin")
     return JSONResponse({
         "ok": True,
-        "filename": (Path(binary.filename or "sample.elf").stem + "-fixed.elf"),
+        "filename": (Path(binary.filename or "sample.elf").stem + "-fixed" + suffix),
         "patched_base64": base64.b64encode(patched).decode("ascii"),
         "report": report.to_dict(),
     }, headers={"Cache-Control": "no-store"})
@@ -1231,7 +1240,7 @@ async def binary_repair(
     if patched is None:
         return JSONResponse({"ok": False, "detail": payload.get("limitations") or ["unsupported"],
                              "report": payload}, status_code=422)
-    suffix = {"elf": "-fixed.elf", "pe": "-fixed.exe"}.get(report.format, "-fixed.bin")
+    suffix = {"elf": "-fixed.elf", "pe": "-fixed.exe", "macho": "-fixed.macho"}.get(report.format, "-fixed.bin")
     return JSONResponse({
         "ok": True,
         "filename": (Path(binary.filename or "sample").stem + suffix),

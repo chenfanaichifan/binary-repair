@@ -33,10 +33,11 @@ def _truthy(value: str | None) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _filename(name: str | None) -> str:
+def _filename(name: str | None, fmt: str = "elf") -> str:
     base = Path(name or "sample.elf").name
     stem = Path(base).stem or "sample"
-    return f"{stem}-fixed.elf"
+    suffix = {"elf": ".elf", "pe": ".exe", "macho": ".macho"}.get(fmt, ".bin")
+    return f"{stem}-fixed{suffix}"
 
 
 @router.post("/api/binary/repair-review")
@@ -79,7 +80,7 @@ async def binary_repair_review(
         )
 
     payload = outcome.to_payload(
-        filename=_filename(binary.filename),
+        filename=_filename(binary.filename, getattr(outcome.report, "format", "elf")),
         include_candidate=True,
     )
     return JSONResponse(payload, headers={"Cache-Control": "no-store"})

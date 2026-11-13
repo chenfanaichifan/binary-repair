@@ -1,0 +1,46 @@
+{
+  "fixture": "pe-i386",
+  "candidate_available": false,
+  "status": "unsupported",
+  "error": "no repair backend for pe/i386",
+  "report": {
+    "schema_version": 3,
+    "format": "pe",
+    "arch": "i386",
+    "backend": "pe",
+    "strategy": "none",
+    "status": "unsupported",
+    "supported": false,
+    "original_sha256": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+    "patched_sha256": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+    "mode": "unsupported",
+    "capacity": null,
+    "findings": [],
+    "offsets": [],
+    "actions": [],
+    "limitations": [
+      "no repair backend for pe/i386"
+    ],
+    "verification": {},
+    "runtime": {},
+    "container": {
+      "format": "pe",
+      "arch": "i386",
+      "bits": 32,
+      "endian": "little",
+      "image_base": 4194304,
+      "slices": 1,
+      "imports": 40,
+      "sections": 7
+    },
+    "universal": {
+      "detected": true,
+      "repairable": false,
+      "reason": "no repair backend for pe/i386"
+    },
+    "signature_invalidated": false,
+    "codesign_invalidated": false,
+    "candidate_available": false,
+    "error": "no repair backend for pe/i386"
+  }
+}

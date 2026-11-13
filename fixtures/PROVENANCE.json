@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "generated_by": "scripts/build_binary_fixtures.py",
+  "sources": [
+    "fixtures/src/control_i386.c",
+    "fixtures/src/main.c",
+    "fixtures/src/vuln_copy_macho_aarch64.S",
+    "fixtures/src/vuln_copy_macho_x86_64.S",
+    "fixtures/src/vuln_copy_win_aarch64.S",
+    "fixtures/src/vuln_copy_win_x86_64.S"
+  ],
+  "fixtures": [
+    {
+      "name": "macho-arm64",
+      "path": "fixtures/macho/vuln-strcpy-arm64",
+      "sha256": "089e01ecb01e0021e3b33c51f3a4369ea5baa71a8b37a83c18d84e4c7ab214e4",
+      "size": 33522,
+      "command": [
+        "/usr/bin/clang",
+        "-O0",
+        "-g0",
+        "-Wno-unused-command-line-argument",
+        "-o",
+        "TMP",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/main.c",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/vuln_copy_macho_aarch64.S"
+      ],
+      "tool": "Apple clang version 14.0.3 (clang-1403.0.22.14.1)",
+      "source_sha256": {
+        "control_i386.c": "644c2c71177e2c08d44fc19d35404e8eb3544f604a0070cbe107eccd9910825a",
+        "main.c": "c28a5bd6ca51c5f74a888b2f3128bbc99e2627d60923dcb1e94ca9503f65cfae",
+        "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
+        "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
+        "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+      }
+    },
+    {
+      "name": "macho-x86_64",
+      "path": "fixtures/macho/vuln-strcpy-x86_64",
+      "sha256": "8ddd7e40efba1942a9cfd1e2ada4831c17900faf55ba6e5bad909d404278cfbf",
+      "size": 33096,
+      "command": [
+        "/usr/bin/clang",
+        "-O0",
+        "-g0",
+        "-Wno-unused-command-line-argument",
+        "-arch",
+        "x86_64",
+        "-o",
+        "TMP",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/main.c",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/vuln_copy_macho_x86_64.S"
+      ],
+      "tool": "Apple clang version 14.0.3 (clang-1403.0.22.14.1)",
+      "source_sha256": {
+        "control_i386.c": "644c2c71177e2c08d44fc19d35404e8eb3544f604a0070cbe107eccd9910825a",
+        "main.c": "c28a5bd6ca51c5f74a888b2f3128bbc99e2627d60923dcb1e94ca9503f65cfae",
+        "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
+        "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
+        "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+      }
+    },
+    {
+      "name": "pe-x86_64",
+      "path": "fixtures/pe/vuln-strcpy-x64.exe",
+      "sha256": "1dcafa9d93e010e7da787e3323376be6b8ac79c792a556ff2f5269ca20463fae",
+      "size": 827392,
+      "command": [
+        "<zig>",
+        "cc",
+        "-target",
+        "x86_64-windows-gnu",
+        "-O0",
+        "-g0",
+        "-o",
+        "TMP",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/main.c",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/vuln_copy_win_x86_64.S"
+      ],
+      "tool": "0.17.1",
+      "source_sha256": {
+        "control_i386.c": "644c2c71177e2c08d44fc19d35404e8eb3544f604a0070cbe107eccd9910825a",
+        "main.c": "c28a5bd6ca51c5f74a888b2f3128bbc99e2627d60923dcb1e94ca9503f65cfae",
+        "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
+        "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
+        "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+      }
+    },
+    {
+      "name": "pe-arm64",
+      "path": "fixtures/pe/vuln-strcpy-arm64.exe",
+      "sha256": "49ec2b4ec019fa754efa99d4adcf7e0ff369d59a623a6cd22a2e084a8e475c8d",
+      "size": 913920,
+      "command": [
+        "<zig>",
+        "cc",
+        "-target",
+        "aarch64-windows-gnu",
+        "-O0",
+        "-g0",
+        "-o",
+        "TMP",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/main.c",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/vuln_copy_win_aarch64.S"
+      ],
+      "tool": "0.17.1",
+      "source_sha256": {
+        "control_i386.c": "644c2c71177e2c08d44fc19d35404e8eb3544f604a0070cbe107eccd9910825a",
+        "main.c": "c28a5bd6ca51c5f74a888b2f3128bbc99e2627d60923dcb1e94ca9503f65cfae",
+        "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
+        "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
+        "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+      }
+    },
+    {
+      "name": "elf-arm64",
+      "path": "fixtures/elf/vuln-strcpy-arm64.elf",
+      "sha256": "9f0fc0b44edea4b8b5b00327e8873d247e142596844777e608a808b92f251755",
+      "size": 4810688,
+      "command": [
+        "<zig>",
+        "cc",
+        "-target",
+        "aarch64-linux-musl",
+        "-O0",
+        "-g0",
+        "-o",
+        "TMP",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/main.c",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/vuln_copy_win_aarch64.S"
+      ],
+      "tool": "0.17.1",
+      "source_sha256": {
+        "control_i386.c": "644c2c71177e2c08d44fc19d35404e8eb3544f604a0070cbe107eccd9910825a",
+        "main.c": "c28a5bd6ca51c5f74a888b2f3128bbc99e2627d60923dcb1e94ca9503f65cfae",
+        "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
+        "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
+        "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+      }
+    },
+    {
+      "name": "pe-i386-control",
+      "path": "fixtures/pe/i386-control.exe",
+      "sha256": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+      "size": 272896,
+      "command": [
+        "<zig>",
+        "cc",
+        "-target",
+        "x86-windows-gnu",
+        "-O0",
+        "-g0",
+        "-o",
+        "TMP",
+        "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/src/control_i386.c"
+      ],
+      "tool": "0.17.1",
+      "source_sha256": {
+        "control_i386.c": "644c2c71177e2c08d44fc19d35404e8eb3544f604a0070cbe107eccd9910825a",
+        "main.c": "c28a5bd6ca51c5f74a888b2f3128bbc99e2627d60923dcb1e94ca9503f65cfae",
+        "vuln_copy_macho_aarch64.S": "1fb7aebcd3f97f3daf46229ade3c79339a33e951ae0c659361a5e25aa2b1416f",
+        "vuln_copy_macho_x86_64.S": "8a0d55a05fe580809bccdf5fc0177c42194b1a753aaee274690ef8ccff0087b4",
+        "vuln_copy_win_aarch64.S": "c9229d9e3ae4a24a4834cac2100325a2c241709447a079fa83f99c08cb71e3c2",
+        "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
+      }
+    }
+  ]
+}

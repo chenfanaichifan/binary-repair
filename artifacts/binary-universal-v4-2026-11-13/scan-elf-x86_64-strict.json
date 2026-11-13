@@ -1,0 +1,46 @@
+{
+  "schema_version": 3,
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "backend": "elf",
+  "supported": true,
+  "repair_supported": true,
+  "findings": [
+    {
+      "kind": "syscall_length",
+      "address": "0x401028",
+      "callee": "syscall read/write",
+      "capacity": 16,
+      "dest_offset": null,
+      "before": 256,
+      "after": 16,
+      "patchable": true,
+      "confidence": "medium",
+      "detail": "immediate syscall length exceeds stack capacity"
+    },
+    {
+      "kind": "syscall_length",
+      "address": "0x40103c",
+      "callee": "syscall read/write",
+      "capacity": 16,
+      "dest_offset": null,
+      "before": 256,
+      "after": 16,
+      "patchable": true,
+      "confidence": "medium",
+      "detail": "immediate syscall length exceeds stack capacity"
+    }
+  ],
+  "limitations": [],
+  "container": {
+    "format": "elf",
+    "arch": "x86_64",
+    "bits": 64,
+    "endian": "little",
+    "image_base": 4194304,
+    "slices": 1,
+    "imports": 0,
+    "sections": 3
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "fixture": "unknown-bytes",
+  "candidate_available": false,
+  "status": "unsupported",
+  "error": "no repair backend for unknown/unknown",
+  "report": {
+    "schema_version": 3,
+    "format": "unknown",
+    "arch": "unknown",
+    "backend": "unknown",
+    "strategy": "none",
+    "status": "unsupported",
+    "supported": false,
+    "original_sha256": "e1cbeb5f5fea046d8fcac0959438e34267447a264aedb71ae7fcc38ca6050bfb",
+    "patched_sha256": "e1cbeb5f5fea046d8fcac0959438e34267447a264aedb71ae7fcc38ca6050bfb",
+    "mode": "unsupported",
+    "capacity": null,
+    "findings": [],
+    "offsets": [],
+    "actions": [],
+    "limitations": [
+      "no repair backend for unknown/unknown"
+    ],
+    "verification": {},
+    "runtime": {},
+    "container": {
+      "format": "unknown",
+      "arch": "unknown",
+      "bits": null,
+      "endian": "little",
+      "image_base": 0,
+      "slices": 1,
+      "imports": 0,
+      "sections": 0
+    },
+    "universal": {
+      "detected": false,
+      "repairable": false,
+      "reason": "no repair backend for unknown/unknown"
+    },
+    "signature_invalidated": false,
+    "codesign_invalidated": false,
+    "candidate_available": false,
+    "error": "no repair backend for unknown/unknown"
+  }
+}

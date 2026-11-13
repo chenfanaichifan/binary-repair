@@ -4,7 +4,8 @@
 Examples:
   scripts/repair_binary.py input.elf output.elf --report report.json
   scripts/repair_binary.py input.exe --scan-only --backend pe
-  scripts/repair_binary.py input.macho output.macho --strategy cave --verify
+  scripts/repair_binary.py input.macho output.macho --strategy guard --verify
+  scripts/repair_binary.py --batch samples/ --out repaired/ --json
 """
 from __future__ import annotations
 
@@ -19,44 +20,36 @@ if str(ROOT) not in sys.path:
 
 from app.services.binary_pipeline import repair_binary, scan_binary
 
+SUFFIX = {"elf": ".elf", "pe": ".exe", "macho": ".macho"}
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("input", type=Path)
-    ap.add_argument("output", type=Path, nargs="?")
-    ap.add_argument("--report", type=Path)
-    ap.add_argument("--scan-only", action="store_true")
-    ap.add_argument("--backend", choices=("auto", "elf", "pe", "macho"), default="auto")
-    ap.add_argument("--strategy", default="auto")
-    ap.add_argument("--verify", dest="verify", action="store_true", default=True)
-    ap.add_argument("--no-verify", dest="verify", action="store_false")
-    args = ap.parse_args()
 
-    data = args.input.read_bytes()
+def _write_candidate(path: Path, data: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+    path.chmod(0o755)
+
+
+def _repair_one(source: Path, output: Path | None, args) -> dict:
+    data = source.read_bytes()
     if args.scan_only:
-        payload = scan_binary(data)
-        print(json.dumps(payload, indent=2, ensure_ascii=False))
-        return 0
-    if args.output is None:
-        print("output is required unless --scan-only is used", file=sys.stderr)
-        return 2
-
+        return {"input": str(source), "scan": scan_binary(data)}
+    if output is None:
+        return {"input": str(source), "error": "output is required unless --scan-only is used"}
+    verify = args.verify and not args.allow_static_only
     patched, report = repair_binary(
-        data, backend=args.backend, strategy=args.strategy, verify=args.verify
+        data, backend=args.backend, strategy=args.strategy, verify=verify
     )
     payload = report.to_dict()
     if patched is None:
-        print(json.dumps({"supported": False, "report": payload}, indent=2, ensure_ascii=False))
-        return 2
-
-    args.output.write_bytes(patched)
-    if report.format == "elf":
-        args.output.chmod(0o755)
+        return {"input": str(source), "supported": False, "report": payload}
+    _write_candidate(output, patched)
     if args.report:
         args.report.write_text(
             json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
         )
-    print(json.dumps({
+    return {
+        "input": str(source),
+        "output": str(output),
         "supported": True,
         "format": report.format,
         "arch": report.arch,
@@ -67,8 +60,85 @@ def main() -> int:
         "mode": report.mode,
         "capacity": report.capacity,
         "report": payload,
-    }, indent=2, ensure_ascii=False))
-    return 0
+    }
+
+
+def _batch(source_dir: Path, out_dir: Path, args) -> int:
+    counts = {"ok": 0, "unsupported": 0, "error": 0}
+    records = []
+    for source in sorted(path for path in source_dir.rglob("*") if path.is_file()):
+        if any(part.startswith(".") for part in source.relative_to(source_dir).parts):
+            continue
+        data = source.read_bytes()
+        if args.scan_only:
+            record = {"input": str(source), "scan": scan_binary(data)}
+            counts["ok"] += 1
+        else:
+            patched, report = repair_binary(
+                data, backend=args.backend, strategy=args.strategy,
+                verify=args.verify and not args.allow_static_only,
+            )
+            suffix = SUFFIX.get(report.format, ".bin")
+            target = out_dir / (source.stem + "-fixed" + suffix)
+            if patched is None:
+                status = report.status
+                record = {
+                    "input": str(source), "format": report.format,
+                    "arch": report.arch, "status": status,
+                    "error": report.error or (report.limitations[-1] if report.limitations else ""),
+                }
+                counts["unsupported" if status in {"unsupported", "not_verified", "rejected"} else "error"] += 1
+            else:
+                _write_candidate(target, patched)
+                record = {
+                    "input": str(source), "output": str(target),
+                    "format": report.format, "arch": report.arch,
+                    "strategy": report.strategy, "status": report.status,
+                    "verification_tier": (report.verification or {}).get("tier"),
+                }
+                counts["ok"] += 1
+        records.append(record)
+        if args.json:
+            print(json.dumps(record, ensure_ascii=False))
+        else:
+            status = record.get("status") or "scan"
+            print(f"{status:12} {record['input']}")
+    print(json.dumps({"summary": counts, "files": len(records)}, ensure_ascii=False))
+    return 0 if counts["error"] == 0 else 1
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("input", type=Path, nargs="?")
+    ap.add_argument("output", type=Path, nargs="?")
+    ap.add_argument("--report", type=Path)
+    ap.add_argument("--scan-only", action="store_true")
+    ap.add_argument("--backend", choices=("auto", "elf", "pe", "macho"), default="auto")
+    ap.add_argument("--strategy", default="auto")
+    ap.add_argument("--verify", dest="verify", action="store_true", default=True)
+    ap.add_argument("--no-verify", dest="verify", action="store_false")
+    ap.add_argument("--allow-static-only", action="store_true",
+                    help="write a candidate even when runtime evidence is missing")
+    ap.add_argument("--batch", type=Path, help="repair every file in a directory")
+    ap.add_argument("--out", type=Path, help="output directory for --batch")
+    ap.add_argument("--json", action="store_true", help="one JSON record per file")
+    args = ap.parse_args()
+
+    if args.batch is not None:
+        if not args.batch.is_dir():
+            print("--batch must be a directory", file=sys.stderr)
+            return 2
+        out_dir = args.out or (args.batch / "repaired")
+        return _batch(args.batch, out_dir, args)
+
+    if args.input is None:
+        print("input is required unless --batch is used", file=sys.stderr)
+        return 2
+    record = _repair_one(args.input, args.output, args)
+    print(json.dumps(record, indent=2, ensure_ascii=False))
+    if "scan" in record:
+        return 0
+    return 0 if record.get("supported") else 2
 
 
 if __name__ == "__main__":

@@ -166,32 +166,76 @@ instructions with modeled `read`/`write`/`exit` syscalls.  It checks:
 It is a test oracle, not a host sandbox.  Final acceptance still belongs in a
 disposable x86-64 Linux guest.
 
-## Unified pipeline (2026-11-13)
+## Unified pipeline v4 (container-neutral, 2026-11-13)
 
 `app/services/binary_pipeline.py` is the format-detecting entry point:
 
 ```python
 from app.services.binary_pipeline import scan_binary, repair_binary
 
-scan = scan_binary(data)                 # ELF / PE / Mach-O metadata + findings
-patched, report = repair_binary(data)    # fail-closed candidate + report v2
+scan = scan_binary(data)                 # ELF / PE / Mach-O analysis
+patched, report = repair_binary(data)    # fail-closed candidate + report v3
+```
+
+The v4 pipeline is built from four container-neutral layers:
+
+```text
+app/services/containers.py        format/arch detection, sections, imports
+app/services/repair/analyzer.py   frame capacity + copy sinks
+app/services/repair/guards.py     bounded-copy guards for 3 ABIs
+app/services/repair/writer.py     immediate clamp, cave injection, call redirect
+app/services/runtime/*            native Mach-O / Unicorn runtime evidence
+app/services/unified_verification.py  deterministic gate
 ```
 
 Routing:
 
 ```text
-ELF64 x86-64   -> repair_elf (immediate + strcpy/strcat cave)
-ELF64 arm64    -> repair_arm64 (MOVZ immediate)
-PE32+ x86-64   -> repair_pe (IAT strcpy/strcat cave; memcpy fallback)
-Mach-O 64      -> repair_macho (MOVZ immediate)
-other          -> unsupported, no output
+ELF64 x86-64   -> legacy strict-template / immediate / cave engine + old gate
+ELF64 arm64    -> analyzer -> guard cave -> Unicorn gate
+PE32+ x86-64   -> analyzer (IAT + thunk) -> guard cave -> Unicorn gate
+PE32+ arm64    -> analyzer (IAT + adrp/ldr/br thunk) -> guard cave -> Unicorn gate
+Mach-O 64      -> analyzer (stubs/bindings) -> guard cave -> native gate
+other          -> unsupported, no candidate
 ```
 
-The pipeline re-parses every candidate before returning it and, for ELF x86-64,
-reuses the structured verification gate (Unicorn evidence). A failed gate or a
-failed reparse returns no candidate. The CLI (`scripts/repair_binary.py`) and
-`/api/binary/scan` / `/api/binary/repair` call the same functions.
+Supported sinks:
 
-This is still a **supported-pattern matrix**, not universal binary repair. PE
-arm64, ELF32, PE32 and packed/obfuscated inputs are scan-only unless a future
-backend explicitly supports them.
+1. `strcpy`/`strcat`/`stpcpy`/`memcpy`/`memmove` calls whose target resolves to
+   a PLT entry, an IAT/thunk, or a Mach-O stub;
+2. stack destination recovered from `lea rdi/rcx, [rsp/rbp ± K]`,
+   `mov reg, rsp` or `add x0, sp, #K`;
+3. capacity `frame_top - destination` with `frame_top` from `sub rsp, N`,
+   `rbp`, or `sub sp, sp, #N`;
+4. immediate lengths (`mov edx/r8d, imm`, `mov x2, #imm`, `mov w2, #imm`) for
+   `memcpy`/`memmove` and raw `syscall` read/write;
+5. checked-copy calls (`__memcpy_chk`, `__strcpy_chk`, `__strcat_chk`) use the
+   explicit destination-size argument.
+
+Repair actions:
+
+- **immediate clamp**: rewrite the imm32 (x86-64) or MOVZ immediate (arm64);
+- **guard cave**: append a new executable PE section / Mach-O `__brfix` section /
+  ELF `PT_LOAD` containing a capacity-bounded copy guard, then redirect the call
+  with `E8 rel32` (x86-64) or `BL` (arm64).
+
+The gate in `app/services/unified_verification.py` requires: same container and
+architecture after reparse, matching hashes, at least one action, and runtime
+evidence whose tier is `native_run` or `emulated_run` with every case inside the
+capacity. `static_only` is `not_verified` and never a success.
+
+## Why "any binary" still has a boundary
+
+The v4 pipeline removes the container limitation: ELF, PE and Mach-O, x86-64
+and arm64, imported and direct calls. It does not remove the **information**
+limitation:
+
+- a capacity is only recoverable when the frame geometry or an explicit
+  `_chk` size carries it;
+- 32-bit, big-endian, fat Mach-O rewriting and heap/global buffers are
+  detected but fail closed;
+- `sprintf` format expansion is not repaired;
+- frame geometry is not DWARF object size (see the acceptance record).
+
+Everything outside the matrix returns `unsupported` with a reason. That is the
+intended behavior, not a missing success.

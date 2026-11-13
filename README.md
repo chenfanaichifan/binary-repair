@@ -47,6 +47,11 @@ this project as proof.
   `success_within_scope`, `inconclusive`, `rejected`, `unsupported`, `error`, or
   `cancelled`.
 - The GUI/API only render verdicts; they never decide them.
+- Direct binary repair spans **ELF, PE and Mach-O** (x86-64 and arm64):
+  container/import detection, stack-capacity analysis, immediate clamping and
+  bounded-copy guard injection, with native Mach-O or Unicorn runtime evidence.
+  See [`docs/acceptance/binary-universal-v4-2026-11-13.md`](docs/acceptance/binary-universal-v4-2026-11-13.md)
+  and [`docs/reference/binary-repair-engine.md`](docs/reference/binary-repair-engine.md).
 - Direct ELF repair exposes a structured verification packet and an optional
   **read-only** AI review (`POST /api/binary/repair-review`). The model sees the
   same packet a human sees; it may hold a candidate or ask for more checks, but

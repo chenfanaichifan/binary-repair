@@ -632,6 +632,41 @@ class RepairOutcome:
         return payload
 
 
+def _unified_verification(report: Any, raw: bytes, patched: bytes | None) -> Verification:
+    """Adapt the unified pipeline packet to the review surface."""
+    stored = getattr(report, "verification", None) or {}
+    packet = dict(stored.get("packet") or {})
+    gate_data = stored.get("gate") or {}
+    if not packet or not gate_data:
+        gate = GateResult(
+            success=False,
+            outcome="unsupported",
+            reason=getattr(report, "error", None) or "no verification packet",
+            required_checks=0,
+            required_not_run=0,
+            evidence_sha256=None,
+        )
+        packet = {
+            "schema_version": 2,
+            "scope": {"format": getattr(report, "format", "unknown"),
+                      "arch": getattr(report, "arch", "unknown")},
+            "checks": [],
+            "missing": [],
+            "report_sha256": "",
+            "gate": asdict(gate),
+        }
+    else:
+        gate = GateResult(**{
+            key: gate_data.get(key) for key in (
+                "success", "outcome", "reason", "required_checks",
+                "required_not_run", "evidence_sha256",
+            )
+        })
+        packet["gate"] = asdict(gate)
+        packet.setdefault("missing", [])
+    return Verification(packet=packet, gate=gate)
+
+
 def run_direct_repair(
     raw: bytes,
     *,
@@ -640,8 +675,15 @@ def run_direct_repair(
     data_dir: str | Any | None = None,
 ) -> RepairOutcome:
     """Run the direct engine, build the gate, optionally review, then decide."""
-    patched, report = repair_elf(raw)
-    verification = build_verification(report, original=raw, patched=patched)
+    from app.services.binary_pipeline import detect_format, repair_binary
+
+    fmt, arch, _bits = detect_format(raw)
+    if (fmt, arch) == ("elf", "x86_64"):
+        patched, report = repair_elf(raw)
+        verification = build_verification(report, original=raw, patched=patched)
+    else:
+        patched, report = repair_binary(raw, verify=True)
+        verification = _unified_verification(report, raw, patched)
     if not request_review:
         review = _not_requested(verification.packet, verification.gate)
     elif client is None:

@@ -1,0 +1,46 @@
+{
+  "fixture": "macho-no-pattern",
+  "candidate_available": false,
+  "status": "unsupported",
+  "error": "no patchable copy sink with a recoverable capacity was found",
+  "report": {
+    "schema_version": 3,
+    "format": "macho",
+    "arch": "arm64",
+    "backend": "macho",
+    "strategy": "none",
+    "status": "unsupported",
+    "supported": false,
+    "original_sha256": "ada39345ad5bf8bf42faa059bacc15c02615ef952169e8dcb3ad9fa9ef9526cd",
+    "patched_sha256": "ada39345ad5bf8bf42faa059bacc15c02615ef952169e8dcb3ad9fa9ef9526cd",
+    "mode": "unsupported",
+    "capacity": null,
+    "findings": [],
+    "offsets": [],
+    "actions": [],
+    "limitations": [
+      "no patchable copy sink with a recoverable capacity was found"
+    ],
+    "verification": {},
+    "runtime": {},
+    "container": {
+      "format": "macho",
+      "arch": "arm64",
+      "bits": 64,
+      "endian": "little",
+      "image_base": 4294967296,
+      "slices": 1,
+      "imports": 19,
+      "sections": 8
+    },
+    "universal": {
+      "detected": true,
+      "repairable": true,
+      "reason": "no patchable copy sink with a recoverable capacity was found"
+    },
+    "signature_invalidated": false,
+    "codesign_invalidated": false,
+    "candidate_available": false,
+    "error": "no patchable copy sink with a recoverable capacity was found"
+  }
+}

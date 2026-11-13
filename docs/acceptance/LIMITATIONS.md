@@ -57,3 +57,20 @@ not merged into the original repository's `main`.
 This is a course/MVP deliverable, not a supported commercial vulnerability
 remediation service. No client binaries, credentials, private keys or private
 logs are included.
+
+## 9. v4 "arbitrary binary" scope
+
+The v4 pipeline repairs ELF, PE and Mach-O (x86-64 / arm64) when a stack-copy
+sink has a recoverable capacity. It is not universal vulnerability discovery:
+
+- capacity is frame geometry (`frame_top - destination`) or an explicit
+  `_chk`/immediate size, not DWARF object size; buffers that do not sit at the
+  frame top can be over-estimated;
+- 32-bit x86/ARM, big-endian binaries and fat Mach-O rewriting are detected but
+  fail closed;
+- heap/global buffers, `sprintf` format expansion and obfuscated code are not
+  repaired;
+- PE and AArch64 ELF runtime evidence is Unicorn emulation of the repaired
+  function, not a Windows/Linux kernel run;
+- Mach-O native evidence exists only on macOS; on Linux those candidates are
+  `not_verified`, not success.

@@ -1,0 +1,292 @@
+{
+  "schema_version": 3,
+  "format": "pe",
+  "arch": "arm64",
+  "backend": "pe",
+  "strategy": "guard",
+  "status": "patched",
+  "supported": true,
+  "original_sha256": "49ec2b4ec019fa754efa99d4adcf7e0ff369d59a623a6cd22a2e084a8e475c8d",
+  "patched_sha256": "d5f2a392f2ad6fc21086838d69e4f849deb74b0fac31d0e7bc2746dfd00fbd49",
+  "mode": "guard",
+  "capacity": 16,
+  "findings": [
+    {
+      "kind": "unbounded_copy",
+      "address": "0x140001124",
+      "callee": "strcpy",
+      "capacity": 16,
+      "dest_offset": -16,
+      "before": null,
+      "after": 16,
+      "patchable": true,
+      "confidence": "medium",
+      "detail": "strcpy into stack destination bounded to 16 bytes"
+    }
+  ],
+  "offsets": [],
+  "actions": [
+    {
+      "kind": "guard",
+      "site": "0x140001124",
+      "callee": "strcpy",
+      "capacity": 16,
+      "cave_va": "0x1400e5000",
+      "method": "pe-section"
+    }
+  ],
+  "limitations": [],
+  "verification": {
+    "packet": {
+      "schema_version": 2,
+      "scope": {
+        "format": "pe",
+        "arch": "arm64",
+        "runtime_tier": "emulated_run",
+        "runtime_verdict": "pass",
+        "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof."
+      },
+      "checks": [
+        {
+          "id": "format",
+          "title": "Container and architecture are in the repair matrix",
+          "status": "passed",
+          "required": true,
+          "detail": "pe/arm64"
+        },
+        {
+          "id": "candidate.present",
+          "title": "A repaired candidate was produced",
+          "status": "passed",
+          "required": true,
+          "detail": "candidate_bytes=914432"
+        },
+        {
+          "id": "candidate.identity.original",
+          "title": "The report hash matches the input bytes",
+          "status": "passed",
+          "required": true,
+          "detail": "hash matches input"
+        },
+        {
+          "id": "candidate.identity.patched",
+          "title": "The candidate hash matches the produced bytes and differs from the input",
+          "status": "passed",
+          "required": true,
+          "detail": "candidate hash matches produced bytes"
+        },
+        {
+          "id": "container.reparse",
+          "title": "The patched candidate re-parses as the same container",
+          "status": "passed",
+          "required": true,
+          "detail": "reparse ok"
+        },
+        {
+          "id": "repair.action",
+          "title": "At least one repair action was applied",
+          "status": "passed",
+          "required": true,
+          "detail": "actions=1"
+        },
+        {
+          "id": "runtime.tier",
+          "title": "Runtime evidence is native or emulated (not static-only)",
+          "status": "passed",
+          "required": true,
+          "detail": "tier=emulated_run engine=unicorn-arm64"
+        },
+        {
+          "id": "runtime.contract",
+          "title": "All runtime cases stay inside the capacity",
+          "status": "passed",
+          "required": true,
+          "detail": "verdict=pass cases=6"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "guard",
+          "site": "0x140001124",
+          "callee": "strcpy",
+          "capacity": 16,
+          "cave_va": "0x1400e5000",
+          "method": "pe-section"
+        }
+      ],
+      "runtime": {
+        "tier": "emulated_run",
+        "engine": "unicorn-arm64",
+        "verdict": "pass",
+        "cases": [
+          {
+            "input_len": 0,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 0,
+            "error": null
+          },
+          {
+            "input_len": 1,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 1,
+            "error": null
+          },
+          {
+            "input_len": 15,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "error": null
+          },
+          {
+            "input_len": 16,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "error": null
+          },
+          {
+            "input_len": 17,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "error": null
+          },
+          {
+            "input_len": 64,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": true,
+            "output_len": 15,
+            "error": null
+          }
+        ],
+        "limitations": [
+          "Emulated execution with modeled imports; not a native Windows/Linux run.",
+          "Only the repaired function is executed; unrelated code paths are not covered."
+        ]
+      },
+      "report_sha256": "650bbc4b675e3a868e3e7f27fa1f071880de50edb5617b06f9f307d73f8b2376"
+    },
+    "gate": {
+      "success": true,
+      "outcome": "success_within_scope",
+      "reason": "",
+      "required_checks": 8,
+      "required_not_run": 0,
+      "evidence_sha256": "650bbc4b675e3a868e3e7f27fa1f071880de50edb5617b06f9f307d73f8b2376"
+    },
+    "tier": "emulated_run",
+    "engine": "unicorn-arm64",
+    "static_reparse": true
+  },
+  "runtime": {
+    "tier": "emulated_run",
+    "engine": "unicorn-arm64",
+    "verdict": "pass",
+    "cases": [
+      {
+        "input_len": 0,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 0,
+        "error": null
+      },
+      {
+        "input_len": 1,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 1,
+        "error": null
+      },
+      {
+        "input_len": 15,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 15,
+        "error": null
+      },
+      {
+        "input_len": 16,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 15,
+        "error": null
+      },
+      {
+        "input_len": 17,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 15,
+        "error": null
+      },
+      {
+        "input_len": 64,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": true,
+        "output_len": 15,
+        "error": null
+      }
+    ],
+    "limitations": [
+      "Emulated execution with modeled imports; not a native Windows/Linux run.",
+      "Only the repaired function is executed; unrelated code paths are not covered."
+    ]
+  },
+  "container": {
+    "format": "pe",
+    "arch": "arm64",
+    "bits": 64,
+    "endian": "little",
+    "image_base": 5368709120,
+    "slices": 1,
+    "imports": 209,
+    "sections": 7
+  },
+  "universal": {
+    "detected": true,
+    "repairable": true,
+    "reason": ""
+  },
+  "signature_invalidated": true,
+  "codesign_invalidated": false,
+  "candidate_available": true,
+  "error": null
+}

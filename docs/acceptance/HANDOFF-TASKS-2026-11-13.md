@@ -3,13 +3,16 @@
 This list is for a member with a Linux VM, Windows runtime and/or macOS arm64 VM.
 All commands assume the repository root is `binary-repair-gui/` unless stated.
 
-Current local baseline (macOS):
+Current local baseline (macOS, v4 tree, GNU readelf installed):
 
 ```text
-900 collected / 895 passed / 4 skipped / 1 failed
-known failure: tests/test_routeb_executor.py::test_static_routeb_bundle
-reason: no GNU readelf on macOS
+950 collected / 946 passed / 4 skipped / 0 failed
 ```
+
+v4 note: ELF/PE/Mach-O repair now has container-neutral analysis and guard
+injection. PE x86-64/arm64 and AArch64 ELF use Unicorn instruction-level
+evidence (works on Linux); Mach-O native execution exists only on macOS, so on
+Linux those candidates must be recorded as `not_verified`, not success.
 
 ---
 

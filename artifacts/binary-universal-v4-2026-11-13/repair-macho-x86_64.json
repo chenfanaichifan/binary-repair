@@ -1,0 +1,292 @@
+{
+  "schema_version": 3,
+  "format": "macho",
+  "arch": "x86_64",
+  "backend": "macho",
+  "strategy": "guard",
+  "status": "patched",
+  "supported": true,
+  "original_sha256": "8ddd7e40efba1942a9cfd1e2ada4831c17900faf55ba6e5bad909d404278cfbf",
+  "patched_sha256": "ca73bcfa5464d246bb72b6025a2877b996466dca708ed8f927096f39fff31d0a",
+  "mode": "guard",
+  "capacity": 16,
+  "findings": [
+    {
+      "kind": "unbounded_copy",
+      "address": "0x100003f94",
+      "callee": "strcpy",
+      "capacity": 16,
+      "dest_offset": -24,
+      "before": null,
+      "after": 16,
+      "patchable": true,
+      "confidence": "medium",
+      "detail": "strcpy into stack destination bounded to 16 bytes"
+    }
+  ],
+  "offsets": [],
+  "actions": [
+    {
+      "kind": "guard",
+      "site": "0x100003f94",
+      "callee": "strcpy",
+      "capacity": 16,
+      "cave_va": "0x100003f2a",
+      "method": "macho-section"
+    }
+  ],
+  "limitations": [],
+  "verification": {
+    "packet": {
+      "schema_version": 2,
+      "scope": {
+        "format": "macho",
+        "arch": "x86_64",
+        "runtime_tier": "native_run",
+        "runtime_verdict": "pass",
+        "statement": "Repair is verified within the stated scope: container reparse, reviewed patch action and native/emulated runtime cases. This is not a whole-program proof."
+      },
+      "checks": [
+        {
+          "id": "format",
+          "title": "Container and architecture are in the repair matrix",
+          "status": "passed",
+          "required": true,
+          "detail": "macho/x86_64"
+        },
+        {
+          "id": "candidate.present",
+          "title": "A repaired candidate was produced",
+          "status": "passed",
+          "required": true,
+          "detail": "candidate_bytes=33096"
+        },
+        {
+          "id": "candidate.identity.original",
+          "title": "The report hash matches the input bytes",
+          "status": "passed",
+          "required": true,
+          "detail": "hash matches input"
+        },
+        {
+          "id": "candidate.identity.patched",
+          "title": "The candidate hash matches the produced bytes and differs from the input",
+          "status": "passed",
+          "required": true,
+          "detail": "candidate hash matches produced bytes"
+        },
+        {
+          "id": "container.reparse",
+          "title": "The patched candidate re-parses as the same container",
+          "status": "passed",
+          "required": true,
+          "detail": "reparse ok"
+        },
+        {
+          "id": "repair.action",
+          "title": "At least one repair action was applied",
+          "status": "passed",
+          "required": true,
+          "detail": "actions=1"
+        },
+        {
+          "id": "runtime.tier",
+          "title": "Runtime evidence is native or emulated (not static-only)",
+          "status": "passed",
+          "required": true,
+          "detail": "tier=native_run engine=macho-native"
+        },
+        {
+          "id": "runtime.contract",
+          "title": "All runtime cases stay inside the capacity",
+          "status": "passed",
+          "required": true,
+          "detail": "verdict=pass cases=6"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "guard",
+          "site": "0x100003f94",
+          "callee": "strcpy",
+          "capacity": 16,
+          "cave_va": "0x100003f2a",
+          "method": "macho-section"
+        }
+      ],
+      "runtime": {
+        "tier": "native_run",
+        "engine": "macho-native",
+        "verdict": "pass",
+        "cases": [
+          {
+            "input_len": 0,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 0,
+            "stderr_len": 0,
+            "canary_intact": null,
+            "output_len": 0,
+            "error": null
+          },
+          {
+            "input_len": 1,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 1,
+            "stderr_len": 0,
+            "canary_intact": null,
+            "output_len": 1,
+            "error": null
+          },
+          {
+            "input_len": 15,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 15,
+            "stderr_len": 0,
+            "canary_intact": null,
+            "output_len": 15,
+            "error": null
+          },
+          {
+            "input_len": 16,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 15,
+            "stderr_len": 0,
+            "canary_intact": null,
+            "output_len": 15,
+            "error": null
+          },
+          {
+            "input_len": 17,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 15,
+            "stderr_len": 0,
+            "canary_intact": null,
+            "output_len": 15,
+            "error": null
+          },
+          {
+            "input_len": 64,
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout_len": 15,
+            "stderr_len": 0,
+            "canary_intact": null,
+            "output_len": 15,
+            "error": null
+          }
+        ],
+        "limitations": [
+          "Native run is a local macOS execution, not a hardened guest.",
+          "The candidate was ad-hoc re-signed for loading; the original signature is not preserved."
+        ]
+      },
+      "report_sha256": "9c49ec4e0371edb316e8b9943549683ebd1d75c67ddebf260949a9e721a086b6"
+    },
+    "gate": {
+      "success": true,
+      "outcome": "success_within_scope",
+      "reason": "",
+      "required_checks": 8,
+      "required_not_run": 0,
+      "evidence_sha256": "9c49ec4e0371edb316e8b9943549683ebd1d75c67ddebf260949a9e721a086b6"
+    },
+    "tier": "native_run",
+    "engine": "macho-native",
+    "static_reparse": true
+  },
+  "runtime": {
+    "tier": "native_run",
+    "engine": "macho-native",
+    "verdict": "pass",
+    "cases": [
+      {
+        "input_len": 0,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 0,
+        "stderr_len": 0,
+        "canary_intact": null,
+        "output_len": 0,
+        "error": null
+      },
+      {
+        "input_len": 1,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 1,
+        "stderr_len": 0,
+        "canary_intact": null,
+        "output_len": 1,
+        "error": null
+      },
+      {
+        "input_len": 15,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 15,
+        "stderr_len": 0,
+        "canary_intact": null,
+        "output_len": 15,
+        "error": null
+      },
+      {
+        "input_len": 16,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 15,
+        "stderr_len": 0,
+        "canary_intact": null,
+        "output_len": 15,
+        "error": null
+      },
+      {
+        "input_len": 17,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 15,
+        "stderr_len": 0,
+        "canary_intact": null,
+        "output_len": 15,
+        "error": null
+      },
+      {
+        "input_len": 64,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_len": 15,
+        "stderr_len": 0,
+        "canary_intact": null,
+        "output_len": 15,
+        "error": null
+      }
+    ],
+    "limitations": [
+      "Native run is a local macOS execution, not a hardened guest.",
+      "The candidate was ad-hoc re-signed for loading; the original signature is not preserved."
+    ]
+  },
+  "container": {
+    "format": "macho",
+    "arch": "x86_64",
+    "bits": 64,
+    "endian": "little",
+    "image_base": 4294967296,
+    "slices": 1,
+    "imports": 4,
+    "sections": 4
+  },
+  "universal": {
+    "detected": true,
+    "repairable": true,
+    "reason": ""
+  },
+  "signature_invalidated": false,
+  "codesign_invalidated": true,
+  "candidate_available": true,
+  "error": null
+}

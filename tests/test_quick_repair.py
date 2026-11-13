@@ -78,4 +78,5 @@ def test_quick_repair_rejects_non_elf():
         data={"csrf": CSRF_TOKEN},
     )
     assert response.status_code == 422
-    assert "not an elf" in response.json()["detail"].lower()
+    detail = response.json()["detail"].lower()
+    assert "unsupported" in detail or "unrecognized" in detail or "no repair" in detail
