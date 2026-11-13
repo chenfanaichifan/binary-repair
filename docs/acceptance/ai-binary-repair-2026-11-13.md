@@ -67,9 +67,11 @@ Targeted coverage includes:
 
 - Workflow: `Ubuntu verification` (`ubuntu-24.04`, Python 3.11, clang installed
   for the assembly path).
-- Run: [43449603578](https://github.com/chenfanaichifan/binary-repair/actions/runs/43449603578)
-  on `2fb9317` (`workbench-v3`) — **success** (native PoC/regression gate,
-  static syntax, CI-evidence and robustness tests; clang installed for assembly).
+- Run: [43457857951](https://github.com/chenfanaichifan/binary-repair/actions/runs/43457857951)
+  on `4ee5e5d` (`workbench-v3`) — **success** (hard-case AI increment benchmark,
+  native PoC/regression gate, static syntax and robustness gates).
+- Previous native-PoC run: [43449603578](https://github.com/chenfanaichifan/binary-repair/actions/runs/43449603578)
+  on `2fb9317` — success.
 - Previous PoC-differential run: [43435227438](https://github.com/chenfanaichifan/binary-repair/actions/runs/43435227438)
   on `60362a9` — success.
 - Previous two-path run: [43426508766](https://github.com/chenfanaichifan/binary-repair/actions/runs/43426508766)

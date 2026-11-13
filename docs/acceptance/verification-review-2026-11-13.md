@@ -162,9 +162,9 @@ remains future work.  Do not claim "AI repaired arbitrary binaries" or
 - Linux VM Ubuntu 24.04 arm64: **1143 tests, 0 failed, 0 errors, 10 skipped** (288.2 s).
 - `scripts/verify_evidence.py`: 11 fixture rows + 110 source rows PASS;
   v5 bundle 38 files PASS; AI bundle 9 files PASS.
-- CI: [43449603578](https://github.com/chenfanaichifan/binary-repair/actions/runs/43449603578)
-  on `2fb9317` — **success** (native PoC/regression gate, static syntax and
-  CI-evidence gates; clang installed for path 1).  This record is a docs-only
+- CI: [43457857951](https://github.com/chenfanaichifan/binary-repair/actions/runs/43457857951)
+  on `4ee5e5d` — **success** (hard-case AI benchmark, native PoC, static syntax
+  and robustness gates; clang installed for path 1).  This record is a docs-only
   follow-up; the workflow re-runs the same suite.
 
 
