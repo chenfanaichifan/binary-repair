@@ -9,8 +9,9 @@ it.  That makes the repair engine's frame model exact:
 
 Toolchains:
   * Mach-O arm64 / x86-64: system ``clang`` (ad-hoc signed by the linker);
-  * PE x86-64 / arm64 and ELF AArch64: the Zig toolchain already vendored under
-    ``.tmp/zigpkg/site/ziglang/zig`` (no network install).
+  * PE x86-64 / arm64 and ELF AArch64: Zig 0.17.1.  The toolchain is **not**
+    shipped; ``--check`` works offline, but rebuilding needs Zig 0.17.1 at
+    ``.tmp/zigpkg/site/ziglang/zig`` (or edit ``ZIG_DEFAULT``).
 
 Usage:
   python3 scripts/build_binary_fixtures.py --check

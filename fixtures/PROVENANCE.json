@@ -169,5 +169,6 @@
         "vuln_copy_win_x86_64.S": "794215f7d277bab102ae7b7cfc5b57a58ff2cede1a5c125b0a447af9e7804d6b"
       }
     }
-  ]
+  ],
+  "toolchain_note": "The .tmp/zigpkg Zig 0.17.1 toolchain is not shipped. --check verifies existing fixtures offline; rebuilding requires Zig 0.17.1 at that path (or edit ZIG_DEFAULT)."
 }

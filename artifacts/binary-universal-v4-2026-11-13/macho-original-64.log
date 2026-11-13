@@ -1,0 +1,37 @@
+# Mach-O 64-byte input — original vs repaired
+
+Date: 2026-11-13 (macOS arm64)
+Input: 64 x 'A'
+
+Original binaries (no ad-hoc signing):
+## vuln-strcpy-arm64
+sha256: 089e01ecb01e0021e3b33c51f3a4369ea5baa71a8b37a83c18d84e4c7ab214e4
+codesign_verify_rc: 0
+exit: 138 (SIGBUS)
+stdout: (empty)
+stderr: (empty)
+
+## vuln-strcpy-x86_64
+sha256: 8ddd7e40efba1942a9cfd1e2ada4831c17900faf55ba6e5bad909d404278cfbf
+codesign_verify_rc: 1
+exit: 139 (SIGSEGV)
+stdout: (empty)
+stderr: (empty)
+
+Repaired candidates (artifact bytes are unchanged; ad-hoc signed copies used for local loading):
+## macho-arm64-fixed.macho
+artifact_sha256: e5545b698f91998e995b22002e0951a54d859e172af377fc38f8785001a7567d
+artifact_codesign_verify_rc: 1
+signed_copy_sha256: 98f21ef3531fba6db5256182ab57452ead5c7f54c756d75a78d64f6c57dcb468
+exit: 0
+stdout: AAAAAAAAAAAAAAA
+stderr: (empty)
+
+## macho-x86_64-fixed.macho
+artifact_sha256: ca73bcfa5464d246bb72b6025a2877b996466dca708ed8f927096f39fff31d0a
+artifact_codesign_verify_rc: 1
+signed_copy_sha256: be52c48f528ae5c385cae3269a97c64b940468970eda6f92b7d4f9057a597b90
+exit: 0
+stdout: AAAAAAAAAAAAAAA
+stderr: (empty)
+

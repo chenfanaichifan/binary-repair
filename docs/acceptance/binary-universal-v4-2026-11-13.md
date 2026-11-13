@@ -46,8 +46,10 @@ arbitrary non-binary bytes        unknown   unrecognized container magic
 Built by `scripts/build_binary_fixtures.py` from `fixtures/src/`:
 
 - Mach-O arm64/x86-64: system clang, ad-hoc signed;
-- PE x86-64/arm64 and AArch64 ELF: the Zig toolchain already vendored under
-  `.tmp/zigpkg/site/ziglang/zig` (offline, no network install);
+- PE x86-64/arm64 and AArch64 ELF: built with Zig 0.17.1. The toolchain is
+  **not shipped** in this package; `--check` verifies existing fixtures offline.
+  Rebuilding requires Zig 0.17.1 at `.tmp/zigpkg/site/ziglang/zig` (or editing
+  `ZIG_DEFAULT`).
 - the vulnerable function is a small assembly routine that places a 16-byte
   buffer at the top of the callee frame, so
   `capacity = frame_top - destination = 0x10` is exact.
@@ -58,7 +60,8 @@ artifact hashes. `scripts/build_binary_fixtures.py --check` verifies them.
 ## Runtime evidence
 
 Native Mach-O: the repaired candidate is ad-hoc re-signed (`codesign -s -`) and
-executed with inputs `0, 1, 15, 16, 17, 64` bytes. The original binaries crash
+executed with inputs `0, 1, 15, 16, 17, 64` bytes. The raw 64-byte original
+crash log is `artifacts/binary-universal-v4-2026-11-13/macho-original-64.log`. The original binaries crash
 (SIGSEGV) on the 64-byte input; repaired binaries exit `0` and truncate to 15
 bytes. Ad-hoc signing is for local loading only; the original signature is not
 forged and `codesign_invalidated` is reported.
