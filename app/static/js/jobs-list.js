@@ -16,7 +16,7 @@
   var PHASE_LABELS = {
     draft: "草稿", queued: "排队中", running: "执行中", screening: "输入筛查",
     analyzing: "二进制分析", roundtrip: "C 往返校验", generating: "候选生成",
-    applying: "写入副本", validating: "共享校验", finished: "已完成"
+    applying: "写入副本", validating: "共享校验", finished: "已完成", failed: "修复未完成"
   };
 
   function read() {

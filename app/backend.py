@@ -865,7 +865,16 @@ class LocalBackend:
         return value if isinstance(value, dict) else {}
 
     def list_jobs(self) -> list[dict[str, Any]]:
-        return job_store.list_jobs(data_dir=self.data_dir)
+        rows = job_store.list_jobs(data_dir=self.data_dir)
+        for row in rows:
+            execution = self._read_local_execution(row["id"])
+            execution_info = execution.get("execution") if isinstance(execution.get("execution"), dict) else {}
+            if execution_info.get("status") in {"failed", "error", "timed_out"}:
+                row["phase"] = "failed"
+            elif execution.get("phase"):
+                row["phase"] = execution["phase"]
+            row["has_repair_artifact"] = bool(execution.get("artifact")) or bool(row.get("has_repair_artifact"))
+        return rows
 
     def get_artifact_metadata(self, artifact_id: str) -> dict[str, Any]:
         row = job_store.get_artifact(artifact_id, data_dir=self.data_dir)
@@ -910,6 +919,12 @@ class LocalBackend:
             route["artifacts"] = [artifact]
             route["verification"] = "not_run"
             route["compatibility"] = "not_run"
+            route_b = routes.setdefault("B", {})
+            route_b["phase"] = "draft"
+            route_b["outcome"] = None
+            route_b["candidate_sha256"] = None
+            route_b["verification"] = "not_run"
+            route_b["compatibility"] = "not_run"
         return {
             "id": record.id,
             "demo": False,
@@ -1151,7 +1166,7 @@ class LocalBackend:
             "reason": "Independent replay is not run in local strict-template mode.",
         }
         rows = [v0, v1, v2, v3, v4, v5]
-        return {"A": rows, "B": [dict(item) for item in rows]}
+        return {"A": rows, "B": []}
 
     def get_artifacts(self, job_id: str) -> dict[str, list[dict[str, Any]]]:
         self._record(job_id)
