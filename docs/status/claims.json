@@ -10,8 +10,8 @@
   ],
   "declared_matrix": "exact cells in app/services/repair_matrix.py: ELF i386/x86_64/arm64, PE i386/x86_64/arm64, Mach-O x86_64/arm64 (little-endian thin only)",
   "latest_verified_ci": {
-    "run_id": 43601736542,
-    "head_sha": "7a5d21f",
+    "run_id": 43608147997,
+    "head_sha": "5f9dd77",
     "branch": "workbench-v3",
     "conclusion": "success"
   },
@@ -215,5 +215,5 @@
   "deterministic_paths": [
     "deterministic_unified (matrix-driven pipeline + evidence profiles)"
   ],
-  "workbench_integration": "feature rebased onto origin/workbench-v3 0aa9f54; CI green on 7a5d21f after native ELF runtime-tier fix"
+  "workbench_integration": "final: feature/rebased workbench at 5f9dd77; CI green after host-dependent Mach-O non-goal mapping"
 }
