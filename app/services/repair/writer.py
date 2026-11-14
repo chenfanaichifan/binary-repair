@@ -197,6 +197,8 @@ def repair_with_sinks(data: bytes, container: ContainerInfo, sinks: list[Sink]) 
         result.actions.append({
             "kind": "immediate",
             "site": hex(sink.call_va or 0),
+            "site_va": int(sink.call_va or 0),
+            "function_va": int(sink.function_va or 0),
             "offset": sink.length_offset,
             "before": sink.length,
             "after": capacity,
@@ -232,6 +234,8 @@ def repair_with_sinks(data: bytes, container: ContainerInfo, sinks: list[Sink]) 
             result.actions.append({
                 "kind": "guard",
                 "site": hex(sink.call_va or 0),
+                "site_va": int(sink.call_va or 0),
+                "function_va": int(sink.function_va or 0),
                 "callee": sink.callee,
                 "capacity": sink.capacity,
                 "cave_va": hex(target),

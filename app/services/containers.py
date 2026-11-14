@@ -481,6 +481,117 @@ def resolve_target(container: ContainerInfo, target: int) -> str | None:
     return None
 
 
+def _executable_section_at(container: ContainerInfo, va: int) -> SectionInfo | None:
+    section = container.section_at(va)
+    if section is None or not section.executable or not section.size:
+        return None
+    return section
+
+
+def _function_scope_end(container: ContainerInfo, va: int) -> int | None:
+    """End VA for a function starting at ``va``.
+
+    The next symbol VA greater than ``va`` that lies inside an executable
+    region is the tightest deterministic bound; the executable section end is
+    the fallback.  ``None`` when neither can be established (fail closed).
+    """
+    candidates = [
+        int(symbol_va) for symbol_va in container.symbols
+        if int(symbol_va) > va
+        and _executable_section_at(container, int(symbol_va)) is not None
+    ]
+    if candidates:
+        return min(candidates)
+    section = _executable_section_at(container, va)
+    if section is None:
+        return None
+    return section.va + section.size
+
+
+def _is_int(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def resolve_function_scope(
+    container: ContainerInfo,
+    target: str | dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    """Resolve a caller-declared target to one executable VA range.
+
+    ``target`` may be:
+
+    * an exact symbol name (preferred, case-sensitive);
+    * a substring of a symbol name, accepted only when it selects exactly one
+      symbol VA (ambiguity fails closed);
+    * an explicit ``{"va": int, "end": int | None}`` range; ``end`` is derived
+      from the surrounding symbols/section when omitted.
+
+    Returns ``{"name", "va", "end", "source"}`` or ``None`` when the target is
+    missing, ambiguous, or has no determinable end.  The scope is half-open:
+    an address is inside when ``va <= address < end``.
+    """
+    if target is None:
+        return None
+    if isinstance(target, dict):
+        va = target.get("va")
+        end = target.get("end")
+        if not _is_int(va) or va <= 0:
+            return None
+        if end is not None and (
+            not _is_int(end) or int(end) <= int(va)
+        ):
+            return None
+        if end is None:
+            end = _function_scope_end(container, int(va))
+            if end is None:
+                return None
+        name = target.get("name")
+        if not isinstance(name, str) or not name:
+            name = container.symbols.get(int(va), "")
+        return {
+            "name": str(name),
+            "va": int(va),
+            "end": int(end),
+            "source": "explicit",
+        }
+    name = str(target).strip()
+    if not name:
+        return None
+    # Exact symbol name first.  The symbols mapping is VA -> name, so an exact
+    # name can in principle repeat at different VAs; that is ambiguous.
+    exact = sorted(
+        int(symbol_va) for symbol_va, symbol_name in container.symbols.items()
+        if str(symbol_name) == name
+    )
+    if exact:
+        if len(exact) != 1:
+            return None
+        va = exact[0]
+        end = _function_scope_end(container, va)
+        if end is None or end <= va:
+            return None
+        return {"name": name, "va": va, "end": end, "source": "symbol"}
+    # Substring fallback only for a unique match (case-insensitive), so a
+    # vague target can never silently select the wrong function.
+    lowered = name.lower()
+    matching = sorted({
+        int(symbol_va) for symbol_va, symbol_name in container.symbols.items()
+        if lowered in str(symbol_name).lower()
+    })
+    if len(matching) != 1:
+        return None
+    va = matching[0]
+    end = _function_scope_end(container, va)
+    if end is None or end <= va:
+        return None
+    return {
+        "name": str(container.symbols.get(va, name)),
+        "va": va,
+        "end": end,
+        "source": "symbol",
+    }
+
+
 def is_supported_repair(container: ContainerInfo) -> bool:
     return (container.format, container.arch) in {
         ("elf", "x86_64"), ("elf", "arm64"),

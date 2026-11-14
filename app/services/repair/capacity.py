@@ -840,23 +840,83 @@ def _select_sites(
     return sites, limitations
 
 
-def detect_capacity_confusion(data: bytes) -> tuple[list[CapacitySite], list[str]]:
-    """Return the divergent destination checks and human-readable limitations."""
+def _in_target_scope(va: int, target_scope: dict[str, Any] | None) -> bool:
+    """Whether ``va`` lies inside the caller-declared target scope (half-open)."""
+    if target_scope is None:
+        return True
+    lo = target_scope.get("va")
+    hi = target_scope.get("end")
+    if not isinstance(lo, int) or isinstance(lo, bool):
+        return False
+    if not isinstance(hi, int) or isinstance(hi, bool):
+        return False
+    if hi <= lo:
+        return False
+    return lo <= int(va) < hi
+
+
+def _target_scope_label(target_scope: dict[str, Any] | None) -> str:
+    if target_scope is None:
+        return ""
+    name = str(target_scope.get("name") or "").strip()
+    va = target_scope.get("va")
+    end = target_scope.get("end")
+    span = (
+        f"[{hex(int(va))},{hex(int(end))})"
+        if isinstance(va, int) and isinstance(end, int) else "[?,?)"
+    )
+    return f"target {name or 'explicit'} {span}"
+
+
+def detect_capacity_confusion(
+    data: bytes,
+    target_scope: dict[str, Any] | None = None,
+) -> tuple[list[CapacitySite], list[str]]:
+    """Return the divergent destination checks and human-readable limitations.
+
+    When ``target_scope`` is supplied, only sites whose ``site_va`` lies inside
+    the half-open ``[va, end)`` range are reported; everything outside the
+    declared target is filtered out (fail closed for the caller).
+    """
     analysis = _analyse(data)
     if analysis.code is None or not analysis.blocks:
         return [], list(analysis.report.limitations)
     sites, limitations = _select_sites(analysis.blocks, analysis.code)
+    if target_scope is not None:
+        kept = [site for site in sites if _in_target_scope(site.site_va, target_scope)]
+        dropped = len(sites) - len(kept)
+        if dropped:
+            limitations = limitations + [
+                f"{dropped} reviewed capacity-check site(s) outside "
+                f"{_target_scope_label(target_scope)} were not considered"
+            ]
+        sites = kept
     return sites, limitations + list(analysis.report.limitations)
 
 
-def repair_capacity_confusion(data: bytes) -> tuple[bytes | None, CapacityReport]:
-    """Return patched bytes and a report, or ``(None, report)`` when unsupported."""
+def repair_capacity_confusion(
+    data: bytes,
+    target_scope: dict[str, Any] | None = None,
+) -> tuple[bytes | None, CapacityReport]:
+    """Return patched bytes and a report, or ``(None, report)`` when unsupported.
+
+    With ``target_scope`` supplied, the reviewed rewrite is rejected unless the
+    selected site lies inside the declared target function range.
+    """
     analysis = _analyse(data)
     report = analysis.report
     if analysis.code is None or not analysis.blocks:
         return None, report
     sites, limitations = _select_sites(analysis.blocks, analysis.code)
     report.limitations.extend(limitations)
+    if target_scope is not None:
+        kept = [site for site in sites if _in_target_scope(site.site_va, target_scope)]
+        if len(kept) != len(sites):
+            report.limitations.append(
+                f"no reviewed capacity-check site inside "
+                f"{_target_scope_label(target_scope)}"
+            )
+        sites = kept
     if not sites:
         if not report.limitations:
             report.limitations.append("no divergent destination capacity check found")
