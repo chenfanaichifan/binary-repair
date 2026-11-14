@@ -25,6 +25,74 @@
     "multi-provider/multi-model statistics and independent-case confidence intervals (only two DeepSeek models available in this milestone)",
     "whole-program proof: verification is scoped to the supplied PoC/regression cases and the one repaired function, not the whole binary"
   ],
+  "non_goals": [
+    {
+      "id": "EG-cases-target-not-analyzed",
+      "category": "engine_gap",
+      "enforcement": "analysis_only; no target-scoped candidate; benchmark baseline_expected is rejected/analysis_only",
+      "claim": "Hard-case non-template targets (inline loops, sprintf, multicall, nonconst, UAF, heap guard) are AI-benchmark/research evidence, not deterministic engine successes."
+    },
+    {
+      "id": "NG-ai-leaf-only::ai_assembly_repair",
+      "category": "non_goal",
+      "enforcement": "no verified; leaf/instruction allowlist refuses calls and non-whitelisted code",
+      "claim": "AI assembly path accepts only a leaf-level reviewed block and cannot express repairs that need external calls/helpers."
+    },
+    {
+      "id": "NG-ai-leaf-only::ai_binary_repair",
+      "category": "non_goal",
+      "enforcement": "no verified; leaf/allowlist machine-code validator; AI never owns acceptance",
+      "claim": "AI binary path emits only structurally validated leaf blocks; the deterministic unified gate decides acceptance."
+    },
+    {
+      "id": "NG-non-goal-1",
+      "category": "non_goal",
+      "enforcement": "analysis_only; no candidate for unrecoverable destination capacity",
+      "claim": "Copy sinks whose destination capacity is not recoverable by same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations)."
+    },
+    {
+      "id": "NG-non-goal-2",
+      "category": "non_goal",
+      "enforcement": "analysis_only; no deterministic template; no download",
+      "claim": "sprintf/format-expansion, UAF/lifetime and integer/loop deterministic repair templates (AI research only)."
+    },
+    {
+      "id": "NG-non-goal-3",
+      "category": "non_goal",
+      "enforcement": "unsupported; no rewrite backend for these containers/architectures",
+      "claim": "arm32, riscv, mips, powerpc and big-endian machine-code repair."
+    },
+    {
+      "id": "NG-non-goal-4",
+      "category": "non_goal",
+      "enforcement": "unsupported; no fat/32-bit Mach-O rewrite",
+      "claim": "32-bit Mach-O and fat Mach-O rewriting (thin little-endian only)."
+    },
+    {
+      "id": "NG-non-goal-5",
+      "category": "non_goal",
+      "enforcement": "unsupported/not_run for native execution beyond the Mach-O path",
+      "claim": "Windows native execution and macOS native execution beyond the existing Mach-O path."
+    },
+    {
+      "id": "RG-external-poc::<doc>::pe/arm64",
+      "category": "runtime_gap",
+      "enforcement": "not_run; never verified_patch",
+      "claim": "External-PoC replay is unavailable for PE/arm64 by design; only emulated/static evidence exists and a PoC requirement stays inconclusive."
+    },
+    {
+      "id": "RG-external-poc::<doc>::pe/i386",
+      "category": "runtime_gap",
+      "enforcement": "not_run; never verified_patch",
+      "claim": "External-PoC replay is unavailable for PE/i386 by design; PE PoC manifests are never executed or faked."
+    },
+    {
+      "id": "RG-external-poc::<doc>::pe/x86_64",
+      "category": "runtime_gap",
+      "enforcement": "not_run; never verified_patch",
+      "claim": "External-PoC replay is unavailable for PE/x86_64 by design; the gate reports the missing evidence, it does not simulate it."
+    }
+  ],
   "implemented": [
     "two product AI paths (asm_roundtrip, binary_direct)",
     "static syntax gate and arbitrary-input robustness contract",
