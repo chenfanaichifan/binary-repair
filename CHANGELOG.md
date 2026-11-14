@@ -49,6 +49,12 @@ simple semantic-versioning policy for delivery snapshots.
   identity; 3 runs each over 12 cases, native PoC.  Both 6/12 (loop 6/6,
   non-loop 0/6), stable.  Evidence `artifacts/multi-model-matrix-2026-11-14/`.
 
+## Phase A/B (2026-11-15)
+
+- RepairSpec planner + ABI-strict assembly: 3/3 non-loop AI verified
+- fixed cave relocation through PT_LOAD instead of NOBITS .tbss section
+- CFG-aware ABI checker; raw assembly/candidate/native failure evidence
+
 ### Added — path A call whitelist and paradigm A loop proof
 
 - Path B injection error classification/retry (ud2 policy); hard-multicall moved

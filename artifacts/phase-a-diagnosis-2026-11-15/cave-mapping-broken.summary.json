@@ -1,0 +1,1689 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "hard-multicall",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "multicall_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-multicall.json",
+        "reference_fix": "fixtures/hard-cases/multicall_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "multicall hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 4614,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 4614,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target multicall_bad [0x102cb60,0x102cbb0)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 3578,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false,
+        "elapsed_ms": 2940
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "model": "deepseek-flash",
+          "model_requested": "deepseek-flash",
+          "status": "accepted",
+          "error": null,
+          "usage": {
+            "prompt_tokens": 1117,
+            "completion_tokens": 241,
+            "total_tokens": 1358,
+            "latency_ms": 1786
+          },
+          "latency_ms": 1790,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "939ba20adde61ebd352bcaceeed8cc9f254da36f0e7c20dcb424af9eea130440",
+          "allowed_calls": [
+            {
+              "name": "helper_copy",
+              "target_va": "0x102cbb0",
+              "source": "direct"
+            },
+            {
+              "name": "puts",
+              "target_va": "0x108a31c",
+              "source": "direct"
+            }
+          ],
+          "target_in_scope": true,
+          "target_scope_check": "passed",
+          "target_scope": {
+            "name": "multicall_bad",
+            "va": 16960352,
+            "end": 16960432,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": false,
+          "injection": {
+            "target_va": "0x102cb60",
+            "cave_va": "0x10cf000",
+            "method": "new-pt-load",
+            "code_bytes": 81,
+            "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b75d8488d7de048897dd0e800000000488b7dd0e80000000064488b042528000000488b4df84839c875064883c4305dc34883c4305dc3",
+            "code_disassembly": [
+              {
+                "address": "0x0",
+                "bytes": "55",
+                "mnemonic": "push",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x1",
+                "bytes": "4889e5",
+                "mnemonic": "mov",
+                "operands": "rbp, rsp"
+              },
+              {
+                "address": "0x4",
+                "bytes": "4883ec30",
+                "mnemonic": "sub",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0x8",
+                "bytes": "64488b042528000000",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr fs:[0x28]"
+              },
+              {
+                "address": "0x11",
+                "bytes": "488945f8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 8], rax"
+              },
+              {
+                "address": "0x15",
+                "bytes": "48897dd8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x28], rdi"
+              },
+              {
+                "address": "0x19",
+                "bytes": "488b75d8",
+                "mnemonic": "mov",
+                "operands": "rsi, qword ptr [rbp - 0x28]"
+              },
+              {
+                "address": "0x1d",
+                "bytes": "488d7de0",
+                "mnemonic": "lea",
+                "operands": "rdi, [rbp - 0x20]"
+              },
+              {
+                "address": "0x21",
+                "bytes": "48897dd0",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x30], rdi"
+              },
+              {
+                "address": "0x25",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x2a"
+              },
+              {
+                "address": "0x2a",
+                "bytes": "488b7dd0",
+                "mnemonic": "mov",
+                "operands": "rdi, qword ptr [rbp - 0x30]"
+              },
+              {
+                "address": "0x2e",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x33"
+              },
+              {
+                "address": "0x33",
+                "bytes": "64488b042528000000",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr fs:[0x28]"
+              },
+              {
+                "address": "0x3c",
+                "bytes": "488b4df8",
+                "mnemonic": "mov",
+                "operands": "rcx, qword ptr [rbp - 8]"
+              },
+              {
+                "address": "0x40",
+                "bytes": "4839c8",
+                "mnemonic": "cmp",
+                "operands": "rax, rcx"
+              },
+              {
+                "address": "0x43",
+                "bytes": "7506",
+                "mnemonic": "jne",
+                "operands": "0x4b"
+              },
+              {
+                "address": "0x45",
+                "bytes": "4883c430",
+                "mnemonic": "add",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0x49",
+                "bytes": "5d",
+                "mnemonic": "pop",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x4a",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              },
+              {
+                "address": "0x4b",
+                "bytes": "4883c430",
+                "mnemonic": "add",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0x4f",
+                "bytes": "5d",
+                "mnemonic": "pop",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x50",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              }
+            ],
+            "assembly_sha256": "cdea9503cf920f5882c25883e55eabe94f2b275defc44227cb276c564c4bf780",
+            "call_targets": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "call_relocations": 2,
+            "abi": {
+              "ok": false,
+              "fatal": 1,
+              "findings": [
+                {
+                  "code": "rsp_not_restored",
+                  "severity": "fatal",
+                  "detail": "ret with RSP depth -40 (entry depth 0 expected)",
+                  "address": "0x50"
+                }
+              ]
+            }
+          },
+          "candidate": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "runner": "limactl",
+            "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+            "poc": {
+              "schema_version": 1,
+              "status": "fail",
+              "runner": "limactl",
+              "tier": "emulated_run",
+              "stdout_signature": "mismatch",
+              "errno_signature": "not_run",
+              "errno_probe": "",
+              "no_input": false,
+              "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+              "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+              "poc": [
+                {
+                  "case_id": "multicall-overflow-64",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "multicall-overflow-256",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "multicall-overflow-64",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": false,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "multicall-overflow-256",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": false,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "regression": [
+                {
+                  "case_id": "multicall-short",
+                  "kind": "regression",
+                  "executable": "original",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "hi\n",
+                  "stderr": "",
+                  "stdout_hex": "68690a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "multicall-short",
+                  "kind": "regression",
+                  "executable": "candidate",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": false,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "limitations": []
+            },
+            "native_failure": {
+              "stage": "native_gate",
+              "error_class": "candidate_crash",
+              "case_id": "multicall-overflow-64",
+              "kind": "poc",
+              "exit_code": 255,
+              "crashed": true,
+              "signal": 11,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "timed_out": false,
+              "expected_ok": false
+            },
+            "candidate_artifact": "/tmp/diag-multicall/candidates/hard-multicall.bin"
+          },
+          "elapsed_ms": 12021
+        }
+      ],
+      "injection": {
+        "target_va": "0x102cb60",
+        "cave_va": "0x10cf000",
+        "method": "new-pt-load",
+        "code_bytes": 81,
+        "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b75d8488d7de048897dd0e800000000488b7dd0e80000000064488b042528000000488b4df84839c875064883c4305dc34883c4305dc3",
+        "code_disassembly": [
+          {
+            "address": "0x0",
+            "bytes": "55",
+            "mnemonic": "push",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x1",
+            "bytes": "4889e5",
+            "mnemonic": "mov",
+            "operands": "rbp, rsp"
+          },
+          {
+            "address": "0x4",
+            "bytes": "4883ec30",
+            "mnemonic": "sub",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0x8",
+            "bytes": "64488b042528000000",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr fs:[0x28]"
+          },
+          {
+            "address": "0x11",
+            "bytes": "488945f8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 8], rax"
+          },
+          {
+            "address": "0x15",
+            "bytes": "48897dd8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x28], rdi"
+          },
+          {
+            "address": "0x19",
+            "bytes": "488b75d8",
+            "mnemonic": "mov",
+            "operands": "rsi, qword ptr [rbp - 0x28]"
+          },
+          {
+            "address": "0x1d",
+            "bytes": "488d7de0",
+            "mnemonic": "lea",
+            "operands": "rdi, [rbp - 0x20]"
+          },
+          {
+            "address": "0x21",
+            "bytes": "48897dd0",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x30], rdi"
+          },
+          {
+            "address": "0x25",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x2a"
+          },
+          {
+            "address": "0x2a",
+            "bytes": "488b7dd0",
+            "mnemonic": "mov",
+            "operands": "rdi, qword ptr [rbp - 0x30]"
+          },
+          {
+            "address": "0x2e",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x33"
+          },
+          {
+            "address": "0x33",
+            "bytes": "64488b042528000000",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr fs:[0x28]"
+          },
+          {
+            "address": "0x3c",
+            "bytes": "488b4df8",
+            "mnemonic": "mov",
+            "operands": "rcx, qword ptr [rbp - 8]"
+          },
+          {
+            "address": "0x40",
+            "bytes": "4839c8",
+            "mnemonic": "cmp",
+            "operands": "rax, rcx"
+          },
+          {
+            "address": "0x43",
+            "bytes": "7506",
+            "mnemonic": "jne",
+            "operands": "0x4b"
+          },
+          {
+            "address": "0x45",
+            "bytes": "4883c430",
+            "mnemonic": "add",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0x49",
+            "bytes": "5d",
+            "mnemonic": "pop",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x4a",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          },
+          {
+            "address": "0x4b",
+            "bytes": "4883c430",
+            "mnemonic": "add",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0x4f",
+            "bytes": "5d",
+            "mnemonic": "pop",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x50",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          }
+        ],
+        "assembly_sha256": "cdea9503cf920f5882c25883e55eabe94f2b275defc44227cb276c564c4bf780",
+        "call_targets": [
+          {
+            "name": "helper_copy",
+            "target_va": "0x102cbb0",
+            "source": "direct"
+          },
+          {
+            "name": "puts",
+            "target_va": "0x108a31c",
+            "source": "direct"
+          }
+        ],
+        "call_relocations": 2,
+        "abi": {
+          "ok": false,
+          "fatal": 1,
+          "findings": [
+            {
+              "code": "rsp_not_restored",
+              "severity": "fatal",
+              "detail": "ret with RSP depth -40 (entry depth 0 expected)",
+              "address": "0x50"
+            }
+          ]
+        }
+      },
+      "candidate": {
+        "gate": "fail",
+        "poc_status": "fail",
+        "runner": "limactl",
+        "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+        "poc": {
+          "schema_version": 1,
+          "status": "fail",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "stdout_signature": "mismatch",
+          "errno_signature": "not_run",
+          "errno_probe": "",
+          "no_input": false,
+          "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+          "poc": [
+            {
+              "case_id": "multicall-overflow-64",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "multicall-overflow-256",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "multicall-overflow-64",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": false,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "multicall-overflow-256",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": false,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "multicall-short",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "hi\n",
+              "stderr": "",
+              "stdout_hex": "68690a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "multicall-short",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": false,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "limitations": []
+        },
+        "native_failure": {
+          "stage": "native_gate",
+          "error_class": "candidate_crash",
+          "case_id": "multicall-overflow-64",
+          "kind": "poc",
+          "exit_code": 255,
+          "crashed": true,
+          "signal": 11,
+          "stdout": "",
+          "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+          "timed_out": false,
+          "expected_ok": false
+        },
+        "candidate_artifact": "/tmp/diag-multicall/candidates/hard-multicall.bin"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "status": "accepted",
+        "latency_ms": 1790,
+        "plan_sha256": "5e5a23844e72d1c3ea4060db92e109c0a9932cc914a3c0f7efa13d311f5f207e",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1117,
+          "completion_tokens": 241,
+          "total_tokens": 1358,
+          "latency_ms": 1786
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-flash",
+        "model_identity_ok": true
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "fail",
+          "poc_status": "fail",
+          "runner": "limactl",
+          "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1117,
+          "completion_tokens": 241,
+          "total_tokens": 1358,
+          "latency_ms": 1786
+        },
+        "request_id": null,
+        "elapsed_ms": 12021,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "usage": {
+              "prompt_tokens": 1117,
+              "completion_tokens": 241,
+              "total_tokens": 1358,
+              "latency_ms": 1786
+            },
+            "latency_ms": 1790,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "939ba20adde61ebd352bcaceeed8cc9f254da36f0e7c20dcb424af9eea130440",
+            "allowed_calls": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "multicall_bad",
+              "va": 16960352,
+              "end": 16960432,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": false,
+            "injection": {
+              "target_va": "0x102cb60",
+              "cave_va": "0x10cf000",
+              "method": "new-pt-load",
+              "code_bytes": 81,
+              "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b75d8488d7de048897dd0e800000000488b7dd0e80000000064488b042528000000488b4df84839c875064883c4305dc34883c4305dc3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x1",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "4883ec30",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x11",
+                  "bytes": "488945f8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 8], rax"
+                },
+                {
+                  "address": "0x15",
+                  "bytes": "48897dd8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x28], rdi"
+                },
+                {
+                  "address": "0x19",
+                  "bytes": "488b75d8",
+                  "mnemonic": "mov",
+                  "operands": "rsi, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x1d",
+                  "bytes": "488d7de0",
+                  "mnemonic": "lea",
+                  "operands": "rdi, [rbp - 0x20]"
+                },
+                {
+                  "address": "0x21",
+                  "bytes": "48897dd0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x30], rdi"
+                },
+                {
+                  "address": "0x25",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x2a"
+                },
+                {
+                  "address": "0x2a",
+                  "bytes": "488b7dd0",
+                  "mnemonic": "mov",
+                  "operands": "rdi, qword ptr [rbp - 0x30]"
+                },
+                {
+                  "address": "0x2e",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x33"
+                },
+                {
+                  "address": "0x33",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x3c",
+                  "bytes": "488b4df8",
+                  "mnemonic": "mov",
+                  "operands": "rcx, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x40",
+                  "bytes": "4839c8",
+                  "mnemonic": "cmp",
+                  "operands": "rax, rcx"
+                },
+                {
+                  "address": "0x43",
+                  "bytes": "7506",
+                  "mnemonic": "jne",
+                  "operands": "0x4b"
+                },
+                {
+                  "address": "0x45",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x49",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x4a",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                },
+                {
+                  "address": "0x4b",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x4f",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x50",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "cdea9503cf920f5882c25883e55eabe94f2b275defc44227cb276c564c4bf780",
+              "call_targets": [
+                {
+                  "name": "helper_copy",
+                  "target_va": "0x102cbb0",
+                  "source": "direct"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": false,
+                "fatal": 1,
+                "findings": [
+                  {
+                    "code": "rsp_not_restored",
+                    "severity": "fatal",
+                    "detail": "ret with RSP depth -40 (entry depth 0 expected)",
+                    "address": "0x50"
+                  }
+                ]
+              }
+            },
+            "candidate": {
+              "gate": "fail",
+              "poc_status": "fail",
+              "runner": "limactl",
+              "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+              "poc": {
+                "schema_version": 1,
+                "status": "fail",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "mismatch",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+                "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+                "poc": [
+                  {
+                    "case_id": "multicall-overflow-64",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-256",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-64",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": false,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-256",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": false,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "multicall-short",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-short",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": false,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "native_failure": {
+                "stage": "native_gate",
+                "error_class": "candidate_crash",
+                "case_id": "multicall-overflow-64",
+                "kind": "poc",
+                "exit_code": 255,
+                "crashed": true,
+                "signal": 11,
+                "stdout": "",
+                "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                "timed_out": false,
+                "expected_ok": false
+              },
+              "candidate_artifact": "/tmp/diag-multicall/candidates/hard-multicall.bin"
+            },
+            "elapsed_ms": 12021
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "fail",
+          "poc_status": "fail",
+          "runner": "limactl",
+          "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1117,
+          "completion_tokens": 241,
+          "total_tokens": 1358,
+          "latency_ms": 1786
+        },
+        "request_id": null,
+        "elapsed_ms": 12021,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "usage": {
+              "prompt_tokens": 1117,
+              "completion_tokens": 241,
+              "total_tokens": 1358,
+              "latency_ms": 1786
+            },
+            "latency_ms": 1790,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "939ba20adde61ebd352bcaceeed8cc9f254da36f0e7c20dcb424af9eea130440",
+            "allowed_calls": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "multicall_bad",
+              "va": 16960352,
+              "end": 16960432,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": false,
+            "injection": {
+              "target_va": "0x102cb60",
+              "cave_va": "0x10cf000",
+              "method": "new-pt-load",
+              "code_bytes": 81,
+              "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b75d8488d7de048897dd0e800000000488b7dd0e80000000064488b042528000000488b4df84839c875064883c4305dc34883c4305dc3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x1",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "4883ec30",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x11",
+                  "bytes": "488945f8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 8], rax"
+                },
+                {
+                  "address": "0x15",
+                  "bytes": "48897dd8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x28], rdi"
+                },
+                {
+                  "address": "0x19",
+                  "bytes": "488b75d8",
+                  "mnemonic": "mov",
+                  "operands": "rsi, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x1d",
+                  "bytes": "488d7de0",
+                  "mnemonic": "lea",
+                  "operands": "rdi, [rbp - 0x20]"
+                },
+                {
+                  "address": "0x21",
+                  "bytes": "48897dd0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x30], rdi"
+                },
+                {
+                  "address": "0x25",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x2a"
+                },
+                {
+                  "address": "0x2a",
+                  "bytes": "488b7dd0",
+                  "mnemonic": "mov",
+                  "operands": "rdi, qword ptr [rbp - 0x30]"
+                },
+                {
+                  "address": "0x2e",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x33"
+                },
+                {
+                  "address": "0x33",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x3c",
+                  "bytes": "488b4df8",
+                  "mnemonic": "mov",
+                  "operands": "rcx, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x40",
+                  "bytes": "4839c8",
+                  "mnemonic": "cmp",
+                  "operands": "rax, rcx"
+                },
+                {
+                  "address": "0x43",
+                  "bytes": "7506",
+                  "mnemonic": "jne",
+                  "operands": "0x4b"
+                },
+                {
+                  "address": "0x45",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x49",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x4a",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                },
+                {
+                  "address": "0x4b",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x4f",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x50",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "cdea9503cf920f5882c25883e55eabe94f2b275defc44227cb276c564c4bf780",
+              "call_targets": [
+                {
+                  "name": "helper_copy",
+                  "target_va": "0x102cbb0",
+                  "source": "direct"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": false,
+                "fatal": 1,
+                "findings": [
+                  {
+                    "code": "rsp_not_restored",
+                    "severity": "fatal",
+                    "detail": "ret with RSP depth -40 (entry depth 0 expected)",
+                    "address": "0x50"
+                  }
+                ]
+              }
+            },
+            "candidate": {
+              "gate": "fail",
+              "poc_status": "fail",
+              "runner": "limactl",
+              "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+              "poc": {
+                "schema_version": 1,
+                "status": "fail",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "mismatch",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+                "candidate_sha256": "acd83b9f44f9c841fbd90fc0a37ace2202197a2a22050df95ac7d881ac6dbc8f",
+                "poc": [
+                  {
+                    "case_id": "multicall-overflow-64",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-256",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-64",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": false,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-256",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": false,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "multicall-short",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-short",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": false,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "native_failure": {
+                "stage": "native_gate",
+                "error_class": "candidate_crash",
+                "case_id": "multicall-overflow-64",
+                "kind": "poc",
+                "exit_code": 255,
+                "crashed": true,
+                "signal": 11,
+                "stdout": "",
+                "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                "timed_out": false,
+                "expected_ok": false
+              },
+              "candidate_artifact": "/tmp/diag-multicall/candidates/hard-multicall.bin"
+            },
+            "elapsed_ms": 12021
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-flash",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-flash",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-flash",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-flash",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 25170,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "multicall_bad",
+        "va": 16960352,
+        "end": 16960432,
+        "source": "symbol"
+      },
+      "target_scope_check": "passed",
+      "target_in_scope": true,
+      "ai_increment": false,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 0,
+  "ai_increment": 0,
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 0,
+  "ai_target_in_scope": 1,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 25170,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

@@ -402,10 +402,13 @@ def _patch_binary_call_relocations(
     from app.services.containers import detect_container
 
     container = detect_container(patched)
-    cave_offset = container.va_to_offset(int(cave_va))
-    if cave_offset is None and container.format == "elf":
-        # add_rx_segment creates a PT_LOAD segment without a matching ELF
-        # section; map through program headers for the injected cave.
+    cave_offset = None
+    if container.format == "elf":
+        # The injected cave is backed by a new PT_LOAD segment.  Always map it
+        # through program headers: the cave VA can fall inside a SHT_NOBITS
+        # section (.tbss/.bss) whose file offset is not a real backing store.
+        # Mapping through sections first can patch debug/other bytes and leave
+        # the executed cave with zero call displacements.
         import io
         from elftools.elf.elffile import ELFFile
 
@@ -419,6 +422,8 @@ def _patch_binary_call_relocations(
                 if start <= int(cave_va) < start + filesz:
                     cave_offset = int(segment["p_offset"]) + (int(cave_va) - start)
                     break
+    if cave_offset is None:
+        cave_offset = container.va_to_offset(int(cave_va))
     if cave_offset is None:
         raise ValueError("injected cave is not file-backed after injection")
     resolved = _apply_call_relocations(code, arch, int(cave_va), relocs, allowed_calls)

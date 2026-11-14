@@ -31,7 +31,8 @@
     "general non-loop / whole-binary paradigm A; only CWE121 function-level closure is proven",
     "5-6 model matrix: only 4 real models; GLM-Z1 probe timed out; no additional provider key",
     "full runtime TLS/libc errno capture; current errno probe is a syscall-signature proxy and optional",
-    "exact TLS errno at arbitrary function return; LD_PRELOAD probe is process-exit only"
+    "exact TLS errno at arbitrary function return; LD_PRELOAD probe is process-exit only",
+    "native semantic feedback retry for future failing candidates; not needed by the 3/3 passing set"
   ],
   "non_goals": [
     {
@@ -258,7 +259,12 @@
     "automatic target-ELF symbol/PLT inventory for Route A; typed patch failure metadata",
     "conditional malloc/free whitelist when target ELF imports them; absolute block for fork/execve/system",
     "optional LD_PRELOAD process-exit TLS errno probe (native dynamic ELF only)",
-    "non-loop generalization triage with typed failures; setup/run_matrix/whitepaper"
+    "non-loop generalization triage with typed failures; setup/run_matrix/whitepaper",
+    "structured RepairSpec planner before assembly generation",
+    "ABI-strict CFG-aware stack/return validator for injected x86-64 blocks",
+    "cave relocation mapped through PT_LOAD, fixing SHT_NOBITS .tbss offset corruption",
+    "3/3 AI-verified non-loop hard cases (hard-multicall, hard-sprintf, hard-nonconst)",
+    "raw assembly/candidate/native-failure evidence and run manifests"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",

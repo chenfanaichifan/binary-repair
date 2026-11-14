@@ -84,3 +84,43 @@ def test_inject_target_resolves_whitelisted_call_into_new_pt_load():
     )
     assert patched is not None, meta
     assert meta["call_relocations"] >= 1
+
+
+def test_call_relocations_patch_executed_pt_load_not_nobits_section():
+    """The hard multicall cave VA overlaps .tbss; relocations must patch PT_LOAD."""
+    import io
+    from elftools.elf.elffile import ELFFile
+    from scripts.run_hard_benchmark import _inject_target, _target_va
+
+    binary = ROOT / "fixtures" / "hard-cases" / "vuln-hardcases-c-x86_64.elf"
+    if not binary.is_file():
+        import pytest
+        pytest.skip("hard multicall fixture missing")
+    data = binary.read_bytes()
+    container = detect_container(data)
+    va = _target_va(container, "multicall_bad")
+    calls = discover_allowed_calls(data, container, va)
+    patched, meta = _inject_target(
+        data, "multicall_bad", 16,
+        ".intel_syntax noprefix\n.text\ncall helper_copy\ncall puts\nret\n",
+        calls,
+    )
+    assert patched is not None, meta
+    cave = int(meta["cave_va"], 16)
+    code = bytes.fromhex(meta["code_hex"])
+    with io.BytesIO(patched) as stream:
+        elf = ELFFile(stream)
+        offset = None
+        for segment in elf.iter_segments():
+            if segment["p_type"] != "PT_LOAD":
+                continue
+            start, filesz = int(segment["p_vaddr"]), int(segment["p_filesz"])
+            if start <= cave < start + filesz:
+                offset = int(segment["p_offset"]) + (cave - start)
+                break
+    assert offset is not None
+    executed = patched[offset:offset + len(code)]
+    assert executed != code
+    # Calls were zero displacement in the assembled block; the executed cave
+    # must now contain non-zero rel32 call targets.
+    assert executed.count(b"\xe8\x00\x00\x00\x00") == 0

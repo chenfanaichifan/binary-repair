@@ -41,6 +41,8 @@ DEFAULT_BUNDLES = (
     "artifacts/path-b-injection-retry-2026-11-14",
     "artifacts/route-a-auto-symbols-2026-11-14",
     "artifacts/generalization-2026-11-14",
+    "artifacts/phase-a-diagnosis-2026-11-15",
+    "artifacts/ai-repair-planning-2026-11-15",
     "artifacts/generalization-uaf-2026-11-14",
     "artifacts/dynamic-symbols-2026-11-14",
     "artifacts/errno-signature-cwe121-2026-11-14",

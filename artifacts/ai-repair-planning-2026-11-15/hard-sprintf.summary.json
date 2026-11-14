@@ -1,0 +1,2662 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "hard-sprintf",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "sprintf_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-sprintf.json",
+        "reference_fix": "fixtures/hard-cases/sprintf_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "sprintf hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 4828,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 4828,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target sprintf_bad [0x102cbe0,0x102cc40)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "sprintf_bad",
+          "va": 16960480,
+          "end": 16960576,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 4006,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false,
+        "elapsed_ms": 3060
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-flash",
+              "status": "not_attempted",
+              "latency_ms": 4601,
+              "plan_sha256": "065e33a1154e2f739c1c9eb0a739cd10ea14435177d3a918584a6ea0ea8337ef",
+              "error": null,
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 1073,
+                "completion_tokens": 776,
+                "total_tokens": 1849,
+                "latency_ms": 4596
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true
+            },
+            "raw_plan": {
+              "schema_version": 1,
+              "vulnerability_type": "stack_buffer_overflow",
+              "root_cause": "The function formats an attacker-controlled input string into a fixed 16-byte stack buffer at [rbp-0x20] via sprintf with format at 0x10004cf, without bounding the output length, so inputs whose formatted result exceeds 15 bytes overflow the buffer and corrupt adjacent stack data including the saved canary slot region.",
+              "affected_function": "sprintf_bad",
+              "affected_addresses": [
+                "0x102cbe0",
+                "0x102cbf5",
+                "0x102cbf9",
+                "0x102cbfd",
+                "0x102cc02",
+                "0x102cc04",
+                "0x102cc08",
+                "0x102cc0c",
+                "0x102cc11",
+                "0x102cc15",
+                "0x102cc1a",
+                "0x102cc23",
+                "0x102cc27",
+                "0x102cc2a",
+                "0x102cc2c",
+                "0x102cc30",
+                "0x102cc31"
+              ],
+              "affected_registers": [
+                "rdi",
+                "rsi",
+                "rdx",
+                "rax",
+                "rcx"
+              ],
+              "affected_memory": [
+                "[rbp-0x20] 16-byte destination buffer",
+                "[rbp-0x28] saved input pointer",
+                "[rbp-0x30] saved destination pointer",
+                "[rbp-8] stack canary slot"
+              ],
+              "original_behavior": "Stores the input pointer, calls sprintf(dest=[rbp-0x20], fmt=0x10004cf, input) with no length limit, then calls puts(dest), then verifies the stack canary and returns.",
+              "required_invariant": "At most 15 bytes plus a NUL terminator may be written into the 16-byte destination buffer at [rbp-0x20]; the stack canary at [rbp-8] and saved frame must remain intact.",
+              "repair_strategy": "Bound the formatted output to the 16-byte destination capacity before or during the sprintf call: reject/truncate inputs whose formatted length would exceed 15 bytes, ensuring the write stays within [rbp-0x20, rbp-0x10) and appending a NUL. Preserve the normal sprintf-then-puts behavior for inputs that fit.",
+              "failure_behavior": "For inputs that do not fit in 15 bytes, do not perform the overflowing write; return without corrupting the buffer or canary (reject path), leaving observable behavior for valid inputs unchanged.",
+              "permitted_calls": [
+                {
+                  "name": "sprintf",
+                  "source": "direct",
+                  "target_va": "0x108a6d0"
+                },
+                {
+                  "name": "puts",
+                  "source": "direct",
+                  "target_va": "0x108a31c"
+                }
+              ],
+              "expected_behavior": "Valid inputs whose formatted result is at most 15 bytes are formatted into [rbp-0x20] and printed via puts exactly as before; oversized inputs are rejected so no bytes beyond the 16-byte buffer are written and the canary check passes.",
+              "verification_conditions": [
+                "Destination write length <= 15 bytes plus NUL for all inputs",
+                "Stack canary at [rbp-8] unchanged after call",
+                "puts receives the same NUL-terminated string for valid inputs as original",
+                "Only direct calls to 0x108a6d0 and 0x108a31c are emitted",
+                "Function terminates with ret and preserves SysV callee-saved registers and stack alignment"
+              ],
+              "confidence": 0.85
+            },
+            "plan": {
+              "schema_version": 1,
+              "vulnerability_type": "stack_buffer_overflow",
+              "root_cause": "The function formats an attacker-controlled input string into a fixed 16-byte stack buffer at [rbp-0x20] via sprintf with format at 0x10004cf, without bounding the output length, so inputs whose formatted result exceeds 15 bytes overflow the buffer and corrupt adjacent stack data including the saved canary slot region.",
+              "affected_function": "sprintf_bad",
+              "affected_addresses": [
+                "0x102cbe0",
+                "0x102cbf5",
+                "0x102cbf9",
+                "0x102cbfd",
+                "0x102cc02",
+                "0x102cc04",
+                "0x102cc08",
+                "0x102cc0c",
+                "0x102cc11",
+                "0x102cc15",
+                "0x102cc1a",
+                "0x102cc23",
+                "0x102cc27",
+                "0x102cc2a",
+                "0x102cc2c",
+                "0x102cc30",
+                "0x102cc31"
+              ],
+              "affected_registers": [
+                "rdi",
+                "rsi",
+                "rdx",
+                "rax",
+                "rcx"
+              ],
+              "affected_memory": [
+                "[rbp-0x20] 16-byte destination buffer",
+                "[rbp-0x28] saved input pointer",
+                "[rbp-0x30] saved destination pointer",
+                "[rbp-8] stack canary slot"
+              ],
+              "original_behavior": "Stores the input pointer, calls sprintf(dest=[rbp-0x20], fmt=0x10004cf, input) with no length limit, then calls puts(dest), then verifies the stack canary and returns.",
+              "required_invariant": "At most 15 bytes plus a NUL terminator may be written into the 16-byte destination buffer at [rbp-0x20]; the stack canary at [rbp-8] and saved frame must remain intact.",
+              "repair_strategy": "Bound the formatted output to the 16-byte destination capacity before or during the sprintf call: reject/truncate inputs whose formatted length would exceed 15 bytes, ensuring the write stays within [rbp-0x20, rbp-0x10) and appending a NUL. Preserve the normal sprintf-then-puts behavior for inputs that fit.",
+              "failure_behavior": "For inputs that do not fit in 15 bytes, do not perform the overflowing write; return without corrupting the buffer or canary (reject path), leaving observable behavior for valid inputs unchanged.",
+              "permitted_calls": [
+                "sprintf",
+                "puts"
+              ],
+              "expected_behavior": "Valid inputs whose formatted result is at most 15 bytes are formatted into [rbp-0x20] and printed via puts exactly as before; oversized inputs are rejected so no bytes beyond the 16-byte buffer are written and the canary check passes.",
+              "verification_conditions": [
+                "Destination write length <= 15 bytes plus NUL for all inputs",
+                "Stack canary at [rbp-8] unchanged after call",
+                "puts receives the same NUL-terminated string for valid inputs as original",
+                "Only direct calls to 0x108a6d0 and 0x108a31c are emitted",
+                "Function terminates with ret and preserves SysV callee-saved registers and stack alignment"
+              ],
+              "confidence": "high"
+            },
+            "plan_sha256": "7dff1bbce891dc50ba2962bc393ff388c646bf5ddef104f99ccc701ed1582686",
+            "plan_error": "",
+            "error": null,
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              },
+              {
+                "name": "sprintf",
+                "target_va": "0x108a6d0",
+                "source": "direct"
+              }
+            ],
+            "elapsed_ms": 4660
+          },
+          "model": "deepseek-flash",
+          "model_requested": "deepseek-flash",
+          "status": "accepted",
+          "error": null,
+          "plan_status": "valid",
+          "plan_sha256": "7dff1bbce891dc50ba2962bc393ff388c646bf5ddef104f99ccc701ed1582686",
+          "usage": {
+            "prompt_tokens": 1834,
+            "completion_tokens": 444,
+            "total_tokens": 2278,
+            "latency_ms": 2470
+          },
+          "latency_ms": 2474,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "d781104732e9e729574c695390e45a2b02cb1278b57376bb5df6c0138c5e056c",
+          "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nmov rcx, rdx\nxor r8d, r8d\n.Lcount_loop:\n  mov al, byte ptr [rcx]\n  test al, al\n  je .Lcount_done\n  inc r8\n  cmp r8, 15\n  ja .Lreject\n  inc rcx\n  jmp .Lcount_loop\n.Lcount_done:\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x108a6d0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\njmp .Lepilogue\n.Lreject:\nmov byte ptr [rbp - 0x20], 0\n.Lepilogue:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x30\npop rbp\nret\n.Lfail:\nadd rsp, 0x30\npop rbp\nret\n",
+          "assembly_attempts": [
+            {
+              "attempt": 1,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "d781104732e9e729574c695390e45a2b02cb1278b57376bb5df6c0138c5e056c",
+              "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nmov rcx, rdx\nxor r8d, r8d\n.Lcount_loop:\n  mov al, byte ptr [rcx]\n  test al, al\n  je .Lcount_done\n  inc r8\n  cmp r8, 15\n  ja .Lreject\n  inc rcx\n  jmp .Lcount_loop\n.Lcount_done:\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x108a6d0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\njmp .Lepilogue\n.Lreject:\nmov byte ptr [rbp - 0x20], 0\n.Lepilogue:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x30\npop rbp\nret\n.Lfail:\nadd rsp, 0x30\npop rbp\nret\n",
+              "validation_error": null,
+              "validation_error_class": null,
+              "usage": {
+                "prompt_tokens": 1834,
+                "completion_tokens": 444,
+                "total_tokens": 2278,
+                "latency_ms": 2470
+              },
+              "latency_ms": 2474,
+              "model": "deepseek-flash",
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true,
+              "request_id": null
+            }
+          ],
+          "validation_error": null,
+          "validation_error_class": null,
+          "allowed_calls": [
+            {
+              "name": "puts",
+              "target_va": "0x108a31c",
+              "source": "direct"
+            },
+            {
+              "name": "sprintf",
+              "target_va": "0x108a6d0",
+              "source": "direct"
+            }
+          ],
+          "target_in_scope": true,
+          "target_scope_check": "passed",
+          "target_scope": {
+            "name": "sprintf_bad",
+            "va": 16960480,
+            "end": 16960576,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": true,
+          "injection": {
+            "target_va": "0x102cbe0",
+            "cave_va": "0x10cf000",
+            "method": "new-pt-load",
+            "code_bytes": 139,
+            "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b55d8becf04000131c0488d7de048897dd04889d14531c08a0184c0740e49ffc04983f80f772848ffc1ebec488b55d8becf04000131c0488d7de048897dd0e800000000488b7dd0e800000000eb04c645e00064488b042528000000488b4df84839c875064883c4305dc34883c4305dc3",
+            "code_disassembly": [
+              {
+                "address": "0x0",
+                "bytes": "55",
+                "mnemonic": "push",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x1",
+                "bytes": "4889e5",
+                "mnemonic": "mov",
+                "operands": "rbp, rsp"
+              },
+              {
+                "address": "0x4",
+                "bytes": "4883ec30",
+                "mnemonic": "sub",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0x8",
+                "bytes": "64488b042528000000",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr fs:[0x28]"
+              },
+              {
+                "address": "0x11",
+                "bytes": "488945f8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 8], rax"
+              },
+              {
+                "address": "0x15",
+                "bytes": "48897dd8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x28], rdi"
+              },
+              {
+                "address": "0x19",
+                "bytes": "488b55d8",
+                "mnemonic": "mov",
+                "operands": "rdx, qword ptr [rbp - 0x28]"
+              },
+              {
+                "address": "0x1d",
+                "bytes": "becf040001",
+                "mnemonic": "mov",
+                "operands": "esi, 0x10004cf"
+              },
+              {
+                "address": "0x22",
+                "bytes": "31c0",
+                "mnemonic": "xor",
+                "operands": "eax, eax"
+              },
+              {
+                "address": "0x24",
+                "bytes": "488d7de0",
+                "mnemonic": "lea",
+                "operands": "rdi, [rbp - 0x20]"
+              },
+              {
+                "address": "0x28",
+                "bytes": "48897dd0",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x30], rdi"
+              },
+              {
+                "address": "0x2c",
+                "bytes": "4889d1",
+                "mnemonic": "mov",
+                "operands": "rcx, rdx"
+              },
+              {
+                "address": "0x2f",
+                "bytes": "4531c0",
+                "mnemonic": "xor",
+                "operands": "r8d, r8d"
+              },
+              {
+                "address": "0x32",
+                "bytes": "8a01",
+                "mnemonic": "mov",
+                "operands": "al, byte ptr [rcx]"
+              },
+              {
+                "address": "0x34",
+                "bytes": "84c0",
+                "mnemonic": "test",
+                "operands": "al, al"
+              },
+              {
+                "address": "0x36",
+                "bytes": "740e",
+                "mnemonic": "je",
+                "operands": "0x46"
+              },
+              {
+                "address": "0x38",
+                "bytes": "49ffc0",
+                "mnemonic": "inc",
+                "operands": "r8"
+              },
+              {
+                "address": "0x3b",
+                "bytes": "4983f80f",
+                "mnemonic": "cmp",
+                "operands": "r8, 0xf"
+              },
+              {
+                "address": "0x3f",
+                "bytes": "7728",
+                "mnemonic": "ja",
+                "operands": "0x69"
+              },
+              {
+                "address": "0x41",
+                "bytes": "48ffc1",
+                "mnemonic": "inc",
+                "operands": "rcx"
+              },
+              {
+                "address": "0x44",
+                "bytes": "ebec",
+                "mnemonic": "jmp",
+                "operands": "0x32"
+              },
+              {
+                "address": "0x46",
+                "bytes": "488b55d8",
+                "mnemonic": "mov",
+                "operands": "rdx, qword ptr [rbp - 0x28]"
+              },
+              {
+                "address": "0x4a",
+                "bytes": "becf040001",
+                "mnemonic": "mov",
+                "operands": "esi, 0x10004cf"
+              },
+              {
+                "address": "0x4f",
+                "bytes": "31c0",
+                "mnemonic": "xor",
+                "operands": "eax, eax"
+              },
+              {
+                "address": "0x51",
+                "bytes": "488d7de0",
+                "mnemonic": "lea",
+                "operands": "rdi, [rbp - 0x20]"
+              },
+              {
+                "address": "0x55",
+                "bytes": "48897dd0",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x30], rdi"
+              },
+              {
+                "address": "0x59",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x5e"
+              },
+              {
+                "address": "0x5e",
+                "bytes": "488b7dd0",
+                "mnemonic": "mov",
+                "operands": "rdi, qword ptr [rbp - 0x30]"
+              },
+              {
+                "address": "0x62",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x67"
+              },
+              {
+                "address": "0x67",
+                "bytes": "eb04",
+                "mnemonic": "jmp",
+                "operands": "0x6d"
+              },
+              {
+                "address": "0x69",
+                "bytes": "c645e000",
+                "mnemonic": "mov",
+                "operands": "byte ptr [rbp - 0x20], 0"
+              },
+              {
+                "address": "0x6d",
+                "bytes": "64488b042528000000",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr fs:[0x28]"
+              },
+              {
+                "address": "0x76",
+                "bytes": "488b4df8",
+                "mnemonic": "mov",
+                "operands": "rcx, qword ptr [rbp - 8]"
+              },
+              {
+                "address": "0x7a",
+                "bytes": "4839c8",
+                "mnemonic": "cmp",
+                "operands": "rax, rcx"
+              },
+              {
+                "address": "0x7d",
+                "bytes": "7506",
+                "mnemonic": "jne",
+                "operands": "0x85"
+              },
+              {
+                "address": "0x7f",
+                "bytes": "4883c430",
+                "mnemonic": "add",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0x83",
+                "bytes": "5d",
+                "mnemonic": "pop",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x84",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              },
+              {
+                "address": "0x85",
+                "bytes": "4883c430",
+                "mnemonic": "add",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0x89",
+                "bytes": "5d",
+                "mnemonic": "pop",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x8a",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              }
+            ],
+            "assembly_sha256": "de12f9f4aaf4f195a4e5a7f13cbc48b79213be0ebc89e84e2a899074c61d3293",
+            "call_targets": [
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              },
+              {
+                "name": "sprintf",
+                "target_va": "0x108a6d0",
+                "source": "direct"
+              }
+            ],
+            "call_relocations": 2,
+            "abi": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          "candidate": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "runner": "limactl",
+            "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+            "poc": {
+              "schema_version": 1,
+              "status": "pass",
+              "runner": "limactl",
+              "tier": "emulated_run",
+              "stdout_signature": "matched",
+              "errno_signature": "not_run",
+              "errno_probe": "",
+              "no_input": false,
+              "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+              "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+              "poc": [
+                {
+                  "case_id": "sprintf-overflow-64",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "sprintf-overflow-256",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "sprintf-overflow-64",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "",
+                  "stderr": "",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "sprintf-overflow-256",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "",
+                  "stderr": "",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "regression": [
+                {
+                  "case_id": "sprintf-short",
+                  "kind": "regression",
+                  "executable": "original",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "hi\n",
+                  "stderr": "",
+                  "stdout_hex": "68690a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "sprintf-short",
+                  "kind": "regression",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "hi\n",
+                  "stderr": "",
+                  "stdout_hex": "68690a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "limitations": []
+            },
+            "repair_status": "VERIFIED",
+            "candidate_artifact": "/tmp/final-hard-sprintf/candidates/hard-sprintf.bin"
+          },
+          "elapsed_ms": 7397
+        }
+      ],
+      "injection": {
+        "target_va": "0x102cbe0",
+        "cave_va": "0x10cf000",
+        "method": "new-pt-load",
+        "code_bytes": 139,
+        "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b55d8becf04000131c0488d7de048897dd04889d14531c08a0184c0740e49ffc04983f80f772848ffc1ebec488b55d8becf04000131c0488d7de048897dd0e800000000488b7dd0e800000000eb04c645e00064488b042528000000488b4df84839c875064883c4305dc34883c4305dc3",
+        "code_disassembly": [
+          {
+            "address": "0x0",
+            "bytes": "55",
+            "mnemonic": "push",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x1",
+            "bytes": "4889e5",
+            "mnemonic": "mov",
+            "operands": "rbp, rsp"
+          },
+          {
+            "address": "0x4",
+            "bytes": "4883ec30",
+            "mnemonic": "sub",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0x8",
+            "bytes": "64488b042528000000",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr fs:[0x28]"
+          },
+          {
+            "address": "0x11",
+            "bytes": "488945f8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 8], rax"
+          },
+          {
+            "address": "0x15",
+            "bytes": "48897dd8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x28], rdi"
+          },
+          {
+            "address": "0x19",
+            "bytes": "488b55d8",
+            "mnemonic": "mov",
+            "operands": "rdx, qword ptr [rbp - 0x28]"
+          },
+          {
+            "address": "0x1d",
+            "bytes": "becf040001",
+            "mnemonic": "mov",
+            "operands": "esi, 0x10004cf"
+          },
+          {
+            "address": "0x22",
+            "bytes": "31c0",
+            "mnemonic": "xor",
+            "operands": "eax, eax"
+          },
+          {
+            "address": "0x24",
+            "bytes": "488d7de0",
+            "mnemonic": "lea",
+            "operands": "rdi, [rbp - 0x20]"
+          },
+          {
+            "address": "0x28",
+            "bytes": "48897dd0",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x30], rdi"
+          },
+          {
+            "address": "0x2c",
+            "bytes": "4889d1",
+            "mnemonic": "mov",
+            "operands": "rcx, rdx"
+          },
+          {
+            "address": "0x2f",
+            "bytes": "4531c0",
+            "mnemonic": "xor",
+            "operands": "r8d, r8d"
+          },
+          {
+            "address": "0x32",
+            "bytes": "8a01",
+            "mnemonic": "mov",
+            "operands": "al, byte ptr [rcx]"
+          },
+          {
+            "address": "0x34",
+            "bytes": "84c0",
+            "mnemonic": "test",
+            "operands": "al, al"
+          },
+          {
+            "address": "0x36",
+            "bytes": "740e",
+            "mnemonic": "je",
+            "operands": "0x46"
+          },
+          {
+            "address": "0x38",
+            "bytes": "49ffc0",
+            "mnemonic": "inc",
+            "operands": "r8"
+          },
+          {
+            "address": "0x3b",
+            "bytes": "4983f80f",
+            "mnemonic": "cmp",
+            "operands": "r8, 0xf"
+          },
+          {
+            "address": "0x3f",
+            "bytes": "7728",
+            "mnemonic": "ja",
+            "operands": "0x69"
+          },
+          {
+            "address": "0x41",
+            "bytes": "48ffc1",
+            "mnemonic": "inc",
+            "operands": "rcx"
+          },
+          {
+            "address": "0x44",
+            "bytes": "ebec",
+            "mnemonic": "jmp",
+            "operands": "0x32"
+          },
+          {
+            "address": "0x46",
+            "bytes": "488b55d8",
+            "mnemonic": "mov",
+            "operands": "rdx, qword ptr [rbp - 0x28]"
+          },
+          {
+            "address": "0x4a",
+            "bytes": "becf040001",
+            "mnemonic": "mov",
+            "operands": "esi, 0x10004cf"
+          },
+          {
+            "address": "0x4f",
+            "bytes": "31c0",
+            "mnemonic": "xor",
+            "operands": "eax, eax"
+          },
+          {
+            "address": "0x51",
+            "bytes": "488d7de0",
+            "mnemonic": "lea",
+            "operands": "rdi, [rbp - 0x20]"
+          },
+          {
+            "address": "0x55",
+            "bytes": "48897dd0",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x30], rdi"
+          },
+          {
+            "address": "0x59",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x5e"
+          },
+          {
+            "address": "0x5e",
+            "bytes": "488b7dd0",
+            "mnemonic": "mov",
+            "operands": "rdi, qword ptr [rbp - 0x30]"
+          },
+          {
+            "address": "0x62",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x67"
+          },
+          {
+            "address": "0x67",
+            "bytes": "eb04",
+            "mnemonic": "jmp",
+            "operands": "0x6d"
+          },
+          {
+            "address": "0x69",
+            "bytes": "c645e000",
+            "mnemonic": "mov",
+            "operands": "byte ptr [rbp - 0x20], 0"
+          },
+          {
+            "address": "0x6d",
+            "bytes": "64488b042528000000",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr fs:[0x28]"
+          },
+          {
+            "address": "0x76",
+            "bytes": "488b4df8",
+            "mnemonic": "mov",
+            "operands": "rcx, qword ptr [rbp - 8]"
+          },
+          {
+            "address": "0x7a",
+            "bytes": "4839c8",
+            "mnemonic": "cmp",
+            "operands": "rax, rcx"
+          },
+          {
+            "address": "0x7d",
+            "bytes": "7506",
+            "mnemonic": "jne",
+            "operands": "0x85"
+          },
+          {
+            "address": "0x7f",
+            "bytes": "4883c430",
+            "mnemonic": "add",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0x83",
+            "bytes": "5d",
+            "mnemonic": "pop",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x84",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          },
+          {
+            "address": "0x85",
+            "bytes": "4883c430",
+            "mnemonic": "add",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0x89",
+            "bytes": "5d",
+            "mnemonic": "pop",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x8a",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          }
+        ],
+        "assembly_sha256": "de12f9f4aaf4f195a4e5a7f13cbc48b79213be0ebc89e84e2a899074c61d3293",
+        "call_targets": [
+          {
+            "name": "puts",
+            "target_va": "0x108a31c",
+            "source": "direct"
+          },
+          {
+            "name": "sprintf",
+            "target_va": "0x108a6d0",
+            "source": "direct"
+          }
+        ],
+        "call_relocations": 2,
+        "abi": {
+          "ok": true,
+          "fatal": 0,
+          "findings": []
+        }
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "limactl",
+        "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "stdout_signature": "matched",
+          "errno_signature": "not_run",
+          "errno_probe": "",
+          "no_input": false,
+          "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+          "poc": [
+            {
+              "case_id": "sprintf-overflow-64",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "sprintf-overflow-256",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "sprintf-overflow-64",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "sprintf-overflow-256",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "sprintf-short",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "hi\n",
+              "stderr": "",
+              "stdout_hex": "68690a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "sprintf-short",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "hi\n",
+              "stderr": "",
+              "stdout_hex": "68690a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "limitations": []
+        },
+        "repair_status": "VERIFIED",
+        "candidate_artifact": "/tmp/final-hard-sprintf/candidates/hard-sprintf.bin"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "status": "accepted",
+        "latency_ms": 2474,
+        "plan_sha256": "3ba12f6c75a24b3d2cba882348be5c60877629013232ee337c3f399e302cce00",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1834,
+          "completion_tokens": 444,
+          "total_tokens": 2278,
+          "latency_ms": 2470
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-flash",
+        "model_identity_ok": true
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1834,
+          "completion_tokens": 444,
+          "total_tokens": 2278,
+          "latency_ms": 2470
+        },
+        "request_id": null,
+        "elapsed_ms": 7397,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "sprintf_bad",
+          "va": 16960480,
+          "end": 16960576,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 4601,
+                "plan_sha256": "065e33a1154e2f739c1c9eb0a739cd10ea14435177d3a918584a6ea0ea8337ef",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1073,
+                  "completion_tokens": 776,
+                  "total_tokens": 1849,
+                  "latency_ms": 4596
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "stack_buffer_overflow",
+                "root_cause": "The function formats an attacker-controlled input string into a fixed 16-byte stack buffer at [rbp-0x20] via sprintf with format at 0x10004cf, without bounding the output length, so inputs whose formatted result exceeds 15 bytes overflow the buffer and corrupt adjacent stack data including the saved canary slot region.",
+                "affected_function": "sprintf_bad",
+                "affected_addresses": [
+                  "0x102cbe0",
+                  "0x102cbf5",
+                  "0x102cbf9",
+                  "0x102cbfd",
+                  "0x102cc02",
+                  "0x102cc04",
+                  "0x102cc08",
+                  "0x102cc0c",
+                  "0x102cc11",
+                  "0x102cc15",
+                  "0x102cc1a",
+                  "0x102cc23",
+                  "0x102cc27",
+                  "0x102cc2a",
+                  "0x102cc2c",
+                  "0x102cc30",
+                  "0x102cc31"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rax",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "[rbp-0x20] 16-byte destination buffer",
+                  "[rbp-0x28] saved input pointer",
+                  "[rbp-0x30] saved destination pointer",
+                  "[rbp-8] stack canary slot"
+                ],
+                "original_behavior": "Stores the input pointer, calls sprintf(dest=[rbp-0x20], fmt=0x10004cf, input) with no length limit, then calls puts(dest), then verifies the stack canary and returns.",
+                "required_invariant": "At most 15 bytes plus a NUL terminator may be written into the 16-byte destination buffer at [rbp-0x20]; the stack canary at [rbp-8] and saved frame must remain intact.",
+                "repair_strategy": "Bound the formatted output to the 16-byte destination capacity before or during the sprintf call: reject/truncate inputs whose formatted length would exceed 15 bytes, ensuring the write stays within [rbp-0x20, rbp-0x10) and appending a NUL. Preserve the normal sprintf-then-puts behavior for inputs that fit.",
+                "failure_behavior": "For inputs that do not fit in 15 bytes, do not perform the overflowing write; return without corrupting the buffer or canary (reject path), leaving observable behavior for valid inputs unchanged.",
+                "permitted_calls": [
+                  {
+                    "name": "sprintf",
+                    "source": "direct",
+                    "target_va": "0x108a6d0"
+                  },
+                  {
+                    "name": "puts",
+                    "source": "direct",
+                    "target_va": "0x108a31c"
+                  }
+                ],
+                "expected_behavior": "Valid inputs whose formatted result is at most 15 bytes are formatted into [rbp-0x20] and printed via puts exactly as before; oversized inputs are rejected so no bytes beyond the 16-byte buffer are written and the canary check passes.",
+                "verification_conditions": [
+                  "Destination write length <= 15 bytes plus NUL for all inputs",
+                  "Stack canary at [rbp-8] unchanged after call",
+                  "puts receives the same NUL-terminated string for valid inputs as original",
+                  "Only direct calls to 0x108a6d0 and 0x108a31c are emitted",
+                  "Function terminates with ret and preserves SysV callee-saved registers and stack alignment"
+                ],
+                "confidence": 0.85
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "stack_buffer_overflow",
+                "root_cause": "The function formats an attacker-controlled input string into a fixed 16-byte stack buffer at [rbp-0x20] via sprintf with format at 0x10004cf, without bounding the output length, so inputs whose formatted result exceeds 15 bytes overflow the buffer and corrupt adjacent stack data including the saved canary slot region.",
+                "affected_function": "sprintf_bad",
+                "affected_addresses": [
+                  "0x102cbe0",
+                  "0x102cbf5",
+                  "0x102cbf9",
+                  "0x102cbfd",
+                  "0x102cc02",
+                  "0x102cc04",
+                  "0x102cc08",
+                  "0x102cc0c",
+                  "0x102cc11",
+                  "0x102cc15",
+                  "0x102cc1a",
+                  "0x102cc23",
+                  "0x102cc27",
+                  "0x102cc2a",
+                  "0x102cc2c",
+                  "0x102cc30",
+                  "0x102cc31"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rax",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "[rbp-0x20] 16-byte destination buffer",
+                  "[rbp-0x28] saved input pointer",
+                  "[rbp-0x30] saved destination pointer",
+                  "[rbp-8] stack canary slot"
+                ],
+                "original_behavior": "Stores the input pointer, calls sprintf(dest=[rbp-0x20], fmt=0x10004cf, input) with no length limit, then calls puts(dest), then verifies the stack canary and returns.",
+                "required_invariant": "At most 15 bytes plus a NUL terminator may be written into the 16-byte destination buffer at [rbp-0x20]; the stack canary at [rbp-8] and saved frame must remain intact.",
+                "repair_strategy": "Bound the formatted output to the 16-byte destination capacity before or during the sprintf call: reject/truncate inputs whose formatted length would exceed 15 bytes, ensuring the write stays within [rbp-0x20, rbp-0x10) and appending a NUL. Preserve the normal sprintf-then-puts behavior for inputs that fit.",
+                "failure_behavior": "For inputs that do not fit in 15 bytes, do not perform the overflowing write; return without corrupting the buffer or canary (reject path), leaving observable behavior for valid inputs unchanged.",
+                "permitted_calls": [
+                  "sprintf",
+                  "puts"
+                ],
+                "expected_behavior": "Valid inputs whose formatted result is at most 15 bytes are formatted into [rbp-0x20] and printed via puts exactly as before; oversized inputs are rejected so no bytes beyond the 16-byte buffer are written and the canary check passes.",
+                "verification_conditions": [
+                  "Destination write length <= 15 bytes plus NUL for all inputs",
+                  "Stack canary at [rbp-8] unchanged after call",
+                  "puts receives the same NUL-terminated string for valid inputs as original",
+                  "Only direct calls to 0x108a6d0 and 0x108a31c are emitted",
+                  "Function terminates with ret and preserves SysV callee-saved registers and stack alignment"
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "7dff1bbce891dc50ba2962bc393ff388c646bf5ddef104f99ccc701ed1582686",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                },
+                {
+                  "name": "sprintf",
+                  "target_va": "0x108a6d0",
+                  "source": "direct"
+                }
+              ],
+              "elapsed_ms": 4660
+            },
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "7dff1bbce891dc50ba2962bc393ff388c646bf5ddef104f99ccc701ed1582686",
+            "usage": {
+              "prompt_tokens": 1834,
+              "completion_tokens": 444,
+              "total_tokens": 2278,
+              "latency_ms": 2470
+            },
+            "latency_ms": 2474,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "d781104732e9e729574c695390e45a2b02cb1278b57376bb5df6c0138c5e056c",
+            "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nmov rcx, rdx\nxor r8d, r8d\n.Lcount_loop:\n  mov al, byte ptr [rcx]\n  test al, al\n  je .Lcount_done\n  inc r8\n  cmp r8, 15\n  ja .Lreject\n  inc rcx\n  jmp .Lcount_loop\n.Lcount_done:\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x108a6d0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\njmp .Lepilogue\n.Lreject:\nmov byte ptr [rbp - 0x20], 0\n.Lepilogue:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x30\npop rbp\nret\n.Lfail:\nadd rsp, 0x30\npop rbp\nret\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "d781104732e9e729574c695390e45a2b02cb1278b57376bb5df6c0138c5e056c",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nmov rcx, rdx\nxor r8d, r8d\n.Lcount_loop:\n  mov al, byte ptr [rcx]\n  test al, al\n  je .Lcount_done\n  inc r8\n  cmp r8, 15\n  ja .Lreject\n  inc rcx\n  jmp .Lcount_loop\n.Lcount_done:\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x108a6d0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\njmp .Lepilogue\n.Lreject:\nmov byte ptr [rbp - 0x20], 0\n.Lepilogue:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x30\npop rbp\nret\n.Lfail:\nadd rsp, 0x30\npop rbp\nret\n",
+                "validation_error": null,
+                "validation_error_class": null,
+                "usage": {
+                  "prompt_tokens": 1834,
+                  "completion_tokens": 444,
+                  "total_tokens": 2278,
+                  "latency_ms": 2470
+                },
+                "latency_ms": 2474,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              },
+              {
+                "name": "sprintf",
+                "target_va": "0x108a6d0",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "sprintf_bad",
+              "va": 16960480,
+              "end": 16960576,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x102cbe0",
+              "cave_va": "0x10cf000",
+              "method": "new-pt-load",
+              "code_bytes": 139,
+              "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b55d8becf04000131c0488d7de048897dd04889d14531c08a0184c0740e49ffc04983f80f772848ffc1ebec488b55d8becf04000131c0488d7de048897dd0e800000000488b7dd0e800000000eb04c645e00064488b042528000000488b4df84839c875064883c4305dc34883c4305dc3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x1",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "4883ec30",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x11",
+                  "bytes": "488945f8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 8], rax"
+                },
+                {
+                  "address": "0x15",
+                  "bytes": "48897dd8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x28], rdi"
+                },
+                {
+                  "address": "0x19",
+                  "bytes": "488b55d8",
+                  "mnemonic": "mov",
+                  "operands": "rdx, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x1d",
+                  "bytes": "becf040001",
+                  "mnemonic": "mov",
+                  "operands": "esi, 0x10004cf"
+                },
+                {
+                  "address": "0x22",
+                  "bytes": "31c0",
+                  "mnemonic": "xor",
+                  "operands": "eax, eax"
+                },
+                {
+                  "address": "0x24",
+                  "bytes": "488d7de0",
+                  "mnemonic": "lea",
+                  "operands": "rdi, [rbp - 0x20]"
+                },
+                {
+                  "address": "0x28",
+                  "bytes": "48897dd0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x30], rdi"
+                },
+                {
+                  "address": "0x2c",
+                  "bytes": "4889d1",
+                  "mnemonic": "mov",
+                  "operands": "rcx, rdx"
+                },
+                {
+                  "address": "0x2f",
+                  "bytes": "4531c0",
+                  "mnemonic": "xor",
+                  "operands": "r8d, r8d"
+                },
+                {
+                  "address": "0x32",
+                  "bytes": "8a01",
+                  "mnemonic": "mov",
+                  "operands": "al, byte ptr [rcx]"
+                },
+                {
+                  "address": "0x34",
+                  "bytes": "84c0",
+                  "mnemonic": "test",
+                  "operands": "al, al"
+                },
+                {
+                  "address": "0x36",
+                  "bytes": "740e",
+                  "mnemonic": "je",
+                  "operands": "0x46"
+                },
+                {
+                  "address": "0x38",
+                  "bytes": "49ffc0",
+                  "mnemonic": "inc",
+                  "operands": "r8"
+                },
+                {
+                  "address": "0x3b",
+                  "bytes": "4983f80f",
+                  "mnemonic": "cmp",
+                  "operands": "r8, 0xf"
+                },
+                {
+                  "address": "0x3f",
+                  "bytes": "7728",
+                  "mnemonic": "ja",
+                  "operands": "0x69"
+                },
+                {
+                  "address": "0x41",
+                  "bytes": "48ffc1",
+                  "mnemonic": "inc",
+                  "operands": "rcx"
+                },
+                {
+                  "address": "0x44",
+                  "bytes": "ebec",
+                  "mnemonic": "jmp",
+                  "operands": "0x32"
+                },
+                {
+                  "address": "0x46",
+                  "bytes": "488b55d8",
+                  "mnemonic": "mov",
+                  "operands": "rdx, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x4a",
+                  "bytes": "becf040001",
+                  "mnemonic": "mov",
+                  "operands": "esi, 0x10004cf"
+                },
+                {
+                  "address": "0x4f",
+                  "bytes": "31c0",
+                  "mnemonic": "xor",
+                  "operands": "eax, eax"
+                },
+                {
+                  "address": "0x51",
+                  "bytes": "488d7de0",
+                  "mnemonic": "lea",
+                  "operands": "rdi, [rbp - 0x20]"
+                },
+                {
+                  "address": "0x55",
+                  "bytes": "48897dd0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x30], rdi"
+                },
+                {
+                  "address": "0x59",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x5e"
+                },
+                {
+                  "address": "0x5e",
+                  "bytes": "488b7dd0",
+                  "mnemonic": "mov",
+                  "operands": "rdi, qword ptr [rbp - 0x30]"
+                },
+                {
+                  "address": "0x62",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x67"
+                },
+                {
+                  "address": "0x67",
+                  "bytes": "eb04",
+                  "mnemonic": "jmp",
+                  "operands": "0x6d"
+                },
+                {
+                  "address": "0x69",
+                  "bytes": "c645e000",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rbp - 0x20], 0"
+                },
+                {
+                  "address": "0x6d",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x76",
+                  "bytes": "488b4df8",
+                  "mnemonic": "mov",
+                  "operands": "rcx, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x7a",
+                  "bytes": "4839c8",
+                  "mnemonic": "cmp",
+                  "operands": "rax, rcx"
+                },
+                {
+                  "address": "0x7d",
+                  "bytes": "7506",
+                  "mnemonic": "jne",
+                  "operands": "0x85"
+                },
+                {
+                  "address": "0x7f",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x83",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x84",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                },
+                {
+                  "address": "0x85",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x89",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x8a",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "de12f9f4aaf4f195a4e5a7f13cbc48b79213be0ebc89e84e2a899074c61d3293",
+              "call_targets": [
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                },
+                {
+                  "name": "sprintf",
+                  "target_va": "0x108a6d0",
+                  "source": "direct"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+                "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+                "poc": [
+                  {
+                    "case_id": "sprintf-overflow-64",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "sprintf-overflow-256",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "sprintf-overflow-64",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "sprintf-overflow-256",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "sprintf-short",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "sprintf-short",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/final-hard-sprintf/candidates/hard-sprintf.bin"
+            },
+            "elapsed_ms": 7397
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1834,
+          "completion_tokens": 444,
+          "total_tokens": 2278,
+          "latency_ms": 2470
+        },
+        "request_id": null,
+        "elapsed_ms": 7397,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "sprintf_bad",
+          "va": 16960480,
+          "end": 16960576,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 4601,
+                "plan_sha256": "065e33a1154e2f739c1c9eb0a739cd10ea14435177d3a918584a6ea0ea8337ef",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1073,
+                  "completion_tokens": 776,
+                  "total_tokens": 1849,
+                  "latency_ms": 4596
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "stack_buffer_overflow",
+                "root_cause": "The function formats an attacker-controlled input string into a fixed 16-byte stack buffer at [rbp-0x20] via sprintf with format at 0x10004cf, without bounding the output length, so inputs whose formatted result exceeds 15 bytes overflow the buffer and corrupt adjacent stack data including the saved canary slot region.",
+                "affected_function": "sprintf_bad",
+                "affected_addresses": [
+                  "0x102cbe0",
+                  "0x102cbf5",
+                  "0x102cbf9",
+                  "0x102cbfd",
+                  "0x102cc02",
+                  "0x102cc04",
+                  "0x102cc08",
+                  "0x102cc0c",
+                  "0x102cc11",
+                  "0x102cc15",
+                  "0x102cc1a",
+                  "0x102cc23",
+                  "0x102cc27",
+                  "0x102cc2a",
+                  "0x102cc2c",
+                  "0x102cc30",
+                  "0x102cc31"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rax",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "[rbp-0x20] 16-byte destination buffer",
+                  "[rbp-0x28] saved input pointer",
+                  "[rbp-0x30] saved destination pointer",
+                  "[rbp-8] stack canary slot"
+                ],
+                "original_behavior": "Stores the input pointer, calls sprintf(dest=[rbp-0x20], fmt=0x10004cf, input) with no length limit, then calls puts(dest), then verifies the stack canary and returns.",
+                "required_invariant": "At most 15 bytes plus a NUL terminator may be written into the 16-byte destination buffer at [rbp-0x20]; the stack canary at [rbp-8] and saved frame must remain intact.",
+                "repair_strategy": "Bound the formatted output to the 16-byte destination capacity before or during the sprintf call: reject/truncate inputs whose formatted length would exceed 15 bytes, ensuring the write stays within [rbp-0x20, rbp-0x10) and appending a NUL. Preserve the normal sprintf-then-puts behavior for inputs that fit.",
+                "failure_behavior": "For inputs that do not fit in 15 bytes, do not perform the overflowing write; return without corrupting the buffer or canary (reject path), leaving observable behavior for valid inputs unchanged.",
+                "permitted_calls": [
+                  {
+                    "name": "sprintf",
+                    "source": "direct",
+                    "target_va": "0x108a6d0"
+                  },
+                  {
+                    "name": "puts",
+                    "source": "direct",
+                    "target_va": "0x108a31c"
+                  }
+                ],
+                "expected_behavior": "Valid inputs whose formatted result is at most 15 bytes are formatted into [rbp-0x20] and printed via puts exactly as before; oversized inputs are rejected so no bytes beyond the 16-byte buffer are written and the canary check passes.",
+                "verification_conditions": [
+                  "Destination write length <= 15 bytes plus NUL for all inputs",
+                  "Stack canary at [rbp-8] unchanged after call",
+                  "puts receives the same NUL-terminated string for valid inputs as original",
+                  "Only direct calls to 0x108a6d0 and 0x108a31c are emitted",
+                  "Function terminates with ret and preserves SysV callee-saved registers and stack alignment"
+                ],
+                "confidence": 0.85
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "stack_buffer_overflow",
+                "root_cause": "The function formats an attacker-controlled input string into a fixed 16-byte stack buffer at [rbp-0x20] via sprintf with format at 0x10004cf, without bounding the output length, so inputs whose formatted result exceeds 15 bytes overflow the buffer and corrupt adjacent stack data including the saved canary slot region.",
+                "affected_function": "sprintf_bad",
+                "affected_addresses": [
+                  "0x102cbe0",
+                  "0x102cbf5",
+                  "0x102cbf9",
+                  "0x102cbfd",
+                  "0x102cc02",
+                  "0x102cc04",
+                  "0x102cc08",
+                  "0x102cc0c",
+                  "0x102cc11",
+                  "0x102cc15",
+                  "0x102cc1a",
+                  "0x102cc23",
+                  "0x102cc27",
+                  "0x102cc2a",
+                  "0x102cc2c",
+                  "0x102cc30",
+                  "0x102cc31"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rax",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "[rbp-0x20] 16-byte destination buffer",
+                  "[rbp-0x28] saved input pointer",
+                  "[rbp-0x30] saved destination pointer",
+                  "[rbp-8] stack canary slot"
+                ],
+                "original_behavior": "Stores the input pointer, calls sprintf(dest=[rbp-0x20], fmt=0x10004cf, input) with no length limit, then calls puts(dest), then verifies the stack canary and returns.",
+                "required_invariant": "At most 15 bytes plus a NUL terminator may be written into the 16-byte destination buffer at [rbp-0x20]; the stack canary at [rbp-8] and saved frame must remain intact.",
+                "repair_strategy": "Bound the formatted output to the 16-byte destination capacity before or during the sprintf call: reject/truncate inputs whose formatted length would exceed 15 bytes, ensuring the write stays within [rbp-0x20, rbp-0x10) and appending a NUL. Preserve the normal sprintf-then-puts behavior for inputs that fit.",
+                "failure_behavior": "For inputs that do not fit in 15 bytes, do not perform the overflowing write; return without corrupting the buffer or canary (reject path), leaving observable behavior for valid inputs unchanged.",
+                "permitted_calls": [
+                  "sprintf",
+                  "puts"
+                ],
+                "expected_behavior": "Valid inputs whose formatted result is at most 15 bytes are formatted into [rbp-0x20] and printed via puts exactly as before; oversized inputs are rejected so no bytes beyond the 16-byte buffer are written and the canary check passes.",
+                "verification_conditions": [
+                  "Destination write length <= 15 bytes plus NUL for all inputs",
+                  "Stack canary at [rbp-8] unchanged after call",
+                  "puts receives the same NUL-terminated string for valid inputs as original",
+                  "Only direct calls to 0x108a6d0 and 0x108a31c are emitted",
+                  "Function terminates with ret and preserves SysV callee-saved registers and stack alignment"
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "7dff1bbce891dc50ba2962bc393ff388c646bf5ddef104f99ccc701ed1582686",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                },
+                {
+                  "name": "sprintf",
+                  "target_va": "0x108a6d0",
+                  "source": "direct"
+                }
+              ],
+              "elapsed_ms": 4660
+            },
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "7dff1bbce891dc50ba2962bc393ff388c646bf5ddef104f99ccc701ed1582686",
+            "usage": {
+              "prompt_tokens": 1834,
+              "completion_tokens": 444,
+              "total_tokens": 2278,
+              "latency_ms": 2470
+            },
+            "latency_ms": 2474,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "d781104732e9e729574c695390e45a2b02cb1278b57376bb5df6c0138c5e056c",
+            "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nmov rcx, rdx\nxor r8d, r8d\n.Lcount_loop:\n  mov al, byte ptr [rcx]\n  test al, al\n  je .Lcount_done\n  inc r8\n  cmp r8, 15\n  ja .Lreject\n  inc rcx\n  jmp .Lcount_loop\n.Lcount_done:\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x108a6d0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\njmp .Lepilogue\n.Lreject:\nmov byte ptr [rbp - 0x20], 0\n.Lepilogue:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x30\npop rbp\nret\n.Lfail:\nadd rsp, 0x30\npop rbp\nret\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "d781104732e9e729574c695390e45a2b02cb1278b57376bb5df6c0138c5e056c",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nmov rcx, rdx\nxor r8d, r8d\n.Lcount_loop:\n  mov al, byte ptr [rcx]\n  test al, al\n  je .Lcount_done\n  inc r8\n  cmp r8, 15\n  ja .Lreject\n  inc rcx\n  jmp .Lcount_loop\n.Lcount_done:\nmov rdx, qword ptr [rbp - 0x28]\nmov esi, 0x10004cf\nxor eax, eax\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x108a6d0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\njmp .Lepilogue\n.Lreject:\nmov byte ptr [rbp - 0x20], 0\n.Lepilogue:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x30\npop rbp\nret\n.Lfail:\nadd rsp, 0x30\npop rbp\nret\n",
+                "validation_error": null,
+                "validation_error_class": null,
+                "usage": {
+                  "prompt_tokens": 1834,
+                  "completion_tokens": 444,
+                  "total_tokens": 2278,
+                  "latency_ms": 2470
+                },
+                "latency_ms": 2474,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              },
+              {
+                "name": "sprintf",
+                "target_va": "0x108a6d0",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "sprintf_bad",
+              "va": 16960480,
+              "end": 16960576,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x102cbe0",
+              "cave_va": "0x10cf000",
+              "method": "new-pt-load",
+              "code_bytes": 139,
+              "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b55d8becf04000131c0488d7de048897dd04889d14531c08a0184c0740e49ffc04983f80f772848ffc1ebec488b55d8becf04000131c0488d7de048897dd0e800000000488b7dd0e800000000eb04c645e00064488b042528000000488b4df84839c875064883c4305dc34883c4305dc3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x1",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "4883ec30",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x11",
+                  "bytes": "488945f8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 8], rax"
+                },
+                {
+                  "address": "0x15",
+                  "bytes": "48897dd8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x28], rdi"
+                },
+                {
+                  "address": "0x19",
+                  "bytes": "488b55d8",
+                  "mnemonic": "mov",
+                  "operands": "rdx, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x1d",
+                  "bytes": "becf040001",
+                  "mnemonic": "mov",
+                  "operands": "esi, 0x10004cf"
+                },
+                {
+                  "address": "0x22",
+                  "bytes": "31c0",
+                  "mnemonic": "xor",
+                  "operands": "eax, eax"
+                },
+                {
+                  "address": "0x24",
+                  "bytes": "488d7de0",
+                  "mnemonic": "lea",
+                  "operands": "rdi, [rbp - 0x20]"
+                },
+                {
+                  "address": "0x28",
+                  "bytes": "48897dd0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x30], rdi"
+                },
+                {
+                  "address": "0x2c",
+                  "bytes": "4889d1",
+                  "mnemonic": "mov",
+                  "operands": "rcx, rdx"
+                },
+                {
+                  "address": "0x2f",
+                  "bytes": "4531c0",
+                  "mnemonic": "xor",
+                  "operands": "r8d, r8d"
+                },
+                {
+                  "address": "0x32",
+                  "bytes": "8a01",
+                  "mnemonic": "mov",
+                  "operands": "al, byte ptr [rcx]"
+                },
+                {
+                  "address": "0x34",
+                  "bytes": "84c0",
+                  "mnemonic": "test",
+                  "operands": "al, al"
+                },
+                {
+                  "address": "0x36",
+                  "bytes": "740e",
+                  "mnemonic": "je",
+                  "operands": "0x46"
+                },
+                {
+                  "address": "0x38",
+                  "bytes": "49ffc0",
+                  "mnemonic": "inc",
+                  "operands": "r8"
+                },
+                {
+                  "address": "0x3b",
+                  "bytes": "4983f80f",
+                  "mnemonic": "cmp",
+                  "operands": "r8, 0xf"
+                },
+                {
+                  "address": "0x3f",
+                  "bytes": "7728",
+                  "mnemonic": "ja",
+                  "operands": "0x69"
+                },
+                {
+                  "address": "0x41",
+                  "bytes": "48ffc1",
+                  "mnemonic": "inc",
+                  "operands": "rcx"
+                },
+                {
+                  "address": "0x44",
+                  "bytes": "ebec",
+                  "mnemonic": "jmp",
+                  "operands": "0x32"
+                },
+                {
+                  "address": "0x46",
+                  "bytes": "488b55d8",
+                  "mnemonic": "mov",
+                  "operands": "rdx, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x4a",
+                  "bytes": "becf040001",
+                  "mnemonic": "mov",
+                  "operands": "esi, 0x10004cf"
+                },
+                {
+                  "address": "0x4f",
+                  "bytes": "31c0",
+                  "mnemonic": "xor",
+                  "operands": "eax, eax"
+                },
+                {
+                  "address": "0x51",
+                  "bytes": "488d7de0",
+                  "mnemonic": "lea",
+                  "operands": "rdi, [rbp - 0x20]"
+                },
+                {
+                  "address": "0x55",
+                  "bytes": "48897dd0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x30], rdi"
+                },
+                {
+                  "address": "0x59",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x5e"
+                },
+                {
+                  "address": "0x5e",
+                  "bytes": "488b7dd0",
+                  "mnemonic": "mov",
+                  "operands": "rdi, qword ptr [rbp - 0x30]"
+                },
+                {
+                  "address": "0x62",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x67"
+                },
+                {
+                  "address": "0x67",
+                  "bytes": "eb04",
+                  "mnemonic": "jmp",
+                  "operands": "0x6d"
+                },
+                {
+                  "address": "0x69",
+                  "bytes": "c645e000",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rbp - 0x20], 0"
+                },
+                {
+                  "address": "0x6d",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x76",
+                  "bytes": "488b4df8",
+                  "mnemonic": "mov",
+                  "operands": "rcx, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x7a",
+                  "bytes": "4839c8",
+                  "mnemonic": "cmp",
+                  "operands": "rax, rcx"
+                },
+                {
+                  "address": "0x7d",
+                  "bytes": "7506",
+                  "mnemonic": "jne",
+                  "operands": "0x85"
+                },
+                {
+                  "address": "0x7f",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x83",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x84",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                },
+                {
+                  "address": "0x85",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x89",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x8a",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "de12f9f4aaf4f195a4e5a7f13cbc48b79213be0ebc89e84e2a899074c61d3293",
+              "call_targets": [
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                },
+                {
+                  "name": "sprintf",
+                  "target_va": "0x108a6d0",
+                  "source": "direct"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+                "candidate_sha256": "ea83b591b2591d4d95fc3390e87529267a1edfb55ae3a5a1b42ce2bf70e80583",
+                "poc": [
+                  {
+                    "case_id": "sprintf-overflow-64",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "sprintf-overflow-256",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "sprintf-overflow-64",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "sprintf-overflow-256",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "sprintf-short",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "sprintf-short",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/final-hard-sprintf/candidates/hard-sprintf.bin"
+            },
+            "elapsed_ms": 7397
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-flash",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-flash",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-flash",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-flash",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 26135,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "sprintf_bad",
+        "va": 16960480,
+        "end": 16960576,
+        "source": "symbol"
+      },
+      "target_scope_check": "passed",
+      "target_in_scope": true,
+      "ai_increment": true,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 1,
+  "ai_increment": 1,
+  "funnel": {
+    "VERIFIED": 1,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 1,
+  "ai_target_in_scope": 1,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 26135,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

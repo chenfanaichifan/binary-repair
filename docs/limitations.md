@@ -26,10 +26,10 @@ general-purpose binary rewriter and does not claim universal correctness.
   (`strlen/memcpy/memset/strcat/atoi`), syscall templates
   (`write/exit`), a reviewed `fputs(x, stderr)` rewrite, and a typed
   `malloc/free` refusal.  Memory-management semantics are not templated;
-- general non-loop Path A/B success.  CWE121 is a single-function non-loop
-  closure, not a family result.  A reference-locked CWE416/UAF repair passes
-  with auto-resolved malloc/free/printf symbols; this is a toolchain validation,
-  not AI-generated repair.
+- general non-loop Path A/B success.  Three non-loop hard cases now pass with
+  a structured RepairSpec + ABI-strict assembly path; this is still a small,
+  same-binary set, not a family/generalization proof.  A reference-locked
+  CWE416/UAF repair passes separately and is never counted as AI.
 
 ## 4-model matrix conclusion
 

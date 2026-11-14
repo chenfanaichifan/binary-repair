@@ -316,7 +316,8 @@ def test_fake_provider_run_records_provider_fields_and_honest_failure(
     assert attempt["usage"]["total_tokens"] == 7
     assert attempt["provider_calls"] == 1
     assert record["ai_target"]["verified"] is False
-    assert fake.calls == 2
+    # preflight + first assembly attempt + validator-feedback retry
+    assert fake.calls == 3
 
     # Artifact contract: README/summary/per-case/SHA256SUMS present and valid.
     assert (out / "README.md").is_file()

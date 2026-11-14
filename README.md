@@ -1,7 +1,8 @@
 # BinaryRepair
 
-> **Current feature line (2026-11-14)**: 4-model matrix (DeepSeek 6/12;
-> CN free Qwen8B/7B 0/12), CWE121 non-loop A closure, auto ELF symbols and
+> **Current feature line (2026-11-15)**: structured RepairSpec planner +
+> ABI-strict assembly gives **3/3 AI-verified non-loop hard cases**; 4-model
+> matrix (DeepSeek 6/12; CN free Qwen8B/7B 0/12), CWE121, auto ELF symbols and
 > optional errno probe. Verification boundaries: [docs/limitations.md](docs/limitations.md);
 > methodology: [docs/whitepaper-2026-11-14.md](docs/whitepaper-2026-11-14.md).
 
