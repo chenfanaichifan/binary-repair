@@ -26,7 +26,22 @@ Assertions (any violation exits non-zero and prints a summary):
    ``id``/``category``/``enforcement``/``claim``;
 6. in ``--local`` mode the acceptance capture exists and passed. In
    ``--local`` mode the allowlist must also be tight: an allowed id that is not
-   measured open is a violation (so closed gaps are removed from the allowlist).
+   measured open is a violation (so closed gaps are removed from the allowlist);
+7. stale-artifact check: committed ``artifacts/capability-gap-audit-2026-11-14``
+   must match a live audit build (summary gap_count/by_status, universe
+   cell_count/unknown, probe structure) and its ``SHA256SUMS`` must verify.
+   Mismatch message: "committed audit artifacts are stale relative to the code;
+   regenerate audit_capability_coverage.py". Exposed as ``stale_artifacts``;
+   required in ``--local``/release mode.
+8. claims measurement sync: ``claims.json`` ``audit_status`` must match the live
+   measured summary field-for-field (gap_count, open, mitigated, non_goal,
+   dynamic_unverified, universe cell_count/unknown) and claims non-goal ids must
+   equal the measured non-goal ids (static mode accepts dynamic_unverified ids
+   that the full audit measures). Exposed as ``claims_sync``; required in
+   ``--local``/release mode.
+9. provider identity: a provider matrix with ``provider_status=ok`` but
+   ``model_identity_ok=false`` is recorded as a non-verified identity, never
+   silently accepted as the requested model. Exposed as ``provider_identity``.
 
 Status is measured by the audit, never hard-coded here: this script only
 decides which measured states are acceptable for a release.
@@ -35,6 +50,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as _datetime
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -45,7 +61,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 AUDIT_DIR = ROOT / "artifacts" / "capability-gap-audit-2026-11-14"
+AUDIT_MATRIX = AUDIT_DIR / "coverage-matrix.json"
+AUDIT_SUMS = AUDIT_DIR / "SHA256SUMS"
 ACCEPTANCE = ROOT / "artifacts" / "coverage-closure-2026-11-14" / "acceptance.json"
+PROVIDER_MATRIX = ROOT / "artifacts" / "provider-matrix-2026-11-14" / "summary.json"
 CLAIMS = ROOT / "docs" / "status" / "claims.json"
 NON_GOALS_DOC = ROOT / "docs" / "acceptance" / "non-goals-2026-11-14.md"
 
@@ -80,6 +99,14 @@ REQUIRED_CLAIM_NON_GOAL_KEYS = (
 REVIEW_BY_MAX = _datetime.date(2027, 5, 14)
 GAP_STATUSES = ("open", "dynamic_unverified", "mitigated", "closed", "non_goal")
 UNIVERSE_STATUSES = ("verified", "supported", "non_goal", "unavailable", "unknown")
+
+
+def _as_dict(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _as_list(value: Any) -> list[Any]:
+    return list(value) if isinstance(value, (list, tuple)) else []
 
 
 def _load_json(path: Path) -> tuple[Any | None, str]:
@@ -159,6 +186,386 @@ def check_acceptance(path: Path = ACCEPTANCE) -> list[str]:
     return []
 
 
+STALE_ARTIFACT_MESSAGE = (
+    "committed audit artifacts are stale relative to the code; regenerate "
+    "audit_capability_coverage.py"
+)
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def verify_artifact_sums(audit_dir: Path = AUDIT_DIR) -> tuple[bool, list[str]]:
+    """Verify artifacts/<...>/SHA256SUMS against the committed bytes."""
+    sums_path = Path(audit_dir) / "SHA256SUMS"
+    if not sums_path.is_file():
+        return False, [f"artifact SHA256SUMS is missing: {sums_path}"]
+    mismatches: list[str] = []
+    try:
+        lines = sums_path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError) as exc:
+        return False, [f"artifact SHA256SUMS unreadable: {type(exc).__name__}: {exc}"]
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        parts = stripped.split()
+        if len(parts) != 2:
+            mismatches.append(f"malformed SHA256SUMS line: {line!r}")
+            continue
+        expected, name = parts[0].lower(), parts[1].lstrip("*")
+        target = Path(audit_dir) / name
+        if not target.is_file():
+            mismatches.append(f"artifact listed in SHA256SUMS is missing: {name}")
+            continue
+        try:
+            actual = _sha256_file(target)
+        except OSError as exc:
+            mismatches.append(f"artifact unreadable: {name}: {exc}")
+            continue
+        if actual != expected:
+            mismatches.append(
+                f"artifact sha256 mismatch for {name}: expected {expected}, "
+                f"actual {actual}")
+    return (not mismatches), mismatches
+
+
+def live_audit_counts(audit: dict[str, Any]) -> dict[str, Any]:
+    """Stable measured counts used by stale-artifact and claims sync checks."""
+    gaps = [gap for gap in audit.get("gaps", []) if isinstance(gap, dict)]
+    summary = audit.get("summary") if isinstance(audit.get("summary"), dict) else {}
+    universe = audit.get("universe") if isinstance(audit.get("universe"), dict) else {}
+    probes = audit.get("probes") if isinstance(audit.get("probes"), dict) else {}
+    status_counts = {status: 0 for status in GAP_STATUSES}
+    for gap in gaps:
+        status = str(gap.get("status", ""))
+        status_counts[status] = status_counts.get(status, 0) + 1
+    return {
+        "mode": str(audit.get("mode") or "unknown"),
+        "gap_count": int(summary.get("gap_count", len(gaps)) or 0),
+        "open_count": status_counts.get("open", 0),
+        "mitigated_count": status_counts.get("mitigated", 0),
+        "closed_count": status_counts.get("closed", 0),
+        "high_severity_open": sum(
+            1 for gap in gaps
+            if gap.get("status") == "open" and gap.get("severity") == "high"),
+        "non_goal_count": status_counts.get("non_goal", 0),
+        "dynamic_unverified_count": status_counts.get("dynamic_unverified", 0),
+        "universe_cell_count": int(universe.get("cell_count", 0) or 0),
+        "universe_unknown": int(universe.get("unknown", -1)),
+        "by_status": status_counts,
+        "probe_structure": {
+            str(key): (len(value) if isinstance(value, list) else value)
+            for key, value in sorted(probes.items())
+        },
+        "non_goal_ids": sorted(str(gap.get("gap_id", "")) for gap in gaps
+                               if gap.get("status") == "non_goal"),
+        "dynamic_unverified_ids": sorted(
+            str(gap.get("gap_id", "")) for gap in gaps
+            if gap.get("status") == "dynamic_unverified"),
+    }
+
+
+def check_stale_artifacts(live_audit: dict[str, Any] | None,
+                          audit_dir: Path = AUDIT_DIR,
+                          committed_override: dict[str, Any] | None = None,
+                          verify_sums: bool = True) -> dict[str, Any]:
+    """Committed audit artifacts must match a live build of the same tree."""
+    mismatches: list[str] = []
+    sums_ok, sums_mismatches = (verify_artifact_sums(audit_dir)
+                                if verify_sums else (True, []))
+    mismatches.extend(sums_mismatches)
+    committed_path = Path(audit_dir) / "coverage-matrix.json"
+    if committed_override is not None:
+        committed = committed_override
+        committed_sha = str(committed.get("_sha256", ""))
+    else:
+        committed, error = _load_json(committed_path)
+        if error:
+            return {
+                "ok": False,
+                "mismatches": [f"committed audit document unavailable: {error}"]
+                              + mismatches,
+                "committed_sha": "",
+                "committed_sha_ok": sums_ok,
+                "mode": "unknown",
+            }
+        committed_sha = ""
+        try:
+            committed_sha = _sha256_file(committed_path)
+        except OSError:
+            committed_sha = ""
+    if not isinstance(committed, dict):
+        return {
+            "ok": False,
+            "mismatches": ["committed audit document is not a JSON object"]
+                          + mismatches,
+            "committed_sha": committed_sha,
+            "committed_sha_ok": sums_ok,
+            "mode": "unknown",
+        }
+    committed_counts = live_audit_counts(committed)
+    committed_mode = committed_counts["mode"]
+    if not isinstance(live_audit, dict):
+        mismatches.append("live audit build unavailable")
+        live_counts: dict[str, Any] = {}
+        live_mode = "unknown"
+    else:
+        live_counts = live_audit_counts(live_audit)
+        live_mode = live_counts["mode"]
+    mode_note = ""
+    if live_counts:
+        if committed_mode == live_mode:
+            for field in ("gap_count",):
+                if committed_counts[field] != live_counts[field]:
+                    mismatches.append(
+                        f"{field}: committed={committed_counts[field]} "
+                        f"live={live_counts[field]}")
+            committed_status = committed_counts["by_status"]
+            live_status = live_counts["by_status"]
+            for status in GAP_STATUSES:
+                if committed_status.get(status, 0) != live_status.get(status, 0):
+                    mismatches.append(
+                        f"by_status.{status}: committed="
+                        f"{committed_status.get(status, 0)} "
+                        f"live={live_status.get(status, 0)}")
+        else:
+            mode_note = (
+                f"committed mode={committed_mode} live mode={live_mode}: "
+                "gap/status counts are mode-specific and are not compared; "
+                "universe structure and SHA256SUMS are compared")
+        for field in ("universe_cell_count", "universe_unknown"):
+            if committed_counts[field] != live_counts[field]:
+                mismatches.append(
+                    f"{field}: committed={committed_counts[field]} "
+                    f"live={live_counts[field]}")
+        committed_probes = committed_counts["probe_structure"]
+        live_probes = live_counts["probe_structure"]
+        if not isinstance(committed_probes, dict):
+            mismatches.append("committed probes are not an object")
+        elif committed_mode == live_mode:
+            for key in sorted(set(committed_probes) | set(live_probes)):
+                if committed_probes.get(key, 0) != live_probes.get(key, 0):
+                    mismatches.append(
+                        f"probes.{key}: committed="
+                        f"{committed_probes.get(key, 0)} "
+                        f"live={live_probes.get(key, 0)}")
+        elif set(committed_probes) != set(live_probes):
+            mismatches.append(
+                "probes structure differs between committed and live modes: "
+                f"committed={sorted(committed_probes)} "
+                f"live={sorted(live_probes)}")
+        # Different audit modes are compared only on mode-invariant structure
+        # (the committed release artifact is a full-mode build; static CI cannot
+        # reproduce probe counts).  --local/release compares like-for-like.
+    report = {
+        "ok": not mismatches,
+        "mismatches": mismatches,
+        "committed_sha": committed_sha,
+        "committed_sha_ok": sums_ok,
+        "mode": committed_mode,
+        "live_mode": live_mode,
+        "mode_note": mode_note,
+        "committed_summary": {
+            "gap_count": committed_counts.get("gap_count"),
+            "universe_cell_count": committed_counts.get("universe_cell_count"),
+            "universe_unknown": committed_counts.get("universe_unknown"),
+        },
+    }
+    return report
+
+
+def _claim_status_value(audit_status: dict[str, Any], *names: str) -> Any:
+    for name in names:
+        if name in audit_status:
+            return audit_status[name]
+    return None
+
+
+def check_claims_sync(live_audit: dict[str, Any] | None,
+                      claims: dict[str, Any] | None) -> dict[str, Any]:
+    """claims.json ``audit_status`` must equal the live measured audit summary.
+
+    The block is mode-specific: static mode compares ``audit_status.static`` and
+    the full/local audit compares ``audit_status.release``.  Both must always
+    match the live measured universe cell count/unknown and the measured
+    non-goal ids.  A missing block/field fails closed.
+    """
+    if not isinstance(claims, dict):
+        return {"ok": False, "mode": "unknown", "block": "",
+                "mismatches": ["claims.json missing; measurement sync cannot be "
+                               "checked"],
+                "audit_status_present": False}
+    audit_status = claims.get("audit_status")
+    if not isinstance(audit_status, dict):
+        return {"ok": False, "mode": "unknown", "block": "",
+                "mismatches": ["claims.json has no 'audit_status' block; live "
+                               "audit measurement is not synchronised"],
+                "audit_status_present": False}
+    if not isinstance(live_audit, dict):
+        return {"ok": False, "mode": "unknown", "block": "",
+                "mismatches": ["live audit build unavailable"],
+                "audit_status_present": True}
+    live = live_audit_counts(live_audit)
+    live_mode = live["mode"]
+    block_name = "release" if live_mode == "full" else (
+        "static" if live_mode == "static" else "")
+    if not block_name:
+        return {"ok": False, "mode": live_mode, "block": "",
+                "mismatches": [
+                    f"cannot select claims.audit_status block for live audit "
+                    f"mode {live_mode!r}"],
+                "audit_status_present": True}
+    block = audit_status.get(block_name)
+    if not isinstance(block, dict):
+        return {"ok": False, "mode": live_mode, "block": block_name,
+                "mismatches": [
+                    f"claims.audit_status.{block_name} block is absent; field-"
+                    "for-field measurement sync cannot be checked"],
+                "audit_status_present": True}
+    mismatches: list[str] = []
+    expected = {
+        "gap_count": live["gap_count"],
+        "closed": live["closed_count"],
+        "open": live["open_count"],
+        "mitigated": live["mitigated_count"],
+        "non_goal": live["non_goal_count"],
+        "dynamic_unverified": live["dynamic_unverified_count"],
+        "high_severity_open": live["high_severity_open"],
+        "universe_cell_count": live["universe_cell_count"],
+        "universe_unknown": live["universe_unknown"],
+    }
+    for field, live_value in expected.items():
+        if field not in block:
+            mismatches.append(
+                f"claims.audit_status.{block_name}.{field} is absent "
+                "(fail closed)")
+            continue
+        claimed = block.get(field)
+        try:
+            claimed_int = int(claimed)
+        except (TypeError, ValueError):
+            mismatches.append(
+                f"claims.audit_status.{block_name}.{field} is not an integer: "
+                f"{claimed!r}")
+            continue
+        if claimed_int != int(live_value):
+            mismatches.append(
+                f"claims.audit_status.{block_name}.{field}: claimed="
+                f"{claimed_int} live={live_value}")
+    claims_ids, _claim_violations = claims_non_goal_ids(claims)
+    live_non_goal = set(live["non_goal_ids"])
+    if live_mode == "full":
+        stale = sorted(claims_ids - live_non_goal)
+        missing = sorted(live_non_goal - claims_ids)
+    else:
+        # Static mode cannot measure probe-dependent claims non-goals: they are
+        # dynamic_unverified.  Every claims id must be measured as non_goal or
+        # dynamic_unverified, and every measured non_goal must be claimed (the
+        # remaining dynamic_unverified rows are probe-only engine gaps, not
+        # non-goals).
+        dynamic_ids = set(live["dynamic_unverified_ids"])
+        stale = sorted(claims_ids - live_non_goal - dynamic_ids)
+        missing = sorted(live_non_goal - claims_ids)
+    if stale or missing:
+        mismatches.append(
+            "claims.json non_goals ids != live audit non_goal ids"
+            f"{' (static mode)' if live_mode != 'full' else ''}: "
+            f"claims-only={stale} audit-only={missing}")
+    artifacts_block = audit_status.get("artifacts")
+    artifacts_note = ""
+    if isinstance(artifacts_block, dict):
+        expected_matrix_sha = ""
+        try:
+            expected_matrix_sha = _sha256_file(AUDIT_MATRIX)
+        except OSError:
+            expected_matrix_sha = ""
+        claimed_sha = str(artifacts_block.get("coverage_matrix_sha256", "") or "")
+        if claimed_sha and expected_matrix_sha and claimed_sha != expected_matrix_sha:
+            mismatches.append(
+                "claims.audit_status.artifacts.coverage_matrix_sha256 does not "
+                "match the committed coverage-matrix.json sha256")
+        if artifacts_block.get("sha256sums_valid") is False:
+            mismatches.append(
+                "claims.audit_status.artifacts.sha256sums_valid is false")
+        artifacts_note = "artifacts block cross-checked"
+    return {
+        "ok": not mismatches,
+        "mode": live_mode,
+        "block": block_name,
+        "mismatches": mismatches,
+        "audit_status_present": True,
+        "artifacts_note": artifacts_note,
+        "live_counts": {key: live[key] for key in (
+            "mode", "gap_count", "closed_count", "open_count",
+            "mitigated_count", "non_goal_count", "dynamic_unverified_count",
+            "high_severity_open", "universe_cell_count", "universe_unknown")},
+    }
+
+
+
+
+def check_provider_identity(path: Path = PROVIDER_MATRIX) -> dict[str, Any]:
+    """Provider identity must be recorded as non-verified on a model mismatch."""
+    payload, error = _load_json(path)
+    if error:
+        return {"ok": False,
+                "reason": f"provider matrix unavailable: {error}",
+                "identity_verified": False,
+                "identity_recorded": False,
+                "mismatches": []}
+    if not isinstance(payload, dict):
+        return {"ok": False, "reason": "provider matrix is not a JSON object",
+                "identity_verified": False, "identity_recorded": False,
+                "mismatches": []}
+    provider = payload.get("provider") if isinstance(
+        payload.get("provider"), dict) else {}
+    provider_status = str(payload.get("provider_status")
+                          or provider.get("status") or "")
+    identity_ok = provider.get("model_identity_ok",
+                               provider.get("identity_ok"))
+    requested = str(provider.get("model_requested")
+                    or provider.get("requested_model") or "")
+    returned = str(provider.get("model_returned")
+                   or provider.get("returned_model") or "")
+    mismatches: list[str] = []
+    identity_verified = identity_ok is True
+    identity_mismatch = provider_status == "ok" and identity_ok is False
+    identity_recorded = True
+    if identity_mismatch:
+        mismatches.append(
+            "provider_status=ok but model identity is not verified: "
+            f"requested={requested or '?'} returned={returned or '?'}; recorded "
+            "as NON-VERIFIED IDENTITY (never silently accepted as the requested "
+            "provider model)")
+    elif identity_ok is None:
+        identity_recorded = False
+        mismatches.append(
+            "provider identity was not measured (model_identity_ok absent); "
+            "cannot record it as verified or non-verified")
+    # ok means "identity state is honestly recorded": a measured mismatch is a
+    # pass for this check because it is explicitly non-verified (never accepted
+    # silently); only an unmeasured/absent identity fails closed.
+    return {
+        "ok": identity_recorded,
+        "identity_mismatch": identity_mismatch,
+        "reason": "; ".join(mismatches) if mismatches else (
+            "provider identity verified" if identity_verified
+            else "provider identity not claimed"),
+        "identity_verified": identity_verified,
+        "identity_recorded": identity_recorded,
+        "provider_status": provider_status,
+        "model_requested": requested,
+        "model_returned": returned,
+        "mismatches": mismatches,
+    }
+
+
 def _universe_violations(audit: dict[str, Any],
                          claims_ids: set[str],
                          local: bool) -> tuple[list[str], dict[str, Any]]:
@@ -197,6 +604,47 @@ def _universe_violations(audit: dict[str, Any],
         non_goal_id = str(row.get("claims_non_goal_id", "") or "")
         if non_goal_id and non_goal_id not in claims_ids:
             unmapped.append(non_goal_id)
+    # Contract-literal fabrication: a cell claiming verified/supported must have
+    # a measured runtime tier.  A declared tier that the runtime census does not
+    # measure as available (and carries no explicit reason) is a fabricated
+    # capability, not a contract statement.
+    availability: dict[tuple[str, str, str], bool] = {}
+    runtime_sources = _as_dict(
+        _as_dict(audit.get("census")).get("runtime_sources")).get("sources")
+    for source in _as_list(runtime_sources):
+        item = _as_dict(source)
+        key = (str(item.get("format", "")), str(item.get("arch", "")),
+               str(item.get("runtime_tier", "")))
+        availability[key] = availability.get(key, False) or bool(
+            item.get("available"))
+    fabricated: list[str] = []
+    if availability:
+        # Only judge fabrication when the live audit actually measured runtime
+        # sources (a synthetic/partial audit document without the census cannot
+        # be judged and is not silently passed as consistent for this facet).
+        for row in cells:
+            if not isinstance(row, dict):
+                continue
+            if str(row.get("status", "")) not in {"verified", "supported"}:
+                continue
+            tier = str(row.get("runtime_tier", ""))
+            container = str(row.get("container", ""))
+            arch = str(row.get("arch", ""))
+            if not tier or container == "(all)" or arch == "(all)":
+                continue
+            key = (container, arch, tier)
+            measured = availability.get(key)
+            if measured is None:
+                fabricated.append(
+                    f"{container}/{arch}:{tier} (no runtime source measured)")
+            elif not measured:
+                fabricated.append(
+                    f"{container}/{arch}:{tier} (runtime tier not measured "
+                    "available)")
+    if fabricated:
+        violations.append(
+            "capability universe fabricates capabilities: "
+            f"{sorted(set(fabricated))[:8]}")
     if bad_status:
         violations.append(
             f"capability universe has invalid statuses: {sorted(set(bad_status))}")
@@ -393,7 +841,7 @@ def _build_audit(local: bool) -> tuple[dict[str, Any] | None, str]:
         return None, f"audit build failed: {type(exc).__name__}: {exc}"
 
 
-def run_meta_audit_check() -> dict[str, Any]:
+def run_meta_audit_check(live_audit: dict[str, Any] | None = None) -> dict[str, Any]:
     """Run scripts/meta_audit.py in-process (deterministic, no network)."""
     try:
         scripts_dir = str(Path(__file__).resolve().parent)
@@ -407,7 +855,8 @@ def run_meta_audit_check() -> dict[str, Any]:
             "recall": 0.0, "precision": 0.0, "scenario_count": 0,
         }
     try:
-        report = meta_audit.run_meta_audit(include_probes=False)
+        report = meta_audit.run_meta_audit(include_probes=False,
+                                           live_audit=live_audit)
     except Exception as exc:  # noqa: BLE001
         return {
             "ok": False, "passed": False, "violations": [
@@ -496,7 +945,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     if local:
         violations.extend(acceptance_violations)
-    meta_audit_report = run_meta_audit_check()
+    meta_audit_report = run_meta_audit_check(audit)
     summary["meta_audit"] = meta_audit_report
     if local and not meta_audit_report["ok"]:
         violations.append(
@@ -508,6 +957,24 @@ def main(argv: list[str] | None = None) -> int:
         violations.append(
             "--local requires invariants.ok; violations="
             f"{invariants_report['violations']}")
+    stale_report = check_stale_artifacts(audit)
+    summary["stale_artifacts"] = stale_report
+    if local and not stale_report["ok"]:
+        violations.append(
+            f"--local requires stale_artifacts.ok: {STALE_ARTIFACT_MESSAGE}; "
+            f"mismatches={stale_report['mismatches']}")
+    claims_sync_report = check_claims_sync(audit, claims)
+    summary["claims_sync"] = claims_sync_report
+    if local and not claims_sync_report["ok"]:
+        violations.append(
+            "--local requires claims_sync.ok; mismatches="
+            f"{claims_sync_report['mismatches']}")
+    provider_report = check_provider_identity()
+    summary["provider_identity"] = provider_report
+    if local and not provider_report["ok"]:
+        violations.append(
+            "--local requires provider identity to be recorded as non-verified "
+            f"on mismatch; mismatches={provider_report['mismatches']}")
     summary["mode"] = mode
     summary["ok"] = not violations
     summary["violations"] = violations
@@ -522,6 +989,8 @@ def main(argv: list[str] | None = None) -> int:
             "universe_unmapped={unmapped} meta_ok={meta_ok} "
             "recall={recall} precision={precision} invariants_ok={inv_ok} "
             "invariant_packets={inv_packets} acceptance_ok={accept_ok} "
+            "stale_ok={stale_ok} claims_sync_ok={sync_ok} "
+            "provider_identity_verified={provider_verified} "
             "violations={violations}".format(
                 mode=mode,
                 gap_count=summary.get("gap_count", 0),
@@ -541,6 +1010,9 @@ def main(argv: list[str] | None = None) -> int:
                 inv_ok=invariants_report.get("ok"),
                 inv_packets=invariants_report.get("packets_checked"),
                 accept_ok=summary.get("acceptance", {}).get("ok"),
+                stale_ok=stale_report.get("ok"),
+                sync_ok=claims_sync_report.get("ok"),
+                provider_verified=provider_report.get("identity_verified"),
                 violations=len(violations),
             )
         )

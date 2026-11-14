@@ -34,14 +34,15 @@ Latest full audit run (see `artifacts/capability-gap-audit-2026-11-14/gap-report
 
 | metric | value |
 |---|---|
-| gaps measured | 67 |
+| gaps measured (frozen release tree) | 68 |
 | closed | 56 |
-| mitigated (honest limitation, routed) | 0 |
+| mitigated (honest platform declaration) | 1 |
 | open (actionable) | 0 |
 | non-goal (honest research/platform limits) | 11 |
 | high-severity open | 0 |
 | dynamic_unverified (full/local run) | 0 |
-| capability universe cells (unknown) | 205 (0) |
+| dynamic_unverified (static/PR mode) | 6 |
+| capability universe cells (unknown) | 240 (0) |
 | matrix cells / sink classes / strategies / profiles / evidence sources / gate checks | 8 / 5 / 18 / 4 / 24 / 34 |
 
 Phase-2 closure (same day): the three open records and the one mitigated record
@@ -165,7 +166,64 @@ capacity-1 and keeps benign regressions byte-identical.
   references source-only 6. Evidence:
   `artifacts/provider-matrix-2026-11-14/`.
 
-## 3.5 Engine capability gaps found by the audit
+## 3.5 Release freeze and P0/P1/P2 closure (phase 4)
+
+- **Frozen release tree**: branch `release/2026-11-14` at mainline SHA `725e7bb`
+  (fast-forwarded to `workbench-v3` after final gates). The exact artifact,
+  acceptance and gate evidence for this SHA lives under
+  `artifacts/capability-gap-audit-2026-11-14/`,
+  `artifacts/coverage-closure-2026-11-14/`,
+  `artifacts/provider-coverage-2026-11-14/` and
+  `artifacts/provider-matrix-2026-11-14/`.
+- **Artifact sync (P0-2)**: the committed audit artifacts were regenerated on the
+  frozen tree and match the live audit (68 gaps / 56 closed / 1 mitigated /
+  0 open / 11 non-goal; universe 240 cells, unknown 0; static view 62 gaps with
+  `dynamic_unverified=6`). The coverage gate now fails on stale artifacts,
+  claims/measurement drift and unmapped non-goal ids.
+- **Release gate (P0-1)**: `scripts/release_gate.py --release --release-sha
+  <sha>` requires a clean frozen tree and re-runs static gate, claims/measurement
+  diff, acceptance contract (capacity 21/21, heap 19/19, target-scoped 20/20,
+  safe-default controls), local gate (`dynamic_unverified=0`, universe
+  `unknown=0`, meta-audit, invariants), provider-matrix schema and the full
+  pytest suite; nightly mode adds a fresh real-Lima capture into a temp
+  directory. Release claims require this gate, never a static-only green.
+- **Provider dimension (P1-1)**: `artifacts/provider-coverage-2026-11-14/`
+  records 11 sha256-bound evidence rows. Completed 12-case matrices: 4 models
+  across 2 providers (DeepSeek official 2 models, exact identity, 6/12 verified,
+  3 runs each; SiliconFlow CN 2 free Qwen models, exact identity, 0/12 verified
+  — a capability result, not a pass). SiliconFlow international is blocked
+  (HTTP 402 insufficient balance); GLM-Z1 probe timed out; DashScope has no
+  key/artifact. The Lead's `provider-matrix` run requested `deepseek-chat` but
+  was served `deepseek-flash` (identity_ok=false); its 6/12 verified repairs are
+  attributed to the served model and excluded from requested-model coverage.
+  The 5-6 model international matrix is explicitly **not satisfied**.
+- **Non-goal productization (P2-1)**: `docs/acceptance/non-goals-2026-11-14.md`
+  and `claims.json["non_goals"]` carry the 11 ids with affected cells,
+  detected-input behaviour, owner, review-by date, productization criteria,
+  fallback, `roadmap_stage`, `owning_area`, `research_acceptance` and
+  `quarterly_review` (next 2027-02-14); the 11th detail (direct copy sink
+  cross-function/offset alias capacity inference) is explicit, and the
+  graduation path requires fixture + runtime oracle + evidence profile + gate
+  check + claims/measurement update.
+- **Capability contract (P2-2)**: `runtime/capabilities.contract()` is the single
+  source of truth; declared-vs-measured gaps carry explicit reasons and
+  unavailable platforms stay `unavailable`/`not_run` (PE and 32-bit Mach-O
+  external PoC; Mach-O x86_64 Rosetta is function-level only).
+- **Audit of the audit (P3-3)**: `scripts/meta_audit.py` now injects 12+
+  scenarios (missing target check, unverified rewrite, provider identity
+  mismatch, stale artifacts, inconclusive download, fabricated contract
+  capability, plus earlier ones) and keeps recall/precision 1.0; the invariant
+  engine fail-closes every relevant inconsistency.
+- **CI/nightly/browser (P1-2)**: CI runs the static coverage gate and PR release
+  gate; the self-hosted Lima nightly job remains inert by default
+  (`vars.BINARYREPAIR_RELEASE_GATE`) and is documented as not-run; browser e2e
+  skips with an explicit reason when Chromium is absent. A local `--nightly`
+  attempt and its outcome are recorded in the release report.
+- **Environment/flake (P3-1/P3-2)**: Lima tests run serially; flake quarantine
+  policy and rerun rules are documented in the release-gate operations doc;
+  static mode keeps `dynamic_unverified` visible and release/local requires 0.
+
+## 3.6 Engine capability gaps found by the audit
 
 - x86-64 `.plt.sec`/CET stubs are now decoded (all in-stub `FF 25` positions),
   so dynamic ELF built with default toolchains resolve `strcpy`/`malloc`/...
@@ -202,6 +260,13 @@ capacity-1 and keeps benign regressions byte-identical.
   not be the only copy in a shared checkout.
 
 ## 5. Residual gaps after phase-2 closure: zero open, honest non-goals only
+
+Frozen-release audit status: **0 open, 1 mitigated (host-dependent
+`native_run` tier declaration for the ELF x86_64 cell: measured `emulated_run`
+on this host, explained by the capability contract; it is a transparent platform
+declaration, not a hidden closure), 11 productized non-goals, 240-cell universe
+with unknown=0**. Provider/nightly/browser dimensions and their honest
+limitations are recorded in §3.5 and §5.
 
 Phase-2 closed the former actionable residuals with measured proof (see
 `gap-report.md` and `artifacts/coverage-closure-2026-11-14/`):
@@ -246,7 +311,9 @@ PE/32-bit Mach-O external PoC, full whole-program proof, non-loop AI verified
 success (0/6), multi-provider statistics, single-function candidate policy, and
 the AI leaf-only path (target-mode selective whitelist as declared).
 
-Continuous guards: `scripts/verify_coverage_gate.py` (static CI mode with
+Release-governance guards: `scripts/release_gate.py` PR/nightly/release stages
+with frozen-SHA + clean-tree enforcement, artifact/claims sync checks,
+meta-audit and invariant engine; `scripts/verify_coverage_gate.py` (static CI mode with
 `dynamic_unverified` visibility + `--local` acceptance mode with
 `dynamic_unverified=0`, universe `unknown=0`, meta-audit and invariant checks),
 `scripts/release_gate.py` (PR/nightly/release stages: static gate, claims/

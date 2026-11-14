@@ -328,3 +328,160 @@ def test_meta_audit_and_invariants_runners_are_exposed() -> None:
     invariants = gate.run_invariant_check()
     assert invariants["ok"] is True
     assert invariants["packets_checked"] > 0
+
+
+def _live_doc_with_runtime(tier: str, available: bool) -> dict:
+    audit = _audit([_gap("NG-x", "non_goal", "info", "non_goal")])
+    audit["summary"] = {"gap_count": 1}
+    audit["census"] = {
+        "runtime_sources": {
+            "sources": [{
+                "format": "elf", "arch": "x86_64",
+                "runtime_tier": tier, "available": available,
+            }]
+        }
+    }
+    return audit
+
+
+def test_stale_artifact_mismatch_is_rejected() -> None:
+    live = _live_doc_with_runtime("emulated_run", True)
+    tampered = json.loads(json.dumps(live))
+    tampered["summary"] = {"gap_count": 2}
+    tampered["universe"]["cell_count"] = 99
+    tampered["universe"]["unknown"] = 3
+    result = gate.check_stale_artifacts(
+        live, committed_override=tampered, verify_sums=False)
+    assert result["ok"] is False
+    assert any("gap_count" in item for item in result["mismatches"])
+    assert any("universe_cell_count" in item for item in result["mismatches"])
+    equal = gate.check_stale_artifacts(
+        live, committed_override=json.loads(json.dumps(live)),
+        verify_sums=False)
+    assert equal["ok"] is True
+
+
+def test_stale_artifact_checksums_are_verified(tmp_path: Path) -> None:
+    audit_dir = tmp_path / "audit"
+    audit_dir.mkdir()
+    matrix = audit_dir / "coverage-matrix.json"
+    matrix.write_text('{"mode": "static"}', encoding="utf-8")
+    report = audit_dir / "gap-report.md"
+    report.write_text("# report\n", encoding="utf-8")
+    checksums = []
+    for name in ("coverage-matrix.json", "gap-report.md"):
+        digest = gate._sha256_file(audit_dir / name)
+        checksums.append(f"{digest}  {name}")
+    sums = audit_dir / "SHA256SUMS"
+    sums.write_text("\n".join(checksums) + "\n", encoding="utf-8")
+    ok, mismatches = gate.verify_artifact_sums(audit_dir)
+    assert ok, mismatches
+    report.write_text("# tampered report\n", encoding="utf-8")
+    ok, mismatches = gate.verify_artifact_sums(audit_dir)
+    assert not ok
+    assert any("sha256 mismatch" in item for item in mismatches)
+
+
+def test_claims_measurement_sync_detects_drift() -> None:
+    live = _audit([
+        _gap("N-ok", "non_goal", "info", "non_goal"),
+        _gap("C-ok", "closed"),
+    ])
+    live["summary"] = {"gap_count": 2}
+    block = {
+        "gap_count": 2, "closed": 1, "open": 0, "mitigated": 0,
+        "non_goal": 1, "dynamic_unverified": 0, "high_severity_open": 0,
+        "universe_cell_count": 1, "universe_unknown": 0,
+    }
+    claims = _claims(["N-ok"])
+    claims["audit_status"] = {"mode": "release", "static": dict(block),
+                              "release": dict(block)}
+    assert gate.check_claims_sync(live, claims)["ok"] is True
+    drifted = json.loads(json.dumps(claims))
+    drifted["audit_status"]["static"]["gap_count"] = 99
+    result = gate.check_claims_sync(live, drifted)
+    assert result["ok"] is False
+    assert any("gap_count" in item for item in result["mismatches"])
+    missing = _claims(["N-ok"])
+    result = gate.check_claims_sync(live, missing)
+    assert result["ok"] is False
+    assert result["audit_status_present"] is False
+
+
+def test_claims_measurement_sync_requires_matching_blocks(tmp_path: Path) -> None:
+    # A present audit_status without the block for the live mode fails closed.
+    live = _audit([_gap("N-ok", "non_goal", "info", "non_goal")])
+    live["summary"] = {"gap_count": 1}
+    claims = _claims(["N-ok"])
+    claims["audit_status"] = {"mode": "release", "release": {}}
+    result = gate.check_claims_sync(live, claims)
+    assert result["ok"] is False
+    assert result["block"] == "static"
+    assert any("absent" in item for item in result["mismatches"])
+
+
+def test_provider_identity_mismatch_is_recorded_non_verified(tmp_path: Path) -> None:
+    mismatch_path = tmp_path / "provider.json"
+    mismatch_path.write_text(json.dumps({
+        "provider_status": "ok",
+        "provider": {
+            "status": "ok", "model_identity_ok": False,
+            "model_requested": "deepseek-chat",
+            "model_returned": "deepseek-flash",
+        },
+    }), encoding="utf-8")
+    result = gate.check_provider_identity(mismatch_path)
+    assert result["ok"] is True
+    assert result["identity_mismatch"] is True
+    assert result["identity_recorded"] is True
+    assert result["identity_verified"] is False
+    assert "NON-VERIFIED IDENTITY" in result["reason"]
+    verified_path = tmp_path / "provider_verified.json"
+    payload = json.loads(mismatch_path.read_text(encoding="utf-8"))
+    payload["provider"]["model_identity_ok"] = True
+    verified_path.write_text(json.dumps(payload), encoding="utf-8")
+    verified = gate.check_provider_identity(verified_path)
+    assert verified["identity_mismatch"] is False
+    assert verified["identity_verified"] is True
+
+
+def test_fabricated_capability_is_rejected_when_tier_unmeasured() -> None:
+    claims = _claims(["N-ok"])
+    audit = _live_doc_with_runtime("emulated_run", True)
+    universe = gate._as_dict(audit["universe"])
+    universe["counts"] = {"verified": 0, "supported": 1, "non_goal": 0,
+                          "unavailable": 0, "unknown": 0}
+    document = gate.evaluate(audit, claims, "N-ok mapped")
+    assert not any("fabricates capabilities" in item
+                   for item in document["violations"])
+    audit["census"]["runtime_sources"]["sources"][0]["available"] = False
+    document = gate.evaluate(audit, claims, "N-ok mapped")
+    assert any("fabricates capabilities" in item
+               for item in document["violations"])
+
+
+def test_static_gate_json_exposes_release_checks() -> None:
+    result = subprocess.run(
+        [sys.executable, str(SCRIPTS / "verify_coverage_gate.py"),
+         "--static-only", "--json"],
+        cwd=ROOT, capture_output=True, text=True, timeout=240,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert "stale_artifacts" in payload
+    assert set(payload["stale_artifacts"]) >= {"ok", "mismatches",
+                                               "committed_sha"}
+    assert "claims_sync" in payload
+    assert set(payload["claims_sync"]) >= {"ok", "mismatches"}
+    assert "provider_identity" in payload
+    assert payload["provider_identity"]["identity_recorded"] is True
+    assert payload["meta_audit"]["scenario_count"] >= 12
+
+
+def test_meta_audit_check_runs_with_live_audit() -> None:
+    from app.services import coverage_audit
+
+    live = coverage_audit.build_audit(include_probes=False)
+    report = gate.run_meta_audit_check(live)
+    assert report["ok"] is True, report["violations"]
+    assert report["scenario_count"] >= 12

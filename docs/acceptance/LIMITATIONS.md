@@ -595,3 +595,35 @@ and unit tests, but the PoC runner does not inspect target TLS/errno after the
 function.  The production gate remains stdout_signature + regression; no runtime
 errno claim is made.
 
+
+Phase-4 release-freeze additions (same date): the frozen release tree is branch
+`release/2026-11-14` at mainline SHA `725e7bb` (fast-forwarded to
+`workbench-v3`). Release claims require `scripts/release_gate.py --release
+--release-sha <sha>` on a clean tree (static gate, claims/measurement diff,
+acceptance contract with capacity 21/21 / heap 19/19 / target-scoped 20/20 and
+safe-default controls, local gate with `dynamic_unverified=0` and universe
+`unknown=0`, meta-audit, invariants, provider-matrix schema, full pytest);
+static-only green is never sufficient. Committed audit artifacts are regenerated
+on the frozen tree (68 gaps: 56 closed, 1 mitigated platform declaration, 0
+open, 11 non-goals; universe 240 cells, unknown 0).
+
+Provider dimension: `artifacts/provider-coverage-2026-11-14/` records
+sha256-bound evidence for 4 models across 2 providers that completed the 12-case
+matrix (DeepSeek official 2 models exact identity 6/12 verified; SiliconFlow CN
+Qwen free models exact identity 0/12 verified). SiliconFlow international is
+blocked (HTTP 402 insufficient balance), GLM-Z1 probe timed out, DashScope has
+no key/artifact, and the 5-6 model international matrix is explicitly not
+satisfied. The Lead provider-matrix run requested `deepseek-chat` but was served
+`deepseek-flash` (identity_ok=false); its verified count is attributed to the
+served model and excluded from requested-model coverage. Cost and seed are
+unavailable and recorded as null; no fabricated values.
+
+Nightly/browser/flake governance: the self-hosted Lima nightly CI job remains
+inert by default (`vars.BINARYREPAIR_RELEASE_GATE`) and no CI run is claimed;
+browser e2e skips with an explicit reason when Chromium is absent. Lima tests
+run serially and a flake quarantine/rerun policy is documented in the
+release-gate operations doc; a local `--nightly` attempt is recorded in the
+release report. Twenty-six pre-existing non-ASCII Python comment/docstring
+violations exist (app/main.py and several tests/e2e/integration tests) and are
+not introduced by this milestone; the language-policy checker does not scan
+markdown docs.

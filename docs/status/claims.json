@@ -41,7 +41,11 @@
       "owner": "target-scope",
       "review_by": "2027-02-14",
       "productization_criteria": "target-strict deterministic recovery for the sprintf/inline-loop/multicall/nonconst families, each with a reviewed fixture + runtime oracle and baseline_expected_target_strict=verified_patch; format-aware sink templates are required for sprintf",
-      "fallback": "analysis_only; no target-scoped candidate; the target-strict benchmark baseline records not_verified and never claims repair"
+      "fallback": "analysis_only; no target-scoped candidate; the target-strict benchmark baseline records not_verified and never claims repair",
+      "roadmap_stage": "productize-next",
+      "owning_area": "solver",
+      "research_acceptance": "deterministic template coverage for the hard-case families with target-mode patch-ownership evidence and a real PoC/regression case",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "NG-ai-leaf-only::ai_assembly_repair",
@@ -51,7 +55,11 @@
       "owner": "ai-path",
       "review_by": "2027-05-14",
       "productization_criteria": "deterministic validator + regression fixture for external-call-free assembly leaf blocks; the AI candidate is accepted only through the unified evidence-profile gate",
-      "fallback": "no verified; the leaf/instruction allowlist refuses calls and non-whitelisted code, so no candidate is produced"
+      "fallback": "no verified; the leaf/instruction allowlist refuses calls and non-whitelisted code, so no candidate is produced",
+      "roadmap_stage": "keep-non-goal",
+      "owning_area": "solver",
+      "research_acceptance": "non-loop target-mode AI repair verified with the call whitelist plus import/stub resolution and a native PoC/regression gate",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "NG-ai-leaf-only::ai_binary_repair",
@@ -61,7 +69,11 @@
       "owner": "ai-path",
       "review_by": "2027-05-14",
       "productization_criteria": "deterministic re-verification of machine-code leaf blocks plus a regression fixture; the deterministic unified gate remains the acceptance owner",
-      "fallback": "no verified; AI binary output is only a structurally validated candidate for the deterministic gate"
+      "fallback": "no verified; AI binary output is only a structurally validated candidate for the deterministic gate",
+      "roadmap_stage": "keep-non-goal",
+      "owning_area": "solver",
+      "research_acceptance": "non-leaf binary_direct repair accepted by the deterministic structural validator and a native PoC/regression gate",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "NG-non-goal-1",
@@ -71,7 +83,11 @@
       "owner": "engine",
       "review_by": "2027-03-31",
       "productization_criteria": "same-function capacity recovery for dynamic sizes, pointer+offset aliases and cross-function allocations, with a fixture + runtime oracle and a reviewed list of the newly recoverable subset",
-      "fallback": "analysis_only for unrecoverable destinations; no candidate bytes"
+      "fallback": "analysis_only for unrecoverable destinations; no candidate bytes",
+      "roadmap_stage": "research",
+      "owning_area": "solver",
+      "research_acceptance": "cross-function/alias capacity proof that never over-estimates, checked by the runtime oracle and evidenced by a fixture",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "NG-non-goal-2",
@@ -81,7 +97,11 @@
       "owner": "engine",
       "review_by": "2027-05-14",
       "productization_criteria": "deterministic templates for sprintf/format-string expansion, UAF/lifetime and integer/loop families, each with a fixture + runtime oracle; format-aware sink template + regression fixture for sprintf specifically",
-      "fallback": "analysis_only; no deterministic template and no download"
+      "fallback": "analysis_only; no deterministic template and no download",
+      "roadmap_stage": "research",
+      "owning_area": "solver",
+      "research_acceptance": "per-class template + fixture + runtime oracle (sprintf format-aware, UAF lifetime model, integer/loop deterministic templates)",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "NG-non-goal-3",
@@ -91,7 +111,11 @@
       "owner": "lead",
       "review_by": "2027-05-14",
       "productization_criteria": "container/writer + gate cell + fixtures for arm32/riscv/mips/powerpc or big-endian input; until all exist the matrix cell must stay out of the claimed universe",
-      "fallback": "unsupported; no rewrite backend for these containers"
+      "fallback": "unsupported; no rewrite backend for these containers",
+      "roadmap_stage": "keep-non-goal",
+      "owning_area": "process",
+      "research_acceptance": "new arch decoder + writer + runtime cell with fixtures and capability-contract entry",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "NG-non-goal-4",
@@ -101,7 +125,11 @@
       "owner": "lead",
       "review_by": "2027-05-14",
       "productization_criteria": "fat/32-bit Mach-O rewrite backend with reparse + fixture + gate cell evidence",
-      "fallback": "unsupported; thin little-endian Mach-O only"
+      "fallback": "unsupported; thin little-endian Mach-O only",
+      "roadmap_stage": "keep-non-goal",
+      "owning_area": "process",
+      "research_acceptance": "fat/32-bit Mach-O container handling with runtime capability matrix and negative tests",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "NG-non-goal-5",
@@ -111,7 +139,11 @@
       "owner": "runtime",
       "review_by": "2027-05-14",
       "productization_criteria": "Windows and non-Mach-O macOS native runtime runners with a measured runtime-capability probe, fixture and acceptance case",
-      "fallback": "unsupported/not_run; no native execution claim"
+      "fallback": "unsupported/not_run; no native execution claim",
+      "roadmap_stage": "runtime-fallback",
+      "owning_area": "runtime",
+      "research_acceptance": "Windows/macOS native runner with capability probe, acceptance case and fixture",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "RG-external-poc::<doc>::pe/arm64",
@@ -121,7 +153,11 @@
       "owner": "runtime",
       "review_by": "2027-05-14",
       "productization_criteria": "a PE external-PoC runner on a supported host with a fixture + native/emulated runtime oracle and capability probe poc_available=true; PE PoC evidence is then gate-validated",
-      "fallback": "not_run; PE PoC manifests are never executed, simulated or reported as verified"
+      "fallback": "not_run; PE PoC manifests are never executed, simulated or reported as verified",
+      "roadmap_stage": "runtime-fallback",
+      "owning_area": "runtime",
+      "research_acceptance": "PE external-PoC runner on a supported host with a fixture, native/emulated oracle and capability poc_available=true",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "RG-external-poc::<doc>::pe/i386",
@@ -131,7 +167,11 @@
       "owner": "runtime",
       "review_by": "2027-05-14",
       "productization_criteria": "a PE external-PoC runner on a supported host with a fixture + native/emulated runtime oracle and capability probe poc_available=true; PE PoC evidence is then gate-validated",
-      "fallback": "not_run; PE PoC manifests are never executed, simulated or reported as verified"
+      "fallback": "not_run; PE PoC manifests are never executed, simulated or reported as verified",
+      "roadmap_stage": "runtime-fallback",
+      "owning_area": "runtime",
+      "research_acceptance": "PE external-PoC runner on a supported host with a fixture, native/emulated oracle and capability poc_available=true",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "RG-external-poc::<doc>::pe/x86_64",
@@ -141,7 +181,11 @@
       "owner": "runtime",
       "review_by": "2027-05-14",
       "productization_criteria": "a PE external-PoC runner on a supported host with a fixture + native/emulated runtime oracle and capability probe poc_available=true; PE PoC evidence is then gate-validated",
-      "fallback": "not_run; PE PoC manifests are never executed, simulated or reported as verified"
+      "fallback": "not_run; PE PoC manifests are never executed, simulated or reported as verified",
+      "roadmap_stage": "runtime-fallback",
+      "owning_area": "runtime",
+      "research_acceptance": "PE external-PoC runner on a supported host with a fixture, native/emulated oracle and capability poc_available=true",
+      "quarterly_review": "2027-02-14"
     },
     {
       "id": "RG-external-poc::<doc>::macho/x86_64",
@@ -151,7 +195,11 @@
       "owner": "runtime",
       "review_by": "2027-05-14",
       "productization_criteria": "run on matching macOS host with external PoC evidence",
-      "fallback": "native function-level evidence only; external PoC reported not_run/unavailable"
+      "fallback": "native function-level evidence only; external PoC reported not_run/unavailable",
+      "roadmap_stage": "runtime-fallback",
+      "owning_area": "runtime",
+      "research_acceptance": "run on a matching macOS host with external-PoC evidence and capability poc_available=true",
+      "quarterly_review": "2027-02-14"
     }
   ],
   "implemented": [
@@ -215,5 +263,36 @@
   "deterministic_paths": [
     "deterministic_unified (matrix-driven pipeline + evidence profiles)"
   ],
-  "workbench_integration": "final: feature/rebased workbench at 5f9dd77; CI green after host-dependent Mach-O non-goal mapping"
+  "workbench_integration": "final: feature/rebased workbench at 5f9dd77; CI green after host-dependent Mach-O non-goal mapping",
+  "audit_status": {
+    "mode": "release",
+    "release": {
+      "gap_count": 68,
+      "closed": 56,
+      "open": 0,
+      "mitigated": 1,
+      "non_goal": 11,
+      "dynamic_unverified": 0,
+      "high_severity_open": 0,
+      "universe_cell_count": 240,
+      "universe_unknown": 0
+    },
+    "static": {
+      "gap_count": 62,
+      "closed": 45,
+      "open": 0,
+      "mitigated": 1,
+      "non_goal": 10,
+      "dynamic_unverified": 6,
+      "high_severity_open": 0,
+      "universe_cell_count": 240,
+      "universe_unknown": 0
+    },
+    "artifacts": {
+      "coverage_matrix_sha256": "aa3a2bddc884ad3a0ffec24a6f6d1074ef779335d1673139b69787e0a3b3b901",
+      "gap_report_sha256": "8cf3e8d143b887122a5b057f5d56f05095c24767072cf45236fff38adbd34e85"
+    },
+    "generated_by": "scripts/audit_capability_coverage.py on the frozen release tree",
+    "note": "release numbers are the full/local audit; static numbers are the probe-free audit. The coverage gate compares the matching mode block and fails on mismatches."
+  }
 }
