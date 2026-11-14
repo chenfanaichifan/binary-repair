@@ -144,11 +144,27 @@ fails while a correct repair exists, with PoC/regression as the gate.
 | `inline-byte-loop` (inlined byte copy, analyzer sees no sink) | `rejected` | **verified via native PoC** |
 | `cwe121-unchecked-strcpy` (semantic bounds check, external printLine) | `analysis_only` | assembly contained `call`; leaf-only validator rejected |
 
-Result: baseline **0/2**, AI **1/2**, increment **1** on this initial hard set.
-The CWE121 failure is preserved honestly: it needs external calls/behavior and
-therefore the paradigm-A route.  Evidence:
-`artifacts/hard-case-benchmark-2026-11-13/`.  This is one case, not a general
-capability claim; the benchmark must be expanded before headline conclusions.
+Initial result: baseline **0/2**, AI **1/2**, increment **1**; CWE121 failed
+because it needs external calls/behavior and therefore paradigm A.
+Evidence: `artifacts/hard-case-benchmark-2026-11-13/`.
+
+The benchmark was then expanded to **10 cases and a fairness ablation**
+(`artifacts/fairness-ablation-2026-11-14/`):
+
+| condition | verified / 10 |
+|---|---|
+| deterministic blind | 0 |
+| deterministic target-aware (same target/capacity) | 0 |
+| AI blind (no target) | 0 |
+| AI target-localized, `full` contract | 6 (3/3 runs) |
+| AI target-localized, `generic` contract | 6 (2/2 runs) |
+| AI target-localized, `none` contract | 6 (2/2 runs) |
+
+Six inline-copy variants pass; CWE121/multicall/sprintf/non-constant copy fail.
+Localization is necessary (+6 over blind AI); target-aware deterministic remains
+0, so repair generation is real; **contract strategy specificity had 0 measured
+effect** on this set.  Repeats were stable at 6/10, but cases are not independent
+and only one model was available: this is not a statistical generalization.
 
 ## 9. Boundaries
 

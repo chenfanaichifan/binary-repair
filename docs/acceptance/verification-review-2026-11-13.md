@@ -84,6 +84,7 @@ bundle artifacts/ai-direct-binary-2026-11-13: 14 files -> PASS
 bundle artifacts/ai-real-provider-2026-11-13: 2 files -> PASS
 bundle artifacts/gate-blind-spots-2026-11-13: 2 files -> PASS
 bundle artifacts/hard-case-benchmark-2026-11-13: 4 files -> PASS
+bundle artifacts/fairness-ablation-2026-11-14: 9 files -> PASS
 overall: PASS
 ```
 
@@ -176,3 +177,13 @@ verified by native PoC), CWE121 semantic case failed at the leaf-only assembly
 validator.  This is the first measured hard-case increment, not a general claim;
 expanding the benchmark and implementing paradigm A remain open.  Candidate and
 PoC evidence are hashed in the bundle; raw provider response is not stored.
+
+
+## 10. Fairness ablation (2026-11-14)
+
+10 hard cases, real provider, native PoC in Linux VM, 7 runs.  Deterministic
+blind and target-aware baselines 0/10, blind AI 0/10, target-localized AI 6/10
+under full/generic/none contract levels (stable across repeats).  Contract
+strategy specificity had no measured effect; target localization is currently
+necessary.  Evidence: `artifacts/fairness-ablation-2026-11-14/`.  Multi-provider
+and independent-case confidence intervals remain future work.

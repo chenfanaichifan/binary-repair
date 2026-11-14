@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "vuln_loop_reverse",
+  "poc": [
+    {
+      "id": "reverse-overflow-64",
+      "argv": [
+        "reverse",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false,
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "reverse-overflow-256",
+      "argv": [
+        "reverse",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false,
+        "exit_code": 0
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "reverse-short",
+      "argv": [
+        "reverse",
+        "hi"
+      ],
+      "original": {
+        "exit_code": 0
+      },
+      "candidate": {
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "reverse-boundary",
+      "argv": [
+        "reverse",
+        "AAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "exit_code": 0
+      },
+      "candidate": {
+        "exit_code": 0
+      }
+    }
+  ]
+}

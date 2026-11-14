@@ -20,7 +20,7 @@
     "native PoC replay for every path/fixture; PE and 32-bit Mach-O PoC are unavailable",
     "arm32, 32-bit Mach-O, fat Mach-O rewrite, big-endian, riscv/mips/ppc repair",
     "heap/global/sprintf/UAF/integer/loop repair templates",
-    "general/large hard-case benchmark and AI increment beyond the single inline-loop case"
+    "multi-provider/multi-model statistics and independent-case confidence intervals; target/PoC/contract product API; puts side-effect gate"
   ],
   "implemented": [
     "two product AI paths (asm_roundtrip, binary_direct)",
@@ -28,6 +28,7 @@
     "native/qemu PoC+regression gate for the ELF x86-64 guard fixture (API/CLI optional manifest)",
     "function-level PoC differential gate",
     "real-provider exploratory benchmark (no measured coverage increment)",
-    "hard-case AI increment benchmark: inline byte-loop case baseline rejected, real-provider AI assembly verified by native PoC (1 hard-case increment)"
+    "hard-case AI increment benchmark: inline byte-loop case baseline rejected, real-provider AI assembly verified by native PoC (1 hard-case increment)",
+    "fairness ablation: 10 hard cases, deterministic/targeted/blind baselines and full/generic/none contracts; target-localized AI 6/10 repeated stable, contract effect 0"
   ]
 }

@@ -175,3 +175,12 @@ was repaired by the real provider and passed native PoC; the CWE121 semantic
 case failed because the leaf-only assembly path cannot call external functions.
 This is evidence, not a general AI-increment claim; the benchmark and paradigm A
 remain future work.
+
+
+## 14. Fairness ablation is small and single-model
+
+The 10-case fairness ablation shows target-localized AI 6/10 vs target-aware
+deterministic 0/10 and blind AI 0/10, with no measured contract-specificity
+effect.  It is one provider/model, 10 non-independent cases, and seven repeated
+runs; it is not a population estimate.  Target/PoC/contract is still benchmark
+tooling, not a product API; the puts side-effect blind spot remains.

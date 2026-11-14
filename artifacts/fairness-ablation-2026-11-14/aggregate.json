@@ -1,0 +1,1778 @@
+{
+  "schema_version": 1,
+  "cases": 10,
+  "runs": 7,
+  "baseline_blind_verified": 0,
+  "baseline_target_aware_verified": 0,
+  "ai_blind_verified": 0,
+  "ai_target_verified_by_level": {
+    "full": [
+      6,
+      6,
+      6
+    ],
+    "generic": [
+      6,
+      6
+    ],
+    "none": [
+      6,
+      6
+    ]
+  },
+  "ai_target_verified_mean": {
+    "full": 6.0,
+    "generic": 6.0,
+    "none": 6.0
+  },
+  "increment_vs_target_aware_deterministic": {
+    "full": 6.0,
+    "generic": 6.0,
+    "none": 6.0
+  },
+  "contract_specificity_effect": 0.0,
+  "localization_effect": 6,
+  "repeat_consistency": true,
+  "per_case": [
+    {
+      "id": "inline-byte-loop",
+      "ai_target_verified": true,
+      "baseline_verified": false
+    },
+    {
+      "id": "cwe121-unchecked-strcpy",
+      "ai_target_verified": false,
+      "baseline_verified": false
+    },
+    {
+      "id": "hard-loop16",
+      "ai_target_verified": true,
+      "baseline_verified": false
+    },
+    {
+      "id": "hard-loop32",
+      "ai_target_verified": true,
+      "baseline_verified": false
+    },
+    {
+      "id": "hard-reverse",
+      "ai_target_verified": true,
+      "baseline_verified": false
+    },
+    {
+      "id": "hard-multicall",
+      "ai_target_verified": false,
+      "baseline_verified": false
+    },
+    {
+      "id": "hard-sprintf",
+      "ai_target_verified": false,
+      "baseline_verified": false
+    },
+    {
+      "id": "hard-nonconst",
+      "ai_target_verified": false,
+      "baseline_verified": false
+    },
+    {
+      "id": "hard-loop8",
+      "ai_target_verified": true,
+      "baseline_verified": false
+    },
+    {
+      "id": "hard-loop64",
+      "ai_target_verified": true,
+      "baseline_verified": false
+    }
+  ],
+  "runs_detail": [
+    {
+      "contract_level": "full",
+      "repeat": "r1",
+      "baseline_blind_verified": 0,
+      "baseline_target_aware_verified": 0,
+      "ai_blind_verified": 0,
+      "ai_target_verified": 6,
+      "ai_increment": 6,
+      "cases": [
+        {
+          "id": "inline-byte-loop",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "12aa3371ac22ea93a87cdebf619184cc3f34b45289fe37e7f53030520cd4945e"
+          },
+          "increment": true
+        },
+        {
+          "id": "cwe121-unchecked-strcpy",
+          "baseline": {
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "not_attempted",
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "no_candidate",
+            "poc_status": "not_run",
+            "candidate_sha256": null
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop16",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "cd8275d08b4ae7985ee9e992a941aa70ba1d5019fba79053b4e52a3c8471d607"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop32",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "230ddc0be41c9e448e4eaeb825f290e9e900a5c28d7ccef95c6851c28b11b322"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-reverse",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "733dde712b5da6e7f7d38e9a8677831b21c286fe9c3418e9938e1a4794a9ce89"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-multicall",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "5c2076f3bd25c8c11de5f7fd38f238fda53d83ad78119a28a24f184c7541b780"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-sprintf",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "no_candidate",
+            "poc_status": "not_run",
+            "candidate_sha256": null
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-nonconst",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "6a0a11d4d17cf77c45e32ca20c028d1fc49f889c478f5693b160f719fa4efa78"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop8",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "ab343eea54a6a0f08e428a775a015c0e8f556137c0bb4eb944a2f73b5e4315be"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop64",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac"
+          },
+          "increment": true
+        }
+      ]
+    },
+    {
+      "contract_level": "full",
+      "repeat": "r2",
+      "baseline_blind_verified": 0,
+      "baseline_target_aware_verified": 0,
+      "ai_blind_verified": 0,
+      "ai_target_verified": 6,
+      "ai_increment": 6,
+      "cases": [
+        {
+          "id": "inline-byte-loop",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "12aa3371ac22ea93a87cdebf619184cc3f34b45289fe37e7f53030520cd4945e"
+          },
+          "increment": true
+        },
+        {
+          "id": "cwe121-unchecked-strcpy",
+          "baseline": {
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "not_attempted",
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "no_candidate",
+            "poc_status": "not_run",
+            "candidate_sha256": null
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop16",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "cd8275d08b4ae7985ee9e992a941aa70ba1d5019fba79053b4e52a3c8471d607"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop32",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "230ddc0be41c9e448e4eaeb825f290e9e900a5c28d7ccef95c6851c28b11b322"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-reverse",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "426c7e18d6fd6f03fff273ddf2c102ff0a2b4145fa6341b671b0c639ceabb189"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-multicall",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "5c2076f3bd25c8c11de5f7fd38f238fda53d83ad78119a28a24f184c7541b780"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-sprintf",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "no_candidate",
+            "poc_status": "not_run",
+            "candidate_sha256": null
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-nonconst",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "d94299bb59bc538d1e3abdbc20e53dafc397e4dfe511c2877a451b91f4f0f24d"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop8",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "ab343eea54a6a0f08e428a775a015c0e8f556137c0bb4eb944a2f73b5e4315be"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop64",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac"
+          },
+          "increment": true
+        }
+      ]
+    },
+    {
+      "contract_level": "full",
+      "repeat": "r3",
+      "baseline_blind_verified": 0,
+      "baseline_target_aware_verified": 0,
+      "ai_blind_verified": 0,
+      "ai_target_verified": 6,
+      "ai_increment": 6,
+      "cases": [
+        {
+          "id": "inline-byte-loop",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "12aa3371ac22ea93a87cdebf619184cc3f34b45289fe37e7f53030520cd4945e"
+          },
+          "increment": true
+        },
+        {
+          "id": "cwe121-unchecked-strcpy",
+          "baseline": {
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "not_attempted",
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "no_candidate",
+            "poc_status": "not_run",
+            "candidate_sha256": null
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop16",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "cd8275d08b4ae7985ee9e992a941aa70ba1d5019fba79053b4e52a3c8471d607"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop32",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "230ddc0be41c9e448e4eaeb825f290e9e900a5c28d7ccef95c6851c28b11b322"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-reverse",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "426c7e18d6fd6f03fff273ddf2c102ff0a2b4145fa6341b671b0c639ceabb189"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-multicall",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "no_candidate",
+            "poc_status": "not_run",
+            "candidate_sha256": null
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-sprintf",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "b4f7abe0131350261684a463f21ae5160c023c26353610e60d641b0342248ef0"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-nonconst",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "021efa4cc45ab93cc76fce02ee3bb76a901797e5b7eaac53bf30b21ea5b0ef32"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop8",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "ab343eea54a6a0f08e428a775a015c0e8f556137c0bb4eb944a2f73b5e4315be"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop64",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac"
+          },
+          "increment": true
+        }
+      ]
+    },
+    {
+      "contract_level": "generic",
+      "repeat": "r1",
+      "baseline_blind_verified": 0,
+      "baseline_target_aware_verified": 0,
+      "ai_blind_verified": 0,
+      "ai_target_verified": 6,
+      "ai_increment": 6,
+      "cases": [
+        {
+          "id": "inline-byte-loop",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "12aa3371ac22ea93a87cdebf619184cc3f34b45289fe37e7f53030520cd4945e"
+          },
+          "increment": true
+        },
+        {
+          "id": "cwe121-unchecked-strcpy",
+          "baseline": {
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "not_attempted",
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "cf8da25df37cfa742813f395c082d8e6a882cdd362ef22ad4fca53febf0a70ac"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop16",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "3b03b471f4c5be91cc7520516cd044da71adee6ba02125f636ae5da9d7dedf5f"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop32",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "230ddc0be41c9e448e4eaeb825f290e9e900a5c28d7ccef95c6851c28b11b322"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-reverse",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "cbf0d2a04f8508892937772bb970e904c8764d24432cdf95fb2cf03357c381f0"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-multicall",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "no_candidate",
+            "poc_status": "not_run",
+            "candidate_sha256": null
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-sprintf",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "no_candidate",
+            "poc_status": "not_run",
+            "candidate_sha256": null
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-nonconst",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "190b10e50d3e98851888816dfbf065c65929e913af7b9efa3e7326c49677fa18"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop8",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "eaa75484eb6b61bea8a917c31ac6a89b8650a80fe1959c58fed215578d1e452a"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop64",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac"
+          },
+          "increment": true
+        }
+      ]
+    },
+    {
+      "contract_level": "generic",
+      "repeat": "r2",
+      "baseline_blind_verified": 0,
+      "baseline_target_aware_verified": 0,
+      "ai_blind_verified": 0,
+      "ai_target_verified": 6,
+      "ai_increment": 6,
+      "cases": [
+        {
+          "id": "inline-byte-loop",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "12aa3371ac22ea93a87cdebf619184cc3f34b45289fe37e7f53030520cd4945e"
+          },
+          "increment": true
+        },
+        {
+          "id": "cwe121-unchecked-strcpy",
+          "baseline": {
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "not_attempted",
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "cd9cc49977d4cc3b2af73da2e043ed1fe03fe4d35d640cbd31457aaef87a7f98"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop16",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "3b03b471f4c5be91cc7520516cd044da71adee6ba02125f636ae5da9d7dedf5f"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop32",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "280cf3f21a6b1c6387c450c883d2193fa29cf54ab57a13d501a8f3bc0e3465ce"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-reverse",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "cbf0d2a04f8508892937772bb970e904c8764d24432cdf95fb2cf03357c381f0"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-multicall",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "1b4851c9cc5fbeecdc970d4cadb203fb1443e39ed086b47ea5c60a0e35b66f98"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-sprintf",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "f1fd724ff9fd123a8d7499401609410803b36ac17d18a6800d7aad4d9fdbbb5f"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-nonconst",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "3251fdc99fea8a9842f0292060e896fbc9a4da472d65a1accbf7373b9266955a"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop8",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "eaa75484eb6b61bea8a917c31ac6a89b8650a80fe1959c58fed215578d1e452a"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop64",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac"
+          },
+          "increment": true
+        }
+      ]
+    },
+    {
+      "contract_level": "none",
+      "repeat": "r1",
+      "baseline_blind_verified": 0,
+      "baseline_target_aware_verified": 0,
+      "ai_blind_verified": 0,
+      "ai_target_verified": 6,
+      "ai_increment": 6,
+      "cases": [
+        {
+          "id": "inline-byte-loop",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "4580f71e0cf2ef28c0104c9628e4b70732e298582197af5e0da2522e0047743c"
+          },
+          "increment": true
+        },
+        {
+          "id": "cwe121-unchecked-strcpy",
+          "baseline": {
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "not_attempted",
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "d42f05cb07ba4866a5937d39b326f3b810c389e6a0ca61883edf709503094b7a"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop16",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "88a1ed2ff7b1d4dca2135bcde1c029f7a68e961ef23dd0c899f2bc6430990c57"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop32",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "230ddc0be41c9e448e4eaeb825f290e9e900a5c28d7ccef95c6851c28b11b322"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-reverse",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "b15a07ccfa9fc353208fbe7651303afccc6f6bed5d7af8ff77725d0a72571ff5"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-multicall",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "158bfa757fde5d5782be669c29c88f2f2fc0271bb76fb6ac14b21dc7fcf0b7dd"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-sprintf",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "23f01dad0d1ad99767d6fc964c0d1c59552a6d3dff24b0faf34ce271c924bf2f"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-nonconst",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "a0dee4d579fc34602456d4293cc1921a4af973c9573727ae74ffcdca160b6bc5"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop8",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "eaa75484eb6b61bea8a917c31ac6a89b8650a80fe1959c58fed215578d1e452a"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop64",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac"
+          },
+          "increment": true
+        }
+      ]
+    },
+    {
+      "contract_level": "none",
+      "repeat": "r2",
+      "baseline_blind_verified": 0,
+      "baseline_target_aware_verified": 0,
+      "ai_blind_verified": 0,
+      "ai_target_verified": 6,
+      "ai_increment": 6,
+      "cases": [
+        {
+          "id": "inline-byte-loop",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "aed2b792cbb258964f4cc4ed5a67e6c7ffad7764ae13fca0b28153628c8b30bc"
+          },
+          "increment": true
+        },
+        {
+          "id": "cwe121-unchecked-strcpy",
+          "baseline": {
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "not_attempted",
+            "disposition": "analysis_only",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "ea4018e9c4ca05f3140ce3558b6b76a460fa5f56cd751cba40008edaf18d22d6"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop16",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "88a1ed2ff7b1d4dca2135bcde1c029f7a68e961ef23dd0c899f2bc6430990c57"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop32",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "230ddc0be41c9e448e4eaeb825f290e9e900a5c28d7ccef95c6851c28b11b322"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-reverse",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "b15a07ccfa9fc353208fbe7651303afccc6f6bed5d7af8ff77725d0a72571ff5"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-multicall",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "2c1061fce1a84142ce824479d59c253d5ee89a77740b833ff075463610f7bc46"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-sprintf",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "69315d038df78c9bdbf9c6fb7ef4ea8b2d5b020c347cf68dd5b8922174b4df10"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-nonconst",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "candidate_sha256": "647ba91e28d1629c740bd7b65fabc3e836fe8000cc7a8f3f7c076ac207f484c0"
+          },
+          "increment": false
+        },
+        {
+          "id": "hard-loop8",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "823e4968b23cd8fda27797eb9e20e88549099aa6aa797b19608d13c100cad3a9"
+          },
+          "increment": true
+        },
+        {
+          "id": "hard-loop64",
+          "baseline": {
+            "disposition": "rejected",
+            "verified": false
+          },
+          "baseline_target_aware": {
+            "attempted": true,
+            "verified": false,
+            "reason": "guard skipped: unsupported x86 guard op: "
+          },
+          "ai_blind": {
+            "status": "invalid",
+            "disposition": "unsupported",
+            "verified": false
+          },
+          "ai_target": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac"
+          },
+          "increment": true
+        }
+      ]
+    }
+  ],
+  "note": "Fairness ablation: deterministic blind and target-aware baselines are 0/10; public blind AI is 0/10; target-localized AI is 6/10 under full, generic and none contracts.  Localization is necessary; contract strategy specificity had no measured effect on these 10 cases.  Successes are the six inline-copy loop variants; CWE121/multicall/sprintf/nonconst fail.  Repeats all 6/10."
+}

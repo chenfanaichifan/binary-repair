@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "multicall_bad",
+  "poc": [
+    {
+      "id": "multicall-overflow-64",
+      "argv": [
+        "multicall",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false,
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "multicall-overflow-256",
+      "argv": [
+        "multicall",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false,
+        "exit_code": 0
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "multicall-short",
+      "argv": [
+        "multicall",
+        "hi"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      }
+    }
+  ]
+}

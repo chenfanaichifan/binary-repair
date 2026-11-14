@@ -22,6 +22,94 @@
       "baseline_expected": "analysis_only",
       "contract": "CWE121 stack overflow: strcpy into char[50] without validation; repaired path must reject inputs with length+1>50 (exit 1, exact stderr) and preserve valid stdout",
       "family": "non-template semantic validation"
+    },
+    {
+      "id": "hard-loop16",
+      "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+      "target": "vuln_loop16",
+      "capacity": 16,
+      "poc": "fixtures/poc/hard-loop16.json",
+      "reference_fix": "fixtures/hard-cases/loop16_fix.S",
+      "baseline_expected": "rejected",
+      "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
+      "family": "non-template inline copy"
+    },
+    {
+      "id": "hard-loop32",
+      "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+      "target": "vuln_loop32",
+      "capacity": 32,
+      "poc": "fixtures/poc/hard-loop32.json",
+      "reference_fix": "fixtures/hard-cases/loop32_fix.S",
+      "baseline_expected": "rejected",
+      "contract": "inline byte-copy loop into a 32-byte stack buffer; no libc call; bounded copy + NUL required",
+      "family": "non-template inline copy"
+    },
+    {
+      "id": "hard-reverse",
+      "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+      "target": "vuln_loop_reverse",
+      "capacity": 16,
+      "poc": "fixtures/poc/hard-reverse.json",
+      "reference_fix": "fixtures/hard-cases/reverse_fix.S",
+      "baseline_expected": "rejected",
+      "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
+      "family": "non-template inline copy"
+    },
+    {
+      "id": "hard-multicall",
+      "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+      "target": "multicall_bad",
+      "capacity": 16,
+      "poc": "fixtures/poc/hard-multicall.json",
+      "reference_fix": "fixtures/hard-cases/multicall_fix.c",
+      "baseline_expected": "rejected",
+      "contract": "multicall hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+      "family": "semantic/multi-layer copy"
+    },
+    {
+      "id": "hard-sprintf",
+      "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+      "target": "sprintf_bad",
+      "capacity": 16,
+      "poc": "fixtures/poc/hard-sprintf.json",
+      "reference_fix": "fixtures/hard-cases/sprintf_fix.c",
+      "baseline_expected": "rejected",
+      "contract": "sprintf hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+      "family": "semantic/multi-layer copy"
+    },
+    {
+      "id": "hard-nonconst",
+      "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+      "target": "nonconst_bad",
+      "capacity": 16,
+      "poc": "fixtures/poc/hard-nonconst.json",
+      "reference_fix": "fixtures/hard-cases/nonconst_fix.c",
+      "baseline_expected": "rejected",
+      "contract": "nonconst hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+      "family": "semantic/multi-layer copy"
+    },
+    {
+      "id": "hard-loop8",
+      "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+      "target": "vuln_loop8",
+      "capacity": 8,
+      "poc": "fixtures/poc/hard-loop8.json",
+      "reference_fix": "fixtures/hard-cases/loop8_fix.S",
+      "baseline_expected": "rejected",
+      "contract": "inline byte-copy loop into a 8-byte stack buffer; bounded copy + NUL required",
+      "family": "non-template inline copy"
+    },
+    {
+      "id": "hard-loop64",
+      "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+      "target": "vuln_loop64",
+      "capacity": 64,
+      "poc": "fixtures/poc/hard-loop64.json",
+      "reference_fix": "fixtures/hard-cases/loop64_fix.S",
+      "baseline_expected": "rejected",
+      "contract": "inline byte-copy loop into a 64-byte stack buffer; bounded copy + NUL required",
+      "family": "non-template inline copy"
     }
   ]
 }

@@ -43,6 +43,18 @@ simple semantic-versioning policy for delivery snapshots.
 
 ## [Unreleased]
 
+### Added — hard-case fairness ablation
+
+- Expanded hard-case benchmark to 10 cases (inline loops, CWE121, multicall,
+  sprintf, non-constant copy).
+- Fairness ablation: deterministic blind/target-aware and AI blind 0/10;
+  target-localized AI 6/10 across full/generic/none contracts and repeated runs;
+  contract strategy specificity effect 0 on this set.
+- Evidence: `artifacts/fairness-ablation-2026-11-14/`.
+- Target/PoC/contract productization, multi-provider statistics, puts
+  side-effect gate and paradigm A remain open.
+
+
 ### Added — hard-case AI increment benchmark
 
 - `scripts/run_hard_benchmark.py` and `fixtures/hard-cases/cases.json`: cases
