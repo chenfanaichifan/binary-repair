@@ -109,20 +109,17 @@ jobs:
         run: python scripts/release_gate.py --pr --json
 
   release-gate-hosted:
-    # Hosted release gate: runs the frozen-tree release gate on a GitHub-hosted
-    # runner through scripts/release_freeze.py --offline.  It records a genuine
-    # CI execution (gate.json + freeze.json + README.md + SHA256SUMS in the
-    # release-gate-hosted-evidence artifact).  It is NOT the self-hosted/lima
+    # Portable GitHub-hosted CI evidence.  The full release gate measures
+    # host-specific capability tiers (Linux/macOS probes, Lima guest) and is
+    # recorded on the frozen reference host by release_freeze.py; a hosted
+    # runner cannot reproduce those measurements.  This job therefore records
+    # the portable CI layer it can genuinely prove: the PR gate (static
+    # coverage + claims diff + targeted pytest), the full non-browser suite,
+    # and the runner/command/input provenance.  It is NOT the self-hosted/lima
     # nightly; that job below stays inert unless the operator enables it.
-    # A skipped/absent run is not evidence; only an actual run's artifact is.
     if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    env:
-      # First hosted gate run: the run ID cannot be committed in the same
-      # commit that produces it.  The bootstrap state is explicit and must be
-      # replaced by a follow-up claims commit with the concrete hosted run.
-      BINARYREPAIR_CI_EVIDENCE_BOOTSTRAP: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -134,31 +131,37 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
-      - name: Hosted release gate (offline, frozen github.sha)
-        # Do NOT create artifacts/release-gate-ci before the gate: an untracked
-        # directory makes the checkout dirty and the gate's clean-tree check
-        # fails. release_freeze.py and --evidence-out create parents themselves.
+      - name: Portable PR gate (static coverage + claims + targeted pytest)
         run: |
-          python scripts/release_freeze.py --mode release \
-            --sha ${{ github.sha }} \
-            --offline \
-            --expected-mainline ignore \
-            --evidence-dir artifacts/release-gate-ci \
-            --json
-      - name: Record hosted release-gate summary
+          mkdir -p artifacts/release-gate-ci
+          python scripts/release_gate.py --pr --json \
+            > artifacts/release-gate-ci/pr-gate.json
+      - name: Full non-browser pytest suite (serial)
+        run: |
+          python -m pytest -q -p no:xdist --ignore=tests/e2e \
+            --junitxml=artifacts/release-gate-ci/pytest.xml
+      - name: Assemble portable CI evidence bundle
+        if: always()
+        run: |
+          python scripts/build_ci_evidence.py \
+            --out artifacts/release-gate-ci/ci-evidence.json \
+            --pr-json artifacts/release-gate-ci/pr-gate.json \
+            --pytest-junit artifacts/release-gate-ci/pytest.xml || true
+      - name: Record hosted CI summary
         if: always()
         run: |
           {
-            echo "## Hosted release gate"
+            echo "## Hosted portable CI evidence"
             echo ""
             echo "- run: \`$GITHUB_RUN_ID\` attempt \`$GITHUB_RUN_ATTEMPT\`"
             echo "- sha: \`${{ github.sha }}\`"
             echo "- ref: \`${{ github.ref }}\`"
             echo "- job status: \`${{ job.status }}\`"
+            echo "- scope: PR gate + full non-browser pytest; NOT host-specific"
+            echo "  release measurements or the Lima nightly."
             echo "- evidence: artifact \`release-gate-hosted-evidence\`"
-            echo "- note: hosted CI record; the self-hosted/lima nightly is a separate job and is inert by default."
           } >> "$GITHUB_STEP_SUMMARY"
-      - name: Upload hosted release-gate evidence
+      - name: Upload hosted portable CI evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
