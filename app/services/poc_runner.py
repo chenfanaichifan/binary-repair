@@ -194,23 +194,24 @@ def _normalize_format(format_name: str) -> str:
 def _select_runner(format_name: str, arch: str) -> GuestRunner | None:
     """Return the external-PoC runner for a target, or None.
 
-    The decision is driven by the measured capability probe
-    (:mod:`app.services.runtime.capabilities`) so the external-PoC path and the
-    native/emulated runtime path cannot disagree about what the host can prove:
+    The decision is driven by :func:`app.services.runtime.capabilities.contract`
+    (the unified capability contract, itself derived only from the measured
+    probe) so the external-PoC selector never disagrees with the contract payload
+    or the native Mach-O scheduler:
 
-    - ELF keeps the live native/qemu/Lima guest runner, but only when the probe
+    - ELF keeps the live native/qemu/Lima guest runner, but only when the contract
       says an external PoC can execute there;
     - Mach-O needs an external-PoC-capable tier (native execution on a matching
       macOS host).  On an arm64 macOS host the x86_64 target is
       ``emulated_run``/``poc_available=False`` (Rosetta function-level evidence
       only), so no runner is selected and ``run_poc`` reports ``unavailable``
-      with the capability reason instead of faking execution;
+      with the contract reason instead of faking execution;
     - PE and every other pair stay explicitly unavailable (function-level
       Unicorn evidence is not an external CLI PoC runner).
     """
 
     fmt = _normalize_format(format_name)
-    capability = capabilities.probe(fmt, arch, external_poc=True)
+    capability = capabilities.contract(fmt, arch)
     if fmt == "elf":
         runner = find_guest_runner(arch)
         if runner is None:
@@ -218,15 +219,15 @@ def _select_runner(format_name: str, arch: str) -> GuestRunner | None:
         if capability.get("available"):
             if not capability.get("poc_available"):
                 return None
-            if capability.get("tier") not in {"native_run", "emulated_run"}:
+            if capability.get("measured_tier") not in {"native_run", "emulated_run"}:
                 return None
         # The live runner above is the authoritative availability measurement; a
-        # cached probe can only veto (never invent) an external-PoC runner.
+        # cached contract can only veto (never invent) an external-PoC runner.
         return runner
     if fmt == "macho":
         if not capability.get("available") or not capability.get("poc_available"):
             return None
-        if capability.get("tier") != "native_run":
+        if capability.get("measured_tier") != "native_run":
             return None
         return GuestRunner(kind="native", tool="", tier="native_run")
     return None
@@ -428,9 +429,8 @@ def run_poc(
     evidence.candidate_sha256 = _sha(candidate)
     selected = _select_runner(str(spec["format"]), str(spec["arch"]))
     if selected is None:
-        capability = capabilities.probe(
+        capability = capabilities.contract(
             _normalize_format(str(spec["format"])), str(spec["arch"]),
-            external_poc=True,
         )
         reason = str(capability.get("reason") or "").strip()
         detail = (

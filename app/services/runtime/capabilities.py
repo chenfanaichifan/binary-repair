@@ -30,6 +30,14 @@ Result schema (all keys always present)::
 pollute the production cache; the default-host probe is cached by
 ``(format, arch, external_poc, platform, machine, macho_engine_ready)`` and can
 be reset with :func:`clear_cache` (e.g. after monkeypatching in tests).
+
+:func:`contract` is the **single consumer-facing source of truth**: it adds the
+repair-matrix declaration (``declared_tier``), the evidence semantics
+(``poc_available``/``emulated_available``) and an explicit ``reason`` whenever a
+declared tier is not measured on this host.  ``poc_runner._select_runner``, the
+``run_poc`` limitation and ``repair_matrix.matrix_payload()`` derive from it, so
+declared and measured capability can never silently diverge.  See
+``docs/acceptance/capability-contract-2026-11-14.md``.
 """
 from __future__ import annotations
 
@@ -258,21 +266,25 @@ def _probe_macho(
             source="macho_native",
         )
     try:
-        runnable = macho_native.supports_arch(arch, host_machine=machine)
+        # Single source of truth: the Mach-O execution-tier helper owns the only
+        # host/arch conditional (see macho_native.execution_tier).
+        tier = macho_native.execution_tier(
+            arch, host_machine=machine, engine_ready=engine_ready,
+        )
     except Exception as exc:  # noqa: BLE001
         return _unavailable(
             "macho", arch,
             f"Mach-O architecture probe failed: {type(exc).__name__}: {exc}",
             source="macho_native",
         )
-    if not runnable:
+    if tier == "unavailable":
         return _unavailable(
             "macho", arch,
             f"host {machine or 'unknown'} has no native or cross-arch execution "
             f"path for macho/{arch}",
             source="macho_native",
         )
-    if arch == machine:
+    if tier == "native_run":
         return _result(
             "macho", arch,
             available=True,
@@ -423,3 +435,152 @@ def probe(
             f"capability probe failed: {type(exc).__name__}: {exc}",
             source="none",
         )
+
+
+#: The unified capability contract fields returned by :func:`contract`.
+CONTRACT_FIELDS = (
+    "declared_tier",
+    "measured_tier",
+    "poc_available",
+    "emulated_available",
+    "available",
+    "reason",
+    "source",
+)
+
+
+def declared_tier(format_name: str, arch: str) -> str:
+    """Declared runtime tier of the repair-matrix cell for ``(format, arch)``.
+
+    A cell may declare several tiers; the strongest declared tier is reported
+    (``native_run`` before ``emulated_run``).  Pairs without a matrix cell report
+    ``"unavailable"`` -- the matrix does not claim them, so their capability must
+    stay an explicit non-goal/unavailable rather than a silent claim.  The
+    matrix module is imported lazily to keep the module graph acyclic.
+    """
+
+    fmt = normalize_format(format_name)
+    wanted = _normalize_arch(arch)
+    try:
+        from app.services.repair_matrix import REPAIR_CELLS
+    except Exception:  # noqa: BLE001 - no declaration available
+        return "unavailable"
+    for cell in REPAIR_CELLS:
+        if cell.container == fmt and cell.arch == wanted:
+            tiers = tuple(cell.runtime_tiers)
+            if not tiers:
+                return "unavailable"
+            if "native_run" in tiers:
+                return "native_run"
+            if "emulated_run" in tiers:
+                return "emulated_run"
+            return str(tiers[0])
+    return "unavailable"
+
+
+def _contract_reason(
+    fmt: str,
+    arch: str,
+    declared: str,
+    measured: str,
+    available: bool,
+    poc_available: bool,
+    probe_reason: str,
+) -> str:
+    """Compose the contract reason; always explains a declared/measured gap."""
+
+    base = probe_reason.strip() or "no measured runtime capability on this host"
+    if declared in {"", "unavailable"}:
+        return (
+            f"declared capability unavailable: no matrix cell declares a runtime "
+            f"tier for {fmt}/{arch}; {base}"
+        )
+    if measured == "unavailable":
+        return (
+            f"declared runtime tier {declared} is unavailable on this host: {base}"
+        )
+    if measured == declared:
+        return base
+    if declared == "native_run" and measured == "emulated_run":
+        # e.g. macho/x86_64 on an arm64 macOS host: Rosetta only.
+        return (
+            f"declared native_run is unavailable on this host; measured "
+            f"emulated_run is function-level evidence only and external PoC is "
+            f"{'available' if poc_available else 'unavailable'}: {base}"
+        )
+    if declared == "emulated_run" and measured == "native_run":
+        return (
+            f"declared emulated_run is superseded by stronger measured "
+            f"native_run evidence on this host: {base}"
+        )
+    return (
+        f"declared {declared} differs from measured {measured} on this host "
+        f"(available={available}); {base}"
+    )
+
+
+def contract(
+    format_name: str,
+    arch: str,
+    *,
+    host: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Unified capability contract for ``(format, arch)``.
+
+    This is the single source of truth downstream modules should read (the PoC
+    runner selector, the matrix capability payload and the native Mach-O
+    scheduler all derive from the same measurement; see
+    :func:`macho_native.execution_tier`).  It adds the matrix declaration and the
+    evidence semantics on top of :func:`probe`:
+
+    - ``declared_tier``: runtime tier the repair matrix declares for the cell
+      (``"unavailable"`` when no cell exists);
+    - ``measured_tier``: tier this host can actually produce;
+    - ``poc_available``: the external CLI PoC runner can execute the target;
+    - ``emulated_available``: emulated (function-level) execution evidence is
+      available on this host;
+    - ``available``: some execution evidence is available;
+    - ``reason``: explicit explanation, non-empty whenever a declared tier is
+      not measured (never a silent mismatch);
+    - ``source``: measurement provider (``guest_runner``/``macho_native``/
+      ``unicorn``/``none``).
+
+    A declared tier is never turned into an availability claim: 32-bit Mach-O has
+    no matrix cell and is reported unavailable; PE has emulated instruction
+    evidence but no external PoC; Mach-O/x86_64 on an arm64 macOS host is
+    function-level Rosetta evidence with ``poc_available=False``.  Never raises:
+    a probe failure is reported as unavailable with the error in ``reason``.
+    """
+
+    fmt = normalize_format(format_name)
+    normalized_arch = _normalize_arch(arch)
+    try:
+        capability = probe(fmt, normalized_arch, host=host)
+        declared = declared_tier(fmt, normalized_arch)
+        measured = str(capability.get("tier") or "unavailable")
+        available = bool(capability.get("available"))
+        poc_available = bool(capability.get("poc_available"))
+        emulated_available = bool(available and measured == "emulated_run")
+        reason = _contract_reason(
+            fmt, normalized_arch, declared, measured, available, poc_available,
+            str(capability.get("reason") or ""),
+        )
+        return {
+            "declared_tier": declared,
+            "measured_tier": measured,
+            "poc_available": poc_available,
+            "emulated_available": emulated_available,
+            "available": available,
+            "reason": reason,
+            "source": str(capability.get("source") or "none"),
+        }
+    except Exception as exc:  # noqa: BLE001 - fail closed, never fabricate
+        return {
+            "declared_tier": "unavailable",
+            "measured_tier": "unavailable",
+            "poc_available": False,
+            "emulated_available": False,
+            "available": False,
+            "reason": f"capability contract failed: {type(exc).__name__}: {exc}",
+            "source": "none",
+        }

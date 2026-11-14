@@ -460,6 +460,75 @@ def measured_runtime_capabilities(
     return measured
 
 
+def _unavailable_contract(cell: RepairCell, reason: str) -> dict[str, Any]:
+    """Fail-safe unified-contract row used when the contract cannot answer."""
+
+    tiers = tuple(cell.runtime_tiers)
+    declared = (
+        "native_run" if "native_run" in tiers
+        else "emulated_run" if "emulated_run" in tiers
+        else "unavailable"
+    )
+    return {
+        "cell_key": cell.key,
+        "declared_tier": declared,
+        "measured_tier": "unavailable",
+        "poc_available": False,
+        "emulated_available": False,
+        "available": False,
+        "reason": reason,
+        "source": "none",
+        "declared_available": False,
+    }
+
+
+def measured_contract_capabilities(
+    cells: tuple[RepairCell, ...] | list[RepairCell] = REPAIR_CELLS,
+) -> dict[str, dict[str, Any]]:
+    """Unified capability contract per matrix cell, derived ONLY from the probe.
+
+    Each row is :func:`app.services.runtime.capabilities.contract` for the cell's
+    ``(container, arch)`` plus ``cell_key`` and a ``declared_available`` flag
+    (``measured_tier == declared_tier``).  The declared ``runtime_tiers`` remain
+    untouched; when the measured tier is not the declared one the contract row
+    carries a non-empty ``reason`` explaining the gap (e.g. Mach-O/x86_64
+    external PoC on arm64, PE external PoC, 32-bit Mach-O unavailable).  A
+    contract error degrades that row to ``unavailable`` with the error in
+    ``reason``: the payload never fabricates a tier.
+    """
+
+    try:
+        from app.services.runtime import capabilities
+    except Exception as exc:  # noqa: BLE001 - matrix payload must stay buildable
+        return {
+            cell.key: _unavailable_contract(
+                cell, f"capability contract unavailable: {type(exc).__name__}: {exc}"
+            )
+            for cell in cells
+        }
+    fields = tuple(capabilities.CONTRACT_FIELDS)
+    measured: dict[str, dict[str, Any]] = {}
+    for cell in cells:
+        try:
+            item = capabilities.contract(cell.container, cell.arch)
+            row: dict[str, Any] = {"cell_key": cell.key}
+            for field in fields:
+                value = item.get(field)
+                if field in {"available", "poc_available", "emulated_available"}:
+                    row[field] = bool(value)
+                elif field in {"declared_tier", "measured_tier", "reason", "source"}:
+                    row[field] = str(value or "")
+                else:  # pragma: no cover - CONTRACT_FIELDS is closed above
+                    row[field] = value
+            row["declared_available"] = row["measured_tier"] == row["declared_tier"]
+        except Exception as exc:  # noqa: BLE001
+            row = _unavailable_contract(
+                cell, f"capability contract failed: {type(exc).__name__}: {exc}"
+            )
+        measured[cell.key] = row
+    return measured
+
+
 def matrix_payload() -> dict[str, Any]:
     """English-ASCII coverage payload for ``GET /api/binary/matrix`` and docs."""
     cells: list[dict[str, Any]] = []
@@ -489,6 +558,11 @@ def matrix_payload() -> dict[str, Any]:
         # Measured, per-cell runtime capability next to the declared tiers above:
         # a declared tier is not a claim that this host can produce it.
         "runtime_capabilities": measured_runtime_capabilities(),
+        # Unified capability contract per cell (declared vs measured tier,
+        # external-PoC/emulated availability, explicit reason).  Derived only
+        # from capabilities.contract; a declared tier never becomes an
+        # availability claim.
+        "contract_capabilities": measured_contract_capabilities(),
         "evidence_profiles": {
             name: {
                 "description": meta["description"],

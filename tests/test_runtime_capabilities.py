@@ -5,6 +5,8 @@ import hashlib
 import json
 import platform
 import sys
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -456,3 +458,252 @@ def test_arm64_macos_measures_macho_x86_64_as_emulated_not_declared_native():
     )
     assert "native_run" in declared
     assert measured["tier"] not in declared
+
+
+# --------------------------------------------------- unified capability contract
+
+
+def test_contract_fields_are_the_documented_single_source():
+    result = capabilities.contract("elf", "x86_64")
+    assert set(result) == set(capabilities.CONTRACT_FIELDS)
+    assert capabilities.CONTRACT_FIELDS == (
+        "declared_tier", "measured_tier", "poc_available",
+        "emulated_available", "available", "reason", "source",
+    )
+    assert result["declared_tier"] in _TIERS | {"unavailable"}
+    assert result["measured_tier"] in _TIERS
+    assert isinstance(result["available"], bool)
+    assert isinstance(result["poc_available"], bool)
+    assert isinstance(result["emulated_available"], bool)
+    assert str(result["reason"]).strip()
+    assert isinstance(result["source"], str) and result["source"]
+    assert str(result).isascii()
+
+
+def test_contract_derives_only_from_probe():
+    for fmt, arch in (("elf", "x86_64"), ("pe", "x86_64"), ("macho", "x86_64"),
+                      ("macho", "arm64"), ("macho", "i386")):
+        probe = capabilities.probe(fmt, arch)
+        contract = capabilities.contract(fmt, arch)
+        assert contract["measured_tier"] == probe["tier"], (fmt, arch)
+        assert contract["available"] == probe["available"], (fmt, arch)
+        assert contract["poc_available"] == probe["poc_available"], (fmt, arch)
+        assert contract["source"] == probe["source"], (fmt, arch)
+        assert contract["emulated_available"] == (
+            probe["available"] and probe["tier"] == "emulated_run"
+        ), (fmt, arch)
+
+
+def test_contract_declared_tier_comes_from_the_matrix_cell():
+    assert capabilities.declared_tier("elf", "x86_64") == "emulated_run"
+    assert capabilities.declared_tier("pe", "x86_64") == "emulated_run"
+    assert capabilities.declared_tier("macho", "x86_64") == "native_run"
+    assert capabilities.declared_tier("macho", "arm64") == "native_run"
+    # 32-bit Mach-O is outside the matrix: no declared tier may be invented
+    assert capabilities.declared_tier("macho", "i386") == "unavailable"
+    assert capabilities.declared_tier("dos", "x86_64") == "unavailable"
+
+
+def test_contract_macho_x86_64_on_arm64_is_function_level_only(monkeypatch):
+    _patch_macho_engine(monkeypatch, True)
+    contract = capabilities.contract(
+        "macho", "x86_64", host={"platform": "darwin", "machine": "arm64"},
+    )
+    assert contract["declared_tier"] == "native_run"
+    assert contract["measured_tier"] == "emulated_run"
+    assert contract["available"] is True
+    assert contract["emulated_available"] is True
+    assert contract["poc_available"] is False
+    assert "function-level" in contract["reason"]
+    assert "external PoC is unavailable" in contract["reason"]
+    assert "declared native_run is unavailable" in contract["reason"]
+    assert contract["source"] == "macho_native"
+
+
+def test_contract_macho_native_on_matching_host(monkeypatch):
+    _patch_macho_engine(monkeypatch, True)
+    contract = capabilities.contract(
+        "macho", "x86_64", host={"platform": "darwin", "machine": "x86_64"},
+    )
+    assert contract["declared_tier"] == "native_run"
+    assert contract["measured_tier"] == "native_run"
+    assert contract["poc_available"] is True
+    assert contract["emulated_available"] is False
+
+
+def test_contract_pe_emulated_but_external_poc_unavailable():
+    contract = capabilities.contract(
+        "pe", "x86_64", host={"platform": "linux", "machine": "x86_64"},
+    )
+    assert contract["declared_tier"] == "emulated_run"
+    assert contract["measured_tier"] == "emulated_run"
+    assert contract["available"] is True
+    assert contract["emulated_available"] is True
+    assert contract["poc_available"] is False
+    assert "external PoC" in contract["reason"]
+
+
+def test_contract_32bit_macho_stays_unavailable(monkeypatch):
+    _patch_macho_engine(monkeypatch, True)
+    for kwargs in ({}, {"host": {"platform": "darwin", "machine": "arm64"}}):
+        contract = capabilities.contract("macho", "i386", **kwargs)
+        assert contract["declared_tier"] == "unavailable"
+        assert contract["measured_tier"] == "unavailable"
+        assert contract["available"] is False
+        assert contract["poc_available"] is False
+        assert contract["emulated_available"] is False
+        assert contract["reason"].strip()
+    # No literal emulated_run claim without a Mach-O mapping implementation.
+    assert "emulated_run" not in capabilities.contract("macho", "i386")["measured_tier"]
+
+
+def test_contract_unknown_pair_and_probe_failure_are_unavailable(monkeypatch):
+    unknown = capabilities.contract("dos", "x86_64")
+    assert unknown["declared_tier"] == "unavailable"
+    assert unknown["measured_tier"] == "unavailable"
+    assert unknown["reason"].strip()
+
+    def _boom(*args, **kwargs):  # noqa: ANN001
+        raise RuntimeError("contract probe exploded")
+
+    monkeypatch.setattr(capabilities, "probe", _boom)
+    failed = capabilities.contract("elf", "x86_64")
+    assert failed["measured_tier"] == "unavailable"
+    assert failed["available"] is False
+    assert "capability contract failed" in failed["reason"]
+
+
+def test_contract_never_silently_ignores_a_declared_tier(monkeypatch):
+    """Every cell: measured in declared tiers OR an explicit non-empty reason."""
+
+    for cell in REPAIR_CELLS:
+        contract = capabilities.contract(cell.container, cell.arch)
+        if contract["measured_tier"] in cell.runtime_tiers:
+            assert contract["declared_tier"] in cell.runtime_tiers
+            continue
+        assert contract["reason"].strip(), cell.key
+        assert contract["declared_tier"] in contract["reason"], cell.key
+        if contract["measured_tier"] == "unavailable":
+            assert contract["available"] is False
+
+
+def test_poc_selector_and_contract_agree(monkeypatch):
+    monkeypatch.setattr(poc_runner, "find_guest_runner", lambda arch: None)
+    native = {
+        "declared_tier": "native_run", "measured_tier": "native_run",
+        "poc_available": True, "emulated_available": False, "available": True,
+        "reason": "native", "source": "macho_native",
+    }
+    emulated = {
+        "declared_tier": "native_run", "measured_tier": "emulated_run",
+        "poc_available": False, "emulated_available": True, "available": True,
+        "reason": "rosetta", "source": "macho_native",
+    }
+    monkeypatch.setattr(poc_runner.capabilities, "contract", lambda *a, **k: native)
+    assert poc_runner._select_runner("macho", "x86_64") == GuestRunner(
+        kind="native", tool="", tier="native_run",
+    )
+    monkeypatch.setattr(poc_runner.capabilities, "contract", lambda *a, **k: emulated)
+    assert poc_runner._select_runner("macho", "x86_64") is None
+
+
+def test_probe_and_command_share_the_macho_execution_tier_helper(monkeypatch):
+    _patch_macho_engine(monkeypatch, True)
+
+    def tier_emulated(arch, **kwargs):  # noqa: ANN001
+        return "emulated_run"
+
+    monkeypatch.setattr(macho_native, "execution_tier", tier_emulated)
+    probe = capabilities.probe(
+        "macho", "x86_64", host={"platform": "darwin", "machine": "arm64"},
+    )
+    assert probe["tier"] == "emulated_run" and probe["poc_available"] is False
+    assert macho_native._command(Path("/tmp/cand"), "x86_64")[-2:] == [
+        "-x86_64", "/tmp/cand",
+    ]
+
+    monkeypatch.setattr(
+        macho_native, "execution_tier",
+        lambda arch, **kwargs: "native_run",
+    )
+    assert macho_native._command(Path("/tmp/cand"), "x86_64") == ["/tmp/cand"]
+
+
+def test_native_macho_scheduler_reads_the_shared_execution_tier(monkeypatch):
+    monkeypatch.setattr(macho_native, "available", lambda: True)
+    monkeypatch.setattr(
+        macho_native, "execution_tier",
+        lambda arch, **kwargs: "unavailable",
+    )
+    evidence = macho_native.run(b"candidate", arch="arm64", capacity=16)
+    assert evidence.tier == "unavailable"
+    assert evidence.verdict == "unavailable"
+    assert any("cannot execute" in item for item in evidence.limitations)
+
+    monkeypatch.setattr(
+        macho_native, "execution_tier",
+        lambda arch, **kwargs: "emulated_run",
+    )
+    monkeypatch.setattr(macho_native, "_resign", lambda path: None)
+    monkeypatch.setattr(
+        macho_native.subprocess, "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    evidence = macho_native.run(b"candidate", arch="x86_64", capacity=16)
+    assert any("function-level evidence only" in item for item in evidence.limitations)
+    assert evidence.verdict == "pass"
+
+
+# ------------------------------------------- platform-limit negatives (never faked)
+
+
+def _platform_limit_manifest(fmt: str, arch: str, original: bytes) -> dict:
+    return {
+        "schema_version": 1,
+        "fixture_sha256": hashlib.sha256(original).hexdigest(),
+        "format": fmt,
+        "arch": arch,
+        "target": "fixture",
+        "poc": [{"id": "poc", "argv": [], "original": {"crashed": True}}],
+        "regression": [],
+    }
+
+
+@pytest.mark.parametrize(
+    ("fmt", "arch"),
+    [("pe", "x86_64"), ("pe", "arm64"), ("macho", "i386")],
+)
+def test_platform_limit_external_poc_is_unavailable_not_rejected(fmt, arch):
+    """No external PoC on PE/32-bit Mach-O => unavailable, never pass/fail."""
+
+    original = b"original-bytes"
+    evidence = poc_runner.run_poc(
+        original, original, _platform_limit_manifest(fmt, arch, original),
+    )
+    assert evidence.status == "unavailable"
+    assert evidence.status not in {"pass", "fail"}  # never verified, never rejected
+    assert evidence.cases == [] and evidence.regression == []
+    assert evidence.runner == "" and evidence.tier == ""
+    assert any("external PoC unavailable:" in item for item in evidence.limitations)
+    assert any(item.strip() for item in evidence.limitations)
+
+
+@pytest.mark.skipif(
+    not (sys.platform == "darwin" and platform.machine().lower() in {"arm64", "aarch64"}),
+    reason="the arm64 macOS host is the measured host",
+)
+def test_macho_x86_64_external_poc_unavailable_on_arm64_host_never_faked():
+    contract = capabilities.contract("macho", "x86_64")
+    assert contract["measured_tier"] == "emulated_run"
+    assert contract["poc_available"] is False
+    assert "function-level" in contract["reason"]
+
+    original = b"original-macho-bytes"
+    evidence = poc_runner.run_poc(
+        original, original, _platform_limit_manifest("macho", "x86_64", original),
+    )
+    assert evidence.status == "unavailable"
+    assert evidence.status not in {"pass", "fail"}
+    assert evidence.cases == [] and evidence.regression == []
+    assert any("external PoC unavailable:" in item for item in evidence.limitations)
+    assert any("function-level" in item for item in evidence.limitations)

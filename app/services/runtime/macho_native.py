@@ -43,6 +43,52 @@ def host_arch() -> str:
     return _host_arch()
 
 
+def execution_tier(
+    arch: str,
+    *,
+    host_machine: str | None = None,
+    engine_ready: bool | None = None,
+) -> str:
+    """Single source of truth for local Mach-O execution-tier classification.
+
+    Returns ``"native_run"`` for a binary matching the host CPU, ``"emulated_run"``
+    for the only supported cross-arch path (x86_64 on an arm64 host, executed
+    through the Rosetta ``arch -x86_64`` wrapper -- function-level evidence only)
+    and ``"unavailable"`` otherwise.  ``engine_ready`` overrides the
+    macOS/codesign check for host-simulation tests; production callers leave it
+    unset.  There is no reverse (arm64-on-x86_64) path, so that combination is
+    unavailable.  ``capabilities.probe``/``contract``, :func:`_command` and
+    :func:`run` all read this helper instead of re-checking
+    ``sys.platform``/host arch themselves.
+    """
+
+    ready = available() if engine_ready is None else bool(engine_ready)
+    if not ready:
+        return "unavailable"
+    host = normalize_arch(host_machine if host_machine is not None else _host_arch())
+    target = normalize_arch(arch)
+    if not host or not target:
+        return "unavailable"
+    if target == host:
+        return "native_run"
+    if host == "arm64" and target == "x86_64":
+        return "emulated_run"
+    return "unavailable"
+
+
+def function_level_only(
+    arch: str,
+    *,
+    host_machine: str | None = None,
+    engine_ready: bool | None = None,
+) -> bool:
+    """Whether executing *arch* is only function-level evidence (Rosetta path)."""
+
+    return execution_tier(
+        arch, host_machine=host_machine, engine_ready=engine_ready,
+    ) == "emulated_run"
+
+
 def supports_arch(arch: str, *, host_machine: str | None = None) -> bool:
     """Whether the local Mach-O execution path can run a binary of *arch*.
 
@@ -53,11 +99,9 @@ def supports_arch(arch: str, *, host_machine: str | None = None) -> bool:
     (arm64-on-x86_64) execution path, so that combination is False.
     """
 
-    host = normalize_arch(host_machine if host_machine is not None else _host_arch())
-    target = normalize_arch(arch)
-    if not host or not target:
-        return False
-    return target == host or (host == "arm64" and target == "x86_64")
+    return execution_tier(
+        arch, host_machine=host_machine, engine_ready=True,
+    ) != "unavailable"
 
 
 def available() -> bool:
@@ -79,7 +123,9 @@ def _resign(path: Path) -> str | None:
 
 
 def _command(path: Path, arch: str) -> list[str]:
-    if arch == "x86_64" and _host_arch() == "arm64":
+    # The Rosetta wrapper decision comes from the shared execution-tier helper;
+    # no host/arch conditional is duplicated here.
+    if execution_tier(arch) == "emulated_run":
         return ["/usr/bin/arch", "-x86_64", str(path)]
     return [str(path)]
 
@@ -98,6 +144,23 @@ def run(
         evidence.verdict = "unavailable"
         evidence.limitations.append("native Mach-O execution requires a macOS host with codesign")
         return evidence
+    tier = execution_tier(arch)
+    if tier == "unavailable":
+        evidence.tier = "unavailable"
+        evidence.verdict = "unavailable"
+        evidence.limitations.append(
+            f"host {_host_arch()} cannot execute macho/{normalize_arch(arch)}: "
+            "no native or Rosetta cross-arch path"
+        )
+        return evidence
+    if tier == "emulated_run":
+        # The Rosetta cross-arch path runs the candidate under ISA translation
+        # with the synthetic capacity probe: function-level evidence only.
+        evidence.limitations.append(
+            "Rosetta cross-arch execution (host arm64 -> target x86_64): "
+            "function-level evidence only, not native host execution; the "
+            "external PoC runner remains unavailable for this pair."
+        )
     if capacity <= 0:
         evidence.tier = "unavailable"
         evidence.verdict = "unavailable"

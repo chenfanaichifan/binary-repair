@@ -1,7 +1,11 @@
 """The deterministic repair matrix is a single source of truth."""
 from __future__ import annotations
 
+import platform
+import sys
 from types import SimpleNamespace
+
+import pytest
 
 from app.services.repair_matrix import (
     DISPOSITIONS,
@@ -13,10 +17,12 @@ from app.services.repair_matrix import (
     STRATEGY_PROFILES,
     is_repairable,
     matrix_payload,
+    measured_contract_capabilities,
     repair_cell,
     resolve_profile,
     supported_pairs,
 )
+from app.services.runtime import capabilities
 
 
 def _container(fmt: str, arch: str, bits: int | None, endian: str = "little"):
@@ -174,3 +180,116 @@ def test_matrix_payload_reports_untested_strategies_honestly():
     assert untested["elf/x86_64"] == ["immediate"]
     assert untested["elf/i386"] == []
     assert untested["pe/x86_64"] == ["immediate"]
+
+
+# ------------------------------------------------- unified capability contract
+
+
+def _expected_declared_tier(cell) -> str:
+    if "native_run" in cell.runtime_tiers:
+        return "native_run"
+    if "emulated_run" in cell.runtime_tiers:
+        return "emulated_run"
+    return "unavailable"
+
+
+def test_matrix_payload_exposes_contract_capabilities_for_every_cell():
+    payload = matrix_payload()
+    contracts = payload["contract_capabilities"]
+    assert set(contracts) == {cell.key for cell in REPAIR_CELLS}
+    required = {"cell_key", *capabilities.CONTRACT_FIELDS, "declared_available"}
+    for cell in REPAIR_CELLS:
+        entry = contracts[cell.key]
+        assert set(entry) == required, cell.key
+        assert entry["cell_key"] == cell.key
+        contract = capabilities.contract(cell.container, cell.arch)
+        assert {
+            field: entry[field] for field in capabilities.CONTRACT_FIELDS
+        } == contract, cell.key
+        assert entry["declared_tier"] == _expected_declared_tier(cell)
+        assert entry["declared_available"] == (
+            entry["measured_tier"] == entry["declared_tier"]
+        )
+    assert payload["contract_capabilities"] == measured_contract_capabilities()
+    assert str(payload).isascii()
+
+
+def test_contract_consistency_covers_all_repair_cells():
+    """No silent mismatch: measured tier is declared, or the gap has a reason."""
+
+    contracts = matrix_payload()["contract_capabilities"]
+    for cell in REPAIR_CELLS:
+        entry = contracts[cell.key]
+        assert entry["measured_tier"] in {
+            "native_run", "emulated_run", "unavailable",
+        }, cell.key
+        assert entry["declared_tier"] in {
+            "native_run", "emulated_run", "unavailable",
+        }, cell.key
+        if entry["measured_tier"] in cell.runtime_tiers:
+            assert entry["declared_tier"] in cell.runtime_tiers, cell.key
+            continue
+        # A declared tier that this host cannot measure must be disclosed.
+        assert entry["reason"].strip(), cell.key
+        assert entry["declared_tier"] in entry["reason"], cell.key
+        if entry["measured_tier"] == "unavailable":
+            assert entry["available"] is False, cell.key
+            assert "unavailable" in entry["reason"], cell.key
+
+
+def test_declared_runtime_tiers_remain_unchanged_by_the_contract():
+    payload = matrix_payload()
+    assert payload["runtime_tiers"] == dict(RUNTIME_TIERS)
+    for row, cell in zip(payload["cells"], REPAIR_CELLS):
+        assert row["runtime_tiers"] == list(cell.runtime_tiers), cell.key
+        assert cell.runtime_tiers, cell.key
+
+
+def test_no_cell_claims_a_tier_the_contract_declares_unavailable():
+    contracts = matrix_payload()["contract_capabilities"]
+    for row in matrix_payload()["cells"]:
+        key = f"{row['container']}/{row['arch']}/{row['bits']}/{row['endian']}"
+        entry = contracts[key]
+        if entry["measured_tier"] == "unavailable":
+            # the declared tier is still listed (declarations remain), but the
+            # contract row marks it unavailable with a reason, never as a claim
+            assert entry["available"] is False
+            assert entry["poc_available"] is False
+            assert entry["emulated_available"] is False
+            assert entry["reason"].strip()
+
+
+def test_matrix_payload_contract_fail_safe(monkeypatch):
+    def _boom(*args, **kwargs):  # noqa: ANN001
+        raise RuntimeError("contract exploded")
+
+    monkeypatch.setattr(capabilities, "contract", _boom)
+    payload = matrix_payload()
+    contracts = payload["contract_capabilities"]
+    assert set(contracts) == {cell.key for cell in REPAIR_CELLS}
+    for cell in REPAIR_CELLS:
+        entry = contracts[cell.key]
+        assert entry["cell_key"] == cell.key
+        assert entry["declared_tier"] == _expected_declared_tier(cell)
+        assert entry["measured_tier"] == "unavailable"
+        assert entry["available"] is False
+        assert entry["poc_available"] is False
+        assert "capability contract failed" in entry["reason"]
+    assert str(payload).isascii()
+
+
+@pytest.mark.skipif(
+    not (sys.platform == "darwin"
+         and platform.machine().lower() in {"arm64", "aarch64"}),
+    reason="the arm64 macOS host is the measured host",
+)
+def test_arm64_macos_macho_x86_64_contract_discloses_declared_tier_gap():
+    entry = matrix_payload()["contract_capabilities"]["macho/x86_64/64/little"]
+    assert entry["declared_tier"] == "native_run"
+    assert entry["measured_tier"] == "emulated_run"
+    assert entry["declared_available"] is False
+    assert entry["poc_available"] is False
+    assert entry["emulated_available"] is True
+    assert "declared native_run is unavailable" in entry["reason"]
+    assert "function-level" in entry["reason"]
+    assert "external PoC is unavailable" in entry["reason"]
