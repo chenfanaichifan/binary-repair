@@ -812,7 +812,7 @@ _NO_CELL = _NoCell()
 
 
 # ---------------------------------------------------------------------------
-# Capacity-check rewrite seam (task B engine; the Lead wires the full path).
+# Reviewed capacity-check rewrite (Lead-owned engine + shared gate tail).
 # ---------------------------------------------------------------------------
 
 def _capacity_engine():
@@ -820,24 +820,128 @@ def _capacity_engine():
 
     The engine lives in its own optional module, so the import stays lazy: the
     pipeline remains importable without it and tests can substitute the
-    returned callable.  The Lead's capacity integration runs this engine and
-    finishes the candidate through :func:`_finish_capacity`.
+    returned callable.
     """
     from app.services.repair.capacity import repair_capacity_confusion
 
     return repair_capacity_confusion
 
 
-# TODO(lead-capacity): the Lead-defined ``_finish_capacity(...)`` hook lands
-# here (the ``_attempt_capacity``/``_finish_capacity`` names are reserved for
-# it).  It calls ``finish_candidate(..., requested_strategy="capacity",
-# rewrite_actions=<engine action dicts>, capacity=cap_report.to_dict())`` with an
-# empty analyzer sink list; ``finish_candidate`` then derives strategy
-# ``capacity``/mode ``capacity-check``, selects the declared
-# ``native_poc_rewrite`` profile and the unified gate re-derives every rewrite
-# action from the original/candidate bytes.  Without a PoC/regression manifest
-# there is no runtime evidence, so the outcome stays not_verified/inconclusive
-# and never verified_patch.
+def _capacity_payload(cap_report: Any) -> dict[str, Any]:
+    """Canonical capacity payload for the unified gate.
+
+    Starts from the engine's own ``to_dict()`` and pins the exact action list
+    the gate re-derives from the original/candidate bytes.
+    """
+    payload: dict[str, Any] = {}
+    if hasattr(cap_report, "to_dict"):
+        try:
+            candidate = cap_report.to_dict()
+        except Exception:  # noqa: BLE001 - report rendering must not hide bytes
+            candidate = None
+        if isinstance(candidate, dict):
+            payload.update(candidate)
+    actions: list[dict[str, Any]] = []
+    for item in getattr(cap_report, "actions", []) or []:
+        if hasattr(item, "to_dict"):
+            actions.append(dict(item.to_dict()))
+        elif isinstance(item, dict):
+            actions.append(dict(item))
+    payload["actions"] = actions
+    payload.setdefault("sites", [])
+    payload.setdefault("message_actions", [])
+    if not isinstance(payload.get("limitations"), list):
+        payload["limitations"] = [str(payload["limitations"])]
+    return payload
+
+
+def _finish_capacity(
+    data: bytes,
+    container: ContainerInfo,
+    patched: bytes,
+    report: UnifiedBinaryReport,
+    actions: list[dict[str, Any]],
+    payload: dict[str, Any],
+    *,
+    requested_strategy: str,
+    verify: bool,
+    allow_static_only: bool,
+    poc_manifest: dict[str, Any] | None,
+) -> RepairOutcome:
+    """Gate one capacity candidate through the shared reparse/evidence tail.
+
+    ``finish_candidate`` derives strategy ``capacity``/mode ``capacity-check``
+    from the action kind, keeps the runtime oracle out of this profile (the
+    rewrites have no stack/Unicorn execution model), selects the declared
+    ``native_poc_rewrite`` profile and makes the unified gate re-derive every
+    rewrite action from the original/candidate bytes.  Without a PoC/regression
+    manifest there is no runtime evidence, so the result stays
+    ``not_verified``/inconclusive and never ``verified_patch``.
+    """
+    return finish_candidate(
+        data,
+        container,
+        patched,
+        [],
+        actions,
+        report=report,
+        requested_strategy=requested_strategy,
+        verify=verify,
+        allow_static_only=allow_static_only,
+        poc_manifest=poc_manifest,
+        rewrite_actions=actions,
+        capacity=payload,
+    )
+
+
+def _attempt_capacity(
+    data: bytes,
+    container: ContainerInfo,
+    *,
+    requested_strategy: str,
+    verify: bool,
+    allow_static_only: bool,
+    poc_manifest: dict[str, Any] | None,
+) -> tuple[RepairOutcome | None, list[str]]:
+    """Try the reviewed duplicated-capacity-check rewrite.
+
+    Returns ``(outcome, diagnostics)``; ``outcome`` is ``None`` when the engine
+    found no reviewed site (fail-closed) and the caller keeps its own report.
+    """
+    try:
+        engine = _capacity_engine()
+    except Exception as exc:  # noqa: BLE001 - optional engine must not crash the pipeline
+        return None, [f"capacity engine unavailable: {type(exc).__name__}: {exc}"]
+    try:
+        patched, cap_report = engine(data)
+    except Exception as exc:  # noqa: BLE001 - malformed input is evidence, not a crash
+        return None, [f"capacity engine failed: {type(exc).__name__}: {exc}"]
+    if patched is None:
+        return None, [
+            str(item) for item in (getattr(cap_report, "limitations", None) or [])
+            if str(item).strip()
+        ]
+    payload = _capacity_payload(cap_report)
+    actions = [dict(item) for item in payload.get("actions", []) if isinstance(item, dict)]
+    if not actions:
+        return None, ["capacity engine produced a candidate without rewrite actions"]
+    report = _base_report(data, container)
+    report.mode = "capacity-check"
+    report.strategy = "capacity"
+    report.findings = [
+        dict(site) for site in payload.get("sites", []) if isinstance(site, dict)
+    ]
+    report.limitations = [
+        str(item) for item in payload.get("limitations", [])
+        if str(item).strip() and str(item) not in report.limitations
+    ]
+    return _finish_capacity(
+        data, container, patched, report, actions, payload,
+        requested_strategy=requested_strategy,
+        verify=verify,
+        allow_static_only=allow_static_only,
+        poc_manifest=poc_manifest,
+    ), []
 
 
 def repair_any(
@@ -907,13 +1011,29 @@ def repair_any(
         return RepairOutcome(None, report)
 
     if fmt == "elf" and arch == "x86_64":
-        # TODO(lead-capacity): a requested ``strategy == "capacity"`` (and the
-        # legacy-engine no-candidate fallback) runs ``_capacity_engine()`` here
-        # and finishes the candidate through ``_finish_capacity(...)``; the
-        # gate then declares profile ``native_poc_rewrite`` with the engine's
-        # rewrite actions, the cell payload and the PoC manifest as external
-        # runtime evidence.  A candidate without that evidence must stay
-        # not_verified/inconclusive (never verified_patch).
+        # The reviewed duplicated-capacity-check rewrite has its own engine and
+        # evidence profile: it is selected explicitly, or tried as the
+        # fail-closed fallback when the legacy immediate engine finds nothing.
+        # Its only runtime evidence is the caller-supplied PoC/regression
+        # manifest executed by a native/emulated guest; without that evidence
+        # the gate stays inconclusive (never verified_patch).
+        if strategy == "capacity":
+            cap_outcome, diagnostics = _attempt_capacity(
+                data, container,
+                requested_strategy="capacity", verify=verify,
+                allow_static_only=allow_static_only, poc_manifest=poc_manifest,
+            )
+            if cap_outcome is not None:
+                return cap_outcome
+            report.supported = False
+            report.error = (
+                diagnostics[-1] if diagnostics
+                else "no reviewed capacity-check divergence was found"
+            )
+            report.limitations = list(diagnostics) or [report.error]
+            report.universal["reason"] = report.error
+            _set_disposition(report, "analysis_only")
+            return RepairOutcome(None, report)
         # The legacy ELF x86-64 engine repairs the old syscall fixture.  The v4/v5
         # generic analyzer owns guard/immediate repair for the new ELF x86-64
         # fixture; route those sinks through the container-neutral writer so the
@@ -945,6 +1065,21 @@ def repair_any(
             _set_disposition(report, "unsupported")
             return RepairOutcome(None, report)
         if patched is None:
+            # Legacy engine found nothing: fall back to the reviewed capacity
+            # rewrite (the only deterministic capability that covers a
+            # runtime-length copy behind an inlined duplicated range check).
+            if strategy == "auto" and plans_strategy(cell, "capacity"):
+                cap_outcome, diagnostics = _attempt_capacity(
+                    data, container,
+                    requested_strategy="capacity", verify=verify,
+                    allow_static_only=allow_static_only,
+                    poc_manifest=poc_manifest,
+                )
+                if cap_outcome is not None:
+                    return cap_outcome
+                for text in diagnostics:
+                    if text not in report.limitations:
+                        report.limitations.append(text)
             report.supported = False
             report.error = report.limitations[-1] if report.limitations else "unsupported"
             report.universal["reason"] = report.error
