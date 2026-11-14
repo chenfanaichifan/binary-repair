@@ -514,6 +514,22 @@ def _generic_repair(
     )
 
 
+#: Strategy name spellings the codebase already treats as equivalent (the
+#: legacy quick-repair report uses ``strict-template``, some callers pass the
+#: underscore form).
+STRATEGY_ALIASES: dict[str, frozenset[str]] = {
+    "strict-template": frozenset({"strict-template", "strict_template"}),
+    "strict_template": frozenset({"strict-template", "strict_template"}),
+}
+
+
+def _strategy_honored(requested: str, produced: str) -> bool:
+    """Whether the produced action set actually is the requested strategy."""
+    if requested == produced:
+        return True
+    return produced in STRATEGY_ALIASES.get(requested, frozenset())
+
+
 def _capacity_payload_capacity(capacity: dict[str, Any] | None) -> int | None:
     """Best-effort capacity value from a reviewed capacity payload."""
     if not isinstance(capacity, dict):
@@ -623,6 +639,21 @@ def finish_candidate(
         report.supported = False
         report.candidate_available = False
         report.error = f"requested strategy {requested_strategy} is not in the repair matrix"
+        _set_disposition(report, "unsupported")
+        return RepairOutcome(None, report)
+
+    requested = str(requested_strategy or "")
+    if strategy_check and requested not in {"", "auto"} and not _strategy_honored(
+        requested, str(report.strategy or "")
+    ):
+        # Honesty about what was produced: a guard request that produced an
+        # immediate patch (or vice versa) is not the requested repair class.
+        report.supported = False
+        report.candidate_available = False
+        report.error = (
+            f"requested strategy {requested} but the produced action set is "
+            f"{report.strategy or 'none'}"
+        )
         _set_disposition(report, "unsupported")
         return RepairOutcome(None, report)
 
@@ -1063,6 +1094,16 @@ def repair_any(
             _set_disposition(report, "invalid")
             return RepairOutcome(None, report)
         report = _from_elf_legacy(container, data, patched, raw, verify=verify)
+        if poc_manifest is not None:
+            # The legacy stack/emulated gate has no external-PoC evidence model;
+            # the manifest is only consumed if the reviewed capacity fallback
+            # below produces a candidate.  Say so explicitly instead of
+            # silently dropping supplied evidence.
+            report.limitations.append(
+                "the supplied PoC manifest cannot be consumed by the legacy "
+                "stack/emulated gate; it is used only by the reviewed capacity "
+                "fallback if that produces a candidate"
+            )
         if strategy != "auto" and (
             report.strategy != strategy or not plans_strategy(cell, strategy)
         ):

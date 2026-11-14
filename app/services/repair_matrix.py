@@ -24,10 +24,6 @@ SINK_CLASSES: dict[str, dict[str, str]] = {
         "strategy": "guard",
         "description": "strcpy/strcat/stpcpy into a analysed destination",
     },
-    "immediate_length": {
-        "strategy": "immediate",
-        "description": "constant length operand of a bounded copy/read/write",
-    },
     "memcpy_length": {
         "strategy": "immediate",
         "description": "constant length operand passed to memcpy/memmove",
@@ -62,6 +58,7 @@ DISPOSITIONS = (
 RUNTIME_TIERS = {
     "native_run": "the repaired candidate executed natively on the host",
     "emulated_run": "the repaired function executed under Unicorn",
+    "unavailable": "no runner/evidence; never a verified success",
     "static_only": "no runtime evidence; never a verified success",
 }
 
@@ -202,14 +199,18 @@ class RepairCell:
 
 
 # Sinks recovered by the container-neutral analyzer and consumed by the generic
-# writer.  The reviewed duplicated-capacity-check rewrite is produced by its own
-# engine and is only planned for the ELF/x86-64 cell below.
-_ANALYZER_SINKS = tuple(
-    sorted(name for name in SINK_CLASSES if name != "capacity_check_mismatch")
-)
+# writer.  The sets are per-architecture because the analyzers have different
+# emission paths (``analyzer._scan_x86_64``, ``analyzer_i386.scan_i386`` and
+# ``analyzer._scan_arm64``); a cell must not advertise a class its analyzer
+# cannot emit.  Container format is irrelevant: the arch dispatch is shared by
+# ELF, PE and Mach-O.
+_I386_ANALYZER_SINKS = ("memcpy_length", "unbounded_copy")
+_X86_64_ANALYZER_SINKS = ("checked_copy", "memcpy_length", "syscall_length",
+                          "unbounded_copy")
+_ARM64_ANALYZER_SINKS = ("checked_copy", "memcpy_length", "unbounded_copy")
 # The ELF/x86-64 cell additionally plans the reviewed capacity-check rewrite;
 # it is the only cell that advertises the ``capacity`` strategy and sink class.
-_ELF_X86_64_SINKS = tuple(sorted(SINK_CLASSES))
+_ELF_X86_64_SINKS = _X86_64_ANALYZER_SINKS + ("capacity_check_mismatch",)
 
 # The deterministic repair matrix.  Only little-endian thin containers are
 # listed; fat Mach-O, 32-bit Mach-O, arm32, riscv, mips, powerpc and big-endian
@@ -222,7 +223,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ANALYZER_SINKS,
+        sink_classes=_I386_ANALYZER_SINKS,
     ),
     RepairCell(
         container="elf",
@@ -240,7 +241,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ANALYZER_SINKS,
+        sink_classes=_ARM64_ANALYZER_SINKS,
     ),
     RepairCell(
         container="pe",
@@ -249,7 +250,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ANALYZER_SINKS,
+        sink_classes=_I386_ANALYZER_SINKS,
     ),
     RepairCell(
         container="pe",
@@ -258,7 +259,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ANALYZER_SINKS,
+        sink_classes=_X86_64_ANALYZER_SINKS,
     ),
     RepairCell(
         container="pe",
@@ -267,7 +268,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ANALYZER_SINKS,
+        sink_classes=_ARM64_ANALYZER_SINKS,
     ),
     RepairCell(
         container="macho",
@@ -276,7 +277,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("native_run",),
-        sink_classes=_ANALYZER_SINKS,
+        sink_classes=_X86_64_ANALYZER_SINKS,
     ),
     RepairCell(
         container="macho",
@@ -285,13 +286,32 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("native_run",),
-        sink_classes=_ANALYZER_SINKS,
+        sink_classes=_ARM64_ANALYZER_SINKS,
     ),
 )
 
+#: Strategies actually exercised by the committed fixture corpus / test
+#: evidence, per cell key.  This is a measurement, not a claim: any declared
+#: strategy missing here is reported as ``untested_strategies`` in the matrix
+#: payload instead of being silently presented as proven.
+FIXTURE_STRATEGY_EVIDENCE: dict[str, tuple[str, ...]] = {
+    # fixtures/elf/vuln-strcpy-x86.elf + fixtures/elf/vuln-memcpy-x86.elf
+    "elf/i386/32/little": ("guard", "immediate"),
+    # artifacts/vuln-elf (strict template), fixtures/elf/vuln-strcpy-x86_64.elf
+    # (guard), fixtures/elf/vuln-capacity-confusion-x86_64.elf (capacity)
+    "elf/x86_64/64/little": ("strict-template", "guard", "capacity"),
+    "elf/arm64/64/little": ("guard",),
+    "pe/i386/32/little": ("guard",),
+    "pe/x86_64/64/little": ("guard",),
+    "pe/arm64/64/little": ("guard",),
+    "macho/x86_64/64/little": ("guard",),
+    "macho/arm64/64/little": ("guard",),
+}
+
 _NON_GOALS = (
-    "heap, global and other non-imported copy sinks outside the reviewed "
-    "duplicated capacity-check rewrite",
+    "copy sinks whose destination capacity is not recoverable by the "
+    "same-function analysis (dynamic sizes, pointer+offset aliases, "
+    "cross-function allocations)",
     "sprintf/format-string expansion, use-after-free and other integer/loop defects",
     "arm32, riscv, mips, powerpc and big-endian machine-code repair",
     "32-bit Mach-O and fat Mach-O rewriting",
@@ -381,9 +401,23 @@ def profile_evidence_sources(profile: str) -> tuple[str, ...]:
 
 def matrix_payload() -> dict[str, Any]:
     """English-ASCII coverage payload for ``GET /api/binary/matrix`` and docs."""
+    cells: list[dict[str, Any]] = []
+    for cell in REPAIR_CELLS:
+        row = cell.to_dict()
+        exercised = tuple(FIXTURE_STRATEGY_EVIDENCE.get(cell.key, ()))
+        row["fixture_strategies"] = [
+            strategy for strategy in cell.strategies if strategy in exercised
+        ]
+        row["untested_strategies"] = [
+            strategy for strategy in cell.strategies if strategy not in exercised
+        ]
+        cells.append(row)
     return {
         "schema_version": SCHEMA_VERSION,
-        "cells": [cell.to_dict() for cell in REPAIR_CELLS],
+        "cells": cells,
+        "fixture_strategy_evidence": {
+            key: list(evidence) for key, evidence in FIXTURE_STRATEGY_EVIDENCE.items()
+        },
         "sink_classes": {name: dict(meta) for name, meta in SINK_CLASSES.items()},
         "dispositions": list(DISPOSITIONS),
         "runtime_tiers": dict(RUNTIME_TIERS),

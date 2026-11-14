@@ -25,8 +25,13 @@ from types import SimpleNamespace
 
 import pytest
 
-from app.services.binary_pipeline import _base_report, _evidence_profile, finish_candidate
-from app.services.binary_pipeline import repair_any
+from app.services.binary_pipeline import (
+    _base_report,
+    _evidence_profile,
+    _strategy_honored,
+    finish_candidate,
+    repair_any,
+)
 from app.services.containers import detect_container
 from app.services.repair_matrix import (
     EVIDENCE_PROFILES,
@@ -572,3 +577,28 @@ def test_heap_destination_does_not_use_the_stack_oracle(monkeypatch):
     packet = outcome.report.verification["packet"]
     assert packet["scope"]["profile"] == "native_poc"
     assert packet["runtime"] is None
+
+
+def test_requested_strategy_must_match_the_produced_action_set():
+    # A guard request that produced immediate actions (or vice versa) must fail
+    # closed instead of silently reporting the other repair class as honored.
+    assert _strategy_honored("guard", "guard") is True
+    assert _strategy_honored("immediate", "immediate") is True
+    assert _strategy_honored("guard", "immediate") is False
+    assert _strategy_honored("immediate", "guard") is False
+    assert _strategy_honored("strict-template", "strict_template") is True
+    assert _strategy_honored("auto", "guard") is False  # auto is filtered earlier
+
+
+def test_guard_request_that_produces_immediate_actions_is_rejected():
+    if not PE.is_file():
+        pytest.skip("PE fixture missing")
+    data = PE.read_bytes()
+    outcome = repair_any(data, strategy="immediate")
+    # The PE fixture only has an unbounded-copy sink, so the engine produces a
+    # guard action while "immediate" was requested: unsupported, no candidate.
+    assert outcome.candidate is None
+    assert outcome.verified is False
+    assert outcome.report.disposition == "unsupported"
+    assert "requested strategy immediate" in (outcome.report.error or "")
+    assert "guard" in (outcome.report.error or "")

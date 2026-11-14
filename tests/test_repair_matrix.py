@@ -6,7 +6,9 @@ from types import SimpleNamespace
 from app.services.repair_matrix import (
     DISPOSITIONS,
     EVIDENCE_PROFILES,
+    FIXTURE_STRATEGY_EVIDENCE,
     REPAIR_CELLS,
+    RUNTIME_TIERS,
     SINK_CLASSES,
     STRATEGY_PROFILES,
     is_repairable,
@@ -110,3 +112,65 @@ def test_resolve_profile_never_uses_the_stack_oracle_for_non_stack_sinks():
     assert resolve_profile(destination_kind="global") == "native_poc"
     assert resolve_profile(has_external_poc=True) == "native_poc"
     assert resolve_profile(capacity=True) == "native_poc_rewrite"
+
+
+def test_no_dead_sink_classes_are_declared():
+    # immediate_length was declared historically but no analyzer path emits it
+    # (the legacy engine reports read/write length findings separately), so the
+    # declaration must not claim an unimplemented capability.
+    assert "immediate_length" not in SINK_CLASSES
+    assert set(SINK_CLASSES) == {
+        "unbounded_copy", "memcpy_length", "syscall_length", "checked_copy",
+        "capacity_check_mismatch",
+    }
+
+
+def test_cells_advertise_only_sinks_their_analyzer_can_emit():
+    # Measured from the analyzer emission paths (arch dispatch is shared by
+    # ELF/PE/Mach-O): x86_64 emits guard/immediate/syscall/checked, i386 emits
+    # guard/immediate only, and arm64 emits guard/immediate/checked.
+    expected = {
+        "i386": {"unbounded_copy", "memcpy_length"},
+        "x86_64": {"unbounded_copy", "memcpy_length", "syscall_length", "checked_copy"},
+        "arm64": {"unbounded_copy", "memcpy_length", "checked_copy"},
+    }
+    for cell in REPAIR_CELLS:
+        want = set(expected[cell.arch])
+        if (cell.container, cell.arch) == ("elf", "x86_64"):
+            want = want | {"capacity_check_mismatch"}
+        assert set(cell.sink_classes) == want, cell.key
+
+
+def test_runtime_tier_vocabulary_includes_unavailable():
+    # The runtime evidence modules report tier="unavailable"; the matrix must
+    # declare that vocabulary instead of silently dropping it.
+    assert "unavailable" in RUNTIME_TIERS
+    assert "never a verified success" in RUNTIME_TIERS["unavailable"]
+    assert set(RUNTIME_TIERS) >= {"native_run", "emulated_run", "static_only"}
+
+
+def test_matrix_payload_reports_untested_strategies_honestly():
+    payload = matrix_payload()
+    evidence = payload["fixture_strategy_evidence"]
+    assert evidence == {
+        key: list(value) for key, value in FIXTURE_STRATEGY_EVIDENCE.items()
+    }
+    for row in payload["cells"]:
+        key = f"{row['container']}/{row['arch']}/{row['bits']}/{row['endian']}"
+        exercised = FIXTURE_STRATEGY_EVIDENCE.get(key, ())
+        assert set(row["fixture_strategies"]) == {
+            strategy for strategy in row["strategies"] if strategy in exercised
+        }, key
+        assert set(row["untested_strategies"]) == {
+            strategy for strategy in row["strategies"] if strategy not in exercised
+        }, key
+        # Nothing is claimed as tested unless fixture evidence exists for it.
+        assert not set(row["fixture_strategies"]) - set(exercised), key
+    untested = {
+        f"{row['container']}/{row['arch']}": row["untested_strategies"]
+        for row in payload["cells"]
+    }
+    # The immediate strategy has no exercised fixture outside elf/i386.
+    assert untested["elf/x86_64"] == ["immediate"]
+    assert untested["elf/i386"] == []
+    assert untested["pe/x86_64"] == ["immediate"]
