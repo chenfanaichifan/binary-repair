@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+  schedule:
+    # Nightly full gate.  The release-nightly-gate job stays skipped unless the
+    # BINARYREPAIR_RELEASE_GATE repository variable is set to "true" (see that
+    # job's comment); the schedule alone does not claim a nightly run happened.
+    - cron: "0 3 * * *"
 
 permissions:
   contents: read
@@ -45,3 +51,54 @@ jobs:
         run: python scripts/verify_coverage_gate.py --static-only
       - name: Coverage gate + capability audit tests
         run: python -m pytest -q tests/test_coverage_gate.py tests/test_capability_audit.py
+
+  release-gate-pr:
+    # Fast PR cost layer (scripts/release_gate.py --pr): static coverage gate +
+    # measured claims/measurement diff + targeted pytest subset.  This is not a
+    # release claim: --release additionally needs the local probe gate, the
+    # real-guest acceptance capture, meta-audit/invariants, the provider-matrix
+    # artifact and the full suite.  The gate exits non-zero on any violation.
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Staged PR gate
+        run: python scripts/release_gate.py --pr --json
+
+  release-nightly-gate:
+    # Full release/nightly gate (scripts/release_gate.py --release / --nightly).
+    # It requires a self-hosted runner with the Lima VM `binaryrepair`
+    # (x86-64 guest execution through qemu-user/binfmt) and the real PoC
+    # differential fixtures.  No such runner is guaranteed for this repository,
+    # so the job is *inert by default*: the repository variable
+    # BINARYREPAIR_RELEASE_GATE must be set to "true" by an operator who has
+    # provisioned the runner.  This file does not claim the job has ever run;
+    # a skipped job is not evidence.  When enabled, schedule/manual runs call
+    # --nightly, which additionally captures a fresh real-Lima acceptance run
+    # into a temporary directory (repository artifacts are never rewritten) and
+    # degrades to an explicit `unavailable` check when no guest runner exists.
+    if: ${{ vars.BINARYREPAIR_RELEASE_GATE == 'true' }}
+    runs-on: [self-hosted, lima]
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Release gate (push / pull request / manual)
+        if: ${{ github.event_name != 'schedule' }}
+        run: python scripts/release_gate.py --release --json
+      - name: Nightly gate (release checks + fresh real-Lima acceptance capture)
+        if: ${{ github.event_name == 'schedule' }}
+        run: python scripts/release_gate.py --nightly --json
