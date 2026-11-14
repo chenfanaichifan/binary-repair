@@ -1381,7 +1381,11 @@ def _evidence_runner(argv, cwd, timeout):
     return RunResult(0, "", "")
 
 
-def test_build_evidence_records_provenance(tmp_path: Path) -> None:
+def test_build_evidence_records_provenance(tmp_path: Path,
+                                           monkeypatch: pytest.MonkeyPatch) -> None:
+    # Keep this test host-independent: CI's GITHUB_ACTIONS env would otherwise
+    # legitimately omit the "github_actions not_run" marker.
+    monkeypatch.setattr(gate, "_github_runner", lambda: None)
     _write_provider_coverage(tmp_path)
     _write_acceptance(Paths(tmp_path).acceptance)
     summary = gate.GateSummary(
