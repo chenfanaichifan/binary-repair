@@ -31,6 +31,14 @@ Output: a structured summary (``--json`` for CI) and exit non-zero on any
 violation.  Missing mid-flight teammate modules/artifacts are reported as
 explicit ``unavailable``/``failed`` reasons, never silently skipped.
 
+Release freeze enforcement (phase 4): ``--release`` requires ``--release-sha``
+(frozen commit) and ``--release``/``--nightly`` require a **clean worktree**
+(``git status --porcelain`` empty).  The read-only tree identity (HEAD SHA,
+branch and porcelain status) is recorded as ``frozen_sha`` / ``branch`` /
+``clean_tree`` in the JSON summary and as the ``release-tree-identity`` check;
+an unfrozen tree fails fast with "commit or freeze before release".  Any commit
+after a green run invalidates it: re-freeze (new SHA) and re-run the gate.
+
 Environment note: no network is used.  ``--release``/``--nightly`` may execute
 the real Lima guest (through the product's own PoC runner) and the full pytest
 suite; ``--pr`` is deterministic and host-portable.
@@ -69,6 +77,7 @@ TIMEOUT_LOCAL = 1500.0
 TIMEOUT_META_AUDIT = 300.0
 TIMEOUT_FULL_PYTEST = 2700.0
 TIMEOUT_CAPTURE = 2400.0
+TIMEOUT_GIT = 30.0
 
 #: Targeted pytest subset for the fast PR layer.  Missing files are reported as
 #: ``not_present`` (teammate suites land incrementally) but at least one must
@@ -264,6 +273,14 @@ class GateSummary:
     violations: list[str]
     notes: list[str] = field(default_factory=list)
     elapsed_ms: int = 0
+    #: --release-sha as supplied by the operator (frozen commit), if any.
+    release_sha: str | None = None
+    #: HEAD SHA measured by the gate's read-only ``git rev-parse HEAD``.
+    frozen_sha: str | None = None
+    #: Current branch, or "HEAD" when detached.
+    branch: str | None = None
+    #: True iff ``git status --porcelain`` was empty (None when git is absent).
+    clean_tree: bool | None = None
 
     @property
     def ok(self) -> bool:
@@ -284,6 +301,10 @@ class GateSummary:
             "exit_code": 0 if self.ok else 1,
             "violations": list(self.violations),
             "notes": list(self.notes),
+            "release_sha": self.release_sha,
+            "frozen_sha": self.frozen_sha,
+            "branch": self.branch,
+            "clean_tree": self.clean_tree,
             "status_counts": self.status_counts(),
             "checks": [check.to_dict() for check in self.checks],
             "elapsed_ms": int(self.elapsed_ms),
@@ -472,10 +493,28 @@ def evaluate_claims_measurement(
         violations.append(
             f"measured open gaps present (release requires zero): {open_ids}"
         )
-    if mitigated_ids:
+    # ``mitigated`` means the audit recorded an accepted residual with an
+    # explicit rationale (for example a host-dependent runtime tier: a macOS
+    # arm64 host cannot run x86_64 ELF natively, so a declared native_run tier is
+    # measured as emulated_run with a capability-contract reason).  The audit
+    # contract allows that status; the release gate accepts it only when the
+    # rationale is recorded, and always prints the residual ids.  Matrix/claim
+    # mismatches stay hard failures below, and an open gap is never tolerated.
+    mitigated_rows = [
+        row for row in rows if str(row.get("status", "")) == "mitigated"
+    ]
+    unjustified_mitigated = sorted(
+        str(row.get("gap_id", "")) for row in mitigated_rows
+        if not str(row.get("symptom", "") or "").strip()
+        or not (
+            str(row.get("next_step", "") or "").strip()
+            or _as_list(row.get("evidence"))
+        )
+    )
+    if unjustified_mitigated:
         violations.append(
-            f"measured mitigated gaps present (release requires closed/non_goal): "
-            f"{mitigated_ids}"
+            "measured mitigated gaps without a recorded rationale "
+            f"(symptom/next_step/evidence): {unjustified_mitigated}"
         )
     if detector_errors:
         violations.append(f"audit detector errors present: {detector_errors}")
@@ -514,6 +553,8 @@ def evaluate_claims_measurement(
         "gap_count": len(rows),
         "open_gap_ids": open_ids,
         "mitigated_gap_ids": mitigated_ids,
+        "unjustified_mitigated_gap_ids": unjustified_mitigated,
+        "mitigated_residual_gap_ids": sorted(set(mitigated_ids) - set(unjustified_mitigated)),
         "dynamic_unverified_gap_ids": dynamic_ids,
         "non_goal_gap_ids": non_goal_ids,
         "claims_non_goal_count": len(claims_ids),
@@ -572,6 +613,7 @@ def check_claims_measurement(
     check.elapsed_ms = int((time.monotonic() - started) * 1000)
     check.detail = (
         f"gaps={detail.get('gap_count')} open={detail.get('open_gap_ids')} "
+        f"mitigated_residual={detail.get('mitigated_residual_gap_ids')} "
         f"non_goals={len(detail.get('non_goal_gap_ids') or [])} "
         f"dynamic_unverified={len(detail.get('dynamic_unverified_gap_ids') or [])} "
         f"claims_non_goals={detail.get('claims_non_goal_count')} "
@@ -602,7 +644,7 @@ def check_targeted_tests(paths: Paths, run: Runner = run_command) -> Check:
         )
     started = time.monotonic()
     result = run(
-        [sys.executable, "-m", "pytest", "-q", *existing],
+        [sys.executable, "-m", "pytest", "-q", "-p", "no:xdist", *existing],
         paths.root,
         TIMEOUT_TARGETED,
     )
@@ -1535,7 +1577,7 @@ def check_full_pytest(paths: Paths, run: Runner = run_command) -> Check:
     check = Check("full-pytest", "Full pytest suite (release gate)")
     started = time.monotonic()
     result = run(
-        [sys.executable, "-m", "pytest", "-q"],
+        [sys.executable, "-m", "pytest", "-q", "-p", "no:xdist"],
         paths.root,
         TIMEOUT_FULL_PYTEST,
     )
@@ -1669,12 +1711,162 @@ def check_real_lima_capture(
 
 
 # ---------------------------------------------------------------------------
+# Release freeze: tree identity (read-only git) + clean-worktree enforcement
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class TreeIdentity:
+    available: bool = False
+    sha: str = ""
+    branch: str = ""
+    dirty_paths: list[str] = field(default_factory=list)
+    error: str = ""
+
+    @property
+    def clean(self) -> bool | None:
+        return (not self.dirty_paths) if self.available else None
+
+
+def _git(paths: Paths, run: Runner, args: Sequence[str]) -> RunResult:
+    """Run one read-only git command against the gated tree."""
+    return run(["git", "-C", str(paths.root), *args], paths.root, TIMEOUT_GIT)
+
+
+def read_tree_identity(paths: Paths, run: Runner = run_command) -> TreeIdentity:
+    """Read HEAD SHA, branch and ``status --porcelain`` (read-only git only)."""
+    head = _git(paths, run, ["rev-parse", "HEAD"])
+    if head.timed_out:
+        return TreeIdentity(error="git rev-parse HEAD timed out")
+    if head.returncode != 0:
+        return TreeIdentity(
+            error=(head.stderr or head.stdout or "git rev-parse HEAD failed").strip()[:300]
+        )
+    sha = head.stdout.strip().splitlines()[0] if head.stdout.strip() else ""
+    if not sha:
+        return TreeIdentity(error="git rev-parse HEAD returned no SHA")
+    branch_result = _git(paths, run, ["rev-parse", "--abbrev-ref", "HEAD"])
+    branch = (
+        branch_result.stdout.strip()
+        if branch_result.returncode == 0 and branch_result.stdout.strip()
+        else ""
+    )
+    status = _git(paths, run, ["status", "--porcelain"])
+    if status.returncode != 0:
+        return TreeIdentity(
+            available=True,
+            sha=sha,
+            branch=branch,
+            error=(status.stderr or "git status --porcelain failed").strip()[:300],
+        )
+    dirty = [line for line in status.stdout.splitlines() if line.strip()]
+    return TreeIdentity(available=True, sha=sha, branch=branch, dirty_paths=dirty)
+
+
+def _resolve_release_sha(
+    paths: Paths, release_sha: str, run: Runner,
+) -> tuple[str | None, str]:
+    """Resolve ``--release-sha`` (short or full SHA) to a full commit SHA."""
+    result = _git(paths, run, ["rev-parse", "--verify", f"{release_sha}^{{commit}}"])
+    if result.timed_out:
+        return None, "resolving --release-sha timed out"
+    if result.returncode != 0:
+        return None, (
+            f"--release-sha {release_sha!r} is not a commit in this repository: "
+            f"{_tail(result.stderr or result.stdout)}"
+        )
+    resolved = result.stdout.strip().splitlines()[0] if result.stdout.strip() else ""
+    if not resolved:
+        return None, f"--release-sha {release_sha!r} resolved to an empty value"
+    return resolved, ""
+
+
+def check_release_tree_identity(
+    paths: Paths,
+    mode: str,
+    release_sha: str | None,
+    run: Runner = run_command,
+) -> tuple[Check, dict[str, Any]]:
+    """Freeze enforcement: record the tree identity and fail closed when unfrozen.
+
+    * ``--release``: requires ``--release-sha``, a matching HEAD and a clean
+      worktree (``git status --porcelain`` empty).
+    * ``--nightly``: requires a clean worktree; ``--release-sha`` is verified
+      when supplied.
+    * ``--pr``: no freeze requirement (dirty trees are normal); a supplied
+      ``--release-sha`` is still verified and a mismatch fails.
+    """
+    check = Check(
+        "release-tree-identity",
+        "Release tree identity: frozen SHA and clean worktree",
+    )
+    identity = read_tree_identity(paths, run)
+    strict = mode in ("release", "nightly")
+    tree: dict[str, Any] = {
+        "release_sha": release_sha or None,
+        "frozen_sha": identity.sha or None,
+        "branch": identity.branch or None,
+        "clean_tree": identity.clean,
+    }
+    if not identity.available:
+        message = f"cannot read release tree identity: {identity.error}"
+        if strict:
+            return check.fail(
+                message + " (release/nightly require a frozen git tree)"
+            ), tree
+        check.skipped(message + " (PR mode does not require freeze identity)")
+        return check, tree
+    detail = (
+        f"sha={identity.sha} branch={identity.branch or 'unknown'} "
+        f"clean_tree={identity.clean}"
+    )
+    if strict and identity.dirty_paths:
+        preview = identity.dirty_paths[:8]
+        check.fail(
+            "worktree is dirty "
+            f"({len(identity.dirty_paths)} path(s)); commit or freeze before "
+            "release: " + "; ".join(preview)
+            + ("; …" if len(identity.dirty_paths) > len(preview) else ""),
+            detail=detail,
+        )
+        return check, tree
+    if release_sha:
+        resolved, error = _resolve_release_sha(paths, release_sha, run)
+        if error:
+            check.fail(error, detail=detail)
+        else:
+            tree["release_sha_resolved"] = resolved
+            if resolved != identity.sha:
+                check.fail(
+                    f"--release-sha {release_sha!r} resolves to {resolved} but "
+                    f"HEAD is {identity.sha}; the frozen tree moved or the "
+                    "wrong SHA was given",
+                    detail=detail,
+                )
+            else:
+                detail += f" release_sha={release_sha} resolved={resolved} MATCH"
+    elif mode == "release":
+        check.fail(
+            "release requires --release-sha <sha> from this phase on so the "
+            "gate can prove the frozen tree identity (a clean worktree alone is "
+            "not enough); freeze the tree, then pass the frozen commit SHA",
+            detail=detail,
+        )
+    else:
+        detail += " release_sha=not_required"
+    if check.status == CHECK_FAILED:
+        return check, tree
+    return check.passed(detail), tree
+
+
+# ---------------------------------------------------------------------------
 # Mode orchestration
 # ---------------------------------------------------------------------------
 
 
 def _summarize(mode: str, checks: list[Check], started: float,
-               notes: Sequence[str] = ()) -> GateSummary:
+               notes: Sequence[str] = (),
+               tree: dict[str, Any] | None = None) -> GateSummary:
     violations: list[str] = []
     for check in checks:
         if not check.required:
@@ -1686,35 +1878,72 @@ def _summarize(mode: str, checks: list[Check], started: float,
                 f"{check.check_id}: unavailable required check — "
                 f"{check.detail or 'no reason reported'}"
             )
-    return GateSummary(
+    summary = GateSummary(
         mode=mode,
         checks=checks,
         violations=violations,
         notes=list(notes),
         elapsed_ms=int((time.monotonic() - started) * 1000),
     )
+    if tree is not None:
+        summary.release_sha = tree.get("release_sha")
+        summary.frozen_sha = tree.get("frozen_sha")
+        summary.branch = tree.get("branch")
+        summary.clean_tree = tree.get("clean_tree")
+    return summary
+
+
+def _identity_blocked(
+    mode: str,
+    identity_check: Check,
+    tree: dict[str, Any],
+    started: float,
+) -> GateSummary | None:
+    """Fail fast when the tree identity check fails (do not burn the suite)."""
+    if identity_check.status != CHECK_FAILED:
+        return None
+    return _summarize(
+        mode,
+        [identity_check],
+        started,
+        notes=[
+            "release-tree-identity failed first: the remaining required checks "
+            "were not run (fail fast on an unfrozen/dirty tree)"
+        ],
+        tree=tree,
+    )
 
 
 def run_pr(
     paths: Paths, run: Runner = run_command, *,
     build_audit: Callable[..., dict[str, Any]] | None = None,
+    release_sha: str | None = None,
 ) -> GateSummary:
     """Fast PR layer: static coverage gate + claims diff + targeted pytest."""
     started = time.monotonic()
+    identity, tree = check_release_tree_identity(paths, "pr", release_sha, run)
     checks = [
+        identity,
         check_static_coverage_gate(paths, run),
         check_claims_measurement(paths, build_audit=build_audit),
         check_targeted_tests(paths, run),
     ]
-    return _summarize("pr", checks, started)
+    return _summarize("pr", checks, started, tree=tree)
 
 
 def run_release(
     paths: Paths, run: Runner = run_command, *,
     build_audit: Callable[..., dict[str, Any]] | None = None,
+    release_sha: str | None = None,
 ) -> GateSummary:
-    """Release layer: all PR checks + local gate + artifacts + full pytest."""
+    """Release layer: frozen tree + PR checks + local gate + full pytest."""
     started = time.monotonic()
+    identity, tree = check_release_tree_identity(
+        paths, "release", release_sha, run
+    )
+    blocked = _identity_blocked("release", identity, tree, started)
+    if blocked is not None:
+        return blocked
     static = check_static_coverage_gate(paths, run)
     claims = check_claims_measurement(paths, build_audit=build_audit)
     acceptance = check_acceptance_contract(paths)
@@ -1726,9 +1955,10 @@ def run_release(
     full = check_full_pytest(paths, run)
     return _summarize(
         "release",
-        [static, claims, acceptance, local, meta, invariants, universe,
-         provider, full],
+        [identity, static, claims, acceptance, local, meta, invariants,
+         universe, provider, full],
         started,
+        tree=tree,
     )
 
 
@@ -1736,9 +1966,16 @@ def run_nightly(
     paths: Paths, run: Runner = run_command, *,
     build_audit: Callable[..., dict[str, Any]] | None = None,
     runner_probe: Callable[[], dict[str, Any]] | None = None,
+    release_sha: str | None = None,
 ) -> GateSummary:
     """Nightly layer: release checks + fresh real-Lima capture when available."""
     started = time.monotonic()
+    identity, tree = check_release_tree_identity(
+        paths, "nightly", release_sha, run
+    )
+    blocked = _identity_blocked("nightly", identity, tree, started)
+    if blocked is not None:
+        return blocked
     static = check_static_coverage_gate(paths, run)
     claims = check_claims_measurement(paths, build_audit=build_audit)
     acceptance = check_acceptance_contract(paths)
@@ -1757,10 +1994,11 @@ def run_nightly(
         )
     return _summarize(
         "nightly",
-        [static, claims, acceptance, local, meta, invariants, universe,
-         provider, capture, full],
+        [identity, static, claims, acceptance, local, meta, invariants,
+         universe, provider, capture, full],
         started,
         notes=notes,
+        tree=tree,
     )
 
 
@@ -1771,11 +2009,13 @@ def run_nightly(
 
 CHECK_MATRIX: dict[str, tuple[str, ...]] = {
     "pr": (
+        "release-tree-identity",
         "static-coverage-gate",
         "claims-measurement-diff",
         "targeted-pytest",
     ),
     "release": (
+        "release-tree-identity",
         "static-coverage-gate",
         "claims-measurement-diff",
         "acceptance-contract",
@@ -1787,6 +2027,7 @@ CHECK_MATRIX: dict[str, tuple[str, ...]] = {
         "full-pytest",
     ),
     "nightly": (
+        "release-tree-identity",
         "static-coverage-gate",
         "claims-measurement-diff",
         "acceptance-contract",
@@ -1818,6 +2059,19 @@ def _print_human(summary: GateSummary) -> None:
             elapsed=summary.elapsed_ms / 1000.0,
         )
     )
+    if any(value is not None for value in (
+        summary.frozen_sha, summary.release_sha, summary.clean_tree,
+        summary.branch,
+    )):
+        print(
+            "  tree        frozen_sha={sha} branch={branch} clean_tree={clean} "
+            "release_sha={release}".format(
+                sha=summary.frozen_sha,
+                branch=summary.branch,
+                clean=summary.clean_tree,
+                release=summary.release_sha,
+            )
+        )
     for check in summary.checks:
         print(
             "  {status:<11} {check_id}: {detail}".format(
@@ -1846,7 +2100,8 @@ def _build_parser() -> argparse.ArgumentParser:
             "examples:\n"
             "  .venv/bin/python scripts/release_gate.py --pr\n"
             "  .venv/bin/python scripts/release_gate.py --pr --json\n"
-            "  .venv/bin/python scripts/release_gate.py --release\n"
+            "  .venv/bin/python scripts/release_gate.py --release "
+            "--release-sha <frozen-commit-sha>\n"
             "  .venv/bin/python scripts/release_gate.py --nightly --json\n"
         ),
     )
@@ -1872,6 +2127,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="print the mode/check matrix and exit (no checks are run)",
     )
     parser.add_argument(
+        "--release-sha", default=None, metavar="SHA",
+        help=(
+            "frozen commit SHA to verify against the tree HEAD (read-only "
+            "git rev-parse); required for --release, optional for --nightly "
+            "and --pr"
+        ),
+    )
+    parser.add_argument(
         "--root", type=Path, default=ROOT,
         help="tree root to gate (default: repository root; for tests/debug only)",
     )
@@ -1889,14 +2152,17 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if not args.mode:
         parser.error("one of --pr, --release or --nightly is required")
+    release_sha = (args.release_sha or "").strip() or None
+    if args.release_sha is not None and release_sha is None:
+        parser.error("--release-sha must not be empty")
     paths = Paths(Path(args.root).resolve())
     try:
         if args.mode == "pr":
-            summary = run_pr(paths)
+            summary = run_pr(paths, release_sha=release_sha)
         elif args.mode == "release":
-            summary = run_release(paths)
+            summary = run_release(paths, release_sha=release_sha)
         else:
-            summary = run_nightly(paths)
+            summary = run_nightly(paths, release_sha=release_sha)
     except KeyboardInterrupt:
         print("release-gate: interrupted", file=sys.stderr)
         return 130

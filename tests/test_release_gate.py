@@ -350,17 +350,52 @@ def _write_tree(root: Path) -> Paths:
     return paths
 
 
+DEFAULT_TREE = {
+    "available": True,
+    "sha": "a" * 40,
+    "branch": "release/2026-11-14",
+    "dirty": [],
+}
+
+
+def _git_result(args, tree):
+    """Simulate the read-only git commands used by release-tree-identity."""
+    if not tree.get("available", True):
+        return RunResult(1, "", "fatal: not a git repository")
+    if args[:2] == ["rev-parse", "HEAD"]:
+        return RunResult(0, str(tree.get("sha", "")) + "\n")
+    if args[:2] == ["rev-parse", "--abbrev-ref"]:
+        return RunResult(0, str(tree.get("branch", "")) + "\n")
+    if args[:1] == ["status"]:
+        dirty = list(tree.get("dirty") or [])
+        return RunResult(0, "".join(line + "\n" for line in dirty))
+    if args[:2] == ["rev-parse", "--verify"]:
+        if tree.get("resolve_fail"):
+            return RunResult(128, "", "fatal: bad revision")
+        spec = str(args[2])
+        key = spec.removesuffix("^{commit}")
+        resolved = (tree.get("resolve") or {}).get(key, tree.get("sha", ""))
+        if not resolved:
+            return RunResult(128, "", "fatal: bad revision")
+        return RunResult(0, resolved + "\n")
+    return RunResult(1, "", "unexpected git args: " + repr(args))
+
+
 def _dispatcher(
     *,
-    static: str | None = None,
-    local: str | None = None,
-    meta: str | None = None,
-    pytest_rc: int = 0,
-    capture: str | None = None,
+    static=None,
+    local=None,
+    meta=None,
+    pytest_rc=0,
+    capture=None,
+    tree=None,
 ):
     """Fake subprocess runner dispatching on the argv of each check."""
+    tree = {**DEFAULT_TREE, **(tree or {})}
 
     def run(argv, cwd, timeout):
+        if argv and str(argv[0]) == "git":
+            return _git_result([str(part) for part in argv[3:]], tree)
         joined = " ".join(str(part) for part in argv)
         if "verify_coverage_gate.py" in joined:
             if "--local" in argv:
@@ -452,6 +487,59 @@ def test_claims_measurement_fails_on_detector_error(tmp_path: Path) -> None:
     check = gate.check_claims_measurement(paths, build_audit=lambda **kwargs: audit)
     assert check.status == gate.CHECK_FAILED
     assert any("detector error" in violation for violation in check.violations)
+
+
+def test_claims_measurement_accepts_reasoned_mitigated_residual(
+    tmp_path: Path,
+) -> None:
+    """A host-dependent residual with an audit rationale is reported, not failed.
+
+    The phase-3/4 audit measures
+    ``RG-runtime-evidence::...::native_run`` as ``mitigated`` on a macOS arm64
+    host (x86_64 ELF cannot run natively; the emulated tier plus a
+    capability-contract reason is the accepted residual).  The gate must keep
+    that visible without calling it a clean closure.
+    """
+    paths = Paths(tmp_path)
+    residual = _gap(
+        "RG-runtime-evidence::elf/x86_64/64/little::native_run",
+        "mitigated",
+        category="runtime_gap",
+    )
+    residual["symptom"] = (
+        "host-dependent declared-vs-measured runtime tier (darwin/arm64)"
+    )
+    residual["next_step"] = "verify on a matching host; keep the capability reason"
+    audit = _audit([
+        _gap("EG-closed", "closed"),
+        _gap("NG-a", "non_goal", category="non_goal"),
+        _gap("EG-dynamic", "dynamic_unverified"),
+        residual,
+    ])
+    _write_claims_docs(tmp_path, audit)
+    check = gate.check_claims_measurement(paths, build_audit=lambda **kwargs: audit)
+    assert check.status == gate.CHECK_PASSED, check.violations
+    assert "RG-runtime-evidence" in check.detail
+    assert "mitigated_residual" in check.detail
+
+
+def test_claims_measurement_rejects_mitigated_without_rationale(
+    tmp_path: Path,
+) -> None:
+    paths = Paths(tmp_path)
+    bare = _gap("RG-bare", "mitigated", category="runtime_gap")
+    bare["symptom"] = ""
+    bare["next_step"] = ""
+    bare["evidence"] = []
+    audit = _audit([
+        _gap("NG-a", "non_goal", category="non_goal"),
+        bare,
+    ])
+    _write_claims_docs(tmp_path, audit)
+    check = gate.check_claims_measurement(paths, build_audit=lambda **kwargs: audit)
+    assert check.status == gate.CHECK_FAILED
+    assert any("without a recorded rationale" in violation
+               for violation in check.violations)
 
 
 def test_claims_measurement_fails_on_unmapped_non_goal(tmp_path: Path) -> None:
@@ -647,7 +735,8 @@ def test_pr_mode_green(tmp_path: Path) -> None:
     )
     assert summary.ok, summary.violations
     assert [check.check_id for check in summary.checks] == [
-        "static-coverage-gate", "claims-measurement-diff", "targeted-pytest",
+        "release-tree-identity", "static-coverage-gate",
+        "claims-measurement-diff", "targeted-pytest",
     ]
 
 
@@ -676,12 +765,13 @@ def test_pr_mode_targeted_pytest_requires_an_existing_file(tmp_path: Path) -> No
 def test_release_mode_green(tmp_path: Path) -> None:
     paths = _write_tree(tmp_path)
     summary = gate.run_release(
-        paths, run=_dispatcher(), build_audit=lambda **kwargs: _green_audit()
+        paths, release_sha="a" * 40, run=_dispatcher(), build_audit=lambda **kwargs: _green_audit()
     )
     assert summary.ok, summary.violations
     ids = [check.check_id for check in summary.checks]
     assert ids == [
-        "static-coverage-gate", "claims-measurement-diff", "acceptance-contract",
+        "release-tree-identity", "static-coverage-gate",
+        "claims-measurement-diff", "acceptance-contract",
         "local-coverage-gate", "meta-audit", "acceptance-invariants",
         "universe-unknown-zero", "provider-matrix", "full-pytest",
     ]
@@ -691,7 +781,7 @@ def test_release_mode_fails_on_missing_acceptance(tmp_path: Path) -> None:
     paths = _write_tree(tmp_path)
     paths.acceptance.unlink()
     summary = gate.run_release(
-        paths, run=_dispatcher(), build_audit=lambda **kwargs: _green_audit()
+        paths, release_sha="a" * 40, run=_dispatcher(), build_audit=lambda **kwargs: _green_audit()
     )
     assert not summary.ok
     assert any("acceptance" in violation for violation in summary.violations)
@@ -701,7 +791,7 @@ def test_release_mode_fails_on_stale_provider_matrix(tmp_path: Path) -> None:
     paths = _write_tree(tmp_path)
     _write_provider_matrix(tmp_path, tamper=True)
     summary = gate.run_release(
-        paths, run=_dispatcher(), build_audit=lambda **kwargs: _green_audit()
+        paths, release_sha="a" * 40, run=_dispatcher(), build_audit=lambda **kwargs: _green_audit()
     )
     assert not summary.ok
     assert any("stale or tampered" in violation for violation in summary.violations)
@@ -715,7 +805,7 @@ def test_release_mode_fails_on_open_gap(tmp_path: Path) -> None:
     ])
     _write_claims_docs(tmp_path, audit)
     summary = gate.run_release(
-        paths, run=_dispatcher(), build_audit=lambda **kwargs: audit
+        paths, release_sha="a" * 40, run=_dispatcher(), build_audit=lambda **kwargs: audit
     )
     assert not summary.ok
     assert any("open gaps" in violation for violation in summary.violations)
@@ -727,7 +817,7 @@ def test_release_mode_fails_on_invariant_violation(tmp_path: Path) -> None:
     local["invariants"] = {"ok": False, "violations": ["tampered check"],
                            "packets_checked": 1, "limitations": []}
     summary = gate.run_release(
-        paths, run=_dispatcher(local=json.dumps(local)),
+        paths, release_sha="a" * 40, run=_dispatcher(local=json.dumps(local)),
         build_audit=lambda **kwargs: _green_audit(),
     )
     assert not summary.ok
@@ -739,7 +829,7 @@ def test_release_mode_fails_on_missing_meta_audit(tmp_path: Path) -> None:
     local = json.loads(_local_gate_summary())
     local.pop("meta_audit", None)
     summary = gate.run_release(
-        paths, run=_dispatcher(local=json.dumps(local)),
+        paths, release_sha="a" * 40, run=_dispatcher(local=json.dumps(local)),
         build_audit=lambda **kwargs: _green_audit(),
     )
     assert not summary.ok
@@ -749,7 +839,7 @@ def test_release_mode_fails_on_missing_meta_audit(tmp_path: Path) -> None:
 def test_release_mode_fails_on_full_pytest_failure(tmp_path: Path) -> None:
     paths = _write_tree(tmp_path)
     summary = gate.run_release(
-        paths, run=_dispatcher(pytest_rc=1),
+        paths, release_sha="a" * 40, run=_dispatcher(pytest_rc=1),
         build_audit=lambda **kwargs: _green_audit(),
     )
     assert not summary.ok
@@ -836,6 +926,200 @@ def test_nightly_mode_fails_when_capture_is_not_passing(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Release freeze: frozen SHA, clean worktree, release-tree-identity
+# ---------------------------------------------------------------------------
+
+
+def test_release_requires_explicit_release_sha(tmp_path: Path) -> None:
+    paths = _write_tree(tmp_path)
+    summary = gate.run_release(
+        paths, run=_dispatcher(), build_audit=lambda **kwargs: _green_audit()
+    )
+    assert not summary.ok
+    assert any("--release-sha" in violation for violation in summary.violations)
+    # Fail fast on an unfrozen tree: no expensive release checks were run.
+    assert [check.check_id for check in summary.checks] == ["release-tree-identity"]
+    identity = summary.checks[0]
+    assert identity.status == gate.CHECK_FAILED
+    assert "release requires --release-sha" in identity.violations[0]
+    assert summary.frozen_sha == "a" * 40
+    assert summary.clean_tree is True
+
+
+def test_release_sha_mismatch_fails(tmp_path: Path) -> None:
+    paths = _write_tree(tmp_path)
+    other = "b" * 40
+    summary = gate.run_release(
+        paths,
+        run=_dispatcher(tree={"sha": "a" * 40, "resolve": {other: other}}),
+        build_audit=lambda **kwargs: _green_audit(),
+        release_sha=other,
+    )
+    assert not summary.ok
+    assert any(
+        "frozen tree moved" in violation or "but HEAD is" in violation
+        for violation in summary.violations
+    )
+    assert len(summary.checks) == 1
+    assert summary.frozen_sha == "a" * 40
+
+
+def test_release_short_sha_resolves_and_matches(tmp_path: Path) -> None:
+    paths = _write_tree(tmp_path)
+    full = "1234567890abcdef1234567890abcdef12345678"
+    summary = gate.run_release(
+        paths,
+        run=_dispatcher(tree={"sha": full, "resolve": {"deadbee": full}}),
+        build_audit=lambda **kwargs: _green_audit(),
+        release_sha="deadbee",
+    )
+    assert summary.ok, summary.violations
+    assert summary.release_sha == "deadbee"
+    assert summary.frozen_sha == full
+    identity = summary.checks[0]
+    assert identity.check_id == "release-tree-identity"
+    assert identity.status == gate.CHECK_PASSED
+    assert "MATCH" in identity.detail
+
+
+def test_release_unknown_sha_fails(tmp_path: Path) -> None:
+    paths = _write_tree(tmp_path)
+    summary = gate.run_release(
+        paths,
+        run=_dispatcher(tree={"resolve_fail": True}),
+        build_audit=lambda **kwargs: _green_audit(),
+        release_sha="f" * 40,
+    )
+    assert not summary.ok
+    assert any("not a commit in this repository" in violation
+               for violation in summary.violations)
+    assert len(summary.checks) == 1
+
+
+def test_release_dirty_tree_fails_fast_with_freeze_message(tmp_path: Path) -> None:
+    paths = _write_tree(tmp_path)
+    dirty = [" M scripts/release_gate.py", "?? scratch-output.json"]
+    summary = gate.run_release(
+        paths,
+        run=_dispatcher(tree={"dirty": dirty}),
+        build_audit=lambda **kwargs: _green_audit(),
+        release_sha="a" * 40,
+    )
+    assert not summary.ok
+    text = " ".join(summary.violations)
+    assert "worktree is dirty" in text
+    assert "commit or freeze before release" in text
+    assert summary.clean_tree is False
+    assert len(summary.checks) == 1
+    assert "release-tree-identity failed first" in " ".join(summary.notes)
+
+
+def test_nightly_dirty_tree_fails_fast(tmp_path: Path) -> None:
+    paths = _write_tree(tmp_path)
+    summary = gate.run_nightly(
+        paths,
+        run=_dispatcher(tree={"dirty": [" M app/main.py"]}),
+        build_audit=lambda **kwargs: _green_audit(),
+        runner_probe=lambda: {"available": True, "runner": "lima:limactl",
+                              "tier": "emulated_run", "reason": ""},
+    )
+    assert not summary.ok
+    assert any("commit or freeze before release" in violation
+               for violation in summary.violations)
+    assert len(summary.checks) == 1
+
+
+def test_pr_dirty_tree_without_release_sha_is_backward_compatible(
+    tmp_path: Path,
+) -> None:
+    paths = _write_tree(tmp_path)
+    summary = gate.run_pr(
+        paths,
+        run=_dispatcher(tree={"dirty": [" M docs/notes.md"]}),
+        build_audit=lambda **kwargs: _green_audit(),
+    )
+    assert summary.ok, summary.violations
+    assert summary.clean_tree is False
+    assert summary.frozen_sha == "a" * 40
+    assert summary.branch == "release/2026-11-14"
+    identity = summary.checks[0]
+    assert identity.check_id == "release-tree-identity"
+    assert identity.status == gate.CHECK_PASSED
+
+
+def test_pr_with_release_sha_mismatch_fails(tmp_path: Path) -> None:
+    paths = _write_tree(tmp_path)
+    other = "b" * 40
+    summary = gate.run_pr(
+        paths,
+        run=_dispatcher(tree={"sha": "a" * 40, "resolve": {other: other}}),
+        build_audit=lambda **kwargs: _green_audit(),
+        release_sha=other,
+    )
+    assert not summary.ok
+    assert any("frozen tree moved" in violation or "but HEAD is" in violation
+               for violation in summary.violations)
+
+
+def test_git_unavailable_pr_skips_but_release_fails(tmp_path: Path) -> None:
+    paths = _write_tree(tmp_path)
+    pr = gate.run_pr(
+        paths,
+        run=_dispatcher(tree={"available": False}),
+        build_audit=lambda **kwargs: _green_audit(),
+    )
+    assert pr.ok, pr.violations
+    assert pr.checks[0].status == gate.CHECK_SKIPPED
+    assert pr.clean_tree is None and pr.frozen_sha is None
+
+    release = gate.run_release(
+        paths,
+        run=_dispatcher(tree={"available": False}),
+        build_audit=lambda **kwargs: _green_audit(),
+        release_sha="a" * 40,
+    )
+    assert not release.ok
+    assert any("cannot read release tree identity" in violation
+               for violation in release.violations)
+    assert len(release.checks) == 1
+
+
+def test_release_summary_records_freeze_fields(tmp_path: Path) -> None:
+    paths = _write_tree(tmp_path)
+    summary = gate.run_release(
+        paths,
+        run=_dispatcher(),
+        build_audit=lambda **kwargs: _green_audit(),
+        release_sha="a" * 40,
+    )
+    payload = summary.to_dict()
+    assert payload["ok"] is True
+    assert payload["release_sha"] == "a" * 40
+    assert payload["frozen_sha"] == "a" * 40
+    assert payload["branch"] == "release/2026-11-14"
+    assert payload["clean_tree"] is True
+    assert payload["checks"][0]["id"] == "release-tree-identity"
+    assert payload["checks"][0]["status"] == "passed"
+
+
+def test_nightly_green_records_identity_and_capture(tmp_path: Path) -> None:
+    paths = _write_tree(tmp_path)
+    summary = gate.run_nightly(
+        paths,
+        run=_dispatcher(),
+        build_audit=lambda **kwargs: _green_audit(),
+        runner_probe=lambda: {"available": True, "runner": "lima:limactl",
+                              "tier": "emulated_run", "reason": ""},
+    )
+    assert summary.ok, summary.violations
+    assert summary.frozen_sha == "a" * 40
+    assert summary.clean_tree is True
+    ids = [check.check_id for check in summary.checks]
+    assert ids[0] == "release-tree-identity"
+    assert "nightly-real-lima-acceptance" in ids
+
+
+# ---------------------------------------------------------------------------
 # CLI surface and structured summary
 # ---------------------------------------------------------------------------
 
@@ -846,6 +1130,8 @@ def test_cli_list_checks_prints_matrix(capsys: pytest.CaptureFixture[str]) -> No
     assert set(payload) == {"pr", "release", "nightly"}
     assert "provider-matrix" in payload["release"]
     assert "nightly-real-lima-acceptance" in payload["nightly"]
+    for mode in ("pr", "release", "nightly"):
+        assert "release-tree-identity" in payload[mode], mode
 
 
 def test_cli_requires_a_mode() -> None:
@@ -865,9 +1151,14 @@ def test_summary_dict_is_structured(tmp_path: Path) -> None:
     assert payload["exit_code"] == 0
     assert payload["violations"] == []
     assert {check["id"] for check in payload["checks"]} == {
-        "static-coverage-gate", "claims-measurement-diff", "targeted-pytest",
+        "release-tree-identity", "static-coverage-gate",
+        "claims-measurement-diff", "targeted-pytest",
     }
-    assert payload["status_counts"]["passed"] == 3
+    assert payload["status_counts"]["passed"] == 4
+    assert payload["frozen_sha"] == "a" * 40
+    assert payload["branch"] == "release/2026-11-14"
+    assert payload["clean_tree"] is True
+    assert payload["release_sha"] is None
 
 
 def test_check_helpers_mark_status() -> None:

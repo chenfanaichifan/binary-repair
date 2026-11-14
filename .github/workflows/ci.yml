@@ -34,8 +34,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
-      - name: Run non-browser tests
-        run: python -m pytest -q --ignore=tests/e2e
+      # Lima/guest-touching suites must stay serial: one guest at a time.
+      - name: Run non-browser tests (serial; xdist explicitly disabled)
+        run: python -m pytest -q -p no:xdist --ignore=tests/e2e
   coverage-gate:
     runs-on: ubuntu-latest
     steps:
@@ -49,8 +50,11 @@ jobs:
           python -m pip install -r requirements.txt
       - name: Coverage regression gate (static, no network)
         run: python scripts/verify_coverage_gate.py --static-only
-      - name: Coverage gate + capability audit tests
-        run: python -m pytest -q tests/test_coverage_gate.py tests/test_capability_audit.py
+      # Serial execution by policy: Lima guests and the real PoC differential are
+      # single-instance resources; -p no:xdist keeps the run serial even if a
+      # parallel plugin is installed in the environment.
+      - name: Coverage gate + capability audit tests (serial)
+        run: python -m pytest -q -p no:xdist tests/test_coverage_gate.py tests/test_capability_audit.py
 
   release-gate-pr:
     # Fast PR cost layer (scripts/release_gate.py --pr): static coverage gate +
@@ -69,14 +73,53 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+      # The gate runs its targeted pytest subset with -p no:xdist (serial);
+      # no test in this layer touches a Lima guest in parallel.
       - name: Staged PR gate
         run: python scripts/release_gate.py --pr --json
+
+  browser-e2e:
+    # Browser end-to-end suite (tests/e2e, Chrome/DevTools protocol).
+    # Best-effort Chromium install with no secrets and no third-party actions.
+    # IMPORTANT: the repository CDP helper (tests/e2e/cdp.py) probes macOS and
+    # Windows browser paths only; on this Linux runner the suite records an
+    # explicit pytest skip (visible via -rs).  A skip is NOT a pass and this job
+    # is not release evidence; the release browser evidence is captured on a
+    # macOS host with Chrome (see docs/operations/release-gate-2026-11-14.md).
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Install Chromium (best effort, no secrets)
+        run: |
+          if command -v chromium >/dev/null 2>&1 || command -v google-chrome >/dev/null 2>&1; then
+            echo "system browser already present"
+          else
+            sudo apt-get update
+            sudo apt-get install -y chromium               || sudo apt-get install -y chromium-browser               || echo "WARNING: no system Chromium installable; browser e2e will skip with an explicit reason"
+          fi
+      - name: Browser e2e (serial, explicit skip reasons)
+        run: python -m pytest -q -p no:xdist tests/e2e -rs
+      - name: Browser e2e status note (never a release claim)
+        if: always()
+        run: |
+          echo "browser-e2e: Linux CI records explicit pytest skips when no"
+          echo "supported browser path is available; a skip is not a pass."
+          echo "Release browser evidence is captured separately on macOS/Chrome."
 
   release-nightly-gate:
     # Full release/nightly gate (scripts/release_gate.py --release / --nightly).
     # It requires a self-hosted runner with the Lima VM `binaryrepair`
     # (x86-64 guest execution through qemu-user/binfmt) and the real PoC
-    # differential fixtures.  No such runner is guaranteed for this repository,
+    # differential fixtures (run serially: Lima is a single-instance resource;
+    # flaky reruns are not accepted as a pass).  No such runner is guaranteed for this repository,
     # so the job is *inert by default*: the repository variable
     # BINARYREPAIR_RELEASE_GATE must be set to "true" by an operator who has
     # provisioned the runner.  This file does not claim the job has ever run;
