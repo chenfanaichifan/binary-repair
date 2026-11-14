@@ -1,15 +1,38 @@
-"""Real ELF code-cave injection: new R-X PT_LOAD + strcpy wrapper."""
+"""Real ELF code-cave injection: new R-X PT_LOAD + strcpy wrapper.
+
+The injection has two deterministic strategies: ``append-phdr`` when the program
+header table genuinely has a free slot, and ``repurpose-pt-note`` (rewrite one
+non-essential PT_NOTE phdr in place) for real dynamic ELFs whose header table is
+immediately followed by ``.interp``/notes.  The dynamic-ELF tests below are the
+regression guard for the historical bug where growing the phdr table in place
+corrupted PT_INTERP and produced candidates the loader could not start.
+"""
 from __future__ import annotations
 
+import io
 import struct
 from pathlib import Path
 
-from app.services.code_cave import inject_strcat_guard, inject_strcpy_guard
+import pytest
+from elftools.elf.elffile import ELFFile
+
+from app.services.code_cave import (
+    PAGE,
+    CaveError,
+    _verify_injection,
+    add_rx_segment,
+    inject_strcat_guard,
+    inject_strcpy_guard,
+)
 from app.services.binary_repair_engine import BinaryRepairReport, _apply_copy_caves
+from app.services.containers import detect_container
 from app.services.x86_runtime import emulate_elf
 
 BASE = 0x400000
 ENTRY = BASE + 0x1000
+ROOT = Path(__file__).resolve().parents[1]
+HEAP_DYNAMIC = ROOT / "fixtures" / "hard-cases" / "vuln-heap-malloc-x86_64.elf"
+STATIC_X64 = ROOT / "fixtures" / "elf" / "vuln-strcpy-x86_64.elf"
 
 
 def _build(src: bytes, etype: int = 2) -> tuple[bytes, int, int]:
@@ -135,3 +158,145 @@ def test_cave_reports_relocations_unchanged():
                                call_file_offset=call_off, capacity=16)
     assert cave.report["relocations_before"] == cave.report["relocations_after"]
     assert cave.report["relocations_unchanged"] is True
+
+
+# --- program-header strategy selection (dynamic ELF regression) -------------
+
+def _require(path: Path) -> bytes:
+    if not path.is_file():
+        pytest.skip(f"fixture missing: {path}")
+    return path.read_bytes()
+
+
+def _phdr_table(image: bytes) -> tuple[int, int, int, bytes]:
+    elf = ELFFile(io.BytesIO(image))
+    phoff = int(elf.header["e_phoff"])
+    phentsize = int(elf.header["e_phentsize"])
+    phnum = int(elf.header["e_phnum"])
+    return phoff, phentsize, phnum, image[phoff:phoff + phnum * phentsize]
+
+
+def _interp(image: bytes) -> tuple[int, int, bytes] | None:
+    elf = ELFFile(io.BytesIO(image))
+    for seg in elf.iter_segments():
+        if str(seg["p_type"]) == "PT_INTERP":
+            offset = int(seg["p_offset"])
+            size = int(seg["p_filesz"])
+            return offset, size, image[offset:offset + size]
+    return None
+
+
+def _segment_types(image: bytes) -> list[str]:
+    return [str(seg["p_type"]) for seg in ELFFile(io.BytesIO(image)).iter_segments()]
+
+
+def test_dynamic_elf_repurposes_note_and_preserves_interp():
+    """Regression: phdr growth must never clobber PT_INTERP on a dynamic ELF."""
+    original = _require(HEAP_DYNAMIC)
+    cave = add_rx_segment(original, b"\xC3")
+    report = cave.report
+    assert cave.method == "new-pt-load"
+    assert report["phdr_strategy"] == "repurpose-pt-note"
+    assert report["interp_preserved"] is True
+
+    original_interp = _interp(original)
+    assert original_interp is not None
+    assert _interp(cave.data) == original_interp
+
+    phoff, phentsize, original_phnum, original_table = _phdr_table(original)
+    new_phoff, new_phentsize, new_phnum, new_table = _phdr_table(cave.data)
+    assert (new_phoff, new_phentsize) == (phoff, phentsize)
+    assert new_phnum == original_phnum == report["phnum"]
+
+    note_index = report["repurposed_note_index"]
+    assert isinstance(note_index, int) and 0 <= note_index < original_phnum
+    for index in range(original_phnum):
+        if index == note_index:
+            continue
+        start = index * phentsize
+        assert new_table[start:start + phentsize] == \
+            original_table[start:start + phentsize], f"phdr #{index} changed"
+
+    original_segments = ELFFile(io.BytesIO(original))
+    original_note_count = sum(
+        1 for seg in original_segments.iter_segments()
+        if str(seg["p_type"]) == "PT_NOTE"
+    )
+    types = _segment_types(cave.data)
+    assert types.count("PT_NOTE") == original_note_count - 1
+    assert types.count("PT_LOAD") == _segment_types(original).count("PT_LOAD") + 1
+
+    patched_elf = ELFFile(io.BytesIO(cave.data))
+    cave_seg = [
+        seg for index, seg in enumerate(patched_elf.iter_segments())
+        if index == note_index
+    ][0]
+    assert str(cave_seg["p_type"]) == "PT_LOAD"
+    assert int(cave_seg["p_flags"]) & 0x5 == 0x5
+    assert int(cave_seg["p_vaddr"]) == cave.cave_vaddr
+    assert int(cave_seg["p_offset"]) == cave.cave_offset
+    assert cave.cave_vaddr % PAGE == 0 and cave.cave_offset % PAGE == 0
+    assert cave.data[cave.cave_offset:] == b"\xC3"
+
+    check = detect_container(cave.data)
+    assert (check.format, check.arch, check.bits) == ("elf", "x86_64", 64)
+    assert check.limitations == []
+
+
+def test_static_elf_keeps_append_phdr_strategy():
+    """Static images have no PT_INTERP: the legacy append-phdr path stays."""
+    original = _require(STATIC_X64)
+    cave = add_rx_segment(original, b"\xC3\xC3")
+    report = cave.report
+    assert cave.method == "new-pt-load"
+    assert report["phdr_strategy"] == "append-phdr"
+    assert _interp(original) is None and _interp(cave.data) is None
+    _, _, original_phnum, original_table = _phdr_table(original)
+    _, _, new_phnum, new_table = _phdr_table(cave.data)
+    assert new_phnum == original_phnum + 1 == report["phnum"]
+    assert new_table[:len(original_table)] == original_table
+    check = detect_container(cave.data)
+    assert (check.format, check.arch) == ("elf", "x86_64")
+    assert check.limitations == []
+
+
+def test_synthetic_elf_keeps_append_phdr_strategy():
+    original, _call_vaddr, _call_off = _build(b"hi")
+    cave = add_rx_segment(original, b"\xC3")
+    assert cave.method == "new-pt-load"
+    assert cave.report["phdr_strategy"] == "append-phdr"
+
+
+def test_dynamic_elf_without_pt_note_fails_closed():
+    """A dynamic ELF with no free slot and no PT_NOTE must not be half-patched."""
+    original = _require(HEAP_DYNAMIC)
+    phoff, phentsize, _phnum, _table = _phdr_table(original)
+    mutated = bytearray(original)
+    patched_any = False
+    for index, seg in enumerate(ELFFile(io.BytesIO(original)).iter_segments()):
+        if str(seg["p_type"]) != "PT_NOTE":
+            continue
+        # Rewrite the type to an unused OS-specific value: no PT_NOTE remains.
+        struct.pack_into("<I", mutated, phoff + index * phentsize, 0x60000001)
+        patched_any = True
+    assert patched_any
+    with pytest.raises(CaveError, match="fail closed"):
+        add_rx_segment(bytes(mutated), b"\xC3")
+
+
+def test_verification_rejects_interpreter_corruption():
+    original = _require(HEAP_DYNAMIC)
+    cave = add_rx_segment(original, b"\xC3")
+    interp = _interp(original)
+    assert interp is not None
+    corrupted = bytearray(cave.data)
+    corrupted[interp[0]] ^= 0xFF
+    phoff, phentsize, phnum, _table = _phdr_table(original)
+    with pytest.raises(CaveError, match="interpreter"):
+        _verify_injection(
+            original, bytes(corrupted), strategy="repurpose-pt-note",
+            phoff=phoff, phentsize=phentsize, original_phnum=phnum,
+            note_index=cave.report["repurposed_note_index"],
+            cave_vaddr=cave.cave_vaddr, code_size=1,
+            file_off=cave.cave_offset,
+        )
