@@ -35,12 +35,18 @@ Latest full audit run (see `artifacts/capability-gap-audit-2026-11-14/gap-report
 | metric | value |
 |---|---|
 | gaps measured | 66 |
-| closed | 51 |
-| mitigated (honest limitation, routed) | 1 |
-| open (actionable) | 3 |
+| closed | 55 |
+| mitigated (honest limitation, routed) | 0 |
+| open (actionable) | 0 |
 | non-goal (honest research/platform limits) | 11 |
 | high-severity open | 0 |
 | matrix cells / sink classes / strategies / profiles / evidence sources / gate checks | 8 / 5 / 18 / 4 / 24 / 34 |
+
+Phase-2 closure (same day, after target-scope / legacy-convergence /
+runtime-capability work): the three open records and the one mitigated record
+were closed with measured evidence and the audit plus a deterministic
+`scripts/verify_coverage_gate.py` (static CI mode and local acceptance mode)
+now fail on any regression.
 
 The three remaining open records are documented, not hidden; they are listed in
 §5. The audit is deterministic and exits 0; the run also writes SHA-256 sums.
@@ -152,31 +158,56 @@ capacity-1 and keeps benign regressions byte-identical.
   is now committed/pushed on `coverage-audit-2026-11-14`; uncommitted work must
   not be the only copy in a shared checkout.
 
-## 5. Residual open gaps and honest non-goals
+## 5. Residual gaps after phase-2 closure: zero open, honest non-goals only
 
-Open (measured; see gap-report for exact evidence strings):
+Phase-2 closed the former actionable residuals with measured proof (see
+`gap-report.md` and `artifacts/coverage-closure-2026-11-14/`):
 
-1. `EG-target-scope` / `OG-wrong-function-candidate` — no caller-declared target
-   selector: the deterministic engine patches the first patchable sink and the
-   gate proves behaviour, not target identity. The hard-case benchmark is
-   AI/non-goal evidence; do not claim deterministic target repair from it.
-   Mitigation in this milestone: the audit reports the out-of-target patch sites
-   explicitly, matrix payload marks unexercised capabilities, and no benchmark
-   claim is derived from whole-image patches.
-2. `RG-external-poc::macho/x86_64` — native Mach-O scheduler and external-PoC
-   runner disagree on an arm64 host for x86_64 slices; external PoC is declared
-   unavailable rather than faked.
-3. The `GM-legacy-gate-poc-manifest` record is now `mitigated`: the legacy
-   stack/emulated gate still cannot consume a PoC manifest, but the pipeline
-   states that explicitly and routes manifest-bearing repairs to the unified
-   evidence-profile path.
+1. `EG-target-scope` / `OG-wrong-function-candidate` — **closed**. The pipeline
+   accepts an explicit `target` (symbol/substring/explicit VA range) and
+   `require_target`; `containers.resolve_function_scope` resolves it fail-closed;
+   sink/capacity output is filtered to the scope and the unified gate now emits
+   and enforces a required `patch.target_scope` check (non-empty actions, every
+   numeric `site_va` inside `[va,end)`, scope hashed into `report_sha256`).
+   Target-mode probes: heap fixture `target="heap_bad"` verified with
+   `patch.target_scope=passed` (20/20 checks, candidate `ea222605...`); wrong or
+   missing target fails closed with no whole-image candidate. The default
+   manifest/-target-less product policy remains whole-image and does **not**
+   claim target identity (documented in `target_policy`, claims and
+   LIMITATIONS); target-strict mode is available via `--target/--require-target`
+   and the benchmark now records `baseline_target_strict`.
+2. `RG-external-poc::macho/x86_64` — **closed as a measured platform
+   limitation**. `app/services/runtime/capabilities.py` probes host/arch and
+   reports `poc_available=False` with an explicit reason on this arm64 host
+   (`emulated_run`, Rosetta/function-level only); `poc_runner._select_runner`
+   consults the same probe, so the native and external-PoC paths agree and
+   `run_poc` stays `unavailable` (never a fabricated pass/fail).
+   `matrix_payload` exposes the measured `runtime_capabilities` next to the
+   declared tiers.
+3. `GM-legacy-gate-poc-manifest` — **closed**. Manifest-bearing ELF x86-64
+   requests never reach the legacy stack/emulated engine (pipeline guard before
+   `repair_elf`, verified by a body-start source census: guard position <
+   legacy engine position); the legacy builder additionally fails closed when
+   given external PoC evidence (`manifest.legacy_gate_unsupported=failed`), and
+   review/API manifest requests use the unified evidence-profile gate only.
+   The audit detector was corrected to require a real guard (the earlier
+   signature-token false positive is regression-tested).
 
-Closed since the first audit run include: no-input/UAF evidence model,
-unavailable-runner semantics (inconclusive, never "rejected"), declared
-profiles/profile checks, cell/tier validation, rewrite re-derivation, matrix
-per-cell sink truth, dead-class removal, requested-vs-produced strategy honesty,
-claims/limitations drift, and `checked_copy` (kept declared, explicitly marked
-as no-shipped-fixture coverage instead of silently claimed).
+The eleven honest **non-goals** are unchanged and explicitly mapped in
+`docs/acceptance/non-goals-2026-11-14.md` and `claims.json["non_goals"]`, with
+enforcement (unsupported / analysis_only / not_run / no download / no verified):
+direct-copy sink capacity not recoverable by same-function analysis, global and
+struct-member capacity inference (runtime oracle catches over-estimation),
+sprintf/format-expansion, UAF/lifetime, integer/loop deterministic templates,
+PE/32-bit Mach-O external PoC, full whole-program proof, non-loop AI verified
+success (0/6), multi-provider statistics, single-function candidate policy, and
+the AI leaf-only path (target-mode selective whitelist as declared).
+
+Continuous guards added: `scripts/verify_coverage_gate.py` (static CI mode +
+`--local` acceptance mode; zero open-gap allowlist, detector-error and
+non-goal-mapping checks), a CI coverage-gate job, target-mode probes in the
+audit, capability-probe/runner-agreement negatives, legacy-manifest routing
+regression tests, and the real Lima acceptance bundle.
 
 Honest non-goals (unchanged or newly documented): sprintf/format-expansion,
 UAF/lifetime, integer/loop deterministic templates, arm32/riscv/mips/ppc/
@@ -188,6 +219,11 @@ non-loop AI verified success (0/6), and multi-provider model statistics.
 ## 6. Reproduction
 
 ```bash
+# phase-2 ownership / convergence / capability checks
+.venv/bin/python -m pytest -q tests/test_target_scope.py tests/test_legacy_manifest_gate.py \
+  tests/test_runtime_capabilities.py tests/test_coverage_gate.py
+.venv/bin/python scripts/verify_coverage_gate.py --static-only
+.venv/bin/python scripts/verify_coverage_gate.py --local
 # deterministic engine/gate checks
 .venv/bin/python -m pytest -q tests/test_capacity_repair.py tests/test_binary_pipeline_capacity.py \
   tests/test_repair_heap.py tests/test_code_cave.py tests/test_gate_profiles.py tests/test_repair_matrix.py
@@ -196,6 +232,9 @@ non-loop AI verified success (0/6), and multi-provider model statistics.
   --poc fixtures/poc/marcx-capacity.json --json
 .venv/bin/python scripts/repair_binary.py fixtures/hard-cases/vuln-heap-malloc-x86_64.elf /tmp/heap.fixed \
   --poc fixtures/poc/heap-malloc.json --json
+# target-scoped ownership proof (strict target mode)
+.venv/bin/python scripts/repair_binary.py fixtures/hard-cases/vuln-heap-malloc-x86_64.elf /tmp/heap.fixed \
+  --target heap_bad --require-target --poc fixtures/poc/heap-malloc.json --json
 # self-discovery audit (bounded, no network)
 .venv/bin/python scripts/audit_capability_coverage.py --out artifacts/capability-gap-audit-2026-11-14
 ```

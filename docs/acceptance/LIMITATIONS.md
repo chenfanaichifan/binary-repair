@@ -264,15 +264,29 @@ Measured residuals (not repaired, reported by the audit):
   wrong-capacity candidate instead of silently accepting it.  Global
   destinations, dynamic sizes, pointer+offset aliases and cross-function
   allocations stay analysis-only.
-- no caller-declared target selector: the deterministic engine repairs the
-  first patchable sink in the image and the gate proves the repaired behaviour,
-  not that the declared benchmark target was the repaired function.
-- the legacy quick-repair gate cannot consume a PoC manifest; manifest-bearing
-  requests are routed to the unified evidence-profile path and the legacy report
-  states the limitation explicitly (audit status: mitigated).
+- default whole-image policy: without a supplied target the deterministic
+  engine repairs the first patchable sink and the gate proves behaviour, not
+  target identity. Target-scoped mode is explicit (`target`/`require_target`,
+  `scripts/repair_binary.py --target/--require-target`): scope resolution is
+  fail-closed, every action must carry a numeric `site_va` inside the resolved
+  function and the required `patch.target_scope` gate check enforces it; the
+  benchmark records `baseline_target_strict` instead of claiming whole-image
+  patches as target repairs.
+- the legacy quick-repair gate refuses external PoC evidence
+  (`manifest.legacy_gate_unsupported` fails closed) and manifest-bearing
+  requests are routed to the unified evidence-profile gate before the legacy
+  engine, so the legacy gate is read-only compatibility only by design.
 - Mach-O x86_64 external PoC remains unavailable on an arm64 host; PE and
   32-bit Mach-O external PoC are unavailable by design.  Runtime tiers are
   platform-declared and enforced per cell, never faked.
 - `checked_copy` is declared by the matrix but no shipped fixture exercises it;
   the matrix payload marks it explicitly as untested rather than claiming
   fixture evidence.
+
+Phase-2 additions (same date): explicit target-scoped repair with a required
+`patch.target_scope` ownership check; unified-only manifest write path with a
+fail-closed legacy backstop; a runtime capability probe that makes host/arch/
+tier/external-PoC availability explicit (Mach-O x86_64 on arm64 is declared
+unavailable, never faked); and a deterministic coverage regression gate
+(`scripts/verify_coverage_gate.py`, static CI + local acceptance modes) backed by
+the self-discovery audit (66 gaps: 55 closed, 0 open, 11 honest non-goals).

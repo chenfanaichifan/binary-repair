@@ -16,7 +16,7 @@
     "conclusion": "success"
   },
   "explicitly_unimplemented": [
-    "target-scoped repair: repair_any has no caller-declared target selector; a whole-image candidate can be shown but the gate does not prove it repaired the declared function (benchmark target identity remains AI/non-goal evidence)",
+    "default whole-image policy: without a supplied target the deterministic engine repairs the first patchable sink and target identity is not claimed; target-scoped mode is explicit (--target / require_target) and enforced by patch.target_scope",
     "global destination and struct-member bounds inference (destination_kind global is reserved; malloc-size over-estimation for struct members is caught by the runtime oracle, not inferred statically)",
     "sprintf/format-expansion, UAF/lifetime and integer/loop deterministic repair templates (no deterministic engine; AI path research only, non-loop AI verified 0/6)",
     "arm32, 32-bit Mach-O, fat Mach-O rewrite, big-endian, riscv/mips/ppc repair",
@@ -125,7 +125,11 @@
     "x86-64 .plt.sec/CET import resolution for dynamic ELF (analyzer now sees imports/sinks for default-toolchain binaries)",
     "Lima guest visibility wait before PoC execution (fixes stale virtiofs inode/size causing qemu internal SIGBUS for appended-segment candidates)",
     "self-discovery capability audit (app/services/coverage_audit.py, scripts/audit_capability_coverage.py): static census + bounded probes of matrix cells, sinks, strategies, runtime sources, gate profiles/checks, fixtures, PoC manifests and claims; emits coverage-matrix.json + gap-report.md with measured closed/open/non-goal statuses",
-    "legacy quick-repair gate declares and enforces its evidence profile (strict_template/emulated_instruction) with appended profile checks, ids/statuses of existing checks unchanged"
+    "legacy quick-repair gate declares and enforces its evidence profile (strict_template/emulated_instruction) with appended profile checks, ids/statuses of existing checks unchanged",
+    "explicit target-scoped repair: repair_any target/require_target + containers.resolve_function_scope + required patch.target_scope gate check (numeric site_va inside the declared function range, scope hashed into report_sha256); wrong/missing target fails closed with no whole-image candidate; benchmark records baseline_target_strict",
+    "legacy quick-repair gate fails closed on external PoC evidence (manifest.legacy_gate_unsupported) and manifest-bearing requests are routed to the unified evidence-profile gate before the legacy engine (pipeline guard measured by audit)",
+    "runtime capability probe (app/services/runtime/capabilities.py) makes host/arch/tier/external-PoC availability explicit; poc_runner consults it (Mach-O x86_64 on arm64 is unavailable with an explicit reason, never fabricated); matrix_payload exposes measured runtime_capabilities",
+    "continuous coverage regression gate scripts/verify_coverage_gate.py (static CI + local acceptance modes), CI job, and a self-discovery audit now measuring 66 gaps / 55 closed / 0 open / 11 non-goal with target-mode probes"
   ],
   "siliconflow_status": {
     "identity_probe": "pass for 3 models",
