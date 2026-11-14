@@ -142,6 +142,16 @@
       "review_by": "2027-05-14",
       "productization_criteria": "a PE external-PoC runner on a supported host with a fixture + native/emulated runtime oracle and capability probe poc_available=true; PE PoC evidence is then gate-validated",
       "fallback": "not_run; PE PoC manifests are never executed, simulated or reported as verified"
+    },
+    {
+      "id": "RG-external-poc::<doc>::macho/x86_64",
+      "category": "runtime_gap",
+      "enforcement": "unavailable/not_run; external PoC for macho/x86_64 is unavailable on arm64 hosts and platform-gated on others; no fabricated PoC",
+      "claim": "Mach-O x86_64 external PoC replay is a platform capability; the capability probe makes availability/reason explicit and the runner selects no runner when unavailable.",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "productization_criteria": "run on matching macOS host with external PoC evidence",
+      "fallback": "native function-level evidence only; external PoC reported not_run/unavailable"
     }
   ],
   "implemented": [

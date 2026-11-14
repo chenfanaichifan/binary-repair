@@ -1,6 +1,30 @@
 {
   "schema_version": 1,
   "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
   "cases": [
     {
       "case": {
@@ -17,16 +41,95 @@
       },
       "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
       "baseline": {
+        "attempted": true,
         "disposition": "rejected",
+        "status": "not_verified",
         "verified": false,
-        "error": "verification gate did not pass"
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 3359,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 3359,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
       },
       "baseline_increment_zero": true,
       "baseline_target_strict": {
         "attempted": true,
         "disposition": "analysis_only",
+        "status": "unsupported",
         "verified": false,
         "error": "target-scoped mode: no patchable sink lies inside target multicall_bad [0x102cb60,0x102cbb0)",
+        "target_policy": "target_strict",
         "target_scope": {
           "name": "multicall_bad",
           "va": 16960352,
@@ -34,8 +137,26 @@
           "source": "symbol"
         },
         "target_in_scope": false,
-        "target_scope_check": null,
-        "actions": []
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 2787,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
       },
       "baseline_target_aware": {
         "attempted": true,
@@ -45,18 +166,56 @@
       "ai_blind": {
         "status": "invalid",
         "disposition": "unsupported",
-        "verified": false
+        "verified": false,
+        "elapsed_ms": 2980
       },
-      "allowed_calls": [
+      "ai_attempts": [
         {
-          "name": "helper_copy",
-          "target_va": "0x102cbb0",
-          "source": "direct"
-        },
-        {
-          "name": "puts",
-          "target_va": "0x108a31c",
-          "source": "direct"
+          "repeat": 0,
+          "model": "deepseek-flash",
+          "model_requested": "deepseek-flash",
+          "status": "accepted",
+          "error": null,
+          "usage": {
+            "prompt_tokens": 1283,
+            "completion_tokens": 335,
+            "total_tokens": 1618,
+            "latency_ms": 2037
+          },
+          "latency_ms": 2038,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "1802d61965bce337a3935ffe686edcc712907a907d2ff4a60dbdc6690290bcbe",
+          "allowed_calls": [
+            {
+              "name": "helper_copy",
+              "target_va": "0x102cbb0",
+              "source": "direct"
+            },
+            {
+              "name": "puts",
+              "target_va": "0x108a31c",
+              "source": "direct"
+            }
+          ],
+          "target_in_scope": false,
+          "target_scope_check": "not_run",
+          "target_scope": {
+            "name": "multicall_bad",
+            "va": 16960352,
+            "end": 16960432,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": false,
+          "injection": {
+            "error": "assembly validation: ValueError: forbidden assembly construct: ud2"
+          },
+          "candidate": {
+            "gate": "no_candidate",
+            "poc_status": "not_run"
+          },
+          "elapsed_ms": 2071
         }
       ],
       "injection": {
@@ -75,15 +234,15 @@
         "provider": "unknown",
         "model": "deepseek-flash",
         "status": "accepted",
-        "latency_ms": 1649,
-        "plan_sha256": "3185a8c7132498d68f464fd57e4248a08eb29351177ae3a8bfb5f7bde39ecf66",
+        "latency_ms": 2038,
+        "plan_sha256": "53a71326df761be4e0cee19cb0d4706b40d0c71e9f2d98ec1188ec43bc92201c",
         "error": null,
         "validation": {},
         "usage": {
           "prompt_tokens": 1283,
-          "completion_tokens": 326,
-          "total_tokens": 1609,
-          "latency_ms": 1648
+          "completion_tokens": 335,
+          "total_tokens": 1618,
+          "latency_ms": 2037
         },
         "request_id": null,
         "authority": "deterministic_gate",
@@ -96,20 +255,281 @@
         "model_requested": "deepseek-flash",
         "model_identity_ok": true
       },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "no_candidate",
+          "poc_status": "not_run",
+          "runner": null,
+          "candidate_sha256": null
+        },
+        "candidate_sha256": null,
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1283,
+          "completion_tokens": 335,
+          "total_tokens": 1618,
+          "latency_ms": 2037
+        },
+        "request_id": null,
+        "elapsed_ms": 2071,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "attempts": [
+          {
+            "repeat": 0,
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "usage": {
+              "prompt_tokens": 1283,
+              "completion_tokens": 335,
+              "total_tokens": 1618,
+              "latency_ms": 2037
+            },
+            "latency_ms": 2038,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "1802d61965bce337a3935ffe686edcc712907a907d2ff4a60dbdc6690290bcbe",
+            "allowed_calls": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": false,
+            "target_scope_check": "not_run",
+            "target_scope": {
+              "name": "multicall_bad",
+              "va": 16960352,
+              "end": 16960432,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": false,
+            "injection": {
+              "error": "assembly validation: ValueError: forbidden assembly construct: ud2"
+            },
+            "candidate": {
+              "gate": "no_candidate",
+              "poc_status": "not_run"
+            },
+            "elapsed_ms": 2071
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "no_candidate",
+          "poc_status": "not_run",
+          "runner": null,
+          "candidate_sha256": null
+        },
+        "candidate_sha256": null,
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1283,
+          "completion_tokens": 335,
+          "total_tokens": 1618,
+          "latency_ms": 2037
+        },
+        "request_id": null,
+        "elapsed_ms": 2071,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "attempts": [
+          {
+            "repeat": 0,
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "usage": {
+              "prompt_tokens": 1283,
+              "completion_tokens": 335,
+              "total_tokens": 1618,
+              "latency_ms": 2037
+            },
+            "latency_ms": 2038,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "1802d61965bce337a3935ffe686edcc712907a907d2ff4a60dbdc6690290bcbe",
+            "allowed_calls": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": false,
+            "target_scope_check": "not_run",
+            "target_scope": {
+              "name": "multicall_bad",
+              "va": 16960352,
+              "end": 16960432,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": false,
+            "injection": {
+              "error": "assembly validation: ValueError: forbidden assembly construct: ud2"
+            },
+            "candidate": {
+              "gate": "no_candidate",
+              "poc_status": "not_run"
+            },
+            "elapsed_ms": 2071
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-flash",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-flash",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-flash",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-flash",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 12700,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "multicall_bad",
+        "va": 16960352,
+        "end": 16960432,
+        "source": "symbol"
+      },
+      "target_scope_check": "not_run",
+      "target_in_scope": false,
+      "ai_increment": false,
       "contract_level": "full",
-      "repeats": 1,
-      "ai_increment": false
+      "repeats": 1
     }
   ],
   "baseline_verified": 0,
   "ai_verified": 0,
   "ai_increment": 0,
-  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
-  "contract_level": "full",
-  "repeats": 1,
   "baseline_target_aware_verified": 0,
   "baseline_target_strict_analysis_only": 1,
   "baseline_target_strict_verified": 0,
   "baseline_target_strict_out_of_scope_actions": 0,
-  "ai_blind_verified": 0
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 0,
+  "ai_target_in_scope": 0,
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 12700,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
 }

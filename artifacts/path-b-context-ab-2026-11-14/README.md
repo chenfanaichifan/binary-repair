@@ -7,12 +7,11 @@ difference is `scripts/export_with_callees.py` context for `helper_copy`,
 
 | arm | AI status | native gate | verified |
 |---|---|---|---:|
-| without callee context | accepted | fail | 0/1 |
-| with callee context | accepted | no_candidate (injection rejected) | 0/1 |
+| without callee context | accepted | no_candidate | 0/1 |
+| with callee context | accepted | no_candidate | 0/1 |
 
-**Result: no verified improvement (0 vs 0).**  The context changes the failure
-mode (candidate injection rejected rather than executed and failing) but does
-not produce a verified non-loop repair.  This is a controlled negative result,
+**Result: no verified improvement (0 vs 0).**  Both arms had no injectable candidate; context did not produce a verified
+non-loop repair.  This is a controlled negative result,
 not evidence that context is useless; it is one case and the assembly path is
 still constrained by leaf/call/injection policy.
 

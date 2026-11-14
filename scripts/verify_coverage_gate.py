@@ -65,6 +65,14 @@ NON_GOALS_DOC = ROOT / "docs" / "acceptance" / "non-goals-2026-11-14.md"
 #: Re-adding an id here is a release decision and must state its rationale.
 ALLOWED_OPEN: tuple[str, ...] = ()
 
+#: Claims that are measured non_goal only on some hosts (Mach-O external PoC is
+#: unavailable on Linux/arm64 CI but may be native on a matching macOS host).
+#: Static mode must not treat the claim as stale when the host measures it as
+#: supported, while CI still maps the ID when the host measures it as non_goal.
+HOST_DEPENDENT_CLAIM_IDS = frozenset({
+    "RG-external-poc::<doc>::macho/x86_64",
+})
+
 REQUIRED_CLAIM_NON_GOAL_KEYS = (
     "id", "category", "enforcement", "claim", "owner", "review_by",
     "productization_criteria", "fallback",
@@ -345,7 +353,8 @@ def evaluate(audit: dict[str, Any] | None, claims: dict[str, Any] | None,
         # Static mode has dynamic_unverified rows for probe-only non-goals: a
         # claims id that is not a static non_goal must be excused by one.
         stale_claims = sorted(
-            claims_ids - set(non_goal_ids) - set(dynamic_ids))
+            claims_ids - set(non_goal_ids) - set(dynamic_ids)
+            - HOST_DEPENDENT_CLAIM_IDS)
         if stale_claims:
             violations.append(
                 "claims.json non_goals lists id(s) measured neither as non_goal "

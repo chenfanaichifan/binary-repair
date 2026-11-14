@@ -260,7 +260,7 @@ def test_repo_claims_parse_and_preserve_invariants() -> None:
                for item in claims["explicitly_unimplemented"])
     ids, violations = gate.claims_non_goal_ids(claims)
     assert not violations
-    assert len(ids) == 11
+    assert len(ids) == 12  # 11 coverage claims + host-dependent Mach-O external PoC
 
 
 def test_dynamic_unverified_is_allowed_static_but_rejected_local() -> None:
