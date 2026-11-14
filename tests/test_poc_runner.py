@@ -14,6 +14,7 @@ from app.services import poc_runner
 from app.services.binary_pipeline import repair_any
 from app.services.guest_runner import GuestResult, GuestRunner, find_guest_runner
 from app.services.poc_runner import load_manifest, run_poc
+from app.services.runtime import capabilities
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "fixtures" / "elf" / "vuln-strcpy-x86_64.elf"
@@ -21,6 +22,15 @@ MANIFEST = ROOT / "fixtures" / "poc" / "elf-x86_64-strcpy.json"
 LINUX_X64 = sys.platform.startswith("linux") and platform.machine() in {"x86_64", "amd64"}
 _RUNNER = find_guest_runner("x86_64")
 LIMA = _RUNNER is not None and _RUNNER.kind == "lima"
+
+
+@pytest.fixture(autouse=True)
+def _isolate_capability_cache():
+    """Keep the measured capability cache out of other tests' monkeypatching."""
+
+    capabilities.clear_cache()
+    yield
+    capabilities.clear_cache()
 
 
 def _b64(data: bytes) -> str:

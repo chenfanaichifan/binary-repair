@@ -399,6 +399,65 @@ def profile_evidence_sources(profile: str) -> tuple[str, ...]:
     return tuple(meta["evidence_sources"]) if meta else ()
 
 
+def _unavailable_capability(cell: RepairCell, reason: str) -> dict[str, Any]:
+    """Fail-safe capability row used when the live probe cannot answer."""
+
+    return {
+        "cell_key": cell.key,
+        "format": cell.container,
+        "arch": cell.arch,
+        "available": False,
+        "tier": "unavailable",
+        "engine": "none",
+        "poc_available": False,
+        "reason": reason,
+        "source": "none",
+    }
+
+
+def measured_runtime_capabilities(
+    cells: tuple[RepairCell, ...] | list[RepairCell] = REPAIR_CELLS,
+) -> dict[str, dict[str, Any]]:
+    """Measured (not declared) runtime capability per matrix cell.
+
+    The declared ``runtime_tiers`` stay untouched; this is the live measurement
+    from :func:`app.services.runtime.capabilities.probe`, keyed by cell key.  A
+    probe error degrades that row to ``unavailable`` with the error in
+    ``reason`` (fail closed, never a fabricated tier).
+    """
+
+    try:
+        from app.services.runtime import capabilities
+    except Exception as exc:  # noqa: BLE001 - matrix payload must stay buildable
+        return {
+            cell.key: _unavailable_capability(
+                cell, f"capability probe unavailable: {type(exc).__name__}: {exc}"
+            )
+            for cell in cells
+        }
+    measured: dict[str, dict[str, Any]] = {}
+    for cell in cells:
+        try:
+            item = capabilities.probe(cell.container, cell.arch)
+            row = {
+                "cell_key": cell.key,
+                "format": str(item.get("format") or cell.container),
+                "arch": str(item.get("arch") or cell.arch),
+                "available": bool(item.get("available")),
+                "tier": str(item.get("tier") or "unavailable"),
+                "engine": str(item.get("engine") or "none"),
+                "poc_available": bool(item.get("poc_available")),
+                "reason": str(item.get("reason") or ""),
+                "source": str(item.get("source") or "none"),
+            }
+        except Exception as exc:  # noqa: BLE001
+            row = _unavailable_capability(
+                cell, f"capability probe failed: {type(exc).__name__}: {exc}"
+            )
+        measured[cell.key] = row
+    return measured
+
+
 def matrix_payload() -> dict[str, Any]:
     """English-ASCII coverage payload for ``GET /api/binary/matrix`` and docs."""
     cells: list[dict[str, Any]] = []
@@ -425,6 +484,9 @@ def matrix_payload() -> dict[str, Any]:
         "untested_sink_classes": ["checked_copy"],
         "dispositions": list(DISPOSITIONS),
         "runtime_tiers": dict(RUNTIME_TIERS),
+        # Measured, per-cell runtime capability next to the declared tiers above:
+        # a declared tier is not a claim that this host can produce it.
+        "runtime_capabilities": measured_runtime_capabilities(),
         "evidence_profiles": {
             name: {
                 "description": meta["description"],

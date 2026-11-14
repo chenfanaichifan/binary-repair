@@ -22,13 +22,42 @@ TIMEOUT_SECONDS = 10.0
 ENV = {"PATH": "/usr/bin:/bin:/usr/sbin:/sbin", "LC_ALL": "C"}
 
 
-def _host_arch() -> str:
-    machine = platform.machine().lower()
-    if machine in {"arm64", "aarch64"}:
+def normalize_arch(arch: str) -> str:
+    """Normalize an architecture name to ``arm64`` / ``x86_64`` / ..."""
+
+    value = str(arch or "").strip().lower()
+    if value in {"arm64", "aarch64"}:
         return "arm64"
-    if machine in {"x86_64", "amd64"}:
+    if value in {"x86_64", "x86-64", "amd64"}:
         return "x86_64"
-    return machine
+    return value
+
+
+def _host_arch() -> str:
+    return normalize_arch(platform.machine())
+
+
+def host_arch() -> str:
+    """Public normalized host CPU architecture (``arm64`` / ``x86_64`` / ...)."""
+
+    return _host_arch()
+
+
+def supports_arch(arch: str, *, host_machine: str | None = None) -> bool:
+    """Whether the local Mach-O execution path can run a binary of *arch*.
+
+    True for a matching host CPU and for x86_64 on an arm64 host, where
+    :func:`_command` uses the Rosetta ``arch -x86_64`` wrapper.  This only
+    answers the architecture question: callers must still check
+    :func:`available` for the macOS/codesign precondition.  There is no reverse
+    (arm64-on-x86_64) execution path, so that combination is False.
+    """
+
+    host = normalize_arch(host_machine if host_machine is not None else _host_arch())
+    target = normalize_arch(arch)
+    if not host or not target:
+        return False
+    return target == host or (host == "arm64" and target == "x86_64")
 
 
 def available() -> bool:

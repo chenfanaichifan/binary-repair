@@ -3,8 +3,10 @@
 This module runs a *user/fixture supplied* PoC manifest against the original and
 repaired binaries and returns typed evidence.  It is deliberately conservative:
 
-- only formats with an available native/qemu/Lima runner are executed;
-- PE and 32-bit Mach-O are reported unavailable instead of being faked;
+- only formats with a measured external-PoC capability are executed (the
+  selector consults :mod:`app.services.runtime.capabilities`, so native/
+  qemu/Lima ELF and matching-host Mach-O run, while Mach-O on a mismatched host,
+  PE and 32-bit Mach-O are reported unavailable instead of being faked);
 - every command is timeout-bounded, runs in a staged directory with a scrubbed
   environment, and never uses a shell;
 - per-case ``files`` (base64) are staged into that directory and ``{tmp}`` in
@@ -21,16 +23,15 @@ import contextlib
 import hashlib
 import json
 import os
-import platform
 import re
 import shutil
-import sys
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterator
 
 from app.services.guest_runner import GuestRunner, find_guest_runner, run_path
+from app.services.runtime import capabilities
 
 SCHEMA_VERSION = 1
 DEFAULT_TIMEOUT = 5.0
@@ -111,20 +112,6 @@ def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _normalize_arch(arch: str) -> str:
-    return {
-        "amd64": "x86_64",
-        "x86_64": "x86_64",
-        "x86-64": "x86_64",
-        "aarch64": "arm64",
-        "arm64": "arm64",
-    }.get(str(arch or "").strip().lower(), str(arch or "").strip().lower())
-
-
-def _host_arch() -> str:
-    return _normalize_arch(platform.machine())
-
-
 def _validate_case_files(case: dict[str, Any], *, where: str) -> None:
     files = case.get("files")
     if files is None:
@@ -199,17 +186,48 @@ def load_manifest(manifest: dict[str, Any] | str | Path) -> dict[str, Any]:
     return data
 
 
-def _select_runner(format_name: str, arch: str) -> GuestRunner | None:
-    """Return the guest runner for a runnable target, or None.
+def _normalize_format(format_name: str) -> str:
+    value = str(format_name or "").strip().lower()
+    return {"mach-o": "macho", "mach_o": "macho"}.get(value, value)
 
-    Linux ELF targets use the native/qemu/Lima guest runner.  Native Mach-O
-    execution on a matching macOS host is kept for backwards compatibility; PE
-    and 32-bit Mach-O remain explicitly unavailable (never faked).
+
+def _select_runner(format_name: str, arch: str) -> GuestRunner | None:
+    """Return the external-PoC runner for a target, or None.
+
+    The decision is driven by the measured capability probe
+    (:mod:`app.services.runtime.capabilities`) so the external-PoC path and the
+    native/emulated runtime path cannot disagree about what the host can prove:
+
+    - ELF keeps the live native/qemu/Lima guest runner, but only when the probe
+      says an external PoC can execute there;
+    - Mach-O needs an external-PoC-capable tier (native execution on a matching
+      macOS host).  On an arm64 macOS host the x86_64 target is
+      ``emulated_run``/``poc_available=False`` (Rosetta function-level evidence
+      only), so no runner is selected and ``run_poc`` reports ``unavailable``
+      with the capability reason instead of faking execution;
+    - PE and every other pair stay explicitly unavailable (function-level
+      Unicorn evidence is not an external CLI PoC runner).
     """
 
-    if format_name == "elf":
-        return find_guest_runner(arch)
-    if format_name == "macho" and sys.platform == "darwin" and _normalize_arch(arch) == _host_arch():
+    fmt = _normalize_format(format_name)
+    capability = capabilities.probe(fmt, arch, external_poc=True)
+    if fmt == "elf":
+        runner = find_guest_runner(arch)
+        if runner is None:
+            return None
+        if capability.get("available"):
+            if not capability.get("poc_available"):
+                return None
+            if capability.get("tier") not in {"native_run", "emulated_run"}:
+                return None
+        # The live runner above is the authoritative availability measurement; a
+        # cached probe can only veto (never invent) an external-PoC runner.
+        return runner
+    if fmt == "macho":
+        if not capability.get("available") or not capability.get("poc_available"):
+            return None
+        if capability.get("tier") != "native_run":
+            return None
         return GuestRunner(kind="native", tool="", tier="native_run")
     return None
 
@@ -410,10 +428,20 @@ def run_poc(
     evidence.candidate_sha256 = _sha(candidate)
     selected = _select_runner(str(spec["format"]), str(spec["arch"]))
     if selected is None:
+        capability = capabilities.probe(
+            _normalize_format(str(spec["format"])), str(spec["arch"]),
+            external_poc=True,
+        )
+        reason = str(capability.get("reason") or "").strip()
+        detail = (
+            f"external PoC unavailable: {reason}"
+            if reason
+            else "external PoC unavailable: the capability probe reports no runner"
+        )
         evidence.status = "unavailable"
         evidence.limitations.append(
-            "no native/qemu/lima runner for this format/arch on this host; "
-            "PoC was not executed"
+            "no native/qemu/lima external PoC runner for this format/arch on "
+            f"this host; PoC was not executed ({detail})"
         )
         return evidence
     try:
