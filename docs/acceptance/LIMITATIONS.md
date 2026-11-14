@@ -23,8 +23,8 @@ work.  See section 9 for the exact matrix/sink boundary.
 Current acceptance is the non-browser suite:
 
 ```text
-macOS 13.5 arm64: 1149 tests, 0 failed, 0 errors, 7 skipped (359.1 s)
-Linux VM Ubuntu 24.04 arm64: 1149 tests, 0 failed, 0 errors, 10 skipped (365.0 s)
+macOS 13.5 arm64: 1155 tests, 0 failed, 0 errors, 7 skipped (281.0 s)
+Linux VM Ubuntu 24.04 arm64: 1155 tests, 0 failed, 0 errors, 10 skipped (287.9 s)
 GitHub Actions Ubuntu 24.04: workflow success on the final commits
 ```
 
@@ -206,3 +206,13 @@ cases are stable at 6/12, all successes in the loop family.  This is not the
 recommended 4–6-model matrix and is not an independent-case confidence interval;
 no SiliconFlow/Bailian key is configured.  See
 `artifacts/multi-model-matrix-2026-11-14/`.
+
+
+## 17. Path A does not lift non-loop verified success
+
+The selective call whitelist was tested on 12 cases with both DeepSeek models.
+Loop remains 6/12 verified; non-loop remains 0/6.  Heap security PoC passed but
+the valid-input stdout regression failed; CWE121 was injectable but behavior
+failed.  A **minimal function-level loop** paradigm-A closure passes roundtrip
+and fixed gates; non-loop A remains unimplemented because the target lacks
+required libc import/stub symbols.

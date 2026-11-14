@@ -49,6 +49,15 @@ simple semantic-versioning policy for delivery snapshots.
   identity; 3 runs each over 12 cases, native PoC.  Both 6/12 (loop 6/6,
   non-loop 0/6), stable.  Evidence `artifacts/multi-model-matrix-2026-11-14/`.
 
+### Added — path A call whitelist and paradigm A loop proof
+
+- target-mode assembly can call only direct targets already present in the
+  original function; call relocations are resolved against the injected cave
+- 12-case result remains 6/12 (loop 6/6, non-loop 0/6); heap security PoC is a
+  partial signal, not verified
+- Ghidra C -> DeepSeek patch -> Patcherex2 function replacement -> roundtrip
+  6/6 + fixed 6/6 on the loop fixture
+
 ### Added — Apple Silicon Ghidra toolchain
 
 - User-local JDK 25 + Ghidra 12.2 install scripts; macOS arm64 native decompiler

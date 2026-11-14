@@ -48,8 +48,8 @@ gate-blind/PoC increment experiment remain future work.
 
 | Environment | Result |
 |---|---|
-| macOS 13.5 arm64 / Python 3.11.8 | **1149 tests, 0 failed, 0 errors, 7 skipped** (359.1 s) |
-| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1149 tests, 0 failed, 0 errors, 10 skipped** (365.0 s) |
+| macOS 13.5 arm64 / Python 3.11.8 | **1155 tests, 0 failed, 0 errors, 7 skipped** (281.0 s) |
+| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1155 tests, 0 failed, 0 errors, 10 skipped** (287.9 s) |
 
 Targeted coverage includes:
 

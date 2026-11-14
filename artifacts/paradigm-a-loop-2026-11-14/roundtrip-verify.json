@@ -1,0 +1,88 @@
+{
+  "binary": "/tmp/route-a2/roundtrip.elf",
+  "mode": "roundtrip",
+  "cases": 6,
+  "failed": 0,
+  "passed": 6,
+  "ok": true,
+  "rows": [
+    {
+      "case": "",
+      "kind": "valid",
+      "returncode": 0,
+      "stdout": "in_len=0 ret=0 name= guard=ok\n",
+      "stderr": "",
+      "parsed": true,
+      "in_len": 0,
+      "ret": 0,
+      "name": "",
+      "guard": "ok",
+      "problems": []
+    },
+    {
+      "case": "a",
+      "kind": "valid",
+      "returncode": 0,
+      "stdout": "in_len=1 ret=1 name=a guard=ok\n",
+      "stderr": "",
+      "parsed": true,
+      "in_len": 1,
+      "ret": 1,
+      "name": "a",
+      "guard": "ok",
+      "problems": []
+    },
+    {
+      "case": "hello",
+      "kind": "valid",
+      "returncode": 0,
+      "stdout": "in_len=5 ret=5 name=hello guard=ok\n",
+      "stderr": "",
+      "parsed": true,
+      "in_len": 5,
+      "ret": 5,
+      "name": "hello",
+      "guard": "ok",
+      "problems": []
+    },
+    {
+      "case": "0123456789abcde",
+      "kind": "valid",
+      "returncode": 0,
+      "stdout": "in_len=15 ret=15 name=0123456789abcde guard=ok\n",
+      "stderr": "",
+      "parsed": true,
+      "in_len": 15,
+      "ret": 15,
+      "name": "0123456789abcde",
+      "guard": "ok",
+      "problems": []
+    },
+    {
+      "case": "0123456789abcdef",
+      "kind": "invalid",
+      "returncode": 3,
+      "stdout": "in_len=16 ret=16 name=0123456789abcdef guard=CORRUPT\n",
+      "stderr": "",
+      "parsed": true,
+      "in_len": 16,
+      "ret": 16,
+      "name": "0123456789abcdef",
+      "guard": "CORRUPT",
+      "problems": []
+    },
+    {
+      "case": "0123456789abcdefg",
+      "kind": "invalid",
+      "returncode": 3,
+      "stdout": "in_len=17 ret=17 name=0123456789abcdef guard=CORRUPT\n",
+      "stderr": "",
+      "parsed": true,
+      "in_len": 17,
+      "ret": 17,
+      "name": "0123456789abcdef",
+      "guard": "CORRUPT",
+      "problems": []
+    }
+  ]
+}

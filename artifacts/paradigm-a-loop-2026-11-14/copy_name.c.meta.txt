@@ -1,0 +1,8 @@
+name=copy_name
+entry=00401176
+size_bytes=83
+signature=undefined copy_name(void)
+calling_convention=unknown
+external=false
+thunk=false
+callees=

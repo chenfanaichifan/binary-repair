@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "runs": [
+    {
+      "model": "flash",
+      "baseline": 0,
+      "ai_verified": 6,
+      "loop_pass": 6,
+      "non_loop_pass": 0,
+      "heap_poc_pass": false
+    },
+    {
+      "model": "v4pro",
+      "baseline": 0,
+      "ai_verified": 6,
+      "loop_pass": 6,
+      "non_loop_pass": 0,
+      "heap_poc_pass": false
+    }
+  ],
+  "cases": 12,
+  "note": "allow_calls only permits direct targets already called by the original function; native PoC in Linux VM. Loop remains 6/6; non-loop verified remains 0/6. Heap partial: security PoC passed but regression stdout failed.",
+  "models": [
+    "deepseek-flash",
+    "deepseek-v4-pro"
+  ]
+}

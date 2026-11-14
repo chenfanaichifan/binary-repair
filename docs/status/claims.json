@@ -16,13 +16,14 @@
     "conclusion": "success"
   },
   "explicitly_unimplemented": [
-    "paradigm A (decompile C -> LLM patch -> binary-aware recompile)",
     "native PoC replay for every path/fixture; PE and 32-bit Mach-O PoC are unavailable",
     "arm32, 32-bit Mach-O, fat Mach-O rewrite, big-endian, riscv/mips/ppc repair",
     "heap/global/sprintf/UAF/integer/loop repair templates",
     "multi-provider/multi-model statistics and independent-case confidence intervals; target/PoC/contract product API; puts side-effect gate",
     "heap silent-overflow canary benchmark and UAF repair success; multi-model comparison",
-    "4-6-model multi-provider matrix: only two DeepSeek models available; no valid SiliconFlow/Bailian key"
+    "4-6-model multi-provider matrix: only two DeepSeek models available; no valid SiliconFlow/Bailian key",
+    "paradigm A non-loop / whole-program repair; minimal loop function replacement is proven only",
+    "non-loop path A verified success: 0/6; heap security-only partial and CWE symbol/stub limits remain"
   ],
   "implemented": [
     "two product AI paths (asm_roundtrip, binary_direct)",
@@ -37,6 +38,8 @@
     "SiliconFlow/DashScope provider profiles, strict model identity probe, and multi-model probe script",
     "operator checklist for multi-model key -> identity probe -> 12-case benchmark -> interpretation; matrix runner --benchmark",
     "Apple Silicon user-local JDK25 + Ghidra 12.2 install, native decompiler build, headless decompile and GUI launch",
-    "two-model DeepSeek matrix (flash + v4-pro, 3 runs each, 12 cases): both 6/12, loop 6/6, non-loop 0/6, identity exact"
+    "two-model DeepSeek matrix (flash + v4-pro, 3 runs each, 12 cases): both 6/12, loop 6/6, non-loop 0/6, identity exact",
+    "path A selective call whitelist for target-mode assembly (direct original call targets only; call relocations resolved at cave VA)",
+    "paradigm A minimal function-level loop closure: Ghidra C -> DeepSeek patch -> Patcherex2 replace -> roundtrip 6/6 and fixed 6/6"
   ]
 }

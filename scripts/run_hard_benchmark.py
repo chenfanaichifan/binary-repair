@@ -22,7 +22,8 @@ if str(ROOT) not in sys.path:
 
 from app.services.ai_assembly_repair import (  # noqa: E402
     ASM_MAX_TOKENS, ASM_SYSTEM_PROMPT, _assemble, _assembly_packet,
-    _disassemble_function, _inject_blob, _redirect_function,
+    _apply_call_relocations, _assemble_with_relocations, _disassemble_function,
+    _inject_blob, _patch_binary_call_relocations, _redirect_function,
     _validate_assembly_text, _validate_code,
 )
 from app.services.ai_binary_repair import _ai_base, _call_model, _sha  # noqa: E402
@@ -30,6 +31,7 @@ from app.services.binary_pipeline import repair_any  # noqa: E402
 from app.services.containers import detect_container  # noqa: E402
 from app.services.poc_runner import run_poc  # noqa: E402
 from app.services.repair.analyzer import Sink  # noqa: E402
+from app.services.repair.call_targets import discover_allowed_calls  # noqa: E402
 from app.services.repair.writer import repair_with_sinks  # noqa: E402
 
 
@@ -44,7 +46,9 @@ def _target_va(container: Any, target: str) -> int | None:
     return None
 
 
-def _inject_target(data: bytes, target: str, capacity: int, assembly: str) -> tuple[bytes | None, dict[str, Any]]:
+def _inject_target(data: bytes, target: str, capacity: int, assembly: str,
+                   allowed_calls: list[Any] | None = None) -> tuple[bytes | None, dict[str, Any]]:
+    allowed_calls = list(allowed_calls or [])
     container = detect_container(data)
     va = _target_va(container, target)
     if va is None:
@@ -54,25 +58,43 @@ def _inject_target(data: bytes, target: str, capacity: int, assembly: str) -> tu
         capacity=capacity, patchable=True,
     )
     try:
-        clean = _validate_assembly_text(assembly, container.arch)
-        code = _assemble(clean, container.arch)
-        _validate_code(code, container.arch)
+        clean = _validate_assembly_text(assembly, container.arch, allowed_calls)
+        if allowed_calls:
+            code, relocs = _assemble_with_relocations(clean, container.arch)
+        else:
+            code, relocs = _assemble(clean, container.arch), []
     except Exception as exc:  # noqa: BLE001
         return None, {"error": f"assembly validation: {type(exc).__name__}: {exc}"}
     patched, cave_va, method = _inject_blob(container, data, code)
     if patched is None or cave_va is None:
         return None, {"error": f"injection failed: {method}"}
+    try:
+        if relocs:
+            patched = _patch_binary_call_relocations(
+                patched, cave_va, container.arch, code, relocs, allowed_calls,
+            )
+            resolved = _apply_call_relocations(
+                code, container.arch, int(cave_va), relocs, allowed_calls,
+            )
+            _validate_code(resolved, container.arch, allowed_calls, base_va=int(cave_va))
+        else:
+            _validate_code(code, container.arch)
+    except Exception as exc:  # noqa: BLE001
+        return None, {"error": f"call relocation: {type(exc).__name__}: {exc}"}
     patched = _redirect_function(patched, container, sink, cave_va)
     if patched is None:
         return None, {"error": "function entry redirect failed"}
     return patched, {
         "target_va": hex(va), "cave_va": hex(cave_va), "method": method,
         "code_bytes": len(code), "assembly_sha256": hashlib.sha256(clean.encode()).hexdigest(),
+        "call_targets": [getattr(item, "to_dict", lambda: {})() for item in allowed_calls],
+        "call_relocations": len(relocs),
     }
 
 
 def _prompt_packet(data: bytes, target: str, capacity: int, contract: str,
-                   contract_level: str = "full") -> dict[str, Any]:
+                   contract_level: str = "full",
+                   allowed_calls: list[Any] | None = None) -> dict[str, Any]:
     container = detect_container(data)
     va = _target_va(container, target)
     if va is None:
@@ -80,15 +102,22 @@ def _prompt_packet(data: bytes, target: str, capacity: int, contract: str,
     sink = Sink(kind="unbounded_copy", arch=container.arch, function_va=va,
                 capacity=capacity, patchable=True)
     listing = _disassemble_function(data, container, sink)
-    packet = _assembly_packet(data, container, sink, listing)
+    allowed_calls = list(allowed_calls or [])
+    packet = _assembly_packet(data, container, sink, listing, allowed_calls)
     packet["target_function"] = target
+    call_rule = (
+        "no external calls, syscalls, privileged instructions or indirect jumps"
+        if not allowed_calls else
+        "only direct calls to the exact target addresses in allowed_calls are allowed; "
+        "no other calls, syscalls, privileged instructions or indirect jumps"
+    )
     if contract_level == "full":
         packet["hard_case_contract"] = contract
         packet["rules"] = [
             "return a complete replacement function assembly",
             "preserve the calling convention and write at most capacity-1 bytes plus NUL",
             "preserve the observable behaviour for valid inputs",
-            "no external calls, syscalls, privileged instructions or indirect jumps",
+            call_rule,
             "terminate with ret",
         ]
     elif contract_level == "generic":
@@ -99,7 +128,7 @@ def _prompt_packet(data: bytes, target: str, capacity: int, contract: str,
         packet["rules"] = [
             "return a complete replacement function assembly",
             "preserve the calling convention and observable behaviour",
-            "no external calls, syscalls, privileged instructions or indirect jumps",
+            call_rule,
             "terminate with ret",
         ]
         packet["sink"] = {"kind": "unbounded_copy"}
@@ -108,7 +137,7 @@ def _prompt_packet(data: bytes, target: str, capacity: int, contract: str,
         packet["sink"] = {"kind": "unbounded_copy"}
         packet["rules"] = [
             "return a complete replacement function assembly",
-            "no external calls, syscalls, privileged instructions or indirect jumps",
+            call_rule,
             "terminate with ret",
         ]
     return packet
@@ -175,6 +204,8 @@ def main() -> int:
     ap.add_argument("--case", default="")
     ap.add_argument("--contract-level", choices=("full", "generic", "none"), default="full")
     ap.add_argument("--repeats", type=int, default=1)
+    ap.add_argument("--allow-calls", action="store_true",
+                    help="allow only calls already present in the target function")
     args = ap.parse_args()
     out = args.out
     out.mkdir(parents=True, exist_ok=True)
@@ -226,9 +257,16 @@ def main() -> int:
             if client is None:
                 ai_meta.update({"status": "unavailable", "error": "no provider configured"})
             else:
+                allowed_calls = []
+                if args.allow_calls:
+                    container = detect_container(data)
+                    target_va = _target_va(container, case["target"])
+                    if target_va is not None:
+                        allowed_calls = discover_allowed_calls(data, container, target_va)
+                record["allowed_calls"] = [item.to_dict() for item in allowed_calls]
                 packet = _prompt_packet(
                     data, case["target"], int(case["capacity"]), case["contract"],
-                    args.contract_level,
+                    args.contract_level, allowed_calls,
                 )
                 parsed, error = _call_model(
                     client, system_prompt=ASM_SYSTEM_PROMPT, packet=packet,
@@ -241,7 +279,21 @@ def main() -> int:
                     ai_meta["status"] = ai_meta.get("status") or "invalid"
                     ai_meta["error"] = error or ai_meta.get("error")
         if assembly is not None:
-            patched, injection = _inject_target(data, case["target"], int(case["capacity"]), assembly)
+            call_targets = record.get("allowed_calls") or []
+            # Reference mode has no packet; discover only when explicitly enabled.
+            if args.allow_calls and not call_targets:
+                container = detect_container(data)
+                target_va = _target_va(container, case["target"])
+                if target_va is not None:
+                    call_targets = [item.to_dict() for item in discover_allowed_calls(data, container, target_va)]
+                    record["allowed_calls"] = call_targets
+            allowed_objects = []
+            if args.allow_calls:
+                from app.services.repair.call_targets import AllowedCall
+                allowed_objects = [AllowedCall(name=item["name"], target_va=int(item["target_va"], 16), source=item["source"]) for item in call_targets]
+            patched, injection = _inject_target(
+                data, case["target"], int(case["capacity"]), assembly, allowed_objects,
+            )
             record["injection"] = injection
             record["candidate"] = _evaluate(data, patched, poc, case)
             if patched is not None:
@@ -269,7 +321,8 @@ def main() -> int:
         "note": (
             "baseline is deterministic; AI target assembly is accepted only by "
             "native/qemu PoC+regression. baseline_target_aware receives the same "
-            "target/capacity hint; ai_blind uses the public AI path without target."
+            "target/capacity hint; ai_blind uses the public AI path without target. "
+            "allow_calls only permits direct calls already present in the target function."
         ),
         "contract_level": args.contract_level,
         "repeats": args.repeats,
