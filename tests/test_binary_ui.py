@@ -112,6 +112,39 @@ def test_i18n_overrides_cover_the_binary_page():
     assert "Repair any binary" in js.text
 
 
+def test_agent_quick_repair_panel_offers_optional_poc_manifest():
+    """The quick-repair card exposes an optional PoC manifest picker.
+
+    The review card is rendered by ``agent.js`` (not the Jinja template), so the
+    contract is checked on the served script: a visible Chinese label, an
+    ``.json`` file input with a stable testid, a conditional FormData append, and
+    display-only strategy/runtime chips.  No new verdict logic is asserted here:
+    success still comes from ``payload.decision.success``.
+    """
+    client = _client()
+    page = client.get("/agent/new")
+    assert page.status_code == 200
+    assert "/static/js/agent.js" in page.text
+    js = client.get("/static/js/agent.js")
+    assert js.status_code == 200
+    for marker in (
+        "agent-poc-manifest",
+        "PoC / 回归用例清单（可选，JSON）",
+        "pocInput.accept",
+        ".json,application/json",
+        'form.append("poc_manifest"',
+        "if (state.pocManifest)",
+        "策略 capacity-check",
+        "verification.scope",
+        "运行时 ",
+        "runtime.evidence",
+    ):
+        assert marker in js.text, marker
+    # The optional manifest must not become a required field and must not drive
+    # the verdict.
+    assert "var success = decision.success === true;" in js.text
+
+
 def test_matrix_api_is_english_ascii():
     response = _client().get("/api/binary/matrix")
     assert response.status_code == 200

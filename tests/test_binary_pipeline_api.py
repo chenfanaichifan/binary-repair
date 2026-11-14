@@ -110,3 +110,95 @@ def test_repair_static_only_requires_opt_in(monkeypatch):
     assert payload["disposition"] == "static_only_patch"
     assert payload["delivery"]["download_allowed"] is True
     assert payload["delivery"]["verified"] is False
+
+
+# ---------------------------------------------------------------------------
+# Reviewed capacity-check strategy through the unified repair endpoint
+# ---------------------------------------------------------------------------
+
+MARCX = ROOT / "fixtures" / "elf" / "vuln-capacity-confusion-x86_64.elf"
+MARCX_PATCHED_SHA256 = (
+    "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2"
+)
+
+
+class _FakePocEvidence:
+    def __init__(self, status: str = "pass") -> None:
+        candidate_ok = status == "pass"
+        self.payload = {
+            "schema_version": 1,
+            "status": status,
+            "runner": "limactl",
+            "tier": "emulated_run" if status in {"pass", "fail"} else "",
+            "poc": [
+                {"case_id": "poc", "kind": "poc", "executable": "original",
+                 "crashed": True, "expected_ok": True},
+                {"case_id": "poc", "kind": "poc", "executable": "candidate",
+                 "crashed": False, "expected_ok": candidate_ok},
+            ],
+            "regression": [
+                {"case_id": "benign", "kind": "regression",
+                 "executable": "original", "exit_code": 0, "expected_ok": True},
+                {"case_id": "benign", "kind": "regression",
+                 "executable": "candidate", "exit_code": 0, "expected_ok": True},
+            ],
+            "limitations": [],
+        }
+
+    def to_dict(self) -> dict:
+        return dict(self.payload)
+
+
+def test_repair_endpoint_capacity_with_passing_manifest_is_verified(monkeypatch):
+    if not MARCX.is_file():
+        import pytest
+
+        pytest.skip(f"fixture missing: {MARCX}")
+    import hashlib
+
+    import app.services.poc_runner as poc_runner
+
+    evidence = _FakePocEvidence("pass")
+    monkeypatch.setattr(poc_runner, "run_poc", lambda *a, **k: evidence)
+    client = _client()
+    response = client.post(
+        "/api/binary/repair",
+        files={
+            "binary": ("marcx", MARCX.read_bytes(), "application/octet-stream"),
+            "poc_manifest": ("marcx-capacity.json", b'{"schema_version": 1}',
+                             "application/json"),
+        },
+        data={"csrf": CSRF_TOKEN},
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["ok"] is True
+    assert payload["verified"] is True
+    assert payload["disposition"] == "verified_patch"
+    assert payload["report"]["strategy"] == "capacity"
+    assert payload["report"]["mode"] == "capacity-check"
+    patched = base64.b64decode(payload["patched_base64"])
+    assert hashlib.sha256(patched).hexdigest() == MARCX_PATCHED_SHA256
+    checks = {
+        check["id"]: check["status"]
+        for check in payload["verification"]["packet"]["checks"]
+    }
+    assert checks["patch.capacity"] == "passed"
+    assert checks["runtime.evidence"] == "passed"
+
+
+def test_repair_endpoint_capacity_without_manifest_is_422():
+    if not MARCX.is_file():
+        import pytest
+
+        pytest.skip(f"fixture missing: {MARCX}")
+    client = _client()
+    response = _post(
+        client, "/api/binary/repair", MARCX.read_bytes(), "marcx",
+    )
+    assert response.status_code == 422
+    payload = response.json()
+    assert payload["ok"] is False
+    assert payload["report"]["strategy"] == "capacity"
+    assert payload["report"]["verification"]["gate"]["success"] is False
+    assert payload["report"]["verification"]["gate"]["required_not_run"] >= 1

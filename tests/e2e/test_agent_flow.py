@@ -99,3 +99,49 @@ def test_live_mode_without_plan_says_so(mock_server, page):
         '.indexOf("计划服务还没接通") >= 0'
     )
     assert "deterministic" in page.text('[data-testid="agent-mode-badge"]')
+
+
+def test_quick_repair_panel_offers_optional_poc_manifest(mock_server, page, tmp_path):
+    """Markup-only e2e: the review card exposes an optional PoC manifest picker.
+
+    The manifest is optional, so the quick-repair button must be usable without
+    choosing one; selecting a file only updates a local hint (the request itself
+    is covered by the API tests).
+    """
+    sample = tmp_path / "sample.elf"
+    sample.write_bytes(b"\x7fELF" + b"demo-bytes" * 32)
+
+    _open(page, mock_server, "/agent/new?plan=fixture")
+    page.wait_js('document.querySelector(\'[data-testid="agent-dropzone"]\') !== null')
+    page.set_file_input('[data-testid="agent-file-input"]', str(sample))
+
+    for index in (1, 2, 3):
+        page.wait_js(
+            "document.querySelectorAll('[data-testid=\"agent-question-card\"]').length >= "
+            + str(index)
+        )
+        _click_last(page, "agent-question-default")
+        _click_last(page, "agent-question-next")
+    page.wait_js('document.querySelector(\'[data-testid="agent-review-card"]\') !== null')
+
+    selector = '[data-testid="agent-poc-manifest"]'
+    assert page.eval_js(
+        f'document.querySelector(\'{selector}\').type'
+    ) == "file"
+    assert ".json" in page.eval_js(f'document.querySelector(\'{selector}\').accept')
+    assert page.eval_js(f'document.querySelector(\'{selector}\').required') is False
+    assert page.eval_js(
+        f'document.querySelector(\'{selector}\').labels[0].textContent'
+    ).find("回归用例清单") >= 0
+    # The quick-repair action stays available without a manifest.
+    assert page.eval_js(
+        'document.querySelector(\'[data-testid="agent-quick-repair"]\').disabled'
+    ) is False
+
+    manifest = tmp_path / "marcx-capacity.json"
+    manifest.write_text('{"schema_version": 1}', encoding="utf-8")
+    page.set_file_input(selector, str(manifest))
+    page.wait_js(
+        'document.querySelector(\'[data-testid="agent-poc-manifest-wrap"]\').textContent'
+        '.indexOf("已选择：marcx-capacity.json") >= 0'
+    )

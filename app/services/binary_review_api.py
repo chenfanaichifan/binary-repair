@@ -45,12 +45,18 @@ async def binary_repair_review(
     binary: UploadFile = File(...),
     csrf: str = Form(...),
     ai_review: str = Form("0"),
+    poc_manifest: UploadFile | None = File(None),
 ) -> JSONResponse:
     """Verify a direct ELF repair and optionally request a read-only review.
 
     The HTTP status is 200 for every valid upload, even when the deterministic
     gate is non-successful: the body's ``ok``/``decision`` carry the outcome and
     there is no candidate download unless the gate succeeded.
+
+    An optional ``poc_manifest`` form field supplies the PoC/regression manifest
+    used as runtime evidence by the reviewed capacity-check repair class.  It
+    is validated here (<= 64 KiB, UTF-8 JSON object) and never bypasses the
+    deterministic gate.
     """
     _require_csrf(csrf)
     raw = await binary.read()
@@ -60,7 +66,11 @@ async def binary_repair_review(
     # Late import so tests and operators can monkeypatch ``app.main``'s client
     # factory; this also keeps the router independent of the app module's import
     # order.
-    from app.main import client_from_env
+    from app.main import _read_poc_manifest, client_from_env
+
+    parsed_poc, poc_error = await _read_poc_manifest(poc_manifest)
+    if poc_error:
+        raise HTTPException(status_code=422, detail=poc_error)
 
     requested = _truthy(ai_review)
     client = client_from_env() if requested else None
@@ -71,6 +81,7 @@ async def binary_repair_review(
             request_review=requested,
             client=client,
             data_dir=data_dir,
+            poc_manifest=parsed_poc,
         )
     except Exception:  # noqa: BLE001 - no stack/secret text leaves the process
         return JSONResponse(

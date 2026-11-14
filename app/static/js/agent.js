@@ -173,6 +173,10 @@
     stepIndex: 0,
     answers: {},
     file: null,
+    /* Optional PoC/regression manifest chosen for the quick-repair request. The
+       File object lives in memory only; it is appended to the same FormData as
+       the binary and is reset with the other guided-flow state. */
+    pocManifest: null,
     snapshot: null,
     artifacts: [],
     view: "chat",
@@ -1239,6 +1243,7 @@
     state.stepIndex = 0;
     state.answers = {};
     state.file = null;
+    state.pocManifest = null;
     clear(stream());
     var tr = window.I18N ? window.I18N.translate : function (value) { return value; };
     var titles = state.plan.steps.map(function (step) {
@@ -1415,6 +1420,8 @@
                     bytes[2] === 0x4c && bytes[3] === 0x46;
         var finish = function (hex) {
           state.file = { file: file, name: file.name, size: file.size, sha256: hex, isElf: isElf };
+          /* The manifest is bound to the sample hash; a new upload invalidates it. */
+          state.pocManifest = null;
           bar.style.width = "100%";
           progressText.textContent = "读取完成 100%";
           if (!isElf) warning.textContent = "未检测到 ELF 文件头；仍可作为演示样本提交，实际执行可能被判为 unsupported。";
@@ -1507,6 +1514,34 @@
     card.appendChild(aiWrap);
     card.appendChild(el("p", "agent-ai-note",
       "AI 只收到结构化验证报告（哈希、地址、限制），不接收二进制或源码；验收仍由确定性 gate 决定。"));
+
+    /* Optional PoC/regression manifest for the reviewed capacity-check profile.
+       It is never required: without it the request still runs, and the gate can
+       only return a non-successful (not verified) outcome. */
+    var pocWrap = el("div", "agent-question");
+    pocWrap.dataset.testid = "agent-poc-manifest-wrap";
+    var pocLabel = el("label", null, "PoC / 回归用例清单（可选，JSON）");
+    pocLabel.setAttribute("for", "agent-poc-manifest");
+    var pocInput = document.createElement("input");
+    pocInput.type = "file";
+    pocInput.id = "agent-poc-manifest";
+    pocInput.accept = ".json,application/json";
+    pocInput.dataset.testid = "agent-poc-manifest";
+    var pocHint = el("p", "agent-ai-note",
+      "可选：上传 PoC/回归用例清单 JSON（≤ 64 KiB）。不提供时只会得到未验证结论，页面不会伪造运行时证据。");
+    if (state.pocManifest) {
+      pocHint.textContent = "已选择：" + state.pocManifest.name;
+    }
+    pocInput.addEventListener("change", function () {
+      state.pocManifest = (pocInput.files && pocInput.files[0]) || null;
+      pocHint.textContent = state.pocManifest
+        ? "已选择：" + state.pocManifest.name
+        : "可选：上传 PoC/回归用例清单 JSON（≤ 64 KiB）。不提供时只会得到未验证结论，页面不会伪造运行时证据。";
+    });
+    pocWrap.appendChild(pocLabel);
+    pocWrap.appendChild(pocInput);
+    pocWrap.appendChild(pocHint);
+    card.appendChild(pocWrap);
 
     var actions = el("div", "agent-card-actions");
     var quick = el("button", "agent-btn", "一键修复（自动识别格式）");
@@ -1631,6 +1666,36 @@
     card.appendChild(block);
   }
 
+  /* Display-only runtime chips: the tier/runner come verbatim from the backend
+     verification packet and never influence payload.decision.success. */
+  var RUNTIME_TIER_LABELS = {
+    native_run: "native",
+    emulated_run: "guest/emulated",
+    static_only: "static_only"
+  };
+
+  function appendRuntimeChips(meta, verification) {
+    if (!meta || !verification) { return; }
+    var scope = verification.scope || {};
+    var tier = scope.runtime_tier;
+    if (tier) {
+      meta.appendChild(el("span", "repair-chip",
+        "运行时 " + (RUNTIME_TIER_LABELS[tier] || tier)));
+    }
+    var runner = "";
+    var checks = verification.checks || [];
+    for (var index = 0; index < checks.length; index += 1) {
+      if (checks[index] && checks[index].id === "runtime.evidence") {
+        var match = /runner=([^\s;]+)/.exec(checks[index].detail || "");
+        if (match) { runner = match[1]; }
+        break;
+      }
+    }
+    if (runner) {
+      meta.appendChild(el("span", "repair-chip", "runner " + runner));
+    }
+  }
+
   function pushQuickResult(payload) {
     var decision = payload.decision || {};
     var success = decision.success === true;
@@ -1646,7 +1711,13 @@
     if (payload.report && payload.report.capacity) {
       meta.appendChild(el("span", "repair-chip", "capacity " + payload.report.capacity));
     }
-    if (payload.report && payload.report.mode) {
+    var strategy = payload.report && payload.report.strategy;
+    if (strategy === "capacity") {
+      /* Reviewed duplicated-capacity-check rewrite profile. Display only: the
+         verdict still comes from payload.decision.success. */
+      meta.appendChild(el("span", "repair-chip", "策略 capacity-check"));
+    }
+    if (payload.report && payload.report.mode && strategy !== "capacity") {
       meta.appendChild(el("span", "repair-chip",
         payload.report.mode === "strict" ? "严格修复 · 超长拒绝" : payload.report.mode));
     }
@@ -1654,6 +1725,7 @@
       meta.appendChild(el("span", "repair-chip",
         "gate " + payload.verification.gate.outcome));
     }
+    appendRuntimeChips(meta, payload.verification);
     card.appendChild(meta);
 
     if (payload.verification) {
@@ -1710,6 +1782,11 @@
     progressText.textContent = "上传并验证中…";
     var form = new FormData();
     form.append("binary", state.file.file, state.file.name);
+    /* Optional: the manifest is only sent when the user chose one, so the
+       request contract is unchanged for callers that do not use it. */
+    if (state.pocManifest) {
+      form.append("poc_manifest", state.pocManifest, state.pocManifest.name);
+    }
     form.append("csrf", CSRF);
     form.append("ai_review", aiToggle && aiToggle.checked ? "1" : "0");
     fetch("/api/binary/repair-review", { method: "POST", body: form })

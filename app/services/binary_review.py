@@ -673,12 +673,36 @@ def run_direct_repair(
     request_review: bool = False,
     client: Any | None = None,
     data_dir: str | Any | None = None,
+    poc_manifest: dict[str, Any] | None = None,
 ) -> RepairOutcome:
-    """Run the direct engine, build the gate, optionally review, then decide."""
-    from app.services.binary_pipeline import detect_format, repair_binary
+    """Run the direct engine, build the gate, optionally review, then decide.
+
+    Without a PoC/regression manifest the ELF x86-64 path keeps the legacy
+    strict-template engine and its stack-capacity gate first, and other
+    containers use the unified pipeline with their native/emulated runtime.
+
+    When a manifest is supplied, every container and every deterministic repair
+    strategy whose evidence model needs a real original-vs-candidate
+    differential (heap/global guards, reviewed capacity rewrites, multi-call
+    guards, ...) is routed through the unified pipeline, because the legacy
+    stack-sentinel gate cannot express that evidence model.  A manifest never
+    bypasses the deterministic gate: the outcome is still whatever the unified
+    gate decides.
+    """
+    from app.services.binary_pipeline import detect_format, repair_any, repair_binary
 
     fmt, arch, _bits = detect_format(raw)
-    if (fmt, arch) == ("elf", "x86_64"):
+    if poc_manifest is not None:
+        # Any strategy whose evidence model needs the supplied PoC/regression
+        # differential (heap/global destinations, in-place capacity rewrites,
+        # multi-call guards) is only verifiable by the unified gate.
+        outcome = repair_any(
+            raw, strategy="auto", verify=True, poc_manifest=poc_manifest,
+        )
+        patched = outcome.candidate
+        report = outcome.report
+        verification = _unified_verification(report, raw, patched)
+    elif (fmt, arch) == ("elf", "x86_64"):
         patched, report = repair_elf(raw)
         verification = build_verification(report, original=raw, patched=patched)
     else:
