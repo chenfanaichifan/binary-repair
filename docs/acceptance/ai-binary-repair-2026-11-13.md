@@ -181,6 +181,16 @@ Two non-loop family-diversity probes were added:
 AI target produced no candidate, 0/1).  They are not counted among the six loop
 successes.
 
+## 8.1 Apple Silicon Ghidra toolchain (installed, not paradigm A)
+
+Ghidra 12.2 and Temurin JDK 25 were installed user-locally on the M2 Mac
+without sudo.  The official zip lacked `os/mac_arm_64/decompile`, so the
+shipped Gradle wrapper built the native decompiler.  Headless decompilation of
+`vuln_copy` succeeded (122 chars, 31-byte body, entry `0102bab4`); `ghidraRun`
+started a Java GUI process.  Evidence:
+`artifacts/ghidra-macos-2026-11-14/`.  This is toolchain readiness and
+decompilation proof, not a C-repatch/recompile (paradigm A) implementation.
+
 ## 9. Multi-model provider readiness (P1)
 
 A provider abstraction now supports DeepSeek, SiliconFlow and DashScope/Bailian

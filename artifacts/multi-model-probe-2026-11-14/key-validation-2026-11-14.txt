@@ -1,0 +1,10 @@
+The operator-supplied key was tested on 2026-11-14 and was rejected by every
+candidate OpenAI-compatible endpoint. The key itself is not stored here.
+
+  api.siliconflow.cn/v1/models              HTTP 401  "Token is invalid."
+  dashscope.aliyuncs.com/compatible-mode/v1/models
+                                            HTTP 401  "Incorrect API key provided"
+  api.deepseek.com/v1/models               HTTP 401  "Authentication Fails ... invalid"
+
+No multi-model benchmark was run with this credential. Obtain a valid key from
+the chosen platform and put it in the environment/.env; do not commit it.

@@ -21,6 +21,13 @@ No real multi-model comparison can be run until a compliant provider key is
 configured (SiliconFlow or DashScope/Bailian).  The provider layer and probe are
 implemented and tested; only credentials are missing.
 
+## Operator key check (2026-11-14)
+
+A key supplied for the P1 matrix was rejected by SiliconFlow, DashScope and
+DeepSeek with HTTP 401 (see `key-validation-2026-11-14.txt`).  No result was
+fabricated; obtain a valid key from the chosen provider and set it in the
+environment/.env.
+
 ## Reproduce
 
 ```bash

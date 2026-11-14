@@ -1,0 +1,6 @@
+GUI launch check 2026-11-14:
+- command: "$GHIDRA_HOME/ghidraRun" with JAVA_HOME=$HOME/Applications/JDKs/temurin-25
+- launcher returns after backgrounding; Java process observed alive:
+  /Users/huageorge/Applications/JDKs/temurin-25/bin/java ... ghidra.GhidraRun
+- verification process was then killed; no persistent GUI left running.
+- interactive window rendering was not asserted by this headless agent.

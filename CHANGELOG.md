@@ -43,6 +43,12 @@ simple semantic-versioning policy for delivery snapshots.
 
 ## [Unreleased]
 
+### Added — Apple Silicon Ghidra toolchain
+
+- User-local JDK 25 + Ghidra 12.2 install scripts; macOS arm64 native decompiler
+  built with Gradle; headless decompile and GUI launch verified on M2.
+- Evidence `artifacts/ghidra-macos-2026-11-14/`; no binaries committed.
+
 ### Added — compliant multi-provider profiles
 
 - Operator checklist `docs/operations/multi-model-benchmark.md`; matrix runner

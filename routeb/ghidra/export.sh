@@ -3,10 +3,15 @@
 #
 #   export.sh <elf> [function] [outdir]
 #
-# Requires Ghidra 11.x and JDK 21. Set GHIDRA_HOME if it is not ~/ghidra_11.4_PUBLIC.
+# Requires Ghidra 12.x and JDK 25 on this Apple Silicon host. Set GHIDRA_HOME
+# and JAVA_HOME if they are not the user-local defaults installed by
+# scripts/install_ghidra_macos.sh.
 set -euo pipefail
 
-GHIDRA_HOME=${GHIDRA_HOME:-$HOME/ghidra_11.4_PUBLIC}
+GHIDRA_HOME=${GHIDRA_HOME:-$HOME/Applications/ghidra_12.2_PUBLIC}
+JAVA_HOME=${JAVA_HOME:-$HOME/Applications/JDKs/temurin-25}
+export JAVA_HOME
+export PATH="$JAVA_HOME/bin:$PATH"
 BIN=${1:?usage: export.sh <elf> [function] [outdir]}
 FUNC=${2:-copy_name}
 OUT=${3:-$(cd "$(dirname "$0")/.." && pwd)/out}
@@ -16,12 +21,16 @@ if [[ ! -x "$GHIDRA_HOME/support/analyzeHeadless" ]]; then
   exit 1
 fi
 
-if ! command -v java >/dev/null 2>&1; then
-  echo "java not found. Ghidra 11.x needs JDK 21 (sudo apt install openjdk-21-jdk)." >&2
+if [[ ! -x "$JAVA_HOME/bin/java" ]]; then
+  echo "java not found under JAVA_HOME=$JAVA_HOME (see scripts/install_ghidra_macos.sh)." >&2
+  exit 1
+fi
+if [[ ! -x "$GHIDRA_HOME/ghidraRun" ]]; then
+  echo "Ghidra not found under GHIDRA_HOME=$GHIDRA_HOME" >&2
   exit 1
 fi
 
-java -version 2>&1 | head -1
+"$JAVA_HOME/bin/java" -version 2>&1 | head -1
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
 

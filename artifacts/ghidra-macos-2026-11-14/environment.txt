@@ -1,0 +1,9 @@
+host=Darwin arm64
+jdk=/Users/huageorge/Applications/JDKs/temurin-25
+openjdk version "25.0.5" 2026-10-20 LTS
+OpenJDK Runtime Environment Temurin-25.0.5+8 (build 25.0.5+8-LTS)
+OpenJDK 64-Bit Server VM Temurin-25.0.5+8 (build 25.0.5+8-LTS, mixed mode, sharing)
+ghidra_home=/Users/huageorge/Applications/ghidra_12.2_PUBLIC
+application.version=12.2
+-rwxr-xr-x@ 1 huageorge  wheel  3293126 Nov 14 15:09 /Users/huageorge/Applications/ghidra_12.2_PUBLIC/Ghidra/Features/Decompiler/build/os/mac_arm_64/decompile
+c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4  fixtures/elf/vuln-strcpy-x86_64.elf

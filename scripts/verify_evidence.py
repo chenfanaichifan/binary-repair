@@ -27,6 +27,7 @@ DEFAULT_BUNDLES = (
     "artifacts/hard-case-benchmark-2026-11-13",
     "artifacts/fairness-ablation-2026-11-14",
     "artifacts/multi-model-probe-2026-11-14",
+    "artifacts/ghidra-macos-2026-11-14",
 )
 
 

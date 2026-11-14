@@ -1,0 +1,8 @@
+name=vuln_copy
+entry=0102bab4
+size_bytes=31
+signature=undefined vuln_copy(void)
+calling_convention=unknown
+external=false
+thunk=false
+callees=strcpy puts 

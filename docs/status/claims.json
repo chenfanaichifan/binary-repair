@@ -22,7 +22,8 @@
     "heap/global/sprintf/UAF/integer/loop repair templates",
     "multi-provider/multi-model statistics and independent-case confidence intervals; target/PoC/contract product API; puts side-effect gate",
     "heap silent-overflow canary benchmark and UAF repair success; multi-model comparison",
-    "real multi-model benchmark results: no SILICONFLOW_API_KEY/DASHSCOPE_API_KEY on host"
+    "real multi-model benchmark results: no SILICONFLOW_API_KEY/DASHSCOPE_API_KEY on host",
+    "paradigm A C patch/recompile loop; valid multi-model provider key (supplied key was rejected HTTP 401)"
   ],
   "implemented": [
     "two product AI paths (asm_roundtrip, binary_direct)",
@@ -35,6 +36,7 @@
     "UAF no-input case support (stdout_hex, empty regression) and an 11th family-diversity probe; AI target assembly rejected on the UAF case (0/1)",
     "heap-canary observable-overflow hard case and UAF no-input probe (both AI 0/1, native PoC evidence)",
     "SiliconFlow/DashScope provider profiles, strict model identity probe, and multi-model probe script",
-    "operator checklist for multi-model key -> identity probe -> 12-case benchmark -> interpretation; matrix runner --benchmark"
+    "operator checklist for multi-model key -> identity probe -> 12-case benchmark -> interpretation; matrix runner --benchmark",
+    "Apple Silicon user-local JDK25 + Ghidra 12.2 install, native decompiler build, headless decompile and GUI launch"
   ]
 }
