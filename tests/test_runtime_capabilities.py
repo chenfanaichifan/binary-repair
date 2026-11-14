@@ -306,6 +306,10 @@ def test_macho_native_supports_arch():
 
 
 def test_select_runner_macho_x86_64_on_arm64_host_is_none(monkeypatch):
+    # The simulated macOS host needs the Mach-O engine available; on a Linux CI
+    # runner the real engine probe is false and would otherwise return
+    # unavailable before the Rosetta cross-arch branch.
+    monkeypatch.setattr(capabilities, "_macho_engine_ready", lambda: True)
     capability = capabilities.probe(
         "macho", "x86_64", host={"platform": "darwin", "machine": "arm64"},
     )
