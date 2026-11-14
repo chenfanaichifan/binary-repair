@@ -301,7 +301,7 @@
       "universe_unknown": 0
     },
     "artifacts": {
-      "coverage_matrix_sha256": "500937b69a1fcded75247114e206cf3e6a62dfe15ff2a258f7e8eb2f48cbd1c3",
+      "coverage_matrix_sha256": "2de7b841129d94b7a2b7962711723e344d14aba8de7dc55319c5a88f80c6bbbb",
       "gap_report_sha256": "e8e70082fd7d320ae470071432c82c2693550ad4fc6d7d1ba6640dcdf21bf210"
     },
     "generated_by": "scripts/audit_capability_coverage.py on the frozen release tree",
