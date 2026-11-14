@@ -3262,20 +3262,55 @@ def _gap_runtime_sources(ctx: dict[str, Any]) -> list[dict[str, Any]]:
                         "runtime_sources",
                     ))
             else:
-                gaps.append(_gap(
-                    f"RG-runtime-evidence::{key}::{tier}", "runtime_gap",
-                    f"matrix cell {key} declares runtime tier {tier} but no "
-                    f"measured runtime source can produce it on this host "
-                    f"({container}/{arch}: {len(candidates)} candidate source(s))",
-                    [
-                        f"census:runtime_sources={len(candidates)} candidate(s)",
-                        f"census:host={host.get('platform')}/{host.get('arch')}",
-                        _source_line(MODULE_PATHS["repair_matrix"], "runtime_tiers"),
-                    ],
-                    "medium", "open",
-                    "add a runtime source or remove the declared tier",
-                    "runtime_sources",
-                ))
+                contract: dict[str, Any] = {}
+                try:
+                    from app.services.runtime import capabilities as _capabilities
+
+                    contract = _as_dict(_capabilities.contract(container, arch))
+                except Exception:  # noqa: BLE001 - capability probe is optional
+                    contract = {}
+                measured_tier = str(contract.get("measured_tier") or "")
+                contract_reason = str(contract.get("reason") or "")
+                host_dependent = (
+                    tier == "native_run"
+                    and bool(contract)
+                    and measured_tier in {"native_run", "emulated_run"}
+                    and bool(contract_reason)
+                )
+                if host_dependent:
+                    gaps.append(_gap(
+                        f"RG-runtime-evidence::{key}::{tier}", "runtime_gap",
+                        f"matrix cell {key} declares runtime tier {tier}; this "
+                        f"host ({host.get('platform')}/{host.get('arch')}) "
+                        f"measures {measured_tier or 'unavailable'} for the cell "
+                        "and the capability contract explains the declared-vs-"
+                        "measured gap (host-dependent declaration, not a defect "
+                        "on this host)",
+                        [
+                            f"census:contract_measured_tier={measured_tier}",
+                            f"census:contract_reason={contract_reason[:160]}",
+                            f"census:host={host.get('platform')}/{host.get('arch')}",
+                        ],
+                        "info", "mitigated",
+                        "keep the host-dependent tier declared only with a "
+                        "capability-contract reason; verify on a matching host",
+                        "runtime_sources",
+                    ))
+                else:
+                    gaps.append(_gap(
+                        f"RG-runtime-evidence::{key}::{tier}", "runtime_gap",
+                        f"matrix cell {key} declares runtime tier {tier} but no "
+                        f"measured runtime source can produce it on this host "
+                        f"({container}/{arch}: {len(candidates)} candidate source(s))",
+                        [
+                            f"census:runtime_sources={len(candidates)} candidate(s)",
+                            f"census:host={host.get('platform')}/{host.get('arch')}",
+                            _source_line(MODULE_PATHS["repair_matrix"], "runtime_tiers"),
+                        ],
+                        "medium", "open",
+                        "add a runtime source or remove the declared tier",
+                        "runtime_sources",
+                    ))
     # External PoC evidence source per (format, arch).
     for row in sources:
         item = _as_dict(row)
