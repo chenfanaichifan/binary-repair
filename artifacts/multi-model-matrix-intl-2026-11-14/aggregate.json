@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "runs": [
+    {
+      "model": "deepseek-flash",
+      "baseline_verified": 0,
+      "ai_verified": 6,
+      "loop_pass": 6,
+      "non_loop_pass": 0
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "baseline_verified": 0,
+      "ai_verified": 6,
+      "loop_pass": 6,
+      "non_loop_pass": 0
+    }
+  ],
+  "requested_models": 5,
+  "completed_models": 2,
+  "status": "blocked_siliconflow_balance",
+  "siliconflow_identity_probe": "pass",
+  "siliconflow_benchmark": "HTTP 402 insufficient balance",
+  "note": "No SiliconFlow benchmark result was produced; 2 DeepSeek models remain 6/12 (loop 6/6, non-loop 0/6)."
+}

@@ -51,6 +51,9 @@ simple semantic-versioning policy for delivery snapshots.
 
 ### Added — path A call whitelist and paradigm A loop proof
 
+- international SiliconFlow identity probes pass; benchmark blocked by HTTP 402
+- symbol-gap resolver with reviewed write/exit syscall templates
+
 - direct-callee context export; explicit stdout_signature gate
 
 - non-loop CWE121 paradigm A closure: model guard + reviewed syscall helper +

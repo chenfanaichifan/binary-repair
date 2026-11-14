@@ -607,7 +607,11 @@ def provider_config(environ: Mapping[str, str] | None = None) -> dict[str, Any]:
         except Exception:  # noqa: BLE001
             key = ""
     base = _first_env(env, tuple(profile["base_envs"])).rstrip("/") or str(profile["base"])
-    model = _first_env(env, tuple(profile["model_envs"])) or str(profile["default_model"])
+    model = (
+        _first_env(env, tuple(profile["model_envs"]))
+        or (env.get(ASSISTANT_MODEL_ENV) or "").strip()
+        or str(profile["default_model"])
+    )
     errors = []
     if not key:
         errors.append(f"missing API key for provider {name!r}")

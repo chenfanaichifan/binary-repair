@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "final_cwe121": {
+    "available": [
+      "printLine"
+    ],
+    "defined_in_source": [
+      "br_fail"
+    ],
+    "stubs": [],
+    "unresolved": []
+  },
+  "model_without_helper": {
+    "available": [
+      "printLine"
+    ],
+    "defined_in_source": [],
+    "stubs": [],
+    "unresolved": [
+      "br_fail"
+    ]
+  },
+  "write_exit_demo": {
+    "available": [],
+    "defined_in_source": [],
+    "stubs": [
+      "br_exit",
+      "br_write"
+    ],
+    "unresolved": []
+  },
+  "stub_demo": "static void br_exit(int code)\n{\n    register long rax __asm__(\"rax\") = 60;\n    register long rdi __asm__(\"rdi\") = code;\n    __asm__ volatile(\"syscall\" :: \"r\"(rax), \"r\"(rdi) : \"rcx\", \"r11\", \"memory\");\n    for (;;) { }\n}\n\nstatic long br_write(int fd, const void *buf, unsigned long n)\n{\n    register long rax __asm__(\"rax\") = 1;\n    register long rdi __asm__(\"rdi\") = fd;\n    register long rsi __asm__(\"rsi\") = (long)buf;\n    register long rdx __asm__(\"rdx\") = (long)n;\n    __asm__ volatile(\"syscall\" : \"+r\"(rax) : \"r\"(rdi), \"r\"(rsi), \"r\"(rdx)\n                     : \"rcx\", \"r11\", \"memory\");\n    return rax;\n}\n\nvoid target(void){ write(2,\"x\",1); exit(1); }"
+}

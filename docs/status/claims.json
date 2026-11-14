@@ -24,7 +24,7 @@
     "4-6-model multi-provider matrix: only two DeepSeek models available; no valid SiliconFlow/Bailian key",
     "non-loop path A verified success: 0/6; heap security-only partial and CWE symbol/stub limits remain",
     "general non-loop / whole-binary paradigm A; only CWE121 function-level closure is proven",
-    "SiliconFlow 4-5 model matrix: supplied key HTTP 401; only 2 DeepSeek models available"
+    "4-6 model matrix: SiliconFlow benchmark blocked by HTTP 402 account balance; only 2 DeepSeek models completed"
   ],
   "implemented": [
     "two product AI paths (asm_roundtrip, binary_direct)",
@@ -45,6 +45,13 @@
     "isolation of unpushed capacity-check commit 86587da in a separate worktree; targeted tests pass; not merged/pushed",
     "non-loop paradigm A CWE121 closure: DeepSeek guard patch + reviewed syscall helper + Patcherex2; poc_runner pass 2/2 PoC and 4/4 regression",
     "direct-callee context export for CWE121 (target + printLine/strcpy)",
-    "explicit stdout_signature field and required poc.native.stdout_signature gate"
-  ]
+    "explicit stdout_signature field and required poc.native.stdout_signature gate",
+    "symbol-gap resolver with reviewed write/exit syscall templates and fail-closed unknowns",
+    "international SiliconFlow identity probes for 3 requested models"
+  ],
+  "siliconflow_status": {
+    "identity_probe": "pass for 3 models",
+    "benchmark": "blocked HTTP 402 insufficient balance",
+    "base_url": "https://api.siliconflow.com/v1"
+  }
 }

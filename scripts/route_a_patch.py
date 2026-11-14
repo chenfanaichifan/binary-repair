@@ -20,6 +20,8 @@ def main() -> int:
     ap.add_argument("--c-source", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--symbols", default="{}", help='JSON object, e.g. {"printLine":"0x401380"}')
+    ap.add_argument("--resolve-gaps", action="store_true",
+                    help="classify calls and apply reviewed syscall stubs; fail on unknown symbols")
     args = ap.parse_args()
     try:
         from patcherex2 import ModifyFunctionPatch, Patcherex
@@ -29,6 +31,16 @@ def main() -> int:
     raw_symbols = json.loads(args.symbols) if args.symbols.strip() else {}
     symbols = {str(k): int(v, 16) if isinstance(v, str) else int(v) for k, v in raw_symbols.items()}
     code = args.c_source.read_text()
+    if args.resolve_gaps:
+        from routeb.symbol_resolver import apply_stubs, resolve
+        resolution = resolve(code, set(symbols), target_name=args.function)
+        if not resolution.ok:
+            print(json.dumps({"ok": False, "reason": "unresolved_symbols",
+                              "unresolved": resolution.unresolved,
+                              "stubs": resolution.stubs}, ensure_ascii=False), file=sys.stderr)
+            return 3
+        code = apply_stubs(code, resolution)
+        print(json.dumps({"symbol_resolution": resolution.to_dict()}, ensure_ascii=False), file=sys.stderr)
     p = Patcherex(str(args.binary))
     p.patches.append(ModifyFunctionPatch(args.function, code, symbols=symbols))
     p.apply_patches()

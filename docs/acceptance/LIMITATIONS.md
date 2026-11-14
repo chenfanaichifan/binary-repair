@@ -233,3 +233,10 @@ the explicit `poc.native.stdout_signature` field.  This catches the observed
 heap-canary early-exit candidate, but it does not prove full side-effect
 equivalence (buffered I/O, errno, libc state); no-PoC assembly paths remain a
 known blind spot.
+
+
+## 20. SiliconFlow matrix is balance-blocked
+
+International SiliconFlow identity probes succeed, but full benchmark calls
+return HTTP 402 `account balance is insufficient`.  A 4-6 model matrix is not
+available from this account; no SiliconFlow benchmark result is claimed.

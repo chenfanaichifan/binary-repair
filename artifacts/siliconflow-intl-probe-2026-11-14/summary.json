@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "records": [
+    {
+      "spec": "siliconflow:Qwen/Qwen3.8-27B",
+      "provider": "siliconflow",
+      "model_requested": "Qwen/Qwen3.8-27B",
+      "base_url": "https://api.siliconflow.com/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_returned": "Qwen/Qwen3.8-27B",
+      "model_identity_ok": true,
+      "latency_ms": 1362,
+      "usage": {
+        "prompt_tokens": 34,
+        "completion_tokens": 6,
+        "total_tokens": 40,
+        "latency_ms": 1362
+      },
+      "request_id": null
+    },
+    {
+      "spec": "siliconflow:moonshotai/Kimi-K3.1-Pro",
+      "provider": "siliconflow",
+      "model_requested": "moonshotai/Kimi-K3.1-Pro",
+      "base_url": "https://api.siliconflow.com/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_returned": "moonshotai/Kimi-K3.1-Pro",
+      "model_identity_ok": true,
+      "latency_ms": 3240,
+      "usage": {
+        "prompt_tokens": 91,
+        "completion_tokens": 12,
+        "total_tokens": 103,
+        "latency_ms": 3240
+      },
+      "request_id": null
+    },
+    {
+      "spec": "siliconflow:deepseek-ai/DeepSeek-V4.1-Flash",
+      "provider": "siliconflow",
+      "model_requested": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "base_url": "https://api.siliconflow.com/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_returned": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "model_identity_ok": true,
+      "latency_ms": 1673,
+      "usage": {
+        "prompt_tokens": 20,
+        "completion_tokens": 7,
+        "total_tokens": 27,
+        "latency_ms": 1673
+      },
+      "request_id": null
+    }
+  ],
+  "ok": 3,
+  "identity_mismatch": 0,
+  "unconfigured": 0,
+  "benchmarks": {},
+  "note": "No key, prompt, or raw response is stored; exact model identity is mandatory."
+}

@@ -1,0 +1,1538 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "cases": [
+    {
+      "case": {
+        "id": "inline-byte-loop",
+        "binary": "fixtures/elf/vuln-loop-x86_64.elf",
+        "target": "vuln_copy",
+        "capacity": 16,
+        "poc": "fixtures/poc/elf-x86_64-loop.json",
+        "reference_fix": "fixtures/hard-cases/loop_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "target_va": "0x102b7d4",
+        "cave_va": "0x10ca000",
+        "method": "new-pt-load",
+        "code_bytes": 44,
+        "assembly_sha256": "fd623c9758299e260b52c67eec908423c09469d7efc5645af8e244d4daaa1ffc",
+        "call_targets": [],
+        "call_relocations": 0
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "native",
+        "candidate_sha256": "93dff405028f25e7725913e5801b65f161cb65d580be10e71b366cf1a4941cf4",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "native",
+          "stdout_signature": "matched",
+          "original_sha256": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+          "candidate_sha256": "93dff405028f25e7725913e5801b65f161cb65d580be10e71b366cf1a4941cf4",
+          "poc": [
+            {
+              "case_id": "loop-overflow-64",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop-overflow-256",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop-overflow-64",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop-overflow-256",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "loop-short",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop-boundary",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop-short",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop-boundary",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "limitations": []
+        }
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 5902,
+        "plan_sha256": "cb8c8662d666e866ced20bcb62ae66601154f7beee7a90e7feb208e447e7039a",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 814,
+          "completion_tokens": 153,
+          "total_tokens": 967,
+          "latency_ms": 5902
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": true
+    },
+    {
+      "case": {
+        "id": "cwe121-unchecked-strcpy",
+        "binary": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+        "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+        "capacity": 50,
+        "poc": "fixtures/poc/cwe121.json",
+        "reference_fix": "fixtures/hard-cases/cwe121_fix.c",
+        "baseline_expected": "analysis_only",
+        "contract": "CWE121 stack overflow: strcpy into char[50] without validation; repaired path must reject inputs with length+1>50 (exit 1, exact stderr) and preserve valid stdout",
+        "family": "non-template semantic validation"
+      },
+      "input_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "baseline": {
+        "disposition": "analysis_only",
+        "verified": false,
+        "error": "No supported immediate-length read/write pattern found."
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "not_attempted",
+        "disposition": "analysis_only",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: call target is not allowed: call 0x4010d0"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 6487,
+        "plan_sha256": "9a953863d726acabd097faf6df2c4697c6717d827a73602f985a990ed092ac9d",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1090,
+          "completion_tokens": 267,
+          "total_tokens": 1357,
+          "latency_ms": 6487
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-loop16",
+        "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+        "target": "vuln_loop16",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-loop16.json",
+        "reference_fix": "fixtures/hard-cases/loop16_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "target_va": "0x102cf74",
+        "cave_va": "0x10ce000",
+        "method": "new-pt-load",
+        "code_bytes": 42,
+        "assembly_sha256": "0f72124854d4b77d01f54b9ef241a4279a10c4b81e64e7239185fa590bcde192",
+        "call_targets": [],
+        "call_relocations": 0
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "native",
+        "candidate_sha256": "5c93e22585d90b616218e7071d476211f96eea372eb817a95640183d8722d379",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "native",
+          "stdout_signature": "matched",
+          "original_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+          "candidate_sha256": "5c93e22585d90b616218e7071d476211f96eea372eb817a95640183d8722d379",
+          "poc": [
+            {
+              "case_id": "loop16-overflow-64",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop16-overflow-256",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop16-overflow-64",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop16-overflow-256",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "loop16-short",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop16-boundary",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop16-short",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop16-boundary",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "limitations": []
+        }
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 6026,
+        "plan_sha256": "4cd071fc631a3b579ac301496c7440e8b68b340ae26493c36d921269afd5f7e7",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 782,
+          "completion_tokens": 158,
+          "total_tokens": 940,
+          "latency_ms": 6026
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": true
+    },
+    {
+      "case": {
+        "id": "hard-loop32",
+        "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+        "target": "vuln_loop32",
+        "capacity": 32,
+        "poc": "fixtures/poc/hard-loop32.json",
+        "reference_fix": "fixtures/hard-cases/loop32_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 32-byte stack buffer; no libc call; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "target_va": "0x102cf96",
+        "cave_va": "0x10ce000",
+        "method": "new-pt-load",
+        "code_bytes": 43,
+        "assembly_sha256": "7741ab16b94c9294bc401bfce4792ee34e5d11ea676213d71e147c5ef1d35de1",
+        "call_targets": [],
+        "call_relocations": 0
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "native",
+        "candidate_sha256": "280cf3f21a6b1c6387c450c883d2193fa29cf54ab57a13d501a8f3bc0e3465ce",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "native",
+          "stdout_signature": "matched",
+          "original_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+          "candidate_sha256": "280cf3f21a6b1c6387c450c883d2193fa29cf54ab57a13d501a8f3bc0e3465ce",
+          "poc": [
+            {
+              "case_id": "loop32-overflow-64",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop32-overflow-256",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop32-overflow-64",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop32-overflow-256",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "loop32-short",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop32-boundary",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop32-short",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop32-boundary",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "limitations": []
+        }
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 6456,
+        "plan_sha256": "53e8edd881f8a0993ecf837097b64bb609eea3ea886fb84c8e70b489fb285a86",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 788,
+          "completion_tokens": 163,
+          "total_tokens": 951,
+          "latency_ms": 6456
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": true
+    },
+    {
+      "case": {
+        "id": "hard-reverse",
+        "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+        "target": "vuln_loop_reverse",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-reverse.json",
+        "reference_fix": "fixtures/hard-cases/reverse_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "target_va": "0x102cfe0",
+        "cave_va": "0x10ce000",
+        "method": "new-pt-load",
+        "code_bytes": 42,
+        "assembly_sha256": "0f72124854d4b77d01f54b9ef241a4279a10c4b81e64e7239185fa590bcde192",
+        "call_targets": [],
+        "call_relocations": 0
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "native",
+        "candidate_sha256": "941530ba08dc55261bc418ab21f0f0674155125e043ce698c9c194a6e4d146f0",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "native",
+          "stdout_signature": "matched",
+          "original_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+          "candidate_sha256": "941530ba08dc55261bc418ab21f0f0674155125e043ce698c9c194a6e4d146f0",
+          "poc": [
+            {
+              "case_id": "reverse-overflow-64",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "reverse-overflow-256",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "reverse-overflow-64",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "reverse-overflow-256",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "reverse-short",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "reverse-boundary",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "reverse-short",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "reverse-boundary",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "limitations": []
+        }
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 6406,
+        "plan_sha256": "4cd071fc631a3b579ac301496c7440e8b68b340ae26493c36d921269afd5f7e7",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 789,
+          "completion_tokens": 158,
+          "total_tokens": 947,
+          "latency_ms": 6406
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": true
+    },
+    {
+      "case": {
+        "id": "hard-multicall",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "multicall_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-multicall.json",
+        "reference_fix": "fixtures/hard-cases/multicall_fix.c",
+        "baseline_expected": "rejected",
+        "contract": "multicall hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: call target is not allowed: call 0x102cbb0"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 6313,
+        "plan_sha256": "6c80df26b335a40a903d95fb08c12cee42966010fc3bcc578198c4c97a3c35be",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 976,
+          "completion_tokens": 240,
+          "total_tokens": 1216,
+          "latency_ms": 6313
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-sprintf",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "sprintf_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-sprintf.json",
+        "reference_fix": "fixtures/hard-cases/sprintf_fix.c",
+        "baseline_expected": "rejected",
+        "contract": "sprintf hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: call target is not allowed: call 0x108a6d0"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 6560,
+        "plan_sha256": "66c8baa315aa76273c9490381488a9b739e9cf74b16ad32bd1271540d88c629f",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1019,
+          "completion_tokens": 259,
+          "total_tokens": 1278,
+          "latency_ms": 6560
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-nonconst",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "nonconst_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-nonconst.json",
+        "reference_fix": "fixtures/hard-cases/nonconst_fix.c",
+        "baseline_expected": "rejected",
+        "contract": "nonconst hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: call target is not allowed: call 0x109e050"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 6319,
+        "plan_sha256": "a6ee5d916245b24f347b349c43cb7a66eb2a781b427b01a510e96a90ea6a3f68",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1082,
+          "completion_tokens": 294,
+          "total_tokens": 1376,
+          "latency_ms": 6317
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-loop8",
+        "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+        "target": "vuln_loop8",
+        "capacity": 8,
+        "poc": "fixtures/poc/hard-loop8.json",
+        "reference_fix": "fixtures/hard-cases/loop8_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 8-byte stack buffer; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "target_va": "0x102b978",
+        "cave_va": "0x10ca000",
+        "method": "new-pt-load",
+        "code_bytes": 42,
+        "assembly_sha256": "a21298dea9811b629e38e9371e25c1335fc425537172d758155809eadccc0f34",
+        "call_targets": [],
+        "call_relocations": 0
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "native",
+        "candidate_sha256": "e288a1ea927ac46242e248aa72b263177f55fad05e3e267331035739b1333209",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "native",
+          "stdout_signature": "matched",
+          "original_sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09",
+          "candidate_sha256": "e288a1ea927ac46242e248aa72b263177f55fad05e3e267331035739b1333209",
+          "poc": [
+            {
+              "case_id": "loop8-overflow-64",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop8-overflow-256",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop8-overflow-64",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop8-overflow-256",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "loop8-short",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop8-short",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "limitations": []
+        }
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 6394,
+        "plan_sha256": "7a0fbfba83993a38f64c0d033ee6761b5b16c485439192bb8a941fa776e99c6d",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 781,
+          "completion_tokens": 156,
+          "total_tokens": 937,
+          "latency_ms": 6392
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": true
+    },
+    {
+      "case": {
+        "id": "hard-loop64",
+        "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+        "target": "vuln_loop64",
+        "capacity": 64,
+        "poc": "fixtures/poc/hard-loop64.json",
+        "reference_fix": "fixtures/hard-cases/loop64_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 64-byte stack buffer; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "target_va": "0x102b99a",
+        "cave_va": "0x10ca000",
+        "method": "new-pt-load",
+        "code_bytes": 47,
+        "assembly_sha256": "6b37af350fa0d83c28aacae9a90d240ebd96e1501a4bd451765935a295e0414b",
+        "call_targets": [],
+        "call_relocations": 0
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "native",
+        "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "native",
+          "stdout_signature": "matched",
+          "original_sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09",
+          "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac",
+          "poc": [
+            {
+              "case_id": "loop64-overflow-256",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": -11,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop64-overflow-256",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "loop64-short",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            },
+            {
+              "case_id": "loop64-short",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true
+            }
+          ],
+          "limitations": []
+        }
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 8383,
+        "plan_sha256": "7bf3f81ef67e7f8e1cc43d0c7888bc317cfd5ca4c6ec73ea81f1acda71532a7d",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 805,
+          "completion_tokens": 163,
+          "total_tokens": 968,
+          "latency_ms": 8187
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": true
+    },
+    {
+      "case": {
+        "id": "uaf-noinput",
+        "binary": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
+        "target": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+        "capacity": 100,
+        "poc": "fixtures/poc/cwe416.json",
+        "reference_fix": "fixtures/hard-cases/uaf_fix.c",
+        "baseline_expected": "analysis_only",
+        "contract": "UAF: read of a heap block after free(); valid no-input path must print exactly 99 A bytes + LF and exit 0",
+        "family": "heap lifetime/UAF"
+      },
+      "input_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+      "baseline": {
+        "disposition": "analysis_only",
+        "verified": false,
+        "error": "No supported immediate-length read/write pattern found."
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "not_attempted",
+        "disposition": "analysis_only",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: call target is not allowed: call 0x401150"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 6993,
+        "plan_sha256": "1f7128d0a39104a67b47d6c2a06a437273aa37a187ade133abfe656400e2e7a7",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1132,
+          "completion_tokens": 281,
+          "total_tokens": 1413,
+          "latency_ms": 6992
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "heap-canary",
+        "binary": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+        "target": "heap_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/heap-canary.json",
+        "reference_fix": "fixtures/hard-cases/heap_canary_fix.c",
+        "baseline_expected": "rejected",
+        "contract": "heap buffer[16] followed by a guard in one allocation; overflow corrupts the guard and exits 1; correct repair must reject oversized input and preserve valid behavior",
+        "family": "heap silent overflow/guard"
+      },
+      "input_sha256": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: call target is not allowed: call 0x10982d0"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 12910,
+        "plan_sha256": "6e59fb5539ffb52e3222f6c77b0161b45c3fe1ab1587bb0b9c432041cf894609",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1909,
+          "completion_tokens": 688,
+          "total_tokens": 2597,
+          "latency_ms": 12896
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 6,
+  "ai_increment": 6,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "contract_level": "full",
+  "repeats": 1,
+  "baseline_target_aware_verified": 0,
+  "ai_blind_verified": 0
+}

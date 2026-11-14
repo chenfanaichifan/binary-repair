@@ -80,3 +80,14 @@ def test_strict_identity_rejects_provider_swap(monkeypatch):
     assert ai["status"] == "identity_mismatch"
     assert ai["model_identity_ok"] is False
     assert "requested" in (error or "")
+
+
+def test_siliconflow_uses_generic_assistant_model_override():
+    env = {
+        "SILICONFLOW_API_KEY": "sk-test-silicon",
+        "BINARYREPAIR_ASSISTANT_MODEL": "Qwen/Qwen3.8-27B",
+    }
+    cfg = provider_config(env)
+    assert cfg["provider"] == "siliconflow"
+    assert cfg["model"] == "Qwen/Qwen3.8-27B"
+    assert cfg["configured"] is True

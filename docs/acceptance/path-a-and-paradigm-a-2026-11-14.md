@@ -80,3 +80,18 @@ Evidence: `artifacts/paradigm-a-cwe121-2026-11-14/`.
   enforced; the new field makes the side-effect gate explicit and observable.
 - The heap-canary partial candidate remains unverified because its short-input
   stdout regression failed.
+
+
+## Update: 2026-11-14 international matrix attempt
+
+SiliconFlow international identity probes passed for `Qwen/Qwen3.8-27B`,
+`moonshotai/Kimi-K3.1-Pro`, and `deepseek-ai/DeepSeek-V4.1-Flash`, but every
+full benchmark call returned HTTP 402 (account balance insufficient).  The two
+DeepSeek official models completed natively at 6/12 each (loop 6/6, non-loop
+0/6).  The 4-6 model matrix remains blocked by balance, not by model identity.
+Evidence: `artifacts/multi-model-matrix-intl-2026-11-14/`.
+
+The CWE121 `br_fail` mechanism is generalized in
+`routeb/symbol_resolver.py`: existing calls, patch-defined calls, reviewed
+write/exit syscall templates, and unresolved symbols (fail closed) are
+classified before patching.  Evidence: `artifacts/symbol-resolver-2026-11-14/`.
