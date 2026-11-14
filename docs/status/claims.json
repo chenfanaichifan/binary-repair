@@ -289,8 +289,8 @@
       "universe_unknown": 0
     },
     "artifacts": {
-      "coverage_matrix_sha256": "aa3a2bddc884ad3a0ffec24a6f6d1074ef779335d1673139b69787e0a3b3b901",
-      "gap_report_sha256": "8cf3e8d143b887122a5b057f5d56f05095c24767072cf45236fff38adbd34e85"
+      "coverage_matrix_sha256": "878448ad9975c6e65f7c20072b46c50b14ce5359141e32859068bdab2e1c5ea7",
+      "gap_report_sha256": "520a6a448ab53db838e222728fea9c8f83e095f98d8121213b7d15914c40d204"
     },
     "generated_by": "scripts/audit_capability_coverage.py on the frozen release tree",
     "note": "release numbers are the full/local audit; static numbers are the probe-free audit. The coverage gate compares the matching mode block and fails on mismatches."
