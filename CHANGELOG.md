@@ -45,6 +45,9 @@ simple semantic-versioning policy for delivery snapshots.
 
 ### Added — compliant multi-provider profiles
 
+- Operator checklist `docs/operations/multi-model-benchmark.md`; matrix runner
+  can probe identities and run the 12-case benchmark per model.
+
 - SiliconFlow and DashScope/Bailian OpenAI-compatible profiles, exact
   model-identity probe and `scripts/run_multi_model_matrix.py`.
 - Current host is credential-blocked: DeepSeek maps chat→flash (caught by the

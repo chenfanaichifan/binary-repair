@@ -50,6 +50,9 @@ def main() -> int:
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--models", nargs="+", required=True,
                     help="provider:model entries, e.g. siliconflow:Qwen/Qwen3-8B")
+    ap.add_argument("--benchmark", action="store_true",
+                    help="also run the hard-case benchmark per model (requires native PoC host)")
+    ap.add_argument("--contract-level", choices=("full", "generic", "none"), default="full")
     args = ap.parse_args()
     out = args.out
     out.mkdir(parents=True, exist_ok=True)
@@ -96,6 +99,40 @@ def main() -> int:
             })
         except Exception as exc:  # noqa: BLE001
             record.update({"status": "error", "error": f"{type(exc).__name__}: {exc}"})
+        if args.benchmark and record.get("status") == "ok":
+            import os
+            import subprocess
+            slug = f"{provider}-{model}".replace("/", "_").replace(":", "_")
+            bench_out = out / "benchmarks" / slug
+            env = dict(os.environ)
+            env.update({
+                "BINARYREPAIR_PROVIDER": provider,
+                "BINARYREPAIR_ASSISTANT_MODEL": model,
+                "BINARYREPAIR_STRICT_MODEL_IDENTITY": "1",
+            })
+            proc = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "run_hard_benchmark.py"),
+                 "--out", str(bench_out), "--client", "real",
+                 "--contract-level", args.contract_level],
+                cwd=ROOT, env=env, capture_output=True, text=True, timeout=1800,
+            )
+            record["benchmark"] = {
+                "returncode": proc.returncode,
+                "stdout_tail": proc.stdout[-1000:],
+                "stderr_tail": proc.stderr[-1000:],
+                "summary_path": str(bench_out / "summary.json"),
+            }
+            try:
+                summary = json.loads((bench_out / "summary.json").read_text())
+                record["benchmark"].update({
+                    "baseline_verified": summary.get("baseline_verified"),
+                    "ai_verified": summary.get("ai_verified"),
+                    "ai_increment": summary.get("ai_increment"),
+                    "contract_level": summary.get("contract_level"),
+                    "cases": len(summary.get("cases", [])),
+                })
+            except (OSError, json.JSONDecodeError):
+                pass
         records.append(record)
         print(json.dumps(record, ensure_ascii=False), flush=True)
     summary = {
@@ -104,6 +141,14 @@ def main() -> int:
         "ok": sum(1 for r in records if r.get("status") == "ok"),
         "identity_mismatch": sum(1 for r in records if r.get("status") == "identity_mismatch"),
         "unconfigured": sum(1 for r in records if r.get("status") == "unconfigured"),
+        "benchmarks": {
+            r["spec"]: {
+                "returncode": r.get("benchmark", {}).get("returncode"),
+                "ai_verified": r.get("benchmark", {}).get("ai_verified"),
+                "ai_increment": r.get("benchmark", {}).get("ai_increment"),
+            }
+            for r in records if "benchmark" in r
+        },
         "note": "No key, prompt, or raw response is stored; exact model identity is mandatory.",
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n")
