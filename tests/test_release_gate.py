@@ -498,6 +498,13 @@ def test_acceptance_contract_flags_unpassed_and_missing_roles(tmp_path: Path) ->
     assert any("did not pass" in item for item in violations)
 
 
+def test_acceptance_contract_flags_missing_capacity_role(tmp_path: Path) -> None:
+    payload = _acceptance_payload()
+    del payload["marcx_pipeline_with_manifest"]
+    violations, _detail = gate.validate_acceptance(payload)
+    assert any("no capacity verified_patch case" in item for item in violations)
+
+
 def test_acceptance_contract_flags_verified_control(tmp_path: Path) -> None:
     paths = Paths(tmp_path)
     payload = _write_acceptance(paths.acceptance)

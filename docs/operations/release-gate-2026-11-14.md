@@ -160,51 +160,57 @@ To enable the nightly/release job: provision a self-hosted runner labelled
 repository variable `BINARYREPAIR_RELEASE_GATE=true`.  A skipped job is not
 evidence; only the gate's own JSON output counts.
 
-## 5. Current honest state (2026-11-14, phase 3)
+## 5. Current state (2026-11-14, phase 3)
 
-Measured on the shared tree with the T1/T2/T4 workstreams landing in parallel;
-numbers are recorded here as observed, and the final handoff re-runs both layers
-after the other workstreams settle.
+Measured on the integrated tree after the T1/T2/T4 workstreams settled; the same
+commands are re-run by the Lead on the frozen tree before the release claim.
 
-- **PR layer: PASS.** `python scripts/release_gate.py --pr` exits 0 (~97 s):
-  `static-coverage-gate` passed (open=[], 10 non_goal rows, 6
-  `dynamic_unverified` — allowed in static mode and printed),
-  `claims-measurement-diff` passed (61 static rows: 45 closed, 10 non_goal, 6
-  dynamic_unverified, 0 open; claims=11; no unresolved `MM-*`),
-  `targeted-pytest` passed (8 gate/audit/release files).
-- **Release layer: expected failures while T1/T2/T4 land.**  First full run
-  (2026-11-14 21:03–21:21, ~1067 s) exited 1 with: `static-coverage-gate`,
-  `claims-measurement-diff`, `acceptance-contract`, `meta-audit` and
-  `universe-unknown-zero` **passed** (universe: 205 cells, `unknown=0`,
-  `verified=36`, `supported=51`, `non_goal=115`, `unavailable=3`); the failures
-  were (a) `local-coverage-gate`/`acceptance-invariants` rejecting the freshly
-  regenerated safe-default acceptance records while the invariant engine was
-  mid-edit (a direct `check_acceptance()` on the same file now returns
-  `ok=True` with limitations, so this is stale), (b) `provider-matrix` checked
-  seconds before the T4 artifact appeared on disk (the artifact now validates:
-  12 cases, `provider_status=ok`, `target_strict_pass_rate=1.0`,
-  `target_in_scope_rate=0.0`, SHA256SUMS verified), and (c) `full-pytest`
-  failing on 7 mid-flight tests in the T1/T2 scopes
-  (`test_i386_pe_fails_closed`, `test_i386_control_has_no_analyzer`,
-  `test_check_acceptance_handles_committed_summary_records`,
-  `test_scripted_ai_evidence_has_both_paths_and_negative_control`,
-  `test_scripted_experiment_has_the_three_required_outcomes`,
-  `test_static_audit_is_deterministic`,
-  `test_meta_audit_and_invariants_runners_are_exposed`).  These are exactly the
-  staged-gate behaviour: required evidence that is missing or stale fails the
-  gate with a named reason instead of being skipped.
-- **Acceptance capture** was regenerated at 21:05 for the new safe-default
-  policy: it keeps the capacity/heap/target-scoped positives and controls and
-  adds `marcx_safe_default` / `heap_safe_default` `analysis_only` records (no
-  candidate, no download).  The T5 acceptance contract validates these roles.
-- **Provider matrix (T4)** is a real provider run: `provider_status=ok`, 12
-  cases, strict expectation match 12/12, AI target verified 6/12, reference
-  6/6 verified + 6 `source_only`, aggregate cost `null` with an explicit basis;
-  the model-identity caveat (configured `deepseek-chat`, served
-  `deepseek-flash`, `identity_ok=false`) is recorded in the summary rather than
-  hidden.
-- A second full release-layer run against the settled snapshot is the final
-  handoff measurement; until it is green the release claim is withheld.
+**PR layer: PASS.** `python scripts/release_gate.py --pr --json` exits 0
+(~97 s): `static-coverage-gate` passed (open=[], 10 non_goal rows, 6
+`dynamic_unverified` — allowed in static mode and printed),
+`claims-measurement-diff` passed (61 static rows: 45 closed, 10 non_goal, 6
+dynamic_unverified, 0 open; 11 claims non-goals; no unresolved `MM-*`),
+`targeted-pytest` passed (8 gate/audit/release files, ~110 s).
+
+**Release layer: PASS (9/9 required checks, exit 0).**
+`python scripts/release_gate.py --release --json` on the settled tree:
+elapsed ~655 s; `violations: []`, `status_counts: {passed: 9, failed: 0,
+unavailable: 0, skipped: 0}`.
+
+| Check | Result |
+|---|---|
+| static-coverage-gate | PASSED (open=[], dynamic_unverified=6 allowed at this layer) |
+| claims-measurement-diff | PASSED (61 static rows, 0 open, 0 unresolved MM-*) |
+| acceptance-contract | PASSED (roles: capacity=1, heap=1, target-scoped=1, controls=2) |
+| local-coverage-gate | PASSED (82 s: open=[], dynamic_unverified=0, universe.unknown=0, 205 cells; meta-audit + invariants + acceptance inside the gate) |
+| meta-audit | PASSED (recall=1.0, precision=1.0, scenarios=9) |
+| acceptance-invariants | PASSED (packets_checked=9, limitations recorded) |
+| universe-unknown-zero | PASSED (205 cells; unknown=0, verified=36, supported=51, non_goal=115, unavailable=3) |
+| provider-matrix | PASSED (12 cases, provider_status=ok, target_strict_pass_rate=1.0, target_in_scope_rate=0.0, SHA256SUMS verified) |
+| full-pytest | PASSED (full `python -m pytest -q`, ~566 s) |
+
+The release layer originally failed closed while the workstreams were landing
+(an older invariant engine rejected the newly regenerated safe-default
+acceptance records; the provider matrix was checked before its artifact existed;
+and the full suite was transiently red on other lanes' files).  Those failures
+were reported with named checks rather than skipped — the intended staged-gate
+behaviour — and disappeared once the tree settled.
+
+**Acceptance capture** was regenerated for the new safe-default policy: it keeps
+the capacity/heap/target-scoped positives and controls and adds
+`marcx_safe_default` / `heap_safe_default` `analysis_only` records (no candidate,
+no download).  The T5 contract validates these roles.
+
+**Provider matrix (T4)** is a real provider run: `provider_status=ok`, 12 cases,
+target-strict expectation 12/12, AI target verified 6/12, reference 6/6 verified
++ 6 `source_only`, cost `null` with an explicit basis; the model-identity caveat
+(configured `deepseek-chat`, served `deepseek-flash`, `identity_ok=false`) is
+recorded in the summary rather than hidden.
+
+**Not yet run/claimed:** `--nightly` (it repeats the release checks plus a fresh
+real-Lima capture; ~TBD, to be run on the self-hosted Lima runner once the
+inert CI job is enabled) and any CI run of the new jobs.  A skipped job or a
+check that did not run is never counted as green.
 
 ## 6. Operating the gate
 
