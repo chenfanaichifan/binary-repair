@@ -140,9 +140,18 @@ def _validate_v2(claims: dict[str, Any], root: Path) -> tuple[list[str], dict[st
     if local_sha != gated_sha:
         violations.append(
             "ci_evidence.local_gate.frozen_sha must equal gated_sha")
-    if not DIGEST_RE.fullmatch(str(local.get("gate_evidence_sha256") or "")):
+    gate_sha = str(local.get("gate_evidence_sha256") or "")
+    evidence_branch = str(local.get("evidence_branch") or "")
+    evidence_tag = str(local.get("evidence_tag") or "")
+    if gate_sha:
+        if not DIGEST_RE.fullmatch(gate_sha):
+            violations.append(
+                "ci_evidence.local_gate.gate_evidence_sha256 is not a sha256")
+    elif not (evidence_branch and evidence_tag):
         violations.append(
-            "ci_evidence.local_gate.gate_evidence_sha256 is not a sha256")
+            "ci_evidence.local_gate needs gate_evidence_sha256 or "
+            "evidence_branch+evidence_tag (the gate bundle is written after "
+            "the claims commit)")
     legacy = _as_dict(claims.get("latest_verified_ci"))
     if legacy:
         if str(legacy.get("head_sha") or "") != head_sha:
