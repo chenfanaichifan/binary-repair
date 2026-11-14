@@ -112,6 +112,9 @@ def _run_case(
     original = engine._runtime_summary
 
     def _run(**kwargs: Any) -> Any:
+        # The scripted experiment demonstrates the historical whole-image
+        # behaviour explicitly; production defaults stay safe (analysis_only).
+        kwargs.setdefault("allow_whole_image", True)
         return run_direct_repair(raw, **kwargs)
 
     if case["evidence_gap"]:

@@ -224,7 +224,7 @@ def main() -> int:
             print(json.dumps({"skipped": str(fixture)}))
             continue
         data = fixture.read_bytes()
-        baseline = repair_any(data)
+        baseline = repair_any(data, allow_whole_image=True)
         baseline_sha = (
             hashlib.sha256(baseline.candidate).hexdigest()
             if baseline.candidate is not None else None
