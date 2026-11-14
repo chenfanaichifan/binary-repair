@@ -32,12 +32,22 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
 LIMA_INSTANCE_ENV = "BINARYREPAIR_LIMA_INSTANCE"
 DEFAULT_LIMA_INSTANCE = "binaryrepair"
 LIMA_LIST_TIMEOUT = 15.0
+#: Lima shares the host home directory read-only through virtiofs/sshfs.  A
+#: freshly written file can be served with a stale size to the guest for a
+#: short window; a target that maps a segment at a file offset beyond that stale
+#: size dies with an internal qemu SIGBUS.  The runner therefore polls the
+#: guest-visible size (bounded) before executing and fails closed instead of
+#: running a stale binary.
+LIMA_VIEW_POLL_ATTEMPTS = 12
+LIMA_VIEW_POLL_INTERVAL = 0.1
+LIMA_STAT_TIMEOUT = 10.0
 
 #: Exit codes conventionally produced by shells when a child died from a
 #: signal (128 + signum); 139 is the usual SIGSEGV value.
@@ -265,6 +275,68 @@ def _lima_launch_failed(returncode: int, stderr: bytes) -> bool:
     return "ssh:" in text and "connect" in text and returncode == 255
 
 
+def _lima_guest_size(tool: str, instance: str, path: Path) -> int | None:
+    """Guest-visible size of *path*, or ``None`` when it cannot be read."""
+
+    try:
+        proc = subprocess.run(
+            [
+                tool, "shell", "--tty=false", instance, "--",
+                "stat", "-c", "%s", str(path),
+            ],
+            capture_output=True,
+            timeout=LIMA_STAT_TIMEOUT,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if proc.returncode != 0:
+        return None
+    text = (proc.stdout or b"").decode("utf-8", "replace").strip()
+    try:
+        return int(text.splitlines()[0].strip())
+    except (IndexError, ValueError):
+        return None
+
+
+def wait_for_lima_guest_view(
+    tool: str,
+    instance: str,
+    path: Path | str,
+    *,
+    attempts: int | None = None,
+    interval: float | None = None,
+) -> str | None:
+    """Wait until the guest sees the current file size of *path*.
+
+    Returns ``None`` when the guest view converged, or an explicit error string
+    ("stale guest view") when it never did.  Callers must not execute the target
+    on a non-``None`` result: a stale view can make qemu map a segment beyond
+    the stale file size and die with an internal SIGBUS, which would fabricate a
+    crash instead of a real execution result.
+    """
+
+    guest_path = Path(path)
+    try:
+        host_size = os.stat(guest_path).st_size
+    except OSError as exc:
+        return f"{type(exc).__name__}: {exc}"
+    poll_attempts = LIMA_VIEW_POLL_ATTEMPTS if attempts is None else int(attempts)
+    poll_interval = LIMA_VIEW_POLL_INTERVAL if interval is None else float(interval)
+    last_size: int | None = None
+    for attempt in range(max(1, poll_attempts)):
+        last_size = _lima_guest_size(tool, instance, guest_path)
+        if last_size == host_size:
+            return None
+        if attempt + 1 < max(1, poll_attempts):
+            time.sleep(max(0.0, poll_interval))
+    return (
+        f"stale guest view for {guest_path}: host size={host_size} "
+        f"guest size={last_size if last_size is not None else 'unknown'} "
+        f"after {max(1, poll_attempts)} polls; refusing to execute a stale binary"
+    )
+
+
 def run_path(
     path: Path | str,
     argv: list[str] | None = None,
@@ -310,6 +382,13 @@ def run_path(
                 ),
                 **common,
             )
+        stale_error = wait_for_lima_guest_view(
+            selected.tool, instance, Path(exec_path).absolute(),
+        )
+        if stale_error is not None:
+            # Do not execute a stale binary: evidence must stay unavailable
+            # rather than a fabricated qemu SIGBUS crash.
+            return GuestResult(True, error=stale_error, **common)
         command = [
             selected.tool,
             "shell",

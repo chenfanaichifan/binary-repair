@@ -1,4 +1,12 @@
-# Duplicated capacity-check repair (`capacity` strategy)
+# Capacity-check repair (integrated profile)
+
+> Status 2026-11-14: re-integrated into the main coverage branch (see
+> `docs/operations/capacity-decision-2026-11-14.md`). The engine is unchanged;
+> the acceptance model is now the declared `native_poc_rewrite` evidence
+> profile: `patch.capacity` + `patch.rewrite` re-derive every rewrite action
+> from the original/candidate bytes and the supplied PoC/regression manifest is
+> the only runtime evidence. Without that evidence the result is
+> not_verified/inconclusive, never verified_patch.
 
 Status: implemented (2026-11-14) for **ELF64 little-endian x86-64 only**, as a
 bounded reviewed repair class.  It is not a general vulnerability rewriter and it

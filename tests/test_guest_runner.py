@@ -294,3 +294,110 @@ def test_lima_run_path_detects_guest_signal_crash():
     assert result.available is True
     assert result.crashed is True
     assert b"Segmentation fault" in result.stderr or b"target signal" in result.stderr
+
+
+# ---------------------------------------------------------------------------
+# Lima guest-view freshness (virtiofs stale size must never fabricate a crash)
+# ---------------------------------------------------------------------------
+
+def _stat_command_size(command: list[str]) -> bool:
+    return "stat" in command and "-c" in command and "%s" in command
+
+
+def test_wait_for_lima_guest_view_retries_until_fresh(monkeypatch, tmp_path: Path):
+    staged = tmp_path / "target"
+    staged.write_bytes(b"x" * 64)
+    sizes = iter([32, 32, 64])
+    calls = {"n": 0}
+
+    def fake_size(tool, instance, path):  # noqa: ANN001
+        calls["n"] += 1
+        return next(sizes)
+
+    monkeypatch.setattr(guest_runner, "_lima_guest_size", fake_size)
+    monkeypatch.setattr(guest_runner.time, "sleep", lambda _s: None)
+    error = guest_runner.wait_for_lima_guest_view(
+        "/fake/limactl", "vm", staged, attempts=6, interval=0.0,
+    )
+    assert error is None
+    assert calls["n"] == 3
+
+
+def test_wait_for_lima_guest_view_fails_closed_when_never_fresh(
+    monkeypatch, tmp_path: Path,
+):
+    staged = tmp_path / "target"
+    staged.write_bytes(b"x" * 64)
+    monkeypatch.setattr(
+        guest_runner, "_lima_guest_size", lambda tool, instance, path: 32,
+    )
+    monkeypatch.setattr(guest_runner.time, "sleep", lambda _s: None)
+    error = guest_runner.wait_for_lima_guest_view(
+        "/fake/limactl", "vm", staged, attempts=3, interval=0.0,
+    )
+    assert error is not None
+    assert "stale guest view" in error
+    assert "host size=64" in error and "guest size=32" in error
+
+
+def test_run_path_lima_stale_view_is_reported_not_executed(monkeypatch):
+    staged = Path.home() / ".br-guest-view-test-target"
+    staged.write_bytes(b"x" * 64)
+    try:
+        monkeypatch.setattr(guest_runner, "_guest_visible", lambda path: True)
+        monkeypatch.setattr(guest_runner, "LIMA_VIEW_POLL_ATTEMPTS", 3)
+        monkeypatch.setattr(guest_runner, "LIMA_VIEW_POLL_INTERVAL", 0.0)
+        monkeypatch.setattr(guest_runner.time, "sleep", lambda _s: None)
+        executed: list[list[str]] = []
+
+        def responder(command):
+            if _stat_command_size(command):
+                return SimpleNamespace(returncode=0, stdout=b"32\n", stderr=b"")
+            executed.append(list(command))
+            return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
+
+        _fake_limactl(monkeypatch, responder)
+        runner = GuestRunner(
+            kind="lima", tool="/fake/limactl", tier="emulated_run", instance="vm",
+        )
+        result = run_path(staged, [], runner=runner)
+        assert result.available is True
+        assert result.exit_code is None
+        assert "stale guest view" in (result.error or "")
+        assert executed == []
+    finally:
+        staged.unlink(missing_ok=True)
+
+
+def test_run_path_lima_waits_for_fresh_view_then_executes(monkeypatch):
+    staged = Path.home() / ".br-guest-view-test-target"
+    staged.write_bytes(b"x" * 64)
+    try:
+        monkeypatch.setattr(guest_runner, "_guest_visible", lambda path: True)
+        monkeypatch.setattr(guest_runner, "LIMA_VIEW_POLL_ATTEMPTS", 5)
+        monkeypatch.setattr(guest_runner, "LIMA_VIEW_POLL_INTERVAL", 0.0)
+        monkeypatch.setattr(guest_runner.time, "sleep", lambda _s: None)
+        stat_sizes = iter([32, 64])
+        executed: list[list[str]] = []
+
+        def responder(command):
+            if _stat_command_size(command):
+                return SimpleNamespace(
+                    returncode=0, stdout=f"{next(stat_sizes)}\n".encode(), stderr=b"",
+                )
+            executed.append(list(command))
+            return SimpleNamespace(returncode=0, stdout=b"ok\n", stderr=b"")
+
+        _fake_limactl(monkeypatch, responder)
+        runner = GuestRunner(
+            kind="lima", tool="/fake/limactl", tier="emulated_run", instance="vm",
+        )
+        result = run_path(staged, ["hi"], runner=runner)
+        assert result.available is True
+        assert result.error is None
+        assert result.exit_code == 0
+        assert result.stdout == b"ok\n"
+        assert len(executed) == 1
+        assert executed[0][-2:] == [str(staged), "hi"]
+    finally:
+        staged.unlink(missing_ok=True)
