@@ -40,6 +40,8 @@ ROOT = Path(__file__).resolve().parents[1]
 VULN = ROOT / "artifacts" / "vuln-elf" / "vuln.elf"
 MARCX = ROOT / "fixtures" / "elf" / "vuln-capacity-confusion-x86_64.elf"
 CAPACITY_MANIFEST = ROOT / "fixtures" / "poc" / "marcx-capacity.json"
+HEAP = ROOT / "fixtures" / "hard-cases" / "vuln-heap-malloc-x86_64.elf"
+HEAP_MANIFEST = ROOT / "fixtures" / "poc" / "heap-malloc.json"
 
 # Captured from the pre-convergence tree: the exact legacy check set for the
 # reviewed strict template.  Existing callers must keep every id/status and the
@@ -173,8 +175,49 @@ def _patch_poc_runner(monkeypatch, status: str = "pass") -> None:
     monkeypatch.setattr(poc_runner, "run_poc", lambda *a, **k: evidence)
 
 
-def _capacity_manifest() -> dict:
-    return json.loads(CAPACITY_MANIFEST.read_text(encoding="utf-8"))
+class _FakeNativePocEvidence:
+    """Full native-PoC evidence stand-in (heap guard profile, no VM)."""
+
+    def to_dict(self) -> dict:
+        def case(kind: str, executable: str, exit_code: int | None,
+                 crashed: bool, stdout: str) -> dict:
+            return {
+                "case_id": "case",
+                "kind": kind,
+                "executable": executable,
+                "exit_code": exit_code,
+                "crashed": crashed,
+                "stdout": stdout,
+                "stderr": "",
+                "stdout_hex": stdout.encode().hex(),
+                "timed_out": False,
+                "error": None,
+                "expected_ok": True,
+            }
+
+        return {
+            "schema_version": 1,
+            "status": "pass",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "no_input": False,
+            "original_sha256": "",
+            "candidate_sha256": "",
+            "poc": [
+                case("poc", "original", 134, True, ""),
+                case("poc", "candidate", 0, False, "AAAAAAAAAAAAAAA\n"),
+            ],
+            "regression": [
+                case("regression", "original", 0, False, "hi\n"),
+                case("regression", "candidate", 0, False, "hi\n"),
+            ],
+            "limitations": [],
+        }
+
+
+def _heap_manifest() -> dict:
+    return json.loads(HEAP_MANIFEST.read_text(encoding="utf-8"))
 
 
 # ---------------------------------------------------------------------------
@@ -328,10 +371,15 @@ def test_build_verification_signature_exposes_manifest_contract():
 
 
 def test_review_path_manifest_routes_to_unified_profile_packet(monkeypatch):
-    _patch_poc_runner(monkeypatch, "pass")
-    outcome = run_direct_repair(
-        MARCX.read_bytes(), poc_manifest=_capacity_manifest()
+    """A manifest request is judged by the unified evidence-profile gate only.
+
+    The heap-guard fixture always takes the container-neutral generic path, so
+    this is stable against pipeline routing changes around the legacy engine.
+    """
+    monkeypatch.setattr(
+        poc_runner, "run_poc", lambda *a, **k: _FakeNativePocEvidence()
     )
+    outcome = run_direct_repair(HEAP.read_bytes(), poc_manifest=_heap_manifest())
 
     packet = outcome.verification.packet
     ids = _check_ids(outcome.verification)
@@ -339,17 +387,20 @@ def test_review_path_manifest_routes_to_unified_profile_packet(monkeypatch):
 
     # Unified evidence-profile packet, never a legacy packet.
     assert packet["schema_version"] == 2
+    assert packet["scope"]["profile"] == "native_poc"
     for check_id in ("profile.declared", "profile.evidence", "profile.required_checks"):
         assert check_id in ids, check_id
     assert statuses["profile.evidence"] == "passed"
+    assert statuses["profile.required_checks"] == "passed"
+    assert "poc.native.available" in ids
     assert "strict.reviewed_template" not in ids
     assert "runtime.boundary_semantics" not in ids
     assert "manifest.legacy_gate_unsupported" not in ids
-    assert "patch.capacity" in ids
 
     # Routing is disclosed on the engine report and in the serialized payload.
     assert outcome.report.universal["manifest_routing"] == MANIFEST_ROUTING_UNIFIED
-    payload = outcome.to_payload(filename="marcx-fixed.elf")
+    assert outcome.decision["success"] is True
+    payload = outcome.to_payload(filename="heap-fixed.elf")
     assert payload["manifest_routing"] == MANIFEST_ROUTING_UNIFIED
     assert payload["report"]["universal"]["manifest_routing"] == MANIFEST_ROUTING_UNIFIED
     assert payload["decision"]["success"] is True
