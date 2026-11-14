@@ -21,6 +21,7 @@ from typing import Any, Mapping
 from app.domain.acceptance import Obligation, decide_attempt_outcome
 from app.domain.outcomes import CheckResult, Outcome, ReasonCode
 from app.services.ai_adjudication import GateResult
+from app.services.repair_matrix import is_known_profile, profile_legacy_required_checks
 
 STRICT_TEMPLATE = Path(__file__).resolve().parents[1] / "data" / "vuln-strict-fixed.elf"
 REQUIRED_INPUT_OFFSETS = (0, 1)
@@ -389,6 +390,55 @@ def build_verification(
                 if template_ok and template_bytes is not None
                 else "candidate does not match the reviewed strict template"
             ),
+        ))
+
+    # The legacy quick-repair gate uses the same declared acceptance-model
+    # registry as the container-neutral gate.  The profile is fixed by the
+    # engine mode (reviewed strict template vs emulated bounds repair); the
+    # existing check ids/statuses above are unchanged and these are additive.
+    legacy_profile = "strict_template" if strict else "emulated_instruction"
+    checks.append(_check(
+        "profile.declared",
+        "The acceptance evidence profile is declared and known",
+        (
+            CheckResult.PASSED if is_known_profile(legacy_profile)
+            else CheckResult.FAILED
+        ),
+        f"profile={legacy_profile} source=derived-from-mode",
+    ))
+    legacy_required = profile_legacy_required_checks(legacy_profile)
+    legacy_status = {
+        str(item["id"]): str(item["status"]) for item in checks
+    }
+    legacy_failed = [
+        check_id for check_id in legacy_required
+        if legacy_status.get(check_id) == CheckResult.FAILED.value
+    ]
+    legacy_not_passed = [
+        check_id for check_id in legacy_required
+        if legacy_status.get(check_id, CheckResult.NOT_RUN.value) != CheckResult.PASSED.value
+    ]
+    if legacy_failed:
+        checks.append(_check(
+            "profile.required_checks",
+            "Every check required by the declared evidence profile passed",
+            CheckResult.FAILED,
+            f"profile={legacy_profile} failed={legacy_failed} "
+            f"missing_or_not_run={[i for i in legacy_not_passed if i not in legacy_failed]}",
+        ))
+    elif legacy_not_passed:
+        checks.append(_check(
+            "profile.required_checks",
+            "Every check required by the declared evidence profile passed",
+            CheckResult.NOT_RUN,
+            f"profile={legacy_profile} missing_or_not_run={legacy_not_passed}",
+        ))
+    else:
+        checks.append(_check(
+            "profile.required_checks",
+            "Every check required by the declared evidence profile passed",
+            CheckResult.PASSED,
+            f"profile={legacy_profile} checks={len(legacy_required)}",
         ))
 
     missing = [

@@ -1,4 +1,4 @@
-"""Architecture-neutral sink analysis for stack-buffer copies.
+"""Architecture-neutral sink analysis for stack/heap-buffer copies.
 
 The analyzer decodes the executable section of an already-parsed container and
 produces :class:`Sink` records.  It never writes or executes bytes.
@@ -15,6 +15,40 @@ size):
 
 A sink is only marked patchable when the capacity is positive, bounded and the
 callee is a known copy function.
+
+Heap destination recovery (x86-64 only, fail closed)
+----------------------------------------------------
+A subset of heap overflows has a statically recoverable capacity: a
+same-function ``malloc``/``calloc`` with immediate size arguments, whose return
+value (rax) is copied to the copy destination register with plain ``mov``
+instructions and then used as the destination of ``strcpy``/``strcat``/
+``stpcpy``.  The scanner tracks:
+
+* the last immediate moved into the allocation argument register (SysV: rdi
+  for malloc, rdi/rsi for calloc; Win64: rcx, rcx/rdx),
+* the allocation base register after a resolved ``malloc``/``calloc`` call,
+* plain register-to-register copies of that base register.
+
+The destination must equal the allocation base exactly.  State is discarded at
+every ``jmp``/conditional jump/``ret``/``leave``/``syscall``, on any
+non-copy write to a tracked register, and on any call other than the
+``malloc``/``calloc`` being consumed; a pointer-plus-offset destination emits no
+heap sink and records a limitation instead.  Heap sinks carry
+``destination_kind="heap"``, ``dest_rel=None`` and the recovered capacity.
+
+Known residual (documented, not repaired here):
+
+* **Over-estimation for structs.** ``malloc(24)`` followed by
+  ``strcpy(p->data, src)`` where ``data`` is a 16-byte member at offset 0
+  recovers capacity 24, not 16.  The recovered number is the allocation size,
+  never a member size; a guard built on it can still overwrite the rest of the
+  struct (the ``heap_canary`` hard case is exactly this shape and its oracle
+  capacity is 16).  The analyzer cannot see member layout without DWARF.
+* Only the single allocation base is tracked; pointers that cross a function
+  boundary, are spilled to memory and reloaded, or are offset by
+  ``lea reg, [rax + K]`` are not recovered (fail closed).
+* i386 heap destinations are not recovered (fail closed; the i386 scanner only
+  models push-materialised stack arguments).
 """
 from __future__ import annotations
 
@@ -30,6 +64,41 @@ from app.services.containers import ContainerInfo, detect_container, resolve_tar
 MAX_CAPACITY = 1 << 20
 COPY_TOKENS = ("strcpy", "strcat", "stpcpy", "memcpy", "memmove",
                "__memcpy_chk", "__strcpy_chk", "__strcat_chk")
+# Allocation functions whose immediate size argument is recoverable.  A
+# ``realloc`` size is not tracked: its returned pointer may alias the input and
+# the old capacity is unknown, so the scanner fails closed instead of guessing.
+ALLOC_TOKENS = ("malloc", "calloc")
+# Canonical 64-bit name for every x86 integer register alias the tracker may
+# see.  Tracking happens in 64-bit terms; a write to any alias kills it.
+_X86_CANON: dict[str, str] = {}
+for _full in ("rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp"):
+    _X86_CANON[_full] = _full
+    _short = _full[1:]
+    for _alias in (_short, "e" + _short, "r" + _short, "r" + _short + "d",
+                   "r" + _short + "w", "r" + _short + "b"):
+        _X86_CANON.setdefault(_alias, _full)
+for _index in range(8, 16):
+    _X86_CANON[f"r{_index}"] = f"r{_index}"
+    for _suffix in ("d", "w", "b"):
+        _X86_CANON[f"r{_index}{_suffix}"] = f"r{_index}"
+del _full, _short, _alias, _index, _suffix
+# Instruction writers whose explicit first operand is NOT written (they only
+# read it), so heap/argument tracking must survive them.
+_READ_ONLY_FIRST = {
+    "cmp", "test", "push", "bt", "ucomiss", "ucomisd", "comiss", "comisd",
+    "vucomiss", "vucomisd", "vcomiss", "vcomisd", "nop", "endbr64",
+    "prefetch", "prefetchw", "prefetcht0", "prefetcht1", "prefetcht2",
+    "prefetchnta",
+}
+# Instructions with implicit register writes/clobbers that are easier to
+# invalidate wholesale than to model.
+_IMPLICIT_CLOBBER = {
+    "mul", "div", "idiv", "imul", "cdq", "cqo", "cwd", "cdqe", "cwde",
+    "xchg", "rdtsc", "rdtscp", "cpuid", "xgetbv",
+}
+_CONTROL_FLOW = {"jmp", "ret", "retf", "leave", "syscall", "sysenter",
+                 "int", "int3", "ud2", "hlt", "loop", "loope", "loopne",
+                 "jecxz", "jrcxz"}
 
 _MD_X86 = Cs(CS_ARCH_X86, CS_MODE_64)
 _MD_X86.detail = True
@@ -46,6 +115,10 @@ class Sink:
     callee: str = ""
     capacity: int | None = None
     dest_rel: int | None = None
+    #: Where the destination lives: ``stack`` (frame-relative ``dest_rel``),
+    #: ``heap`` (same-function allocation capacity) or ``global`` (reserved;
+    #: no analyzer emits it today).
+    destination_kind: str = "stack"
     length: int | None = None
     length_offset: int | None = None
     length_width: int = 0
@@ -87,6 +160,26 @@ def _copy_name(name: str | None) -> str | None:
         if short == token or short.endswith("!" + token) or token in short:
             return short
     return None
+
+
+def _plain_func_name(name: str | None) -> str:
+    """Return the unqualified libc-style name for an import/symbol, else ``""``.
+
+    ``malloc`` must match exactly (after namespace/suffix cleanup): matching by
+    substring would also accept e.g. ``__libc_malloc`` wrappers whose return
+    conventions differ, so allocation recovery fails closed there.
+    """
+    if not name:
+        return ""
+    low = name.lower().split("@")[0]
+    return low.rsplit(".", 1)[-1].lstrip("_")
+
+
+def _canon_reg(name: str | None) -> str:
+    """Canonical 64-bit register name for an x86 register alias."""
+    if not name:
+        return ""
+    return _X86_CANON.get(name.lower(), name.lower())
 
 
 def _text_section(container: ContainerInfo):
@@ -162,10 +255,114 @@ def _scan_x86_64(analysis: Analysis, container: ContainerInfo, text, code: bytes
     length_off: int | None = None
     eax_imm: int | None = None
     eax_off: int | None = None
+    # --- heap destination recovery state (fail closed) ---------------------
+    heap_caps: dict[str, int] = {}   # canonical reg -> live allocation capacity
+    arg_imms: dict[str, int] = {}    # canonical arg reg -> last moved immediate
+    heap_notes: list[str] = []
+    malloc_size_reg = "rdi" if sysv else "rcx"
+    calloc_size_regs = ("rdi", "rsi") if sysv else ("rcx", "rdx")
+    arg_regs = frozenset(calloc_size_regs)
+    return_reg = "rax"
+
+    def _clear_heap_state() -> None:
+        heap_caps.clear()
+        arg_imms.clear()
+
+    def _evict(reg: str) -> None:
+        heap_caps.pop(reg, None)
+        arg_imms.pop(reg, None)
+
+    def _note_heap_offset() -> None:
+        if not heap_notes:
+            heap_notes.append(
+                "heap destination is offset from its allocation base; the sink "
+                "is not recovered (fail closed)"
+            )
+
+    def _heap_step(ins_obj) -> None:
+        """Track same-function allocation/arg state for one instruction."""
+        step_mnemonic = ins_obj.mnemonic
+        if step_mnemonic == "call":
+            return  # resolved and consumed by the call handler below
+        if step_mnemonic in _CONTROL_FLOW or step_mnemonic.startswith("j"):
+            _clear_heap_state()
+            return
+        if step_mnemonic in _IMPLICIT_CLOBBER:
+            _clear_heap_state()
+            return
+        operands = ins_obj.operands
+        if not operands:
+            return
+        first = operands[0]
+        if step_mnemonic == "pop":
+            for item in operands:
+                if item.type == X86_OP_REG:
+                    _evict(_canon_reg(ins_obj.reg_name(item.reg)))
+            return
+        if first.type != X86_OP_REG or step_mnemonic in _READ_ONLY_FIRST:
+            return
+        target = _canon_reg(ins_obj.reg_name(first.reg))
+        if step_mnemonic == "mov" and len(operands) == 2:
+            source = operands[1]
+            if source.type == X86_OP_REG:
+                source_reg = _canon_reg(ins_obj.reg_name(source.reg))
+                _evict(target)
+                if source_reg in heap_caps:
+                    heap_caps[target] = heap_caps[source_reg]
+                if source_reg in arg_imms:
+                    arg_imms[target] = arg_imms[source_reg]
+                return
+            if source.type == X86_OP_IMM:
+                _evict(target)
+                value = int(source.imm)
+                if target in arg_regs and 0 < value <= MAX_CAPACITY:
+                    arg_imms[target] = value
+                return
+            _evict(target)  # loaded from memory: value is unknown
+            return
+        if step_mnemonic == "lea" and len(operands) == 2:
+            memory = operands[1]
+            _evict(target)
+            if memory.type == X86_OP_MEM and not memory.mem.index:
+                base = (
+                    _canon_reg(ins_obj.reg_name(memory.mem.base))
+                    if memory.mem.base else ""
+                )
+                if base in heap_caps:
+                    offset = int(memory.mem.disp or 0)
+                    if offset == 0:
+                        heap_caps[target] = heap_caps[base]
+                    else:
+                        _note_heap_offset()
+            return
+        _evict(target)
+
+    def _track_call(name: str | None) -> None:
+        """Consume one resolved call: recover malloc/calloc or clobber state."""
+        plain = _plain_func_name(name)
+        capacity: int | None = None
+        if plain == "malloc":
+            value = arg_imms.get(malloc_size_reg)
+            if value is not None and 0 < value <= MAX_CAPACITY:
+                capacity = value
+        elif plain == "calloc":
+            count = arg_imms.get(calloc_size_regs[0])
+            size = arg_imms.get(calloc_size_regs[1])
+            if (
+                count is not None and size is not None
+                and 0 < count <= MAX_CAPACITY and 0 < size <= MAX_CAPACITY
+            ):
+                product = count * size
+                if 0 < product <= MAX_CAPACITY:
+                    capacity = product
+        _clear_heap_state()
+        if capacity is not None:
+            heap_caps[return_reg] = capacity
 
     for ins in _MD_X86.disasm(code, text.va):
         op = (ins.op_str or "").replace(" ", "")
         mnemonic = ins.mnemonic
+        _heap_step(ins)
         if mnemonic == "ret":
             rsp_rel, rbp_rel, frame_top, frame_start = 0, None, 0, None
             dest.clear()
@@ -263,6 +460,11 @@ def _scan_x86_64(analysis: Analysis, container: ContainerInfo, text, code: bytes
                 if base == "rip":
                     iat = ins.address + ins.size + operand.mem.disp
                     name = container.imports.get(iat)
+        # Capture a tracked heap destination for this call, then consume the
+        # allocation (or clobber) state.  ``_track_call`` must run before the
+        # copy dispatch below because it clears the tracked registers.
+        heap_dest_capacity = heap_caps.get(dest_reg)
+        _track_call(name)
         copy = _copy_name(name)
         if copy is None:
             length = length_off = None
@@ -296,7 +498,26 @@ def _scan_x86_64(analysis: Analysis, container: ContainerInfo, text, code: bytes
             length = length_off = None
             continue
         if copy in {"strcpy", "strcat", "stpcpy"}:
-            if capacity is not None and 0 < capacity <= MAX_CAPACITY:
+            if heap_dest_capacity is not None and 0 < heap_dest_capacity <= MAX_CAPACITY:
+                analysis.sinks.append(Sink(
+                    kind="unbounded_copy",
+                    arch=container.arch,
+                    function_va=frame_start or 0,
+                    call_va=ins.address,
+                    callee=copy,
+                    capacity=heap_dest_capacity,
+                    dest_rel=None,
+                    destination_kind="heap",
+                    call_offset=call_off,
+                    call_size=ins.size,
+                    patchable=True,
+                    confidence="medium",
+                    detail=(
+                        f"{copy} into heap destination of {heap_dest_capacity} "
+                        "bytes recovered from a same-function malloc/calloc"
+                    ),
+                ))
+            elif capacity is not None and 0 < capacity <= MAX_CAPACITY:
                 analysis.sinks.append(Sink(
                     kind="unbounded_copy",
                     arch=container.arch,
@@ -313,6 +534,8 @@ def _scan_x86_64(analysis: Analysis, container: ContainerInfo, text, code: bytes
                 ))
             length = length_off = None
         continue
+    if heap_notes:
+        analysis.limitations.extend(heap_notes)
 
 
 def _lookback_imm(code: bytes, text, call_va: int, reg: str, container: ContainerInfo) -> int | None:

@@ -2,30 +2,46 @@
 
 This module runs a *user/fixture supplied* PoC manifest against the original and
 repaired binaries and returns typed evidence.  It is deliberately conservative:
-- only formats with an available native/qemu runner are executed;
+
+- only formats with an available native/qemu/Lima runner are executed;
 - PE and 32-bit Mach-O are reported unavailable instead of being faked;
-- every command is timeout-bounded, runs in a temporary directory with a
-  scrubbed environment, and never uses a shell.
+- every command is timeout-bounded, runs in a staged directory with a scrubbed
+  environment, and never uses a shell;
+- per-case ``files`` (base64) are staged into that directory and ``{tmp}`` in
+  ``argv`` is replaced by its absolute path, so file-based PoCs (archives,
+  inputs) need no host/guest path juggling;
+- for the Lima tier the staging directory lives under ``$HOME`` (the guest
+  mounts the host home read-only at the same path) and is removed afterwards.
 """
 from __future__ import annotations
 
 import base64
+import binascii
+import contextlib
 import hashlib
 import json
 import os
 import platform
+import re
 import shutil
-import subprocess
 import sys
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
+
+from app.services.guest_runner import GuestRunner, find_guest_runner, run_path
 
 SCHEMA_VERSION = 1
 DEFAULT_TIMEOUT = 5.0
 MAX_STDOUT = 64 * 1024
 MAX_STDERR = 16 * 1024
+MAX_STAGED_FILE = 8 * 1024 * 1024
+MAX_STAGED_TOTAL = 32 * 1024 * 1024
+STAGE_ENV = "BINARYREPAIR_GUEST_STAGE"
+DEFAULT_STAGE_DIR = ".br-guest-stage"
+TMP_PLACEHOLDER = "{tmp}"
+_CASE_FILE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
 @dataclass
@@ -62,7 +78,9 @@ class CaseResult:
 class PocEvidence:
     status: str = "not_run"
     runner: str = ""
+    tier: str = ""
     stdout_signature: str = "not_run"
+    no_input: bool = False
     cases: list[CaseResult] = field(default_factory=list)
     regression: list[CaseResult] = field(default_factory=list)
     limitations: list[str] = field(default_factory=list)
@@ -78,7 +96,9 @@ class PocEvidence:
             "schema_version": SCHEMA_VERSION,
             "status": self.status,
             "runner": self.runner,
+            "tier": self.tier,
             "stdout_signature": self.stdout_signature,
+            "no_input": self.no_input,
             "original_sha256": self.original_sha256,
             "candidate_sha256": self.candidate_sha256,
             "poc": [case.to_dict() for case in self.cases],
@@ -89,6 +109,53 @@ class PocEvidence:
 
 def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def _normalize_arch(arch: str) -> str:
+    return {
+        "amd64": "x86_64",
+        "x86_64": "x86_64",
+        "x86-64": "x86_64",
+        "aarch64": "arm64",
+        "arm64": "arm64",
+    }.get(str(arch or "").strip().lower(), str(arch or "").strip().lower())
+
+
+def _host_arch() -> str:
+    return _normalize_arch(platform.machine())
+
+
+def _validate_case_files(case: dict[str, Any], *, where: str) -> None:
+    files = case.get("files")
+    if files is None:
+        return
+    if not isinstance(files, list):
+        raise ValueError(f"PoC case {where} field 'files' must be a list")
+    seen: set[str] = set()
+    for item in files:
+        if not isinstance(item, dict):
+            raise ValueError(f"PoC case {where} entry in 'files' must be an object")
+        name = item.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError(f"PoC case {where} staged file requires a string name")
+        if not _CASE_FILE_NAME.match(name) or name in {".", ".."}:
+            raise ValueError(
+                f"PoC case {where} staged file name must be a plain file name, got {name!r}"
+            )
+        if name in seen:
+            raise ValueError(f"PoC case {where} has duplicate staged file name {name!r}")
+        seen.add(name)
+        encoded = item.get("base64")
+        if not isinstance(encoded, str):
+            raise ValueError(f"PoC case {where} staged file {name!r} requires string base64")
+        if len(encoded) > (MAX_STAGED_FILE * 4) // 3 + 16:
+            raise ValueError(f"PoC case {where} staged file {name!r} is too large")
+        try:
+            base64.b64decode(encoded, validate=True)
+        except (binascii.Error, ValueError) as exc:
+            raise ValueError(
+                f"PoC case {where} staged file {name!r} has invalid base64: {exc}"
+            ) from exc
 
 
 def load_manifest(manifest: dict[str, Any] | str | Path) -> dict[str, Any]:
@@ -108,8 +175,11 @@ def load_manifest(manifest: dict[str, Any] | str | Path) -> dict[str, Any]:
         raise ValueError("PoC manifest requires non-empty 'poc'")
     if not isinstance(data.get("regression"), list):
         raise ValueError("PoC manifest requires a 'regression' list (may be empty for no-input cases)")
+    if "no_input" in data and not isinstance(data["no_input"], bool):
+        raise ValueError("PoC manifest field 'no_input' must be a boolean")
     for group in ("poc", "regression"):
-        for case in data[group]:
+        for index, case in enumerate(data[group]):
+            where = f"{group}[{index}]"
             if not isinstance(case, dict):
                 raise ValueError("PoC case must be an object")
             if not isinstance(case.get("id"), str) or not case["id"]:
@@ -117,60 +187,114 @@ def load_manifest(manifest: dict[str, Any] | str | Path) -> dict[str, Any]:
             argv = case.get("argv")
             if not isinstance(argv, list) or not all(isinstance(x, str) for x in argv):
                 raise ValueError("PoC case argv must be a list of strings")
+            if "stdin_base64" in case:
+                stdin_encoded = case["stdin_base64"]
+                if not isinstance(stdin_encoded, str):
+                    raise ValueError(f"PoC case {where} stdin_base64 must be a string")
+                try:
+                    base64.b64decode(stdin_encoded, validate=True)
+                except (binascii.Error, ValueError) as exc:
+                    raise ValueError(f"PoC case {where} stdin_base64 is invalid: {exc}") from exc
+            _validate_case_files(case, where=where)
     return data
 
 
-def _runner_for(format_name: str, arch: str) -> tuple[str, str] | None:
-    """Return (kind, executable) for a runnable target, or None."""
-    if format_name == "elf":
-        if sys.platform.startswith("linux") and arch == "x86_64":
-            return ("native", "")
-        try:
-            from app.services.guest_runner import find_qemu
+def _select_runner(format_name: str, arch: str) -> GuestRunner | None:
+    """Return the guest runner for a runnable target, or None.
 
-            qemu = find_qemu(arch)
-        except Exception:  # noqa: BLE001
-            qemu = None
-        if qemu:
-            return ("qemu", qemu)
-        return None
-    if format_name == "macho" and sys.platform == "darwin" and arch == platform.machine():
-        return ("native", "")
+    Linux ELF targets use the native/qemu/Lima guest runner.  Native Mach-O
+    execution on a matching macOS host is kept for backwards compatibility; PE
+    and 32-bit Mach-O remain explicitly unavailable (never faked).
+    """
+
+    if format_name == "elf":
+        return find_guest_runner(arch)
+    if format_name == "macho" and sys.platform == "darwin" and _normalize_arch(arch) == _host_arch():
+        return GuestRunner(kind="native", tool="", tier="native_run")
     return None
 
 
-def _execute(
-    path: Path,
-    *,
-    runner_kind: str,
-    runner: str,
-    argv: list[str],
-    stdin: bytes,
-    timeout: float,
-) -> tuple[int | None, bool, bytes, str, bool, str | None]:
-    command = ([runner] if runner_kind == "qemu" else []) + [str(path), *argv]
-    env = {
-        "PATH": "/usr/bin:/bin",
-        "HOME": str(path.parent),
-        "TMPDIR": str(path.parent),
-        "LC_ALL": "C",
-    }
-    try:
-        proc = subprocess.run(
-            command, input=stdin, capture_output=True, timeout=timeout,
-            cwd=str(path.parent), env=env, check=False,
-        )
-    except subprocess.TimeoutExpired:
-        return None, False, b"", "", True, "timeout"
-    except OSError as exc:
-        return None, False, b"", "", False, f"{type(exc).__name__}: {exc}"
-    stdout_raw = proc.stdout[:MAX_STDOUT]
-    stdout = stdout_raw.decode("utf-8", "replace")
-    stderr = proc.stderr[:MAX_STDERR].decode("utf-8", "replace")
-    crashed = proc.returncode is not None and proc.returncode < 0
-    if not crashed and runner_kind == "qemu":
-        crashed = "target signal" in stderr or "Segmentation fault" in stderr
-    return proc.returncode, crashed, stdout_raw, stderr, False, None
+def _staging_base() -> Path:
+    """Host directory that also hosts Lima staging (override via env)."""
+
+    override = (os.environ.get(STAGE_ENV) or "").strip()
+    base = Path(override).expanduser() if override else Path.home() / DEFAULT_STAGE_DIR
+    base.mkdir(parents=True, exist_ok=True)
+    return base
+
+
+@contextlib.contextmanager
+def _staging_root(runner: GuestRunner) -> Iterator[Path]:
+    """Create the execution root and remove it afterwards.
+
+    Lima guests see the host home directory read-only at the same path, so the
+    staging tree must live under ``$HOME`` for that tier.  Native/qemu runs use
+    an ordinary temporary directory.
+    """
+
+    if runner.kind == "lima":
+        base = _staging_base()
+        root = Path(tempfile.mkdtemp(prefix="br-poc-", dir=str(base)))
+        try:
+            yield root
+        finally:
+            shutil.rmtree(root, ignore_errors=True)
+    else:
+        with tempfile.TemporaryDirectory(prefix="br-poc-") as tmp:
+            yield Path(tmp)
+
+
+def _case_files(case: dict[str, Any]) -> list[tuple[str, bytes]]:
+    """Decode the staged files of one case (validated in :func:`load_manifest`)."""
+
+    decoded: list[tuple[str, bytes]] = []
+    total = 0
+    for item in case.get("files") or []:
+        name = item["name"]
+        if not _CASE_FILE_NAME.match(name):
+            raise ValueError(f"unsafe staged file name {name!r}")
+        try:
+            data = base64.b64decode(item["base64"], validate=True)
+        except (binascii.Error, ValueError) as exc:
+            raise ValueError(f"invalid base64 in staged file {name!r}: {exc}") from exc
+        if len(data) > MAX_STAGED_FILE:
+            raise ValueError(f"staged file {name!r} exceeds {MAX_STAGED_FILE} bytes")
+        total += len(data)
+        if total > MAX_STAGED_TOTAL:
+            raise ValueError(f"staged files exceed {MAX_STAGED_TOTAL} bytes in total for one case")
+        decoded.append((name, data))
+    return decoded
+
+
+def _preflight(spec: dict[str, Any]) -> None:
+    """Decode/validate every case's staged files before any execution."""
+
+    total = 0
+    for group in ("poc", "regression"):
+        for case in spec[group]:
+            for _name, data in _case_files(case):
+                total += len(data)
+    if total > MAX_STAGED_TOTAL:
+        raise ValueError(f"PoC staged payload exceeds {MAX_STAGED_TOTAL} bytes")
+
+
+def _prepare_case_dir(root: Path, group: str, index: int, case: dict[str, Any]) -> Path:
+    """(Re)create the staged directory for one case and write its files."""
+
+    case_dir = root / f"case-{group}-{index:02d}"
+    if case_dir.exists():
+        shutil.rmtree(case_dir)
+    case_dir.mkdir(parents=True)
+    for name, data in _case_files(case):
+        target = case_dir / name
+        target.write_bytes(data)
+        target.chmod(0o600)
+    return case_dir
+
+
+def _substitute_argv(argv: list[str], case_dir: Path) -> list[str]:
+    marker = str(case_dir)
+    return [str(arg).replace(TMP_PLACEHOLDER, marker) for arg in argv]
 
 
 def _expected_ok(actual_exit: int | None, crashed: bool, actual_stdout: str,
@@ -207,6 +331,59 @@ def _expected_ok(actual_exit: int | None, crashed: bool, actual_stdout: str,
     return True
 
 
+def _run_case(
+    *,
+    binary_bytes: bytes,
+    case: dict[str, Any],
+    group: str,
+    index: int,
+    is_original: bool,
+    arch: str,
+    runner: GuestRunner,
+    root: Path,
+    stdin: bytes,
+    timeout: float,
+) -> CaseResult:
+    case_dir = _prepare_case_dir(root, group, index, case)
+    # Both sides of the differential are executed from the *same* staged path so
+    # that argv[0]-dependent output (e.g. ``--help`` printing its program path)
+    # stays comparable between the original and the candidate.
+    binary_path = case_dir / "target"
+    binary_path.write_bytes(binary_bytes)
+    binary_path.chmod(0o700)
+    argv = _substitute_argv(case["argv"], case_dir)
+    result = run_path(
+        binary_path,
+        argv,
+        arch=arch,
+        stdin=stdin,
+        timeout=timeout,
+        runner=runner,
+        cwd=case_dir,
+    )
+    stdout_bytes = (result.stdout or b"")[:MAX_STDOUT]
+    stdout = stdout_bytes.decode("utf-8", "replace")
+    stderr = (result.stderr or b"")[:MAX_STDERR].decode("utf-8", "replace")
+    expected = case.get("original" if is_original else "candidate") or {}
+    ok = _expected_ok(
+        result.exit_code, result.crashed, stdout, stdout_bytes.hex(), stderr, expected,
+        is_poc=group == "poc",
+    )
+    return CaseResult(
+        case_id=case["id"],
+        kind=group,
+        executable="original" if is_original else "candidate",
+        exit_code=result.exit_code,
+        crashed=result.crashed,
+        stdout=stdout,
+        stderr=stderr,
+        stdout_hex=stdout_bytes.hex(),
+        timed_out=result.timed_out,
+        error=result.error,
+        expected_ok=ok,
+    )
+
+
 def run_poc(
     original: bytes,
     candidate: bytes | None,
@@ -221,6 +398,7 @@ def run_poc(
         evidence.status = "fail"
         evidence.limitations.append(f"invalid PoC manifest: {type(exc).__name__}: {exc}")
         return evidence
+    evidence.no_input = bool(spec.get("no_input", False))
     if spec["fixture_sha256"] != evidence.original_sha256:
         evidence.status = "fail"
         evidence.limitations.append("PoC fixture_sha256 does not match the uploaded original")
@@ -230,65 +408,72 @@ def run_poc(
         evidence.limitations.append("no candidate bytes to execute")
         return evidence
     evidence.candidate_sha256 = _sha(candidate)
-    selected = _runner_for(str(spec["format"]), str(spec["arch"]))
+    selected = _select_runner(str(spec["format"]), str(spec["arch"]))
     if selected is None:
         evidence.status = "unavailable"
         evidence.limitations.append(
-            "no native/qemu runner for this format/arch on this host; PoC was not executed"
+            "no native/qemu/lima runner for this format/arch on this host; "
+            "PoC was not executed"
         )
         return evidence
-    runner_kind, runner = selected
-    evidence.runner = "native" if runner_kind == "native" else Path(runner).name
-    with tempfile.TemporaryDirectory(prefix="br-poc-") as tmp:
-        root = Path(tmp)
-        original_path = root / "original"
-        candidate_path = root / "candidate"
-        original_path.write_bytes(original)
-        candidate_path.write_bytes(candidate)
-        original_path.chmod(0o700)
-        candidate_path.chmod(0o700)
+    try:
+        _preflight(spec)
+    except ValueError as exc:
+        evidence.status = "fail"
+        evidence.limitations.append(f"invalid PoC staged files: {exc}")
+        return evidence
+    evidence.runner = "native" if selected.kind == "native" else Path(selected.tool).name
+    evidence.tier = selected.tier
+    arch = str(spec["arch"])
 
-        def run_cases(
-            data_path: Path, run_group: str, *, is_original: bool,
-        ) -> list[CaseResult]:
-            results: list[CaseResult] = []
-            for case in spec[run_group]:
-                stdin = b""
-                if case.get("stdin_base64"):
-                    stdin = base64.b64decode(case["stdin_base64"], validate=True)
-                exit_code, crashed, stdout_bytes, stderr, timed_out, error = _execute(
-                    data_path, runner_kind=runner_kind, runner=runner,
-                    argv=list(case["argv"]), stdin=stdin, timeout=timeout,
-                )
-                expected = case.get("original" if is_original else "candidate") or {}
-                stdout = stdout_bytes.decode("utf-8", "replace")
-                ok = _expected_ok(
-                    exit_code, crashed, stdout, stdout_bytes.hex(), stderr, expected,
-                    is_poc=run_group == "poc",
-                )
-                results.append(CaseResult(
-                    case_id=case["id"], kind=run_group, executable="original" if is_original else "candidate",
-                    exit_code=exit_code, crashed=crashed, stdout=stdout, stderr=stderr,
-                    stdout_hex=stdout_bytes.hex(), timed_out=timed_out, error=error,
-                    expected_ok=ok,
-                ))
-            return results
+    try:
+        with _staging_root(selected) as root:
 
-        evidence.cases = run_cases(original_path, "poc", is_original=True)
-        candidate_cases = run_cases(candidate_path, "poc", is_original=False)
-        evidence.cases.extend(candidate_cases)
-        evidence.regression = run_cases(original_path, "regression", is_original=True)
-        candidate_regression = run_cases(candidate_path, "regression", is_original=False)
-        evidence.regression.extend(candidate_regression)
+            def run_group(group: str) -> tuple[list[CaseResult], list[CaseResult]]:
+                originals: list[CaseResult] = []
+                candidates: list[CaseResult] = []
+                for index, case in enumerate(spec[group]):
+                    stdin = b""
+                    if case.get("stdin_base64"):
+                        stdin = base64.b64decode(case["stdin_base64"], validate=True)
+                    for is_original in (True, False):
+                        result = _run_case(
+                            binary_bytes=original if is_original else candidate,
+                            case=case,
+                            group=group,
+                            index=index,
+                            is_original=is_original,
+                            arch=arch,
+                            runner=selected,
+                            root=root,
+                            stdin=stdin,
+                            timeout=timeout,
+                        )
+                        (originals if is_original else candidates).append(result)
+                return originals, candidates
+
+            original_poc, candidate_poc = run_group("poc")
+            original_regression, candidate_regression = run_group("regression")
+    except OSError as exc:
+        evidence.status = "fail"
+        evidence.limitations.append(
+            f"PoC staging failed: {type(exc).__name__}: {exc}"
+        )
+        return evidence
+    except ValueError as exc:
+        evidence.status = "fail"
+        evidence.limitations.append(f"invalid PoC case data: {exc}")
+        return evidence
+
+    # Preserve the historical evidence layout: all original cases first, then
+    # the candidate cases of the same group.
+    evidence.cases = original_poc + candidate_poc
+    evidence.regression = original_regression + candidate_regression
 
     if any(case.error or case.timed_out for case in evidence.cases + evidence.regression):
         evidence.status = "fail"
         evidence.limitations.append("one or more PoC/regression executions failed to run")
         return evidence
-    original_poc = evidence.cases[: len(spec["poc"])]
-    candidate_poc = evidence.cases[len(spec["poc"]):]
-    original_regression = evidence.regression[: len(spec["regression"])]
-    candidate_regression = evidence.regression[len(spec["regression"]):]
     passed = (
         all(case.expected_ok for case in original_poc)
         and all(case.expected_ok for case in candidate_poc)
@@ -308,7 +493,9 @@ def run_poc(
                     f"{cand.exit_code} stdout={cand.stdout!r}"
                 )
     evidence.status = "pass" if passed else "fail"
-    if original_regression and candidate_regression:
+    if evidence.no_input:
+        evidence.stdout_signature = "not_applicable"
+    elif original_regression and candidate_regression:
         evidence.stdout_signature = (
             "matched"
             if all(a.stdout_hex == b.stdout_hex for a, b in zip(original_regression, candidate_regression))
@@ -339,7 +526,18 @@ def poc_contract() -> dict[str, Any]:
             "target": "function name for reporting",
             "poc": "cases the original must fail; candidate must be safe",
             "regression": "valid-input cases compared original vs candidate",
+            "files": (
+                "optional per-case list of {name, base64} staged in the execution "
+                "directory; argv may reference {tmp}/name"
+            ),
         },
-        "runner": "native on matching Linux/macOS hosts; qemu-user for ELF cross-arch; otherwise unavailable",
-        "limits": {"timeout_seconds": DEFAULT_TIMEOUT, "stdout_bytes": MAX_STDOUT},
+        "runner": (
+            "native on matching Linux hosts; qemu-user for ELF cross-arch; Lima VM "
+            "when a running instance is available; otherwise unavailable"
+        ),
+        "limits": {
+            "timeout_seconds": DEFAULT_TIMEOUT,
+            "stdout_bytes": MAX_STDOUT,
+            "staged_file_bytes": MAX_STAGED_FILE,
+        },
     }

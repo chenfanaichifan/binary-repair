@@ -40,6 +40,13 @@ SINK_CLASSES: dict[str, dict[str, str]] = {
         "strategy": "immediate",
         "description": "constant length operand of a checked copy helper",
     },
+    "capacity_check_mismatch": {
+        "strategy": "capacity",
+        "description": (
+            "inlined duplicated destination range check whose minority copy "
+            "tests the input size instead of the output capacity"
+        ),
+    },
 }
 
 DISPOSITIONS = (
@@ -56,6 +63,113 @@ RUNTIME_TIERS = {
     "native_run": "the repaired candidate executed natively on the host",
     "emulated_run": "the repaired function executed under Unicorn",
     "static_only": "no runtime evidence; never a verified success",
+}
+
+# Declared acceptance/evidence models.  This registry is the only place that
+# declares which evidence a repair class must supply: the verification gates
+# enforce exactly these models and must not invent a different one.
+#
+# ``required_checks`` are check ids of the unified verification gate
+# (``app.services.unified_verification.build``); ``legacy_required_checks`` are
+# ids of the legacy ELF quick-repair gate
+# (``app.services.binary_verification.build_verification``).
+_COMMON_GATE_CHECKS = (
+    "format",
+    "candidate.present",
+    "candidate.identity.original",
+    "candidate.identity.patched",
+    "container.reparse",
+    "repair.action",
+)
+_RUNTIME_GATE_CHECKS = (
+    "runtime.evidence",
+    "runtime.tier",
+    "runtime.contract",
+)
+_POC_GATE_CHECKS = (
+    "poc.native.available",
+    "poc.native.original_failure",
+    "poc.native.candidate_pass",
+    "poc.native.regression",
+    "poc.native.stdout_signature",
+)
+_NATIVE_POC_CHECKS = _COMMON_GATE_CHECKS + _RUNTIME_GATE_CHECKS + _POC_GATE_CHECKS
+
+EVIDENCE_PROFILES: dict[str, dict[str, Any]] = {
+    "strict_template": {
+        "description": (
+            "Legacy ELF x86-64 repair against the reviewed strict template, "
+            "verified by the template identity plus Unicorn stack-copy cases."
+        ),
+        "evidence_sources": ("runtime",),
+        "required_checks": _COMMON_GATE_CHECKS + _RUNTIME_GATE_CHECKS,
+        "legacy_required_checks": (
+            "format",
+            "candidate.present",
+            "candidate.identity.original",
+            "candidate.identity.patched",
+            "patch.scope",
+            "runtime.available",
+            "runtime.cases",
+            "runtime.no_overflow",
+            "runtime.boundary_semantics",
+            "strict.reviewed_template",
+        ),
+    },
+    "emulated_instruction": {
+        "description": (
+            "Unicorn instruction/function emulation of the repaired function "
+            "for stack-bound copy sinks.  The emulated oracle only models "
+            "in-bounds cases that exit 0: guard/reject semantics (a candidate "
+            "exit status of 1 on an over-limit input) cannot be represented, so "
+            "non-stack destinations must never reuse this oracle."
+        ),
+        "evidence_sources": ("runtime",),
+        "required_checks": _COMMON_GATE_CHECKS + _RUNTIME_GATE_CHECKS,
+        "legacy_required_checks": (
+            "format",
+            "candidate.present",
+            "candidate.identity.original",
+            "candidate.identity.patched",
+            "patch.scope",
+            "runtime.available",
+            "runtime.cases",
+            "runtime.no_overflow",
+        ),
+    },
+    "native_poc": {
+        "description": (
+            "External PoC/regression differential executed natively or in a "
+            "guest runtime.  This is the declared evidence model for non-stack "
+            "(heap/global) destinations and for hosts without an "
+            "instruction-level runtime; no fabricated runtime evidence is "
+            "allowed when the runner is unavailable."
+        ),
+        "evidence_sources": ("external_poc",),
+        "required_checks": _NATIVE_POC_CHECKS,
+        "legacy_required_checks": (),
+    },
+    "native_poc_rewrite": {
+        "description": (
+            "External PoC/regression differential plus byte-re-derived "
+            "in-place rewrite actions (reviewed duplicated-capacity-check "
+            "rewrite); every rewrite action is re-derived from the original "
+            "and candidate bytes by the gate."
+        ),
+        "evidence_sources": ("external_poc", "rewrite_actions"),
+        "required_checks": _NATIVE_POC_CHECKS + ("patch.rewrite",),
+        "legacy_required_checks": (),
+    },
+}
+
+# Default profile planned by a repair strategy.  Sink/evidence rules in
+# ``resolve_profile`` can override this (heap/global sinks and external PoCs
+# never use the emulated-instruction oracle).
+STRATEGY_PROFILES: dict[str, str] = {
+    "strict-template": "strict_template",
+    "immediate": "emulated_instruction",
+    "guard": "emulated_instruction",
+    "capacity": "native_poc_rewrite",
 }
 
 
@@ -87,7 +201,15 @@ class RepairCell:
         }
 
 
-_ALL_SINKS = tuple(sorted(SINK_CLASSES))
+# Sinks recovered by the container-neutral analyzer and consumed by the generic
+# writer.  The reviewed duplicated-capacity-check rewrite is produced by its own
+# engine and is only planned for the ELF/x86-64 cell below.
+_ANALYZER_SINKS = tuple(
+    sorted(name for name in SINK_CLASSES if name != "capacity_check_mismatch")
+)
+# The ELF/x86-64 cell additionally plans the reviewed capacity-check rewrite;
+# it is the only cell that advertises the ``capacity`` strategy and sink class.
+_ELF_X86_64_SINKS = tuple(sorted(SINK_CLASSES))
 
 # The deterministic repair matrix.  Only little-endian thin containers are
 # listed; fat Mach-O, 32-bit Mach-O, arm32, riscv, mips, powerpc and big-endian
@@ -100,16 +222,16 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ALL_SINKS,
+        sink_classes=_ANALYZER_SINKS,
     ),
     RepairCell(
         container="elf",
         arch="x86_64",
         bits=64,
         endian="little",
-        strategies=("strict-template", "immediate", "guard"),
+        strategies=("strict-template", "immediate", "guard", "capacity"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ALL_SINKS,
+        sink_classes=_ELF_X86_64_SINKS,
     ),
     RepairCell(
         container="elf",
@@ -118,7 +240,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ALL_SINKS,
+        sink_classes=_ANALYZER_SINKS,
     ),
     RepairCell(
         container="pe",
@@ -127,7 +249,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ALL_SINKS,
+        sink_classes=_ANALYZER_SINKS,
     ),
     RepairCell(
         container="pe",
@@ -136,7 +258,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ALL_SINKS,
+        sink_classes=_ANALYZER_SINKS,
     ),
     RepairCell(
         container="pe",
@@ -145,7 +267,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("emulated_run",),
-        sink_classes=_ALL_SINKS,
+        sink_classes=_ANALYZER_SINKS,
     ),
     RepairCell(
         container="macho",
@@ -154,7 +276,7 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("native_run",),
-        sink_classes=_ALL_SINKS,
+        sink_classes=_ANALYZER_SINKS,
     ),
     RepairCell(
         container="macho",
@@ -163,13 +285,14 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         endian="little",
         strategies=("immediate", "guard"),
         runtime_tiers=("native_run",),
-        sink_classes=_ALL_SINKS,
+        sink_classes=_ANALYZER_SINKS,
     ),
 )
 
 _NON_GOALS = (
-    "heap, global and non-imported inline copy sinks",
-    "sprintf/format-string expansion, UAF, integer and loop defects",
+    "heap, global and other non-imported copy sinks outside the reviewed "
+    "duplicated capacity-check rewrite",
+    "sprintf/format-string expansion, use-after-free and other integer/loop defects",
     "arm32, riscv, mips, powerpc and big-endian machine-code repair",
     "32-bit Mach-O and fat Mach-O rewriting",
     "Windows / macOS native execution beyond the existing Mach-O path",
@@ -207,6 +330,55 @@ def plans_strategy(cell: RepairCell, strategy: str) -> bool:
     return strategy == "auto" or strategy in cell.strategies
 
 
+def profile_for_strategy(strategy: str) -> str | None:
+    """Return the profile a strategy plans by default, or ``None``."""
+    return STRATEGY_PROFILES.get(str(strategy or ""))
+
+
+def resolve_profile(
+    *,
+    has_runtime: bool = False,
+    has_external_poc: bool = False,
+    has_rewrite_actions: bool = False,
+    capacity: bool = False,
+    destination_kind: str = "stack",
+) -> str:
+    """Declare the evidence profile for the evidence a caller supplies.
+
+    This is the pipeline's strategy/sink -> profile rule and the declared
+    backward-compatible default for direct gate callers that do not pass an
+    explicit profile.  Non-stack destinations must never be accepted through
+    the stack/emulated-instruction oracle.
+    """
+    del has_runtime  # runtime hints never select the external-PoC model
+    if capacity or has_rewrite_actions:
+        return "native_poc_rewrite"
+    if has_external_poc:
+        return "native_poc"
+    if str(destination_kind or "stack") != "stack":
+        return "native_poc"
+    return "emulated_instruction"
+
+
+def is_known_profile(profile: str) -> bool:
+    return str(profile or "") in EVIDENCE_PROFILES
+
+
+def profile_required_checks(profile: str) -> tuple[str, ...]:
+    meta = EVIDENCE_PROFILES.get(str(profile or ""))
+    return tuple(meta["required_checks"]) if meta else ()
+
+
+def profile_legacy_required_checks(profile: str) -> tuple[str, ...]:
+    meta = EVIDENCE_PROFILES.get(str(profile or ""))
+    return tuple(meta["legacy_required_checks"]) if meta else ()
+
+
+def profile_evidence_sources(profile: str) -> tuple[str, ...]:
+    meta = EVIDENCE_PROFILES.get(str(profile or ""))
+    return tuple(meta["evidence_sources"]) if meta else ()
+
+
 def matrix_payload() -> dict[str, Any]:
     """English-ASCII coverage payload for ``GET /api/binary/matrix`` and docs."""
     return {
@@ -215,6 +387,16 @@ def matrix_payload() -> dict[str, Any]:
         "sink_classes": {name: dict(meta) for name, meta in SINK_CLASSES.items()},
         "dispositions": list(DISPOSITIONS),
         "runtime_tiers": dict(RUNTIME_TIERS),
+        "evidence_profiles": {
+            name: {
+                "description": meta["description"],
+                "evidence_sources": list(meta["evidence_sources"]),
+                "required_checks": list(meta["required_checks"]),
+                "legacy_required_checks": list(meta["legacy_required_checks"]),
+            }
+            for name, meta in EVIDENCE_PROFILES.items()
+        },
+        "strategy_profiles": dict(STRATEGY_PROFILES),
         "non_goals": list(_NON_GOALS),
         "notes": [
             "Every input is triaged; only matrix cells with a patchable sink "
