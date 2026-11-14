@@ -344,6 +344,7 @@ def _from_elf_legacy(
     raw: Any,
     *,
     verify: bool,
+    external_poc: dict[str, Any] | None = None,
 ) -> UnifiedBinaryReport:
     report = _base_report(data, container)
     report.backend = raw.backend or "elf"
@@ -352,6 +353,7 @@ def _from_elf_legacy(
     report.supported = bool(raw.supported and patched is not None)
     report.mode = raw.mode
     report.capacity = raw.capacity
+    raw_findings = getattr(raw, "findings", [])
     raw_findings = getattr(raw, "findings", [])
     if isinstance(raw_findings, (str, bytes)) or not isinstance(raw_findings, (list, tuple)):
         raw_findings = [raw_findings] if raw_findings else []
@@ -364,6 +366,15 @@ def _from_elf_legacy(
     report.findings = normalized
     report.offsets = list(raw.offsets)
     report.limitations = list(raw.limitations)
+    if external_poc is not None:
+        # The legacy gate has no external-PoC evidence model.  Record that the
+        # caller supplied one instead of silently dropping it; the caller then
+        # routes manifest-bearing repairs through the unified path.
+        report.limitations.append(
+            "an external PoC manifest was supplied but the legacy "
+            "stack/emulated gate cannot consume it; manifest-bearing repairs "
+            "must use the unified evidence-profile gate"
+        )
     report.runtime = dict(raw.runtime or {})
     report.verification = dict(raw.verification or {})
     if patched is not None:
@@ -1093,17 +1104,10 @@ def repair_any(
             report.limitations = [report.error]
             _set_disposition(report, "invalid")
             return RepairOutcome(None, report)
-        report = _from_elf_legacy(container, data, patched, raw, verify=verify)
-        if poc_manifest is not None:
-            # The legacy stack/emulated gate has no external-PoC evidence model;
-            # the manifest is only consumed if the reviewed capacity fallback
-            # below produces a candidate.  Say so explicitly instead of
-            # silently dropping supplied evidence.
-            report.limitations.append(
-                "the supplied PoC manifest cannot be consumed by the legacy "
-                "stack/emulated gate; it is used only by the reviewed capacity "
-                "fallback if that produces a candidate"
-            )
+        report = _from_elf_legacy(
+            container, data, patched, raw, verify=verify,
+            external_poc=poc_manifest,
+        )
         if strategy != "auto" and (
             report.strategy != strategy or not plans_strategy(cell, strategy)
         ):

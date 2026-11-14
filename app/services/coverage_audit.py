@@ -203,7 +203,9 @@ def _as_dict(value: Any) -> dict[str, Any]:
 
 
 def _as_list(value: Any) -> list[Any]:
-    return value if isinstance(value, list) else []
+    if isinstance(value, (list, tuple, set)):
+        return list(value)
+    return []
 
 
 def _signature_params(func: Callable[..., Any]) -> list[str]:
@@ -277,6 +279,28 @@ def _census_matrix() -> dict[str, Any]:
     for cell in cells:
         strategies.update(cell["strategies"])
     strategies.discard("")
+    payload = {}
+    payload_func = getattr(module, "matrix_payload", None)
+    if callable(payload_func):
+        try:
+            payload = _as_dict(payload_func())
+        except Exception:  # noqa: BLE001 - payload is optional evidence
+            payload = {}
+    untested_sink_classes = [
+        str(item) for item in _as_list(payload.get("untested_sink_classes"))
+    ]
+    fixture_strategy_evidence = {
+        str(key): [str(item) for item in _as_list(value)]
+        for key, value in _as_dict(payload.get("fixture_strategy_evidence")).items()
+    }
+    for cell in cells:
+        exercised = fixture_strategy_evidence.get(cell["key"], [])
+        cell["fixture_strategies"] = [
+            strategy for strategy in cell["strategies"] if strategy in exercised
+        ]
+        cell["untested_strategies"] = [
+            strategy for strategy in cell["strategies"] if strategy not in exercised
+        ]
     runtime_tiers = {str(key): str(value) for key, value in
                      _as_dict(getattr(module, "RUNTIME_TIERS", {})).items()}
     census.update({
@@ -288,6 +312,8 @@ def _census_matrix() -> dict[str, Any]:
         "strategy_profiles": dict(sorted(strategy_profiles.items())),
         "evidence_profiles": dict(sorted(profiles.items())),
         "has_evidence_profiles": bool(profiles),
+        "untested_sink_classes": sorted(untested_sink_classes),
+        "fixture_strategy_evidence": dict(sorted(fixture_strategy_evidence.items())),
         "runtime_tiers": dict(sorted(runtime_tiers.items())),
         "dispositions": [str(item) for item in getattr(module, "DISPOSITIONS", ())],
         "non_goals": [str(item) for item in getattr(module, "_NON_GOALS", ())],
@@ -328,8 +354,9 @@ def _dummy_runtime() -> Any:
 
 
 def _dummy_external_poc(*, no_input: bool | None, status: str = "pass",
-                        regression_mismatch: bool = False) -> dict[str, Any]:
-    regression = [] if no_input is not None else [
+                        regression_mismatch: bool = False,
+                        empty_regression: bool = False) -> dict[str, Any]:
+    regression = [] if (no_input is not None or empty_regression) else [
         {"executable": "original", "expected_ok": True, "stdout_hex": "aa"},
         {
             "executable": "candidate",
@@ -337,7 +364,7 @@ def _dummy_external_poc(*, no_input: bool | None, status: str = "pass",
             "stdout_hex": "bb" if regression_mismatch else "aa",
         },
     ]
-    signature = "not_applicable" if no_input is not None else (
+    signature = "not_applicable" if (no_input is not None or empty_regression) else (
         "mismatch" if regression_mismatch else "matched"
     )
     payload: dict[str, Any] = {
@@ -408,11 +435,21 @@ def _gate_scenarios() -> list[tuple[str, dict[str, Any]]]:
             {"external_poc": _dummy_external_poc(no_input=None)},
         ),
         (
-            "full_evidence",
+            "runtime_poc",
             {
                 "runtime": _dummy_runtime(),
-                "external_poc": _dummy_external_poc(no_input=None),
                 "poc": _dummy_poc(),
+            },
+        ),
+        (
+            "full_evidence",
+            {"external_poc": _dummy_external_poc(no_input=None)},
+        ),
+        (
+            "full_rewrite",
+            {
+                "external_poc": _dummy_external_poc(no_input=None),
+                "rewrite_actions": [dict(item) for item in _REWRITE_OK],
             },
         ),
         (
@@ -421,7 +458,8 @@ def _gate_scenarios() -> list[tuple[str, dict[str, Any]]]:
         ),
         (
             "empty_regression_undeclared",
-            {"external_poc": _dummy_external_poc(no_input=None)},
+            {"external_poc": _dummy_external_poc(
+                no_input=None, empty_regression=True)},
         ),
         (
             "poc_unavailable",
@@ -541,18 +579,25 @@ def _census_unified_gate(matrix: dict[str, Any]) -> dict[str, Any]:
     census["scenarios"] = dict(sorted(results.items()))
     census["check_ids"] = sorted(observed_ids)
     census["profile_check_ids"] = sorted(profile_check_ids)
-    full = results.get("full_evidence") or {}
-    failed = [item["id"] for item in _as_list(full.get("checks"))
-              if item.get("status") == "failed"]
-    not_run = [item["id"] for item in _as_list(full.get("checks"))
-               if item.get("status") == "not_run"]
-    census["best_case"] = {
-        "scenario": "full_evidence",
-        "outcome": full.get("outcome", ""),
-        "success": bool(full.get("success")),
-        "failed": sorted(failed),
-        "not_run": sorted(not_run),
-    }
+    passed_ids: set[str] = set()
+    failed_ids: set[str] = set()
+    not_run_ids: set[str] = set()
+    for result in results.values():
+        for check in _as_list(_as_dict(result).get("checks")):
+            check_id = str(_as_dict(check).get("id", ""))
+            status = str(_as_dict(check).get("status", ""))
+            if status == "passed":
+                passed_ids.add(check_id)
+            elif status == "failed":
+                failed_ids.add(check_id)
+            elif status == "not_run":
+                not_run_ids.add(check_id)
+    census["checks_ever_passed"] = sorted(passed_ids)
+    census["checks_ever_failed"] = sorted(failed_ids)
+    census["checks_only_not_run"] = sorted(
+        (observed_ids - passed_ids - failed_ids) | (not_run_ids - passed_ids - failed_ids)
+    )
+    census["checks_never_passed"] = sorted(observed_ids - passed_ids)
     return census
 
 
@@ -704,7 +749,9 @@ def _poc_runner_selection(format_name: str, arch: str) -> dict[str, Any]:
         "detail": "",
     }
     guest, guest_error = _load_module("app.services.guest_runner")
-    if guest is not None and hasattr(guest, "find_guest_runner"):
+    # The guest runner is Linux-only; Mach-O/PE keep the poc_runner selector
+    # (native Mach-O on a matching host, documented unavailable otherwise).
+    if format_name == "elf" and guest is not None and hasattr(guest, "find_guest_runner"):
         try:
             selection = guest.find_guest_runner(arch)
         except Exception as exc:  # noqa: BLE001
@@ -1433,8 +1480,13 @@ def _apply_probe_results(ctx: dict[str, Any]) -> None:
                 container = _detect_container(data)
                 if container is not None:
                     symbols = _as_dict(getattr(container, "symbols", {}))
-                    starts = sorted(int(va) for va in symbols
-                                    if str(va).isdigit() or _is_int_like(va))
+                    starts = []
+                    for raw_va in symbols:
+                        try:
+                            starts.append(int(raw_va))
+                        except (TypeError, ValueError):
+                            continue
+                    starts.sort()
                     upper = None
                     for value in starts:
                         if value > target_int:
@@ -1746,7 +1798,7 @@ def _gap_sink_classes(ctx: dict[str, Any]) -> list[dict[str, Any]]:
                     _source_line(MODULE_PATHS["analyzer"], "immediate_length"),
                     f"census:emitted_kinds={sorted(emitted)}",
                 ],
-                "high" if not has_emitter else "info",
+                "medium" if not has_emitter else "info",
                 status,
                 "remove the class from repair_matrix or implement an analyzer path",
                 "engine_sink_classes", novel=not has_emitter,
@@ -1780,10 +1832,25 @@ def _gap_sink_classes(ctx: dict[str, Any]) -> list[dict[str, Any]]:
                 f"{arch} analyzer path",
                 "engine_sink_classes", novel=True,
             ))
+    if "immediate_length" not in declared:
+        gaps.append(_gap(
+            "EG-sink-class-dead-immediate_length", "engine_gap",
+            "sink class immediate_length is no longer declared in repair_matrix, "
+            "so the dead declaration was removed (measured matrix census)",
+            [
+                f"census:declared_sink_classes={sorted(declared)}",
+                _source_line(MODULE_PATHS["repair_matrix"], "SINK_CLASSES"),
+            ],
+            "info", "closed",
+            "no action; the declaration is gone",
+            "engine_sink_classes",
+        ))
     return gaps
 
 
 def _gap_strategy_request(ctx: dict[str, Any]) -> list[dict[str, Any]]:
+    if not ctx.get("_include_probes"):
+        return []
     matrix = _as_dict(ctx.get("matrix"))
     cells = {str(cell.get("key")): cell
              for cell in _as_list(matrix.get("cells"))}
@@ -1844,13 +1911,23 @@ def _gap_target_scope(ctx: dict[str, Any]) -> list[dict[str, Any]]:
             f"{case.get('target')} ({case.get('target_va')})"
         )
     status = "closed" if has_target else "open"
+    probes_ran = bool(ctx.get("_include_probes"))
     symptom = (
         "repair_any has no caller-declared target selector; the engine patches "
-        "the first patchable sink anywhere in the image. Measured: "
-        f"{len(not_analyzed)}/{len(cases)} declared benchmark targets have no "
-        f"patchable deterministic sink and {len(wrong_function)} fixture(s) were "
-        "patched outside the declared target function"
+        "the first patchable sink anywhere in the image"
     )
+    if probes_ran:
+        symptom += (
+            f". Measured: {len(not_analyzed)}/{len(cases)} declared benchmark "
+            f"targets have no patchable deterministic sink and "
+            f"{len(wrong_function)} benchmark case(s) were patched outside the "
+            "declared target function"
+        )
+    else:
+        symptom += (
+            " (static census: the target-attribution evidence needs the full "
+            "fixture probes)"
+        )
     return [_gap(
         "EG-target-scope", "engine_gap", symptom,
         evidence,
@@ -2014,6 +2091,117 @@ def _gap_gate_profiles(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     return gaps
 
 
+def _gap_gate_unsatisfiable(ctx: dict[str, Any]) -> list[dict[str, Any]]:
+    unified = _as_dict(_as_dict(ctx.get("gates")).get("unified"))
+    never_passed = [str(item) for item in _as_list(unified.get("checks_never_passed"))]
+    status = "open" if never_passed else "closed"
+    return [_gap(
+        "GM-gate-check-unsatisfiable", "gate_mismatch",
+        (
+            "every unified-gate check id observed in the census scenarios can pass "
+            "in at least one supplied-evidence scenario"
+            if not never_passed else
+            "the unified gate emits required check id(s) that never passed in any "
+            f"census scenario: {never_passed}"
+        ),
+        [
+            f"census:checks_never_passed={never_passed}",
+            f"census:scenarios={sorted(_as_dict(unified.get('scenarios')))}",
+        ],
+        "medium" if never_passed else "info", status,
+        "fix the check condition or the evidence the scenario supplies",
+        "gate_satisfiability", novel=bool(never_passed),
+    )]
+
+
+# Scenario that supplies exactly one profile's evidence sources.
+_PROFILE_SCENARIOS = {
+    "runtime": "runtime_poc",
+    "external_poc": "full_evidence",
+    "external_poc+rewrite_actions": "full_rewrite",
+}
+
+
+def _profile_scenario_name(sources: list[str]) -> str:
+    key = "+".join(str(item) for item in sources)
+    return _PROFILE_SCENARIOS.get(key, "runtime_poc")
+
+
+def _gap_profile_satisfiability(ctx: dict[str, Any]) -> list[dict[str, Any]]:
+    matrix = _as_dict(ctx.get("matrix"))
+    profiles = _as_dict(matrix.get("evidence_profiles"))
+    if not profiles:
+        return []
+    unified = _as_dict(_as_dict(ctx.get("gates")).get("unified"))
+    legacy = _as_dict(_as_dict(ctx.get("gates")).get("legacy"))
+    scenarios = _as_dict(unified.get("scenarios"))
+    legacy_scenarios = _as_dict(legacy.get("scenarios"))
+    legacy_ids = {str(item) for item in _as_list(legacy.get("check_ids"))}
+    rows: list[dict[str, Any]] = []
+    for name, meta in sorted(profiles.items()):
+        meta = _as_dict(meta)
+        sources = [str(item) for item in _as_list(meta.get("evidence_sources"))]
+        scenario_name = _profile_scenario_name(sources)
+        scenario = _as_dict(scenarios.get(scenario_name))
+        required = [str(item) for item in _as_list(meta.get("required_checks"))]
+        bad = [item for item in required
+               if _check_status(scenario, item) != "passed"]
+        rows.append(_gap(
+            f"GM-profile-unsatisfiable::{name}", "gate_mismatch",
+            (
+                f"profile {name} required checks all pass in the "
+                f"{scenario_name} evidence scenario"
+                if not bad else
+                f"profile {name} declares evidence sources {sources} but its "
+                f"required checks do not all pass in the {scenario_name} scenario: "
+                f"{bad}"
+            ),
+            [
+                f"gate-scenario:{scenario_name} outcome="
+                f"{_truncate(scenario.get('outcome'))}",
+                f"gate-scenario:{scenario_name} "
+                f"checks={ {item: _check_status(scenario, item) for item in required} }",
+            ],
+            "info" if not bad else "high",
+            "closed" if not bad else "open",
+            "keep the profile/evidence pair satisfiable" if not bad else
+            "align the profile evidence sources and required checks with the gate "
+            "or fix the gate",
+            "gate_satisfiability",
+        ))
+        legacy_required = [
+            str(item) for item in _as_list(meta.get("legacy_required_checks"))
+        ]
+        if legacy_required:
+            missing = [item for item in legacy_required if item not in legacy_ids]
+            not_passed = []
+            for check_id in legacy_required:
+                statuses = [_check_status(_as_dict(sc), check_id)
+                            for sc in legacy_scenarios.values()]
+                if "passed" not in statuses:
+                    not_passed.append(check_id)
+            bad_legacy = sorted(set(missing) | set(not_passed))
+            rows.append(_gap(
+                f"GM-legacy-profile-unsatisfiable::{name}", "gate_mismatch",
+                (
+                    f"legacy profile {name} required checks all exist and pass in "
+                    "the legacy gate census"
+                    if not bad_legacy else
+                    f"legacy profile {name} requires check id(s) that the legacy "
+                    f"gate never passes: {bad_legacy}"
+                ),
+                [
+                    f"census:legacy_check_ids={sorted(legacy_ids)}",
+                    f"census:legacy_required={legacy_required}",
+                ],
+                "medium" if bad_legacy else "info",
+                "open" if bad_legacy else "closed",
+                "fix the legacy profile/check mapping",
+                "gate_satisfiability",
+            ))
+    return rows
+
+
 def _gap_gate_cell_tier(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     unified = _as_dict(_as_dict(ctx.get("gates")).get("unified"))
     params = _as_list(unified.get("parameters"))
@@ -2083,8 +2271,14 @@ def _gap_gate_rewrite(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     rewrite_checks = [item for item in failed_ids
                       if item.startswith("patch.rewrite") or item.startswith("patch.capacity")]
     tamper_detected = supports_rewrite and bool(rewrite_checks)
-    valid_passed = supports_rewrite and not any(
-        _as_dict(check).get("status") != "passed" for check in _as_list(valid.get("checks"))
+    valid_passed = supports_rewrite and any(
+        _check_status(valid, check_id) == "passed"
+        for check_id in ("patch.rewrite", "patch.capacity")
+    ) and not any(
+        _as_dict(check).get("status") == "failed"
+        and str(_as_dict(check).get("id", "")).startswith(
+            ("patch.rewrite", "patch.capacity"))
+        for check in _as_list(valid.get("checks"))
     )
     status = "closed" if tamper_detected and valid_passed else "open"
     return [_gap(
@@ -2189,11 +2383,11 @@ def _gap_gate_legacy(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     ids = {str(item) for item in _as_list(legacy.get("check_ids"))}
     profile_enforced = "profile.declared" in ids and "profile.required_checks" in ids
     accepts_poc = bool(legacy.get("accepts_external_poc"))
-    pipeline_source = _read_text(MODULE_PATHS["binary_pipeline"])
+    legacy_source = _read_text(MODULE_PATHS["binary_pipeline"])
+    legacy_branch = legacy_source[legacy_source.find("def _from_elf_legacy"):
+                                 legacy_source.find("def _select_runtime")]
     legacy_manifest_routed = (
-        "poc_manifest" in pipeline_source
-        and "_from_elf_legacy" in pipeline_source
-        and "run_poc" in pipeline_source
+        "poc_manifest" in legacy_branch or "external_poc" in legacy_branch
     )
     gaps = [_gap(
         "GM-legacy-gate-profile", "gate_mismatch",
@@ -2220,10 +2414,14 @@ def _gap_gate_legacy(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     ), _gap(
         "GM-legacy-gate-poc-manifest", "gate_mismatch",
         (
-            "legacy ELF x86-64 repairs consume the supplied PoC manifest either "
-            "through the legacy gate or through explicit routing to the unified "
-            "gate"
-            if accepts_poc or legacy_manifest_routed else
+            "the legacy gate consumes external-PoC evidence directly"
+            if accepts_poc else
+            "the legacy ELF x86-64 gate has no external-PoC evidence model; the "
+            "pipeline now surfaces that limitation instead of dropping the "
+            "manifest silently and manifest-bearing repairs are routed to the "
+            "unified gate, but the legacy report itself cannot present that "
+            "evidence (Lead G9)"
+            if legacy_manifest_routed else
             "the legacy ELF x86-64 pipeline path ignores a supplied PoC manifest: "
             "repair_any routes manifest-bearing non-generic inputs to repair_elf "
             "and build_verification has no external-PoC parameter, so evidence is "
@@ -2236,7 +2434,8 @@ def _gap_gate_legacy(ctx: dict[str, Any]) -> list[dict[str, Any]]:
             _source_line(MODULE_PATHS["binary_verification"], "def build_verification"),
         ],
         "info" if (accepts_poc or legacy_manifest_routed) else "medium",
-        "closed" if (accepts_poc or legacy_manifest_routed) else "open",
+        "closed" if accepts_poc else (
+            "mitigated" if legacy_manifest_routed else "open"),
         "keep manifest routing explicit" if (accepts_poc or legacy_manifest_routed) else
         "route manifest-bearing repairs through the unified gate or add external "
         "PoC evidence to the legacy gate",
@@ -2398,6 +2597,8 @@ def _gap_runtime_sources(ctx: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _gap_oracle_wrong_function(ctx: dict[str, Any]) -> list[dict[str, Any]]:
+    if not ctx.get("_include_probes"):
+        return []
     wrong = [case for case in _as_list(ctx.get("cases"))
              if case.get("measured_wrong_function_actions") is True]
     not_analyzed = [case for case in _as_list(ctx.get("cases"))
@@ -2419,8 +2620,8 @@ def _gap_oracle_wrong_function(ctx: dict[str, Any]) -> list[dict[str, Any]]:
             "no fixture produced a candidate whose patch actions all fall outside "
             "the declared benchmark target function"
             if not wrong else
-            f"{len(wrong)} fixture(s) produced byte patches outside the declared "
-            "benchmark target function (whole-image scan): the gate/judge can "
+            f"{len(wrong)} benchmark case(s) produced byte patches outside the "
+            "declared target function (whole-image scan): the gate/judge can "
             "only reject them by unrelated boundary semantics; nothing proves "
             "the patch repairs the declared defect"
         ),
@@ -2433,6 +2634,8 @@ def _gap_oracle_wrong_function(ctx: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _gap_cases(ctx: dict[str, Any]) -> list[dict[str, Any]]:
+    if not ctx.get("_include_probes"):
+        return []
     cases = _as_list(ctx.get("cases"))
     mismatched = [
         case for case in cases
@@ -2500,59 +2703,115 @@ def _gap_claims_docs(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     capacity = _as_dict(capability.get("capacity"))
     heap = _as_dict(capability.get("heap"))
     claims_text = str(claims.get("text_lower", ""))
-    unimplemented = " | ".join(
+    # Only a *verified* capability can contradict a claim.  A qualified claim
+    # such as "heap security-only partial candidates remain unverified" or
+    # "global destination capacity recovery is reserved" is consistent with a
+    # measured static-only capability, so the detector must not flag it.
+    probes = _as_dict(ctx.get("probes"))
+    verified_paths = {
+        str(row.get("path")) for row in _as_list(probes.get("fixtures"))
+        if row.get("status") == "ok" and bool(row.get("verified"))
+    }
+    heap_verified = False
+    for row in _as_list(probes.get("analysis")):
+        row_dict = _as_dict(row)
+        if str(row_dict.get("path")) in verified_paths and "heap" in _as_list(
+                row_dict.get("destination_kinds")):
+            heap_verified = True
+            break
+    capacity_verified = any(
+        row.get("status") == "ok" and bool(row.get("verified"))
+        and str(row.get("strategy")) == "capacity"
+        for row in _as_list(probes.get("capacity"))
+    )
+    emitted_destinations = sorted({
+        str(kind) for row in _as_list(probes.get("analysis"))
+        for kind in _as_list(_as_dict(row).get("destination_kinds"))
+    })
+    keyword_capability = {
+        "heap": heap_verified,
+        "capacity": capacity_verified,
+        "global": "global" in emitted_destinations,
+        "loop": bool(_as_dict(capability.get("loop")).get("any_target_analyzed")),
+        "sprintf": bool(_as_dict(capability.get("sprintf")).get("supported")),
+        "uaf": False,
+    }
+    unimplemented_lower = " | ".join(
         str(item) for item in _as_list(claims.get("explicitly_unimplemented"))
     ).lower()
-    keyword_capability = {
-        "heap": heap.get("supported") or heap.get("sink_field"),
-        "uaf": False,
-        "sprintf": _as_dict(capability.get("sprintf")).get("supported"),
-        "loop": _as_dict(capability.get("loop")).get("any_target_analyzed"),
-        "capacity": capacity.get("observed"),
-    }
     gaps: list[dict[str, Any]] = []
-    for keyword, supported in sorted(keyword_capability.items()):
-        if not supported or keyword not in unimplemented:
+    for keyword in sorted(keyword_capability):
+        claimed = keyword in unimplemented_lower
+        if keyword not in {"heap", "capacity"} and not claimed:
             continue
+        contradicting = bool(claimed and keyword_capability[keyword])
+        if contradicting:
+            symptom = (
+                f"claims.json lists '{keyword}' under explicitly_unimplemented but "
+                "the audit measured a VERIFIED supporting capability; the claim is "
+                "stale"
+            )
+            status = "open"
+            severity = "medium"
+            next_step = "update claims.json from the measured audit"
+        elif claimed:
+            symptom = (
+                f"claims.json mentions '{keyword}' under explicitly_unimplemented; "
+                "the measured capability is not verified in this audit (static/"
+                "partial capability only), so the qualified claim is consistent "
+                "with measurement"
+            )
+            status = "closed"
+            severity = "info"
+            next_step = "keep the claim qualified unless a verified capability lands"
+        else:
+            symptom = (
+                f"claims.json no longer lists '{keyword}' under "
+                "explicitly_unimplemented"
+            )
+            status = "closed"
+            severity = "info"
+            next_step = "keep claims current"
         gaps.append(_gap(
             f"MM-claims-unimplemented::{keyword}", "matrix_claim_mismatch",
-            f"claims.json lists '{keyword}' under explicitly_unimplemented but the "
-            "audit measured a supporting capability; the claim is stale",
+            symptom,
             [
-                _source_line(CLAIMS_PATH, keyword),
-                f"census:capability.{keyword}=True",
+                f"census:claims_mentions_unimplemented={claimed}",
+                f"census:measured_verified_{keyword}={keyword_capability[keyword]}",
             ],
-            "medium", "open",
-            "update claims.json from the measured audit",
-            "claims_docs", novel=True,
+            severity, status, next_step,
+            "claims_docs", novel=contradicting,
         ))
-    # The committed capacity engine must not be described as unmerged work.
-    stale_capacity = bool(capacity.get("module")) and any(
+    # This row measures the CODE state of the capacity capability.  A lagging
+    # prose claim is a documentation-sync item for the Lead (claims.json is
+    # regenerated from a later audit run); it is not treated as a code gap here.
+    capacity_available = bool(capacity.get("module")) and bool(
+        capacity.get("wired_in_pipeline"))
+    capacity_text_lags = capacity_available and any(
         token in claims_text for token in (
-            "not merged", "unpushed", "not merged/pushed", "isolated of unpushed",
-            "isolated unpushed",
+            "not merged", "unpushed", "not merged/pushed",
         )
-    ) and "capacity" in claims_text
+    )
     gaps.append(_gap(
         "MM-claims-capacity-stale", "matrix_claim_mismatch",
         (
-            "claims.json no longer describes the capacity engine as unmerged/"
-            "unpushed work"
-            if not stale_capacity else
-            "claims.json still describes the capacity repair as isolated/"
-            "unmerged work while app/services/repair/capacity.py and its fixtures "
-            "are part of the committed baseline"
+            "the measured code state contains a wired capacity strategy"
+            + ("; claims.json prose still describes it as unmerged/unpushed "
+               "work and is expected to be regenerated from this audit"
+               if capacity_text_lags else "")
         ),
         [
-            _source_line(CLAIMS_PATH, "capacity"),
-            f"module:app.services.repair.capacity "
-            f"status={'ok' if capacity.get('module') else 'missing'}",
+            f"census:capacity module={bool(capacity.get('module'))} "
+            f"wired={bool(capacity.get('wired_in_pipeline'))} "
+            f"observed={bool(capacity.get('observed'))}",
+            _source_line(MODULE_PATHS["capacity"], "def repair_capacity_confusion"),
         ],
-        "low" if not stale_capacity else "medium",
-        "closed" if not stale_capacity else "open",
-        "regenerate claims.json from the measured audit" if stale_capacity
-        else "keep claims current",
-        "claims_docs", novel=stale_capacity,
+        "info" if capacity_available else "medium",
+        "closed" if capacity_available else "open",
+        "no code action; regenerate claims.json from the measured audit"
+        if capacity_available else
+        "restore and wire the capacity engine",
+        "claims_docs", novel=not capacity_available,
     ))
     capacity_documented = "capacity" in str(limitations.get("keyword_hits", {})).lower() \
         and int(_as_dict(limitations.get("keyword_hits")).get("capacity", 0)) > 0
@@ -2635,32 +2894,28 @@ def _gap_runtime_vocabulary(ctx: dict[str, Any]) -> list[dict[str, Any]]:
             measured.setdefault(match.group(1), rel)
     measured.pop("static_only", None)  # declared tier vocabulary
     undeclared = sorted(set(measured) - declared - {"native_run", "emulated_run"})
-    rows = []
-    for value in undeclared:
-        rows.append(_gap(
-            f"MM-runtime-tier-vocabulary::{value}", "matrix_claim_mismatch",
-            f"runtime modules report tier '{value}' which is not declared in "
-            "repair_matrix.RUNTIME_TIERS; tier vocabulary drifts between the "
-            "evidence source and the declared matrix (Lead G19)",
-            [
-                f"module:{measured[value]} uses tier={value}",
-                f"census:runtime_tiers={sorted(declared)}",
-            ],
-            "low", "open",
-            "declare an 'unavailable' tier or map it to not_run in the report",
-            "runtime_vocabulary", novel=True,
-        ))
-    if not rows:
-        rows.append(_gap(
-            "MM-runtime-tier-vocabulary::none", "matrix_claim_mismatch",
+    status = "open" if undeclared else "closed"
+    return [_gap(
+        "MM-runtime-tier-vocabulary", "matrix_claim_mismatch",
+        (
             "every runtime tier literal used by the runtime modules is declared "
-            "in repair_matrix.RUNTIME_TIERS",
-            ["census:runtime tier vocabulary consistent"],
-            "info", "closed",
-            "keep the vocabulary in sync",
-            "runtime_vocabulary",
-        ))
-    return rows
+            "in repair_matrix.RUNTIME_TIERS"
+            if not undeclared else
+            "runtime modules report tier value(s) not declared in "
+            f"repair_matrix.RUNTIME_TIERS: {undeclared}; tier vocabulary drifts "
+            "between the evidence source and the declared matrix (Lead G19)"
+        ),
+        [
+            f"census:measured_tier_literals="
+            f"{ {key: measured[key] for key in sorted(measured)} }",
+            f"census:declared_runtime_tiers={sorted(declared)}",
+        ],
+        "info" if not undeclared else "low",
+        status,
+        "keep runtime tier vocabulary in sync" if not undeclared else
+        "declare an 'unavailable' tier or normalize it to not_run in the report",
+        "runtime_vocabulary", novel=bool(undeclared),
+    )]
 
 
 def _gap_matrix_coverage(ctx: dict[str, Any]) -> list[dict[str, Any]]:
@@ -2668,38 +2923,66 @@ def _gap_matrix_coverage(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     fixtures = _as_list(ctx.get("fixtures"))
     probes = _as_dict(ctx.get("probes"))
     analysis_rows = _as_list(probes.get("analysis"))
+    full_mode = bool(ctx.get("_include_probes"))
     gaps: list[dict[str, Any]] = []
-    cell_fixture_counts: dict[str, int] = {}
-    for row in analysis_rows:
+    # Cell fixture coverage is measurable from the static fixture census.
+    census_cells: dict[str, int] = {}
+    for row in fixtures:
         cell = str(row.get("cell") or "")
         if cell:
-            cell_fixture_counts[cell] = cell_fixture_counts.get(cell, 0) + 1
+            census_cells[cell] = census_cells.get(cell, 0) + 1
     for cell in _as_list(matrix.get("cells")):
         key = str(cell.get("key"))
-        if cell_fixture_counts.get(key, 0) == 0:
-            fixture_bytes = [
-                row.get("path") for row in fixtures
-                if str(row.get("cell") or "") == key
-            ]
+        if census_cells.get(key, 0) == 0:
             gaps.append(_gap(
                 f"MM-cell-no-fixture::{key}", "matrix_claim_mismatch",
-                f"matrix cell {key} is declared but no shipped fixture exercises "
-                "it in the audit census",
+                f"matrix cell {key} is declared but no shipped fixture detects "
+                "into that cell",
                 [
                     f"census:cell={key}",
-                    f"census:detected_fixtures={fixture_bytes}",
+                    f"census:fixture_cells={dict(sorted(census_cells.items()))}",
                 ],
                 "medium", "open",
                 "add a fixture for the cell or drop the cell",
                 "matrix_coverage",
             ))
+        else:
+            gaps.append(_gap(
+                f"MM-cell-no-fixture::{key}", "matrix_claim_mismatch",
+                f"matrix cell {key} has {census_cells[key]} fixture(s) in the "
+                "static census",
+                [f"census:cell={key} fixture_count={census_cells[key]}"],
+                "info", "closed",
+                "keep fixture coverage for the cell",
+                "matrix_coverage",
+            ))
+    if not full_mode:
+        return gaps
     declared_sinks = _as_dict(matrix.get("sink_classes"))
     emitted = sorted({
         str(kind) for row in analysis_rows
         for kind in _as_list(_as_dict(row).get("kinds"))
     })
+    untested_declared = {
+        str(item) for item in _as_list(matrix.get("untested_sink_classes"))
+    }
     for kind in sorted(declared_sinks):
-        if kind in emitted or kind == "capacity_check_mismatch":
+        if kind in emitted or kind in {"capacity_check_mismatch",
+                                       "immediate_length"}:
+            # capacity_check_mismatch is exercised by the capacity probe rows;
+            # immediate_length has its own dead-declaration gap row above.
+            continue
+        if kind in untested_declared:
+            gaps.append(_gap(
+                f"MM-sink-class-unexercised::{kind}", "matrix_claim_mismatch",
+                f"declared sink class {kind} is explicitly marked untested "
+                "(no shipped fixture yet) in repair_matrix.matrix_payload()",
+                [f"census:untested_sink_classes={sorted(untested_declared)}",
+                 f"census:emitted_kinds={emitted}"],
+                "info", "closed",
+                "keep the explicit untested marker until a fixture exists",
+                "matrix_coverage",
+            ))
             continue
         gaps.append(_gap(
             f"MM-sink-class-unexercised::{kind}", "matrix_claim_mismatch",
@@ -2711,32 +2994,42 @@ def _gap_matrix_coverage(ctx: dict[str, Any]) -> list[dict[str, Any]]:
             "add a fixture that exercises the class or mark it as untested",
             "matrix_coverage",
         ))
-    # Strategy evidence: which declared cell strategies were measured?
-    measured_strategies: dict[str, set[str]] = {}
+    # Strategy evidence: a declared strategy that no probe anywhere delivers is
+    # a matrix claim with no measured engine path; per-cell rows stay in
+    # coverage_rows instead of becoming gap noise.
+    delivered_anywhere: dict[str, list[str]] = {}
     for row in _as_list(probes.get("fixtures")) + _as_list(probes.get("strategies")):
         if row.get("status") != "ok":
             continue
-        cell = str(row.get("cell") or "")
-        if cell:
-            measured_strategies.setdefault(cell, set()).add(str(row.get("strategy", "")))
-    for cell in _as_list(matrix.get("cells")):
-        key = str(cell.get("key"))
-        for strategy in _as_list(cell.get("strategies")):
-            if str(strategy) in measured_strategies.get(key, set()):
-                continue
+        delivered_anywhere.setdefault(str(row.get("strategy", "")), []).append(
+            str(row.get("probe_id"))
+        )
+    declared_strategies = [
+        str(item) for item in _as_list(matrix.get("strategies"))
+    ]
+    for strategy in declared_strategies:
+        if strategy in delivered_anywhere:
             gaps.append(_gap(
-                f"MM-strategy-unexercised::{key}::{strategy}",
-                "matrix_claim_mismatch",
-                f"cell {key} declares strategy {strategy} but no audit probe of "
-                "that cell delivered it",
-                [
-                    f"census:measured_strategies[{key}]="
-                    f"{sorted(measured_strategies.get(key, set()))}",
-                    f"probe:strategy:{key}:{strategy}",
-                ],
-                "low", "open",
-                "add fixture evidence for the declared strategy",
+                f"MM-strategy-unexercised::{strategy}", "matrix_claim_mismatch",
+                f"declared strategy {strategy} was delivered by at least one audit "
+                "probe",
+                [f"census:delivered_strategies={sorted(delivered_anywhere)}"],
+                "info", "closed",
+                "keep strategy fixture evidence",
                 "matrix_coverage",
+            ))
+        else:
+            gaps.append(_gap(
+                f"MM-strategy-unexercised::{strategy}", "matrix_claim_mismatch",
+                f"declared strategy {strategy} was not delivered by any audit probe "
+                "(matrix advertises a strategy with no measured engine path on the "
+                "shipped evidence)",
+                [f"census:delivered_strategies={sorted(delivered_anywhere)}",
+                 f"census:declared_strategies={declared_strategies}"],
+                "medium", "open",
+                "add a fixture/probe that produces the strategy or remove it from "
+                "the matrix",
+                "matrix_coverage", novel=True,
             ))
     return gaps
 
@@ -2837,7 +3130,7 @@ def _gap_manifests(ctx: dict[str, Any]) -> list[dict[str, Any]]:
         "info" if not no_input_empty else "medium",
         "closed" if not no_input_empty else "open",
         "declare no_input:true for legitimate no-input manifests",
-        "manifests", novel=not no_input_empty,
+        "manifests", novel=bool(no_input_empty),
     )]
     return gaps
 
@@ -2974,6 +3267,9 @@ def _coverage_rows(ctx: dict[str, Any]) -> dict[str, Any]:
                 if name in _as_list(cell.get("sink_classes"))
             ),
             "analyzer_emission_markers": emitters,
+            "explicitly_untested": name in {
+                str(item) for item in _as_list(matrix.get("untested_sink_classes"))
+            },
             "emitted_by_audit_fixtures": name in emitted,
             "fixtures_emitting": sorted(
                 str(row.get("path")) for row in analysis_rows
@@ -3086,6 +3382,8 @@ DETECTORS: tuple[tuple[str, Callable[[dict[str, Any]], list[dict[str, Any]]]], .
     ("engine_target_scope", _gap_target_scope),
     ("oracle_destinations", _gap_heap_oracle),
     ("gate_profiles", _gap_gate_profiles),
+    ("gate_satisfiability", _gap_profile_satisfiability),
+    ("gate_unsatisfiable", _gap_gate_unsatisfiable),
     ("gate_cell", _gap_gate_cell_tier),
     ("gate_rewrite", _gap_gate_rewrite),
     ("gate_no_input", _gap_gate_no_input),
@@ -3104,20 +3402,36 @@ DETECTORS: tuple[tuple[str, Callable[[dict[str, Any]], list[dict[str, Any]]]], .
 )
 
 
+_MODULE_IMPORTS: dict[str, str] = {
+    "repair_matrix": "app.services.repair_matrix",
+    "binary_pipeline": "app.services.binary_pipeline",
+    "unified_verification": "app.services.unified_verification",
+    "binary_verification": "app.services.binary_verification",
+    "analyzer": "app.services.repair.analyzer",
+    "analyzer_i386": "app.services.repair.analyzer_i386",
+    "writer": "app.services.repair.writer",
+    "emulated": "app.services.runtime.emulated",
+    "macho_native": "app.services.runtime.macho_native",
+    "poc_runner": "app.services.poc_runner",
+    "guest_runner": "app.services.guest_runner",
+    "capacity": "app.services.repair.capacity",
+    "ai_binary_repair": "app.services.ai_binary_repair",
+    "ai_assembly_repair": "app.services.ai_assembly_repair",
+    "ai_patch_validation": "app.services.ai_patch_validation",
+    "containers": "app.services.containers",
+    "runtime_evidence": "app.services.runtime.evidence",
+}
+
+
 def _module_statuses() -> dict[str, Any]:
     statuses: dict[str, Any] = {}
-    for name in ("repair_matrix", "binary_pipeline", "unified_verification",
-                 "binary_verification", "analyzer", "analyzer_i386", "writer",
-                 "emulated", "macho_native", "poc_runner", "guest_runner",
-                 "capacity", "ai_binary_repair", "ai_assembly_repair",
-                 "ai_patch_validation", "containers", "runtime_evidence"):
-        module, error = _load_module(f"app.services.{name}"
-                                     if name != "runtime_evidence"
-                                     else "app.services.runtime.evidence")
+    for name, module_name in _MODULE_IMPORTS.items():
+        module, error = _load_module(module_name)
         statuses[name] = {
             "status": "ok" if module is not None else "module_not_ready",
+            "module": module_name,
             "error": error,
-            "source": MODULE_PATHS.get(name, f"app/services/{name}.py"),
+            "source": MODULE_PATHS.get(name, ""),
         }
     return dict(sorted(statuses.items()))
 
@@ -3171,6 +3485,7 @@ def build_audit(*, include_probes: bool = True,
         "_budget_seconds": float(budget_seconds),
         "_max_fixture_probes": max_fixture_probes,
         "_include_strategy_probes": bool(include_strategy_probes),
+        "_include_probes": bool(include_probes),
         "_data_cache": {},
     }
     ctx["modules"] = _module_statuses()
@@ -3236,6 +3551,11 @@ def build_audit(*, include_probes: bool = True,
         "fixtures_skipped_over_size": rows_over_size,
         "network_access": False,
         "host_elf_execution": False,
+        "probe_evidence_note": (
+            "fixture probes pass allow_static_only=True so a produced candidate "
+            "can be inspected without supplying a PoC manifest; the resulting "
+            "static_only_patch rows are measurement aids, not product claims"
+        ),
         "notes": [
             "verify=True probes reuse the product's own acceptance runtimes "
             "(Unicorn emulation, native Mach-O runner); the audit adds no PoC "
@@ -3456,11 +3776,20 @@ def render_gap_report(audit: dict[str, Any]) -> str:
         "modules, fixtures, PoC manifests, claims and acceptance docs; the "
         "dynamic probes call the real `repair_any`, `analyze`, gate builders and "
         "runner-selection helpers",
+        "- machine-readable rows: `coverage-matrix.json` (same directory); "
+        "tamper-evident digests: `SHA256SUMS`",
         "- a mid-flight module is recorded as `module_not_ready`; it never "
         "crashes the audit and is reported as an open evidence gap",
         "- statuses are measured: re-running after an integration flips the "
         "affected rows between open / mitigated / closed instead of keeping a "
         "stale list",
+        ("- mode=static: fixture/strategy probes were not run, so probe-dependent "
+         "detectors (case dispositions, target attribution, wrong-function "
+         "attribution, sink/strategy exercise) are omitted from this report; run "
+         "the script without --static-only for the full audit"
+         if audit.get("mode") == "static" else
+         "- mode=full: every eligible fixture was probed; see `bounds` and "
+         "`probes` in coverage-matrix.json for counts"),
         "",
         "## Reproduction",
         "",

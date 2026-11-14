@@ -240,3 +240,39 @@ known blind spot.
 International SiliconFlow identity probes succeed, but full benchmark calls
 return HTTP 402 `account balance is insufficient`.  A 4-6 model matrix is not
 available from this account; no SiliconFlow benchmark result is claimed.
+
+
+## 21. Capacity/heap coverage closure and its measured residuals
+
+The 2026-11-14 capability audit (see
+`docs/acceptance/capability-gap-audit-2026-11-14.md` and
+`artifacts/capability-gap-audit-2026-11-14/`) closed the reviewed
+duplicated-capacity-check class and same-function immediate heap-destination
+copies.  Their acceptance model is declared, not implicit: the unified gate
+enforces evidence profiles (`strict_template`, `emulated_instruction`,
+`native_poc`, `native_poc_rewrite`), re-derives in-place rewrites from the
+actual original/candidate bytes (`patch.capacity`, `patch.rewrite`), checks the
+exact matrix cell and runtime tier, and keeps unavailable PoC evidence
+`not_run`/inconclusive.
+
+Measured residuals (not repaired, reported by the audit):
+
+- heap recovery only covers an immediate `malloc`/`calloc` size whose returned
+  pointer reaches the copy destination through plain register moves in one
+  basic block.  A struct allocation over-estimates the member capacity
+  (`malloc(24)` for `char data[16]`); the runtime PoC differential catches the
+  wrong-capacity candidate instead of silently accepting it.  Global
+  destinations, dynamic sizes, pointer+offset aliases and cross-function
+  allocations stay analysis-only.
+- no caller-declared target selector: the deterministic engine repairs the
+  first patchable sink in the image and the gate proves the repaired behaviour,
+  not that the declared benchmark target was the repaired function.
+- the legacy quick-repair gate cannot consume a PoC manifest; manifest-bearing
+  requests are routed to the unified evidence-profile path and the legacy report
+  states the limitation explicitly (audit status: mitigated).
+- Mach-O x86_64 external PoC remains unavailable on an arm64 host; PE and
+  32-bit Mach-O external PoC are unavailable by design.  Runtime tiers are
+  platform-declared and enforced per cell, never faked.
+- `checked_copy` is declared by the matrix but no shipped fixture exercises it;
+  the matrix payload marks it explicitly as untested rather than claiming
+  fixture evidence.

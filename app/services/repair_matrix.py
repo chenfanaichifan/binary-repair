@@ -419,6 +419,10 @@ def matrix_payload() -> dict[str, Any]:
             key: list(evidence) for key, evidence in FIXTURE_STRATEGY_EVIDENCE.items()
         },
         "sink_classes": {name: dict(meta) for name, meta in SINK_CLASSES.items()},
+        # Declared analyzer capabilities that no shipped fixture exercises yet.
+        # Kept explicit so a coverage audit can distinguish "declared but not
+        # exercised" from a false matrix claim (no fake fixture evidence).
+        "untested_sink_classes": ["checked_copy"],
         "dispositions": list(DISPOSITIONS),
         "runtime_tiers": dict(RUNTIME_TIERS),
         "evidence_profiles": {

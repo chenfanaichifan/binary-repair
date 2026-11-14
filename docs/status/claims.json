@@ -8,7 +8,7 @@
   "research_paths": [
     "source_roundtrip (not implemented)"
   ],
-  "declared_matrix": "ELF/PE/Mach-O x86_64/arm64; ELF32/PE32 i386",
+  "declared_matrix": "exact cells in app/services/repair_matrix.py: ELF i386/x86_64/arm64, PE i386/x86_64/arm64, Mach-O x86_64/arm64 (little-endian thin only)",
   "latest_verified_ci": {
     "run_id": 43589156716,
     "head_sha": "8dc9c85",
@@ -16,15 +16,14 @@
     "conclusion": "success"
   },
   "explicitly_unimplemented": [
-    "native PoC replay for every path/fixture; PE and 32-bit Mach-O PoC are unavailable",
+    "target-scoped repair: repair_any has no caller-declared target selector; a whole-image candidate can be shown but the gate does not prove it repaired the declared function (benchmark target identity remains AI/non-goal evidence)",
+    "global destination and struct-member bounds inference (destination_kind global is reserved; malloc-size over-estimation for struct members is caught by the runtime oracle, not inferred statically)",
+    "sprintf/format-expansion, UAF/lifetime and integer/loop deterministic repair templates (no deterministic engine; AI path research only, non-loop AI verified 0/6)",
     "arm32, 32-bit Mach-O, fat Mach-O rewrite, big-endian, riscv/mips/ppc repair",
-    "heap/global/sprintf/UAF/integer/loop repair templates",
-    "multi-provider/multi-model statistics and independent-case confidence intervals; target/PoC/contract product API; puts side-effect gate",
-    "heap silent-overflow canary benchmark and UAF repair success; multi-model comparison",
-    "4-6-model multi-provider matrix: only two DeepSeek models available; no valid SiliconFlow/Bailian key",
-    "non-loop path A verified success: 0/6; heap security-only partial and CWE symbol/stub limits remain",
-    "general non-loop / whole-binary paradigm A; only CWE121 function-level closure is proven",
-    "4-6 model matrix: SiliconFlow benchmark blocked by HTTP 402 account balance; only 2 DeepSeek models completed"
+    "external-PoC replay for PE and 32-bit Mach-O; Mach-O x86_64 external PoC on arm64 hosts (native function-level Unicorn/emulation remains the only tier there)",
+    "paradigm A: non-loop path A verified success (0/6); only CWE121 function-level closure is proven; security-only partial candidates remain unverified",
+    "multi-provider/multi-model statistics and independent-case confidence intervals (only two DeepSeek models available in this milestone)",
+    "whole-program proof: verification is scoped to the supplied PoC/regression cases and the one repaired function, not the whole binary"
   ],
   "implemented": [
     "two product AI paths (asm_roundtrip, binary_direct)",
@@ -47,11 +46,25 @@
     "direct-callee context export for CWE121 (target + printLine/strcpy)",
     "explicit stdout_signature field and required poc.native.stdout_signature gate",
     "symbol-gap resolver with reviewed write/exit syscall templates and fail-closed unknowns",
-    "international SiliconFlow identity probes for 3 requested models"
+    "international SiliconFlow identity probes for 3 requested models",
+    "reviewed duplicated-capacity-check rewrite engine (CWE-131/697): in-place predicate rewrite, strategy capacity on elf/x86_64, profile native_poc_rewrite, marcx repaired to 93e27f2f... and verified through the review API (21/21 checks) with the real Lima guest differential",
+    "heap destination capacity recovery for same-function immediate malloc/calloc copies (Sink.destination_kind stack|heap; strategy guard; profile native_poc), heap fixture repaired to ea222605... and verified end-to-end (19/19 checks, real Lima PoC/regression)",
+    "declared evidence profiles (strict_template, emulated_instruction, native_poc, native_poc_rewrite) enforced by the unified gate: profile.declared/profile.evidence/profile.required_checks, patch.rewrite/patch.capacity byte re-derivation, container.cell, runtime.cell_tier",
+    "no-input/UAF evidence model: manifest-level no_input declaration makes an empty regression list an explicit not_applicable model; undeclared empty regression still fails",
+    "unavailable external-PoC evidence stays not_run/inconclusive (never mislabeled rejected); declared no-input and unavailable paths covered by the gate scenario census",
+    "quick repair routes manifest-bearing requests through the unified pipeline; reviewed candidates are surfaced as inconclusive without evidence instead of hidden behind the legacy unsupported verdict; optional poc_manifest on /api/binary/repair-review and the GUI quick-repair picker",
+    "dynamic ELF PT_INTERP-safe code injection: PT_NOTE phdr repurpose fallback (e_phnum/PT_INTERP preserved, fail-closed verification) so guard candidates load on dynamic ELF",
+    "x86-64 .plt.sec/CET import resolution for dynamic ELF (analyzer now sees imports/sinks for default-toolchain binaries)",
+    "Lima guest visibility wait before PoC execution (fixes stale virtiofs inode/size causing qemu internal SIGBUS for appended-segment candidates)",
+    "self-discovery capability audit (app/services/coverage_audit.py, scripts/audit_capability_coverage.py): static census + bounded probes of matrix cells, sinks, strategies, runtime sources, gate profiles/checks, fixtures, PoC manifests and claims; emits coverage-matrix.json + gap-report.md with measured closed/open/non-goal statuses",
+    "legacy quick-repair gate declares and enforces its evidence profile (strict_template/emulated_instruction) with appended profile checks, ids/statuses of existing checks unchanged"
   ],
   "siliconflow_status": {
     "identity_probe": "pass for 3 models",
     "benchmark": "blocked HTTP 402 insufficient balance",
     "base_url": "https://api.siliconflow.com/v1"
-  }
+  },
+  "deterministic_paths": [
+    "deterministic_unified (matrix-driven pipeline + evidence profiles)"
+  ]
 }

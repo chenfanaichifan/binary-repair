@@ -19,5 +19,6 @@
       }
     }
   ],
-  "regression": []
+  "regression": [],
+  "no_input": true
 }
