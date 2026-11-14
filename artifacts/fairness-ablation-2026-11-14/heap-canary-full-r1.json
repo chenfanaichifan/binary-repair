@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "cases": [
+    {
+      "case": {
+        "id": "heap-canary",
+        "binary": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+        "target": "heap_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/heap-canary.json",
+        "reference_fix": "fixtures/hard-cases/heap_canary_fix.c",
+        "baseline_expected": "rejected",
+        "contract": "heap buffer[16] followed by a guard in one allocation; overflow corrupts the guard and exits 1; correct repair must reject oversized input and preserve valid behavior",
+        "family": "heap silent overflow/guard"
+      },
+      "input_sha256": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "injection": {
+        "error": "assembly validation: ValueError: forbidden assembly construct: call 0x10982d0"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "status": "accepted",
+        "latency_ms": 3106,
+        "plan_sha256": "77bc0a28010c01fad497606ed327970f8894976c198c6039d2a9ab81b144c1ce",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1868,
+          "completion_tokens": 762,
+          "total_tokens": 2630,
+          "latency_ms": 3106
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ]
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 0,
+  "ai_increment": 0,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target.",
+  "contract_level": "full",
+  "repeats": 1,
+  "baseline_target_aware_verified": 0,
+  "ai_blind_verified": 0
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "heap_bad",
+  "poc": [
+    {
+      "id": "heap-guard-16",
+      "argv": [
+        "AAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "exit_code": 1,
+        "stderr_contains": "HEAP GUARD CORRUPT"
+      },
+      "candidate": {
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "heap-guard-64",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "exit_code": 1,
+        "stderr_contains": "HEAP GUARD CORRUPT"
+      },
+      "candidate": {
+        "exit_code": 0
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "heap-short",
+      "argv": [
+        "hi"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      }
+    }
+  ]
+}

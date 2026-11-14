@@ -31,6 +31,7 @@
     "real-provider exploratory benchmark (no measured coverage increment)",
     "hard-case AI increment benchmark: inline byte-loop case baseline rejected, real-provider AI assembly verified by native PoC (1 hard-case increment)",
     "fairness ablation: 10 hard cases, deterministic/targeted/blind baselines and full/generic/none contracts; target-localized AI 6/10 repeated stable, contract effect 0",
-    "UAF no-input case support (stdout_hex, empty regression) and an 11th family-diversity probe; AI target assembly rejected on the UAF case (0/1)"
+    "UAF no-input case support (stdout_hex, empty regression) and an 11th family-diversity probe; AI target assembly rejected on the UAF case (0/1)",
+    "heap-canary observable-overflow hard case and UAF no-input probe (both AI 0/1, native PoC evidence)"
   ]
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "cases": 11,
+  "cases": 10,
   "runs": 7,
   "baseline_blind_verified": 0,
   "baseline_target_aware_verified": 0,
@@ -1790,5 +1790,20 @@
       "verified": false,
       "note": "no candidate: target assembly injection rejected; baseline analysis_only"
     }
-  }
+  },
+  "family_diversity_probes": {
+    "uaf-noinput": {
+      "family": "heap lifetime/UAF",
+      "baseline": "analysis_only",
+      "ai": "accepted_no_candidate",
+      "verified": false
+    },
+    "heap-canary": {
+      "family": "heap overflow with guard",
+      "baseline": "rejected",
+      "ai": "accepted_no_candidate",
+      "verified": false
+    }
+  },
+  "diversity_probe_count": 2
 }

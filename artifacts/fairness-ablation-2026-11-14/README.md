@@ -49,6 +49,14 @@ stdout is the 3-byte allocator residue `05040a`, deterministic baseline is
 regression) was added so this case is measurable; it is recorded as 0/1, not
 folded into the six loop successes.
 
+## Heap-canary diversity probe
+
+A second non-loop family was added: a heap block with a guard word in the same
+allocation.  Overflow corrupts the guard and the original exits 1 with
+`HEAP GUARD CORRUPT`; this is observable without a native crash.  Deterministic
+baseline is `rejected`; target-localized AI produced no candidate because the
+leaf-only assembly path cannot call malloc/free/strcpy.  Recorded as 0/1.
+
 ## Interpretation
 
 The previous "increment 1" was under human target localization.  This ablation

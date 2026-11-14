@@ -121,6 +121,17 @@
       "baseline_expected": "analysis_only",
       "contract": "UAF: read of a heap block after free(); valid no-input path must print exactly 99 A bytes + LF and exit 0",
       "family": "heap lifetime/UAF"
+    },
+    {
+      "id": "heap-canary",
+      "binary": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+      "target": "heap_bad",
+      "capacity": 16,
+      "poc": "fixtures/poc/heap-canary.json",
+      "reference_fix": "fixtures/hard-cases/heap_canary_fix.c",
+      "baseline_expected": "rejected",
+      "contract": "heap buffer[16] followed by a guard in one allocation; overflow corrupts the guard and exits 1; correct repair must reject oversized input and preserve valid behavior",
+      "family": "heap silent overflow/guard"
     }
   ]
 }

@@ -168,10 +168,11 @@ Localization is necessary (+6 over blind AI); target-aware deterministic remains
 effect** on this set.  Repeats were stable at 6/10, but cases are not independent
 and only one model was available: this is not a statistical generalization.
 
-A no-input UAF case was added as an 11th family-diversity probe:
-deterministic `analysis_only`, AI target assembly rejected (`call` forbidden),
-no candidate; native no-input PoC support was required because the case has no
-regression input.  It is recorded as 0/1, not counted among the six loop
+Two non-loop family-diversity probes were added:
+**UAF no-input** (native `stdout_hex` + empty regression; deterministic
+`analysis_only`, AI target rejected on `call`, 0/1) and **heap-canary**
+(guard word corrupts observably, no native crash; deterministic rejected,
+AI target produced no candidate, 0/1).  They are not counted among the six loop
 successes.
 
 ## 9. Boundaries

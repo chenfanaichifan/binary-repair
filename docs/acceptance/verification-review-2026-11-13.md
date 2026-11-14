@@ -84,7 +84,7 @@ bundle artifacts/ai-direct-binary-2026-11-13: 14 files -> PASS
 bundle artifacts/ai-real-provider-2026-11-13: 2 files -> PASS
 bundle artifacts/gate-blind-spots-2026-11-13: 2 files -> PASS
 bundle artifacts/hard-case-benchmark-2026-11-13: 4 files -> PASS
-bundle artifacts/fairness-ablation-2026-11-14: 9 files -> PASS
+bundle artifacts/fairness-ablation-2026-11-14: 11 files -> PASS
 overall: PASS
 ```
 
@@ -185,7 +185,7 @@ PoC evidence are hashed in the bundle; raw provider response is not stored.
 blind and target-aware baselines 0/10, blind AI 0/10, target-localized AI 6/10
 under full/generic/none contract levels (stable across repeats).  Contract
 strategy specificity had no measured effect; target localization is currently
-necessary.  Evidence: `artifacts/fairness-ablation-2026-11-14/`.  An 11th UAF no-input
-probe was added (native `stdout_hex` + empty regression; AI 0/1, target
-assembly rejected for `call`).  Multi-provider and independent-case confidence
+necessary.  Evidence: `artifacts/fairness-ablation-2026-11-14/`.  Two diversity probes were added:
+UAF no-input (native `stdout_hex` + empty regression; AI 0/1, target assembly
+rejected for `call`) and heap-canary (observable guard corruption; AI 0/1).  Multi-provider and independent-case confidence
 intervals remain future work.

@@ -170,11 +170,12 @@ binaries natively is not a security boundary.
 
 ## 13. Hard-case benchmark is initial
 
-The first hard-case AI-increment benchmark has two cases.  One inline-copy case
-was repaired by the real provider and passed native PoC; the CWE121 semantic
-case failed because the leaf-only assembly path cannot call external functions.
-This is evidence, not a general AI-increment claim; the benchmark and paradigm A
-remain future work.
+The hard-case benchmark was expanded from the initial two cases to 10 cases
+(six inline-loop variants plus CWE121/multicall/sprintf/nonconst), with two
+additional non-loop probes (UAF, heap-canary).  Success remains limited to the
+inline-loop family: 6/10 primary cases, 0/2 diversity probes.  This is evidence,
+not a general AI-increment claim; the benchmark and paradigm A remain future
+work.
 
 
 ## 14. Fairness ablation is small and single-model
@@ -186,10 +187,11 @@ runs; it is not a population estimate.  Target/PoC/contract is still benchmark
 tooling, not a product API; the puts side-effect blind spot remains.
 
 
-## 15. UAF/no-input probe is not a success
+## 15. UAF and heap diversity probes are not successes
 
 The UAF no-input probe is supported as a real native PoC case (exact stdout hex,
 no regression inputs), but the deterministic baseline is `analysis_only` and
 target-localized AI produced no candidate because external calls are forbidden
-in the leaf-only assembly path.  It is recorded as 0/1; it does not broaden the
-six-loop family success.
+in the leaf-only assembly path.  UAF and heap-canary are recorded as 0/1 each; they do not
+broaden the six-loop family success.  Heap silent overflow without a guard
+still needs an allocator canary oracle.
