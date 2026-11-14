@@ -1,0 +1,400 @@
+{
+  "schema_version": 1,
+  "case_id": "uaf-noinput",
+  "family": "heap lifetime/UAF",
+  "case": {
+    "id": "uaf-noinput",
+    "binary": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
+    "target": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+    "capacity": 100,
+    "poc": "fixtures/poc/cwe416.json",
+    "reference_fix": "fixtures/hard-cases/uaf_fix.c",
+    "baseline_expected": "analysis_only",
+    "contract": "UAF: read of a heap block after free(); valid no-input path must print exactly 99 A bytes + LF and exit 0",
+    "family": "heap lifetime/UAF"
+  },
+  "input_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "recorded_at": "2026-11-14T13:06:45Z",
+  "provider": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-chat",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "status": "ok",
+    "model_configured": "deepseek-chat",
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-chat",
+      "configured": true,
+      "errors": []
+    },
+    "model_returned": "deepseek-flash",
+    "served_models": [
+      "deepseek-flash"
+    ],
+    "model_identity_ok": false
+  },
+  "model": "deepseek-chat",
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "elapsed_ms": 75,
+  "target_policy": {
+    "whole_image_baseline": "whole_image",
+    "target_strict_baseline": "target_strict",
+    "ai_target": "target"
+  },
+  "target_scope": {
+    "name": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+    "va": 4199082,
+    "end": 4199193,
+    "source": "symbol"
+  },
+  "target_scope_check": "not_run",
+  "target_in_scope": false,
+  "baseline_whole_image": {
+    "attempted": true,
+    "disposition": "analysis_only",
+    "status": "unsupported",
+    "verified": false,
+    "error": "scanned 0 inlined range-check block(s) in the code region",
+    "target_policy": "whole_image",
+    "candidate_available": false,
+    "candidate_sha256": null,
+    "patched_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "actions": [],
+    "checks_summary": {
+      "gate_success": false,
+      "gate_outcome": null,
+      "reason": null,
+      "required_checks": null,
+      "required_not_run": null,
+      "failed_checks": [],
+      "not_run_checks": [],
+      "tier": null,
+      "engine": null,
+      "scope": null
+    },
+    "elapsed_ms": 42,
+    "allow_whole_image_requested": true,
+    "allow_whole_image_supported": true
+  },
+  "baseline": {
+    "attempted": true,
+    "disposition": "analysis_only",
+    "status": "unsupported",
+    "verified": false,
+    "error": "scanned 0 inlined range-check block(s) in the code region",
+    "target_policy": "whole_image",
+    "candidate_available": false,
+    "candidate_sha256": null,
+    "patched_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "actions": [],
+    "checks_summary": {
+      "gate_success": false,
+      "gate_outcome": null,
+      "reason": null,
+      "required_checks": null,
+      "required_not_run": null,
+      "failed_checks": [],
+      "not_run_checks": [],
+      "tier": null,
+      "engine": null,
+      "scope": null
+    },
+    "elapsed_ms": 42,
+    "allow_whole_image_requested": true,
+    "allow_whole_image_supported": true
+  },
+  "baseline_target_strict": {
+    "attempted": true,
+    "disposition": "analysis_only",
+    "status": "unsupported",
+    "verified": false,
+    "error": "target-scoped mode: no patchable sink lies inside target CWE416_Use_After_Free__malloc_free_char_01_bad [0x4012aa,0x401319)",
+    "target_policy": "target_strict",
+    "target_scope": {
+      "name": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+      "va": 4199082,
+      "end": 4199193,
+      "source": "symbol"
+    },
+    "target_in_scope": false,
+    "target_scope_check": "not_run",
+    "candidate_sha256": null,
+    "patched_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+    "actions": [],
+    "checks_summary": {
+      "gate_success": false,
+      "gate_outcome": null,
+      "reason": null,
+      "required_checks": null,
+      "required_not_run": null,
+      "failed_checks": [],
+      "not_run_checks": [],
+      "tier": null,
+      "engine": null,
+      "scope": null
+    },
+    "elapsed_ms": 32,
+    "expected": "analysis_only",
+    "expected_source": "baseline_expected (strict field omitted in cases.json)",
+    "matches_expected": true
+  },
+  "reference_fix": {
+    "attempted": true,
+    "reference_fix": "fixtures/hard-cases/uaf_fix.c",
+    "kind": "c",
+    "status": "source_only",
+    "verified": null,
+    "reason": "reference fix is source code with no compiled reference artifact declared in cases.json; it is recorded but not PoC-executed"
+  },
+  "ai_target": {
+    "attempted": true,
+    "status": "accepted",
+    "error": null,
+    "repeats": 1,
+    "verified": false,
+    "checks_summary": {
+      "poc_gate": "no_candidate",
+      "poc_status": "not_run",
+      "runner": null,
+      "tier": null,
+      "verified": false,
+      "candidate_sha256": null,
+      "empty_assembly": false
+    },
+    "candidate_sha256": null,
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-chat",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_configured": "deepseek-chat",
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-chat",
+        "configured": true,
+        "errors": []
+      },
+      "model_returned": "deepseek-flash",
+      "served_models": [
+        "deepseek-flash"
+      ],
+      "model_identity_ok": false
+    },
+    "model_requested": "deepseek-chat",
+    "model_returned": "deepseek-flash",
+    "seed": null,
+    "seed_supported": false,
+    "cost": null,
+    "cost_basis": "provider API exposes token usage only; no price table configured",
+    "usage": {
+      "prompt_tokens": 1135,
+      "completion_tokens": 279,
+      "total_tokens": 1414,
+      "latency_ms": 1854
+    },
+    "request_id": null,
+    "elapsed_ms": 1861,
+    "target_policy": "target",
+    "target_scope": {
+      "name": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+      "va": 4199082,
+      "end": 4199193,
+      "source": "symbol"
+    },
+    "target_scope_check": "not_run",
+    "target_in_scope": false,
+    "attempts": [
+      {
+        "repeat": 0,
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "model_requested": "deepseek-chat",
+        "model_returned": "deepseek-flash",
+        "model_identity_ok": false,
+        "usage": {
+          "prompt_tokens": 1135,
+          "completion_tokens": 279,
+          "total_tokens": 1414,
+          "latency_ms": 1854
+        },
+        "latency_ms": 1854,
+        "request_id": null,
+        "provider_calls": 1,
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "assembly_returned": true,
+        "assembly_sha256": "479b23052ff32b06e6920a4e0ebf14fccfd12c334be7dbf0cec95399cc7af091",
+        "injection": {
+          "error": "assembly validation: ValueError: call target is not allowed: call 0x401150"
+        },
+        "target_scope": {
+          "name": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+          "va": 4199082,
+          "end": 4199193,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "poc_gate": "no_candidate",
+        "poc_status": "not_run",
+        "runner": null,
+        "verified": false,
+        "candidate_sha256": null,
+        "checks_summary": {
+          "poc_gate": "no_candidate",
+          "poc_status": "not_run",
+          "runner": null,
+          "tier": null,
+          "verified": false,
+          "candidate_sha256": null,
+          "empty_assembly": false
+        },
+        "elapsed_ms": 1861
+      }
+    ],
+    "model_identity_ok": false,
+    "latency_ms": 1854
+  },
+  "inconclusive_reasons": [
+    "whole_image:analysis_only",
+    "reference:source_only",
+    "ai:accepted/no_candidate"
+  ],
+  "limitations": [],
+  "ai_result": {
+    "attempted": true,
+    "status": "accepted",
+    "error": null,
+    "repeats": 1,
+    "verified": false,
+    "checks_summary": {
+      "poc_gate": "no_candidate",
+      "poc_status": "not_run",
+      "runner": null,
+      "tier": null,
+      "verified": false,
+      "candidate_sha256": null,
+      "empty_assembly": false
+    },
+    "candidate_sha256": null,
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-chat",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_configured": "deepseek-chat",
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-chat",
+        "configured": true,
+        "errors": []
+      },
+      "model_returned": "deepseek-flash",
+      "served_models": [
+        "deepseek-flash"
+      ],
+      "model_identity_ok": false
+    },
+    "model_requested": "deepseek-chat",
+    "model_returned": "deepseek-flash",
+    "seed": null,
+    "seed_supported": false,
+    "cost": null,
+    "cost_basis": "provider API exposes token usage only; no price table configured",
+    "usage": {
+      "prompt_tokens": 1135,
+      "completion_tokens": 279,
+      "total_tokens": 1414,
+      "latency_ms": 1854
+    },
+    "request_id": null,
+    "elapsed_ms": 1861,
+    "target_policy": "target",
+    "target_scope": {
+      "name": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+      "va": 4199082,
+      "end": 4199193,
+      "source": "symbol"
+    },
+    "target_scope_check": "not_run",
+    "target_in_scope": false,
+    "attempts": [
+      {
+        "repeat": 0,
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "model_requested": "deepseek-chat",
+        "model_returned": "deepseek-flash",
+        "model_identity_ok": false,
+        "usage": {
+          "prompt_tokens": 1135,
+          "completion_tokens": 279,
+          "total_tokens": 1414,
+          "latency_ms": 1854
+        },
+        "latency_ms": 1854,
+        "request_id": null,
+        "provider_calls": 1,
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "assembly_returned": true,
+        "assembly_sha256": "479b23052ff32b06e6920a4e0ebf14fccfd12c334be7dbf0cec95399cc7af091",
+        "injection": {
+          "error": "assembly validation: ValueError: call target is not allowed: call 0x401150"
+        },
+        "target_scope": {
+          "name": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+          "va": 4199082,
+          "end": 4199193,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "poc_gate": "no_candidate",
+        "poc_status": "not_run",
+        "runner": null,
+        "verified": false,
+        "candidate_sha256": null,
+        "checks_summary": {
+          "poc_gate": "no_candidate",
+          "poc_status": "not_run",
+          "runner": null,
+          "tier": null,
+          "verified": false,
+          "candidate_sha256": null,
+          "empty_assembly": false
+        },
+        "elapsed_ms": 1861
+      }
+    ],
+    "model_identity_ok": false,
+    "latency_ms": 1854
+  }
+}

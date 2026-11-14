@@ -1,0 +1,462 @@
+{
+  "schema_version": 1,
+  "case_id": "hard-loop64",
+  "family": "non-template inline copy",
+  "case": {
+    "id": "hard-loop64",
+    "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+    "target": "vuln_loop64",
+    "capacity": 64,
+    "poc": "fixtures/poc/hard-loop64.json",
+    "reference_fix": "fixtures/hard-cases/loop64_fix.S",
+    "baseline_expected": "rejected",
+    "baseline_expected_target_strict": "analysis_only",
+    "contract": "inline byte-copy loop into a 64-byte stack buffer; bounded copy + NUL required",
+    "family": "non-template inline copy"
+  },
+  "input_sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09",
+  "recorded_at": "2026-11-14T13:06:45Z",
+  "provider": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-chat",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "status": "ok",
+    "model_configured": "deepseek-chat",
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-chat",
+      "configured": true,
+      "errors": []
+    },
+    "model_returned": "deepseek-flash",
+    "served_models": [
+      "deepseek-flash"
+    ],
+    "model_identity_ok": false
+  },
+  "model": "deepseek-chat",
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "elapsed_ms": 11382,
+  "target_policy": {
+    "whole_image_baseline": "whole_image",
+    "target_strict_baseline": "target_strict",
+    "ai_target": "target"
+  },
+  "target_scope": {
+    "name": "vuln_loop64",
+    "va": 16955802,
+    "end": 16955840,
+    "source": "symbol"
+  },
+  "target_scope_check": "passed",
+  "target_in_scope": true,
+  "baseline_whole_image": {
+    "attempted": true,
+    "disposition": "rejected",
+    "status": "not_verified",
+    "verified": false,
+    "error": "verification gate did not pass",
+    "target_policy": "whole_image",
+    "candidate_available": false,
+    "candidate_sha256": null,
+    "patched_sha256": "9f944d3a003ad32829f5c99003cbd169275f337f972455ffcf5a0e765f76c583",
+    "actions": [],
+    "checks_summary": {
+      "gate_success": false,
+      "gate_outcome": "rejected",
+      "reason": "regression_failed",
+      "required_checks": 10,
+      "required_not_run": 0,
+      "failed_checks": [
+        "runtime.cases",
+        "runtime.no_overflow",
+        "profile.required_checks"
+      ],
+      "not_run_checks": [],
+      "tier": "emulated_run",
+      "engine": "unicorn-x86-64",
+      "scope": {
+        "format": "elf64-little",
+        "arch": "x86_64",
+        "mode": "bounds-only",
+        "strategy": "immediate",
+        "capacity": 16,
+        "strict": false,
+        "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+        "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+        "target_policy": "whole_image"
+      }
+    },
+    "elapsed_ms": 4525,
+    "allow_whole_image_requested": true,
+    "allow_whole_image_supported": true
+  },
+  "baseline": {
+    "attempted": true,
+    "disposition": "rejected",
+    "status": "not_verified",
+    "verified": false,
+    "error": "verification gate did not pass",
+    "target_policy": "whole_image",
+    "candidate_available": false,
+    "candidate_sha256": null,
+    "patched_sha256": "9f944d3a003ad32829f5c99003cbd169275f337f972455ffcf5a0e765f76c583",
+    "actions": [],
+    "checks_summary": {
+      "gate_success": false,
+      "gate_outcome": "rejected",
+      "reason": "regression_failed",
+      "required_checks": 10,
+      "required_not_run": 0,
+      "failed_checks": [
+        "runtime.cases",
+        "runtime.no_overflow",
+        "profile.required_checks"
+      ],
+      "not_run_checks": [],
+      "tier": "emulated_run",
+      "engine": "unicorn-x86-64",
+      "scope": {
+        "format": "elf64-little",
+        "arch": "x86_64",
+        "mode": "bounds-only",
+        "strategy": "immediate",
+        "capacity": 16,
+        "strict": false,
+        "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+        "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+        "target_policy": "whole_image"
+      }
+    },
+    "elapsed_ms": 4525,
+    "allow_whole_image_requested": true,
+    "allow_whole_image_supported": true
+  },
+  "baseline_target_strict": {
+    "attempted": true,
+    "disposition": "analysis_only",
+    "status": "unsupported",
+    "verified": false,
+    "error": "target-scoped mode: no patchable sink lies inside target vuln_loop64 [0x102b99a,0x102b9c0)",
+    "target_policy": "target_strict",
+    "target_scope": {
+      "name": "vuln_loop64",
+      "va": 16955802,
+      "end": 16955840,
+      "source": "symbol"
+    },
+    "target_in_scope": false,
+    "target_scope_check": "not_run",
+    "candidate_sha256": null,
+    "patched_sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09",
+    "actions": [],
+    "checks_summary": {
+      "gate_success": false,
+      "gate_outcome": null,
+      "reason": null,
+      "required_checks": null,
+      "required_not_run": null,
+      "failed_checks": [],
+      "not_run_checks": [],
+      "tier": null,
+      "engine": null,
+      "scope": null
+    },
+    "elapsed_ms": 3577,
+    "expected": "analysis_only",
+    "expected_source": "baseline_expected_target_strict",
+    "matches_expected": true
+  },
+  "reference_fix": {
+    "attempted": true,
+    "reference_fix": "fixtures/hard-cases/loop64_fix.S",
+    "kind": "S",
+    "status": "verified",
+    "verified": true,
+    "reason": null,
+    "assembly_sha256": "69578fdade0dfad48fbcb8b72f0d9d6296f0ab08441b314fef4a46e02d05297f",
+    "injection": {
+      "target_va": "0x102b99a",
+      "cave_va": "0x10ca000",
+      "method": "new-pt-load",
+      "code_bytes": 45,
+      "assembly_sha256": "ae5bb46bf22f00c90552d08cd40a03537b8735efcf32c358a73824ba28ffdb6e",
+      "call_targets": [],
+      "call_relocations": 0
+    },
+    "target_scope": {
+      "name": "vuln_loop64",
+      "va": 16955802,
+      "end": 16955840,
+      "source": "symbol"
+    },
+    "target_scope_check": "passed",
+    "target_in_scope": true,
+    "poc_gate": "pass",
+    "poc_status": "pass",
+    "runner": "limactl",
+    "candidate_sha256": "f2808c1dffa55b3206b58c609932819aa25c8175cbdfc233315443e35697a061",
+    "elapsed_ms": 3227
+  },
+  "ai_target": {
+    "attempted": true,
+    "status": "accepted",
+    "error": null,
+    "repeats": 1,
+    "verified": true,
+    "checks_summary": {
+      "poc_gate": "pass",
+      "poc_status": "pass",
+      "runner": "limactl",
+      "tier": "emulated_run",
+      "verified": true,
+      "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac",
+      "empty_assembly": false
+    },
+    "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac",
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-chat",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_configured": "deepseek-chat",
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-chat",
+        "configured": true,
+        "errors": []
+      },
+      "model_returned": "deepseek-flash",
+      "served_models": [
+        "deepseek-flash"
+      ],
+      "model_identity_ok": false
+    },
+    "model_requested": "deepseek-chat",
+    "model_returned": "deepseek-flash",
+    "seed": null,
+    "seed_supported": false,
+    "cost": null,
+    "cost_basis": "provider API exposes token usage only; no price table configured",
+    "usage": {
+      "prompt_tokens": 808,
+      "completion_tokens": 160,
+      "total_tokens": 968,
+      "latency_ms": 1574
+    },
+    "request_id": null,
+    "elapsed_ms": 4774,
+    "target_policy": "target",
+    "target_scope": {
+      "name": "vuln_loop64",
+      "va": 16955802,
+      "end": 16955840,
+      "source": "symbol"
+    },
+    "target_scope_check": "passed",
+    "target_in_scope": true,
+    "attempts": [
+      {
+        "repeat": 0,
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "model_requested": "deepseek-chat",
+        "model_returned": "deepseek-flash",
+        "model_identity_ok": false,
+        "usage": {
+          "prompt_tokens": 808,
+          "completion_tokens": 160,
+          "total_tokens": 968,
+          "latency_ms": 1574
+        },
+        "latency_ms": 1574,
+        "request_id": null,
+        "provider_calls": 1,
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "assembly_returned": true,
+        "assembly_sha256": "1a118995f020017a6e1fdbf280204d215d0e368b1b87d82cc0182d704d269291",
+        "injection": {
+          "target_va": "0x102b99a",
+          "cave_va": "0x10ca000",
+          "method": "new-pt-load",
+          "code_bytes": 47,
+          "assembly_sha256": "40acc4649f987ea86c30680f6314084603b2d2d8746426838e0c87516db2cd23",
+          "call_targets": [],
+          "call_relocations": 0
+        },
+        "target_scope": {
+          "name": "vuln_loop64",
+          "va": 16955802,
+          "end": 16955840,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "poc_gate": "pass",
+        "poc_status": "pass",
+        "runner": "limactl",
+        "verified": true,
+        "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac",
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "verified": true,
+          "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac",
+          "empty_assembly": false
+        },
+        "elapsed_ms": 4774
+      }
+    ],
+    "model_identity_ok": false,
+    "latency_ms": 1574
+  },
+  "inconclusive_reasons": [
+    "whole_image:rejected"
+  ],
+  "limitations": [],
+  "ai_result": {
+    "attempted": true,
+    "status": "accepted",
+    "error": null,
+    "repeats": 1,
+    "verified": true,
+    "checks_summary": {
+      "poc_gate": "pass",
+      "poc_status": "pass",
+      "runner": "limactl",
+      "tier": "emulated_run",
+      "verified": true,
+      "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac",
+      "empty_assembly": false
+    },
+    "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac",
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-chat",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_configured": "deepseek-chat",
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-chat",
+        "configured": true,
+        "errors": []
+      },
+      "model_returned": "deepseek-flash",
+      "served_models": [
+        "deepseek-flash"
+      ],
+      "model_identity_ok": false
+    },
+    "model_requested": "deepseek-chat",
+    "model_returned": "deepseek-flash",
+    "seed": null,
+    "seed_supported": false,
+    "cost": null,
+    "cost_basis": "provider API exposes token usage only; no price table configured",
+    "usage": {
+      "prompt_tokens": 808,
+      "completion_tokens": 160,
+      "total_tokens": 968,
+      "latency_ms": 1574
+    },
+    "request_id": null,
+    "elapsed_ms": 4774,
+    "target_policy": "target",
+    "target_scope": {
+      "name": "vuln_loop64",
+      "va": 16955802,
+      "end": 16955840,
+      "source": "symbol"
+    },
+    "target_scope_check": "passed",
+    "target_in_scope": true,
+    "attempts": [
+      {
+        "repeat": 0,
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "model_requested": "deepseek-chat",
+        "model_returned": "deepseek-flash",
+        "model_identity_ok": false,
+        "usage": {
+          "prompt_tokens": 808,
+          "completion_tokens": 160,
+          "total_tokens": 968,
+          "latency_ms": 1574
+        },
+        "latency_ms": 1574,
+        "request_id": null,
+        "provider_calls": 1,
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "assembly_returned": true,
+        "assembly_sha256": "1a118995f020017a6e1fdbf280204d215d0e368b1b87d82cc0182d704d269291",
+        "injection": {
+          "target_va": "0x102b99a",
+          "cave_va": "0x10ca000",
+          "method": "new-pt-load",
+          "code_bytes": 47,
+          "assembly_sha256": "40acc4649f987ea86c30680f6314084603b2d2d8746426838e0c87516db2cd23",
+          "call_targets": [],
+          "call_relocations": 0
+        },
+        "target_scope": {
+          "name": "vuln_loop64",
+          "va": 16955802,
+          "end": 16955840,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "poc_gate": "pass",
+        "poc_status": "pass",
+        "runner": "limactl",
+        "verified": true,
+        "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac",
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "verified": true,
+          "candidate_sha256": "2d01ec86126c053760ad429f9ac4e3b761a9c9cd68fd2b23bdb921e243d454ac",
+          "empty_assembly": false
+        },
+        "elapsed_ms": 4774
+      }
+    ],
+    "model_identity_ok": false,
+    "latency_ms": 1574
+  }
+}

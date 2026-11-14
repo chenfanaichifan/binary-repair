@@ -53,6 +53,12 @@ def main() -> int:
     ap.add_argument("--benchmark", action="store_true",
                     help="also run the hard-case benchmark per model (requires native PoC host)")
     ap.add_argument("--contract-level", choices=("full", "generic", "none"), default="full")
+    ap.add_argument("--repeats", type=int, default=1,
+                    help="AI target-attempt repeats forwarded to the hard-case benchmark")
+    ap.add_argument("--seed", type=int, default=None,
+                    help="recorded seed forwarded to the hard-case benchmark (not marshalled)")
+    ap.add_argument("--target-strict", action="store_true",
+                    help="forward the strict AI-increment measurement flag")
     args = ap.parse_args()
     out = args.out
     out.mkdir(parents=True, exist_ok=True)
@@ -75,6 +81,10 @@ def main() -> int:
             "base_url": cfg.get("base_url"),
             "configured": cfg.get("configured"),
             "errors": list(cfg.get("errors") or []),
+            "seed": args.seed,
+            "repeats": max(1, int(args.repeats)),
+            "target_strict": bool(args.target_strict),
+            "cost": None,
         }
         client = client_from_env(env)
         if client is None:
@@ -110,10 +120,19 @@ def main() -> int:
                 "BINARYREPAIR_ASSISTANT_MODEL": model,
                 "BINARYREPAIR_STRICT_MODEL_IDENTITY": "1",
             })
+            benchmark_argv = [
+                sys.executable, str(ROOT / "scripts" / "run_hard_benchmark.py"),
+                "--out", str(bench_out), "--client", "real",
+                "--contract-level", args.contract_level,
+                "--repeats", str(max(1, int(args.repeats))),
+                "--provider-tag", f"{provider}:{model}",
+            ]
+            if args.seed is not None:
+                benchmark_argv += ["--seed", str(args.seed)]
+            if args.target_strict:
+                benchmark_argv.append("--target-strict")
             proc = subprocess.run(
-                [sys.executable, str(ROOT / "scripts" / "run_hard_benchmark.py"),
-                 "--out", str(bench_out), "--client", "real",
-                 "--contract-level", args.contract_level],
+                benchmark_argv,
                 cwd=ROOT, env=env, capture_output=True, text=True, timeout=1800,
             )
             record["benchmark"] = {
@@ -124,12 +143,32 @@ def main() -> int:
             }
             try:
                 summary = json.loads((bench_out / "summary.json").read_text())
+                provider_metadata = summary.get("provider_metadata") or {}
                 record["benchmark"].update({
                     "baseline_verified": summary.get("baseline_verified"),
                     "ai_verified": summary.get("ai_verified"),
                     "ai_increment": summary.get("ai_increment"),
                     "contract_level": summary.get("contract_level"),
                     "cases": len(summary.get("cases", [])),
+                    "repeats": summary.get("repeats"),
+                    "seed": summary.get("seed"),
+                    "cost": summary.get("cost"),
+                    "elapsed_ms": summary.get("elapsed_ms"),
+                    "target_policy": summary.get("target_policy"),
+                    "baseline_target_strict_expected_matches": summary.get(
+                        "baseline_target_strict_expected_matches"
+                    ),
+                    "baseline_target_strict_expected_match_rate": summary.get(
+                        "baseline_target_strict_expected_match_rate"
+                    ),
+                    "baseline_target_strict_target_in_scope_rate": summary.get(
+                        "baseline_target_strict_target_in_scope_rate"
+                    ),
+                    "ai_target_verified": summary.get("ai_target_verified"),
+                    "ai_target_in_scope": summary.get("ai_target_in_scope"),
+                    "target_strict_enforced": summary.get("target_strict_enforced"),
+                    "model_requested": provider_metadata.get("model_requested"),
+                    "provider_requested_name": provider_metadata.get("provider"),
                 })
             except (OSError, json.JSONDecodeError):
                 pass
@@ -146,10 +185,27 @@ def main() -> int:
                 "returncode": r.get("benchmark", {}).get("returncode"),
                 "ai_verified": r.get("benchmark", {}).get("ai_verified"),
                 "ai_increment": r.get("benchmark", {}).get("ai_increment"),
+                "ai_target_verified": r.get("benchmark", {}).get("ai_target_verified"),
+                "baseline_target_strict_expected_match_rate": r.get(
+                    "benchmark", {}
+                ).get("baseline_target_strict_expected_match_rate"),
+                "target_strict_enforced": r.get("benchmark", {}).get(
+                    "target_strict_enforced"
+                ),
+                "seed": r.get("benchmark", {}).get("seed"),
+                "cost": r.get("benchmark", {}).get("cost"),
+                "elapsed_ms": r.get("benchmark", {}).get("elapsed_ms"),
             }
             for r in records if "benchmark" in r
         },
-        "note": "No key, prompt, or raw response is stored; exact model identity is mandatory.",
+        "seed": args.seed,
+        "repeats": max(1, int(args.repeats)),
+        "target_strict": bool(args.target_strict),
+        "note": (
+            "No key, prompt, or raw response is stored; exact model identity is "
+            "mandatory. Cost is null (provider usage exposes tokens only) and the "
+            "seed is recorded but not marshalled by the shared client."
+        ),
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n")
     sums = []
