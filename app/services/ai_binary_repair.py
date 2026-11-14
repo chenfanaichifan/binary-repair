@@ -594,7 +594,7 @@ def ai_paths_contract() -> dict[str, Any]:
                 ),
                 "ai_outputs": ["assembly"],
                 "formats": ["elf"],
-                "arches": ["i386", "arm64"],
+                "arches": ["i386", "x86_64", "arm64"],
             },
             {
                 "id": DIRECT_PATH,
