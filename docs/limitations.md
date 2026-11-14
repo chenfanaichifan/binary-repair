@@ -27,7 +27,9 @@ general-purpose binary rewriter and does not claim universal correctness.
   (`write/exit`), a reviewed `fputs(x, stderr)` rewrite, and a typed
   `malloc/free` refusal.  Memory-management semantics are not templated;
 - general non-loop Path A/B success.  CWE121 is a single-function non-loop
-  closure, not a family result.
+  closure, not a family result.  A reference-locked CWE416/UAF repair passes
+  with auto-resolved malloc/free/printf symbols; this is a toolchain validation,
+  not AI-generated repair.
 
 ## 4-model matrix conclusion
 

@@ -30,7 +30,8 @@
     "non-loop path A verified success: 0/6; heap security-only partial and CWE symbol/stub limits remain",
     "general non-loop / whole-binary paradigm A; only CWE121 function-level closure is proven",
     "5-6 model matrix: only 4 real models; GLM-Z1 probe timed out; no additional provider key",
-    "full runtime TLS/libc errno capture; current errno probe is a syscall-signature proxy and optional"
+    "full runtime TLS/libc errno capture; current errno probe is a syscall-signature proxy and optional",
+    "exact TLS errno at arbitrary function return; LD_PRELOAD probe is process-exit only"
   ],
   "non_goals": [
     {
@@ -252,7 +253,12 @@
     "optional errno_probe=strace syscall-errno signature with CWE121 evidence",
     "Path B callee-context A/B negative controlled result",
     "strcat/atoi pure templates and malloc/free typed refusal",
-    "docs/limitations.md verification-boundary statement"
+    "docs/limitations.md verification-boundary statement",
+    "Path B assembly validation failure classification + one feedback retry; hard-multicall moved from no_candidate to native semantic fail",
+    "automatic target-ELF symbol/PLT inventory for Route A; typed patch failure metadata",
+    "conditional malloc/free whitelist when target ELF imports them; absolute block for fork/execve/system",
+    "optional LD_PRELOAD process-exit TLS errno probe (native dynamic ELF only)",
+    "non-loop generalization triage with typed failures; setup/run_matrix/whitepaper"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",

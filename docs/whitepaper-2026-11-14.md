@@ -22,7 +22,11 @@ Patcherex2 或 assembly 注入 → native PoC/regression/副作用 gate。
 2. 该案例真实的 `no_candidate` 原因是 assembly validator 拒绝 `ud2`，不是
    Patcherex2 符号/空间失败；修复后已能注入，native gate 变成语义 fail；
 3. 小参数免费模型即便有相同上下文/符号解析器，仍全量 0/12；
-4. 精确 TLS errno 不是 syscall errno；后者只能是代理。
+4. 精确 TLS errno 不是 syscall errno；后者只能是代理；新增 LD_PRELOAD
+   进程退出 errno 探针（native dynamic ELF）仍不是函数返回点。
+5. 非 loop 泛化：hard-multicall 已从 no_candidate 推进到 native 语义 fail；
+   hard-sprintf 为 assembler typed no_candidate；UAF 参考修复在自动符号/PLT
+   路径上 PASS（参考修复，不是 AI 生成）。
 
 ## 不可判定 / 未覆盖
 

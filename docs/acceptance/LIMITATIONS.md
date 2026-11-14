@@ -640,3 +640,15 @@ pooled AI-target 36/96 with Wilson CI; international 5-6 model matrix explicitly
 not satisfied due to HTTP 402 / missing key); identity_ok=false rows are
 served-model-only. Browser e2e passed 12/12 locally on macOS Chrome and is
 recorded separately; Linux CI skips are not evidence.
+
+## Path B / errno / symbols (feature line 2026-11-14)
+
+- `hard-multicall` was blocked by the assembly validator's `ud2` rule, not by
+  Patcherex2 symbols or space; after typed retry it injected and failed the
+  native semantic gate.
+- Route A now auto-extracts ELF symbols/PLT entries and records a typed
+  `patch_failure_reason`; malloc/free are allowed only when the target imports
+  them, while process-control calls remain absolute refusals.
+- `ld_preload` errno is process-exit TLS errno on native dynamic ELF; it is not
+  a function-return capture and remains optional.
+
