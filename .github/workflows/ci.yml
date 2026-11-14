@@ -85,7 +85,7 @@ jobs:
       - name: Autonomous reflection contract (12 questions, verified=false)
         run: python scripts/run_autonomous_reflection.py --check
       - name: Capability gap discovery (gap registry, six mechanisms)
-        run: python scripts/discover_capability_gaps.py --check
+        run: python scripts/discover_capability_gaps.py --check --allow-host-variance
       - name: Coverage regression gate (static, no network)
         run: python scripts/verify_coverage_gate.py --static-only
       # Serial execution by policy: Lima guests and the real PoC differential are

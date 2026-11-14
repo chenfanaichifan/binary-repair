@@ -492,3 +492,50 @@ def test_schema_violations_are_detected_in_memory():
     violations = discovery._schema_violations(files)
     assert violations
     assert any("invalid status" in item for item in violations)
+
+
+# ---------------------------------------------------------------------------
+# Cross-host CI mode: committed-integrity validation
+# ---------------------------------------------------------------------------
+
+DISCOVERY_SCRIPT = ROOT / "scripts" / "discover_capability_gaps.py"
+GAP_ARTIFACT = ROOT / "artifacts" / "gap-registry-2026-11-16"
+
+
+def _copy_artifact(tmp_path: Path) -> Path:
+    target = tmp_path / "gap-registry"
+    shutil.copytree(GAP_ARTIFACT, target)
+    return target
+
+
+def _run_discovery_check(artifact: Path, *extra: str) -> subprocess.CompletedProcess:
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(ROOT)
+    return subprocess.run(
+        [sys.executable, str(DISCOVERY_SCRIPT), "--check",
+         "--out", str(artifact), *extra],
+        cwd=ROOT, capture_output=True, text=True, timeout=180, env=env,
+    )
+
+
+def test_host_variance_check_validates_committed_integrity(tmp_path: Path) -> None:
+    artifact = _copy_artifact(tmp_path)
+    result = _run_discovery_check(artifact, "--allow-host-variance")
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["host_variance"]["allowed"] is True
+    assert payload["record_count"] == 64
+    assert payload["candidate_count"] == 51
+
+
+def test_host_variance_check_still_rejects_tampering(tmp_path: Path) -> None:
+    artifact = _copy_artifact(tmp_path)
+    gaps = json.loads((artifact / "gaps.json").read_text())
+    gaps["records"][0]["status"] = "verified"
+    (artifact / "gaps.json").write_text(json.dumps(gaps, indent=2) + "\n")
+    result = _run_discovery_check(artifact, "--allow-host-variance")
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["violations"]
