@@ -26,6 +26,7 @@ DEFAULT_BUNDLES = (
     "artifacts/gate-blind-spots-2026-11-13",
     "artifacts/hard-case-benchmark-2026-11-13",
     "artifacts/fairness-ablation-2026-11-14",
+    "artifacts/multi-model-probe-2026-11-14",
 )
 
 

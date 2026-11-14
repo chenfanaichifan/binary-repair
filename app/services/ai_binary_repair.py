@@ -21,6 +21,7 @@ decision: a failed/incomplete gate can never be promoted (same policy as
 from __future__ import annotations
 
 import hashlib
+import os
 import json
 import time
 from dataclasses import dataclass, field
@@ -229,8 +230,28 @@ def _call_model(
     ai["latency_ms"] = max(0, int((time.perf_counter() - started) * 1000))
     ai["usage"] = getattr(raw, "usage", None)
     ai["request_id"] = getattr(raw, "request_id", None)
-    if getattr(raw, "model", None):
-        ai["model"] = str(raw.model)
+    requested_model = getattr(client, "model", None)
+    returned_model = getattr(raw, "model", None)
+    ai["model_requested"] = str(requested_model) if requested_model else None
+    if returned_model:
+        ai["model"] = str(returned_model)
+    try:
+        from app.services.assistant_llm import model_identity_ok
+
+        ai["model_identity_ok"] = model_identity_ok(
+            str(requested_model) if requested_model else None,
+            str(returned_model) if returned_model else None,
+        )
+    except Exception:  # noqa: BLE001
+        ai["model_identity_ok"] = False
+    strict_identity = str(os.environ.get("BINARYREPAIR_STRICT_MODEL_IDENTITY", "")).strip().lower()
+    if ai["model_identity_ok"] is False and strict_identity in {"1", "true", "yes", "on"}:
+        ai["status"] = "identity_mismatch"
+        ai["error"] = (
+            f"provider model identity mismatch: requested={requested_model!r} "
+            f"returned={returned_model!r}; result excluded from evidence"
+        )
+        return None, ai["error"]
     parsed, parse_error = _parse_content(getattr(raw, "content", None))
     if parse_error is not None or parsed is None:
         ai["status"] = "invalid"

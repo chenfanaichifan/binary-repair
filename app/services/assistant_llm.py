@@ -61,9 +61,41 @@ ASSISTANT_MODEL_ENV = "BINARYREPAIR_ASSISTANT_MODEL"
 PROVIDER_KEY_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_KEY"
 PROVIDER_BASE_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_BASE_URL"
 PROVIDER_TIMEOUT_ENV = "BINARYREPAIR_ASSISTANT_PROVIDER_TIMEOUT"
+PROVIDER_ENV = "BINARYREPAIR_PROVIDER"
+STRICT_IDENTITY_ENV = "BINARYREPAIR_STRICT_MODEL_IDENTITY"
 DEFAULT_MODEL = "deepseek-chat"
 DEFAULT_PROVIDER_BASE = "https://api.deepseek.com/v1"
 DEFAULT_TIMEOUT = 30.0
+
+# OpenAI-compatible, compliant multi-model providers.  Selection is explicit
+# (BINARYREPAIR_PROVIDER) or by the provider-specific key variable; the generic
+# BINARYREPAIR_ASSISTANT_PROVIDER_KEY remains a custom/DeepSeek-compatible key.
+PROVIDER_PROFILES: dict[str, dict[str, Any]] = {
+    "deepseek": {
+        "title": "DeepSeek official / compatible endpoint",
+        "base": DEFAULT_PROVIDER_BASE,
+        "base_envs": (PROVIDER_BASE_ENV, *("DEEPSEEK_BASE_URL",)),
+        "key_envs": (PROVIDER_KEY_ENV, *("DEEPSEEK_API_KEY",)),
+        "model_envs": (ASSISTANT_MODEL_ENV, *("DEEPSEEK_MODEL",)),
+        "default_model": DEFAULT_MODEL,
+    },
+    "siliconflow": {
+        "title": "SiliconFlow (OpenAI-compatible multi-model MaaS)",
+        "base": "https://api.siliconflow.cn/v1",
+        "base_envs": ("SILICONFLOW_BASE_URL", "BINARYREPAIR_SILICONFLOW_BASE_URL"),
+        "key_envs": ("SILICONFLOW_API_KEY", "BINARYREPAIR_SILICONFLOW_API_KEY"),
+        "model_envs": ("SILICONFLOW_MODEL", "BINARYREPAIR_SILICONFLOW_MODEL"),
+        "default_model": "",
+    },
+    "dashscope": {
+        "title": "Alibaba Cloud Bailian / DashScope (OpenAI-compatible)",
+        "base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "base_envs": ("DASHSCOPE_BASE_URL", "BINARYREPAIR_DASHSCOPE_BASE_URL"),
+        "key_envs": ("DASHSCOPE_API_KEY", "BAILIAN_API_KEY", "BINARYREPAIR_DASHSCOPE_API_KEY"),
+        "model_envs": ("DASHSCOPE_MODEL", "BAILIAN_MODEL", "BINARYREPAIR_DASHSCOPE_MODEL"),
+        "default_model": "",
+    },
+}
 MAX_OUTPUT_TOKENS = 262144
 
 MODES = ("llm", "deterministic", "fixture")
@@ -377,6 +409,7 @@ class HttpJsonClient:
         model: str = DEFAULT_MODEL,
         timeout: float = DEFAULT_TIMEOUT,
         transport: Any | None = None,
+        provider_name: str = "deepseek",
     ) -> None:
         if not api_key:
             raise ValueError("api_key is required")
@@ -385,6 +418,7 @@ class HttpJsonClient:
         self._model = model
         self._timeout = timeout
         self._transport = transport
+        self._provider_name = provider_name
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"HttpJsonClient(base_url={self._base_url!r}, model={self._model!r})"
@@ -396,6 +430,10 @@ class HttpJsonClient:
     @property
     def model(self) -> str:
         return self._model
+
+    @property
+    def provider_name(self) -> str:
+        return self._provider_name
 
     def chat_json(
         self,
@@ -534,6 +572,67 @@ def ensure_env_loaded(path: str | Path | None = None) -> dict[str, str]:
     return load_env_file(path)
 
 
+def resolve_provider_name(environ: Mapping[str, str] | None = None) -> str:
+    """Select a configured provider without making a network call.
+
+    Explicit BINARYREPAIR_PROVIDER wins.  Otherwise a provider-specific key
+    selects SiliconFlow/Bailian; the generic key keeps the DeepSeek-compatible
+    behaviour for backward compatibility.
+    """
+    env = os.environ if environ is None else environ
+    explicit = (env.get(PROVIDER_ENV) or "").strip().lower()
+    if explicit in PROVIDER_PROFILES:
+        return explicit
+    if (env.get("SILICONFLOW_API_KEY") or env.get("BINARYREPAIR_SILICONFLOW_API_KEY") or "").strip():
+        return "siliconflow"
+    if (
+        env.get("DASHSCOPE_API_KEY") or env.get("BAILIAN_API_KEY")
+        or env.get("BINARYREPAIR_DASHSCOPE_API_KEY") or ""
+    ).strip():
+        return "dashscope"
+    return "deepseek"
+
+
+def provider_config(environ: Mapping[str, str] | None = None) -> dict[str, Any]:
+    """Return the selected provider's non-secret configuration and validation."""
+    env = os.environ if environ is None else environ
+    name = resolve_provider_name(env)
+    profile = PROVIDER_PROFILES[name]
+    key = _first_env(env, tuple(profile["key_envs"]))
+    if not key and name == "deepseek":
+        try:
+            from app.services.assistant_key_store import load_key
+
+            key = (load_key() or "").strip()
+        except Exception:  # noqa: BLE001
+            key = ""
+    base = _first_env(env, tuple(profile["base_envs"])).rstrip("/") or str(profile["base"])
+    model = _first_env(env, tuple(profile["model_envs"])) or str(profile["default_model"])
+    errors = []
+    if not key:
+        errors.append(f"missing API key for provider {name!r}")
+    if not model:
+        errors.append(f"missing model name for provider {name!r}")
+    return {
+        "provider": name,
+        "title": profile["title"],
+        "base_url": base,
+        "model": model,
+        "key_env_candidates": list(profile["key_envs"]),
+        "base_url_env_candidates": list(profile["base_envs"]),
+        "model_env_candidates": list(profile["model_envs"]),
+        "configured": not errors,
+        "errors": errors,
+    }
+
+
+def model_identity_ok(requested: str | None, returned: str | None) -> bool:
+    """Exact identity check; a provider that silently swaps models must fail."""
+    if not requested or not returned:
+        return False
+    return requested.strip() == returned.strip()
+
+
 def client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient | None:
     """Build a provider client from the environment, or ``None``.
 
@@ -543,22 +642,19 @@ def client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient 
     if environ is None:
         ensure_env_loaded()
     env = os.environ if environ is None else environ
-    key = _first_env(env, (PROVIDER_KEY_ENV, *COMPAT_KEY_ENVS))
-    if not key and environ is None:
-        # A key saved from the local operator UI is the next fallback; the
-        # environment still wins when both exist.
+    cfg = provider_config(env)
+    if cfg["errors"]:
+        return None
+    name = str(cfg["provider"])
+    profile = PROVIDER_PROFILES[name]
+    key = _first_env(env, tuple(profile["key_envs"]))
+    if not key and name == "deepseek":
         try:
             from app.services.assistant_key_store import load_key
 
             key = (load_key() or "").strip()
-        except Exception:
+        except Exception:  # noqa: BLE001
             key = ""
-    if not key:
-        return None
-    base = _first_env(
-        env, (PROVIDER_BASE_ENV, *COMPAT_BASE_ENVS)
-    ).rstrip("/") or DEFAULT_PROVIDER_BASE
-    model = _first_env(env, (ASSISTANT_MODEL_ENV, *COMPAT_MODEL_ENVS)) or DEFAULT_MODEL
     raw_timeout = _first_env(env, (PROVIDER_TIMEOUT_ENV, *COMPAT_TIMEOUT_ENVS))
     try:
         timeout = float(raw_timeout) if raw_timeout else DEFAULT_TIMEOUT
@@ -566,7 +662,10 @@ def client_from_env(environ: Mapping[str, str] | None = None) -> HttpJsonClient 
         timeout = DEFAULT_TIMEOUT
     if timeout <= 0:
         timeout = DEFAULT_TIMEOUT
-    return HttpJsonClient(api_key=key, base_url=base, model=model, timeout=timeout)
+    return HttpJsonClient(
+        api_key=key, base_url=str(cfg["base_url"]), model=str(cfg["model"]),
+        timeout=timeout, provider_name=name,
+    )
 
 
 def test_provider_connection(client: Any | None = None) -> dict[str, Any]:

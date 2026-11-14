@@ -43,6 +43,13 @@ simple semantic-versioning policy for delivery snapshots.
 
 ## [Unreleased]
 
+### Added — compliant multi-provider profiles
+
+- SiliconFlow and DashScope/Bailian OpenAI-compatible profiles, exact
+  model-identity probe and `scripts/run_multi_model_matrix.py`.
+- Current host is credential-blocked: DeepSeek maps chat→flash (caught by the
+  identity check); no alternate provider key is present.
+
 ### Added — hard-case fairness ablation
 
 - Native no-input PoC support (`stdout_hex`, empty regression) and an 11th UAF

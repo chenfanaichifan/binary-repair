@@ -48,8 +48,8 @@ gate-blind/PoC increment experiment remain future work.
 
 | Environment | Result |
 |---|---|
-| macOS 13.5 arm64 / Python 3.11.8 | **1143 tests, 0 failed, 0 errors, 7 skipped** (264.0 s) |
-| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1143 tests, 0 failed, 0 errors, 10 skipped** (264.1 s) |
+| macOS 13.5 arm64 / Python 3.11.8 | **1149 tests, 0 failed, 0 errors, 7 skipped** (359.1 s) |
+| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1149 tests, 0 failed, 0 errors, 10 skipped** (365.0 s) |
 
 Targeted coverage includes:
 
@@ -177,7 +177,20 @@ Two non-loop family-diversity probes were added:
 AI target produced no candidate, 0/1).  They are not counted among the six loop
 successes.
 
-## 9. Boundaries
+## 9. Multi-model provider readiness (P1)
+
+A provider abstraction now supports DeepSeek, SiliconFlow and DashScope/Bailian
+through OpenAI-compatible endpoints, with exact `resp.model` identity checks.
+`scripts/run_multi_model_matrix.py` probes provider/model pairs and never
+fabricates a result when a key is absent.
+
+On this host only the existing DeepSeek key is configured.  Probing
+`deepseek:deepseek-chat` returned `deepseek-flash` (**identity mismatch**), while
+`deepseek:deepseek-flash` matched.  SiliconFlow/Bailian are **unconfigured** —
+no keys are present — so no real multi-model comparison has been run yet.
+Evidence: `artifacts/multi-model-probe-2026-11-14/`.
+
+## 10. Boundaries
 
 - Assembly path: ELF i386/x86_64/arm64 only; requires host `clang`; no
   PE/Mach-O assembly path.

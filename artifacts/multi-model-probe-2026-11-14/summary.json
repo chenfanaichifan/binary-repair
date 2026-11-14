@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "records": [
+    {
+      "spec": "deepseek:deepseek-chat",
+      "provider": "deepseek",
+      "model_requested": "deepseek-chat",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "status": "identity_mismatch",
+      "model_returned": "deepseek-flash",
+      "model_identity_ok": false,
+      "latency_ms": 790,
+      "usage": {
+        "prompt_tokens": 42,
+        "completion_tokens": 5,
+        "total_tokens": 47,
+        "latency_ms": 790
+      },
+      "request_id": null
+    },
+    {
+      "spec": "deepseek:deepseek-flash",
+      "provider": "deepseek",
+      "model_requested": "deepseek-flash",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_returned": "deepseek-flash",
+      "model_identity_ok": true,
+      "latency_ms": 805,
+      "usage": {
+        "prompt_tokens": 42,
+        "completion_tokens": 5,
+        "total_tokens": 47,
+        "latency_ms": 805
+      },
+      "request_id": null
+    }
+  ],
+  "ok": 1,
+  "identity_mismatch": 1,
+  "unconfigured": 0,
+  "note": "No key, prompt, or raw response is stored; exact model identity is mandatory."
+}

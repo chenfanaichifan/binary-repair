@@ -23,8 +23,8 @@ work.  See section 9 for the exact matrix/sink boundary.
 Current acceptance is the non-browser suite:
 
 ```text
-macOS 13.5 arm64: 1143 tests, 0 failed, 0 errors, 7 skipped (264.0 s)
-Linux VM Ubuntu 24.04 arm64: 1143 tests, 0 failed, 0 errors, 10 skipped (264.1 s)
+macOS 13.5 arm64: 1149 tests, 0 failed, 0 errors, 7 skipped (359.1 s)
+Linux VM Ubuntu 24.04 arm64: 1149 tests, 0 failed, 0 errors, 10 skipped (365.0 s)
 GitHub Actions Ubuntu 24.04: workflow success on the final commits
 ```
 
@@ -195,3 +195,13 @@ target-localized AI produced no candidate because external calls are forbidden
 in the leaf-only assembly path.  UAF and heap-canary are recorded as 0/1 each; they do not
 broaden the six-loop family success.  Heap silent overflow without a guard
 still needs an allocator canary oracle.
+
+
+## 16. Multi-model is credential-blocked
+
+Provider profiles for SiliconFlow and DashScope/Bailian are implemented, and
+the probe enforces exact returned-model identity.  However this host has no
+SILICONFLOW_API_KEY or DASHSCOPE_API_KEY; the old DeepSeek endpoint silently
+returns deepseek-flash for deepseek-chat.  Real multi-model statistics remain
+blocked on credentials, not on code.  See
+`artifacts/multi-model-probe-2026-11-14/`.
