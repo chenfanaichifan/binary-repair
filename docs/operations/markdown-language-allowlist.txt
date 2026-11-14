@@ -1,0 +1,163 @@
+# Markdown language allowlist (historical legacy documents only).
+#
+# Policy: every NEW document under docs/ must be ASCII-English. This file
+# tracks documents written before that policy was enforced so CI can fail
+# closed on new violations without rewriting history. Entries are exact
+# docs-relative paths (not directory globs), so a newly added document can
+# never be hidden by an entry here. Do not add entries without an owner
+# and a reason; review this list when the legacy docs are migrated.
+#
+# Reasons for the groups below:
+# - pre-policy acceptance/architecture/development/reference documents:
+#   Chinese-language research, reviews and handoffs from 2026-10/11.
+# - operations docs pre-dating the ASCII policy: small amounts of
+#   typographic punctuation or imported benchmark text.
+# - demo/generated Markdown assets: historical screenshots/proposals.
+#
+# checker contract: one fnmatch pattern per line, relative to docs/.
+# Example: acceptance/HISTORICAL-ACCEPTANCE-2026-10-31.md
+#
+README.md
+acceptance/ACCEPTANCE.md
+acceptance/HANDOFF-TASKS-2026-11-13.md
+acceptance/HISTORICAL-ACCEPTANCE-2026-10-31.md
+acceptance/LIMITATIONS.md
+acceptance/ai-binary-repair-2026-11-13.md
+acceptance/binary-ai-review-2026-11-12.md
+acceptance/binary-universal-2026-11-13.md
+acceptance/binary-universal-v4-2026-11-13.md
+acceptance/binary-universal-v5-2026-11-13.md
+acceptance/capability-contract-2026-11-14.md
+acceptance/capability-gap-audit-2026-11-14.md
+acceptance/cgc-pov-2026-11-12.md
+acceptance/evidence/ubuntu-3400a13/README.md
+acceptance/feature-p0-p4-2026-11-15.md
+acceptance/multi-model-matrix-2026-11-14.md
+acceptance/overflow-ai-2026-11-12.md
+acceptance/path-a-and-paradigm-a-2026-11-14.md
+acceptance/repair-evaluation-2026-11-12.md
+acceptance/verification-review-2026-11-13.md
+architecture/agent-console.md
+architecture/ai-adjudication.md
+architecture/ai-binary-repair-paths.md
+architecture/attempt-writer-schema.md
+architecture/capacity-check-repair.md
+architecture/code-repair.md
+architecture/controller-integration.md
+architecture/history.md
+architecture/host-importer-broker.md
+archive/mvp-2026-10-31/evidence/README.md
+archive/updates/2026-11-08.md
+assets/demo/PR-BODY-GUI.md
+assets/demo/README.md
+development/analysis/CONTROLLER-FIXES.md
+development/analysis/M2-F5-EXPORT.md
+development/analysis/M2-MERGE-REPORT.md
+development/analysis/ROOT-CAUSE-ANALYSIS.md
+development/analysis/RUNTIME-VERIFICATION.md
+development/analysis/VERIFICATION.md
+development/handoffs/165-m5-review-9-12-machine-readable-2026-11-07.md
+development/handoffs/166-t83-revalidation-2026-11-07.md
+development/handoffs/167-p1-p2-acceptance-2026-11-07.md
+development/handoffs/168-test-isolation-v2v4-2026-11-07.md
+development/handoffs/169-task33-routea-noinput-2026-11-07.md
+development/handoffs/170-t83-fresh-tree-closure-2026-11-07.md
+development/handoffs/171-m4-t83-confirmation-2026-11-07.md
+development/handoffs/172-m1-m4-m5-code-run-2026-11-07.md
+development/handoffs/173-p1-success-2026-11-07.md
+development/handoffs/174-p1-final-reconciliation-2026-11-07.md
+development/handoffs/175-post-p1-task-board-2026-11-07.md
+development/handoffs/176-m1-final-status-2026-11-07.md
+development/handoffs/177-m4-final-acceptance-2026-11-07.md
+development/handoffs/178-m5-final-status-2026-11-07.md
+development/handoffs/179-m2-all-inputs-handoff-2026-11-07.md
+development/handoffs/180-review12-pass-2026-11-08.md
+development/handoffs/181-all-members-run-2026-11-08.md
+development/handoffs/182-project-audit-2026-11-08.md
+development/handoffs/193-final-project-audit-2026-11-08.md
+development/handoffs/194-m5-comparison-schema-decision-2026-11-08.md
+development/handoffs/195-all-members-final-rerun-2026-11-08.md
+development/handoffs/196-m1-gui-comparison-route-2026-11-08.md
+development/handoffs/196b-m2-comparison-ui-2026-11-08.md
+development/handoffs/197-m5-comparison-kind-verdict-clarification-2026-11-08.md
+development/handoffs/198-m4-merge-comparison-ui-2026-11-08.md
+development/handoffs/199-final-completion-2026-11-08.md
+development/handoffs/203-v1.2.0-backlog-2026-11-09.md
+development/handoffs/204-v1.2.0-acceptance-upload-gate-2026-11-09.md
+development/handoffs/208-v1.2.0-p1-replay-2026-11-09.md
+development/handoffs/209-v1.2.0-release-approval-2026-11-09.md
+development/handoffs/210-m4-v1.2.0-browser-check-2026-11-09.md
+development/handoffs/211-v1.2.1-release-review.md
+development/handoffs/212-v1.2.1-real-deepseek-smoke.md
+development/handoffs/213-v1.2.1-real-key-ui.md
+development/handoffs/214-v1.2.1-m5-key-smoke.md
+development/handoffs/215-v1.2.1-m2-verification.md
+development/handoffs/216-v1.2.1-security-fixes.md
+development/handoffs/217-v1.2.1-f2-hardening.md
+development/handoffs/218-v1.2.1-hold-resolution.md
+development/handoffs/219-v1.2.1-n8-n9-hardening.md
+development/handoffs/220-v1.2.1-n10-n11.md
+development/integration-plan.md
+development/member2-notes.md
+development/repository-guide.md
+development/repository-layout.md
+development/reviews/review-12-m4-verification-2026-11-08.md
+development/reviews/review-9-12-canonical-2026-11-07.md
+development/reviews/review-9-12-m4-verification-2026-11-07.md
+development/reviews/review-a856afe-response-m2.md
+development/routes/route-a/gate3-record.md
+development/routes/route-b/02-member-5-candidate-provider.md
+development/routes/route-b/03-feasibility-checklist.md
+development/routes/route-b/04-root-integration.md
+development/routes/route-b/05-db-v2-spec.md
+development/routes/route-b/06-gate6-evidence.md
+development/routes/route-b/07-route-a-trampoline-plan.md
+development/routes/route-b/08-candidate-quality.md
+development/routes/route-b/09-gate4-evidence.md
+development/routes/route-b/10-routea-worker.md
+development/routes/route-b/12-routea-strategy-c.md
+development/routes/route-b/13-routea-cave-probe.md
+development/routes/route-b/14-gate4-runner.md
+development/routes/route-b/15-routea-c4a159-handoff.md
+development/routes/route-b/16-contract-revision-approval.md
+development/routes/route-b/17-gate3-six-item-matrix.md
+development/routes/route-b/18-build-recipe.md
+development/routes/route-b/19-routea-review.md
+development/routes/route-b/20-m4-patch-review.md
+development/routes/route-b/22-routeb-attempt-bundle.md
+development/routes/route-b/23-gate4-record.md
+development/routes/route-b/README.md
+development/t8-3-second-class.md
+operations/fixtures.md
+operations/ghidra-macos.md
+operations/multi-model-benchmark.md
+operations/run-worker.md
+operations/ubuntu-verification.md
+operations/worktree-safety.md
+overview/product/PRD-BinaryRepair-MVP.md
+overview/product/TechDesign-BinaryRepair-MVP.md
+overview/product/proposal-verification-materials.md
+overview/product/research-BinaryRepair.md
+overview/product/research-request-BinaryRepair.md
+overview/product/verification-design.md
+overview/proposal/gui-section.md
+reference/binary-assembly-repair.md
+reference/binary-overflow-surface.md
+reference/binary-repair-engine.md
+reference/binary-repair-landscape.md
+reference/binary-vulnerability-datasets.md
+reference/buffer-overflow-patterns.md
+reference/cgc-access.md
+reference/i18n.md
+reference/interfaces/execution-bridge-v1.md
+reference/interfaces/m5-tool-contracts-v1.md
+reference/interfaces/m5-tool-contracts-v2.md
+reference/interfaces/report-sync-v1.md
+reference/interfaces/route-a-worker-contract.md
+reference/lan-fixed-access.md
+reference/m5/141-m5-class-difference-plan-2026-11-07.md
+reference/m5/m5-tool-contracts-v2.md
+reference/patch-validation.md
+reference/ui-settings.md
+status/final-status.md
+whitepaper-2026-11-14.md

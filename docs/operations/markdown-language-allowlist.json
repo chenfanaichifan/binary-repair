@@ -1,0 +1,724 @@
+{
+  "allow": [
+    {
+      "path": "README.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/ACCEPTANCE.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/HANDOFF-TASKS-2026-11-13.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/HISTORICAL-ACCEPTANCE-2026-10-31.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/LIMITATIONS.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/ai-binary-repair-2026-11-13.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/binary-ai-review-2026-11-12.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/binary-universal-2026-11-13.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/binary-universal-v4-2026-11-13.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/binary-universal-v5-2026-11-13.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/capability-contract-2026-11-14.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/capability-gap-audit-2026-11-14.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/cgc-pov-2026-11-12.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/evidence/ubuntu-3400a13/README.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/feature-p0-p4-2026-11-15.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/multi-model-matrix-2026-11-14.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/overflow-ai-2026-11-12.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/path-a-and-paradigm-a-2026-11-14.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/repair-evaluation-2026-11-12.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "acceptance/verification-review-2026-11-13.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    },
+    {
+      "path": "architecture/agent-console.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "architecture/ai-adjudication.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "architecture/ai-binary-repair-paths.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "architecture/attempt-writer-schema.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "architecture/capacity-check-repair.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "architecture/code-repair.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "architecture/controller-integration.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "architecture/history.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "architecture/host-importer-broker.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "archive/mvp-2026-10-31/evidence/README.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "archive/updates/2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "assets/demo/PR-BODY-GUI.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "assets/demo/README.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/analysis/CONTROLLER-FIXES.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/analysis/M2-F5-EXPORT.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/analysis/M2-MERGE-REPORT.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/analysis/ROOT-CAUSE-ANALYSIS.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/analysis/RUNTIME-VERIFICATION.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/analysis/VERIFICATION.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/165-m5-review-9-12-machine-readable-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/166-t83-revalidation-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/167-p1-p2-acceptance-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/168-test-isolation-v2v4-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/169-task33-routea-noinput-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/170-t83-fresh-tree-closure-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/171-m4-t83-confirmation-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/172-m1-m4-m5-code-run-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/173-p1-success-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/174-p1-final-reconciliation-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/175-post-p1-task-board-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/176-m1-final-status-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/177-m4-final-acceptance-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/178-m5-final-status-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/179-m2-all-inputs-handoff-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/180-review12-pass-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/181-all-members-run-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/182-project-audit-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/193-final-project-audit-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/194-m5-comparison-schema-decision-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/195-all-members-final-rerun-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/196-m1-gui-comparison-route-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/196b-m2-comparison-ui-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/197-m5-comparison-kind-verdict-clarification-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/198-m4-merge-comparison-ui-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/199-final-completion-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/203-v1.2.0-backlog-2026-11-09.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/204-v1.2.0-acceptance-upload-gate-2026-11-09.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/208-v1.2.0-p1-replay-2026-11-09.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/209-v1.2.0-release-approval-2026-11-09.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/210-m4-v1.2.0-browser-check-2026-11-09.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/211-v1.2.1-release-review.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/212-v1.2.1-real-deepseek-smoke.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/213-v1.2.1-real-key-ui.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/214-v1.2.1-m5-key-smoke.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/215-v1.2.1-m2-verification.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/216-v1.2.1-security-fixes.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/217-v1.2.1-f2-hardening.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/218-v1.2.1-hold-resolution.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/219-v1.2.1-n8-n9-hardening.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/handoffs/220-v1.2.1-n10-n11.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/integration-plan.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/member2-notes.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/repository-guide.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/repository-layout.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/reviews/review-12-m4-verification-2026-11-08.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/reviews/review-9-12-canonical-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/reviews/review-9-12-m4-verification-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/reviews/review-a856afe-response-m2.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-a/gate3-record.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/02-member-5-candidate-provider.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/03-feasibility-checklist.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/04-root-integration.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/05-db-v2-spec.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/06-gate6-evidence.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/07-route-a-trampoline-plan.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/08-candidate-quality.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/09-gate4-evidence.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/10-routea-worker.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/12-routea-strategy-c.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/13-routea-cave-probe.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/14-gate4-runner.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/15-routea-c4a159-handoff.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/16-contract-revision-approval.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/17-gate3-six-item-matrix.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/18-build-recipe.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/19-routea-review.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/20-m4-patch-review.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/22-routeb-attempt-bundle.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/23-gate4-record.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/routes/route-b/README.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "development/t8-3-second-class.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "operations/fixtures.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "operations/ghidra-macos.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "operations/multi-model-benchmark.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "operations/run-worker.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "operations/ubuntu-verification.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "operations/worktree-safety.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "overview/product/PRD-BinaryRepair-MVP.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "overview/product/TechDesign-BinaryRepair-MVP.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "overview/product/proposal-verification-materials.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "overview/product/research-BinaryRepair.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "overview/product/research-request-BinaryRepair.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "overview/product/verification-design.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "overview/proposal/gui-section.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/binary-assembly-repair.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/binary-overflow-surface.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/binary-repair-engine.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/binary-repair-landscape.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/binary-vulnerability-datasets.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/buffer-overflow-patterns.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/cgc-access.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/i18n.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/interfaces/execution-bridge-v1.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/interfaces/m5-tool-contracts-v1.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/interfaces/m5-tool-contracts-v2.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/interfaces/report-sync-v1.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/interfaces/route-a-worker-contract.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/lan-fixed-access.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/m5/141-m5-class-difference-plan-2026-11-07.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/m5/m5-tool-contracts-v2.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/patch-validation.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "reference/ui-settings.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "status/final-status.md",
+      "reason": "historical document predating the ASCII-only docs policy; not a 2026-11-15 release acceptance document",
+      "owner": "docs"
+    },
+    {
+      "path": "whitepaper-2026-11-14.md",
+      "reason": "historical research paper, not product acceptance docs",
+      "owner": "docs"
+    }
+  ]
+}

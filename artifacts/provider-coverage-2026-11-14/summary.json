@@ -100,7 +100,18 @@
         "successful repairs remain loop-family only (6/6 loop, 0/6 non-loop) for every run",
         "native PoC/regression executed in the Linux guest; candidate generation on macOS"
       ],
-      "notes": "requested and returned model identity matched exactly on all runs"
+      "notes": "requested and returned model identity matched exactly on all runs",
+      "http": null,
+      "probe_log_path": "artifacts/deepseek-matrix-2026-11-14/summary.json",
+      "probe_log_sha256": "097899ed46b06c2d017c0babace62debdfb6e06c034155656c08ab668f24c274",
+      "identity_layer": {
+        "requested_model": "deepseek-flash",
+        "served_model": "deepseek-flash",
+        "observed_model": "deepseek-flash",
+        "identity_ok": true,
+        "identity_verified": true,
+        "attribution": "requested_model"
+      }
     },
     {
       "row_id": "deepseek-official/deepseek-v4-pro",
@@ -178,7 +189,18 @@
         "successful repairs remain loop-family only (6/6 loop, 0/6 non-loop) for every run",
         "native PoC/regression executed in the Linux guest; candidate generation on macOS"
       ],
-      "notes": "requested and returned model identity matched exactly on all runs"
+      "notes": "requested and returned model identity matched exactly on all runs",
+      "http": null,
+      "probe_log_path": "artifacts/deepseek-matrix-2026-11-14/summary.json",
+      "probe_log_sha256": "097899ed46b06c2d017c0babace62debdfb6e06c034155656c08ab668f24c274",
+      "identity_layer": {
+        "requested_model": "deepseek-v4-pro",
+        "served_model": "deepseek-v4-pro",
+        "observed_model": "deepseek-v4-pro",
+        "identity_ok": true,
+        "identity_verified": true,
+        "attribution": "requested_model"
+      }
     },
     {
       "row_id": "siliconflow-cn/Qwen/Qwen3-8B",
@@ -237,7 +259,18 @@
         "identity probes and the full 12-case benchmark are real free-tier calls (no balance error)",
         "model produced no verified candidate (0/12); this is model-capability evidence, not a pass"
       ],
-      "notes": "see LIMITATIONS section 22 (4-model real matrix); the same evidence is in this tree"
+      "notes": "see LIMITATIONS section 22 (4-model real matrix); the same evidence is in this tree",
+      "http": null,
+      "probe_log_path": "artifacts/multi-model-matrix-cn-2026-11-14/identity-probe/summary.json",
+      "probe_log_sha256": "65d7969f75620221bbea0059c662fa768f219601b76d461a9e0d22dbecd4be0a",
+      "identity_layer": {
+        "requested_model": "Qwen/Qwen3-8B",
+        "served_model": "Qwen/Qwen3-8B",
+        "observed_model": "Qwen/Qwen3-8B",
+        "identity_ok": true,
+        "identity_verified": true,
+        "attribution": "requested_model"
+      }
     },
     {
       "row_id": "siliconflow-cn/Qwen/Qwen2.5-7B-Instruct",
@@ -296,7 +329,18 @@
         "identity probes and the full 12-case benchmark are real free-tier calls (no balance error)",
         "model produced no verified candidate (0/12); this is model-capability evidence, not a pass"
       ],
-      "notes": "see LIMITATIONS section 22 (4-model real matrix); the same evidence is in this tree"
+      "notes": "see LIMITATIONS section 22 (4-model real matrix); the same evidence is in this tree",
+      "http": null,
+      "probe_log_path": "artifacts/multi-model-matrix-cn-2026-11-14/identity-probe/summary.json",
+      "probe_log_sha256": "65d7969f75620221bbea0059c662fa768f219601b76d461a9e0d22dbecd4be0a",
+      "identity_layer": {
+        "requested_model": "Qwen/Qwen2.5-7B-Instruct",
+        "served_model": "Qwen/Qwen2.5-7B-Instruct",
+        "observed_model": "Qwen/Qwen2.5-7B-Instruct",
+        "identity_ok": true,
+        "identity_verified": true,
+        "attribution": "requested_model"
+      }
     },
     {
       "row_id": "siliconflow-intl/Qwen/Qwen3.8-27B",
@@ -359,7 +403,22 @@
         "identity probe passed (resp.model exact); no 12-case benchmark was produced",
         "blocked by account balance, not by model identity or code; never counted as verified"
       ],
-      "notes": "matrix record: siliconflow:Qwen/Qwen3.8-27B -> status=error, _ProviderHTTPError: provider returned HTTP 402"
+      "notes": "matrix record: siliconflow:Qwen/Qwen3.8-27B -> status=error, _ProviderHTTPError: provider returned HTTP 402",
+      "http": {
+        "status": 402,
+        "code": null,
+        "error_class": "_ProviderHTTPError"
+      },
+      "probe_log_path": "artifacts/multi-model-matrix-intl-2026-11-14/identity-probe/summary.json",
+      "probe_log_sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944",
+      "identity_layer": {
+        "requested_model": "Qwen/Qwen3.8-27B",
+        "served_model": "Qwen/Qwen3.8-27B",
+        "observed_model": "Qwen/Qwen3.8-27B",
+        "identity_ok": true,
+        "identity_verified": false,
+        "attribution": "none"
+      }
     },
     {
       "row_id": "siliconflow-intl/deepseek-ai/DeepSeek-V4.1-Flash",
@@ -422,7 +481,22 @@
         "identity probe passed (resp.model exact); no 12-case benchmark was produced",
         "blocked by account balance, not by model identity or code; never counted as verified"
       ],
-      "notes": "matrix record: siliconflow:deepseek-ai/DeepSeek-V4.1-Flash -> status=error, _ProviderHTTPError: provider returned HTTP 402"
+      "notes": "matrix record: siliconflow:deepseek-ai/DeepSeek-V4.1-Flash -> status=error, _ProviderHTTPError: provider returned HTTP 402",
+      "http": {
+        "status": 402,
+        "code": null,
+        "error_class": "_ProviderHTTPError"
+      },
+      "probe_log_path": "artifacts/multi-model-matrix-intl-2026-11-14/identity-probe/summary.json",
+      "probe_log_sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944",
+      "identity_layer": {
+        "requested_model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "served_model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "observed_model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "identity_ok": true,
+        "identity_verified": false,
+        "attribution": "none"
+      }
     },
     {
       "row_id": "siliconflow-intl/moonshotai/Kimi-K3.1-Pro",
@@ -485,7 +559,22 @@
         "identity probe passed (resp.model exact); no 12-case benchmark was produced",
         "blocked by account balance, not by model identity or code; never counted as verified"
       ],
-      "notes": "matrix record: siliconflow:moonshotai/Kimi-K3.1-Pro -> status=error, _ProviderHTTPError: provider returned HTTP 402"
+      "notes": "matrix record: siliconflow:moonshotai/Kimi-K3.1-Pro -> status=error, _ProviderHTTPError: provider returned HTTP 402",
+      "http": {
+        "status": 402,
+        "code": null,
+        "error_class": "_ProviderHTTPError"
+      },
+      "probe_log_path": "artifacts/multi-model-matrix-intl-2026-11-14/identity-probe/summary.json",
+      "probe_log_sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944",
+      "identity_layer": {
+        "requested_model": "moonshotai/Kimi-K3.1-Pro",
+        "served_model": "moonshotai/Kimi-K3.1-Pro",
+        "observed_model": "moonshotai/Kimi-K3.1-Pro",
+        "identity_ok": true,
+        "identity_verified": false,
+        "attribution": "none"
+      }
     },
     {
       "row_id": "siliconflow-cn/THUDM/GLM-Z1-9B-0414",
@@ -536,7 +625,18 @@
       "limitations": [
         "no benchmark evidence for this model; identity unknown, never counted"
       ],
-      "notes": "LIMITATIONS section 22; no fifth provider key is available"
+      "notes": "LIMITATIONS section 22; no fifth provider key is available",
+      "http": null,
+      "probe_log_path": "artifacts/multi-model-matrix-cn-2026-11-14/identity-probe/summary.json",
+      "probe_log_sha256": "65d7969f75620221bbea0059c662fa768f219601b76d461a9e0d22dbecd4be0a",
+      "identity_layer": {
+        "requested_model": "THUDM/GLM-Z1-9B-0414",
+        "served_model": null,
+        "observed_model": null,
+        "identity_ok": null,
+        "identity_verified": false,
+        "attribution": "none"
+      }
     },
     {
       "row_id": "deepseek-official/provider-matrix/deepseek-chat->deepseek-flash",
@@ -584,7 +684,18 @@
         "AI verified count is attributed to the served model only",
         "served-model aliasing is provider-side; recorded honestly, not excluded from evidence"
       ],
-      "notes": "requested deepseek-chat was served as deepseek-flash (provider aliasing)"
+      "notes": "requested deepseek-chat was served as deepseek-flash (provider aliasing)",
+      "http": null,
+      "probe_log_path": "artifacts/provider-matrix-2026-11-14/summary.json",
+      "probe_log_sha256": "0552c37d3c7a6b5ff45331e62d712a4809d4d60035325b730b4ddf42c9dd5ecb",
+      "identity_layer": {
+        "requested_model": "deepseek-chat",
+        "served_model": "deepseek-flash",
+        "observed_model": "deepseek-flash",
+        "identity_ok": false,
+        "identity_verified": false,
+        "attribution": "served_model"
+      }
     },
     {
       "row_id": "deepseek-official/probe/deepseek-chat",
@@ -628,7 +739,18 @@
       "limitations": [
         "probe record only; the strict identity check rejects this model for benchmark evidence"
       ],
-      "notes": "old single-model endpoint maps deepseek-chat to deepseek-flash (P5 model-shrinkage risk)"
+      "notes": "old single-model endpoint maps deepseek-chat to deepseek-flash (P5 model-shrinkage risk)",
+      "http": null,
+      "probe_log_path": "artifacts/multi-model-probe-2026-11-14/summary.json",
+      "probe_log_sha256": "e3302434065892602aed0ff889dbb2cf45747b44b4c3f9ad2d04aef4137e4097",
+      "identity_layer": {
+        "requested_model": "deepseek-chat",
+        "served_model": "deepseek-flash",
+        "observed_model": "deepseek-flash",
+        "identity_ok": false,
+        "identity_verified": false,
+        "attribution": "served_model"
+      }
     },
     {
       "row_id": "dashscope/qwen-plus",
@@ -663,7 +785,18 @@
       "limitations": [
         "referenced by docs only; no key, no probe, no benchmark evidence"
       ],
-      "notes": "explicit unavailable/no-artifact row: never a provider claim"
+      "notes": "explicit unavailable/no-artifact row: never a provider claim",
+      "http": null,
+      "probe_log_path": null,
+      "probe_log_sha256": null,
+      "identity_layer": {
+        "requested_model": "qwen-plus",
+        "served_model": null,
+        "observed_model": null,
+        "identity_ok": null,
+        "identity_verified": false,
+        "attribution": "none"
+      }
     }
   ],
   "statistics": {
@@ -1331,7 +1464,12 @@
       }
     ],
     "not_satisfied": [
-      "international 5-6 model matrix: 3 SiliconFlow international models passed identity probes but every benchmark call returned HTTP 402 insufficient balance; no fifth provider key is available; 4 models completed, not 5-6"
+      {
+        "id": "international_5_6_model_matrix",
+        "reason": "international 5-6 model matrix: 3 SiliconFlow international models passed identity probes but every benchmark call returned HTTP 402 insufficient balance; no fifth provider key is available; 4 models completed, not 5-6",
+        "evidence_path": "artifacts/provider-coverage-2026-11-14/intl-unavailable.json",
+        "evidence_sha256": "64353269fb8e3f1f502adb062b982c0908906038ece81fde831625ebb5e20d55"
+      }
     ],
     "blocked_reasons": [
       {
@@ -1419,6 +1557,19 @@
       }
     },
     "no_overclaim": true
+  },
+  "intl_unavailable": {
+    "path": "artifacts/provider-coverage-2026-11-14/intl-unavailable.json",
+    "sha256": "64353269fb8e3f1f502adb062b982c0908906038ece81fde831625ebb5e20d55",
+    "status": "blocked_unavailable",
+    "http_status": 402,
+    "error_class": "_ProviderHTTPError",
+    "models": [
+      "Qwen/Qwen3.8-27B",
+      "deepseek-ai/DeepSeek-V4.1-Flash",
+      "moonshotai/Kimi-K3.1-Pro"
+    ],
+    "evidence_note": "aggregate.not_satisfied items reference this file by path and SHA-256; it is derived from the SiliconFlow international identity-probe and benchmark-attempt artifacts"
   },
   "blocked_reasons": [
     {

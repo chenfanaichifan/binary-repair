@@ -5,8 +5,10 @@ which providers/models have real 12-case benchmark evidence, what the verified
 rate is (with 95% Wilson intervals), how the strict model-identity policy treats
 served-model mismatches, and which capabilities are blocked/unavailable.
 
-Machine-readable artifact: [`artifacts/provider-coverage-2026-11-14/summary.json`](../../artifacts/provider-coverage-2026-11-14/summary.json)
-(with `README.md` and `SHA256SUMS` next to it). The artifact is **reproducible**:
+Machine-readable artifact: [`artifacts/provider-coverage-2026-11-14/summary.json`](../../artifacts/provider-coverage-2026-11-14/summary.json),
+with `README.md`, `intl-unavailable.json` (SiliconFlow-international
+unavailability evidence) and a `SHA256SUMS` that covers all three files. The
+artifact is **reproducible**:
 [`scripts/build_provider_coverage.py`](../../scripts/build_provider_coverage.py)
 re-derives it deterministically from the committed source artifacts (no provider
 calls, no network, no git commands, no wall-clock timestamps). Every cited file
@@ -37,6 +39,39 @@ verified.
 | DeepSeek official | `deepseek-chat` | **mismatch** (served `deepseek-flash`) | served-model completed | 12 | 1 | 6/12 -> served model | `artifacts/provider-matrix-2026-11-14/` |
 | DeepSeek official | `deepseek-chat` | **mismatch** | probe only | 0 | 0 | not executed | `artifacts/multi-model-probe-2026-11-14/` |
 | DashScope/Bailian | `qwen-plus` | unknown | unavailable, no artifact | 0 | 0 | not executed | - |
+
+Every evidence row also carries two machine-readable layers:
+
+- `http`: `{"status", "code", "error_class"}` for a typed provider HTTP failure,
+  or `null` when the provider call did not fail with an HTTP status. The
+  provider-specific `code` stays `null` unless a machine-readable source field
+  records it (never parsed from prose).
+- `probe_log_path` / `probe_log_sha256`: the identity-probe or matrix record
+  that evidences the served model; `null` when no probe exists. The test suite
+  re-hashes the file.
+- `identity_layer`: `{requested_model, served_model, observed_model,
+  identity_ok, identity_verified, attribution}` with `attribution` in
+  `requested_model` / `served_model` / `none`. Served-model mismatches always
+  carry `attribution=served_model` and are never identity-verified.
+
+## International provider unavailability (`intl-unavailable.json`)
+
+[`artifacts/provider-coverage-2026-11-14/intl-unavailable.json`](../../artifacts/provider-coverage-2026-11-14/intl-unavailable.json)
+is derived from the committed SiliconFlow-international identity-probe,
+benchmark-attempt, aggregate and account-status artifacts, with every cited
+source file bound by SHA-256:
+
+- provider / status: `siliconflow-intl` / `blocked_unavailable`
+- `http_status: 402`, `error_class: "_ProviderHTTPError"`, reason:
+  `insufficient account balance on full benchmark calls`
+- identity probes passed for all 3 requested models (exact `resp.model`); no
+  benchmark case ran.
+- fields the sources do not record are explicitly unavailable with a reason:
+  `timestamp` (no `generated_at` in the intl artifacts) and
+  `provider_error_code` (the HTTP error body is prose only, not asserted).
+- `aggregate.not_satisfied` items each carry `evidence_path` and
+  `evidence_sha256` pointing at this file; the summary also exposes an
+  `intl_unavailable` block with the same path and hash.
 
 ## Model-identity policy
 
@@ -94,7 +129,9 @@ not a repair success.
 | cost / seed | unavailable (`available=false`, `value=null`) | - |
 
 `aggregate.not_satisfied` explicitly records the international 5-6 model matrix
-gap; it is not silently omitted.
+gap; each item carries `evidence_path` and `evidence_sha256` pointing at
+`artifacts/provider-coverage-2026-11-14/intl-unavailable.json`. It is not
+silently omitted.
 
 ### Reconciliation with the phase-4 brief
 
@@ -142,17 +179,20 @@ python -m pytest -q tests/test_provider_matrix.py tests/test_provider_coverage_a
 ```
 
 `--check` rebuilds the artifact in memory and compares `summary.json`,
-`README.md` and `SHA256SUMS` byte-for-byte with the committed artifact; it exits
-0 only on an exact match and never writes files. `generated_at` is deterministic:
-it is the latest `generated_at` recorded in a cited source artifact, not the
-build clock, so a fresh build stays byte-identical.
+`README.md`, `intl-unavailable.json` and `SHA256SUMS` byte-for-byte with the
+committed artifact, re-validating the SHA256SUMS coverage of all three data
+files; it exits 0 only on an exact match and never writes files. `generated_at`
+is deterministic: it is the latest `generated_at` recorded in a cited source
+artifact, not the build clock, so a fresh build stays byte-identical.
 
 `tests/test_provider_coverage_artifact.py` is offline (no network) and validates:
 the release-gate schema contract, the SHA-256 of every cited file, each source
-artifact's own `SHA256SUMS`, identity policy enforcement, Wilson interval math,
-re-derivation of every evidence value from the cited artifacts, the
-`not_satisfied`/blocked fields, builder determinism, and `--check` tamper
-detection.
+artifact's own `SHA256SUMS`, identity policy enforcement, the HTTP and
+three-model identity layers, Wilson interval math, re-derivation of every
+evidence value from the cited artifacts, the SHA-256-bound
+`intl-unavailable.json` evidence (including explicit unavailable fields),
+`--check` coverage of all three data files, builder determinism, and `--check`
+tamper detection.
 
 ## Limitations
 

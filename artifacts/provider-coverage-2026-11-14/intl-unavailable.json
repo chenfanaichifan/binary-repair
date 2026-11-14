@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "kind": "provider_unavailable_evidence",
+  "provider": "siliconflow-intl",
+  "provider_name": "siliconflow",
+  "endpoint": "https://api.siliconflow.com/v1",
+  "status": "blocked_unavailable",
+  "reason": "HTTP 402 insufficient balance",
+  "http_status": 402,
+  "http": {
+    "status": 402,
+    "code": null,
+    "error_class": "_ProviderHTTPError"
+  },
+  "error_class": "_ProviderHTTPError",
+  "requested_models": 5,
+  "completed_models": 2,
+  "identity_probe_status": "pass",
+  "models": [
+    {
+      "model": "Qwen/Qwen3.8-27B",
+      "endpoint": "https://api.siliconflow.com/v1",
+      "identity_probe_status": "ok",
+      "model_returned": "Qwen/Qwen3.8-27B",
+      "identity_ok": true,
+      "identity_probe_latency_ms": 1362,
+      "benchmark_status": "error",
+      "benchmark_error_class": "_ProviderHTTPError",
+      "benchmark_error_text": "_ProviderHTTPError: provider returned HTTP 402",
+      "http": {
+        "status": 402,
+        "code": null,
+        "error_class": "_ProviderHTTPError"
+      },
+      "not_executed_reason": "the identity probe passed with exact resp.model, but the full benchmark call was blocked before any of the 12 cases ran"
+    },
+    {
+      "model": "moonshotai/Kimi-K3.1-Pro",
+      "endpoint": "https://api.siliconflow.com/v1",
+      "identity_probe_status": "ok",
+      "model_returned": "moonshotai/Kimi-K3.1-Pro",
+      "identity_ok": true,
+      "identity_probe_latency_ms": 3240,
+      "benchmark_status": "error",
+      "benchmark_error_class": "_ProviderHTTPError",
+      "benchmark_error_text": "_ProviderHTTPError: provider returned HTTP 402",
+      "http": {
+        "status": 402,
+        "code": null,
+        "error_class": "_ProviderHTTPError"
+      },
+      "not_executed_reason": "the identity probe passed with exact resp.model, but the full benchmark call was blocked before any of the 12 cases ran"
+    },
+    {
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "endpoint": "https://api.siliconflow.com/v1",
+      "identity_probe_status": "ok",
+      "model_returned": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "identity_ok": true,
+      "identity_probe_latency_ms": 1673,
+      "benchmark_status": "error",
+      "benchmark_error_class": "_ProviderHTTPError",
+      "benchmark_error_text": "_ProviderHTTPError: provider returned HTTP 402",
+      "http": {
+        "status": 402,
+        "code": null,
+        "error_class": "_ProviderHTTPError"
+      },
+      "not_executed_reason": "the identity probe passed with exact resp.model, but the full benchmark call was blocked before any of the 12 cases ran"
+    }
+  ],
+  "evidence": {
+    "identity_probe": {
+      "path": "artifacts/multi-model-matrix-intl-2026-11-14/identity-probe/summary.json",
+      "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
+    },
+    "benchmark_attempt": {
+      "path": "artifacts/multi-model-matrix-intl-2026-11-14/summary.json",
+      "sha256": "11e0a1a2604a1fbb33e04eecf9c1cd7e0231261db63acc19567d8d710a499dc7"
+    },
+    "aggregate": {
+      "path": "artifacts/multi-model-matrix-intl-2026-11-14/aggregate.json",
+      "sha256": "9ef24f719c79271b3826e4ff3e574c9c40066a65443f922f6ae3431c2b5d26bc"
+    },
+    "intl_identity_probe": {
+      "path": "artifacts/siliconflow-intl-probe-2026-11-14/summary.json",
+      "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
+    },
+    "key_status_doc": {
+      "path": "artifacts/siliconflow-key-2026-11-14/README.md",
+      "sha256": "dc9c97f4e7e0461763687ad06f29eb5c79f2cb2cbaebb78b7fb68e8bae368b08"
+    },
+    "artifact_readme": {
+      "path": "artifacts/multi-model-matrix-intl-2026-11-14/README.md",
+      "sha256": "2dbdc493a163dbcf438ca4df157f8647bd569b9b78c28cd0c529d12c34b7e580"
+    }
+  },
+  "timestamp": {
+    "available": false,
+    "value": null,
+    "reason": "the SiliconFlow international source artifacts do not record a generated_at timestamp; not fabricated"
+  },
+  "provider_error_code": {
+    "available": false,
+    "value": null,
+    "reason": "the HTTP error body (provider code 30001, insufficient balance) is only described in prose in the source artifacts; no machine-readable field records it, so it is not asserted here"
+  },
+  "unavailable_fields": [
+    "timestamp",
+    "provider_error_code"
+  ],
+  "limitations": [
+    "no benchmark case ran for these models; this file is unavailability evidence, never a benchmark result",
+    "identity probes passed before the benchmark calls were blocked by the account balance; identity is recorded, capability is not claimed"
+  ],
+  "notes": [
+    "blocked by account balance, not by model identity or code",
+    "this file is referenced by aggregate.not_satisfied with its SHA-256"
+  ]
+}

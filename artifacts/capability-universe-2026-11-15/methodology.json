@@ -1,0 +1,647 @@
+{
+  "check": {
+    "cell_count": 240,
+    "missing_registry_entries": [],
+    "ok": true,
+    "status_counts": {
+      "non_goal": 129,
+      "supported": 87,
+      "unavailable": 24
+    },
+    "unexplained_cell_count": 0,
+    "unexplained_cells": [],
+    "unknown": 0
+  },
+  "generated_by": "scripts/check_universe_methodology.py",
+  "methodology": {
+    "dimensions": {
+      "arch": {
+        "allowed": [
+          "(all)",
+          "arm64",
+          "i386",
+          "x86_64"
+        ],
+        "counts": {
+          "(all)": 1,
+          "arm64": 63,
+          "i386": 28,
+          "x86_64": 148
+        },
+        "values": [
+          "(all)",
+          "arm64",
+          "i386",
+          "x86_64"
+        ]
+      },
+      "bits": {
+        "allowed": [
+          "(all)",
+          "32",
+          "64"
+        ],
+        "counts": {
+          "(all)": 1,
+          "32": 28,
+          "64": 211
+        },
+        "values": [
+          "(all)",
+          "32",
+          "64"
+        ]
+      },
+      "container": {
+        "allowed": [
+          "(all)",
+          "elf",
+          "macho",
+          "pe"
+        ],
+        "counts": {
+          "(all)": 1,
+          "elf": 117,
+          "macho": 54,
+          "pe": 68
+        },
+        "values": [
+          "(all)",
+          "elf",
+          "macho",
+          "pe"
+        ]
+      },
+      "destination_kind": {
+        "allowed": [
+          "(all)",
+          "(any)",
+          "global",
+          "heap",
+          "stack"
+        ],
+        "counts": {
+          "(any)": 1,
+          "global": 54,
+          "heap": 16,
+          "stack": 169
+        },
+        "values": [
+          "(any)",
+          "global",
+          "heap",
+          "stack"
+        ]
+      },
+      "endian": {
+        "allowed": [
+          "(all)",
+          "little"
+        ],
+        "counts": {
+          "(all)": 1,
+          "little": 239
+        },
+        "values": [
+          "(all)",
+          "little"
+        ]
+      },
+      "evidence_profile": {
+        "allowed": [
+          "(all)",
+          "(any)",
+          "emulated_instruction",
+          "native_poc",
+          "native_poc_rewrite",
+          "strict_template"
+        ],
+        "counts": {
+          "(any)": 1,
+          "emulated_instruction": 145,
+          "native_poc": 74,
+          "native_poc_rewrite": 10,
+          "strict_template": 10
+        },
+        "values": [
+          "(any)",
+          "emulated_instruction",
+          "native_poc",
+          "native_poc_rewrite",
+          "strict_template"
+        ]
+      },
+      "proof_scope": {
+        "allowed": [
+          "(all)",
+          "(any)",
+          "function_level",
+          "target_scoped",
+          "whole_image",
+          "whole_program"
+        ],
+        "counts": {
+          "function_level": 74,
+          "target_scoped": 64,
+          "whole_image": 64,
+          "whole_program": 38
+        },
+        "values": [
+          "function_level",
+          "target_scoped",
+          "whole_image",
+          "whole_program"
+        ]
+      },
+      "provider": {
+        "allowed": [
+          "(all)",
+          "(any)",
+          "ai",
+          "deterministic"
+        ],
+        "counts": {
+          "ai": 37,
+          "deterministic": 203
+        },
+        "values": [
+          "ai",
+          "deterministic"
+        ]
+      },
+      "runtime_tier": {
+        "allowed": [
+          "(all)",
+          "(any)",
+          "emulated_run",
+          "native_run",
+          "unavailable"
+        ],
+        "counts": {
+          "(any)": 1,
+          "emulated_run": 138,
+          "native_run": 101
+        },
+        "values": [
+          "(any)",
+          "emulated_run",
+          "native_run"
+        ]
+      },
+      "sink_class": {
+        "allowed": [
+          "(all)",
+          "(any)",
+          "(legacy_whole_image)",
+          "(none)",
+          "(whole_image_legacy)",
+          "capacity_check_mismatch",
+          "checked_copy",
+          "memcpy_length",
+          "syscall_length",
+          "unbounded_copy"
+        ],
+        "counts": {
+          "(any)": 1,
+          "(legacy_whole_image)": 12,
+          "capacity_check_mismatch": 12,
+          "checked_copy": 47,
+          "memcpy_length": 61,
+          "syscall_length": 26,
+          "unbounded_copy": 81
+        },
+        "values": [
+          "(any)",
+          "(legacy_whole_image)",
+          "capacity_check_mismatch",
+          "checked_copy",
+          "memcpy_length",
+          "syscall_length",
+          "unbounded_copy"
+        ]
+      },
+      "strategy": {
+        "allowed": [
+          "(all)",
+          "(any)",
+          "(legacy_whole_image)",
+          "(none)",
+          "capacity",
+          "guard",
+          "immediate",
+          "strict-template"
+        ],
+        "counts": {
+          "(any)": 1,
+          "capacity": 12,
+          "guard": 81,
+          "immediate": 134,
+          "strict-template": 12
+        },
+        "values": [
+          "(any)",
+          "capacity",
+          "guard",
+          "immediate",
+          "strict-template"
+        ]
+      }
+    },
+    "host": "static-audit (no probes; deterministic)",
+    "unknown_rules": [
+      {
+        "id": "unknown.status_semantics",
+        "rule": "A universe cell is status=unknown only when the registry has no mapping for it; release requires unknown==0 and the gate fails otherwise.  Unexplained (unregistered) cells are reported separately and also fail the methodology check."
+      },
+      {
+        "id": "unknown.registry_authority",
+        "rule": "The registry (REPAIR_CELLS/SINK_CLASSES/STRATEGY_PROFILES/EVIDENCE_PROFILES/UNIVERSE_*) is the only allowed source of dimension values; synthetic sentinels are documented structural markers, not capabilities."
+      },
+      {
+        "id": "unknown.denominator",
+        "rule": "cell_count, unknown and the status counts are recomputed from the cells; the document's own summary is never trusted on its own."
+      },
+      {
+        "id": "unknown.reverse_coverage",
+        "rule": "Every registry entry must appear at least once, otherwise a declared capability would be invisible to the universe (missing_registry_entries)."
+      }
+    ]
+  },
+  "registry": {
+    "repair_matrix": {
+      "cells": [
+        {
+          "arch": "i386",
+          "bits": 32,
+          "container": "elf",
+          "endian": "little",
+          "runtime_tiers": [
+            "emulated_run"
+          ],
+          "sink_classes": [
+            "memcpy_length",
+            "unbounded_copy"
+          ],
+          "strategies": [
+            "immediate",
+            "guard"
+          ]
+        },
+        {
+          "arch": "x86_64",
+          "bits": 64,
+          "container": "elf",
+          "endian": "little",
+          "runtime_tiers": [
+            "native_run",
+            "emulated_run"
+          ],
+          "sink_classes": [
+            "checked_copy",
+            "memcpy_length",
+            "syscall_length",
+            "unbounded_copy",
+            "capacity_check_mismatch"
+          ],
+          "strategies": [
+            "strict-template",
+            "immediate",
+            "guard",
+            "capacity"
+          ]
+        },
+        {
+          "arch": "arm64",
+          "bits": 64,
+          "container": "elf",
+          "endian": "little",
+          "runtime_tiers": [
+            "emulated_run"
+          ],
+          "sink_classes": [
+            "checked_copy",
+            "memcpy_length",
+            "unbounded_copy"
+          ],
+          "strategies": [
+            "immediate",
+            "guard"
+          ]
+        },
+        {
+          "arch": "i386",
+          "bits": 32,
+          "container": "pe",
+          "endian": "little",
+          "runtime_tiers": [
+            "emulated_run"
+          ],
+          "sink_classes": [
+            "memcpy_length",
+            "unbounded_copy"
+          ],
+          "strategies": [
+            "immediate",
+            "guard"
+          ]
+        },
+        {
+          "arch": "x86_64",
+          "bits": 64,
+          "container": "pe",
+          "endian": "little",
+          "runtime_tiers": [
+            "emulated_run"
+          ],
+          "sink_classes": [
+            "checked_copy",
+            "memcpy_length",
+            "syscall_length",
+            "unbounded_copy"
+          ],
+          "strategies": [
+            "immediate",
+            "guard"
+          ]
+        },
+        {
+          "arch": "arm64",
+          "bits": 64,
+          "container": "pe",
+          "endian": "little",
+          "runtime_tiers": [
+            "emulated_run"
+          ],
+          "sink_classes": [
+            "checked_copy",
+            "memcpy_length",
+            "unbounded_copy"
+          ],
+          "strategies": [
+            "immediate",
+            "guard"
+          ]
+        },
+        {
+          "arch": "x86_64",
+          "bits": 64,
+          "container": "macho",
+          "endian": "little",
+          "runtime_tiers": [
+            "native_run"
+          ],
+          "sink_classes": [
+            "checked_copy",
+            "memcpy_length",
+            "syscall_length",
+            "unbounded_copy"
+          ],
+          "strategies": [
+            "immediate",
+            "guard"
+          ]
+        },
+        {
+          "arch": "arm64",
+          "bits": 64,
+          "container": "macho",
+          "endian": "little",
+          "runtime_tiers": [
+            "native_run"
+          ],
+          "sink_classes": [
+            "checked_copy",
+            "memcpy_length",
+            "unbounded_copy"
+          ],
+          "strategies": [
+            "immediate",
+            "guard"
+          ]
+        }
+      ],
+      "evidence_profiles": {
+        "emulated_instruction": {
+          "description": "Unicorn instruction/function emulation of the repaired function for stack-bound copy sinks.  The emulated oracle only models in-bounds cases that exit 0: guard/reject semantics (a candidate exit status of 1 on an over-limit input) cannot be represented, so non-stack destinations must never reuse this oracle.",
+          "evidence_sources": [
+            "runtime"
+          ],
+          "legacy_required_checks": [
+            "format",
+            "candidate.present",
+            "candidate.identity.original",
+            "candidate.identity.patched",
+            "patch.scope",
+            "runtime.available",
+            "runtime.cases",
+            "runtime.no_overflow"
+          ],
+          "required_checks": [
+            "format",
+            "candidate.present",
+            "candidate.identity.original",
+            "candidate.identity.patched",
+            "container.reparse",
+            "repair.action",
+            "runtime.evidence",
+            "runtime.tier",
+            "runtime.contract"
+          ]
+        },
+        "native_poc": {
+          "description": "External PoC/regression differential executed natively or in a guest runtime.  This is the declared evidence model for non-stack (heap/global) destinations and for hosts without an instruction-level runtime; no fabricated runtime evidence is allowed when the runner is unavailable.",
+          "evidence_sources": [
+            "external_poc"
+          ],
+          "legacy_required_checks": [],
+          "required_checks": [
+            "format",
+            "candidate.present",
+            "candidate.identity.original",
+            "candidate.identity.patched",
+            "container.reparse",
+            "repair.action",
+            "runtime.evidence",
+            "runtime.tier",
+            "runtime.contract",
+            "poc.native.available",
+            "poc.native.original_failure",
+            "poc.native.candidate_pass",
+            "poc.native.regression",
+            "poc.native.stdout_signature"
+          ]
+        },
+        "native_poc_rewrite": {
+          "description": "External PoC/regression differential plus byte-re-derived in-place rewrite actions (reviewed duplicated-capacity-check rewrite); every rewrite action is re-derived from the original and candidate bytes by the gate.",
+          "evidence_sources": [
+            "external_poc",
+            "rewrite_actions"
+          ],
+          "legacy_required_checks": [],
+          "required_checks": [
+            "format",
+            "candidate.present",
+            "candidate.identity.original",
+            "candidate.identity.patched",
+            "container.reparse",
+            "repair.action",
+            "runtime.evidence",
+            "runtime.tier",
+            "runtime.contract",
+            "poc.native.available",
+            "poc.native.original_failure",
+            "poc.native.candidate_pass",
+            "poc.native.regression",
+            "poc.native.stdout_signature",
+            "patch.rewrite"
+          ]
+        },
+        "strict_template": {
+          "description": "Legacy ELF x86-64 repair against the reviewed strict template, verified by the template identity plus Unicorn stack-copy cases.",
+          "evidence_sources": [
+            "runtime"
+          ],
+          "legacy_required_checks": [
+            "format",
+            "candidate.present",
+            "candidate.identity.original",
+            "candidate.identity.patched",
+            "patch.scope",
+            "runtime.available",
+            "runtime.cases",
+            "runtime.no_overflow",
+            "runtime.boundary_semantics",
+            "strict.reviewed_template"
+          ],
+          "required_checks": [
+            "format",
+            "candidate.present",
+            "candidate.identity.original",
+            "candidate.identity.patched",
+            "container.reparse",
+            "repair.action",
+            "runtime.evidence",
+            "runtime.tier",
+            "runtime.contract"
+          ]
+        }
+      },
+      "sink_classes": {
+        "capacity_check_mismatch": {
+          "description": "inlined duplicated destination range check whose minority copy tests the input size instead of the output capacity",
+          "strategy": "capacity"
+        },
+        "checked_copy": {
+          "description": "constant length operand of a checked copy helper",
+          "strategy": "immediate"
+        },
+        "memcpy_length": {
+          "description": "constant length operand passed to memcpy/memmove",
+          "strategy": "immediate"
+        },
+        "syscall_length": {
+          "description": "constant length operand of a direct read/write syscall",
+          "strategy": "immediate"
+        },
+        "unbounded_copy": {
+          "description": "strcpy/strcat/stpcpy into a analysed destination",
+          "strategy": "guard"
+        }
+      },
+      "strategy_profiles": {
+        "capacity": "native_poc_rewrite",
+        "guard": "emulated_instruction",
+        "immediate": "emulated_instruction",
+        "strict-template": "strict_template"
+      }
+    },
+    "schema_version": 1,
+    "universe_taxonomy": {
+      "destination_kinds": [
+        "stack",
+        "heap",
+        "global"
+      ],
+      "dimensions": [
+        "container",
+        "arch",
+        "bits",
+        "endian",
+        "strategy",
+        "sink_class",
+        "destination_kind",
+        "evidence_profile",
+        "runtime_tier",
+        "provider",
+        "proof_scope"
+      ],
+      "proof_scopes": [
+        "target_scoped",
+        "whole_image",
+        "function_level",
+        "whole_program"
+      ],
+      "providers": [
+        "deterministic",
+        "ai"
+      ],
+      "sentinels": {
+        "arch": [
+          "(all)"
+        ],
+        "bits": [
+          "(all)"
+        ],
+        "container": [
+          "(all)"
+        ],
+        "destination_kind": [
+          "(all)",
+          "(any)"
+        ],
+        "endian": [
+          "(all)"
+        ],
+        "evidence_profile": [
+          "(all)",
+          "(any)"
+        ],
+        "proof_scope": [
+          "(all)",
+          "(any)"
+        ],
+        "provider": [
+          "(all)",
+          "(any)"
+        ],
+        "runtime_tier": [
+          "(all)",
+          "(any)",
+          "unavailable"
+        ],
+        "sink_class": [
+          "(all)",
+          "(any)",
+          "(none)",
+          "(legacy_whole_image)",
+          "(whole_image_legacy)"
+        ],
+        "strategy": [
+          "(all)",
+          "(any)",
+          "(none)",
+          "(legacy_whole_image)"
+        ]
+      },
+      "statuses": [
+        "verified",
+        "supported",
+        "non_goal",
+        "unavailable",
+        "unknown"
+      ]
+    }
+  },
+  "registry_sha256": "d17d3eddf68fe07693a7f7ff7349514429d47184415e2835c924f29f4628bcb3",
+  "schema_version": 1
+}

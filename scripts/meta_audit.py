@@ -14,7 +14,10 @@ inconclusive packet, and a fabricated capability (supported cell on an
 unmeasured runtime tier without a reason), release evidence with a
 ``frozen_sha``/``release_sha`` mismatch or contradictory checks, release
 evidence missing audit-artifact/Lima provenance, and a local gate result claimed
-as CI evidence (a local run cannot satisfy a required hosted-CI slot).
+as CI evidence (a local run cannot satisfy a required hosted-CI slot),
+unregistered universe sink/strategy/platform values (methodology must flag
+them), missing/misclaimed CI evidence v2, incomplete evidence provenance and
+evidence branch drift.
 
 * **precision scenarios** inject fabricated gap records into a synthetic audit
   document and require the coverage regression gate to reject them, and mutate
@@ -43,7 +46,7 @@ for entry in (ROOT, ROOT / "scripts"):
 
 MIN_RECALL = 0.8
 MIN_PRECISION = 1.0
-MIN_SCENARIOS = 18
+MIN_SCENARIOS = 22
 
 
 def _import_audit() -> Any:
@@ -594,6 +597,172 @@ def _recall_local_gate_claimed_as_ci() -> dict[str, Any]:
     )
 
 
+def _tampered_universe(live_audit: dict[str, Any],
+                       **overrides: object) -> dict[str, Any]:
+    mutated = copy.deepcopy(live_audit)
+    universe = _as_dict(mutated.get("universe"))
+    cells = copy.deepcopy(_as_list(universe.get("cells")))
+    target = next((cell for cell in cells
+                   if _as_dict(cell).get("status") == "supported"), None)
+    if target is None:
+        target = cells[0]
+    target.update(overrides)
+    universe["cells"] = cells
+    mutated["universe"] = universe
+    return mutated
+
+
+def _recall_unregistered_sink(live_audit: dict[str, Any]) -> dict[str, Any]:
+    from verify_coverage_gate import check_universe_methodology
+
+    mutated = _tampered_universe(live_audit,
+                                 sink_class="audit_unregistered_sink")
+    result = check_universe_methodology(mutated)
+    detected = bool(
+        result.get("ok") is False
+        and any("unregistered sink_class" in item
+                for item in result.get("unexplained_cells", []))
+    )
+    return _scenario(
+        "unregistered_sink_detected_by_methodology", "recall", True, detected,
+        "a universe cell sink_class outside SINK_CLASSES is reported as "
+        "unexplained by the methodology checker",
+    )
+
+
+def _recall_unregistered_strategy(live_audit: dict[str, Any]) -> dict[str, Any]:
+    from verify_coverage_gate import check_universe_methodology
+
+    mutated = _tampered_universe(live_audit,
+                                 strategy="audit_unregistered_strategy")
+    result = check_universe_methodology(mutated)
+    detected = bool(
+        result.get("ok") is False
+        and any("unregistered strategy" in item
+                for item in result.get("unexplained_cells", []))
+    )
+    return _scenario(
+        "unregistered_strategy_detected_by_methodology", "recall", True,
+        detected,
+        "a universe cell strategy outside STRATEGY_PROFILES/cells is reported "
+        "as unexplained",
+    )
+
+
+def _recall_unregistered_platform(live_audit: dict[str, Any]) -> dict[str, Any]:
+    from verify_coverage_gate import check_universe_methodology
+
+    detected_all = True
+    details = []
+    for field, value in (("container", "plan9"), ("arch", "riscv")):
+        mutated = _tampered_universe(live_audit, **{field: value})
+        result = check_universe_methodology(mutated)
+        ok = bool(
+            result.get("ok") is False
+            and any(f"unregistered {field}" in item
+                    for item in result.get("unexplained_cells", []))
+        )
+        detected_all = detected_all and ok
+        details.append(f"{field}={value}:{'detected' if ok else 'missed'}")
+    return _scenario(
+        "unregistered_platform_detected_by_methodology", "recall", True,
+        detected_all,
+        "universe cells with an unregistered container/arch are reported as "
+        f"unexplained ({', '.join(details)})",
+    )
+
+
+def _recall_ci_evidence_missing_or_misclaimed() -> dict[str, Any]:
+    from verify_coverage_gate import check_release_claims
+
+    missing = check_release_claims({})
+    misclaimed = check_release_claims({
+        "release_sha": "abcd1234",
+        "ci_evidence": {
+            "hosted_ci": {
+                "run_id": 1,
+                "head_sha": "a" * 40,
+                "gated_sha": "b" * 40,
+                "run_url": "https://github.com/x/y/actions/runs/1",
+                "conclusion": "success",
+            },
+            "local_gate": {"used_as_ci": True},
+        },
+    })
+    detected = bool(
+        missing.get("ok") is False
+        and any("ci_evidence" in item for item in missing["mismatches"])
+        and misclaimed.get("ok") is False
+        and any("local_gate" in item for item in misclaimed["mismatches"])
+        and any("head_sha" in item for item in misclaimed["mismatches"])
+    )
+    return _scenario(
+        "ci_evidence_missing_or_misclaimed", "recall", True, detected,
+        "missing ci_evidence v2 and local-gate/head-sha misclaims are rejected",
+    )
+
+
+def _provenance_complete_evidence(**overrides: object) -> dict[str, Any]:
+    evidence = {
+        "mode": "release",
+        "ok": True,
+        "release_sha": "a" * 40,
+        "frozen_sha": "a" * 40,
+        "violations": [],
+        "checks": [{"id": "targeted-pytest", "status": "passed",
+                    "required": True}],
+        "provenance": {
+            "artifact_sha256": "cd" * 32,
+            "lima_identity": "runner=lima:limactl tier=emulated_run",
+        },
+    }
+    evidence.update(overrides)
+    return evidence
+
+
+def _recall_provenance_incomplete() -> dict[str, Any]:
+    from verify_coverage_gate import check_release_evidence
+
+    evidence = _provenance_complete_evidence()
+    evidence["provenance"] = {"artifact_sha256": "cd" * 32}
+    partial = check_release_evidence(evidence)
+    complete = check_release_evidence(_provenance_complete_evidence())
+    detected = bool(
+        partial.get("ok") is False
+        and any("incomplete" in item for item in partial["mismatches"])
+        and complete.get("ok") is True
+    )
+    return _scenario(
+        "provenance_incomplete", "recall", True, detected,
+        "release evidence with only one half of artifact-digest/Lima provenance "
+        "is rejected as incomplete; complete provenance passes",
+    )
+
+
+def _recall_evidence_branch_drift() -> dict[str, Any]:
+    from verify_coverage_gate import check_release_evidence
+
+    evidence = _provenance_complete_evidence(branch="workbench-v3")
+    evidence["provenance"] = {
+        "artifact_sha256": "cd" * 32,
+        "lima_identity": "runner=lima:limactl tier=emulated_run",
+        "branch": "stale-release-branch",
+    }
+    drifted = check_release_evidence(evidence)
+    evidence["provenance"]["branch"] = "workbench-v3"
+    consistent = check_release_evidence(evidence)
+    detected = bool(
+        drifted.get("ok") is False
+        and any("branch drift" in item for item in drifted["mismatches"])
+        and consistent.get("ok") is True
+    )
+    return _scenario(
+        "evidence_branch_drift", "recall", True, detected,
+        "evidence payload branch != provenance branch is rejected as branch "
+        "drift; matching branches pass",
+    )
+
+
 def run_meta_audit(*, include_probes: bool = False,
                    live_audit: dict[str, Any] | None = None) -> dict[str, Any]:
     """Run the meta-audit and return the deterministic report dict."""
@@ -614,6 +783,12 @@ def run_meta_audit(*, include_probes: bool = False,
     scenarios.append(_recall_release_evidence_mismatch())
     scenarios.append(_recall_evidence_provenance_missing())
     scenarios.append(_recall_local_gate_claimed_as_ci())
+    scenarios.append(_recall_unregistered_sink(live_audit))
+    scenarios.append(_recall_unregistered_strategy(live_audit))
+    scenarios.append(_recall_unregistered_platform(live_audit))
+    scenarios.append(_recall_ci_evidence_missing_or_misclaimed())
+    scenarios.append(_recall_provenance_incomplete())
+    scenarios.append(_recall_evidence_branch_drift())
     scenarios.extend(_manifest_route_scenarios(audit_module))
     scenarios.extend(_gate_fake_gap_scenarios(audit_module, ctx))
     scenarios.append(_precision_benign_mutations(audit_module, ctx))

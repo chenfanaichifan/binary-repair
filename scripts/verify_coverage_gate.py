@@ -47,7 +47,19 @@ Assertions (any violation exits non-zero and prints a summary):
    claims/audit non-goal ids exactly (12/12). Exposed as ``roadmap_sync``; an
    id mismatch is always a violation, a missing roadmap document is tolerated
    explicitly in static mode and required in ``--local``/release mode.
-11. evidence honesty helpers used by the meta-audit:
+12. release claims / CI evidence schema v2 (``release_claims_sync``): the
+   claims ``ci_evidence`` block must use hosted_ci / self_hosted_nightly /
+   local_gate kinds; hosted CI requires a successful run whose head_sha equals
+   gated_sha or a valid docs-only-delta path allow-list, may never masquerade
+   an older SHA as the release SHA, and must agree with
+   ``latest_verified_ci``; a not_run self-hosted nightly requires a non-empty
+   signoff file; a local gate result cannot satisfy the CI evidence slot.
+   Required in ``--local``/release mode, tolerated-explicitly in static mode.
+13. universe methodology (``universe_methodology``): the live universe must be
+   derived from the canonical registry (11 dimensions registered, reverse
+   registry coverage complete, no unexplained cells, unknown==0). Required in
+   ``--local``/release mode, tolerated-explicitly in static mode.
+14. evidence honesty helpers used by the meta-audit:
    ``check_release_evidence`` rejects release evidence whose
    ``frozen_sha != release_sha`` or whose recorded checks contradict its
    ``ok``/status counts, and requires audit-artifact + Lima provenance for
@@ -113,6 +125,13 @@ REQUIRED_CLAIM_NON_GOAL_KEYS = (
 REVIEW_BY_MAX = _datetime.date(2027, 5, 14)
 GAP_STATUSES = ("open", "dynamic_unverified", "mitigated", "closed", "non_goal")
 UNIVERSE_STATUSES = ("verified", "supported", "non_goal", "unavailable", "unknown")
+#: CI evidence schema v2 kinds and the docs-only-delta path allow-list.
+CI_EVIDENCE_KINDS = ("hosted_ci", "self_hosted_nightly", "local_gate")
+DOCS_ONLY_PATH_PREFIXES = (
+    "docs/", "README", "CHANGELOG", "DELIVERY", "CITATION", "SECURITY",
+    "CONTRIBUTING", "CODE_OF_CONDUCT", "SHARE-WECHAT", "START-HERE",
+)
+SELF_HOSTED_NOT_RUN_STATUSES = ("not_run", "skipped", "pending", "unavailable")
 
 
 def _as_dict(value: Any) -> dict[str, Any]:
@@ -545,6 +564,232 @@ def parse_roadmap_ids(text: str) -> list[str]:
     return sorted(ids)
 
 
+def check_universe_methodology(live_audit: dict[str, Any] | None) -> dict[str, Any]:
+    """Validate the universe against the canonical registry methodology."""
+    try:
+        scripts_dir = str(Path(__file__).resolve().parent)
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        import check_universe_methodology as methodology
+    except Exception as exc:  # noqa: BLE001 - surfaced as an honest failure
+        return {
+            "ok": False,
+            "registry_sha256": "",
+            "cell_count": 0,
+            "unknown": -1,
+            "mismatches": [
+                f"universe methodology checker unavailable: "
+                f"{type(exc).__name__}: {exc}"],
+            "missing_registry_entries": [],
+            "unexplained_cells": [],
+        }
+    universe = _as_dict(_as_dict(live_audit).get("universe"))
+    try:
+        report = methodology.evaluate_methodology(universe=universe)
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "ok": False,
+            "registry_sha256": "",
+            "cell_count": 0,
+            "unknown": -1,
+            "mismatches": [
+                f"universe methodology check failed: {type(exc).__name__}: {exc}"],
+            "missing_registry_entries": [],
+            "unexplained_cells": [],
+        }
+    mismatches = []
+    if report.get("unexplained_cells"):
+        mismatches.append(
+            "universe has unexplained (unregistered) cells: "
+            f"{report.get('unexplained_cells', [])[:4]}")
+    if report.get("missing_registry_entries"):
+        mismatches.append(
+            "universe is missing registry entries: "
+            f"{report.get('missing_registry_entries', [])[:6]}")
+    if int(report.get("unknown", 0) or 0) != 0:
+        mismatches.append(
+            f"universe unknown count is {report.get('unknown')}, not 0")
+    return {
+        "ok": bool(report.get("ok")) and not mismatches,
+        "registry_sha256": str(report.get("registry_sha256", "")),
+        "cell_count": int(report.get("cell_count", 0) or 0),
+        "unknown": int(report.get("unknown", -1)),
+        "missing_registry_entries": list(
+            report.get("missing_registry_entries", [])),
+        "unexplained_cells": list(report.get("unexplained_cells", [])),
+        "unexplained_cell_count": int(
+            report.get("unexplained_cell_count", 0) or 0),
+        "mismatches": mismatches,
+    }
+
+
+def _docs_only_delta_valid(hosted: dict[str, Any],
+                           head_sha: str,
+                           gated_sha: str) -> tuple[bool, str]:
+    delta = _as_dict(hosted.get("docs_only_delta"))
+    if not delta:
+        return False, "no docs_only_delta recorded"
+    paths = [str(item) for item in _as_list(delta.get("paths"))]
+    delta_from = str(delta.get("from_sha") or delta.get("gated_sha") or "")
+    delta_to = str(delta.get("to_sha") or delta.get("head_sha") or "")
+    if not paths:
+        return False, "docs_only_delta has no paths"
+    if delta_from and delta_from != gated_sha:
+        return False, (
+            f"docs_only_delta.from_sha={delta_from} != gated_sha={gated_sha}")
+    if delta_to and delta_to != head_sha:
+        return False, (
+            f"docs_only_delta.to_sha={delta_to} != head_sha={head_sha}")
+    offenders = [
+        path for path in paths
+        if not any(path == prefix or path.startswith(prefix)
+                   for prefix in DOCS_ONLY_PATH_PREFIXES)]
+    if offenders:
+        return False, f"docs_only_delta contains non-docs paths: {offenders[:5]}"
+    return True, ""
+
+
+def check_release_claims(claims: dict[str, Any] | None,
+                         root: Path = ROOT) -> dict[str, Any]:
+    """Validate claims.json CI evidence schema v2 for release honesty."""
+    if not isinstance(claims, dict):
+        return {"ok": False, "mismatches": ["claims.json is missing"],
+                "ci_evidence_present": False}
+    ci = claims.get("ci_evidence")
+    result: dict[str, Any] = {
+        "ok": False,
+        "ci_evidence_present": isinstance(ci, dict),
+        "mismatches": [],
+    }
+    mismatches: list[str] = list(result["mismatches"])
+    if not isinstance(ci, dict):
+        import os
+
+        if os.environ.get("BINARYREPAIR_CI_EVIDENCE_BOOTSTRAP") == "1":
+            # First hosted CI release-gate run: the run ID cannot be recorded
+            # in the same commit that produces it.  Record an explicit
+            # bootstrap state so the run is possible, and require a follow-up
+            # commit (recorded in evidence docs) to write the concrete run ID.
+            result["ok"] = True
+            result["bootstrap"] = True
+            result["mismatches"] = []
+            result["note"] = (
+                "ci_evidence v2 absent: first hosted release-gate bootstrap "
+                "run; a follow-up commit must record the concrete hosted run")
+            return result
+        mismatches.append(
+            "claims.json has no 'ci_evidence' schema-v2 block "
+            "(hosted_ci/self_hosted_nightly/local_gate)")
+        result["ok"] = False
+        result["mismatches"] = mismatches
+        return result
+    hosted = _as_dict(ci.get("hosted_ci"))
+    self_hosted = _as_dict(ci.get("self_hosted_nightly"))
+    local_gate = _as_dict(ci.get("local_gate"))
+    result["hosted_ci"] = hosted
+    result["self_hosted_nightly"] = self_hosted
+    result["local_gate"] = local_gate
+    if not hosted and not self_hosted:
+        mismatches.append(
+            "ci_evidence has neither hosted_ci nor self_hosted_nightly "
+            "evidence; a local gate run cannot satisfy CI evidence")
+    if hosted:
+        for field in ("run_id", "head_sha", "gated_sha", "run_url",
+                      "conclusion"):
+            if not str(hosted.get(field, "") or "").strip():
+                mismatches.append(
+                    f"hosted_ci missing required field {field!r}")
+        head_sha = str(hosted.get("head_sha", "") or "")
+        gated_sha = str(hosted.get("gated_sha", "") or "")
+        if str(hosted.get("conclusion", "")).lower() not in {"success",
+                                                             "passed"}:
+            mismatches.append(
+                "hosted_ci conclusion is not success: "
+                f"{hosted.get('conclusion')!r}")
+        docs_delta_ok = False
+        if head_sha and gated_sha and head_sha != gated_sha:
+            docs_delta_ok, delta_reason = _docs_only_delta_valid(
+                hosted, head_sha, gated_sha)
+            if not docs_delta_ok:
+                mismatches.append(
+                    "hosted_ci head_sha != gated_sha and docs-only delta is "
+                    f"invalid: {delta_reason}")
+        claimed_shas = [
+            str(claims.get(key, "") or "") for key in
+            ("release_sha", "frozen_sha", "gated_sha")
+            if str(claims.get(key, "") or "").strip()
+        ]
+        if (claimed_shas and head_sha and head_sha not in claimed_shas
+                and not docs_delta_ok):
+            mismatches.append(
+                "historical SHA masquerade: hosted_ci.head_sha "
+                f"{head_sha} is not the claimed release/frozen/gated SHA "
+                f"{claimed_shas}")
+        latest = _as_dict(claims.get("latest_verified_ci"))
+        if latest:
+            latest_run = str(latest.get("run_id", "") or "")
+            latest_head = str(latest.get("head_sha", "") or "")
+            if latest_run and str(hosted.get("run_id", "")) != latest_run:
+                mismatches.append(
+                    "latest_verified_ci.run_id differs from hosted_ci.run_id")
+            if latest_head and head_sha and latest_head != head_sha:
+                mismatches.append(
+                    "latest_verified_ci.head_sha differs from hosted_ci.head_sha")
+    if self_hosted:
+        status = str(self_hosted.get("status", "") or "").lower()
+        if status in SELF_HOSTED_NOT_RUN_STATUSES:
+            signoff = (self_hosted.get("signoff")
+                       or claims.get("self_hosted_signoff"))
+            if not signoff:
+                mismatches.append(
+                    "self_hosted_nightly is not_run without a signoff file")
+            elif isinstance(signoff, str):
+                signoff_path = Path(signoff)
+                if not signoff_path.is_absolute():
+                    signoff_path = Path(root) / signoff_path
+                if not signoff_path.is_file():
+                    mismatches.append(
+                        "self_hosted_nightly signoff file is missing: "
+                        f"{signoff}")
+                else:
+                    try:
+                        if not signoff_path.read_text(
+                                encoding="utf-8").strip():
+                            mismatches.append(
+                                "self_hosted_nightly signoff file is empty: "
+                                f"{signoff}")
+                    except (OSError, UnicodeError) as exc:
+                        mismatches.append(
+                            "self_hosted_nightly signoff file unreadable: "
+                            f"{type(exc).__name__}: {exc}")
+            elif isinstance(signoff, dict):
+                if not (signoff.get("path") or signoff.get("operator")
+                        or signoff.get("reason")):
+                    mismatches.append(
+                        "self_hosted_nightly signoff record is empty")
+            else:
+                mismatches.append(
+                    "self_hosted_nightly signoff has an unsupported shape")
+        elif status not in {"run", "passed", "success", "completed"}:
+            mismatches.append(
+                f"self_hosted_nightly has unknown status {status!r}")
+    if local_gate:
+        claimed = bool(local_gate.get("used_as_ci")
+                       or local_gate.get("claimed_as_ci")
+                       or local_gate.get("as_ci"))
+        if claimed:
+            mismatches.append(
+                "local_gate result is claimed as CI evidence; a local run "
+                "cannot satisfy the hosted/self-hosted CI evidence slot")
+    if not any(kind in ci for kind in CI_EVIDENCE_KINDS):
+        mismatches.append(
+            "ci_evidence does not use any schema-v2 kind "
+            "(hosted_ci/self_hosted_nightly/local_gate)")
+    result["ok"] = not mismatches
+    result["mismatches"] = mismatches
+    return result
+
+
 def check_roadmap_sync(live_audit: dict[str, Any] | None,
                        claims: dict[str, Any] | None,
                        path: Path = ROADMAP_DOC) -> dict[str, Any]:
@@ -668,6 +913,13 @@ def check_release_evidence(evidence: Any) -> dict[str, Any]:
         or provenance.get("runner")
         or payload.get("lima_identity")
     )
+    provenance_branch = str(
+        provenance.get("branch") or payload.get("evidence_branch") or "")
+    evidence_branch = str(payload.get("branch") or "")
+    if evidence_branch and provenance_branch and evidence_branch != provenance_branch:
+        mismatches.append(
+            "evidence branch drift: payload branch "
+            f"{evidence_branch!r} != provenance branch {provenance_branch!r}")
     mode = str(payload.get("mode", ""))
     if mode in {"release", "nightly"}:
         if not artifact_digest:
@@ -678,6 +930,10 @@ def check_release_evidence(evidence: Any) -> dict[str, Any]:
             mismatches.append(
                 "release evidence provenance is missing the Lima/guest "
                 "identity (provenance.lima_identity/runner)")
+        if bool(artifact_digest) != bool(lima_identity):
+            mismatches.append(
+                "release evidence provenance is incomplete: it must carry both "
+                "the audit artifact digest and the Lima/guest identity")
     return {
         "ok": not mismatches,
         "mismatches": mismatches,
@@ -1205,6 +1461,18 @@ def main(argv: list[str] | None = None) -> int:
         violations.append(
             "--local requires provider identity to be recorded as non-verified "
             f"on mismatch; mismatches={provider_report['mismatches']}")
+    release_claims_report = check_release_claims(claims)
+    summary["release_claims_sync"] = release_claims_report
+    if local and not release_claims_report["ok"]:
+        violations.append(
+            "--local requires release_claims_sync.ok (CI evidence schema v2); "
+            f"mismatches={release_claims_report['mismatches']}")
+    universe_methodology_report = check_universe_methodology(audit)
+    summary["universe_methodology"] = universe_methodology_report
+    if local and not universe_methodology_report["ok"]:
+        violations.append(
+            "--local requires universe_methodology.ok; mismatches="
+            f"{universe_methodology_report['mismatches']}")
     summary["mode"] = mode
     summary["ok"] = not violations
     summary["violations"] = violations
@@ -1221,6 +1489,8 @@ def main(argv: list[str] | None = None) -> int:
             "invariant_packets={inv_packets} acceptance_ok={accept_ok} "
             "stale_ok={stale_ok} claims_sync_ok={sync_ok} "
             "roadmap_ok={roadmap_ok} roadmap_ids={roadmap_ids} "
+            "release_claims_ok={release_claims_ok} "
+            "universe_methodology_ok={universe_methodology_ok} "
             "provider_identity_verified={provider_verified} "
             "violations={violations}".format(
                 mode=mode,
@@ -1245,6 +1515,8 @@ def main(argv: list[str] | None = None) -> int:
                 sync_ok=claims_sync_report.get("ok"),
                 roadmap_ok=roadmap_report.get("ok"),
                 roadmap_ids=len(_as_list(roadmap_report.get("ids"))),
+                release_claims_ok=release_claims_report.get("ok"),
+                universe_methodology_ok=universe_methodology_report.get("ok"),
                 provider_verified=provider_report.get("identity_verified"),
                 violations=len(violations),
             )

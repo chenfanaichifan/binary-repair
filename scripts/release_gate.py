@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -2097,13 +2098,14 @@ def run_release(
     meta = check_meta_audit(paths, local_payload, run)
     invariants = check_acceptance_invariants(paths, local_payload)
     universe = check_universe_evidence(paths, local_payload)
+    provenance = check_provenance_complete(paths, "release", tree, run)
     provider = check_provider_matrix(paths)
     provider_coverage = check_provider_coverage(paths)
     full = check_full_pytest(paths, run)
     return _summarize(
         "release",
         [identity, static, claims, acceptance, local, meta, invariants,
-         universe, provider, provider_coverage, full],
+         universe, provenance, provider, provider_coverage, full],
         started,
         tree=tree,
     )
@@ -2130,6 +2132,7 @@ def run_nightly(
     meta = check_meta_audit(paths, local_payload, run)
     invariants = check_acceptance_invariants(paths, local_payload)
     universe = check_universe_evidence(paths, local_payload)
+    provenance = check_provenance_complete(paths, "nightly", tree, run)
     provider = check_provider_matrix(paths)
     provider_coverage = check_provider_coverage(paths)
     capture = check_real_lima_capture(paths, run, runner_probe=runner_probe)
@@ -2143,7 +2146,7 @@ def run_nightly(
     return _summarize(
         "nightly",
         [identity, static, claims, acceptance, local, meta, invariants,
-         universe, provider, provider_coverage, capture, full],
+         universe, provenance, provider, provider_coverage, capture, full],
         started,
         notes=notes,
         tree=tree,
@@ -2171,6 +2174,7 @@ CHECK_MATRIX: dict[str, tuple[str, ...]] = {
         "meta-audit",
         "acceptance-invariants",
         "universe-unknown-zero",
+        "provenance-complete",
         "provider-matrix",
         "provider-coverage",
         "full-pytest",
@@ -2184,6 +2188,7 @@ CHECK_MATRIX: dict[str, tuple[str, ...]] = {
         "meta-audit",
         "acceptance-invariants",
         "universe-unknown-zero",
+        "provenance-complete",
         "provider-matrix",
         "provider-coverage",
         "nightly-real-lima-acceptance",
@@ -2296,6 +2301,13 @@ def _artifact_evidence(paths: Paths) -> dict[str, Any]:
         "artifacts/provider-coverage-2026-11-14/summary.json": None,
         "artifacts/provider-coverage-2026-11-14/SHA256SUMS": None,
         "artifacts/browser-e2e-2026-11-14/summary.json": None,
+        "artifacts/capability-universe-2026-11-15/methodology.json": None,
+        "artifacts/provider-coverage-2026-11-14/intl-unavailable.json": None,
+        "docs/acceptance/non-goal-roadmap-2026-11-15.md": None,
+        "docs/acceptance/platform-limits-2026-11-15.md": None,
+        "docs/acceptance/capability-universe-2026-11-15.md": None,
+        "docs/release/CI-SIGNOFF-2026-11-15.md": None,
+        "docs/operations/flake-quarantine-2026-11-15.json": None,
         "docs/status/claims.json": None,
         "docs/acceptance/non-goals-2026-11-14.md": None,
         "docs/acceptance/non-goal-roadmap-2026-11-14.md": None,
@@ -2326,6 +2338,296 @@ def _mitigated_residual(checks: Sequence[Check]) -> list[str]:
     return []
 
 
+def _fixture_digests(paths: Paths) -> dict[str, Any]:
+    fixtures = {
+        "fixtures/poc/marcx-capacity.json": None,
+        "fixtures/hard-cases/vuln-heap-malloc-x86_64.elf": None,
+        "fixtures/elf/vuln-capacity-confusion-x86_64.elf": None,
+    }
+    rows: dict[str, Any] = {}
+    for relative in fixtures:
+        path = paths.root / relative
+        rows[relative] = {
+            "present": path.is_file(),
+            "sha256": _sha256_file(path) if path.is_file() else None,
+        }
+    return rows
+
+
+def _acceptance_subjects(paths: Paths) -> dict[str, Any]:
+    payload, error = _load_json(paths.acceptance)
+    if error or not isinstance(payload, dict):
+        return {"available": False, "error": error or "acceptance payload is not an object"}
+    fields = (
+        "fixture_sha256", "candidate_sha256", "patched_sha256",
+        "disposition", "target_scope", "target_policy", "checks_total",
+    )
+    subjects: dict[str, Any] = {}
+    for case_id in (
+        "marcx_review_api", "marcx_pipeline_with_manifest",
+        "marcx_pipeline_without_manifest", "heap_pipeline_with_manifest",
+        "heap_pipeline_without_manifest", "heap_target_scoped",
+        "heap_wrong_target", "marcx_safe_default", "heap_safe_default",
+    ):
+        row = _as_dict(payload.get(case_id))
+        if not row:
+            continue
+        subjects[case_id] = {key: row.get(key) for key in fields if key in row}
+    return {"available": bool(subjects), "cases": subjects}
+
+
+def _guest_provenance(run: Runner = run_command) -> dict[str, Any]:
+    guest = _lima_identity(run)
+    if not guest.get("available"):
+        return guest
+    try:
+        release = run(
+            ["limactl", "shell", "binaryrepair", "--", "uname", "-srm"],
+            Path("/"), 60.0,
+        )
+        if release.returncode == 0:
+            guest["guest_uname"] = release.stdout.strip()
+        qemu = run(
+            ["limactl", "shell", "binaryrepair", "--", "qemu-x86_64",
+             "--version"],
+            Path("/"), 60.0,
+        )
+        guest["qemu_version"] = (
+            qemu.stdout.strip().splitlines()[0] if qemu.returncode == 0
+            and qemu.stdout.strip() else None
+        )
+        info = run(["limactl", "info", "binaryrepair"], Path("/"), 60.0)
+        if info.returncode == 0 and info.stdout.strip():
+            guest["lima_info_sha256"] = _sha256_text(info.stdout.strip())
+    except Exception as exc:  # noqa: BLE001 - provenance is best effort
+        guest["guest_probe_error"] = f"{type(exc).__name__}: {exc}"
+    return guest
+
+
+def _github_runner() -> dict[str, Any] | None:
+    if os.environ.get("GITHUB_ACTIONS", "").lower() != "true":
+        return None
+    return {
+        "run_id": os.environ.get("GITHUB_RUN_ID"),
+        "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+        "workflow": os.environ.get("GITHUB_WORKFLOW"),
+        "job": os.environ.get("GITHUB_JOB"),
+        "sha": os.environ.get("GITHUB_SHA"),
+        "repository": os.environ.get("GITHUB_REPOSITORY"),
+        "server_url": os.environ.get("GITHUB_SERVER_URL"),
+    }
+
+
+def _invocation_argv() -> list[str]:
+    import sys
+
+    return [str(item) for item in sys.argv]
+
+
+def _provenance_payload(
+    paths: Paths,
+    *,
+    mode: str,
+    frozen_sha: str | None,
+    release_sha: str | None,
+    branch: str | None,
+    clean_tree: bool | None,
+    run: Runner = run_command,
+) -> dict[str, Any]:
+    import platform
+    import sys
+
+    tree_sha = None
+    if frozen_sha:
+        tree_result = _git(paths, run, ["rev-parse", "HEAD^{tree}"])
+        if tree_result.returncode == 0:
+            tree_sha = tree_result.stdout.strip() or None
+    artifacts = _artifact_evidence(paths)
+    claims_sha = _sha256_file(paths.claims)
+    non_goals = paths.non_goals_doc
+    github = _github_runner()
+    builder_kind = "github-actions" if github else "local-frozen-tree"
+    not_run = ["international_provider_matrix"]
+    if not github:
+        not_run.insert(0, "github_actions")
+    not_run.append("self_hosted_nightly_lima_capture")
+    if mode != "nightly":
+        not_run.append("nightly_real_lima_capture")
+    if release_sha and frozen_sha and release_sha != frozen_sha:
+        resolved = _git(paths, run, ["rev-parse", "--verify",
+                                     f"{release_sha}^{{commit}}"])
+        if (resolved.returncode == 0
+                and resolved.stdout.strip() == frozen_sha):
+            release_sha = frozen_sha
+        elif len(release_sha) >= 7 and frozen_sha.startswith(release_sha):
+            release_sha = frozen_sha
+    return {
+        "schema_version": 1,
+        "subject": {
+            "frozen_sha": frozen_sha,
+            "release_sha": release_sha,
+            "tree_sha": tree_sha,
+            "branch": branch,
+            "clean_tree": clean_tree,
+        },
+        "materials": {
+            "artifacts": artifacts,
+            "fixtures": _fixture_digests(paths),
+            "acceptance_subjects": _acceptance_subjects(paths),
+            "claims_sha256": claims_sha,
+            "non_goals_doc": {
+                "path": str(non_goals.relative_to(paths.root)) if non_goals.is_relative_to(paths.root) else str(non_goals),
+                "sha256": _sha256_file(non_goals),
+                "present": non_goals.is_file(),
+            },
+        },
+        "builder": {
+            "kind": builder_kind,
+            "python": sys.version.split()[0],
+            "platform": platform.platform(),
+            "machine": platform.machine(),
+            "kernel": platform.uname().release,
+            "github": github,
+        },
+        "guest": _guest_provenance(run) if mode == "nightly" else _lima_identity(run),
+        "invocation": {
+            "argv": _invocation_argv(),
+            "cwd": str(paths.root),
+            "mode": mode,
+            "release_sha": release_sha,
+        },
+        "not_run": not_run,
+    }
+
+
+ALLOWED_DOCS_DELTA_PREFIXES = (
+    "docs/status/claims.json",
+    "docs/release-",
+    "docs/acceptance/ci-",
+    "artifacts/release-gate-",
+)
+
+
+def validate_provenance(payload: dict[str, Any], *, mode: str) -> list[str]:
+    violations: list[str] = []
+    provenance = _as_dict(payload.get("provenance"))
+    if not provenance:
+        return ["provenance block is missing"]
+    subject = _as_dict(provenance.get("subject"))
+    for field in ("frozen_sha", "release_sha", "tree_sha"):
+        value = str(subject.get(field) or "")
+        if not value:
+            violations.append(f"provenance.subject.{field} is missing")
+        elif field.endswith("_sha") and len(value) < 7:
+            violations.append(f"provenance.subject.{field} is not a commit/tree SHA")
+    if subject.get("frozen_sha") and subject.get("release_sha"):
+        if subject.get("frozen_sha") != subject.get("release_sha"):
+            violations.append(
+                "provenance.subject frozen_sha != release_sha")
+    materials = _as_dict(provenance.get("materials"))
+    artifacts = _as_dict(materials.get("artifacts"))
+    required_artifacts = (
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+        "artifacts/coverage-closure-2026-11-14/acceptance.json",
+        "artifacts/provider-matrix-2026-11-14/summary.json",
+        "docs/status/claims.json",
+    )
+    for relative in required_artifacts:
+        row = _as_dict(artifacts.get(relative))
+        if not row.get("present"):
+            violations.append(f"provenance materials artifact missing: {relative}")
+        digest = str(row.get("sha256") or "")
+        if len(digest) != 64:
+            violations.append(
+                f"provenance materials artifact has no sha256: {relative}")
+    acceptance = _as_dict(materials.get("acceptance_subjects"))
+    cases = _as_dict(acceptance.get("cases"))
+    for case_id in ("marcx_pipeline_with_manifest", "heap_pipeline_with_manifest"):
+        row = _as_dict(cases.get(case_id))
+        if not row:
+            violations.append(
+                f"provenance acceptance subject missing: {case_id}")
+            continue
+        if len(str(row.get("fixture_sha256") or "")) != 64:
+            violations.append(
+                f"provenance acceptance subject {case_id} lacks fixture sha256")
+        if len(str(row.get("candidate_sha256") or "")) != 64:
+            violations.append(
+                f"provenance acceptance subject {case_id} lacks candidate sha256")
+    scoped = _as_dict(cases.get("heap_target_scoped"))
+    if not scoped or not _as_dict(scoped.get("target_scope")):
+        violations.append(
+            "provenance acceptance subject heap_target_scoped lacks target_scope")
+    builder = _as_dict(provenance.get("builder"))
+    kind = str(builder.get("kind") or "")
+    if kind not in {"local-frozen-tree", "github-actions"}:
+        violations.append(f"provenance.builder.kind unknown: {kind!r}")
+    if kind == "github-actions":
+        github = _as_dict(builder.get("github"))
+        for field in ("run_id", "workflow", "sha"):
+            if not github.get(field):
+                violations.append(
+                    f"provenance builder github.{field} is missing")
+    guest = _as_dict(provenance.get("guest"))
+    if mode == "nightly":
+        if guest.get("available") is not True:
+            violations.append(
+                "provenance guest is unavailable for a nightly gate")
+        for field in ("limactl_version", "config_sha256"):
+            if not guest.get(field):
+                violations.append(f"provenance guest.{field} is missing")
+    invocation = _as_dict(provenance.get("invocation"))
+    if not _as_list(invocation.get("argv")):
+        violations.append("provenance.invocation.argv is empty")
+    if str(invocation.get("mode") or "") != mode:
+        violations.append(
+            "provenance.invocation.mode does not match the gate mode")
+    if not _as_list(provenance.get("not_run")):
+        violations.append("provenance.not_run must be explicit (possibly empty)")
+    return violations
+
+
+def check_provenance_complete(
+    paths: Paths,
+    mode: str,
+    tree: dict[str, Any],
+    run: Runner = run_command,
+) -> Check:
+    check = Check(
+        "provenance-complete",
+        "Release provenance binds tree/artifacts/acceptance/runner/guest",
+    )
+    payload = {
+        "provenance": _provenance_payload(
+            paths,
+            mode=mode,
+            frozen_sha=tree.get("frozen_sha"),
+            release_sha=tree.get("release_sha") or tree.get("frozen_sha"),
+            branch=tree.get("branch"),
+            clean_tree=tree.get("clean_tree"),
+            run=run,
+        )
+    }
+    violations = validate_provenance(payload, mode=mode)
+    builder = _as_dict(_as_dict(payload.get("provenance")).get("builder"))
+    guest = _as_dict(_as_dict(payload.get("provenance")).get("guest"))
+    provenance = _as_dict(payload.get("provenance"))
+    subjects = _as_dict(
+        _as_dict(_as_dict(provenance.get("materials")).get(
+            "acceptance_subjects")).get("cases"))
+    check.detail = (
+        f"builder={builder.get('kind')} "
+        f"guest_available={guest.get('available')} "
+        f"subjects={len(subjects)} "
+        f"limactl={guest.get('limactl_version')}"
+    )
+    if violations:
+        check.violations.extend(violations)
+        check.status = CHECK_FAILED
+        return check
+    return check.passed(check.detail)
+
+
 def _build_evidence(
     paths: Paths,
     summary: GateSummary,
@@ -2346,8 +2648,19 @@ def _build_evidence(
         "python": sys.version.split()[0],
         "platform": platform.platform(),
         "machine": platform.machine(),
+        "kernel": platform.uname().release,
     }
-    missing_not_run = list(dict.fromkeys(["github_actions", *not_run]))
+    provenance = _provenance_payload(
+        paths,
+        mode=summary.mode,
+        frozen_sha=summary.frozen_sha,
+        release_sha=summary.release_sha,
+        branch=summary.branch,
+        clean_tree=summary.clean_tree,
+        run=run,
+    )
+    missing_not_run = list(dict.fromkeys(
+        [*provenance.get("not_run", []), *not_run]))
     evidence: dict[str, Any] = {
         "schema_version": 1,
         "kind": "release_gate_evidence",
@@ -2370,6 +2683,7 @@ def _build_evidence(
         "elapsed_ms": int(summary.elapsed_ms),
         "checks": [check.to_dict() for check in summary.checks],
         "environment": environment,
+        "provenance": provenance,
         "lima": _lima_identity(run),
         "artifacts": _artifact_evidence(paths),
         "mitigated_residual": _mitigated_residual(summary.checks),

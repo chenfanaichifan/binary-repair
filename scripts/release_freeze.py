@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -75,6 +76,22 @@ def _text(value: Any) -> str:
     return str(value)
 
 
+def _github_env() -> dict[str, Any] | None:
+    """Return the GitHub Actions identity when this wrapper runs in CI."""
+    if os.environ.get("GITHUB_ACTIONS", "").lower() != "true":
+        return None
+    return {
+        "run_id": os.environ.get("GITHUB_RUN_ID"),
+        "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+        "workflow": os.environ.get("GITHUB_WORKFLOW"),
+        "job": os.environ.get("GITHUB_JOB"),
+        "sha": os.environ.get("GITHUB_SHA"),
+        "repository": os.environ.get("GITHUB_REPOSITORY"),
+        "server_url": os.environ.get("GITHUB_SERVER_URL"),
+        "event_name": os.environ.get("GITHUB_EVENT_NAME"),
+    }
+
+
 def _git(root: Path, run: Runner, *args: str) -> str | None:
     result = run(["git", *args], root, 30.0)
     if result.returncode != 0:
@@ -118,6 +135,7 @@ def _write_bundle(
     gate_rc: int,
     tree_sha: str | None = None,
     branch: str | None = None,
+    github: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Write README/SHA256SUMS/freeze.json; returns the freeze payload."""
     evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -160,11 +178,15 @@ def _write_bundle(
                 "tree_sha",
             )
         } if gate_payload else None,
+        "runner": {
+            "kind": "github-actions" if github else "local-frozen-tree",
+            "github": github,
+        },
         "evidence_scope": (
-            "local frozen-tree gate evidence: proves the gated git tree identity, "
-            "the measured checks and the recorded artifact digests. It does not "
-            "prove a GitHub Actions run or binary provenance beyond those "
-            "digests. CI evidence must be recorded from the CI job artifact."
+            "frozen-tree gate evidence: proves the gated git tree identity, the "
+            "measured checks and the recorded artifact digests, plus provenance. "
+            "When runner.kind is local-frozen-tree this is not a GitHub Actions "
+            "run; a CI run is a separate claim recorded from its own artifact."
         ),
     }
     _write_json(evidence_dir / FREEZE_JSON, freeze)
@@ -181,7 +203,11 @@ def _write_bundle(
         f"- mainline unchanged: `{not drift}`",
         f"- gate rc: `{gate_rc}`",
         f"- gate ok: `{bool(gate_payload and gate_payload.get('ok'))}`",
-        f"- evidence scope: local frozen-tree gate (not a CI run)",
+        f"- runner kind: `{'github-actions' if github else 'local-frozen-tree'}`",
+        (f"- GitHub run: `{github.get('run_id')}` workflow `{github.get('workflow')}` "
+         f"job `{github.get('job')}` sha `{github.get('sha')}`" if github else
+         "- GitHub run: not applicable (local frozen-tree evidence)"),
+        f"- evidence scope: frozen-tree gate (not automatically a CI run)",
         "",
         "## Command",
         "",
@@ -291,6 +317,7 @@ def freeze(
         gate_rc=result.returncode,
         tree_sha=tree_sha,
         branch=branch,
+        github=_github_env(),
     )
     return freeze_payload
 

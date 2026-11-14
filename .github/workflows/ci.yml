@@ -2,9 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, workbench-v3]
   pull_request:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag for release-drift (latest release by default)"
+        required: false
+        default: "release-2026-11-15"
+        type: string
   schedule:
     # Nightly full gate.  The release-nightly-gate job stays skipped unless the
     # BINARYREPAIR_RELEASE_GATE repository variable is set to "true" (see that
@@ -33,6 +39,14 @@ jobs:
         run: python scripts/check_language_policy.py
       - name: Test serialization policy (CI pytest must pass -p no:xdist)
         run: python scripts/verify_test_serial.py
+      - name: Markdown language policy (release docs are ASCII/English)
+        run: >-
+          python scripts/check_markdown_language.py --json
+          --allowlist docs/operations/markdown-language-allowlist.json
+      - name: Flake policy (no rerun-as-pass; serial flake governance)
+        run: python scripts/check_flake_policy.py --json
+      - name: Universe methodology check (three-state matrix invariants)
+        run: python scripts/check_universe_methodology.py --check
 
       - name: Install dependencies
         run: |
@@ -56,6 +70,14 @@ jobs:
         run: python scripts/check_language_policy.py
       - name: Test serialization policy (CI pytest must pass -p no:xdist)
         run: python scripts/verify_test_serial.py
+      - name: Markdown language policy (release docs are ASCII/English)
+        run: >-
+          python scripts/check_markdown_language.py --json
+          --allowlist docs/operations/markdown-language-allowlist.json
+      - name: Flake policy (no rerun-as-pass; serial flake governance)
+        run: python scripts/check_flake_policy.py --json
+      - name: Universe methodology check (three-state matrix invariants)
+        run: python scripts/check_universe_methodology.py --check
       - name: Coverage regression gate (static, no network)
         run: python scripts/verify_coverage_gate.py --static-only
       # Serial execution by policy: Lima guests and the real PoC differential are
@@ -85,6 +107,110 @@ jobs:
       # no test in this layer touches a Lima guest in parallel.
       - name: Staged PR gate
         run: python scripts/release_gate.py --pr --json
+
+  release-gate-hosted:
+    # Hosted release gate: runs the frozen-tree release gate on a GitHub-hosted
+    # runner through scripts/release_freeze.py --offline.  It records a genuine
+    # CI execution (gate.json + freeze.json + README.md + SHA256SUMS in the
+    # release-gate-hosted-evidence artifact).  It is NOT the self-hosted/lima
+    # nightly; that job below stays inert unless the operator enables it.
+    # A skipped/absent run is not evidence; only an actual run's artifact is.
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # First hosted gate run: the run ID cannot be committed in the same
+      # commit that produces it.  The bootstrap state is explicit and must be
+      # replaced by a follow-up claims commit with the concrete hosted run.
+      BINARYREPAIR_CI_EVIDENCE_BOOTSTRAP: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install system tools (binutils, clang)
+        run: sudo apt-get update && sudo apt-get install -y binutils clang
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Hosted release gate (offline, frozen github.sha)
+        # Do NOT create artifacts/release-gate-ci before the gate: an untracked
+        # directory makes the checkout dirty and the gate's clean-tree check
+        # fails. release_freeze.py and --evidence-out create parents themselves.
+        run: |
+          python scripts/release_freeze.py --mode release \
+            --sha ${{ github.sha }} \
+            --offline \
+            --expected-mainline ignore \
+            --evidence-dir artifacts/release-gate-ci \
+            --json
+      - name: Record hosted release-gate summary
+        if: always()
+        run: |
+          {
+            echo "## Hosted release gate"
+            echo ""
+            echo "- run: \`$GITHUB_RUN_ID\` attempt \`$GITHUB_RUN_ATTEMPT\`"
+            echo "- sha: \`${{ github.sha }}\`"
+            echo "- ref: \`${{ github.ref }}\`"
+            echo "- job status: \`${{ job.status }}\`"
+            echo "- evidence: artifact \`release-gate-hosted-evidence\`"
+            echo "- note: hosted CI record; the self-hosted/lima nightly is a separate job and is inert by default."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload hosted release-gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-hosted-evidence
+          path: artifacts/release-gate-ci/
+          if-no-files-found: warn
+
+  release-drift:
+    # Daily release-drift alarm: compare the release tag, mainline and the
+    # evidence-branch gate evidence.  This is an ALARM, not release evidence:
+    # a red run means "tag/evidence review is due", not that a release passed.
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fetch mainline and release tags
+        run: |
+          git fetch --tags --force origin
+          git fetch --force origin workbench-v3:refs/remotes/origin/workbench-v3
+      - name: Check release drift (tag vs mainline vs evidence)
+        env:
+          RELEASE_TAG: ${{ github.event.inputs.tag || 'release-2026-11-15' }}
+        run: |
+          mkdir -p artifacts/release-drift
+          set +e
+          python scripts/release_drift_check.py --tag "$RELEASE_TAG" --json \
+            > artifacts/release-drift/drift.json
+          rc=$?
+          cat artifacts/release-drift/drift.json || true
+          {
+            echo "## Release drift"
+            echo ""
+            echo "- tag: \`$RELEASE_TAG\`"
+            echo "- run: \`$GITHUB_RUN_ID\` attempt \`$GITHUB_RUN_ATTEMPT\`"
+            echo "- drift exit code: \`$rc\`"
+            echo "- note: drift alarm only, not release evidence."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
+      - name: Upload drift report (alarm artifact, not release evidence)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-drift-report
+          path: artifacts/release-drift/
+          if-no-files-found: warn
 
   browser-e2e:
     # Browser end-to-end suite (tests/e2e, Chrome/DevTools protocol).
@@ -154,17 +280,18 @@ jobs:
       # writes the gate JSON summary next to stdout for artifact upload.  The
       # evidence file is uploaded only when the job actually runs; a skipped job
       # is not evidence and this file does not claim a run has happened.
+      # Do NOT mkdir the evidence directory here: an untracked directory makes
+      # the checkout dirty and the gate's clean-tree check would fail.
+      # --evidence-out creates the parent directory itself.
       - name: Release gate (push / pull request / manual)
         if: ${{ github.event_name != 'schedule' }}
         run: |
-          mkdir -p artifacts/release-gate-ci
           python scripts/release_gate.py --release \
             --release-sha ${{ github.sha }} \
             --evidence-out artifacts/release-gate-ci/evidence.json
       - name: Nightly gate (release checks + fresh real-Lima acceptance capture)
         if: ${{ github.event_name == 'schedule' }}
         run: |
-          mkdir -p artifacts/release-gate-ci
           python scripts/release_gate.py --nightly \
             --release-sha ${{ github.sha }} \
             --evidence-out artifacts/release-gate-ci/evidence.json

@@ -10,7 +10,8 @@ to build it.
 - cited source files: 32
 
 Artifact files: `summary.json` (machine-readable), `README.md` (this file),
-`SHA256SUMS` (covers README.md and summary.json; never itself).
+`intl-unavailable.json` (SiliconFlow-international unavailability evidence)
+and `SHA256SUMS` (covers all three files; never itself).
 
 ## What this artifact answers
 
@@ -23,6 +24,9 @@ Artifact files: `summary.json` (machine-readable), `README.md` (this file),
    blocked/unavailable, with exact reasons - no fabricated success.
 4. Separate deterministic and AI metrics: `deterministic_target_strict`
    (model-independent) is never combined with `ai_target` (provider run).
+5. HTTP failure evidence and the three-model identity layer
+   (requested / served / observed) for every evidence row, plus the
+   `intl-unavailable.json` evidence file referenced by `not_satisfied`.
 
 ## Evidence rows
 
@@ -43,6 +47,34 @@ Artifact files: `summary.json` (machine-readable), `README.md` (this file),
 Every row cites source files with SHA-256; each source artifact's own
 `SHA256SUMS` is validated by the builder and by the test suite, which also
 re-derives the row values from the cited artifacts.
+
+### Evidence layers (per row)
+
+- `http`: `{status, code, error_class}` for a typed provider HTTP failure,
+  or `null` when the provider call did not fail with an HTTP status.
+  The provider-specific `code` stays `null` unless a machine-readable
+  field records it (never parsed from prose).
+- `probe_log_path` / `probe_log_sha256`: the identity-probe or matrix
+  record that evidences `model_served`; `null` when no probe exists.
+- `identity_layer`: `{requested_model, served_model, observed_model,`
+  `identity_ok, identity_verified, attribution}` where `attribution` is
+  `requested_model`, `served_model`, or `none`. A served-model mismatch
+  is always `attribution=served_model` and is never identity-verified.
+
+## International provider unavailability (`intl-unavailable.json`)
+
+- file: `artifacts/provider-coverage-2026-11-14/intl-unavailable.json`
+- sha256: `64353269fb8e3f1f502adb062b982c0908906038ece81fde831625ebb5e20d55`
+- provider/status: `siliconflow-intl` / `blocked_unavailable`
+- http_status: 402; error_class: `_ProviderHTTPError`
+- models: `Qwen/Qwen3.8-27B`, `deepseek-ai/DeepSeek-V4.1-Flash`, `moonshotai/Kimi-K3.1-Pro`
+
+The file is derived from the committed SiliconFlow-international identity
+probe, benchmark-attempt and account-status artifacts; every cited source
+file carries a SHA-256. Fields the sources do not record (timestamp,
+provider error code) are explicitly marked unavailable with a reason -
+never fabricated. The `not_satisfied` items below reference this file by
+path and SHA-256.
 
 ## Statistics (AI target, Wilson 95% CI)
 
@@ -101,7 +133,7 @@ Requirements:
 
 ### Not satisfied (explicit)
 
-- international 5-6 model matrix: 3 SiliconFlow international models passed identity probes but every benchmark call returned HTTP 402 insufficient balance; no fifth provider key is available; 4 models completed, not 5-6
+- international 5-6 model matrix: 3 SiliconFlow international models passed identity probes but every benchmark call returned HTTP 402 insufficient balance; no fifth provider key is available; 4 models completed, not 5-6 (evidence: `artifacts/provider-coverage-2026-11-14/intl-unavailable.json` sha256 `64353269fb8e3f1f502adb062b982c0908906038ece81fde831625ebb5e20d55`)
 
 ### Reconciliation with the phase-4 brief
 
@@ -134,8 +166,11 @@ python scripts/build_provider_coverage.py --check   # fresh build == committed a
 python -m pytest -q tests/test_provider_matrix.py tests/test_provider_coverage_artifact.py
 ```
 
-The artifact test suite is offline: it verifies the schema, the SHA-256 of
-every cited file, each source artifact's own `SHA256SUMS`, the identity
+`--check` rebuilds the artifact in memory and compares `summary.json`,
+`README.md`, `intl-unavailable.json` and `SHA256SUMS` byte-for-byte with
+the committed artifact, and re-validates the SHA256SUMS coverage; it exits
+0 only on an exact match and never writes files. The artifact test suite
+is offline: it verifies the schema, the SHA-256 of every cited file, each source artifact's own `SHA256SUMS`, the identity
 policy, Wilson interval sanity, aggregate re-derivation, and that the
 committed artifact matches a fresh deterministic build (`--check`).
 

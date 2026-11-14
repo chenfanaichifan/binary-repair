@@ -196,5 +196,5 @@ def test_freeze_records_ci_mode_without_claiming_ci_run(tmp_path: Path) -> None:
     )
     freeze = json.loads((evidence / "freeze.json").read_text())
     assert freeze["gate_summary"]["not_run"] == ["github_actions"]
-    assert "does not prove a GitHub Actions run" in freeze["evidence_scope"]
+    assert "not a GitHub Actions run" in freeze["evidence_scope"]
     assert payload["ok"] is True

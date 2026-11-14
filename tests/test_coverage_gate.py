@@ -579,3 +579,151 @@ def test_static_gate_json_exposes_roadmap_sync() -> None:
     assert set(payload["roadmap_sync"]) >= {"ok", "ids", "mismatches",
                                             "present"}
     assert payload["meta_audit"]["scenario_count"] >= 18
+
+
+def _hosted_ci(**overrides: object) -> dict:
+    hosted = {
+        "run_id": 43614759619,
+        "head_sha": "a" * 40,
+        "gated_sha": "a" * 40,
+        "run_url": "https://github.com/example/repo/actions/runs/1",
+        "conclusion": "success",
+    }
+    hosted.update(overrides)
+    return hosted
+
+
+def test_release_claims_ci_evidence_v2() -> None:
+    claims = {
+        "release_sha": "a" * 40,
+        "latest_verified_ci": {"run_id": 43614759619, "head_sha": "a" * 40},
+        "ci_evidence": {"hosted_ci": _hosted_ci()},
+    }
+    result = gate.check_release_claims(claims)
+    assert result["ok"] is True, result["mismatches"]
+    missing = gate.check_release_claims({})
+    assert missing["ok"] is False
+    assert any("ci_evidence" in item for item in missing["mismatches"])
+
+
+def test_release_claims_docs_only_delta_and_history_masquerade() -> None:
+    docs_delta = {
+        "from_sha": "a" * 40,
+        "to_sha": "b" * 40,
+        "paths": ["docs/status/claims.json", "README.md"],
+    }
+    claims = {
+        "release_sha": "b" * 40,
+        "ci_evidence": {"hosted_ci": _hosted_ci(
+            head_sha="b" * 40, gated_sha="a" * 40,
+            docs_only_delta=docs_delta)},
+    }
+    assert gate.check_release_claims(claims)["ok"] is True
+    claims["ci_evidence"]["hosted_ci"]["docs_only_delta"] = {
+        "from_sha": "a" * 40, "to_sha": "b" * 40,
+        "paths": ["scripts/release_gate.py"],
+    }
+    bad_delta = gate.check_release_claims(claims)
+    assert bad_delta["ok"] is False
+    assert any("non-docs" in item for item in bad_delta["mismatches"])
+    claims["ci_evidence"]["hosted_ci"] = _hosted_ci(
+        head_sha="a" * 40, gated_sha="a" * 40)
+    claims["release_sha"] = "b" * 40
+    masquerade = gate.check_release_claims(claims)
+    assert masquerade["ok"] is False
+    assert any("historical SHA" in item for item in masquerade["mismatches"])
+
+
+def test_release_claims_self_hosted_and_local_gate() -> None:
+    not_run = {"ci_evidence": {"self_hosted_nightly": {"status": "not_run"}}}
+    missing_signoff = gate.check_release_claims(not_run)
+    assert missing_signoff["ok"] is False
+    assert any("signoff" in item for item in missing_signoff["mismatches"])
+    local_claim = {
+        "ci_evidence": {
+            "hosted_ci": _hosted_ci(),
+            "local_gate": {"used_as_ci": True},
+        }
+    }
+    local_result = gate.check_release_claims(local_claim)
+    assert local_result["ok"] is False
+    assert any("local_gate" in item for item in local_result["mismatches"])
+    latest_mismatch = {
+        "latest_verified_ci": {"run_id": 2, "head_sha": "c" * 40},
+        "ci_evidence": {"hosted_ci": _hosted_ci()},
+    }
+    latest_result = gate.check_release_claims(latest_mismatch)
+    assert latest_result["ok"] is False
+    assert any("latest_verified_ci" in item
+               for item in latest_result["mismatches"])
+
+
+def test_release_claims_self_hosted_signoff_file(tmp_path: Path) -> None:
+    signoff = tmp_path / "signoff.txt"
+    signoff.write_text("operator: release\nreason: lima unavailable\n",
+                       encoding="utf-8")
+    claims = {
+        "self_hosted_signoff": str(signoff),
+        "ci_evidence": {"self_hosted_nightly": {"status": "not_run"}},
+    }
+    result = gate.check_release_claims(claims, root=tmp_path)
+    assert result["ok"] is True, result["mismatches"]
+
+
+def test_release_evidence_provenance_incomplete_and_branch_drift() -> None:
+    evidence = {
+        "mode": "release", "ok": True,
+        "release_sha": "a" * 40, "frozen_sha": "a" * 40,
+        "checks": [{"id": "targeted-pytest", "status": "passed",
+                    "required": True}],
+        "provenance": {"artifact_sha256": "cd" * 32},
+    }
+    partial = gate.check_release_evidence(evidence)
+    assert partial["ok"] is False
+    assert any("incomplete" in item for item in partial["mismatches"])
+    evidence["provenance"]["lima_identity"] = "runner=lima:limactl"
+    assert gate.check_release_evidence(evidence)["ok"] is True
+    evidence["branch"] = "workbench-v3"
+    evidence["provenance"]["branch"] = "stale-branch"
+    drift = gate.check_release_evidence(evidence)
+    assert drift["ok"] is False
+    assert any("branch drift" in item for item in drift["mismatches"])
+
+
+def test_universe_methodology_gate_wrapper() -> None:
+    from app.services import coverage_audit
+
+    live = coverage_audit.build_audit(include_probes=False)
+    result = gate.check_universe_methodology(live)
+    assert result["ok"] is True, result["mismatches"]
+    assert result["cell_count"] >= 8
+    assert result["unknown"] == 0
+    assert len(result["registry_sha256"]) == 64
+    tampered = json.loads(json.dumps(live))
+    cells = tampered["universe"]["cells"]
+    for cell in cells:
+        if cell.get("status") == "supported":
+            cell["sink_class"] = "audit_unregistered_sink"
+            break
+    bad = gate.check_universe_methodology(tampered)
+    assert bad["ok"] is False
+    assert bad["unexplained_cells"]
+
+
+def test_static_gate_json_exposes_phase6_sections() -> None:
+    result = subprocess.run(
+        [sys.executable, str(SCRIPTS / "verify_coverage_gate.py"),
+         "--static-only", "--json"],
+        cwd=ROOT, capture_output=True, text=True, timeout=240,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert "release_claims_sync" in payload
+    assert set(payload["release_claims_sync"]) >= {"ok", "mismatches"}
+    assert "universe_methodology" in payload
+    assert set(payload["universe_methodology"]) >= {
+        "ok", "registry_sha256", "cell_count", "unknown",
+        "missing_registry_entries", "unexplained_cells"}
+    assert payload["universe_methodology"]["ok"] is True
+    assert payload["universe_methodology"]["unknown"] == 0
+    assert payload["meta_audit"]["scenario_count"] >= 22

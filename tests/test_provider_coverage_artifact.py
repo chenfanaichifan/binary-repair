@@ -29,6 +29,8 @@ ARTIFACT = ROOT / "artifacts" / "provider-coverage-2026-11-14"
 SUMMARY_PATH = ARTIFACT / "summary.json"
 README_PATH = ARTIFACT / "README.md"
 SUMS_PATH = ARTIFACT / "SHA256SUMS"
+INTL_PATH = ARTIFACT / "intl-unavailable.json"
+ARTIFACT_FILES = ("README.md", "summary.json", "intl-unavailable.json")
 BUILDER = ROOT / "scripts" / "build_provider_coverage.py"
 PYTHON = sys.executable
 
@@ -42,6 +44,11 @@ VALID_STATUSES = {
 ROW_REQUIRED_FIELDS = {
     "provider", "model_requested", "model_served", "identity_ok",
     "identity_verified", "status", "cases", "source",
+    "http", "probe_log_sha256", "identity_layer",
+}
+IDENTITY_LAYER_REQUIRED_FIELDS = {
+    "requested_model", "served_model", "observed_model", "identity_ok",
+    "identity_verified", "attribution",
 }
 STAT_REQUIRED_FIELDS = {
     "verified", "cases", "verified_rate", "wilson_ci95", "inconclusive",
@@ -138,7 +145,7 @@ def _verify_sha256sums_dir(artifact_dir: str) -> int:
 
 
 def test_artifact_files_and_own_sha256sums():
-    for path in (SUMMARY_PATH, README_PATH, SUMS_PATH):
+    for path in (SUMMARY_PATH, README_PATH, SUMS_PATH, INTL_PATH):
         assert path.is_file(), f"artifact file missing: {path}"
     entries: dict[str, str] = {}
     for line in SUMS_PATH.read_text(encoding="utf-8").splitlines():
@@ -147,11 +154,11 @@ def test_artifact_files_and_own_sha256sums():
             continue
         digest, relative = line.split(None, 1)
         entries[relative.strip()] = digest
-    assert set(entries) == {"README.md", "summary.json"}, entries
+    assert set(entries) == set(ARTIFACT_FILES), entries
     assert "SHA256SUMS" not in entries
     for relative, digest in entries.items():
         assert _sha256(ARTIFACT / relative) == digest
-    for name in ("README.md", "summary.json"):
+    for name in ARTIFACT_FILES:
         data = (ARTIFACT / name).read_bytes()
         assert data.decode("ascii")  # ASCII-only evidence files
     text = README_PATH.read_text(encoding="utf-8")
@@ -179,6 +186,15 @@ def test_schema_matches_release_gate_contract(summary):
         for key in ("artifact_dir", "files", "sha256sums",
                     "corroborating_files", "reference_docs"):
             assert key in row["source"], f"{row['row_id']}: source.{key} missing"
+        assert "http" in row and (row["http"] is None or isinstance(row["http"], dict))
+        if row["http"] is not None:
+            assert set(row["http"]) == {"status", "code", "error_class"}
+        assert row["probe_log_sha256"] is None or (
+            isinstance(row["probe_log_sha256"], str)
+            and len(row["probe_log_sha256"]) == 64
+        )
+        assert isinstance(row["identity_layer"], dict)
+        assert IDENTITY_LAYER_REQUIRED_FIELDS <= set(row["identity_layer"])
 
     aggregate = summary["aggregate"]
     assert isinstance(aggregate["providers_completed_12case"], int)
@@ -186,8 +202,13 @@ def test_schema_matches_release_gate_contract(summary):
     assert aggregate["providers_completed_12case"] == 2
     assert aggregate["models_completed_12case"] == 4
     assert isinstance(aggregate["not_satisfied"], list) and aggregate["not_satisfied"]
-    assert all(isinstance(item, str) for item in aggregate["not_satisfied"])
-    assert any("5-6" in item for item in aggregate["not_satisfied"])
+    for item in aggregate["not_satisfied"]:
+        assert isinstance(item, dict)
+        assert {"reason", "evidence_path", "evidence_sha256"} <= set(item)
+        assert isinstance(item["reason"], str) and item["reason"]
+    assert any("5-6" in item["reason"] for item in aggregate["not_satisfied"])
+    assert isinstance(summary["intl_unavailable"], dict)
+    assert summary["intl_unavailable"]["status"] == "blocked_unavailable"
     assert isinstance(aggregate["blocked_reasons"], list) and aggregate["blocked_reasons"]
 
     assert summary["cost"]["available"] is False
@@ -208,6 +229,14 @@ def test_every_cited_sha256_matches_disk_and_source_sums_validate(summary):
                     f"{row['row_id']}: SHA256 mismatch for {entry['path']}"
                 )
                 checked_files += 1
+        probe_log_path = row.get("probe_log_path")
+        probe_log_sha = row.get("probe_log_sha256")
+        if probe_log_path:
+            probe_file = ROOT / probe_log_path
+            assert probe_file.is_file(), f"{row['row_id']}: missing {probe_log_path}"
+            assert _sha256(probe_file) == probe_log_sha
+        else:
+            assert probe_log_sha is None
         sums = source["sha256sums"]
         if sums is None:
             continue
@@ -400,7 +429,11 @@ def test_aggregate_requests_and_not_satisfied_are_honest(summary):
     assert {"siliconflow-intl", "dashscope"} <= blocked_providers
     assert summary["next_steps"]
     assert summary["limitations"]
-    assert summary["aggregate"]["not_satisfied"]
+    not_satisfied = summary["aggregate"]["not_satisfied"]
+    assert not_satisfied
+    for item in not_satisfied:
+        assert item["evidence_path"].endswith("intl-unavailable.json")
+        assert item["evidence_sha256"] == _sha256(INTL_PATH)
 
 
 # ---------------------------------------------------------------------------
@@ -531,7 +564,7 @@ def test_builder_is_deterministic_across_hash_seeds(tmp_path):
     assert proc_a.returncode == 0, proc_a.stderr
     proc_b = _run_builder("--out", str(second), env_extra={"PYTHONHASHSEED": "12345"})
     assert proc_b.returncode == 0, proc_b.stderr
-    for name in ("summary.json", "README.md", "SHA256SUMS"):
+    for name in (*ARTIFACT_FILES, "SHA256SUMS"):
         assert (first / name).is_file(), name
         assert (first / name).read_bytes() == (second / name).read_bytes(), name
     fresh = json.loads((first / "summary.json").read_text(encoding="utf-8"))
@@ -544,7 +577,7 @@ def test_builder_reproduces_committed_artifact(tmp_path):
     built = tmp_path / "built"
     proc = _run_builder("--out", str(built))
     assert proc.returncode == 0, proc.stderr
-    for name in ("summary.json", "README.md", "SHA256SUMS"):
+    for name in (*ARTIFACT_FILES, "SHA256SUMS"):
         assert (built / name).read_bytes() == (ARTIFACT / name).read_bytes(), name
     check = _run_builder("--check")
     assert check.returncode == 0, check.stdout + check.stderr
@@ -613,3 +646,149 @@ def test_check_mode_fails_on_missing_artifact(tmp_path):
     report = json.loads(proc.stdout)
     assert report["ok"] is False
     assert len(report["violations"]) >= 3
+
+
+# ---------------------------------------------------------------------------
+# HTTP layer / three-model identity layer / intl-unavailable evidence
+# ---------------------------------------------------------------------------
+
+
+def test_http_layer_is_honest(summary):
+    rows = _rows_by_id(summary)
+    intl_rows = [row for row in rows.values() if row["provider"] == "siliconflow-intl"]
+    assert len(intl_rows) == 3
+    for row in intl_rows:
+        assert row["http"] == {
+            "status": 402, "code": None, "error_class": "_ProviderHTTPError",
+        }
+        assert row["status"] == "blocked_unavailable"
+        assert row["cases"] == 0
+        assert row["benchmark_executed"] is False
+    # No HTTP failure is invented for providers that answered successfully, and
+    # non-HTTP blocks (probe timeout) keep http=null instead of faking an HTTP code.
+    for row in rows.values():
+        if row["provider"] == "siliconflow-intl":
+            continue
+        assert row["http"] is None, row["row_id"]
+    glm = rows["siliconflow-cn/THUDM/GLM-Z1-9B-0414"]
+    assert glm["http"] is None
+    assert "timed out" in glm["blocked_reason"].lower()
+
+
+def test_identity_layer_three_model_contract(summary):
+    for row in _rows(summary):
+        layer = row["identity_layer"]
+        assert set(layer) == {
+            "requested_model", "served_model", "observed_model", "identity_ok",
+            "identity_verified", "attribution",
+        }
+        assert layer["requested_model"] == row["model_requested"]
+        assert layer["served_model"] == row["model_served"]
+        assert layer["identity_ok"] == row["identity_ok"]
+        assert layer["identity_verified"] == row["identity_verified"]
+        assert layer["attribution"] in {"requested_model", "served_model", "none"}
+        if layer["identity_ok"] is False:
+            assert layer["attribution"] == "served_model"
+            assert layer["observed_model"] == layer["served_model"]
+            assert layer["identity_verified"] is False
+        if row["status"] == "identity_verified_completed":
+            assert layer["attribution"] == "requested_model"
+            assert layer["observed_model"] == layer["served_model"]
+        if row["status"] == "unavailable_no_artifact":
+            assert layer["observed_model"] is None
+            assert layer["attribution"] == "none"
+    probe = next(
+        row for row in _rows(summary)
+        if row["status"] == "probe_only_identity_mismatch"
+    )
+    assert probe["identity_layer"]["requested_model"] == "deepseek-chat"
+    assert probe["identity_layer"]["served_model"] == "deepseek-flash"
+    assert probe["identity_layer"]["observed_model"] == "deepseek-flash"
+    assert probe["identity_layer"]["attribution"] == "served_model"
+
+
+def test_intl_unavailable_artifact_is_sha_bound_and_honest(summary):
+    assert INTL_PATH.is_file()
+    payload = _load_json(str(INTL_PATH.relative_to(ROOT)))
+    assert payload["schema_version"] == 1
+    assert payload["kind"] == "provider_unavailable_evidence"
+    assert payload["provider"] == "siliconflow-intl"
+    assert payload["endpoint"] == "https://api.siliconflow.com/v1"
+    assert payload["status"] == "blocked_unavailable"
+    assert payload["http_status"] == 402
+    assert payload["error_class"] == "_ProviderHTTPError"
+    assert payload["http"] == {
+        "status": 402, "code": None, "error_class": "_ProviderHTTPError",
+    }
+    assert "402" in payload["reason"] or "insufficient" in payload["reason"].lower()
+    assert payload["requested_models"] == 5
+    assert payload["completed_models"] == 2
+    assert payload["identity_probe_status"] == "pass"
+    assert len(payload["models"]) == 3
+    for model in payload["models"]:
+        assert model["identity_probe_status"] == "ok"
+        assert model["identity_ok"] is True
+        assert model["model_returned"] == model["model"]
+        assert model["benchmark_status"] == "error"
+        assert model["http"] == {
+            "status": 402, "code": None, "error_class": "_ProviderHTTPError",
+        }
+        assert model["not_executed_reason"]
+    # Fields the sources do not record are explicitly unavailable, not invented.
+    assert payload["timestamp"]["available"] is False
+    assert payload["timestamp"]["value"] is None
+    assert payload["timestamp"]["reason"]
+    assert payload["provider_error_code"]["available"] is False
+    assert payload["provider_error_code"]["value"] is None
+    assert set(payload["unavailable_fields"]) >= {
+        "timestamp", "provider_error_code",
+    }
+    # Every cited evidence path/digest is re-derived from disk.
+    assert payload["evidence"]
+    for key, item in payload["evidence"].items():
+        path = ROOT / item["path"]
+        assert path.is_file(), key
+        assert _sha256(path) == item["sha256"], key
+    # summary and aggregate.not_satisfied reference this exact file hash.
+    intl_sha = _sha256(INTL_PATH)
+    assert summary["intl_unavailable"]["sha256"] == intl_sha
+    assert summary["intl_unavailable"]["path"] == str(INTL_PATH.relative_to(ROOT))
+    assert summary["intl_unavailable"]["http_status"] == 402
+    for item in summary["aggregate"]["not_satisfied"]:
+        assert item["evidence_path"] == str(INTL_PATH.relative_to(ROOT))
+        assert item["evidence_sha256"] == intl_sha
+    # The artifact-level SHA256SUMS covers the file with that digest.
+    entries: dict[str, str] = {}
+    for line in SUMS_PATH.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        digest, relative = line.split(None, 1)
+        entries[relative.strip()] = digest
+    assert entries["intl-unavailable.json"] == intl_sha
+
+
+def test_check_mode_detects_tampered_intl_unavailable(tmp_path):
+    target = _copy_artifact(tmp_path)
+    payload = json.loads((target / "intl-unavailable.json").read_text(encoding="utf-8"))
+    payload["reason"] = payload["reason"] + " tampered"
+    (target / "intl-unavailable.json").write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    proc = _run_builder("--check", "--out", str(target))
+    assert proc.returncode == 1, proc.stdout
+    report = json.loads(proc.stdout)
+    assert report["ok"] is False
+    assert report["files"]["intl-unavailable.json"]["match"] is False
+    assert any("intl-unavailable.json" in item for item in report["violations"])
+
+
+def test_check_mode_detects_missing_intl_unavailable(tmp_path):
+    target = _copy_artifact(tmp_path)
+    (target / "intl-unavailable.json").unlink()
+    proc = _run_builder("--check", "--out", str(target))
+    assert proc.returncode == 1, proc.stdout
+    report = json.loads(proc.stdout)
+    assert report["ok"] is False
+    assert any("intl-unavailable.json" in item for item in report["violations"])
+    assert report["files"]["intl-unavailable.json"]["match"] is False

@@ -38,12 +38,15 @@ import argparse
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_ARTIFACT_DIR = ROOT / "artifacts" / "provider-coverage-2026-11-14"
-ARTIFACT_FILES = ("README.md", "summary.json")
+ARTIFACT_FILES = ("README.md", "summary.json", "intl-unavailable.json")
+INTL_UNAVAILABLE_NAME = "intl-unavailable.json"
+ARTIFACT_DIR_REL = "artifacts/provider-coverage-2026-11-14"
 SCHEMA_VERSION = 1
 ARTIFACT_KIND = "provider_coverage"
 BUILDER_VERSION = 1
@@ -133,6 +136,54 @@ def _wilson_ci95(verified: int, cases: int, *, z: float = Z_SCORE) -> list[float
         z * math.sqrt(p * (1.0 - p) / cases + z * z / (4.0 * cases * cases))
     ) / denominator
     return [round(max(0.0, centre - margin), 6), round(min(1.0, centre + margin), 6)]
+
+
+_HTTP_STATUS_RE = re.compile(r"HTTP\s+(?P<status>\d{3})")
+_HTTP_ERROR_CLASS_RE = re.compile(r"^(?P<cls>[A-Za-z_][A-Za-z0-9_]*)\s*:")
+
+
+def _parse_http_error(error_text: Any) -> dict[str, Any] | None:
+    """Parse the recorded typed provider error into {status, code, error_class}."""
+    if not isinstance(error_text, str) or not error_text.strip():
+        return None
+    text = error_text.strip()
+    status_match = _HTTP_STATUS_RE.search(text)
+    class_match = _HTTP_ERROR_CLASS_RE.match(text)
+    if not status_match and not class_match:
+        return None
+    return {
+        "status": int(status_match.group("status")) if status_match else None,
+        # The provider HTTP error body is not stored in a machine-readable
+        # artifact, so the provider-specific code is not asserted.
+        "code": None,
+        "error_class": class_match.group("cls") if class_match else None,
+    }
+
+
+def _probe_log(relative_path: str | None) -> dict[str, Any]:
+    """SHA-256 binding for the probe/matrix record that evidences a row."""
+    if not relative_path or not _path(relative_path).is_file():
+        return {"path": None, "sha256": None}
+    return {"path": relative_path, "sha256": _sha256_file(relative_path)}
+
+
+def _identity_layer(
+    requested_model: str | None,
+    served_model: str | None,
+    observed_model: str | None,
+    identity_ok: bool | None,
+    identity_verified: bool,
+    attribution: str,
+) -> dict[str, Any]:
+    """Explicit three-model identity layer for one evidence row."""
+    return {
+        "requested_model": requested_model,
+        "served_model": served_model,
+        "observed_model": observed_model,
+        "identity_ok": identity_ok,
+        "identity_verified": bool(identity_verified),
+        "attribution": attribution,
+    }
 
 
 def _validate_sha256sums(artifact_dir: str) -> dict[str, Any]:
@@ -632,6 +683,184 @@ def _build_statistics(rows: list[dict[str, Any]],
 # ---------------------------------------------------------------------------
 
 
+def _augment_rows(rows: list[dict[str, Any]],
+                  sources: dict[str, Any]) -> list[dict[str, Any]]:
+    """Add the http / probe-log / identity-layer evidence to every row."""
+    ds_probe_records = {
+        str(record.get("spec")): record
+        for record in (sources["ds_probe"].get("records") or [])
+    }
+    cn_matrix_records = {
+        record.get("model_requested"): record
+        for record in ((sources["cn_summary"] or {}).get("records") or [])
+    }
+    cn_identity_records = {
+        record.get("model_requested"): record
+        for record in ((sources["cn_identity"] or {}).get("records") or [])
+    }
+    intl_identity_records = {
+        record.get("model_requested"): record
+        for record in (sources["intl_identity"].get("records") or [])
+    }
+    intl_matrix_records = {
+        record.get("model_requested"): record
+        for record in (sources["intl_summary"].get("records") or [])
+        if record.get("provider") == "siliconflow"
+    }
+    multi_probe_records = {
+        str(record.get("spec")): record
+        for record in (sources["multi_probe"].get("records") or [])
+    }
+    pm_provider = sources["pm_summary"].get("provider") or {}
+    for row in rows:
+        row_id = row["row_id"]
+        http = None
+        probe_path: str | None = None
+        observed_model: str | None = None
+        attribution = "none"
+        if row_id.startswith("deepseek-official/") and "/provider-matrix/" not in row_id \
+                and "/probe/" not in row_id:
+            model = row["model_requested"]
+            record = ds_probe_records.get(f"deepseek:{model}") or {}
+            observed_model = str(record.get("model_returned") or row["model_served"])
+            probe_path = f"{DS_PROBE_DIR}/summary.json"
+            attribution = "requested_model"
+        elif row_id.startswith("siliconflow-cn/") and "THUDM" not in row_id:
+            record = cn_matrix_records.get(row["model_requested"]) or {}
+            observed_model = str(record.get("model_returned") or row["model_served"])
+            probe_path = f"{CN_DIR}/identity-probe/summary.json"
+            attribution = "requested_model"
+        elif row_id.startswith("siliconflow-intl/"):
+            record = intl_identity_records.get(row["model_requested"]) or {}
+            observed_model = str(record.get("model_returned") or row["model_served"])
+            probe_path = f"{INTL_DIR}/identity-probe/summary.json"
+            attribution = "none"
+            matrix_record = intl_matrix_records.get(row["model_requested"]) or {}
+            http = _parse_http_error(matrix_record.get("error"))
+        elif "THUDM/GLM-Z1-9B-0414" in row_id:
+            probe_path = f"{CN_DIR}/identity-probe/summary.json"
+            attribution = "none"
+        elif "/provider-matrix/" in row_id:
+            observed_model = str(pm_provider.get("model_returned") or row["model_served"])
+            probe_path = f"{PM_DIR}/summary.json"
+            attribution = "served_model"
+        elif "/probe/" in row_id:
+            record = multi_probe_records.get("deepseek:deepseek-chat") or {}
+            observed_model = str(record.get("model_returned") or row["model_served"])
+            probe_path = f"{MULTI_PROBE_DIR}/summary.json"
+            attribution = "served_model"
+        probe = _probe_log(probe_path)
+        row["http"] = http
+        row["probe_log_path"] = probe["path"]
+        row["probe_log_sha256"] = probe["sha256"]
+        row["identity_layer"] = _identity_layer(
+            row["model_requested"],
+            row["model_served"],
+            observed_model,
+            row["identity_ok"],
+            bool(row["identity_verified"]),
+            attribution,
+        )
+    return rows
+
+
+def _build_intl_unavailable(sources: dict[str, Any]) -> dict[str, Any]:
+    """Derive the SiliconFlow-international unavailability evidence file."""
+    aggregate = sources["intl_aggregate"]
+    matrix = sources["intl_summary"]
+    identity = sources["intl_identity"]
+    intl_probe = sources["sf_intl_probe"]
+    records = [
+        record for record in (matrix.get("records") or [])
+        if record.get("provider") == "siliconflow"
+    ]
+    identity_by_model = {
+        record.get("model_requested"): record
+        for record in (identity.get("records") or [])
+    }
+    first_http = None
+    models: list[dict[str, Any]] = []
+    for record in records:
+        model = record.get("model_requested")
+        probe_record = identity_by_model.get(model) or {}
+        http = _parse_http_error(record.get("error"))
+        if first_http is None and http is not None:
+            first_http = http
+        models.append({
+            "model": model,
+            "endpoint": "https://api.siliconflow.com/v1",
+            "identity_probe_status": probe_record.get("status"),
+            "model_returned": probe_record.get("model_returned"),
+            "identity_ok": probe_record.get("model_identity_ok"),
+            "identity_probe_latency_ms": probe_record.get("latency_ms"),
+            "benchmark_status": record.get("status"),
+            "benchmark_error_class": (http or {}).get("error_class"),
+            "benchmark_error_text": record.get("error"),
+            "http": http,
+            "not_executed_reason": (
+                "the identity probe passed with exact resp.model, but the full "
+                "benchmark call was blocked before any of the 12 cases ran"
+            ),
+        })
+    http = first_http or {"status": 402, "code": None, "error_class": "_ProviderHTTPError"}
+    evidence = {
+        "identity_probe": _probe_log(f"{INTL_DIR}/identity-probe/summary.json"),
+        "benchmark_attempt": _probe_log(f"{INTL_DIR}/summary.json"),
+        "aggregate": _probe_log(f"{INTL_DIR}/aggregate.json"),
+        "intl_identity_probe": _probe_log(f"{SF_INTL_PROBE_DIR}/summary.json"),
+        "key_status_doc": _probe_log(f"{SF_KEY_DIR}/README.md"),
+        "artifact_readme": _probe_log(f"{INTL_DIR}/README.md"),
+    }
+    return {
+        "schema_version": 1,
+        "kind": "provider_unavailable_evidence",
+        "provider": "siliconflow-intl",
+        "provider_name": "siliconflow",
+        "endpoint": "https://api.siliconflow.com/v1",
+        "status": "blocked_unavailable",
+        "reason": str(
+            aggregate.get("siliconflow_benchmark")
+            or "HTTP 402 insufficient account balance on full benchmark calls"
+        ),
+        "http_status": http.get("status"),
+        "http": http,
+        "error_class": http.get("error_class"),
+        "requested_models": aggregate.get("requested_models"),
+        "completed_models": aggregate.get("completed_models"),
+        "identity_probe_status": aggregate.get("siliconflow_identity_probe"),
+        "models": models,
+        "evidence": evidence,
+        "timestamp": {
+            "available": False,
+            "value": None,
+            "reason": (
+                "the SiliconFlow international source artifacts do not record a "
+                "generated_at timestamp; not fabricated"
+            ),
+        },
+        "provider_error_code": {
+            "available": False,
+            "value": None,
+            "reason": (
+                "the HTTP error body (provider code 30001, insufficient balance) "
+                "is only described in prose in the source artifacts; no "
+                "machine-readable field records it, so it is not asserted here"
+            ),
+        },
+        "unavailable_fields": ["timestamp", "provider_error_code"],
+        "limitations": [
+            "no benchmark case ran for these models; this file is unavailability "
+            "evidence, never a benchmark result",
+            "identity probes passed before the benchmark calls were blocked by "
+            "the account balance; identity is recorded, capability is not claimed",
+        ],
+        "notes": [
+            "blocked by account balance, not by model identity or code",
+            "this file is referenced by aggregate.not_satisfied with its SHA-256",
+        ],
+    }
+
+
 def _build_rows(sources: dict[str, Any]) -> list[dict[str, Any]]:
     """Re-derive the eleven evidence rows from the committed source artifacts."""
     rows: list[dict[str, Any]] = []
@@ -886,7 +1115,7 @@ def _build_rows(sources: dict[str, Any]) -> list[dict[str, Any]]:
         "limitations": ["referenced by docs only; no key, no probe, no benchmark evidence"],
         "notes": "explicit unavailable/no-artifact row: never a provider claim",
     })
-    return rows
+    return _augment_rows(rows, sources)
 
 
 # ---------------------------------------------------------------------------
@@ -895,7 +1124,8 @@ def _build_rows(sources: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _build_aggregate(rows: list[dict[str, Any]],
-                     statistics: dict[str, Any]) -> dict[str, Any]:
+                     statistics: dict[str, Any],
+                     intl_sha256: str) -> dict[str, Any]:
     completed = [row for row in rows if row["status"] == "identity_verified_completed"]
     served_mismatch = [
         row for row in rows if row["status"] == "served_model_mismatch_completed"
@@ -944,22 +1174,38 @@ def _build_aggregate(rows: list[dict[str, Any]],
         "models": ["qwen-plus"],
         "reason": "no DashScope/Bailian key configured; no artifact",
     })
-    not_satisfied = [
-        "international 5-6 model matrix: 3 SiliconFlow international models "
-        "passed identity probes but every benchmark call returned HTTP 402 "
-        "insufficient balance; no fifth provider key is available; 4 models "
-        "completed, not 5-6",
-    ]
+    intl_evidence = {
+        "evidence_path": f"{ARTIFACT_DIR_REL}/{INTL_UNAVAILABLE_NAME}",
+        "evidence_sha256": intl_sha256,
+    }
+    not_satisfied: list[dict[str, Any]] = [{
+        "id": "international_5_6_model_matrix",
+        "reason": (
+            "international 5-6 model matrix: 3 SiliconFlow international models "
+            "passed identity probes but every benchmark call returned HTTP 402 "
+            "insufficient balance; no fifth provider key is available; 4 models "
+            "completed, not 5-6"
+        ),
+        **intl_evidence,
+    }]
     if len(completed_providers) < 2:
-        not_satisfied.append(
-            "at least 2 providers completed a 12-case benchmark: only "
-            f"{len(completed_providers)} provider(s) have evidence in this tree"
-        )
+        not_satisfied.append({
+            "id": "at_least_2_providers_12case",
+            "reason": (
+                "at least 2 providers completed a 12-case benchmark: only "
+                f"{len(completed_providers)} provider(s) have evidence in this tree"
+            ),
+            **intl_evidence,
+        })
     if len(completed) < 4:
-        not_satisfied.append(
-            "at least 4 models completed a 12-case benchmark: only "
-            f"{len(completed)} model(s) have evidence in this tree"
-        )
+        not_satisfied.append({
+            "id": "at_least_4_models_12case",
+            "reason": (
+                "at least 4 models completed a 12-case benchmark: only "
+                f"{len(completed)} model(s) have evidence in this tree"
+            ),
+            **intl_evidence,
+        })
     return {
         "providers_with_artifact": len({
             provider for provider in (
@@ -1011,7 +1257,7 @@ def _build_aggregate(rows: list[dict[str, Any]],
             "five_model_international_matrix": {
                 "satisfied": False,
                 "observed": len(completed),
-                "reason": not_satisfied[0],
+                "reason": not_satisfied[0]["reason"],
             },
             "identity_policy_applied": {"satisfied": True},
         },
@@ -1043,10 +1289,11 @@ def _build_aggregate(rows: list[dict[str, Any]],
     }
 
 
-def _build_summary(sources: dict[str, Any]) -> dict[str, Any]:
+def _build_summary(sources: dict[str, Any],
+                   intl_unavailable_sha256: str) -> dict[str, Any]:
     rows = _build_rows(sources)
     statistics = _build_statistics(rows, sources)
-    aggregate = _build_aggregate(rows, statistics)
+    aggregate = _build_aggregate(rows, statistics, intl_unavailable_sha256)
     generated_at, generated_at_source = _latest_source_generated_at(sources)
     extra_files = [
         f"{DS_PROBE_DIR}/summary.json",
@@ -1118,6 +1365,22 @@ def _build_summary(sources: dict[str, Any]) -> dict[str, Any]:
             ),
         },
         "aggregate": aggregate,
+        "intl_unavailable": {
+            "path": f"{ARTIFACT_DIR_REL}/{INTL_UNAVAILABLE_NAME}",
+            "sha256": intl_unavailable_sha256,
+            "status": "blocked_unavailable",
+            "http_status": 402,
+            "error_class": "_ProviderHTTPError",
+            "models": [
+                row["model_requested"] for row in rows
+                if row["provider"] == "siliconflow-intl"
+            ],
+            "evidence_note": (
+                "aggregate.not_satisfied items reference this file by path and "
+                "SHA-256; it is derived from the SiliconFlow international "
+                "identity-probe and benchmark-attempt artifacts"
+            ),
+        },
         # Top-level aliases kept for consumers that read the blocked list outside
         # the aggregate block; both are byte-identical content.
         "blocked_reasons": aggregate["blocked_reasons"],
@@ -1172,7 +1435,8 @@ def _render_readme(summary: dict[str, Any]) -> str:
         f"- cited source files: {provenance['cited_source_count']}",
         "",
         "Artifact files: `summary.json` (machine-readable), `README.md` (this file),",
-        "`SHA256SUMS` (covers README.md and summary.json; never itself).",
+        "`intl-unavailable.json` (SiliconFlow-international unavailability evidence)",
+        "and `SHA256SUMS` (covers all three files; never itself).",
         "",
         "## What this artifact answers",
         "",
@@ -1185,6 +1449,9 @@ def _render_readme(summary: dict[str, Any]) -> str:
         "   blocked/unavailable, with exact reasons - no fabricated success.",
         "4. Separate deterministic and AI metrics: `deterministic_target_strict`",
         "   (model-independent) is never combined with `ai_target` (provider run).",
+        "5. HTTP failure evidence and the three-model identity layer",
+        "   (requested / served / observed) for every evidence row, plus the",
+        "   `intl-unavailable.json` evidence file referenced by `not_satisfied`.",
         "",
         "## Evidence rows",
         "",
@@ -1205,6 +1472,35 @@ def _render_readme(summary: dict[str, Any]) -> str:
         "Every row cites source files with SHA-256; each source artifact's own",
         "`SHA256SUMS` is validated by the builder and by the test suite, which also",
         "re-derives the row values from the cited artifacts.",
+        "",
+        "### Evidence layers (per row)",
+        "",
+        "- `http`: `{status, code, error_class}` for a typed provider HTTP failure,",
+        "  or `null` when the provider call did not fail with an HTTP status.",
+        "  The provider-specific `code` stays `null` unless a machine-readable",
+        "  field records it (never parsed from prose).",
+        "- `probe_log_path` / `probe_log_sha256`: the identity-probe or matrix",
+        "  record that evidences `model_served`; `null` when no probe exists.",
+        "- `identity_layer`: `{requested_model, served_model, observed_model,`",
+        "  `identity_ok, identity_verified, attribution}` where `attribution` is",
+        "  `requested_model`, `served_model`, or `none`. A served-model mismatch",
+        "  is always `attribution=served_model` and is never identity-verified.",
+        "",
+        "## International provider unavailability (`intl-unavailable.json`)",
+        "",
+        f"- file: `{summary['intl_unavailable']['path']}`",
+        f"- sha256: `{summary['intl_unavailable']['sha256']}`",
+        "- provider/status: `siliconflow-intl` / `blocked_unavailable`",
+        f"- http_status: {summary['intl_unavailable']['http_status']}; "
+        f"error_class: `{summary['intl_unavailable']['error_class']}`",
+        f"- models: {', '.join('`' + model + '`' for model in summary['intl_unavailable']['models'])}",
+        "",
+        "The file is derived from the committed SiliconFlow-international identity",
+        "probe, benchmark-attempt and account-status artifacts; every cited source",
+        "file carries a SHA-256. Fields the sources do not record (timestamp,",
+        "provider error code) are explicitly marked unavailable with a reason -",
+        "never fabricated. The `not_satisfied` items below reference this file by",
+        "path and SHA-256.",
         "",
         "## Statistics (AI target, Wilson 95% CI)",
         "",
@@ -1287,7 +1583,11 @@ def _render_readme(summary: dict[str, Any]) -> str:
         "### Not satisfied (explicit)",
         "",
     ]
-    lines.extend(f"- {item}" for item in aggregate["not_satisfied"])
+    for item in aggregate["not_satisfied"]:
+        lines.append(
+            f"- {item['reason']} (evidence: `{item['evidence_path']}` "
+            f"sha256 `{item['evidence_sha256']}`)"
+        )
     lines += [
         "",
         "### Reconciliation with the phase-4 brief",
@@ -1330,8 +1630,11 @@ def _render_readme(summary: dict[str, Any]) -> str:
         "python -m pytest -q tests/test_provider_matrix.py tests/test_provider_coverage_artifact.py",
         "```",
         "",
-        "The artifact test suite is offline: it verifies the schema, the SHA-256 of",
-        "every cited file, each source artifact's own `SHA256SUMS`, the identity",
+        "`--check` rebuilds the artifact in memory and compares `summary.json`,",
+        "`README.md`, `intl-unavailable.json` and `SHA256SUMS` byte-for-byte with",
+        "the committed artifact, and re-validates the SHA256SUMS coverage; it exits",
+        "0 only on an exact match and never writes files. The artifact test suite",
+        "is offline: it verifies the schema, the SHA-256 of every cited file, each source artifact's own `SHA256SUMS`, the identity",
         "policy, Wilson interval sanity, aggregate re-derivation, and that the",
         "committed artifact matches a fresh deterministic build (`--check`).",
         "",
@@ -1358,14 +1661,21 @@ def _render_sha256sums(files: dict[str, bytes]) -> bytes:
 def build_artifact() -> dict[str, bytes]:
     """Build the artifact files in memory (deterministic, no side effects)."""
     sources = _load_sources()
-    summary = _build_summary(sources)
+    # intl-unavailable.json is rendered first because summary.json references its
+    # SHA-256 in aggregate.not_satisfied; README.md then embeds the summary data
+    # and the intl file hash; SHA256SUMS covers all three files.
+    intl_payload = _build_intl_unavailable(sources)
+    intl_bytes = (
+        json.dumps(intl_payload, indent=2, ensure_ascii=False) + "\n"
+    ).encode("utf-8")
+    intl_sha256 = _sha256_bytes(intl_bytes)
+    summary = _build_summary(sources, intl_sha256)
     summary_bytes = (
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n"
     ).encode("utf-8")
-    # summary.json is rendered first, then README.md (README embeds only summary
-    # data, never its own hash), then SHA256SUMS over both.
     files: dict[str, bytes] = {
         "summary.json": summary_bytes,
+        "intl-unavailable.json": intl_bytes,
         "README.md": _render_readme(summary).encode("utf-8"),
     }
     files["SHA256SUMS"] = _render_sha256sums(files)
@@ -1376,7 +1686,7 @@ def write_artifact(out_dir: Path) -> list[dict[str, str]]:
     files = build_artifact()
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[dict[str, str]] = []
-    for name in ("summary.json", "README.md", "SHA256SUMS"):
+    for name in (*ARTIFACT_FILES, "SHA256SUMS"):
         target = out_dir / name
         target.write_bytes(files[name])
         written.append({"path": str(target), "sha256": _sha256_bytes(files[name])})
@@ -1393,7 +1703,7 @@ def check_artifact(artifact_dir: Path) -> dict[str, Any]:
         "violations": [],
     }
     on_disk: dict[str, bytes] = {}
-    for name in ("summary.json", "README.md", "SHA256SUMS"):
+    for name in (*ARTIFACT_FILES, "SHA256SUMS"):
         target = artifact_dir / name
         if not target.is_file():
             report["ok"] = False
@@ -1410,7 +1720,7 @@ def check_artifact(artifact_dir: Path) -> dict[str, Any]:
         if not match:
             report["ok"] = False
             report["violations"].append(f"fresh build differs from committed {name}")
-    # The on-disk SHA256SUMS must also match the on-disk README/summary.
+    # The on-disk SHA256SUMS must also match every on-disk artifact file.
     sums_bytes = on_disk.get("SHA256SUMS")
     if sums_bytes is not None:
         try:
@@ -1425,7 +1735,7 @@ def check_artifact(artifact_dir: Path) -> dict[str, Any]:
             report["ok"] = False
             report["violations"].append(f"on-disk SHA256SUMS unreadable: {exc}")
             entries = {}
-        for name in ("README.md", "summary.json"):
+        for name in ARTIFACT_FILES:
             if name not in entries:
                 report["ok"] = False
                 report["violations"].append(

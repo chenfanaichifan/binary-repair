@@ -139,6 +139,7 @@ def _acceptance_payload(**overrides) -> dict:
             "verified": True,
             "download_allowed": True,
             "gate_outcome": "success_within_scope",
+            "fixture_sha256": "f" * 64,
             "candidate_sha256": "a" * 64,
         },
         "marcx_pipeline_without_manifest": {
@@ -155,6 +156,7 @@ def _acceptance_payload(**overrides) -> dict:
             "verified": True,
             "download_allowed": True,
             "gate_outcome": "success_within_scope",
+            "fixture_sha256": "e" * 64,
             "candidate_sha256": "b" * 64,
         },
         "heap_pipeline_without_manifest": {
@@ -174,6 +176,7 @@ def _acceptance_payload(**overrides) -> dict:
             "gate_outcome": "success_within_scope",
             "target_scope_check": "passed",
             "target_scope": {"name": "heap_bad", "va": 0x401130, "end": 0x40116C},
+            "fixture_sha256": "d" * 64,
             "candidate_sha256": "c" * 64,
         },
         "heap_wrong_target": {
@@ -452,6 +455,14 @@ def _write_tree(root: Path) -> Paths:
     )
     _write_provider_matrix(root)
     _write_provider_coverage(root)
+    audit = root / "artifacts" / "capability-gap-audit-2026-11-14"
+    audit.mkdir(parents=True, exist_ok=True)
+    (audit / "coverage-matrix.json").write_text(
+        json.dumps({"summary": {"gap_count": 0}, "universe": {"cell_count": 0}}),
+        encoding="utf-8",
+    )
+    (audit / "gap-report.md").write_text("# fake gap report\n", encoding="utf-8")
+    (audit / "SHA256SUMS").write_text("", encoding="utf-8")
     tests = root / "tests"
     tests.mkdir(parents=True, exist_ok=True)
     (tests / "test_release_gate.py").write_text("def test_dummy():\n    pass\n",
@@ -473,6 +484,8 @@ def _git_result(args, tree):
         return RunResult(1, "", "fatal: not a git repository")
     if args[:2] == ["rev-parse", "HEAD"]:
         return RunResult(0, str(tree.get("sha", "")) + "\n")
+    if args[:2] == ["rev-parse", "HEAD^{tree}"]:
+        return RunResult(0, "d" * 40 + "\n")
     if args[:2] == ["rev-parse", "--abbrev-ref"]:
         return RunResult(0, str(tree.get("branch", "")) + "\n")
     if args[:1] == ["status"]:
@@ -512,6 +525,20 @@ def _dispatcher(
                                  else _local_gate_summary(), "")
             return RunResult(0, static if static is not None
                              else _static_gate_summary(), "")
+        if "limactl" in joined:
+            if "--version" in argv:
+                return RunResult(0, "limactl version 2.3.0\n", "")
+            if "list" in argv:
+                return RunResult(0, json.dumps([{"name": "binaryrepair"}]) + "\n", "")
+            if "info" in argv:
+                return RunResult(0, "{\"name\":\"binaryrepair\"}\n", "")
+            if "shell" in argv:
+                if "uname" in argv:
+                    return RunResult(0, "Linux x86_64\n", "")
+                if "qemu-x86_64" in argv:
+                    return RunResult(0, "QEMU emulator version 8.2.0\n", "")
+                return RunResult(0, "", "")
+            return RunResult(0, "", "")
         if "meta_audit.py" in joined:
             return RunResult(0, meta if meta is not None else json.dumps(
                 {"ok": True, "violations": [], "recall": 1.0,
@@ -882,8 +909,8 @@ def test_release_mode_green(tmp_path: Path) -> None:
         "release-tree-identity", "static-coverage-gate",
         "claims-measurement-diff", "acceptance-contract",
         "local-coverage-gate", "meta-audit", "acceptance-invariants",
-        "universe-unknown-zero", "provider-matrix", "provider-coverage",
-        "full-pytest",
+        "universe-unknown-zero", "provenance-complete", "provider-matrix",
+        "provider-coverage", "full-pytest",
     ]
 
 

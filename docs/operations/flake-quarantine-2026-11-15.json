@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-15T00:00:00+08:00",
+  "notes": "Initial flake-quarantine registry for the 2026-11-15 release. Empty on purpose: no test is quarantined. Quarantine is debt, not a pass: every entry needs an owner, a reason, opened/expiry dates with a window <= 14 days, and evidence. Gate-critical tests are prohibited.",
+  "entries": [],
+  "prohibited": [
+    "tests/test_target_scope.py::*",
+    "tests/test_acceptance_invariants.py::*",
+    "tests/test_release_gate.py::*",
+    "tests/test_provider_matrix.py::*",
+    "tests/test_provider_coverage_artifact.py::*",
+    "tests/test_capability_audit.py::*",
+    "tests/test_coverage_gate.py::*",
+    "tests/test_ci_evidence.py::*",
+    "tests/test_contract_revision.py::*"
+  ]
+}
