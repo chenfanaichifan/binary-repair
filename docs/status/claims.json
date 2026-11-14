@@ -244,7 +244,7 @@
     "static audit dynamic_unverified status (probe-dependent rows are not closed/mitigated in static mode; release requires 0) plus a 205-cell capability universe (unknown=0) and a meta-audit with injected-defect recall/precision 1.0/1.0",
     "acceptance invariant engine (verified/rejected/not_run/target/rewrite/manifest-legacy/download/policy rules) integrated into the local coverage gate and release gate",
     "real 12-case provider matrix evidence with target-strict measurement: deepseek endpoint, 253.7 s, 13 calls, served-model identity mismatch recorded, AI target verified 6/12 (in-scope 9/12), deterministic target-strict expectation matches 12/12 with 0 verified, reference .S 6/6 verified / .c source-only 6; evidence artifacts/provider-matrix-2026-11-14",
-    "productized non-goals: all 11 carry affected cells, detected-input behaviour, owner, review-by date, productization criteria and fallback; coverage gate enforces the mapping",
+    "productized non-goals: all 12 carry affected cells, detected-input behaviour, owner, review-by date, productization criteria and fallback; coverage gate enforces the mapping",
     "staged release gate (PR/nightly/release) with claims/measurement diff, acceptance contract, provider-matrix schema, invariants, meta-audit and full-suite enforcement; CI static + PR jobs with an honestly inert nightly self-hosted-lima job",
     "4-model real matrix: 2 DeepSeek official (6/12 each) + 2 SiliconFlow CN free Qwen (0/12 each), native PoC and exact identity",
     "route A symbol resolver pure-function templates (strlen/memcpy/memset), fputs(stderr)->br_fputs rewrite, fail-closed otherwise",
@@ -268,10 +268,10 @@
     "mode": "release",
     "release": {
       "gap_count": 68,
-      "closed": 56,
+      "closed": 55,
       "open": 0,
       "mitigated": 1,
-      "non_goal": 11,
+      "non_goal": 12,
       "dynamic_unverified": 0,
       "high_severity_open": 0,
       "universe_cell_count": 240,
@@ -279,18 +279,18 @@
     },
     "static": {
       "gap_count": 62,
-      "closed": 45,
+      "closed": 44,
       "open": 0,
       "mitigated": 1,
-      "non_goal": 10,
+      "non_goal": 11,
       "dynamic_unverified": 6,
       "high_severity_open": 0,
       "universe_cell_count": 240,
       "universe_unknown": 0
     },
     "artifacts": {
-      "coverage_matrix_sha256": "878448ad9975c6e65f7c20072b46c50b14ce5359141e32859068bdab2e1c5ea7",
-      "gap_report_sha256": "520a6a448ab53db838e222728fea9c8f83e095f98d8121213b7d15914c40d204"
+      "coverage_matrix_sha256": "557a3ac5100c8f19b149fff1594079b7d1eb5e7e2fdbc52ec43cb9fd10faf00c",
+      "gap_report_sha256": "e8e70082fd7d320ae470071432c82c2693550ad4fc6d7d1ba6640dcdf21bf210"
     },
     "generated_by": "scripts/audit_capability_coverage.py on the frozen release tree",
     "note": "release numbers are the full/local audit; static numbers are the probe-free audit. The coverage gate compares the matching mode block and fails on mismatches."

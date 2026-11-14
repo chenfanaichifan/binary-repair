@@ -35,10 +35,10 @@ Latest full audit run (see `artifacts/capability-gap-audit-2026-11-14/gap-report
 | metric | value |
 |---|---|
 | gaps measured (frozen release tree) | 68 |
-| closed | 56 |
+| closed | 55 |
 | mitigated (honest platform declaration) | 1 |
 | open (actionable) | 0 |
-| non-goal (honest research/platform limits) | 11 |
+| non-goal (honest research/platform limits) | 12 |
 | high-severity open | 0 |
 | dynamic_unverified (full/local run) | 0 |
 | dynamic_unverified (static/PR mode) | 6 |
@@ -176,8 +176,8 @@ capacity-1 and keeps benign regressions byte-identical.
   `artifacts/provider-coverage-2026-11-14/` and
   `artifacts/provider-matrix-2026-11-14/`.
 - **Artifact sync (P0-2)**: the committed audit artifacts were regenerated on the
-  frozen tree and match the live audit (68 gaps / 56 closed / 1 mitigated /
-  0 open / 11 non-goal; universe 240 cells, unknown 0; static view 62 gaps with
+  frozen tree and match the live audit (68 gaps / 55 closed / 1 mitigated /
+  0 open / 12 non-goal; universe 240 cells, unknown 0; static view 62 gaps with
   `dynamic_unverified=6`). The coverage gate now fails on stale artifacts,
   claims/measurement drift and unmapped non-goal ids.
 - **Release gate (P0-1)**: `scripts/release_gate.py --release --release-sha
@@ -198,7 +198,7 @@ capacity-1 and keeps benign regressions byte-identical.
   attributed to the served model and excluded from requested-model coverage.
   The 5-6 model international matrix is explicitly **not satisfied**.
 - **Non-goal productization (P2-1)**: `docs/acceptance/non-goals-2026-11-14.md`
-  and `claims.json["non_goals"]` carry the 11 ids with affected cells,
+  and `claims.json["non_goals"]` carry the 12 ids with affected cells,
   detected-input behaviour, owner, review-by date, productization criteria,
   fallback, `roadmap_stage`, `owning_area`, `research_acceptance` and
   `quarterly_review` (next 2027-02-14); the 11th detail (direct copy sink

@@ -3383,6 +3383,30 @@ def _gap_runtime_sources(ctx: dict[str, Any]) -> list[dict[str, Any]]:
                 and not selector_value
                 and runner_consults_capabilities
             )
+            if consistent and pair == "macho/x86_64":
+                # Host-dependent platform capability: x86_64 Mach-O external PoC
+                # replay is unavailable on arm64 hosts (Rosetta gives only
+                # function-level evidence) and platform-gated elsewhere. The
+                # capability probe and runner agree; this is a documented
+                # non-goal, not something the product can prove on every host.
+                gaps.append(_gap(
+                    f"RG-external-poc::<doc>::{pair}", "non_goal",
+                    f"external PoC execution is unavailable for {pair} on this "
+                    f"host with an explicit capability reason "
+                    f"({_truncate(reason, 140)}); the capability probe and the "
+                    "PoC runner agree on platform-gated function-level evidence "
+                    "only, and no PoC is fabricated",
+                    [
+                        f"census:capability_pairs={capability_fields}",
+                        f"census:runner={selector_value or 'none'}",
+                        f"census:host={host.get('platform')}/{host.get('arch')}",
+                    ],
+                    "info", "non_goal",
+                    "run on a matching macOS host with a real external-PoC "
+                    "runner; keep function-level evidence otherwise",
+                    "runtime_sources",
+                ))
+                continue
             if consistent:
                 status = "closed"
                 severity = "info"
