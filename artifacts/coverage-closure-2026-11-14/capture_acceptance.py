@@ -28,10 +28,12 @@ def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def pipeline_case(name: str, binary: Path, manifest_path: Path, *, with_manifest: bool):
+def pipeline_case(name: str, binary: Path, manifest_path: Path, *, with_manifest: bool,
+                  allow_whole_image: bool = False):
     raw = binary.read_bytes()
     manifest = json.loads(manifest_path.read_text()) if with_manifest else None
-    out = repair_any(raw, verify=True, poc_manifest=manifest)
+    out = repair_any(raw, verify=True, poc_manifest=manifest,
+                     allow_whole_image=allow_whole_image)
     report = out.report
     packet = (report.verification or {}).get("packet") or {}
     checks = {check["id"]: check["status"] for check in packet.get("checks") or []}
@@ -52,6 +54,8 @@ def pipeline_case(name: str, binary: Path, manifest_path: Path, *, with_manifest
         "checks_failed": sorted(k for k, v in checks.items() if v == "failed"),
         "checks_not_run": sorted(k for k, v in checks.items() if v == "not_run"),
         "poc_status": (report.poc or {}).get("status") if isinstance(report.poc, dict) else None,
+        "target_policy": (report.universal or {}).get("target_policy"),
+        "allow_whole_image": allow_whole_image,
     }
 
 
@@ -104,7 +108,7 @@ def review_api_case() -> dict:
     assert client.get("/?token=" + SESSION_TOKEN).status_code == 200
     response = client.post(
         "/api/binary/repair-review",
-        data={"csrf": CSRF_TOKEN, "ai_review": "0"},
+        data={"csrf": CSRF_TOKEN, "ai_review": "0", "allow_whole_image": "1"},
         files={
             "binary": ("marcx", MARCX.read_bytes(), "application/octet-stream"),
             "poc_manifest": ("marcx-capacity.json", MARCX_MANIFEST.read_bytes(), "application/json"),
@@ -129,6 +133,7 @@ def review_api_case() -> dict:
         "checks_not_run": sorted(k for k, v in checks.items() if v == "not_run"),
         "profile": (verification.get("scope") or {}).get("profile"),
         "runtime_tier": (verification.get("scope") or {}).get("runtime_tier"),
+        "target_policy": (verification.get("scope") or {}).get("target_policy"),
     }
 
 
@@ -137,16 +142,28 @@ def main() -> int:
         "generated_by": "artifacts/coverage-closure-2026-11-14/capture_acceptance.py",
         "marcx_review_api": review_api_case(),
         "marcx_pipeline_with_manifest": pipeline_case(
-            "marcx-pipeline", MARCX, MARCX_MANIFEST, with_manifest=True
+            "marcx-pipeline", MARCX, MARCX_MANIFEST, with_manifest=True,
+            allow_whole_image=True,
         ),
         "marcx_pipeline_without_manifest": pipeline_case(
-            "marcx-pipeline", MARCX, MARCX_MANIFEST, with_manifest=False
+            "marcx-pipeline", MARCX, MARCX_MANIFEST, with_manifest=False,
+            allow_whole_image=True,
         ),
         "heap_pipeline_with_manifest": pipeline_case(
-            "heap-pipeline", HEAP, HEAP_MANIFEST, with_manifest=True
+            "heap-pipeline", HEAP, HEAP_MANIFEST, with_manifest=True,
+            allow_whole_image=True,
         ),
         "heap_pipeline_without_manifest": pipeline_case(
-            "heap-pipeline", HEAP, HEAP_MANIFEST, with_manifest=False
+            "heap-pipeline", HEAP, HEAP_MANIFEST, with_manifest=False,
+            allow_whole_image=True,
+        ),
+        "marcx_safe_default": pipeline_case(
+            "marcx-safe-default", MARCX, MARCX_MANIFEST, with_manifest=True,
+            allow_whole_image=False,
+        ),
+        "heap_safe_default": pipeline_case(
+            "heap-safe-default", HEAP, HEAP_MANIFEST, with_manifest=True,
+            allow_whole_image=False,
         ),
         "heap_target_scoped": target_scoped_case(),
         "heap_wrong_target": wrong_target_case(),
@@ -157,6 +174,15 @@ def main() -> int:
         failures.append("marcx review API did not succeed")
     if results["marcx_review_api"]["checks_failed"]:
         failures.append("marcx review API has failed checks")
+    if results["marcx_review_api"].get("target_policy") != "whole_image":
+        failures.append("marcx review API opt-in did not record target_policy=whole_image")
+    for key in ("marcx_safe_default", "heap_safe_default"):
+        row = results[key]
+        if row["disposition"] != "analysis_only" or row["verified"] or row["download_allowed"]:
+            failures.append(f"{key} must stay analysis_only without target or allow_whole_image")
+    for key in ("marcx_pipeline_with_manifest", "heap_pipeline_with_manifest"):
+        if results[key].get("target_policy") != "whole_image":
+            failures.append(f"{key} did not record whole_image policy")
     expected_marcx = "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2"
     if marcx["patched_sha256"] != expected_marcx:
         failures.append("marcx patched sha mismatch")
@@ -185,7 +211,7 @@ def main() -> int:
         "marcx_review_api", "marcx_pipeline_with_manifest",
         "marcx_pipeline_without_manifest", "heap_pipeline_with_manifest",
         "heap_pipeline_without_manifest", "heap_target_scoped", "heap_wrong_target",
-        "passed", "failures")}, indent=2))
+        "marcx_safe_default", "heap_safe_default", "passed", "failures")}, indent=2))
     return 0 if not failures else 1
 
 

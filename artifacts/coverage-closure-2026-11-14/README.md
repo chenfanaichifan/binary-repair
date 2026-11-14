@@ -1,17 +1,26 @@
-# Coverage-closure acceptance evidence (2026-11-14)
+# Coverage-closure acceptance evidence (2026-11-14, safe-default policy)
 
 End-to-end acceptance for the two repaired classes plus the phase-2
 target-scope ownership proof.  Raw output: `acceptance.json`, produced by
 `capture_acceptance.py` (run from the repo root with `.venv/bin/python`; the
 real PoC differentials execute in the Lima VM `binaryrepair`).
 
+## Safe-default policy (phase 3)
+
+- Whole-image repair is opt-in: the capacity/heap product paths below pass
+  `allow_whole_image=True` and the packets record `scope.target_policy=whole_image`;
+  without a target and without that opt-in the same fixture/manifest returns
+  **analysis_only**, no candidate and no download (`target_policy=analysis_only`).
+- The ownership path (`target="heap_bad"`) keeps `target_policy=target_scoped`
+  and a required `patch.target_scope` check; a wrong target fails closed.
+
 ## Capacity-check rewrite (marcx) — profile `native_poc_rewrite`
 
-- review API `POST /api/binary/repair-review` with `poc_manifest`:
+- review API `POST /api/binary/repair-review` with `poc_manifest` + `allow_whole_image=1`:
   HTTP 200, `decision.success=true`, `success_within_scope`, 21/21 required
   checks passed, profile `native_poc_rewrite`, tier `emulated_run`;
 - patched sha256 `93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2`;
-- pipeline with manifest: `verified_patch`; without manifest:
+- pipeline with manifest + opt-in: `verified_patch` (`whole_image`); without manifest:
   `not_verified`/`inconclusive`, no candidate.
 
 ## Heap-destination guard — profile `native_poc`
@@ -20,7 +29,7 @@ real PoC differentials execute in the Lima VM `binaryrepair`).
   (`0f65a2d2...`); with real `heap-malloc.json`: `verified_patch`, 19/19
   checks, `poc_status=pass`, candidate
   `ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73`;
-- without manifest: inconclusive, no candidate.
+- safe-default control (no target/opt-in): analysis_only, no candidate.
 
 ## Target-scoped ownership proof (phase-2 P0)
 
