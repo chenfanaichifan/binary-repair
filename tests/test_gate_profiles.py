@@ -378,9 +378,11 @@ def test_container_cell_mismatch_fails():
 
 
 def test_runtime_cell_tier_mismatch_fails():
-    # The ELF/x86-64 cell only declares emulated_run in this matrix; a native
-    # runtime tier claim for it is a matrix mismatch.
-    verification = _build(runtime=_runtime(tier="native_run"))
+    # A cell that only declares emulated_run must reject a native claim, even
+    # though the real ELF/x86-64 cell accepts both tiers.
+    empty = dict(ELF_CELL)
+    empty["runtime_tiers"] = ["emulated_run"]
+    verification = _build(runtime=_runtime(tier="native_run"), cell=empty)
     assert verification.gate.success is False
     statuses = _statuses(verification)
     assert statuses["runtime.cell_tier"] == "failed"

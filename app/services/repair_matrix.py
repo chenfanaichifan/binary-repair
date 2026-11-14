@@ -231,7 +231,9 @@ REPAIR_CELLS: tuple[RepairCell, ...] = (
         bits=64,
         endian="little",
         strategies=("strict-template", "immediate", "guard", "capacity"),
-        runtime_tiers=("emulated_run",),
+        # Native x86_64 hosts can execute this cell directly; qemu/Unicorn
+        # remains the fallback on other hosts.
+        runtime_tiers=("native_run", "emulated_run"),
         sink_classes=_ELF_X86_64_SINKS,
     ),
     RepairCell(
