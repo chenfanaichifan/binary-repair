@@ -60,3 +60,6 @@ paths only) and those skips are not release evidence.
 - Local macOS Chrome run, not a CI run; it does not prove CI execution.
 - Covers the 12 documented GUI flows, not every browser/OS combination.
 - The frozen SHA is recorded as reported by the Lead and is not re-verified here.
+
+
+Re-run on the final integration tree `f2392fd9c0f9cf5a83ae7b04a09e2ec0695c073a`: 12 passed / 0 failed / 0 skipped (0.000s).
