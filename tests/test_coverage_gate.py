@@ -38,14 +38,46 @@ def _claims(ids: list[str]) -> dict:
                 "category": "non_goal",
                 "enforcement": "unsupported",
                 "claim": "test claim",
+                "owner": "test-owner",
+                "review_by": "2027-01-31",
+                "productization_criteria": "test criteria",
+                "fallback": "test fallback",
             }
             for gap_id in ids
         ]
     }
 
 
+def _universe() -> dict:
+    cell = {
+        "container": "elf", "arch": "x86_64", "bits": "64",
+        "endian": "little", "strategy": "guard",
+        "sink_class": "unbounded_copy", "destination_kind": "stack",
+        "evidence_profile": "emulated_instruction",
+        "runtime_tier": "emulated_run", "provider": "deterministic",
+        "proof_scope": "target_scoped", "status": "supported",
+        "reason": "test cell", "claims_non_goal_id": "",
+    }
+    return {
+        "cells": [cell],
+        "dimensions": {key: [cell[key]] for key in (
+            "container", "arch", "bits", "endian", "strategy", "sink_class",
+            "destination_kind", "evidence_profile", "runtime_tier",
+            "provider", "proof_scope")},
+        "statuses": ["verified", "supported", "non_goal", "unavailable",
+                     "unknown"],
+        "counts": {"verified": 0, "supported": 1, "non_goal": 0,
+                   "unavailable": 0, "unknown": 0},
+        "cell_count": 1,
+        "unknown": 0,
+        "unmapped_non_goal_ids": [],
+        "missing_reason_count": 0,
+        "missing_reason_cells": [],
+    }
+
+
 def _audit(gaps: list[dict]) -> dict:
-    return {"gaps": gaps, "mode": "static"}
+    return {"gaps": gaps, "mode": "static", "universe": _universe()}
 
 
 def test_real_tree_static_gate_passes() -> None:
@@ -76,12 +108,16 @@ def test_evaluate_detects_high_severity_open() -> None:
 
 def test_allowlist_accepts_known_residual_and_rejects_new() -> None:
     allowed = ("EG-target-scope",)
-    ok = gate.evaluate(
-        _audit([_gap("EG-target-scope", "open", "medium")]),
-        _claims(["NG-dummy"]), "", allowed_open=allowed)
+    measured = [
+        _gap("EG-target-scope", "open", "medium"),
+        _gap("NG-dummy", "non_goal", "info", "non_goal"),
+    ]
+    ok = gate.evaluate(_audit(measured), _claims(["NG-dummy"]), "",
+                       allowed_open=allowed)
     assert ok["violations"] == []
     bad = gate.evaluate(
-        _audit([_gap("EG-new-open", "open", "medium")]),
+        _audit([_gap("EG-new-open", "open", "medium"),
+                _gap("NG-dummy", "non_goal", "info", "non_goal")]),
         _claims(["NG-dummy"]), "", allowed_open=allowed)
     assert any("ALLOWED_OPEN" in item for item in bad["violations"])
 
@@ -92,8 +128,10 @@ def test_unmapped_non_goal_is_a_violation_and_doc_or_claims_maps_it() -> None:
     assert any("not mapped" in item for item in unmapped["violations"])
     via_claims = gate.evaluate(audit, _claims(["NG-test-1"]), "")
     assert via_claims["violations"] == []
-    via_doc = gate.evaluate(audit, _claims(["NG-other"]),
-                            "see NG-test-1 in this page")
+    via_doc = gate.evaluate(
+        _audit([_gap("NG-test-1", "non_goal", "info", "non_goal"),
+                _gap("NG-other", "non_goal", "info", "non_goal")]),
+        _claims(["NG-other"]), "see NG-test-1 in this page")
     assert via_doc["violations"] == []
 
 
@@ -223,3 +261,70 @@ def test_repo_claims_parse_and_preserve_invariants() -> None:
     ids, violations = gate.claims_non_goal_ids(claims)
     assert not violations
     assert len(ids) == 11
+
+
+def test_dynamic_unverified_is_allowed_static_but_rejected_local() -> None:
+    audit = _audit([_gap("EG-target-scope", "dynamic_unverified")])
+    static = gate.evaluate(audit, _claims([]), "", local=False)
+    assert not any("dynamic_unverified" in item
+                   for item in static["violations"])
+    local = gate.evaluate(audit, _claims([]), "", local=True)
+    assert any("dynamic_unverified_count==0" in item
+               for item in local["violations"])
+
+
+def test_universe_unknown_or_unmapped_is_a_violation() -> None:
+    audit = _audit([])
+    audit["universe"]["unknown"] = 2
+    result = gate.evaluate(audit, _claims([]), "")
+    assert any("unknown count" in item for item in result["violations"])
+
+    audit = _audit([])
+    cell = dict(audit["universe"]["cells"][0])
+    cell.update({"status": "non_goal", "reason": "reserved",
+                 "claims_non_goal_id": "NG-not-in-claims"})
+    audit["universe"]["cells"] = [cell]
+    audit["universe"]["counts"] = {"verified": 0, "supported": 0,
+                                   "non_goal": 1, "unavailable": 0,
+                                   "unknown": 0}
+    result = gate.evaluate(audit, _claims([]), "")
+    assert any("claims.json non_goals" in item for item in result["violations"])
+
+
+def test_claims_productization_fields_are_required() -> None:
+    audit = _audit([_gap("NG-x", "non_goal", "info", "non_goal")])
+    claims = _claims(["NG-x"])
+    del claims["non_goals"][0]["owner"]
+    result = gate.evaluate(audit, claims, "")
+    assert any("missing fields" in item for item in result["violations"])
+
+    claims = _claims(["NG-x"])
+    claims["non_goals"][0]["review_by"] = "2028-01-01"
+    result = gate.evaluate(audit, claims, "")
+    assert any("review_by" in item for item in result["violations"])
+
+
+def test_static_gate_json_exposes_phase3_sections() -> None:
+    result = subprocess.run(
+        [sys.executable, str(SCRIPTS / "verify_coverage_gate.py"),
+         "--static-only", "--json"],
+        cwd=ROOT, capture_output=True, text=True, timeout=180,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["dynamic_unverified_count"] >= 1
+    assert payload["universe"]["unknown"] == 0
+    assert payload["meta_audit"]["ok"] is True
+    assert payload["meta_audit"]["recall"] >= 0.8
+    assert payload["invariants"]["ok"] is True
+    assert payload["invariants"]["packets_checked"] > 0
+    assert payload["acceptance"]["ok"] is True
+
+
+def test_meta_audit_and_invariants_runners_are_exposed() -> None:
+    meta = gate.run_meta_audit_check()
+    assert meta["ok"] is True and meta["passed"] is True
+    invariants = gate.run_invariant_check()
+    assert invariants["ok"] is True
+    assert invariants["packets_checked"] > 0

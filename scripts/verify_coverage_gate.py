@@ -34,6 +34,7 @@ decides which measured states are acceptable for a release.
 from __future__ import annotations
 
 import argparse
+import datetime as _datetime
 import json
 import sys
 from pathlib import Path
@@ -64,7 +65,13 @@ NON_GOALS_DOC = ROOT / "docs" / "acceptance" / "non-goals-2026-11-14.md"
 #: Re-adding an id here is a release decision and must state its rationale.
 ALLOWED_OPEN: tuple[str, ...] = ()
 
-REQUIRED_CLAIM_NON_GOAL_KEYS = ("id", "category", "enforcement", "claim")
+REQUIRED_CLAIM_NON_GOAL_KEYS = (
+    "id", "category", "enforcement", "claim", "owner", "review_by",
+    "productization_criteria", "fallback",
+)
+REVIEW_BY_MAX = _datetime.date(2027, 5, 14)
+GAP_STATUSES = ("open", "dynamic_unverified", "mitigated", "closed", "non_goal")
+UNIVERSE_STATUSES = ("verified", "supported", "non_goal", "unavailable", "unknown")
 
 
 def _load_json(path: Path) -> tuple[Any | None, str]:
@@ -84,7 +91,7 @@ def load_claims(path: Path = CLAIMS) -> tuple[dict[str, Any] | None, list[str]]:
 
 
 def claims_non_goal_ids(claims: dict[str, Any] | None) -> tuple[set[str], list[str]]:
-    """Validate the structured non_goals list and return its ids."""
+    """Validate the structured non_goals list (incl. productization fields)."""
     if not isinstance(claims, dict):
         return set(), ["claims.json is missing; non_goal mapping cannot be checked"]
     entries = claims.get("non_goals")
@@ -98,13 +105,29 @@ def claims_non_goal_ids(claims: dict[str, Any] | None) -> tuple[set[str], list[s
         if not isinstance(entry, dict):
             violations.append(f"claims.json non_goals[{index}] is not an object")
             continue
+        entry_id = str(entry.get("id", "") or "")
         missing = [key for key in REQUIRED_CLAIM_NON_GOAL_KEYS
                    if not str(entry.get(key, "") or "").strip()]
         if missing:
             violations.append(
-                f"claims.json non_goals[{index}] missing fields: {missing}"
+                f"claims.json non_goals[{index}] ({entry_id or '?'}) missing "
+                f"fields: {missing}"
             )
-        entry_id = str(entry.get("id", "") or "")
+        review_by = str(entry.get("review_by", "") or "")
+        if review_by:
+            try:
+                review_date = _datetime.date.fromisoformat(review_by)
+            except ValueError:
+                violations.append(
+                    f"claims.json non_goals[{index}] ({entry_id or '?'}) "
+                    f"review_by is not an ISO date: {review_by!r}"
+                )
+            else:
+                if review_date > REVIEW_BY_MAX:
+                    violations.append(
+                        f"claims.json non_goals[{index}] ({entry_id or '?'}) "
+                        f"review_by {review_by} is after {REVIEW_BY_MAX}"
+                    )
         if not entry_id:
             continue
         if entry_id in ids:
@@ -128,6 +151,107 @@ def check_acceptance(path: Path = ACCEPTANCE) -> list[str]:
     return []
 
 
+def _universe_violations(audit: dict[str, Any],
+                         claims_ids: set[str],
+                         local: bool) -> tuple[list[str], dict[str, Any]]:
+    violations: list[str] = []
+    universe = audit.get("universe")
+    if not isinstance(universe, dict):
+        return (["audit document has no capability 'universe' object"], {})
+    cells = universe.get("cells")
+    if not isinstance(cells, list) or not cells:
+        violations.append("capability universe has no cells")
+        cells = []
+    try:
+        unknown = int(universe.get("unknown", -1))
+    except (TypeError, ValueError):
+        unknown = -1
+    if unknown != 0:
+        violations.append(f"capability universe unknown count is {unknown}, not 0")
+    counts = universe.get("counts") if isinstance(universe.get("counts"), dict) else {}
+    recomputed = {status: 0 for status in UNIVERSE_STATUSES}
+    missing_reason: list[str] = []
+    unmapped: list[str] = []
+    bad_status: list[str] = []
+    dimensions = universe.get("dimensions") if isinstance(
+        universe.get("dimensions"), dict) else {}
+    for row in cells:
+        if not isinstance(row, dict):
+            violations.append("capability universe has a non-object cell")
+            continue
+        status = str(row.get("status", ""))
+        if status not in UNIVERSE_STATUSES:
+            bad_status.append(status or "(missing)")
+        recomputed[status] = recomputed.get(status, 0) + 1
+        reason = str(row.get("reason", "") or "").strip()
+        if status in {"non_goal", "unavailable"} and not reason:
+            missing_reason.append(str(row.get("cell", "?")))
+        non_goal_id = str(row.get("claims_non_goal_id", "") or "")
+        if non_goal_id and non_goal_id not in claims_ids:
+            unmapped.append(non_goal_id)
+    if bad_status:
+        violations.append(
+            f"capability universe has invalid statuses: {sorted(set(bad_status))}")
+    if missing_reason:
+        violations.append(
+            "capability universe non_goal/unavailable cells without an explicit "
+            f"reason: {sorted(set(missing_reason))[:6]}")
+    if unmapped:
+        violations.append(
+            "capability universe non_goal cells reference ids missing from "
+            f"claims.json non_goals: {sorted(set(unmapped))}")
+    if int(universe.get("unmapped_non_goal_ids") and len(
+            universe.get("unmapped_non_goal_ids")) or 0) > 0:
+        violations.append(
+            "capability universe self-reports unmapped non-goal ids: "
+            f"{universe.get('unmapped_non_goal_ids')}")
+    if int(universe.get("missing_reason_count", 0) or 0) > 0:
+        violations.append(
+            "capability universe self-reports cells without a reason: "
+            f"{universe.get('missing_reason_cells')}")
+    if counts and recomputed != {status: int(counts.get(status, 0) or 0)
+                                 for status in UNIVERSE_STATUSES}:
+        violations.append(
+            "capability universe status counts disagree with the cells "
+            f"(declared={counts}, recomputed={recomputed})")
+    # Dimension coverage: every declared dimension value must appear in a cell.
+    def _row_value(row: dict[str, Any], dimension: str) -> str:
+        if dimension == "container":
+            return str(row.get("container", ""))
+        if dimension == "arch":
+            return str(row.get("arch", ""))
+        if dimension == "bits":
+            return str(row.get("bits", ""))
+        if dimension == "endian":
+            return str(row.get("endian", ""))
+        return str(row.get(dimension, ""))
+
+    for dimension, values in dimensions.items():
+        if not isinstance(values, list):
+            continue
+        present = {_row_value(row, dimension) for row in cells
+                   if isinstance(row, dict)}
+        missing_values = [value for value in values
+                          if str(value) not in present]
+        if missing_values:
+            violations.append(
+                f"capability universe dimension {dimension} has values absent "
+                f"from every cell: {missing_values}")
+    summary = {
+        "ok": not violations,
+        "unknown": unknown,
+        "cell_count": len(cells),
+        "counts": {status: recomputed.get(status, 0)
+                   for status in UNIVERSE_STATUSES},
+        "non_goal_count": recomputed.get("non_goal", 0),
+        "unavailable_count": recomputed.get("unavailable", 0),
+        "unmapped_non_goal_ids": sorted(set(unmapped)),
+        "missing_reason_count": len(missing_reason),
+        "dimension_count": len(dimensions),
+    }
+    return violations, summary
+
+
 def evaluate(audit: dict[str, Any] | None, claims: dict[str, Any] | None,
              non_goals_doc: str, *, allowed_open: tuple[str, ...] = ALLOWED_OPEN,
              local: bool = False) -> dict[str, Any]:
@@ -138,6 +262,8 @@ def evaluate(audit: dict[str, Any] | None, claims: dict[str, Any] | None,
             "violations": ["audit document is not an object"],
             "open_gap_ids": [],
             "non_goal_gap_ids": [],
+            "dynamic_unverified_gap_ids": [],
+            "dynamic_unverified_count": 0,
             "allowlist": list(allowed_open),
         }
     gaps = audit.get("gaps")
@@ -146,14 +272,23 @@ def evaluate(audit: dict[str, Any] | None, claims: dict[str, Any] | None,
             "violations": ["audit document has no 'gaps' list"],
             "open_gap_ids": [],
             "non_goal_gap_ids": [],
+            "dynamic_unverified_gap_ids": [],
+            "dynamic_unverified_count": 0,
             "allowlist": list(allowed_open),
         }
     rows = [gap for gap in gaps if isinstance(gap, dict)]
     gap_ids = [str(gap.get("gap_id", "")) for gap in rows]
+    invalid_status = [str(gap.get("status", "")) for gap in rows
+                      if str(gap.get("status", "")) not in GAP_STATUSES]
+    if invalid_status:
+        violations.append(
+            f"audit gaps have invalid statuses: {sorted(set(invalid_status))}")
     open_ids = sorted(str(gap.get("gap_id", "")) for gap in rows
                       if gap.get("status") == "open")
     non_goal_ids = sorted(str(gap.get("gap_id", "")) for gap in rows
                           if gap.get("status") == "non_goal")
+    dynamic_ids = sorted(str(gap.get("gap_id", "")) for gap in rows
+                         if gap.get("status") == "dynamic_unverified")
 
     detector_errors = sorted(
         gap_id for gap_id in gap_ids if gap_id.startswith("GM-detector-error::")
@@ -182,6 +317,10 @@ def evaluate(audit: dict[str, Any] | None, claims: dict[str, Any] | None,
                 "ALLOWED_OPEN still lists id(s) that are no longer measured open: "
                 f"{stale_allowlist}; tighten the allowlist"
             )
+        if dynamic_ids:
+            violations.append(
+                "--local requires dynamic_unverified_count==0 before release "
+                f"claims; still dynamic_unverified: {dynamic_ids}")
 
     claims_ids, claim_violations = claims_non_goal_ids(claims)
     violations.extend(claim_violations)
@@ -196,23 +335,42 @@ def evaluate(audit: dict[str, Any] | None, claims: dict[str, Any] | None,
             f"non-goals doc: {unmapped}"
         )
     if local:
-        measured = set(non_goal_ids)
-        stale_claims = sorted(claims_ids - measured - set(open_ids))
+        if claims_ids != set(non_goal_ids):
+            stale = sorted(claims_ids - set(non_goal_ids))
+            missing = sorted(set(non_goal_ids) - claims_ids)
+            violations.append(
+                "--local claims/non_goal id mismatch: claims-only="
+                f"{stale} audit-only={missing}")
+    else:
+        # Static mode has dynamic_unverified rows for probe-only non-goals: a
+        # claims id that is not a static non_goal must be excused by one.
+        stale_claims = sorted(
+            claims_ids - set(non_goal_ids) - set(dynamic_ids))
         if stale_claims:
             violations.append(
-                "claims.json non_goals lists id(s) that are not measured as "
-                f"non_goal/open audit rows: {stale_claims}"
-            )
+                "claims.json non_goals lists id(s) measured neither as non_goal "
+                f"nor dynamic_unverified in static mode: {stale_claims}")
+    universe_violations, universe_summary = _universe_violations(
+        audit, claims_ids, local)
+    violations.extend(universe_violations)
     summary = {
         "gap_count": len(rows),
         "open_gap_ids": open_ids,
         "non_goal_gap_ids": non_goal_ids,
+        "dynamic_unverified_gap_ids": dynamic_ids,
+        "dynamic_unverified_count": len(dynamic_ids),
         "allowed_open": list(allowed_open),
         "mapped_non_goal_count": len(non_goal_ids) - len(unmapped),
         "claims_non_goal_count": len(claims_ids),
+        "universe": universe_summary,
         "violations": violations,
     }
     return summary
+
+
+def _as_summary_universe(summary: dict[str, Any]) -> dict[str, Any]:
+    value = summary.get("universe")
+    return value if isinstance(value, dict) else {}
 
 
 def _build_audit(local: bool) -> tuple[dict[str, Any] | None, str]:
@@ -224,6 +382,63 @@ def _build_audit(local: bool) -> tuple[dict[str, Any] | None, str]:
         return coverage_audit.build_audit(include_probes=local), ""
     except Exception as exc:  # noqa: BLE001
         return None, f"audit build failed: {type(exc).__name__}: {exc}"
+
+
+def run_meta_audit_check() -> dict[str, Any]:
+    """Run scripts/meta_audit.py in-process (deterministic, no network)."""
+    try:
+        scripts_dir = str(Path(__file__).resolve().parent)
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        import meta_audit
+    except Exception as exc:  # noqa: BLE001 - surfaced as an honest failure
+        return {
+            "ok": False, "passed": False, "violations": [
+                f"meta_audit unavailable: {type(exc).__name__}: {exc}"],
+            "recall": 0.0, "precision": 0.0, "scenario_count": 0,
+        }
+    try:
+        report = meta_audit.run_meta_audit(include_probes=False)
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "ok": False, "passed": False, "violations": [
+                f"meta_audit failed: {type(exc).__name__}: {exc}"],
+            "recall": 0.0, "precision": 0.0, "scenario_count": 0,
+        }
+    return {
+        "ok": bool(report.get("ok")),
+        "passed": bool(report.get("ok")),
+        "recall": report.get("recall", 0.0),
+        "precision": report.get("precision", 0.0),
+        "scenario_count": report.get("scenario_count", 0),
+        "violations": list(report.get("violations", [])),
+    }
+
+
+def run_invariant_check(path: Path = ACCEPTANCE) -> dict[str, Any]:
+    """Validate the committed acceptance evidence with the invariant engine."""
+    document, error = _load_json(path)
+    if error:
+        return {"ok": False, "violations": [f"acceptance unavailable: {error}"],
+                "packets_checked": 0, "limitations": []}
+    try:
+        from app.services import acceptance_invariants
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "violations": [
+            f"acceptance_invariants unavailable: {type(exc).__name__}: {exc}"],
+            "packets_checked": 0, "limitations": []}
+    try:
+        result = acceptance_invariants.check_acceptance(document)
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "violations": [
+            f"acceptance invariant check failed: {type(exc).__name__}: {exc}"],
+            "packets_checked": 0, "limitations": []}
+    return {
+        "ok": bool(result.get("ok")),
+        "violations": list(result.get("violations", [])),
+        "packets_checked": int(result.get("packets_checked", 0) or 0),
+        "limitations": list(result.get("limitations", [])),
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -265,24 +480,58 @@ def main(argv: list[str] | None = None) -> int:
         claim_errors.append(f"non-goals doc unavailable: {type(exc).__name__}: {exc}")
     summary = evaluate(audit, claims, doc_text, local=local)
     violations = list(claim_errors) + list(summary["violations"])
+    acceptance_violations = check_acceptance(args.acceptance)
+    summary["acceptance"] = {
+        "ok": not acceptance_violations,
+        "violations": list(acceptance_violations),
+    }
     if local:
-        violations.extend(check_acceptance(args.acceptance))
+        violations.extend(acceptance_violations)
+    meta_audit_report = run_meta_audit_check()
+    summary["meta_audit"] = meta_audit_report
+    if local and not meta_audit_report["ok"]:
+        violations.append(
+            "--local requires meta_audit.ok; violations="
+            f"{meta_audit_report['violations']}")
+    invariants_report = run_invariant_check(args.acceptance)
+    summary["invariants"] = invariants_report
+    if local and not invariants_report["ok"]:
+        violations.append(
+            "--local requires invariants.ok; violations="
+            f"{invariants_report['violations']}")
     summary["mode"] = mode
+    summary["ok"] = not violations
     summary["violations"] = violations
     if args.json:
         print(json.dumps(summary, indent=2, sort_keys=True, ensure_ascii=False))
     else:
         print(
             "coverage-gate: mode={mode} gaps={gap_count} open={open} "
-            "non_goals={non_goals} mapped={mapped} claims_entries={claims} "
-            "allowed={allowed} violations={violations}".format(
+            "dynamic_unverified={dynamic} non_goals={non_goals} mapped={mapped} "
+            "claims_entries={claims} allowed={allowed} "
+            "universe_cells={cells} universe_unknown={unknown} "
+            "universe_unmapped={unmapped} meta_ok={meta_ok} "
+            "recall={recall} precision={precision} invariants_ok={inv_ok} "
+            "invariant_packets={inv_packets} acceptance_ok={accept_ok} "
+            "violations={violations}".format(
                 mode=mode,
                 gap_count=summary.get("gap_count", 0),
                 open=summary.get("open_gap_ids", []),
+                dynamic=summary.get("dynamic_unverified_count", 0),
                 non_goals=summary.get("non_goal_gap_ids", []),
                 mapped=summary.get("mapped_non_goal_count", 0),
                 claims=summary.get("claims_non_goal_count", 0),
                 allowed=summary.get("allowed_open", []),
+                cells=_as_summary_universe(summary).get("cell_count", 0),
+                unknown=_as_summary_universe(summary).get("unknown", 0),
+                unmapped=_as_summary_universe(summary).get(
+                    "unmapped_non_goal_ids", []),
+                meta_ok=meta_audit_report.get("ok"),
+                recall=meta_audit_report.get("recall"),
+                precision=meta_audit_report.get("precision"),
+                inv_ok=invariants_report.get("ok"),
+                inv_packets=invariants_report.get("packets_checked"),
+                accept_ok=summary.get("acceptance", {}).get("ok"),
                 violations=len(violations),
             )
         )

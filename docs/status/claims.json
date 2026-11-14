@@ -37,67 +37,111 @@
       "id": "EG-cases-target-not-analyzed",
       "category": "engine_gap",
       "enforcement": "analysis_only; no target-scoped candidate; target-strict baseline (baseline_expected_target_strict) recorded as analysis_only/not_verified",
-      "claim": "Hard-case non-template targets (inline loops, sprintf, multicall, nonconst, UAF, heap guard) are AI-benchmark/research evidence, not deterministic engine successes; strict target-scoped deterministic baselines (baseline_expected_target_strict) record analysis_only/not_verified instead of a repaired claim."
+      "claim": "Hard-case non-template targets (inline loops, sprintf, multicall, nonconst, UAF, heap guard) are AI-benchmark/research evidence, not deterministic engine successes; strict target-scoped deterministic baselines (baseline_expected_target_strict) record analysis_only/not_verified instead of a repaired claim.",
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "productization_criteria": "target-strict deterministic recovery for the sprintf/inline-loop/multicall/nonconst families, each with a reviewed fixture + runtime oracle and baseline_expected_target_strict=verified_patch; format-aware sink templates are required for sprintf",
+      "fallback": "analysis_only; no target-scoped candidate; the target-strict benchmark baseline records not_verified and never claims repair"
     },
     {
       "id": "NG-ai-leaf-only::ai_assembly_repair",
       "category": "non_goal",
       "enforcement": "no verified; leaf/instruction allowlist refuses calls and non-whitelisted code",
-      "claim": "AI assembly path accepts only a leaf-level reviewed block and cannot express repairs that need external calls/helpers."
+      "claim": "AI assembly path accepts only a leaf-level reviewed block and cannot express repairs that need external calls/helpers.",
+      "owner": "ai-path",
+      "review_by": "2027-05-14",
+      "productization_criteria": "deterministic validator + regression fixture for external-call-free assembly leaf blocks; the AI candidate is accepted only through the unified evidence-profile gate",
+      "fallback": "no verified; the leaf/instruction allowlist refuses calls and non-whitelisted code, so no candidate is produced"
     },
     {
       "id": "NG-ai-leaf-only::ai_binary_repair",
       "category": "non_goal",
       "enforcement": "no verified; leaf/allowlist machine-code validator; AI never owns acceptance",
-      "claim": "AI binary path emits only structurally validated leaf blocks; the deterministic unified gate decides acceptance."
+      "claim": "AI binary path emits only structurally validated leaf blocks; the deterministic unified gate decides acceptance.",
+      "owner": "ai-path",
+      "review_by": "2027-05-14",
+      "productization_criteria": "deterministic re-verification of machine-code leaf blocks plus a regression fixture; the deterministic unified gate remains the acceptance owner",
+      "fallback": "no verified; AI binary output is only a structurally validated candidate for the deterministic gate"
     },
     {
       "id": "NG-non-goal-1",
       "category": "non_goal",
       "enforcement": "analysis_only; no candidate for unrecoverable destination capacity",
-      "claim": "Copy sinks whose destination capacity is not recoverable by same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations)."
+      "claim": "Copy sinks whose destination capacity is not recoverable by same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations).",
+      "owner": "engine",
+      "review_by": "2027-03-31",
+      "productization_criteria": "same-function capacity recovery for dynamic sizes, pointer+offset aliases and cross-function allocations, with a fixture + runtime oracle and a reviewed list of the newly recoverable subset",
+      "fallback": "analysis_only for unrecoverable destinations; no candidate bytes"
     },
     {
       "id": "NG-non-goal-2",
       "category": "non_goal",
       "enforcement": "analysis_only; no deterministic template; no download",
-      "claim": "sprintf/format-expansion, UAF/lifetime and integer/loop deterministic repair templates (AI research only)."
+      "claim": "sprintf/format-expansion, UAF/lifetime and integer/loop deterministic repair templates (AI research only).",
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "productization_criteria": "deterministic templates for sprintf/format-string expansion, UAF/lifetime and integer/loop families, each with a fixture + runtime oracle; format-aware sink template + regression fixture for sprintf specifically",
+      "fallback": "analysis_only; no deterministic template and no download"
     },
     {
       "id": "NG-non-goal-3",
       "category": "non_goal",
       "enforcement": "unsupported; no rewrite backend for these containers/architectures",
-      "claim": "arm32, riscv, mips, powerpc and big-endian machine-code repair."
+      "claim": "arm32, riscv, mips, powerpc and big-endian machine-code repair.",
+      "owner": "lead",
+      "review_by": "2027-05-14",
+      "productization_criteria": "container/writer + gate cell + fixtures for arm32/riscv/mips/powerpc or big-endian input; until all exist the matrix cell must stay out of the claimed universe",
+      "fallback": "unsupported; no rewrite backend for these containers"
     },
     {
       "id": "NG-non-goal-4",
       "category": "non_goal",
       "enforcement": "unsupported; no fat/32-bit Mach-O rewrite",
-      "claim": "32-bit Mach-O and fat Mach-O rewriting (thin little-endian only)."
+      "claim": "32-bit Mach-O and fat Mach-O rewriting (thin little-endian only).",
+      "owner": "lead",
+      "review_by": "2027-05-14",
+      "productization_criteria": "fat/32-bit Mach-O rewrite backend with reparse + fixture + gate cell evidence",
+      "fallback": "unsupported; thin little-endian Mach-O only"
     },
     {
       "id": "NG-non-goal-5",
       "category": "non_goal",
       "enforcement": "unsupported/not_run for native execution beyond the Mach-O path",
-      "claim": "Windows native execution and macOS native execution beyond the existing Mach-O path."
+      "claim": "Windows native execution and macOS native execution beyond the existing Mach-O path.",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "productization_criteria": "Windows and non-Mach-O macOS native runtime runners with a measured runtime-capability probe, fixture and acceptance case",
+      "fallback": "unsupported/not_run; no native execution claim"
     },
     {
       "id": "RG-external-poc::<doc>::pe/arm64",
       "category": "runtime_gap",
       "enforcement": "not_run; never verified_patch",
-      "claim": "External-PoC replay is unavailable for PE/arm64 by design; only emulated/static evidence exists and a PoC requirement stays inconclusive."
+      "claim": "External-PoC replay is unavailable for PE/arm64 by design; only emulated/static evidence exists and a PoC requirement stays inconclusive.",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "productization_criteria": "a PE external-PoC runner on a supported host with a fixture + native/emulated runtime oracle and capability probe poc_available=true; PE PoC evidence is then gate-validated",
+      "fallback": "not_run; PE PoC manifests are never executed, simulated or reported as verified"
     },
     {
       "id": "RG-external-poc::<doc>::pe/i386",
       "category": "runtime_gap",
       "enforcement": "not_run; never verified_patch",
-      "claim": "External-PoC replay is unavailable for PE/i386 by design; PE PoC manifests are never executed or faked."
+      "claim": "External-PoC replay is unavailable for PE/i386 by design; PE PoC manifests are never executed or faked.",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "productization_criteria": "a PE external-PoC runner on a supported host with a fixture + native/emulated runtime oracle and capability probe poc_available=true; PE PoC evidence is then gate-validated",
+      "fallback": "not_run; PE PoC manifests are never executed, simulated or reported as verified"
     },
     {
       "id": "RG-external-poc::<doc>::pe/x86_64",
       "category": "runtime_gap",
       "enforcement": "not_run; never verified_patch",
-      "claim": "External-PoC replay is unavailable for PE/x86_64 by design; the gate reports the missing evidence, it does not simulate it."
+      "claim": "External-PoC replay is unavailable for PE/x86_64 by design; the gate reports the missing evidence, it does not simulate it.",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "productization_criteria": "a PE external-PoC runner on a supported host with a fixture + native/emulated runtime oracle and capability probe poc_available=true; PE PoC evidence is then gate-validated",
+      "fallback": "not_run; PE PoC manifests are never executed, simulated or reported as verified"
     }
   ],
   "implemented": [

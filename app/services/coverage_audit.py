@@ -63,10 +63,11 @@ GAP_CATEGORIES = (
     "matrix_claim_mismatch",
     "non_goal",
 )
-GAP_STATUSES = ("open", "closed", "mitigated", "non_goal")
+GAP_STATUSES = ("open", "dynamic_unverified", "mitigated", "closed", "non_goal")
 GAP_SEVERITIES = ("high", "medium", "low", "info")
 SEVERITY_RANK = {"high": 0, "medium": 1, "low": 2, "info": 3}
-STATUS_RANK = {"open": 0, "mitigated": 1, "closed": 2, "non_goal": 3}
+STATUS_RANK = {"open": 0, "dynamic_unverified": 1, "mitigated": 2,
+               "closed": 3, "non_goal": 4}
 CATEGORY_RANK = {name: index for index, name in enumerate(GAP_CATEGORIES)}
 
 FIXTURE_GLOBS = (
@@ -1239,6 +1240,19 @@ def _census_poc_manifests(ctx: dict[str, Any]) -> list[dict[str, Any]]:
 def _census_claims(ctx: dict[str, Any]) -> dict[str, Any]:
     payload = _json_load(CLAIMS_PATH)
     text = _read_text(CLAIMS_PATH)
+    non_goals = []
+    for entry in _as_list(_as_dict(payload).get("non_goals")):
+        item = _as_dict(entry)
+        non_goals.append({
+            "id": str(item.get("id", "")),
+            "category": str(item.get("category", "")),
+            "enforcement": str(item.get("enforcement", "")),
+            "claim": str(item.get("claim", "")),
+            "owner": str(item.get("owner", "")),
+            "review_by": str(item.get("review_by", "")),
+            "productization_criteria": str(item.get("productization_criteria", "")),
+            "fallback": str(item.get("fallback", "")),
+        })
     return {
         "path": CLAIMS_PATH,
         "present": payload is not None,
@@ -1252,6 +1266,8 @@ def _census_claims(ctx: dict[str, Any]) -> dict[str, Any]:
             str(item) for item in _as_list(_as_dict(payload).get("explicitly_unimplemented"))
         ],
         "implemented_count": len(_as_list(_as_dict(payload).get("implemented"))),
+        "non_goals": non_goals,
+        "non_goal_ids": sorted(entry["id"] for entry in non_goals if entry["id"]),
         "latest_verified_ci": _as_dict(_as_dict(payload).get("latest_verified_ci")),
         "text_lower": text.lower(),
     }
@@ -1370,7 +1386,8 @@ def _analyze_fixture(ctx: dict[str, Any], rel: str, data: bytes) -> dict[str, An
 def _extract_probe_row(report: Any, outcome: Any, *, probe_id: str, path: str,
                        source: str, requested_strategy: str,
                        verify: bool, target_mode: bool = False,
-                       target: str = "") -> dict[str, Any]:
+                       target: str = "", allow_whole_image: bool | None = None,
+                       ) -> dict[str, Any]:
     verification = _as_dict(getattr(report, "verification", {}))
     packet = _as_dict(verification.get("packet"))
     scope = _as_dict(packet.get("scope"))
@@ -1387,6 +1404,9 @@ def _extract_probe_row(report: Any, outcome: Any, *, probe_id: str, path: str,
     runtime = _as_dict(getattr(report, "runtime", {}))
     matrix = _as_dict(getattr(report, "matrix", {}))
     universal = _as_dict(getattr(report, "universal", {}))
+    target_policy = str(universal.get("target_policy", "")
+                        or scope.get("target_policy", "")
+                        or packet.get("target_policy", ""))
     target_scope = _as_dict(universal.get("target_scope"))
     if not target_scope:
         target_scope = _as_dict(getattr(report, "target_scope", None))
@@ -1458,6 +1478,8 @@ def _extract_probe_row(report: Any, outcome: Any, *, probe_id: str, path: str,
         "requested_strategy": requested_strategy,
         "target_mode": bool(target_mode),
         "target": str(target or ""),
+        "target_policy": target_policy,
+        "allow_whole_image": allow_whole_image,
         "target_scope": target_scope or None,
         "target_actions_total": len(actions),
         "target_actions_missing_site": missing_site,
@@ -1498,7 +1520,8 @@ def _extract_probe_row(report: Any, outcome: Any, *, probe_id: str, path: str,
 def _probe_repair(ctx: dict[str, Any], rel: str, source: str, data: bytes, *,
                   strategy: str, verify: bool, probe_id: str,
                   target: str | None = None,
-                  require_target: bool = False) -> dict[str, Any]:
+                  require_target: bool = False,
+                  allow_whole_image: bool | None = None) -> dict[str, Any]:
     pipeline, error = _load_module("app.services.binary_pipeline")
     if pipeline is None or not hasattr(pipeline, "repair_any"):
         return {
@@ -1523,6 +1546,8 @@ def _probe_repair(ctx: dict[str, Any], rel: str, source: str, data: bytes, *,
             "requested_strategy": strategy,
             "target_mode": bool(target),
             "target": str(target or ""),
+            "target_policy": "",
+            "allow_whole_image": allow_whole_image,
             "status": "target_not_supported",
             "error": "repair_any has no target/require_target parameters",
         }
@@ -1531,6 +1556,8 @@ def _probe_repair(ctx: dict[str, Any], rel: str, source: str, data: bytes, *,
         "verify": verify,
         "allow_static_only": True,
     }
+    if allow_whole_image is True and "allow_whole_image" in params:
+        call_kwargs["allow_whole_image"] = True
     if target is not None and "target" in params:
         call_kwargs["target"] = target
     if require_target and "require_target" in params:
@@ -1546,6 +1573,8 @@ def _probe_repair(ctx: dict[str, Any], rel: str, source: str, data: bytes, *,
             "requested_strategy": strategy,
             "target_mode": bool(target),
             "target": str(target or ""),
+            "target_policy": "",
+            "allow_whole_image": allow_whole_image,
             "status": "target_not_supported",
             "error": f"target kwarg rejected: {_truncate(exc)}",
         }
@@ -1558,6 +1587,8 @@ def _probe_repair(ctx: dict[str, Any], rel: str, source: str, data: bytes, *,
             "requested_strategy": strategy,
             "target_mode": bool(target),
             "target": str(target or ""),
+            "target_policy": "",
+            "allow_whole_image": allow_whole_image,
             "status": "probe_error",
             "error": f"{type(exc).__name__}: {_truncate(exc)}",
         }
@@ -1571,13 +1602,16 @@ def _probe_repair(ctx: dict[str, Any], rel: str, source: str, data: bytes, *,
             "requested_strategy": strategy,
             "target_mode": bool(target),
             "target": str(target or ""),
+            "target_policy": "",
+            "allow_whole_image": allow_whole_image,
             "status": "probe_error",
             "error": "outcome.report missing",
         }
     return _extract_probe_row(report, outcome, probe_id=probe_id, path=rel,
                               source=source, requested_strategy=strategy,
                               verify=verify, target_mode=target is not None,
-                              target=target or "")
+                              target=target or "",
+                              allow_whole_image=allow_whole_image)
 
 
 def _budget_exceeded(ctx: dict[str, Any]) -> bool:
@@ -1615,6 +1649,7 @@ def _run_probes(ctx: dict[str, Any]) -> None:
         probes.append(_probe_repair(
             ctx, rel, str(row["source"]), data,
             strategy="auto", verify=True, probe_id=f"fixture:{rel}",
+            allow_whole_image=True,
         ))
     # Strategy selection probes: request every declared strategy of the cell on
     # the first fixture that maps to that cell, static-only (no execution).
@@ -1640,6 +1675,7 @@ def _run_probes(ctx: dict[str, Any]) -> None:
                     ctx, first_by_cell[cell_key], "strategy_probe", data,
                     strategy=str(strategy), verify=False,
                     probe_id=f"strategy:{cell_key}:{strategy}",
+                    allow_whole_image=True,
                 ))
     # Capacity probes are explicit because the strategy may be declared by the
     # engine/profile registry before the matrix lists it.
@@ -1660,6 +1696,7 @@ def _run_probes(ctx: dict[str, Any]) -> None:
         capacity_rows.append(_probe_repair(
             ctx, rel, "capacity_probe", data,
             strategy="capacity", verify=True, probe_id=f"capacity:{rel}",
+            allow_whole_image=True,
         ))
     # Target-mode probes: measure whether requested repair actions stay inside a
     # caller-declared function scope (only when the pipeline/gate support it).
@@ -1770,12 +1807,51 @@ def _run_probes(ctx: dict[str, Any]) -> None:
                 probe_id=f"target:{case_id}",
                 target=target_name, require_target=True,
             ))
+    # Safe-default probes: the product default must be analysis_only with no
+    # candidate when neither a target nor allow_whole_image is supplied.  This
+    # measures the safe default itself, separately from the opt-in whole-image
+    # capability probes above.
+    safe_default_rows: list[dict[str, Any]] = []
+    safe_candidates: list[str] = []
+    for row in probe_targets:
+        if len(safe_candidates) >= 6:
+            break
+        rel = str(row.get("path"))
+        if rel in safe_candidates:
+            continue
+        safe_candidates.append(rel)
+    for rel in safe_candidates:
+        data = _read_bytes(ctx, ROOT / rel)
+        if data is None:
+            continue
+        if _budget_exceeded(ctx):
+            safe_default_rows.append({
+                "probe_id": f"safe_default:{rel}",
+                "path": rel,
+                "source": "safe_default_probe",
+                "verify": True,
+                "requested_strategy": "auto",
+                "target_mode": False,
+                "target": "",
+                "target_policy": "",
+                "allow_whole_image": False,
+                "status": "skipped_budget",
+                "error": None,
+            })
+            continue
+        safe_default_rows.append(_probe_repair(
+            ctx, rel, "safe_default_probe", data,
+            strategy="auto", verify=True,
+            probe_id=f"safe_default:{rel}",
+            allow_whole_image=False,
+        ))
     ctx["probes"] = {
         "fixtures": probes,
         "analysis": analysis_rows,
         "strategies": strategy_rows,
         "capacity": capacity_rows,
         "targets": target_rows,
+        "safe_default": safe_default_rows,
         "skipped_budget": skipped,
     }
 
@@ -1981,6 +2057,87 @@ def _status_rank(status: str) -> int:
     return STATUS_RANK.get(status, 99)
 
 
+#: Gap ids/prefixes whose status requires a dynamic fixture/target probe.  In
+#: ``--static-only`` (no probes) they are reported as ``dynamic_unverified``
+#: instead of a fabricated closed/mitigated/open status: static evidence cannot
+#: prove or disprove them.
+PROBE_DEPENDENT_GAP_IDS: tuple[str, ...] = (
+    "EG-capacity-strategy",
+    "EG-target-scope",
+    "OG-wrong-function-candidate",
+    "EG-cases-target-not-analyzed",
+    "EG-strategy-request-not-honored",
+    "GM-safe-default-policy",
+)
+PROBE_DEPENDENT_GAP_PREFIXES: tuple[str, ...] = (
+    "MM-strategy-unexercised::",
+    "MM-sink-class-unexercised::",
+)
+STATIC_DYNAMIC_PLACEHOLDERS: tuple[tuple[str, str, str, str], ...] = (
+    (
+        "EG-cases-target-not-analyzed",
+        "engine_gap",
+        "hard-case benchmark target reachability requires the dynamic fixture "
+        "analysis/target probes; static mode cannot measure it",
+        "cases",
+    ),
+    (
+        "EG-strategy-request-not-honored",
+        "engine_gap",
+        "per-cell strategy-select behaviour requires the dynamic strategy probes; "
+        "static mode cannot measure it",
+        "engine_strategy_request",
+    ),
+    (
+        "GM-safe-default-policy",
+        "gate_mismatch",
+        "safe-default behaviour (no target/allow_whole_image => analysis_only, "
+        "no candidate, no verified packet) requires dynamic probes; static mode "
+        "cannot measure it",
+        "safe_default",
+    ),
+)
+
+
+def _apply_static_dynamic_status(gaps: list[dict[str, Any]],
+                                 ctx: dict[str, Any]) -> list[dict[str, Any]]:
+    """Static mode: mark probe-dependent statuses as ``dynamic_unverified``."""
+    if bool(ctx.get("_include_probes")):
+        return gaps
+    converted: list[dict[str, Any]] = []
+    for gap in gaps:
+        probe_dependent = gap["gap_id"] in PROBE_DEPENDENT_GAP_IDS or any(
+            gap["gap_id"].startswith(prefix)
+            for prefix in PROBE_DEPENDENT_GAP_PREFIXES
+        )
+        if probe_dependent and gap["status"] in {"open", "mitigated", "closed"}:
+            updated = dict(gap)
+            updated["status"] = "dynamic_unverified"
+            updated["symptom"] = (
+                f"{gap['symptom']} [static mode: dynamic probe evidence not "
+                "collected; status is dynamic_unverified, not a closure or an "
+                "open failure]"
+            )
+            converted.append(updated)
+        else:
+            converted.append(gap)
+    existing = {gap["gap_id"] for gap in converted}
+    for gap_id, category, symptom, detector in STATIC_DYNAMIC_PLACEHOLDERS:
+        if gap_id in existing:
+            continue
+        converted.append(_gap(
+            gap_id, category, symptom,
+            ["census:static-mode:fixture/strategy/target probes not run"],
+            "info", "dynamic_unverified",
+            "run the full audit (or coverage gate --local) to measure this",
+            detector,
+        ))
+    converted.sort(key=lambda item: (CATEGORY_RANK[item["category"]],
+                                     SEVERITY_RANK[item["severity"]],
+                                     item["gap_id"]))
+    return converted
+
+
 def _merge_gaps(gaps: list[dict[str, Any]]) -> list[dict[str, Any]]:
     merged: dict[str, dict[str, Any]] = {}
     for gap in gaps:
@@ -2165,6 +2322,33 @@ def _gap_sink_classes(ctx: dict[str, Any]) -> list[dict[str, Any]]:
                 f"{arch} analyzer path",
                 "engine_sink_classes", novel=True,
             ))
+    # General dead-declaration detector: a declared sink class with no emission
+    # marker in any analyzer/engine source is a declaration no engine can
+    # produce (meta-audit injects one to measure this detector).
+    capacity_source = _read_text(MODULE_PATHS["capacity"])
+    analyzer_sources = analysis_source + "\n" + i386_source
+    special_classes = {"immediate_length", "capacity_check_mismatch"}
+    for kind in sorted(declared):
+        if kind in special_classes:
+            continue
+        markers = (f'"{kind}"', f"'{kind}'")
+        has_marker = any(marker in analyzer_sources or marker in capacity_source
+                         for marker in markers)
+        if has_marker:
+            continue
+        gaps.append(_gap(
+            f"EG-sink-class-dead::{kind}", "engine_gap",
+            f"repair_matrix declares sink class {kind} but no analyzer/engine "
+            "source emits it, so the declaration is dead",
+            [
+                f"census:declared_sink_classes={sorted(declared)}",
+                f"census:emitted_kinds={sorted(emitted)}",
+                _source_line(MODULE_PATHS["repair_matrix"], "SINK_CLASSES"),
+            ],
+            "medium", "open",
+            "remove the class from repair_matrix or implement an emitters path",
+            "engine_sink_classes", novel=True,
+        ))
     if "immediate_length" not in declared:
         gaps.append(_gap(
             "EG-sink-class-dead-immediate_length", "engine_gap",
@@ -4040,7 +4224,74 @@ def _coverage_rows(ctx: dict[str, Any]) -> dict[str, Any]:
 # audit assembly
 # ---------------------------------------------------------------------------
 
+def _gap_safe_default(ctx: dict[str, Any]) -> list[dict[str, Any]]:
+    """Measure the safe default: no target and no allow_whole_image."""
+    probes = _as_dict(ctx.get("probes"))
+    rows = [_as_dict(row) for row in _as_list(probes.get("safe_default"))]
+    if not rows:
+        return []
+    ok_rows = [row for row in rows if row.get("status") == "ok"]
+
+    def _safe(row: dict[str, Any]) -> bool:
+        policy = str(row.get("target_policy") or "")
+        candidate = row.get("candidate")
+        return (
+            str(row.get("disposition")) == "analysis_only"
+            and not bool(row.get("verified"))
+            and candidate is not True
+            and not bool(row.get("download_allowed"))
+            and policy in {"analysis_only", ""}
+        )
+
+    unsafe = [row for row in ok_rows if not _safe(row)]
+    evidence = [
+        f"census:probe_rows={len(rows)} usable={len(ok_rows)}",
+        f"census:safe_rows={len(ok_rows) - len(unsafe)} unsafe={len(unsafe)}",
+    ]
+    for row in ok_rows[:8]:
+        evidence.append(
+            "probe:{} disposition={} verified={} candidate={} download={} "
+            "target_policy={}".format(
+                row.get("probe_id"), row.get("disposition"),
+                row.get("verified"), row.get("candidate"),
+                row.get("download_allowed"), row.get("target_policy") or "-",
+            )
+        )
+    if not ok_rows:
+        return [_gap(
+            "GM-safe-default-policy", "gate_mismatch",
+            "safe-default probes produced no usable probe rows: the default "
+            "(no target, allow_whole_image=False) path could not be measured",
+            evidence, "low", "mitigated",
+            "fix the probe/pipeline so the default path can be measured",
+            "safe_default",
+        )]
+    if unsafe:
+        return [_gap(
+            "GM-safe-default-policy", "gate_mismatch",
+            f"{len(unsafe)}/{len(ok_rows)} safe-default probes returned a "
+            "candidate/verified/download without a target or explicit "
+            "allow_whole_image; the default whole-image path can still be read "
+            "as a repair claim",
+            evidence, "high", "open",
+            "make the default path analysis_only (no candidate, no verified, no "
+            "download); whole-image repair requires allow_whole_image=True or a "
+            "target",
+            "safe_default", novel=True,
+        )]
+    return [_gap(
+        "GM-safe-default-policy", "gate_mismatch",
+        f"measured safe default for {len(ok_rows)} fixtures: with neither a "
+        "target nor allow_whole_image the pipeline returns analysis_only with no "
+        "candidate, no verified packet and no download",
+        evidence, "info", "closed",
+        "keep the safe default and re-measure in every full audit",
+        "safe_default",
+    )]
+
+
 DETECTORS: tuple[tuple[str, Callable[[dict[str, Any]], list[dict[str, Any]]]], ...] = (
+    ("safe_default", _gap_safe_default),
     ("engine_capacity", _gap_engine_capacity),
     ("engine_heap", _gap_engine_heap),
     ("engine_sink_classes", _gap_sink_classes),
@@ -4118,6 +4369,7 @@ def _summarize(gaps: list[dict[str, Any]], ctx: dict[str, Any]) -> dict[str, Any
         "mitigated_count": counts_by_status.get("mitigated", 0),
         "closed_count": counts_by_status.get("closed", 0),
         "non_goal_count": counts_by_status.get("non_goal", 0),
+        "dynamic_unverified_count": counts_by_status.get("dynamic_unverified", 0),
         "high_severity_open": sum(
             1 for gap in gaps
             if gap["status"] == "open" and gap["severity"] == "high"
@@ -4131,23 +4383,401 @@ def _summarize(gaps: list[dict[str, Any]], ctx: dict[str, Any]) -> dict[str, Any
                                     if gap["status"] == "mitigated"),
         "closed_gap_ids": sorted(gap["gap_id"] for gap in gaps
                                  if gap["status"] == "closed"),
+        "dynamic_unverified_gap_ids": sorted(
+            gap["gap_id"] for gap in gaps
+            if gap["status"] == "dynamic_unverified"),
         "probes": {
             "fixtures": len(_as_list(probes.get("fixtures"))),
             "analysis": len(_as_list(probes.get("analysis"))),
             "strategies": len(_as_list(probes.get("strategies"))),
             "capacity": len(_as_list(probes.get("capacity"))),
             "targets": len(_as_list(probes.get("targets"))),
+            "safe_default": len(_as_list(probes.get("safe_default"))),
             "skipped_budget": int(probes.get("skipped_budget", 0) or 0),
+        },
+        "universe": {
+            "cell_count": int(_as_dict(ctx.get("_universe")).get("cell_count", 0) or 0),
+            "unknown": int(_as_dict(ctx.get("_universe")).get("unknown", 0) or 0),
+            "counts": _as_dict(_as_dict(ctx.get("_universe")).get("counts")),
+            "non_goal_count": int(
+                _as_dict(_as_dict(ctx.get("_universe")).get("counts")).get(
+                    "non_goal", 0) or 0),
+            "unmapped_non_goal_ids": _as_list(
+                _as_dict(ctx.get("_universe")).get("unmapped_non_goal_ids")),
+            "missing_reason_count": int(
+                _as_dict(ctx.get("_universe")).get("missing_reason_count", 0) or 0),
         },
     }
 
 
-def build_audit(*, include_probes: bool = True,
-                include_legacy_artifact: bool = True,
-                max_fixture_probes: int | None = None,
-                budget_seconds: float = DEFAULT_BUDGET_SECONDS,
-                include_strategy_probes: bool = True) -> dict[str, Any]:
-    """Run the audit and return the deterministic coverage/gap document."""
+UNIVERSE_STATUSES = ("verified", "supported", "non_goal", "unavailable", "unknown")
+UNIVERSE_DESTINATION_KINDS = ("stack", "heap", "global")
+UNIVERSE_PROOF_SCOPES = ("target_scoped", "whole_image", "function_level",
+                         "whole_program")
+UNIVERSE_PROVIDERS = ("deterministic", "ai")
+
+
+def _universe_measurements(ctx: dict[str, Any]) -> dict[str, Any]:
+    probes = _as_dict(ctx.get("probes"))
+    emitted: dict[str, set[str]] = {}
+    destinations: dict[str, set[str]] = {}
+    verified: set[tuple[str, str, str]] = set()
+    for row in _as_list(probes.get("analysis")):
+        row_dict = _as_dict(row)
+        cell = str(row_dict.get("cell") or "")
+        if not cell:
+            continue
+        parts = cell.split("/")
+        if len(parts) < 2:
+            continue
+        pair = f"{parts[0]}/{parts[1]}"
+        emitted.setdefault(pair, set()).update(
+            str(kind) for kind in _as_list(row_dict.get("kinds")))
+        destinations.setdefault(pair, set()).update(
+            str(kind) for kind in _as_list(row_dict.get("destination_kinds")))
+    for row in _as_list(probes.get("fixtures")):
+        row_dict = _as_dict(row)
+        if row_dict.get("status") == "ok" and row_dict.get("verified"):
+            verified.add((str(row_dict.get("format")), str(row_dict.get("arch")),
+                          str(row_dict.get("strategy"))))
+    for row in _as_list(probes.get("targets")):
+        row_dict = _as_dict(row)
+        if row_dict.get("status") != "ok":
+            continue
+        passed = any(
+            str(_as_dict(check).get("id")) == "patch.target_scope"
+            and str(_as_dict(check).get("status")) == "passed"
+            for check in _as_list(row_dict.get("checks"))
+        )
+        if passed and int(row_dict.get("target_actions_total") or 0) > 0:
+            verified.add((str(row_dict.get("format")), str(row_dict.get("arch")),
+                          str(row_dict.get("strategy"))))
+    runtime_available: dict[tuple[str, str, str], bool] = {}
+    for row in _as_list(_as_dict(ctx.get("runtime")).get("sources")):
+        row_dict = _as_dict(row)
+        key = (str(row_dict.get("format")), str(row_dict.get("arch")),
+               str(row_dict.get("runtime_tier")))
+        runtime_available[key] = runtime_available.get(key, False) or bool(
+            row_dict.get("available"))
+    return {
+        "emitted": emitted,
+        "destinations": destinations,
+        "verified": verified,
+        "runtime_available": runtime_available,
+    }
+
+
+def _universe_analyzer_capabilities() -> dict[str, Any]:
+    analyzer_source = _read_text(MODULE_PATHS["analyzer"])
+    i386_source = _read_text(MODULE_PATHS["analyzer_i386"])
+    analysis_source = analyzer_source + "\n" + i386_source
+    capacity_source = _read_text(MODULE_PATHS["capacity"])
+    dead_kinds: set[str] = set()
+    module, _error = _load_module("app.services.repair_matrix")
+    sink_classes = _as_dict(getattr(module, "SINK_CLASSES", {}))
+    for kind in sorted(sink_classes):
+        if kind in {"capacity_check_mismatch"}:
+            if '"capacity_check_mismatch"' not in capacity_source:
+                dead_kinds.add(kind)
+            continue
+        marker = f'"{kind}"'
+        if marker not in analysis_source and marker not in capacity_source:
+            dead_kinds.add(kind)
+    # analyzer.py recovers heap destinations for the x86_64 scanner only; the
+    # arm64 scanner and the i386 scanner do not (documented fail-closed limits).
+    heap_archs = {"x86_64"} if 'destination_kind="heap"' in analyzer_source else set()
+    return {
+        "heap_archs": heap_archs,
+        "arch_sources": {
+            "x86_64": analyzer_source,
+            "arm64": analyzer_source,
+            "i386": i386_source,
+        },
+        "dead_sink_classes": dead_kinds,
+    }
+
+
+def _universe_status(*, provider: str, proof_scope: str,
+                     destination_kind: str, sink_class: str,
+                     container: str, arch: str, strategy: str,
+                     runtime_tier: str, tier_available: bool,
+                     sink_emitted: bool, measured_verified: bool,
+                     heap_supported: bool,
+                     stream: dict[str, Any]) -> tuple[str, str, str]:
+    """Return (status, reason, claims_non_goal_id) for one universe cell."""
+    del stream  # reserved for future evidence attachment
+    if provider == "ai":
+        non_goal_id = ("NG-ai-leaf-only::ai_assembly_repair"
+                       if container == "elf" else
+                       "NG-ai-leaf-only::ai_binary_repair")
+        return ("non_goal",
+                "AI paths are not the acceptance owner: leaf/instruction "
+                "allowlist validator, deterministic unified gate decides accept",
+                non_goal_id)
+    if destination_kind == "global":
+        return ("non_goal",
+                "global destination capacity recovery is reserved / out of "
+                "scope (no analyzer emits destination_kind=global)",
+                "NG-non-goal-1")
+    if proof_scope == "whole_program":
+        return ("non_goal",
+                "verification is function/PoC scoped; whole-program proof is "
+                "not claimed",
+                "")
+    if destination_kind == "heap" and not heap_supported:
+        return ("unavailable",
+                f"analyzer has no heap destination capacity recovery for {arch}",
+                "NG-non-goal-1")
+    if sink_class in {"capacity_check_mismatch"} and strategy != "capacity":
+        return ("unavailable",
+                "capacity_check_mismatch is only produced by the reviewed "
+                "capacity engine (strategy=capacity)",
+                "")
+    if not sink_emitted:
+        return ("unavailable",
+                f"analyzer has no emission path for sink class {sink_class} on "
+                f"{arch}",
+                "NG-non-goal-1" if sink_class in {"syscall_length",
+                                                  "checked_copy"} else "")
+    if not tier_available:
+        return ("unavailable",
+                f"declared runtime tier {runtime_tier} is unavailable on the "
+                "host that produced this measurement (platform-gated; no "
+                "fabricated runtime evidence)",
+                "RG-external-poc::<doc>::macho/x86_64"
+                if container == "macho" and arch == "x86_64" else "")
+    if strategy == "strict-template" and not (container == "elf" and arch == "x86_64"):
+        return ("unavailable",
+                "strict-template is a reviewed-input legacy path for "
+                "elf/x86_64 only",
+                "")
+    if measured_verified:
+        return ("verified",
+                "measured verified candidate in the audit probes "
+                "(deterministic gate passed)", "")
+    return ("supported",
+            "declared engine path (matrix cell + analyzer/writer + evidence "
+            "profile); no verified probe evidence in this audit run", "")
+
+
+def _build_universe(ctx: dict[str, Any]) -> dict[str, Any]:
+    """Explicit capability universe: dimensions + statused cells (unknown=0)."""
+    matrix = _as_dict(ctx.get("matrix"))
+    measurements = _universe_measurements(ctx)
+    analyzer_caps = _universe_analyzer_capabilities()
+    claims = _as_dict(ctx.get("claims"))
+    claims_non_goal_ids = set(_as_list(claims.get("non_goal_ids")))
+    emitted = _as_dict(measurements["emitted"])
+    destinations = _as_dict(measurements["destinations"])
+    verified = set(measurements["verified"])
+    runtime_available = _as_dict(measurements["runtime_available"])
+    sink_meta = _as_dict(matrix.get("sink_classes"))
+    strategy_profiles = _as_dict(matrix.get("strategy_profiles"))
+    host = _as_dict(_as_dict(ctx.get("runtime")).get("host"))
+    cells_out: list[dict[str, Any]] = []
+    dimension_values: dict[str, set[str]] = {
+        "container": set(), "arch": set(), "bits": set(), "endian": set(),
+        "strategy": set(), "sink_class": set(), "destination_kind": set(),
+        "evidence_profile": set(), "runtime_tier": set(), "provider": set(),
+        "proof_scope": set(),
+    }
+    for cell in _as_list(matrix.get("cells")):
+        container = str(cell.get("container"))
+        arch = str(cell.get("arch"))
+        bits = str(cell.get("bits"))
+        endian = str(cell.get("endian"))
+        cell_key = str(cell.get("key"))
+        pair = f"{container}/{arch}"
+        cell_sinks = [str(item) for item in _as_list(cell.get("sink_classes"))]
+        # Per-cell sink classes are the phase-2 measured matrix truth; a class
+        # the analyzer/engine cannot emit at all is dead (meta-audit injects one).
+        cell_emitted = {
+            sink for sink in cell_sinks
+            if sink not in set(analyzer_caps["dead_sink_classes"])
+        }
+        heap_supported = arch in set(analyzer_caps["heap_archs"])
+        # (sink_class, strategy) pairs this cell meaningfully declares.
+        pairs: list[tuple[str, str]] = []
+        for strategy in _as_list(cell.get("strategies")):
+            strategy = str(strategy)
+            if strategy == "strict-template":
+                pairs.append(("(legacy_whole_image)", strategy))
+                continue
+            matching = [
+                sink for sink in cell_sinks
+                if str(_as_dict(sink_meta.get(sink)).get("strategy")) == strategy
+            ]
+            if matching:
+                pairs.extend((sink, strategy) for sink in matching)
+            elif strategy == "capacity" and "capacity_check_mismatch" in cell_sinks:
+                pairs.append(("capacity_check_mismatch", strategy))
+        if not pairs:
+            pairs.append(("(none)", "none"))
+        for sink_class, strategy in pairs:
+            sink_emitted = sink_class in cell_emitted or (
+                sink_class == "capacity_check_mismatch"
+                and strategy == "capacity"
+                and container == "elf" and arch == "x86_64"
+            )
+            dest_kinds = ["stack"]
+            if sink_class == "unbounded_copy" and heap_supported:
+                dest_kinds.append("heap")
+            for destination_kind in dest_kinds:
+                if destination_kind == "heap":
+                    evidence_profile = "native_poc"
+                elif strategy == "capacity":
+                    evidence_profile = "native_poc_rewrite"
+                elif strategy == "strict-template":
+                    evidence_profile = "strict_template"
+                else:
+                    evidence_profile = "emulated_instruction"
+                for runtime_tier in _as_list(cell.get("runtime_tiers")):
+                    runtime_tier = str(runtime_tier)
+                    tier_available = bool(
+                        runtime_available.get((container, arch, runtime_tier)))
+                    for provider in UNIVERSE_PROVIDERS:
+                        scopes = (UNIVERSE_PROOF_SCOPES if provider == "deterministic"
+                                  else ("function_level",))
+                        for proof_scope in scopes:
+                            if proof_scope == "whole_program":
+                                destination = "stack"
+                            else:
+                                destination = destination_kind
+                            status, reason, non_goal_id = _universe_status(
+                                provider=provider, proof_scope=proof_scope,
+                                destination_kind=destination,
+                                sink_class=sink_class, container=container,
+                                arch=arch, strategy=strategy,
+                                runtime_tier=runtime_tier,
+                                tier_available=tier_available,
+                                sink_emitted=sink_emitted,
+                                measured_verified=(container, arch,
+                                                   strategy) in verified,
+                                heap_supported=heap_supported,
+                                stream={},
+                            )
+                            cells_out.append({
+                                "container": container,
+                                "arch": arch,
+                                "bits": bits,
+                                "endian": endian,
+                                "cell": cell_key,
+                                "strategy": strategy,
+                                "sink_class": sink_class,
+                                "destination_kind": destination,
+                                "evidence_profile": evidence_profile,
+                                "runtime_tier": runtime_tier,
+                                "provider": provider,
+                                "proof_scope": proof_scope,
+                                "status": status,
+                                "reason": reason,
+                                "claims_non_goal_id": non_goal_id,
+                            })
+                            for key in (
+                                "container", "arch", "bits", "endian",
+                                "strategy", "sink_class", "destination_kind",
+                                "evidence_profile", "runtime_tier", "provider",
+                                "proof_scope",
+                            ):
+                                dimension_values[key].add(str(cells_out[-1][key]))
+            # global destination is an explicit non-goal for every pair
+            for proof_scope in ("target_scoped", "whole_image"):
+                for runtime_tier in _as_list(cell.get("runtime_tiers"))[:1]:
+                    status, reason, non_goal_id = _universe_status(
+                        provider="deterministic", proof_scope=proof_scope,
+                        destination_kind="global", sink_class=sink_class,
+                        container=container, arch=arch, strategy=strategy,
+                        runtime_tier=str(runtime_tier), tier_available=True,
+                        sink_emitted=False, measured_verified=False,
+                        heap_supported=heap_supported, stream={},
+                    )
+                    cells_out.append({
+                        "container": container, "arch": arch, "bits": bits,
+                        "endian": endian, "cell": cell_key, "strategy": strategy,
+                        "sink_class": sink_class, "destination_kind": "global",
+                        "evidence_profile": "native_poc",
+                        "runtime_tier": str(runtime_tier),
+                        "provider": "deterministic", "proof_scope": proof_scope,
+                        "status": status, "reason": reason,
+                        "claims_non_goal_id": non_goal_id,
+                    })
+                    dimension_values["destination_kind"].add("global")
+                    dimension_values["provider"].add("deterministic")
+                    dimension_values["proof_scope"].add(proof_scope)
+                    dimension_values["evidence_profile"].add("native_poc")
+    # A whole-program non-goal row so the proof_scope dimension is explicit.
+    cells_out.append({
+        "container": "(all)", "arch": "(all)", "bits": "(all)",
+        "endian": "(all)", "cell": "(all)", "strategy": "(any)",
+        "sink_class": "(any)", "destination_kind": "(any)",
+        "evidence_profile": "(any)", "runtime_tier": "(any)",
+        "provider": "deterministic", "proof_scope": "whole_program",
+        "status": "non_goal",
+        "reason": "whole-program proof is out of scope: verification is scoped "
+                  "to the supplied PoC/regression cases and the one repaired "
+                  "function",
+        "claims_non_goal_id": "",
+    })
+    for key in ("container", "arch", "bits", "endian"):
+        dimension_values[key].add("(all)")
+    for key in ("strategy", "sink_class", "destination_kind",
+                "evidence_profile", "runtime_tier"):
+        dimension_values[key].add("(any)")
+    cells_out.sort(key=lambda row: (
+        row["container"], row["arch"], row["bits"], row["endian"],
+        row["strategy"], row["sink_class"], row["destination_kind"],
+        row["provider"], row["proof_scope"], row["runtime_tier"],
+        row["evidence_profile"],
+    ))
+    counts = {status: 0 for status in UNIVERSE_STATUSES}
+    for row in cells_out:
+        counts[row["status"]] = counts.get(row["status"], 0) + 1
+    unmapped_non_goal = sorted({
+        row["claims_non_goal_id"] for row in cells_out
+        if row["status"] == "non_goal" and row["claims_non_goal_id"]
+        and row["claims_non_goal_id"] not in claims_non_goal_ids
+    })
+    missing_reason = sorted({
+        f"{row['cell']}/{row['strategy']}/{row['sink_class']}/"
+        f"{row['destination_kind']}/{row['provider']}/{row['proof_scope']}"
+        for row in cells_out
+        if row["status"] in {"non_goal", "unavailable"} and not row["reason"]
+    })
+    allowed_non_goal_ids = sorted({
+        row["claims_non_goal_id"] for row in cells_out
+        if row["status"] == "non_goal" and row["claims_non_goal_id"]
+    })
+    return {
+        "schema_version": 1,
+        "dimensions": {key: sorted(values)
+                       for key, values in sorted(dimension_values.items())},
+        "cells": cells_out,
+        "statuses": list(UNIVERSE_STATUSES),
+        "counts": counts,
+        "cell_count": len(cells_out),
+        "unknown": counts.get("unknown", 0),
+        "host": {
+            "platform": host.get("platform", ""),
+            "arch": host.get("arch", ""),
+        },
+        "claims_non_goal_ids": sorted(claims_non_goal_ids),
+        "allowed_non_goal_ids": allowed_non_goal_ids,
+        "unmapped_non_goal_ids": unmapped_non_goal,
+        "missing_reason_count": len(missing_reason),
+        "missing_reason_cells": missing_reason[:10],
+    }
+
+
+def build_census_context(*, include_probes: bool = True,
+                         include_legacy_artifact: bool = True,
+                         max_fixture_probes: int | None = None,
+                         budget_seconds: float = DEFAULT_BUDGET_SECONDS,
+                         include_strategy_probes: bool = True) -> dict[str, Any]:
+    """Build the measurement context (census + optional probes) without gap rows.
+
+    Exposed for the meta-audit, which injects synthetic census fixtures and runs
+    the real detectors against them.
+    """
     ctx: dict[str, Any] = {
         "_started": time.monotonic(),
         "_budget_seconds": float(budget_seconds),
@@ -4171,13 +4801,28 @@ def build_audit(*, include_probes: bool = True,
     ctx["docs"] = _census_docs(ctx)
     ctx["benchmarks"] = _census_benchmarks(ctx)
     ctx["probes"] = {"fixtures": [], "analysis": [], "strategies": [],
-                     "capacity": [], "skipped_budget": 0}
+                     "capacity": [], "targets": [], "safe_default": [],
+                     "skipped_budget": 0}
     if include_probes:
         _run_probes(ctx)
-        _apply_probe_results(ctx)
-    else:
-        _apply_probe_results(ctx)
+    _apply_probe_results(ctx)
     ctx["capability"] = _measure_capability(ctx)
+    return ctx
+
+
+def build_audit(*, include_probes: bool = True,
+                include_legacy_artifact: bool = True,
+                max_fixture_probes: int | None = None,
+                budget_seconds: float = DEFAULT_BUDGET_SECONDS,
+                include_strategy_probes: bool = True) -> dict[str, Any]:
+    """Run the audit and return the deterministic coverage/gap document."""
+    ctx = build_census_context(
+        include_probes=include_probes,
+        include_legacy_artifact=include_legacy_artifact,
+        max_fixture_probes=max_fixture_probes,
+        budget_seconds=budget_seconds,
+        include_strategy_probes=include_strategy_probes,
+    )
     gaps: list[dict[str, Any]] = []
     for _name, detector in DETECTORS:
         try:
@@ -4193,6 +4838,9 @@ def build_audit(*, include_probes: bool = True,
                 _name,
             ))
     gaps = _merge_gaps(gaps)
+    gaps = _apply_static_dynamic_status(gaps, ctx)
+    universe = _build_universe(ctx)
+    ctx["_universe"] = universe
     coverage_rows = _coverage_rows(ctx)
     environment = {
         "platform": sys.platform,
@@ -4217,13 +4865,20 @@ def build_audit(*, include_probes: bool = True,
         ]),
         "probes_skipped_budget": int(probes.get("skipped_budget", 0) or 0),
         "target_mode_probes": len(_as_list(probes.get("targets"))),
+        "safe_default_probes": len(_as_list(probes.get("safe_default"))),
         "fixtures_skipped_over_size": rows_over_size,
         "network_access": False,
         "host_elf_execution": False,
+        "dynamic_status_policy": (
+            "static mode: probe-dependent detectors report dynamic_unverified "
+            "(neither closed/mitigated nor open); --local requires "
+            "dynamic_unverified_count==0"
+        ),
         "probe_evidence_note": (
-            "fixture probes pass allow_static_only=True so a produced candidate "
-            "can be inspected without supplying a PoC manifest; the resulting "
-            "static_only_patch rows are measurement aids, not product claims"
+            "whole-image-capability fixture probes pass allow_whole_image=True "
+            "explicitly when the pipeline exposes it; safe-default probes pass "
+            "neither target nor allow_whole_image. Both reuse the product's own "
+            "acceptance runtimes and never run a host-native Linux ELF."
         ),
         "notes": [
             "verify=True probes reuse the product's own acceptance runtimes "
@@ -4260,12 +4915,14 @@ def build_audit(*, include_probes: bool = True,
             "capability": ctx["capability"],
         },
         "coverage_rows": coverage_rows,
+        "universe": universe,
         "probes": {
             "fixtures": probes.get("fixtures", []),
             "analysis": probes.get("analysis", []),
             "strategies": probes.get("strategies", []),
             "capacity": probes.get("capacity", []),
             "targets": probes.get("targets", []),
+            "safe_default": probes.get("safe_default", []),
         },
         "gaps": gaps,
         "summary": _summarize(gaps, ctx),
@@ -4325,10 +4982,17 @@ def render_gap_report(audit: dict[str, Any]) -> str:
         "## Summary",
         "",
         f"- gaps measured: **{summary.get('gap_count', 0)}** "
-        f"(open {summary.get('open_count', 0)}, mitigated "
+        f"(open {summary.get('open_count', 0)}, dynamic_unverified "
+        f"{summary.get('dynamic_unverified_count', 0)}, mitigated "
         f"{summary.get('mitigated_count', 0)}, closed "
         f"{summary.get('closed_count', 0)}, non_goal "
         f"{summary.get('non_goal_count', 0)})",
+        f"- capability universe: {_as_dict(summary.get('universe')).get('cell_count', 0)} "
+        f"cells, unknown "
+        f"**{_as_dict(summary.get('universe')).get('unknown', 0)}**, "
+        f"non_goal {_as_dict(summary.get('universe')).get('non_goal_count', 0)}, "
+        f"unmapped non-goals "
+        f"{len(_as_list(_as_dict(summary.get('universe')).get('unmapped_non_goal_ids')))}",
         f"- high-severity open gaps: **{summary.get('high_severity_open', 0)}**",
         f"- coverage rows: {len(_as_list(rows.get('cells')))} cells, "
         f"{len(_as_list(rows.get('sink_classes')))} sink classes, "
@@ -4356,6 +5020,60 @@ def render_gap_report(audit: dict[str, Any]) -> str:
         lines.extend(_gap_table(open_gaps))
     else:
         lines.append("No open gaps were measured in this run.")
+    dynamic_gaps = [gap for gap in gaps
+                    if gap["status"] == "dynamic_unverified"]
+    lines.extend(["", "## Dynamic-unverified (static mode: needs --local probes)", ""])
+    if dynamic_gaps:
+        lines.extend(_gap_table(dynamic_gaps))
+        lines.append("")
+        lines.append(
+            "Static mode cannot measure these probe-dependent gaps; they are "
+            "neither closed/mitigated nor open failures. `--local` requires "
+            "this count to be 0 before release claims."
+        )
+    else:
+        lines.append("No dynamic-unverified gaps: this run collected probe evidence.")
+    universe = _as_dict(audit.get("universe"))
+    universe_cells = _as_list(universe.get("cells"))
+    if universe_cells:
+        universe_counts = _as_dict(universe.get("counts"))
+        lines.extend([
+            "",
+            "## Capability universe (three-state, unknown must be 0)",
+            "",
+            f"- cells: **{universe.get('cell_count', 0)}**, unknown: "
+            f"**{universe.get('unknown', 0)}**, unmapped non-goal ids: "
+            f"{len(_as_list(universe.get('unmapped_non_goal_ids')))}, "
+            f"missing reasons: {universe.get('missing_reason_count', 0)}",
+            "",
+            "| status | cells |",
+            "|---|---|",
+        ])
+        for status in UNIVERSE_STATUSES:
+            lines.append(f"| {status} | {universe_counts.get(status, 0)} |")
+        lines.extend([
+            "",
+            "Dimension coverage: " + ", ".join(
+                f"{name}={len(_as_list(values))}"
+                for name, values in sorted(
+                    _as_dict(universe.get("dimensions")).items())),
+            "",
+            "| status | sample cell | reason | claims non-goal |",
+            "|---|---|---|---|",
+        ])
+        for row in universe_cells[:40]:
+            lines.append("| {status} | {cell}/{strategy}/{sink}/{dest}/{provider}/"
+                         "{scope} | {reason} | {ng} |".format(
+                             status=_md_escape(row.get("status")),
+                             cell=_md_escape(row.get("cell")),
+                             strategy=_md_escape(row.get("strategy")),
+                             sink=_md_escape(row.get("sink_class")),
+                             dest=_md_escape(row.get("destination_kind")),
+                             provider=_md_escape(row.get("provider")),
+                             scope=_md_escape(row.get("proof_scope")),
+                             reason=_md_escape(row.get("reason")),
+                             ng=_md_escape(row.get("claims_non_goal_id") or "-"),
+                         ))
     lines.extend(["", "## Closed and non-goal records", ""])
     if settled:
         lines.extend(_gap_table(settled))

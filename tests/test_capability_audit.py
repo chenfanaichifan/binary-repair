@@ -169,3 +169,54 @@ def test_cli_static_run_writes_artifacts(tmp_path: Path) -> None:
     assert (tmp_path / "gap-report.md").is_file()
     assert (tmp_path / "SHA256SUMS").is_file()
     assert "audit: gaps=" in proc.stdout
+
+
+def test_static_audit_reports_dynamic_unverified_not_open() -> None:
+    gaps = STATIC_AUDIT["gaps"]
+    dynamic = [gap for gap in gaps if gap["status"] == "dynamic_unverified"]
+    assert dynamic, "static mode must report probe-dependent gaps"
+    ids = {gap["gap_id"] for gap in dynamic}
+    assert "EG-cases-target-not-analyzed" in ids
+    assert "EG-target-scope" in ids
+    assert "GM-safe-default-policy" in ids
+    assert STATIC_AUDIT["summary"]["dynamic_unverified_count"] == len(dynamic)
+    assert all(gap["status"] != "open" for gap in gaps)
+    assert all(gap["status"] != "mitigated" for gap in gaps)
+
+
+def test_universe_is_complete_and_fully_classified() -> None:
+    universe = STATIC_AUDIT["universe"]
+    assert universe["cell_count"] > 0
+    assert universe["unknown"] == 0
+    assert universe["unmapped_non_goal_ids"] == []
+    assert universe["missing_reason_count"] == 0
+    cells = universe["cells"]
+    statuses = {row["status"] for row in cells}
+    assert statuses <= {"verified", "supported", "non_goal", "unavailable",
+                        "unknown"}
+    counts = universe["counts"]
+    assert counts["unknown"] == 0
+    for status in ("verified", "supported", "non_goal", "unavailable"):
+        assert counts[status] == sum(1 for row in cells if row["status"] == status)
+    for row in cells:
+        if row["status"] in {"non_goal", "unavailable"}:
+            assert row["reason"].strip(), row
+        if row["status"] == "non_goal" and row.get("claims_non_goal_id"):
+            claims_ids = set(STATIC_AUDIT["census"]["claims"]["non_goal_ids"])
+            assert row["claims_non_goal_id"] in claims_ids, row
+
+
+def test_universe_dimensions_are_explicit_and_covered() -> None:
+    universe = STATIC_AUDIT["universe"]
+    dimensions = universe["dimensions"]
+    for name in ("container", "arch", "bits", "endian", "strategy",
+                 "sink_class", "destination_kind", "evidence_profile",
+                 "runtime_tier", "provider", "proof_scope"):
+        assert dimensions.get(name), name
+    cells = universe["cells"]
+    assert {"deterministic", "ai"} <= {
+        row["provider"] for row in cells}
+    assert {"target_scoped", "whole_image", "function_level",
+            "whole_program"} <= {row["proof_scope"] for row in cells}
+    assert {"stack", "heap", "global"} <= {
+        row["destination_kind"] for row in cells}
