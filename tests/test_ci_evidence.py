@@ -134,3 +134,18 @@ def test_ci_evidence_v2_local_gate_sha_must_match(tmp_path: Path) -> None:
     result = _run_ci_evidence(tmp_path, claims)
     assert result.returncode == 1
     assert "local_gate.frozen_sha" in result.stdout
+
+
+def test_ci_evidence_v2_evidence_branch_binding(tmp_path: Path) -> None:
+    claims = _v2_claims(tmp_path)
+    claims["ci_evidence"].pop("local_gate")
+    claims["ci_evidence"]["evidence_branch"] = (
+        "release/2026-11-16-evidence")
+    claims["ci_evidence"]["evidence_tag"] = (
+        "release-2026-11-16-evidence")
+    result = _run_ci_evidence(tmp_path, claims)
+    assert result.returncode == 0, result.stdout + result.stderr
+    claims["ci_evidence"].pop("evidence_tag")
+    result = _run_ci_evidence(tmp_path, claims)
+    assert result.returncode == 1
+    assert "evidence_branch+evidence_tag" in result.stdout
