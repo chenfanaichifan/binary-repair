@@ -31,6 +31,7 @@ DEFAULT_BUNDLES = (
     "artifacts/multi-model-matrix-2026-11-14",
     "artifacts/path-a-call-whitelist-2026-11-14",
     "artifacts/paradigm-a-loop-2026-11-14",
+    "artifacts/worktree-isolation-2026-11-14",
     "artifacts/deepseek-matrix-2026-11-14",
 )
 
