@@ -1,0 +1,582 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-v4-pro",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "hard-sprintf",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "sprintf_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-sprintf.json",
+        "reference_fix": "fixtures/hard-cases/sprintf_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "sprintf hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 4540,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 4540,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target sprintf_bad [0x102cbe0,0x102cc40)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "sprintf_bad",
+          "va": 16960480,
+          "end": 16960576,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 15503,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false,
+        "elapsed_ms": 4248
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "status": "plan_invalid",
+          "error": "empty_plan",
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-v4-pro",
+              "status": "invalid",
+              "latency_ms": 7248,
+              "plan_sha256": null,
+              "error": "invalid_json",
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 1070,
+                "completion_tokens": 900,
+                "total_tokens": 1970,
+                "latency_ms": 7245
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true
+            },
+            "raw_plan": null,
+            "plan": null,
+            "plan_sha256": null,
+            "plan_error": "empty_plan",
+            "error": "invalid_json",
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              },
+              {
+                "name": "sprintf",
+                "target_va": "0x108a6d0",
+                "source": "direct"
+              }
+            ],
+            "elapsed_ms": 7249
+          },
+          "assembly_returned": false,
+          "attempted": true,
+          "verified": false,
+          "candidate": {
+            "gate": "plan_invalid",
+            "poc_status": "not_run",
+            "repair_status": "PLAN_INVALID",
+            "plan_error": "empty_plan"
+          },
+          "injection": {},
+          "target_scope": null,
+          "target_scope_check": "not_run",
+          "target_in_scope": false,
+          "elapsed_ms": 7249
+        }
+      ],
+      "injection": {},
+      "candidate": {
+        "gate": "plan_invalid",
+        "poc_status": "not_run",
+        "repair_status": "PLAN_INVALID",
+        "plan_error": "empty_plan"
+      },
+      "ai": {
+        "status": "plan_invalid",
+        "error": "empty_plan"
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "plan_invalid",
+        "error": "empty_plan",
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "plan_invalid",
+          "poc_status": "not_run",
+          "runner": null,
+          "candidate_sha256": null,
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": null,
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-v4-pro",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-v4-pro",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-v4-pro",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-v4-pro",
+        "model_returned": null,
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": null,
+        "request_id": null,
+        "elapsed_ms": 7249,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "sprintf_bad",
+          "va": 16960480,
+          "end": 16960576,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "attempts": [
+          {
+            "repeat": 0,
+            "status": "plan_invalid",
+            "error": "empty_plan",
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-v4-pro",
+                "status": "invalid",
+                "latency_ms": 7248,
+                "plan_sha256": null,
+                "error": "invalid_json",
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1070,
+                  "completion_tokens": 900,
+                  "total_tokens": 1970,
+                  "latency_ms": 7245
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true
+              },
+              "raw_plan": null,
+              "plan": null,
+              "plan_sha256": null,
+              "plan_error": "empty_plan",
+              "error": "invalid_json",
+              "allowed_calls": [
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                },
+                {
+                  "name": "sprintf",
+                  "target_va": "0x108a6d0",
+                  "source": "direct"
+                }
+              ],
+              "elapsed_ms": 7249
+            },
+            "assembly_returned": false,
+            "attempted": true,
+            "verified": false,
+            "candidate": {
+              "gate": "plan_invalid",
+              "poc_status": "not_run",
+              "repair_status": "PLAN_INVALID",
+              "plan_error": "empty_plan"
+            },
+            "injection": {},
+            "target_scope": null,
+            "target_scope_check": "not_run",
+            "target_in_scope": false,
+            "elapsed_ms": 7249
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "plan_invalid",
+        "error": "empty_plan",
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "plan_invalid",
+          "poc_status": "not_run",
+          "runner": null,
+          "candidate_sha256": null,
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": null,
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-v4-pro",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-v4-pro",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-v4-pro",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-v4-pro",
+        "model_returned": null,
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": null,
+        "request_id": null,
+        "elapsed_ms": 7249,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "sprintf_bad",
+          "va": 16960480,
+          "end": 16960576,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "attempts": [
+          {
+            "repeat": 0,
+            "status": "plan_invalid",
+            "error": "empty_plan",
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-v4-pro",
+                "status": "invalid",
+                "latency_ms": 7248,
+                "plan_sha256": null,
+                "error": "invalid_json",
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1070,
+                  "completion_tokens": 900,
+                  "total_tokens": 1970,
+                  "latency_ms": 7245
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true
+              },
+              "raw_plan": null,
+              "plan": null,
+              "plan_sha256": null,
+              "plan_error": "empty_plan",
+              "error": "invalid_json",
+              "allowed_calls": [
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                },
+                {
+                  "name": "sprintf",
+                  "target_va": "0x108a6d0",
+                  "source": "direct"
+                }
+              ],
+              "elapsed_ms": 7249
+            },
+            "assembly_returned": false,
+            "attempted": true,
+            "verified": false,
+            "candidate": {
+              "gate": "plan_invalid",
+              "poc_status": "not_run",
+              "repair_status": "PLAN_INVALID",
+              "plan_error": "empty_plan"
+            },
+            "injection": {},
+            "target_scope": null,
+            "target_scope_check": "not_run",
+            "target_in_scope": false,
+            "elapsed_ms": 7249
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-v4-pro",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-v4-pro",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-v4-pro",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-v4-pro",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 34232,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "sprintf_bad",
+        "va": 16960480,
+        "end": 16960576,
+        "source": "symbol"
+      },
+      "target_scope_check": "not_run",
+      "target_in_scope": false,
+      "ai_increment": false,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 0,
+  "ai_increment": 0,
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 1,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 0,
+  "ai_target_in_scope": 0,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 34232,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

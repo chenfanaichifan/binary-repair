@@ -25,7 +25,8 @@ Patcherex2 或 assembly 注入 → native PoC/regression/副作用 gate。
 4. 精确 TLS errno 不是 syscall errno；后者只能是代理；新增 LD_PRELOAD
    进程退出 errno 探针（native dynamic ELF）仍不是函数返回点。
 5. 非 loop 泛化：在 RepairSpec + ABI-strict + cave relocation 修复后，
-   hard-multicall / hard-sprintf / hard-nonconst 三例 **AI verified PASS**；
+   hard-multicall / hard-sprintf / hard-nonconst 三例 **AI verified PASS**
+   （deepseek-flash）；同一管线 deepseek-v4-pro 为 0/3，证明能力仍依赖模型；
    UAF 参考修复单独 PASS，不计入 AI。
 
 ## 不可判定 / 未覆盖

@@ -17,6 +17,11 @@ run manifests report `VERIFIED: 1`.
 
 Evidence: `artifacts/ai-repair-planning-2026-11-15/`.
 
+Same pipeline, `deepseek-v4-pro`: **0/3** (ABI fatal; invalid/empty plan;
+forbidden call target 0x0), recorded separately in
+`artifacts/ai-repair-planning-model-ab-2026-11-15/`.  The capability is
+model-dependent, not a prompt claim.
+
 ## Root causes fixed
 
 1. **Cave relocation bug:** the injected PT_LOAD cave VA `0x10cf000` lies in the

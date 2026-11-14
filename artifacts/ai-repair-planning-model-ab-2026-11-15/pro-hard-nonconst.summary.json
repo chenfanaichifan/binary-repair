@@ -1,0 +1,1121 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-v4-pro",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "hard-nonconst",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "nonconst_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-nonconst.json",
+        "reference_fix": "fixtures/hard-cases/nonconst_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "nonconst hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 4605,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 4605,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target nonconst_bad [0x102cc40,0x102ccb0)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "nonconst_bad",
+          "va": 16960576,
+          "end": 16960688,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 3552,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false,
+        "elapsed_ms": 3839
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-v4-pro",
+              "status": "not_attempted",
+              "latency_ms": 4140,
+              "plan_sha256": "25db3bdb937a3fee91934933d1bffb4b4500825a2c50770db276925e3fa66e71",
+              "error": null,
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 1169,
+                "completion_tokens": 458,
+                "total_tokens": 1627,
+                "latency_ms": 4137
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true
+            },
+            "raw_plan": {
+              "schema_version": 1,
+              "vulnerability_type": "buffer_overflow",
+              "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, allowing a buffer overflow if the input string is longer than 15 characters.",
+              "affected_function": "nonconst_bad",
+              "affected_addresses": [
+                "0x102cc71",
+                "0x102cc79"
+              ],
+              "affected_registers": [
+                "rdi",
+                "rsi",
+                "rdx",
+                "rax"
+              ],
+              "affected_memory": [
+                "stack buffer at [rbp - 0x20] (16 bytes)"
+              ],
+              "original_behavior": "The function copies the input string into a 16-byte stack buffer and then prints it using puts. It does not check the length of the input string.",
+              "required_invariant": "The function must not write more than 15 bytes plus a null terminator into the 16-byte destination buffer. For valid inputs (length <= 15), the behavior must be identical to the original.",
+              "repair_strategy": "Insert a length check before the copy. If the input string length (including null terminator) exceeds 16 bytes, skip the copy and print operation, and return normally. Otherwise, proceed with the original copy and print.",
+              "failure_behavior": "If the input string is too long, the function returns without copying or printing.",
+              "permitted_calls": [
+                "compiler_rt.strlen",
+                "compiler_rt.memcpy.memcpyFast",
+                "puts"
+              ],
+              "expected_behavior": "For input strings of length <= 15, the function copies the string to the stack buffer and prints it. For longer strings, it does nothing and returns.",
+              "verification_conditions": [
+                "Input length <= 15: output matches original behavior.",
+                "Input length > 15: no copy or print occurs, function returns safely.",
+                "No writes beyond the 16-byte buffer."
+              ],
+              "confidence": 0.95
+            },
+            "plan": {
+              "schema_version": 1,
+              "vulnerability_type": "buffer_overflow",
+              "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, allowing a buffer overflow if the input string is longer than 15 characters.",
+              "affected_function": "nonconst_bad",
+              "affected_addresses": [
+                "0x102cc71",
+                "0x102cc79"
+              ],
+              "affected_registers": [
+                "rdi",
+                "rsi",
+                "rdx",
+                "rax"
+              ],
+              "affected_memory": [
+                "stack buffer at [rbp - 0x20] (16 bytes)"
+              ],
+              "original_behavior": "The function copies the input string into a 16-byte stack buffer and then prints it using puts. It does not check the length of the input string.",
+              "required_invariant": "The function must not write more than 15 bytes plus a null terminator into the 16-byte destination buffer. For valid inputs (length <= 15), the behavior must be identical to the original.",
+              "repair_strategy": "Insert a length check before the copy. If the input string length (including null terminator) exceeds 16 bytes, skip the copy and print operation, and return normally. Otherwise, proceed with the original copy and print.",
+              "failure_behavior": "If the input string is too long, the function returns without copying or printing.",
+              "permitted_calls": [
+                "compiler_rt.strlen",
+                "compiler_rt.memcpy.memcpyFast",
+                "puts"
+              ],
+              "expected_behavior": "For input strings of length <= 15, the function copies the string to the stack buffer and prints it. For longer strings, it does nothing and returns.",
+              "verification_conditions": [
+                "Input length <= 15: output matches original behavior.",
+                "Input length > 15: no copy or print occurs, function returns safely.",
+                "No writes beyond the 16-byte buffer."
+              ],
+              "confidence": "high"
+            },
+            "plan_sha256": "b99b59f636f5c1a762693fd76b7f738ffd0cc40c4c071ca9befdce53013ebcaa",
+            "plan_error": "",
+            "error": null,
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              },
+              {
+                "name": "compiler_rt.strlen",
+                "target_va": "0x109e050",
+                "source": "direct"
+              },
+              {
+                "name": "compiler_rt.memcpy.memcpyFast",
+                "target_va": "0x109ed10",
+                "source": "direct"
+              }
+            ],
+            "elapsed_ms": 4195
+          },
+          "model": "deepseek-v4-pro",
+          "model_requested": "deepseek-v4-pro",
+          "status": "accepted",
+          "error": null,
+          "plan_status": "valid",
+          "plan_sha256": "b99b59f636f5c1a762693fd76b7f738ffd0cc40c4c071ca9befdce53013ebcaa",
+          "usage": {
+            "prompt_tokens": 1680,
+            "completion_tokens": 273,
+            "total_tokens": 1953,
+            "latency_ms": 2626
+          },
+          "latency_ms": 2629,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "cc8d3074fc9b6e47f07744026a5a3538c3851fc632e04780aedff04ad9a93523",
+          "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x40\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdi, qword ptr [rbp - 0x28]\ncall 0x109e050\ncmp rax, 15\nja .Lskip\nmov rsi, qword ptr [rbp - 0x28]\nmov rdx, rax\nadd rdx, 1\nlea rdi, [rbp - 0x20]\ncall 0x109ed10\nlea rdi, [rbp - 0x20]\ncall 0x108a31c\n.Lskip:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x40\npop rbp\nret\n.Lfail:\ncall 0x0\n",
+          "assembly_attempts": [
+            {
+              "attempt": 1,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "cc8d3074fc9b6e47f07744026a5a3538c3851fc632e04780aedff04ad9a93523",
+              "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x40\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdi, qword ptr [rbp - 0x28]\ncall 0x109e050\ncmp rax, 15\nja .Lskip\nmov rsi, qword ptr [rbp - 0x28]\nmov rdx, rax\nadd rdx, 1\nlea rdi, [rbp - 0x20]\ncall 0x109ed10\nlea rdi, [rbp - 0x20]\ncall 0x108a31c\n.Lskip:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x40\npop rbp\nret\n.Lfail:\ncall 0x0\n",
+              "validation_error": "call target is not allowed: call 0x0",
+              "validation_error_class": "injection",
+              "usage": {
+                "prompt_tokens": 1616,
+                "completion_tokens": 273,
+                "total_tokens": 1889,
+                "latency_ms": 1864
+              },
+              "latency_ms": 1867,
+              "model": "deepseek-v4-pro",
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true,
+              "request_id": null
+            },
+            {
+              "attempt": 2,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "cc8d3074fc9b6e47f07744026a5a3538c3851fc632e04780aedff04ad9a93523",
+              "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x40\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdi, qword ptr [rbp - 0x28]\ncall 0x109e050\ncmp rax, 15\nja .Lskip\nmov rsi, qword ptr [rbp - 0x28]\nmov rdx, rax\nadd rdx, 1\nlea rdi, [rbp - 0x20]\ncall 0x109ed10\nlea rdi, [rbp - 0x20]\ncall 0x108a31c\n.Lskip:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x40\npop rbp\nret\n.Lfail:\ncall 0x0\n",
+              "validation_error": "call target is not allowed: call 0x0",
+              "validation_error_class": "injection",
+              "usage": {
+                "prompt_tokens": 1680,
+                "completion_tokens": 273,
+                "total_tokens": 1953,
+                "latency_ms": 2626
+              },
+              "latency_ms": 2629,
+              "model": "deepseek-v4-pro",
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true,
+              "request_id": null
+            }
+          ],
+          "validation_error": "call target is not allowed: call 0x0",
+          "validation_error_class": "injection",
+          "allowed_calls": [
+            {
+              "name": "puts",
+              "target_va": "0x108a31c",
+              "source": "direct"
+            },
+            {
+              "name": "compiler_rt.strlen",
+              "target_va": "0x109e050",
+              "source": "direct"
+            },
+            {
+              "name": "compiler_rt.memcpy.memcpyFast",
+              "target_va": "0x109ed10",
+              "source": "direct"
+            }
+          ],
+          "target_in_scope": false,
+          "target_scope_check": "not_run",
+          "target_scope": {
+            "name": "nonconst_bad",
+            "va": 16960576,
+            "end": 16960688,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": false,
+          "injection": {
+            "stage": "validation",
+            "error_class": "injection",
+            "error_token": null,
+            "error": "assembly validation: ValueError: call target is not allowed: call 0x0"
+          },
+          "candidate": {
+            "gate": "no_candidate",
+            "poc_status": "not_run",
+            "injection_error_class": "injection",
+            "injection_error_token": null,
+            "injection_error": "assembly validation: ValueError: call target is not allowed: call 0x0",
+            "no_candidate_reason": "injection",
+            "repair_status": "INJECTION_FAILED"
+          },
+          "elapsed_ms": 4653
+        }
+      ],
+      "injection": {
+        "stage": "validation",
+        "error_class": "injection",
+        "error_token": null,
+        "error": "assembly validation: ValueError: call target is not allowed: call 0x0"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run",
+        "injection_error_class": "injection",
+        "injection_error_token": null,
+        "injection_error": "assembly validation: ValueError: call target is not allowed: call 0x0",
+        "no_candidate_reason": "injection",
+        "repair_status": "INJECTION_FAILED"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 2629,
+        "plan_sha256": "220c42accd914a866411317368e1662212e4f10138def2e50e62e2607664adc3",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1680,
+          "completion_tokens": 273,
+          "total_tokens": 1953,
+          "latency_ms": 2626
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true,
+        "validation_error": "call target is not allowed: call 0x0",
+        "validation_error_class": "injection"
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "no_candidate",
+          "poc_status": "not_run",
+          "runner": null,
+          "candidate_sha256": null,
+          "no_candidate_reason": "injection",
+          "injection_error_class": "injection"
+        },
+        "candidate_sha256": null,
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-v4-pro",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-v4-pro",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-v4-pro",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-v4-pro",
+        "model_returned": "deepseek-v4-pro",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1680,
+          "completion_tokens": 273,
+          "total_tokens": 1953,
+          "latency_ms": 2626
+        },
+        "request_id": null,
+        "elapsed_ms": 4653,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "nonconst_bad",
+          "va": 16960576,
+          "end": 16960688,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-v4-pro",
+                "status": "not_attempted",
+                "latency_ms": 4140,
+                "plan_sha256": "25db3bdb937a3fee91934933d1bffb4b4500825a2c50770db276925e3fa66e71",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1169,
+                  "completion_tokens": 458,
+                  "total_tokens": 1627,
+                  "latency_ms": 4137
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "buffer_overflow",
+                "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, allowing a buffer overflow if the input string is longer than 15 characters.",
+                "affected_function": "nonconst_bad",
+                "affected_addresses": [
+                  "0x102cc71",
+                  "0x102cc79"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rax"
+                ],
+                "affected_memory": [
+                  "stack buffer at [rbp - 0x20] (16 bytes)"
+                ],
+                "original_behavior": "The function copies the input string into a 16-byte stack buffer and then prints it using puts. It does not check the length of the input string.",
+                "required_invariant": "The function must not write more than 15 bytes plus a null terminator into the 16-byte destination buffer. For valid inputs (length <= 15), the behavior must be identical to the original.",
+                "repair_strategy": "Insert a length check before the copy. If the input string length (including null terminator) exceeds 16 bytes, skip the copy and print operation, and return normally. Otherwise, proceed with the original copy and print.",
+                "failure_behavior": "If the input string is too long, the function returns without copying or printing.",
+                "permitted_calls": [
+                  "compiler_rt.strlen",
+                  "compiler_rt.memcpy.memcpyFast",
+                  "puts"
+                ],
+                "expected_behavior": "For input strings of length <= 15, the function copies the string to the stack buffer and prints it. For longer strings, it does nothing and returns.",
+                "verification_conditions": [
+                  "Input length <= 15: output matches original behavior.",
+                  "Input length > 15: no copy or print occurs, function returns safely.",
+                  "No writes beyond the 16-byte buffer."
+                ],
+                "confidence": 0.95
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "buffer_overflow",
+                "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, allowing a buffer overflow if the input string is longer than 15 characters.",
+                "affected_function": "nonconst_bad",
+                "affected_addresses": [
+                  "0x102cc71",
+                  "0x102cc79"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rax"
+                ],
+                "affected_memory": [
+                  "stack buffer at [rbp - 0x20] (16 bytes)"
+                ],
+                "original_behavior": "The function copies the input string into a 16-byte stack buffer and then prints it using puts. It does not check the length of the input string.",
+                "required_invariant": "The function must not write more than 15 bytes plus a null terminator into the 16-byte destination buffer. For valid inputs (length <= 15), the behavior must be identical to the original.",
+                "repair_strategy": "Insert a length check before the copy. If the input string length (including null terminator) exceeds 16 bytes, skip the copy and print operation, and return normally. Otherwise, proceed with the original copy and print.",
+                "failure_behavior": "If the input string is too long, the function returns without copying or printing.",
+                "permitted_calls": [
+                  "compiler_rt.strlen",
+                  "compiler_rt.memcpy.memcpyFast",
+                  "puts"
+                ],
+                "expected_behavior": "For input strings of length <= 15, the function copies the string to the stack buffer and prints it. For longer strings, it does nothing and returns.",
+                "verification_conditions": [
+                  "Input length <= 15: output matches original behavior.",
+                  "Input length > 15: no copy or print occurs, function returns safely.",
+                  "No writes beyond the 16-byte buffer."
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "b99b59f636f5c1a762693fd76b7f738ffd0cc40c4c071ca9befdce53013ebcaa",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                },
+                {
+                  "name": "compiler_rt.strlen",
+                  "target_va": "0x109e050",
+                  "source": "direct"
+                },
+                {
+                  "name": "compiler_rt.memcpy.memcpyFast",
+                  "target_va": "0x109ed10",
+                  "source": "direct"
+                }
+              ],
+              "elapsed_ms": 4195
+            },
+            "model": "deepseek-v4-pro",
+            "model_requested": "deepseek-v4-pro",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "b99b59f636f5c1a762693fd76b7f738ffd0cc40c4c071ca9befdce53013ebcaa",
+            "usage": {
+              "prompt_tokens": 1680,
+              "completion_tokens": 273,
+              "total_tokens": 1953,
+              "latency_ms": 2626
+            },
+            "latency_ms": 2629,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "cc8d3074fc9b6e47f07744026a5a3538c3851fc632e04780aedff04ad9a93523",
+            "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x40\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdi, qword ptr [rbp - 0x28]\ncall 0x109e050\ncmp rax, 15\nja .Lskip\nmov rsi, qword ptr [rbp - 0x28]\nmov rdx, rax\nadd rdx, 1\nlea rdi, [rbp - 0x20]\ncall 0x109ed10\nlea rdi, [rbp - 0x20]\ncall 0x108a31c\n.Lskip:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x40\npop rbp\nret\n.Lfail:\ncall 0x0\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "cc8d3074fc9b6e47f07744026a5a3538c3851fc632e04780aedff04ad9a93523",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x40\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdi, qword ptr [rbp - 0x28]\ncall 0x109e050\ncmp rax, 15\nja .Lskip\nmov rsi, qword ptr [rbp - 0x28]\nmov rdx, rax\nadd rdx, 1\nlea rdi, [rbp - 0x20]\ncall 0x109ed10\nlea rdi, [rbp - 0x20]\ncall 0x108a31c\n.Lskip:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x40\npop rbp\nret\n.Lfail:\ncall 0x0\n",
+                "validation_error": "call target is not allowed: call 0x0",
+                "validation_error_class": "injection",
+                "usage": {
+                  "prompt_tokens": 1616,
+                  "completion_tokens": 273,
+                  "total_tokens": 1889,
+                  "latency_ms": 1864
+                },
+                "latency_ms": 1867,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              },
+              {
+                "attempt": 2,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "cc8d3074fc9b6e47f07744026a5a3538c3851fc632e04780aedff04ad9a93523",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x40\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdi, qword ptr [rbp - 0x28]\ncall 0x109e050\ncmp rax, 15\nja .Lskip\nmov rsi, qword ptr [rbp - 0x28]\nmov rdx, rax\nadd rdx, 1\nlea rdi, [rbp - 0x20]\ncall 0x109ed10\nlea rdi, [rbp - 0x20]\ncall 0x108a31c\n.Lskip:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x40\npop rbp\nret\n.Lfail:\ncall 0x0\n",
+                "validation_error": "call target is not allowed: call 0x0",
+                "validation_error_class": "injection",
+                "usage": {
+                  "prompt_tokens": 1680,
+                  "completion_tokens": 273,
+                  "total_tokens": 1953,
+                  "latency_ms": 2626
+                },
+                "latency_ms": 2629,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": "call target is not allowed: call 0x0",
+            "validation_error_class": "injection",
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              },
+              {
+                "name": "compiler_rt.strlen",
+                "target_va": "0x109e050",
+                "source": "direct"
+              },
+              {
+                "name": "compiler_rt.memcpy.memcpyFast",
+                "target_va": "0x109ed10",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": false,
+            "target_scope_check": "not_run",
+            "target_scope": {
+              "name": "nonconst_bad",
+              "va": 16960576,
+              "end": 16960688,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": false,
+            "injection": {
+              "stage": "validation",
+              "error_class": "injection",
+              "error_token": null,
+              "error": "assembly validation: ValueError: call target is not allowed: call 0x0"
+            },
+            "candidate": {
+              "gate": "no_candidate",
+              "poc_status": "not_run",
+              "injection_error_class": "injection",
+              "injection_error_token": null,
+              "injection_error": "assembly validation: ValueError: call target is not allowed: call 0x0",
+              "no_candidate_reason": "injection",
+              "repair_status": "INJECTION_FAILED"
+            },
+            "elapsed_ms": 4653
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "no_candidate",
+          "poc_status": "not_run",
+          "runner": null,
+          "candidate_sha256": null,
+          "no_candidate_reason": "injection",
+          "injection_error_class": "injection"
+        },
+        "candidate_sha256": null,
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-v4-pro",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-v4-pro",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-v4-pro",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-v4-pro",
+        "model_returned": "deepseek-v4-pro",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1680,
+          "completion_tokens": 273,
+          "total_tokens": 1953,
+          "latency_ms": 2626
+        },
+        "request_id": null,
+        "elapsed_ms": 4653,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "nonconst_bad",
+          "va": 16960576,
+          "end": 16960688,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-v4-pro",
+                "status": "not_attempted",
+                "latency_ms": 4140,
+                "plan_sha256": "25db3bdb937a3fee91934933d1bffb4b4500825a2c50770db276925e3fa66e71",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1169,
+                  "completion_tokens": 458,
+                  "total_tokens": 1627,
+                  "latency_ms": 4137
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "buffer_overflow",
+                "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, allowing a buffer overflow if the input string is longer than 15 characters.",
+                "affected_function": "nonconst_bad",
+                "affected_addresses": [
+                  "0x102cc71",
+                  "0x102cc79"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rax"
+                ],
+                "affected_memory": [
+                  "stack buffer at [rbp - 0x20] (16 bytes)"
+                ],
+                "original_behavior": "The function copies the input string into a 16-byte stack buffer and then prints it using puts. It does not check the length of the input string.",
+                "required_invariant": "The function must not write more than 15 bytes plus a null terminator into the 16-byte destination buffer. For valid inputs (length <= 15), the behavior must be identical to the original.",
+                "repair_strategy": "Insert a length check before the copy. If the input string length (including null terminator) exceeds 16 bytes, skip the copy and print operation, and return normally. Otherwise, proceed with the original copy and print.",
+                "failure_behavior": "If the input string is too long, the function returns without copying or printing.",
+                "permitted_calls": [
+                  "compiler_rt.strlen",
+                  "compiler_rt.memcpy.memcpyFast",
+                  "puts"
+                ],
+                "expected_behavior": "For input strings of length <= 15, the function copies the string to the stack buffer and prints it. For longer strings, it does nothing and returns.",
+                "verification_conditions": [
+                  "Input length <= 15: output matches original behavior.",
+                  "Input length > 15: no copy or print occurs, function returns safely.",
+                  "No writes beyond the 16-byte buffer."
+                ],
+                "confidence": 0.95
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "buffer_overflow",
+                "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, allowing a buffer overflow if the input string is longer than 15 characters.",
+                "affected_function": "nonconst_bad",
+                "affected_addresses": [
+                  "0x102cc71",
+                  "0x102cc79"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rax"
+                ],
+                "affected_memory": [
+                  "stack buffer at [rbp - 0x20] (16 bytes)"
+                ],
+                "original_behavior": "The function copies the input string into a 16-byte stack buffer and then prints it using puts. It does not check the length of the input string.",
+                "required_invariant": "The function must not write more than 15 bytes plus a null terminator into the 16-byte destination buffer. For valid inputs (length <= 15), the behavior must be identical to the original.",
+                "repair_strategy": "Insert a length check before the copy. If the input string length (including null terminator) exceeds 16 bytes, skip the copy and print operation, and return normally. Otherwise, proceed with the original copy and print.",
+                "failure_behavior": "If the input string is too long, the function returns without copying or printing.",
+                "permitted_calls": [
+                  "compiler_rt.strlen",
+                  "compiler_rt.memcpy.memcpyFast",
+                  "puts"
+                ],
+                "expected_behavior": "For input strings of length <= 15, the function copies the string to the stack buffer and prints it. For longer strings, it does nothing and returns.",
+                "verification_conditions": [
+                  "Input length <= 15: output matches original behavior.",
+                  "Input length > 15: no copy or print occurs, function returns safely.",
+                  "No writes beyond the 16-byte buffer."
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "b99b59f636f5c1a762693fd76b7f738ffd0cc40c4c071ca9befdce53013ebcaa",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                },
+                {
+                  "name": "compiler_rt.strlen",
+                  "target_va": "0x109e050",
+                  "source": "direct"
+                },
+                {
+                  "name": "compiler_rt.memcpy.memcpyFast",
+                  "target_va": "0x109ed10",
+                  "source": "direct"
+                }
+              ],
+              "elapsed_ms": 4195
+            },
+            "model": "deepseek-v4-pro",
+            "model_requested": "deepseek-v4-pro",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "b99b59f636f5c1a762693fd76b7f738ffd0cc40c4c071ca9befdce53013ebcaa",
+            "usage": {
+              "prompt_tokens": 1680,
+              "completion_tokens": 273,
+              "total_tokens": 1953,
+              "latency_ms": 2626
+            },
+            "latency_ms": 2629,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "cc8d3074fc9b6e47f07744026a5a3538c3851fc632e04780aedff04ad9a93523",
+            "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x40\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdi, qword ptr [rbp - 0x28]\ncall 0x109e050\ncmp rax, 15\nja .Lskip\nmov rsi, qword ptr [rbp - 0x28]\nmov rdx, rax\nadd rdx, 1\nlea rdi, [rbp - 0x20]\ncall 0x109ed10\nlea rdi, [rbp - 0x20]\ncall 0x108a31c\n.Lskip:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x40\npop rbp\nret\n.Lfail:\ncall 0x0\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "cc8d3074fc9b6e47f07744026a5a3538c3851fc632e04780aedff04ad9a93523",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x40\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdi, qword ptr [rbp - 0x28]\ncall 0x109e050\ncmp rax, 15\nja .Lskip\nmov rsi, qword ptr [rbp - 0x28]\nmov rdx, rax\nadd rdx, 1\nlea rdi, [rbp - 0x20]\ncall 0x109ed10\nlea rdi, [rbp - 0x20]\ncall 0x108a31c\n.Lskip:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x40\npop rbp\nret\n.Lfail:\ncall 0x0\n",
+                "validation_error": "call target is not allowed: call 0x0",
+                "validation_error_class": "injection",
+                "usage": {
+                  "prompt_tokens": 1616,
+                  "completion_tokens": 273,
+                  "total_tokens": 1889,
+                  "latency_ms": 1864
+                },
+                "latency_ms": 1867,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              },
+              {
+                "attempt": 2,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "cc8d3074fc9b6e47f07744026a5a3538c3851fc632e04780aedff04ad9a93523",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x40\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rdi, qword ptr [rbp - 0x28]\ncall 0x109e050\ncmp rax, 15\nja .Lskip\nmov rsi, qword ptr [rbp - 0x28]\nmov rdx, rax\nadd rdx, 1\nlea rdi, [rbp - 0x20]\ncall 0x109ed10\nlea rdi, [rbp - 0x20]\ncall 0x108a31c\n.Lskip:\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lfail\nadd rsp, 0x40\npop rbp\nret\n.Lfail:\ncall 0x0\n",
+                "validation_error": "call target is not allowed: call 0x0",
+                "validation_error_class": "injection",
+                "usage": {
+                  "prompt_tokens": 1680,
+                  "completion_tokens": 273,
+                  "total_tokens": 1953,
+                  "latency_ms": 2626
+                },
+                "latency_ms": 2629,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": "call target is not allowed: call 0x0",
+            "validation_error_class": "injection",
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              },
+              {
+                "name": "compiler_rt.strlen",
+                "target_va": "0x109e050",
+                "source": "direct"
+              },
+              {
+                "name": "compiler_rt.memcpy.memcpyFast",
+                "target_va": "0x109ed10",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": false,
+            "target_scope_check": "not_run",
+            "target_scope": {
+              "name": "nonconst_bad",
+              "va": 16960576,
+              "end": 16960688,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": false,
+            "injection": {
+              "stage": "validation",
+              "error_class": "injection",
+              "error_token": null,
+              "error": "assembly validation: ValueError: call target is not allowed: call 0x0"
+            },
+            "candidate": {
+              "gate": "no_candidate",
+              "poc_status": "not_run",
+              "injection_error_class": "injection",
+              "injection_error_token": null,
+              "injection_error": "assembly validation: ValueError: call target is not allowed: call 0x0",
+              "no_candidate_reason": "injection",
+              "repair_status": "INJECTION_FAILED"
+            },
+            "elapsed_ms": 4653
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-v4-pro",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-v4-pro",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-v4-pro",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-v4-pro",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 22970,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "nonconst_bad",
+        "va": 16960576,
+        "end": 16960688,
+        "source": "symbol"
+      },
+      "target_scope_check": "not_run",
+      "target_in_scope": false,
+      "ai_increment": false,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 0,
+  "ai_increment": 0,
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 1,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 0,
+  "ai_target_in_scope": 0,
+  "ai_no_candidate_reasons": {
+    "injection": 1
+  },
+  "ai_injection_error_classes": {
+    "injection": 1
+  },
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 22970,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

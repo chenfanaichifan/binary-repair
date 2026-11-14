@@ -264,7 +264,8 @@
     "ABI-strict CFG-aware stack/return validator for injected x86-64 blocks",
     "cave relocation mapped through PT_LOAD, fixing SHT_NOBITS .tbss offset corruption",
     "3/3 AI-verified non-loop hard cases (hard-multicall, hard-sprintf, hard-nonconst)",
-    "raw assembly/candidate/native-failure evidence and run manifests"
+    "raw assembly/candidate/native-failure evidence and run manifests",
+    "deepseek-flash 3/3 AI-verified non-loop; deepseek-v4-pro 0/3 under same RepairSpec/ABI pipeline"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",
