@@ -297,7 +297,7 @@ def test_aggregate_marks_partial_when_a_sibling_row_has_no_usage(tmp_path: Path)
 
 
 def test_aggregate_is_null_when_every_row_lacks_usage(tmp_path: Path):
-    # "未提供" is null, not 0: a job with only missing usage has no sum.
+    # "not provided" is null, not 0: a job with only missing usage has no sum.
     data, job = _job(tmp_path)
     generate_plan("fix it", client=FakeTransport(_payload()),
                   context={"data_dir": str(data), "job_id": job.id})

@@ -263,7 +263,7 @@
   "deterministic_paths": [
     "deterministic_unified (matrix-driven pipeline + evidence profiles)"
   ],
-  "workbench_integration": "final: feature/rebased workbench at 5f9dd77; CI green after host-dependent Mach-O non-goal mapping",
+  "workbench_integration": "final release freeze on workbench-v3: the frozen SHA is gated locally via release_freeze.py --nightly --release-sha; the evidence bundle (gate.json, provenance, browser-e2e, release note) is on release/2026-11-14-evidence; no GitHub Actions run is claimed for this SHA",
   "audit_status": {
     "mode": "release",
     "release": {
@@ -289,10 +289,89 @@
       "universe_unknown": 0
     },
     "artifacts": {
-      "coverage_matrix_sha256": "557a3ac5100c8f19b149fff1594079b7d1eb5e7e2fdbc52ec43cb9fd10faf00c",
+      "coverage_matrix_sha256": "46eadafbbe6f84bdb9708b13987c2fd01c3b2ddfceab3e10d7701e42ad48ad97",
       "gap_report_sha256": "e8e70082fd7d320ae470071432c82c2693550ad4fc6d7d1ba6640dcdf21bf210"
     },
     "generated_by": "scripts/audit_capability_coverage.py on the frozen release tree",
     "note": "release numbers are the full/local audit; static numbers are the probe-free audit. The coverage gate compares the matching mode block and fails on mismatches."
+  },
+  "provider_coverage": {
+    "artifact": "artifacts/provider-coverage-2026-11-14/summary.json",
+    "providers_completed_12case": 2,
+    "models_completed_12case": 4,
+    "identity_verified_models": [
+      "deepseek-flash",
+      "deepseek-v4-pro",
+      "Qwen/Qwen3-8B",
+      "Qwen/Qwen2.5-7B-Instruct"
+    ],
+    "identity_mismatch_rows": 2,
+    "served_model_attribution": [
+      {
+        "requested_model": "deepseek-chat",
+        "served_model": "deepseek-flash",
+        "cases": 12,
+        "runs": 1,
+        "ai_verified": 6,
+        "source": "artifacts/provider-matrix-2026-11-14",
+        "policy": "served-model evidence only; not requested-model coverage"
+      }
+    ],
+    "not_satisfied": [
+      "international 5-6 model matrix: SiliconFlow international identity probes pass but benchmark calls return HTTP 402 insufficient balance; no fifth-provider key configured"
+    ],
+    "blocked_reasons": [
+      {
+        "provider": "siliconflow-intl",
+        "reason": "HTTP 402 insufficient account balance"
+      },
+      {
+        "provider": "siliconflow-cn",
+        "model": "THUDM/GLM-Z1-9B-0414",
+        "reason": "identity probe timed out"
+      },
+      {
+        "provider": "dashscope",
+        "reason": "no key configured; no artifact"
+      }
+    ],
+    "ai_target_pooled": {
+      "models": 4,
+      "runs": 8,
+      "cases": 96,
+      "verified": 36,
+      "verified_rate": 0.375,
+      "wilson_ci95": [
+        0.284725,
+        0.474895
+      ],
+      "inconclusive": 60
+    },
+    "deterministic_target_strict": {
+      "cases": 12,
+      "verified": 0,
+      "verified_rate": 0.0,
+      "expected_match_rate": 1.0
+    },
+    "cost": {
+      "available": false,
+      "value": null
+    },
+    "seed": {
+      "available": false,
+      "value": null
+    }
+  },
+  "release_evidence": {
+    "procedure": "scripts/release_freeze.py --mode nightly --sha <frozen-sha> runs release_gate.py --nightly --release-sha and writes a provenance bundle",
+    "artifact_dir": "artifacts/release-gate-2026-11-14",
+    "evidence_branch": "release/2026-11-14-evidence",
+    "evidence_scope": "local frozen-tree gate only; proves the gated git tree identity and measured checks; it is not a GitHub Actions run",
+    "ci_status": "not_run",
+    "not_run": [
+      "github_actions",
+      "self_hosted_lima_nightly_ci",
+      "international_provider_matrix"
+    ]
   }
 }

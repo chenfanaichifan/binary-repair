@@ -10,7 +10,7 @@ What these tests protect:
 * a corrected package is accepted and its identity/structure/behaviour evidence
   survives the trip;
 * a package that never ran V4 stays ``inconclusive`` / ``required_check_not_run``
-  — the failure mode the whole project is built to avoid is a missing check
+  - the failure mode the whole project is built to avoid is a missing check
   becoming a success;
 * an unchanged round trip is stored as ``round_trip`` and earns no V3 credit;
 * the candidate hash is bound to a verified artifact, not to a string.

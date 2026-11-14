@@ -623,7 +623,20 @@ inert by default (`vars.BINARYREPAIR_RELEASE_GATE`) and no CI run is claimed;
 browser e2e skips with an explicit reason when Chromium is absent. Lima tests
 run serially and a flake quarantine/rerun policy is documented in the
 release-gate operations doc; a local `--nightly` attempt is recorded in the
-release report. Final frozen release-gate evidence: nightly/release superset exit 0, 11/11 checks, violations=[], full pytest 564.9 s, real Lima capture 40.4 s, local gate dynamic_unverified=0/universe unknown=0, meta-audit 15 scenarios, invariants 9 packets, provider-matrix 12 cases; validated SHA 640d08a, final mainline 0522735 differs only by operator docs/claims/junit edits (static+local gates green on the final SHA). Twenty-six pre-existing non-ASCII Python comment/docstring
-violations exist (app/main.py and several tests/e2e/integration tests) and are
-not introduced by this milestone; the language-policy checker does not scan
-markdown docs.
+release report. Final frozen release-gate evidence: nightly/release superset exit 0, 11/11 checks, violations=[], full pytest 564.9 s, real Lima capture 40.4 s, local gate dynamic_unverified=0/universe unknown=0, meta-audit 15 scenarios, invariants 9 packets, provider-matrix 12 cases; validated SHA 640d08a, final mainline 0522735 differs only by operator docs/claims/junit edits (static+local gates green on the final SHA). The 26 pre-existing non-ASCII Python comment/docstring violations
+(app/main.py and several tests/e2e/integration tests) are fixed in phase 5:
+`scripts/check_language_policy.py` reports 0 and CI enforces it on every run;
+the checker does not scan markdown docs.
+
+Phase-5 final release evidence: `scripts/release_freeze.py` runs the gate with
+`--release-sha` on a clean frozen tree, re-checks `origin/workbench-v3` after
+the run and writes `artifacts/release-gate-2026-11-14/{gate.json,freeze.json,
+README.md,SHA256SUMS}` on `release/2026-11-14-evidence` (mainline is the gated
+SHA). Evidence layers are explicit: local frozen-tree gate is not a GitHub
+Actions run (`ci_status=not_run`); the self-hosted Lima nightly job stays inert
+by default and no CI run is claimed. Provider coverage is reproducible with
+`scripts/build_provider_coverage.py` (4 models / 2 providers completed 12-case;
+pooled AI-target 36/96 with Wilson CI; international 5-6 model matrix explicitly
+not satisfied due to HTTP 402 / missing key); identity_ok=false rows are
+served-model-only. Browser e2e passed 12/12 locally on macOS Chrome and is
+recorded separately; Linux CI skips are not evidence.

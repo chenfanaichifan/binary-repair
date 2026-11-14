@@ -310,6 +310,114 @@ def _write_provider_matrix(
     return artifact
 
 
+def _write_provider_coverage(
+    root: Path,
+    *,
+    complete: bool = True,
+    tamper: bool = False,
+    overclaim_identity: bool = False,
+) -> Path:
+    artifact = root / "artifacts" / "provider-coverage-2026-11-14"
+    artifact.mkdir(parents=True, exist_ok=True)
+    (artifact / "README.md").write_text(
+        "# Provider coverage evidence (test fixture)\n"
+        "identity policy: identity_ok=false is never requested-model verified\n",
+        encoding="utf-8",
+    )
+    rows = [
+        {
+            "row_id": "deepseek-official/deepseek-flash",
+            "provider": "deepseek-official",
+            "model_requested": "deepseek-flash",
+            "model_served": "deepseek-flash",
+            "identity_ok": True,
+            "identity_verified": True,
+            "status": "identity_verified_completed",
+            "cases": 12,
+            "runs": 3,
+            "ai_verified": 6,
+        },
+        {
+            "row_id": "siliconflow-cn/Qwen3-8B",
+            "provider": "siliconflow-cn",
+            "model_requested": "Qwen/Qwen3-8B",
+            "model_served": "Qwen/Qwen3-8B",
+            "identity_ok": True,
+            "identity_verified": True,
+            "status": "identity_verified_completed",
+            "cases": 12,
+            "runs": 1,
+            "ai_verified": 0,
+        },
+        {
+            "row_id": "deepseek-official/deepseek-chat",
+            "provider": "deepseek-official",
+            "model_requested": "deepseek-chat",
+            "model_served": "deepseek-flash",
+            "identity_ok": False,
+            "identity_verified": False,
+            "status": "served_model_mismatch_completed",
+            "cases": 12,
+            "runs": 1,
+            "ai_verified": 6,
+        },
+    ]
+    if overclaim_identity:
+        rows[2]["identity_verified"] = True
+        rows[2]["status"] = "identity_verified_completed"
+    summary = {
+        "schema_version": 1,
+        "kind": "provider_coverage",
+        "generated_at": "2026-11-14T00:00:00Z",
+        "identity_policy": {
+            "applied_in_this_artifact": True,
+            "rule": "identity_ok=false is served-model evidence only",
+        },
+        "evidence_rows": rows,
+        "aggregate": {
+            "providers_completed_12case": 2,
+            "models_completed_12case": 4,
+            "not_satisfied": [
+                "international 5-6 model matrix (SiliconFlow intl HTTP 402)"
+            ],
+            "blocked_reasons": ["siliconflow-intl HTTP 402"],
+        },
+        "statistics": {
+            "deterministic_target_strict": {
+                "goal": "target_strict", "cases": 12, "verified": 0,
+                "verified_rate": 0.0, "wilson_ci95": [0.0, 0.0],
+            },
+            "ai_target": {
+                "goal": "ai_target", "cases": 12, "verified": 6,
+                "verified_rate": 0.5, "wilson_ci95": [0.25, 0.75],
+                "inconclusive": 6,
+            },
+            "by_provider_model": [
+                {"provider": "deepseek-official", "model": "deepseek-flash",
+                 "cases": 12, "verified": 6, "verified_rate": 0.5,
+                 "wilson_ci95": [0.25, 0.75], "inconclusive": 6},
+            ],
+        },
+        "cost": {"available": False, "value": None},
+        "seed": {"available": False, "value": None},
+    }
+    if not complete:
+        summary.pop("statistics", None)
+    summary_path = artifact / "summary.json"
+    summary_path.write_text(json.dumps(summary), encoding="utf-8")
+    lines = []
+    for name in ("README.md", "summary.json"):
+        digest = _sha((artifact / name).read_bytes())
+        lines.append(f"{digest}  {name}")
+    (artifact / "SHA256SUMS").write_text("\n".join(lines) + "\n",
+                                         encoding="utf-8")
+    if tamper:
+        summary_path.write_text(
+            json.dumps({**summary, "generated_at": "tampered"}), encoding="utf-8"
+        )
+    return artifact
+
+
 def _write_claims_docs(root: Path, audit: dict) -> None:
     claims = _claims(["NG-a"])
     path = root / "docs" / "status" / "claims.json"
@@ -343,6 +451,7 @@ def _write_tree(root: Path) -> Paths:
         encoding="utf-8",
     )
     _write_provider_matrix(root)
+    _write_provider_coverage(root)
     tests = root / "tests"
     tests.mkdir(parents=True, exist_ok=True)
     (tests / "test_release_gate.py").write_text("def test_dummy():\n    pass\n",
@@ -773,7 +882,8 @@ def test_release_mode_green(tmp_path: Path) -> None:
         "release-tree-identity", "static-coverage-gate",
         "claims-measurement-diff", "acceptance-contract",
         "local-coverage-gate", "meta-audit", "acceptance-invariants",
-        "universe-unknown-zero", "provider-matrix", "full-pytest",
+        "universe-unknown-zero", "provider-matrix", "provider-coverage",
+        "full-pytest",
     ]
 
 
@@ -1169,3 +1279,121 @@ def test_check_helpers_mark_status() -> None:
     assert check.violations == ["boom"]
     unavailable = Check("y", "title").unavailable("missing")
     assert unavailable.status == gate.CHECK_UNAVAILABLE
+
+
+# ---------------------------------------------------------------------------
+# Provider-coverage artifact + release evidence (phase-5)
+# ---------------------------------------------------------------------------
+
+
+def test_provider_coverage_artifact_passes(tmp_path: Path) -> None:
+    _write_provider_coverage(tmp_path)
+    check = gate.check_provider_coverage(Paths(tmp_path))
+    assert check.status == gate.CHECK_PASSED
+    assert "providers_completed_12case=2" in check.detail
+    assert "statistics=True" in check.detail
+
+
+def test_provider_coverage_missing_artifact_fails(tmp_path: Path) -> None:
+    check = gate.check_provider_coverage(Paths(tmp_path))
+    assert check.status == gate.CHECK_FAILED
+    assert any("missing" in violation for violation in check.violations)
+
+
+def test_provider_coverage_rejects_identity_overclaim(tmp_path: Path) -> None:
+    _write_provider_coverage(tmp_path, overclaim_identity=True)
+    check = gate.check_provider_coverage(Paths(tmp_path))
+    assert check.status == gate.CHECK_FAILED
+    assert any("identity_ok=false" in violation for violation in check.violations)
+
+
+def test_provider_coverage_requires_statistics_and_not_satisfied(
+    tmp_path: Path,
+) -> None:
+    _write_provider_coverage(tmp_path, complete=False)
+    check = gate.check_provider_coverage(Paths(tmp_path))
+    assert check.status == gate.CHECK_FAILED
+    assert any("statistics" in violation for violation in check.violations)
+
+
+def test_provider_coverage_checksum_tamper_fails(tmp_path: Path) -> None:
+    _write_provider_coverage(tmp_path, tamper=True)
+    check = gate.check_provider_coverage(Paths(tmp_path))
+    assert check.status == gate.CHECK_FAILED
+    assert any("SHA256SUMS mismatch" in violation for violation in check.violations)
+
+
+def test_check_matrix_includes_provider_coverage() -> None:
+    assert "provider-coverage" in gate.CHECK_MATRIX["release"]
+    assert "provider-coverage" in gate.CHECK_MATRIX["nightly"]
+
+
+def _evidence_runner(argv, cwd, timeout):
+    if argv and str(argv[0]) == "git":
+        if str(argv[-1]) == "HEAD^{tree}" or "HEAD^{tree}" in argv:
+            return RunResult(0, "b" * 40 + "\n")
+        return RunResult(1, "", "unexpected git args")
+    if "limactl" in " ".join(str(part) for part in argv):
+        return RunResult(0, "", "")
+    return RunResult(0, "", "")
+
+
+def test_build_evidence_records_provenance(tmp_path: Path) -> None:
+    _write_provider_coverage(tmp_path)
+    _write_acceptance(Paths(tmp_path).acceptance)
+    summary = gate.GateSummary(
+        mode="nightly",
+        checks=[
+            Check("release-tree-identity", "tree").passed("sha=x"),
+            Check(
+                "claims-measurement-diff", "claims"
+            ).passed("mitigated_residual=['RG-runtime-evidence::elf/x86_64']"),
+        ],
+        violations=[],
+    )
+    summary.frozen_sha = "a" * 40
+    summary.release_sha = "a" * 40
+    summary.branch = "release/2026-11-14"
+    summary.clean_tree = True
+    evidence = gate._build_evidence(
+        Paths(tmp_path), summary, run=_evidence_runner
+    )
+    assert evidence["schema_version"] == 1
+    assert evidence["kind"] == "release_gate_evidence"
+    assert evidence["frozen_matches_release"] is True
+    assert evidence["tree_sha"] == "b" * 40
+    assert evidence["mitigated_residual"] == ["RG-runtime-evidence::elf/x86_64"]
+    assert "github_actions" in evidence["not_run"]
+    assert evidence["artifacts"]["artifacts/provider-coverage-2026-11-14/summary.json"]["present"] is True
+    assert evidence["checks"][0]["status"] == gate.CHECK_PASSED
+
+
+def test_write_evidence_reports_unwritable_path(tmp_path: Path) -> None:
+    blocker = tmp_path / "blocker"
+    blocker.write_text("not a directory", encoding="utf-8")
+    error = gate._write_evidence(blocker / "gate.json", {"ok": True})
+    assert error
+
+
+def test_cli_evidence_out_writes_after_pr(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    summary = gate.GateSummary(
+        mode="pr",
+        checks=[Check("static-coverage-gate", "static").passed("ok")],
+        violations=[],
+    )
+    summary.frozen_sha = "c" * 40
+    summary.release_sha = "c" * 40
+    summary.branch = "HEAD"
+    summary.clean_tree = True
+    monkeypatch.setattr(gate, "run_pr", lambda *args, **kwargs: summary)
+    monkeypatch.setattr(gate, "_lima_identity", lambda run=None: {"available": False})
+    evidence_path = tmp_path / "evidence" / "gate.json"
+    rc = gate.main([
+        "--pr", "--json", "--evidence-out", str(evidence_path),
+    ])
+    assert rc == 0
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert payload["frozen_sha"] == "c" * 40
+    assert payload["mode"] == "pr"

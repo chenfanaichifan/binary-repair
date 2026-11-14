@@ -1,4 +1,4 @@
-"""Agent console (/agent) — M2 GUI owner, Lead record 86 / tasks T7.4-T7.8.
+"""Agent console (/agent) - M2 GUI owner, Lead record 86 / tasks T7.4-T7.8.
 
 These tests pin the M2 boundary rather than backend behaviour:
 - the shell renders and stays behind the local session + host gate;
@@ -171,7 +171,7 @@ def test_top_level_obligations_are_accepted_when_routes_omit_them():
 
 
 def test_missing_region_field_renders_a_dash_not_a_blank_cell():
-    """A missing before/after byte shows —, never a blank cell."""
+    """A missing before/after byte shows a dash, never a blank cell."""
     assert 'value === undefined || value === null || value === "" ? "—" : value' in AGENT_JS
 
 
@@ -569,7 +569,7 @@ def test_plan_503_keeps_the_fallback_reason():
 
 def test_usage_null_is_not_rendered_as_zero():
     # aggregate_job_usage returns None when any token count is missing; the
-    # page must keep that as 未提供 instead of defaulting to 0.
+    # page must keep that as "not provided" instead of defaulting to 0.
     assert 'typeof usage.input_tokens === "number"' in AGENT_JS
     assert 'input === undefined ? "未提供"' in AGENT_JS
     assert "input_tokens || 0" not in AGENT_JS
@@ -585,7 +585,7 @@ def test_partial_usage_is_labelled():
 
 
 def test_plan_mode_badge_shows_scripted_v1_and_keeps_raw_mode():
-    # T8.4: the badge must read "脚本 v1" for deterministic plans, while the
+    # T8.4: the badge must read "script v1" for deterministic plans, while the
     # raw mode stays visible and is also exposed as a data attribute.
     assert 'deterministic: "脚本 v1"' in AGENT_JS
     assert 'llm: "LLM"' in AGENT_JS
@@ -610,8 +610,9 @@ def test_gates_render_in_endpoint_order():
 
 
 def test_invalid_is_na_when_input_mode_is_none():
-    # Lead 定稿：input_mode="none" 时 invalid 是 {passed:0,total:0}，显示 N/A，
-    # 不显示 0/0 passed。invalid_applicable 只作旧响应的兼容。
+    # Final Lead decision: with input_mode="none" invalid is {passed:0,total:0}
+    # and renders as N/A, not 0/0 passed. invalid_applicable is kept for old
+    # response compatibility.
     assert 'v3.input_mode === "none"' in AGENT_JS
     assert 'var invalidText = "N/A";' in AGENT_JS
     assert "v3.invalid.total > 0" in AGENT_JS

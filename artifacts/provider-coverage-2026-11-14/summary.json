@@ -1,812 +1,1461 @@
 {
- "schema_version": 1,
- "kind": "provider_coverage",
- "generated_at": "2026-11-14T14:27:36Z",
- "worktree": {
-  "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-release-2026-11-14",
-  "commit": "725e7bb",
-  "branch": "release/2026-11-14",
-  "note": "frozen release worktree; no provider calls were made while building this artifact"
- },
- "purpose": "Machine-readable provider/model coverage for the provider dimension: which models have real 12-case benchmark evidence, with sha256-bound source artifacts, strict model-identity policy and honest blocked/unavailable rows.",
- "identity_policy": {
-  "rule": "A benchmark row may be presented as requested-model-identity verified only when the provider response model equals the requested model (identity_ok=true) and the strict identity check (BINARYREPAIR_STRICT_MODEL_IDENTITY=1) passed.",
-  "identity_ok_false": "identity_ok=false rows may be recorded as served-model evidence but must not be presented as requested-model-identity verified; every AI verified count is attributed to the served model and carries a limitation note.",
-  "served_model_attribution": true,
-  "strict_identity_env": "BINARYREPAIR_STRICT_MODEL_IDENTITY=1",
-  "excluded_when_strict": true,
-  "applied_in_this_artifact": true,
-  "identity_mismatch_rows": 2,
-  "served_model_only_completed_rows": 1
- },
- "evidence_rows": [
-  {
-   "row_id": "deepseek-official/deepseek-flash",
-   "provider": "deepseek-official",
-   "provider_kind": "official_endpoint",
-   "endpoint": "https://api.deepseek.com/v1",
-   "model_requested": "deepseek-flash",
-   "model_served": "deepseek-flash",
-   "identity_ok": true,
-   "identity_verified": true,
-   "status": "identity_verified_completed",
-   "benchmark_executed": true,
-   "cases": 12,
-   "runs": 3,
-   "runs_ai_verified": [
-    6,
-    6,
-    6
-   ],
-   "ai_verified": 6,
-   "ai_verified_attributed_to": "deepseek-flash",
-   "source": {
-    "artifact_dir": "artifacts/multi-model-matrix-2026-11-14",
-    "files": [
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/aggregate.json",
-      "sha256": "4da1b10fa485859db5a8270c811b1e7e6933982958db0e3d12c9563cbe11b763"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/provider-probe.json",
-      "sha256": "097899ed46b06c2d017c0babace62debdfb6e06c034155656c08ab668f24c274"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-flash-r1.json",
-      "sha256": "2cf1f588d1924f7383d6e05759c8caa673e9bdec11a8d770c8439c0f6fd82485"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-flash-r2.json",
-      "sha256": "f0d914ca25c45229343ffae9449c42809b03b47f447d0ba7287fe9d07407d92f"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-flash-r3.json",
-      "sha256": "ea8af9301ad99f2a9046ebc3d78e29a8834085fc57b47e22126f3e19d101bb82"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/README.md",
-      "sha256": "841e824d3536f7df3c878aed051487cb2ecada905a1230ddbe0f56cd49c6012e"
-     }
-    ],
-    "sha256sums": {
-     "sha256sums": "artifacts/multi-model-matrix-2026-11-14/SHA256SUMS",
-     "sha256sums_sha256": "169ca8e1e600ad04a56eb3a634370f14fcf0339cf3847783f7008437ddec2a0d",
-     "valid": true,
-     "entries": 9,
-     "mismatches": [],
-     "missing": []
-    },
-    "corroborating_files": [
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/benchmarks/deepseek-deepseek-flash/summary.json",
-      "sha256": "84d4a4bf5878ee30c9eab311b04ed24cb774c419505aeda8853723b7f59840df"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/deepseek-deepseek-flash/summary.json",
-      "sha256": "0da586ab0c719ccc59d060c2931905b3b8bf46e80cce6741e3a93793bd614155"
-     }
-    ],
-    "reference_docs": []
-   },
-   "limitations": [
-    "successful repairs remain loop-family only (6/6 loop, 0/6 non-loop) for every run",
-    "native PoC/regression executed in the Linux guest; candidate generation on macOS"
-   ],
-   "notes": "requested and returned model identity matched exactly on all three runs"
+  "schema_version": 1,
+  "kind": "provider_coverage",
+  "generated_at": "2026-11-14T13:08:04Z",
+  "provenance": {
+    "builder": "scripts/build_provider_coverage.py",
+    "builder_version": 1,
+    "build_method": "deterministic re-derivation from committed source artifacts; no provider calls, no network, no git commands, no wall-clock timestamps",
+    "generated_at": "2026-11-14T13:08:04Z",
+    "generated_at_source": "artifacts/provider-matrix-2026-11-14/summary.json#generated_at",
+    "generated_at_note": "generated_at is the latest timestamp recorded in a cited source artifact so a fresh build is byte-identical; it is not the build time",
+    "source_digest_sha256": "bb5712db5a6244ca6ef9f3be807e63851a7cf8903517dfa78cb4e2ed8a6eddc1",
+    "cited_source_count": 32
   },
-  {
-   "row_id": "deepseek-official/deepseek-v4-pro",
-   "provider": "deepseek-official",
-   "provider_kind": "official_endpoint",
-   "endpoint": "https://api.deepseek.com/v1",
-   "model_requested": "deepseek-v4-pro",
-   "model_served": "deepseek-v4-pro",
-   "identity_ok": true,
-   "identity_verified": true,
-   "status": "identity_verified_completed",
-   "benchmark_executed": true,
-   "cases": 12,
-   "runs": 3,
-   "runs_ai_verified": [
-    6,
-    6,
-    6
-   ],
-   "ai_verified": 6,
-   "ai_verified_attributed_to": "deepseek-v4-pro",
-   "source": {
-    "artifact_dir": "artifacts/multi-model-matrix-2026-11-14",
-    "files": [
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/aggregate.json",
-      "sha256": "4da1b10fa485859db5a8270c811b1e7e6933982958db0e3d12c9563cbe11b763"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/provider-probe.json",
-      "sha256": "097899ed46b06c2d017c0babace62debdfb6e06c034155656c08ab668f24c274"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-v4-pro-r1.json",
-      "sha256": "f41c45ceb2884ecd69d195c1aa30631456066ba64a83cc5f7375e4bc95686f65"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-v4-pro-r2.json",
-      "sha256": "e22e588a0647c70df559aaf62d2090063086f5ed48f913cf79277b5872aa0fb0"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-v4-pro-r3.json",
-      "sha256": "d5be26f9e6bc0c0a9d93631f874138a4e35725040879947eb10dcbe31e3e79d0"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-2026-11-14/README.md",
-      "sha256": "841e824d3536f7df3c878aed051487cb2ecada905a1230ddbe0f56cd49c6012e"
-     }
-    ],
-    "sha256sums": {
-     "sha256sums": "artifacts/multi-model-matrix-2026-11-14/SHA256SUMS",
-     "sha256sums_sha256": "169ca8e1e600ad04a56eb3a634370f14fcf0339cf3847783f7008437ddec2a0d",
-     "valid": true,
-     "entries": 9,
-     "mismatches": [],
-     "missing": []
-    },
-    "corroborating_files": [
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/benchmarks/deepseek-deepseek-v4-pro/summary.json",
-      "sha256": "b6dedbe98fbacc0fb14aa9a27884f6daba9a19029c3f2bae6a849f2c25f882c2"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/deepseek-deepseek-v4-pro/summary.json",
-      "sha256": "ac44e011217a630693368c43f2860c4716785a80d35c8452bfc93394c7da493d"
-     }
-    ],
-    "reference_docs": []
-   },
-   "limitations": [
-    "successful repairs remain loop-family only (6/6 loop, 0/6 non-loop) for every run",
-    "native PoC/regression executed in the Linux guest; candidate generation on macOS"
-   ],
-   "notes": "requested and returned model identity matched exactly on all three runs"
+  "purpose": "Machine-readable provider/model coverage: which models have real 12-case benchmark evidence, with sha256-bound source artifacts, strict model-identity policy, Wilson 95% intervals and honest blocked/unavailable rows.",
+  "identity_policy": {
+    "rule": "A benchmark row may be presented as requested-model-identity verified only when the provider response model equals the requested model (identity_ok=true) and the strict identity check (BINARYREPAIR_STRICT_MODEL_IDENTITY=1) passed.",
+    "identity_ok_false": "identity_ok=false rows may be recorded as served-model evidence but must never be presented as requested-model-identity verified; every AI verified count is attributed to the served model and carries a limitation note.",
+    "served_model_attribution": true,
+    "strict_identity_env": "BINARYREPAIR_STRICT_MODEL_IDENTITY=1",
+    "excluded_when_strict": true,
+    "applied_in_this_artifact": true,
+    "identity_mismatch_rows": 2,
+    "served_model_only_completed_rows": 1
   },
-  {
-   "row_id": "siliconflow-cn/Qwen/Qwen3-8B",
-   "provider": "siliconflow-cn",
-   "provider_kind": "third_party_free_tier",
-   "endpoint": "https://api.siliconflow.cn/v1",
-   "model_requested": "Qwen/Qwen3-8B",
-   "model_served": "Qwen/Qwen3-8B",
-   "identity_ok": true,
-   "identity_verified": true,
-   "status": "identity_verified_completed",
-   "benchmark_executed": true,
-   "cases": 12,
-   "runs": 1,
-   "runs_ai_verified": [
-    0
-   ],
-   "ai_verified": 0,
-   "ai_verified_attributed_to": "Qwen/Qwen3-8B",
-   "source": {
-    "artifact_dir": "artifacts/multi-model-matrix-cn-2026-11-14",
-    "files": [
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/summary.json",
-      "sha256": "1c284baa88f8291c3f76b5a29d2ddb43b1b7aaf356456951748d75c0ad63697c"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/aggregate.json",
-      "sha256": "08d2e6456c3765e45ef23a68be1cfc1f30648a92e4b330362fed7b9c8ff02bfe"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/identity-probe/summary.json",
-      "sha256": "65d7969f75620221bbea0059c662fa768f219601b76d461a9e0d22dbecd4be0a"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/siliconflow-Qwen_Qwen3-8B/summary.json",
-      "sha256": "13c43a385e52b6c89fc819d3742a302118f11bbf78953646f139d17902a1cca5"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/README.md",
-      "sha256": "86278dc584f697e3131f7ab80969879e5469e6c51744110dc321031c41a93a76"
-     }
-    ],
-    "sha256sums": {
-     "sha256sums": "artifacts/multi-model-matrix-cn-2026-11-14/SHA256SUMS",
-     "sha256sums_sha256": "78da1bccb6bbd186578026d91a44a6a54d4046defca5a5962d442fbf75080f02",
-     "valid": true,
-     "entries": 24,
-     "mismatches": [],
-     "missing": []
+  "evidence_rows": [
+    {
+      "row_id": "deepseek-official/deepseek-flash",
+      "provider": "deepseek-official",
+      "provider_kind": "official_endpoint",
+      "endpoint": "https://api.deepseek.com/v1",
+      "model_requested": "deepseek-flash",
+      "model_served": "deepseek-flash",
+      "identity_ok": true,
+      "identity_verified": true,
+      "status": "identity_verified_completed",
+      "benchmark_executed": true,
+      "cases": 12,
+      "runs": 3,
+      "runs_ai_verified": [
+        6,
+        6,
+        6
+      ],
+      "ai_verified": 6,
+      "ai_verified_attributed_to": "deepseek-flash",
+      "source": {
+        "artifact_dir": "artifacts/multi-model-matrix-2026-11-14",
+        "files": [
+          {
+            "path": "artifacts/deepseek-matrix-2026-11-14/summary.json",
+            "sha256": "097899ed46b06c2d017c0babace62debdfb6e06c034155656c08ab668f24c274"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/aggregate.json",
+            "sha256": "4da1b10fa485859db5a8270c811b1e7e6933982958db0e3d12c9563cbe11b763"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/provider-probe.json",
+            "sha256": "097899ed46b06c2d017c0babace62debdfb6e06c034155656c08ab668f24c274"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-flash-r1.json",
+            "sha256": "2cf1f588d1924f7383d6e05759c8caa673e9bdec11a8d770c8439c0f6fd82485"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-flash-r2.json",
+            "sha256": "f0d914ca25c45229343ffae9449c42809b03b47f447d0ba7287fe9d07407d92f"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-flash-r3.json",
+            "sha256": "ea8af9301ad99f2a9046ebc3d78e29a8834085fc57b47e22126f3e19d101bb82"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/README.md",
+            "sha256": "841e824d3536f7df3c878aed051487cb2ecada905a1230ddbe0f56cd49c6012e"
+          }
+        ],
+        "sha256sums": {
+          "sha256sums": "artifacts/multi-model-matrix-2026-11-14/SHA256SUMS",
+          "sha256sums_sha256": "169ca8e1e600ad04a56eb3a634370f14fcf0339cf3847783f7008437ddec2a0d",
+          "valid": true,
+          "entries": 9,
+          "mismatches": [],
+          "missing": []
+        },
+        "corroborating_files": [
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/benchmarks/deepseek-deepseek-flash/summary.json",
+            "sha256": "84d4a4bf5878ee30c9eab311b04ed24cb774c419505aeda8853723b7f59840df"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/deepseek-deepseek-flash/summary.json",
+            "sha256": "0da586ab0c719ccc59d060c2931905b3b8bf46e80cce6741e3a93793bd614155"
+          }
+        ],
+        "reference_docs": []
+      },
+      "limitations": [
+        "successful repairs remain loop-family only (6/6 loop, 0/6 non-loop) for every run",
+        "native PoC/regression executed in the Linux guest; candidate generation on macOS"
+      ],
+      "notes": "requested and returned model identity matched exactly on all runs"
     },
-    "corroborating_files": [],
-    "reference_docs": []
-   },
-   "limitations": [
-    "identity probes and the full 12-case benchmark are real free-tier calls (no balance error)",
-    "model produced no verified candidate (0/12); this is model-capability evidence, not a pass"
-   ],
-   "notes": "see LIMITATIONS \u00a722 (4-model real matrix); the frozen tree also contains this evidence"
-  },
-  {
-   "row_id": "siliconflow-cn/Qwen/Qwen2.5-7B-Instruct",
-   "provider": "siliconflow-cn",
-   "provider_kind": "third_party_free_tier",
-   "endpoint": "https://api.siliconflow.cn/v1",
-   "model_requested": "Qwen/Qwen2.5-7B-Instruct",
-   "model_served": "Qwen/Qwen2.5-7B-Instruct",
-   "identity_ok": true,
-   "identity_verified": true,
-   "status": "identity_verified_completed",
-   "benchmark_executed": true,
-   "cases": 12,
-   "runs": 1,
-   "runs_ai_verified": [
-    0
-   ],
-   "ai_verified": 0,
-   "ai_verified_attributed_to": "Qwen/Qwen2.5-7B-Instruct",
-   "source": {
-    "artifact_dir": "artifacts/multi-model-matrix-cn-2026-11-14",
-    "files": [
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/summary.json",
-      "sha256": "1c284baa88f8291c3f76b5a29d2ddb43b1b7aaf356456951748d75c0ad63697c"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/aggregate.json",
-      "sha256": "08d2e6456c3765e45ef23a68be1cfc1f30648a92e4b330362fed7b9c8ff02bfe"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/identity-probe/summary.json",
-      "sha256": "65d7969f75620221bbea0059c662fa768f219601b76d461a9e0d22dbecd4be0a"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/siliconflow-Qwen_Qwen2.5-7B-Instruct/summary.json",
-      "sha256": "05e1572866c03fcdc28f2bea6bcb7a57c639e06734709ac66e120d05e79200e3"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/README.md",
-      "sha256": "86278dc584f697e3131f7ab80969879e5469e6c51744110dc321031c41a93a76"
-     }
-    ],
-    "sha256sums": {
-     "sha256sums": "artifacts/multi-model-matrix-cn-2026-11-14/SHA256SUMS",
-     "sha256sums_sha256": "78da1bccb6bbd186578026d91a44a6a54d4046defca5a5962d442fbf75080f02",
-     "valid": true,
-     "entries": 24,
-     "mismatches": [],
-     "missing": []
+    {
+      "row_id": "deepseek-official/deepseek-v4-pro",
+      "provider": "deepseek-official",
+      "provider_kind": "official_endpoint",
+      "endpoint": "https://api.deepseek.com/v1",
+      "model_requested": "deepseek-v4-pro",
+      "model_served": "deepseek-v4-pro",
+      "identity_ok": true,
+      "identity_verified": true,
+      "status": "identity_verified_completed",
+      "benchmark_executed": true,
+      "cases": 12,
+      "runs": 3,
+      "runs_ai_verified": [
+        6,
+        6,
+        6
+      ],
+      "ai_verified": 6,
+      "ai_verified_attributed_to": "deepseek-v4-pro",
+      "source": {
+        "artifact_dir": "artifacts/multi-model-matrix-2026-11-14",
+        "files": [
+          {
+            "path": "artifacts/deepseek-matrix-2026-11-14/summary.json",
+            "sha256": "097899ed46b06c2d017c0babace62debdfb6e06c034155656c08ab668f24c274"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/aggregate.json",
+            "sha256": "4da1b10fa485859db5a8270c811b1e7e6933982958db0e3d12c9563cbe11b763"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/provider-probe.json",
+            "sha256": "097899ed46b06c2d017c0babace62debdfb6e06c034155656c08ab668f24c274"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-v4-pro-r1.json",
+            "sha256": "f41c45ceb2884ecd69d195c1aa30631456066ba64a83cc5f7375e4bc95686f65"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-v4-pro-r2.json",
+            "sha256": "e22e588a0647c70df559aaf62d2090063086f5ed48f913cf79277b5872aa0fb0"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/deepseek-v4-pro-r3.json",
+            "sha256": "d5be26f9e6bc0c0a9d93631f874138a4e35725040879947eb10dcbe31e3e79d0"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-2026-11-14/README.md",
+            "sha256": "841e824d3536f7df3c878aed051487cb2ecada905a1230ddbe0f56cd49c6012e"
+          }
+        ],
+        "sha256sums": {
+          "sha256sums": "artifacts/multi-model-matrix-2026-11-14/SHA256SUMS",
+          "sha256sums_sha256": "169ca8e1e600ad04a56eb3a634370f14fcf0339cf3847783f7008437ddec2a0d",
+          "valid": true,
+          "entries": 9,
+          "mismatches": [],
+          "missing": []
+        },
+        "corroborating_files": [
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/benchmarks/deepseek-deepseek-v4-pro/summary.json",
+            "sha256": "b6dedbe98fbacc0fb14aa9a27884f6daba9a19029c3f2bae6a849f2c25f882c2"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/deepseek-deepseek-v4-pro/summary.json",
+            "sha256": "ac44e011217a630693368c43f2860c4716785a80d35c8452bfc93394c7da493d"
+          }
+        ],
+        "reference_docs": []
+      },
+      "limitations": [
+        "successful repairs remain loop-family only (6/6 loop, 0/6 non-loop) for every run",
+        "native PoC/regression executed in the Linux guest; candidate generation on macOS"
+      ],
+      "notes": "requested and returned model identity matched exactly on all runs"
     },
-    "corroborating_files": [],
-    "reference_docs": []
-   },
-   "limitations": [
-    "identity probes and the full 12-case benchmark are real free-tier calls (no balance error)",
-    "model produced no verified candidate (0/12); this is model-capability evidence, not a pass"
-   ],
-   "notes": "see LIMITATIONS \u00a722 (4-model real matrix); the frozen tree also contains this evidence"
-  },
-  {
-   "row_id": "siliconflow-intl/Qwen/Qwen3.8-27B",
-   "provider": "siliconflow-intl",
-   "provider_kind": "third_party_paid",
-   "endpoint": "https://api.siliconflow.com/v1",
-   "model_requested": "Qwen/Qwen3.8-27B",
-   "model_served": "Qwen/Qwen3.8-27B",
-   "identity_ok": true,
-   "identity_verified": true,
-   "status": "blocked_unavailable",
-   "benchmark_executed": false,
-   "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls",
-   "http_status": 402,
-   "cases": 0,
-   "runs": 0,
-   "runs_ai_verified": [],
-   "ai_verified": null,
-   "ai_verified_attributed_to": null,
-   "source": {
-    "artifact_dir": "artifacts/multi-model-matrix-intl-2026-11-14",
-    "files": [
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/summary.json",
-      "sha256": "11e0a1a2604a1fbb33e04eecf9c1cd7e0231261db63acc19567d8d710a499dc7"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/aggregate.json",
-      "sha256": "9ef24f719c79271b3826e4ff3e574c9c40066a65443f922f6ae3431c2b5d26bc"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/identity-probe/summary.json",
-      "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/README.md",
-      "sha256": "2dbdc493a163dbcf438ca4df157f8647bd569b9b78c28cd0c529d12c34b7e580"
-     },
-     {
-      "path": "artifacts/siliconflow-intl-probe-2026-11-14/summary.json",
-      "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
-     },
-     {
-      "path": "artifacts/siliconflow-key-2026-11-14/README.md",
-      "sha256": "dc9c97f4e7e0461763687ad06f29eb5c79f2cb2cbaebb78b7fb68e8bae368b08"
-     }
-    ],
-    "sha256sums": {
-     "sha256sums": "artifacts/multi-model-matrix-intl-2026-11-14/SHA256SUMS",
-     "sha256sums_sha256": "72e73a9cfbe1968ac71e5acb8975789ec767931523d9159efa32b2f229513a98",
-     "valid": true,
-     "entries": 20,
-     "mismatches": [],
-     "missing": []
+    {
+      "row_id": "siliconflow-cn/Qwen/Qwen3-8B",
+      "provider": "siliconflow-cn",
+      "provider_kind": "third_party_free_tier",
+      "endpoint": "https://api.siliconflow.cn/v1",
+      "model_requested": "Qwen/Qwen3-8B",
+      "model_served": "Qwen/Qwen3-8B",
+      "identity_ok": true,
+      "identity_verified": true,
+      "status": "identity_verified_completed",
+      "benchmark_executed": true,
+      "cases": 12,
+      "runs": 1,
+      "runs_ai_verified": [
+        0
+      ],
+      "ai_verified": 0,
+      "ai_verified_attributed_to": "Qwen/Qwen3-8B",
+      "source": {
+        "artifact_dir": "artifacts/multi-model-matrix-cn-2026-11-14",
+        "files": [
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/summary.json",
+            "sha256": "1c284baa88f8291c3f76b5a29d2ddb43b1b7aaf356456951748d75c0ad63697c"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/aggregate.json",
+            "sha256": "08d2e6456c3765e45ef23a68be1cfc1f30648a92e4b330362fed7b9c8ff02bfe"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/identity-probe/summary.json",
+            "sha256": "65d7969f75620221bbea0059c662fa768f219601b76d461a9e0d22dbecd4be0a"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/siliconflow-Qwen_Qwen3-8B/summary.json",
+            "sha256": "13c43a385e52b6c89fc819d3742a302118f11bbf78953646f139d17902a1cca5"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/README.md",
+            "sha256": "86278dc584f697e3131f7ab80969879e5469e6c51744110dc321031c41a93a76"
+          }
+        ],
+        "sha256sums": {
+          "sha256sums": "artifacts/multi-model-matrix-cn-2026-11-14/SHA256SUMS",
+          "sha256sums_sha256": "78da1bccb6bbd186578026d91a44a6a54d4046defca5a5962d442fbf75080f02",
+          "valid": true,
+          "entries": 24,
+          "mismatches": [],
+          "missing": []
+        },
+        "corroborating_files": [],
+        "reference_docs": []
+      },
+      "limitations": [
+        "identity probes and the full 12-case benchmark are real free-tier calls (no balance error)",
+        "model produced no verified candidate (0/12); this is model-capability evidence, not a pass"
+      ],
+      "notes": "see LIMITATIONS section 22 (4-model real matrix); the same evidence is in this tree"
     },
-    "corroborating_files": [],
-    "reference_docs": []
-   },
-   "limitations": [
-    "identity probe passed (resp.model exact); no 12-case benchmark was produced",
-    "blocked by account balance, not by model identity or code; never counted as verified"
-   ],
-   "notes": "matrix record: siliconflow:Qwen/Qwen3.8-27B -> status=error, _ProviderHTTPError 402"
-  },
-  {
-   "row_id": "siliconflow-intl/moonshotai/Kimi-K3.1-Pro",
-   "provider": "siliconflow-intl",
-   "provider_kind": "third_party_paid",
-   "endpoint": "https://api.siliconflow.com/v1",
-   "model_requested": "moonshotai/Kimi-K3.1-Pro",
-   "model_served": "moonshotai/Kimi-K3.1-Pro",
-   "identity_ok": true,
-   "identity_verified": true,
-   "status": "blocked_unavailable",
-   "benchmark_executed": false,
-   "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls",
-   "http_status": 402,
-   "cases": 0,
-   "runs": 0,
-   "runs_ai_verified": [],
-   "ai_verified": null,
-   "ai_verified_attributed_to": null,
-   "source": {
-    "artifact_dir": "artifacts/multi-model-matrix-intl-2026-11-14",
-    "files": [
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/summary.json",
-      "sha256": "11e0a1a2604a1fbb33e04eecf9c1cd7e0231261db63acc19567d8d710a499dc7"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/aggregate.json",
-      "sha256": "9ef24f719c79271b3826e4ff3e574c9c40066a65443f922f6ae3431c2b5d26bc"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/identity-probe/summary.json",
-      "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/README.md",
-      "sha256": "2dbdc493a163dbcf438ca4df157f8647bd569b9b78c28cd0c529d12c34b7e580"
-     },
-     {
-      "path": "artifacts/siliconflow-intl-probe-2026-11-14/summary.json",
-      "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
-     },
-     {
-      "path": "artifacts/siliconflow-key-2026-11-14/README.md",
-      "sha256": "dc9c97f4e7e0461763687ad06f29eb5c79f2cb2cbaebb78b7fb68e8bae368b08"
-     }
-    ],
-    "sha256sums": {
-     "sha256sums": "artifacts/multi-model-matrix-intl-2026-11-14/SHA256SUMS",
-     "sha256sums_sha256": "72e73a9cfbe1968ac71e5acb8975789ec767931523d9159efa32b2f229513a98",
-     "valid": true,
-     "entries": 20,
-     "mismatches": [],
-     "missing": []
+    {
+      "row_id": "siliconflow-cn/Qwen/Qwen2.5-7B-Instruct",
+      "provider": "siliconflow-cn",
+      "provider_kind": "third_party_free_tier",
+      "endpoint": "https://api.siliconflow.cn/v1",
+      "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+      "model_served": "Qwen/Qwen2.5-7B-Instruct",
+      "identity_ok": true,
+      "identity_verified": true,
+      "status": "identity_verified_completed",
+      "benchmark_executed": true,
+      "cases": 12,
+      "runs": 1,
+      "runs_ai_verified": [
+        0
+      ],
+      "ai_verified": 0,
+      "ai_verified_attributed_to": "Qwen/Qwen2.5-7B-Instruct",
+      "source": {
+        "artifact_dir": "artifacts/multi-model-matrix-cn-2026-11-14",
+        "files": [
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/summary.json",
+            "sha256": "1c284baa88f8291c3f76b5a29d2ddb43b1b7aaf356456951748d75c0ad63697c"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/aggregate.json",
+            "sha256": "08d2e6456c3765e45ef23a68be1cfc1f30648a92e4b330362fed7b9c8ff02bfe"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/identity-probe/summary.json",
+            "sha256": "65d7969f75620221bbea0059c662fa768f219601b76d461a9e0d22dbecd4be0a"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/siliconflow-Qwen_Qwen2.5-7B-Instruct/summary.json",
+            "sha256": "05e1572866c03fcdc28f2bea6bcb7a57c639e06734709ac66e120d05e79200e3"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/README.md",
+            "sha256": "86278dc584f697e3131f7ab80969879e5469e6c51744110dc321031c41a93a76"
+          }
+        ],
+        "sha256sums": {
+          "sha256sums": "artifacts/multi-model-matrix-cn-2026-11-14/SHA256SUMS",
+          "sha256sums_sha256": "78da1bccb6bbd186578026d91a44a6a54d4046defca5a5962d442fbf75080f02",
+          "valid": true,
+          "entries": 24,
+          "mismatches": [],
+          "missing": []
+        },
+        "corroborating_files": [],
+        "reference_docs": []
+      },
+      "limitations": [
+        "identity probes and the full 12-case benchmark are real free-tier calls (no balance error)",
+        "model produced no verified candidate (0/12); this is model-capability evidence, not a pass"
+      ],
+      "notes": "see LIMITATIONS section 22 (4-model real matrix); the same evidence is in this tree"
     },
-    "corroborating_files": [],
-    "reference_docs": []
-   },
-   "limitations": [
-    "identity probe passed (resp.model exact); no 12-case benchmark was produced",
-    "blocked by account balance, not by model identity or code; never counted as verified"
-   ],
-   "notes": "matrix record: siliconflow:moonshotai/Kimi-K3.1-Pro -> status=error, _ProviderHTTPError 402"
-  },
-  {
-   "row_id": "siliconflow-intl/deepseek-ai/DeepSeek-V4.1-Flash",
-   "provider": "siliconflow-intl",
-   "provider_kind": "third_party_paid",
-   "endpoint": "https://api.siliconflow.com/v1",
-   "model_requested": "deepseek-ai/DeepSeek-V4.1-Flash",
-   "model_served": "deepseek-ai/DeepSeek-V4.1-Flash",
-   "identity_ok": true,
-   "identity_verified": true,
-   "status": "blocked_unavailable",
-   "benchmark_executed": false,
-   "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls",
-   "http_status": 402,
-   "cases": 0,
-   "runs": 0,
-   "runs_ai_verified": [],
-   "ai_verified": null,
-   "ai_verified_attributed_to": null,
-   "source": {
-    "artifact_dir": "artifacts/multi-model-matrix-intl-2026-11-14",
-    "files": [
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/summary.json",
-      "sha256": "11e0a1a2604a1fbb33e04eecf9c1cd7e0231261db63acc19567d8d710a499dc7"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/aggregate.json",
-      "sha256": "9ef24f719c79271b3826e4ff3e574c9c40066a65443f922f6ae3431c2b5d26bc"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/identity-probe/summary.json",
-      "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
-     },
-     {
-      "path": "artifacts/multi-model-matrix-intl-2026-11-14/README.md",
-      "sha256": "2dbdc493a163dbcf438ca4df157f8647bd569b9b78c28cd0c529d12c34b7e580"
-     },
-     {
-      "path": "artifacts/siliconflow-intl-probe-2026-11-14/summary.json",
-      "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
-     },
-     {
-      "path": "artifacts/siliconflow-key-2026-11-14/README.md",
-      "sha256": "dc9c97f4e7e0461763687ad06f29eb5c79f2cb2cbaebb78b7fb68e8bae368b08"
-     }
-    ],
-    "sha256sums": {
-     "sha256sums": "artifacts/multi-model-matrix-intl-2026-11-14/SHA256SUMS",
-     "sha256sums_sha256": "72e73a9cfbe1968ac71e5acb8975789ec767931523d9159efa32b2f229513a98",
-     "valid": true,
-     "entries": 20,
-     "mismatches": [],
-     "missing": []
+    {
+      "row_id": "siliconflow-intl/Qwen/Qwen3.8-27B",
+      "provider": "siliconflow-intl",
+      "provider_kind": "third_party_paid",
+      "endpoint": "https://api.siliconflow.com/v1",
+      "model_requested": "Qwen/Qwen3.8-27B",
+      "model_served": "Qwen/Qwen3.8-27B",
+      "identity_ok": true,
+      "identity_verified": false,
+      "status": "blocked_unavailable",
+      "benchmark_executed": false,
+      "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls",
+      "http_status": 402,
+      "cases": 0,
+      "runs": 0,
+      "runs_ai_verified": [],
+      "ai_verified": null,
+      "ai_verified_attributed_to": null,
+      "source": {
+        "artifact_dir": "artifacts/multi-model-matrix-intl-2026-11-14",
+        "files": [
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/summary.json",
+            "sha256": "11e0a1a2604a1fbb33e04eecf9c1cd7e0231261db63acc19567d8d710a499dc7"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/aggregate.json",
+            "sha256": "9ef24f719c79271b3826e4ff3e574c9c40066a65443f922f6ae3431c2b5d26bc"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/identity-probe/summary.json",
+            "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/README.md",
+            "sha256": "2dbdc493a163dbcf438ca4df157f8647bd569b9b78c28cd0c529d12c34b7e580"
+          },
+          {
+            "path": "artifacts/siliconflow-intl-probe-2026-11-14/summary.json",
+            "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
+          },
+          {
+            "path": "artifacts/siliconflow-key-2026-11-14/README.md",
+            "sha256": "dc9c97f4e7e0461763687ad06f29eb5c79f2cb2cbaebb78b7fb68e8bae368b08"
+          }
+        ],
+        "sha256sums": {
+          "sha256sums": "artifacts/multi-model-matrix-intl-2026-11-14/SHA256SUMS",
+          "sha256sums_sha256": "72e73a9cfbe1968ac71e5acb8975789ec767931523d9159efa32b2f229513a98",
+          "valid": true,
+          "entries": 20,
+          "mismatches": [],
+          "missing": []
+        },
+        "corroborating_files": [],
+        "reference_docs": []
+      },
+      "limitations": [
+        "identity probe passed (resp.model exact); no 12-case benchmark was produced",
+        "blocked by account balance, not by model identity or code; never counted as verified"
+      ],
+      "notes": "matrix record: siliconflow:Qwen/Qwen3.8-27B -> status=error, _ProviderHTTPError: provider returned HTTP 402"
     },
-    "corroborating_files": [],
-    "reference_docs": []
-   },
-   "limitations": [
-    "identity probe passed (resp.model exact); no 12-case benchmark was produced",
-    "blocked by account balance, not by model identity or code; never counted as verified"
-   ],
-   "notes": "matrix record: siliconflow:deepseek-ai/DeepSeek-V4.1-Flash -> status=error, _ProviderHTTPError 402"
-  },
-  {
-   "row_id": "siliconflow-cn/THUDM/GLM-Z1-9B-0414",
-   "provider": "siliconflow-cn",
-   "provider_kind": "third_party_free_tier",
-   "endpoint": "https://api.siliconflow.cn/v1",
-   "model_requested": "THUDM/GLM-Z1-9B-0414",
-   "model_served": null,
-   "identity_ok": null,
-   "identity_verified": false,
-   "status": "blocked_unavailable",
-   "benchmark_executed": false,
-   "blocked_reason": "identity probe timed out (TimeoutError)",
-   "http_status": null,
-   "cases": 0,
-   "runs": 0,
-   "runs_ai_verified": [],
-   "ai_verified": null,
-   "ai_verified_attributed_to": null,
-   "source": {
-    "artifact_dir": "artifacts/multi-model-matrix-cn-2026-11-14",
-    "files": [
-     {
-      "path": "artifacts/multi-model-matrix-cn-2026-11-14/identity-probe/summary.json",
-      "sha256": "65d7969f75620221bbea0059c662fa768f219601b76d461a9e0d22dbecd4be0a"
-     }
-    ],
-    "sha256sums": {
-     "sha256sums": "artifacts/multi-model-matrix-cn-2026-11-14/SHA256SUMS",
-     "sha256sums_sha256": "78da1bccb6bbd186578026d91a44a6a54d4046defca5a5962d442fbf75080f02",
-     "valid": true,
-     "entries": 24,
-     "mismatches": [],
-     "missing": []
+    {
+      "row_id": "siliconflow-intl/deepseek-ai/DeepSeek-V4.1-Flash",
+      "provider": "siliconflow-intl",
+      "provider_kind": "third_party_paid",
+      "endpoint": "https://api.siliconflow.com/v1",
+      "model_requested": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "model_served": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "identity_ok": true,
+      "identity_verified": false,
+      "status": "blocked_unavailable",
+      "benchmark_executed": false,
+      "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls",
+      "http_status": 402,
+      "cases": 0,
+      "runs": 0,
+      "runs_ai_verified": [],
+      "ai_verified": null,
+      "ai_verified_attributed_to": null,
+      "source": {
+        "artifact_dir": "artifacts/multi-model-matrix-intl-2026-11-14",
+        "files": [
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/summary.json",
+            "sha256": "11e0a1a2604a1fbb33e04eecf9c1cd7e0231261db63acc19567d8d710a499dc7"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/aggregate.json",
+            "sha256": "9ef24f719c79271b3826e4ff3e574c9c40066a65443f922f6ae3431c2b5d26bc"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/identity-probe/summary.json",
+            "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/README.md",
+            "sha256": "2dbdc493a163dbcf438ca4df157f8647bd569b9b78c28cd0c529d12c34b7e580"
+          },
+          {
+            "path": "artifacts/siliconflow-intl-probe-2026-11-14/summary.json",
+            "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
+          },
+          {
+            "path": "artifacts/siliconflow-key-2026-11-14/README.md",
+            "sha256": "dc9c97f4e7e0461763687ad06f29eb5c79f2cb2cbaebb78b7fb68e8bae368b08"
+          }
+        ],
+        "sha256sums": {
+          "sha256sums": "artifacts/multi-model-matrix-intl-2026-11-14/SHA256SUMS",
+          "sha256sums_sha256": "72e73a9cfbe1968ac71e5acb8975789ec767931523d9159efa32b2f229513a98",
+          "valid": true,
+          "entries": 20,
+          "mismatches": [],
+          "missing": []
+        },
+        "corroborating_files": [],
+        "reference_docs": []
+      },
+      "limitations": [
+        "identity probe passed (resp.model exact); no 12-case benchmark was produced",
+        "blocked by account balance, not by model identity or code; never counted as verified"
+      ],
+      "notes": "matrix record: siliconflow:deepseek-ai/DeepSeek-V4.1-Flash -> status=error, _ProviderHTTPError: provider returned HTTP 402"
     },
-    "corroborating_files": [],
-    "reference_docs": [
-     {
-      "path": "docs/acceptance/LIMITATIONS.md",
-      "sha256": "c16fd72cd15e5c397e5f71e9a2a1281e8ae7021920b95a8de488934ebca3f113"
-     },
-     {
-      "path": "artifacts/siliconflow-key-2026-11-14/README.md",
-      "sha256": "dc9c97f4e7e0461763687ad06f29eb5c79f2cb2cbaebb78b7fb68e8bae368b08"
-     }
-    ]
-   },
-   "limitations": [
-    "no benchmark evidence for this model; identity unknown, never counted"
-   ],
-   "notes": "LIMITATIONS \u00a722; no fifth provider key is available"
-  },
-  {
-   "row_id": "deepseek-official/provider-matrix/deepseek-chat->deepseek-flash",
-   "provider": "deepseek-official",
-   "provider_kind": "official_endpoint",
-   "endpoint": "https://api.deepseek.com/v1",
-   "model_requested": "deepseek-chat",
-   "model_served": "deepseek-flash",
-   "identity_ok": false,
-   "identity_verified": false,
-   "status": "served_model_mismatch_completed",
-   "benchmark_executed": true,
-   "cases": 12,
-   "runs": 1,
-   "runs_ai_verified": [
-    6
-   ],
-   "ai_verified": 6,
-   "ai_verified_attributed_to": "deepseek-flash",
-   "source": {
-    "artifact_dir": "artifacts/provider-matrix-2026-11-14",
-    "files": [
-     {
-      "path": "artifacts/provider-matrix-2026-11-14/summary.json",
-      "sha256": "0552c37d3c7a6b5ff45331e62d712a4809d4d60035325b730b4ddf42c9dd5ecb"
-     },
-     {
-      "path": "artifacts/provider-matrix-2026-11-14/README.md",
-      "sha256": "786a016c6bf80a2b878ebc366a92487b43551327c8f10ce292ab5c732fddfdcc"
-     }
-    ],
-    "sha256sums": {
-     "sha256sums": "artifacts/provider-matrix-2026-11-14/SHA256SUMS",
-     "sha256sums_sha256": "06c064739e000c7852f8d29a31f19fe85f1bf8b768a8e4f9cfd1d2ed3b57185a",
-     "valid": true,
-     "entries": 14,
-     "mismatches": [],
-     "missing": []
+    {
+      "row_id": "siliconflow-intl/moonshotai/Kimi-K3.1-Pro",
+      "provider": "siliconflow-intl",
+      "provider_kind": "third_party_paid",
+      "endpoint": "https://api.siliconflow.com/v1",
+      "model_requested": "moonshotai/Kimi-K3.1-Pro",
+      "model_served": "moonshotai/Kimi-K3.1-Pro",
+      "identity_ok": true,
+      "identity_verified": false,
+      "status": "blocked_unavailable",
+      "benchmark_executed": false,
+      "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls",
+      "http_status": 402,
+      "cases": 0,
+      "runs": 0,
+      "runs_ai_verified": [],
+      "ai_verified": null,
+      "ai_verified_attributed_to": null,
+      "source": {
+        "artifact_dir": "artifacts/multi-model-matrix-intl-2026-11-14",
+        "files": [
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/summary.json",
+            "sha256": "11e0a1a2604a1fbb33e04eecf9c1cd7e0231261db63acc19567d8d710a499dc7"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/aggregate.json",
+            "sha256": "9ef24f719c79271b3826e4ff3e574c9c40066a65443f922f6ae3431c2b5d26bc"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/identity-probe/summary.json",
+            "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
+          },
+          {
+            "path": "artifacts/multi-model-matrix-intl-2026-11-14/README.md",
+            "sha256": "2dbdc493a163dbcf438ca4df157f8647bd569b9b78c28cd0c529d12c34b7e580"
+          },
+          {
+            "path": "artifacts/siliconflow-intl-probe-2026-11-14/summary.json",
+            "sha256": "f628f56fcfcfb879d5d9b80321fd9e5ba47c5e6fbf53edef9f52901b88fd2944"
+          },
+          {
+            "path": "artifacts/siliconflow-key-2026-11-14/README.md",
+            "sha256": "dc9c97f4e7e0461763687ad06f29eb5c79f2cb2cbaebb78b7fb68e8bae368b08"
+          }
+        ],
+        "sha256sums": {
+          "sha256sums": "artifacts/multi-model-matrix-intl-2026-11-14/SHA256SUMS",
+          "sha256sums_sha256": "72e73a9cfbe1968ac71e5acb8975789ec767931523d9159efa32b2f229513a98",
+          "valid": true,
+          "entries": 20,
+          "mismatches": [],
+          "missing": []
+        },
+        "corroborating_files": [],
+        "reference_docs": []
+      },
+      "limitations": [
+        "identity probe passed (resp.model exact); no 12-case benchmark was produced",
+        "blocked by account balance, not by model identity or code; never counted as verified"
+      ],
+      "notes": "matrix record: siliconflow:moonshotai/Kimi-K3.1-Pro -> status=error, _ProviderHTTPError: provider returned HTTP 402"
     },
-    "corroborating_files": [],
-    "reference_docs": []
-   },
-   "limitations": [
-    "identity_ok=false: this run must NOT be presented as requested-model-identity verified",
-    "AI verified count (6/12) is attributed to the served model deepseek-flash only",
-    "served-model aliasing is provider-side; recorded honestly, not excluded from evidence"
-   ],
-   "notes": "requested deepseek-chat was served as deepseek-flash (provider aliasing)"
-  },
-  {
-   "row_id": "deepseek-official/probe/deepseek-chat",
-   "provider": "deepseek-official",
-   "provider_kind": "official_endpoint",
-   "endpoint": "https://api.deepseek.com/v1",
-   "model_requested": "deepseek-chat",
-   "model_served": "deepseek-flash",
-   "identity_ok": false,
-   "identity_verified": false,
-   "status": "probe_only_identity_mismatch",
-   "benchmark_executed": false,
-   "cases": 0,
-   "runs": 0,
-   "runs_ai_verified": [],
-   "ai_verified": null,
-   "ai_verified_attributed_to": null,
-   "source": {
-    "artifact_dir": "artifacts/multi-model-probe-2026-11-14",
-    "files": [
-     {
-      "path": "artifacts/multi-model-probe-2026-11-14/summary.json",
-      "sha256": "e3302434065892602aed0ff889dbb2cf45747b44b4c3f9ad2d04aef4137e4097"
-     },
-     {
-      "path": "artifacts/multi-model-probe-2026-11-14/README.md",
-      "sha256": "1dde99edfd10b1609ce831efbc404f559c89efedb433d731cf6708402e9979e6"
-     }
-    ],
-    "sha256sums": {
-     "sha256sums": "artifacts/multi-model-probe-2026-11-14/SHA256SUMS",
-     "sha256sums_sha256": "7e94cec79f6a1670d4cb90dc250a3da22cc3dfaf3a29e3db400b97b9a7716326",
-     "valid": true,
-     "entries": 3,
-     "mismatches": [],
-     "missing": []
+    {
+      "row_id": "siliconflow-cn/THUDM/GLM-Z1-9B-0414",
+      "provider": "siliconflow-cn",
+      "provider_kind": "third_party_free_tier",
+      "endpoint": "https://api.siliconflow.cn/v1",
+      "model_requested": "THUDM/GLM-Z1-9B-0414",
+      "model_served": null,
+      "identity_ok": null,
+      "identity_verified": false,
+      "status": "blocked_unavailable",
+      "benchmark_executed": false,
+      "blocked_reason": "identity probe timed out (TimeoutError)",
+      "http_status": null,
+      "cases": 0,
+      "runs": 0,
+      "runs_ai_verified": [],
+      "ai_verified": null,
+      "ai_verified_attributed_to": null,
+      "source": {
+        "artifact_dir": "artifacts/multi-model-matrix-cn-2026-11-14",
+        "files": [
+          {
+            "path": "artifacts/multi-model-matrix-cn-2026-11-14/identity-probe/summary.json",
+            "sha256": "65d7969f75620221bbea0059c662fa768f219601b76d461a9e0d22dbecd4be0a"
+          }
+        ],
+        "sha256sums": {
+          "sha256sums": "artifacts/multi-model-matrix-cn-2026-11-14/SHA256SUMS",
+          "sha256sums_sha256": "78da1bccb6bbd186578026d91a44a6a54d4046defca5a5962d442fbf75080f02",
+          "valid": true,
+          "entries": 24,
+          "mismatches": [],
+          "missing": []
+        },
+        "corroborating_files": [],
+        "reference_docs": [
+          {
+            "path": "docs/acceptance/LIMITATIONS.md",
+            "sha256": "a3c17cff5bb7f8064759ea32ab9aed9bc1cfa177182d98d450f750ca3d656840"
+          },
+          {
+            "path": "artifacts/siliconflow-key-2026-11-14/README.md",
+            "sha256": "dc9c97f4e7e0461763687ad06f29eb5c79f2cb2cbaebb78b7fb68e8bae368b08"
+          }
+        ]
+      },
+      "limitations": [
+        "no benchmark evidence for this model; identity unknown, never counted"
+      ],
+      "notes": "LIMITATIONS section 22; no fifth provider key is available"
     },
-    "corroborating_files": [],
-    "reference_docs": []
-   },
-   "limitations": [
-    "probe record only; the strict identity check rejects this model for benchmark evidence"
-   ],
-   "notes": "old single-model endpoint silently maps deepseek-chat to deepseek-flash (P5 model-shrinkage risk)"
-  },
-  {
-   "row_id": "dashscope/qwen-plus",
-   "provider": "dashscope",
-   "provider_kind": "reference_only",
-   "endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-   "model_requested": "qwen-plus",
-   "model_served": null,
-   "identity_ok": null,
-   "identity_verified": false,
-   "status": "unavailable_no_artifact",
-   "benchmark_executed": false,
-   "blocked_reason": "no DashScope/Bailian key configured on this host; no artifact exists",
-   "http_status": null,
-   "cases": 0,
-   "runs": 0,
-   "runs_ai_verified": [],
-   "ai_verified": null,
-   "ai_verified_attributed_to": null,
-   "source": {
-    "artifact_dir": null,
-    "files": [],
-    "sha256sums": null,
-    "corroborating_files": [],
-    "reference_docs": [
-     {
-      "path": "docs/operations/multi-model-benchmark.md",
-      "sha256": "209db204c06a11aca38b864df74781685d83b9695c20dec337297e009bfbb6f6"
-     }
-    ]
-   },
-   "limitations": [
-    "referenced by docs only; no key, no probe, no benchmark evidence"
-   ],
-   "notes": "explicit unavailable/no-artifact row: never a provider claim"
-  }
- ],
- "aggregate": {
-  "providers_with_artifact": 3,
-  "providers_completed_12case": 2,
-  "providers_completed": [
-   "deepseek-official",
-   "siliconflow-cn"
+    {
+      "row_id": "deepseek-official/provider-matrix/deepseek-chat->deepseek-flash",
+      "provider": "deepseek-official",
+      "provider_kind": "official_endpoint",
+      "endpoint": "https://api.deepseek.com/v1",
+      "model_requested": "deepseek-chat",
+      "model_served": "deepseek-flash",
+      "identity_ok": false,
+      "identity_verified": false,
+      "status": "served_model_mismatch_completed",
+      "benchmark_executed": true,
+      "cases": 12,
+      "runs": 1,
+      "runs_ai_verified": [
+        6
+      ],
+      "ai_verified": 6,
+      "ai_verified_attributed_to": "deepseek-flash",
+      "source": {
+        "artifact_dir": "artifacts/provider-matrix-2026-11-14",
+        "files": [
+          {
+            "path": "artifacts/provider-matrix-2026-11-14/summary.json",
+            "sha256": "0552c37d3c7a6b5ff45331e62d712a4809d4d60035325b730b4ddf42c9dd5ecb"
+          },
+          {
+            "path": "artifacts/provider-matrix-2026-11-14/README.md",
+            "sha256": "786a016c6bf80a2b878ebc366a92487b43551327c8f10ce292ab5c732fddfdcc"
+          }
+        ],
+        "sha256sums": {
+          "sha256sums": "artifacts/provider-matrix-2026-11-14/SHA256SUMS",
+          "sha256sums_sha256": "06c064739e000c7852f8d29a31f19fe85f1bf8b768a8e4f9cfd1d2ed3b57185a",
+          "valid": true,
+          "entries": 14,
+          "mismatches": [],
+          "missing": []
+        },
+        "corroborating_files": [],
+        "reference_docs": []
+      },
+      "limitations": [
+        "identity_ok=false: this run must NOT be presented as requested-model-identity verified",
+        "AI verified count is attributed to the served model only",
+        "served-model aliasing is provider-side; recorded honestly, not excluded from evidence"
+      ],
+      "notes": "requested deepseek-chat was served as deepseek-flash (provider aliasing)"
+    },
+    {
+      "row_id": "deepseek-official/probe/deepseek-chat",
+      "provider": "deepseek-official",
+      "provider_kind": "official_endpoint",
+      "endpoint": "https://api.deepseek.com/v1",
+      "model_requested": "deepseek-chat",
+      "model_served": "deepseek-flash",
+      "identity_ok": false,
+      "identity_verified": false,
+      "status": "probe_only_identity_mismatch",
+      "benchmark_executed": false,
+      "cases": 0,
+      "runs": 0,
+      "runs_ai_verified": [],
+      "ai_verified": null,
+      "ai_verified_attributed_to": null,
+      "source": {
+        "artifact_dir": "artifacts/multi-model-probe-2026-11-14",
+        "files": [
+          {
+            "path": "artifacts/multi-model-probe-2026-11-14/summary.json",
+            "sha256": "e3302434065892602aed0ff889dbb2cf45747b44b4c3f9ad2d04aef4137e4097"
+          },
+          {
+            "path": "artifacts/multi-model-probe-2026-11-14/README.md",
+            "sha256": "1dde99edfd10b1609ce831efbc404f559c89efedb433d731cf6708402e9979e6"
+          }
+        ],
+        "sha256sums": {
+          "sha256sums": "artifacts/multi-model-probe-2026-11-14/SHA256SUMS",
+          "sha256sums_sha256": "7e94cec79f6a1670d4cb90dc250a3da22cc3dfaf3a29e3db400b97b9a7716326",
+          "valid": true,
+          "entries": 3,
+          "mismatches": [],
+          "missing": []
+        },
+        "corroborating_files": [],
+        "reference_docs": []
+      },
+      "limitations": [
+        "probe record only; the strict identity check rejects this model for benchmark evidence"
+      ],
+      "notes": "old single-model endpoint maps deepseek-chat to deepseek-flash (P5 model-shrinkage risk)"
+    },
+    {
+      "row_id": "dashscope/qwen-plus",
+      "provider": "dashscope",
+      "provider_kind": "reference_only",
+      "endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "model_requested": "qwen-plus",
+      "model_served": null,
+      "identity_ok": null,
+      "identity_verified": false,
+      "status": "unavailable_no_artifact",
+      "benchmark_executed": false,
+      "blocked_reason": "no DashScope/Bailian key configured on this host; no artifact exists",
+      "http_status": null,
+      "cases": 0,
+      "runs": 0,
+      "runs_ai_verified": [],
+      "ai_verified": null,
+      "ai_verified_attributed_to": null,
+      "source": {
+        "artifact_dir": null,
+        "files": [],
+        "sha256sums": null,
+        "corroborating_files": [],
+        "reference_docs": [
+          {
+            "path": "docs/operations/multi-model-benchmark.md",
+            "sha256": "209db204c06a11aca38b864df74781685d83b9695c20dec337297e009bfbb6f6"
+          }
+        ]
+      },
+      "limitations": [
+        "referenced by docs only; no key, no probe, no benchmark evidence"
+      ],
+      "notes": "explicit unavailable/no-artifact row: never a provider claim"
+    }
   ],
-  "providers_blocked": 1,
-  "providers_blocked_list": [
-   "siliconflow-intl"
-  ],
-  "providers_referenced_no_artifact": 1,
-  "models_completed_12case": 4,
-  "models_blocked": 4,
-  "identity_verified_models": [
-   "deepseek-flash",
-   "deepseek-v4-pro",
-   "Qwen/Qwen3-8B",
-   "Qwen/Qwen2.5-7B-Instruct"
-  ],
-  "identity_verified_models_count": 4,
-  "identity_mismatch_rows": 2,
-  "served_model_only_completed_rows": 1,
-  "ai_verified_by_completed_model": {
-   "deepseek-flash": {
-    "provider": "deepseek-official",
-    "runs": 3,
-    "cases": 12,
-    "per_run_ai_verified": [
-     6,
-     6,
-     6
-    ]
-   },
-   "deepseek-v4-pro": {
-    "provider": "deepseek-official",
-    "runs": 3,
-    "cases": 12,
-    "per_run_ai_verified": [
-     6,
-     6,
-     6
-    ]
-   },
-   "Qwen/Qwen3-8B": {
-    "provider": "siliconflow-cn",
-    "runs": 1,
-    "cases": 12,
-    "per_run_ai_verified": [
-     0
-    ]
-   },
-   "Qwen/Qwen2.5-7B-Instruct": {
-    "provider": "siliconflow-cn",
-    "runs": 1,
-    "cases": 12,
-    "per_run_ai_verified": [
-     0
-    ]
-   }
-  },
-  "served_model_attribution_runs": [
-   {
-    "requested_model": "deepseek-chat",
-    "served_model": "deepseek-flash",
-    "cases": 12,
-    "runs": 1,
-    "ai_verified": 6,
-    "source": "artifacts/provider-matrix-2026-11-14"
-   }
-  ],
-  "requirements": {
-   "at_least_2_models_12case": {
-    "satisfied": true,
-    "observed": 4,
-    "evidence": [
-     "deepseek-flash",
-     "deepseek-v4-pro",
-     "Qwen/Qwen3-8B",
-     "Qwen/Qwen2.5-7B-Instruct"
-    ]
-   },
-   "at_least_2_providers_12case": {
-    "satisfied": true,
-    "observed": 2,
-    "evidence": [
-     "deepseek-official",
-     "siliconflow-cn"
+  "statistics": {
+    "methodology": "Wilson score interval at 95% confidence (z=1.96) over all cases of all runs of a model (pooled). verified = cases whose AI target repair passed the native/emulated PoC+regression gate. inconclusive = cases that produced no verified candidate (analysis_only / rejected / no candidate / gate fail). deterministic_target_strict and ai_target are reported separately and are never combined into one score. n=0 means not executed and uses the uninformative interval [0.0, 1.0].",
+    "confidence_level": 0.95,
+    "z_score": 1.96,
+    "definitions": {
+      "verified": "cases accepted by the native/emulated PoC+regression gate",
+      "verified_rate": "pooled verified / pooled cases for one model",
+      "wilson_ci95": "two-element Wilson 95% interval for the pooled verified_rate",
+      "inconclusive": "pooled cases with no verified candidate",
+      "cases": "cases per run (12 for every hard-case benchmark)",
+      "cases_pooled": "cases summed over all runs of the model",
+      "deterministic_target_strict": "deterministic pipeline under repair_any(target=..., require_target=True); verified means the deterministic gate verified a candidate; expected_matches compares the disposition with cases.json baseline_expected_target_strict",
+      "ai_target": "real provider target-assembly mode; identity_verified only when requested model == served model",
+      "served_model_only": "identity_ok=false run recorded as served-model evidence only; never pooled with requested-model-identity evidence"
+    },
+    "deterministic_target_strict": {
+      "available": true,
+      "metric": "deterministic_target_strict",
+      "source": "artifacts/provider-matrix-2026-11-14/per-case/*.json",
+      "identity_ok": false,
+      "identity_verified": false,
+      "identity_note": "the deterministic target-strict measurement is model-independent and is recorded on the provider-matrix benchmark suite; the provider run that produced that suite requested deepseek-chat and was served deepseek-flash (identity_ok=false), but the deterministic pipeline does not use a provider",
+      "runs": 1,
+      "cases": 12,
+      "cases_pooled": 12,
+      "verified": 0,
+      "verified_rate": 0.0,
+      "wilson_ci95": [
+        0.0,
+        0.242501
+      ],
+      "inconclusive": 12,
+      "expected_matches": 12,
+      "expected_match_rate": 1.0,
+      "target_scope_resolved": 12,
+      "dispositions": {
+        "analysis_only": 12
+      },
+      "whole_image_verified": 0
+    },
+    "ai_target": {
+      "by_model": [
+        {
+          "provider": "deepseek-official",
+          "model_requested": "deepseek-flash",
+          "model_served": "deepseek-flash",
+          "identity_ok": true,
+          "identity_verified": true,
+          "status": "identity_verified_completed",
+          "runs": 3,
+          "cases": 12,
+          "cases_pooled": 36,
+          "verified": 18,
+          "verified_per_run": [
+            6,
+            6,
+            6
+          ],
+          "verified_rate": 0.5,
+          "wilson_ci95": [
+            0.344741,
+            0.655259
+          ],
+          "inconclusive": 18,
+          "inconclusive_per_run": [
+            6,
+            6,
+            6
+          ],
+          "attributed_to": "deepseek-flash",
+          "blocked_reason": null
+        },
+        {
+          "provider": "deepseek-official",
+          "model_requested": "deepseek-v4-pro",
+          "model_served": "deepseek-v4-pro",
+          "identity_ok": true,
+          "identity_verified": true,
+          "status": "identity_verified_completed",
+          "runs": 3,
+          "cases": 12,
+          "cases_pooled": 36,
+          "verified": 18,
+          "verified_per_run": [
+            6,
+            6,
+            6
+          ],
+          "verified_rate": 0.5,
+          "wilson_ci95": [
+            0.344741,
+            0.655259
+          ],
+          "inconclusive": 18,
+          "inconclusive_per_run": [
+            6,
+            6,
+            6
+          ],
+          "attributed_to": "deepseek-v4-pro",
+          "blocked_reason": null
+        },
+        {
+          "provider": "siliconflow-cn",
+          "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+          "model_served": "Qwen/Qwen2.5-7B-Instruct",
+          "identity_ok": true,
+          "identity_verified": true,
+          "status": "identity_verified_completed",
+          "runs": 1,
+          "cases": 12,
+          "cases_pooled": 12,
+          "verified": 0,
+          "verified_per_run": [
+            0
+          ],
+          "verified_rate": 0.0,
+          "wilson_ci95": [
+            0.0,
+            0.242501
+          ],
+          "inconclusive": 12,
+          "inconclusive_per_run": [
+            12
+          ],
+          "attributed_to": "Qwen/Qwen2.5-7B-Instruct",
+          "blocked_reason": null
+        },
+        {
+          "provider": "siliconflow-cn",
+          "model_requested": "Qwen/Qwen3-8B",
+          "model_served": "Qwen/Qwen3-8B",
+          "identity_ok": true,
+          "identity_verified": true,
+          "status": "identity_verified_completed",
+          "runs": 1,
+          "cases": 12,
+          "cases_pooled": 12,
+          "verified": 0,
+          "verified_per_run": [
+            0
+          ],
+          "verified_rate": 0.0,
+          "wilson_ci95": [
+            0.0,
+            0.242501
+          ],
+          "inconclusive": 12,
+          "inconclusive_per_run": [
+            12
+          ],
+          "attributed_to": "Qwen/Qwen3-8B",
+          "blocked_reason": null
+        }
+      ],
+      "pooled_identity_verified": {
+        "models": 4,
+        "runs": 8,
+        "cases": 96,
+        "verified": 36,
+        "verified_rate": 0.375,
+        "wilson_ci95": [
+          0.284725,
+          0.474895
+        ],
+        "inconclusive": 60
+      },
+      "served_model_only": {
+        "provider": "deepseek-official",
+        "model_requested": "deepseek-chat",
+        "model_served": "deepseek-flash",
+        "identity_ok": false,
+        "identity_verified": false,
+        "status": "served_model_mismatch_completed",
+        "runs": 1,
+        "cases": 12,
+        "cases_pooled": 12,
+        "verified": 6,
+        "verified_per_run": [
+          6
+        ],
+        "verified_rate": 0.5,
+        "wilson_ci95": [
+          0.253778,
+          0.746222
+        ],
+        "inconclusive": 6,
+        "inconclusive_per_run": [
+          6
+        ],
+        "attributed_to": "deepseek-flash",
+        "blocked_reason": null
+      }
+    },
+    "by_provider_model": [
+      {
+        "provider": "deepseek-official",
+        "model_requested": "deepseek-flash",
+        "model_served": "deepseek-flash",
+        "identity_ok": true,
+        "identity_verified": true,
+        "status": "identity_verified_completed",
+        "runs": 3,
+        "cases": 12,
+        "cases_pooled": 36,
+        "verified": 18,
+        "verified_per_run": [
+          6,
+          6,
+          6
+        ],
+        "verified_rate": 0.5,
+        "wilson_ci95": [
+          0.344741,
+          0.655259
+        ],
+        "inconclusive": 18,
+        "inconclusive_per_run": [
+          6,
+          6,
+          6
+        ],
+        "attributed_to": "deepseek-flash",
+        "blocked_reason": null
+      },
+      {
+        "provider": "deepseek-official",
+        "model_requested": "deepseek-v4-pro",
+        "model_served": "deepseek-v4-pro",
+        "identity_ok": true,
+        "identity_verified": true,
+        "status": "identity_verified_completed",
+        "runs": 3,
+        "cases": 12,
+        "cases_pooled": 36,
+        "verified": 18,
+        "verified_per_run": [
+          6,
+          6,
+          6
+        ],
+        "verified_rate": 0.5,
+        "wilson_ci95": [
+          0.344741,
+          0.655259
+        ],
+        "inconclusive": 18,
+        "inconclusive_per_run": [
+          6,
+          6,
+          6
+        ],
+        "attributed_to": "deepseek-v4-pro",
+        "blocked_reason": null
+      },
+      {
+        "provider": "siliconflow-cn",
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_served": "Qwen/Qwen2.5-7B-Instruct",
+        "identity_ok": true,
+        "identity_verified": true,
+        "status": "identity_verified_completed",
+        "runs": 1,
+        "cases": 12,
+        "cases_pooled": 12,
+        "verified": 0,
+        "verified_per_run": [
+          0
+        ],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          0.242501
+        ],
+        "inconclusive": 12,
+        "inconclusive_per_run": [
+          12
+        ],
+        "attributed_to": "Qwen/Qwen2.5-7B-Instruct",
+        "blocked_reason": null
+      },
+      {
+        "provider": "siliconflow-cn",
+        "model_requested": "Qwen/Qwen3-8B",
+        "model_served": "Qwen/Qwen3-8B",
+        "identity_ok": true,
+        "identity_verified": true,
+        "status": "identity_verified_completed",
+        "runs": 1,
+        "cases": 12,
+        "cases_pooled": 12,
+        "verified": 0,
+        "verified_per_run": [
+          0
+        ],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          0.242501
+        ],
+        "inconclusive": 12,
+        "inconclusive_per_run": [
+          12
+        ],
+        "attributed_to": "Qwen/Qwen3-8B",
+        "blocked_reason": null
+      },
+      {
+        "provider": "siliconflow-intl",
+        "model_requested": "Qwen/Qwen3.8-27B",
+        "model_served": "Qwen/Qwen3.8-27B",
+        "identity_ok": true,
+        "identity_verified": false,
+        "status": "blocked_unavailable",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "Qwen/Qwen3.8-27B",
+        "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls"
+      },
+      {
+        "provider": "siliconflow-intl",
+        "model_requested": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "model_served": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "identity_ok": true,
+        "identity_verified": false,
+        "status": "blocked_unavailable",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls"
+      },
+      {
+        "provider": "siliconflow-intl",
+        "model_requested": "moonshotai/Kimi-K3.1-Pro",
+        "model_served": "moonshotai/Kimi-K3.1-Pro",
+        "identity_ok": true,
+        "identity_verified": false,
+        "status": "blocked_unavailable",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "moonshotai/Kimi-K3.1-Pro",
+        "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls"
+      },
+      {
+        "provider": "siliconflow-cn",
+        "model_requested": "THUDM/GLM-Z1-9B-0414",
+        "model_served": null,
+        "identity_ok": null,
+        "identity_verified": false,
+        "status": "blocked_unavailable",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "THUDM/GLM-Z1-9B-0414",
+        "blocked_reason": "identity probe timed out (TimeoutError)"
+      },
+      {
+        "provider": "deepseek-official",
+        "model_requested": "deepseek-chat",
+        "model_served": "deepseek-flash",
+        "identity_ok": false,
+        "identity_verified": false,
+        "status": "served_model_mismatch_completed",
+        "runs": 1,
+        "cases": 12,
+        "cases_pooled": 12,
+        "verified": 6,
+        "verified_per_run": [
+          6
+        ],
+        "verified_rate": 0.5,
+        "wilson_ci95": [
+          0.253778,
+          0.746222
+        ],
+        "inconclusive": 6,
+        "inconclusive_per_run": [
+          6
+        ],
+        "attributed_to": "deepseek-flash",
+        "blocked_reason": null
+      },
+      {
+        "provider": "deepseek-official",
+        "model_requested": "deepseek-chat",
+        "model_served": "deepseek-flash",
+        "identity_ok": false,
+        "identity_verified": false,
+        "status": "probe_only_identity_mismatch",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "deepseek-flash",
+        "blocked_reason": null
+      },
+      {
+        "provider": "dashscope",
+        "model_requested": "qwen-plus",
+        "model_served": null,
+        "identity_ok": null,
+        "identity_verified": false,
+        "status": "unavailable_no_artifact",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "qwen-plus",
+        "blocked_reason": "no DashScope/Bailian key configured on this host; no artifact exists"
+      }
     ],
-    "note": "DeepSeek official (2 models) and SiliconFlow China (2 free Qwen models); the frozen tree already contains this 4-model evidence (LIMITATIONS \u00a722)"
-   },
-   "five_model_international_matrix": {
-    "satisfied": false,
-    "observed": 4,
-    "reason": "3 SiliconFlow international models passed identity probes but every benchmark call returned HTTP 402 insufficient balance; GLM-Z1 probe timed out; no DashScope key/artifact. 4 models completed, not 5-6."
-   },
-   "identity_policy_applied": {
-    "satisfied": true
-   }
+    "blocked": [
+      {
+        "provider": "siliconflow-intl",
+        "model_requested": "Qwen/Qwen3.8-27B",
+        "model_served": "Qwen/Qwen3.8-27B",
+        "identity_ok": true,
+        "identity_verified": false,
+        "status": "blocked_unavailable",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "Qwen/Qwen3.8-27B",
+        "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls"
+      },
+      {
+        "provider": "siliconflow-intl",
+        "model_requested": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "model_served": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "identity_ok": true,
+        "identity_verified": false,
+        "status": "blocked_unavailable",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls"
+      },
+      {
+        "provider": "siliconflow-intl",
+        "model_requested": "moonshotai/Kimi-K3.1-Pro",
+        "model_served": "moonshotai/Kimi-K3.1-Pro",
+        "identity_ok": true,
+        "identity_verified": false,
+        "status": "blocked_unavailable",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "moonshotai/Kimi-K3.1-Pro",
+        "blocked_reason": "HTTP 402 insufficient account balance on full benchmark calls"
+      },
+      {
+        "provider": "siliconflow-cn",
+        "model_requested": "THUDM/GLM-Z1-9B-0414",
+        "model_served": null,
+        "identity_ok": null,
+        "identity_verified": false,
+        "status": "blocked_unavailable",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "THUDM/GLM-Z1-9B-0414",
+        "blocked_reason": "identity probe timed out (TimeoutError)"
+      },
+      {
+        "provider": "dashscope",
+        "model_requested": "qwen-plus",
+        "model_served": null,
+        "identity_ok": null,
+        "identity_verified": false,
+        "status": "unavailable_no_artifact",
+        "runs": 0,
+        "cases": 0,
+        "cases_pooled": 0,
+        "verified": 0,
+        "verified_per_run": [],
+        "verified_rate": 0.0,
+        "wilson_ci95": [
+          0.0,
+          1.0
+        ],
+        "inconclusive": 0,
+        "inconclusive_per_run": [],
+        "attributed_to": "qwen-plus",
+        "blocked_reason": "no DashScope/Bailian key configured on this host; no artifact exists"
+      }
+    ]
   },
-  "brief_expectation_check": {
-   "brief_expected": {
-    "providers_completed": 1,
-    "providers_blocked": 1
-   },
-   "observed": {
-    "providers_completed": 2,
-    "providers_blocked": 1
-   },
-   "explanation": "The frozen release worktree also contains real SiliconFlow-CN 12-case benchmark evidence (artifacts/multi-model-matrix-cn-2026-11-14, 4-model matrix, LIMITATIONS \u00a722). Both CN Qwen models are identity-verified and completed 12 cases (0/12 verified), so two providers completed 12-case; only the international 5-model matrix is blocked. No overclaim: CN models produced zero verified candidates."
+  "cost": {
+    "available": false,
+    "value": null,
+    "currency": null,
+    "basis": "provider APIs expose token usage only; no price table configured"
   },
-  "no_overclaim": true,
-  "providers_partially_blocked": [
-   "siliconflow-cn"
+  "seed": {
+    "available": false,
+    "value": null,
+    "reason": "the shared provider client (HttpJsonClient.chat_json) does not marshal a seed; no source artifact records one"
+  },
+  "aggregate": {
+    "providers_with_artifact": 3,
+    "providers_completed_12case": 2,
+    "providers_completed": [
+      "deepseek-official",
+      "siliconflow-cn"
+    ],
+    "providers_blocked": 1,
+    "providers_blocked_list": [
+      "siliconflow-intl"
+    ],
+    "providers_partially_blocked": [
+      "siliconflow-cn"
+    ],
+    "providers_referenced_no_artifact": 1,
+    "models_completed_12case": 4,
+    "models_blocked": 4,
+    "identity_verified_models": [
+      "Qwen/Qwen2.5-7B-Instruct",
+      "Qwen/Qwen3-8B",
+      "deepseek-flash",
+      "deepseek-v4-pro"
+    ],
+    "identity_verified_models_count": 4,
+    "identity_mismatch_rows": 2,
+    "served_model_only_completed_rows": 1,
+    "ai_verified_by_completed_model": {
+      "deepseek-flash": {
+        "provider": "deepseek-official",
+        "runs": 3,
+        "cases": 12,
+        "per_run_ai_verified": [
+          6,
+          6,
+          6
+        ]
+      },
+      "deepseek-v4-pro": {
+        "provider": "deepseek-official",
+        "runs": 3,
+        "cases": 12,
+        "per_run_ai_verified": [
+          6,
+          6,
+          6
+        ]
+      },
+      "Qwen/Qwen3-8B": {
+        "provider": "siliconflow-cn",
+        "runs": 1,
+        "cases": 12,
+        "per_run_ai_verified": [
+          0
+        ]
+      },
+      "Qwen/Qwen2.5-7B-Instruct": {
+        "provider": "siliconflow-cn",
+        "runs": 1,
+        "cases": 12,
+        "per_run_ai_verified": [
+          0
+        ]
+      }
+    },
+    "served_model_attribution_runs": [
+      {
+        "requested_model": "deepseek-chat",
+        "served_model": "deepseek-flash",
+        "cases": 12,
+        "runs": 1,
+        "ai_verified": 6,
+        "source": "artifacts/provider-matrix-2026-11-14"
+      }
+    ],
+    "not_satisfied": [
+      "international 5-6 model matrix: 3 SiliconFlow international models passed identity probes but every benchmark call returned HTTP 402 insufficient balance; no fifth provider key is available; 4 models completed, not 5-6"
+    ],
+    "blocked_reasons": [
+      {
+        "provider": "siliconflow-cn",
+        "models": [
+          "THUDM/GLM-Z1-9B-0414"
+        ],
+        "reason": "identity probe timed out (TimeoutError)"
+      },
+      {
+        "provider": "siliconflow-intl",
+        "models": [
+          "Qwen/Qwen3.8-27B",
+          "deepseek-ai/DeepSeek-V4.1-Flash",
+          "moonshotai/Kimi-K3.1-Pro"
+        ],
+        "reason": "HTTP 402 insufficient account balance on full benchmark calls"
+      },
+      {
+        "provider": "dashscope",
+        "models": [
+          "qwen-plus"
+        ],
+        "reason": "no DashScope/Bailian key configured; no artifact"
+      }
+    ],
+    "requirements": {
+      "at_least_2_models_12case": {
+        "satisfied": true,
+        "observed": 4,
+        "evidence": [
+          "Qwen/Qwen2.5-7B-Instruct",
+          "Qwen/Qwen3-8B",
+          "deepseek-flash",
+          "deepseek-v4-pro"
+        ]
+      },
+      "at_least_2_providers_12case": {
+        "satisfied": true,
+        "observed": 2,
+        "evidence": [
+          "deepseek-official",
+          "siliconflow-cn"
+        ],
+        "note": "DeepSeek official (2 models) and SiliconFlow China (2 free Qwen models); this 4-model evidence is in the tree (LIMITATIONS section 22)"
+      },
+      "five_model_international_matrix": {
+        "satisfied": false,
+        "observed": 4,
+        "reason": "international 5-6 model matrix: 3 SiliconFlow international models passed identity probes but every benchmark call returned HTTP 402 insufficient balance; no fifth provider key is available; 4 models completed, not 5-6"
+      },
+      "identity_policy_applied": {
+        "satisfied": true
+      }
+    },
+    "brief_expectation_check": {
+      "brief_expected": {
+        "providers_completed": 1,
+        "providers_blocked": 1
+      },
+      "observed": {
+        "providers_completed": 2,
+        "providers_blocked": 1
+      },
+      "explanation": "The frozen release tree also contains real SiliconFlow-CN 12-case benchmark evidence (artifacts/multi-model-matrix-cn-2026-11-14, 4-model matrix, LIMITATIONS section 22). Both CN Qwen models are identity-verified and completed 12 cases (0/12 verified), so two providers completed 12-case; only the international 5-model matrix is blocked. No overclaim: CN models produced zero verified candidates."
+    },
+    "statistics_pooled": {
+      "ai_target_identity_verified": {
+        "models": 4,
+        "runs": 8,
+        "cases": 96,
+        "verified": 36,
+        "verified_rate": 0.375,
+        "wilson_ci95": [
+          0.284725,
+          0.474895
+        ],
+        "inconclusive": 60
+      },
+      "deterministic_target_strict": {
+        "cases": 12,
+        "verified": 0,
+        "verified_rate": 0.0,
+        "expected_match_rate": 1.0
+      }
+    },
+    "no_overclaim": true
+  },
+  "blocked_reasons": [
+    {
+      "provider": "siliconflow-cn",
+      "models": [
+        "THUDM/GLM-Z1-9B-0414"
+      ],
+      "reason": "identity probe timed out (TimeoutError)"
+    },
+    {
+      "provider": "siliconflow-intl",
+      "models": [
+        "Qwen/Qwen3.8-27B",
+        "deepseek-ai/DeepSeek-V4.1-Flash",
+        "moonshotai/Kimi-K3.1-Pro"
+      ],
+      "reason": "HTTP 402 insufficient account balance on full benchmark calls"
+    },
+    {
+      "provider": "dashscope",
+      "models": [
+        "qwen-plus"
+      ],
+      "reason": "no DashScope/Bailian key configured; no artifact"
+    }
+  ],
+  "next_steps": [
+    "top up the SiliconFlow international account (or use a funded key) and rerun scripts/run_multi_model_matrix.py --benchmark for the three identity-probed models to reach 5-6 models",
+    "or configure a DashScope/Bailian key and run the same 12-case benchmark",
+    "then rerun the multi-provider matrix in CI (one provider/model per row, strict identity, Linux guest PoC) and replace blocked rows with completed rows",
+    "do not present served-model evidence as requested-model identity evidence (deepseek-chat alias)"
+  ],
+  "limitations": [
+    "no provider calls were made for this artifact; it consolidates committed evidence only",
+    "two SiliconFlow international models and GLM have no benchmark evidence (blocked), explicitly recorded",
+    "CN Qwen models completed 12 cases with 0/12 verified: completing a benchmark is not a pass",
+    "successful AI repairs remain loop-family only (6/6 loop, 0/6 non-loop) for every completed model",
+    "the provider-matrix deepseek-chat run is served-model evidence (identity_ok=false) and is never counted as requested-model coverage"
   ]
- },
- "blocked_reasons": [
-  {
-   "provider": "siliconflow-intl",
-   "models": [
-    "Qwen/Qwen3.8-27B",
-    "moonshotai/Kimi-K3.1-Pro",
-    "deepseek-ai/DeepSeek-V4.1-Flash"
-   ],
-   "reason": "HTTP 402 insufficient account balance on full benchmark calls",
-   "http_status": 402
-  },
-  {
-   "provider": "siliconflow-cn",
-   "models": [
-    "THUDM/GLM-Z1-9B-0414"
-   ],
-   "reason": "identity probe timed out (TimeoutError)"
-  },
-  {
-   "provider": "dashscope",
-   "models": [
-    "qwen-plus"
-   ],
-   "reason": "no DashScope/Bailian key configured; no artifact"
-  }
- ],
- "next_steps": [
-  "top up the SiliconFlow international account (or use a funded key): rerun `scripts/run_multi_model_matrix.py --benchmark` for the three identity-probed models to reach 5-6 models",
-  "or configure a DashScope/Bailian key and run the same 12-case benchmark",
-  "then run the multi-provider matrix in CI (one provider/model per row, strict identity, Linux guest PoC) and replace this artifact's blocked rows with completed rows",
-  "do not present served-model evidence as requested-model identity evidence (deepseek-chat alias)"
- ],
- "limitations": [
-  "no provider calls were made for this artifact; it consolidates existing frozen-tree evidence only",
-  "two SiliconFlow international models and GLM have no benchmark evidence (blocked), explicitly recorded",
-  "CN Qwen models completed 12 cases with 0/12 verified: completing a benchmark is not a pass",
-  "successful AI repairs remain loop-family only (6/6 loop, 0/6 non-loop) for every completed model",
-  "the provider-matrix deepseek-chat run is served-model evidence (identity_ok=false) and is never counted as requested-model coverage"
- ]
 }

@@ -322,7 +322,7 @@ def _agent_context(
 
     ``assistant`` is the GUI's view of the T8.2 seam. It is deliberately
     conservative: llm mode without a configured client reports
-    ``available=false`` so the badge says "未接线" instead of implying a call
+    ``available=false`` so the badge says "not wired" instead of implying a call
     happened.
     """
     ui = load_ui_config()

@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "kind": "browser_e2e_evidence",
+  "generated_at": "2026-11-14T15:46:50Z",
+  "workspace": {
+    "path": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui",
+    "branch": "workbench-v3",
+    "lead_reported_sha": "f65ed53",
+    "sha_source": "provided by the Lead in the task-19 brief; not re-verified here because task-19 forbids git commands"
+  },
+  "command": ".venv/bin/python -m pytest -q -p no:xdist tests/e2e -rs --junitxml=artifacts/browser-e2e-2026-11-14/junit.xml",
+  "browser": {
+    "name": "Google Chrome",
+    "path": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "version": "157.0.8103.51",
+    "driver": "Chrome DevTools Protocol (repository helper tests/e2e/cdp.py)"
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "python": "3.11 (repository .venv)"
+  },
+  "result": {
+    "status": "passed",
+    "exit_code": 0,
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 35.742,
+    "skip_reasons": []
+  },
+  "runs": [
+    {
+      "run": 1,
+      "command": ".venv/bin/python -m pytest -q -p no:xdist tests/e2e -rs",
+      "exit_code": 0,
+      "observed": "12 passed (deterministic rerun agreement)"
+    },
+    {
+      "run": 2,
+      "command": ".venv/bin/python -m pytest -q -p no:xdist tests/e2e -rs --junitxml=/tmp/browser_e2e_junit.xml",
+      "exit_code": 0,
+      "observed": "12 passed / 0 skipped / 0 failed (JUnit counts)"
+    }
+  ],
+  "tests": [
+    {
+      "nodeid": "tests/e2e/test_agent_flow::test_guided_flow_creates_a_real_job",
+      "classname": "tests.e2e.test_agent_flow",
+      "name": "test_guided_flow_creates_a_real_job",
+      "time_seconds": 4.512,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_agent_flow::test_pending_receipt_shows_placeholder_not_not_run",
+      "classname": "tests.e2e.test_agent_flow",
+      "name": "test_pending_receipt_shows_placeholder_not_not_run",
+      "time_seconds": 0.935,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_agent_flow::test_failure_shows_reason_advice_and_verbatim_not_run",
+      "classname": "tests.e2e.test_agent_flow",
+      "name": "test_failure_shows_reason_advice_and_verbatim_not_run",
+      "time_seconds": 0.915,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_agent_flow::test_success_shows_mode_fallback_metadata_and_diff",
+      "classname": "tests.e2e.test_agent_flow",
+      "name": "test_success_shows_mode_fallback_metadata_and_diff",
+      "time_seconds": 0.893,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_agent_flow::test_live_mode_without_plan_says_so",
+      "classname": "tests.e2e.test_agent_flow",
+      "name": "test_live_mode_without_plan_says_so",
+      "time_seconds": 1.05,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_agent_flow::test_quick_repair_panel_offers_optional_poc_manifest",
+      "classname": "tests.e2e.test_agent_flow",
+      "name": "test_quick_repair_panel_offers_optional_poc_manifest",
+      "time_seconds": 0.957,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_gui_journey::test_http_mode_uses_the_real_controller",
+      "classname": "tests.e2e.test_gui_journey",
+      "name": "test_http_mode_uses_the_real_controller",
+      "time_seconds": 2.729,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_gui_journey::test_landing_hero_leads_to_workbench",
+      "classname": "tests.e2e.test_gui_journey",
+      "name": "test_landing_hero_leads_to_workbench",
+      "time_seconds": 1.07,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_gui_journey::test_full_journey_setup_to_export",
+      "classname": "tests.e2e.test_gui_journey",
+      "name": "test_full_journey_setup_to_export",
+      "time_seconds": 9.372,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_gui_journey::test_refresh_keeps_state_and_shows_unfinished_stages",
+      "classname": "tests.e2e.test_gui_journey",
+      "name": "test_refresh_keeps_state_and_shows_unfinished_stages",
+      "time_seconds": 8.662,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_gui_journey::test_cancel_keeps_evidence",
+      "classname": "tests.e2e.test_gui_journey",
+      "name": "test_cancel_keeps_evidence",
+      "time_seconds": 2.729,
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/e2e/test_gui_journey::test_local_mode_is_honest",
+      "classname": "tests.e2e.test_gui_journey",
+      "name": "test_local_mode_is_honest",
+      "time_seconds": 1.818,
+      "outcome": "passed"
+    }
+  ],
+  "skip_semantics": {
+    "skips_are_not_passes": true,
+    "note": "A pytest skip is not a pass. This run recorded zero skips because a supported Chrome binary is present at the documented macOS path. Linux CI records explicit skips by design (the CDP helper probes macOS/Windows browser paths only); those skips are not release evidence."
+  },
+  "provenance": {
+    "authority": "local-macos-chrome",
+    "is_release_gate_check": false,
+    "note": "Local host evidence for the browser e2e suite. It is recorded against the workspace snapshot the Lead froze for this phase; it is not a GitHub Actions run and not the release gate itself. The release gate checks acceptance/gate evidence separately."
+  },
+  "limitations": [
+    "Local macOS Chrome run, not a CI run; the self-hosted nightly job stays inert on disk.",
+    "The frozen SHA is recorded as reported by the Lead (f65ed53) because task-19 forbids git commands; the sha is not re-verified here.",
+    "The e2e suite covers the documented GUI flows (12 tests), not every browser/OS combination; Linux CI skips are expected and are not passes."
+  ]
+}

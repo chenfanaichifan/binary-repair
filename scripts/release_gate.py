@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -66,6 +67,8 @@ CHECK_SKIPPED = "skipped"
 DEFAULT_ACCEPTANCE = "artifacts/coverage-closure-2026-11-14/acceptance.json"
 DEFAULT_CAPTURE = "artifacts/coverage-closure-2026-11-14/capture_acceptance.py"
 DEFAULT_PROVIDER_MATRIX = "artifacts/provider-matrix-2026-11-14"
+DEFAULT_PROVIDER_COVERAGE = "artifacts/provider-coverage-2026-11-14"
+DEFAULT_EVIDENCE = "artifacts/release-gate-2026-11-14/gate.json"
 DEFAULT_CLAIMS = "docs/status/claims.json"
 DEFAULT_NON_GOALS = "docs/acceptance/non-goals-2026-11-14.md"
 COVERAGE_GATE = "scripts/verify_coverage_gate.py"
@@ -161,6 +164,10 @@ class Paths:
     @property
     def provider_matrix_dir(self) -> Path:
         return self.root / DEFAULT_PROVIDER_MATRIX
+
+    @property
+    def provider_coverage_dir(self) -> Path:
+        return self.root / DEFAULT_PROVIDER_COVERAGE
 
     @property
     def claims(self) -> Path:
@@ -1568,6 +1575,145 @@ def check_provider_matrix(paths: Paths) -> Check:
     return check.passed(check.detail)
 
 
+def evaluate_provider_coverage(artifact_dir: Path) -> tuple[list[str], dict[str, Any]]:
+    """Validate the provider-coverage artifact (identity + statistics evidence).
+
+    Required schema (built by ``scripts/build_provider_coverage.py``):
+    ``summary.json`` with schema_version/kind/identity_policy/evidence_rows/
+    aggregate/statistics/cost/seed, plus README.md and a SHA256SUMS that covers
+    both files.  A row whose ``identity_ok`` is false may be recorded as served
+    model evidence but must never be marked identity-verified / requested-model
+    coverage; the international matrix must be explicitly ``not_satisfied``
+    rather than silently omitted.
+    """
+    violations: list[str] = []
+    detail: dict[str, Any] = {}
+    if not artifact_dir.is_dir():
+        return [f"provider-coverage artifact missing: {artifact_dir}"], detail
+    for name in ("README.md", "summary.json", "SHA256SUMS"):
+        if not (artifact_dir / name).is_file():
+            violations.append(f"provider-coverage artifact missing file: {name}")
+    if violations:
+        return violations, detail
+    summary, error = _load_json(artifact_dir / "summary.json")
+    if error or not isinstance(summary, dict):
+        return [f"provider-coverage summary unreadable: {error}"], detail
+    if summary.get("kind") != "provider_coverage":
+        violations.append(
+            f"provider-coverage kind={summary.get('kind')!r} (expected provider_coverage)"
+        )
+    if summary.get("schema_version") != 1:
+        violations.append(
+            "provider-coverage schema_version is not 1: "
+            f"{summary.get('schema_version')!r}"
+        )
+    rows = _as_list(summary.get("evidence_rows"))
+    detail["rows"] = len(rows)
+    if not rows:
+        violations.append("provider-coverage has no evidence_rows")
+    for index, raw in enumerate(rows):
+        row = _as_dict(raw)
+        label = row.get("row_id") or row.get("provider") or f"row[{index}]"
+        for field in ("provider", "model_requested", "model_served",
+                      "identity_ok", "status", "cases"):
+            if field not in row:
+                violations.append(f"provider-coverage row {label} missing {field}")
+        if row.get("identity_ok") is False:
+            if row.get("identity_verified") is True:
+                violations.append(
+                    f"provider-coverage row {label} claims identity_verified "
+                    "with identity_ok=false"
+                )
+            if row.get("status") == "identity_verified_completed":
+                violations.append(
+                    f"provider-coverage row {label} is identity_verified_completed "
+                    "with identity_ok=false (requested-model coverage overclaimed)"
+                )
+    policy = _as_dict(summary.get("identity_policy"))
+    detail["identity_policy"] = bool(policy.get("applied_in_this_artifact"))
+    if policy.get("applied_in_this_artifact") is not True:
+        violations.append(
+            "provider-coverage identity_policy.applied_in_this_artifact is not true"
+        )
+    aggregate = _as_dict(summary.get("aggregate"))
+    for field in ("providers_completed_12case", "models_completed_12case"):
+        if not isinstance(aggregate.get(field), int):
+            violations.append(
+                f"provider-coverage aggregate.{field} is not an integer"
+            )
+    detail["providers_completed_12case"] = aggregate.get("providers_completed_12case")
+    detail["models_completed_12case"] = aggregate.get("models_completed_12case")
+    not_satisfied = _as_list(aggregate.get("not_satisfied"))
+    if not not_satisfied:
+        violations.append(
+            "provider-coverage aggregate.not_satisfied is empty: the international "
+            "5-6 model matrix gap must be recorded explicitly"
+        )
+    if not _as_list(aggregate.get("blocked_reasons")):
+        violations.append(
+            "provider-coverage aggregate.blocked_reasons is empty: blocked "
+            "providers must be recorded explicitly"
+        )
+    statistics = summary.get("statistics")
+    serialized = json.dumps(statistics, sort_keys=True) if statistics else ""
+    if not statistics or "wilson_ci95" not in serialized:
+        violations.append(
+            "provider-coverage statistics missing (per-model rates with wilson_ci95)"
+        )
+    detail["statistics"] = bool(statistics)
+    cost = _as_dict(summary.get("cost"))
+    seed = _as_dict(summary.get("seed"))
+    if "available" not in cost:
+        violations.append("provider-coverage cost.available missing (honest null)")
+    if "available" not in seed:
+        violations.append("provider-coverage seed.available missing (honest null)")
+    detail["cost_available"] = cost.get("available")
+    detail["seed_available"] = seed.get("available")
+    # SHA256SUMS must cover README.md + summary.json and match on disk.
+    checksums_path = artifact_dir / "SHA256SUMS"
+    entries, parse_violations = _parse_sha256sums(
+        checksums_path.read_text(encoding="utf-8", errors="replace")
+    )
+    violations.extend(parse_violations)
+    for name in ("README.md", "summary.json"):
+        if name not in entries:
+            violations.append(
+                f"provider-coverage SHA256SUMS does not cover {name}"
+            )
+            continue
+        actual = _sha256_file(artifact_dir / name)
+        if actual is None:
+            violations.append(f"provider-coverage cannot hash {name}")
+        elif actual.lower() != entries[name].lower():
+            violations.append(
+                f"provider-coverage SHA256SUMS mismatch for {name}: "
+                f"recorded={entries[name]} actual={actual}"
+            )
+    return violations, detail
+
+
+def check_provider_coverage(paths: Paths) -> Check:
+    check = Check(
+        "provider-coverage",
+        "Provider/model coverage artifact: identity policy + statistics (P1)",
+    )
+    violations, detail = evaluate_provider_coverage(paths.provider_coverage_dir)
+    check.detail = (
+        f"rows={detail.get('rows', 0)} "
+        f"providers_completed_12case={detail.get('providers_completed_12case')} "
+        f"models_completed_12case={detail.get('models_completed_12case')} "
+        f"identity_policy={detail.get('identity_policy')} "
+        f"statistics={detail.get('statistics')} "
+        f"cost_available={detail.get('cost_available')} "
+        f"seed_available={detail.get('seed_available')}"
+    )
+    if violations:
+        check.violations.extend(violations)
+        check.status = CHECK_FAILED
+        return check
+    return check.passed(check.detail)
+
+
 # ---------------------------------------------------------------------------
 # Release layer: full pytest suite
 # ---------------------------------------------------------------------------
@@ -1952,11 +2098,12 @@ def run_release(
     invariants = check_acceptance_invariants(paths, local_payload)
     universe = check_universe_evidence(paths, local_payload)
     provider = check_provider_matrix(paths)
+    provider_coverage = check_provider_coverage(paths)
     full = check_full_pytest(paths, run)
     return _summarize(
         "release",
         [identity, static, claims, acceptance, local, meta, invariants,
-         universe, provider, full],
+         universe, provider, provider_coverage, full],
         started,
         tree=tree,
     )
@@ -1984,6 +2131,7 @@ def run_nightly(
     invariants = check_acceptance_invariants(paths, local_payload)
     universe = check_universe_evidence(paths, local_payload)
     provider = check_provider_matrix(paths)
+    provider_coverage = check_provider_coverage(paths)
     capture = check_real_lima_capture(paths, run, runner_probe=runner_probe)
     full = check_full_pytest(paths, run)
     notes = []
@@ -1995,7 +2143,7 @@ def run_nightly(
     return _summarize(
         "nightly",
         [identity, static, claims, acceptance, local, meta, invariants,
-         universe, provider, capture, full],
+         universe, provider, provider_coverage, capture, full],
         started,
         notes=notes,
         tree=tree,
@@ -2024,6 +2172,7 @@ CHECK_MATRIX: dict[str, tuple[str, ...]] = {
         "acceptance-invariants",
         "universe-unknown-zero",
         "provider-matrix",
+        "provider-coverage",
         "full-pytest",
     ),
     "nightly": (
@@ -2036,6 +2185,7 @@ CHECK_MATRIX: dict[str, tuple[str, ...]] = {
         "acceptance-invariants",
         "universe-unknown-zero",
         "provider-matrix",
+        "provider-coverage",
         "nightly-real-lima-acceptance",
         "full-pytest",
     ),
@@ -2088,6 +2238,165 @@ def _print_human(summary: GateSummary) -> None:
             print(f"  - {violation}")
 
 
+def _sha256_text(value: str) -> str:
+    import hashlib
+
+    return hashlib.sha256(value.encode("utf-8", "replace")).hexdigest()
+
+
+def _lima_identity(run: Runner = run_command) -> dict[str, Any]:
+    """Best-effort, read-only Lima/guest provenance (never raises)."""
+    identity: dict[str, Any] = {"available": False}
+    try:
+        version = run(["limactl", "--version"], Path("/"), 30.0)
+        if version.returncode == 0 and version.stdout.strip():
+            identity["limactl_version"] = version.stdout.strip()
+        listing = run(["limactl", "list", "--json"], Path("/"), 30.0)
+        if listing.returncode == 0 and listing.stdout.strip():
+            identity["available"] = True
+            identity["list_sha256"] = _sha256_text(listing.stdout.strip())
+            parsed = json.loads(listing.stdout)
+            items = parsed if isinstance(parsed, list) else []
+            if not items:
+                # ``limactl list --json`` is newline-delimited JSON on some versions.
+                items = []
+                for line in listing.stdout.splitlines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        item = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if isinstance(item, dict):
+                        items.append(item)
+            identity["vms"] = sorted(
+                str(item.get("name"))
+                for item in items
+                if isinstance(item, dict) and item.get("name")
+            )
+    except Exception as exc:  # noqa: BLE001 - provenance is optional
+        identity["error"] = f"{type(exc).__name__}: {exc}"
+    config = Path.home() / ".lima" / "binaryrepair" / "lima.yaml"
+    identity["config_present"] = config.is_file()
+    identity["config_sha256"] = _sha256_file(config) if config.is_file() else None
+    return identity
+
+
+def _artifact_evidence(paths: Paths) -> dict[str, Any]:
+    """Content-addressed digests of the committed release evidence inputs."""
+    artifacts = {
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json": None,
+        "artifacts/capability-gap-audit-2026-11-14/gap-report.md": None,
+        "artifacts/capability-gap-audit-2026-11-14/SHA256SUMS": None,
+        "artifacts/coverage-closure-2026-11-14/acceptance.json": None,
+        "artifacts/coverage-closure-2026-11-14/README.md": None,
+        "artifacts/provider-matrix-2026-11-14/summary.json": None,
+        "artifacts/provider-matrix-2026-11-14/SHA256SUMS": None,
+        "artifacts/provider-coverage-2026-11-14/summary.json": None,
+        "artifacts/provider-coverage-2026-11-14/SHA256SUMS": None,
+        "artifacts/browser-e2e-2026-11-14/summary.json": None,
+        "docs/status/claims.json": None,
+        "docs/acceptance/non-goals-2026-11-14.md": None,
+        "docs/acceptance/non-goal-roadmap-2026-11-14.md": None,
+    }
+    rows: dict[str, Any] = {}
+    for relative, _unused in artifacts.items():
+        path = paths.root / relative
+        rows[relative] = {
+            "present": path.is_file(),
+            "sha256": _sha256_file(path) if path.is_file() else None,
+        }
+    return rows
+
+
+def _mitigated_residual(checks: Sequence[Check]) -> list[str]:
+    for check in checks:
+        if check.check_id != "claims-measurement-diff":
+            continue
+        match = re.search(r"mitigated_residual=(\[[^\]]*\])", check.detail)
+        if not match:
+            continue
+        try:
+            parsed = json.loads(match.group(1).replace("'", '"'))
+        except json.JSONDecodeError:
+            return [match.group(1)]
+        if isinstance(parsed, list):
+            return [str(item) for item in parsed]
+    return []
+
+
+def _build_evidence(
+    paths: Paths,
+    summary: GateSummary,
+    run: Runner = run_command,
+    *,
+    not_run: Sequence[str] = (),
+) -> dict[str, Any]:
+    """Build a provenance-rich release evidence JSON (no repo mutation)."""
+    import platform
+    import sys
+
+    tree_sha = None
+    if summary.frozen_sha:
+        tree_result = _git(paths, run, ["rev-parse", "HEAD^{tree}"])
+        if tree_result.returncode == 0:
+            tree_sha = tree_result.stdout.strip() or None
+    environment = {
+        "python": sys.version.split()[0],
+        "platform": platform.platform(),
+        "machine": platform.machine(),
+    }
+    missing_not_run = list(dict.fromkeys(["github_actions", *not_run]))
+    evidence: dict[str, Any] = {
+        "schema_version": 1,
+        "kind": "release_gate_evidence",
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "mode": summary.mode,
+        "ok": summary.ok,
+        "exit_code": 0 if summary.ok else 1,
+        "frozen_sha": summary.frozen_sha,
+        "release_sha": summary.release_sha,
+        "branch": summary.branch,
+        "clean_tree": summary.clean_tree,
+        "tree_sha": tree_sha,
+        "frozen_matches_release": (
+            summary.frozen_sha == summary.release_sha
+            if summary.frozen_sha and summary.release_sha else None
+        ),
+        "status_counts": summary.status_counts(),
+        "violations": list(summary.violations),
+        "notes": list(summary.notes),
+        "elapsed_ms": int(summary.elapsed_ms),
+        "checks": [check.to_dict() for check in summary.checks],
+        "environment": environment,
+        "lima": _lima_identity(run),
+        "artifacts": _artifact_evidence(paths),
+        "mitigated_residual": _mitigated_residual(summary.checks),
+        "not_run": missing_not_run,
+        "evidence_scope": (
+            "local frozen-tree gate; proves the gated git tree identity and the "
+            "measured checks. It does not prove a GitHub Actions run or binary "
+            "provenance beyond the recorded artifact digests."
+        ),
+    }
+    return evidence
+
+
+def _write_evidence(path: Path, payload: dict[str, Any]) -> str:
+    """Write the evidence JSON atomically enough for release use."""
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False)
+            + "\n",
+            encoding="utf-8",
+        )
+    except OSError as exc:
+        return f"{path}: {type(exc).__name__}: {exc}"
+    return ""
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
@@ -2135,6 +2444,13 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--evidence-out", type=Path, default=None, metavar="PATH",
+        help=(
+            "write a provenance-rich release evidence JSON to PATH after the "
+            "gate run (gate result is unchanged; an unwritable path exits 2)"
+        ),
+    )
+    parser.add_argument(
         "--root", type=Path, default=ROOT,
         help="tree root to gate (default: repository root; for tests/debug only)",
     )
@@ -2166,6 +2482,15 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print("release-gate: interrupted", file=sys.stderr)
         return 130
+    if args.evidence_out is not None:
+        evidence = _build_evidence(paths, summary)
+        error = _write_evidence(Path(args.evidence_out), evidence)
+        if error:
+            print(f"release-gate: evidence write failed: {error}",
+                  file=sys.stderr)
+            return 2
+        print(f"release-gate: evidence written to {args.evidence_out}",
+              file=sys.stderr)
     if args.json:
         print(json.dumps(summary.to_dict(), indent=2, sort_keys=True,
                          ensure_ascii=False))

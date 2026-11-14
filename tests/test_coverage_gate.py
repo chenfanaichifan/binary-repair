@@ -485,3 +485,97 @@ def test_meta_audit_check_runs_with_live_audit() -> None:
     report = gate.run_meta_audit_check(live)
     assert report["ok"] is True, report["violations"]
     assert report["scenario_count"] >= 12
+
+
+def test_roadmap_id_parser_reads_table_rows() -> None:
+    text = """
+## Roadmap
+
+| id | productization |
+|---|---|
+| `NG-a` | fix later |
+| `RG-external-poc::<doc>::pe/arm64` | runner |
+| not-an-id | x |
+"""
+    ids = gate.parse_roadmap_ids(text)
+    assert ids == ["NG-a", "RG-external-poc::<doc>::pe/arm64"]
+
+
+def test_roadmap_sync_requires_exact_id_equality(tmp_path: Path) -> None:
+    claims = _claims(["NG-ok", "NG-second"])
+    live = _audit([
+        _gap("NG-ok", "non_goal", "info", "non_goal"),
+        _gap("NG-second", "non_goal", "info", "non_goal"),
+    ])
+    live["summary"] = {"gap_count": 2}
+    roadmap = tmp_path / "roadmap.md"
+    roadmap.write_text(
+        "| id | x |\n|---|---|\n| `NG-ok` | a |\n| `NG-second` | b |\n",
+        encoding="utf-8")
+    ok = gate.check_roadmap_sync(live, claims, roadmap)
+    assert ok["ok"] is True, ok["mismatches"]
+    assert ok["ids"] == ["NG-ok", "NG-second"]
+    roadmap.write_text(
+        "| id | x |\n|---|---|\n| `NG-ok` | a |\n| `NG-other` | b |\n",
+        encoding="utf-8")
+    drifted = gate.check_roadmap_sync(live, claims, roadmap)
+    assert drifted["ok"] is False
+    assert any("roadmap ids" in item for item in drifted["mismatches"])
+
+
+def test_roadmap_sync_missing_document_is_explicit(tmp_path: Path) -> None:
+    live = _audit([_gap("NG-ok", "non_goal", "info", "non_goal")])
+    live["summary"] = {"gap_count": 1}
+    result = gate.check_roadmap_sync(live, _claims(["NG-ok"]),
+                                     tmp_path / "missing.md")
+    assert result["ok"] is False
+    assert result["present"] is False
+    assert any("missing" in item for item in result["mismatches"])
+
+
+def test_release_evidence_and_ci_claim_helpers() -> None:
+    evidence = {
+        "mode": "release", "ok": True,
+        "release_sha": "a" * 40, "frozen_sha": "a" * 40, "violations": [],
+        "checks": [{"id": "targeted-pytest", "status": "passed",
+                    "required": True}],
+    }
+    complete = {
+        **evidence,
+        "provenance": {"artifact_sha256": "cd" * 32,
+                       "lima_identity": "runner=lima:limactl"},
+    }
+    assert gate.check_release_evidence(complete)["ok"] is True
+    mismatched = json.loads(json.dumps(complete))
+    mismatched["frozen_sha"] = "b" * 40
+    result = gate.check_release_evidence(mismatched)
+    assert result["ok"] is False
+    assert any("frozen_sha" in item for item in result["mismatches"])
+    no_provenance = gate.check_release_evidence(evidence)
+    assert no_provenance["ok"] is False
+    assert any("provenance" in item for item in no_provenance["mismatches"])
+    ci_bad = gate.check_ci_evidence_claim({
+        "mode": "ci", "ci_run_url": "",
+        "checks": [{"id": "coverage-gate-local", "status": "passed"}],
+    })
+    assert ci_bad["ok"] is False
+    ci_ok = gate.check_ci_evidence_claim({
+        "mode": "ci",
+        "ci_run_url": "https://github.com/example/repo/actions/runs/1",
+        "checks": [{"id": "coverage-gate-static", "status": "passed"}],
+    })
+    assert ci_ok["ok"] is True
+
+
+def test_static_gate_json_exposes_roadmap_sync() -> None:
+    result = subprocess.run(
+        [sys.executable, str(SCRIPTS / "verify_coverage_gate.py"),
+         "--static-only", "--json"],
+        cwd=ROOT, capture_output=True, text=True, timeout=240,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert "roadmap_sync" in payload
+    assert set(payload["roadmap_sync"]) >= {"ok", "ids", "mismatches",
+                                            "present"}
+    assert payload["meta_audit"]["scenario_count"] >= 18

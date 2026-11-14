@@ -100,33 +100,33 @@ def main() -> int:
                 session.navigate(base_url + path)
                 time.sleep(0.4)
 
-            # 00 未认证页面：清掉 cookie 后必须只看到提示页，且不含 token
+            # 00 unauthenticated page: after clearing cookies only the prompt page may appear, without the token
             session.send("Network.clearBrowserCookies")
             session.navigate(base_url + "/jobs/new")
             time.sleep(0.8)
             shot("00-auth-required.png")
 
-            # 重新登录，后续页面才可用
+            # log in again so the following pages are reachable
             session.navigate(base_url + "/?token=" + SESSION_TOKEN)
             time.sleep(0.6)
 
-            # 01 起始页
+            # 01 home page
             go("/")
             shot("01-home.png", full=True)
 
-            # 02 控制台 · 引导首屏（上传卡）
+            # 02 agent console - guided first screen (upload card)
             go("/agent/new?fixture=1")
             session.wait_js('document.querySelector(\'[data-testid="agent-dropzone"]\') !== null')
             shot("02-agent-guided.png")
 
-            # 02b 控制台 · 状态面板收起，对话流单列
+            # 02b agent console - status panel collapsed, single-column chat
             session.click('[data-testid="agent-side-toggle"]')
             session.wait_js(
                 'document.querySelector(".agent-body").classList.contains("is-side-collapsed")'
             )
             shot("02b-agent-collapsed.png")
 
-            # 02c 控制台 · 窄条悬停浮出
+            # 02c agent console - narrow strip peeks out on hover
             session.eval_js(
                 '(() => { document.getElementById("agent-side").classList.add("is-peek"); return true; })()'
             )
@@ -143,14 +143,14 @@ def main() -> int:
                 '(() => { window.localStorage.removeItem("br.agent.side.collapsed"); return true; })()'
             )
 
-            # 03 控制台 · 问题卡（真实读取样本后）
+            # 03 agent console - question card (after reading a real sample)
             go("/agent/new?plan=fixture")
             session.wait_js('document.querySelector(\'[data-testid="agent-dropzone"]\') !== null')
             session.set_file_input('[data-testid="agent-file-input"]', str(sample))
             session.wait_js('document.querySelector(\'[data-testid="agent-field-defect"]\') !== null')
             shot("03-agent-question.png")
 
-            # 04 控制台 · 复核卡
+            # 04 agent console - review card
             for index in (1, 2, 3):
                 session.eval_js(
                     "(() => {var n=document.querySelectorAll('[data-testid=\"agent-question-default\"]');"
@@ -164,34 +164,34 @@ def main() -> int:
             session.wait_js('document.querySelector(\'[data-testid="agent-review-card"]\') !== null')
             shot("04-agent-review.png")
 
-            # 05 等待回传
+            # 05 waiting for the result
             go("/agent/new?fixture=1&scenario=pending")
             session.click('[data-testid="agent-tab-result"]')
             session.wait_js('!document.querySelector(\'[data-testid="agent-receipt-placeholder"]\').hidden')
             shot("05-agent-pending.png")
 
-            # 06 成功 · 结果屏
+            # 06 success - result screen
             go("/agent/new?fixture=1&scenario=success")
             session.click('[data-testid="agent-tab-result"]')
             session.wait_js('document.querySelector(\'[data-testid="agent-before-after"] pre\') !== null')
             shot("06-agent-success.png")
 
-            # 07 失败 · 结果屏
+            # 07 failure - result screen
             go("/agent/new?fixture=1&scenario=failure")
             session.click('[data-testid="agent-tab-result"]')
             session.wait_js('document.querySelector(\'[data-testid="agent-obligations"]\') !== null')
             shot("07-agent-failure.png")
 
-            # 08 成功 · 对话屏（含 llm 徽章与降级横幅）
+            # 08 success - chat screen (llm badge and fallback banner)
             go("/agent/new?fixture=1&scenario=success")
             session.wait_js('!document.querySelector(\'[data-testid="agent-fallback"]\').hidden')
             shot("08-agent-success-chat.png")
 
-            # 09 连接器与插件（只读清单）
+            # 09 connectors and plugins (read-only inventory)
             go("/connectors")
             shot("09-connectors.png", full=True)
 
-            # 12-13 原有进度 / 证据页
+            # 12-13 existing progress / evidence pages
             go(f"/jobs/{job_id}")
             time.sleep(1.2)
             shot("12-job-progress.png", full=True)
@@ -199,17 +199,17 @@ def main() -> int:
             time.sleep(0.6)
             shot("13-job-evidence.png", full=True)
 
-            # 14 控制台打开真实任务
+            # 14 agent console opens a real job
             go(f"/agent/{job_id}")
             time.sleep(1.2)
             shot("14-agent-live-job.png")
 
-            # 15 HTML 报告
+            # 15 HTML report
             go(f"/jobs/{job_id}/report")
             time.sleep(0.6)
             shot("15-job-report.png", full=True)
 
-            # 16 控制台真实模式（无引导计划时的诚实提示）
+            # 16 agent console live mode (honest hint when no guided plan exists)
             go("/agent")
             time.sleep(0.5)
             shot("16-agent-task-list.png")

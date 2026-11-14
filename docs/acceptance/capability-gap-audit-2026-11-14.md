@@ -255,6 +255,43 @@ nightly run is claimed; the nightly was executed locally from the frozen tree.
   includes `unavailable`, and requested strategies that do not match the
   produced action are rejected instead of being silently accepted.
 
+## 3.7 Final release evidence and closure (phase 5)
+
+- **Frozen-tree release evidence**: `scripts/release_freeze.py` wraps the gate
+  with release-freeze operations: clean-tree + HEAD==requested SHA checks,
+  `origin/workbench-v3` pin (fail-closed on drift), `--nightly --release-sha`,
+  a re-check of mainline after the run, and a reviewable bundle
+  (`gate.json`, `freeze.json`, `README.md`, `SHA256SUMS`). The declared
+  provenance covers git tree SHA, Python/platform, Lima version + VM config
+  digest, and SHA-256 digests of the audit/acceptance/provider/browser
+  artifacts. The bundle lives on `release/2026-11-14-evidence`; the validated
+  mainline SHA is tagged, so the released tree is exactly the gated tree.
+- **Evidence layers are explicit**: local frozen-tree gate, GitHub Actions (not
+  run; `ci_status=not_run`), and browser evidence (local macOS Chrome run) are
+  separate claims. A local gate proves tree identity + measured checks, not a CI
+  run or binary provenance beyond the recorded digests.
+- **Provider measurement**: `artifacts/provider-coverage-2026-11-14/` is
+  reproducible from the source provider artifacts
+  (`scripts/build_provider_coverage.py`, `--check` mode). It records 4 models
+  across 2 providers that completed 12-case matrices (DeepSeek official 2 models
+  exact identity 6/12 each; SiliconFlow CN Qwen 0/12 each), pooled AI-target
+  statistics with Wilson 95% CI (36/96, 0.375 [0.285, 0.475]), deterministic
+  target-strict expectations (12/12 matches, 0 verified), identity mismatch
+  rows served-model-only, cost/seed unavailable, and the international matrix
+  explicitly `not_satisfied` (HTTP 402 / no key).
+- **Non-goal roadmap**: `docs/acceptance/non-goal-roadmap-2026-11-14.md` lists
+  the 12 mapped non-goal ids with stage/owner/first experiment/five-step
+  research acceptance/target quarter and governance; the coverage gate parses
+  the document and requires exact 12/12 id equality with claims/audit.
+- **Self-checks**: meta-audit now injects 18 defect scenarios (release-evidence
+  SHA mismatch, missing provenance, local-gate-as-CI claim, plus earlier ones)
+  with recall/precision 1.0; `scripts/check_capability_contract.py` validates
+  declared-vs-measured tiers and platform negatives; the language checker
+  reports 0 non-ASCII Python comments/docstrings; browser e2e passed 12/12 on
+  macOS Chrome (recorded under `artifacts/browser-e2e-2026-11-14/`), while Linux
+  CI skips are explicitly not evidence; serial/language CI checks and the
+  self-hosted gate wiring pass `--release-sha` and upload the gate evidence.
+
 ## 4. Self-reflection: what this audit says about the earlier work
 
 - **Isolating a working capability is not the same as shipping it.** The

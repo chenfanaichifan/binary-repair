@@ -42,6 +42,18 @@ Assertions (any violation exits non-zero and prints a summary):
 9. provider identity: a provider matrix with ``provider_status=ok`` but
    ``model_identity_ok=false`` is recorded as a non-verified identity, never
    silently accepted as the requested model. Exposed as ``provider_identity``.
+10. non-goal roadmap sync: the id set in
+   ``docs/acceptance/non-goal-roadmap-2026-11-14.md`` must equal the
+   claims/audit non-goal ids exactly (12/12). Exposed as ``roadmap_sync``; an
+   id mismatch is always a violation, a missing roadmap document is tolerated
+   explicitly in static mode and required in ``--local``/release mode.
+11. evidence honesty helpers used by the meta-audit:
+   ``check_release_evidence`` rejects release evidence whose
+   ``frozen_sha != release_sha`` or whose recorded checks contradict its
+   ``ok``/status counts, and requires audit-artifact + Lima provenance for
+   release/nightly evidence; ``check_ci_evidence_claim`` rejects a local gate
+   result claimed as CI evidence (a local run cannot satisfy a required hosted
+   CI evidence slot).
 
 Status is measured by the audit, never hard-coded here: this script only
 decides which measured states are acceptable for a release.
@@ -52,6 +64,7 @@ import argparse
 import datetime as _datetime
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -67,6 +80,7 @@ ACCEPTANCE = ROOT / "artifacts" / "coverage-closure-2026-11-14" / "acceptance.js
 PROVIDER_MATRIX = ROOT / "artifacts" / "provider-matrix-2026-11-14" / "summary.json"
 CLAIMS = ROOT / "docs" / "status" / "claims.json"
 NON_GOALS_DOC = ROOT / "docs" / "acceptance" / "non-goals-2026-11-14.md"
+ROADMAP_DOC = ROOT / "docs" / "acceptance" / "non-goal-roadmap-2026-11-14.md"
 
 #: Residual open gaps this release may ship with. Keep this explicit and tiny;
 #: remove an id as soon as its detector closes it (``--local`` enforces that the
@@ -508,6 +522,211 @@ def check_claims_sync(live_audit: dict[str, Any] | None,
     }
 
 
+
+
+ROADMAP_ID_PATTERN = re.compile(
+    r"(?:EG|NG|RG|GM)-[A-Za-z0-9_.:<>/\-]+")
+
+
+def parse_roadmap_ids(text: str) -> list[str]:
+    """Extract the non-goal ids written in roadmap table rows."""
+    ids: set[str] = set()
+    for value in re.findall(r"`([^`\n]+)`", str(text or "")):
+        stripped = value.strip()
+        if ROADMAP_ID_PATTERN.fullmatch(stripped):
+            ids.add(stripped)
+    for line in str(text or "").splitlines():
+        if "|" not in line:
+            continue
+        for cell in line.split("|"):
+            stripped = cell.strip().strip("`*")
+            if ROADMAP_ID_PATTERN.fullmatch(stripped):
+                ids.add(stripped)
+    return sorted(ids)
+
+
+def check_roadmap_sync(live_audit: dict[str, Any] | None,
+                       claims: dict[str, Any] | None,
+                       path: Path = ROADMAP_DOC) -> dict[str, Any]:
+    """Roadmap doc ids must equal the claims/audit non-goal ids exactly."""
+    claims_ids, _claim_violations = claims_non_goal_ids(claims)
+    live = live_audit_counts(live_audit) if isinstance(live_audit, dict) else {}
+    live_mode = str(live.get("mode", ""))
+    # The roadmap is the 12-id claims/audit non-goal set.  Static mode cannot
+    # measure probe-dependent non-goals (dynamic_unverified), so the measured
+    # equality is only enforced on the full/local audit; in static mode every
+    # *measured* non-goal id must still be present in the roadmap.
+    measured_ids = set(live.get("non_goal_ids", []))
+    dynamic_not_compared = sorted(live.get("dynamic_unverified_ids", [])) \
+        if live_mode != "full" else []
+    expected_ids = claims_ids or measured_ids
+    roadmap = Path(path)
+    if not roadmap.is_file():
+        return {
+            "ok": False,
+            "present": False,
+            "ids": [],
+            "expected_ids": sorted(expected_ids),
+            "dynamic_not_compared": dynamic_not_compared,
+            "mismatches": [
+                f"non-goal roadmap document is missing: {roadmap}"],
+        }
+    try:
+        text = roadmap.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        return {
+            "ok": False,
+            "present": True,
+            "ids": [],
+            "expected_ids": sorted(expected_ids),
+            "dynamic_not_compared": dynamic_not_compared,
+            "mismatches": [
+                f"non-goal roadmap document unreadable: "
+                f"{type(exc).__name__}: {exc}"],
+        }
+    roadmap_ids = set(parse_roadmap_ids(text))
+    mismatches: list[str] = []
+    if claims_ids and roadmap_ids != claims_ids:
+        mismatches.append(
+            "roadmap ids != claims.json non_goal ids: "
+            f"roadmap-only={sorted(roadmap_ids - claims_ids)} "
+            f"claims-only={sorted(claims_ids - roadmap_ids)}")
+    if measured_ids:
+        if live_mode == "full":
+            if roadmap_ids != measured_ids:
+                mismatches.append(
+                    "roadmap ids != measured audit non_goal ids: "
+                    f"roadmap-only={sorted(roadmap_ids - measured_ids)} "
+                    f"audit-only={sorted(measured_ids - roadmap_ids)}")
+        else:
+            missing_measured = sorted(measured_ids - roadmap_ids)
+            if missing_measured:
+                mismatches.append(
+                    "roadmap ids missing measured audit non_goal ids: "
+                    f"{missing_measured}")
+    if not roadmap_ids:
+        mismatches.append(
+            "non-goal roadmap document contains no non-goal ids")
+    return {
+        "ok": not mismatches,
+        "present": True,
+        "ids": sorted(roadmap_ids),
+        "expected_ids": sorted(expected_ids),
+        "dynamic_not_compared": dynamic_not_compared,
+        "mismatches": mismatches,
+    }
+
+
+def check_release_evidence(evidence: Any) -> dict[str, Any]:
+    """Validate a release-gate evidence payload (identity/checks/provenance)."""
+    payload = _as_dict(evidence)
+    mismatches: list[str] = []
+    for field in ("mode", "ok", "release_sha", "frozen_sha", "checks"):
+        if field not in payload:
+            mismatches.append(f"release evidence missing required field {field!r}")
+    release_sha = str(payload.get("release_sha") or "")
+    frozen_sha = str(payload.get("frozen_sha") or "")
+    if release_sha and frozen_sha and release_sha != frozen_sha:
+        mismatches.append(
+            "release evidence frozen_sha != release_sha: "
+            f"frozen={frozen_sha} release={release_sha}")
+    checks = [_as_dict(item) for item in _as_list(payload.get("checks"))]
+    failed_required = [
+        str(check.get("id", "?")) for check in checks
+        if _as_dict(check).get("required", True)
+        and str(check.get("status", "")) != "passed"
+    ]
+    claimed_ok = payload.get("ok") is True
+    if claimed_ok and failed_required:
+        mismatches.append(
+            "release evidence claims ok=true with non-passed required checks: "
+            f"{failed_required[:6]}")
+    if claimed_ok and _as_list(payload.get("violations")):
+        mismatches.append(
+            "release evidence claims ok=true but lists violations: "
+            f"{_as_list(payload.get('violations'))[:3]}")
+    status_counts = _as_dict(payload.get("status_counts"))
+    if status_counts and checks:
+        recomputed: dict[str, int] = {}
+        for check in checks:
+            status = str(check.get("status", ""))
+            recomputed[status] = recomputed.get(status, 0) + 1
+        for status, count in status_counts.items():
+            if int(count or 0) != recomputed.get(str(status), 0):
+                mismatches.append(
+                    f"release evidence status_counts.{status}={count} but "
+                    f"checks contain {recomputed.get(str(status), 0)}")
+    provenance = _as_dict(payload.get("provenance"))
+    artifact_digest = (
+        provenance.get("artifact_sha256")
+        or provenance.get("artifacts")
+        or payload.get("artifact_sha256")
+        or payload.get("artifacts")
+    )
+    lima_identity = (
+        provenance.get("lima_identity")
+        or provenance.get("runner")
+        or payload.get("lima_identity")
+    )
+    mode = str(payload.get("mode", ""))
+    if mode in {"release", "nightly"}:
+        if not artifact_digest:
+            mismatches.append(
+                "release evidence provenance is missing the audit artifact "
+                "digest (provenance.artifact_sha256/artifacts)")
+        if not lima_identity:
+            mismatches.append(
+                "release evidence provenance is missing the Lima/guest "
+                "identity (provenance.lima_identity/runner)")
+    return {
+        "ok": not mismatches,
+        "mismatches": mismatches,
+        "mode": mode,
+        "release_sha": release_sha,
+        "frozen_sha": frozen_sha,
+        "provenance": {
+            "artifact_digest_present": bool(artifact_digest),
+            "lima_identity_present": bool(lima_identity),
+        },
+    }
+
+
+def check_ci_evidence_claim(evidence: Any) -> dict[str, Any]:
+    """A local gate run can never satisfy a required CI evidence slot."""
+    payload = _as_dict(evidence)
+    mismatches: list[str] = []
+    mode = str(payload.get("mode") or payload.get("source") or "")
+    ci_run_url = str(payload.get("ci_run_url") or payload.get("run_url") or "")
+    local_claimed = bool(payload.get("local_gate")
+                         or payload.get("claimed_as_ci")
+                         or payload.get("local_gate_result"))
+    check_ids = [str(_as_dict(item).get("id", ""))
+                 for item in _as_list(payload.get("checks"))]
+    local_only_ids = [
+        check_id for check_id in check_ids
+        if "local" in check_id.lower()
+    ]
+    if mode in {"ci", "hosted-ci", "github-actions"}:
+        if not ci_run_url:
+            mismatches.append(
+                "CI evidence must cite the hosted CI run URL; a local gate run "
+                "cannot satisfy a required CI evidence slot")
+        if local_only_ids:
+            mismatches.append(
+                "CI evidence includes local-only gate checks "
+                f"{local_only_ids}; local results cannot be claimed as CI "
+                "evidence")
+    elif local_claimed or local_only_ids:
+        mismatches.append(
+            "local gate result is claimed as CI evidence; a local run cannot "
+            "satisfy a required hosted-CI evidence slot")
+    return {
+        "ok": not mismatches,
+        "mismatches": mismatches,
+        "mode": mode,
+        "ci_run_url": ci_run_url,
+        "local_only_check_ids": local_only_ids,
+    }
 
 
 def check_provider_identity(path: Path = PROVIDER_MATRIX) -> dict[str, Any]:
@@ -969,6 +1188,17 @@ def main(argv: list[str] | None = None) -> int:
         violations.append(
             "--local requires claims_sync.ok; mismatches="
             f"{claims_sync_report['mismatches']}")
+    roadmap_report = check_roadmap_sync(audit, claims)
+    summary["roadmap_sync"] = roadmap_report
+    if not roadmap_report["present"]:
+        if local:
+            violations.append(
+                "--local requires the non-goal roadmap document; mismatches="
+                f"{roadmap_report['mismatches']}")
+    elif not roadmap_report["ok"]:
+        violations.append(
+            "roadmap_sync violation: "
+            f"{roadmap_report['mismatches']}")
     provider_report = check_provider_identity()
     summary["provider_identity"] = provider_report
     if local and not provider_report["ok"]:
@@ -990,6 +1220,7 @@ def main(argv: list[str] | None = None) -> int:
             "recall={recall} precision={precision} invariants_ok={inv_ok} "
             "invariant_packets={inv_packets} acceptance_ok={accept_ok} "
             "stale_ok={stale_ok} claims_sync_ok={sync_ok} "
+            "roadmap_ok={roadmap_ok} roadmap_ids={roadmap_ids} "
             "provider_identity_verified={provider_verified} "
             "violations={violations}".format(
                 mode=mode,
@@ -1012,6 +1243,8 @@ def main(argv: list[str] | None = None) -> int:
                 accept_ok=summary.get("acceptance", {}).get("ok"),
                 stale_ok=stale_report.get("ok"),
                 sync_ok=claims_sync_report.get("ok"),
+                roadmap_ok=roadmap_report.get("ok"),
+                roadmap_ids=len(_as_list(roadmap_report.get("ids"))),
                 provider_verified=provider_report.get("identity_verified"),
                 violations=len(violations),
             )

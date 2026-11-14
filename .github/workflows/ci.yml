@@ -29,6 +29,10 @@ jobs:
         run: python scripts/check_static_syntax.py
       - name: CI evidence claims (offline)
         run: python scripts/verify_ci_evidence.py
+      - name: Language policy (Python comments/docstrings must be ASCII)
+        run: python scripts/check_language_policy.py
+      - name: Test serialization policy (CI pytest must pass -p no:xdist)
+        run: python scripts/verify_test_serial.py
 
       - name: Install dependencies
         run: |
@@ -48,6 +52,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+      - name: Language policy (Python comments/docstrings must be ASCII)
+        run: python scripts/check_language_policy.py
+      - name: Test serialization policy (CI pytest must pass -p no:xdist)
+        run: python scripts/verify_test_serial.py
       - name: Coverage regression gate (static, no network)
         run: python scripts/verify_coverage_gate.py --static-only
       # Serial execution by policy: Lima guests and the real PoC differential are
@@ -84,8 +92,10 @@ jobs:
     # IMPORTANT: the repository CDP helper (tests/e2e/cdp.py) probes macOS and
     # Windows browser paths only; on this Linux runner the suite records an
     # explicit pytest skip (visible via -rs).  A skip is NOT a pass and this job
-    # is not release evidence; the release browser evidence is captured on a
-    # macOS host with Chrome (see docs/operations/release-gate-2026-11-14.md).
+    # is not release evidence: Linux skips are not release evidence.  The
+    # release browser evidence is the macOS/Chrome local run recorded under
+    # artifacts/browser-e2e-2026-11-14/ (see
+    # docs/operations/release-gate-2026-11-14.md section 15).
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -139,9 +149,29 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+      # The frozen tree is this Actions checkout: --release-sha pins the gate to
+      # github.sha (the gate fails on a dirty/moved tree), and --evidence-out
+      # writes the gate JSON summary next to stdout for artifact upload.  The
+      # evidence file is uploaded only when the job actually runs; a skipped job
+      # is not evidence and this file does not claim a run has happened.
       - name: Release gate (push / pull request / manual)
         if: ${{ github.event_name != 'schedule' }}
-        run: python scripts/release_gate.py --release --json
+        run: |
+          mkdir -p artifacts/release-gate-ci
+          python scripts/release_gate.py --release \
+            --release-sha ${{ github.sha }} \
+            --evidence-out artifacts/release-gate-ci/evidence.json
       - name: Nightly gate (release checks + fresh real-Lima acceptance capture)
         if: ${{ github.event_name == 'schedule' }}
-        run: python scripts/release_gate.py --nightly --json
+        run: |
+          mkdir -p artifacts/release-gate-ci
+          python scripts/release_gate.py --nightly \
+            --release-sha ${{ github.sha }} \
+            --evidence-out artifacts/release-gate-ci/evidence.json
+      - name: Upload release-gate evidence (never a release claim by itself)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-evidence
+          path: artifacts/release-gate-ci/
+          if-no-files-found: warn

@@ -1,10 +1,13 @@
 # Release gate, release freeze and the full-coverage definition (2026-11-14)
 
 Status: phase-3 gate implemented; **phase-4 release freeze added** (frozen SHA +
-clean worktree enforcement, serialization/flake governance, browser-e2e CI job).
-Entry point: `scripts/release_gate.py`.  Tests: `tests/test_release_gate.py` (no
-network, mock artifacts).  CI: `.github/workflows/ci.yml` jobs
-`release-gate-pr`, `browser-e2e` and the inert-by-default
+clean worktree enforcement, serialization/flake governance, browser-e2e CI job);
+**phase-5 final-release evidence separation added** (frozen `github.sha` +
+`--evidence-out` artifact upload in CI, repo-wide serial/language policy checks,
+local macOS/Chrome browser evidence).  Entry point: `scripts/release_gate.py`.
+Tests: `tests/test_release_gate.py` and `tests/test_verify_test_serial.py` (no
+network, mock/tmp fixtures).  CI: `.github/workflows/ci.yml` jobs `test`,
+`coverage-gate`, `release-gate-pr`, `browser-e2e` and the inert-by-default
 `release-nightly-gate`.
 
 The gate exists so that "0 open gaps" is never used to hide a
@@ -249,9 +252,11 @@ defines:
 
 | Job | Runner | Command | State |
 |---|---|---|---|
+| `test` | `ubuntu-latest` | syntax gate + offline CI claims + **language policy** + **test-serialization policy** + serial non-browser pytest | active for every push/PR; language policy passes on this tree (CI fails on regression) and `scripts/verify_test_serial.py` enforces `-p no:xdist` repo-wide (it is dependency-light: PyYAML when present, built-in `run:` scanner otherwise, so it can run before dependency installation) |
+| `coverage-gate` | `ubuntu-latest` | same language/serial governance steps + `verify_coverage_gate.py --static-only` + serial gate/audit pytest | active; `dynamic_unverified>0` is expected at this static layer |
 | `release-gate-pr` | `ubuntu-latest` | `python scripts/release_gate.py --pr --json` | active for every PR; records tree identity but does not require a frozen SHA |
-| `browser-e2e` | `ubuntu-latest` | best-effort Chromium install, then `pytest -q -p no:xdist tests/e2e -rs` | runs serially; the repository CDP helper probes macOS/Windows browser paths only, so on Linux CI the suite records **explicit pytest skips** (visible with `-rs`).  A skip is **not a pass** and this job is not release evidence; release browser evidence is captured on a macOS host with Chrome. |
-| `release-nightly-gate` | `[self-hosted, lima]` | `--release --release-sha <frozen-sha>` on push/PR/manual, `--nightly` on schedule | **inert by default**: job-level guard `if: ${{ vars.BINARYREPAIR_RELEASE_GATE == 'true' }}`; requires an operator-provisioned self-hosted Lima runner and the repository variable. No such run is claimed. |
+| `browser-e2e` | `ubuntu-latest` | best-effort Chromium install, then `pytest -q -p no:xdist tests/e2e -rs` | runs serially; the repository CDP helper probes macOS/Windows browser paths only, so on Linux CI the suite records **explicit pytest skips** (visible with `-rs`).  **Linux skips are not release evidence**; the release browser evidence is the local macOS/Chrome run in `artifacts/browser-e2e-2026-11-14/` (§15). |
+| `release-nightly-gate` | `[self-hosted, lima]` | `python scripts/release_gate.py --release --release-sha ${{ github.sha }} --evidence-out artifacts/release-gate-ci/evidence.json` on push/PR/manual, the `--nightly` equivalent on schedule | **inert by default**: job-level guard `if: ${{ vars.BINARYREPAIR_RELEASE_GATE == 'true' }}`; requires an operator-provisioned self-hosted Lima runner and the repository variable. Evidence file is uploaded by `actions/upload-artifact@v4` with `if: always()` as `release-gate-evidence`; no such run is claimed here. |
 
 To enable the nightly/release job: provision a self-hosted runner labelled
 `lima` with the `binaryrepair` Lima VM and the real fixtures, then set the
@@ -259,12 +264,14 @@ repository variable `BINARYREPAIR_RELEASE_GATE=true`.  A skipped job is not
 evidence; only the gate's own JSON output counts.
 
 **Nightly/browser-e2e status:** the CI `release-nightly-gate` and `browser-e2e`
-jobs have **not been executed** in this phase (no self-hosted Lima runner is
-provisioned; Linux `browser-e2e` records explicit skips by design).  Local
-evidence is limited to what is reported in §8: the local `--nightly` run is
-executed from the frozen worktree when the environment (Lima guest + Chromium)
-allows it; anything unavailable is reported as `unavailable`/skip with a reason,
-never as a pass.
+jobs have **not been executed** (no self-hosted Lima runner is provisioned;
+Linux `browser-e2e` records explicit skips by design).  Local browser evidence
+does exist: the macOS/Chrome run recorded in
+`artifacts/browser-e2e-2026-11-14/` passed 12/12 (Chrome 157.0.8103.51, JUnit
+counts, deterministic rerun) — see §15.  A local frozen-tree `--nightly` run is
+recorded in the phase handoff when the environment (Lima guest + Chrome) allows
+it; anything unavailable is reported as `unavailable`/skip with a reason, never
+as a pass, and never as a GitHub Actions claim.
 
 ## 6. Flake governance and contract serialization (P2-3)
 
@@ -329,7 +336,7 @@ Measured on the integrated/frozen tree with the phase-3/phase-4 gates; the
 | P3-1 worktree safety | protocol documented and adopted | documented | `docs/operations/worktree-safety.md` (two reset incidents, isolation/stash/restore/tests) | doc |
 | P3-1 CI/governance | serial tests, browser-e2e job, inert nightly | CI updated, no run claimed | `coverage-gate`/`release-gate-pr` serial; `browser-e2e` documents Linux explicit skips; `release-nightly-gate` inert with vars guard | `.github/workflows/ci.yml` (PyYAML-validated) |
 
-## 8. Current state (2026-11-14, phase 4 freeze)
+## 8. Current state (2026-11-14, phase 4 freeze / phase 5 final release)
 
 - Frozen release worktree: `worktree-release-2026-11-14`, branch
   `release/2026-11-14`, created by the Lead at the mainline release commit
@@ -364,9 +371,27 @@ Measured on the integrated/frozen tree with the phase-3/phase-4 gates; the
   The phase-4 tree is expected to fail closed on `release-tree-identity` until
   the Lead commits these changes and re-freezes; `--release` on the re-frozen
   tree must then be run with the new `--release-sha` and is not claimed here.
-- Browser e2e: not run in CI (Linux explicit skips by design); the phase-3 macOS
-  Chrome evidence remains the browser evidence, and the final frozen release run
-  records its own skip/unavailable reasons if no browser is present.
+- Browser e2e: not run in CI (Linux explicit skips by design).  The local
+  macOS/Chrome run for this phase passed 12/12 (zero skips) and is recorded in
+  `artifacts/browser-e2e-2026-11-14/` (summary.json + README.md + SHA256SUMS,
+  Chrome 157.0.8103.51); see §15.  A skip is never counted as a pass.
+- Phase-5 final-release wiring (task-19): `release-nightly-gate` now calls
+  `--release/--nightly --release-sha ${{ github.sha }}
+  --evidence-out artifacts/release-gate-ci/evidence.json` and uploads the
+  `release-gate-evidence` artifact with `if: always()`, keeping the inert
+  `vars.BINARYREPAIR_RELEASE_GATE == 'true'` guard and the not-run comments.
+  `test`/`coverage-gate` run `scripts/check_language_policy.py` and the new
+  `scripts/verify_test_serial.py`; `ubuntu-verify.yml` now passes
+  `-p no:xdist` too.  Repo-wide snapshot: `verify_test_serial.py` passes
+  (5 pytest commands across 2 workflows) and `check_language_policy.py` passes
+  (0 non-ASCII comments/docstrings; the 26 pre-existing fixtures seen earlier
+  were fixed by their owners before this snapshot — CI fails on any regression).
+  `--evidence-out` is now on disk in `scripts/release_gate.py` and was
+  smoke-tested with the exact CI step shape: it writes the evidence JSON
+  (keys include `frozen_sha`, `release_sha`, `tree_sha`/`tree_hash`,
+  `clean_tree`, `branch`, `checks`, `artifacts`, `environment`, `lima`,
+  `not_run`, `mitigated_residual`), creates missing parent directories, and
+  returns exit 2 with a clear message if the evidence file cannot be written.
 
 ## 9. Operating the gate
 
@@ -413,3 +438,167 @@ mark the cell an explicit non-goal with an owner and review date.
 - The self-hosted CI nightly job is inert by default and `browser-e2e` records
   explicit Linux skips; neither is a release claim, and this document does not
   claim a CI run happened.
+
+
+## 11. Evidence layers and provenance
+
+Three evidence layers are kept separate on purpose; none is allowed to stand in
+for another.
+
+| Layer | Where it lives | Authority | Proves | Does not prove |
+|---|---|---|---|---|
+| Local frozen-tree gate | lead-run `--release`/`--nightly` JSON on the frozen worktree | `local-frozen-tree` | the bar in §1 on the frozen, clean, SHA-pinned tree, including the real Lima guest capture | that CI ran, or that a different SHA/branch was tested |
+| GitHub Actions run | `release-gate-evidence` artifact from the self-hosted run, plus run/job metadata | `github-actions-run` | the same gate ran inside Actions on `${{ github.sha }}` with the uploaded evidence file | anything about runs that did not happen; a skipped job is not evidence |
+| Browser evidence | `artifacts/browser-e2e-2026-11-14/` (local macOS/Chrome) or a future supported-runner capture | `local-browser` | the browser e2e suite behavior on a supported browser/OS | CI execution, Linux browser behavior, or gate results |
+
+Provenance fields that must stay attached to a release claim:
+
+- **Frozen git identity:** `frozen_sha`, `release_sha`, `branch`,
+  `clean_tree` from the gate summary.  `frozen_sha == release_sha` and
+  `clean_tree == true` for a release claim.
+- **Check evidence:** the full `checks` list (ids/status/detail/violations) from
+  the gate JSON, not a prose summary.  `--evidence-out PATH` writes this JSON
+  next to stdout (optional; IO failure is a usage error) and the CI uploads it
+  as `release-gate-evidence`.
+- **Artifact digests:** acceptance capture sha, provider-matrix `SHA256SUMS`,
+  browser-e2e `SHA256SUMS`.  A cited artifact must be the one hashed by its
+  recorded digest.
+- **Runner/guest identity:** the Lima runner probe (`runner`, `tier`, reason)
+  recorded by `nightly-real-lima-acceptance`; an `unavailable` probe is an
+  explicit non-pass.
+- **Binary/guest provenance:** committed fixture binary sha256 -> the evidence
+  record that cites it -> the guest tier that executed it.  The gate validates
+  the record; it does not rebuild the binary.  A claim may only cite the chain it
+  actually has.
+
+## 12. Not-run semantics and claims fields
+
+Rules (enforced by the gate structure and reviewed in release notes):
+
+- A **skipped CI job** is not evidence.  An **`unavailable` required check** is a
+  violation; an **`unavailable` non-required check** (e.g. nightly capture with
+  no guest runner) is reported and never counted as green.
+- PR mode never claims dynamic verification or a frozen identity; it records the
+  tree identity but does not require a frozen SHA.
+- A release claim requires all of: `ok == true`, `violations == []`,
+  `frozen_sha == release_sha`, `clean_tree == true`, and
+  `release-tree-identity: passed` in `checks`.
+- "Not run" must be written as "not run" with the reason; never as a pass,
+  "green by omission", "expected", or "covered elsewhere".
+
+Canonical JSON fields (gate summary and `--evidence-out`):
+
+| Field | Meaning |
+|---|---|
+| `mode` | `pr` / `release` / `nightly` |
+| `ok`, `exit_code`, `violations`, `notes` | result and named failures/warnings |
+| `frozen_sha`, `release_sha`, `branch`, `clean_tree` | frozen tree identity (§2) |
+| `tree_sha` / `tree_hash` | evidence-time tree digest recorded by `--evidence-out` |
+| `frozen_matches_release` | convenience boolean (`frozen_sha == release_sha`) |
+| `status_counts` | passed/failed/unavailable/skipped counts |
+| `checks[].id/status/required/detail/violations/elapsed_ms` | per-check evidence |
+| `artifacts` | artifact digests cited by the run |
+| `environment`, `lima`, `not_run`, `mitigated_residual` | runner/guest provenance, explicit non-runs, accepted residuals |
+| `elapsed_ms`, `schema_version`, `generated_at`, `kind`, `evidence_scope` | run metadata |
+
+`--evidence-out PATH` is optional (release/nightly/pr), writes the JSON next to
+stdout, creates parent directories, and exits 2 if the path cannot be written;
+the CI uploads it as the `release-gate-evidence` artifact with `if: always()`.
+A skipped job produces no evidence file and remains "not run".
+
+Claims documents (`docs/status/claims.json`, release notes) must state: what was
+run, where (local frozen tree vs Actions), the frozen SHA, the evidence file/
+artifact, and every residual (`dynamic_unverified`, non-goals, `mitigated`
+residuals, `unavailable` checks).  Do not cite a run that did not happen.
+
+## 13. Evidence branch/tag procedure
+
+1. **Freeze:** Lead creates `release/<date>` from the intended commit, keeps it
+   clean and records the full SHA (phase-4 procedure, §2).
+2. **Gate:** run `--release --release-sha <frozen-sha>` (and `--nightly` when a
+   guest is available); keep the JSON/evidence file.  The local evidence is
+   valid only for that `frozen_sha`.
+3. **CI evidence (optional):** enable the self-hosted runner variable
+   `BINARYREPAIR_RELEASE_GATE=true` and dispatch the workflow on the frozen
+   commit; the run uploads `release-gate-evidence`, whose `frozen_sha` must
+   equal `github.sha`.  A skipped/inert job stays "not run".
+4. **Evidence branch:** commit the evidence bundle (gate JSON, browser-e2e
+   directory, acceptance/provider-matrix digests) to `evidence/<date>` (or keep
+   the Actions artifact and its digest in the release note); Lead-only git.
+5. **Tag:** create the annotated release tag only after the frozen tree is green
+   and the evidence is stored.  Do not amend, force-push, or rebase after the
+   tag; any new commit invalidates the evidence -> new freeze, new gate run, new
+   tag.
+6. **Revert/retag:** if the tag must move, treat it as a new release: fresh
+   freeze + gate + evidence; never present the old evidence for the new SHA.
+
+## 14. Flake governance: quarantine ownership and no rerun-as-pass
+
+Serial execution (§6.1) stays mandatory: single Lima guest, single PoC
+differential, `-p no:xdist` everywhere (now enforced repo-wide by
+`scripts/verify_test_serial.py`).
+
+Quarantine records must carry: test id, owner, reason, evidence link,
+`opened` date and `expiry` date (max 14 days), and re-review note.  A quarantine
+is a tracking device, **not a pass**: quarantined tests are reported and cannot
+be counted as green, and no acceptance/gate/release-freeze/provider-matrix test
+may be quarantined.  Expired quarantines fail the review.
+
+No rerun-as-pass: on a frozen SHA, one environment-classification rerun is
+allowed to distinguish flake from defect, but a failure is never converted into
+a pass by retrying and only the first clean frozen-SHA run counts as evidence.
+Any rerun must be reported with its reason; two consecutive failures of the same
+check block the release (§6.3).
+
+## 15. Browser evidence: macOS/Chrome pass vs Linux CI skips
+
+`artifacts/browser-e2e-2026-11-14/` records the local browser run:
+
+- command: `.venv/bin/python -m pytest -q -p no:xdist tests/e2e -rs
+  --junitxml=artifacts/browser-e2e-2026-11-14/junit.xml`
+- browser: Google Chrome 157.0.8103.51 at
+  `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`
+- result: **12 passed / 0 failed / 0 errors / 0 skipped**, 35.742 s, JUnit
+  counts, deterministic rerun agreement; every file hashed in `SHA256SUMS`.
+- skip semantics: this run had zero skips because a supported browser exists.
+  Linux CI (`browser-e2e` job) auto-skips when the repo CDP helper (which probes
+  macOS/Windows browser paths) finds no supported browser; **those skips are not
+  release evidence and not passes**.  Release browser evidence requires a local
+  macOS/Chrome run like the one above (or a future supported-runner capture).
+
+## 16. Final release commands
+
+Run from the frozen, clean worktree (`release/<date>`), with the frozen SHA
+recorded by the Lead:
+
+```bash
+# 0) repo governance (CI also runs these; they are cheap)
+.venv/bin/python scripts/verify_test_serial.py --json
+.venv/bin/python scripts/check_language_policy.py
+
+# 1) PR smoke layer (not a release claim)
+.venv/bin/python scripts/release_gate.py --pr --json
+
+# 2) release layer on the frozen tree, writing the evidence file
+.venv/bin/python scripts/release_gate.py --release \
+    --release-sha <frozen-sha> \
+    --json --evidence-out artifacts/release-gate-ci/evidence.json
+
+# 3) nightly layer when a guest runner/browser is available
+.venv/bin/python scripts/release_gate.py --nightly \
+    --release-sha <frozen-sha> \
+    --json --evidence-out artifacts/release-gate-ci/evidence.json
+
+# 4) browser e2e evidence (macOS/Chrome; Linux CI skips are not evidence)
+.venv/bin/python -m pytest -q -p no:xdist tests/e2e -rs \
+    --junitxml=artifacts/browser-e2e-<date>/junit.xml
+
+# 5) CI evidence (operator action, only after the self-hosted runner is enabled)
+#    set BINARYREPAIR_RELEASE_GATE=true, dispatch the workflow on the frozen
+#    commit, download the release-gate-evidence artifact, compare frozen_sha to
+#    the commit; a skipped job is not evidence.
+```
+
+Claims may only cite commands actually run; this phase's recorded local evidence
+is the browser run in §15 plus the `--release`/`--nightly` results in the phase
+handoff.  No GitHub Actions run is claimed.

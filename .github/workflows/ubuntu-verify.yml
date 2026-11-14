@@ -43,7 +43,7 @@ jobs:
         run: |
           mkdir -p artifacts/ubuntu-verification
           set -o pipefail
-          python -m pytest -q -vv \
+          python -m pytest -q -vv -p no:xdist \
             tests/test_fixture_v3_manifest.py::test_original_is_v0_on_invalid_inputs_if_binary_present \
             --junitxml=artifacts/ubuntu-verification/fixture-junit.xml \
             2>&1 | tee artifacts/ubuntu-verification/fixture-regression.log
@@ -54,7 +54,7 @@ jobs:
         run: |
           mkdir -p artifacts/ubuntu-verification
           set -o pipefail
-          python -m pytest -q --ignore=tests/e2e \
+          python -m pytest -q -p no:xdist --ignore=tests/e2e \
             --junitxml=artifacts/ubuntu-verification/junit.xml \
             2>&1 | tee artifacts/ubuntu-verification/pytest.log
 

@@ -11,7 +11,10 @@ Additional injected defects: removed ``patch.target_scope`` gate check,
 rewrite actions no longer re-derived, provider identity mismatch recorded as a
 non-verified identity, stale committed audit artifacts, download allowed on an
 inconclusive packet, and a fabricated capability (supported cell on an
-unmeasured runtime tier without a reason).
+unmeasured runtime tier without a reason), release evidence with a
+``frozen_sha``/``release_sha`` mismatch or contradictory checks, release
+evidence missing audit-artifact/Lima provenance, and a local gate result claimed
+as CI evidence (a local run cannot satisfy a required hosted-CI slot).
 
 * **precision scenarios** inject fabricated gap records into a synthetic audit
   document and require the coverage regression gate to reject them, and mutate
@@ -40,7 +43,7 @@ for entry in (ROOT, ROOT / "scripts"):
 
 MIN_RECALL = 0.8
 MIN_PRECISION = 1.0
-MIN_SCENARIOS = 12
+MIN_SCENARIOS = 18
 
 
 def _import_audit() -> Any:
@@ -498,6 +501,99 @@ def _recall_fabricated_capability(live_audit: dict[str, Any],
     )
 
 
+def _recall_release_evidence_mismatch() -> dict[str, Any]:
+    """frozen_sha != release_sha / contradictory checks must be rejected."""
+    from verify_coverage_gate import check_release_evidence
+
+    provenance = {"artifact_sha256": "ab" * 32,
+                  "lima_identity": "runner=lima:limactl tier=emulated_run"}
+    bad = {
+        "mode": "release",
+        "ok": True,
+        "release_sha": "a" * 40,
+        "frozen_sha": "b" * 40,
+        "provenance": provenance,
+        "violations": [],
+        "checks": [
+            {"id": "local-coverage-gate", "status": "passed", "required": True},
+            {"id": "targeted-pytest", "status": "failed", "required": True},
+        ],
+        "status_counts": {"passed": 1, "failed": 1},
+    }
+    result = check_release_evidence(bad)
+    detected = bool(
+        result.get("ok") is False
+        and any("frozen_sha" in item for item in result["mismatches"])
+        and any("required checks" in item for item in result["mismatches"])
+    )
+    return _scenario(
+        "release_evidence_sha_or_check_mismatch", "recall", True, detected,
+        "release evidence with frozen_sha != release_sha and a failed required "
+        "check while ok=true is rejected",
+    )
+
+
+def _recall_evidence_provenance_missing() -> dict[str, Any]:
+    """Release evidence without artifact digest/Lima identity must be rejected."""
+    from verify_coverage_gate import check_release_evidence
+
+    evidence = {
+        "mode": "release",
+        "ok": True,
+        "release_sha": "a" * 40,
+        "frozen_sha": "a" * 40,
+        "violations": [],
+        "checks": [{"id": "targeted-pytest", "status": "passed",
+                    "required": True}],
+    }
+    missing = check_release_evidence(evidence)
+    complete = check_release_evidence({
+        **evidence,
+        "provenance": {
+            "artifact_sha256": "cd" * 32,
+            "lima_identity": "runner=lima:limactl tier=emulated_run",
+        },
+    })
+    detected = bool(
+        missing.get("ok") is False
+        and any("provenance" in item for item in missing["mismatches"])
+        and complete.get("ok") is True
+    )
+    return _scenario(
+        "evidence_provenance_missing", "recall", True, detected,
+        "release evidence without audit-artifact digest/Lima identity is "
+        "rejected; complete provenance passes",
+    )
+
+
+def _recall_local_gate_claimed_as_ci() -> dict[str, Any]:
+    """A local gate result cannot satisfy a required CI evidence slot."""
+    from verify_coverage_gate import check_ci_evidence_claim
+
+    claimed = check_ci_evidence_claim({
+        "mode": "ci",
+        "ci_run_url": "",
+        "checks": [
+            {"id": "coverage-gate-local", "status": "passed"},
+        ],
+    })
+    hosted = check_ci_evidence_claim({
+        "mode": "ci",
+        "ci_run_url": "https://github.com/example/repo/actions/runs/1",
+        "checks": [{"id": "coverage-gate-static", "status": "passed"}],
+    })
+    detected = bool(
+        claimed.get("ok") is False
+        and any("local" in item.lower() for item in claimed["mismatches"])
+        and hosted.get("ok") is True
+    )
+    return _scenario(
+        "local_gate_claimed_as_ci_evidence", "recall", True, detected,
+        "a local coverage-gate result without a hosted CI run URL is rejected "
+        "as CI evidence; hosted CI evidence passes",
+    )
+
+
 def run_meta_audit(*, include_probes: bool = False,
                    live_audit: dict[str, Any] | None = None) -> dict[str, Any]:
     """Run the meta-audit and return the deterministic report dict."""
@@ -515,6 +611,9 @@ def run_meta_audit(*, include_probes: bool = False,
     scenarios.append(_recall_stale_artifacts(live_audit))
     scenarios.append(_recall_download_on_inconclusive())
     scenarios.append(_recall_fabricated_capability(live_audit, ctx))
+    scenarios.append(_recall_release_evidence_mismatch())
+    scenarios.append(_recall_evidence_provenance_missing())
+    scenarios.append(_recall_local_gate_claimed_as_ci())
     scenarios.extend(_manifest_route_scenarios(audit_module))
     scenarios.extend(_gate_fake_gap_scenarios(audit_module, ctx))
     scenarios.append(_precision_benign_mutations(audit_module, ctx))
