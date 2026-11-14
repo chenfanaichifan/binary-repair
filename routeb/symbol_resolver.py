@@ -86,12 +86,16 @@ _PURE_TEMPLATES: dict[str, str] = {
 }''',
 }
 
-# Memory-management calls are intentionally not templated: static replacement
-# cannot preserve allocator state.  The resolver reports a typed refusal.
-_DANGEROUS_SYMBOLS = frozenset({
-    "malloc", "calloc", "realloc", "free", "dlopen", "dlclose", "dlsym",
-    "pthread_create", "fork", "execve", "system", "popen",
+# Memory-management calls are conditionally allowed only when the target ELF
+# actually imports them (Route A supplies the measured PLT/symbol address).
+_CONDITIONAL_BLOCKED = frozenset({"malloc", "calloc", "realloc", "free"})
+# Process/permission-changing calls remain absolute policy refusals even if a
+# PLT entry exists; a patch must not be granted these capabilities implicitly.
+_ALWAYS_BLOCKED = frozenset({
+    "dlopen", "dlclose", "dlsym", "pthread_create", "fork", "execve",
+    "system", "popen",
 })
+_DANGEROUS_SYMBOLS = _CONDITIONAL_BLOCKED | _ALWAYS_BLOCKED
 _FPUTS_TEMPLATE = r'''static int br_fputs(const char *s)
 {
     unsigned long n = 0;
@@ -162,13 +166,15 @@ def resolve(source: str, available: set[str] | frozenset[str],
     resolution = Resolution()
     resolution.defined_in_source = sorted(defined - ({target_name} if target_name else set()))
     for name in sorted(names):
-        if name in available:
+        if name in _ALWAYS_BLOCKED:
+            resolution.blocked.append(name)
+        elif name in available:
             resolution.available.append(name)
         elif name in _TEMPLATE_ALIASES:
             resolution.stubs.append(_TEMPLATE_ALIASES[name])
         elif name in _PURE_TEMPLATES:
             resolution.stubs.append(name)
-        elif name in _DANGEROUS_SYMBOLS:
+        elif name in _CONDITIONAL_BLOCKED:
             resolution.blocked.append(name)
         elif name == "br_fputs":
             resolution.stubs.append("br_fputs")

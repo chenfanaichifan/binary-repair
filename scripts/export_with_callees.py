@@ -47,15 +47,30 @@ def main() -> int:
     meta_text = meta.read_text()
     callees_line = next((line for line in meta_text.splitlines() if line.startswith("callees=")), "")
     names = [n for n in callees_line.partition("=")[2].split() if n]
+    def _entry(path: Path) -> int | None:
+        for line in path.read_text().splitlines():
+            if line.startswith("entry="):
+                try:
+                    return int(line.partition("=")[2], 16)
+                except ValueError:
+                    return None
+        return None
+
     context = {
         "schema_version": 1,
         "binary_sha256": __import__("hashlib").sha256(args.binary.read_bytes()).hexdigest(),
         "target": args.function,
         "target_c": c.name,
         "target_meta": meta.name,
+        "entries": {},
+        "symbols": {},
         "callees": [],
         "missing_or_external": [],
     }
+    target_entry = _entry(meta)
+    if target_entry is not None:
+        context["entries"][args.function] = hex(target_entry)
+        context["symbols"][args.function] = hex(target_entry)
     for name in names:
         child = args.out / "callees" / name
         child.mkdir(parents=True, exist_ok=True)
@@ -63,8 +78,13 @@ def main() -> int:
         if cc is None or cm is None:
             context["missing_or_external"].append(name)
             continue
+        child_entry = _entry(cm)
+        if child_entry is not None:
+            context["entries"][name] = hex(child_entry)
+            context["symbols"][name] = hex(child_entry)
         context["callees"].append({
             "name": name,
+            "entry": hex(child_entry) if child_entry is not None else None,
             "c": str(cc.relative_to(args.out)),
             "meta": str(cm.relative_to(args.out)),
         })

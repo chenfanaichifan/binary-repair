@@ -1,5 +1,10 @@
 # BinaryRepair
 
+> **Current feature line (2026-11-14)**: 4-model matrix (DeepSeek 6/12;
+> CN free Qwen8B/7B 0/12), CWE121 non-loop A closure, auto ELF symbols and
+> optional errno probe. Verification boundaries: [docs/limitations.md](docs/limitations.md);
+> methodology: [docs/whitepaper-2026-11-14.md](docs/whitepaper-2026-11-14.md).
+
 BinaryRepair is a local analyst tool for repairing one known vulnerability in a
 Linux x86-64 ELF **without original source**. Two independent repair routes
 produce candidate bytes, and one deterministic acceptance engine decides whether

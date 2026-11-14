@@ -72,3 +72,11 @@ def test_malloc_is_blocked_with_a_typed_refusal():
     assert not r.ok
     assert r.blocked == ["malloc"]
     assert r.unresolved == []
+
+
+def test_process_control_stays_blocked_even_when_imported():
+    r = resolve("void target(){ fork(); execve(0,0,0); }",
+                {"fork", "execve"}, target_name="target")
+    assert not r.ok
+    assert set(r.blocked) == {"fork", "execve"}
+    assert r.available == []

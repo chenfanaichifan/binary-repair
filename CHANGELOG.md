@@ -51,6 +51,11 @@ simple semantic-versioning policy for delivery snapshots.
 
 ### Added — path A call whitelist and paradigm A loop proof
 
+- Path B injection error classification/retry (ud2 policy); hard-multicall moved
+  from no_candidate to native semantic fail
+- auto ELF symbol inventory, conditional malloc/free PLT whitelist, LD_PRELOAD
+  process-exit errno probe, setup/run_matrix/whitepaper
+
 - optional strace syscall-errno signature in poc_runner; CWE121 evidence
 - Path B direct-callee A/B negative result (0 vs 0 verified)
 - malloc/free typed refusal; strcat/atoi pure templates

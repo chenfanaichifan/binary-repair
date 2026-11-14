@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import inspect
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -289,10 +290,21 @@ def _inject_target(data: bytes, target: str, capacity: int, assembly: str,
         else:
             code, relocs = _assemble(clean, container.arch), []
     except Exception as exc:  # noqa: BLE001
-        return None, {"error": f"assembly validation: {type(exc).__name__}: {exc}"}
+        error_class, token = _classify_assembly_error(exc)
+        return None, {
+            "stage": "validation",
+            "error_class": error_class,
+            "error_token": token,
+            "error": f"assembly validation: {type(exc).__name__}: {exc}",
+        }
     patched, cave_va, method = _inject_blob(container, data, code)
     if patched is None or cave_va is None:
-        return None, {"error": f"injection failed: {method}"}
+        return None, {
+            "stage": "injection",
+            "error_class": "injection",
+            "error_token": None,
+            "error": f"injection failed: {method}",
+        }
     try:
         if relocs:
             patched = _patch_binary_call_relocations(
@@ -305,10 +317,21 @@ def _inject_target(data: bytes, target: str, capacity: int, assembly: str,
         else:
             _validate_code(code, container.arch)
     except Exception as exc:  # noqa: BLE001
-        return None, {"error": f"call relocation: {type(exc).__name__}: {exc}"}
+        error_class, token = _classify_assembly_error(exc)
+        return None, {
+            "stage": "relocation",
+            "error_class": error_class,
+            "error_token": token,
+            "error": f"call relocation: {type(exc).__name__}: {exc}",
+        }
     patched = _redirect_function(patched, container, sink, cave_va)
     if patched is None:
-        return None, {"error": "function entry redirect failed"}
+        return None, {
+            "stage": "redirect",
+            "error_class": "redirect",
+            "error_token": None,
+            "error": "function entry redirect failed",
+        }
     return patched, {
         "target_va": hex(va), "cave_va": hex(cave_va), "method": method,
         "code_bytes": len(code), "assembly_sha256": hashlib.sha256(clean.encode()).hexdigest(),
@@ -412,9 +435,50 @@ def _fake_client(assembly: str) -> Any:
     return FakeClient()
 
 
-def _evaluate(data: bytes, patched: bytes | None, poc: dict, case: dict) -> dict:
+
+_ASSEMBLY_FORBIDDEN_RE = re.compile(r"forbidden assembly construct:\s*(\S+)|instruction not in the assembly allowlist:\s*(\S+)")
+_ASSEMBLY_ASSEMBLE_RE = re.compile(r"assembler rejected repair")
+
+
+def _count_values(values: Any) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for value in values:
+        if value:
+            key = str(value)
+            counts[key] = counts.get(key, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _classify_assembly_error(exc: BaseException) -> tuple[str, str | None]:
+    """Return (class, token) for a validator/assembler failure."""
+    text = str(exc)
+    match = _ASSEMBLY_FORBIDDEN_RE.search(text)
+    if match:
+        token = match.group(1) or match.group(2)
+        return "assembly_forbidden", token
+    if _ASSEMBLY_ASSEMBLE_RE.search(text):
+        return "assembly_assemble", None
+    if "forbidden instruction in assembled block" in text:
+        return "assembly_forbidden", text.rsplit(":", 1)[-1].strip()
+    if "assembly" in text.lower():
+        return "assembly_validation", None
+    return "injection", None
+
+
+def _evaluate(data: bytes, patched: bytes | None, poc: dict, case: dict,
+              injection: dict[str, Any] | None = None) -> dict:
     if patched is None:
-        return {"gate": "no_candidate", "poc_status": "not_run"}
+        result: dict[str, Any] = {"gate": "no_candidate", "poc_status": "not_run"}
+        if injection:
+            result["injection_error_class"] = injection.get("error_class")
+            result["injection_error_token"] = injection.get("error_token")
+            result["injection_error"] = injection.get("error")
+            if injection.get("error_class"):
+                reason = str(injection.get("error_class"))
+                if injection.get("error_token"):
+                    reason += ":" + str(injection.get("error_token"))
+                result["no_candidate_reason"] = reason
+        return result
     evidence = run_poc(data, patched, poc)
     return {
         "gate": "pass" if evidence.passed else "fail",
@@ -453,21 +517,84 @@ def _ai_prompt_attempt(
         contract_level, allowed_calls, callee_context,
     )
     started = time.perf_counter()
-    parsed, error = _call_model(
-        client, system_prompt=ASM_SYSTEM_PROMPT, packet=packet,
-        max_tokens=ASM_MAX_TOKENS, ai=ai_meta,
-    )
-    assembly = None
-    if parsed is not None and isinstance(parsed.get("assembly"), str):
-        assembly = parsed["assembly"]
-        ai_meta["status"] = "accepted"
-    else:
-        ai_meta["status"] = ai_meta.get("status") or "invalid"
-        ai_meta["error"] = error or ai_meta.get("error")
+    attempts: list[dict[str, Any]] = []
+    assembly: str | None = None
+    validation_error: str | None = None
+    validation_class: str | None = None
+    last_ai: dict[str, Any] = {}
+    for attempt_index in range(2):
+        attempt_meta: dict[str, Any] = _ai_base("hard_target_asm")
+        parsed, error = _call_model(
+            client, system_prompt=ASM_SYSTEM_PROMPT, packet=dict(packet),
+            max_tokens=ASM_MAX_TOKENS, ai=attempt_meta,
+        )
+        attempt_assembly = None
+        attempt_error = None
+        attempt_class = None
+        if parsed is not None and isinstance(parsed.get("assembly"), str):
+            attempt_assembly = parsed["assembly"]
+            attempt_meta["status"] = "accepted"
+            try:
+                _validate_assembly_text(attempt_assembly, detect_container(data).arch, allowed_calls)
+            except Exception as exc:  # noqa: BLE001
+                attempt_error = str(exc)
+                attempt_class, _token = _classify_assembly_error(exc)
+        else:
+            attempt_meta["status"] = attempt_meta.get("status") or "invalid"
+            attempt_meta["error"] = error or attempt_meta.get("error")
+        attempts.append({
+            "attempt": attempt_index + 1,
+            "status": attempt_meta.get("status"),
+            "error": attempt_meta.get("error"),
+            "assembly_returned": attempt_assembly is not None,
+            "assembly_sha256": (
+                hashlib.sha256(attempt_assembly.encode()).hexdigest()
+                if attempt_assembly is not None else None
+            ),
+            "validation_error": attempt_error,
+            "validation_error_class": attempt_class,
+            "usage": attempt_meta.get("usage"),
+            "latency_ms": attempt_meta.get("latency_ms"),
+            "model": attempt_meta.get("model"),
+            "model_requested": attempt_meta.get("model_requested"),
+            "model_identity_ok": attempt_meta.get("model_identity_ok"),
+            "request_id": attempt_meta.get("request_id"),
+        })
+        last_ai = attempt_meta
+        if attempt_assembly is not None and attempt_error is None:
+            assembly = attempt_assembly
+            validation_error = None
+            validation_class = None
+            break
+        if attempt_assembly is None:
+            assembly = None
+            break
+        # The model returned assembly that the validator refused; give it one
+        # feedback retry, but never rewrite the forbidden instruction.
+        assembly = attempt_assembly
+        validation_error = attempt_error
+        validation_class = attempt_class
+        if attempt_index == 0:
+            packet = dict(packet)
+            packet["previous_assembly_error"] = attempt_error
+            packet["retry_instruction"] = (
+                "Do not use ud2 or any trap/privileged instruction. For an "
+                "unreachable/error path, terminate with ret (or a permitted "
+                "direct call followed by ret). Return corrected assembly."
+            )
+            continue
+        break
+    if validation_error is not None:
+        last_ai["status"] = last_ai.get("status") or "accepted"
+        last_ai["validation_error"] = validation_error
+        last_ai["validation_error_class"] = validation_class
     return {
-        "ai": ai_meta,
+        "ai": last_ai,
         "assembly": assembly,
-        "error": ai_meta.get("error"),
+        "error": last_ai.get("error") or validation_error,
+        "validation_error": validation_error,
+        "validation_error_class": validation_class,
+        "attempts": attempts,
         "allowed_calls": [item.to_dict() for item in allowed_calls],
         "elapsed_ms": max(0, int((time.perf_counter() - started) * 1000)),
     }
@@ -501,7 +628,7 @@ def _apply_assembly_and_evaluate(
         data, case["target"], int(case["capacity"]), assembly,
         _allowed_call_objects(call_targets),
     )
-    candidate = _evaluate(data, patched, poc, case)
+    candidate = _evaluate(data, patched, poc, case, injection)
     return {
         "injection": injection,
         "candidate": candidate,
@@ -799,6 +926,8 @@ def main() -> int:
                 "poc_status": candidate.get("poc_status"),
                 "runner": candidate.get("runner"),
                 "candidate_sha256": candidate.get("candidate_sha256"),
+                "no_candidate_reason": candidate.get("no_candidate_reason"),
+                "injection_error_class": candidate.get("injection_error_class"),
             },
             "candidate_sha256": candidate.get("candidate_sha256"),
             "provider": provider,
@@ -904,6 +1033,12 @@ def main() -> int:
         ),
         "ai_target_in_scope": sum(
             1 for r in results if r["ai_target"].get("target_in_scope")
+        ),
+        "ai_no_candidate_reasons": _count_values(
+            r.get("candidate", {}).get("no_candidate_reason") for r in results
+        ),
+        "ai_injection_error_classes": _count_values(
+            r.get("candidate", {}).get("injection_error_class") for r in results
         ),
         "ai_blind_verified": sum(
             1 for r in results if (r.get("ai_blind") or {}).get("verified")

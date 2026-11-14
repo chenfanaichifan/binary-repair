@@ -347,6 +347,7 @@ def run_path(
     runner: GuestRunner | None = None,
     cwd: Path | str | None = None,
     wrapper: list[str] | None = None,
+    extra_env: dict[str, str] | None = None,
 ) -> GuestResult:
     """Execute *path* with *argv* in a native/qemu/Lima environment.
 
@@ -415,6 +416,8 @@ def run_path(
             "TMPDIR": str(run_cwd),
             "LC_ALL": "C",
         }
+        if extra_env:
+            env.update({str(k): str(v) for k, v in extra_env.items()})
 
     try:
         proc = subprocess.run(

@@ -439,3 +439,20 @@ def test_errno_strace_parser_and_manifest_opt_in():
     manifest["errno_probe"] = "ptrace"
     with pytest.raises(ValueError, match="errno_probe"):
         load_manifest(manifest)
+
+
+
+
+@pytest.mark.skipif(not LINUX_X64, reason="LD_PRELOAD errno probe requires native Linux x86-64")
+def test_ld_preload_errno_probe_captures_process_exit_errno():
+    fixed = ROOT / "artifacts" / "paradigm-a-cwe121-2026-11-14" / "fixed.elf"
+    if not fixed.is_file():
+        pytest.skip("CWE121 fixed artifact missing")
+    original = (ROOT / "fixtures" / "public" / "CWE121_src_char_declare_cpy_51b" / "original.elf").read_bytes()
+    manifest = json.loads((ROOT / "fixtures" / "poc" / "cwe121.json").read_text())
+    manifest["errno_probe"] = "ld_preload"
+    evidence = run_poc(original, fixed.read_bytes(), manifest)
+    assert evidence.status == "pass"
+    assert evidence.errno_probe == "ld_preload"
+    assert evidence.errno_signature == "matched"
+    assert all(case.errno_value is not None for case in evidence.regression)

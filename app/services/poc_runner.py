@@ -25,6 +25,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -60,6 +61,7 @@ class CaseResult:
     error: str | None = None
     expected_ok: bool = False
     syscall_errors: list[str] = field(default_factory=list)
+    errno_value: int | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -75,6 +77,7 @@ class CaseResult:
             "error": self.error,
             "expected_ok": self.expected_ok,
             "syscall_errors": list(self.syscall_errors),
+            "errno_value": self.errno_value,
         }
 
 
@@ -171,8 +174,12 @@ def load_manifest(manifest: dict[str, Any] | str | Path) -> dict[str, Any]:
         raise ValueError("PoC manifest requires a 'regression' list (may be empty for no-input cases)")
     if "no_input" in data and not isinstance(data["no_input"], bool):
         raise ValueError("PoC manifest field 'no_input' must be a boolean")
-    if "errno_probe" in data and data["errno_probe"] not in {"strace"}:
-        raise ValueError("PoC manifest field 'errno_probe' must be 'strace' when present")
+    if "errno_probe" in data and data["errno_probe"] not in {
+        "strace", "ld_preload", "gdb",
+    }:
+        raise ValueError(
+            "PoC manifest field 'errno_probe' must be strace, ld_preload or gdb"
+        )
     for group in ("poc", "regression"):
         for index, case in enumerate(data[group]):
             where = f"{group}[{index}]"
@@ -333,6 +340,39 @@ def parse_strace_errors(text: str) -> list[str]:
     return sorted({m.group(1) for m in _STRACE_ERROR.finditer(text)})
 
 
+def _is_dynamic_elf(data: bytes) -> bool:
+    try:
+        import io
+        from elftools.elf.elffile import ELFFile
+        with io.BytesIO(data) as stream:
+            elf = ELFFile(stream)
+            return any(segment["p_type"] == "PT_INTERP" for segment in elf.iter_segments())
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _read_errno_dump(path: Path) -> int | None:
+    try:
+        for line in path.read_text(errors="replace").splitlines():
+            if line.startswith("BR_ERRNO="):
+                return int(line.partition("=")[2])
+    except (OSError, ValueError):
+        return None
+    return None
+
+
+def _compile_errno_dumper(destination: Path) -> Path | None:
+    cc = shutil.which("cc") or shutil.which("gcc") or shutil.which("clang")
+    source = Path(__file__).resolve().parents[2] / "runtime" / "errno_dumper.c"
+    if cc is None or not source.is_file():
+        return None
+    proc = subprocess.run(
+        [cc, "-shared", "-fPIC", "-O2", str(source), "-o", str(destination)],
+        capture_output=True, text=True, timeout=30, check=False,
+    )
+    return destination if proc.returncode == 0 and destination.is_file() else None
+
+
 def _expected_ok(actual_exit: int | None, crashed: bool, actual_stdout: str,
                  actual_stdout_hex: str, actual_stderr: str,
                  expected: dict[str, Any], *, is_poc: bool) -> bool:
@@ -390,11 +430,21 @@ def _run_case(
     binary_path.chmod(0o700)
     argv = _substitute_argv(case["argv"], case_dir)
     wrapper: list[str] | None = None
+    extra_env: dict[str, str] = {}
     trace_path = case_dir / "strace.log"
     if errno_probe == "strace" and runner.kind != "lima":
         strace = shutil.which("strace")
         if strace:
             wrapper = [strace, "-f", "-qq", "-e", "trace=all", "-o", str(trace_path)]
+    errno_path = case_dir / "errno.txt"
+    if (errno_probe == "ld_preload" and runner.kind == "native"
+            and _is_dynamic_elf(binary_bytes)):
+        dumper = _compile_errno_dumper(case_dir / "errno_dumper.so")
+        if dumper is not None:
+            extra_env = {
+                "LD_PRELOAD": str(dumper),
+                "BR_ERRNO_PATH": str(errno_path),
+            }
     run_kwargs: dict[str, Any] = {
         "arch": arch,
         "stdin": stdin,
@@ -404,10 +454,13 @@ def _run_case(
     }
     if wrapper:
         run_kwargs["wrapper"] = wrapper
+    if extra_env:
+        run_kwargs["extra_env"] = extra_env
     result = run_path(binary_path, argv, **run_kwargs)
     syscall_errors: list[str] = []
     if wrapper and trace_path.is_file():
         syscall_errors = parse_strace_errors(trace_path.read_text(errors="replace"))
+    errno_value = _read_errno_dump(errno_path) if extra_env else None
     stdout_bytes = (result.stdout or b"")[:MAX_STDOUT]
     stdout = stdout_bytes.decode("utf-8", "replace")
     stderr = (result.stderr or b"")[:MAX_STDERR].decode("utf-8", "replace")
@@ -429,6 +482,7 @@ def _run_case(
         error=result.error,
         expected_ok=ok,
         syscall_errors=syscall_errors,
+        errno_value=errno_value,
     )
 
 
@@ -562,7 +616,18 @@ def run_poc(
         )
     else:
         evidence.stdout_signature = "not_applicable"
-    if evidence.errno_probe == "strace" and original_regression and candidate_regression:
+    if evidence.errno_probe == "ld_preload" and original_regression and candidate_regression:
+        values = [
+            (a.errno_value, b.errno_value)
+            for a, b in zip(original_regression, candidate_regression)
+        ]
+        if any(value is None for pair in values for value in pair):
+            evidence.errno_signature = "not_run"
+        elif all(a == b for a, b in values):
+            evidence.errno_signature = "matched"
+        else:
+            evidence.errno_signature = "mismatch"
+    elif evidence.errno_probe == "strace" and original_regression and candidate_regression:
         matched = all(
             compare_errno_state(
                 1 if a.syscall_errors else 0,

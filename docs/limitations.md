@@ -16,6 +16,8 @@ general-purpose binary rewriter and does not claim universal correctness.
 ## What it does not cover
 
 - exact errno values or `__errno_location()` TLS state after the function;
+  the new optional `ld_preload` probe captures **process-exit** errno on native
+  dynamic ELF only, while `strace` remains a syscall proxy;
 - heap allocator internal layout/metadata, file-descriptor offsets, locks,
   signal handlers, locale, and other process-global state;
 - whole-program equivalence; verification is scoped to the supplied
