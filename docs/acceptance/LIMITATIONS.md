@@ -264,14 +264,16 @@ Measured residuals (not repaired, reported by the audit):
   wrong-capacity candidate instead of silently accepting it.  Global
   destinations, dynamic sizes, pointer+offset aliases and cross-function
   allocations stay analysis-only.
-- default whole-image policy: without a supplied target the deterministic
-  engine repairs the first patchable sink and the gate proves behaviour, not
-  target identity. Target-scoped mode is explicit (`target`/`require_target`,
-  `scripts/repair_binary.py --target/--require-target`): scope resolution is
-  fail-closed, every action must carry a numeric `site_va` inside the resolved
-  function and the required `patch.target_scope` gate check enforces it; the
-  benchmark records `baseline_target_strict` instead of claiming whole-image
-  patches as target repairs.
+- safe default: without a supplied target and without `allow_whole_image=True`
+  the deterministic engine returns `analysis_only` (no candidate/download/
+  success packet). Whole-image repair is an explicit opt-in whose packets carry
+  `target_policy="whole_image"` and never claim target identity. Target-scoped
+  mode (`target`/`require_target`, `scripts/repair_binary.py --target/
+  --require-target`) resolves the function fail-closed, requires a numeric
+  `site_va` inside the resolved range and enforces the required
+  `patch.target_scope` gate check; the benchmark records
+  `baseline_target_strict` instead of claiming whole-image patches as target
+  repairs.
 - the legacy quick-repair gate refuses external PoC evidence
   (`manifest.legacy_gate_unsupported` fails closed) and manifest-bearing
   requests are routed to the unified evidence-profile gate before the legacy
@@ -568,6 +570,17 @@ unavailable, never faked); and a deterministic coverage regression gate
 (`scripts/verify_coverage_gate.py`, static CI + local acceptance modes) backed by
 the self-discovery audit (66 gaps: 55 closed, 0 open, 11 honest non-goals).
 
+Phase-3 additions (same date): safe-by-default whole-image policy (explicit
+target or `allow_whole_image` opt-in only); `dynamic_unverified` static-audit
+status (release requires 0); 205-cell capability universe with unknown=0;
+meta-audit of the audit (injected-defect recall/precision 1.0/1.0); acceptance
+invariant engine; productized non-goals (owner/review/productization/fallback);
+real 12-case provider matrix (served-model identity mismatch and missing
+cost/seed recorded honestly; AI target verified 6/12, deterministic
+target-strict expectation matches 12/12 with 0 verified); staged
+PR/nightly/release gate (`scripts/release_gate.py`). Release claims depend on
+running `--local` coverage gate + release gate, not on a static-only green.
+
 ## 22. Matrix reaches 4 models but not 5-6
 
 China SiliconFlow free `Qwen/Qwen3-8B` and `Qwen/Qwen2.5-7B-Instruct` plus two
@@ -581,3 +594,4 @@ available.  This is a model-capability result, not a pass.
 and unit tests, but the PoC runner does not inspect target TLS/errno after the
 function.  The production gate remains stdout_signature + regression; no runtime
 errno claim is made.
+

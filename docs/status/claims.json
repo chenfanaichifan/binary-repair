@@ -16,7 +16,7 @@
     "conclusion": "success"
   },
   "explicitly_unimplemented": [
-    "default whole-image policy: without a supplied target the deterministic engine repairs the first patchable sink and target identity is not claimed; target-scoped mode is explicit (--target / require_target) and enforced by patch.target_scope",
+    "whole-image repair is explicit opt-in only: the safe default returns analysis_only without a declared target or allow_whole_image=True; whole-image packets are labelled target_policy=whole_image and never claim target identity (use --target/require_target for ownership proof)",
     "global destination and struct-member bounds inference (destination_kind global is reserved; malloc-size over-estimation for struct members is caught by the runtime oracle, not inferred statically)",
     "sprintf/format-expansion, UAF/lifetime and integer/loop deterministic repair templates (no deterministic engine; AI path research only, non-loop AI verified 0/6)",
     "arm32, 32-bit Mach-O, fat Mach-O rewrite, big-endian, riscv/mips/ppc repair",
@@ -181,9 +181,17 @@
     "legacy quick-repair gate fails closed on external PoC evidence (manifest.legacy_gate_unsupported) and manifest-bearing requests are routed to the unified evidence-profile gate before the legacy engine (pipeline guard measured by audit)",
     "runtime capability probe (app/services/runtime/capabilities.py) makes host/arch/tier/external-PoC availability explicit; poc_runner consults it (Mach-O x86_64 on arm64 is unavailable with an explicit reason, never fabricated); matrix_payload exposes measured runtime_capabilities",
     "continuous coverage regression gate scripts/verify_coverage_gate.py (static CI + local acceptance modes), CI job, and a self-discovery audit now measuring 66 gaps / 55 closed / 0 open / 11 non-goal with target-mode probes",
+    "safe-by-default repair policy: without an explicit target and without allow_whole_image=True the deterministic engine returns analysis_only (no candidate/download/success packet); whole-image repair is an explicit opt-in with target_policy=whole_image, target-scoped repair keeps required patch.target_scope",
+    "runtime capability contract as single source of truth (declared vs measured tier, emulated/external-PoC availability, reason); matrix_payload contract_capabilities; poc_runner/native Mach-O scheduler read the same contract; unavailable platform limits (Mach-O x86_64 external PoC on arm64, PE external PoC, 32-bit Mach-O) stay unavailable/not_run, never fabricated",
+    "static audit dynamic_unverified status (probe-dependent rows are not closed/mitigated in static mode; release requires 0) plus a 205-cell capability universe (unknown=0) and a meta-audit with injected-defect recall/precision 1.0/1.0",
+    "acceptance invariant engine (verified/rejected/not_run/target/rewrite/manifest-legacy/download/policy rules) integrated into the local coverage gate and release gate",
+    "real 12-case provider matrix evidence with target-strict measurement: deepseek endpoint, 253.7 s, 13 calls, served-model identity mismatch recorded, AI target verified 6/12 (in-scope 9/12), deterministic target-strict expectation matches 12/12 with 0 verified, reference .S 6/6 verified / .c source-only 6; evidence artifacts/provider-matrix-2026-11-14",
+    "productized non-goals: all 11 carry affected cells, detected-input behaviour, owner, review-by date, productization criteria and fallback; coverage gate enforces the mapping",
+    "staged release gate (PR/nightly/release) with claims/measurement diff, acceptance contract, provider-matrix schema, invariants, meta-audit and full-suite enforcement; CI static + PR jobs with an honestly inert nightly self-hosted-lima job",
     "4-model real matrix: 2 DeepSeek official (6/12 each) + 2 SiliconFlow CN free Qwen (0/12 each), native PoC and exact identity",
     "route A symbol resolver pure-function templates (strlen/memcpy/memset), fputs(stderr)->br_fputs rewrite, fail-closed otherwise",
     "errno set/unset signature comparator and unit tests (runtime extraction still optional/pending)"
+
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",

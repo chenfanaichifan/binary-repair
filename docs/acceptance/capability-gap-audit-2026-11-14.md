@@ -34,19 +34,26 @@ Latest full audit run (see `artifacts/capability-gap-audit-2026-11-14/gap-report
 
 | metric | value |
 |---|---|
-| gaps measured | 66 |
-| closed | 55 |
+| gaps measured | 67 |
+| closed | 56 |
 | mitigated (honest limitation, routed) | 0 |
 | open (actionable) | 0 |
 | non-goal (honest research/platform limits) | 11 |
 | high-severity open | 0 |
+| dynamic_unverified (full/local run) | 0 |
+| capability universe cells (unknown) | 205 (0) |
 | matrix cells / sink classes / strategies / profiles / evidence sources / gate checks | 8 / 5 / 18 / 4 / 24 / 34 |
 
-Phase-2 closure (same day, after target-scope / legacy-convergence /
-runtime-capability work): the three open records and the one mitigated record
-were closed with measured evidence and the audit plus a deterministic
-`scripts/verify_coverage_gate.py` (static CI mode and local acceptance mode)
-now fail on any regression.
+Phase-2 closure (same day): the three open records and the one mitigated record
+were closed with measured evidence. Phase-3 (same day) added the
+safe-by-default whole-image policy, `dynamic_unverified` static-mode semantics,
+an explicit capability universe (unknown=0), a meta-audit of the audit itself
+(injected-defect recall/precision 1.0), an acceptance-invariant engine, real
+12-case provider-matrix evidence with target-strict measurement, productized
+non-goals (owner/review date/productization criteria/fallback), and staged
+PR/nightly/release gates. `scripts/verify_coverage_gate.py --static-only` and
+`--local` are the regression authorities; CI runs the static mode and the
+release gate requires `--local` plus invariants/meta-audit/real acceptance.
 
 The three remaining open records are documented, not hidden; they are listed in
 §5. The audit is deterministic and exits 0; the run also writes SHA-256 sums.
@@ -122,7 +129,43 @@ capacity-1 and keeps benign regressions byte-identical.
   `poc_manifest` again; the candidate is only offered when the deterministic
   gate succeeds.
 
-### 3.4 Engine capability gaps found by the audit
+### 3.4 Safe-by-default policy and platform capability contract (phase 3)
+
+- **Safe default**: `repair_any` without an explicit target and without
+  `allow_whole_image=True` returns `analysis_only` — no candidate, no download,
+  no success-readable packet, explicit reason, `target_policy="analysis_only"`.
+  Whole-image repair is an explicit opt-in (`allow_whole_image=True` /
+  `--allow-whole-image` / GUI checkbox default OFF) and its packets record
+  `target_policy="whole_image"`; target-scoped repair keeps the required
+  `patch.target_scope` ownership check. A PoC manifest cannot silently opt in.
+- **Capability contract**: `runtime/capabilities.contract()` is the single source
+  of truth for declared vs measured tier, emulated availability, external-PoC
+  availability and reason. `matrix_payload` exposes `contract_capabilities`;
+  `poc_runner` and the native Mach-O scheduler read the same contract.
+  Declared-but-unavailable capabilities (Mach-O x86_64 external PoC on arm64,
+  PE external PoC, 32-bit Mach-O) are reported `unavailable`/`not_run` with
+  reasons — never fabricated and never `rejected`/verified.
+- **Dynamic vs static audit**: `--static-only` reports probe-dependent records as
+  `dynamic_unverified` (6 rows) instead of closed/mitigated; `--local` requires
+  `dynamic_unverified == 0`. A static green light cannot be used for release
+  claims.
+- **Audit about the audit**: `scripts/meta_audit.py` injects known defects
+  (dead sink class, removed gate check, unexercised strategy, manifest-route
+  signature-token false positive, fabricated open gap/unmapped non-goal) and
+  measures detector recall/precision (1.0/1.0, 9 scenarios). The acceptance
+  invariant engine (`app/services/acceptance_invariants.py`) fail-closes
+  inconsistent packets (verified/rejected/not_run/target/rewrite/manifest-legacy/
+  download/policy rules).
+- **Real provider matrix**: 12 hard cases, deepseek endpoint, 1 repeat,
+  253.7 s / 13 of 40 calls, served model `deepseek-flash` while
+  `deepseek-chat` was requested (identity mismatch recorded, not hidden),
+  cost/seed unavailable honestly. Deterministic target-strict expectation
+  matches 12/12 with 0 verified (these are AI/non-goal classes); AI target mode
+  verified 6/12 (in-scope 9/12); reference `.S` fixes 6/6 verified, `.c`
+  references source-only 6. Evidence:
+  `artifacts/provider-matrix-2026-11-14/`.
+
+## 3.5 Engine capability gaps found by the audit
 
 - x86-64 `.plt.sec`/CET stubs are now decoded (all in-stub `FF 25` positions),
   so dynamic ELF built with default toolchains resolve `strcpy`/`malloc`/...
@@ -203,11 +246,21 @@ PE/32-bit Mach-O external PoC, full whole-program proof, non-loop AI verified
 success (0/6), multi-provider statistics, single-function candidate policy, and
 the AI leaf-only path (target-mode selective whitelist as declared).
 
-Continuous guards added: `scripts/verify_coverage_gate.py` (static CI mode +
-`--local` acceptance mode; zero open-gap allowlist, detector-error and
-non-goal-mapping checks), a CI coverage-gate job, target-mode probes in the
-audit, capability-probe/runner-agreement negatives, legacy-manifest routing
-regression tests, and the real Lima acceptance bundle.
+Continuous guards: `scripts/verify_coverage_gate.py` (static CI mode with
+`dynamic_unverified` visibility + `--local` acceptance mode with
+`dynamic_unverified=0`, universe `unknown=0`, meta-audit and invariant checks),
+`scripts/release_gate.py` (PR/nightly/release stages: static gate, claims/
+measurement diff, acceptance role/sha contract, provider-matrix schema,
+invariant engine, meta-audit, full pytest), CI `coverage-gate` +
+`release-gate-pr` jobs (nightly self-hosted-lima job documented and inert by
+default), target-mode probes, capability-probe/runner negatives, legacy
+manifest routing regression tests, and the real Lima acceptance bundle
+(`artifacts/coverage-closure-2026-11-14/`).
+
+Non-goals are productized in `docs/acceptance/non-goals-2026-11-14.md` and
+`claims.json["non_goals"]`: all 11 carry affected cells, detected-input
+behaviour, owner, review-by date, productization criteria and fallback; the
+coverage gate fails if any mapping/field is missing.
 
 Honest non-goals (unchanged or newly documented): sprintf/format-expansion,
 UAF/lifetime, integer/loop deterministic templates, arm32/riscv/mips/ppc/
