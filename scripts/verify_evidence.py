@@ -28,6 +28,8 @@ DEFAULT_BUNDLES = (
     "artifacts/fairness-ablation-2026-11-14",
     "artifacts/multi-model-probe-2026-11-14",
     "artifacts/ghidra-macos-2026-11-14",
+    "artifacts/multi-model-matrix-2026-11-14",
+    "artifacts/deepseek-matrix-2026-11-14",
 )
 
 

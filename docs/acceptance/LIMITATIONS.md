@@ -197,11 +197,12 @@ broaden the six-loop family success.  Heap silent overflow without a guard
 still needs an allocator canary oracle.
 
 
-## 16. Multi-model is credential-blocked
+## 16. Multi-model is two models, one provider
 
-Provider profiles for SiliconFlow and DashScope/Bailian are implemented, and
-the probe enforces exact returned-model identity.  However this host has no
-SILICONFLOW_API_KEY or DASHSCOPE_API_KEY; the old DeepSeek endpoint silently
-returns deepseek-flash for deepseek-chat.  Real multi-model statistics remain
-blocked on credentials, not on code.  See
-`artifacts/multi-model-probe-2026-11-14/`.
+SiliconFlow/DashScope profiles and exact model-identity checks are implemented.
+A valid DeepSeek key gives exactly two models (`deepseek-flash`,
+`deepseek-v4-pro`); both passed identity checks.  Six runs (3 per model) over 12
+cases are stable at 6/12, all successes in the loop family.  This is not the
+recommended 4–6-model matrix and is not an independent-case confidence interval;
+no SiliconFlow/Bailian key is configured.  See
+`artifacts/multi-model-matrix-2026-11-14/`.

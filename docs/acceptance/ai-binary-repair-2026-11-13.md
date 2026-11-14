@@ -200,11 +200,20 @@ through OpenAI-compatible endpoints, with exact `resp.model` identity checks.
 `scripts/run_multi_model_matrix.py` probes provider/model pairs and never
 fabricates a result when a key is absent.
 
-On this host only the existing DeepSeek key is configured.  Probing
-`deepseek:deepseek-chat` returned `deepseek-flash` (**identity mismatch**), while
-`deepseek:deepseek-flash` matched.  SiliconFlow/Bailian are **unconfigured** —
-no keys are present — so no real multi-model comparison has been run yet.
-Evidence: `artifacts/multi-model-probe-2026-11-14/`.
+A valid DeepSeek official key was subsequently supplied.  Its `/v1/models`
+lists exactly `deepseek-flash` and `deepseek-v4-pro`; both requested IDs were
+returned exactly (identity 100%).  Three runs per model over 12 cases, with
+native PoC/regression in the Linux VM, produced:
+
+| model | baseline | AI verified | loop | non-loop |
+|---|---:|---:|---:|---:|
+| `deepseek-flash` | 0/12 | **6/12** | **6/6** | **0/6** |
+| `deepseek-v4-pro` | 0/12 | **6/12** | **6/6** | **0/6** |
+
+All six runs were stable at 6/12.  This is model robustness for the loop family
+only; non-loop failures remain model-independent under the leaf-only path.
+Evidence: `artifacts/multi-model-matrix-2026-11-14/` and
+`artifacts/deepseek-matrix-2026-11-14/`.
 
 ## 10. Boundaries
 

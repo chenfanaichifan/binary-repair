@@ -43,6 +43,12 @@ simple semantic-versioning policy for delivery snapshots.
 
 ## [Unreleased]
 
+### Added — two-model DeepSeek matrix
+
+- Valid DeepSeek official key: `deepseek-flash` and `deepseek-v4-pro`, exact
+  identity; 3 runs each over 12 cases, native PoC.  Both 6/12 (loop 6/6,
+  non-loop 0/6), stable.  Evidence `artifacts/multi-model-matrix-2026-11-14/`.
+
 ### Added — Apple Silicon Ghidra toolchain
 
 - User-local JDK 25 + Ghidra 12.2 install scripts; macOS arm64 native decompiler
