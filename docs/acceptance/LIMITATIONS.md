@@ -23,8 +23,8 @@ work.  See section 9 for the exact matrix/sink boundary.
 Current acceptance is the non-browser suite:
 
 ```text
-macOS 13.5 arm64: 1155 tests, 0 failed, 0 errors, 7 skipped (267.9 s)
-Linux VM Ubuntu 24.04 arm64: 1155 tests, 0 failed, 0 errors, 10 skipped (263.5 s)
+macOS 13.5 arm64: 1160 tests, 0 failed, 0 errors, 7 skipped (340.8 s)
+Linux VM Ubuntu 24.04 arm64: 1160 tests, 0 failed, 0 errors, 10 skipped (372.1 s)
 GitHub Actions Ubuntu 24.04: workflow success on the final commits
 ```
 
