@@ -90,8 +90,14 @@ REQUIRED_CLAIM_TOP_LEVEL = ("scope", "product_paths", "non_goals")
 PROVIDER_MATRIX_FILES = ("README.md", "summary.json", "SHA256SUMS")
 PROVIDER_MATRIX_CASES = 12
 PROVIDER_PROVIDER_STATUSES = frozenset(
-    {"ok", "unavailable", "error", "not_requested"}
+    # T4 writes "ok"/"reference"/"unavailable"/"not_requested"; "error" is kept
+    # for forward compatibility with an explicit provider-error run.
+    {"ok", "reference", "unavailable", "error", "not_requested"}
 )
+#: Statuses that must explain why the AI phase could not run.
+PROVIDER_UNAVAILABLE_STATUSES = frozenset({"unavailable", "error"})
+#: Statuses that may legitimately record a verified reference/AI attempt.
+PROVIDER_TRUSTED_STATUSES = frozenset({"ok", "reference"})
 PROVIDER_CASE_REQUIRED_FIELDS = (
     "provider",
     "model",
@@ -612,7 +618,7 @@ def check_targeted_tests(paths: Paths, run: Runner = run_command) -> Check:
     if result.returncode != 0:
         return check.fail(
             f"targeted pytest failed (rc={result.returncode}); {message}; "
-            f"stderr={_tail(result.stderr)}",
+            f"stdout={_tail(result.stdout)}; stderr={_tail(result.stderr)}",
             detail=message,
         )
     return check.passed(message)
@@ -1274,7 +1280,7 @@ def evaluate_provider_matrix(artifact_dir: Path) -> tuple[list[str], dict[str, A
             f"provider-matrix provider_status={status!r} is not one of "
             f"{sorted(PROVIDER_PROVIDER_STATUSES)}"
         )
-    if status in {"unavailable", "error"}:
+    if status in PROVIDER_UNAVAILABLE_STATUSES:
         reason = summary.get("unavailable_reason")
         if not isinstance(reason, str) or not reason.strip():
             violations.append(
@@ -1342,10 +1348,10 @@ def evaluate_provider_matrix(artifact_dir: Path) -> tuple[list[str], dict[str, A
                     f"provider-matrix cases[{index}] ({case_id or '?'}) lacks "
                     f"target-strict field {field!r}"
                 )
-        if status != "ok" and row.get("ai_verified") is True:
+        if status not in PROVIDER_TRUSTED_STATUSES and row.get("ai_verified") is True:
             violations.append(
                 f"provider-matrix cases[{index}] ({case_id or '?'}) claims "
-                "ai_verified=true while the provider is not ok"
+                "ai_verified=true while the provider is not ok/reference"
             )
     # Per-case files with the full target-strict record contract.
     per_case_dir = artifact_dir / "per-case"
@@ -1385,10 +1391,14 @@ def evaluate_provider_matrix(artifact_dir: Path) -> tuple[list[str], dict[str, A
                     f"fields: {missing}"
                 )
             policy = record.get("target_policy")
-            if not isinstance(policy, str) or not policy.strip():
+            policy_ok = (
+                (isinstance(policy, str) and bool(policy.strip()))
+                or (isinstance(policy, dict) and bool(policy))
+            )
+            if not policy_ok:
                 violations.append(
                     f"provider-matrix per-case/{case_id}.json target_policy must be "
-                    "a non-empty string"
+                    "a non-empty string or object"
                 )
             scope = record.get("target_scope")
             if scope is not None and not isinstance(scope, dict):
@@ -1442,10 +1452,14 @@ def evaluate_provider_matrix(artifact_dir: Path) -> tuple[list[str], dict[str, A
                             f"provider-matrix per-case/{case_id}.json ai_target lacks "
                             f"{field!r}"
                         )
-                if status != "ok" and ai.get("verified") is True:
+                if (
+                    status not in PROVIDER_TRUSTED_STATUSES
+                    and ai.get("verified") is True
+                ):
                     violations.append(
                         f"provider-matrix per-case/{case_id}.json claims "
-                        "ai_target.verified=true while the provider is not ok"
+                        "ai_target.verified=true while the provider is not "
+                        "ok/reference"
                     )
             if baseline is None and "baseline_target_strict" not in record:
                 violations.append(
@@ -1533,7 +1547,7 @@ def check_full_pytest(paths: Paths, run: Runner = run_command) -> Check:
     if result.returncode != 0:
         return check.fail(
             f"full pytest suite failed (rc={result.returncode}); "
-            f"stderr={_tail(result.stderr)}"
+            f"stdout={_tail(result.stdout)}; stderr={_tail(result.stderr)}"
         )
     return check.passed(f"full pytest suite passed in {check.elapsed_ms} ms")
 

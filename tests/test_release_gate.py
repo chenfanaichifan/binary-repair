@@ -223,7 +223,11 @@ def _write_provider_matrix(
             "seed": None,
             "cost": None,
             "elapsed_ms": 12,
-            "target_policy": "target_scoped",
+            "target_policy": {
+                "whole_image_baseline": "whole_image",
+                "target_strict_baseline": "target_strict",
+                "ai_target": "target",
+            },
             "target_scope": {"name": "heap_bad", "va": 0x401130},
             "target_scope_check": "passed",
             "target_in_scope": True,
@@ -569,6 +573,13 @@ def test_provider_matrix_unavailable_requires_reason_and_no_claimed_ai(
     )
     violations, _detail = gate.evaluate_provider_matrix(artifact)
     assert violations == []
+
+
+def test_provider_matrix_reference_run_is_accepted(tmp_path: Path) -> None:
+    artifact = _write_provider_matrix(tmp_path, provider_status="reference")
+    violations, detail = gate.evaluate_provider_matrix(artifact)
+    assert violations == []
+    assert detail["provider_status"] == "reference"
 
 
 def test_provider_matrix_wrong_case_count(tmp_path: Path) -> None:
