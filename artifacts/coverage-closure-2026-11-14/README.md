@@ -1,44 +1,51 @@
 # Coverage-closure acceptance evidence (2026-11-14)
 
-Two acceptance paths were re-run end-to-end after the capability-gap audit and
-the capacity/heap integration.  Raw output: `acceptance.json` (produced by
-`capture_acceptance.py`, run from the repo root with `.venv/bin/python`).
+End-to-end acceptance for the two repaired classes plus the phase-2
+target-scope ownership proof.  Raw output: `acceptance.json`, produced by
+`capture_acceptance.py` (run from the repo root with `.venv/bin/python`; the
+real PoC differentials execute in the Lima VM `binaryrepair`).
 
-## Capacity-check rewrite (marcx) — reviewed profile `native_poc_rewrite`
+## Capacity-check rewrite (marcx) — profile `native_poc_rewrite`
 
 - review API `POST /api/binary/repair-review` with `poc_manifest`:
-  HTTP 200, `decision.success=true`, outcome `success_within_scope`, 21/21
-  required checks passed, 0 not_run, profile `native_poc_rewrite`, tier
-  `emulated_run`;
+  HTTP 200, `decision.success=true`, `success_within_scope`, 21/21 required
+  checks passed, profile `native_poc_rewrite`, tier `emulated_run`;
 - patched sha256 `93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2`;
-- pipeline with manifest: `verified_patch`, `strategy=capacity`,
-  `mode=capacity-check`, `poc_status=pass`;
-- pipeline without manifest: `not_verified`/`inconclusive`, no candidate
-  (`fail-closed`).
+- pipeline with manifest: `verified_patch`; without manifest:
+  `not_verified`/`inconclusive`, no candidate.
 
 ## Heap-destination guard — profile `native_poc`
 
 - fixture `fixtures/hard-cases/vuln-heap-malloc-x86_64.elf`
-  (`0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f`);
-- with real `fixtures/poc/heap-malloc.json`: `verified_patch`, 19/19 checks,
-  `poc_status=pass`, candidate sha256
+  (`0f65a2d2...`); with real `heap-malloc.json`: `verified_patch`, 19/19
+  checks, `poc_status=pass`, candidate
   `ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73`;
-- without manifest: `not_verified`/`inconclusive`, no candidate.
+- without manifest: inconclusive, no candidate.
+
+## Target-scoped ownership proof (phase-2 P0)
+
+- `repair_any(heap fixture, target="heap_bad", require_target=True,
+  poc_manifest=heap-malloc.json)` => `verified_patch`, candidate
+  `ea222605...`, 20/20 checks with required `patch.target_scope=passed`
+  (`target=heap_bad scope=[0x401130,0x40116c) actions=1`), scope carried in
+  `packet.scope.target` and hashed into `report_sha256`;
+- wrong target control `target="main"` (no patchable sink inside): analysis_only,
+  no candidate, no download;
+- `--require-target` without a target => `unsupported` (strict mode).
 
 ## Reproduce
 
 ```bash
 .venv/bin/python artifacts/coverage-closure-2026-11-14/capture_acceptance.py
-.venv/bin/python -m pytest -q tests/test_capacity_repair.py \
-  tests/test_binary_pipeline_capacity.py tests/test_repair_heap.py \
-  tests/test_code_cave.py tests/test_gate_profiles.py tests/test_binary_review_api.py
+.venv/bin/python scripts/repair_binary.py fixtures/hard-cases/vuln-heap-malloc-x86_64.elf /tmp/heap.fixed \
+  --target heap_bad --require-target --poc fixtures/poc/heap-malloc.json --json
+.venv/bin/python -m pytest -q tests/test_capacity_repair.py tests/test_binary_pipeline_capacity.py \
+  tests/test_repair_heap.py tests/test_code_cave.py tests/test_gate_profiles.py \
+  tests/test_target_scope.py tests/test_legacy_manifest_gate.py tests/test_runtime_capabilities.py \
+  tests/test_binary_review_api.py
 ```
 
-The missing-evidence controls are part of the script: both paths must stay
-`not_verified`/inconclusive and must not offer a candidate when the manifest is
-absent.  The deterministic gate remains the only acceptance authority; the AI
-review path is not involved in these runs.
-
-Self-discovery audit (separate, bounded, no network):
-`artifacts/capability-gap-audit-2026-11-14/` (66 gap rows: 51 closed, 3 open,
-1 mitigated, 11 non-goal, 0 high-severity open).
+The missing-evidence controls are part of the script: every path must stay
+`not_verified`/inconclusive with no candidate when its manifest is absent, and a
+wrong/absent target must fail closed without a whole-image candidate.  The
+deterministic gate remains the only acceptance authority.

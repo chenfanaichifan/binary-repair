@@ -14,7 +14,8 @@
       "budget is a safety guard: normally every fixture is probed; a budget-exhausted run marks the remaining probes skipped_budget."
     ],
     "probe_evidence_note": "fixture probes pass allow_static_only=True so a produced candidate can be inspected without supplying a PoC manifest; the resulting static_only_patch rows are measurement aids, not product claims",
-    "probes_skipped_budget": 0
+    "probes_skipped_budget": 0,
+    "target_mode_probes": 6
   },
   "census": {
     "benchmarks": [
@@ -255,6 +256,7 @@
     "cases": [
       {
         "baseline_expected": "analysis_only",
+        "baseline_expected_target_strict": "",
         "binary": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
         "capacity": 50,
         "case_id": "cwe121-unchecked-strcpy",
@@ -270,6 +272,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
         "capacity": 16,
         "case_id": "hard-loop16",
@@ -285,6 +288,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
         "capacity": 32,
         "case_id": "hard-loop32",
@@ -300,6 +304,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
         "capacity": 64,
         "case_id": "hard-loop64",
@@ -315,6 +320,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
         "capacity": 8,
         "case_id": "hard-loop8",
@@ -330,6 +336,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
         "capacity": 16,
         "case_id": "hard-multicall",
@@ -345,6 +352,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
         "capacity": 16,
         "case_id": "hard-nonconst",
@@ -360,6 +368,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
         "capacity": 16,
         "case_id": "hard-reverse",
@@ -375,6 +384,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
         "capacity": 16,
         "case_id": "hard-sprintf",
@@ -390,6 +400,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
         "capacity": 16,
         "case_id": "heap-canary",
@@ -405,6 +416,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/elf/vuln-loop-x86_64.elf",
         "capacity": 16,
         "case_id": "inline-byte-loop",
@@ -420,6 +432,7 @@
       },
       {
         "baseline_expected": "analysis_only",
+        "baseline_expected_target_strict": "",
         "binary": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
         "capacity": 100,
         "case_id": "uaf-noinput",
@@ -435,7 +448,7 @@
       }
     ],
     "claims": {
-      "bytes": 6814,
+      "bytes": 10347,
       "declared_matrix": "exact cells in app/services/repair_matrix.py: ELF i386/x86_64/arm64, PE i386/x86_64/arm64, Mach-O x86_64/arm64 (little-endian thin only)",
       "explicitly_unimplemented": [
         "target-scoped repair: repair_any has no caller-declared target selector; a whole-image candidate can be shown but the gate does not prove it repaired the declared function (benchmark target identity remains AI/non-goal evidence)",
@@ -443,7 +456,7 @@
         "sprintf/format-expansion, UAF/lifetime and integer/loop deterministic repair templates (no deterministic engine; AI path research only, non-loop AI verified 0/6)",
         "arm32, 32-bit Mach-O, fat Mach-O rewrite, big-endian, riscv/mips/ppc repair",
         "external-PoC replay for PE and 32-bit Mach-O; Mach-O x86_64 external PoC on arm64 hosts (native function-level Unicorn/emulation remains the only tier there)",
-        "non-loop path A verified success (0/6); only CWE121 function-level A closure is proven; security-only partial candidates remain unverified",
+        "paradigm A: non-loop path A verified success (0/6); only CWE121 function-level closure is proven; security-only partial candidates remain unverified",
         "multi-provider/multi-model statistics and independent-case confidence intervals (only two DeepSeek models available in this milestone)",
         "whole-program proof: verification is scoped to the supplied PoC/regression cases and the one repaired function, not the whole binary"
       ],
@@ -451,26 +464,25 @@
       "latest_verified_ci": {
         "branch": "workbench-v3",
         "conclusion": "success",
-        "head_sha": "fa80f50",
-        "run_id": 43582808690
+        "head_sha": "8dc9c85",
+        "run_id": 43589156716
       },
       "path": "docs/status/claims.json",
       "present": true,
       "product_paths": [
         "asm_roundtrip",
-        "binary_direct",
-        "deterministic_unified"
+        "binary_direct"
       ],
       "research_paths": [
         "source_roundtrip (not implemented)"
       ],
       "scope": "bounded, evidence-gated binary repair; not universal repair",
-      "sha256": "13ed266b3cdc72393368b1d4dba48f3fea2fe2ae412316b0d94ac581ad98b16d",
-      "text_lower": "{\n  \"schema_version\": 1,\n  \"scope\": \"bounded, evidence-gated binary repair; not universal repair\",\n  \"product_paths\": [\n    \"asm_roundtrip\",\n    \"binary_direct\",\n    \"deterministic_unified\"\n  ],\n  \"research_paths\": [\n    \"source_roundtrip (not implemented)\"\n  ],\n  \"declared_matrix\": \"exact cells in app/services/repair_matrix.py: elf i386/x86_64/arm64, pe i386/x86_64/arm64, mach-o x86_64/arm64 (little-endian thin only)\",\n  \"latest_verified_ci\": {\n    \"run_id\": 43582808690,\n    \"head_sha\": \"fa80f50\",\n    \"branch\": \"workbench-v3\",\n    \"conclusion\": \"success\"\n  },\n  \"explicitly_unimplemented\": [\n    \"target-scoped repair: repair_any has no caller-declared target selector; a whole-image candidate can be shown but the gate does not prove it repaired the declared function (benchmark target identity remains ai/non-goal evidence)\",\n    \"global destination and struct-member bounds inference (destination_kind global is reserved; malloc-size over-estimation for struct members is caught by the runtime oracle, not inferred statically)\",\n    \"sprintf/format-expansion, uaf/lifetime and integer/loop deterministic repair templates (no deterministic engine; ai path research only, non-loop ai verified 0/6)\",\n    \"arm32, 32-bit mach-o, fat mach-o rewrite, big-endian, riscv/mips/ppc repair\",\n    \"external-poc replay for pe and 32-bit mach-o; mach-o x86_64 external poc on arm64 hosts (native function-level unicorn/emulation remains the only tier there)\",\n    \"non-loop path a verified success (0/6); only cwe121 function-level a closure is proven; security-only partial candidates remain unverified\",\n    \"multi-provider/multi-model statistics and independent-case confidence intervals (only two deepseek models available in this milestone)\",\n    \"whole-program proof: verification is scoped to the supplied poc/regression cases and the one repaired function, not the whole binary\"\n  ],\n  \"implemented\": [\n    \"two product ai paths (asm_roundtrip, binary_direct)\",\n    \"static syntax gate and arbitrary-input robustness contract\",\n    \"native/qemu poc+regression gate for the elf x86-64 guard fixture (api/cli optional manifest)\",\n    \"function-level poc differential gate\",\n    \"real-provider exploratory benchmark (no measured coverage increment)\",\n    \"hard-case ai increment benchmark: inline byte-loop case baseline rejected, real-provider ai assembly verified by native poc (1 hard-case increment)\",\n    \"fairness ablation: 10 hard cases, deterministic/targeted/blind baselines and full/generic/none contracts; target-localized ai 6/10 repeated stable, contract effect 0\",\n    \"uaf no-input case support (stdout_hex, empty regression) and an 11th family-diversity probe; ai target assembly rejected on the uaf case (0/1)\",\n    \"heap-canary observable-overflow hard case and uaf no-input probe (both ai 0/1, native poc evidence)\",\n    \"siliconflow/dashscope provider profiles, strict model identity probe, and multi-model probe script\",\n    \"operator checklist for multi-model key -> identity probe -> 12-case benchmark -> interpretation; matrix runner --benchmark\",\n    \"apple silicon user-local jdk25 + ghidra 12.2 install, native decompiler build, headless decompile and gui launch\",\n    \"two-model deepseek matrix (flash + v4-pro, 3 runs each, 12 cases): both 6/12, loop 6/6, non-loop 0/6, identity exact\",\n    \"path a selective call whitelist for target-mode assembly (direct original call targets only; call relocations resolved at cave va)\",\n    \"paradigm a minimal function-level loop closure: ghidra c -> deepseek patch -> patcherex2 replace -> roundtrip 6/6 and fixed 6/6\",\n    \"isolation of unpushed capacity-check commit 86587da in a separate worktree; targeted tests pass; not merged/pushed\",\n    \"non-loop paradigm a cwe121 closure: deepseek guard patch + reviewed syscall helper + patcherex2; poc_runner pass 2/2 poc and 4/4 regression\",\n    \"direct-callee context export for cwe121 (target + printline/strcpy)\",\n    \"explicit stdout_signature field and required poc.native.stdout_signature gate\",\n    \"symbol-gap resolver with reviewed write/exit syscall templates and fail-closed unknowns\",\n    \"international siliconflow identity probes for 3 requested models\",\n    \"reviewed duplicated-capacity-check rewrite engine (cwe-131/697): in-place predicate rewrite, strategy capacity on elf/x86_64, profile native_poc_rewrite, marcx repaired to 93e27f2f... and verified through the review api (21/21 checks) with the real lima guest differential\",\n    \"heap destination capacity recovery for same-function immediate malloc/calloc copies (sink.destination_kind stack|heap; strategy guard; profile native_poc), heap fixture repaired to ea222605... and verified end-to-end (19/19 checks, real lima poc/regression)\",\n    \"declared evidence profiles (strict_template, emulated_instruction, native_poc, native_poc_rewrite) enforced by the unified gate: profile.declared/profile.evidence/profile.required_checks, patch.rewrite/patch.capacity byte re-derivation, container.cell, runtime.cell_tier\",\n    \"no-input/uaf evidence model: manifest-level no_input declaration makes an empty regression list an explicit not_applicable model; undeclared empty regression still fails\",\n    \"unavailable external-poc evidence stays not_run/inconclusive (never mislabeled rejected); declared no-input and unavailable paths covered by the gate scenario census\",\n    \"quick repair routes manifest-bearing requests through the unified pipeline; reviewed candidates are surfaced as inconclusive without evidence instead of hidden behind the legacy unsupported verdict; optional poc_manifest on /api/binary/repair-review and the gui quick-repair picker\",\n    \"dynamic elf pt_interp-safe code injection: pt_note phdr repurpose fallback (e_phnum/pt_interp preserved, fail-closed verification) so guard candidates load on dynamic elf\",\n    \"x86-64 .plt.sec/cet import resolution for dynamic elf (analyzer now sees imports/sinks for default-toolchain binaries)\",\n    \"lima guest visibility wait before poc execution (fixes stale virtiofs inode/size causing qemu internal sigbus for appended-segment candidates)\",\n    \"self-discovery capability audit (app/services/coverage_audit.py, scripts/audit_capability_coverage.py): static census + bounded probes of matrix cells, sinks, strategies, runtime sources, gate profiles/checks, fixtures, poc manifests and claims; emits coverage-matrix.json + gap-report.md with measured closed/open/non-goal statuses\",\n    \"legacy quick-repair gate declares and enforces its evidence profile (strict_template/emulated_instruction) with appended profile checks, ids/statuses of existing checks unchanged\"\n  ],\n  \"siliconflow_status\": {\n    \"identity_probe\": \"pass for 3 models\",\n    \"benchmark\": \"blocked http 402 insufficient balance\",\n    \"base_url\": \"https://api.siliconflow.com/v1\"\n  }\n}\n"
+      "sha256": "059d8c6ba0325bb627a170251b0ed49874c9486e390c0a4bc15da31e01c7ef3f",
+      "text_lower": "{\n  \"schema_version\": 1,\n  \"scope\": \"bounded, evidence-gated binary repair; not universal repair\",\n  \"product_paths\": [\n    \"asm_roundtrip\",\n    \"binary_direct\"\n  ],\n  \"research_paths\": [\n    \"source_roundtrip (not implemented)\"\n  ],\n  \"declared_matrix\": \"exact cells in app/services/repair_matrix.py: elf i386/x86_64/arm64, pe i386/x86_64/arm64, mach-o x86_64/arm64 (little-endian thin only)\",\n  \"latest_verified_ci\": {\n    \"run_id\": 43589156716,\n    \"head_sha\": \"8dc9c85\",\n    \"branch\": \"workbench-v3\",\n    \"conclusion\": \"success\"\n  },\n  \"explicitly_unimplemented\": [\n    \"target-scoped repair: repair_any has no caller-declared target selector; a whole-image candidate can be shown but the gate does not prove it repaired the declared function (benchmark target identity remains ai/non-goal evidence)\",\n    \"global destination and struct-member bounds inference (destination_kind global is reserved; malloc-size over-estimation for struct members is caught by the runtime oracle, not inferred statically)\",\n    \"sprintf/format-expansion, uaf/lifetime and integer/loop deterministic repair templates (no deterministic engine; ai path research only, non-loop ai verified 0/6)\",\n    \"arm32, 32-bit mach-o, fat mach-o rewrite, big-endian, riscv/mips/ppc repair\",\n    \"external-poc replay for pe and 32-bit mach-o; mach-o x86_64 external poc on arm64 hosts (native function-level unicorn/emulation remains the only tier there)\",\n    \"paradigm a: non-loop path a verified success (0/6); only cwe121 function-level closure is proven; security-only partial candidates remain unverified\",\n    \"multi-provider/multi-model statistics and independent-case confidence intervals (only two deepseek models available in this milestone)\",\n    \"whole-program proof: verification is scoped to the supplied poc/regression cases and the one repaired function, not the whole binary\"\n  ],\n  \"non_goals\": [\n    {\n      \"id\": \"eg-cases-target-not-analyzed\",\n      \"category\": \"engine_gap\",\n      \"enforcement\": \"analysis_only; no target-scoped candidate; target-strict baseline (baseline_expected_target_strict) recorded as analysis_only/not_verified\",\n      \"claim\": \"hard-case non-template targets (inline loops, sprintf, multicall, nonconst, uaf, heap guard) are ai-benchmark/research evidence, not deterministic engine successes; strict target-scoped deterministic baselines (baseline_expected_target_strict) record analysis_only/not_verified instead of a repaired claim.\"\n    },\n    {\n      \"id\": \"ng-ai-leaf-only::ai_assembly_repair\",\n      \"category\": \"non_goal\",\n      \"enforcement\": \"no verified; leaf/instruction allowlist refuses calls and non-whitelisted code\",\n      \"claim\": \"ai assembly path accepts only a leaf-level reviewed block and cannot express repairs that need external calls/helpers.\"\n    },\n    {\n      \"id\": \"ng-ai-leaf-only::ai_binary_repair\",\n      \"category\": \"non_goal\",\n      \"enforcement\": \"no verified; leaf/allowlist machine-code validator; ai never owns acceptance\",\n      \"claim\": \"ai binary path emits only structurally validated leaf blocks; the deterministic unified gate decides acceptance.\"\n    },\n    {\n      \"id\": \"ng-non-goal-1\",\n      \"category\": \"non_goal\",\n      \"enforcement\": \"analysis_only; no candidate for unrecoverable destination capacity\",\n      \"claim\": \"copy sinks whose destination capacity is not recoverable by same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations).\"\n    },\n    {\n      \"id\": \"ng-non-goal-2\",\n      \"category\": \"non_goal\",\n      \"enforcement\": \"analysis_only; no deterministic template; no download\",\n      \"claim\": \"sprintf/format-expansion, uaf/lifetime and integer/loop deterministic repair templates (ai research only).\"\n    },\n    {\n      \"id\": \"ng-non-goal-3\",\n      \"category\": \"non_goal\",\n      \"enforcement\": \"unsupported; no rewrite backend for these containers/architectures\",\n      \"claim\": \"arm32, riscv, mips, powerpc and big-endian machine-code repair.\"\n    },\n    {\n      \"id\": \"ng-non-goal-4\",\n      \"category\": \"non_goal\",\n      \"enforcement\": \"unsupported; no fat/32-bit mach-o rewrite\",\n      \"claim\": \"32-bit mach-o and fat mach-o rewriting (thin little-endian only).\"\n    },\n    {\n      \"id\": \"ng-non-goal-5\",\n      \"category\": \"non_goal\",\n      \"enforcement\": \"unsupported/not_run for native execution beyond the mach-o path\",\n      \"claim\": \"windows native execution and macos native execution beyond the existing mach-o path.\"\n    },\n    {\n      \"id\": \"rg-external-poc::<doc>::pe/arm64\",\n      \"category\": \"runtime_gap\",\n      \"enforcement\": \"not_run; never verified_patch\",\n      \"claim\": \"external-poc replay is unavailable for pe/arm64 by design; only emulated/static evidence exists and a poc requirement stays inconclusive.\"\n    },\n    {\n      \"id\": \"rg-external-poc::<doc>::pe/i386\",\n      \"category\": \"runtime_gap\",\n      \"enforcement\": \"not_run; never verified_patch\",\n      \"claim\": \"external-poc replay is unavailable for pe/i386 by design; pe poc manifests are never executed or faked.\"\n    },\n    {\n      \"id\": \"rg-external-poc::<doc>::pe/x86_64\",\n      \"category\": \"runtime_gap\",\n      \"enforcement\": \"not_run; never verified_patch\",\n      \"claim\": \"external-poc replay is unavailable for pe/x86_64 by design; the gate reports the missing evidence, it does not simulate it.\"\n    }\n  ],\n  \"implemented\": [\n    \"two product ai paths (asm_roundtrip, binary_direct)\",\n    \"static syntax gate and arbitrary-input robustness contract\",\n    \"native/qemu poc+regression gate for the elf x86-64 guard fixture (api/cli optional manifest)\",\n    \"function-level poc differential gate\",\n    \"real-provider exploratory benchmark (no measured coverage increment)\",\n    \"hard-case ai increment benchmark: inline byte-loop case baseline rejected, real-provider ai assembly verified by native poc (1 hard-case increment)\",\n    \"fairness ablation: 10 hard cases, deterministic/targeted/blind baselines and full/generic/none contracts; target-localized ai 6/10 repeated stable, contract effect 0\",\n    \"uaf no-input case support (stdout_hex, empty regression) and an 11th family-diversity probe; ai target assembly rejected on the uaf case (0/1)\",\n    \"heap-canary observable-overflow hard case and uaf no-input probe (both ai 0/1, native poc evidence)\",\n    \"siliconflow/dashscope provider profiles, strict model identity probe, and multi-model probe script\",\n    \"operator checklist for multi-model key -> identity probe -> 12-case benchmark -> interpretation; matrix runner --benchmark\",\n    \"apple silicon user-local jdk25 + ghidra 12.2 install, native decompiler build, headless decompile and gui launch\",\n    \"two-model deepseek matrix (flash + v4-pro, 3 runs each, 12 cases): both 6/12, loop 6/6, non-loop 0/6, identity exact\",\n    \"path a selective call whitelist for target-mode assembly (direct original call targets only; call relocations resolved at cave va)\",\n    \"paradigm a minimal function-level loop closure: ghidra c -> deepseek patch -> patcherex2 replace -> roundtrip 6/6 and fixed 6/6\",\n    \"isolation of unpushed capacity-check commit 86587da in a separate worktree; targeted tests pass; not merged/pushed\",\n    \"non-loop paradigm a cwe121 closure: deepseek guard patch + reviewed syscall helper + patcherex2; poc_runner pass 2/2 poc and 4/4 regression\",\n    \"direct-callee context export for cwe121 (target + printline/strcpy)\",\n    \"explicit stdout_signature field and required poc.native.stdout_signature gate\",\n    \"symbol-gap resolver with reviewed write/exit syscall templates and fail-closed unknowns\",\n    \"international siliconflow identity probes for 3 requested models\",\n    \"reviewed duplicated-capacity-check rewrite engine (cwe-131/697): in-place predicate rewrite, strategy capacity on elf/x86_64, profile native_poc_rewrite, marcx repaired to 93e27f2f... and verified through the review api (21/21 checks) with the real lima guest differential\",\n    \"heap destination capacity recovery for same-function immediate malloc/calloc copies (sink.destination_kind stack|heap; strategy guard; profile native_poc), heap fixture repaired to ea222605... and verified end-to-end (19/19 checks, real lima poc/regression)\",\n    \"declared evidence profiles (strict_template, emulated_instruction, native_poc, native_poc_rewrite) enforced by the unified gate: profile.declared/profile.evidence/profile.required_checks, patch.rewrite/patch.capacity byte re-derivation, container.cell, runtime.cell_tier\",\n    \"no-input/uaf evidence model: manifest-level no_input declaration makes an empty regression list an explicit not_applicable model; undeclared empty regression still fails\",\n    \"unavailable external-poc evidence stays not_run/inconclusive (never mislabeled rejected); declared no-input and unavailable paths covered by the gate scenario census\",\n    \"quick repair routes manifest-bearing requests through the unified pipeline; reviewed candidates are surfaced as inconclusive without evidence instead of hidden behind the legacy unsupported verdict; optional poc_manifest on /api/binary/repair-review and the gui quick-repair picker\",\n    \"dynamic elf pt_interp-safe code injection: pt_note phdr repurpose fallback (e_phnum/pt_interp preserved, fail-closed verification) so guard candidates load on dynamic elf\",\n    \"x86-64 .plt.sec/cet import resolution for dynamic elf (analyzer now sees imports/sinks for default-toolchain binaries)\",\n    \"lima guest visibility wait before poc execution (fixes stale virtiofs inode/size causing qemu internal sigbus for appended-segment candidates)\",\n    \"self-discovery capability audit (app/services/coverage_audit.py, scripts/audit_capability_coverage.py): static census + bounded probes of matrix cells, sinks, strategies, runtime sources, gate profiles/checks, fixtures, poc manifests and claims; emits coverage-matrix.json + gap-report.md with measured closed/open/non-goal statuses\",\n    \"legacy quick-repair gate declares and enforces its evidence profile (strict_template/emulated_instruction) with appended profile checks, ids/statuses of existing checks unchanged\"\n  ],\n  \"siliconflow_status\": {\n    \"identity_probe\": \"pass for 3 models\",\n    \"benchmark\": \"blocked http 402 insufficient balance\",\n    \"base_url\": \"https://api.siliconflow.com/v1\"\n  },\n  \"deterministic_paths\": [\n    \"deterministic_unified (matrix-driven pipeline + evidence profiles)\"\n  ]\n}\n"
     },
     "docs": {
       "limitations": {
-        "bytes": 12179,
+        "bytes": 14245,
         "headings": [
           "## 1. V4 is model-level",
           "## 2. Coverage is a bounded fixture/matrix, not arbitrary binaries",
@@ -492,22 +504,23 @@
           "## 17. Path A does not lift non-loop verified success",
           "## 18. CWE121 closure is one function, not general A",
           "## 19. Side-effect gate is explicit, not complete",
-          "## 20. SiliconFlow matrix is balance-blocked"
+          "## 20. SiliconFlow matrix is balance-blocked",
+          "## 21. Capacity/heap coverage closure and its measured residuals"
         ],
         "keyword_hits": {
-          "capacity": 3,
-          "heap": 7,
+          "capacity": 8,
+          "heap": 10,
           "leaf": 1,
           "loop": 12,
-          "mach-o": 10,
+          "mach-o": 12,
           "native poc": 2,
-          "pe ": 4,
-          "profile": 1,
+          "pe ": 5,
+          "profile": 3,
           "sprintf": 2,
           "uaf": 5
         },
         "path": "docs/acceptance/LIMITATIONS.md",
-        "sha256": "79555ff4e702ce0070408de83922f3b4f49030455afb9e4436872fb05ed045bd"
+        "sha256": "c469613776378f81d1d59d85b078a0e084d201618b78f04443b051bbfa22d024"
       },
       "readme": {
         "bytes": 12902,
@@ -942,12 +955,13 @@
         }
       },
       "legacy": {
-        "accepts_external_poc": false,
+        "accepts_external_poc": true,
         "check_ids": [
           "candidate.identity.original",
           "candidate.identity.patched",
           "candidate.present",
           "format",
+          "manifest.legacy_gate_unsupported",
           "patch.scope",
           "profile.declared",
           "profile.required_checks",
@@ -958,11 +972,14 @@
           "strict.reviewed_template"
         ],
         "error": null,
+        "manifest_unsupported_check": "failed",
         "module": "app.services.binary_verification",
         "parameters": [
+          "external_poc",
           "original",
           "patched",
-          "report"
+          "report",
+          "target_scope"
         ],
         "scenarios": {
           "bounds_only": {
@@ -1021,6 +1038,68 @@
             "error": null,
             "outcome": "success_within_scope",
             "success": true
+          },
+          "manifest_supplied": {
+            "checks": [
+              {
+                "detail": "format=elf64-little arch=x86_64 supported=True",
+                "id": "format",
+                "status": "passed"
+              },
+              {
+                "detail": "candidate_bytes=16",
+                "id": "candidate.present",
+                "status": "passed"
+              },
+              {
+                "detail": "original hash matches input",
+                "id": "candidate.identity.original",
+                "status": "passed"
+              },
+              {
+                "detail": "candidate hash matches produced bytes",
+                "id": "candidate.identity.patched",
+                "status": "passed"
+              },
+              {
+                "detail": "immediate offsets=[0]",
+                "id": "patch.scope",
+                "status": "passed"
+              },
+              {
+                "detail": "engine=unicorn-x86-64 cases=4",
+                "id": "runtime.available",
+                "status": "passed"
+              },
+              {
+                "detail": "runtime cases=[0, 1, 16, 17]",
+                "id": "runtime.cases",
+                "status": "passed"
+              },
+              {
+                "detail": "stack sentinel intact for every runtime case",
+                "id": "runtime.no_overflow",
+                "status": "passed"
+              },
+              {
+                "detail": "profile=emulated_instruction source=derived-from-mode",
+                "id": "profile.declared",
+                "status": "passed"
+              },
+              {
+                "detail": "profile=emulated_instruction checks=8",
+                "id": "profile.required_checks",
+                "status": "passed"
+              },
+              {
+                "detail": "external PoC evidence must use the unified evidence-profile gate",
+                "id": "manifest.legacy_gate_unsupported",
+                "status": "failed"
+              }
+            ],
+            "error": null,
+            "outcome": "rejected",
+            "success": false
           },
           "strict_template": {
             "checks": [
@@ -1104,6 +1183,7 @@
           "container.reparse",
           "format",
           "patch.rewrite",
+          "patch.target_scope",
           "poc.candidate_passes",
           "poc.native.available",
           "poc.native.candidate_pass",
@@ -1123,6 +1203,7 @@
         "checks_ever_failed": [
           "container.cell",
           "patch.rewrite",
+          "patch.target_scope",
           "poc.native.regression",
           "poc.native.stdout_signature",
           "profile.declared",
@@ -1138,6 +1219,7 @@
           "container.reparse",
           "format",
           "patch.rewrite",
+          "patch.target_scope",
           "poc.candidate_passes",
           "poc.native.available",
           "poc.native.candidate_pass",
@@ -1160,7 +1242,8 @@
         "extra_kwargs_supported": {
           "cell": true,
           "profile": true,
-          "rewrite_actions": true
+          "rewrite_actions": true,
+          "target_scope": true
         },
         "module": "app.services.unified_verification",
         "parameters": [
@@ -1178,10 +1261,12 @@
           "profile",
           "reparse_ok",
           "rewrite_actions",
-          "runtime"
+          "runtime",
+          "target_scope"
         ],
         "profile_check_ids": [
           "patch.rewrite",
+          "patch.target_scope",
           "profile.declared",
           "profile.evidence",
           "profile.required_checks"
@@ -2506,6 +2591,207 @@
             "reason": "",
             "success": true
           },
+          "target_scope_no_site": {
+            "checks": [
+              {
+                "detail": "elf/x86_64",
+                "id": "format",
+                "status": "passed"
+              },
+              {
+                "detail": "candidate_bytes=16",
+                "id": "candidate.present",
+                "status": "passed"
+              },
+              {
+                "detail": "hash matches input",
+                "id": "candidate.identity.original",
+                "status": "passed"
+              },
+              {
+                "detail": "candidate hash matches produced bytes",
+                "id": "candidate.identity.patched",
+                "status": "passed"
+              },
+              {
+                "detail": "reparse ok",
+                "id": "container.reparse",
+                "status": "passed"
+              },
+              {
+                "detail": "actions=1",
+                "id": "repair.action",
+                "status": "passed"
+              },
+              {
+                "detail": "no runtime runner was selected",
+                "id": "runtime.evidence",
+                "status": "not_run"
+              },
+              {
+                "detail": "profile=emulated_instruction source=derived (no explicit declaration)",
+                "id": "profile.declared",
+                "status": "passed"
+              },
+              {
+                "detail": "profile=emulated_instruction declared evidence unavailable=['runtime'] (declared=['runtime'])",
+                "id": "profile.evidence",
+                "status": "not_run"
+              },
+              {
+                "detail": "profile=emulated_instruction missing_or_not_run=['runtime.evidence', 'runtime.tier', 'runtime.contract']",
+                "id": "profile.required_checks",
+                "status": "not_run"
+              },
+              {
+                "detail": "target=audit_fn scope=[0x100,0x120) actions=1; action[0] has no numeric site_va",
+                "id": "patch.target_scope",
+                "status": "failed"
+              }
+            ],
+            "error": null,
+            "extra_kwargs_passed": [
+              "actions",
+              "target_scope"
+            ],
+            "outcome": "rejected",
+            "reason": "target=audit_fn scope=[0x100,0x120) actions=1; action[0] has no numeric site_va",
+            "success": false
+          },
+          "target_scope_outside": {
+            "checks": [
+              {
+                "detail": "elf/x86_64",
+                "id": "format",
+                "status": "passed"
+              },
+              {
+                "detail": "candidate_bytes=16",
+                "id": "candidate.present",
+                "status": "passed"
+              },
+              {
+                "detail": "hash matches input",
+                "id": "candidate.identity.original",
+                "status": "passed"
+              },
+              {
+                "detail": "candidate hash matches produced bytes",
+                "id": "candidate.identity.patched",
+                "status": "passed"
+              },
+              {
+                "detail": "reparse ok",
+                "id": "container.reparse",
+                "status": "passed"
+              },
+              {
+                "detail": "actions=1",
+                "id": "repair.action",
+                "status": "passed"
+              },
+              {
+                "detail": "no runtime runner was selected",
+                "id": "runtime.evidence",
+                "status": "not_run"
+              },
+              {
+                "detail": "profile=emulated_instruction source=derived (no explicit declaration)",
+                "id": "profile.declared",
+                "status": "passed"
+              },
+              {
+                "detail": "profile=emulated_instruction declared evidence unavailable=['runtime'] (declared=['runtime'])",
+                "id": "profile.evidence",
+                "status": "not_run"
+              },
+              {
+                "detail": "profile=emulated_instruction missing_or_not_run=['runtime.evidence', 'runtime.tier', 'runtime.contract']",
+                "id": "profile.required_checks",
+                "status": "not_run"
+              },
+              {
+                "detail": "target=audit_fn scope=[0x100,0x120) actions=1; action[0] site_va=0x900 is outside the declared target",
+                "id": "patch.target_scope",
+                "status": "failed"
+              }
+            ],
+            "error": null,
+            "extra_kwargs_passed": [
+              "actions",
+              "target_scope"
+            ],
+            "outcome": "rejected",
+            "reason": "target=audit_fn scope=[0x100,0x120) actions=1; action[0] site_va=0x900 is outside the declared target",
+            "success": false
+          },
+          "target_scope_pass": {
+            "checks": [
+              {
+                "detail": "elf/x86_64",
+                "id": "format",
+                "status": "passed"
+              },
+              {
+                "detail": "candidate_bytes=16",
+                "id": "candidate.present",
+                "status": "passed"
+              },
+              {
+                "detail": "hash matches input",
+                "id": "candidate.identity.original",
+                "status": "passed"
+              },
+              {
+                "detail": "candidate hash matches produced bytes",
+                "id": "candidate.identity.patched",
+                "status": "passed"
+              },
+              {
+                "detail": "reparse ok",
+                "id": "container.reparse",
+                "status": "passed"
+              },
+              {
+                "detail": "actions=1",
+                "id": "repair.action",
+                "status": "passed"
+              },
+              {
+                "detail": "no runtime runner was selected",
+                "id": "runtime.evidence",
+                "status": "not_run"
+              },
+              {
+                "detail": "profile=emulated_instruction source=derived (no explicit declaration)",
+                "id": "profile.declared",
+                "status": "passed"
+              },
+              {
+                "detail": "profile=emulated_instruction declared evidence unavailable=['runtime'] (declared=['runtime'])",
+                "id": "profile.evidence",
+                "status": "not_run"
+              },
+              {
+                "detail": "profile=emulated_instruction missing_or_not_run=['runtime.evidence', 'runtime.tier', 'runtime.contract']",
+                "id": "profile.required_checks",
+                "status": "not_run"
+              },
+              {
+                "detail": "target=audit_fn scope=[0x100,0x120) actions=1",
+                "id": "patch.target_scope",
+                "status": "passed"
+              }
+            ],
+            "error": null,
+            "extra_kwargs_passed": [
+              "actions",
+              "target_scope"
+            ],
+            "outcome": "inconclusive",
+            "reason": "runtime evidence incomplete",
+            "success": false
+          },
           "unknown_profile": {
             "checks": [
               {
@@ -2569,7 +2855,14 @@
           }
         },
         "source": "app/services/unified_verification.py",
-        "status": "ok"
+        "status": "ok",
+        "target_scope_check_observed": true,
+        "target_scope_enforcement": {
+          "missing_site": "failed",
+          "outside": "failed",
+          "pass": "passed"
+        },
+        "target_scope_supported": true
       }
     },
     "matrix": {
@@ -2951,6 +3244,96 @@
         "profile_required_checks",
         "resolve_profile"
       ],
+      "runtime_capabilities": {
+        "elf/arm64/64/little": {
+          "arch": "arm64",
+          "available": true,
+          "cell_key": "elf/arm64/64/little",
+          "engine": "limactl",
+          "format": "elf",
+          "poc_available": true,
+          "reason": "lima guest runner can execute elf/arm64 on darwin/arm64",
+          "source": "guest_runner",
+          "tier": "emulated_run"
+        },
+        "elf/i386/32/little": {
+          "arch": "i386",
+          "available": true,
+          "cell_key": "elf/i386/32/little",
+          "engine": "limactl",
+          "format": "elf",
+          "poc_available": true,
+          "reason": "lima guest runner can execute elf/i386 on darwin/arm64",
+          "source": "guest_runner",
+          "tier": "emulated_run"
+        },
+        "elf/x86_64/64/little": {
+          "arch": "x86_64",
+          "available": true,
+          "cell_key": "elf/x86_64/64/little",
+          "engine": "limactl",
+          "format": "elf",
+          "poc_available": true,
+          "reason": "lima guest runner can execute elf/x86_64 on darwin/arm64",
+          "source": "guest_runner",
+          "tier": "emulated_run"
+        },
+        "macho/arm64/64/little": {
+          "arch": "arm64",
+          "available": true,
+          "cell_key": "macho/arm64/64/little",
+          "engine": "macho-native",
+          "format": "macho",
+          "poc_available": true,
+          "reason": "native Mach-O execution is available for macho/arm64 on darwin/arm64",
+          "source": "macho_native",
+          "tier": "native_run"
+        },
+        "macho/x86_64/64/little": {
+          "arch": "x86_64",
+          "available": true,
+          "cell_key": "macho/x86_64/64/little",
+          "engine": "macho-native",
+          "format": "macho",
+          "poc_available": false,
+          "reason": "host arm64 cannot execute macho/x86_64 natively; only the Rosetta cross-arch path provides function-level evidence, and the external PoC runner is unavailable",
+          "source": "macho_native",
+          "tier": "emulated_run"
+        },
+        "pe/arm64/64/little": {
+          "arch": "arm64",
+          "available": true,
+          "cell_key": "pe/arm64/64/little",
+          "engine": "unicorn-arm64",
+          "format": "pe",
+          "poc_available": false,
+          "reason": "pe/arm64 has Unicorn instruction-level execution evidence; external PoC runner unavailable",
+          "source": "unicorn",
+          "tier": "emulated_run"
+        },
+        "pe/i386/32/little": {
+          "arch": "i386",
+          "available": true,
+          "cell_key": "pe/i386/32/little",
+          "engine": "unicorn-i386",
+          "format": "pe",
+          "poc_available": false,
+          "reason": "pe/i386 has Unicorn instruction-level execution evidence; external PoC runner unavailable",
+          "source": "unicorn",
+          "tier": "emulated_run"
+        },
+        "pe/x86_64/64/little": {
+          "arch": "x86_64",
+          "available": true,
+          "cell_key": "pe/x86_64/64/little",
+          "engine": "unicorn-x86_64",
+          "format": "pe",
+          "poc_available": false,
+          "reason": "pe/x86_64 has Unicorn instruction-level execution evidence; external PoC runner unavailable",
+          "source": "unicorn",
+          "tier": "emulated_run"
+        }
+      },
       "runtime_tiers": {
         "emulated_run": "the repaired function executed under Unicorn",
         "native_run": "the repaired candidate executed natively on the host",
@@ -3039,6 +3422,12 @@
         "error": null,
         "module": "app.services.binary_verification",
         "source": "app/services/binary_verification.py",
+        "status": "ok"
+      },
+      "capabilities": {
+        "error": null,
+        "module": "app.services.runtime.capabilities",
+        "source": "app/services/runtime/capabilities.py",
         "status": "ok"
       },
       "capacity": {
@@ -3330,6 +3719,99 @@
       }
     ],
     "runtime_sources": {
+      "capabilities": {
+        "module": "app.services.runtime.capabilities",
+        "pairs": {
+          "elf/arm64": {
+            "available": true,
+            "engine": "limactl",
+            "error": null,
+            "module": "app.services.runtime.capabilities",
+            "poc_available": true,
+            "reason": "lima guest runner can execute elf/arm64 on darwin/arm64",
+            "source": "guest_runner",
+            "status": "ok",
+            "tier": "emulated_run"
+          },
+          "elf/i386": {
+            "available": true,
+            "engine": "limactl",
+            "error": null,
+            "module": "app.services.runtime.capabilities",
+            "poc_available": true,
+            "reason": "lima guest runner can execute elf/i386 on darwin/arm64",
+            "source": "guest_runner",
+            "status": "ok",
+            "tier": "emulated_run"
+          },
+          "elf/x86_64": {
+            "available": true,
+            "engine": "limactl",
+            "error": null,
+            "module": "app.services.runtime.capabilities",
+            "poc_available": true,
+            "reason": "lima guest runner can execute elf/x86_64 on darwin/arm64",
+            "source": "guest_runner",
+            "status": "ok",
+            "tier": "emulated_run"
+          },
+          "macho/arm64": {
+            "available": true,
+            "engine": "macho-native",
+            "error": null,
+            "module": "app.services.runtime.capabilities",
+            "poc_available": true,
+            "reason": "native Mach-O execution is available for macho/arm64 on darwin/arm64",
+            "source": "macho_native",
+            "status": "ok",
+            "tier": "native_run"
+          },
+          "macho/x86_64": {
+            "available": true,
+            "engine": "macho-native",
+            "error": null,
+            "module": "app.services.runtime.capabilities",
+            "poc_available": false,
+            "reason": "host arm64 cannot execute macho/x86_64 natively; only the Rosetta cross-arch path provides function-level evidence, and the external PoC runner is unavailable",
+            "source": "macho_native",
+            "status": "ok",
+            "tier": "emulated_run"
+          },
+          "pe/arm64": {
+            "available": true,
+            "engine": "unicorn-arm64",
+            "error": null,
+            "module": "app.services.runtime.capabilities",
+            "poc_available": false,
+            "reason": "pe/arm64 has Unicorn instruction-level execution evidence; external PoC runner unavailable",
+            "source": "unicorn",
+            "status": "ok",
+            "tier": "emulated_run"
+          },
+          "pe/i386": {
+            "available": true,
+            "engine": "unicorn-i386",
+            "error": null,
+            "module": "app.services.runtime.capabilities",
+            "poc_available": false,
+            "reason": "pe/i386 has Unicorn instruction-level execution evidence; external PoC runner unavailable",
+            "source": "unicorn",
+            "status": "ok",
+            "tier": "emulated_run"
+          },
+          "pe/x86_64": {
+            "available": true,
+            "engine": "unicorn-x86_64",
+            "error": null,
+            "module": "app.services.runtime.capabilities",
+            "poc_available": false,
+            "reason": "pe/x86_64 has Unicorn instruction-level execution evidence; external PoC runner unavailable",
+            "source": "unicorn",
+            "status": "ok",
+            "tier": "emulated_run"
+          }
+        }
+      },
       "emulated": {
         "error": null,
         "module": "app.services.runtime.emulated",
@@ -3579,6 +4061,7 @@
     "cases": [
       {
         "baseline_expected": "analysis_only",
+        "baseline_expected_target_strict": "",
         "binary": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
         "capacity": 50,
         "case_id": "cwe121-unchecked-strcpy",
@@ -3594,6 +4077,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
         "capacity": 16,
         "case_id": "hard-loop16",
@@ -3609,6 +4093,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
         "capacity": 32,
         "case_id": "hard-loop32",
@@ -3624,6 +4109,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
         "capacity": 64,
         "case_id": "hard-loop64",
@@ -3639,6 +4125,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
         "capacity": 8,
         "case_id": "hard-loop8",
@@ -3654,6 +4141,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
         "capacity": 16,
         "case_id": "hard-multicall",
@@ -3669,6 +4157,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
         "capacity": 16,
         "case_id": "hard-nonconst",
@@ -3684,6 +4173,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
         "capacity": 16,
         "case_id": "hard-reverse",
@@ -3699,6 +4189,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
         "capacity": 16,
         "case_id": "hard-sprintf",
@@ -3714,6 +4205,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
         "capacity": 16,
         "case_id": "heap-canary",
@@ -3729,6 +4221,7 @@
       },
       {
         "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
         "binary": "fixtures/elf/vuln-loop-x86_64.elf",
         "capacity": 16,
         "case_id": "inline-byte-loop",
@@ -3744,6 +4237,7 @@
       },
       {
         "baseline_expected": "analysis_only",
+        "baseline_expected_target_strict": "",
         "binary": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
         "capacity": 100,
         "case_id": "uaf-noinput",
@@ -4391,7 +4885,7 @@
         "check_id": "candidate.identity.original",
         "gate": "legacy",
         "observed_in_scenarios": {
-          "passed": 2
+          "passed": 3
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4403,7 +4897,7 @@
         "check_id": "candidate.identity.patched",
         "gate": "legacy",
         "observed_in_scenarios": {
-          "passed": 2
+          "passed": 3
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4415,7 +4909,7 @@
         "check_id": "candidate.present",
         "gate": "legacy",
         "observed_in_scenarios": {
-          "passed": 2
+          "passed": 3
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4427,7 +4921,7 @@
         "check_id": "format",
         "gate": "legacy",
         "observed_in_scenarios": {
-          "passed": 2
+          "passed": 3
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4436,10 +4930,19 @@
         ]
       },
       {
+        "check_id": "manifest.legacy_gate_unsupported",
+        "gate": "legacy",
+        "observed_in_scenarios": {
+          "failed": 1
+        },
+        "profile_or_patch_check": false,
+        "required_by_profiles": []
+      },
+      {
         "check_id": "patch.scope",
         "gate": "legacy",
         "observed_in_scenarios": {
-          "passed": 2
+          "passed": 3
         },
         "profile_or_patch_check": true,
         "required_by_profiles": [
@@ -4451,7 +4954,7 @@
         "check_id": "profile.declared",
         "gate": "legacy",
         "observed_in_scenarios": {
-          "passed": 2
+          "passed": 3
         },
         "profile_or_patch_check": true,
         "required_by_profiles": []
@@ -4460,7 +4963,7 @@
         "check_id": "profile.required_checks",
         "gate": "legacy",
         "observed_in_scenarios": {
-          "passed": 2
+          "passed": 3
         },
         "profile_or_patch_check": true,
         "required_by_profiles": []
@@ -4469,7 +4972,7 @@
         "check_id": "runtime.available",
         "gate": "legacy",
         "observed_in_scenarios": {
-          "passed": 2
+          "passed": 3
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4492,7 +4995,7 @@
         "check_id": "runtime.cases",
         "gate": "legacy",
         "observed_in_scenarios": {
-          "passed": 2
+          "passed": 3
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4504,7 +5007,7 @@
         "check_id": "runtime.no_overflow",
         "gate": "legacy",
         "observed_in_scenarios": {
-          "passed": 2
+          "passed": 3
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4527,7 +5030,7 @@
         "check_id": "candidate.identity.original",
         "gate": "unified",
         "observed_in_scenarios": {
-          "passed": 17
+          "passed": 20
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4541,7 +5044,7 @@
         "check_id": "candidate.identity.patched",
         "gate": "unified",
         "observed_in_scenarios": {
-          "passed": 17
+          "passed": 20
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4555,7 +5058,7 @@
         "check_id": "candidate.present",
         "gate": "unified",
         "observed_in_scenarios": {
-          "passed": 17
+          "passed": 20
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4579,7 +5082,7 @@
         "check_id": "container.reparse",
         "gate": "unified",
         "observed_in_scenarios": {
-          "passed": 17
+          "passed": 20
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4593,7 +5096,7 @@
         "check_id": "format",
         "gate": "unified",
         "observed_in_scenarios": {
-          "passed": 17
+          "passed": 20
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4614,6 +5117,16 @@
         "required_by_profiles": [
           "native_poc_rewrite"
         ]
+      },
+      {
+        "check_id": "patch.target_scope",
+        "gate": "unified",
+        "observed_in_scenarios": {
+          "failed": 2,
+          "passed": 1
+        },
+        "profile_or_patch_check": true,
+        "required_by_profiles": []
       },
       {
         "check_id": "poc.candidate_passes",
@@ -4705,7 +5218,7 @@
         "gate": "unified",
         "observed_in_scenarios": {
           "failed": 1,
-          "passed": 16
+          "passed": 19
         },
         "profile_or_patch_check": true,
         "required_by_profiles": []
@@ -4715,7 +5228,7 @@
         "gate": "unified",
         "observed_in_scenarios": {
           "failed": 1,
-          "not_run": 6,
+          "not_run": 9,
           "passed": 10
         },
         "profile_or_patch_check": true,
@@ -4726,7 +5239,7 @@
         "gate": "unified",
         "observed_in_scenarios": {
           "failed": 4,
-          "not_run": 5,
+          "not_run": 8,
           "passed": 8
         },
         "profile_or_patch_check": true,
@@ -4736,7 +5249,7 @@
         "check_id": "repair.action",
         "gate": "unified",
         "observed_in_scenarios": {
-          "passed": 17
+          "passed": 20
         },
         "profile_or_patch_check": false,
         "required_by_profiles": [
@@ -4775,7 +5288,7 @@
         "check_id": "runtime.evidence",
         "gate": "unified",
         "observed_in_scenarios": {
-          "not_run": 7,
+          "not_run": 10,
           "passed": 10
         },
         "profile_or_patch_check": false,
@@ -5244,7 +5757,7 @@
       "evidence": [
         "census:matrix.strategies=['capacity', 'guard', 'immediate', 'strict-template']",
         "app/services/repair_matrix.py:22",
-        "app/services/binary_pipeline.py:860",
+        "app/services/binary_pipeline.py:1014",
         "module:app.services.repair.capacity status=ok",
         "artifact:/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/fixtures/poc/marcx-capacity.json",
         "probe:capacity:fixtures/elf/vuln-capacity-confusion-x86_64.elf status=ok disposition=static_only_patch strategy=capacity",
@@ -5257,27 +5770,6 @@
       "severity": "high",
       "status": "closed",
       "symptom": "capacity strategy is declared and a capacity rewrite candidate was measured on a capacity fixture"
-    },
-    {
-      "category": "engine_gap",
-      "detector": "engine_target_scope",
-      "evidence": [
-        "census:repair_any parameters=['allow_static_only', 'backend', 'data', 'poc_manifest', 'strategy', 'verify']",
-        "app/services/binary_pipeline.py:995",
-        "probe:fixtures/hard-cases/vuln-hardcases-x86_64.elf patched actions outside declared target vuln_loop16 (0x102cf74)",
-        "probe:fixtures/hard-cases/vuln-hardcases-x86_64.elf patched actions outside declared target vuln_loop32 (0x102cf96)",
-        "probe:fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf patched actions outside declared target vuln_loop64 (0x102b99a)",
-        "probe:fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf patched actions outside declared target vuln_loop8 (0x102b978)",
-        "probe:fixtures/hard-cases/vuln-hardcases-c-x86_64.elf patched actions outside declared target multicall_bad (0x102cb60)",
-        "probe:fixtures/hard-cases/vuln-hardcases-c-x86_64.elf patched actions outside declared target nonconst_bad (0x102cc40)"
-      ],
-      "gap_id": "EG-target-scope",
-      "lead_ref": "",
-      "next_step": "add an optional target/function selector or a target-identity gate check so a whole-image patch cannot be reported as repairing the declared function",
-      "novel": true,
-      "severity": "medium",
-      "status": "open",
-      "symptom": "repair_any has no caller-declared target selector; the engine patches the first patchable sink anywhere in the image. Measured: 12/12 declared benchmark targets have no patchable deterministic sink and 10 benchmark case(s) were patched outside the declared target function"
     },
     {
       "category": "engine_gap",
@@ -5348,10 +5840,33 @@
       "symptom": "every requested matrix strategy either matched the delivered strategy or was rejected"
     },
     {
+      "category": "engine_gap",
+      "detector": "engine_target_scope",
+      "evidence": [
+        "census:repair_any parameters=['allow_static_only', 'backend', 'data', 'poc_manifest', 'require_target', 'strategy', 'target', 'verify']",
+        "census:resolve_function_scope=True",
+        "census:gate_target_scope_supported=True",
+        "census:gate_target_scope_check=True",
+        "census:target_scope_enforcement={'pass': 'passed', 'outside': 'failed', 'missing_site': 'failed'}",
+        "probe:target:target:heap_bad target=heap_bad actions=1 outside=0 missing_site=0",
+        "probe:target:target:vuln_copy target=vuln_copy actions=1 outside=0 missing_site=0",
+        "probe:target:target:cwe121-unchecked-strcpy target=CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink actions=0 outside=0 missing_site=0",
+        "probe:target:target:hard-loop16 target=vuln_loop16 actions=0 outside=0 missing_site=0",
+        "census:12/12 declared benchmark targets have no patchable deterministic sink"
+      ],
+      "gap_id": "EG-target-scope",
+      "lead_ref": "",
+      "next_step": "keep the target-mode gate and probe evidence",
+      "novel": false,
+      "severity": "info",
+      "status": "closed",
+      "symptom": "caller-declared target scope is enforced end-to-end: repair_any accepts target/require_target, the unified gate emits and enforces patch.target_scope, and target-mode probes kept every patch action inside the declared function (4 action(s), 0 outside)"
+    },
+    {
       "category": "gate_mismatch",
       "detector": "gate_cell",
       "evidence": [
-        "census:build parameters=['actions', 'arch', 'candidate', 'capacity', 'cell', 'external_poc', 'format_name', 'original', 'original_sha256', 'patched_sha256', 'poc', 'profile', 'reparse_ok', 'rewrite_actions', 'runtime']",
+        "census:build parameters=['actions', 'arch', 'candidate', 'capacity', 'cell', 'external_poc', 'format_name', 'original', 'original_sha256', 'patched_sha256', 'poc', 'profile', 'reparse_ok', 'rewrite_actions', 'runtime', 'target_scope']",
         "gate-scenario:cell_mismatch outcome=rejected container.cell=failed",
         "app/services/repair_matrix.py:344"
       ],
@@ -5368,7 +5883,7 @@
       "detector": "gate_satisfiability",
       "evidence": [
         "census:checks_never_passed=[]",
-        "census:scenarios=['cell_mismatch', 'cell_position', 'cell_tier_mismatch', 'declared_profile', 'empty_regression_undeclared', 'external_only', 'full_evidence', 'full_rewrite', 'minimal', 'no_input_declared', 'poc_unavailable', 'regression_mismatch', 'rewrite_tampered', 'rewrite_valid', 'runtime_only', 'runtime_poc', 'unknown_profile']"
+        "census:scenarios=['cell_mismatch', 'cell_position', 'cell_tier_mismatch', 'declared_profile', 'empty_regression_undeclared', 'external_only', 'full_evidence', 'full_rewrite', 'minimal', 'no_input_declared', 'poc_unavailable', 'regression_mismatch', 'rewrite_tampered', 'rewrite_valid', 'runtime_only', 'runtime_poc', 'target_scope_no_site', 'target_scope_outside', 'target_scope_pass', 'unknown_profile']"
       ],
       "gap_id": "GM-gate-check-unsatisfiable",
       "lead_ref": "",
@@ -5385,7 +5900,7 @@
         "gate-scenario:no_input_declared poc.native.regression=passed",
         "gate-scenario:empty_regression_undeclared poc.native.regression=failed",
         "gate-scenario:no_input_declared poc.native.stdout_signature=passed",
-        "app/services/unified_verification.py:456",
+        "app/services/unified_verification.py:523",
         "module:poc_runner no_input_field=True"
       ],
       "gap_id": "GM-gate-no-input",
@@ -5401,7 +5916,7 @@
       "detector": "gate_poc_unavailable",
       "evidence": [
         "gate-scenario:poc_unavailable outcome=inconclusive failed=[]",
-        "app/services/unified_verification.py:414"
+        "app/services/unified_verification.py:481"
       ],
       "gap_id": "GM-gate-poc-unavailable",
       "lead_ref": "G5",
@@ -5415,10 +5930,10 @@
       "category": "gate_mismatch",
       "detector": "gate_rewrite",
       "evidence": [
-        "census:build parameters=['actions', 'arch', 'candidate', 'capacity', 'cell', 'external_poc', 'format_name', 'original', 'original_sha256', 'patched_sha256', 'poc', 'profile', 'reparse_ok', 'rewrite_actions', 'runtime']",
+        "census:build parameters=['actions', 'arch', 'candidate', 'capacity', 'cell', 'external_poc', 'format_name', 'original', 'original_sha256', 'patched_sha256', 'poc', 'profile', 'reparse_ok', 'rewrite_actions', 'runtime', 'target_scope']",
         "gate-scenario:rewrite_tampered failed=['patch.rewrite', 'profile.required_checks']",
         "gate-scenario:rewrite_valid outcome=inconclusive",
-        "app/services/unified_verification.py:294"
+        "app/services/unified_verification.py:361"
       ],
       "gap_id": "GM-gate-rewrite",
       "lead_ref": "",
@@ -5433,7 +5948,7 @@
       "detector": "gate_cell_tier",
       "evidence": [
         "gate-scenario:cell_tier_mismatch outcome=rejected runtime.cell_tier=failed",
-        "app/services/unified_verification.py:339"
+        "app/services/unified_verification.py:406"
       ],
       "gap_id": "GM-gate-runtime-tier",
       "lead_ref": "G8",
@@ -5461,26 +5976,29 @@
       "category": "gate_mismatch",
       "detector": "gate_legacy_poc",
       "evidence": [
-        "census:legacy_build_parameters=['original', 'patched', 'report']",
-        "census:pipeline_legacy_manifest_routed=True",
-        "app/services/binary_pipeline.py:340",
-        "app/services/binary_verification.py:149"
+        "census:legacy_build_parameters=['external_poc', 'original', 'patched', 'report', 'target_scope']",
+        "census:manifest_unsupported_check=failed",
+        "census:pipeline_manifest_routed_before_legacy=True",
+        "census:manifest_route_evidence={'routed': True, 'guard_position': 4507, 'guard_patterns': ['poc_manifest is not None'], 'legacy_position': 8929, 'route_helpers': ['_attempt_capacity', '_generic_repair', 'analysis_only', 'return'], 'disclosed': True, 'body_start': 1189}",
+        "census:legacy_branch_discloses_manifest=True",
+        "app/services/binary_pipeline.py:459",
+        "app/services/binary_verification.py:161"
       ],
       "gap_id": "GM-legacy-gate-poc-manifest",
       "lead_ref": "G9",
-      "next_step": "keep manifest routing explicit",
+      "next_step": "keep the manifest guard before the legacy engine",
       "novel": false,
       "severity": "info",
-      "status": "mitigated",
-      "symptom": "the legacy ELF x86-64 gate has no external-PoC evidence model; the pipeline now surfaces that limitation instead of dropping the manifest silently and manifest-bearing repairs are routed to the unified gate, but the legacy report itself cannot present that evidence (Lead G9)"
+      "status": "closed",
+      "symptom": "manifest-bearing ELF x86-64 repairs are routed to the unified evidence-profile gate before the legacy engine, and the legacy builder fails closed on supplied external PoC evidence (manifest.legacy_gate_unsupported=failed)"
     },
     {
       "category": "gate_mismatch",
       "detector": "gate_legacy_profile",
       "evidence": [
-        "census:legacy_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'format', 'patch.scope', 'profile.declared', 'profile.required_checks', 'runtime.available', 'runtime.boundary_semantics', 'runtime.cases', 'runtime.no_overflow', 'strict.reviewed_template']",
-        "census:legacy_accepts_external_poc=False",
-        "app/services/binary_verification.py:401"
+        "census:legacy_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'format', 'manifest.legacy_gate_unsupported', 'patch.scope', 'profile.declared', 'profile.required_checks', 'runtime.available', 'runtime.boundary_semantics', 'runtime.cases', 'runtime.no_overflow', 'strict.reviewed_template']",
+        "census:legacy_accepts_external_poc=True",
+        "app/services/binary_verification.py:426"
       ],
       "gap_id": "GM-legacy-gate-profile",
       "lead_ref": "G25",
@@ -5494,7 +6012,7 @@
       "category": "gate_mismatch",
       "detector": "gate_satisfiability",
       "evidence": [
-        "census:legacy_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'format', 'patch.scope', 'profile.declared', 'profile.required_checks', 'runtime.available', 'runtime.boundary_semantics', 'runtime.cases', 'runtime.no_overflow', 'strict.reviewed_template']",
+        "census:legacy_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'format', 'manifest.legacy_gate_unsupported', 'patch.scope', 'profile.declared', 'profile.required_checks', 'runtime.available', 'runtime.boundary_semantics', 'runtime.cases', 'runtime.no_overflow', 'strict.reviewed_template']",
         "census:legacy_required=['format', 'candidate.present', 'candidate.identity.original', 'candidate.identity.patched', 'patch.scope', 'runtime.available', 'runtime.cases', 'runtime.no_overflow']"
       ],
       "gap_id": "GM-legacy-profile-unsatisfiable::emulated_instruction",
@@ -5509,7 +6027,7 @@
       "category": "gate_mismatch",
       "detector": "gate_satisfiability",
       "evidence": [
-        "census:legacy_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'format', 'patch.scope', 'profile.declared', 'profile.required_checks', 'runtime.available', 'runtime.boundary_semantics', 'runtime.cases', 'runtime.no_overflow', 'strict.reviewed_template']",
+        "census:legacy_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'format', 'manifest.legacy_gate_unsupported', 'patch.scope', 'profile.declared', 'profile.required_checks', 'runtime.available', 'runtime.boundary_semantics', 'runtime.cases', 'runtime.no_overflow', 'strict.reviewed_template']",
         "census:legacy_required=['format', 'candidate.present', 'candidate.identity.original', 'candidate.identity.patched', 'patch.scope', 'runtime.available', 'runtime.cases', 'runtime.no_overflow', 'runtime.boundary_semantics', 'strict.reviewed_template']"
       ],
       "gap_id": "GM-legacy-profile-unsatisfiable::strict_template",
@@ -5553,7 +6071,7 @@
       "detector": "gate_profile_checks",
       "evidence": [
         "census:profile=emulated_instruction required=['format', 'candidate.present', 'candidate.identity.original', 'candidate.identity.patched', 'container.reparse', 'repair.action', 'runtime.evidence', 'runtime.tier', 'runtime.contract']",
-        "census:observed_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'container.cell', 'container.reparse', 'format', 'patch.rewrite', 'poc.candidate_passes', 'poc.native.available', 'poc.native.candidate_pass', 'poc.native.original_failure', 'poc.native.regression', 'poc.native.stdout_signature', 'poc.original_fails', 'profile.declared', 'profile.evidence', 'profile.required_checks', 'repair.action', 'runtime.cell_tier', 'runtime.contract', 'runtime.evidence', 'runtime.tier']"
+        "census:observed_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'container.cell', 'container.reparse', 'format', 'patch.rewrite', 'patch.target_scope', 'poc.candidate_passes', 'poc.native.available', 'poc.native.candidate_pass', 'poc.native.original_failure', 'poc.native.regression', 'poc.native.stdout_signature', 'poc.original_fails', 'profile.declared', 'profile.evidence', 'profile.required_checks', 'repair.action', 'runtime.cell_tier', 'runtime.contract', 'runtime.evidence', 'runtime.tier']"
       ],
       "gap_id": "GM-profile-check-missing::emulated_instruction",
       "lead_ref": "",
@@ -5568,7 +6086,7 @@
       "detector": "gate_profile_checks",
       "evidence": [
         "census:profile=native_poc required=['format', 'candidate.present', 'candidate.identity.original', 'candidate.identity.patched', 'container.reparse', 'repair.action', 'runtime.evidence', 'runtime.tier', 'runtime.contract', 'poc.native.available', 'poc.native.original_failure', 'poc.native.candidate_pass', 'poc.native.regression', 'poc.native.stdout_signature']",
-        "census:observed_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'container.cell', 'container.reparse', 'format', 'patch.rewrite', 'poc.candidate_passes', 'poc.native.available', 'poc.native.candidate_pass', 'poc.native.original_failure', 'poc.native.regression', 'poc.native.stdout_signature', 'poc.original_fails', 'profile.declared', 'profile.evidence', 'profile.required_checks', 'repair.action', 'runtime.cell_tier', 'runtime.contract', 'runtime.evidence', 'runtime.tier']"
+        "census:observed_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'container.cell', 'container.reparse', 'format', 'patch.rewrite', 'patch.target_scope', 'poc.candidate_passes', 'poc.native.available', 'poc.native.candidate_pass', 'poc.native.original_failure', 'poc.native.regression', 'poc.native.stdout_signature', 'poc.original_fails', 'profile.declared', 'profile.evidence', 'profile.required_checks', 'repair.action', 'runtime.cell_tier', 'runtime.contract', 'runtime.evidence', 'runtime.tier']"
       ],
       "gap_id": "GM-profile-check-missing::native_poc",
       "lead_ref": "",
@@ -5583,7 +6101,7 @@
       "detector": "gate_profile_checks",
       "evidence": [
         "census:profile=native_poc_rewrite required=['format', 'candidate.present', 'candidate.identity.original', 'candidate.identity.patched', 'container.reparse', 'repair.action', 'runtime.evidence', 'runtime.tier', 'runtime.contract', 'poc.native.available', 'poc.native.original_failure', 'poc.native.candidate_pass', 'poc.native.regression', 'poc.native.stdout_signature', 'patch.rewrite']",
-        "census:observed_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'container.cell', 'container.reparse', 'format', 'patch.rewrite', 'poc.candidate_passes', 'poc.native.available', 'poc.native.candidate_pass', 'poc.native.original_failure', 'poc.native.regression', 'poc.native.stdout_signature', 'poc.original_fails', 'profile.declared', 'profile.evidence', 'profile.required_checks', 'repair.action', 'runtime.cell_tier', 'runtime.contract', 'runtime.evidence', 'runtime.tier']"
+        "census:observed_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'container.cell', 'container.reparse', 'format', 'patch.rewrite', 'patch.target_scope', 'poc.candidate_passes', 'poc.native.available', 'poc.native.candidate_pass', 'poc.native.original_failure', 'poc.native.regression', 'poc.native.stdout_signature', 'poc.original_fails', 'profile.declared', 'profile.evidence', 'profile.required_checks', 'repair.action', 'runtime.cell_tier', 'runtime.contract', 'runtime.evidence', 'runtime.tier']"
       ],
       "gap_id": "GM-profile-check-missing::native_poc_rewrite",
       "lead_ref": "",
@@ -5598,7 +6116,7 @@
       "detector": "gate_profile_checks",
       "evidence": [
         "census:profile=strict_template required=['format', 'candidate.present', 'candidate.identity.original', 'candidate.identity.patched', 'container.reparse', 'repair.action', 'runtime.evidence', 'runtime.tier', 'runtime.contract']",
-        "census:observed_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'container.cell', 'container.reparse', 'format', 'patch.rewrite', 'poc.candidate_passes', 'poc.native.available', 'poc.native.candidate_pass', 'poc.native.original_failure', 'poc.native.regression', 'poc.native.stdout_signature', 'poc.original_fails', 'profile.declared', 'profile.evidence', 'profile.required_checks', 'repair.action', 'runtime.cell_tier', 'runtime.contract', 'runtime.evidence', 'runtime.tier']"
+        "census:observed_check_ids=['candidate.identity.original', 'candidate.identity.patched', 'candidate.present', 'container.cell', 'container.reparse', 'format', 'patch.rewrite', 'patch.target_scope', 'poc.candidate_passes', 'poc.native.available', 'poc.native.candidate_pass', 'poc.native.original_failure', 'poc.native.regression', 'poc.native.stdout_signature', 'poc.original_fails', 'profile.declared', 'profile.evidence', 'profile.required_checks', 'repair.action', 'runtime.cell_tier', 'runtime.contract', 'runtime.evidence', 'runtime.tier']"
       ],
       "gap_id": "GM-profile-check-missing::strict_template",
       "lead_ref": "",
@@ -5628,7 +6146,7 @@
       "evidence": [
         "app/services/repair_matrix.py:95",
         "app/services/unified_verification.py:13",
-        "census:build parameters=['actions', 'arch', 'candidate', 'capacity', 'cell', 'external_poc', 'format_name', 'original', 'original_sha256', 'patched_sha256', 'poc', 'profile', 'reparse_ok', 'rewrite_actions', 'runtime']",
+        "census:build parameters=['actions', 'arch', 'candidate', 'capacity', 'cell', 'external_poc', 'format_name', 'original', 'original_sha256', 'patched_sha256', 'poc', 'profile', 'reparse_ok', 'rewrite_actions', 'runtime', 'target_scope']",
         "census:evidence_profiles=['emulated_instruction', 'native_poc', 'native_poc_rewrite', 'strict_template']"
       ],
       "gap_id": "GM-profile-registry",
@@ -5704,7 +6222,7 @@
       "detector": "oracle_destinations",
       "evidence": [
         "app/services/repair/analyzer.py:37",
-        "app/services/binary_pipeline.py:567",
+        "app/services/binary_pipeline.py:698",
         "app/services/unified_verification.py:11"
       ],
       "gap_id": "OG-heap-destination-oracle",
@@ -5719,6 +6237,7 @@
       "category": "oracle_gap",
       "detector": "oracle_wrong_function",
       "evidence": [
+        "census:target_scope_support=True clean=True outside_actions=0",
         "probe:fixtures/hard-cases/vuln-hardcases-x86_64.elf findings outside target vuln_loop16 (0x102cf74)",
         "probe:fixtures/hard-cases/vuln-hardcases-x86_64.elf findings outside target vuln_loop32 (0x102cf96)",
         "probe:fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf findings outside target vuln_loop64 (0x102b99a)",
@@ -5733,32 +6252,37 @@
         "probe:fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf no patchable sink in target vuln_loop64",
         "probe:fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf no patchable sink in target vuln_loop8",
         "probe:fixtures/hard-cases/vuln-hardcases-c-x86_64.elf no patchable sink in target multicall_bad",
-        "probe:fixtures/hard-cases/vuln-hardcases-c-x86_64.elf no patchable sink in target nonconst_bad",
-        "probe:fixtures/hard-cases/vuln-hardcases-x86_64.elf no patchable sink in target vuln_loop_reverse"
+        "probe:target:target:heap_bad target=heap_bad actions=1 outside=0",
+        "probe:target:target:vuln_copy target=vuln_copy actions=1 outside=0",
+        "probe:target:target:cwe121-unchecked-strcpy target=CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink actions=0 outside=0",
+        "probe:target:target:hard-loop16 target=vuln_loop16 actions=0 outside=0"
       ],
       "gap_id": "OG-wrong-function-candidate",
       "lead_ref": "G22",
-      "next_step": "bind candidate actions to a declared target function or reject out-of-target patch sites",
-      "novel": true,
-      "severity": "medium",
-      "status": "open",
-      "symptom": "10 benchmark case(s) produced byte patches outside the declared target function (whole-image scan): the gate/judge can only reject them by unrelated boundary semantics; nothing proves the patch repairs the declared defect"
+      "next_step": "keep the target-mode probe in the release audit",
+      "novel": false,
+      "severity": "info",
+      "status": "closed",
+      "symptom": "target-mode probes bound every patch action inside the declared function; the whole-image default remains documented policy, but target identity is provable when a target is requested"
     },
     {
       "category": "runtime_gap",
       "detector": "runtime_sources",
       "evidence": [
-        "census:selector=none",
-        "census:host=darwin/arm64",
-        "census:limactl=/opt/homebrew/bin/limactl"
+        "census:capability_pairs={'available': True, 'tier': 'emulated_run', 'engine': 'macho-native', 'poc_available': False, 'reason': 'host arm64 cannot execute macho/x86_64 natively; only the Rosetta cross-arch path provides function-level evidence, and the external PoC runner is unavailable', 'source': 'macho_native'}",
+        "census:capabilities_module=True",
+        "census:poc_runner_consults_capabilities=True",
+        "census:runner=none",
+        "census:matrix.runtime_capabilities[keys]=['elf/arm64/64/little', 'elf/i386/32/little', 'elf/x86_64/64/little', 'macho/arm64/64/little', 'macho/x86_64/64/little', 'pe/arm64/64/little', 'pe/i386/32/little', 'pe/x86_64/64/little']",
+        "census:host=darwin/arm64"
       ],
       "gap_id": "RG-external-poc::macho/x86_64",
       "lead_ref": "G17",
-      "next_step": "teach the PoC runner the same arch-translation the native runner uses, or declare external PoC unavailable for this cell",
-      "novel": true,
-      "severity": "low",
-      "status": "open",
-      "symptom": "native Mach-O runtime can execute x86_64 on this host (arm64) but the external-PoC runner selects none: the two acceptance paths disagree about what this cell can prove"
+      "next_step": "keep capability probe + runner selector in agreement",
+      "novel": false,
+      "severity": "info",
+      "status": "closed",
+      "symptom": "runtime capability probe declares external PoC unavailable for macho/x86_64 on this host with an explicit reason (host arm64 cannot execute macho/x86_64 natively; only the Rosetta cross-arch path provides function-level evidence, and the external PoC run), and the PoC runner selects no runner consistently; the native and PoC evidence paths now agree on what this cell can prove (no fabricated PoC)"
     },
     {
       "category": "runtime_gap",
@@ -5794,7 +6318,7 @@
       "evidence": [
         "docs/acceptance/LIMITATIONS.md:71",
         "artifact:app/services/repair/capacity.py",
-        "census:limitations_keyword_hits={'heap': 7, 'uaf': 5, 'loop': 12, 'sprintf': 2, 'native poc': 2, 'mach-o': 10, 'pe ': 4, 'capacity': 3, 'profile': 1, 'leaf': 1}"
+        "census:limitations_keyword_hits={'heap': 10, 'uaf': 5, 'loop': 12, 'sprintf': 2, 'native poc': 2, 'mach-o': 12, 'pe ': 5, 'capacity': 8, 'profile': 3, 'leaf': 1}"
       ],
       "gap_id": "MM-docs-capacity-missing",
       "lead_ref": "G27",
@@ -5935,7 +6459,7 @@
       "detector": "claims_docs",
       "evidence": [
         "census:capacity module=True wired=True observed=True",
-        "app/services/repair/capacity.py:852"
+        "app/services/repair/capacity.py:897"
       ],
       "gap_id": "MM-claims-capacity-stale",
       "lead_ref": "G16",
@@ -6226,7 +6750,7 @@
       "detector": "runtime_sources",
       "evidence": [
         "census:runner=none",
-        "docs/status/claims.json:24"
+        "docs/status/claims.json:23"
       ],
       "gap_id": "RG-external-poc::<doc>::pe/arm64",
       "lead_ref": "",
@@ -6241,7 +6765,7 @@
       "detector": "runtime_sources",
       "evidence": [
         "census:runner=none",
-        "docs/status/claims.json:24"
+        "docs/status/claims.json:23"
       ],
       "gap_id": "RG-external-poc::<doc>::pe/i386",
       "lead_ref": "",
@@ -6256,7 +6780,7 @@
       "detector": "runtime_sources",
       "evidence": [
         "census:runner=none",
-        "docs/status/claims.json:24"
+        "docs/status/claims.json:23"
       ],
       "gap_id": "RG-external-poc::<doc>::pe/x86_64",
       "lead_ref": "",
@@ -7094,7 +7618,9 @@
             "capacity": null,
             "kind": "capacity_check_rewrite",
             "method": "",
-            "site": ""
+            "offset": 8409,
+            "site": "",
+            "site_va": 4202713
           }
         ],
         "arch": "x86_64",
@@ -7193,6 +7719,12 @@
         "status": "ok",
         "strategy": "capacity",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -7203,7 +7735,9 @@
             "capacity": null,
             "kind": "capacity_check_rewrite",
             "method": "",
-            "site": ""
+            "offset": 7859,
+            "site": "",
+            "site_va": 4202163
           }
         ],
         "arch": "x86_64",
@@ -7302,6 +7836,12 @@
         "status": "ok",
         "strategy": "capacity",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       }
@@ -7314,7 +7854,9 @@
             "capacity": null,
             "kind": "capacity_check_rewrite",
             "method": "",
-            "site": ""
+            "offset": 8409,
+            "site": "",
+            "site_va": 4202713
           }
         ],
         "arch": "x86_64",
@@ -7413,6 +7955,12 @@
         "status": "ok",
         "strategy": "capacity",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -7503,6 +8051,12 @@
         "status": "ok",
         "strategy": "immediate",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -7513,7 +8067,9 @@
             "capacity": null,
             "kind": "immediate",
             "method": "",
-            "site": "0x33bdf"
+            "offset": 142294,
+            "site": "0x33bdf",
+            "site_va": 211935
           }
         ],
         "arch": "i386",
@@ -7616,6 +8172,12 @@
         "status": "ok",
         "strategy": "immediate",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -7626,7 +8188,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "new-pt-load",
-            "site": "0x10352a8"
+            "offset": null,
+            "site": "0x10352a8",
+            "site_va": 16994984
           }
         ],
         "arch": "arm64",
@@ -7729,6 +8293,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -7739,7 +8309,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "new-pt-load",
-            "site": "0x2f5c2"
+            "offset": null,
+            "site": "0x2f5c2",
+            "site_va": 193986
           }
         ],
         "arch": "i386",
@@ -7842,6 +8414,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -7852,7 +8430,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "new-pt-load",
-            "site": "0x33e9a"
+            "offset": null,
+            "site": "0x33e9a",
+            "site_va": 212634
           }
         ],
         "arch": "i386",
@@ -7955,6 +8535,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -7965,7 +8551,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "new-pt-load",
-            "site": "0x102bac3"
+            "offset": null,
+            "site": "0x102bac3",
+            "site_va": 16956099
           }
         ],
         "arch": "x86_64",
@@ -8070,6 +8658,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -8080,7 +8674,9 @@
             "capacity": null,
             "kind": "capacity_check_rewrite",
             "method": "",
-            "site": ""
+            "offset": 7859,
+            "site": "",
+            "site_va": 4202163
           }
         ],
         "arch": "x86_64",
@@ -8179,6 +8775,12 @@
         "status": "ok",
         "strategy": "capacity",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -8270,6 +8872,12 @@
         "status": "ok",
         "strategy": "immediate",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -8360,6 +8968,12 @@
         "status": "ok",
         "strategy": "immediate",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -8450,6 +9064,12 @@
         "status": "ok",
         "strategy": "immediate",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -8540,6 +9160,12 @@
         "status": "ok",
         "strategy": "immediate",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -8550,7 +9176,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "new-pt-load",
-            "site": "0x40114d"
+            "offset": null,
+            "site": "0x40114d",
+            "site_va": 4198733
           }
         ],
         "arch": "x86_64",
@@ -8637,6 +9265,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -8671,6 +9305,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -8705,6 +9345,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -8715,7 +9361,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "macho-section",
-            "site": "0x100003f80"
+            "offset": null,
+            "site": "0x100003f80",
+            "site_va": 4294983552
           }
         ],
         "arch": "arm64",
@@ -8818,6 +9466,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -8828,7 +9482,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "macho-section",
-            "site": "0x100003f94"
+            "offset": null,
+            "site": "0x100003f94",
+            "site_va": 4294983572
           }
         ],
         "arch": "x86_64",
@@ -8931,6 +9587,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -8965,6 +9627,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -8999,6 +9667,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -9034,6 +9708,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -9044,7 +9724,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "pe-section",
-            "site": "0x140001124"
+            "offset": null,
+            "site": "0x140001124",
+            "site_va": 5368713508
           }
         ],
         "arch": "arm64",
@@ -9147,6 +9829,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -9157,7 +9845,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "pe-section",
-            "site": "0x1400010d0"
+            "offset": null,
+            "site": "0x1400010d0",
+            "site_va": 5368713424
           }
         ],
         "arch": "x86_64",
@@ -9260,6 +9950,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -9270,7 +9966,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "pe-section",
-            "site": "0x4010be"
+            "offset": null,
+            "site": "0x4010be",
+            "site_va": 4198590
           }
         ],
         "arch": "i386",
@@ -9373,6 +10071,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -9383,7 +10087,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "pe-section",
-            "site": "0x4010be"
+            "offset": null,
+            "site": "0x4010be",
+            "site_va": 4198590
           }
         ],
         "arch": "i386",
@@ -9486,6 +10192,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       },
@@ -9521,6 +10233,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -9556,6 +10274,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": true
       },
@@ -9640,6 +10364,12 @@
         "status": "ok",
         "strategy": "strict-template",
         "supported": true,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": true,
         "verify": true
       }
@@ -9652,7 +10382,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "new-pt-load",
-            "site": "0x10352a8"
+            "offset": null,
+            "site": "0x10352a8",
+            "site_va": 16994984
           }
         ],
         "arch": "arm64",
@@ -9690,6 +10422,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -9700,7 +10438,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "new-pt-load",
-            "site": "0x10352a8"
+            "offset": null,
+            "site": "0x10352a8",
+            "site_va": 16994984
           }
         ],
         "arch": "arm64",
@@ -9738,6 +10478,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -9748,7 +10494,9 @@
             "capacity": null,
             "kind": "immediate",
             "method": "",
-            "site": "0x33bdf"
+            "offset": 142294,
+            "site": "0x33bdf",
+            "site_va": 211935
           }
         ],
         "arch": "i386",
@@ -9786,6 +10534,12 @@
         "status": "ok",
         "strategy": "immediate",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -9796,7 +10550,9 @@
             "capacity": null,
             "kind": "immediate",
             "method": "",
-            "site": "0x33bdf"
+            "offset": 142294,
+            "site": "0x33bdf",
+            "site_va": 211935
           }
         ],
         "arch": "i386",
@@ -9834,6 +10590,12 @@
         "status": "ok",
         "strategy": "immediate",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -9869,6 +10631,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -9904,6 +10672,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -9939,6 +10713,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -9949,7 +10729,9 @@
             "capacity": null,
             "kind": "capacity_check_rewrite",
             "method": "",
-            "site": ""
+            "offset": 8409,
+            "site": "",
+            "site_va": 4202713
           }
         ],
         "arch": "x86_64",
@@ -9991,6 +10773,12 @@
         "status": "ok",
         "strategy": "capacity",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -10025,6 +10813,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -10059,6 +10853,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -10069,7 +10869,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "macho-section",
-            "site": "0x100003f94"
+            "offset": null,
+            "site": "0x100003f94",
+            "site_va": 4294983572
           }
         ],
         "arch": "x86_64",
@@ -10107,6 +10909,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -10117,7 +10925,9 @@
             "capacity": 16,
             "kind": "guard",
             "method": "macho-section",
-            "site": "0x100003f94"
+            "offset": null,
+            "site": "0x100003f94",
+            "site_va": 4294983572
           }
         ],
         "arch": "x86_64",
@@ -10155,6 +10965,12 @@
         "status": "ok",
         "strategy": "guard",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 1,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -10189,6 +11005,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -10223,6 +11045,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -10258,6 +11086,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -10293,6 +11127,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -10327,6 +11167,12 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
       },
@@ -10361,8 +11207,615 @@
         "status": "ok",
         "strategy": "none",
         "supported": false,
+        "target": "",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": null,
+        "target_actions_total": 0,
+        "target_mode": false,
+        "target_scope": null,
         "verified": false,
         "verify": false
+      }
+    ],
+    "targets": [
+      {
+        "actions": [
+          {
+            "callee": "strcpy",
+            "capacity": 16,
+            "kind": "guard",
+            "method": "new-pt-load",
+            "offset": null,
+            "site": "0x40114d",
+            "site_va": 4198733
+          }
+        ],
+        "arch": "x86_64",
+        "candidate": true,
+        "capacity": 16,
+        "cell": "elf/x86_64/64/little",
+        "checks": [
+          {
+            "id": "format",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.present",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.identity.original",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.identity.patched",
+            "status": "passed"
+          },
+          {
+            "id": "container.reparse",
+            "status": "passed"
+          },
+          {
+            "id": "repair.action",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.evidence",
+            "status": "not_run"
+          },
+          {
+            "id": "profile.declared",
+            "status": "passed"
+          },
+          {
+            "id": "profile.evidence",
+            "status": "not_run"
+          },
+          {
+            "id": "container.cell",
+            "status": "passed"
+          },
+          {
+            "id": "profile.required_checks",
+            "status": "not_run"
+          },
+          {
+            "id": "patch.target_scope",
+            "status": "passed"
+          }
+        ],
+        "checks_not_passed": [
+          "profile.evidence",
+          "profile.required_checks",
+          "runtime.evidence"
+        ],
+        "disposition": "static_only_patch",
+        "download_allowed": true,
+        "error": "",
+        "findings": [
+          {
+            "address": "0x40114d",
+            "callee": "strcpy",
+            "capacity": 16,
+            "destination_kind": "",
+            "kind": "unbounded_copy"
+          }
+        ],
+        "format": "elf",
+        "gate_outcome": "inconclusive",
+        "gate_reason": "runtime evidence incomplete",
+        "gate_success": false,
+        "limitations": [],
+        "path": "fixtures/hard-cases/vuln-heap-malloc-x86_64.elf",
+        "probe_id": "target:target:heap_bad",
+        "profile": "native_poc",
+        "report_status": "not_verified",
+        "requested_strategy": "auto",
+        "runtime_engine": "",
+        "runtime_tier": "static_only",
+        "runtime_verdict": "not_run",
+        "source": "target_probe",
+        "status": "ok",
+        "strategy": "guard",
+        "supported": false,
+        "target": "heap_bad",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": 0,
+        "target_actions_total": 1,
+        "target_mode": true,
+        "target_scope": {
+          "end": 4198764,
+          "name": "heap_bad",
+          "source": "symbol",
+          "va": 4198704
+        },
+        "verified": false,
+        "verify": true
+      },
+      {
+        "actions": [
+          {
+            "callee": "strcpy",
+            "capacity": 16,
+            "kind": "guard",
+            "method": "new-pt-load",
+            "offset": null,
+            "site": "0x2f5c2",
+            "site_va": 193986
+          }
+        ],
+        "arch": "i386",
+        "candidate": true,
+        "capacity": 16,
+        "cell": "elf/i386/32/little",
+        "checks": [
+          {
+            "id": "format",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.present",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.identity.original",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.identity.patched",
+            "status": "passed"
+          },
+          {
+            "id": "container.reparse",
+            "status": "passed"
+          },
+          {
+            "id": "repair.action",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.evidence",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.tier",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.contract",
+            "status": "passed"
+          },
+          {
+            "id": "poc.original_fails",
+            "status": "passed"
+          },
+          {
+            "id": "poc.candidate_passes",
+            "status": "passed"
+          },
+          {
+            "id": "profile.declared",
+            "status": "passed"
+          },
+          {
+            "id": "profile.evidence",
+            "status": "passed"
+          },
+          {
+            "id": "container.cell",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.cell_tier",
+            "status": "passed"
+          },
+          {
+            "id": "profile.required_checks",
+            "status": "passed"
+          },
+          {
+            "id": "patch.target_scope",
+            "status": "passed"
+          }
+        ],
+        "checks_not_passed": [],
+        "disposition": "verified_patch",
+        "download_allowed": true,
+        "error": "",
+        "findings": [
+          {
+            "address": "0x2f5c2",
+            "callee": "strcpy",
+            "capacity": 16,
+            "destination_kind": "",
+            "kind": "unbounded_copy"
+          }
+        ],
+        "format": "elf",
+        "gate_outcome": "success_within_scope",
+        "gate_reason": "",
+        "gate_success": true,
+        "limitations": [],
+        "path": "fixtures/elf/vuln-strcpy-x86-dyn.elf",
+        "probe_id": "target:target:vuln_copy",
+        "profile": "emulated_instruction",
+        "report_status": "patched",
+        "requested_strategy": "auto",
+        "runtime_engine": "unicorn-i386",
+        "runtime_tier": "emulated_run",
+        "runtime_verdict": "pass",
+        "source": "target_probe",
+        "status": "ok",
+        "strategy": "guard",
+        "supported": true,
+        "target": "vuln_copy",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": 0,
+        "target_actions_total": 1,
+        "target_mode": true,
+        "target_scope": {
+          "end": 194016,
+          "name": "vuln_copy",
+          "source": "symbol",
+          "va": 193972
+        },
+        "verified": true,
+        "verify": true
+      },
+      {
+        "actions": [
+          {
+            "callee": "strcpy",
+            "capacity": 16,
+            "kind": "guard",
+            "method": "new-pt-load",
+            "offset": null,
+            "site": "0x33e9a",
+            "site_va": 212634
+          }
+        ],
+        "arch": "i386",
+        "candidate": true,
+        "capacity": 16,
+        "cell": "elf/i386/32/little",
+        "checks": [
+          {
+            "id": "format",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.present",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.identity.original",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.identity.patched",
+            "status": "passed"
+          },
+          {
+            "id": "container.reparse",
+            "status": "passed"
+          },
+          {
+            "id": "repair.action",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.evidence",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.tier",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.contract",
+            "status": "passed"
+          },
+          {
+            "id": "poc.original_fails",
+            "status": "passed"
+          },
+          {
+            "id": "poc.candidate_passes",
+            "status": "passed"
+          },
+          {
+            "id": "profile.declared",
+            "status": "passed"
+          },
+          {
+            "id": "profile.evidence",
+            "status": "passed"
+          },
+          {
+            "id": "container.cell",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.cell_tier",
+            "status": "passed"
+          },
+          {
+            "id": "profile.required_checks",
+            "status": "passed"
+          },
+          {
+            "id": "patch.target_scope",
+            "status": "passed"
+          }
+        ],
+        "checks_not_passed": [],
+        "disposition": "verified_patch",
+        "download_allowed": true,
+        "error": "",
+        "findings": [
+          {
+            "address": "0x33e9a",
+            "callee": "strcpy",
+            "capacity": 16,
+            "destination_kind": "",
+            "kind": "unbounded_copy"
+          }
+        ],
+        "format": "elf",
+        "gate_outcome": "success_within_scope",
+        "gate_reason": "",
+        "gate_success": true,
+        "limitations": [],
+        "path": "fixtures/elf/vuln-strcpy-x86.elf",
+        "probe_id": "target:target:vuln_copy",
+        "profile": "emulated_instruction",
+        "report_status": "patched",
+        "requested_strategy": "auto",
+        "runtime_engine": "unicorn-i386",
+        "runtime_tier": "emulated_run",
+        "runtime_verdict": "pass",
+        "source": "target_probe",
+        "status": "ok",
+        "strategy": "guard",
+        "supported": true,
+        "target": "vuln_copy",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": 0,
+        "target_actions_total": 1,
+        "target_mode": true,
+        "target_scope": {
+          "end": 212656,
+          "name": "vuln_copy",
+          "source": "symbol",
+          "va": 212620
+        },
+        "verified": true,
+        "verify": true
+      },
+      {
+        "actions": [
+          {
+            "callee": "strcpy",
+            "capacity": 16,
+            "kind": "guard",
+            "method": "new-pt-load",
+            "offset": null,
+            "site": "0x102bac3",
+            "site_va": 16956099
+          }
+        ],
+        "arch": "x86_64",
+        "candidate": true,
+        "capacity": 16,
+        "cell": "elf/x86_64/64/little",
+        "checks": [
+          {
+            "id": "format",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.present",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.identity.original",
+            "status": "passed"
+          },
+          {
+            "id": "candidate.identity.patched",
+            "status": "passed"
+          },
+          {
+            "id": "container.reparse",
+            "status": "passed"
+          },
+          {
+            "id": "repair.action",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.evidence",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.tier",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.contract",
+            "status": "passed"
+          },
+          {
+            "id": "poc.original_fails",
+            "status": "passed"
+          },
+          {
+            "id": "poc.candidate_passes",
+            "status": "passed"
+          },
+          {
+            "id": "profile.declared",
+            "status": "passed"
+          },
+          {
+            "id": "profile.evidence",
+            "status": "passed"
+          },
+          {
+            "id": "container.cell",
+            "status": "passed"
+          },
+          {
+            "id": "runtime.cell_tier",
+            "status": "passed"
+          },
+          {
+            "id": "profile.required_checks",
+            "status": "passed"
+          },
+          {
+            "id": "patch.target_scope",
+            "status": "passed"
+          }
+        ],
+        "checks_not_passed": [],
+        "disposition": "verified_patch",
+        "download_allowed": true,
+        "error": "",
+        "findings": [
+          {
+            "address": "0x102bac3",
+            "callee": "strcpy",
+            "capacity": 16,
+            "destination_kind": "",
+            "kind": "unbounded_copy"
+          }
+        ],
+        "format": "elf",
+        "gate_outcome": "success_within_scope",
+        "gate_reason": "",
+        "gate_success": true,
+        "limitations": [],
+        "path": "fixtures/elf/vuln-strcpy-x86_64.elf",
+        "probe_id": "target:target:vuln_copy",
+        "profile": "emulated_instruction",
+        "report_status": "patched",
+        "requested_strategy": "auto",
+        "runtime_engine": "unicorn-x86_64",
+        "runtime_tier": "emulated_run",
+        "runtime_verdict": "pass",
+        "source": "target_probe",
+        "status": "ok",
+        "strategy": "guard",
+        "supported": true,
+        "target": "vuln_copy",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": 0,
+        "target_actions_total": 1,
+        "target_mode": true,
+        "target_scope": {
+          "end": 16956128,
+          "name": "vuln_copy",
+          "source": "symbol",
+          "va": 16956084
+        },
+        "verified": true,
+        "verify": true
+      },
+      {
+        "actions": [],
+        "arch": "x86_64",
+        "candidate": false,
+        "capacity": null,
+        "cell": "elf/x86_64/64/little",
+        "checks": [],
+        "checks_not_passed": [],
+        "disposition": "analysis_only",
+        "download_allowed": false,
+        "error": "target-scoped mode: no patchable sink lies inside target CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink [0x4012b0,0x401318)",
+        "findings": [],
+        "format": "elf",
+        "gate_outcome": "",
+        "gate_reason": "",
+        "gate_success": false,
+        "limitations": [
+          "no patchable copy sink with a recoverable capacity was found",
+          "target-scoped mode: no patchable sink lies inside target CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink [0x4012b0,0x401318)",
+          "scanned 0 inlined range-check block(s) in the code region",
+          "target-scoped mode: no reviewed capacity-check site inside target CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink [0x4012b0,0x401318)"
+        ],
+        "path": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+        "probe_id": "target:target:cwe121-unchecked-strcpy",
+        "profile": "",
+        "report_status": "unsupported",
+        "requested_strategy": "auto",
+        "runtime_engine": "",
+        "runtime_tier": "",
+        "runtime_verdict": "",
+        "source": "target_probe",
+        "status": "ok",
+        "strategy": "none",
+        "supported": false,
+        "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": 0,
+        "target_actions_total": 0,
+        "target_mode": true,
+        "target_scope": {
+          "end": 4199192,
+          "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+          "source": "symbol",
+          "va": 4199088
+        },
+        "verified": false,
+        "verify": true
+      },
+      {
+        "actions": [],
+        "arch": "x86_64",
+        "candidate": false,
+        "capacity": null,
+        "cell": "elf/x86_64/64/little",
+        "checks": [],
+        "checks_not_passed": [],
+        "disposition": "analysis_only",
+        "download_allowed": false,
+        "error": "target-scoped mode: no patchable sink lies inside target vuln_loop16 [0x102cf74,0x102cf96)",
+        "findings": [],
+        "format": "elf",
+        "gate_outcome": "",
+        "gate_reason": "",
+        "gate_success": false,
+        "limitations": [
+          "target-scoped mode: no patchable sink lies inside target vuln_loop16 [0x102cf74,0x102cf96)",
+          "scanned 0 inlined range-check block(s) in the code region",
+          "target-scoped mode: no reviewed capacity-check site inside target vuln_loop16 [0x102cf74,0x102cf96)"
+        ],
+        "path": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+        "probe_id": "target:target:hard-loop16",
+        "profile": "",
+        "report_status": "unsupported",
+        "requested_strategy": "auto",
+        "runtime_engine": "",
+        "runtime_tier": "",
+        "runtime_verdict": "",
+        "source": "target_probe",
+        "status": "ok",
+        "strategy": "none",
+        "supported": false,
+        "target": "vuln_loop16",
+        "target_actions_missing_site": 0,
+        "target_actions_outside": 0,
+        "target_actions_total": 0,
+        "target_mode": true,
+        "target_scope": {
+          "end": 16961430,
+          "name": "vuln_loop16",
+          "source": "symbol",
+          "va": 16961396
+        },
+        "verified": false,
+        "verify": true
       }
     ]
   },
@@ -10378,22 +11831,23 @@
     },
     "by_severity": {
       "high": 1,
-      "info": 60,
-      "low": 2,
-      "medium": 3
+      "info": 63,
+      "low": 1,
+      "medium": 1
     },
     "by_status": {
-      "closed": 51,
-      "mitigated": 1,
+      "closed": 55,
+      "mitigated": 0,
       "non_goal": 11,
-      "open": 3
+      "open": 0
     },
-    "closed_count": 51,
+    "closed_count": 55,
     "closed_gap_ids": [
       "EG-capacity-strategy",
       "EG-heap-destination",
       "EG-sink-class-dead-immediate_length",
       "EG-strategy-request-not-honored",
+      "EG-target-scope",
       "GM-gate-cell",
       "GM-gate-check-unsatisfiable",
       "GM-gate-no-input",
@@ -10401,6 +11855,7 @@
       "GM-gate-rewrite",
       "GM-gate-runtime-tier",
       "GM-gate-scenario-execution",
+      "GM-legacy-gate-poc-manifest",
       "GM-legacy-gate-profile",
       "GM-legacy-profile-unsatisfiable::emulated_instruction",
       "GM-legacy-profile-unsatisfiable::strict_template",
@@ -10440,27 +11895,24 @@
       "MM-strategy-unexercised::immediate",
       "MM-strategy-unexercised::strict-template",
       "OG-heap-destination-oracle",
+      "OG-wrong-function-candidate",
+      "RG-external-poc::macho/x86_64",
       "RG-poc-manifests-unrunnable"
     ],
     "gap_count": 66,
     "high_severity_open": 0,
-    "mitigated_count": 1,
-    "mitigated_gap_ids": [
-      "GM-legacy-gate-poc-manifest"
-    ],
+    "mitigated_count": 0,
+    "mitigated_gap_ids": [],
     "non_goal_count": 11,
-    "open_count": 3,
-    "open_gap_ids": [
-      "EG-target-scope",
-      "OG-wrong-function-candidate",
-      "RG-external-poc::macho/x86_64"
-    ],
+    "open_count": 0,
+    "open_gap_ids": [],
     "probes": {
       "analysis": 27,
       "capacity": 2,
       "fixtures": 27,
       "skipped_budget": 0,
-      "strategies": 18
+      "strategies": 18,
+      "targets": 6
     }
   }
 }

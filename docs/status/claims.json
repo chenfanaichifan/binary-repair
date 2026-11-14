@@ -29,8 +29,8 @@
     {
       "id": "EG-cases-target-not-analyzed",
       "category": "engine_gap",
-      "enforcement": "analysis_only; no target-scoped candidate; benchmark baseline_expected is rejected/analysis_only",
-      "claim": "Hard-case non-template targets (inline loops, sprintf, multicall, nonconst, UAF, heap guard) are AI-benchmark/research evidence, not deterministic engine successes."
+      "enforcement": "analysis_only; no target-scoped candidate; target-strict baseline (baseline_expected_target_strict) recorded as analysis_only/not_verified",
+      "claim": "Hard-case non-template targets (inline loops, sprintf, multicall, nonconst, UAF, heap guard) are AI-benchmark/research evidence, not deterministic engine successes; strict target-scoped deterministic baselines (baseline_expected_target_strict) record analysis_only/not_verified instead of a repaired claim."
     },
     {
       "id": "NG-ai-leaf-only::ai_assembly_repair",

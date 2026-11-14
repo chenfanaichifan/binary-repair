@@ -104,6 +104,7 @@ MODULE_PATHS = {
     "poc_runner": "app/services/poc_runner.py",
     "guest_runner": "app/services/guest_runner.py",
     "capacity": "app/services/repair/capacity.py",
+    "capabilities": "app/services/runtime/capabilities.py",
     "ai_binary_repair": "app/services/ai_binary_repair.py",
     "ai_assembly_repair": "app/services/ai_assembly_repair.py",
     "ai_patch_validation": "app/services/ai_patch_validation.py",
@@ -289,6 +290,7 @@ def _census_matrix() -> dict[str, Any]:
     untested_sink_classes = [
         str(item) for item in _as_list(payload.get("untested_sink_classes"))
     ]
+    runtime_capabilities = _as_dict(payload.get("runtime_capabilities"))
     fixture_strategy_evidence = {
         str(key): [str(item) for item in _as_list(value)]
         for key, value in _as_dict(payload.get("fixture_strategy_evidence")).items()
@@ -315,6 +317,7 @@ def _census_matrix() -> dict[str, Any]:
         "untested_sink_classes": sorted(untested_sink_classes),
         "fixture_strategy_evidence": dict(sorted(fixture_strategy_evidence.items())),
         "runtime_tiers": dict(sorted(runtime_tiers.items())),
+        "runtime_capabilities": runtime_capabilities,
         "dispositions": [str(item) for item in getattr(module, "DISPOSITIONS", ())],
         "non_goals": [str(item) for item in getattr(module, "_NON_GOALS", ())],
         "profile_helpers": sorted(
@@ -420,6 +423,16 @@ _MATCH_CELL = {
 }
 
 _REWRITE_OK = [{"offset": 0, "size": 1, "before_hex": "00", "after_hex": "01"}]
+_TARGET_SCOPE = {"name": "audit_fn", "va": 0x100, "end": 0x120, "source": "explicit"}
+_ACTIONS_IN_SCOPE = [
+    {"kind": "immediate", "offset": 0, "before": 0, "after": 1, "site_va": 0x104},
+]
+_ACTIONS_OUTSIDE_SCOPE = [
+    {"kind": "immediate", "offset": 0, "before": 0, "after": 1, "site_va": 0x900},
+]
+_ACTIONS_NO_SITE = [
+    {"kind": "immediate", "offset": 0, "before": 0, "after": 1},
+]
 _REWRITE_TAMPERED = [{"offset": 0, "size": 1, "before_hex": "ff", "after_hex": "01"}]
 
 
@@ -515,7 +528,8 @@ def _census_unified_gate(matrix: dict[str, Any]) -> dict[str, Any]:
     params = _signature_params(build)
     census["parameters"] = params
     census["extra_kwargs_supported"] = {
-        name: name in params for name in ("profile", "rewrite_actions", "cell")
+        name: name in params
+        for name in ("profile", "rewrite_actions", "cell", "target_scope")
     }
     profiles = sorted(_as_dict(matrix.get("evidence_profiles")))
     preferred_profile = ""
@@ -524,6 +538,30 @@ def _census_unified_gate(matrix: dict[str, Any]) -> dict[str, Any]:
     elif profiles:
         preferred_profile = profiles[0]
     scenarios = _gate_scenarios()
+    if "target_scope" in params:
+        scenarios.extend([
+            (
+                "target_scope_pass",
+                {
+                    "target_scope": dict(_TARGET_SCOPE),
+                    "actions": [dict(item) for item in _ACTIONS_IN_SCOPE],
+                },
+            ),
+            (
+                "target_scope_outside",
+                {
+                    "target_scope": dict(_TARGET_SCOPE),
+                    "actions": [dict(item) for item in _ACTIONS_OUTSIDE_SCOPE],
+                },
+            ),
+            (
+                "target_scope_no_site",
+                {
+                    "target_scope": dict(_TARGET_SCOPE),
+                    "actions": [dict(item) for item in _ACTIONS_NO_SITE],
+                },
+            ),
+        ])
     if preferred_profile:
         scenarios.append((
             "declared_profile",
@@ -598,6 +636,20 @@ def _census_unified_gate(matrix: dict[str, Any]) -> dict[str, Any]:
         (observed_ids - passed_ids - failed_ids) | (not_run_ids - passed_ids - failed_ids)
     )
     census["checks_never_passed"] = sorted(observed_ids - passed_ids)
+
+    def _scenario_check(scenario_name: str, check_id: str) -> str:
+        for check in _as_list(_as_dict(results.get(scenario_name)).get("checks")):
+            if str(_as_dict(check).get("id", "")) == check_id:
+                return str(_as_dict(check).get("status", ""))
+        return "absent"
+
+    census["target_scope_supported"] = "target_scope" in params
+    census["target_scope_check_observed"] = "patch.target_scope" in observed_ids
+    census["target_scope_enforcement"] = {
+        "pass": _scenario_check("target_scope_pass", "patch.target_scope"),
+        "outside": _scenario_check("target_scope_outside", "patch.target_scope"),
+        "missing_site": _scenario_check("target_scope_no_site", "patch.target_scope"),
+    }
     return census
 
 
@@ -666,6 +718,33 @@ def _census_legacy_gate() -> dict[str, Any]:
             continue
     scenarios: dict[str, Any] = {}
     observed: set[str] = set()
+
+    def _run_legacy(report: Any, *, patched: bytes,
+                    external_poc: dict[str, Any] | None = None) -> dict[str, Any]:
+        kwargs: dict[str, Any] = {}
+        if external_poc is not None:
+            kwargs["external_poc"] = external_poc
+        verification = build(report, original=b"\x02" * 16, patched=patched,
+                             **kwargs)
+        packet = _as_dict(getattr(verification, "packet", {}))
+        gate = _as_dict(vars(verification.gate))
+        checks = []
+        for check in _as_list(packet.get("checks")):
+            item = _as_dict(check)
+            check_id = str(item.get("id", ""))
+            observed.add(check_id)
+            checks.append({
+                "id": check_id,
+                "status": str(item.get("status", "")),
+                "detail": _truncate(item.get("detail")),
+            })
+        return {
+            "outcome": str(gate.get("outcome", "")),
+            "success": bool(gate.get("success")),
+            "checks": checks,
+            "error": None,
+        }
+
     for name, mode, strict in (
         ("bounds_only", "bounds-only", False),
         ("strict_template", "strict", True),
@@ -677,25 +756,7 @@ def _census_legacy_gate() -> dict[str, Any]:
         report = _legacy_report(mode=mode, strict=strict, capacity=16,
                                 patched=patched, template=template)
         try:
-            verification = build(report, original=b"\x02" * 16, patched=patched)
-            packet = _as_dict(getattr(verification, "packet", {}))
-            gate = _as_dict(vars(verification.gate))
-            checks = []
-            for check in _as_list(packet.get("checks")):
-                item = _as_dict(check)
-                check_id = str(item.get("id", ""))
-                observed.add(check_id)
-                checks.append({
-                    "id": check_id,
-                    "status": str(item.get("status", "")),
-                    "detail": _truncate(item.get("detail")),
-                })
-            scenarios[name] = {
-                "outcome": str(gate.get("outcome", "")),
-                "success": bool(gate.get("success")),
-                "checks": checks,
-                "error": None,
-            }
+            scenarios[name] = _run_legacy(report, patched=patched)
         except Exception as exc:  # noqa: BLE001
             scenarios[name] = {
                 "outcome": "error",
@@ -705,6 +766,46 @@ def _census_legacy_gate() -> dict[str, Any]:
             }
     census["template"] = template_path if template is not None else ""
     census["template_present"] = template is not None
+    # After the legacy-convergence work the builder must fail closed when an
+    # external PoC manifest is supplied (the stack/emulated gate cannot
+    # represent that evidence).  Measure the defensive check, if present.
+    manifest_check = "absent"
+    if census["accepts_external_poc"]:
+        unavailable_poc = {
+            "schema_version": 1,
+            "status": "unavailable",
+            "runner": "",
+            "tier": "",
+            "stdout_signature": "not_run",
+            "poc": [],
+            "regression": [],
+            "limitations": ["audit: external PoC unavailable"],
+        }
+        patched_bounds = b"\x03" * 16
+        report = _legacy_report(mode="bounds-only", strict=False, capacity=16,
+                                patched=patched_bounds, template=None)
+        try:
+            result = _run_legacy(report, patched=patched_bounds,
+                                 external_poc=unavailable_poc)
+            scenarios["manifest_supplied"] = result
+            for check in _as_list(result.get("checks")):
+                if str(_as_dict(check).get("id", "")) == "manifest.legacy_gate_unsupported":
+                    manifest_check = str(_as_dict(check).get("status", ""))
+        except TypeError as exc:
+            scenarios["manifest_supplied"] = {
+                "outcome": "error",
+                "success": False,
+                "checks": [],
+                "error": f"signature rejected external_poc: {_truncate(exc)}",
+            }
+        except Exception as exc:  # noqa: BLE001
+            scenarios["manifest_supplied"] = {
+                "outcome": "error",
+                "success": False,
+                "checks": [],
+                "error": f"{type(exc).__name__}: {_truncate(exc)}",
+            }
+    census["manifest_unsupported_check"] = manifest_check
     census["scenarios"] = dict(sorted(scenarios.items()))
     census["check_ids"] = sorted(observed)
     return census
@@ -817,6 +918,47 @@ def _runtime_module_support(module_name: str, rel_path: str) -> dict[str, Any]:
     }
 
 
+def _capability_probe(container: str, arch: str) -> dict[str, Any]:
+    """Measured runtime capability for one container/arch pair (guarded)."""
+    module, error = _load_module("app.services.runtime.capabilities")
+    result: dict[str, Any] = {
+        "module": "app.services.runtime.capabilities",
+        "status": "ok" if module is not None else "module_not_ready",
+        "error": error,
+        "available": None,
+        "tier": "",
+        "engine": "",
+        "poc_available": None,
+        "reason": "",
+        "source": "",
+    }
+    probe = getattr(module, "probe", None) if module is not None else None
+    if not callable(probe):
+        return result
+    payload: Any = None
+    probe_error = ""
+    for call in (
+        lambda: probe(container, arch, external_poc=True),
+        lambda: probe(container, arch),
+    ):
+        try:
+            payload = call()
+            break
+        except TypeError:
+            continue
+        except Exception as exc:  # noqa: BLE001 - mid-flight module is evidence
+            probe_error = f"{type(exc).__name__}: {_truncate(exc)}"
+            break
+    if probe_error:
+        result["error"] = probe_error
+    if isinstance(payload, dict):
+        for key in ("available", "tier", "engine", "poc_available", "reason",
+                    "source"):
+            if key in payload:
+                result[key] = payload[key]
+    return result
+
+
 def _census_runtime(matrix: dict[str, Any]) -> dict[str, Any]:
     emulated = _runtime_module_support(
         "app.services.runtime.emulated", MODULE_PATHS["emulated"]
@@ -876,6 +1018,10 @@ def _census_runtime(matrix: dict[str, Any]) -> dict[str, Any]:
             "detail": selection["detail"],
         })
     sources.sort(key=lambda item: (item["format"], item["arch"], item["source"]))
+    capability_pairs = {
+        f"{container}/{arch}": _capability_probe(container, arch)
+        for container, arch in pairs
+    }
     host = {
         "platform": sys.platform,
         "machine": platform.machine(),
@@ -891,6 +1037,10 @@ def _census_runtime(matrix: dict[str, Any]) -> dict[str, Any]:
         "emulated": emulated,
         "macho_native": macho_info,
         "sources": sources,
+        "capabilities": {
+            "module": "app.services.runtime.capabilities",
+            "pairs": dict(sorted(capability_pairs.items())),
+        },
     }
 
 
@@ -1029,6 +1179,8 @@ def _census_cases(ctx: dict[str, Any]) -> list[dict[str, Any]]:
             "capacity": item.get("capacity"),
             "family": str(item.get("family", "")),
             "baseline_expected": str(item.get("baseline_expected", "")),
+            "baseline_expected_target_strict": str(
+                item.get("baseline_expected_target_strict", "")),
             "poc_manifest": str(item.get("poc", "")),
             "measured_disposition": "",
             "measured_strategy": "",
@@ -1217,7 +1369,8 @@ def _analyze_fixture(ctx: dict[str, Any], rel: str, data: bytes) -> dict[str, An
 
 def _extract_probe_row(report: Any, outcome: Any, *, probe_id: str, path: str,
                        source: str, requested_strategy: str,
-                       verify: bool) -> dict[str, Any]:
+                       verify: bool, target_mode: bool = False,
+                       target: str = "") -> dict[str, Any]:
     verification = _as_dict(getattr(report, "verification", {}))
     packet = _as_dict(verification.get("packet"))
     scope = _as_dict(packet.get("scope"))
@@ -1233,6 +1386,10 @@ def _extract_probe_row(report: Any, outcome: Any, *, probe_id: str, path: str,
         })
     runtime = _as_dict(getattr(report, "runtime", {}))
     matrix = _as_dict(getattr(report, "matrix", {}))
+    universal = _as_dict(getattr(report, "universal", {}))
+    target_scope = _as_dict(universal.get("target_scope"))
+    if not target_scope:
+        target_scope = _as_dict(getattr(report, "target_scope", None))
     findings = []
     for item in _as_list(getattr(report, "findings", [])):
         item_dict = _as_dict(item)
@@ -1244,15 +1401,36 @@ def _extract_probe_row(report: Any, outcome: Any, *, probe_id: str, path: str,
             "destination_kind": str(item_dict.get("destination_kind", "")),
         })
     actions = []
+    site_values: list[int] = []
+    missing_site = 0
     for item in _as_list(getattr(report, "actions", [])):
         item_dict = _as_dict(item)
+        site_va = item_dict.get("site_va")
+        if isinstance(site_va, int) and not isinstance(site_va, bool):
+            site_values.append(site_va)
+        elif target_mode:
+            missing_site += 1
         actions.append({
             "kind": str(item_dict.get("kind", "")),
             "site": str(item_dict.get("site", "")),
+            "site_va": site_va,
+            "offset": item_dict.get("offset"),
             "callee": str(item_dict.get("callee", "")),
             "capacity": item_dict.get("capacity"),
             "method": str(item_dict.get("method", "")),
         })
+    target_actions_outside: int | None = None
+    if target_mode and target_scope:
+        try:
+            scope_start = int(target_scope.get("va"))
+            scope_end = int(target_scope.get("end"))
+        except (TypeError, ValueError):
+            scope_start = scope_end = None
+        if scope_start is not None and scope_end is not None:
+            target_actions_outside = sum(
+                1 for value in site_values
+                if not (scope_start <= value < scope_end)
+            )
     profile = str(packet.get("profile", "") or scope.get("profile", "")
                   or verification.get("profile", "") or "")
     if not profile:
@@ -1278,6 +1456,12 @@ def _extract_probe_row(report: Any, outcome: Any, *, probe_id: str, path: str,
         "source": source,
         "verify": verify,
         "requested_strategy": requested_strategy,
+        "target_mode": bool(target_mode),
+        "target": str(target or ""),
+        "target_scope": target_scope or None,
+        "target_actions_total": len(actions),
+        "target_actions_missing_site": missing_site,
+        "target_actions_outside": target_actions_outside,
         "status": "ok",
         "error": None,
         "format": str(getattr(report, "format", "")),
@@ -1312,7 +1496,9 @@ def _extract_probe_row(report: Any, outcome: Any, *, probe_id: str, path: str,
 
 
 def _probe_repair(ctx: dict[str, Any], rel: str, source: str, data: bytes, *,
-                  strategy: str, verify: bool, probe_id: str) -> dict[str, Any]:
+                  strategy: str, verify: bool, probe_id: str,
+                  target: str | None = None,
+                  require_target: bool = False) -> dict[str, Any]:
     pipeline, error = _load_module("app.services.binary_pipeline")
     if pipeline is None or not hasattr(pipeline, "repair_any"):
         return {
@@ -1321,16 +1507,48 @@ def _probe_repair(ctx: dict[str, Any], rel: str, source: str, data: bytes, *,
             "source": source,
             "verify": verify,
             "requested_strategy": strategy,
+            "target_mode": bool(target),
+            "target": str(target or ""),
             "status": "module_not_ready",
             "error": error or "repair_any unavailable",
         }
+    params = _signature_params(getattr(pipeline, "repair_any", None))
+    wants_target = target is not None or require_target
+    if wants_target and "target" not in params:
+        return {
+            "probe_id": probe_id,
+            "path": rel,
+            "source": source,
+            "verify": verify,
+            "requested_strategy": strategy,
+            "target_mode": bool(target),
+            "target": str(target or ""),
+            "status": "target_not_supported",
+            "error": "repair_any has no target/require_target parameters",
+        }
+    call_kwargs: dict[str, Any] = {
+        "strategy": strategy,
+        "verify": verify,
+        "allow_static_only": True,
+    }
+    if target is not None and "target" in params:
+        call_kwargs["target"] = target
+    if require_target and "require_target" in params:
+        call_kwargs["require_target"] = True
     try:
-        outcome = pipeline.repair_any(
-            data,
-            strategy=strategy,
-            verify=verify,
-            allow_static_only=True,
-        )
+        outcome = pipeline.repair_any(data, **call_kwargs)
+    except TypeError as exc:
+        return {
+            "probe_id": probe_id,
+            "path": rel,
+            "source": source,
+            "verify": verify,
+            "requested_strategy": strategy,
+            "target_mode": bool(target),
+            "target": str(target or ""),
+            "status": "target_not_supported",
+            "error": f"target kwarg rejected: {_truncate(exc)}",
+        }
     except Exception as exc:  # noqa: BLE001 - mid-flight pipeline is evidence
         return {
             "probe_id": probe_id,
@@ -1338,6 +1556,8 @@ def _probe_repair(ctx: dict[str, Any], rel: str, source: str, data: bytes, *,
             "source": source,
             "verify": verify,
             "requested_strategy": strategy,
+            "target_mode": bool(target),
+            "target": str(target or ""),
             "status": "probe_error",
             "error": f"{type(exc).__name__}: {_truncate(exc)}",
         }
@@ -1349,12 +1569,15 @@ def _probe_repair(ctx: dict[str, Any], rel: str, source: str, data: bytes, *,
             "source": source,
             "verify": verify,
             "requested_strategy": strategy,
+            "target_mode": bool(target),
+            "target": str(target or ""),
             "status": "probe_error",
             "error": "outcome.report missing",
         }
     return _extract_probe_row(report, outcome, probe_id=probe_id, path=rel,
                               source=source, requested_strategy=strategy,
-                              verify=verify)
+                              verify=verify, target_mode=target is not None,
+                              target=target or "")
 
 
 def _budget_exceeded(ctx: dict[str, Any]) -> bool:
@@ -1438,11 +1661,121 @@ def _run_probes(ctx: dict[str, Any]) -> None:
             ctx, rel, "capacity_probe", data,
             strategy="capacity", verify=True, probe_id=f"capacity:{rel}",
         ))
+    # Target-mode probes: measure whether requested repair actions stay inside a
+    # caller-declared function scope (only when the pipeline/gate support it).
+    target_rows: list[dict[str, Any]] = []
+    pipeline, _pipeline_error = _load_module("app.services.binary_pipeline")
+    pipeline_params = _signature_params(getattr(pipeline, "repair_any", None)) \
+        if pipeline is not None else []
+    unified = _as_dict(_as_dict(ctx.get("gates")).get("unified"))
+    target_support = (
+        "target" in pipeline_params
+        and "require_target" in pipeline_params
+        and bool(unified.get("target_scope_supported"))
+    )
+    if target_support:
+        candidates: list[tuple[str, str, str]] = []
+        seen: set[tuple[str, str]] = set()
+
+        def _add_candidate(probe_key: str, rel: str, target_name: str) -> None:
+            key = (rel, target_name)
+            if key in seen or not rel or not target_name:
+                return
+            seen.add(key)
+            candidates.append((probe_key, rel, target_name))
+
+        # Prefer functions that actually own a patchable sink: a target-mode
+        # probe then exercises the positive path (actions inside scope and
+        # patch.target_scope=passed), not only the fail-closed path.
+        analysis_by_path = {
+            str(row.get("path")): row for row in analysis_rows
+            if row.get("status") == "ok"
+        }
+
+        def _fixture_priority(rel: str) -> tuple[int, str]:
+            # Canonical acceptance fixtures first: the heap malloc guard and the
+            # stack strcpy guards are the reviewed positives; large static
+            # binaries (legacy runtime code) come later.
+            if "heap-malloc" in rel:
+                return (0, rel)
+            if "vuln-strcpy" in rel:
+                return (1, rel)
+            return (2, rel)
+
+        for rel in sorted(analysis_by_path, key=_fixture_priority):
+            if len(candidates) >= 4:
+                break
+            analysis_row = _as_dict(analysis_by_path[rel])
+            sink_functions = []
+            for sink in _as_list(analysis_row.get("sinks")):
+                sink_dict = _as_dict(sink)
+                if not sink_dict.get("patchable"):
+                    continue
+                try:
+                    sink_functions.append(int(str(sink_dict.get("function_va"))))
+                except (TypeError, ValueError):
+                    continue
+            if not sink_functions:
+                continue
+            data = _read_bytes(ctx, ROOT / rel)
+            if data is None:
+                continue
+            container = _detect_container(data)
+            if container is None:
+                continue
+            symbols = _as_dict(getattr(container, "symbols", {}))
+            by_va: dict[int, str] = {}
+            for raw_va, name in symbols.items():
+                try:
+                    by_va[int(raw_va)] = str(name)
+                except (TypeError, ValueError):
+                    continue
+            for function_va in sorted(set(sink_functions)):
+                name = by_va.get(function_va)
+                if name:
+                    _add_candidate(f"target:{name}", rel, name)
+                    break
+        # Benchmark/declared targets: prove the fail-closed path when the
+        # declared function has no patchable deterministic sink.
+        for case in _as_list(ctx.get("cases")):
+            case_dict = _as_dict(case)
+            if len(candidates) >= 6:
+                break
+            rel = str(case_dict.get("binary") or "")
+            target_name = str(case_dict.get("target") or "")
+            if case_dict.get("target_state") != "resolved":
+                continue
+            _add_candidate(f"target:{case_dict.get('case_id') or target_name}",
+                           rel, target_name)
+        for case_id, rel, target_name in candidates[:6]:
+            data = _read_bytes(ctx, ROOT / rel)
+            if data is None:
+                continue
+            if _budget_exceeded(ctx):
+                target_rows.append({
+                    "probe_id": f"target:{case_id}",
+                    "path": rel,
+                    "source": "target_probe",
+                    "verify": True,
+                    "requested_strategy": "auto",
+                    "target_mode": True,
+                    "target": target_name,
+                    "status": "skipped_budget",
+                    "error": None,
+                })
+                continue
+            target_rows.append(_probe_repair(
+                ctx, rel, "target_probe", data,
+                strategy="auto", verify=True,
+                probe_id=f"target:{case_id}",
+                target=target_name, require_target=True,
+            ))
     ctx["probes"] = {
         "fixtures": probes,
         "analysis": analysis_rows,
         "strategies": strategy_rows,
         "capacity": capacity_rows,
+        "targets": target_rows,
         "skipped_budget": skipped,
     }
 
@@ -1892,50 +2225,170 @@ def _gap_strategy_request(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     )]
 
 
-def _gap_target_scope(ctx: dict[str, Any]) -> list[dict[str, Any]]:
+def _pipeline_target_support() -> dict[str, Any]:
+    """Measured support for a caller-declared target repair scope."""
     pipeline, error = _load_module("app.services.binary_pipeline")
-    params = _signature_params(getattr(pipeline, "repair_any", lambda: None)) \
+    params = _signature_params(getattr(pipeline, "repair_any", None)) \
         if pipeline is not None else []
-    has_target = any(name in params for name in ("target", "function", "target_va"))
-    cases = _as_list(ctx.get("cases"))
-    not_analyzed = [case for case in cases if case.get("measured_target_analyzed") is False]
-    wrong_function = [case for case in cases
-                      if case.get("measured_wrong_function_actions") is True]
-    evidence = [
-        f"census:repair_any parameters={params}",
-        _source_line(MODULE_PATHS["binary_pipeline"], "def repair_any"),
-    ]
-    for case in wrong_function[:6]:
-        evidence.append(
-            f"probe:{case.get('binary')} patched actions outside declared target "
-            f"{case.get('target')} ({case.get('target_va')})"
-        )
-    status = "closed" if has_target else "open"
-    probes_ran = bool(ctx.get("_include_probes"))
-    symptom = (
-        "repair_any has no caller-declared target selector; the engine patches "
-        "the first patchable sink anywhere in the image"
+    containers, _containers_error = _load_module("app.services.containers")
+    return {
+        "module": "app.services.binary_pipeline",
+        "status": "ok" if pipeline is not None else "module_not_ready",
+        "error": error,
+        "parameters": params,
+        "accepts_target": "target" in params,
+        "accepts_require_target": "require_target" in params,
+        "resolve_function_scope": bool(
+            containers is not None
+            and hasattr(containers, "resolve_function_scope")
+        ),
+    }
+
+
+def _target_scope_evidence(ctx: dict[str, Any]) -> dict[str, Any]:
+    """Combine pipeline/gate support with measured target-mode probe evidence."""
+    unified = _as_dict(_as_dict(ctx.get("gates")).get("unified"))
+    support = _pipeline_target_support()
+    enforcement = _as_dict(unified.get("target_scope_enforcement"))
+    gate_supported = bool(unified.get("target_scope_supported"))
+    gate_check_observed = bool(unified.get("target_scope_check_observed"))
+    gate_enforced = (
+        enforcement.get("pass") == "passed"
+        and enforcement.get("outside") == "failed"
+        and enforcement.get("missing_site") == "failed"
     )
-    if probes_ran:
-        symptom += (
-            f". Measured: {len(not_analyzed)}/{len(cases)} declared benchmark "
-            f"targets have no patchable deterministic sink and "
-            f"{len(wrong_function)} benchmark case(s) were patched outside the "
-            "declared target function"
+    probes = _as_dict(ctx.get("probes"))
+    target_rows = [
+        _as_dict(row) for row in _as_list(probes.get("targets"))
+    ]
+    ok_rows = [row for row in target_rows if row.get("status") == "ok"]
+    outside = sum(
+        int(row.get("target_actions_outside") or 0)
+        for row in ok_rows
+        if isinstance(row.get("target_actions_outside"), (int, float))
+    )
+    missing_site = sum(
+        int(row.get("target_actions_missing_site") or 0) for row in ok_rows
+    )
+    actions_total = sum(
+        int(row.get("target_actions_total") or 0) for row in ok_rows
+    )
+    check_passed_rows = 0
+    for row in ok_rows:
+        for check in _as_list(_as_dict(row).get("checks")):
+            item = _as_dict(check)
+            if (str(item.get("id", "")) == "patch.target_scope"
+                    and str(item.get("status", "")) == "passed"):
+                check_passed_rows += 1
+                break
+    clean = bool(ok_rows) and outside == 0 and missing_site == 0 \
+        and actions_total > 0 and check_passed_rows > 0
+    support_ok = (
+        bool(support.get("accepts_target"))
+        and bool(support.get("accepts_require_target"))
+        and gate_supported
+        and gate_check_observed
+        and gate_enforced
+    )
+    return {
+        "support": support,
+        "gate_supported": gate_supported,
+        "gate_check_observed": gate_check_observed,
+        "gate_enforced": gate_enforced,
+        "enforcement": enforcement,
+        "target_rows": target_rows,
+        "ok_rows": ok_rows,
+        "outside_actions": outside,
+        "missing_site": missing_site,
+        "actions_total": actions_total,
+        "check_passed_rows": check_passed_rows,
+        "clean": clean,
+        "support_ok": support_ok,
+    }
+
+
+def _gap_target_scope(ctx: dict[str, Any]) -> list[dict[str, Any]]:
+    evidence = _target_scope_evidence(ctx)
+    support = _as_dict(evidence["support"])
+    probes_ran = bool(ctx.get("_include_probes"))
+    cases = _as_list(ctx.get("cases"))
+    not_analyzed = [case for case in cases
+                    if case.get("measured_target_analyzed") is False]
+    probe_evidence: list[str] = [
+        f"census:repair_any parameters={_as_list(support.get('parameters'))}",
+        f"census:resolve_function_scope={support.get('resolve_function_scope')}",
+        f"census:gate_target_scope_supported={evidence['gate_supported']}",
+        f"census:gate_target_scope_check={evidence['gate_check_observed']}",
+        f"census:target_scope_enforcement={evidence['enforcement']}",
+    ]
+    for row in _as_list(evidence["ok_rows"])[:6]:
+        probe_evidence.append(
+            "probe:{} target={} actions={} outside={} missing_site={}".format(
+                row.get("probe_id"), row.get("target"),
+                row.get("target_actions_total"),
+                row.get("target_actions_outside"),
+                row.get("target_actions_missing_site"),
+            )
         )
+    if evidence["support_ok"] and probes_ran and evidence["clean"]:
+        status = "closed"
+        severity = "info"
+        symptom = (
+            "caller-declared target scope is enforced end-to-end: repair_any "
+            "accepts target/require_target, the unified gate emits and enforces "
+            "patch.target_scope, and target-mode probes kept every patch action "
+            f"inside the declared function ({evidence['actions_total']} action(s), "
+            f"{evidence['outside_actions']} outside)"
+        )
+        next_step = "keep the target-mode gate and probe evidence"
+    elif evidence["support_ok"] and not probes_ran:
+        status = "mitigated"
+        severity = "low"
+        symptom = (
+            "target selector + patch.target_scope support is measured, but this "
+            "static audit run has no target-mode probe evidence; closing requires "
+            "the full/--local audit (not fabricated)"
+        )
+        next_step = "run the full audit with probes to confirm target-mode actions"
+    elif evidence["support_ok"]:
+        status = "open"
+        severity = "medium"
+        symptom = (
+            "target support is present but target-mode probe evidence is "
+            f"incomplete: clean={evidence['clean']} "
+            f"outside_actions={evidence['outside_actions']} "
+            f"missing_site_va={evidence['missing_site']} "
+            f"probe_rows={len(evidence['ok_rows'])}"
+        )
+        next_step = "fix out-of-scope/missing-site actions or target-mode probe errors"
     else:
-        symptom += (
-            " (static census: the target-attribution evidence needs the full "
-            "fixture probes)"
+        status = "open"
+        severity = "medium"
+        symptom = (
+            "repair_any has no enforced caller-declared target scope: "
+            f"target={support.get('accepts_target')} "
+            f"require_target={support.get('accepts_require_target')} "
+            f"gate_target_scope={evidence['gate_supported']} "
+            f"patch.target_scope={evidence['gate_check_observed']} "
+            f"enforced={evidence['gate_enforced']}; the engine can patch the "
+            "first patchable sink anywhere in the image"
+        )
+        next_step = (
+            "add repair_any(target, require_target) + unified patch.target_scope "
+            "so a whole-image patch cannot be reported as repairing the "
+            "declared function"
+        )
+    if probes_ran and not_analyzed:
+        probe_evidence.append(
+            f"census:{len(not_analyzed)}/{len(cases)} declared benchmark targets "
+            "have no patchable deterministic sink"
         )
     return [_gap(
         "EG-target-scope", "engine_gap", symptom,
-        evidence,
-        "medium", status,
-        "add an optional target/function selector or a target-identity gate "
-        "check so a whole-image patch cannot be reported as repairing the "
-        "declared function",
-        "engine_target_scope", novel=True,
+        probe_evidence,
+        severity, status,
+        next_step,
+        "engine_target_scope", novel=status == "open",
     )]
 
 
@@ -2378,17 +2831,116 @@ def _gap_gate_poc_unavailable(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     )]
 
 
+def _manifest_route_evidence(pipeline_source: str) -> dict[str, Any]:
+    """Measure whether ``repair_any`` routes manifest repairs away from the
+    legacy engine.
+
+    A parameter *declaration* such as ``poc_manifest: dict | None = None`` is
+    NOT a route.  The measurement therefore (a) starts at the first runtime
+    statement of ``repair_any`` after its signature/docstring, (b) accepts only
+    real guard expressions, and (c) requires the guard to precede the legacy
+    ``repair_elf`` call with a route/return token in between.
+    """
+    source = str(pipeline_source or "")
+    repair_start = source.find("def repair_any")
+    repair_text = source[repair_start:] if repair_start >= 0 else ""
+    body_start = repair_text.find("container = detect_container(data)")
+    if body_start < 0:
+        body_start = repair_text.find("report = _base_report(data, container)")
+    body = repair_text[body_start:] if body_start >= 0 else repair_text
+    legacy_position = body.find("repair_elf")
+    guard_patterns = (
+        "poc_manifest is not None",
+        "if poc_manifest:",
+        "if poc_manifest: ",
+        "manifest_supplied",
+    )
+    guard_hits = [
+        (body.find(pattern), pattern) for pattern in guard_patterns
+        if body.find(pattern) >= 0
+    ]
+    guard_position = min(position for position, _pattern in guard_hits) \
+        if guard_hits else -1
+    window = ""
+    if guard_position >= 0 and legacy_position > guard_position:
+        window = body[guard_position:legacy_position]
+    route_helpers = [
+        token for token in (
+            "_attempt_capacity", "_generic_repair", "_targeted_elf_repair",
+            "analysis_only", "return",
+        )
+        if token in window
+    ]
+    routed = bool(
+        guard_position >= 0
+        and legacy_position >= 0
+        and guard_position < legacy_position
+        and route_helpers
+    )
+    legacy_start = source.find("def _from_elf_legacy")
+    legacy_end = source.find("def _select_runtime")
+    legacy_branch = (
+        source[legacy_start:legacy_end]
+        if legacy_start >= 0 and legacy_end > legacy_start else ""
+    )
+    disclosed = "cannot consume" in legacy_branch or "external_poc" in legacy_branch
+    return {
+        "routed": routed,
+        "guard_position": guard_position,
+        "guard_patterns": [pattern for _position, pattern in guard_hits],
+        "legacy_position": legacy_position,
+        "route_helpers": route_helpers,
+        "disclosed": bool(disclosed),
+        "body_start": body_start,
+    }
+
+
 def _gap_gate_legacy(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     legacy = _as_dict(_as_dict(ctx.get("gates")).get("legacy"))
     ids = {str(item) for item in _as_list(legacy.get("check_ids"))}
     profile_enforced = "profile.declared" in ids and "profile.required_checks" in ids
     accepts_poc = bool(legacy.get("accepts_external_poc"))
-    legacy_source = _read_text(MODULE_PATHS["binary_pipeline"])
-    legacy_branch = legacy_source[legacy_source.find("def _from_elf_legacy"):
-                                 legacy_source.find("def _select_runtime")]
-    legacy_manifest_routed = (
-        "poc_manifest" in legacy_branch or "external_poc" in legacy_branch
-    )
+    manifest_check = str(legacy.get("manifest_unsupported_check") or "absent")
+    route_evidence = _manifest_route_evidence(
+        _read_text(MODULE_PATHS["binary_pipeline"]))
+    manifest_routed_away = bool(route_evidence["routed"])
+    legacy_discloses = bool(route_evidence["disclosed"])
+    defensive = accepts_poc and manifest_check == "failed"
+    if defensive and manifest_routed_away:
+        manifest_status = "closed"
+        manifest_symptom = (
+            "manifest-bearing ELF x86-64 repairs are routed to the unified "
+            "evidence-profile gate before the legacy engine, and the legacy "
+            "builder fails closed on supplied external PoC evidence "
+            "(manifest.legacy_gate_unsupported=failed)"
+        )
+        manifest_next = "keep the manifest guard before the legacy engine"
+    elif defensive or manifest_routed_away or legacy_discloses:
+        manifest_status = "mitigated"
+        manifest_symptom = (
+            "legacy manifest handling is partially converged: defensive "
+            f"fail-closed check={defensive} (status={manifest_check}), routing "
+            f"before the legacy engine={manifest_routed_away}, disclosed in the "
+            f"legacy branch={legacy_discloses}; the mismatch is disclosed, not "
+            "silently dropped"
+        )
+        manifest_next = (
+            "complete the convergence: route manifest-bearing repairs to the "
+            "unified gate AND keep the legacy builder fail-closed"
+        )
+    else:
+        manifest_status = "open"
+        manifest_symptom = (
+            "the legacy ELF x86-64 pipeline path ignores or cannot represent a "
+            "supplied PoC manifest: no defensive fail-closed check "
+            f"(accepts_external_poc={accepts_poc}, status={manifest_check}) and "
+            f"no measured routing before the legacy engine "
+            f"(routed={manifest_routed_away}, disclosed={legacy_discloses})"
+        )
+        manifest_next = (
+            "route manifest-bearing repairs through the unified gate and add the "
+            "legacy fail-closed manifest check"
+        )
     gaps = [_gap(
         "GM-legacy-gate-profile", "gate_mismatch",
         (
@@ -2412,34 +2964,20 @@ def _gap_gate_legacy(ctx: dict[str, Any]) -> list[dict[str, Any]]:
         "in binary_verification.build_verification",
         "gate_legacy_profile", novel=not profile_enforced,
     ), _gap(
-        "GM-legacy-gate-poc-manifest", "gate_mismatch",
-        (
-            "the legacy gate consumes external-PoC evidence directly"
-            if accepts_poc else
-            "the legacy ELF x86-64 gate has no external-PoC evidence model; the "
-            "pipeline now surfaces that limitation instead of dropping the "
-            "manifest silently and manifest-bearing repairs are routed to the "
-            "unified gate, but the legacy report itself cannot present that "
-            "evidence (Lead G9)"
-            if legacy_manifest_routed else
-            "the legacy ELF x86-64 pipeline path ignores a supplied PoC manifest: "
-            "repair_any routes manifest-bearing non-generic inputs to repair_elf "
-            "and build_verification has no external-PoC parameter, so evidence is "
-            "silently dropped (Lead G9)"
-        ),
+        "GM-legacy-gate-poc-manifest", "gate_mismatch", manifest_symptom,
         [
             f"census:legacy_build_parameters={_as_list(legacy.get('parameters'))}",
-            f"census:pipeline_legacy_manifest_routed={legacy_manifest_routed}",
+            f"census:manifest_unsupported_check={manifest_check}",
+            f"census:pipeline_manifest_routed_before_legacy={manifest_routed_away}",
+            f"census:manifest_route_evidence={route_evidence}",
+            f"census:legacy_branch_discloses_manifest={legacy_discloses}",
             _source_line(MODULE_PATHS["binary_pipeline"], "_from_elf_legacy"),
             _source_line(MODULE_PATHS["binary_verification"], "def build_verification"),
         ],
-        "info" if (accepts_poc or legacy_manifest_routed) else "medium",
-        "closed" if accepts_poc else (
-            "mitigated" if legacy_manifest_routed else "open"),
-        "keep manifest routing explicit" if (accepts_poc or legacy_manifest_routed) else
-        "route manifest-bearing repairs through the unified gate or add external "
-        "PoC evidence to the legacy gate",
-        "gate_legacy_poc", novel=not (accepts_poc or legacy_manifest_routed),
+        "info" if manifest_status == "closed" else (
+            "low" if manifest_status == "mitigated" else "medium"),
+        manifest_status, manifest_next,
+        "gate_legacy_poc", novel=manifest_status == "open",
     )]
     return gaps
 
@@ -2486,6 +3024,10 @@ def _gap_runtime_sources(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     sources = _as_list(runtime.get("sources"))
     host = _as_dict(runtime.get("host"))
     macho = _as_dict(runtime.get("macho_native"))
+    capabilities = _as_dict(runtime.get("capabilities"))
+    capability_pairs = _as_dict(capabilities.get("pairs"))
+    payload_capabilities = _as_dict(matrix.get("runtime_capabilities"))
+    capability_module_ok = bool(capabilities.get("module"))
     gaps: list[dict[str, Any]] = []
     for cell in _as_list(matrix.get("cells")):
         key = str(cell.get("key"))
@@ -2503,33 +3045,53 @@ def _gap_runtime_sources(ctx: dict[str, Any]) -> list[dict[str, Any]]:
             if available:
                 continue
             if tier == "native_run" and container == "macho":
-                detail = (
-                    "macho_native.available()="
-                    f"{macho.get('available')} host_supported="
-                    f"{macho.get('host_supported')}"
-                )
-                status = "open"
-                next_step = (
-                    "run the audit on a macOS host with codesign, or mark the "
-                    "Mach-O cells as platform-gated in the report"
-                )
-                severity = "high"
+                host_supported = bool(macho.get("host_supported"))
+                if host_supported:
+                    gaps.append(_gap(
+                        f"RG-runtime-evidence::{key}::{tier}", "runtime_gap",
+                        f"matrix cell {key} declares runtime tier {tier} but the "
+                        "native Mach-O runtime is unavailable on a host that "
+                        "should support it (macho_native.available()=False)",
+                        [
+                            f"census:macho_native={macho}",
+                            f"census:host={host.get('platform')}/{host.get('arch')}",
+                        ],
+                        "high", "open",
+                        "investigate the native runner (codesign/arch translation)",
+                        "runtime_sources",
+                    ))
+                else:
+                    gaps.append(_gap(
+                        f"RG-runtime-evidence::{key}::{tier}", "runtime_gap",
+                        f"matrix cell {key} declares runtime tier {tier}; this "
+                        f"host ({host.get('platform')}/{host.get('arch')}) cannot "
+                        "produce native Mach-O execution evidence (platform-gated, "
+                        "documented non-goal, not a product defect on this host)",
+                        [
+                            f"census:macho_native host_supported=False "
+                            f"available={macho.get('available')}",
+                            f"census:host={host.get('platform')}/{host.get('arch')}",
+                        ],
+                        "info", "mitigated",
+                        "run the audit on macOS for native evidence; CI static "
+                        "mode is platform-gated",
+                        "runtime_sources",
+                    ))
             else:
-                detail = f"no runtime source for {container}/{arch} tier {tier}"
-                status = "open"
-                next_step = "add a runtime source or remove the declared tier"
-                severity = "medium"
-            gaps.append(_gap(
-                f"RG-runtime-evidence::{key}::{tier}", "runtime_gap",
-                f"matrix cell {key} declares runtime tier {tier} but no measured "
-                f"runtime source can produce it on this host ({detail})",
-                [
-                    f"census:runtime_sources={len(candidates)} candidate(s)",
-                    f"census:host={host.get('platform')}/{host.get('arch')}",
-                    _source_line(MODULE_PATHS["repair_matrix"], "runtime_tiers"),
-                ],
-                severity, status, next_step, "runtime_sources",
-            ))
+                gaps.append(_gap(
+                    f"RG-runtime-evidence::{key}::{tier}", "runtime_gap",
+                    f"matrix cell {key} declares runtime tier {tier} but no "
+                    f"measured runtime source can produce it on this host "
+                    f"({container}/{arch}: {len(candidates)} candidate source(s))",
+                    [
+                        f"census:runtime_sources={len(candidates)} candidate(s)",
+                        f"census:host={host.get('platform')}/{host.get('arch')}",
+                        _source_line(MODULE_PATHS["repair_matrix"], "runtime_tiers"),
+                    ],
+                    "medium", "open",
+                    "add a runtime source or remove the declared tier",
+                    "runtime_sources",
+                ))
     # External PoC evidence source per (format, arch).
     for row in sources:
         item = _as_dict(row)
@@ -2542,6 +3104,7 @@ def _gap_runtime_sources(ctx: dict[str, Any]) -> list[dict[str, Any]]:
             (container == "pe")
             or (container == "macho" and arch == "i386")
         )
+        selector_value = str(item.get("runner") or "")
         if documented_non_goal:
             gaps.append(_gap(
                 f"RG-external-poc::<doc>::{pair}", "non_goal",
@@ -2557,79 +3120,182 @@ def _gap_runtime_sources(ctx: dict[str, Any]) -> list[dict[str, Any]]:
                 "runtime_sources",
             ))
             continue
-        status = "open"
-        if container == "macho" and bool(macho.get("available")):
-            symptom = (
-                f"native Mach-O runtime can execute {arch} on this host "
-                f"({host.get('arch')}) but the external-PoC runner selects none: "
-                "the two acceptance paths disagree about what this cell can prove"
+        if container == "macho":
+            capability = _as_dict(capability_pairs.get(pair))
+            has_capability = capability_module_ok and isinstance(
+                capability.get("poc_available"), bool)
+            reason = str(capability.get("reason") or "")
+            capability_fields = {
+                key: capability.get(key)
+                for key in ("available", "tier", "engine", "poc_available",
+                            "reason", "source")
+            }
+            poc_runner_source = _read_text(MODULE_PATHS["poc_runner"])
+            runner_consults_capabilities = (
+                "capabilities" in poc_runner_source
+                and ("_select_runner" in poc_runner_source
+                     or "select_runner" in poc_runner_source)
             )
-            next_step = (
-                "teach the PoC runner the same arch-translation the native runner "
-                "uses, or declare external PoC unavailable for this cell"
+            consistent = bool(
+                has_capability
+                and capability.get("poc_available") is False
+                and reason.strip()
+                and not selector_value
+                and runner_consults_capabilities
             )
-            severity = "low"
-        elif container == "elf":
-            symptom = (
-                f"external PoC evidence is unavailable for {pair}: shipped PoC "
-                "manifests for this cell cannot be executed through the product "
-                f"runner on this host ({host.get('platform')}/{host.get('arch')})"
-            )
-            next_step = (
-                "wire the declared guest runner (Lima/qemu) into poc_runner or "
-                "document the host requirement"
-            )
-            severity = "medium"
-        else:
-            symptom = f"external PoC evidence is unavailable for {pair}"
-            next_step = "document or provide a runner"
-            severity = "medium"
+            if consistent:
+                status = "closed"
+                severity = "info"
+                symptom = (
+                    f"runtime capability probe declares external PoC unavailable "
+                    f"for {pair} on this host with an explicit reason "
+                    f"({_truncate(reason, 140)}), and the PoC runner selects no "
+                    "runner consistently; the native and PoC evidence paths now "
+                    "agree on what this cell can prove (no fabricated PoC)"
+                )
+                next_step = "keep capability probe + runner selector in agreement"
+            elif has_capability:
+                status = "mitigated"
+                severity = "low"
+                symptom = (
+                    f"runtime capability module reports {pair} but its negative "
+                    "external-PoC evidence is incomplete or contradicts the "
+                    f"runner selector: poc_available="
+                    f"{capability.get('poc_available')} reason={reason!r} "
+                    f"runner={selector_value or 'none'}"
+                )
+                next_step = (
+                    "make _select_runner consult the capability probe and surface "
+                    "the reason; never fake PoC availability"
+                )
+            else:
+                status = "open"
+                severity = "low"
+                symptom = (
+                    f"native Mach-O runtime can execute {arch} on this host "
+                    f"({host.get('arch')}) but the external-PoC runner selects "
+                    "none, and no runtime capability probe explains the "
+                    "limitation: the two acceptance paths disagree about what "
+                    "this cell can prove"
+                )
+                next_step = (
+                    "add runtime.capabilities.probe coverage for Mach-O and "
+                    "declare external PoC unavailable with an explicit reason"
+                )
+            gaps.append(_gap(
+                f"RG-external-poc::{pair}", "runtime_gap", symptom,
+                [
+                    f"census:capability_pairs={capability_fields}",
+                    f"census:capabilities_module={capability_module_ok}",
+                    f"census:poc_runner_consults_capabilities="
+                    f"{runner_consults_capabilities}",
+                    f"census:runner={selector_value or 'none'}",
+                    f"census:matrix.runtime_capabilities[keys]="
+                    f"{sorted(payload_capabilities)[:8]}",
+                    f"census:host={host.get('platform')}/{host.get('arch')}",
+                ],
+                severity, status, next_step, "runtime_sources",
+                novel=status == "open",
+            ))
+            continue
+        if container == "elf":
+            gaps.append(_gap(
+                f"RG-external-poc::{pair}", "runtime_gap",
+                f"external PoC evidence is unavailable for {pair} because this "
+                f"host ({host.get('platform')}/{host.get('arch')}) has no "
+                "native/qemu/lima runner for that target (host capability gated); "
+                "the cell's declared runtime tier remains available and a "
+                "PoC-required repair stays not_verified",
+                [
+                    f"census:runner={selector_value or 'none'}",
+                    f"census:host={host.get('platform')}/{host.get('arch')}",
+                    f"census:limactl={host.get('limactl') or 'none'}",
+                ],
+                "info", "mitigated",
+                "run on a host with the matching guest runner, or keep "
+                "PoC-required repairs unverified",
+                "runtime_sources",
+            ))
+            continue
         gaps.append(_gap(
-            f"RG-external-poc::{pair}", "runtime_gap", symptom,
+            f"RG-external-poc::{pair}", "runtime_gap",
+            f"external PoC evidence is unavailable for {pair}",
             [
-                f"census:selector={item.get('selector') or 'none'}",
+                f"census:runner={selector_value or 'none'}",
                 f"census:host={host.get('platform')}/{host.get('arch')}",
-                f"census:limactl={host.get('limactl') or 'none'}",
             ],
-            severity, status, next_step, "runtime_sources", novel=True,
+            "medium", "open",
+            "document or provide a runner",
+            "runtime_sources", novel=True,
         ))
     return gaps
 
 
 def _gap_oracle_wrong_function(ctx: dict[str, Any]) -> list[dict[str, Any]]:
-    if not ctx.get("_include_probes"):
-        return []
+    evidence = _target_scope_evidence(ctx)
+    probes_ran = bool(ctx.get("_include_probes"))
     wrong = [case for case in _as_list(ctx.get("cases"))
              if case.get("measured_wrong_function_actions") is True]
     not_analyzed = [case for case in _as_list(ctx.get("cases"))
                     if case.get("measured_target_analyzed") is False]
-    evidence = [
-        f"probe:{case.get('binary')} findings outside target "
-        f"{case.get('target')} ({case.get('target_va')})"
-        for case in wrong[:8]
+    evidence_lines = [
+        f"census:target_scope_support={evidence['support_ok']} "
+        f"clean={evidence['clean']} outside_actions={evidence['outside_actions']}"
     ]
-    evidence += [
-        f"probe:{case.get('binary')} no patchable sink in target "
-        f"{case.get('target')}"
-        for case in not_analyzed[:8]
-    ]
-    status = "open" if wrong else "closed"
-    return [_gap(
-        "OG-wrong-function-candidate", "oracle_gap",
-        (
-            "no fixture produced a candidate whose patch actions all fall outside "
-            "the declared benchmark target function"
-            if not wrong else
+    for case in wrong[:8]:
+        evidence_lines.append(
+            f"probe:{case.get('binary')} findings outside target "
+            f"{case.get('target')} ({case.get('target_va')})"
+        )
+    for case in not_analyzed[:6]:
+        evidence_lines.append(
+            f"probe:{case.get('binary')} no patchable sink in target "
+            f"{case.get('target')}"
+        )
+    for row in _as_list(evidence["ok_rows"])[:6]:
+        evidence_lines.append(
+            "probe:{} target={} actions={} outside={}".format(
+                row.get("probe_id"), row.get("target"),
+                row.get("target_actions_total"),
+                row.get("target_actions_outside"),
+            )
+        )
+    if evidence["support_ok"] and probes_ran and evidence["clean"]:
+        status = "closed"
+        severity = "info"
+        symptom = (
+            "target-mode probes bound every patch action inside the declared "
+            "function; the whole-image default remains documented policy, but "
+            "target identity is provable when a target is requested"
+        )
+        next_step = "keep the target-mode probe in the release audit"
+    elif evidence["support_ok"]:
+        status = "mitigated"
+        severity = "low"
+        symptom = (
+            "target selector/gate support is present but this run has no clean "
+            "target-mode probe evidence; the wrong-function risk is bounded only "
+            "when a target is requested (not claimed closed)"
+        )
+        next_step = "run the full audit with target probes to confirm ownership"
+    else:
+        status = "open"
+        severity = "medium"
+        symptom = (
             f"{len(wrong)} benchmark case(s) produced byte patches outside the "
             "declared target function (whole-image scan): the gate/judge can "
             "only reject them by unrelated boundary semantics; nothing proves "
             "the patch repairs the declared defect"
-        ),
-        evidence or ["census:no wrong-function action measured"],
-        "medium" if wrong else "info", status,
-        "bind candidate actions to a declared target function or reject "
-        "out-of-target patch sites",
-        "oracle_wrong_function", novel=bool(wrong),
+        )
+        next_step = (
+            "bind candidate actions to a declared target function or reject "
+            "out-of-target patch sites"
+        )
+    return [_gap(
+        "OG-wrong-function-candidate", "oracle_gap", symptom,
+        evidence_lines or ["census:no wrong-function action measured"],
+        severity, status, next_step,
+        "oracle_wrong_function", novel=status == "open",
     )]
 
 
@@ -3415,6 +4081,7 @@ _MODULE_IMPORTS: dict[str, str] = {
     "poc_runner": "app.services.poc_runner",
     "guest_runner": "app.services.guest_runner",
     "capacity": "app.services.repair.capacity",
+    "capabilities": "app.services.runtime.capabilities",
     "ai_binary_repair": "app.services.ai_binary_repair",
     "ai_assembly_repair": "app.services.ai_assembly_repair",
     "ai_patch_validation": "app.services.ai_patch_validation",
@@ -3469,6 +4136,7 @@ def _summarize(gaps: list[dict[str, Any]], ctx: dict[str, Any]) -> dict[str, Any
             "analysis": len(_as_list(probes.get("analysis"))),
             "strategies": len(_as_list(probes.get("strategies"))),
             "capacity": len(_as_list(probes.get("capacity"))),
+            "targets": len(_as_list(probes.get("targets"))),
             "skipped_budget": int(probes.get("skipped_budget", 0) or 0),
         },
     }
@@ -3548,6 +4216,7 @@ def build_audit(*, include_probes: bool = True,
             if row.get("status") == "ok"
         ]),
         "probes_skipped_budget": int(probes.get("skipped_budget", 0) or 0),
+        "target_mode_probes": len(_as_list(probes.get("targets"))),
         "fixtures_skipped_over_size": rows_over_size,
         "network_access": False,
         "host_elf_execution": False,
@@ -3578,6 +4247,7 @@ def build_audit(*, include_probes: bool = True,
                 "host": _as_dict(ctx["runtime"]).get("host"),
                 "emulated": _as_dict(ctx["runtime"]).get("emulated"),
                 "macho_native": _as_dict(ctx["runtime"]).get("macho_native"),
+                "capabilities": _as_dict(ctx["runtime"]).get("capabilities"),
                 "sources": _as_list(_as_dict(ctx["runtime"]).get("sources")),
             },
             "fixtures": ctx["fixtures"],
@@ -3595,6 +4265,7 @@ def build_audit(*, include_probes: bool = True,
             "analysis": probes.get("analysis", []),
             "strategies": probes.get("strategies", []),
             "capacity": probes.get("capacity", []),
+            "targets": probes.get("targets", []),
         },
         "gaps": gaps,
         "summary": _summarize(gaps, ctx),

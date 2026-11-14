@@ -12,7 +12,7 @@
       "ai_action": null,
       "ai_effect": "none",
       "reason": "all_required_checks_passed",
-      "evidence_sha256": "4ca9f001dc2d56917e642575e4c74427acbf7c20ac23dcc318b6400a3cc85057",
+      "evidence_sha256": "09296a3c35e27b429514cd0d08b51618c7b7ba4b47c835d5d01f2560128dbe13",
       "review_status": "review_not_requested",
       "review_mode": "off",
       "review_called": false
@@ -103,6 +103,32 @@
       "runtime.evidence"
     ],
     "poc_status": null
+  },
+  "heap_target_scoped": {
+    "case": "heap-target-scoped",
+    "target": "heap_bad",
+    "disposition": "verified_patch",
+    "verified": true,
+    "candidate_sha256": "ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73",
+    "gate_outcome": "success_within_scope",
+    "target_scope_check": "passed",
+    "target_scope": {
+      "name": "heap_bad",
+      "va": 4198704,
+      "end": 4198764,
+      "source": "symbol"
+    },
+    "checks_total": 20,
+    "checks_failed": []
+  },
+  "heap_wrong_target": {
+    "case": "heap-wrong-target",
+    "target": "main",
+    "disposition": "analysis_only",
+    "verified": false,
+    "download_allowed": false,
+    "candidate_present": false,
+    "error": "PoC manifest requests are verified only by the unified evidence-profile gate; no deterministic candidate was produced"
   },
   "failures": [],
   "passed": true

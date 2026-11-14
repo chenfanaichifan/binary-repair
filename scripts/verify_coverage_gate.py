@@ -50,18 +50,19 @@ NON_GOALS_DOC = ROOT / "docs" / "acceptance" / "non-goals-2026-11-14.md"
 
 #: Residual open gaps this release may ship with. Keep this explicit and tiny;
 #: remove an id as soon as its detector closes it (``--local`` enforces that the
-#: list is tight). Rationale for the current entries:
-#: - EG-target-scope / OG-wrong-function-candidate: target selection + gate
-#:   target-identity proof (target-scope workstream); closed only by measured
-#:   target-mode probe evidence.
-#: - RG-external-poc::macho/x86_64: external PoC is declared unavailable on
-#:   arm64 hosts (platform limitation); closed only when the capability probe
-#:   and the runner agree with an explicit reason.
-ALLOWED_OPEN: tuple[str, ...] = (
-    "EG-target-scope",
-    "OG-wrong-function-candidate",
-    "RG-external-poc::macho/x86_64",
-)
+#: list is tight, so an id that is no longer measured open must be removed).
+#:
+#: Current residual set: EMPTY. The baseline open set
+#: (EG-target-scope, OG-wrong-function-candidate, RG-external-poc::macho/x86_64)
+#: closed by measurement on the integrated tree:
+#: - EG-target-scope / OG-wrong-function-candidate: repair_any(target,
+#:   require_target) + unified patch.target_scope are exposed AND a target-mode
+#:   probe kept every patch action inside the declared function;
+#: - RG-external-poc::macho/x86_64: the runtime capability probe declares
+#:   external PoC unavailable on arm64 hosts with an explicit reason and the PoC
+#:   runner selects no runner consistently.
+#: Re-adding an id here is a release decision and must state its rationale.
+ALLOWED_OPEN: tuple[str, ...] = ()
 
 REQUIRED_CLAIM_NON_GOAL_KEYS = ("id", "category", "enforcement", "claim")
 

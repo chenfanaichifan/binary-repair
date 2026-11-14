@@ -142,6 +142,77 @@ def test_cli_injected_bad_audit_fails(tmp_path: Path) -> None:
     assert "VIOLATION" in result.stdout
 
 
+def test_manifest_route_detection_ignores_signature_declaration() -> None:
+    """A `poc_manifest: ... = None` parameter is not a routing guard."""
+    from app.services import coverage_audit
+
+    source = """
+def repair_any(
+    data: bytes,
+    *,
+    poc_manifest: dict[str, Any] | None = None,
+    verify: bool = True,
+) -> RepairOutcome:
+    # Repair any input.
+    container = detect_container(data)
+    from app.services.binary_repair_engine import repair_elf
+    patched, raw = repair_elf(data)
+    report = _from_elf_legacy(container, data, patched, raw, verify=verify,
+                              external_poc=poc_manifest)
+    return report
+
+
+def _from_elf_legacy(container, data, patched, raw, *, verify,
+                     external_poc=None):
+    if external_poc is not None:
+        report.limitations.append("cannot consume it")
+    return report
+
+
+def _select_runtime(data, container, sink):
+    return None
+"""
+    evidence = coverage_audit._manifest_route_evidence(source)
+    assert evidence["routed"] is False
+    assert evidence["disclosed"] is True
+    assert "poc_manifest is not None" not in evidence["guard_patterns"]
+
+
+def test_manifest_route_detection_requires_guard_before_legacy_engine() -> None:
+    """A real control-flow guard that routes before repair_elf is measured."""
+    from app.services import coverage_audit
+
+    source = """
+def repair_any(
+    data: bytes,
+    *,
+    poc_manifest: dict[str, Any] | None = None,
+    verify: bool = True,
+) -> RepairOutcome:
+    # Repair any input.
+    container = detect_container(data)
+    if poc_manifest is not None:
+        return _attempt_capacity(data, container, poc_manifest=poc_manifest)
+    from app.services.binary_repair_engine import repair_elf
+    patched, raw = repair_elf(data)
+    return patched
+
+
+def _from_elf_legacy(container, data, patched, raw, *, verify,
+                     external_poc=None):
+    return None
+
+
+def _select_runtime(data, container, sink):
+    return None
+"""
+    evidence = coverage_audit._manifest_route_evidence(source)
+    assert evidence["routed"] is True
+    assert evidence["guard_position"] < evidence["legacy_position"]
+    assert "_attempt_capacity" in evidence["route_helpers"]
+    assert "return" in evidence["route_helpers"]
+
+
 def test_repo_claims_parse_and_preserve_invariants() -> None:
     claims = json.loads((ROOT / "docs" / "status" / "claims.json")
                         .read_text(encoding="utf-8"))
