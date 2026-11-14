@@ -41,6 +41,20 @@ def test_side_effecting_unknown_symbol_fails_closed():
     assert "fputs" in r.unresolved
 
 
+def test_fputs_stderr_has_a_reviewed_write_shortcut():
+    source = "void target(char *p) { fputs(p, stderr); }"
+    r = resolve(source, set(), target_name="target", allow_fputs_stderr=True)
+    assert r.ok
+    assert r.stubs == ["br_fputs"]
+    out = apply_stubs(source, r)
+    assert "br_fputs(p)" in out
+    assert "syscall" in out
+    # Non-stderr stream is not silently rewritten.
+    r2 = resolve("void t(char*p){ fputs(p, stdout); }", set(), target_name="t",
+                 allow_fputs_stderr=True)
+    assert not r2.ok
+
+
 def test_call_extraction_ignores_control_flow():
     names = called_names("if (x) { foo(); } else { bar(); }")
     assert names == {"foo", "bar"}

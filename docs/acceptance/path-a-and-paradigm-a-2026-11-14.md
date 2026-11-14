@@ -116,3 +116,19 @@ non-loop 0/6 unchanged.
 
 `routeb/symbol_resolver.py` now also has pure-function templates for `strlen`,
 `memcpy`, and `memset`; side-effecting/unknown calls still fail closed.
+
+
+## Final integration update (2026-11-14)
+
+- Feature was rebased onto `origin/workbench-v3` (`090ad94`); docs conflicts
+  were resolved by keeping the coverage acceptance section and appending the
+  4-model matrix section.
+- 4-model real matrix: DeepSeek 6/12 each, CN free Qwen 0/12 each, native PoC.
+- Symbol resolver added pure templates (`strlen/memcpy/memset`) and a reviewed
+  `fputs(x, stderr) -> br_fputs` write shortcut; other streams and side-effecting
+  calls remain fail-closed.
+- Errno comparator (`app/services/errno_signature.py`) has unit tests; runtime
+  errno extraction is **not** wired into `poc_runner` yet.
+- External capacity/coverage work lives on `coverage-audit-2026-11-14`; stashes
+  were exported to `../capacity-archive-2026-11-14/`, then dropped; the old
+  capacity worktree was removed.

@@ -37,6 +37,15 @@
     ],
     "unresolved": []
   },
+  "fputs_stderr_shortcut": {
+    "available": [],
+    "defined_in_source": [],
+    "stubs": [
+      "br_fputs"
+    ],
+    "unresolved": []
+  },
   "stub_demo": "static void br_exit(int code)\n{\n    register long rax __asm__(\"rax\") = 60;\n    register long rdi __asm__(\"rdi\") = code;\n    __asm__ volatile(\"syscall\" :: \"r\"(rax), \"r\"(rdi) : \"rcx\", \"r11\", \"memory\");\n    for (;;) { }\n}\n\nstatic long br_write(int fd, const void *buf, unsigned long n)\n{\n    register long rax __asm__(\"rax\") = 1;\n    register long rdi __asm__(\"rdi\") = fd;\n    register long rsi __asm__(\"rsi\") = (long)buf;\n    register long rdx __asm__(\"rdx\") = (long)n;\n    __asm__ volatile(\"syscall\" : \"+r\"(rax) : \"r\"(rdi), \"r\"(rsi), \"r\"(rdx)\n                     : \"rcx\", \"r11\", \"memory\");\n    return rax;\n}\n\nvoid target(void){ write(2,\"x\",1); exit(1); }",
-  "pure_stub": "static unsigned long strlen(const char *s)\n{\n    const char *p = s;\n    while (*p != 0) { p++; }\n    return (unsigned long)(p - s);\n}\n\nvoid target(char *p){ strlen(p); }"
+  "pure_stub": "static unsigned long strlen(const char *s)\n{\n    const char *p = s;\n    while (*p != 0) { p++; }\n    return (unsigned long)(p - s);\n}\n\nvoid target(char *p){ strlen(p); }",
+  "fputs_stub": "static int br_fputs(const char *s)\n{\n    unsigned long n = 0;\n    while (s[n] != 0) { n++; }\n    register long rax __asm__(\"rax\") = 1;\n    register long rdi __asm__(\"rdi\") = 2;\n    register long rsi __asm__(\"rsi\") = (long)s;\n    register long rdx __asm__(\"rdx\") = (long)n;\n    __asm__ volatile(\"syscall\" : \"+r\"(rax) : \"r\"(rdi), \"r\"(rsi), \"r\"(rdx)\n                     : \"rcx\", \"r11\", \"memory\");\n    return 0;\n}\n\nvoid target(char *p){ br_fputs(p); }"
 }

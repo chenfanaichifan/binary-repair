@@ -560,7 +560,6 @@ Measured residuals (not repaired, reported by the audit):
   the matrix payload marks it explicitly as untested rather than claiming
   fixture evidence.
 
-<<<<<<< HEAD
 Phase-2 additions (same date): explicit target-scoped repair with a required
 `patch.target_scope` ownership check; unified-only manifest write path with a
 fail-closed legacy backstop; a runtime capability probe that makes host/arch/
@@ -568,7 +567,7 @@ tier/external-PoC availability explicit (Mach-O x86_64 on arm64 is declared
 unavailable, never faked); and a deterministic coverage regression gate
 (`scripts/verify_coverage_gate.py`, static CI + local acceptance modes) backed by
 the self-discovery audit (66 gaps: 55 closed, 0 open, 11 honest non-goals).
-=======
+
 ## 22. Matrix reaches 4 models but not 5-6
 
 China SiliconFlow free `Qwen/Qwen3-8B` and `Qwen/Qwen2.5-7B-Instruct` plus two
@@ -576,4 +575,9 @@ DeepSeek models form a real 4-model matrix.  Both Qwen models scored 0/12
 (verified); GLM-Z1 identity probe timed out and no fifth provider key is
 available.  This is a model-capability result, not a pass.
 
->>>>>>> 4ae8308 (feat(matrix): 4-model real matrix + pure-function symbol templates)
+## 23. Errno runtime capture is still pending
+
+`app/services/errno_signature.py` provides a conservative set/unset comparator
+and unit tests, but the PoC runner does not inspect target TLS/errno after the
+function.  The production gate remains stdout_signature + regression; no runtime
+errno claim is made.

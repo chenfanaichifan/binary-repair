@@ -22,6 +22,8 @@ def main() -> int:
     ap.add_argument("--symbols", default="{}", help='JSON object, e.g. {"printLine":"0x401380"}')
     ap.add_argument("--resolve-gaps", action="store_true",
                     help="classify calls and apply reviewed syscall stubs; fail on unknown symbols")
+    ap.add_argument("--allow-fputs-stderr", action="store_true",
+                    help="rewrite fputs(x, stderr) to the reviewed br_fputs write stub")
     args = ap.parse_args()
     try:
         from patcherex2 import ModifyFunctionPatch, Patcherex
@@ -33,7 +35,8 @@ def main() -> int:
     code = args.c_source.read_text()
     if args.resolve_gaps:
         from routeb.symbol_resolver import apply_stubs, resolve
-        resolution = resolve(code, set(symbols), target_name=args.function)
+        resolution = resolve(code, set(symbols), target_name=args.function,
+                             allow_fputs_stderr=args.allow_fputs_stderr)
         if not resolution.ok:
             print(json.dumps({"ok": False, "reason": "unresolved_symbols",
                               "unresolved": resolution.unresolved,

@@ -29,9 +29,8 @@
     "heap silent-overflow canary benchmark and UAF repair success; multi-model comparison",
     "non-loop path A verified success: 0/6; heap security-only partial and CWE symbol/stub limits remain",
     "general non-loop / whole-binary paradigm A; only CWE121 function-level closure is proven",
-    "errno/libc-state side-effect gate; only stdout_signature is implemented",
     "5-6 model matrix: only 4 real models; GLM-Z1 probe timed out; no additional provider key",
-    "errno/libc-state side-effect gate; only stdout_signature is implemented"
+    "runtime errno/libc-state extraction is not wired into poc_runner; only the comparator/schema and stdout_signature gate exist"
   ],
   "non_goals": [
     {
@@ -134,14 +133,13 @@
     "Lima guest visibility wait before PoC execution (fixes stale virtiofs inode/size causing qemu internal SIGBUS for appended-segment candidates)",
     "self-discovery capability audit (app/services/coverage_audit.py, scripts/audit_capability_coverage.py): static census + bounded probes of matrix cells, sinks, strategies, runtime sources, gate profiles/checks, fixtures, PoC manifests and claims; emits coverage-matrix.json + gap-report.md with measured closed/open/non-goal statuses",
     "legacy quick-repair gate declares and enforces its evidence profile (strict_template/emulated_instruction) with appended profile checks, ids/statuses of existing checks unchanged",
-<<<<<<< HEAD
     "explicit target-scoped repair: repair_any target/require_target + containers.resolve_function_scope + required patch.target_scope gate check (numeric site_va inside the declared function range, scope hashed into report_sha256); wrong/missing target fails closed with no whole-image candidate; benchmark records baseline_target_strict",
     "legacy quick-repair gate fails closed on external PoC evidence (manifest.legacy_gate_unsupported) and manifest-bearing requests are routed to the unified evidence-profile gate before the legacy engine (pipeline guard measured by audit)",
     "runtime capability probe (app/services/runtime/capabilities.py) makes host/arch/tier/external-PoC availability explicit; poc_runner consults it (Mach-O x86_64 on arm64 is unavailable with an explicit reason, never fabricated); matrix_payload exposes measured runtime_capabilities",
-    "continuous coverage regression gate scripts/verify_coverage_gate.py (static CI + local acceptance modes), CI job, and a self-discovery audit now measuring 66 gaps / 55 closed / 0 open / 11 non-goal with target-mode probes"
-=======
-    "4-model real matrix: 2 DeepSeek official + 2 SiliconFlow CN free models; native PoC; identity exact"
->>>>>>> 4ae8308 (feat(matrix): 4-model real matrix + pure-function symbol templates)
+    "continuous coverage regression gate scripts/verify_coverage_gate.py (static CI + local acceptance modes), CI job, and a self-discovery audit now measuring 66 gaps / 55 closed / 0 open / 11 non-goal with target-mode probes",
+    "4-model real matrix: 2 DeepSeek official (6/12 each) + 2 SiliconFlow CN free Qwen (0/12 each), native PoC and exact identity",
+    "route A symbol resolver pure-function templates (strlen/memcpy/memset), fputs(stderr)->br_fputs rewrite, fail-closed otherwise",
+    "errno set/unset signature comparator and unit tests (runtime extraction still optional/pending)"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",
@@ -151,5 +149,6 @@
   },
   "deterministic_paths": [
     "deterministic_unified (matrix-driven pipeline + evidence profiles)"
-  ]
+  ],
+  "workbench_integration": "feature rebased onto origin/workbench-v3 0aa9f54; final commit to be fast-forwarded to workbench-v3 to trigger CI"
 }

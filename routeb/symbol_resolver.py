@@ -69,7 +69,20 @@ _PURE_TEMPLATES: dict[str, str] = {
     return dst;
 }''',
 }
-_TEMPLATE_SOURCES = {**_SYSCALL_TEMPLATES, **_PURE_TEMPLATES}
+_FPUTS_TEMPLATE = r'''static int br_fputs(const char *s)
+{
+    unsigned long n = 0;
+    while (s[n] != 0) { n++; }
+    register long rax __asm__("rax") = 1;
+    register long rdi __asm__("rdi") = 2;
+    register long rsi __asm__("rsi") = (long)s;
+    register long rdx __asm__("rdx") = (long)n;
+    __asm__ volatile("syscall" : "+r"(rax) : "r"(rdi), "r"(rsi), "r"(rdx)
+                     : "rcx", "r11", "memory");
+    return 0;
+}'''
+_TEMPLATE_SOURCES = {**_SYSCALL_TEMPLATES, **_PURE_TEMPLATES, "br_fputs": _FPUTS_TEMPLATE}
+_FPUTS_STDERR_RE = re.compile(r"\bfputs\s*\(\s*([^,()]+?)\s*,\s*stderr\s*\)")
 
 
 @dataclass
@@ -78,6 +91,7 @@ class Resolution:
     defined_in_source: list[str] = field(default_factory=list)
     stubs: list[str] = field(default_factory=list)
     unresolved: list[str] = field(default_factory=list)
+    rewritten_source: str | None = None
 
     @property
     def ok(self) -> bool:
@@ -100,13 +114,22 @@ def defined_names(source: str) -> set[str]:
     return {m.group(1) for m in _DEF_RE.finditer(source)} - C_KEYWORDS
 
 
+def rewrite_fputs_stderr(source: str) -> tuple[str, int]:
+    """Rewrite only ``fputs(<simple>, stderr)`` to the reviewed br_fputs stub."""
+    return _FPUTS_STDERR_RE.subn(r"br_fputs(\1)", source)
+
+
 def resolve(source: str, available: set[str] | frozenset[str],
-            target_name: str | None = None) -> Resolution:
+            target_name: str | None = None,
+            allow_fputs_stderr: bool = False) -> Resolution:
     """Classify calls; add syscall stubs only when a reviewed template exists.
 
     Caller must inspect ``unresolved`` and fail closed if non-empty.
     """
     available = set(available)
+    rewritten_count = 0
+    if allow_fputs_stderr:
+        source, rewritten_count = rewrite_fputs_stderr(source)
     defined = defined_names(source)
     if target_name:
         defined.add(target_name)
@@ -120,8 +143,14 @@ def resolve(source: str, available: set[str] | frozenset[str],
             resolution.stubs.append(_TEMPLATE_ALIASES[name])
         elif name in _PURE_TEMPLATES:
             resolution.stubs.append(name)
+        elif name == "br_fputs":
+            resolution.stubs.append("br_fputs")
         else:
             resolution.unresolved.append(name)
+    if rewritten_count:
+        if "br_fputs" not in resolution.stubs:
+            resolution.stubs.append("br_fputs")
+        resolution.rewritten_source = source
     return resolution
 
 
@@ -129,6 +158,6 @@ def apply_stubs(source: str, resolution: Resolution) -> str:
     """Prepend needed reviewed templates; unresolved calls remain for caller."""
     needed = sorted(set(resolution.stubs))
     if not needed:
-        return source
+        return resolution.rewritten_source or source
     blocks = "\n\n".join(_TEMPLATE_SOURCES[name] for name in needed)
-    return blocks + "\n\n" + source
+    return blocks + "\n\n" + (resolution.rewritten_source or source)
