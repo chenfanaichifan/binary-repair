@@ -25,7 +25,9 @@ def test_batch_repairs_supported_and_reports_unsupported(tmp_path):
     out = tmp_path / "out"
     proc = subprocess.run(
         [str(PYTHON), str(ROOT / "scripts" / "repair_binary.py"),
-         "--batch", str(source), "--out", str(out), "--json"],
+         "--batch", str(source), "--out", str(out), "--json",
+         # Safe default: whole-image batch repair needs the explicit opt-in.
+         "--allow-whole-image"],
         cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         timeout=180,
     )

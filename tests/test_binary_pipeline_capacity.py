@@ -125,7 +125,7 @@ def _fake_runner(monkeypatch, status: str) -> None:
 
 def test_capacity_fallback_without_manifest_is_not_verified():
     data = _fixture()
-    outcome = repair_any(data, verify=True)
+    outcome = repair_any(data, verify=True, allow_whole_image=True)
     report = outcome.report
 
     assert outcome.candidate is None
@@ -153,7 +153,10 @@ def test_capacity_fallback_without_manifest_is_not_verified():
 
 
 def test_capacity_fallback_is_static_only_when_explicitly_opted_in():
-    outcome = repair_any(_fixture(), verify=True, allow_static_only=True)
+    outcome = repair_any(
+        _fixture(), verify=True, allow_static_only=True,
+        allow_whole_image=True,
+    )
     report = outcome.report
     assert outcome.candidate is not None
     assert outcome.verified is False
@@ -165,7 +168,10 @@ def test_capacity_fallback_is_static_only_when_explicitly_opted_in():
 
 def test_capacity_fallback_with_passing_manifest_is_verified(monkeypatch):
     _fake_runner(monkeypatch, "pass")
-    outcome = repair_any(_fixture(), verify=True, poc_manifest={"schema_version": 1})
+    outcome = repair_any(
+        _fixture(), verify=True, poc_manifest={"schema_version": 1},
+        allow_whole_image=True,
+    )
     report = outcome.report
 
     assert outcome.candidate is not None
@@ -206,7 +212,10 @@ def test_capacity_fallback_with_passing_manifest_is_verified(monkeypatch):
 
 def test_capacity_fallback_with_failing_differential_is_rejected(monkeypatch):
     _fake_runner(monkeypatch, "fail")
-    outcome = repair_any(_fixture(), verify=True, poc_manifest={"schema_version": 1})
+    outcome = repair_any(
+        _fixture(), verify=True, poc_manifest={"schema_version": 1},
+        allow_whole_image=True,
+    )
     report = outcome.report
 
     assert outcome.candidate is None
@@ -224,7 +233,10 @@ def test_capacity_fallback_with_failing_differential_is_rejected(monkeypatch):
 
 def test_capacity_fallback_with_unavailable_runner_stays_not_run(monkeypatch):
     _fake_runner(monkeypatch, "unavailable")
-    outcome = repair_any(_fixture(), verify=True, poc_manifest={"schema_version": 1})
+    outcome = repair_any(
+        _fixture(), verify=True, poc_manifest={"schema_version": 1},
+        allow_whole_image=True,
+    )
     report = outcome.report
 
     assert outcome.candidate is None
@@ -243,7 +255,7 @@ def test_explicit_capacity_strategy_is_supported(monkeypatch):
     _fake_runner(monkeypatch, "pass")
     outcome = repair_any(
         _fixture(), strategy="capacity", verify=True,
-        poc_manifest={"schema_version": 1},
+        poc_manifest={"schema_version": 1}, allow_whole_image=True,
     )
     assert outcome.verified is True
     assert outcome.report.strategy == "capacity"
@@ -256,7 +268,9 @@ def test_explicit_capacity_strategy_without_site_is_analysis_only(monkeypatch):
         pipeline, "_capacity_engine",
         lambda: (lambda _data: (None, _NoSiteReport())),
     )
-    outcome = repair_any(data, strategy="capacity", verify=True)
+    outcome = repair_any(
+        data, strategy="capacity", verify=True, allow_whole_image=True,
+    )
     assert outcome.candidate is None
     assert outcome.report.disposition == "analysis_only"
     assert outcome.report.strategy == "capacity"
@@ -287,7 +301,7 @@ def test_capacity_engine_error_fails_closed(monkeypatch):
         raise RuntimeError("simulated engine failure")
 
     monkeypatch.setattr(pipeline, "_capacity_engine", lambda: _boom)
-    outcome = repair_any(_fixture(), verify=True)
+    outcome = repair_any(_fixture(), verify=True, allow_whole_image=True)
     assert outcome.candidate is None
     assert outcome.report.disposition == "analysis_only"
     assert any(
@@ -300,7 +314,9 @@ def test_capacity_does_not_replace_the_legacy_strict_template(monkeypatch):
     legacy = ROOT / "artifacts" / "vuln-elf" / "vuln.elf"
     if not legacy.is_file():
         pytest.skip(f"fixture missing: {legacy}")
-    outcome = repair_any(legacy.read_bytes(), verify=True)
+    outcome = repair_any(
+        legacy.read_bytes(), verify=True, allow_whole_image=True,
+    )
     assert outcome.verified is True
     assert outcome.report.strategy == "strict-template"
     assert "patch.capacity" not in {
@@ -434,7 +450,10 @@ def test_capacity_repair_with_real_manifest_is_verified():
         pytest.skip(f"fixture missing: {manifest_path}")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-    outcome = repair_any(_fixture(), verify=True, poc_manifest=manifest)
+    outcome = repair_any(
+        _fixture(), verify=True, poc_manifest=manifest,
+        allow_whole_image=True,
+    )
     report = outcome.report
 
     assert outcome.verified is True, report.verification["gate"]

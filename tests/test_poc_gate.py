@@ -66,7 +66,7 @@ def test_poc_fails_when_candidate_does_not_pass():
 
 def test_repair_report_contains_poc_differential():
     data = PE.read_bytes()
-    outcome = repair_any(data)
+    outcome = repair_any(data, allow_whole_image=True)
     assert outcome.verified is True
     packet = outcome.report.verification["packet"]
     assert packet["poc"]["original_verdict"] == "fail"

@@ -28,7 +28,7 @@ def test_native_run_verdict_pass_for_patched(arch):
     if not path.is_file():
         pytest.skip(f"fixture missing: {path}")
     data = path.read_bytes()
-    patched, report = repair_binary(data, verify=True)
+    patched, report = repair_binary(data, verify=True, allow_whole_image=True)
     assert patched is not None
     assert report.verification["tier"] == "native_run"
     evidence = macho_native.run(patched, arch=arch, capacity=16)

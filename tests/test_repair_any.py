@@ -23,7 +23,7 @@ def _read(path: Path) -> bytes:
 
 def test_verified_repair_reports_v4_disposition():
     data = _read(PE_VULN)
-    outcome = repair_any(data)
+    outcome = repair_any(data, allow_whole_image=True)
     assert outcome.candidate is not None
     assert outcome.download_allowed is True
     assert outcome.verified is True
@@ -85,7 +85,7 @@ def test_backend_mismatch_is_unsupported():
 def test_runtime_unavailable_is_not_verified_by_default(monkeypatch):
     monkeypatch.setattr(pipeline, "_select_runtime", lambda *args, **kwargs: None)
     data = _read(PE_VULN)
-    outcome = repair_any(data)
+    outcome = repair_any(data, allow_whole_image=True)
     assert outcome.candidate is None
     assert outcome.download_allowed is False
     assert outcome.report.disposition == "not_verified"
@@ -96,7 +96,9 @@ def test_runtime_unavailable_is_not_verified_by_default(monkeypatch):
 def test_static_only_requires_explicit_opt_in(monkeypatch):
     monkeypatch.setattr(pipeline, "_select_runtime", lambda *args, **kwargs: None)
     data = _read(PE_VULN)
-    outcome = repair_any(data, allow_static_only=True)
+    outcome = repair_any(
+        data, allow_static_only=True, allow_whole_image=True,
+    )
     assert outcome.candidate is not None
     assert outcome.download_allowed is True
     assert outcome.verified is False
@@ -111,7 +113,9 @@ def test_static_only_requires_explicit_opt_in(monkeypatch):
 
 def test_legacy_wrapper_verify_false_returns_static_only_candidate():
     data = _read(PE_VULN)
-    patched, report = repair_binary(data, verify=False)
+    patched, report = repair_binary(
+        data, verify=False, allow_whole_image=True,
+    )
     assert patched is not None
     assert report.disposition == "static_only_patch"
     assert report.status == "not_verified"
@@ -119,7 +123,7 @@ def test_legacy_wrapper_verify_false_returns_static_only_candidate():
 
 def test_verified_gate_never_returns_candidate_for_wrong_backend():
     data = _read(ELF)
-    patched, report = repair_binary(data, verify=True)
+    patched, report = repair_binary(data, verify=True, allow_whole_image=True)
     assert patched is not None
     assert report.disposition == "verified_patch"
     assert report.verification["gate"]["success"] is True

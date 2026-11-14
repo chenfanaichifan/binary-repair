@@ -43,7 +43,9 @@ def test_scan_reports_three_formats():
 
 
 def test_repair_elf_returns_verified_candidate():
-    patched, report = repair_binary(ELF.read_bytes(), verify=True)
+    patched, report = repair_binary(
+        ELF.read_bytes(), verify=True, allow_whole_image=True,
+    )
     assert patched is not None
     assert patched[:4] == b"\x7fELF"
     assert report.format == "elf"

@@ -497,7 +497,7 @@ def test_capacity_candidate_without_manifest_is_never_verified():
     if not fixture.is_file():
         pytest.skip("ELF fixture missing")
     original = fixture.read_bytes()
-    baseline = repair_any(original)
+    baseline = repair_any(original, allow_whole_image=True)
     patched = baseline.candidate
     if patched is None:
         pytest.skip("the host cannot produce a guard candidate")
@@ -546,7 +546,7 @@ def test_heap_destination_does_not_use_the_stack_oracle(monkeypatch):
     import app.services.binary_pipeline as pipeline
 
     data = PE.read_bytes()
-    baseline = repair_any(data)
+    baseline = repair_any(data, allow_whole_image=True)
     patched = baseline.candidate
     if patched is None:
         pytest.skip("the host cannot produce a PE guard candidate")
@@ -596,7 +596,9 @@ def test_guard_request_that_produces_immediate_actions_is_rejected():
     if not PE.is_file():
         pytest.skip("PE fixture missing")
     data = PE.read_bytes()
-    outcome = repair_any(data, strategy="immediate")
+    outcome = repair_any(
+        data, strategy="immediate", allow_whole_image=True,
+    )
     # The PE fixture only has an unbounded-copy sink, so the engine produces a
     # guard action while "immediate" was requested: unsupported, no candidate.
     assert outcome.candidate is None

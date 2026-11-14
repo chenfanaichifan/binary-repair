@@ -178,7 +178,8 @@ def test_scan_returns_matrix_findings_and_limitations():
 
 def test_verified_repair_returns_downloadable_candidate():
     response = _post(
-        _client(), "/api/binary/repair", data=ELF_X86_64.read_bytes(), name="vuln.elf"
+        _client(), "/api/binary/repair", data=ELF_X86_64.read_bytes(),
+        name="vuln.elf", extra={"allow_whole_image": "1"},
     )
     assert response.status_code == 200
     payload = response.json()
@@ -202,7 +203,7 @@ def test_static_only_repair_is_unverified_but_downloadable(monkeypatch):
         "/api/binary/repair",
         data=MACHO_X86_64.read_bytes(),
         name="vuln.macho",
-        extra={"allow_static_only": "1"},
+        extra={"allow_static_only": "1", "allow_whole_image": "1"},
     )
     assert response.status_code == 200
     payload = response.json()
@@ -222,7 +223,8 @@ def test_static_only_repair_is_unverified_but_downloadable(monkeypatch):
 def test_repair_without_static_opt_in_fails_closed(monkeypatch):
     monkeypatch.setattr("app.services.runtime.macho_native.available", lambda: False)
     response = _post(
-        _client(), "/api/binary/repair", data=MACHO_X86_64.read_bytes(), name="vuln.macho"
+        _client(), "/api/binary/repair", data=MACHO_X86_64.read_bytes(),
+        name="vuln.macho", extra={"allow_whole_image": "1"},
     )
     assert response.status_code == 422
     payload = response.json()

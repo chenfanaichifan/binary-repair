@@ -87,18 +87,25 @@ def _client() -> TestClient:
     return client
 
 
-def _post(client: TestClient, data: bytes, name: str, *, ai: bool = False):
+def _post(
+    client: TestClient, data: bytes, name: str, *,
+    ai: bool = False, **extra_fields: str,
+):
+    form = {"csrf": CSRF_TOKEN, "ai_review": "1" if ai else "0"}
+    form.update(extra_fields)
     return client.post(
         "/api/binary/repair-review",
         files={"binary": (name, data, "application/octet-stream")},
-        data={"csrf": CSRF_TOKEN, "ai_review": "1" if ai else "0"},
+        data=form,
     )
 
 
 def test_strict_fixture_without_ai_is_successful_and_downloadable(tmp_path, monkeypatch):
     monkeypatch.setenv("BINARYREPAIR_DATA_DIR", str(tmp_path / "var"))
     client = _client()
-    response = _post(client, VULN.read_bytes(), "vuln.elf")
+    response = _post(
+        client, VULN.read_bytes(), "vuln.elf", allow_whole_image="1",
+    )
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is True
@@ -134,7 +141,10 @@ def test_missing_evidence_with_ai_accept_stays_non_successful(tmp_path, monkeypa
         lambda patched, capacity: {"available": False, "error": "simulated evidence gap"},
     )
     client = _client()
-    response = _post(client, VULN.read_bytes(), "vuln.elf", ai=True)
+    response = _post(
+        client, VULN.read_bytes(), "vuln.elf", ai=True,
+        allow_whole_image="1",
+    )
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is False
@@ -149,7 +159,10 @@ def test_ai_hold_vetoes_download_but_keeps_gate_success(tmp_path, monkeypatch):
     monkeypatch.setenv("BINARYREPAIR_DATA_DIR", str(tmp_path / "var"))
     monkeypatch.setattr(main_module, "client_from_env", lambda: FakeReviewer("hold"))
     client = _client()
-    response = _post(client, VULN.read_bytes(), "vuln.elf", ai=True)
+    response = _post(
+        client, VULN.read_bytes(), "vuln.elf", ai=True,
+        allow_whole_image="1",
+    )
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is False
@@ -165,7 +178,10 @@ def test_ai_unavailable_does_not_block_a_passing_gate(tmp_path, monkeypatch):
     monkeypatch.setenv("BINARYREPAIR_DATA_DIR", str(tmp_path / "var"))
     monkeypatch.setattr(main_module, "client_from_env", lambda: None)
     client = _client()
-    response = _post(client, VULN.read_bytes(), "vuln.elf", ai=True)
+    response = _post(
+        client, VULN.read_bytes(), "vuln.elf", ai=True,
+        allow_whole_image="1",
+    )
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is True
@@ -221,7 +237,11 @@ def _post_with_manifest(
             "binary": (name, data, "application/octet-stream"),
             "poc_manifest": (filename, manifest, "application/json"),
         },
-        data={"csrf": CSRF_TOKEN, "ai_review": "1" if ai else "0"},
+        data={
+            "csrf": CSRF_TOKEN,
+            "ai_review": "1" if ai else "0",
+            "allow_whole_image": "1",
+        },
     )
 
 
@@ -286,7 +306,11 @@ def test_capacity_without_manifest_stays_non_successful(tmp_path, monkeypatch):
     response = client.post(
         "/api/binary/repair-review",
         files={"binary": ("marcx", MARCX.read_bytes(), "application/octet-stream")},
-        data={"csrf": CSRF_TOKEN, "ai_review": "0"},
+        data={
+            "csrf": CSRF_TOKEN,
+            "ai_review": "0",
+            "allow_whole_image": "1",
+        },
     )
     assert response.status_code == 200
     payload = response.json()

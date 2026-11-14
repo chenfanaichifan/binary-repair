@@ -49,7 +49,9 @@ def test_repair_never_returns_an_ungated_candidate():
         if not path.is_file():
             continue
         data = path.read_bytes()
-        patched, report = repair_binary(data[:len(data) // 3], verify=False)
+        patched, report = repair_binary(
+            data[:len(data) // 3], verify=False, allow_whole_image=True,
+        )
         if patched is not None:
             assert report.actions
             assert report.status == "patched"

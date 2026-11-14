@@ -1386,6 +1386,15 @@ def repair_any(
     """
     container = detect_container(data)
     fmt, arch = container.format, container.arch
+    # Requested patch-ownership policy (resolved exactly later): a declared
+    # target wins, otherwise the explicit whole-image opt-in, otherwise the
+    # safe analysis-only default.  Used to label even early fail-closed reports
+    # accurately.
+    requested_policy = (
+        "whole_image" if (target is None and allow_whole_image)
+        else "analysis_only" if target is None
+        else "target_scoped"
+    )
 
     if len(data) > MAX_INPUT_BYTES or len(data) == 0:
         reason = "empty input" if not data else f"input exceeds {MAX_INPUT_BYTES} bytes"
@@ -1394,6 +1403,7 @@ def repair_any(
         report.error = reason
         report.limitations = [reason]
         report.universal["reason"] = reason
+        _record_target_scope(report, None, requested_policy)
         _set_disposition(report, "invalid")
         return RepairOutcome(None, report)
 
@@ -1405,6 +1415,7 @@ def repair_any(
             else "unrecognised container magic"
         )
         report.limitations = list(container.limitations) or [report.error]
+        _record_target_scope(report, None, requested_policy)
         _set_disposition(report, "invalid")
         return RepairOutcome(None, report)
     if container.arch in {"", "unknown"} or container.bits is None:
@@ -1414,12 +1425,14 @@ def repair_any(
             else f"malformed {fmt} container"
         )
         report.limitations = list(container.limitations) or [report.error]
+        _record_target_scope(report, None, requested_policy)
         _set_disposition(report, "invalid")
         return RepairOutcome(None, report)
 
     if backend != "auto" and backend != fmt:
         report.error = f"requested backend {backend} does not match {fmt}"
         report.limitations = [report.error]
+        _record_target_scope(report, None, requested_policy)
         _set_disposition(report, "unsupported")
         return RepairOutcome(None, report)
 
@@ -1433,6 +1446,7 @@ def repair_any(
         report.error = reason
         report.limitations = [reason]
         report.universal["reason"] = reason
+        _record_target_scope(report, None, requested_policy)
         _set_disposition(report, "unsupported")
         return RepairOutcome(None, report)
 

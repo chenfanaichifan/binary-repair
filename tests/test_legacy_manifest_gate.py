@@ -379,7 +379,10 @@ def test_review_path_manifest_routes_to_unified_profile_packet(monkeypatch):
     monkeypatch.setattr(
         poc_runner, "run_poc", lambda *a, **k: _FakeNativePocEvidence()
     )
-    outcome = run_direct_repair(HEAP.read_bytes(), poc_manifest=_heap_manifest())
+    outcome = run_direct_repair(
+        HEAP.read_bytes(), poc_manifest=_heap_manifest(),
+        allow_whole_image=True,
+    )
 
     packet = outcome.verification.packet
     ids = _check_ids(outcome.verification)
@@ -408,7 +411,7 @@ def test_review_path_manifest_routes_to_unified_profile_packet(monkeypatch):
 
 
 def test_review_path_manifest_less_elf_is_legacy_readonly():
-    outcome = run_direct_repair(VULN.read_bytes())
+    outcome = run_direct_repair(VULN.read_bytes(), allow_whole_image=True)
 
     packet = outcome.verification.packet
     ids = _check_ids(outcome.verification)
@@ -494,7 +497,13 @@ def _post(client: TestClient, data: bytes, name: str, manifest: bytes | None = N
     return client.post(
         "/api/binary/repair-review",
         files=files,
-        data={"csrf": CSRF_TOKEN, "ai_review": "0"},
+        data={
+            "csrf": CSRF_TOKEN,
+            "ai_review": "0",
+            # Manifest evidence is still unified-only; whole-image runs need the
+            # explicit opt-in under the P0 safe default.
+            "allow_whole_image": "1",
+        },
     )
 
 

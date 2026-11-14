@@ -68,7 +68,7 @@ def test_fat_macho_is_analysis_only_with_slice_metadata(
     assert container.slices == 2
     assert container.arch == "arm64"
 
-    outcome = repair_any(data)
+    outcome = repair_any(data, allow_whole_image=True)
     assert outcome.candidate is None
     assert outcome.download_allowed is False
     report = outcome.report
@@ -100,7 +100,7 @@ def test_big_endian_elf_fails_closed_without_candidate() -> None:
     assert container.endian == "big"
     assert container.bits == 32
 
-    outcome = repair_any(data)
+    outcome = repair_any(data, allow_whole_image=True)
     assert outcome.candidate is None
     assert outcome.report.disposition == "unsupported"
     assert outcome.report.matrix["cell"] is None
@@ -139,7 +139,7 @@ def test_dynamic_elf32_plt_repair_is_verified() -> None:
     assert finding["callee"] == "strcpy"
     assert finding["capacity"] == 16
 
-    outcome = repair_any(data)
+    outcome = repair_any(data, allow_whole_image=True)
     assert outcome.verified is True
     assert outcome.report.disposition == "verified_patch"
     assert outcome.report.strategy == "guard"
@@ -164,7 +164,7 @@ def test_pe32_direct_iat_call_is_redirected_and_verified() -> None:
     assert sink.call_size == 6
     assert data[sink.call_offset] == 0xFF  # type: ignore[index]
 
-    outcome = repair_any(data)
+    outcome = repair_any(data, allow_whole_image=True)
     assert outcome.verified is True
     assert outcome.report.disposition == "verified_patch"
     assert outcome.report.actions[0]["kind"] == "guard"
@@ -186,7 +186,7 @@ def test_i386_memcpy_immediate_repair_is_verified() -> None:
     assert finding["capacity"] == 16
     assert finding["before"] == 64
 
-    outcome = repair_any(data)
+    outcome = repair_any(data, allow_whole_image=True)
     assert outcome.verified is True
     report = outcome.report
     assert report.disposition == "verified_patch"

@@ -215,7 +215,9 @@ def test_truncated_inputs_do_not_raise():
             truncated = data[:size]
             analysis = analyze(truncated)
             assert isinstance(analysis.limitations, list)
-            patched, report = repair_binary(truncated, verify=True)
+            patched, report = repair_binary(
+                truncated, verify=True, allow_whole_image=True,
+            )
             if patched is not None:
                 assert report.verification["gate"]["success"] is True
 

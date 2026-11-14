@@ -15,7 +15,8 @@ def test_cli_returns_strict_patched_elf(tmp_path):
     report = tmp_path / "report.json"
     proc = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "repair_binary.py"),
-         str(VULN), str(out), "--report", str(report)],
+         str(VULN), str(out), "--report", str(report),
+         "--allow-whole-image"],
         cwd=ROOT, capture_output=True, text=True, timeout=30,
     )
     assert proc.returncode == 0, proc.stderr

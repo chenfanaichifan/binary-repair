@@ -308,7 +308,7 @@ def test_repair_with_sinks_emits_heap_guard_action():
 # ---------------------------------------------------------------------------
 def test_repair_any_heap_without_manifest_is_never_verified():
     data = _require(FIXTURE)
-    outcome = repair_any(data)
+    outcome = repair_any(data, allow_whole_image=True)
     report = outcome.report
     assert outcome.verified is False
     assert outcome.download_allowed is False
@@ -358,7 +358,9 @@ def test_mocked_external_poc_yields_native_poc_verification(monkeypatch):
 
     monkeypatch.setattr("app.services.poc_runner.run_poc",
                         lambda *args, **kwargs: _FakeEvidence())
-    outcome = repair_any(data, poc_manifest=manifest)
+    outcome = repair_any(
+        data, poc_manifest=manifest, allow_whole_image=True,
+    )
     report = outcome.report
     assert outcome.verified is True
     assert outcome.download_allowed is True

@@ -31,7 +31,7 @@ def test_positive_matrix_returns_verified_candidate(name):
         pytest.skip("Mach-O native runtime is macOS-only")
     data = _require(path)
     assert detect_format(data)[:2] == (fmt, arch)
-    patched, report = repair_binary(data, verify=True)
+    patched, report = repair_binary(data, verify=True, allow_whole_image=True)
     assert patched is not None, report.to_dict()
     assert report.format == fmt and report.arch == arch
     assert report.status == "patched"

@@ -42,7 +42,10 @@ def test_scan_endpoint_reports_all_formats():
 
 def test_repair_endpoint_returns_downloadable_elf():
     client = _client()
-    response = _post(client, "/api/binary/repair", ELF.read_bytes(), "vuln.elf")
+    response = _post(
+        client, "/api/binary/repair", ELF.read_bytes(), "vuln.elf",
+        allow_whole_image="1",
+    )
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is True
@@ -81,7 +84,10 @@ def test_matrix_endpoint_is_english_ascii():
 
 def test_repair_pe_reports_verified_disposition():
     client = _client()
-    response = _post(client, "/api/binary/repair", PE_VULN.read_bytes(), "vuln.exe")
+    response = _post(
+        client, "/api/binary/repair", PE_VULN.read_bytes(), "vuln.exe",
+        allow_whole_image="1",
+    )
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is True
@@ -98,11 +104,16 @@ def test_repair_static_only_requires_opt_in(monkeypatch):
     monkeypatch.setattr(pipeline, "_select_runtime", lambda *args, **kwargs: None)
     client = _client()
     data = PE_VULN.read_bytes()
-    refused = _post(client, "/api/binary/repair", data, "vuln.exe")
+    refused = _post(
+        client, "/api/binary/repair", data, "vuln.exe",
+        allow_whole_image="1",
+    )
     assert refused.status_code == 422
     assert refused.json()["disposition"] == "not_verified"
-    allowed = _post(client, "/api/binary/repair", data, "vuln.exe",
-                    allow_static_only="1")
+    allowed = _post(
+        client, "/api/binary/repair", data, "vuln.exe",
+        allow_static_only="1", allow_whole_image="1",
+    )
     assert allowed.status_code == 200
     payload = allowed.json()
     assert payload["ok"] is True
@@ -168,7 +179,7 @@ def test_repair_endpoint_capacity_with_passing_manifest_is_verified(monkeypatch)
             "poc_manifest": ("marcx-capacity.json", b'{"schema_version": 1}',
                              "application/json"),
         },
-        data={"csrf": CSRF_TOKEN},
+        data={"csrf": CSRF_TOKEN, "allow_whole_image": "1"},
     )
     assert response.status_code == 200, response.text
     payload = response.json()
@@ -195,6 +206,7 @@ def test_repair_endpoint_capacity_without_manifest_is_422():
     client = _client()
     response = _post(
         client, "/api/binary/repair", MARCX.read_bytes(), "marcx",
+        allow_whole_image="1",
     )
     assert response.status_code == 422
     payload = response.json()

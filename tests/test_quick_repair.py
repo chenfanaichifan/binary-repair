@@ -32,7 +32,7 @@ def test_quick_repair_api_returns_download():
     response = client.post(
         "/api/binary/quick-repair",
         files={"binary": ("vuln.elf", VULN.read_bytes(), "application/octet-stream")},
-        data={"csrf": CSRF_TOKEN},
+        data={"csrf": CSRF_TOKEN, "allow_whole_image": "1"},
     )
     assert response.status_code == 200
     payload = response.json()
@@ -63,7 +63,7 @@ def test_quick_repair_api_fails_closed_without_runtime_evidence(monkeypatch):
     response = client.post(
         "/api/binary/quick-repair",
         files={"binary": ("vuln.elf", VULN.read_bytes(), "application/octet-stream")},
-        data={"csrf": CSRF_TOKEN},
+        data={"csrf": CSRF_TOKEN, "allow_whole_image": "1"},
     )
     assert response.status_code == 422
     assert "verification did not pass" in response.json()["detail"].lower()

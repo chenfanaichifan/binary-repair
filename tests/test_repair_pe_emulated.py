@@ -27,7 +27,7 @@ def test_emulated_run_accepts_patched_and_rejects_original(name):
     data = path.read_bytes()
     container = detect_container(data)
     sink = analyze(data).patchable()[0]
-    patched, report = repair_binary(data, verify=True)
+    patched, report = repair_binary(data, verify=True, allow_whole_image=True)
     assert patched is not None
     patched_container = detect_container(patched)
 
@@ -52,7 +52,9 @@ def test_emulated_report_is_labelled_not_native():
     path, abi = CASES["pe-x64"]
     if not path.is_file():
         pytest.skip(f"fixture missing: {path}")
-    patched, report = repair_binary(path.read_bytes(), verify=True)
+    patched, report = repair_binary(
+        path.read_bytes(), verify=True, allow_whole_image=True,
+    )
     assert patched is not None
     packet = report.verification["packet"]
     assert packet["scope"]["runtime_tier"] == "emulated_run"

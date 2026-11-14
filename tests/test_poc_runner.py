@@ -299,7 +299,9 @@ def test_manifest_rejects_invalid_base64():
 def test_real_poc_and_regression_pass_for_verified_candidate():
     original = FIXTURE.read_bytes()
     manifest = json.loads(MANIFEST.read_text())
-    outcome = repair_any(original, poc_manifest=manifest)
+    outcome = repair_any(
+        original, poc_manifest=manifest, allow_whole_image=True,
+    )
     assert outcome.verified is True, outcome.report.to_dict()
     assert outcome.report.poc["status"] == "pass"
     assert outcome.report.poc["stdout_signature"] == "matched"

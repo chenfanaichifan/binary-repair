@@ -347,8 +347,12 @@ def test_manifest_request_never_uses_the_legacy_engine(monkeypatch):
 
     monkeypatch.setattr(legacy_engine, "repair_elf", _forbidden)
     vuln = ROOT / "artifacts" / "vuln-elf" / "vuln.elf"
+    # Safe default would short-circuit before the manifest route; pass the
+    # explicit whole-image opt-in so the P1 "manifest never uses the legacy
+    # engine" rule itself is exercised.
     outcome = repair_any(
         _read(vuln), verify=True, poc_manifest={"schema_version": 1},
+        allow_whole_image=True,
     )
     report = outcome.report
     assert outcome.candidate is None
@@ -384,7 +388,7 @@ def test_target_plus_manifest_is_deterministic_only_and_fails_closed():
 
 
 def test_no_target_keeps_whole_image_policy():
-    outcome = repair_any(_read(HEAP), verify=True)
+    outcome = repair_any(_read(HEAP), verify=True, allow_whole_image=True)
     report = outcome.report
     # A whole-image candidate is still produced, but target identity is not
     # claimed anywhere in the report or the gate packet.

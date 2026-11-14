@@ -50,11 +50,14 @@ def _payload(recommendation: str, **overrides) -> dict:
 
 
 def _run(raw: bytes, reviewer: FakeReviewer | None, *, data_dir=None):
+    # These tests exercise the legacy strict-template gate/review path; the
+    # whole-image engine is only reachable through the explicit opt-in.
     return run_direct_repair(
         raw,
         request_review=True,
         client=reviewer,
         data_dir=data_dir,
+        allow_whole_image=True,
     )
 
 

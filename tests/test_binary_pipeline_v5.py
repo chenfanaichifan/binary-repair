@@ -56,7 +56,7 @@ def test_i386_scan_finds_exact_capacity(name):
 def test_i386_repair_is_verified_by_emulated_runtime(name):
     path, fmt, arch, _suffix = CASES[name]
     data = _read(path)
-    outcome = repair_any(data)
+    outcome = repair_any(data, allow_whole_image=True)
     assert outcome.candidate is not None, outcome.report.to_dict()
     assert outcome.download_allowed is True
     assert outcome.verified is True
@@ -91,7 +91,9 @@ def test_i386_repair_is_verified_by_emulated_runtime(name):
 @pytest.mark.parametrize("name", sorted(CASES))
 def test_i386_legacy_wrapper_static_only_is_labelled(name):
     path, _fmt, _arch, _suffix = CASES[name]
-    patched, report = repair_binary(_read(path), verify=False)
+    patched, report = repair_binary(
+        _read(path), verify=False, allow_whole_image=True,
+    )
     assert patched is not None
     assert report.disposition == "static_only_patch"
     assert report.status == "not_verified"
@@ -105,7 +107,7 @@ def test_i386_cli_writes_verified_candidate(tmp_path):
     out = tmp_path / f"fixed{suffix}"
     proc = subprocess.run(
         [str(PYTHON), str(ROOT / "scripts" / "repair_binary.py"),
-         str(path), str(out), "--json"],
+         str(path), str(out), "--allow-whole-image", "--json"],
         cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         timeout=180,
     )
