@@ -67,9 +67,11 @@ Targeted coverage includes:
 
 - Workflow: `Ubuntu verification` (`ubuntu-24.04`, Python 3.11, clang installed
   for the assembly path).
-- Run: [43565353034](https://github.com/chenfanaichifan/binary-repair/actions/runs/43565353034)
-  on `4349a92` (`workbench-v3`) — **success** (multi-model operator checklist,
-  provider identity probe, 12-case benchmark, native PoC/regression gate).
+- Run: [43570678371](https://github.com/chenfanaichifan/binary-repair/actions/runs/43570678371)
+  on `6a12bb8` (`workbench-v3`) — **success** (Apple Silicon JDK25/Ghidra 12.2
+  toolchain evidence, provider identity probe, 12-case benchmark gates).
+- Previous checklist run: [43565353034](https://github.com/chenfanaichifan/binary-repair/actions/runs/43565353034)
+  on `4349a92` — success.
 - Previous provider run: [43563347462](https://github.com/chenfanaichifan/binary-repair/actions/runs/43563347462)
   on `91e4706` — success.
 - Previous diversity run: [43560207206](https://github.com/chenfanaichifan/binary-repair/actions/runs/43560207206)
