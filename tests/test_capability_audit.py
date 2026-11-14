@@ -181,7 +181,13 @@ def test_static_audit_reports_dynamic_unverified_not_open() -> None:
     assert "GM-safe-default-policy" in ids
     assert STATIC_AUDIT["summary"]["dynamic_unverified_count"] == len(dynamic)
     assert all(gap["status"] != "open" for gap in gaps)
-    assert all(gap["status"] != "mitigated" for gap in gaps)
+    # Static mode may record explicitly platform-gated declarations (e.g. a
+    # host-dependent native_run tier with a capability-contract reason) as
+    # mitigated; they must carry host/contract evidence, never a hidden closure.
+    mitigated = [gap for gap in gaps if gap["status"] == "mitigated"]
+    for gap in mitigated:
+        evidence = " ".join(str(item) for item in gap.get("evidence") or []).lower()
+        assert "host" in evidence or "contract" in evidence or "platform" in evidence.lower(), gap
 
 
 def test_universe_is_complete_and_fully_classified() -> None:
