@@ -45,6 +45,9 @@ simple semantic-versioning policy for delivery snapshots.
 
 ### Added — hard-case fairness ablation
 
+- Native no-input PoC support (`stdout_hex`, empty regression) and an 11th UAF
+  family-diversity probe: deterministic analysis_only, AI target 0/1.
+
 - Expanded hard-case benchmark to 10 cases (inline loops, CWE121, multicall,
   sprintf, non-constant copy).
 - Fairness ablation: deterministic blind/target-aware and AI blind 0/10;

@@ -37,6 +37,7 @@ class CaseResult:
     crashed: bool
     stdout: str
     stderr: str
+    stdout_hex: str = ""
     timed_out: bool = False
     error: str | None = None
     expected_ok: bool = False
@@ -50,6 +51,7 @@ class CaseResult:
             "crashed": self.crashed,
             "stdout": self.stdout,
             "stderr": self.stderr,
+            "stdout_hex": self.stdout_hex,
             "timed_out": self.timed_out,
             "error": self.error,
             "expected_ok": self.expected_ok,
@@ -100,9 +102,10 @@ def load_manifest(manifest: dict[str, Any] | str | Path) -> dict[str, Any]:
     for key in ("fixture_sha256", "format", "arch", "target"):
         if not isinstance(data.get(key), str) or not data[key]:
             raise ValueError(f"PoC manifest requires string field {key!r}")
-    for key in ("poc", "regression"):
-        if not isinstance(data.get(key), list) or not data[key]:
-            raise ValueError(f"PoC manifest requires non-empty {key!r}")
+    if not isinstance(data.get("poc"), list) or not data["poc"]:
+        raise ValueError("PoC manifest requires non-empty 'poc'")
+    if not isinstance(data.get("regression"), list):
+        raise ValueError("PoC manifest requires a 'regression' list (may be empty for no-input cases)")
     for group in ("poc", "regression"):
         for case in data[group]:
             if not isinstance(case, dict):
@@ -142,7 +145,7 @@ def _execute(
     argv: list[str],
     stdin: bytes,
     timeout: float,
-) -> tuple[int | None, bool, str, str, bool, str | None]:
+) -> tuple[int | None, bool, bytes, str, bool, str | None]:
     command = ([runner] if runner_kind == "qemu" else []) + [str(path), *argv]
     env = {
         "PATH": "/usr/bin:/bin",
@@ -156,19 +159,21 @@ def _execute(
             cwd=str(path.parent), env=env, check=False,
         )
     except subprocess.TimeoutExpired:
-        return None, False, "", "", True, "timeout"
+        return None, False, b"", "", True, "timeout"
     except OSError as exc:
-        return None, False, "", "", False, f"{type(exc).__name__}: {exc}"
-    stdout = proc.stdout[:MAX_STDOUT].decode("utf-8", "replace")
+        return None, False, b"", "", False, f"{type(exc).__name__}: {exc}"
+    stdout_raw = proc.stdout[:MAX_STDOUT]
+    stdout = stdout_raw.decode("utf-8", "replace")
     stderr = proc.stderr[:MAX_STDERR].decode("utf-8", "replace")
     crashed = proc.returncode is not None and proc.returncode < 0
     if not crashed and runner_kind == "qemu":
         crashed = "target signal" in stderr or "Segmentation fault" in stderr
-    return proc.returncode, crashed, stdout, stderr, False, None
+    return proc.returncode, crashed, stdout_raw, stderr, False, None
 
 
 def _expected_ok(actual_exit: int | None, crashed: bool, actual_stdout: str,
-                 actual_stderr: str, expected: dict[str, Any], *, is_poc: bool) -> bool:
+                 actual_stdout_hex: str, actual_stderr: str,
+                 expected: dict[str, Any], *, is_poc: bool) -> bool:
     if "crashed" in expected:
         want = bool(expected["crashed"])
         if is_poc and want:
@@ -184,6 +189,9 @@ def _expected_ok(actual_exit: int | None, crashed: bool, actual_stdout: str,
             return False
     if "stdout" in expected:
         if actual_stdout != str(expected["stdout"]):
+            return False
+    if "stdout_hex" in expected:
+        if actual_stdout_hex.lower() != str(expected["stdout_hex"]).lower():
             return False
     if "stdout_contains" in expected:
         if str(expected["stdout_contains"]) not in actual_stdout:
@@ -246,19 +254,21 @@ def run_poc(
                 stdin = b""
                 if case.get("stdin_base64"):
                     stdin = base64.b64decode(case["stdin_base64"], validate=True)
-                exit_code, crashed, stdout, stderr, timed_out, error = _execute(
+                exit_code, crashed, stdout_bytes, stderr, timed_out, error = _execute(
                     data_path, runner_kind=runner_kind, runner=runner,
                     argv=list(case["argv"]), stdin=stdin, timeout=timeout,
                 )
                 expected = case.get("original" if is_original else "candidate") or {}
+                stdout = stdout_bytes.decode("utf-8", "replace")
                 ok = _expected_ok(
-                    exit_code, crashed, stdout, stderr, expected,
+                    exit_code, crashed, stdout, stdout_bytes.hex(), stderr, expected,
                     is_poc=run_group == "poc",
                 )
                 results.append(CaseResult(
                     case_id=case["id"], kind=run_group, executable="original" if is_original else "candidate",
                     exit_code=exit_code, crashed=crashed, stdout=stdout, stderr=stderr,
-                    timed_out=timed_out, error=error, expected_ok=ok,
+                    stdout_hex=stdout_bytes.hex(), timed_out=timed_out, error=error,
+                    expected_ok=ok,
                 ))
             return results
 

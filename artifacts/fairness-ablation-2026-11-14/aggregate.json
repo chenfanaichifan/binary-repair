@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "cases": 10,
+  "cases": 11,
   "runs": 7,
   "baseline_blind_verified": 0,
   "baseline_target_aware_verified": 0,
@@ -1774,5 +1774,21 @@
       ]
     }
   ],
-  "note": "Fairness ablation: deterministic blind and target-aware baselines are 0/10; public blind AI is 0/10; target-localized AI is 6/10 under full, generic and none contracts.  Localization is necessary; contract strategy specificity had no measured effect on these 10 cases.  Successes are the six inline-copy loop variants; CWE121/multicall/sprintf/nonconst fail.  Repeats all 6/10."
+  "note": "Fairness ablation: deterministic blind and target-aware baselines are 0/10; public blind AI is 0/10; target-localized AI is 6/10 under full, generic and none contracts.  Localization is necessary; contract strategy specificity had no measured effect on these 10 cases.  Successes are the six inline-copy loop variants; CWE121/multicall/sprintf/nonconst fail.  Repeats all 6/10.",
+  "family_diversity_probe": {
+    "uaf-noinput": {
+      "fixture": "CWE416 no-input UAF",
+      "baseline": {
+        "disposition": "analysis_only",
+        "verified": false,
+        "error": "No supported immediate-length read/write pattern found."
+      },
+      "ai": "accepted",
+      "injection": {
+        "error": "assembly validation: ValueError: forbidden assembly construct: call 0x401150"
+      },
+      "verified": false,
+      "note": "no candidate: target assembly injection rejected; baseline analysis_only"
+    }
+  }
 }

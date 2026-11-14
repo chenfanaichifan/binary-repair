@@ -23,8 +23,8 @@ work.  See section 9 for the exact matrix/sink boundary.
 Current acceptance is the non-browser suite:
 
 ```text
-macOS 13.5 arm64: 1143 tests, 0 failed, 0 errors, 7 skipped (307.4 s)
-Linux VM Ubuntu 24.04 arm64: 1143 tests, 0 failed, 0 errors, 10 skipped (288.2 s)
+macOS 13.5 arm64: 1143 tests, 0 failed, 0 errors, 7 skipped (264.0 s)
+Linux VM Ubuntu 24.04 arm64: 1143 tests, 0 failed, 0 errors, 10 skipped (264.1 s)
 GitHub Actions Ubuntu 24.04: workflow success on the final commits
 ```
 
@@ -184,3 +184,12 @@ deterministic 0/10 and blind AI 0/10, with no measured contract-specificity
 effect.  It is one provider/model, 10 non-independent cases, and seven repeated
 runs; it is not a population estimate.  Target/PoC/contract is still benchmark
 tooling, not a product API; the puts side-effect blind spot remains.
+
+
+## 15. UAF/no-input probe is not a success
+
+The UAF no-input probe is supported as a real native PoC case (exact stdout hex,
+no regression inputs), but the deterministic baseline is `analysis_only` and
+target-localized AI produced no candidate because external calls are forbidden
+in the leaf-only assembly path.  It is recorded as 0/1; it does not broaden the
+six-loop family success.

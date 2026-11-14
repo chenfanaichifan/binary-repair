@@ -40,6 +40,15 @@ Linux x86-64 VM.  No API key, raw prompt or raw response is stored.
   at 6/10; the sample is not independent and no statistical generalization is
   claimed.
 
+## Family diversity probe: UAF (no-input)
+
+The 11th case is `CWE416_Use_After_Free__malloc_free_char_01_noinput`: original
+stdout is the 3-byte allocator residue `05040a`, deterministic baseline is
+`analysis_only`, and the real-provider target assembly produced no candidate
+(target injection rejected).  Native no-input PoC support (`stdout_hex`, empty
+regression) was added so this case is measurable; it is recorded as 0/1, not
+folded into the six loop successes.
+
 ## Interpretation
 
 The previous "increment 1" was under human target localization.  This ablation

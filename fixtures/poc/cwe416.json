@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+  "capacity": 100,
+  "poc": [
+    {
+      "id": "uaf-noinput",
+      "argv": [],
+      "original": {
+        "exit_code": 0,
+        "stdout_hex": "05040a"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n"
+      }
+    }
+  ],
+  "regression": []
+}

@@ -48,8 +48,8 @@ gate-blind/PoC increment experiment remain future work.
 
 | Environment | Result |
 |---|---|
-| macOS 13.5 arm64 / Python 3.11.8 | **1143 tests, 0 failed, 0 errors, 7 skipped** (307.4 s) |
-| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1143 tests, 0 failed, 0 errors, 10 skipped** (288.2 s) |
+| macOS 13.5 arm64 / Python 3.11.8 | **1143 tests, 0 failed, 0 errors, 7 skipped** (264.0 s) |
+| Linux VM Ubuntu 24.04 arm64 / Python 3.12.3 | **1143 tests, 0 failed, 0 errors, 10 skipped** (264.1 s) |
 
 Targeted coverage includes:
 
@@ -167,6 +167,12 @@ Localization is necessary (+6 over blind AI); target-aware deterministic remains
 0, so repair generation is real; **contract strategy specificity had 0 measured
 effect** on this set.  Repeats were stable at 6/10, but cases are not independent
 and only one model was available: this is not a statistical generalization.
+
+A no-input UAF case was added as an 11th family-diversity probe:
+deterministic `analysis_only`, AI target assembly rejected (`call` forbidden),
+no candidate; native no-input PoC support was required because the case has no
+regression input.  It is recorded as 0/1, not counted among the six loop
+successes.
 
 ## 9. Boundaries
 

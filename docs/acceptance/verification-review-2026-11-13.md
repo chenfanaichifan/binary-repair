@@ -159,8 +159,8 @@ remains future work.  Do not claim "AI repaired arbitrary binaries" or
 
 ## 8. Final local verification
 
-- macOS 13.5 arm64: **1143 tests, 0 failed, 0 errors, 7 skipped** (307.4 s).
-- Linux VM Ubuntu 24.04 arm64: **1143 tests, 0 failed, 0 errors, 10 skipped** (288.2 s).
+- macOS 13.5 arm64: **1143 tests, 0 failed, 0 errors, 7 skipped** (264.0 s).
+- Linux VM Ubuntu 24.04 arm64: **1143 tests, 0 failed, 0 errors, 10 skipped** (264.1 s).
 - `scripts/verify_evidence.py`: 11 fixture rows + 110 source rows PASS;
   v5 bundle 38 files PASS; AI bundle 9 files PASS.
 - CI: [43555871445](https://github.com/chenfanaichifan/binary-repair/actions/runs/43555871445)
@@ -185,5 +185,7 @@ PoC evidence are hashed in the bundle; raw provider response is not stored.
 blind and target-aware baselines 0/10, blind AI 0/10, target-localized AI 6/10
 under full/generic/none contract levels (stable across repeats).  Contract
 strategy specificity had no measured effect; target localization is currently
-necessary.  Evidence: `artifacts/fairness-ablation-2026-11-14/`.  Multi-provider
-and independent-case confidence intervals remain future work.
+necessary.  Evidence: `artifacts/fairness-ablation-2026-11-14/`.  An 11th UAF no-input
+probe was added (native `stdout_hex` + empty regression; AI 0/1, target
+assembly rejected for `call`).  Multi-provider and independent-case confidence
+intervals remain future work.

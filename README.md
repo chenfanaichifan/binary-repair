@@ -79,7 +79,8 @@ this project as proof.
   `artifacts/gate-blind-spots-2026-11-13/`, `artifacts/hard-case-benchmark-2026-11-13/`
   (initial 1/2 hard-case increment), and `artifacts/fairness-ablation-2026-11-14/`
   (10 hard cases: target-localized AI 6/10, blind AI 0/10, target-aware
-  deterministic 0/10; contract specificity effect 0).
+  deterministic 0/10; contract specificity effect 0; an 11th UAF no-input
+  probe is recorded at 0/1).
 - Direct binary repair spans **ELF, PE and Mach-O** (x86-64 and arm64) and,
   since v5, **32-bit x86 (ELF32/PE32)**: static/dynamic ELF32 (PLT), PE32
   import-thunk and direct-IAT (`FF15`) calls, stack-capacity analysis, immediate

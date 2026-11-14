@@ -110,6 +110,17 @@
       "baseline_expected": "rejected",
       "contract": "inline byte-copy loop into a 64-byte stack buffer; bounded copy + NUL required",
       "family": "non-template inline copy"
+    },
+    {
+      "id": "uaf-noinput",
+      "binary": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
+      "target": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+      "capacity": 100,
+      "poc": "fixtures/poc/cwe416.json",
+      "reference_fix": "fixtures/hard-cases/uaf_fix.c",
+      "baseline_expected": "analysis_only",
+      "contract": "UAF: read of a heap block after free(); valid no-input path must print exactly 99 A bytes + LF and exit 0",
+      "family": "heap lifetime/UAF"
     }
   ]
 }
