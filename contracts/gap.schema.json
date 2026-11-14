@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/gap.schema.json",
+  "title": "Unified GapRecord",
+  "description": "One unified capability gap record: discovery source, category, target, observed failure, existing capability, severity and explicit lifecycle status, evidence references, proposed experiment, owner, review date, verification requirement and false-verified risk. Candidate records are never promoted to verified/non_goal by the schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "gap_id",
+    "discovery_source",
+    "category",
+    "subcategory",
+    "target",
+    "observed_failure",
+    "existing_capability",
+    "severity",
+    "status",
+    "evidence_refs",
+    "proposed_experiment",
+    "owner",
+    "review_by",
+    "verification_required",
+    "false_verified_risk"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "gap_id": {
+      "type": "string",
+      "pattern": "^GAP-[A-Z0-9][A-Z0-9._-]*$"
+    },
+    "discovery_source": {
+      "type": "string",
+      "enum": [
+        "claims_non_goal",
+        "knowledge",
+        "failure_driven",
+        "differential",
+        "mutation",
+        "metamorphic",
+        "sample_based",
+        "knowledge_source_scan"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subcategory": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "observed_failure": {
+      "type": "string",
+      "minLength": 1
+    },
+    "existing_capability": {
+      "type": "string",
+      "minLength": 1
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "open",
+        "blocked",
+        "non_goal",
+        "resolved",
+        "rejected"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "proposed_experiment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "proposed",
+            "cannot_plan"
+          ]
+        },
+        "experiment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_by": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "verification_required": {
+      "type": "boolean"
+    },
+    "false_verified_risk": {
+      "type": "string",
+      "enum": [
+        "none",
+        "low",
+        "medium",
+        "high"
+      ]
+    }
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/acceptance.schema.json",
+  "title": "Acceptance model registry and match result (A01-A08 / AM01-AM20)",
+  "description": "The A01-A08 acceptance dimensions and AM01-AM20 mismatch registry plus one pure matcher result. The result carries decision, mismatch ids, required actions, verified flag, residual risk and reasons; matching never repairs or promotes evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dimensions",
+    "mismatch_classes",
+    "match_result"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "dimensions": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "task_fields",
+          "acceptance_fields",
+          "mismatch_ids"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^A0[1-8]$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "task_fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "acceptance_fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "mismatch_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^AM(0[1-9]|1[0-9]|20)$"
+            }
+          }
+        }
+      }
+    },
+    "mismatch_classes": {
+      "type": "array",
+      "minItems": 20,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "code",
+          "severity",
+          "required_actions"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^AM(0[1-9]|1[0-9]|20)$"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "required_actions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "match_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "task_id",
+        "decision",
+        "mismatches",
+        "required_actions",
+        "verified",
+        "residual_risk",
+        "reasons"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "rejected"
+          ]
+        },
+        "mismatches": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^AM(0[1-9]|1[0-9]|20)$"
+          }
+        },
+        "required_actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "residual_risk": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

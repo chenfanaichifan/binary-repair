@@ -16,8 +16,10 @@ unmeasured runtime tier without a reason), release evidence with a
 evidence missing audit-artifact/Lima provenance, and a local gate result claimed
 as CI evidence (a local run cannot satisfy a required hosted-CI slot),
 unregistered universe sink/strategy/platform values (methodology must flag
-them), missing/misclaimed CI evidence v2, incomplete evidence provenance and
-evidence branch drift.
+them), missing/misclaimed CI evidence v2, incomplete evidence provenance,
+evidence branch drift, and two acceptance-model masquerades (served-model-only
+identity claiming the requested model; single-function evidence claiming
+whole-program scope).
 
 * **precision scenarios** inject fabricated gap records into a synthetic audit
   document and require the coverage regression gate to reject them, and mutate
@@ -46,7 +48,7 @@ for entry in (ROOT, ROOT / "scripts"):
 
 MIN_RECALL = 0.8
 MIN_PRECISION = 1.0
-MIN_SCENARIOS = 22
+MIN_SCENARIOS = 26
 
 
 def _import_audit() -> Any:
@@ -763,6 +765,53 @@ def _recall_evidence_branch_drift() -> dict[str, Any]:
     )
 
 
+def _acceptance_recall_scenarios() -> list[dict[str, Any]]:
+    """Acceptance-model injections: the matcher must catch both masquerades."""
+    import copy as _copy
+
+    from app.services.acceptance_models import AcceptanceModelMatcher
+    from audit_acceptance_models import BASE_ACCEPTANCE, BASE_TASK
+
+    served_task = _copy.deepcopy(BASE_TASK)
+    served_acceptance = _copy.deepcopy(BASE_ACCEPTANCE)
+    served_acceptance["model_identity"] = {
+        "status": "served-model-only",
+        "requested": "deepseek-chat",
+        "served": "deepseek-chat",
+    }
+    served = AcceptanceModelMatcher.match(served_task, served_acceptance)
+
+    whole_task = _copy.deepcopy(BASE_TASK)
+    whole_acceptance = _copy.deepcopy(BASE_ACCEPTANCE)
+    whole_task["scope"] = "whole_program"
+    whole_acceptance["scope"] = "whole_program"
+    whole_acceptance["claims"]["scope"] = "whole_program"
+    whole = AcceptanceModelMatcher.match(whole_task, whole_acceptance)
+
+    served_detected = bool(
+        served.get("verified") is False
+        and "AM09" in _as_list(served.get("mismatches"))
+    )
+    whole_detected = bool(
+        whole.get("verified") is False
+        and "AM07" in _as_list(whole.get("mismatches"))
+    )
+    return [
+        _scenario(
+            "acceptance_served_model_only_masquerade", "recall", True,
+            served_detected,
+            "served-model-only identity must not verify the requested model "
+            f"(matcher mismatches={served.get('mismatches')})",
+        ),
+        _scenario(
+            "acceptance_whole_program_masquerade", "recall", True,
+            whole_detected,
+            "single-function evidence cannot verify a whole-program claim "
+            f"(matcher mismatches={whole.get('mismatches')})",
+        ),
+    ]
+
+
 def run_meta_audit(*, include_probes: bool = False,
                    live_audit: dict[str, Any] | None = None) -> dict[str, Any]:
     """Run the meta-audit and return the deterministic report dict."""
@@ -789,6 +838,7 @@ def run_meta_audit(*, include_probes: bool = False,
     scenarios.append(_recall_ci_evidence_missing_or_misclaimed())
     scenarios.append(_recall_provenance_incomplete())
     scenarios.append(_recall_evidence_branch_drift())
+    scenarios.extend(_acceptance_recall_scenarios())
     scenarios.extend(_manifest_route_scenarios(audit_module))
     scenarios.extend(_gate_fake_gap_scenarios(audit_module, ctx))
     scenarios.append(_precision_benign_mutations(audit_module, ctx))

@@ -78,6 +78,14 @@ jobs:
         run: python scripts/check_flake_policy.py --json
       - name: Universe methodology check (three-state matrix invariants)
         run: python scripts/check_universe_methodology.py --check
+      - name: Contract schemas (capability/gap/acceptance/repair/evidence/reflection)
+        run: python scripts/check_contract_schemas.py --check
+      - name: Acceptance-model audit (AM01-AM20 registry + matcher)
+        run: python scripts/audit_acceptance_models.py --check
+      - name: Autonomous reflection contract (12 questions, verified=false)
+        run: python scripts/run_autonomous_reflection.py --check
+      - name: Capability gap discovery (gap registry, six mechanisms)
+        run: python scripts/discover_capability_gaps.py --check
       - name: Coverage regression gate (static, no network)
         run: python scripts/verify_coverage_gate.py --static-only
       # Serial execution by policy: Lima guests and the real PoC differential are

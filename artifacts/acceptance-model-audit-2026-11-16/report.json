@@ -1,0 +1,616 @@
+{
+  "case_count": 43,
+  "cases": [
+    {
+      "case_id": "negative-am01-target-sha",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM01"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM01"
+      ],
+      "ok": true,
+      "purpose": "target SHA spoof is rejected"
+    },
+    {
+      "case_id": "negative-am02-tree-sha",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM02"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM02"
+      ],
+      "ok": true,
+      "purpose": "tree SHA spoof is rejected"
+    },
+    {
+      "case_id": "negative-am03-format",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM03"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM03"
+      ],
+      "ok": true,
+      "purpose": "container format spoof is rejected"
+    },
+    {
+      "case_id": "negative-am04-arch",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM04"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM04"
+      ],
+      "ok": true,
+      "purpose": "arch spoof is rejected"
+    },
+    {
+      "case_id": "negative-am05-scope-overclaim",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM05"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM05"
+      ],
+      "ok": true,
+      "purpose": "module experience cannot claim a function task"
+    },
+    {
+      "case_id": "negative-am06-static-dynamic",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM06"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM06"
+      ],
+      "ok": true,
+      "purpose": "missing dynamic evidence mode is rejected"
+    },
+    {
+      "case_id": "negative-am07-whole-program",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM07"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM07"
+      ],
+      "ok": true,
+      "purpose": "single-function evidence cannot claim whole program"
+    },
+    {
+      "case_id": "negative-am08-evidence-hash",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM08"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM08"
+      ],
+      "ok": true,
+      "purpose": "tampered evidence hash is rejected"
+    },
+    {
+      "case_id": "negative-am09-served-only",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM09"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM09"
+      ],
+      "ok": true,
+      "purpose": "served-model-only identity cannot verify requested"
+    },
+    {
+      "case_id": "negative-am10-unknown-identity",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM10"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM10"
+      ],
+      "ok": true,
+      "purpose": "unknown model identity is rejected"
+    },
+    {
+      "case_id": "negative-am11-mismatched-identity",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM11"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM11"
+      ],
+      "ok": true,
+      "purpose": "mismatched model identity is rejected"
+    },
+    {
+      "case_id": "negative-am12-invalid-alias",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM12"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM12"
+      ],
+      "ok": true,
+      "purpose": "undeclared model alias is rejected"
+    },
+    {
+      "case_id": "negative-am13-method-missing",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM13"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM13"
+      ],
+      "ok": true,
+      "purpose": "required method without evidence is rejected"
+    },
+    {
+      "case_id": "negative-am14-environment",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM14"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM14"
+      ],
+      "ok": true,
+      "purpose": "environment spoof is rejected"
+    },
+    {
+      "case_id": "negative-am15-only-positive",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM15"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM15"
+      ],
+      "ok": true,
+      "purpose": "only-positive evidence cannot satisfy regression"
+    },
+    {
+      "case_id": "negative-am16-statistics",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM16"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM16"
+      ],
+      "ok": true,
+      "purpose": "insufficient repeats are rejected"
+    },
+    {
+      "case_id": "negative-am17-tool-version",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM17"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM17"
+      ],
+      "ok": true,
+      "purpose": "tool version drift is rejected"
+    },
+    {
+      "case_id": "negative-am18-independence",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM18"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM18"
+      ],
+      "ok": true,
+      "purpose": "self-review independence violation is rejected"
+    },
+    {
+      "case_id": "negative-am19-extra-claim",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM19"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM19"
+      ],
+      "ok": true,
+      "purpose": "claims beyond the task contract are rejected"
+    },
+    {
+      "case_id": "negative-am20-evidence-incomplete",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM20"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM20"
+      ],
+      "ok": true,
+      "purpose": "incomplete evidence record is rejected"
+    },
+    {
+      "case_id": "positive-declared-alias",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "a declared model alias is verified"
+    },
+    {
+      "case_id": "positive-exact-identity",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "complete exact-identity acceptance verifies"
+    },
+    {
+      "case_id": "positive-static-only",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "static-only task with static evidence verifies"
+    },
+    {
+      "case_id": "positive-whole-program",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "whole-program task with whole-program evidence verifies"
+    },
+    {
+      "case_id": "variant-am01-target-sha-other",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM01"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM01"
+      ],
+      "ok": true,
+      "purpose": "any target SHA deviation is rejected"
+    },
+    {
+      "case_id": "variant-am02-tree-sha-other",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM02"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM02"
+      ],
+      "ok": true,
+      "purpose": "any tree SHA deviation is rejected"
+    },
+    {
+      "case_id": "variant-am03-format-macho",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM03"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM03"
+      ],
+      "ok": true,
+      "purpose": "Mach-O acceptance cannot verify an ELF task"
+    },
+    {
+      "case_id": "variant-am04-abi",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM04"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM04"
+      ],
+      "ok": true,
+      "purpose": "ABI spoof is rejected with the arch class"
+    },
+    {
+      "case_id": "variant-am05-vulnerability-scope",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM05"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM05"
+      ],
+      "ok": true,
+      "purpose": "whole-program evidence cannot claim a vulnerability task"
+    },
+    {
+      "case_id": "variant-am07-claim-scope",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM07",
+        "AM19"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM07",
+        "AM19"
+      ],
+      "ok": true,
+      "purpose": "whole-program claim without whole-program evidence"
+    },
+    {
+      "case_id": "variant-am08-evidence-hash-2",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM08"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM08"
+      ],
+      "ok": true,
+      "purpose": "second evidence hash tamper is rejected"
+    },
+    {
+      "case_id": "variant-am09-served-different",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM09"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM09"
+      ],
+      "ok": true,
+      "purpose": "served-only different model cannot verify requested"
+    },
+    {
+      "case_id": "variant-am10-no-identity",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM10"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM10"
+      ],
+      "ok": true,
+      "purpose": "missing identity record is unknown"
+    },
+    {
+      "case_id": "variant-am11-exact-but-served",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM11"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM11"
+      ],
+      "ok": true,
+      "purpose": "exact status with a different served model is rejected"
+    },
+    {
+      "case_id": "variant-am12-alias-requested",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM12"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM12"
+      ],
+      "ok": true,
+      "purpose": "alias for a different requested model is invalid"
+    },
+    {
+      "case_id": "variant-am13-static-method-missing",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM13"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM13"
+      ],
+      "ok": true,
+      "purpose": "missing static method evidence is rejected"
+    },
+    {
+      "case_id": "variant-am14-runtime-tier",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM14"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM14"
+      ],
+      "ok": true,
+      "purpose": "runtime tier claim mismatch is rejected"
+    },
+    {
+      "case_id": "variant-am15-positive-only-flag",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM15"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM15"
+      ],
+      "ok": true,
+      "purpose": "only_positive acceptance is rejected"
+    },
+    {
+      "case_id": "variant-am16-repeats-bar",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM16"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM16"
+      ],
+      "ok": true,
+      "purpose": "higher repeat bar is rejected when evidence is thin"
+    },
+    {
+      "case_id": "variant-am17-acceptance-version",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM17"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM17"
+      ],
+      "ok": true,
+      "purpose": "acceptance-level tool version drift is rejected"
+    },
+    {
+      "case_id": "variant-am18-shared-source",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM18"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM18"
+      ],
+      "ok": true,
+      "purpose": "shared-source independence violation is rejected"
+    },
+    {
+      "case_id": "variant-am19-claim-scope",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM19"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM19"
+      ],
+      "ok": true,
+      "purpose": "claim scope overclaim is rejected"
+    },
+    {
+      "case_id": "variant-am20-extra-ref",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM20"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM20"
+      ],
+      "ok": true,
+      "purpose": "task evidence reference without acceptance evidence"
+    }
+  ],
+  "covered_am_classes": [
+    "AM01",
+    "AM02",
+    "AM03",
+    "AM04",
+    "AM05",
+    "AM06",
+    "AM07",
+    "AM08",
+    "AM09",
+    "AM10",
+    "AM11",
+    "AM12",
+    "AM13",
+    "AM14",
+    "AM15",
+    "AM16",
+    "AM17",
+    "AM18",
+    "AM19",
+    "AM20"
+  ],
+  "detected_expected_instances": 40,
+  "detected_mismatch_instances": 40,
+  "dimensions": [
+    "A01",
+    "A02",
+    "A03",
+    "A04",
+    "A05",
+    "A06",
+    "A07",
+    "A08"
+  ],
+  "expected_mismatch_instances": 40,
+  "failures": [],
+  "false_positives": 0,
+  "generated_by": "scripts/audit_acceptance_models.py",
+  "mismatch_classes": [
+    "AM01",
+    "AM02",
+    "AM03",
+    "AM04",
+    "AM05",
+    "AM06",
+    "AM07",
+    "AM08",
+    "AM09",
+    "AM10",
+    "AM11",
+    "AM12",
+    "AM13",
+    "AM14",
+    "AM15",
+    "AM16",
+    "AM17",
+    "AM18",
+    "AM19",
+    "AM20"
+  ],
+  "negative_case_count": 39,
+  "ok": true,
+  "positive_case_count": 4,
+  "precision": 1.0,
+  "recall": 1.0,
+  "schema_version": 1
+}

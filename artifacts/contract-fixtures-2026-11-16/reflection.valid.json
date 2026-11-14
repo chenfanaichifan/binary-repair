@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "reflection_id": "ref-0123456789ab",
+  "observations": [
+    {
+      "observation_id": "obs-001",
+      "source": "fixture",
+      "expected": "verified disposition",
+      "observed": "analysis_only",
+      "evidence": [],
+      "refs": [
+        "cell:elf/x86_64"
+      ]
+    }
+  ],
+  "diagnosis": "capability classification over 1 observation(s); capability decision analysis_only; verified is always false",
+  "failure_type": "unknown",
+  "root_cause_hypothesis": "insufficient machine-readable evidence",
+  "12_questions": [
+    {
+      "q": "Q01",
+      "answer": "expected behavior recorded in fixture",
+      "evidence": [
+        {
+          "kind": "fixture",
+          "ref": "tests/fixtures/reflection-observation.json",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "note": "fixture"
+        }
+      ],
+      "status": "answered"
+    },
+    {
+      "q": "Q02",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    },
+    {
+      "q": "Q03",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    },
+    {
+      "q": "Q04",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    },
+    {
+      "q": "Q05",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    },
+    {
+      "q": "Q06",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    },
+    {
+      "q": "Q07",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    },
+    {
+      "q": "Q08",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    },
+    {
+      "q": "Q09",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    },
+    {
+      "q": "Q10",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    },
+    {
+      "q": "Q11",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    },
+    {
+      "q": "Q12",
+      "answer": "unknown: fixture answer not measured",
+      "evidence": [],
+      "status": "unknown"
+    }
+  ],
+  "experiment_plan": {
+    "hypothesis": "cannot be planned from the available evidence",
+    "samples": [],
+    "acceptance_criteria": [],
+    "independent_verification": [],
+    "regression_checks": [],
+    "status": "cannot_plan",
+    "reason": "failure type is unknown: evidence is insufficient to plan an experiment"
+  },
+  "capability_decision": "analysis_only",
+  "verified": false,
+  "review_owner": "autonomous-audit"
+}

@@ -377,8 +377,8 @@
   },
   "release_evidence": {
     "procedure": "scripts/release_freeze.py --mode nightly --sha <frozen-sha> runs release_gate.py --nightly --release-sha and writes a provenance bundle",
-    "artifact_dir": "artifacts/release-gate-2026-11-16",
-    "evidence_branch": "release/2026-11-16-evidence",
+    "artifact_dir": "artifacts/release-gate-2026-11-15-autonomy",
+    "evidence_branch": "release/2026-11-15-autonomy-evidence",
     "evidence_scope": "local frozen-tree nightly gate on the final release commit plus a real GitHub-hosted portable CI run; the self-hosted Lima nightly is not_run and is not claimed",
     "ci_status": "portable_hosted_success_self_hosted_not_run",
     "hosted_ci_run_id": 43626323294,
@@ -392,8 +392,8 @@
   "ci_evidence": {
     "schema_version": 2,
     "gated_sha": "bb1ee2ddf2d9c40cbbd4b44be4931602aca0fcee",
-    "evidence_branch": "release/2026-11-16-evidence",
-    "evidence_tag": "release-2026-11-16-evidence",
+    "evidence_branch": "release/2026-11-15-autonomy-evidence",
+    "evidence_tag": "release/2026-11-15-autonomy-evidence",
     "hosted_ci": {
       "workflow": "CI",
       "run_id": 43626323294,
@@ -409,5 +409,107 @@
       "reason": "no self-hosted lima runner provisioned",
       "signoff": "docs/release/CI-SIGNOFF-2026-11-15.md"
     }
+  },
+  "autonomy_foundation": {
+    "phase": "phase-7",
+    "base_sha": "a8934fefe918b95069b89b42399095dd28bf8710",
+    "status": "implemented_foundation_no_new_repair_capability",
+    "new_vulnerability_repair_capability_this_phase": false,
+    "auto_upgrade_verified_this_phase": false,
+    "components": {
+      "state_machine": {
+        "path": "app/services/repair_states.py"
+      },
+      "contracts": {
+        "paths": [
+          "contracts/capability.schema.json",
+          "contracts/gap.schema.json",
+          "contracts/acceptance.schema.json",
+          "contracts/repair.schema.json",
+          "contracts/evidence.schema.json",
+          "contracts/reflection.schema.json"
+        ]
+      },
+      "capability_dimensions": {
+        "count": 20,
+        "artifact": "artifacts/capability-universe-2026-11-16/dimension-registry.json",
+        "mapped_cells": 240,
+        "unknown_within_universe": 0,
+        "out_of_universe_candidates": 12,
+        "undiscovered_space": "not_measurable"
+      },
+      "acceptance_intelligence": {
+        "registry_dimensions": 8,
+        "mismatch_classes": 20,
+        "audit_cases": 43,
+        "recall": 1.0,
+        "precision": 1.0,
+        "artifact": "artifacts/acceptance-model-audit-2026-11-16/report.json"
+      },
+      "gap_registry": {
+        "records": 64,
+        "candidates": 51,
+        "non_goal_migrated": 12,
+        "mechanisms_run": [
+          "knowledge",
+          "failure_driven",
+          "differential"
+        ],
+        "mechanisms_not_run": [
+          "mutation",
+          "metamorphic",
+          "sample_based",
+          "knowledge_source_scan"
+        ],
+        "artifact": "artifacts/gap-registry-2026-11-16/gaps.json"
+      },
+      "reflection": {
+        "questions": 12,
+        "records": 91,
+        "candidates": 12,
+        "verified_true_count": 0,
+        "capability_decisions": [
+          "analysis_only",
+          "candidate",
+          "not_run"
+        ],
+        "auto_upgrade_verified": false,
+        "artifact": "artifacts/autonomous-reflection-2026-11-16/reflection.json"
+      },
+      "unified_audit": {
+        "entry": "scripts/autonomous_repair_audit.py",
+        "mode_full_checks": 7,
+        "ok": true,
+        "not_run": []
+      },
+      "roadmap": "docs/operations/autonomy-roadmap-2026-11-16.md"
+    },
+    "implemented_backlog_items": [
+      "P0-01",
+      "P0-02",
+      "P0-03",
+      "P0-05",
+      "P0-06",
+      "P0-07",
+      "P1-14",
+      "P1-15"
+    ],
+    "partial_backlog_items": [
+      "P0-04",
+      "P0-08",
+      "P1-13"
+    ],
+    "not_started_backlog_items": [
+      "P1-09",
+      "P1-10",
+      "P1-11",
+      "P1-12"
+    ],
+    "not_claimed": [
+      "new vulnerability repair capability",
+      "upgraded verified capability",
+      "automatic promotion of candidates to verified",
+      "complete capability universe (undiscovered space is not measurable)"
+    ]
   }
 }

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "gap_id": "GAP-CLAIM-NG-NON-GOAL-1",
+  "discovery_source": "claims_non_goal",
+  "category": "non_goal",
+  "subcategory": "NG-non-goal-1",
+  "target": {
+    "kind": "claims_non_goal",
+    "claim_id": "NG-non-goal-1",
+    "applies_to": "non_goal"
+  },
+  "observed_failure": "copy sinks whose destination capacity is not recoverable by same-function analysis; remains analysis_only",
+  "existing_capability": "analysis_only; no candidate for unrecoverable destination capacity",
+  "severity": "info",
+  "status": "non_goal",
+  "evidence_refs": [
+    "docs/status/claims.json#non_goals[id=NG-non-goal-1]",
+    "docs/acceptance/non-goal-roadmap-2026-11-15.md#NG-non-goal-1"
+  ],
+  "proposed_experiment": {
+    "experiment_id": "EXP-CLAIM-NG-NON-GOAL-1",
+    "status": "cannot_plan",
+    "reason": "explicit non-goal: research evidence is required before an experiment"
+  },
+  "owner": "engine",
+  "review_by": "2027-03-31",
+  "verification_required": true,
+  "false_verified_risk": "medium"
+}

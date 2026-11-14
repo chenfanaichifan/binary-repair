@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/reflection.schema.json",
+  "title": "Reflection record (12-question contract, verified=false)",
+  "description": "One deterministic reflection record: observations, diagnosis, failure type, root-cause hypothesis, exactly the 12 contract questions, an experiment plan, a capability decision limited to analysis_only/candidate/not_run, verified always false and a review owner.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "reflection_id",
+    "observations",
+    "diagnosis",
+    "failure_type",
+    "root_cause_hypothesis",
+    "12_questions",
+    "experiment_plan",
+    "capability_decision",
+    "verified",
+    "review_owner"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "reflection_id": {
+      "type": "string",
+      "pattern": "^ref-[0-9a-f]{12,64}$"
+    },
+    "observations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "observation_id",
+          "source",
+          "expected",
+          "observed",
+          "evidence",
+          "refs"
+        ],
+        "properties": {
+          "observation_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected": {
+            "type": "string"
+          },
+          "observed": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "diagnosis": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_type": {
+      "type": "string",
+      "enum": [
+        "capability",
+        "evaluation",
+        "infrastructure",
+        "knowledge",
+        "unknown"
+      ]
+    },
+    "root_cause_hypothesis": {
+      "type": "string",
+      "minLength": 1
+    },
+    "12_questions": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "answer",
+          "evidence",
+          "status"
+        ],
+        "properties": {
+          "q": {
+            "type": "string",
+            "pattern": "^Q(0[1-9]|1[0-2])$"
+          },
+          "answer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "answered",
+              "unknown"
+            ]
+          }
+        }
+      }
+    },
+    "experiment_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hypothesis",
+        "samples",
+        "acceptance_criteria",
+        "independent_verification",
+        "regression_checks",
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "hypothesis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "samples": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "independent_verification": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "regression_checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "cannot_plan"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "capability_decision": {
+      "type": "string",
+      "enum": [
+        "analysis_only",
+        "candidate",
+        "not_run"
+      ]
+    },
+    "verified": {
+      "const": false
+    },
+    "review_owner": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

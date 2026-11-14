@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "dimensions": [
+    {
+      "id": "A09",
+      "title": "identity (target/tree/format/arch/ABI)",
+      "task_fields": [
+        "target_sha",
+        "tree_sha",
+        "format",
+        "arch",
+        "abi"
+      ],
+      "acceptance_fields": [
+        "target",
+        "format",
+        "arch",
+        "abi"
+      ],
+      "mismatch_ids": [
+        "AM01",
+        "AM02",
+        "AM03",
+        "AM04",
+        "AM20"
+      ]
+    },
+    {
+      "id": "A02",
+      "title": "scope (vulnerability/function/module/whole_program)",
+      "task_fields": [
+        "scope"
+      ],
+      "acceptance_fields": [
+        "scope",
+        "claims.scope"
+      ],
+      "mismatch_ids": [
+        "AM05",
+        "AM07",
+        "AM19"
+      ]
+    },
+    {
+      "id": "A03",
+      "title": "methods and evidence modes",
+      "task_fields": [
+        "required_methods",
+        "required_evidence_modes"
+      ],
+      "acceptance_fields": [
+        "methods",
+        "evidence[].methods",
+        "evidence[].mode"
+      ],
+      "mismatch_ids": [
+        "AM06",
+        "AM13"
+      ]
+    },
+    {
+      "id": "A04",
+      "title": "environment",
+      "task_fields": [
+        "required_environment"
+      ],
+      "acceptance_fields": [
+        "environment",
+        "evidence[].environment"
+      ],
+      "mismatch_ids": [
+        "AM14",
+        "AM20"
+      ]
+    },
+    {
+      "id": "A05",
+      "title": "model identity",
+      "task_fields": [
+        "model_identity"
+      ],
+      "acceptance_fields": [
+        "model_identity"
+      ],
+      "mismatch_ids": [
+        "AM09",
+        "AM10",
+        "AM11",
+        "AM12"
+      ]
+    },
+    {
+      "id": "A06",
+      "title": "evidence integrity (refs/hashes)",
+      "task_fields": [
+        "evidence_refs"
+      ],
+      "acceptance_fields": [
+        "evidence"
+      ],
+      "mismatch_ids": [
+        "AM08",
+        "AM15",
+        "AM20"
+      ]
+    },
+    {
+      "id": "A07",
+      "title": "regression and statistics",
+      "task_fields": [
+        "requires_regression",
+        "required_repeats",
+        "required_tool_versions"
+      ],
+      "acceptance_fields": [
+        "evidence[].regression",
+        "evidence[].repeats",
+        "evidence[].tool_versions",
+        "only_positive"
+      ],
+      "mismatch_ids": [
+        "AM15",
+        "AM16",
+        "AM17"
+      ]
+    },
+    {
+      "id": "A08",
+      "title": "independence and claims",
+      "task_fields": [
+        "model_identity.independence_required"
+      ],
+      "acceptance_fields": [
+        "independence",
+        "claims"
+      ],
+      "mismatch_ids": [
+        "AM18",
+        "AM19"
+      ]
+    }
+  ],
+  "mismatch_classes": [
+    {
+      "id": "AM21",
+      "code": "target_sha_mismatch",
+      "severity": "critical",
+      "required_actions": [
+        "reject_target_sha_mismatch"
+      ]
+    },
+    {
+      "id": "AM02",
+      "code": "tree_sha_mismatch",
+      "severity": "critical",
+      "required_actions": [
+        "reject_tree_sha_mismatch"
+      ]
+    },
+    {
+      "id": "AM03",
+      "code": "format_mismatch",
+      "severity": "high",
+      "required_actions": [
+        "reject_format_mismatch"
+      ]
+    },
+    {
+      "id": "AM04",
+      "code": "arch_abi_mismatch",
+      "severity": "high",
+      "required_actions": [
+        "reject_arch_abi_mismatch"
+      ]
+    },
+    {
+      "id": "AM05",
+      "code": "scope_overclaim",
+      "severity": "critical",
+      "required_actions": [
+        "reject_scope_overclaim"
+      ]
+    },
+    {
+      "id": "AM06",
+      "code": "evidence_mode_mismatch",
+      "severity": "high",
+      "required_actions": [
+        "collect_required_evidence_mode"
+      ]
+    },
+    {
+      "id": "AM07",
+      "code": "whole_program_claim_unsupported",
+      "severity": "critical",
+      "required_actions": [
+        "reject_whole_program_claim"
+      ]
+    },
+    {
+      "id": "AM08",
+      "code": "evidence_hash_mismatch",
+      "severity": "critical",
+      "required_actions": [
+        "reject_evidence_hash_mismatch"
+      ]
+    },
+    {
+      "id": "AM09",
+      "code": "served_model_identity",
+      "severity": "critical",
+      "required_actions": [
+        "reject_served_model_identity"
+      ]
+    },
+    {
+      "id": "AM10",
+      "code": "unknown_model_identity",
+      "severity": "critical",
+      "required_actions": [
+        "reject_unknown_model_identity"
+      ]
+    },
+    {
+      "id": "AM11",
+      "code": "mismatched_model_identity",
+      "severity": "critical",
+      "required_actions": [
+        "reject_mismatched_model_identity"
+      ]
+    },
+    {
+      "id": "AM12",
+      "code": "invalid_model_alias",
+      "severity": "high",
+      "required_actions": [
+        "reject_invalid_model_alias"
+      ]
+    },
+    {
+      "id": "AM13",
+      "code": "required_method_missing",
+      "severity": "high",
+      "required_actions": [
+        "collect_required_method_evidence"
+      ]
+    },
+    {
+      "id": "AM14",
+      "code": "environment_mismatch",
+      "severity": "high",
+      "required_actions": [
+        "reject_environment_mismatch"
+      ]
+    },
+    {
+      "id": "AM15",
+      "code": "only_positive_evidence",
+      "severity": "critical",
+      "required_actions": [
+        "add_regression_negative_case"
+      ]
+    },
+    {
+      "id": "AM16",
+      "code": "insufficient_statistics",
+      "severity": "high",
+      "required_actions": [
+        "increase_repeats_or_confidence"
+      ]
+    },
+    {
+      "id": "AM17",
+      "code": "tool_version_drift",
+      "severity": "medium",
+      "required_actions": [
+        "reject_tool_version_drift"
+      ]
+    },
+    {
+      "id": "AM18",
+      "code": "independence_violation",
+      "severity": "critical",
+      "required_actions": [
+        "require_independent_review"
+      ]
+    },
+    {
+      "id": "AM19",
+      "code": "unsupported_claim",
+      "severity": "high",
+      "required_actions": [
+        "reject_unsupported_claim"
+      ]
+    },
+    {
+      "id": "AM20",
+      "code": "evidence_incomplete",
+      "severity": "critical",
+      "required_actions": [
+        "collect_complete_evidence"
+      ]
+    }
+  ],
+  "match_result": {
+    "schema_version": 1,
+    "task_id": "task-fixture-001",
+    "decision": "rejected",
+    "mismatches": [
+      "AM01"
+    ],
+    "required_actions": [
+      "reject_target_sha_mismatch"
+    ],
+    "verified": false,
+    "residual_risk": "critical",
+    "reasons": [
+      "AM01: target_sha_mismatch: acceptance target sha differs from task target sha"
+    ]
+  }
+}

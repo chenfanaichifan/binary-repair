@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/evidence.schema.json",
+  "title": "Evidence bundle binding",
+  "description": "One evidence bundle that binds an artifact digest, a source tree digest, the producing runner (hosted/self-hosted/local/guest) and the guest execution facts, plus an explicit independence statement. Missing or unavailable capabilities are represented explicitly, never invented.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "target_sha256",
+    "tree_sha256",
+    "artifact",
+    "runner",
+    "guest",
+    "independence",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^ev-[A-Za-z0-9_.-]{3,}$"
+    },
+    "target_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "tree_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "runner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "runner_id",
+        "tier",
+        "available",
+        "reason"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "local",
+            "hosted_ci",
+            "self_hosted_ci",
+            "guest",
+            "none"
+          ]
+        },
+        "runner_id": {
+          "type": "string"
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "native_run",
+            "emulated_run",
+            "static_only",
+            "unavailable"
+          ]
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "guest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "available",
+        "reason"
+      ],
+      "properties": {
+        "engine": {
+          "type": "string",
+          "enum": [
+            "native",
+            "lima",
+            "qemu",
+            "unicorn",
+            "none"
+          ]
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "independence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "method"
+      ],
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "independent_review",
+            "independent_reimplementation",
+            "none"
+          ]
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,2162 @@
+{
+  "schema_version": 1,
+  "kind": "gap_registry",
+  "generated_at": "2026-11-14T00:00:00Z",
+  "purpose": "Unified Phase-7 capability gap registry: 12 claims non-goals + 1 mitigated runtime-evidence gap + deterministic discovery candidates.",
+  "record_count": 64,
+  "base_record_count": 13,
+  "candidate_record_count": 51,
+  "records_by_source": {
+    "claims_non_goal": 12,
+    "differential": 5,
+    "failure_driven": 32,
+    "knowledge": 15
+  },
+  "records_by_status": {
+    "candidate": 51,
+    "non_goal": 12,
+    "resolved": 1
+  },
+  "validation": {
+    "ok": true,
+    "violations": [],
+    "record_count": 64,
+    "unique_id_count": 64,
+    "sources": [
+      "claims_non_goal",
+      "differential",
+      "failure_driven",
+      "knowledge"
+    ]
+  },
+  "no_auto_promotion": true,
+  "records": [
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-EG-CASES-TARGET-NOT-ANALYZED",
+      "discovery_source": "claims_non_goal",
+      "category": "engine_gap",
+      "subcategory": "EG-cases-target-not-analyzed",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "EG-cases-target-not-analyzed",
+        "applies_to": "engine_gap"
+      },
+      "observed_failure": "Hard-case non-template targets (inline loops, sprintf, multicall, nonconst, UAF, heap guard) are AI-benchmark/research evidence, not deterministic engine successes; strict target-scoped deterministic baselines (baseline_expected_target_strict) record analysis_only/not_verified instead of a repaired claim.",
+      "existing_capability": "analysis_only; no target-scoped candidate; target-strict baseline (baseline_expected_target_strict) recorded as analysis_only/not_verified",
+      "severity": "high",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "cannot_plan",
+        "reason": "explicit non-goal in docs/status/claims.json: no repair experiment is planned; only enforcement/regression verification applies"
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-NG-AI-LEAF-ONLY-AI-ASSEMBLY-REPAIR",
+      "discovery_source": "claims_non_goal",
+      "category": "non_goal",
+      "subcategory": "NG-ai-leaf-only::ai_assembly_repair",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "NG-ai-leaf-only::ai_assembly_repair",
+        "applies_to": "non_goal"
+      },
+      "observed_failure": "AI assembly path accepts only a leaf-level reviewed block and cannot express repairs that need external calls/helpers.",
+      "existing_capability": "no verified; leaf/instruction allowlist refuses calls and non-whitelisted code",
+      "severity": "info",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-ai-leaf-only::ai_assembly_repair]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-ai-leaf-only::ai_assembly_repair]"
+      ],
+      "proposed_experiment": {
+        "status": "cannot_plan",
+        "reason": "explicit non-goal in docs/status/claims.json: no repair experiment is planned; only enforcement/regression verification applies"
+      },
+      "owner": "ai-path",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-NG-AI-LEAF-ONLY-AI-BINARY-REPAIR",
+      "discovery_source": "claims_non_goal",
+      "category": "non_goal",
+      "subcategory": "NG-ai-leaf-only::ai_binary_repair",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "NG-ai-leaf-only::ai_binary_repair",
+        "applies_to": "non_goal"
+      },
+      "observed_failure": "AI binary path emits only structurally validated leaf blocks; the deterministic unified gate decides acceptance.",
+      "existing_capability": "no verified; leaf/allowlist machine-code validator; AI never owns acceptance",
+      "severity": "info",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-ai-leaf-only::ai_binary_repair]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-ai-leaf-only::ai_binary_repair]"
+      ],
+      "proposed_experiment": {
+        "status": "cannot_plan",
+        "reason": "explicit non-goal in docs/status/claims.json: no repair experiment is planned; only enforcement/regression verification applies"
+      },
+      "owner": "ai-path",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-NG-NON-GOAL-1",
+      "discovery_source": "claims_non_goal",
+      "category": "non_goal",
+      "subcategory": "NG-non-goal-1",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "NG-non-goal-1",
+        "applies_to": "non_goal"
+      },
+      "observed_failure": "Copy sinks whose destination capacity is not recoverable by same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations).",
+      "existing_capability": "analysis_only; no candidate for unrecoverable destination capacity",
+      "severity": "info",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-non-goal-1]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-non-goal-1]"
+      ],
+      "proposed_experiment": {
+        "status": "cannot_plan",
+        "reason": "explicit non-goal in docs/status/claims.json: no repair experiment is planned; only enforcement/regression verification applies"
+      },
+      "owner": "engine",
+      "review_by": "2027-03-31",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-NG-NON-GOAL-2",
+      "discovery_source": "claims_non_goal",
+      "category": "non_goal",
+      "subcategory": "NG-non-goal-2",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "NG-non-goal-2",
+        "applies_to": "non_goal"
+      },
+      "observed_failure": "sprintf/format-expansion, UAF/lifetime and integer/loop deterministic repair templates (AI research only).",
+      "existing_capability": "analysis_only; no deterministic template; no download",
+      "severity": "info",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-non-goal-2]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-non-goal-2]"
+      ],
+      "proposed_experiment": {
+        "status": "cannot_plan",
+        "reason": "explicit non-goal in docs/status/claims.json: no repair experiment is planned; only enforcement/regression verification applies"
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-NG-NON-GOAL-3",
+      "discovery_source": "claims_non_goal",
+      "category": "non_goal",
+      "subcategory": "NG-non-goal-3",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "NG-non-goal-3",
+        "applies_to": "non_goal"
+      },
+      "observed_failure": "arm32, riscv, mips, powerpc and big-endian machine-code repair.",
+      "existing_capability": "unsupported; no rewrite backend for these containers/architectures",
+      "severity": "info",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-non-goal-3]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-non-goal-3]"
+      ],
+      "proposed_experiment": {
+        "status": "cannot_plan",
+        "reason": "explicit non-goal in docs/status/claims.json: no repair experiment is planned; only enforcement/regression verification applies"
+      },
+      "owner": "lead",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-NG-NON-GOAL-4",
+      "discovery_source": "claims_non_goal",
+      "category": "non_goal",
+      "subcategory": "NG-non-goal-4",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "NG-non-goal-4",
+        "applies_to": "non_goal"
+      },
+      "observed_failure": "32-bit Mach-O and fat Mach-O rewriting (thin little-endian only).",
+      "existing_capability": "unsupported; no fat/32-bit Mach-O rewrite",
+      "severity": "info",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-non-goal-4]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-non-goal-4]"
+      ],
+      "proposed_experiment": {
+        "status": "cannot_plan",
+        "reason": "explicit non-goal in docs/status/claims.json: no repair experiment is planned; only enforcement/regression verification applies"
+      },
+      "owner": "lead",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-NG-NON-GOAL-5",
+      "discovery_source": "claims_non_goal",
+      "category": "non_goal",
+      "subcategory": "NG-non-goal-5",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "NG-non-goal-5",
+        "applies_to": "non_goal"
+      },
+      "observed_failure": "Windows native execution and macOS native execution beyond the existing Mach-O path.",
+      "existing_capability": "unsupported/not_run for native execution beyond the Mach-O path",
+      "severity": "info",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-non-goal-5]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-non-goal-5]"
+      ],
+      "proposed_experiment": {
+        "status": "cannot_plan",
+        "reason": "explicit non-goal in docs/status/claims.json: no repair experiment is planned; only enforcement/regression verification applies"
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-RG-EXTERNAL-POC-DOC-MACHO-X86-64",
+      "discovery_source": "claims_non_goal",
+      "category": "runtime_gap",
+      "subcategory": "RG-external-poc::<doc>::macho/x86_64",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "RG-external-poc::<doc>::macho/x86_64",
+        "applies_to": "runtime_gap"
+      },
+      "observed_failure": "Mach-O x86_64 external PoC replay is a platform capability; the capability probe makes availability/reason explicit and the runner selects no runner when unavailable.",
+      "existing_capability": "unavailable/not_run; external PoC for macho/x86_64 is unavailable on arm64 hosts and platform-gated on others; no fabricated PoC",
+      "severity": "medium",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=RG-external-poc::<doc>::macho/x86_64]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=RG-external-poc::<doc>::macho/x86_64]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-CLAIM-RG-EXTERNAL-POC-DOC-MACHO-X86-64",
+        "steps": [
+          "run the documented capability probe on a host/platform where the runtime path is expected to be available",
+          "record the typed unavailable/available evidence and never mark a verified_patch without external-PoC/native evidence"
+        ]
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-RG-EXTERNAL-POC-DOC-PE-ARM64",
+      "discovery_source": "claims_non_goal",
+      "category": "runtime_gap",
+      "subcategory": "RG-external-poc::<doc>::pe/arm64",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "RG-external-poc::<doc>::pe/arm64",
+        "applies_to": "runtime_gap"
+      },
+      "observed_failure": "External-PoC replay is unavailable for PE/arm64 by design; only emulated/static evidence exists and a PoC requirement stays inconclusive.",
+      "existing_capability": "not_run; never verified_patch",
+      "severity": "medium",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=RG-external-poc::<doc>::pe/arm64]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=RG-external-poc::<doc>::pe/arm64]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-CLAIM-RG-EXTERNAL-POC-DOC-PE-ARM64",
+        "steps": [
+          "run the documented capability probe on a host/platform where the runtime path is expected to be available",
+          "record the typed unavailable/available evidence and never mark a verified_patch without external-PoC/native evidence"
+        ]
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-RG-EXTERNAL-POC-DOC-PE-I386",
+      "discovery_source": "claims_non_goal",
+      "category": "runtime_gap",
+      "subcategory": "RG-external-poc::<doc>::pe/i386",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "RG-external-poc::<doc>::pe/i386",
+        "applies_to": "runtime_gap"
+      },
+      "observed_failure": "External-PoC replay is unavailable for PE/i386 by design; PE PoC manifests are never executed or faked.",
+      "existing_capability": "not_run; never verified_patch",
+      "severity": "medium",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=RG-external-poc::<doc>::pe/i386]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=RG-external-poc::<doc>::pe/i386]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-CLAIM-RG-EXTERNAL-POC-DOC-PE-I386",
+        "steps": [
+          "run the documented capability probe on a host/platform where the runtime path is expected to be available",
+          "record the typed unavailable/available evidence and never mark a verified_patch without external-PoC/native evidence"
+        ]
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-CLAIM-RG-EXTERNAL-POC-DOC-PE-X86-64",
+      "discovery_source": "claims_non_goal",
+      "category": "runtime_gap",
+      "subcategory": "RG-external-poc::<doc>::pe/x86_64",
+      "target": {
+        "kind": "claims_non_goal",
+        "claim_id": "RG-external-poc::<doc>::pe/x86_64",
+        "applies_to": "runtime_gap"
+      },
+      "observed_failure": "External-PoC replay is unavailable for PE/x86_64 by design; the gate reports the missing evidence, it does not simulate it.",
+      "existing_capability": "not_run; never verified_patch",
+      "severity": "medium",
+      "status": "non_goal",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=RG-external-poc::<doc>::pe/x86_64]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=RG-external-poc::<doc>::pe/x86_64]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-CLAIM-RG-EXTERNAL-POC-DOC-PE-X86-64",
+        "steps": [
+          "run the documented capability probe on a host/platform where the runtime path is expected to be available",
+          "record the typed unavailable/available evidence and never mark a verified_patch without external-PoC/native evidence"
+        ]
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-DIFF-034E4F2DBA5F",
+      "discovery_source": "differential",
+      "category": "platform_capability_differential",
+      "subcategory": "pe/x86_64",
+      "target": {
+        "kind": "contract_cell",
+        "cell": "pe/x86_64",
+        "declared_tier": "emulated_run",
+        "measured_tier": "emulated_run"
+      },
+      "observed_failure": "pe/x86_64: declared_tiers=['emulated_run'] measured_tier=emulated_run poc_available=False; external PoC runner unavailable; measured reason: pe/x86_64 has Unicorn instruction-level execution evidence; external PoC runner unavailable",
+      "existing_capability": "the committed capability-contract checker measures this cell and reports a typed reason; no verified claim is fabricated",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "scripts/check_capability_contract.py --json#cells[cell=pe/x86_64]",
+        "docs/acceptance/capability-contract-2026-11-14.md#runtime-tiers"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-DIFF-PE-X86-64",
+        "steps": [
+          "re-run the capability-contract probe for pe/x86_64 on a host/platform where the declared tier can actually be measured",
+          "record the resulting typed evidence and only then update the measured tier; never fabricate native/PoC availability"
+        ]
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-DIFF-48734D7F8B17",
+      "discovery_source": "differential",
+      "category": "platform_capability_differential",
+      "subcategory": "macho/x86_64",
+      "target": {
+        "kind": "contract_cell",
+        "cell": "macho/x86_64",
+        "declared_tier": "native_run",
+        "measured_tier": "emulated_run"
+      },
+      "observed_failure": "macho/x86_64: declared_tiers=['native_run'] measured_tier=emulated_run poc_available=False; declared 'native_run' not measured on this host; external PoC runner unavailable; measured reason: declared native_run is unavailable on this host; measured emulated_run is function-level evidence only and external PoC is unavailable: host arm64 cannot execute macho/x86_64 natively; only the Rosetta cross-arch path provides function-level evidence, and the external PoC runner is unavailable",
+      "existing_capability": "the committed capability-contract checker measures this cell and reports a typed reason; no verified claim is fabricated",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "scripts/check_capability_contract.py --json#cells[cell=macho/x86_64]",
+        "docs/acceptance/capability-contract-2026-11-14.md#runtime-tiers"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-DIFF-MACHO-X86-64",
+        "steps": [
+          "re-run the capability-contract probe for macho/x86_64 on a host/platform where the declared tier can actually be measured",
+          "record the resulting typed evidence and only then update the measured tier; never fabricate native/PoC availability"
+        ]
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-DIFF-552CB23EC176",
+      "discovery_source": "differential",
+      "category": "platform_capability_differential",
+      "subcategory": "elf/x86_64",
+      "target": {
+        "kind": "contract_cell",
+        "cell": "elf/x86_64",
+        "declared_tier": "native_run",
+        "measured_tier": "emulated_run"
+      },
+      "observed_failure": "elf/x86_64: declared_tiers=['native_run', 'emulated_run'] measured_tier=emulated_run poc_available=True; declared 'native_run' not measured on this host; measured reason: declared native_run is unavailable on this host; measured emulated_run is function-level evidence only and external PoC is available: lima guest runner can execute elf/x86_64 on darwin/arm64",
+      "existing_capability": "the committed capability-contract checker measures this cell and reports a typed reason; no verified claim is fabricated",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "scripts/check_capability_contract.py --json#cells[cell=elf/x86_64]",
+        "docs/acceptance/capability-contract-2026-11-14.md#runtime-tiers"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-DIFF-ELF-X86-64",
+        "steps": [
+          "re-run the capability-contract probe for elf/x86_64 on a host/platform where the declared tier can actually be measured",
+          "record the resulting typed evidence and only then update the measured tier; never fabricate native/PoC availability"
+        ]
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-DIFF-588259E9D4A2",
+      "discovery_source": "differential",
+      "category": "platform_capability_differential",
+      "subcategory": "pe/i386",
+      "target": {
+        "kind": "contract_cell",
+        "cell": "pe/i386",
+        "declared_tier": "emulated_run",
+        "measured_tier": "emulated_run"
+      },
+      "observed_failure": "pe/i386: declared_tiers=['emulated_run'] measured_tier=emulated_run poc_available=False; external PoC runner unavailable; measured reason: pe/i386 has Unicorn instruction-level execution evidence; external PoC runner unavailable",
+      "existing_capability": "the committed capability-contract checker measures this cell and reports a typed reason; no verified claim is fabricated",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "scripts/check_capability_contract.py --json#cells[cell=pe/i386]",
+        "docs/acceptance/capability-contract-2026-11-14.md#runtime-tiers"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-DIFF-PE-I386",
+        "steps": [
+          "re-run the capability-contract probe for pe/i386 on a host/platform where the declared tier can actually be measured",
+          "record the resulting typed evidence and only then update the measured tier; never fabricate native/PoC availability"
+        ]
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-DIFF-D96AB1937BEC",
+      "discovery_source": "differential",
+      "category": "platform_capability_differential",
+      "subcategory": "pe/arm64",
+      "target": {
+        "kind": "contract_cell",
+        "cell": "pe/arm64",
+        "declared_tier": "emulated_run",
+        "measured_tier": "emulated_run"
+      },
+      "observed_failure": "pe/arm64: declared_tiers=['emulated_run'] measured_tier=emulated_run poc_available=False; external PoC runner unavailable; measured reason: pe/arm64 has Unicorn instruction-level execution evidence; external PoC runner unavailable",
+      "existing_capability": "the committed capability-contract checker measures this cell and reports a typed reason; no verified claim is fabricated",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "scripts/check_capability_contract.py --json#cells[cell=pe/arm64]",
+        "docs/acceptance/capability-contract-2026-11-14.md#runtime-tiers"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-DIFF-PE-ARM64",
+        "steps": [
+          "re-run the capability-contract probe for pe/arm64 on a host/platform where the declared tier can actually be measured",
+          "record the resulting typed evidence and only then update the measured tier; never fabricate native/PoC availability"
+        ]
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-CWE121-UNCHECKED-STRCPY",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "cwe121-unchecked-strcpy",
+      "target": {
+        "kind": "case",
+        "id": "cwe121-unchecked-strcpy"
+      },
+      "observed_failure": "target-resolved case cwe121-unchecked-strcpy measured_target_analyzed=false (deterministic disposition=analysis_only); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=cwe121-unchecked-strcpy]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-CWE121-UNCHECKED-STRCPY",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for cwe121-unchecked-strcpy",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-HARD-LOOP16",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "hard-loop16",
+      "target": {
+        "kind": "case",
+        "id": "hard-loop16"
+      },
+      "observed_failure": "target-resolved case hard-loop16 measured_target_analyzed=false (deterministic disposition=rejected); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=hard-loop16]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-HARD-LOOP16",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for hard-loop16",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-HARD-LOOP32",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "hard-loop32",
+      "target": {
+        "kind": "case",
+        "id": "hard-loop32"
+      },
+      "observed_failure": "target-resolved case hard-loop32 measured_target_analyzed=false (deterministic disposition=rejected); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=hard-loop32]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-HARD-LOOP32",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for hard-loop32",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-HARD-LOOP64",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "hard-loop64",
+      "target": {
+        "kind": "case",
+        "id": "hard-loop64"
+      },
+      "observed_failure": "target-resolved case hard-loop64 measured_target_analyzed=false (deterministic disposition=rejected); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=hard-loop64]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-HARD-LOOP64",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for hard-loop64",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-HARD-LOOP8",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "hard-loop8",
+      "target": {
+        "kind": "case",
+        "id": "hard-loop8"
+      },
+      "observed_failure": "target-resolved case hard-loop8 measured_target_analyzed=false (deterministic disposition=rejected); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=hard-loop8]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-HARD-LOOP8",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for hard-loop8",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-HARD-MULTICALL",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "hard-multicall",
+      "target": {
+        "kind": "case",
+        "id": "hard-multicall"
+      },
+      "observed_failure": "target-resolved case hard-multicall measured_target_analyzed=false (deterministic disposition=rejected); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=hard-multicall]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-HARD-MULTICALL",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for hard-multicall",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-HARD-NONCONST",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "hard-nonconst",
+      "target": {
+        "kind": "case",
+        "id": "hard-nonconst"
+      },
+      "observed_failure": "target-resolved case hard-nonconst measured_target_analyzed=false (deterministic disposition=rejected); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=hard-nonconst]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-HARD-NONCONST",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for hard-nonconst",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-HARD-REVERSE",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "hard-reverse",
+      "target": {
+        "kind": "case",
+        "id": "hard-reverse"
+      },
+      "observed_failure": "target-resolved case hard-reverse measured_target_analyzed=false (deterministic disposition=rejected); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=hard-reverse]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-HARD-REVERSE",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for hard-reverse",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-HARD-SPRINTF",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "hard-sprintf",
+      "target": {
+        "kind": "case",
+        "id": "hard-sprintf"
+      },
+      "observed_failure": "target-resolved case hard-sprintf measured_target_analyzed=false (deterministic disposition=rejected); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=hard-sprintf]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-HARD-SPRINTF",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for hard-sprintf",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-HEAP-CANARY",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "heap-canary",
+      "target": {
+        "kind": "case",
+        "id": "heap-canary"
+      },
+      "observed_failure": "target-resolved case heap-canary measured_target_analyzed=false (deterministic disposition=rejected); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=heap-canary]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-HEAP-CANARY",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for heap-canary",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-INLINE-BYTE-LOOP",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "inline-byte-loop",
+      "target": {
+        "kind": "case",
+        "id": "inline-byte-loop"
+      },
+      "observed_failure": "target-resolved case inline-byte-loop measured_target_analyzed=false (deterministic disposition=rejected); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=inline-byte-loop]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-INLINE-BYTE-LOOP",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for inline-byte-loop",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-CASE-UAF-NOINPUT",
+      "discovery_source": "failure_driven",
+      "category": "case_target_analysis_failure",
+      "subcategory": "uaf-noinput",
+      "target": {
+        "kind": "case",
+        "id": "uaf-noinput"
+      },
+      "observed_failure": "target-resolved case uaf-noinput measured_target_analyzed=false (deterministic disposition=analysis_only); target is not analyzed by the deterministic baseline",
+      "existing_capability": "deterministic baseline records analysis_only/rejected; the hard-case non-template limitation is claims non-goal EG-cases-target-not-analyzed",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#coverage_rows.cases[id=uaf-noinput]",
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-CASE-UAF-NOINPUT",
+        "steps": [
+          "add a reviewed target fixture + runtime oracle for uaf-noinput",
+          "implement target-scoped deterministic or AI repair and verify with the native/emulated PoC+regression gate",
+          "do not mark the case repaired without target-scoped evidence"
+        ]
+      },
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-CELL",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_cell",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_cell",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector gate_cell were observed and closed/mitigated in the committed audit (gap ids: GM-gate-cell)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_cell]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-CELL",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-CELL-TIER",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_cell_tier",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_cell_tier",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector gate_cell_tier were observed and closed/mitigated in the committed audit (gap ids: GM-gate-runtime-tier)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_cell_tier]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-CELL-TIER",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-LEGACY-POC",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_legacy_poc",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_legacy_poc",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector gate_legacy_poc were observed and closed/mitigated in the committed audit (gap ids: GM-legacy-gate-poc-manifest)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_legacy_poc]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-LEGACY-POC",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-LEGACY-PROFILE",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_legacy_profile",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_legacy_profile",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector gate_legacy_profile were observed and closed/mitigated in the committed audit (gap ids: GM-legacy-gate-profile)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_legacy_profile]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-LEGACY-PROFILE",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-NO-INPUT",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_no_input",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_no_input",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector gate_no_input were observed and closed/mitigated in the committed audit (gap ids: GM-gate-no-input)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_no_input]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-NO-INPUT",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-POC-UNAVAILABLE",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_poc_unavailable",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_poc_unavailable",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector gate_poc_unavailable were observed and closed/mitigated in the committed audit (gap ids: GM-gate-poc-unavailable)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_poc_unavailable]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-POC-UNAVAILABLE",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-PROFILE-CHECKS",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_profile_checks",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_profile_checks",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "4 gate_mismatch row(s) with detector gate_profile_checks were observed and closed/mitigated in the committed audit (gap ids: GM-profile-check-missing::emulated_instruction, GM-profile-check-missing::native_poc, GM-profile-check-missing::native_poc_rewrite, GM-profile-check-missing::strict_template)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_profile_checks]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-PROFILE-CHECKS",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-PROFILE-ENFORCEMENT",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_profile_enforcement",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_profile_enforcement",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector gate_profile_enforcement were observed and closed/mitigated in the committed audit (gap ids: GM-profile-evidence-enforcement)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_profile_enforcement]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-PROFILE-ENFORCEMENT",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-PROFILES",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_profiles",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_profiles",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector gate_profiles were observed and closed/mitigated in the committed audit (gap ids: GM-profile-registry)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_profiles]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-PROFILES",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-REWRITE",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_rewrite",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_rewrite",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector gate_rewrite were observed and closed/mitigated in the committed audit (gap ids: GM-gate-rewrite)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_rewrite]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-REWRITE",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-SATISFIABILITY",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_satisfiability",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_satisfiability",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "7 gate_mismatch row(s) with detector gate_satisfiability were observed and closed/mitigated in the committed audit (gap ids: GM-gate-check-unsatisfiable, GM-legacy-profile-unsatisfiable::emulated_instruction, GM-legacy-profile-unsatisfiable::strict_template, GM-profile-unsatisfiable::emulated_instruction, ...)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_satisfiability]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-SATISFIABILITY",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-GATE-SCENARIO-EXECUTION",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "gate_scenario_execution",
+      "target": {
+        "kind": "audit_detector",
+        "id": "gate_scenario_execution",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector gate_scenario_execution were observed and closed/mitigated in the committed audit (gap ids: GM-gate-scenario-execution)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=gate_scenario_execution]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-GATE-SCENARIO-EXECUTION",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-MANIFESTS",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "manifests",
+      "target": {
+        "kind": "audit_detector",
+        "id": "manifests",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector manifests were observed and closed/mitigated in the committed audit (gap ids: GM-manifest-no-input-model)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=manifests]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-MANIFESTS",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-MODULE-READINESS",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "module_readiness",
+      "target": {
+        "kind": "audit_detector",
+        "id": "module_readiness",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector module_readiness were observed and closed/mitigated in the committed audit (gap ids: GM-module-readiness)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=module_readiness]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-MODULE-READINESS",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-GATE-MISMATCH-SAFE-DEFAULT",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "safe_default",
+      "target": {
+        "kind": "audit_detector",
+        "id": "safe_default",
+        "audit_category": "gate_mismatch"
+      },
+      "observed_failure": "1 gate_mismatch row(s) with detector safe_default were observed and closed/mitigated in the committed audit (gap ids: GM-safe-default-policy)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=gate_mismatch,detector=safe_default]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-SAFE-DEFAULT",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-MATRIX-CLAIM-MISMATCH-CASES-BASELINE",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "cases_baseline",
+      "target": {
+        "kind": "audit_detector",
+        "id": "cases_baseline",
+        "audit_category": "matrix_claim_mismatch"
+      },
+      "observed_failure": "1 matrix_claim_mismatch row(s) with detector cases_baseline were observed and closed/mitigated in the committed audit (gap ids: MM-case-baseline-mismatch)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=matrix_claim_mismatch,detector=cases_baseline]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-CASES-BASELINE",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-MATRIX-CLAIM-MISMATCH-CLAIMS-DOCS",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "claims_docs",
+      "target": {
+        "kind": "audit_detector",
+        "id": "claims_docs",
+        "audit_category": "matrix_claim_mismatch"
+      },
+      "observed_failure": "8 matrix_claim_mismatch row(s) with detector claims_docs were observed and closed/mitigated in the committed audit (gap ids: MM-docs-capacity-missing, MM-claims-capacity-stale, MM-claims-unimplemented::capacity, MM-claims-unimplemented::global, ...)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=matrix_claim_mismatch,detector=claims_docs]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-CLAIMS-DOCS",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-MATRIX-CLAIM-MISMATCH-MATRIX-COVERAGE",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "matrix_coverage",
+      "target": {
+        "kind": "audit_detector",
+        "id": "matrix_coverage",
+        "audit_category": "matrix_claim_mismatch"
+      },
+      "observed_failure": "13 matrix_claim_mismatch row(s) with detector matrix_coverage were observed and closed/mitigated in the committed audit (gap ids: MM-cell-no-fixture::elf/arm64/64/little, MM-cell-no-fixture::elf/i386/32/little, MM-cell-no-fixture::elf/x86_64/64/little, MM-cell-no-fixture::macho/arm64/64/little, ...)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=matrix_claim_mismatch,detector=matrix_coverage]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-MATRIX-COVERAGE",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-META-MATRIX-CLAIM-MISMATCH-RUNTIME-VOCABULARY",
+      "discovery_source": "failure_driven",
+      "category": "audit_meta_mismatch_regression",
+      "subcategory": "runtime_vocabulary",
+      "target": {
+        "kind": "audit_detector",
+        "id": "runtime_vocabulary",
+        "audit_category": "matrix_claim_mismatch"
+      },
+      "observed_failure": "1 matrix_claim_mismatch row(s) with detector runtime_vocabulary were observed and closed/mitigated in the committed audit (gap ids: MM-runtime-tier-vocabulary)",
+      "existing_capability": "the committed coverage audit records these as closed/mitigated; no open failure remains in the re-run checker",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[category=matrix_claim_mismatch,detector=runtime_vocabulary]",
+        "scripts/check_universe_methodology.py --json"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-FAIL-META-RUNTIME-VOCABULARY",
+        "steps": [
+          "re-run the committed audit detector on the current tree",
+          "if no permanent regression check exists, add one that fails on a silent regression of this detector class",
+          "record the passing check evidence; do not promote the candidate without an independent verification result"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-FAIL-RG-RUNTIME-EVIDENCE-ELF-X86-64-64-LITTLE-NATIVE-RUN",
+      "discovery_source": "failure_driven",
+      "category": "runtime_gap",
+      "subcategory": "RG-runtime-evidence::elf/x86_64/64/little::native_run",
+      "target": {
+        "kind": "audit_gap",
+        "gap_id": "RG-runtime-evidence::elf/x86_64/64/little::native_run"
+      },
+      "observed_failure": "matrix cell elf/x86_64/64/little declares native ELF execution; it is available only when the host matches the cell arch (host=darwin/arm64, cell=x86_64); static audit cannot probe it",
+      "existing_capability": "mitigated in the committed coverage audit: native ELF tier is platform-gated; run the local probe on a matching host for native evidence",
+      "severity": "info",
+      "status": "resolved",
+      "evidence_refs": [
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#gaps[id=RG-runtime-evidence::elf/x86_64/64/little::native_run]"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-MIT-RUNTIME-TIER-HOST-MATCH",
+        "steps": [
+          "re-run the runtime capability probe on a host matching the cell architecture to obtain native-tier evidence",
+          "if no matching host is available, keep reporting the mitigated platform-gated status and never fabricate native evidence"
+        ]
+      },
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "high"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-0046331D4CF9",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D10",
+      "target": {
+        "kind": "dimension",
+        "id": "D10",
+        "title": "Control-flow analysis",
+        "status": "not_started"
+      },
+      "observed_failure": "D10 (Control-flow analysis) has status=not_started: no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered",
+      "existing_capability": "no old-11 dimension mapping exists",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D10]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D10",
+        "steps": [
+          "define a first-level Control-flow analysis registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-0144E364AE88",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D16",
+      "target": {
+        "kind": "dimension",
+        "id": "D16",
+        "title": "Patch generation",
+        "status": "partial"
+      },
+      "observed_failure": "D16 (Patch generation) has status=partial: only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry",
+      "existing_capability": "mapped old-11 dimensions: strategy, evidence_profile",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D16]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D16",
+        "steps": [
+          "define a first-level Patch generation registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "ai-path",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-0733D101CD78",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D09",
+      "target": {
+        "kind": "dimension",
+        "id": "D09",
+        "title": "Data-flow analysis",
+        "status": "not_started"
+      },
+      "observed_failure": "D09 (Data-flow analysis) has status=not_started: no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered",
+      "existing_capability": "no old-11 dimension mapping exists",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D09]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D09",
+        "steps": [
+          "define a first-level Data-flow analysis registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-131698DB89CE",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D08",
+      "target": {
+        "kind": "dimension",
+        "id": "D08",
+        "title": "Control-flow safety",
+        "status": "non_goal"
+      },
+      "observed_failure": "D08 (Control-flow safety) has status=non_goal: the dimension's repair subject is an explicit non-goal in docs/status/claims.json; related_non_goal_ids lists the records",
+      "existing_capability": "no old-11 dimension mapping exists",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D08]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "cannot_plan",
+        "reason": "explicit non-goal dimension: no repair experiment is planned; only claim/enforcement verification applies"
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "low"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-19F9BAE43B4F",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D11",
+      "target": {
+        "kind": "dimension",
+        "id": "D11",
+        "title": "Interprocedural analysis",
+        "status": "not_started"
+      },
+      "observed_failure": "D11 (Interprocedural analysis) has status=not_started: no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered",
+      "existing_capability": "no old-11 dimension mapping exists",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D11]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D11",
+        "steps": [
+          "define a first-level Interprocedural analysis registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-2449225E53BC",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D03",
+      "target": {
+        "kind": "dimension",
+        "id": "D03",
+        "title": "ABI and calling conventions",
+        "status": "not_started"
+      },
+      "observed_failure": "D03 (ABI and calling conventions) has status=not_started: no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered",
+      "existing_capability": "no old-11 dimension mapping exists",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D03]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D03",
+        "steps": [
+          "define a first-level ABI and calling conventions registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-4E20E505D6BE",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D19",
+      "target": {
+        "kind": "dimension",
+        "id": "D19",
+        "title": "Verification",
+        "status": "partial"
+      },
+      "observed_failure": "D19 (Verification) has status=partial: only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry",
+      "existing_capability": "mapped old-11 dimensions: evidence_profile, proof_scope",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D19]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D19",
+        "steps": [
+          "define a first-level Verification registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "verification",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-8CFA10A33EE8",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D14",
+      "target": {
+        "kind": "dimension",
+        "id": "D14",
+        "title": "Exploitability assessment",
+        "status": "not_started"
+      },
+      "observed_failure": "D14 (Exploitability assessment) has status=not_started: no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered",
+      "existing_capability": "no old-11 dimension mapping exists",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D14]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D14",
+        "steps": [
+          "define a first-level Exploitability assessment registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-A9FDABBC6B98",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D07",
+      "target": {
+        "kind": "dimension",
+        "id": "D07",
+        "title": "Arithmetic safety",
+        "status": "non_goal"
+      },
+      "observed_failure": "D07 (Arithmetic safety) has status=non_goal: the dimension's repair subject is an explicit non-goal in docs/status/claims.json; related_non_goal_ids lists the records",
+      "existing_capability": "no old-11 dimension mapping exists",
+      "severity": "info",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D07]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "cannot_plan",
+        "reason": "explicit non-goal dimension: no repair experiment is planned; only claim/enforcement verification applies"
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "low"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-DA25B80E6306",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D12",
+      "target": {
+        "kind": "dimension",
+        "id": "D12",
+        "title": "Binary structure",
+        "status": "partial"
+      },
+      "observed_failure": "D12 (Binary structure) has status=partial: only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry",
+      "existing_capability": "mapped old-11 dimensions: bits, endian",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D12]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D12",
+        "steps": [
+          "define a first-level Binary structure registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "universe",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-DF96FDBC59A0",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D04",
+      "target": {
+        "kind": "dimension",
+        "id": "D04",
+        "title": "Compiler ecosystems",
+        "status": "not_started"
+      },
+      "observed_failure": "D04 (Compiler ecosystems) has status=not_started: no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered",
+      "existing_capability": "no old-11 dimension mapping exists",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D04]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D04",
+        "steps": [
+          "define a first-level Compiler ecosystems registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-E5E00D03D52A",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D17",
+      "target": {
+        "kind": "dimension",
+        "id": "D17",
+        "title": "Patch application",
+        "status": "partial"
+      },
+      "observed_failure": "D17 (Patch application) has status=partial: only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry",
+      "existing_capability": "mapped old-11 dimensions: evidence_profile",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D17]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D17",
+        "steps": [
+          "define a first-level Patch application registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "pipeline",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-E9D869738D70",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D20",
+      "target": {
+        "kind": "dimension",
+        "id": "D20",
+        "title": "AI model intelligence",
+        "status": "partial"
+      },
+      "observed_failure": "D20 (AI model intelligence) has status=partial: only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry",
+      "existing_capability": "mapped old-11 dimensions: provider",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D20]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D20",
+        "steps": [
+          "define a first-level AI model intelligence registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "ai-path",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-F5925DDEA69C",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D18",
+      "target": {
+        "kind": "dimension",
+        "id": "D18",
+        "title": "Semantic preservation",
+        "status": "not_started"
+      },
+      "observed_failure": "D18 (Semantic preservation) has status=not_started: no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered",
+      "existing_capability": "no old-11 dimension mapping exists",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D18]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D18",
+        "steps": [
+          "define a first-level Semantic preservation registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "verification",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    },
+    {
+      "schema_version": 1,
+      "gap_id": "GAP-KNOW-F94C650CD01B",
+      "discovery_source": "knowledge",
+      "category": "universe_dimension_gap",
+      "subcategory": "D06",
+      "target": {
+        "kind": "dimension",
+        "id": "D06",
+        "title": "Memory safety",
+        "status": "partial"
+      },
+      "observed_failure": "D06 (Memory safety) has status=partial: only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry",
+      "existing_capability": "mapped old-11 dimensions: sink_class, destination_kind",
+      "severity": "medium",
+      "status": "candidate",
+      "evidence_refs": [
+        "artifacts/capability-universe-2026-11-16/dimension-registry.json#dimensions[id=D06]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.dimensions",
+        "docs/status/claims.json#non_goals"
+      ],
+      "proposed_experiment": {
+        "status": "proposed",
+        "experiment_id": "EXP-KNOW-D06",
+        "steps": [
+          "define a first-level Memory safety registry/universe mapping",
+          "collect measured evidence for the dimension from real fixtures or a documented corpus (never fabricate coverage)",
+          "register the mapping in the capability universe and re-run this builder; keep the dimension status unchanged until evidence exists"
+        ]
+      },
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "verification_required": true,
+      "false_verified_risk": "medium"
+    }
+  ],
+  "gaps_path": "artifacts/gap-registry-2026-11-16/gaps.json",
+  "candidates_path": "artifacts/gap-registry-2026-11-16/candidates.json",
+  "provenance": {
+    "builder": "scripts/discover_capability_gaps.py",
+    "builder_version": 1,
+    "build_method": "real in-process/in-subprocess discovery from committed evidence; no network, no git commands, no wall-clock timestamps",
+    "generated_at": "2026-11-14T00:00:00Z",
+    "generated_at_source": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#audit_date",
+    "generated_at_note": "generated_at is derived from the coverage-matrix audit_date so a fresh build is byte-identical; it is not the build time",
+    "sources": [
+      {
+        "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+        "sha256": "6c72abcac0f71b747f68a8f2b5fb4f4fd5b74de4629aa00a3fa9a8647251e3d8"
+      },
+      {
+        "path": "docs/status/claims.json",
+        "sha256": "a9b3d0ce406ab6e8cc51d43d6e62f003a797bad4fa89f1a2f3126bef7e1dc875"
+      },
+      {
+        "path": "scripts/check_universe_methodology.py",
+        "sha256": "d58d9ce0a411850d6da84999fb8bda4fc4db5464f15ce8d2939792e26117e715"
+      },
+      {
+        "path": "scripts/check_capability_contract.py",
+        "sha256": "1feccefe63168277fc5f85d67c78fbbfba4bf046fbcbbf581a0a2ee2f7fe604c"
+      },
+      {
+        "path": "app/services/capability_dimensions.py",
+        "sha256": "615157ccaf2c9b2b84e858627c374c8baed98a02470c6c30d0ddf19e1660bd31"
+      },
+      {
+        "path": "app/services/gap_registry.py",
+        "sha256": "652eb022455071ba66867c83d1b1db3b97ad4a33b1366dcbe6625e85acc2a92b"
+      },
+      {
+        "path": "scripts/build_universe_dimension_registry.py",
+        "sha256": "aa6a4fdfee759e94302e7f9ee42e6b67724b08a1d034eedc92b860dbab7693d6"
+      },
+      {
+        "path": "artifacts/capability-universe-2026-11-16/dimension-registry.json",
+        "sha256": "dcca77f305c44725be747dc2f2cf271ff6930711cf4374d7f54b4d4f1e4734f0"
+      }
+    ],
+    "source_digest_sha256": "2cb2aa74a25c02914e741a94b2946d72dcea4a64cedfb7a79252f4c620d45bd7",
+    "environment": {
+      "platform": "darwin",
+      "python": "3.11.8"
+    }
+  },
+  "limitations": [
+    "Discovery candidates are not verified repairs and are never auto-promoted.",
+    "4 of 7 adapters are not_run because their corpus/engine is absent; the reasons are explicit.",
+    "The differential candidates are host-dependent measurements recorded with the measured host."
+  ]
+}

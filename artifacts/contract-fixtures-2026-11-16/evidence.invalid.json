@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev-fixture-001",
+  "target_sha256": "attacker-sha",
+  "tree_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "artifact": {
+    "path": "fixtures/elf/vuln-strcpy-x86_64.elf",
+    "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "size_bytes": 15000
+  },
+  "runner": {
+    "kind": "unknown-ci",
+    "runner_id": "lima-binaryrepair",
+    "tier": "emulated_run",
+    "available": true,
+    "reason": "lima guest runner executes x86_64 ELF on darwin/arm64"
+  },
+  "guest": {
+    "engine": "lima",
+    "available": true,
+    "reason": "guest binaryrepair provisioned"
+  },
+  "independence": {
+    "ok": true,
+    "method": "independent_review"
+  },
+  "limitations": [
+    "runtime evidence is emulated, not a host-kernel run"
+  ]
+}

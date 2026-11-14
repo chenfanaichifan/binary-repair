@@ -49,6 +49,8 @@ def test_meta_audit_scenarios_cover_recall_and_precision() -> None:
         "ci_evidence_missing_or_misclaimed",
         "provenance_incomplete",
         "evidence_branch_drift",
+        "acceptance_served_model_only_masquerade",
+        "acceptance_whole_program_masquerade",
     }
     precision_ids = {
         "gate_rejects_fabricated_open_gap",
@@ -98,8 +100,8 @@ def test_meta_audit_cli_json_contract(tmp_path: Path) -> None:
 
 def test_meta_audit_has_at_least_twelve_injected_scenarios() -> None:
     report = _report()
-    assert report["scenario_count"] >= 22
-    assert report["thresholds"]["min_scenarios"] >= 22
+    assert report["scenario_count"] >= 26
+    assert report["thresholds"]["min_scenarios"] >= 26
     scenario_ids = {item["id"] for item in report["scenarios"]}
     for required in (
         "target_scope_gate_check_removed",
@@ -117,6 +119,8 @@ def test_meta_audit_has_at_least_twelve_injected_scenarios() -> None:
         "ci_evidence_missing_or_misclaimed",
         "provenance_incomplete",
         "evidence_branch_drift",
+        "acceptance_served_model_only_masquerade",
+        "acceptance_whole_program_masquerade",
     ):
         assert required in scenario_ids, required
 
@@ -128,7 +132,7 @@ def test_meta_audit_cli_reports_full_scenario_count() -> None:
     )
     assert result.returncode == 0, result.stdout + result.stderr
     payload = json.loads(result.stdout)
-    assert payload["scenario_count"] >= 22
+    assert payload["scenario_count"] >= 26
     assert payload["ok"] is True
     assert payload["recall"] == 1.0
     assert payload["precision"] == 1.0

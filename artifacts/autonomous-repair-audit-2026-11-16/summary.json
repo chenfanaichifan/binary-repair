@@ -1,0 +1,94 @@
+{
+  "checks": [
+    {
+      "args": [
+        "--check"
+      ],
+      "detail": "exit 0 (no JSON report parsed)",
+      "exit_code": 0,
+      "id": "universe-methodology",
+      "required": true,
+      "script": "scripts/check_universe_methodology.py",
+      "status": "passed"
+    },
+    {
+      "args": [
+        "--check"
+      ],
+      "detail": "exit 0 (no JSON report parsed)",
+      "exit_code": 0,
+      "id": "autonomous-reflection",
+      "required": true,
+      "script": "scripts/run_autonomous_reflection.py",
+      "status": "passed"
+    },
+    {
+      "args": [
+        "--static-only",
+        "--json"
+      ],
+      "detail": "exit 0; report ok=True",
+      "exit_code": 0,
+      "id": "coverage-gate-static",
+      "required": true,
+      "script": "scripts/verify_coverage_gate.py",
+      "status": "passed"
+    },
+    {
+      "args": [
+        "--check"
+      ],
+      "detail": "exit 0 (no JSON report parsed)",
+      "exit_code": 0,
+      "id": "acceptance-model-audit",
+      "required": true,
+      "script": "scripts/audit_acceptance_models.py",
+      "status": "passed"
+    },
+    {
+      "args": [
+        "--check"
+      ],
+      "detail": "exit 0; report ok=True",
+      "exit_code": 0,
+      "id": "capability-gap-discovery",
+      "required": true,
+      "script": "scripts/discover_capability_gaps.py",
+      "status": "passed"
+    },
+    {
+      "args": [
+        "--json"
+      ],
+      "detail": "exit 0; report ok=True",
+      "exit_code": 0,
+      "id": "meta-audit",
+      "required": true,
+      "script": "scripts/meta_audit.py",
+      "status": "passed"
+    },
+    {
+      "args": [
+        "--check"
+      ],
+      "detail": "exit 0; report ok=True",
+      "exit_code": 0,
+      "id": "provider-coverage",
+      "required": true,
+      "script": "scripts/build_provider_coverage.py",
+      "status": "passed"
+    }
+  ],
+  "exit_code": 0,
+  "failed": [],
+  "kind": "autonomous_repair_audit",
+  "limitations": [
+    "not_run checks are not evidence: a missing script/input never counts as a pass",
+    "this orchestration is static only; it does not run dynamic/Lima suites",
+    "the audit never promotes capability or claims verified repair"
+  ],
+  "mode": "full",
+  "not_run": [],
+  "ok": true,
+  "schema_version": 1
+}

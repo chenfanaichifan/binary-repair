@@ -1,0 +1,1709 @@
+{
+  "schema_version": 1,
+  "kind": "universe_dimension_registry",
+  "generated_at": "2026-11-14T00:00:00Z",
+  "purpose": "Phase-7 first-level capability universe: 20 dimensions D01-D20 with explicit old-11-dim mapping, 240/240 cell mapping, honest unknown / undiscovered-space semantics and the 12 claims non-goals as out-of-universe candidates.",
+  "dimension_count": 20,
+  "mapped_cells": 240,
+  "cell_count": 240,
+  "cell_mapping": {
+    "total_cells": 240,
+    "mapped_cells": 240,
+    "unmapped_cells": [],
+    "mapping_rule": "every universe cell maps to >=1 new dimension through the explicit OLD_TO_NEW mapping of its 11 old dimensions; the builder fails closed if any cell/reference is unmapped",
+    "mapping_digest_sha256": "8c40fede137d907c38bc6911c6c07eb4f4c44da51bb346d35c76ce1b29bb4963",
+    "new_dimensions_covered": [
+      "D01",
+      "D02",
+      "D05",
+      "D06",
+      "D12",
+      "D13",
+      "D15",
+      "D16",
+      "D17",
+      "D19",
+      "D20"
+    ]
+  },
+  "cell_counts": {
+    "verified": 36,
+    "supported": 51,
+    "non_goal": 129,
+    "unavailable": 24,
+    "unknown": 0,
+    "total": 240
+  },
+  "coverage_matrix_counts": {
+    "verified": 36,
+    "supported": 51,
+    "non_goal": 129,
+    "unavailable": 24,
+    "unknown": 0,
+    "cell_count": 240
+  },
+  "counts_match_coverage_matrix": true,
+  "dimensions": [
+    {
+      "id": "D01",
+      "title": "Binary formats",
+      "description": "Static container formats the repair pipeline can parse, analyze, rewrite and verify (ELF thin; Mach-O thin; PE). Fat/32-bit Mach-O and non-declared formats are explicit non-goals.",
+      "status": "covered",
+      "owner": "universe",
+      "review_by": "2027-05-14",
+      "source_registries": [
+        "REPAIR_CELLS.container",
+        "REPAIR_CELLS.bits",
+        "REPAIR_CELLS.endian"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "container",
+          "bits",
+          "endian"
+        ],
+        "mapping_strength": "full"
+      },
+      "related_non_goal_ids": [
+        "NG-non-goal-4"
+      ],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.container",
+          "kind": "audit"
+        },
+        {
+          "path": "app/services/repair_matrix.py",
+          "fragment": "REPAIR_CELLS",
+          "kind": "code"
+        },
+        {
+          "path": "docs/acceptance/capability-universe-2026-11-15.md",
+          "fragment": "section 2",
+          "kind": "methodology"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "container",
+          "bits",
+          "endian"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "container": [
+            "(all)",
+            "elf",
+            "macho",
+            "pe"
+          ],
+          "bits": [
+            "(all)",
+            "32",
+            "64"
+          ],
+          "endian": [
+            "(all)",
+            "little"
+          ]
+        }
+      },
+      "status_reason": "the dimension's complete subject is represented by mapped old-11 dimensions in the 240-cell universe registry"
+    },
+    {
+      "id": "D02",
+      "title": "CPU architectures",
+      "description": "Machine architectures for which repair/verification is declared and measured: x86_64, i386, arm64 (little-endian). arm32/riscv/mips/powerpc and big-endian are explicit non-goals.",
+      "status": "covered",
+      "owner": "universe",
+      "review_by": "2027-05-14",
+      "source_registries": [
+        "REPAIR_CELLS.arch",
+        "REPAIR_CELLS.bits",
+        "REPAIR_CELLS.endian"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "arch",
+          "bits",
+          "endian"
+        ],
+        "mapping_strength": "full"
+      },
+      "related_non_goal_ids": [
+        "NG-non-goal-3"
+      ],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.arch",
+          "kind": "audit"
+        },
+        {
+          "path": "app/services/repair_matrix.py",
+          "fragment": "REPAIR_CELLS",
+          "kind": "code"
+        },
+        {
+          "path": "docs/acceptance/non-goals-2026-11-14.md",
+          "fragment": "NG-non-goal-3",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "arch",
+          "bits",
+          "endian"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "arch": [
+            "(all)",
+            "arm64",
+            "i386",
+            "x86_64"
+          ],
+          "bits": [
+            "(all)",
+            "32",
+            "64"
+          ],
+          "endian": [
+            "(all)",
+            "little"
+          ]
+        }
+      },
+      "status_reason": "the dimension's complete subject is represented by mapped old-11 dimensions in the 240-cell universe registry"
+    },
+    {
+      "id": "D03",
+      "title": "ABI and calling conventions",
+      "description": "ABI/calling-convention awareness needed to reason about arguments, return values, stack layout and register usage. The current universe has no ABI dimension; runtime/PoC code assumes the platform ABI implicitly but there is no measured ABI registry.",
+      "status": "not_started",
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "source_registries": [],
+      "old_11dim_mapping": {
+        "old_dimensions": [],
+        "mapping_strength": "none"
+      },
+      "related_non_goal_ids": [],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions",
+          "kind": "audit"
+        },
+        {
+          "path": "docs/status/claims.json",
+          "fragment": "implicit ABI assumptions",
+          "kind": "claims"
+        },
+        {
+          "path": "docs/acceptance/LIMITATIONS.md",
+          "fragment": "ABI/analysis limits",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [],
+        "mapped_cells": 0,
+        "status_counts": {
+          "verified": 0,
+          "supported": 0,
+          "non_goal": 0,
+          "unavailable": 0,
+          "unknown": 0
+        },
+        "old_dimension_values": {}
+      },
+      "status_reason": "no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered"
+    },
+    {
+      "id": "D04",
+      "title": "Compiler ecosystems",
+      "description": "Compiler/toolchain provenance (GCC/Clang/Rust/MSVC/...), optimization levels and instrumented code patterns that affect analysis and rewriting. No compiler-ecosystem registry or corpus exists here.",
+      "status": "not_started",
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "source_registries": [],
+      "old_11dim_mapping": {
+        "old_dimensions": [],
+        "mapping_strength": "none"
+      },
+      "related_non_goal_ids": [],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "environment",
+          "kind": "audit"
+        },
+        {
+          "path": "docs/status/claims.json",
+          "fragment": "explicitly_unimplemented",
+          "kind": "claims"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [],
+        "mapped_cells": 0,
+        "status_counts": {
+          "verified": 0,
+          "supported": 0,
+          "non_goal": 0,
+          "unavailable": 0,
+          "unknown": 0
+        },
+        "old_dimension_values": {}
+      },
+      "status_reason": "no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered"
+    },
+    {
+      "id": "D05",
+      "title": "Vulnerability classes",
+      "description": "Vulnerability classes the deterministic/repair pipeline models: unbounded copy, memcpy/syscall length, checked copy and capacity-check mismatch. Hard-case non-template classes stay AI/research evidence (EG-cases-target-not-analyzed).",
+      "status": "covered",
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "source_registries": [
+        "REPAIR_CELLS.sink_classes",
+        "SINK_CLASSES"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "sink_class"
+        ],
+        "mapping_strength": "full"
+      },
+      "related_non_goal_ids": [
+        "EG-cases-target-not-analyzed"
+      ],
+      "evidence_refs": [
+        {
+          "path": "app/services/repair_matrix.py",
+          "fragment": "SINK_CLASSES",
+          "kind": "code"
+        },
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.sink_class",
+          "kind": "audit"
+        },
+        {
+          "path": "docs/acceptance/capability-gap-audit-2026-11-14.md",
+          "fragment": "engine/sink-class rows",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "sink_class"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "sink_class": [
+            "(any)",
+            "(legacy_whole_image)",
+            "capacity_check_mismatch",
+            "checked_copy",
+            "memcpy_length",
+            "syscall_length",
+            "unbounded_copy"
+          ]
+        }
+      },
+      "status_reason": "the dimension's complete subject is represented by mapped old-11 dimensions in the 240-cell universe registry"
+    },
+    {
+      "id": "D06",
+      "title": "Memory safety",
+      "description": "Memory-safety analysis and repair: stack/heap/global destinations and copy-safety classes are mapped via sink_class + destination_kind. Unrecoverable destination capacity, UAF/lifetime and global destinations are explicit non-goals (NG-non-goal-1/2).",
+      "status": "partial",
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "source_registries": [
+        "UNIVERSE_DESTINATION_KINDS",
+        "REPAIR_CELLS.sink_classes"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "sink_class",
+          "destination_kind"
+        ],
+        "mapping_strength": "partial"
+      },
+      "related_non_goal_ids": [
+        "NG-non-goal-1",
+        "NG-non-goal-2"
+      ],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.destination_kind",
+          "kind": "audit"
+        },
+        {
+          "path": "docs/status/claims.json",
+          "fragment": "non_goals",
+          "kind": "claims"
+        },
+        {
+          "path": "docs/acceptance/non-goals-2026-11-14.md",
+          "fragment": "destination capacity/UAF",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "sink_class",
+          "destination_kind"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "sink_class": [
+            "(any)",
+            "(legacy_whole_image)",
+            "capacity_check_mismatch",
+            "checked_copy",
+            "memcpy_length",
+            "syscall_length",
+            "unbounded_copy"
+          ],
+          "destination_kind": [
+            "(any)",
+            "global",
+            "heap",
+            "stack"
+          ]
+        }
+      },
+      "status_reason": "only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry"
+    },
+    {
+      "id": "D07",
+      "title": "Arithmetic safety",
+      "description": "Integer overflow/truncation/signedness and arithmetic-driven buffer defects. No arithmetic-safety universe dimension exists and the deterministic integer repair templates are an explicit non-goal (NG-non-goal-2).",
+      "status": "non_goal",
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "source_registries": [],
+      "old_11dim_mapping": {
+        "old_dimensions": [],
+        "mapping_strength": "none"
+      },
+      "related_non_goal_ids": [
+        "NG-non-goal-2"
+      ],
+      "evidence_refs": [
+        {
+          "path": "docs/status/claims.json",
+          "fragment": "non_goals[NG-non-goal-2]",
+          "kind": "claims"
+        },
+        {
+          "path": "docs/acceptance/non-goal-roadmap-2026-11-15.md",
+          "fragment": "integer/loop non-goals",
+          "kind": "acceptance"
+        },
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions",
+          "kind": "audit"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [],
+        "mapped_cells": 0,
+        "status_counts": {
+          "verified": 0,
+          "supported": 0,
+          "non_goal": 0,
+          "unavailable": 0,
+          "unknown": 0
+        },
+        "old_dimension_values": {}
+      },
+      "status_reason": "the dimension's repair subject is an explicit non-goal in docs/status/claims.json; related_non_goal_ids lists the records"
+    },
+    {
+      "id": "D08",
+      "title": "Control-flow safety",
+      "description": "Loop bounds, branch/guard integrity and control-flow-hijack defects. No control-flow-safety universe dimension exists; deterministic array/loop templates are an explicit non-goal (NG-non-goal-2), while guard injection covers only the declared reviewed pattern.",
+      "status": "non_goal",
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "source_registries": [],
+      "old_11dim_mapping": {
+        "old_dimensions": [],
+        "mapping_strength": "none"
+      },
+      "related_non_goal_ids": [
+        "NG-non-goal-2"
+      ],
+      "evidence_refs": [
+        {
+          "path": "docs/status/claims.json",
+          "fragment": "non_goals[NG-non-goal-2]",
+          "kind": "claims"
+        },
+        {
+          "path": "app/services/repair_matrix.py",
+          "fragment": "STRATEGY_PROFILES",
+          "kind": "code"
+        },
+        {
+          "path": "docs/acceptance/non-goal-roadmap-2026-11-15.md",
+          "fragment": "loop non-goal",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [],
+        "mapped_cells": 0,
+        "status_counts": {
+          "verified": 0,
+          "supported": 0,
+          "non_goal": 0,
+          "unavailable": 0,
+          "unknown": 0
+        },
+        "old_dimension_values": {}
+      },
+      "status_reason": "the dimension's repair subject is an explicit non-goal in docs/status/claims.json; related_non_goal_ids lists the records"
+    },
+    {
+      "id": "D09",
+      "title": "Data-flow analysis",
+      "description": "Use/def, taint, length/capacity propagation and value-set reasoning. No first-class data-flow universe dimension; the deterministic analyzer models only the declared copy/length patterns.",
+      "status": "not_started",
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "source_registries": [],
+      "old_11dim_mapping": {
+        "old_dimensions": [],
+        "mapping_strength": "none"
+      },
+      "related_non_goal_ids": [],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions",
+          "kind": "audit"
+        },
+        {
+          "path": "app/services/repair_matrix.py",
+          "fragment": "analyzer patterns",
+          "kind": "code"
+        },
+        {
+          "path": "docs/acceptance/LIMITATIONS.md",
+          "fragment": "data-flow limits",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [],
+        "mapped_cells": 0,
+        "status_counts": {
+          "verified": 0,
+          "supported": 0,
+          "non_goal": 0,
+          "unavailable": 0,
+          "unknown": 0
+        },
+        "old_dimension_values": {}
+      },
+      "status_reason": "no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered"
+    },
+    {
+      "id": "D10",
+      "title": "Control-flow analysis",
+      "description": "CFG recovery, reachability, dominance and indirect-target resolution. The pipeline patches declared instruction sites; there is no first-class CFG/control-flow-insight universe dimension.",
+      "status": "not_started",
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "source_registries": [],
+      "old_11dim_mapping": {
+        "old_dimensions": [],
+        "mapping_strength": "none"
+      },
+      "related_non_goal_ids": [],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions",
+          "kind": "audit"
+        },
+        {
+          "path": "docs/acceptance/LIMITATIONS.md",
+          "fragment": "CFG limits",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [],
+        "mapped_cells": 0,
+        "status_counts": {
+          "verified": 0,
+          "supported": 0,
+          "non_goal": 0,
+          "unavailable": 0,
+          "unknown": 0
+        },
+        "old_dimension_values": {}
+      },
+      "status_reason": "no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered"
+    },
+    {
+      "id": "D11",
+      "title": "Interprocedural analysis",
+      "description": "Cross-function analysis, call graphs, cross-function capacity/lifetime reasoning. Analysis is function-scoped today; no interprocedural universe dimension exists (cross-function allocations stay non-goals).",
+      "status": "not_started",
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "source_registries": [],
+      "old_11dim_mapping": {
+        "old_dimensions": [],
+        "mapping_strength": "none"
+      },
+      "related_non_goal_ids": [
+        "NG-non-goal-1"
+      ],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions",
+          "kind": "audit"
+        },
+        {
+          "path": "docs/status/claims.json",
+          "fragment": "non_goals[NG-non-goal-1]",
+          "kind": "claims"
+        },
+        {
+          "path": "docs/acceptance/LIMITATIONS.md",
+          "fragment": "interprocedural limits",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [],
+        "mapped_cells": 0,
+        "status_counts": {
+          "verified": 0,
+          "supported": 0,
+          "non_goal": 0,
+          "unavailable": 0,
+          "unknown": 0
+        },
+        "old_dimension_values": {}
+      },
+      "status_reason": "no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered"
+    },
+    {
+      "id": "D12",
+      "title": "Binary structure",
+      "description": "Sections/segments, symbol/DWARF metadata, relocations, imports/exports, PIE/ASLR and instruction decoding. Only bits/endian provide partial universe evidence; there is no structural-metadata registry.",
+      "status": "partial",
+      "owner": "universe",
+      "review_by": "2027-05-14",
+      "source_registries": [
+        "REPAIR_CELLS.bits",
+        "REPAIR_CELLS.endian"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "bits",
+          "endian"
+        ],
+        "mapping_strength": "partial"
+      },
+      "related_non_goal_ids": [],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.bits",
+          "kind": "audit"
+        },
+        {
+          "path": "docs/acceptance/capability-universe-2026-11-15.md",
+          "fragment": "section 2",
+          "kind": "methodology"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "bits",
+          "endian"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "bits": [
+            "(all)",
+            "32",
+            "64"
+          ],
+          "endian": [
+            "(all)",
+            "little"
+          ]
+        }
+      },
+      "status_reason": "only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry"
+    },
+    {
+      "id": "D13",
+      "title": "Runtime environments",
+      "description": "Execution/evidence environments: native, qemu/Lima emulated, instruction-level Unicorn emulation, function-level native paths. The runtime_tier dimension maps fully; PE external PoC and native x86_64-on-arm64 are platform/non-goal limits.",
+      "status": "covered",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "source_registries": [
+        "REPAIR_CELLS.runtime_tiers",
+        "runtime capabilities"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "runtime_tier"
+        ],
+        "mapping_strength": "full"
+      },
+      "related_non_goal_ids": [
+        "NG-non-goal-5",
+        "RG-external-poc::<doc>::pe/x86_64",
+        "RG-external-poc::<doc>::pe/i386",
+        "RG-external-poc::<doc>::pe/arm64",
+        "RG-external-poc::<doc>::macho/x86_64"
+      ],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.runtime_tier",
+          "kind": "audit"
+        },
+        {
+          "path": "app/services/runtime/capabilities.py",
+          "fragment": "probe/contract",
+          "kind": "code"
+        },
+        {
+          "path": "docs/acceptance/capability-contract-2026-11-14.md",
+          "fragment": "runtime tiers",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "runtime_tier"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "runtime_tier": [
+            "(any)",
+            "emulated_run",
+            "native_run"
+          ]
+        }
+      },
+      "status_reason": "the dimension's complete subject is represented by mapped old-11 dimensions in the 240-cell universe registry"
+    },
+    {
+      "id": "D14",
+      "title": "Exploitability assessment",
+      "description": "Whether a finding is practically exploitable (reachability, input control, mitigations, primitives). The pipeline repairs testcases/PoCs; it does not assess exploitability and has no universe mapping.",
+      "status": "not_started",
+      "owner": "analysis",
+      "review_by": "2027-05-14",
+      "source_registries": [],
+      "old_11dim_mapping": {
+        "old_dimensions": [],
+        "mapping_strength": "none"
+      },
+      "related_non_goal_ids": [],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.proof_scope",
+          "kind": "audit"
+        },
+        {
+          "path": "docs/status/claims.json",
+          "fragment": "scope",
+          "kind": "claims"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [],
+        "mapped_cells": 0,
+        "status_counts": {
+          "verified": 0,
+          "supported": 0,
+          "non_goal": 0,
+          "unavailable": 0,
+          "unknown": 0
+        },
+        "old_dimension_values": {}
+      },
+      "status_reason": "no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered"
+    },
+    {
+      "id": "D15",
+      "title": "Repair strategies",
+      "description": "Deterministic repair strategies: strict-template, immediate, guard and capacity rewrite. The strategy dimension maps fully for the declared matrix strategies; non-template targets remain analysis_only (EG-cases-target-not-analyzed).",
+      "status": "covered",
+      "owner": "engine",
+      "review_by": "2027-02-14",
+      "source_registries": [
+        "REPAIR_CELLS.strategies",
+        "STRATEGY_PROFILES"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "strategy"
+        ],
+        "mapping_strength": "full"
+      },
+      "related_non_goal_ids": [
+        "EG-cases-target-not-analyzed"
+      ],
+      "evidence_refs": [
+        {
+          "path": "app/services/repair_matrix.py",
+          "fragment": "STRATEGY_PROFILES",
+          "kind": "code"
+        },
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.strategy",
+          "kind": "audit"
+        },
+        {
+          "path": "docs/acceptance/capability-gap-audit-2026-11-14.md",
+          "fragment": "strategy rows",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "strategy"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "strategy": [
+            "(any)",
+            "capacity",
+            "guard",
+            "immediate",
+            "strict-template"
+          ]
+        }
+      },
+      "status_reason": "the dimension's complete subject is represented by mapped old-11 dimensions in the 240-cell universe registry"
+    },
+    {
+      "id": "D16",
+      "title": "Patch generation",
+      "description": "Generation of candidate patches/repairs: deterministic strategy writers and the AI assembly/binary leaf-only paths. Partially mapped via strategy + evidence_profile; AI generation is structurally validated but never owns acceptance.",
+      "status": "partial",
+      "owner": "ai-path",
+      "review_by": "2027-05-14",
+      "source_registries": [
+        "STRATEGY_PROFILES",
+        "REPAIR_CELLS.evidence_profiles"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "strategy",
+          "evidence_profile"
+        ],
+        "mapping_strength": "partial"
+      },
+      "related_non_goal_ids": [
+        "NG-ai-leaf-only::ai_assembly_repair",
+        "NG-ai-leaf-only::ai_binary_repair"
+      ],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.evidence_profile",
+          "kind": "audit"
+        },
+        {
+          "path": "docs/status/claims.json",
+          "fragment": "non_goals[NG-ai-leaf-only]",
+          "kind": "claims"
+        },
+        {
+          "path": "docs/acceptance/LIMITATIONS.md",
+          "fragment": "AI path limits",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "strategy",
+          "evidence_profile"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "strategy": [
+            "(any)",
+            "capacity",
+            "guard",
+            "immediate",
+            "strict-template"
+          ],
+          "evidence_profile": [
+            "(any)",
+            "emulated_instruction",
+            "native_poc",
+            "native_poc_rewrite",
+            "strict_template"
+          ]
+        }
+      },
+      "status_reason": "only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry"
+    },
+    {
+      "id": "D17",
+      "title": "Patch application",
+      "description": "In-place/section-aware application of generated patches with original-byte re-derivation and rollback semantics. Partially mapped via evidence_profile; native Mach-O application is supported, PE/32-bit application is not.",
+      "status": "partial",
+      "owner": "pipeline",
+      "review_by": "2027-05-14",
+      "source_registries": [
+        "REPAIR_CELLS.evidence_profiles",
+        "rewrite actions"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "evidence_profile"
+        ],
+        "mapping_strength": "partial"
+      },
+      "related_non_goal_ids": [
+        "NG-non-goal-4"
+      ],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.evidence_profile",
+          "kind": "audit"
+        },
+        {
+          "path": "app/services/repair_matrix.py",
+          "fragment": "rewrite",
+          "kind": "code"
+        },
+        {
+          "path": "docs/status/claims.json",
+          "fragment": "non_goals[NG-non-goal-4]",
+          "kind": "claims"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "evidence_profile"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "evidence_profile": [
+            "(any)",
+            "emulated_instruction",
+            "native_poc",
+            "native_poc_rewrite",
+            "strict_template"
+          ]
+        }
+      },
+      "status_reason": "only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry"
+    },
+    {
+      "id": "D18",
+      "title": "Semantic preservation",
+      "description": "Evidence that a repair preserves intended program semantics (proof/differential/invariant reasoning beyond PoC+regression behaviour). No semantic-preservation universe dimension exists; current gates check observed behaviour only.",
+      "status": "not_started",
+      "owner": "verification",
+      "review_by": "2027-05-14",
+      "source_registries": [],
+      "old_11dim_mapping": {
+        "old_dimensions": [],
+        "mapping_strength": "none"
+      },
+      "related_non_goal_ids": [],
+      "evidence_refs": [
+        {
+          "path": "docs/status/claims.json",
+          "fragment": "scope",
+          "kind": "claims"
+        },
+        {
+          "path": "docs/acceptance/LIMITATIONS.md",
+          "fragment": "semantic-preservation limits",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [],
+        "mapped_cells": 0,
+        "status_counts": {
+          "verified": 0,
+          "supported": 0,
+          "non_goal": 0,
+          "unavailable": 0,
+          "unknown": 0
+        },
+        "old_dimension_values": {}
+      },
+      "status_reason": "no universe mapping and no implemented first-level mechanism for this dimension in this tree; not fabricated as covered"
+    },
+    {
+      "id": "D19",
+      "title": "Verification",
+      "description": "Acceptance/verification layers: unified gate evidence profiles, proof scopes, native/emulated PoC and regression, independence. Partially mapped via evidence_profile + proof_scope; whole-program/external-PoC scopes remain non-goals/platform limits.",
+      "status": "partial",
+      "owner": "verification",
+      "review_by": "2027-05-14",
+      "source_registries": [
+        "REPAIR_CELLS.evidence_profiles",
+        "REPAIR_CELLS.proof_scopes"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "evidence_profile",
+          "proof_scope"
+        ],
+        "mapping_strength": "partial"
+      },
+      "related_non_goal_ids": [
+        "RG-external-poc::<doc>::pe/x86_64",
+        "RG-external-poc::<doc>::pe/i386",
+        "RG-external-poc::<doc>::pe/arm64",
+        "RG-external-poc::<doc>::macho/x86_64"
+      ],
+      "evidence_refs": [
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.proof_scope",
+          "kind": "audit"
+        },
+        {
+          "path": "app/services/unified_verification.py",
+          "fragment": "gate checks",
+          "kind": "code"
+        },
+        {
+          "path": "docs/acceptance/capability-contract-2026-11-14.md",
+          "fragment": "verification/evidence",
+          "kind": "acceptance"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "evidence_profile",
+          "proof_scope"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "evidence_profile": [
+            "(any)",
+            "emulated_instruction",
+            "native_poc",
+            "native_poc_rewrite",
+            "strict_template"
+          ],
+          "proof_scope": [
+            "function_level",
+            "target_scoped",
+            "whole_image",
+            "whole_program"
+          ]
+        }
+      },
+      "status_reason": "only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry"
+    },
+    {
+      "id": "D20",
+      "title": "AI model intelligence",
+      "description": "AI/model capability dimension: provider/model configurations, strict model identity, measured AI target-mode repair increment and served-model attribution. Provider identity maps fully via the provider old dimension; model intelligence itself is only partially characterized (4 identity-verified models, loop-family only).",
+      "status": "partial",
+      "owner": "ai-path",
+      "review_by": "2027-05-14",
+      "source_registries": [
+        "UNIVERSE_PROVIDERS",
+        "provider coverage evidence"
+      ],
+      "old_11dim_mapping": {
+        "old_dimensions": [
+          "provider"
+        ],
+        "mapping_strength": "partial"
+      },
+      "related_non_goal_ids": [],
+      "evidence_refs": [
+        {
+          "path": "artifacts/provider-coverage-2026-11-14/summary.json",
+          "fragment": "identity_policy/statistics",
+          "kind": "acceptance"
+        },
+        {
+          "path": "docs/acceptance/ai-capability-layering-2026-11-14.md",
+          "fragment": "AI target layering",
+          "kind": "acceptance"
+        },
+        {
+          "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+          "fragment": "universe.dimensions.provider",
+          "kind": "audit"
+        }
+      ],
+      "universe_evidence": {
+        "old_dimensions": [
+          "provider"
+        ],
+        "mapped_cells": 240,
+        "status_counts": {
+          "verified": 36,
+          "supported": 51,
+          "non_goal": 129,
+          "unavailable": 24,
+          "unknown": 0
+        },
+        "old_dimension_values": {
+          "provider": [
+            "ai",
+            "deterministic"
+          ]
+        }
+      },
+      "status_reason": "only a subset of the dimension has an old-11 mapping / measured universe evidence; the remainder is not covered by this registry"
+    }
+  ],
+  "dimension_status_counts": {
+    "covered": 5,
+    "partial": 6,
+    "non_goal": 2,
+    "unavailable": 0,
+    "not_started": 7
+  },
+  "covered_dimensions": [
+    "D01",
+    "D02",
+    "D05",
+    "D13",
+    "D15"
+  ],
+  "partial_dimensions": [
+    "D06",
+    "D12",
+    "D16",
+    "D17",
+    "D19",
+    "D20"
+  ],
+  "non_goal_dimensions": [
+    "D07",
+    "D08"
+  ],
+  "unavailable_dimensions": [],
+  "not_started_dimensions": [
+    "D03",
+    "D04",
+    "D09",
+    "D10",
+    "D11",
+    "D14",
+    "D18"
+  ],
+  "old_11_dimensions": {
+    "container": {
+      "values": [
+        "(all)",
+        "elf",
+        "macho",
+        "pe"
+      ],
+      "cell_counts": {
+        "(all)": 1,
+        "elf": 117,
+        "macho": 54,
+        "pe": 68
+      },
+      "mapped_to_new_dimensions": [
+        "D01"
+      ]
+    },
+    "arch": {
+      "values": [
+        "(all)",
+        "arm64",
+        "i386",
+        "x86_64"
+      ],
+      "cell_counts": {
+        "(all)": 1,
+        "arm64": 63,
+        "i386": 28,
+        "x86_64": 148
+      },
+      "mapped_to_new_dimensions": [
+        "D02"
+      ]
+    },
+    "bits": {
+      "values": [
+        "(all)",
+        "32",
+        "64"
+      ],
+      "cell_counts": {
+        "(all)": 1,
+        "32": 28,
+        "64": 211
+      },
+      "mapped_to_new_dimensions": [
+        "D01",
+        "D02",
+        "D12"
+      ]
+    },
+    "endian": {
+      "values": [
+        "(all)",
+        "little"
+      ],
+      "cell_counts": {
+        "(all)": 1,
+        "little": 239
+      },
+      "mapped_to_new_dimensions": [
+        "D01",
+        "D02",
+        "D12"
+      ]
+    },
+    "sink_class": {
+      "values": [
+        "(any)",
+        "(legacy_whole_image)",
+        "capacity_check_mismatch",
+        "checked_copy",
+        "memcpy_length",
+        "syscall_length",
+        "unbounded_copy"
+      ],
+      "cell_counts": {
+        "(any)": 1,
+        "(legacy_whole_image)": 12,
+        "capacity_check_mismatch": 12,
+        "checked_copy": 47,
+        "memcpy_length": 61,
+        "syscall_length": 26,
+        "unbounded_copy": 81
+      },
+      "mapped_to_new_dimensions": [
+        "D05",
+        "D06"
+      ]
+    },
+    "strategy": {
+      "values": [
+        "(any)",
+        "capacity",
+        "guard",
+        "immediate",
+        "strict-template"
+      ],
+      "cell_counts": {
+        "(any)": 1,
+        "capacity": 12,
+        "guard": 81,
+        "immediate": 134,
+        "strict-template": 12
+      },
+      "mapped_to_new_dimensions": [
+        "D15",
+        "D16"
+      ]
+    },
+    "destination_kind": {
+      "values": [
+        "(any)",
+        "global",
+        "heap",
+        "stack"
+      ],
+      "cell_counts": {
+        "(any)": 1,
+        "global": 54,
+        "heap": 16,
+        "stack": 169
+      },
+      "mapped_to_new_dimensions": [
+        "D06"
+      ]
+    },
+    "evidence_profile": {
+      "values": [
+        "(any)",
+        "emulated_instruction",
+        "native_poc",
+        "native_poc_rewrite",
+        "strict_template"
+      ],
+      "cell_counts": {
+        "(any)": 1,
+        "emulated_instruction": 145,
+        "native_poc": 74,
+        "native_poc_rewrite": 10,
+        "strict_template": 10
+      },
+      "mapped_to_new_dimensions": [
+        "D16",
+        "D17",
+        "D19"
+      ]
+    },
+    "runtime_tier": {
+      "values": [
+        "(any)",
+        "emulated_run",
+        "native_run"
+      ],
+      "cell_counts": {
+        "(any)": 1,
+        "emulated_run": 138,
+        "native_run": 101
+      },
+      "mapped_to_new_dimensions": [
+        "D13"
+      ]
+    },
+    "provider": {
+      "values": [
+        "ai",
+        "deterministic"
+      ],
+      "cell_counts": {
+        "ai": 37,
+        "deterministic": 203
+      },
+      "mapped_to_new_dimensions": [
+        "D20"
+      ]
+    },
+    "proof_scope": {
+      "values": [
+        "function_level",
+        "target_scoped",
+        "whole_image",
+        "whole_program"
+      ],
+      "cell_counts": {
+        "function_level": 74,
+        "target_scoped": 64,
+        "whole_image": 64,
+        "whole_program": 38
+      },
+      "mapped_to_new_dimensions": [
+        "D19"
+      ]
+    }
+  },
+  "old_to_new_mapping": {
+    "container": [
+      "D01"
+    ],
+    "arch": [
+      "D02"
+    ],
+    "bits": [
+      "D01",
+      "D02",
+      "D12"
+    ],
+    "endian": [
+      "D01",
+      "D02",
+      "D12"
+    ],
+    "sink_class": [
+      "D05",
+      "D06"
+    ],
+    "strategy": [
+      "D15",
+      "D16"
+    ],
+    "destination_kind": [
+      "D06"
+    ],
+    "evidence_profile": [
+      "D16",
+      "D17",
+      "D19"
+    ],
+    "runtime_tier": [
+      "D13"
+    ],
+    "provider": [
+      "D20"
+    ],
+    "proof_scope": [
+      "D19"
+    ]
+  },
+  "new_to_old_mapping": {
+    "D01": [
+      "container",
+      "bits",
+      "endian"
+    ],
+    "D02": [
+      "arch",
+      "bits",
+      "endian"
+    ],
+    "D03": [],
+    "D04": [],
+    "D05": [
+      "sink_class"
+    ],
+    "D06": [
+      "sink_class",
+      "destination_kind"
+    ],
+    "D07": [],
+    "D08": [],
+    "D09": [],
+    "D10": [],
+    "D11": [],
+    "D12": [
+      "bits",
+      "endian"
+    ],
+    "D13": [
+      "runtime_tier"
+    ],
+    "D14": [],
+    "D15": [
+      "strategy"
+    ],
+    "D16": [
+      "strategy",
+      "evidence_profile"
+    ],
+    "D17": [
+      "evidence_profile"
+    ],
+    "D18": [],
+    "D19": [
+      "evidence_profile",
+      "proof_scope"
+    ],
+    "D20": [
+      "provider"
+    ]
+  },
+  "out_of_universe_candidates": [
+    {
+      "candidate_id": "EG-cases-target-not-analyzed",
+      "source": "claims_non_goal",
+      "category": "engine_gap",
+      "claim": "Hard-case non-template targets (inline loops, sprintf, multicall, nonconst, UAF, heap guard) are AI-benchmark/research evidence, not deterministic engine successes; strict target-scoped deterministic baselines (baseline_expected_target_strict) record analysis_only/not_verified instead of a repaired claim.",
+      "enforcement": "analysis_only; no target-scoped candidate; target-strict baseline (baseline_expected_target_strict) recorded as analysis_only/not_verified",
+      "owner": "target-scope",
+      "review_by": "2027-02-14",
+      "matching_universe_cells": 0,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=EG-cases-target-not-analyzed]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=EG-cases-target-not-analyzed]"
+      ]
+    },
+    {
+      "candidate_id": "NG-ai-leaf-only::ai_assembly_repair",
+      "source": "claims_non_goal",
+      "category": "non_goal",
+      "claim": "AI assembly path accepts only a leaf-level reviewed block and cannot express repairs that need external calls/helpers.",
+      "enforcement": "no verified; leaf/instruction allowlist refuses calls and non-whitelisted code",
+      "owner": "ai-path",
+      "review_by": "2027-05-14",
+      "matching_universe_cells": 19,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-ai-leaf-only::ai_assembly_repair]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-ai-leaf-only::ai_assembly_repair]"
+      ]
+    },
+    {
+      "candidate_id": "NG-ai-leaf-only::ai_binary_repair",
+      "source": "claims_non_goal",
+      "category": "non_goal",
+      "claim": "AI binary path emits only structurally validated leaf blocks; the deterministic unified gate decides acceptance.",
+      "enforcement": "no verified; leaf/allowlist machine-code validator; AI never owns acceptance",
+      "owner": "ai-path",
+      "review_by": "2027-05-14",
+      "matching_universe_cells": 18,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-ai-leaf-only::ai_binary_repair]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-ai-leaf-only::ai_binary_repair]"
+      ]
+    },
+    {
+      "candidate_id": "NG-non-goal-1",
+      "source": "claims_non_goal",
+      "category": "non_goal",
+      "claim": "Copy sinks whose destination capacity is not recoverable by same-function analysis (dynamic sizes, pointer+offset aliases, cross-function allocations).",
+      "enforcement": "analysis_only; no candidate for unrecoverable destination capacity",
+      "owner": "engine",
+      "review_by": "2027-03-31",
+      "matching_universe_cells": 54,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-non-goal-1]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-non-goal-1]"
+      ]
+    },
+    {
+      "candidate_id": "NG-non-goal-2",
+      "source": "claims_non_goal",
+      "category": "non_goal",
+      "claim": "sprintf/format-expansion, UAF/lifetime and integer/loop deterministic repair templates (AI research only).",
+      "enforcement": "analysis_only; no deterministic template; no download",
+      "owner": "engine",
+      "review_by": "2027-05-14",
+      "matching_universe_cells": 0,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-non-goal-2]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-non-goal-2]"
+      ]
+    },
+    {
+      "candidate_id": "NG-non-goal-3",
+      "source": "claims_non_goal",
+      "category": "non_goal",
+      "claim": "arm32, riscv, mips, powerpc and big-endian machine-code repair.",
+      "enforcement": "unsupported; no rewrite backend for these containers/architectures",
+      "owner": "lead",
+      "review_by": "2027-05-14",
+      "matching_universe_cells": 0,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-non-goal-3]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-non-goal-3]"
+      ]
+    },
+    {
+      "candidate_id": "NG-non-goal-4",
+      "source": "claims_non_goal",
+      "category": "non_goal",
+      "claim": "32-bit Mach-O and fat Mach-O rewriting (thin little-endian only).",
+      "enforcement": "unsupported; no fat/32-bit Mach-O rewrite",
+      "owner": "lead",
+      "review_by": "2027-05-14",
+      "matching_universe_cells": 0,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-non-goal-4]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-non-goal-4]"
+      ]
+    },
+    {
+      "candidate_id": "NG-non-goal-5",
+      "source": "claims_non_goal",
+      "category": "non_goal",
+      "claim": "Windows native execution and macOS native execution beyond the existing Mach-O path.",
+      "enforcement": "unsupported/not_run for native execution beyond the Mach-O path",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "matching_universe_cells": 0,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=NG-non-goal-5]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=NG-non-goal-5]"
+      ]
+    },
+    {
+      "candidate_id": "RG-external-poc::<doc>::pe/arm64",
+      "source": "claims_non_goal",
+      "category": "runtime_gap",
+      "claim": "External-PoC replay is unavailable for PE/arm64 by design; only emulated/static evidence exists and a PoC requirement stays inconclusive.",
+      "enforcement": "not_run; never verified_patch",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "matching_universe_cells": 0,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=RG-external-poc::<doc>::pe/arm64]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=RG-external-poc::<doc>::pe/arm64]"
+      ]
+    },
+    {
+      "candidate_id": "RG-external-poc::<doc>::pe/i386",
+      "source": "claims_non_goal",
+      "category": "runtime_gap",
+      "claim": "External-PoC replay is unavailable for PE/i386 by design; PE PoC manifests are never executed or faked.",
+      "enforcement": "not_run; never verified_patch",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "matching_universe_cells": 0,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=RG-external-poc::<doc>::pe/i386]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=RG-external-poc::<doc>::pe/i386]"
+      ]
+    },
+    {
+      "candidate_id": "RG-external-poc::<doc>::pe/x86_64",
+      "source": "claims_non_goal",
+      "category": "runtime_gap",
+      "claim": "External-PoC replay is unavailable for PE/x86_64 by design; the gate reports the missing evidence, it does not simulate it.",
+      "enforcement": "not_run; never verified_patch",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "matching_universe_cells": 0,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=RG-external-poc::<doc>::pe/x86_64]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=RG-external-poc::<doc>::pe/x86_64]"
+      ]
+    },
+    {
+      "candidate_id": "RG-external-poc::<doc>::macho/x86_64",
+      "source": "claims_non_goal",
+      "category": "runtime_gap",
+      "claim": "Mach-O x86_64 external PoC replay is a platform capability; the capability probe makes availability/reason explicit and the runner selects no runner when unavailable.",
+      "enforcement": "unavailable/not_run; external PoC for macho/x86_64 is unavailable on arm64 hosts and platform-gated on others; no fabricated PoC",
+      "owner": "runtime",
+      "review_by": "2027-05-14",
+      "matching_universe_cells": 0,
+      "reason_out_of_universe": "explicit non-goal in docs/status/claims.json: it is not part of the measurable 240-cell universe and no measurement is fabricated",
+      "evidence_refs": [
+        "docs/status/claims.json#non_goals[id=RG-external-poc::<doc>::macho/x86_64]",
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#universe.cells[claims_non_goal_id=RG-external-poc::<doc>::macho/x86_64]"
+      ]
+    }
+  ],
+  "out_of_universe_count": 12,
+  "unknown_within_universe": 0,
+  "unknown_within_universe_detail": {
+    "count": 0,
+    "cells": [],
+    "note": "no universe cell is status=unknown; the 240 cells are fully status-classified in the committed audit"
+  },
+  "undiscovered_space": "not_measurable",
+  "undiscovered_space_note": "not_measurable: the space outside the declared 240-cell registry cannot be measured with the evidence in this repository (no sampling frame/corpus); no count or percentage is estimated or fabricated",
+  "assumptions": [
+    "D01-D20 ids and titles are the user's authoritative Phase-7 list, relayed verbatim by the Lead; the builder validates title fidelity.",
+    "The old-11-dim -> new-D mapping is the Lead-supplied mapping; dimensions with no old mapping are not silently inferred as covered and carry an explicit source_registries/old_11dim_mapping of [] / 'none'.",
+    "Status assignment is analyst inference under the documented rules (covered/partial/non_goal/unavailable/not_started); every entry records a status_reason and evidence_refs.",
+    "undiscovered_space is not_measurable: this tree has no external corpus sampling frame, so the unenumerated capability space cannot be counted; unknown_within_universe is 0 because all 240 declared cells are status-classified.",
+    "No capability is claimed verified/non_goal by this artifact; it maps the universe and records explicit non-goals only."
+  ],
+  "provenance": {
+    "builder": "scripts/build_universe_dimension_registry.py",
+    "builder_version": 1,
+    "build_method": "deterministic re-derivation from committed source artifacts; no network, no git commands, no wall-clock timestamps",
+    "generated_at": "2026-11-14T00:00:00Z",
+    "generated_at_source": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#audit_date",
+    "generated_at_note": "generated_at is derived from the coverage-matrix audit_date so a fresh build is byte-identical; it is not the build time",
+    "registry_digest": "7da89f2765a1b2103d9c78d81d95ab69da664ca275a625f153561cfeba9ca225",
+    "sources": [
+      {
+        "path": "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json",
+        "sha256": "6c72abcac0f71b747f68a8f2b5fb4f4fd5b74de4629aa00a3fa9a8647251e3d8"
+      },
+      {
+        "path": "docs/status/claims.json",
+        "sha256": "a9b3d0ce406ab6e8cc51d43d6e62f003a797bad4fa89f1a2f3126bef7e1dc875"
+      },
+      {
+        "path": "artifacts/capability-universe-2026-11-15/methodology.json",
+        "sha256": "e6b35563c8df7755b78a147e2e05388fb8136536d910290e6a93454ac775acc7"
+      }
+    ],
+    "source_digest_sha256": "9719696ecfb50aab7d30de7eb59ab8cf1b901e2f029755a0e7aaa85231874226"
+  },
+  "limitations": [
+    "This registry maps the declared universe; it does not prove new repair capability.",
+    "12 claims non-goals remain out of the measurable universe and are listed explicitly.",
+    "7 dimensions are not_started; 6 are partial; 2 are explicit non_goal dimensions.",
+    "undiscovered_space is not_measurable; no unenumerated-space number is invented."
+  ]
+}

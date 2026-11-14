@@ -1,0 +1,185 @@
+"""Tests for the unified autonomous-repair audit entry point (injected runner)."""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+import autonomous_repair_audit as audit_cli  # noqa: E402
+
+
+class FakeRunner:
+    """Deterministic subprocess replacement keyed by script basename."""
+
+    def __init__(self, responses: dict[str, tuple[int, str, str]] | None = None) -> None:
+        self.responses = responses or {}
+        self.calls: list[list[str]] = []
+
+    def __call__(self, command, cwd, timeout):
+        argv = [str(part) for part in command]
+        self.calls.append(argv)
+        script = Path(argv[1]).name if len(argv) > 1 else ""
+        returncode, stdout, stderr = self.responses.get(script, (0, "", ""))
+        return audit_cli.CommandResult(returncode, stdout, stderr)
+
+    def called_scripts(self) -> list[str]:
+        return [Path(call[1]).name for call in self.calls if len(call) > 1]
+
+
+def _make_root(tmp_path: Path, *, missing: tuple[str, ...] = ()) -> Path:
+    root = tmp_path / "repo"
+    (root / "scripts").mkdir(parents=True)
+    for spec in audit_cli.CHECK_SPECS:
+        if spec["script"].split("/")[-1] in missing:
+            continue
+        (root / spec["script"]).write_text("", encoding="utf-8")
+    (root / "artifacts").mkdir(exist_ok=True)
+    return root
+
+
+def _passing_runner() -> FakeRunner:
+    return FakeRunner({
+        name: (0, json.dumps({"ok": True}), "")
+        for name in (
+            "check_universe_methodology.py",
+            "run_autonomous_reflection.py",
+            "verify_coverage_gate.py",
+            "audit_acceptance_models.py",
+            "discover_capability_gaps.py",
+            "meta_audit.py",
+            "build_provider_coverage.py",
+        )
+    })
+
+
+def test_full_mode_all_passing_writes_valid_evidence(tmp_path: Path) -> None:
+    root = _make_root(tmp_path)
+    out = tmp_path / "evidence"
+    runner = _passing_runner()
+    code = audit_cli.main(
+        ["--mode", "full", "--root", str(root), "--evidence-out", str(out), "--json"],
+        run=runner,
+    )
+    assert code == 0
+    payload = json.loads((out / "summary.json").read_text(encoding="utf-8"))
+    assert payload["kind"] == "autonomous_repair_audit"
+    assert payload["ok"] is True
+    assert len(payload["checks"]) == 7
+    assert [check["status"] for check in payload["checks"]] == ["passed"] * 7
+    assert payload["not_run"] == []
+    sums_lines = [line for line in (out / "SHA256SUMS").read_text(encoding="utf-8").splitlines() if line]
+    assert len(sums_lines) == 2
+    assert audit_cli.verify_evidence(out) == []
+    assert len(runner.calls) == 7
+
+
+def test_static_mode_runs_only_static_subset(tmp_path: Path) -> None:
+    root = _make_root(tmp_path)
+    runner = _passing_runner()
+    payload = audit_cli.audit(mode="static", root=root, run=runner)
+    assert payload["ok"] is True
+    assert payload["exit_code"] == 0
+    assert len(payload["checks"]) == 3
+    assert sorted(runner.called_scripts()) == [
+        "check_universe_methodology.py",
+        "run_autonomous_reflection.py",
+        "verify_coverage_gate.py",
+    ]
+
+
+def test_required_failure_exits_one_and_records_check(tmp_path: Path) -> None:
+    root = _make_root(tmp_path)
+    runner = _passing_runner()
+    runner.responses["meta_audit.py"] = (1, "", "recall below threshold")
+    code = audit_cli.main(["--mode", "full", "--root", str(root), "--json"], run=runner)
+    assert code == 1
+    payload = audit_cli.audit(mode="full", root=root, run=runner)
+    failed = [check for check in payload["checks"] if check["status"] == "failed"]
+    assert [check["id"] for check in failed] == ["meta-audit"]
+    assert "recall below threshold" in failed[0]["detail"]
+
+
+def test_exit_zero_report_with_ok_false_is_a_failure(tmp_path: Path) -> None:
+    root = _make_root(tmp_path)
+    runner = _passing_runner()
+    runner.responses["verify_coverage_gate.py"] = (0, json.dumps({"ok": False}), "")
+    payload = audit_cli.audit(mode="static", root=root, run=runner)
+    assert payload["exit_code"] == 1
+    failed = [check for check in payload["checks"] if check["status"] == "failed"]
+    assert failed[0]["id"] == "coverage-gate-static"
+
+
+def test_missing_required_script_is_not_run_exit_two(tmp_path: Path) -> None:
+    root = _make_root(tmp_path, missing=("discover_capability_gaps.py",))
+    runner = _passing_runner()
+    code = audit_cli.main(["--mode", "full", "--root", str(root), "--json"], run=runner)
+    assert code == 2
+    payload = audit_cli.audit(mode="full", root=root, run=_passing_runner())
+    assert payload["ok"] is False
+    assert payload["exit_code"] == 2
+    assert [item["id"] for item in payload["not_run"]] == ["capability-gap-discovery"]
+    assert "not present" in payload["not_run"][0]["reason"]
+    # Other checks still ran: a missing input is reported, never silently skipped.
+    missing_runner = _passing_runner()
+    audit_cli.audit(mode="full", root=root, run=missing_runner)
+    assert "discover_capability_gaps.py" not in missing_runner.called_scripts()
+    assert len(missing_runner.calls) == 6
+
+
+def test_check_exit_two_is_aggregated_as_not_run(tmp_path: Path) -> None:
+    root = _make_root(tmp_path)
+    runner = _passing_runner()
+    runner.responses["run_autonomous_reflection.py"] = (
+        2, "autonomous-reflection: NOT_OK records=0 not_run=1", ""
+    )
+    payload = audit_cli.audit(mode="static", root=root, run=runner)
+    assert payload["ok"] is False
+    assert payload["exit_code"] == 2
+    statuses = {check["id"]: check["status"] for check in payload["checks"]}
+    assert statuses["autonomous-reflection"] == "not_run"
+    assert [item["id"] for item in payload["not_run"]] == ["autonomous-reflection"]
+
+
+def test_failure_takes_precedence_over_not_run(tmp_path: Path) -> None:
+    root = _make_root(tmp_path, missing=("build_provider_coverage.py",))
+    runner = _passing_runner()
+    runner.responses["meta_audit.py"] = (1, "", "boom")
+    payload = audit_cli.audit(mode="full", root=root, run=runner)
+    assert payload["exit_code"] == 1
+    assert payload["failed"] == ["meta-audit"]
+    assert [item["id"] for item in payload["not_run"]] == ["provider-coverage"]
+
+
+def test_no_evidence_out_writes_nothing(tmp_path: Path) -> None:
+    root = _make_root(tmp_path)
+    before = set(tmp_path.iterdir())
+    code = audit_cli.main(["--mode", "static", "--root", str(root), "--json"], run=_passing_runner())
+    assert code == 0
+    after = set(tmp_path.iterdir())
+    assert before == after
+    assert not (root / "artifacts").exists() or list((root / "artifacts").iterdir()) == []
+
+
+def test_evidence_tamper_is_detected(tmp_path: Path) -> None:
+    root = _make_root(tmp_path)
+    out = tmp_path / "evidence"
+    assert audit_cli.main(
+        ["--mode", "static", "--root", str(root), "--evidence-out", str(out)]
+    , run=_passing_runner()) == 0
+    summary = out / "summary.json"
+    payload = json.loads(summary.read_text(encoding="utf-8"))
+    payload["ok"] = False
+    summary.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    violations = audit_cli.verify_evidence(out)
+    assert any("SHA256SUMS mismatch" in item for item in violations)
+
+
+def test_payload_is_deterministic(tmp_path: Path) -> None:
+    root = _make_root(tmp_path)
+    first = audit_cli.audit(mode="full", root=root, run=_passing_runner())
+    second = audit_cli.audit(mode="full", root=root, run=_passing_runner())
+    assert first == second

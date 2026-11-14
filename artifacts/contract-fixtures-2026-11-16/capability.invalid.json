@@ -1,0 +1,22 @@
+{
+  "id": "D01",
+  "title": "Binary formats",
+  "description": "Static container formats the repair pipeline can parse and rewrite.",
+  "status": "verified",
+  "owner": "universe",
+  "review_by": "2027-05-14",
+  "source_registries": [
+    "REPAIR_CELLS.container"
+  ],
+  "old_11dim_mapping": {
+    "old_dimensions": [
+      "container",
+      "bits",
+      "endian"
+    ],
+    "mapping_strength": "full"
+  },
+  "related_non_goal_ids": [
+    "NG-non-goal-4"
+  ]
+}

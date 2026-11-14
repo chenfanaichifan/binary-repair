@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "repair_id": "repair-fixture-001",
+  "target": {
+    "target_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "tree_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "format": "elf",
+    "arch": "x86_64",
+    "abi": "sysv-amd64",
+    "scope": "function",
+    "target_symbol": "vuln_copy"
+  },
+  "state": "verified",
+  "previous_state": "patch_candidate",
+  "transition_reason": "deterministic gate returned success_within_scope",
+  "evidence_ok": true,
+  "independence_ok": false,
+  "candidate_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "evidence_refs": [
+    "artifacts/contract-fixtures-2026-11-16/evidence.valid.json"
+  ],
+  "release_eligible": false,
+  "owner": "pipeline",
+  "review_by": "2027-02-14"
+}
