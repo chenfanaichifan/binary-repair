@@ -97,7 +97,12 @@ def _check_status(checks: list[dict[str, Any]], check_id: str) -> str:
     return "not_run"
 
 
-def _limits(report: Any, *, strict: bool) -> list[str]:
+def _limits(
+    report: Any,
+    *,
+    strict: bool,
+    legacy_poc_supplied: bool = False,
+) -> list[str]:
     values = [str(item) for item in (getattr(report, "limitations", None) or [])]
     values.append(
         "Runtime evidence is Unicorn x86-64 emulation with modeled syscalls, "
@@ -117,6 +122,13 @@ def _limits(report: Any, *, strict: bool) -> list[str]:
         values.append(
             "The immediate read/write length was rewritten; short-read and "
             "disclosure semantics are not claimed."
+        )
+    if legacy_poc_supplied:
+        # Never let a supplied manifest look like evidence this gate understood.
+        values.append(
+            "External PoC evidence was supplied, but the legacy stack/emulated "
+            "gate has no external-PoC evidence model; manifest evidence must use "
+            "the unified evidence-profile gate."
         )
     return _dedupe(values)
 
@@ -151,12 +163,25 @@ def build_verification(
     *,
     original: bytes,
     patched: bytes | None,
+    external_poc: dict[str, Any] | None = None,
+    target_scope: dict[str, Any] | None = None,
 ) -> Verification:
     """Build the structured report and gate for one engine result.
 
     ``original`` and ``patched`` are the actual bytes; hashes in ``report`` are
     never trusted on their own.  A mismatch becomes a failed check, not a
     success.
+
+    This legacy stack/emulated gate models exactly one evidence family: the
+    reviewed stack template plus the emulated capacity/boundary runtime.  It
+    has no external-PoC differential model, so supplying ``external_poc`` is
+    fail-closed: an extra *required* check is recorded as failed and the gate
+    can never verify.  Manifest-bearing repairs must use the unified
+    evidence-profile gate (``app.services.unified_verification``).
+
+    ``target_scope`` is accepted for interface parity with the unified gate;
+    the legacy gate cannot enforce patch ownership, so it only records a
+    non-required ``not_run`` note and never changes the legacy outcome.
     """
     mode = str(getattr(report, "mode", "") or "unsupported")
     strict = bool(getattr(report, "strict", False)) or mode == "strict"
@@ -441,6 +466,49 @@ def build_verification(
             f"profile={legacy_profile} checks={len(legacy_required)}",
         ))
 
+    # --- legacy-gate convergence (P1) --------------------------------------
+    # This gate is the read-only legacy stack/emulated gate.  It cannot
+    # represent manifest evidence, so a supplied PoC/regression manifest must
+    # fail closed here with an explicit required check instead of being
+    # silently dropped.  Wired this way, no caller can obtain a successful
+    # legacy gate for a manifest-bearing request.
+    supplied_poc = external_poc
+    if supplied_poc is None:
+        # Defensive backstop for a report that already carries manifest
+        # evidence but whose caller did not pass it explicitly.  Only exact
+        # manifest attributes are inspected, so manifest-less reports (every
+        # existing caller) are byte-for-byte unchanged.
+        for attribute in ("external_poc", "poc_manifest"):
+            candidate = getattr(report, attribute, None)
+            if isinstance(candidate, Mapping) and candidate:
+                supplied_poc = dict(candidate)
+                break
+    legacy_poc_supplied = supplied_poc is not None
+    if legacy_poc_supplied:
+        checks.append(_check(
+            "manifest.legacy_gate_unsupported",
+            (
+                "External PoC evidence is outside the legacy stack/emulated "
+                "gate's evidence model"
+            ),
+            CheckResult.FAILED,
+            "external PoC evidence must use the unified evidence-profile gate",
+        ))
+    elif target_scope is not None:
+        # Interface parity only: a not-run note documents that the legacy gate
+        # cannot enforce patch ownership.  Non-required, so legacy outcomes are
+        # unchanged for every historical caller.
+        checks.append(_check(
+            "scope.target_scope",
+            "Patch ownership is inside the requested target function",
+            CheckResult.NOT_RUN,
+            (
+                "the legacy stack/emulated gate cannot enforce target scope; "
+                "the unified gate must verify it"
+            ),
+            required=False,
+        ))
+
     missing = [
         {
             "check_id": item["id"],
@@ -494,7 +562,9 @@ def build_verification(
         "cases": [dict(item) for item in runtime_cases if isinstance(item, Mapping)],
         "error": runtime.get("error"),
     }
-    limitations = _limits(report, strict=strict)
+    limitations = _limits(
+        report, strict=strict, legacy_poc_supplied=legacy_poc_supplied
+    )
 
     body = {
         "schema_version": 1,

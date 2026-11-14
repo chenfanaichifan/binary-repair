@@ -22,6 +22,7 @@ from app.domain.binary_review import (
     AIReviewPayload,
     validate_check_references,
 )
+from app.domain.outcomes import CheckResult
 from app.services.ai_adjudication import (
     GateResult,
     PolicyViolation,
@@ -44,6 +45,16 @@ REVIEW_STATUS_ERROR = "review_error"
 
 REVIEW_MAX_TOKENS = 1500
 REVIEW_RECOMMENDATIONS = frozenset({"accept", "hold", "needs_more_checks"})
+
+# Which verification authority a direct-repair request was routed through.
+# Exposed on the engine report as ``report.universal["manifest_routing"]`` so
+# audit/CI can prove a manifest never reaches the legacy stack/emulated gate.
+MANIFEST_ROUTING_UNIFIED = "unified"
+MANIFEST_ROUTING_LEGACY = "legacy_readonly"
+LEGACY_MANIFEST_REJECTION_DETAIL = (
+    "external PoC evidence must use the unified evidence-profile gate"
+)
+
 _ACTION = {
     "accept": "accept",
     "hold": "reject",
@@ -609,13 +620,25 @@ class RepairOutcome:
     decision: dict[str, Any]
 
     def to_payload(self, *, filename: str, include_candidate: bool = True) -> dict[str, Any]:
+        routing = _manifest_routing(self.report)
+        report_payload = self.report.to_dict()
+        universal = report_payload.get("universal")
+        if not isinstance(universal, Mapping):
+            universal = {}
+        else:
+            universal = dict(universal)
+        if routing is not None:
+            universal.setdefault("manifest_routing", routing)
+        if universal:
+            report_payload["universal"] = universal
         payload: dict[str, Any] = {
             "schema_version": 1,
             "ok": bool(self.decision.get("success")),
             "candidate_available": self.patched is not None,
             "download_allowed": bool(self.decision.get("success")),
             "filename": filename,
-            "report": self.report.to_dict(),
+            "manifest_routing": routing,
+            "report": report_payload,
             "verification": self.verification.packet,
             "gate": self.verification.packet["gate"],
             "review": self.review.as_dict(),
@@ -630,6 +653,131 @@ class RepairOutcome:
                 or self.verification.gate.outcome
             )
         return payload
+
+
+def _manifest_routing(report: Any) -> str | None:
+    """Return the recorded routing authority for a request, if any."""
+    universal = getattr(report, "universal", None)
+    if isinstance(universal, Mapping):
+        value = universal.get("manifest_routing")
+        if isinstance(value, str) and value in {
+            MANIFEST_ROUTING_UNIFIED,
+            MANIFEST_ROUTING_LEGACY,
+        }:
+            return value
+    return None
+
+
+def _set_manifest_routing(report: Any, routing: str) -> None:
+    """Record which gate wrote (or would write) a request's evidence.
+
+    A manifest-bearing request must always be ``unified``: the legacy
+    stack/emulated gate has no external-PoC evidence model.
+    """
+    if routing not in {MANIFEST_ROUTING_UNIFIED, MANIFEST_ROUTING_LEGACY}:
+        raise ValueError(f"unknown manifest routing: {routing!r}")
+    universal = getattr(report, "universal", None)
+    if not isinstance(universal, dict):
+        universal = {}
+        try:
+            setattr(report, "universal", universal)
+        except (AttributeError, TypeError):  # pragma: no cover - defensive
+            return
+    universal["manifest_routing"] = routing
+
+
+def _has_unified_profile_evidence(packet: Mapping[str, Any]) -> bool:
+    """True when a stored packet came from the unified evidence-profile gate.
+
+    Every unified packet appends ``profile.evidence``; the legacy
+    stack/emulated packet never does.
+    """
+    checks = packet.get("checks")
+    if not isinstance(checks, list):
+        return False
+    return any(
+        isinstance(item, Mapping) and item.get("id") == "profile.evidence"
+        for item in checks
+    )
+
+
+def _manifest_legacy_packet_rejection(
+    report: Any,
+    raw: bytes,
+    patched: bytes | None,
+) -> Verification:
+    """Fail closed when a manifest request only produced a legacy packet.
+
+    The legacy stack/emulated gate cannot represent external-PoC evidence, so
+    a manifest-bearing request must never surface that packet as its evidence
+    packet.  The replacement packet states the explicit unsupported-manifest
+    check and a rejected gate; it can never claim success.
+    """
+    detail = (
+        LEGACY_MANIFEST_REJECTION_DETAIL
+        + "; the legacy stack/emulated gate cannot represent a supplied manifest"
+    )
+    limitation = (
+        "A PoC/regression manifest was supplied, but the repair produced only a "
+        "legacy stack/emulated verification packet, which has no external-PoC "
+        "evidence model; the request is rejected. "
+        + LEGACY_MANIFEST_REJECTION_DETAIL
+    )
+    candidate_present = patched is not None and len(patched) > 0
+    check = {
+        "id": "manifest.legacy_gate_unsupported",
+        "title": (
+            "External PoC evidence is outside the legacy stack/emulated gate's "
+            "evidence model"
+        ),
+        "required": True,
+        "status": CheckResult.FAILED.value,
+        "detail": detail,
+    }
+    body = {
+        "schema_version": 2,
+        "scope": {
+            "format": str(getattr(report, "format", "") or ""),
+            "arch": str(getattr(report, "arch", "") or ""),
+            "mode": str(getattr(report, "mode", "") or ""),
+            "strategy": str(getattr(report, "strategy", "") or ""),
+            "manifest_routing": MANIFEST_ROUTING_UNIFIED,
+            "statement": (
+                "Manifest-bearing repairs are verified only by the unified "
+                "evidence-profile gate."
+            ),
+        },
+        "candidate": {
+            "present": candidate_present,
+            "size_bytes": len(patched) if patched is not None else 0,
+            "original_sha256": hashlib.sha256(raw).hexdigest(),
+            "patched_sha256": (
+                hashlib.sha256(patched).hexdigest()
+                if patched is not None
+                else ""
+            ),
+        },
+        "checks": [check],
+        "missing": [
+            {
+                "check_id": check["id"],
+                "status": check["status"],
+                "reason": detail,
+            }
+        ],
+        "limitations": [limitation],
+    }
+    report_sha256 = _sha_payload(body)
+    gate = GateResult(
+        success=False,
+        outcome="rejected",
+        reason=detail,
+        required_checks=1,
+        required_not_run=0,
+        evidence_sha256=None,
+    )
+    packet = {**body, "report_sha256": report_sha256, "gate": asdict(gate)}
+    return Verification(packet=packet, gate=gate)
 
 
 def _unified_verification(report: Any, raw: bytes, patched: bytes | None) -> Verification:
@@ -688,6 +836,12 @@ def run_direct_repair(
     stack-sentinel gate cannot express that evidence model.  A manifest never
     bypasses the deterministic gate: the outcome is still whatever the unified
     gate decides.
+
+    The routing authority used for the request is recorded as
+    ``report.universal["manifest_routing"]``: ``"unified"`` whenever a manifest
+    was supplied (or the unified container-neutral pipeline was used) and
+    ``"legacy_readonly"`` for the manifest-less legacy ELF path.  The legacy
+    stack/emulated verification builder is never called with a manifest.
     """
     from app.services.binary_pipeline import detect_format, repair_any, repair_binary
 
@@ -695,16 +849,33 @@ def run_direct_repair(
     if poc_manifest is not None:
         # Any strategy whose evidence model needs the supplied PoC/regression
         # differential (heap/global destinations, in-place capacity rewrites,
-        # multi-call guards) is only verifiable by the unified gate.
+        # multi-call guards) is only verifiable by the unified gate.  A manifest
+        # request never touches the legacy stack/emulated verification builder.
         outcome = repair_any(
             raw, strategy="auto", verify=True, poc_manifest=poc_manifest,
         )
         patched = outcome.candidate
         report = outcome.report
-        verification = _unified_verification(report, raw, patched)
+        stored = getattr(report, "verification", None) or {}
+        stored_packet = (
+            stored.get("packet") if isinstance(stored, Mapping) else None
+        )
+        if (
+            isinstance(stored_packet, Mapping)
+            and stored_packet
+            and not _has_unified_profile_evidence(stored_packet)
+        ):
+            # Defensive convergence: even if a caller/pipeline regression
+            # produced a legacy packet for a manifest request, it must never be
+            # surfaced as the evidence packet of that request.
+            verification = _manifest_legacy_packet_rejection(report, raw, patched)
+        else:
+            verification = _unified_verification(report, raw, patched)
+        manifest_routing = MANIFEST_ROUTING_UNIFIED
     elif (fmt, arch) == ("elf", "x86_64"):
         patched, report = repair_elf(raw)
         verification = build_verification(report, original=raw, patched=patched)
+        manifest_routing = MANIFEST_ROUTING_LEGACY
         if patched is None:
             # Surface reviewed deterministic candidates that the legacy
             # immediate engine cannot express (heap/global guards, in-place
@@ -720,6 +891,11 @@ def run_direct_repair(
     else:
         patched, report = repair_binary(raw, verify=True)
         verification = _unified_verification(report, raw, patched)
+        manifest_routing = MANIFEST_ROUTING_UNIFIED
+    # Audit/CI surface: which gate this request was routed through.  Manifest
+    # requests are always ``unified``; a manifest-less legacy request is
+    # ``legacy_readonly`` (it can never be given manifest evidence).
+    _set_manifest_routing(report, manifest_routing)
     if not request_review:
         review = _not_requested(verification.packet, verification.gate)
     elif client is None:
