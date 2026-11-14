@@ -10,8 +10,8 @@
   ],
   "declared_matrix": "ELF/PE/Mach-O x86_64/arm64; ELF32/PE32 i386",
   "latest_verified_ci": {
-    "run_id": 43582808690,
-    "head_sha": "fa80f50",
+    "run_id": 43589156716,
+    "head_sha": "8dc9c85",
     "branch": "workbench-v3",
     "conclusion": "success"
   },
