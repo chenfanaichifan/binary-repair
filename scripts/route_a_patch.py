@@ -38,8 +38,10 @@ def main() -> int:
         resolution = resolve(code, set(symbols), target_name=args.function,
                              allow_fputs_stderr=args.allow_fputs_stderr)
         if not resolution.ok:
-            print(json.dumps({"ok": False, "reason": "unresolved_symbols",
+            reason = "blocked_symbols" if resolution.blocked else "unresolved_symbols"
+            print(json.dumps({"ok": False, "reason": reason,
                               "unresolved": resolution.unresolved,
+                              "blocked": resolution.blocked,
                               "stubs": resolution.stubs}, ensure_ascii=False), file=sys.stderr)
             return 3
         code = apply_stubs(code, resolution)

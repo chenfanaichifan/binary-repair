@@ -346,6 +346,7 @@ def run_path(
     timeout: float = 10.0,
     runner: GuestRunner | None = None,
     cwd: Path | str | None = None,
+    wrapper: list[str] | None = None,
 ) -> GuestResult:
     """Execute *path* with *argv* in a native/qemu/Lima environment.
 
@@ -402,10 +403,11 @@ def run_path(
         ]
         env = None
     else:
-        if selected.kind == "qemu":
-            command = [selected.tool, str(exec_path), *args]
-        else:
-            command = [str(exec_path), *args]
+        base = (
+            [selected.tool, str(exec_path), *args]
+            if selected.kind == "qemu" else [str(exec_path), *args]
+        )
+        command = [*(wrapper or []), *base]
         # Scrubbed environment: only what the target needs to run.
         env = {
             "PATH": "/usr/bin:/bin",

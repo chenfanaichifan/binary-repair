@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "cases": [
+    {
+      "case": {
+        "id": "hard-multicall",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "multicall_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-multicall.json",
+        "reference_fix": "fixtures/hard-cases/multicall_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "multicall hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target multicall_bad [0x102cb60,0x102cbb0)",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": null,
+        "actions": []
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [
+        {
+          "name": "helper_copy",
+          "target_va": "0x102cbb0",
+          "source": "direct"
+        },
+        {
+          "name": "puts",
+          "target_va": "0x108a31c",
+          "source": "direct"
+        }
+      ],
+      "injection": {
+        "error": "assembly validation: ValueError: forbidden assembly construct: ud2"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "status": "accepted",
+        "latency_ms": 1649,
+        "plan_sha256": "3185a8c7132498d68f464fd57e4248a08eb29351177ae3a8bfb5f7bde39ecf66",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1283,
+          "completion_tokens": 326,
+          "total_tokens": 1609,
+          "latency_ms": 1648
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-flash",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 0,
+  "ai_increment": 0,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "contract_level": "full",
+  "repeats": 1,
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "ai_blind_verified": 0
+}

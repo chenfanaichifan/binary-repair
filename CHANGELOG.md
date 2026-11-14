@@ -51,6 +51,11 @@ simple semantic-versioning policy for delivery snapshots.
 
 ### Added — path A call whitelist and paradigm A loop proof
 
+- optional strace syscall-errno signature in poc_runner; CWE121 evidence
+- Path B direct-callee A/B negative result (0 vs 0 verified)
+- malloc/free typed refusal; strcat/atoi pure templates
+- docs/limitations.md with verification boundaries
+
 - 4-model real matrix: 2 DeepSeek + 2 SiliconFlow CN free Qwen; identity exact
 - pure-function stub templates for strlen/memcpy/memset
 

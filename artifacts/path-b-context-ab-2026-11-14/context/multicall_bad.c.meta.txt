@@ -1,0 +1,8 @@
+name=multicall_bad
+entry=0102cb60
+size_bytes=80
+signature=undefined multicall_bad(void)
+calling_convention=unknown
+external=false
+thunk=false
+callees=helper_copy __stack_chk_fail puts 

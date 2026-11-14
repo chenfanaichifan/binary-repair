@@ -1,0 +1,8 @@
+name=puts
+entry=0108a31c
+size_bytes=149
+signature=int __stdcall puts(char * s)
+calling_convention=__stdcall
+external=false
+thunk=false
+callees=__overflow __lockfile fputs __unlockfile 

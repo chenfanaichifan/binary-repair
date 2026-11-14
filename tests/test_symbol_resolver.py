@@ -58,3 +58,17 @@ def test_fputs_stderr_has_a_reviewed_write_shortcut():
 def test_call_extraction_ignores_control_flow():
     names = called_names("if (x) { foo(); } else { bar(); }")
     assert names == {"foo", "bar"}
+
+
+def test_strcat_and_atoi_have_pure_templates():
+    source = "void target(char *d, char *s){ strcat(d, s); atoi(d); }"
+    r = resolve(source, set(), target_name="target")
+    assert r.ok
+    assert set(r.stubs) == {"strcat", "atoi"}
+
+
+def test_malloc_is_blocked_with_a_typed_refusal():
+    r = resolve("void target(void){ malloc(8); }", set(), target_name="target")
+    assert not r.ok
+    assert r.blocked == ["malloc"]
+    assert r.unresolved == []

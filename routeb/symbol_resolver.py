@@ -68,7 +68,30 @@ _PURE_TEMPLATES: dict[str, str] = {
     for (unsigned long i = 0; i < n; i++) { d[i] = (unsigned char)value; }
     return dst;
 }''',
+    "strcat": r'''static char *strcat(char *dst, const char *src)
+{
+    char *p = dst;
+    while (*p != 0) { p++; }
+    while (*src != 0) { *p++ = *src++; }
+    *p = 0;
+    return dst;
+}''',
+    "atoi": r'''static int atoi(const char *s)
+{
+    int sign = 1, value = 0;
+    while (*s == ' ' || *s == '\t' || *s == '\n') { s++; }
+    if (*s == '-') { sign = -1; s++; } else if (*s == '+') { s++; }
+    while (*s >= '0' && *s <= '9') { value = value * 10 + (*s - '0'); s++; }
+    return sign * value;
+}''',
 }
+
+# Memory-management calls are intentionally not templated: static replacement
+# cannot preserve allocator state.  The resolver reports a typed refusal.
+_DANGEROUS_SYMBOLS = frozenset({
+    "malloc", "calloc", "realloc", "free", "dlopen", "dlclose", "dlsym",
+    "pthread_create", "fork", "execve", "system", "popen",
+})
 _FPUTS_TEMPLATE = r'''static int br_fputs(const char *s)
 {
     unsigned long n = 0;
@@ -92,10 +115,11 @@ class Resolution:
     stubs: list[str] = field(default_factory=list)
     unresolved: list[str] = field(default_factory=list)
     rewritten_source: str | None = None
+    blocked: list[str] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
-        return not self.unresolved
+        return not self.unresolved and not self.blocked
 
     def to_dict(self) -> dict[str, list[str]]:
         return {
@@ -103,6 +127,7 @@ class Resolution:
             "defined_in_source": sorted(self.defined_in_source),
             "stubs": sorted(self.stubs),
             "unresolved": sorted(self.unresolved),
+            "blocked": sorted(self.blocked),
         }
 
 
@@ -143,6 +168,8 @@ def resolve(source: str, available: set[str] | frozenset[str],
             resolution.stubs.append(_TEMPLATE_ALIASES[name])
         elif name in _PURE_TEMPLATES:
             resolution.stubs.append(name)
+        elif name in _DANGEROUS_SYMBOLS:
+            resolution.blocked.append(name)
         elif name == "br_fputs":
             resolution.stubs.append("br_fputs")
         else:

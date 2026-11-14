@@ -3228,7 +3228,28 @@ def _gap_runtime_sources(ctx: dict[str, Any]) -> list[dict[str, Any]]:
             available = any(bool(_as_dict(row).get("available")) for row in candidates)
             if available:
                 continue
-            if tier == "native_run" and container == "macho":
+            if tier == "native_run" and container == "elf":
+                # ELF native execution is a platform capability: x86_64 on an
+                # x86_64 host (and analogous matching hosts).  The static audit
+                # has no runtime probe, so this is a declared/platform-gated
+                # capability, not an open product gap.
+                host_arch = str(host.get("arch") or "")
+                gaps.append(_gap(
+                    f"RG-runtime-evidence::{key}::{tier}", "runtime_gap",
+                    f"matrix cell {key} declares native ELF execution; it is "
+                    f"available only when the host matches the cell arch "
+                    f"(host={host.get('platform')}/{host_arch}, cell={arch}); "
+                    "static audit cannot probe it",
+                    [
+                        f"census:host={host.get('platform')}/{host_arch}",
+                        f"census:cell_arch={arch}",
+                    ],
+                    "info", "mitigated",
+                    "native ELF tier is platform-gated; run the local probe on a "
+                    "matching host for native evidence",
+                    "runtime_sources",
+                ))
+            elif tier == "native_run" and container == "macho":
                 host_supported = bool(macho.get("host_supported"))
                 if host_supported:
                     gaps.append(_gap(

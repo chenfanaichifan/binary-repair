@@ -30,7 +30,7 @@
     "non-loop path A verified success: 0/6; heap security-only partial and CWE symbol/stub limits remain",
     "general non-loop / whole-binary paradigm A; only CWE121 function-level closure is proven",
     "5-6 model matrix: only 4 real models; GLM-Z1 probe timed out; no additional provider key",
-    "runtime errno/libc-state extraction is not wired into poc_runner; only the comparator/schema and stdout_signature gate exist"
+    "full runtime TLS/libc errno capture; current errno probe is a syscall-signature proxy and optional"
   ],
   "non_goals": [
     {
@@ -190,8 +190,11 @@
     "staged release gate (PR/nightly/release) with claims/measurement diff, acceptance contract, provider-matrix schema, invariants, meta-audit and full-suite enforcement; CI static + PR jobs with an honestly inert nightly self-hosted-lima job",
     "4-model real matrix: 2 DeepSeek official (6/12 each) + 2 SiliconFlow CN free Qwen (0/12 each), native PoC and exact identity",
     "route A symbol resolver pure-function templates (strlen/memcpy/memset), fputs(stderr)->br_fputs rewrite, fail-closed otherwise",
-    "errno set/unset signature comparator and unit tests (runtime extraction still optional/pending)"
-
+    "errno set/unset signature comparator and unit tests (runtime extraction still optional/pending)",
+    "optional errno_probe=strace syscall-errno signature with CWE121 evidence",
+    "Path B callee-context A/B negative controlled result",
+    "strcat/atoi pure templates and malloc/free typed refusal",
+    "docs/limitations.md verification-boundary statement"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",

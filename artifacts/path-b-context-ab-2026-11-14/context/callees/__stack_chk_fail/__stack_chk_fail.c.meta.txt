@@ -1,0 +1,8 @@
+name=__stack_chk_fail
+entry=0108883d
+size_bytes=5
+signature=noreturn void __stack_chk_fail(void)
+calling_convention=unknown
+external=false
+thunk=false
+callees=

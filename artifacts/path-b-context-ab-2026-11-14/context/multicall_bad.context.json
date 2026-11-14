@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "binary_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+  "target": "multicall_bad",
+  "target_c": "multicall_bad.c",
+  "target_meta": "multicall_bad.c.meta.txt",
+  "callees": [
+    {
+      "name": "helper_copy",
+      "c": "callees/helper_copy/helper_copy.c",
+      "meta": "callees/helper_copy/helper_copy.c.meta.txt"
+    },
+    {
+      "name": "__stack_chk_fail",
+      "c": "callees/__stack_chk_fail/__stack_chk_fail.c",
+      "meta": "callees/__stack_chk_fail/__stack_chk_fail.c.meta.txt"
+    },
+    {
+      "name": "puts",
+      "c": "callees/puts/puts.c",
+      "meta": "callees/puts/puts.c.meta.txt"
+    }
+  ],
+  "missing_or_external": []
+}

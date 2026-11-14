@@ -319,7 +319,8 @@ def _inject_target(data: bytes, target: str, capacity: int, assembly: str,
 
 def _prompt_packet(data: bytes, target: str, capacity: int, contract: str,
                    contract_level: str = "full",
-                   allowed_calls: list[Any] | None = None) -> dict[str, Any]:
+                   allowed_calls: list[Any] | None = None,
+                   callee_context: dict[str, Any] | None = None) -> dict[str, Any]:
     container = detect_container(data)
     va = _target_va(container, target)
     if va is None:
@@ -330,6 +331,8 @@ def _prompt_packet(data: bytes, target: str, capacity: int, contract: str,
     allowed_calls = list(allowed_calls or [])
     packet = _assembly_packet(data, container, sink, listing, allowed_calls)
     packet["target_function"] = target
+    if callee_context is not None:
+        packet["callee_context"] = callee_context
     call_rule = (
         "no external calls, syscalls, privileged instructions or indirect jumps"
         if not allowed_calls else
@@ -428,6 +431,7 @@ def _ai_prompt_attempt(
     case: dict[str, Any],
     contract_level: str,
     allow_calls_flag: bool,
+    callee_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """One real/scripted model call for the target assembly repair.
 
@@ -446,7 +450,7 @@ def _ai_prompt_attempt(
             allowed_calls = discover_allowed_calls(data, container, target_va)
     packet = _prompt_packet(
         data, case["target"], int(case["capacity"]), case["contract"],
-        contract_level, allowed_calls,
+        contract_level, allowed_calls, callee_context,
     )
     started = time.perf_counter()
     parsed, error = _call_model(
@@ -543,6 +547,8 @@ def main() -> int:
     ap.add_argument("--repeats", type=int, default=1)
     ap.add_argument("--allow-calls", action="store_true",
                     help="allow only calls already present in the target function")
+    ap.add_argument("--callee-context", type=Path, default=None,
+                    help="optional export_with_callees JSON to include in the target prompt")
     ap.add_argument("--target-strict", action="store_true",
                     help="only count an AI increment when the injected target scope check passed")
     ap.add_argument("--provider-tag", default="",
@@ -556,6 +562,9 @@ def main() -> int:
     selected_cases = [item.strip() for item in args.case.split(",") if item.strip()]
     if selected_cases:
         cases = [case for case in cases if case["id"] in selected_cases]
+    callee_context = None
+    if args.callee_context is not None:
+        callee_context = json.loads(args.callee_context.read_text())
     client = None
     provider_config: dict[str, Any] | None = None
     if args.client == "real":
@@ -685,6 +694,7 @@ def main() -> int:
             for repeat in range(repeats):
                 prompt = _ai_prompt_attempt(
                     client, data, case, args.contract_level, args.allow_calls,
+                    callee_context,
                 )
                 attempt: dict[str, Any] = {
                     "repeat": repeat,

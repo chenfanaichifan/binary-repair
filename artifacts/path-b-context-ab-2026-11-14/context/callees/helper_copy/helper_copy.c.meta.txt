@@ -1,0 +1,8 @@
+name=helper_copy
+entry=0102cbb0
+size_bytes=35
+signature=undefined helper_copy(void)
+calling_convention=unknown
+external=false
+thunk=false
+callees=strcpy 

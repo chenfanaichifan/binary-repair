@@ -561,6 +561,15 @@ def build(
             signature_status,
             f"signature={signature}",
         ))
+        errno_probe = str(external_poc.get("errno_probe") or "")
+        errno_signature = str(external_poc.get("errno_signature") or "not_run")
+        if errno_probe and errno_signature != "not_run":
+            checks.append(_check(
+                "poc.native.errno_signature",
+                "Candidate preserves the original syscall errno set/unset signature",
+                CHECK_PASSED if errno_signature == "matched" else CHECK_FAILED,
+                f"probe={errno_probe} signature={errno_signature}",
+            ))
 
     if poc is not None:
         original_verdict = str(poc.get("original_verdict") or "not_run")

@@ -13,7 +13,7 @@ import pytest
 from app.services import poc_runner
 from app.services.binary_pipeline import repair_any
 from app.services.guest_runner import GuestResult, GuestRunner, find_guest_runner
-from app.services.poc_runner import load_manifest, run_poc
+from app.services.poc_runner import load_manifest, parse_strace_errors, run_poc
 from app.services.runtime import capabilities
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -424,3 +424,18 @@ def test_undeclared_empty_regression_is_still_allowed_by_the_runner(monkeypatch)
     assert evidence.no_input is False
     assert evidence.to_dict()["no_input"] is False
     assert evidence.to_dict()["regression"] == []
+
+
+def test_errno_strace_parser_and_manifest_opt_in():
+    text = """123 write(2, "x", 1) = 1
+124 openat(AT_FDCWD, "missing", O_RDONLY) = -1 ENOENT (No such file or directory)
+125 close(3) = -1 EBADF (Bad file descriptor)
+126 exit_group(1) = ?
+"""
+    assert parse_strace_errors(text) == ["EBADF", "ENOENT"]
+    manifest = json.loads(MANIFEST.read_text())
+    manifest["errno_probe"] = "strace"
+    assert load_manifest(manifest)["errno_probe"] == "strace"
+    manifest["errno_probe"] = "ptrace"
+    with pytest.raises(ValueError, match="errno_probe"):
+        load_manifest(manifest)

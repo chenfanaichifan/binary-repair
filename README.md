@@ -37,7 +37,7 @@ Source      chenfanaichifan/binary-repair
 
 See [`docs/acceptance/evidence/ubuntu-a971ffd/README.md`](docs/acceptance/evidence/ubuntu-a971ffd/README.md) and [`docs/status/final-status.md`](docs/status/final-status.md) and
 [`docs/acceptance/LIMITATIONS.md`](docs/acceptance/LIMITATIONS.md) before citing
-this project as proof.
+this project as proof. See [docs/limitations.md](docs/limitations.md) for the exact verification boundaries and the 4-model capability conclusion.
 
 > **v5/v6 feature branch (pushed, not a release).** The
 > [`feature/universal-repair`](docs/acceptance/binary-universal-v5-2026-11-13.md)

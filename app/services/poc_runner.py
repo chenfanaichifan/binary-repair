@@ -32,6 +32,7 @@ from typing import Any, Iterator
 
 from app.services.guest_runner import GuestRunner, find_guest_runner, run_path
 from app.services.runtime import capabilities
+from app.services.errno_signature import compare as compare_errno_state
 
 SCHEMA_VERSION = 1
 DEFAULT_TIMEOUT = 5.0
@@ -58,6 +59,7 @@ class CaseResult:
     timed_out: bool = False
     error: str | None = None
     expected_ok: bool = False
+    syscall_errors: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -72,6 +74,7 @@ class CaseResult:
             "timed_out": self.timed_out,
             "error": self.error,
             "expected_ok": self.expected_ok,
+            "syscall_errors": list(self.syscall_errors),
         }
 
 
@@ -81,6 +84,8 @@ class PocEvidence:
     runner: str = ""
     tier: str = ""
     stdout_signature: str = "not_run"
+    errno_signature: str = "not_run"
+    errno_probe: str = ""
     no_input: bool = False
     cases: list[CaseResult] = field(default_factory=list)
     regression: list[CaseResult] = field(default_factory=list)
@@ -99,6 +104,8 @@ class PocEvidence:
             "runner": self.runner,
             "tier": self.tier,
             "stdout_signature": self.stdout_signature,
+            "errno_signature": self.errno_signature,
+            "errno_probe": self.errno_probe,
             "no_input": self.no_input,
             "original_sha256": self.original_sha256,
             "candidate_sha256": self.candidate_sha256,
@@ -164,6 +171,8 @@ def load_manifest(manifest: dict[str, Any] | str | Path) -> dict[str, Any]:
         raise ValueError("PoC manifest requires a 'regression' list (may be empty for no-input cases)")
     if "no_input" in data and not isinstance(data["no_input"], bool):
         raise ValueError("PoC manifest field 'no_input' must be a boolean")
+    if "errno_probe" in data and data["errno_probe"] not in {"strace"}:
+        raise ValueError("PoC manifest field 'errno_probe' must be 'strace' when present")
     for group in ("poc", "regression"):
         for index, case in enumerate(data[group]):
             where = f"{group}[{index}]"
@@ -316,6 +325,14 @@ def _substitute_argv(argv: list[str], case_dir: Path) -> list[str]:
     return [str(arg).replace(TMP_PLACEHOLDER, marker) for arg in argv]
 
 
+_STRACE_ERROR = re.compile(r"= -1 (E[A-Z0-9_]+)")
+
+
+def parse_strace_errors(text: str) -> list[str]:
+    """Extract errno names from strace output lines (proxy signature)."""
+    return sorted({m.group(1) for m in _STRACE_ERROR.finditer(text)})
+
+
 def _expected_ok(actual_exit: int | None, crashed: bool, actual_stdout: str,
                  actual_stdout_hex: str, actual_stderr: str,
                  expected: dict[str, Any], *, is_poc: bool) -> bool:
@@ -362,6 +379,7 @@ def _run_case(
     root: Path,
     stdin: bytes,
     timeout: float,
+    errno_probe: str = "",
 ) -> CaseResult:
     case_dir = _prepare_case_dir(root, group, index, case)
     # Both sides of the differential are executed from the *same* staged path so
@@ -371,15 +389,25 @@ def _run_case(
     binary_path.write_bytes(binary_bytes)
     binary_path.chmod(0o700)
     argv = _substitute_argv(case["argv"], case_dir)
-    result = run_path(
-        binary_path,
-        argv,
-        arch=arch,
-        stdin=stdin,
-        timeout=timeout,
-        runner=runner,
-        cwd=case_dir,
-    )
+    wrapper: list[str] | None = None
+    trace_path = case_dir / "strace.log"
+    if errno_probe == "strace" and runner.kind != "lima":
+        strace = shutil.which("strace")
+        if strace:
+            wrapper = [strace, "-f", "-qq", "-e", "trace=all", "-o", str(trace_path)]
+    run_kwargs: dict[str, Any] = {
+        "arch": arch,
+        "stdin": stdin,
+        "timeout": timeout,
+        "runner": runner,
+        "cwd": case_dir,
+    }
+    if wrapper:
+        run_kwargs["wrapper"] = wrapper
+    result = run_path(binary_path, argv, **run_kwargs)
+    syscall_errors: list[str] = []
+    if wrapper and trace_path.is_file():
+        syscall_errors = parse_strace_errors(trace_path.read_text(errors="replace"))
     stdout_bytes = (result.stdout or b"")[:MAX_STDOUT]
     stdout = stdout_bytes.decode("utf-8", "replace")
     stderr = (result.stderr or b"")[:MAX_STDERR].decode("utf-8", "replace")
@@ -400,6 +428,7 @@ def _run_case(
         timed_out=result.timed_out,
         error=result.error,
         expected_ok=ok,
+        syscall_errors=syscall_errors,
     )
 
 
@@ -418,6 +447,7 @@ def run_poc(
         evidence.limitations.append(f"invalid PoC manifest: {type(exc).__name__}: {exc}")
         return evidence
     evidence.no_input = bool(spec.get("no_input", False))
+    evidence.errno_probe = str(spec.get("errno_probe") or "")
     if spec["fixture_sha256"] != evidence.original_sha256:
         evidence.status = "fail"
         evidence.limitations.append("PoC fixture_sha256 does not match the uploaded original")
@@ -476,6 +506,7 @@ def run_poc(
                             root=root,
                             stdin=stdin,
                             timeout=timeout,
+                            errno_probe=evidence.errno_probe,
                         )
                         (originals if is_original else candidates).append(result)
                 return originals, candidates
@@ -531,6 +562,17 @@ def run_poc(
         )
     else:
         evidence.stdout_signature = "not_applicable"
+    if evidence.errno_probe == "strace" and original_regression and candidate_regression:
+        matched = all(
+            compare_errno_state(
+                1 if a.syscall_errors else 0,
+                1 if b.syscall_errors else 0,
+            ) == "matched"
+            for a, b in zip(original_regression, candidate_regression)
+        )
+        evidence.errno_signature = "matched" if matched else "mismatch"
+    elif evidence.errno_probe:
+        evidence.errno_signature = "not_run"
     return evidence
 
 
