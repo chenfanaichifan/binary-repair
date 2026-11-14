@@ -623,7 +623,7 @@ inert by default (`vars.BINARYREPAIR_RELEASE_GATE`) and no CI run is claimed;
 browser e2e skips with an explicit reason when Chromium is absent. Lima tests
 run serially and a flake quarantine/rerun policy is documented in the
 release-gate operations doc; a local `--nightly` attempt is recorded in the
-release report. Twenty-six pre-existing non-ASCII Python comment/docstring
+release report. Final frozen release-gate evidence: nightly/release superset exit 0, 11/11 checks, violations=[], full pytest 564.9 s, real Lima capture 40.4 s, local gate dynamic_unverified=0/universe unknown=0, meta-audit 15 scenarios, invariants 9 packets, provider-matrix 12 cases; validated SHA 640d08a, final mainline 0522735 differs only by operator docs/claims/junit edits (static+local gates green on the final SHA). Twenty-six pre-existing non-ASCII Python comment/docstring
 violations exist (app/main.py and several tests/e2e/integration tests) and are
 not introduced by this milestone; the language-policy checker does not scan
 markdown docs.

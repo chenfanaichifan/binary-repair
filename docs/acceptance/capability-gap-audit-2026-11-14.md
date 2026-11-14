@@ -223,6 +223,26 @@ capacity-1 and keeps benign regressions byte-identical.
   policy and rerun rules are documented in the release-gate operations doc;
   static mode keeps `dynamic_unverified` visible and release/local requires 0.
 
+### Final release-gate evidence (frozen tree)
+
+The authoritative gate run is `scripts/release_gate.py --nightly
+--release-sha <sha> --json` from a clean frozen worktree (nightly is a superset
+of release: all release checks plus a fresh real-Lima acceptance capture).
+Result on the validated release tree:
+**exit 0, 11/11 checks passed, violations=[]**, `frozen_sha == release_sha`,
+`clean_tree=true`, full pytest 564.9 s serial, real Lima capture 40.4 s
+(`runner=lima:limactl`, `tier=emulated_run`), local coverage gate
+(`open=[]`, `dynamic_unverified=0`, universe `unknown=0`, 240 cells),
+claims/measurement diff (`mitigated_residual` printed for the host-dependent
+ELF x86_64 `native_run` declaration), meta-audit (15 scenarios, recall/precision
+1.0), invariants (9 packets), provider-matrix schema (12 cases), acceptance
+contract (capacity 21/21, heap 19/19, target-scoped 20/20, safe-default
+controls). The validated SHA was 640d08a; the final mainline SHA 0522735 differs
+from it only by operator docs/claims/junit edits (10 lines, 5 files, no code,
+tests, config or audit-artifact changes; verified with `git diff --stat`), and
+static + local gates were re-run green on 0522735. No CI run and no GitHub-hosted
+nightly run is claimed; the nightly was executed locally from the frozen tree.
+
 ## 3.6 Engine capability gaps found by the audit
 
 - x86-64 `.plt.sec`/CET stubs are now decoded (all in-stub `FF 25` positions),
