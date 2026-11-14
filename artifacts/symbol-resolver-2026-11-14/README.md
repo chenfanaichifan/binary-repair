@@ -18,3 +18,10 @@
 This generalizes the CWE121 helper's mechanism; it does not claim automatic
 semantic equivalence for arbitrary libc calls.  `scripts/route_a_patch.py
 --resolve-gaps` is the CLI entry point.
+
+
+## Pure-function templates (2026-11-14)
+
+`strlen`, `memcpy`, and `memset` now have reviewed pure C templates (no
+syscall, no external symbol).  They are selected before fail-closed; side-
+effecting or semantic-unknown symbols such as `fputs` still fail closed.

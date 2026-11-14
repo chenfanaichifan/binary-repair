@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "records": [
+    {
+      "spec": "deepseek:deepseek-flash",
+      "provider": "deepseek",
+      "model_requested": "deepseek-flash",
+      "base_url": "https://api.deepseek.com",
+      "configured": false,
+      "errors": [
+        "missing API key for provider 'deepseek'"
+      ],
+      "status": "unconfigured"
+    },
+    {
+      "spec": "deepseek:deepseek-v4-pro",
+      "provider": "deepseek",
+      "model_requested": "deepseek-v4-pro",
+      "base_url": "https://api.deepseek.com",
+      "configured": false,
+      "errors": [
+        "missing API key for provider 'deepseek'"
+      ],
+      "status": "unconfigured"
+    },
+    {
+      "spec": "siliconflow:Qwen/Qwen3-8B",
+      "provider": "siliconflow",
+      "model_requested": "Qwen/Qwen3-8B",
+      "base_url": "https://api.siliconflow.cn/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_returned": "Qwen/Qwen3-8B",
+      "model_identity_ok": true,
+      "latency_ms": 4681,
+      "usage": {
+        "prompt_tokens": 32,
+        "completion_tokens": 5,
+        "total_tokens": 37,
+        "latency_ms": 4681
+      },
+      "request_id": null,
+      "benchmark": {
+        "returncode": 0,
+        "stdout_tail": "e\", \"increment\": false}\n{\"case\": \"hard-multicall\", \"baseline\": \"rejected\", \"ai_status\": \"error\", \"ai_gate\": null, \"increment\": false}\n{\"case\": \"hard-sprintf\", \"baseline\": \"rejected\", \"ai_status\": \"error\", \"ai_gate\": null, \"increment\": false}\n{\"case\": \"hard-nonconst\", \"baseline\": \"rejected\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"case\": \"hard-loop8\", \"baseline\": \"rejected\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"case\": \"hard-loop64\", \"baseline\": \"rejected\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"case\": \"uaf-noinput\", \"baseline\": \"analysis_only\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"case\": \"heap-canary\", \"baseline\": \"rejected\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"out\": \"artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/siliconflow-Qwen_Qwen3-8B\", \"baseline_verified\": 0, \"ai_verified\": 0, \"ai_increment\": 0}\n",
+        "stderr_tail": "",
+        "summary_path": "artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/siliconflow-Qwen_Qwen3-8B/summary.json",
+        "baseline_verified": 0,
+        "ai_verified": 0,
+        "ai_increment": 0,
+        "contract_level": "full",
+        "cases": 12
+      }
+    },
+    {
+      "spec": "siliconflow:Qwen/Qwen2.5-7B-Instruct",
+      "provider": "siliconflow",
+      "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+      "base_url": "https://api.siliconflow.cn/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_returned": "Qwen/Qwen2.5-7B-Instruct",
+      "model_identity_ok": true,
+      "latency_ms": 5469,
+      "usage": {
+        "prompt_tokens": 28,
+        "completion_tokens": 5,
+        "total_tokens": 33,
+        "latency_ms": 5469
+      },
+      "request_id": null,
+      "benchmark": {
+        "returncode": 0,
+        "stdout_tail": "d-multicall\", \"baseline\": \"rejected\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"case\": \"hard-sprintf\", \"baseline\": \"rejected\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"case\": \"hard-nonconst\", \"baseline\": \"rejected\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"case\": \"hard-loop8\", \"baseline\": \"rejected\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"case\": \"hard-loop64\", \"baseline\": \"rejected\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"case\": \"uaf-noinput\", \"baseline\": \"analysis_only\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"case\": \"heap-canary\", \"baseline\": \"rejected\", \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"increment\": false}\n{\"out\": \"artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/siliconflow-Qwen_Qwen2.5-7B-Instruct\", \"baseline_verified\": 0, \"ai_verified\": 0, \"ai_increment\": 0}\n",
+        "stderr_tail": "",
+        "summary_path": "artifacts/multi-model-matrix-cn-2026-11-14/benchmarks/siliconflow-Qwen_Qwen2.5-7B-Instruct/summary.json",
+        "baseline_verified": 0,
+        "ai_verified": 0,
+        "ai_increment": 0,
+        "contract_level": "full",
+        "cases": 12
+      }
+    }
+  ],
+  "ok": 2,
+  "identity_mismatch": 0,
+  "unconfigured": 2,
+  "benchmarks": {
+    "siliconflow:Qwen/Qwen3-8B": {
+      "returncode": 0,
+      "ai_verified": 0,
+      "ai_increment": 0
+    },
+    "siliconflow:Qwen/Qwen2.5-7B-Instruct": {
+      "returncode": 0,
+      "ai_verified": 0,
+      "ai_increment": 0
+    }
+  },
+  "note": "No key, prompt, or raw response is stored; exact model identity is mandatory."
+}

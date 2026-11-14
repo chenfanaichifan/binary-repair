@@ -1,0 +1,845 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "cases": [
+    {
+      "case": {
+        "id": "inline-byte-loop",
+        "binary": "fixtures/elf/vuln-loop-x86_64.elf",
+        "target": "vuln_copy",
+        "capacity": 16,
+        "poc": "fixtures/poc/elf-x86_64-loop.json",
+        "reference_fix": "fixtures/hard-cases/loop_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: assembly directive not allowed: .pushsection .text,\"ax\",\"progbits\""
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "accepted",
+        "latency_ms": 7524,
+        "plan_sha256": "4005e8f4884904f1b9237974904beb804910de55b27fb52b37356f7f6aca37f8",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 851,
+          "completion_tokens": 162,
+          "total_tokens": 1013,
+          "latency_ms": 7523
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "cwe121-unchecked-strcpy",
+        "binary": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+        "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+        "capacity": 50,
+        "poc": "fixtures/poc/cwe121.json",
+        "reference_fix": "fixtures/hard-cases/cwe121_fix.c",
+        "baseline_expected": "analysis_only",
+        "contract": "CWE121 stack overflow: strcpy into char[50] without validation; repaired path must reject inputs with length+1>50 (exit 1, exact stderr) and preserve valid stdout",
+        "family": "non-template semantic validation"
+      },
+      "input_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "baseline": {
+        "disposition": "analysis_only",
+        "verified": false,
+        "error": "No supported immediate-length read/write pattern found."
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "not_attempted",
+        "disposition": "analysis_only",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "invalid",
+        "latency_ms": 29579,
+        "plan_sha256": null,
+        "error": "invalid_json",
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1257,
+          "completion_tokens": 1400,
+          "total_tokens": 2657,
+          "latency_ms": 29578
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-loop16",
+        "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+        "target": "vuln_loop16",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-loop16.json",
+        "reference_fix": "fixtures/hard-cases/loop16_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: assembly directive not allowed: .pushsection .text,\"ax\",@progbits"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "accepted",
+        "latency_ms": 10291,
+        "plan_sha256": "72f3caf0bab51399fba8723e7d0ac1a27340961d1f767d17c4aee306b76e523b",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 843,
+          "completion_tokens": 188,
+          "total_tokens": 1031,
+          "latency_ms": 10281
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-loop32",
+        "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+        "target": "vuln_loop32",
+        "capacity": 32,
+        "poc": "fixtures/poc/hard-loop32.json",
+        "reference_fix": "fixtures/hard-cases/loop32_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 32-byte stack buffer; no libc call; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "error",
+        "latency_ms": 36166,
+        "plan_sha256": null,
+        "error": "provider_error: TimeoutError",
+        "validation": {},
+        "usage": null,
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ]
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-reverse",
+        "binary": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+        "target": "vuln_loop_reverse",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-reverse.json",
+        "reference_fix": "fixtures/hard-cases/reverse_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "error",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: assembly directive not allowed: .pushsection .text,\"ax\",@progbits"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "accepted",
+        "latency_ms": 8397,
+        "plan_sha256": "e3f90c6a27c6fcc54cdb59d10dc9b1996964dca18243bc89a11b57b56fe85b99",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 836,
+          "completion_tokens": 156,
+          "total_tokens": 992,
+          "latency_ms": 8397
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-multicall",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "multicall_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-multicall.json",
+        "reference_fix": "fixtures/hard-cases/multicall_fix.c",
+        "baseline_expected": "rejected",
+        "contract": "multicall hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: assembly directive not allowed: .pushsection .text,\"ax\",@progbits"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "accepted",
+        "latency_ms": 25807,
+        "plan_sha256": "68b6e5c88a61262154c1a35448ebbb58ce6070be72a04a7f1ea201b381b77847",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1090,
+          "completion_tokens": 313,
+          "total_tokens": 1403,
+          "latency_ms": 25804
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-sprintf",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "sprintf_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-sprintf.json",
+        "reference_fix": "fixtures/hard-cases/sprintf_fix.c",
+        "baseline_expected": "rejected",
+        "contract": "sprintf hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: assembly directive not allowed: .pushsection .text,\"ax\",@progbits"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "accepted",
+        "latency_ms": 16204,
+        "plan_sha256": "653f85197a68d0ebcb926df288b11b2324c0c90955e502c161bc96a2539b3a75",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1139,
+          "completion_tokens": 290,
+          "total_tokens": 1429,
+          "latency_ms": 16065
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-nonconst",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "nonconst_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-nonconst.json",
+        "reference_fix": "fixtures/hard-cases/nonconst_fix.c",
+        "baseline_expected": "rejected",
+        "contract": "nonconst hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "error",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: assembly directive not allowed: .pushsection .text,\"ax\",@progbits"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "accepted",
+        "latency_ms": 11969,
+        "plan_sha256": "fa3050cb5e4d529f4684d8a885e12263d5cf957300ddaa711dc1e8537aceb00b",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1241,
+          "completion_tokens": 349,
+          "total_tokens": 1590,
+          "latency_ms": 11968
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-loop8",
+        "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+        "target": "vuln_loop8",
+        "capacity": 8,
+        "poc": "fixtures/poc/hard-loop8.json",
+        "reference_fix": "fixtures/hard-cases/loop8_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 8-byte stack buffer; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: assembly directive not allowed: .pushsection .text,\"ax\",@progbits"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "accepted",
+        "latency_ms": 8639,
+        "plan_sha256": "3a04098ee6b3aee0b9464dfe93ee87195ece35f24515b33e8d2713b2c8012512",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 846,
+          "completion_tokens": 190,
+          "total_tokens": 1036,
+          "latency_ms": 8639
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "hard-loop64",
+        "binary": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+        "target": "vuln_loop64",
+        "capacity": 64,
+        "poc": "fixtures/poc/hard-loop64.json",
+        "reference_fix": "fixtures/hard-cases/loop64_fix.S",
+        "baseline_expected": "rejected",
+        "contract": "inline byte-copy loop into a 64-byte stack buffer; bounded copy + NUL required",
+        "family": "non-template inline copy"
+      },
+      "input_sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: assembly directive not allowed: .pushsection .text,\"ax\",@progbits"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "accepted",
+        "latency_ms": 10392,
+        "plan_sha256": "e224e955f591ed64e1a1d0bc7cce89fae8f9b1f404ae1d3f25d702c3fa2157a4",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 851,
+          "completion_tokens": 165,
+          "total_tokens": 1016,
+          "latency_ms": 10354
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "uaf-noinput",
+        "binary": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
+        "target": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+        "capacity": 100,
+        "poc": "fixtures/poc/cwe416.json",
+        "reference_fix": "fixtures/hard-cases/uaf_fix.c",
+        "baseline_expected": "analysis_only",
+        "contract": "UAF: read of a heap block after free(); valid no-input path must print exactly 99 A bytes + LF and exit 0",
+        "family": "heap lifetime/UAF"
+      },
+      "input_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+      "baseline": {
+        "disposition": "analysis_only",
+        "verified": false,
+        "error": "No supported immediate-length read/write pattern found."
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "not_attempted",
+        "disposition": "analysis_only",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: assembly directive not allowed: .section .text"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "accepted",
+        "latency_ms": 11135,
+        "plan_sha256": "7d36cae9698fb0144ae55a7ad208b63c9016c7b041515488ff4ec5bc53b04041",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1284,
+          "completion_tokens": 316,
+          "total_tokens": 1600,
+          "latency_ms": 11133
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    },
+    {
+      "case": {
+        "id": "heap-canary",
+        "binary": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+        "target": "heap_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/heap-canary.json",
+        "reference_fix": "fixtures/hard-cases/heap_canary_fix.c",
+        "baseline_expected": "rejected",
+        "contract": "heap buffer[16] followed by a guard in one allocation; overflow corrupts the guard and exits 1; correct repair must reject oversized input and preserve valid behavior",
+        "family": "heap silent overflow/guard"
+      },
+      "input_sha256": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+      "baseline": {
+        "disposition": "rejected",
+        "verified": false,
+        "error": "verification gate did not pass"
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "error",
+        "disposition": "unsupported",
+        "verified": false
+      },
+      "allowed_calls": [],
+      "injection": {
+        "error": "assembly validation: ValueError: call target is not allowed: call 0x10982d0"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "status": "accepted",
+        "latency_ms": 8661,
+        "plan_sha256": "9a5b50afd7f0557ca57f78016d0eb679c22ebdd7085062980a32f49e61044465",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 2298,
+          "completion_tokens": 197,
+          "total_tokens": 2495,
+          "latency_ms": 8661
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+        "model_identity_ok": true
+      },
+      "contract_level": "full",
+      "repeats": 1,
+      "ai_increment": false
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 0,
+  "ai_increment": 0,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "contract_level": "full",
+  "repeats": 1,
+  "baseline_target_aware_verified": 0,
+  "ai_blind_verified": 0
+}

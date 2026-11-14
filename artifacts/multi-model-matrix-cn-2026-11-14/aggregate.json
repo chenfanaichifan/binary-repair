@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "matrix": "4 real models: 2 DeepSeek official + 2 SiliconFlow CN free",
+  "runs": [
+    {
+      "model": "deepseek-deepseek-flash",
+      "baseline_verified": 0,
+      "ai_verified": 6,
+      "loop_pass": 6,
+      "non_loop_pass": 0
+    },
+    {
+      "model": "deepseek-deepseek-v4-pro",
+      "baseline_verified": 0,
+      "ai_verified": 6,
+      "loop_pass": 6,
+      "non_loop_pass": 0
+    },
+    {
+      "model": "siliconflow-Qwen_Qwen3-8B",
+      "baseline_verified": 0,
+      "ai_verified": 0,
+      "loop_pass": 0,
+      "non_loop_pass": 0
+    },
+    {
+      "model": "siliconflow-Qwen_Qwen2.5-7B-Instruct",
+      "baseline_verified": 0,
+      "ai_verified": 0,
+      "loop_pass": 0,
+      "non_loop_pass": 0
+    }
+  ],
+  "completed_models": 4,
+  "identity_mismatch": 0,
+  "note": "Qwen free models returned 0/12; DeepSeek 6/12 each; loop 6/6 only for DeepSeek; non-loop remains 0/6. Native PoC in Linux VM."
+}

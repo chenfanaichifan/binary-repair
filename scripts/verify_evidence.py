@@ -35,6 +35,7 @@ DEFAULT_BUNDLES = (
     "artifacts/worktree-isolation-2026-11-14",
     "artifacts/siliconflow-key-2026-11-14",
     "artifacts/multi-model-matrix-intl-2026-11-14",
+    "artifacts/multi-model-matrix-cn-2026-11-14",
     "artifacts/symbol-resolver-2026-11-14",
     "artifacts/callee-context-2026-11-14",
     "artifacts/deepseek-matrix-2026-11-14",

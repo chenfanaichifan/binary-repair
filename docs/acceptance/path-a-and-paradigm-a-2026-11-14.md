@@ -95,3 +95,24 @@ The CWE121 `br_fail` mechanism is generalized in
 `routeb/symbol_resolver.py`: existing calls, patch-defined calls, reviewed
 write/exit syscall templates, and unresolved symbols (fail closed) are
 classified before patching.  Evidence: `artifacts/symbol-resolver-2026-11-14/`.
+
+
+## Update: 4-model real matrix completed (CN free models)
+
+Using the China site (`https://api.siliconflow.cn/v1`) with two permanently
+free models plus two DeepSeek official models:
+
+| model | AI verified | loop | non-loop |
+|---|---:|---:|---:|
+| deepseek-flash | 6/12 | 6/6 | 0/6 |
+| deepseek-v4-pro | 6/12 | 6/6 | 0/6 |
+| Qwen/Qwen3-8B | 0/12 | 0/6 | 0/6 |
+| Qwen/Qwen2.5-7B-Instruct | 0/12 | 0/6 | 0/6 |
+
+All four identity probes matched exactly; native PoC ran in the Linux VM.  The
+Qwen free models produce no verified candidate, which is real capability data,
+not a transport failure.  This completes a **4-model real matrix** and leaves
+non-loop 0/6 unchanged.
+
+`routeb/symbol_resolver.py` now also has pure-function templates for `strlen`,
+`memcpy`, and `memset`; side-effecting/unknown calls still fail closed.

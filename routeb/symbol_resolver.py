@@ -45,6 +45,32 @@ _SYSCALL_TEMPLATES: dict[str, str] = {
 }
 _TEMPLATE_ALIASES = {"write": "br_write", "exit": "br_exit"}
 
+# Pure, deterministic user-space templates.  These are low-risk replacements
+# for common libc functions that have no target import; side-effecting libc
+# (fputs/malloc/...) is deliberately absent and remains fail-closed.
+_PURE_TEMPLATES: dict[str, str] = {
+    "strlen": r'''static unsigned long strlen(const char *s)
+{
+    const char *p = s;
+    while (*p != 0) { p++; }
+    return (unsigned long)(p - s);
+}''',
+    "memcpy": r'''static void *memcpy(void *dst, const void *src, unsigned long n)
+{
+    unsigned char *d = (unsigned char *)dst;
+    const unsigned char *s = (const unsigned char *)src;
+    for (unsigned long i = 0; i < n; i++) { d[i] = s[i]; }
+    return dst;
+}''',
+    "memset": r'''static void *memset(void *dst, int value, unsigned long n)
+{
+    unsigned char *d = (unsigned char *)dst;
+    for (unsigned long i = 0; i < n; i++) { d[i] = (unsigned char)value; }
+    return dst;
+}''',
+}
+_TEMPLATE_SOURCES = {**_SYSCALL_TEMPLATES, **_PURE_TEMPLATES}
+
 
 @dataclass
 class Resolution:
@@ -92,6 +118,8 @@ def resolve(source: str, available: set[str] | frozenset[str],
             resolution.available.append(name)
         elif name in _TEMPLATE_ALIASES:
             resolution.stubs.append(_TEMPLATE_ALIASES[name])
+        elif name in _PURE_TEMPLATES:
+            resolution.stubs.append(name)
         else:
             resolution.unresolved.append(name)
     return resolution
@@ -102,5 +130,5 @@ def apply_stubs(source: str, resolution: Resolution) -> str:
     needed = sorted(set(resolution.stubs))
     if not needed:
         return source
-    blocks = "\n\n".join(_SYSCALL_TEMPLATES[name] for name in needed)
+    blocks = "\n\n".join(_TEMPLATE_SOURCES[name] for name in needed)
     return blocks + "\n\n" + source

@@ -51,6 +51,9 @@ simple semantic-versioning policy for delivery snapshots.
 
 ### Added — path A call whitelist and paradigm A loop proof
 
+- 4-model real matrix: 2 DeepSeek + 2 SiliconFlow CN free Qwen; identity exact
+- pure-function stub templates for strlen/memcpy/memset
+
 - international SiliconFlow identity probes pass; benchmark blocked by HTTP 402
 - symbol-gap resolver with reviewed write/exit syscall templates
 

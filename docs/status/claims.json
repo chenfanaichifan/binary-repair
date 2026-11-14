@@ -22,8 +22,16 @@
     "arm32, 32-bit Mach-O, fat Mach-O rewrite, big-endian, riscv/mips/ppc repair",
     "external-PoC replay for PE and 32-bit Mach-O; Mach-O x86_64 external PoC on arm64 hosts (native function-level Unicorn/emulation remains the only tier there)",
     "paradigm A: non-loop path A verified success (0/6); only CWE121 function-level closure is proven; security-only partial candidates remain unverified",
-    "multi-provider/multi-model statistics and independent-case confidence intervals (only two DeepSeek models available in this milestone)",
-    "whole-program proof: verification is scoped to the supplied PoC/regression cases and the one repaired function, not the whole binary"
+    "whole-program proof: verification is scoped to the supplied PoC/regression cases and the one repaired function, not the whole binary",
+    "native PoC replay for every path/fixture; PE and 32-bit Mach-O PoC are unavailable",
+    "heap/global/sprintf/UAF/integer/loop repair templates",
+    "multi-provider/multi-model statistics and independent-case confidence intervals; target/PoC/contract product API; puts side-effect gate",
+    "heap silent-overflow canary benchmark and UAF repair success; multi-model comparison",
+    "non-loop path A verified success: 0/6; heap security-only partial and CWE symbol/stub limits remain",
+    "general non-loop / whole-binary paradigm A; only CWE121 function-level closure is proven",
+    "errno/libc-state side-effect gate; only stdout_signature is implemented",
+    "5-6 model matrix: only 4 real models; GLM-Z1 probe timed out; no additional provider key",
+    "errno/libc-state side-effect gate; only stdout_signature is implemented"
   ],
   "non_goals": [
     {
@@ -126,15 +134,20 @@
     "Lima guest visibility wait before PoC execution (fixes stale virtiofs inode/size causing qemu internal SIGBUS for appended-segment candidates)",
     "self-discovery capability audit (app/services/coverage_audit.py, scripts/audit_capability_coverage.py): static census + bounded probes of matrix cells, sinks, strategies, runtime sources, gate profiles/checks, fixtures, PoC manifests and claims; emits coverage-matrix.json + gap-report.md with measured closed/open/non-goal statuses",
     "legacy quick-repair gate declares and enforces its evidence profile (strict_template/emulated_instruction) with appended profile checks, ids/statuses of existing checks unchanged",
+<<<<<<< HEAD
     "explicit target-scoped repair: repair_any target/require_target + containers.resolve_function_scope + required patch.target_scope gate check (numeric site_va inside the declared function range, scope hashed into report_sha256); wrong/missing target fails closed with no whole-image candidate; benchmark records baseline_target_strict",
     "legacy quick-repair gate fails closed on external PoC evidence (manifest.legacy_gate_unsupported) and manifest-bearing requests are routed to the unified evidence-profile gate before the legacy engine (pipeline guard measured by audit)",
     "runtime capability probe (app/services/runtime/capabilities.py) makes host/arch/tier/external-PoC availability explicit; poc_runner consults it (Mach-O x86_64 on arm64 is unavailable with an explicit reason, never fabricated); matrix_payload exposes measured runtime_capabilities",
     "continuous coverage regression gate scripts/verify_coverage_gate.py (static CI + local acceptance modes), CI job, and a self-discovery audit now measuring 66 gaps / 55 closed / 0 open / 11 non-goal with target-mode probes"
+=======
+    "4-model real matrix: 2 DeepSeek official + 2 SiliconFlow CN free models; native PoC; identity exact"
+>>>>>>> 4ae8308 (feat(matrix): 4-model real matrix + pure-function symbol templates)
   ],
   "siliconflow_status": {
-    "identity_probe": "pass for 3 models",
-    "benchmark": "blocked HTTP 402 insufficient balance",
-    "base_url": "https://api.siliconflow.com/v1"
+    "international": "identity pass; HTTP 402 balance",
+    "cn_identity_probe": "pass for Qwen/Qwen3-8B and Qwen/Qwen2.5-7B-Instruct",
+    "cn_benchmark": "completed; both Qwen free models 0/12 verified",
+    "base_url_cn": "https://api.siliconflow.cn/v1"
   },
   "deterministic_paths": [
     "deterministic_unified (matrix-driven pipeline + evidence profiles)"

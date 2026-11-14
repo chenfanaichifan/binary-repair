@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "records": [
+    {
+      "spec": "siliconflow:Qwen/Qwen3-8B",
+      "provider": "siliconflow",
+      "model_requested": "Qwen/Qwen3-8B",
+      "base_url": "https://api.siliconflow.cn/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_returned": "Qwen/Qwen3-8B",
+      "model_identity_ok": true,
+      "latency_ms": 671,
+      "usage": {
+        "prompt_tokens": 32,
+        "completion_tokens": 5,
+        "total_tokens": 37,
+        "latency_ms": 671
+      },
+      "request_id": null
+    },
+    {
+      "spec": "siliconflow:THUDM/GLM-Z1-9B-0414",
+      "provider": "siliconflow",
+      "model_requested": "THUDM/GLM-Z1-9B-0414",
+      "base_url": "https://api.siliconflow.cn/v1",
+      "configured": true,
+      "errors": [],
+      "status": "error",
+      "error": "TimeoutError: provider timed out"
+    },
+    {
+      "spec": "siliconflow:Qwen/Qwen2.5-7B-Instruct",
+      "provider": "siliconflow",
+      "model_requested": "Qwen/Qwen2.5-7B-Instruct",
+      "base_url": "https://api.siliconflow.cn/v1",
+      "configured": true,
+      "errors": [],
+      "status": "ok",
+      "model_returned": "Qwen/Qwen2.5-7B-Instruct",
+      "model_identity_ok": true,
+      "latency_ms": 1793,
+      "usage": {
+        "prompt_tokens": 28,
+        "completion_tokens": 5,
+        "total_tokens": 33,
+        "latency_ms": 1793
+      },
+      "request_id": null
+    }
+  ],
+  "ok": 2,
+  "identity_mismatch": 0,
+  "unconfigured": 0,
+  "benchmarks": {},
+  "note": "No key, prompt, or raw response is stored; exact model identity is mandatory."
+}

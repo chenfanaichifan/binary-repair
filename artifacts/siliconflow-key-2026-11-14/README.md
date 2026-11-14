@@ -1,13 +1,11 @@
-# SiliconFlow key status (2026-11-14)
+# SiliconFlow account status (2026-11-14)
 
-- Earlier supplied key: HTTP 401 `Token is invalid` on `.cn`; records retained.
-- New international key (`.com`): **valid for identity probes** — `/v1/models`
-  HTTP 200 and `resp.model == requested` for Qwen/Qwen3.8-27B,
-  moonshotai/Kimi-K3.1-Pro, deepseek-ai/DeepSeek-V4.1-Flash.
-- Full benchmark calls then returned **HTTP 402**
-  `{"code":30001,"message":"Sorry, your account balance is insufficient"}`;
-  the same key on `.cn` returns 401 (endpoint/region mismatch).
-- No model call for the 12-case benchmark succeeded on SiliconFlow; no matrix
-  result was fabricated.  The exact key is not stored in this repository.
+- International key (`.com`): valid identity probes, but full benchmark calls
+  return HTTP 402 `{"code":30001,"message":"Sorry, your account balance is insufficient"}`.
+  The international site has no permanent free LLM; small models are also paid.
+- China key (`.cn`): valid; identity probes pass for `Qwen/Qwen3-8B` and
+  `Qwen/Qwen2.5-7B-Instruct`; `THUDM/GLM-Z1-9B-0414` timed out on the probe.
+  The two Qwen models are real free calls and are included in the 4-model matrix.
+- Keys are not stored in this repository.
 
-Status: **P1 blocked by account balance**, not by model ID or transport.
+Matrix evidence: `artifacts/multi-model-matrix-cn-2026-11-14/`.

@@ -26,11 +26,19 @@ def test_write_and_exit_gain_reviewed_syscall_stubs():
     assert "fputs" not in out
 
 
-def test_unknown_semantic_symbol_fails_closed():
+def test_strlen_is_a_pure_template_not_fail_closed():
     source = "void target(char *p) { strlen(p); }"
     r = resolve(source, set(), target_name="target")
+    assert r.ok
+    assert r.stubs == ["strlen"]
+    assert "static unsigned long strlen" in apply_stubs(source, r)
+
+
+def test_side_effecting_unknown_symbol_fails_closed():
+    source = "void target(char *p) { fputs(p, stderr); }"
+    r = resolve(source, set(), target_name="target")
     assert not r.ok
-    assert r.unresolved == ["strlen"]
+    assert "fputs" in r.unresolved
 
 
 def test_call_extraction_ignores_control_flow():
