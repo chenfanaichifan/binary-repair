@@ -16,6 +16,22 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture(autouse=True)
+def _fake_lima_home(tmp_path_factory, monkeypatch):
+    """Provide a deterministic Lima config for provenance tests.
+
+    ``_lima_identity`` reads ``$HOME/.lima/binaryrepair/lima.yaml``; tests must
+    not depend on the host having a real Lima installation.
+    """
+    home = tmp_path_factory.mktemp("home")
+    config_dir = home / ".lima" / "binaryrepair"
+    config_dir.mkdir(parents=True)
+    (config_dir / "lima.yaml").write_text("vmType: vz\n", encoding="utf-8")
+    monkeypatch.setenv("HOME", str(home))
+    return home
+
 SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
