@@ -705,6 +705,18 @@ def run_direct_repair(
     elif (fmt, arch) == ("elf", "x86_64"):
         patched, report = repair_elf(raw)
         verification = build_verification(report, original=raw, patched=patched)
+        if patched is None:
+            # Surface reviewed deterministic candidates that the legacy
+            # immediate engine cannot express (heap/global guards, in-place
+            # capacity rewrites) even without a manifest.  Their unified
+            # packet shows which evidence is missing; the decision stays
+            # non-successful and no download is offered.
+            outcome = repair_any(raw, strategy="auto", verify=True)
+            stored = getattr(outcome.report, "verification", None) or {}
+            if stored.get("packet"):
+                report = outcome.report
+                patched = outcome.candidate
+                verification = _unified_verification(report, raw, patched)
     else:
         patched, report = repair_binary(raw, verify=True)
         verification = _unified_verification(report, raw, patched)

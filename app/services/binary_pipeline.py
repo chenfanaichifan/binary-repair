@@ -878,7 +878,7 @@ def _finish_capacity(
     manifest there is no runtime evidence, so the result stays
     ``not_verified``/inconclusive and never ``verified_patch``.
     """
-    return finish_candidate(
+    outcome = finish_candidate(
         data,
         container,
         patched,
@@ -892,6 +892,12 @@ def _finish_capacity(
         rewrite_actions=actions,
         capacity=payload,
     )
+    verification = outcome.report.verification
+    if isinstance(verification, dict) and not verification.get("engine"):
+        # Keep the reviewed profile observable in the packet without changing
+        # any gate check or verdict.
+        verification["engine"] = "capacity-check"
+    return outcome
 
 
 def _attempt_capacity(
@@ -911,11 +917,11 @@ def _attempt_capacity(
     try:
         engine = _capacity_engine()
     except Exception as exc:  # noqa: BLE001 - optional engine must not crash the pipeline
-        return None, [f"capacity engine unavailable: {type(exc).__name__}: {exc}"]
+        return None, [f"capacity-check engine unavailable: {type(exc).__name__}: {exc}"]
     try:
         patched, cap_report = engine(data)
     except Exception as exc:  # noqa: BLE001 - malformed input is evidence, not a crash
-        return None, [f"capacity engine failed: {type(exc).__name__}: {exc}"]
+        return None, [f"capacity-check engine error: {type(exc).__name__}: {exc}"]
     if patched is None:
         return None, [
             str(item) for item in (getattr(cap_report, "limitations", None) or [])
@@ -924,7 +930,7 @@ def _attempt_capacity(
     payload = _capacity_payload(cap_report)
     actions = [dict(item) for item in payload.get("actions", []) if isinstance(item, dict)]
     if not actions:
-        return None, ["capacity engine produced a candidate without rewrite actions"]
+        return None, ["capacity-check engine produced a candidate without rewrite actions"]
     report = _base_report(data, container)
     report.mode = "capacity-check"
     report.strategy = "capacity"
@@ -1025,6 +1031,8 @@ def repair_any(
             )
             if cap_outcome is not None:
                 return cap_outcome
+            report.strategy = "capacity"
+            report.mode = "capacity-check"
             report.supported = False
             report.error = (
                 diagnostics[-1] if diagnostics
