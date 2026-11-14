@@ -10,8 +10,8 @@
   ],
   "declared_matrix": "exact cells in app/services/repair_matrix.py: ELF i386/x86_64/arm64, PE i386/x86_64/arm64, Mach-O x86_64/arm64 (little-endian thin only)",
   "latest_verified_ci": {
-    "run_id": 43608147997,
-    "head_sha": "5f9dd77",
+    "run_id": 43614759619,
+    "head_sha": "f2392fd",
     "branch": "workbench-v3",
     "conclusion": "success"
   },
