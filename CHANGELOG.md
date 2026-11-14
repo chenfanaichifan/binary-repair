@@ -51,6 +51,11 @@ simple semantic-versioning policy for delivery snapshots.
 
 ### Added — path A call whitelist and paradigm A loop proof
 
+- direct-callee context export; explicit stdout_signature gate
+
+- non-loop CWE121 paradigm A closure: model guard + reviewed syscall helper +
+  Patcherex2; poc_runner pass (2/2 PoC, 4/4 regression)
+
 - target-mode assembly can call only direct targets already present in the
   original function; call relocations are resolved against the injected cave
 - 12-case result remains 6/12 (loop 6/6, non-loop 0/6); heap security PoC is a

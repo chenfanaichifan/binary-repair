@@ -75,7 +75,7 @@ this project as proof.
   manifest is supplied (`--poc`, API `poc_manifest`), a real native/qemu
   PoC + regression execution.  See
   [docs/architecture/ai-binary-repair-paths.md](docs/architecture/ai-binary-repair-paths.md).
-  Path A call-whitelist and paradigm-A loop evidence: `artifacts/path-a-call-whitelist-2026-11-14/`, `artifacts/paradigm-a-loop-2026-11-14/`. Experiments: `artifacts/ai-real-provider-2026-11-13/` (easy fixtures),
+  Path A call-whitelist and paradigm-A loop evidence: `artifacts/path-a-call-whitelist-2026-11-14/`, `artifacts/paradigm-a-loop-2026-11-14/`, `artifacts/paradigm-a-cwe121-2026-11-14/` (non-loop CWE121 closure), `artifacts/callee-context-2026-11-14/`. Experiments: `artifacts/ai-real-provider-2026-11-13/` (easy fixtures),
   `artifacts/gate-blind-spots-2026-11-13/`, `artifacts/hard-case-benchmark-2026-11-13/`
   (initial 1/2 hard-case increment), and `artifacts/fairness-ablation-2026-11-14/`
   (10 hard cases: target-localized AI 6/10, blind AI 0/10, target-aware

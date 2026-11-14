@@ -22,8 +22,9 @@
     "multi-provider/multi-model statistics and independent-case confidence intervals; target/PoC/contract product API; puts side-effect gate",
     "heap silent-overflow canary benchmark and UAF repair success; multi-model comparison",
     "4-6-model multi-provider matrix: only two DeepSeek models available; no valid SiliconFlow/Bailian key",
-    "paradigm A non-loop / whole-program repair; minimal loop function replacement is proven only",
-    "non-loop path A verified success: 0/6; heap security-only partial and CWE symbol/stub limits remain"
+    "non-loop path A verified success: 0/6; heap security-only partial and CWE symbol/stub limits remain",
+    "general non-loop / whole-binary paradigm A; only CWE121 function-level closure is proven",
+    "SiliconFlow 4-5 model matrix: supplied key HTTP 401; only 2 DeepSeek models available"
   ],
   "implemented": [
     "two product AI paths (asm_roundtrip, binary_direct)",
@@ -41,6 +42,9 @@
     "two-model DeepSeek matrix (flash + v4-pro, 3 runs each, 12 cases): both 6/12, loop 6/6, non-loop 0/6, identity exact",
     "path A selective call whitelist for target-mode assembly (direct original call targets only; call relocations resolved at cave VA)",
     "paradigm A minimal function-level loop closure: Ghidra C -> DeepSeek patch -> Patcherex2 replace -> roundtrip 6/6 and fixed 6/6",
-    "isolation of unpushed capacity-check commit 86587da in a separate worktree; targeted tests pass; not merged/pushed"
+    "isolation of unpushed capacity-check commit 86587da in a separate worktree; targeted tests pass; not merged/pushed",
+    "non-loop paradigm A CWE121 closure: DeepSeek guard patch + reviewed syscall helper + Patcherex2; poc_runner pass 2/2 PoC and 4/4 regression",
+    "direct-callee context export for CWE121 (target + printLine/strcpy)",
+    "explicit stdout_signature field and required poc.native.stdout_signature gate"
   ]
 }

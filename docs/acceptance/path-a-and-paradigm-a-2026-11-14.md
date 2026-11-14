@@ -50,3 +50,33 @@ libc symbols not present in the target's imports (`fputs`, `exit`, `strlen`)
 and the binary lacks stderr/exit stubs; this is a concrete import/PLT/stub
 problem, not a blocked gate.  Handle it by call-graph-aware symbol/stub
 generation or a richer external-call resolver before claiming non-loop A.
+
+## Update: CWE121 non-loop function-level closure (2026-11-14)
+
+The CWE121 symbol gap was closed with a **model-generated guard/copy patch**
+plus a reviewed syscall helper, without adding absent libc imports:
+
+- Ghidra exports `badSink`; DeepSeek generates a length/check/copy guard using
+  only `printLine` and a provided `br_fail()` helper.
+- The helper is deterministic glue: x86-64 `write(2,...)` syscall for the exact
+  stderr message and `exit(1)` syscall; no `fputs/exit/strlen/memset`.
+- Patcherex2 replaces the function with
+  `symbols={"printLine":0x401380}`.
+- `poc_runner` on `fixtures/poc/cwe121.json`: **status=pass**, 2/2 PoC and
+  4/4 regression.  Fixed SHA-256: `463a9758...`.
+
+This is the first measured **non-loop** paradigm-A closure.  It is still one
+function/fixture, and the syscall helper is reviewed glue, not model content.
+Evidence: `artifacts/paradigm-a-cwe121-2026-11-14/`.
+
+## Update: direct-callee context (P2) and stdout signature (P4)
+
+- `scripts/export_with_callees.py` now exports target C/meta plus each direct
+  callee (`printLine`, `strcpy` for CWE121) into a context JSON; evidence:
+  `artifacts/callee-context-2026-11-14/`.
+- `poc_runner` records an explicit `stdout_signature` (`matched`/`mismatch`/
+  `not_applicable`) and `unified_verification` has a required
+  `poc.native.stdout_signature` check.  Regression stdout comparison was already
+  enforced; the new field makes the side-effect gate explicit and observable.
+- The heap-canary partial candidate remains unverified because its short-input
+  stdout regression failed.

@@ -164,6 +164,27 @@ def build(
             CHECK_PASSED if regression_ok else CHECK_FAILED,
             f"cases={len(regression)}",
         ))
+        signature = str(external_poc.get("stdout_signature") or "not_run")
+        if signature == "not_run":
+            # Backward compatibility for retained evidence from before the
+            # explicit field: derive it from the regression observations.
+            original_reg = [c for c in regression if c.get("executable") == "original"]
+            candidate_reg = [c for c in regression if c.get("executable") == "candidate"]
+            if original_reg and len(original_reg) == len(candidate_reg):
+                signature = (
+                    "matched"
+                    if all(a.get("stdout_hex") == b.get("stdout_hex")
+                           for a, b in zip(original_reg, candidate_reg))
+                    else "mismatch"
+                )
+            else:
+                signature = "not_applicable"
+        checks.append(_check(
+            "poc.native.stdout_signature",
+            "Candidate preserves the original stdout signature on regressions",
+            CHECK_PASSED if signature in {"matched", "not_applicable"} else CHECK_FAILED,
+            f"signature={signature}",
+        ))
 
     if poc is not None:
         original_verdict = str(poc.get("original_verdict") or "not_run")

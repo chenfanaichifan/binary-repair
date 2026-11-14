@@ -23,8 +23,8 @@ work.  See section 9 for the exact matrix/sink boundary.
 Current acceptance is the non-browser suite:
 
 ```text
-macOS 13.5 arm64: 1155 tests, 0 failed, 0 errors, 7 skipped (281.0 s)
-Linux VM Ubuntu 24.04 arm64: 1155 tests, 0 failed, 0 errors, 10 skipped (287.9 s)
+macOS 13.5 arm64: 1155 tests, 0 failed, 0 errors, 7 skipped (267.9 s)
+Linux VM Ubuntu 24.04 arm64: 1155 tests, 0 failed, 0 errors, 10 skipped (263.5 s)
 GitHub Actions Ubuntu 24.04: workflow success on the final commits
 ```
 
@@ -216,3 +216,20 @@ the valid-input stdout regression failed; CWE121 was injectable but behavior
 failed.  A **minimal function-level loop** paradigm-A closure passes roundtrip
 and fixed gates; non-loop A remains unimplemented because the target lacks
 required libc import/stub symbols.
+
+
+## 18. CWE121 closure is one function, not general A
+
+CWE121 `badSink` now passes the function-level A gate with a model-generated
+guard plus reviewed syscall glue.  This does not establish whole-binary repair,
+other non-loop functions, or automatic symbol/stub selection; the helper was
+written by the analyst because the target lacks fputs/exit/strlen imports.
+
+
+## 19. Side-effect gate is explicit, not complete
+
+Regression stdout is now compared both by the existing regression check and by
+the explicit `poc.native.stdout_signature` field.  This catches the observed
+heap-canary early-exit candidate, but it does not prove full side-effect
+equivalence (buffered I/O, errno, libc state); no-PoC assembly paths remain a
+known blind spot.

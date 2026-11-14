@@ -1,0 +1,8 @@
+host=macOS arm64 M2 + Linux VM aarch64
+ghidra=12.2_PUBLIC_20261016
+jdk=25.0.5
+patcherex2=0.2.14
+angr=10.0.7
+clang=18.1.3
+original_sha256=aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393
+fixed_sha256=463a9758f9eb45a8d80d5af340ffd0861997b0ccaa5c5b6be41406616589636f

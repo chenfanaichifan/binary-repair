@@ -40,6 +40,7 @@ def test_real_poc_and_regression_pass_for_verified_candidate():
     outcome = repair_any(original, poc_manifest=manifest)
     assert outcome.verified is True, outcome.report.to_dict()
     assert outcome.report.poc["status"] == "pass"
+    assert outcome.report.poc["stdout_signature"] == "matched"
     checks = {
         check["id"]: check["status"]
         for check in outcome.report.verification["packet"]["checks"]
@@ -48,6 +49,7 @@ def test_real_poc_and_regression_pass_for_verified_candidate():
     assert checks["poc.native.original_failure"] == "passed"
     assert checks["poc.native.candidate_pass"] == "passed"
     assert checks["poc.native.regression"] == "passed"
+    assert checks["poc.native.stdout_signature"] == "passed"
 
 
 @pytest.mark.skipif(not LINUX_X64, reason="native ELF x86-64 PoC requires Linux x86-64")

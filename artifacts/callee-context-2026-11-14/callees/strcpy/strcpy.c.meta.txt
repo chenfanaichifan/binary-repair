@@ -1,0 +1,8 @@
+name=strcpy
+entry=004010d0
+size_bytes=10
+signature=char * strcpy(char * __dest, char * __src)
+calling_convention=unknown
+external=false
+thunk=true
+callees=strcpy 

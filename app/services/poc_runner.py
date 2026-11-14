@@ -62,6 +62,7 @@ class CaseResult:
 class PocEvidence:
     status: str = "not_run"
     runner: str = ""
+    stdout_signature: str = "not_run"
     cases: list[CaseResult] = field(default_factory=list)
     regression: list[CaseResult] = field(default_factory=list)
     limitations: list[str] = field(default_factory=list)
@@ -77,6 +78,7 @@ class PocEvidence:
             "schema_version": SCHEMA_VERSION,
             "status": self.status,
             "runner": self.runner,
+            "stdout_signature": self.stdout_signature,
             "original_sha256": self.original_sha256,
             "candidate_sha256": self.candidate_sha256,
             "poc": [case.to_dict() for case in self.cases],
@@ -306,6 +308,14 @@ def run_poc(
                     f"{cand.exit_code} stdout={cand.stdout!r}"
                 )
     evidence.status = "pass" if passed else "fail"
+    if original_regression and candidate_regression:
+        evidence.stdout_signature = (
+            "matched"
+            if all(a.stdout_hex == b.stdout_hex for a, b in zip(original_regression, candidate_regression))
+            else "mismatch"
+        )
+    else:
+        evidence.stdout_signature = "not_applicable"
     return evidence
 
 

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "binary_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+  "target": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+  "target_c": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink.c",
+  "target_meta": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink.c.meta.txt",
+  "callees": [
+    {
+      "name": "printLine",
+      "c": "callees/printLine/printLine.c",
+      "meta": "callees/printLine/printLine.c.meta.txt"
+    },
+    {
+      "name": "strcpy",
+      "c": "callees/strcpy/strcpy.c",
+      "meta": "callees/strcpy/strcpy.c.meta.txt"
+    }
+  ],
+  "missing_or_external": []
+}

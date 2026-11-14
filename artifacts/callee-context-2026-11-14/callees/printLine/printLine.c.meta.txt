@@ -1,0 +1,8 @@
+name=printLine
+entry=00401380
+size_bytes=38
+signature=void __stdcall printLine(char * line)
+calling_convention=__stdcall
+external=false
+thunk=false
+callees=puts 
