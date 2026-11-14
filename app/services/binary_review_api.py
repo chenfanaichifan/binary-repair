@@ -33,6 +33,29 @@ def _truthy(value: str | None) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _validate_target(target: str | None, require_target: str | None) -> str | None:
+    """Validate the optional declared-target form field.
+
+    The target is a symbol name, unique symbol substring, or an explicit VA
+    range accepted by the container-neutral resolver.  It is bounded to keep
+    hostile uploads from turning into unbounded resolver work; a required but
+    missing target is an explicit 422 (the pipeline would also fail closed,
+    but a parameter error is clearer for API clients).
+    """
+    name = str(target or "").strip()
+    if len(name) > 256:
+        raise HTTPException(
+            status_code=422,
+            detail="target exceeds the 256 character limit.",
+        )
+    if _truthy(require_target) and not name:
+        raise HTTPException(
+            status_code=422,
+            detail="require_target requires a non-empty target.",
+        )
+    return name or None
+
+
 def _filename(name: str | None, fmt: str = "elf") -> str:
     base = Path(name or "sample.elf").name
     stem = Path(base).stem or "sample"
@@ -45,6 +68,9 @@ async def binary_repair_review(
     binary: UploadFile = File(...),
     csrf: str = Form(...),
     ai_review: str = Form("0"),
+    target: str = Form(""),
+    require_target: str = Form("0"),
+    allow_whole_image: str = Form("0"),
     poc_manifest: UploadFile | None = File(None),
 ) -> JSONResponse:
     """Verify a direct ELF repair and optionally request a read-only review.
@@ -57,8 +83,18 @@ async def binary_repair_review(
     used as runtime evidence by the reviewed capacity-check repair class.  It
     is validated here (<= 64 KiB, UTF-8 JSON object) and never bypasses the
     deterministic gate.
+
+    Safe default: without ``target`` and without ``allow_whole_image=1`` the
+    request is analysis-only (no candidate, no download) with
+    ``target_policy="analysis_only"``.  ``target`` declares the function whose
+    repair is claimed; ``require_target=1`` fails closed when it is missing;
+    ``allow_whole_image=1`` is the explicit whole-image opt-in
+    (``target_policy="whole_image"``, never a target repair).
     """
     _require_csrf(csrf)
+    target_name = _validate_target(target, require_target)
+    require = _truthy(require_target)
+    allow_whole = _truthy(allow_whole_image)
     raw = await binary.read()
     if len(raw) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
@@ -82,6 +118,9 @@ async def binary_repair_review(
             client=client,
             data_dir=data_dir,
             poc_manifest=parsed_poc,
+            target=target_name,
+            require_target=require,
+            allow_whole_image=allow_whole,
         )
     except Exception:  # noqa: BLE001 - no stack/secret text leaves the process
         return JSONResponse(

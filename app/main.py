@@ -221,6 +221,27 @@ def _require_csrf(token: str) -> None:
         raise HTTPException(status_code=403, detail="CSRF token missing or invalid.")
 
 
+def _form_flag(value: str | None) -> bool:
+    """Parse a 0/1 form flag (same accepted spellings as the API layer)."""
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _repair_target(value: str | None) -> str | None:
+    """Validate the optional declared-target form field (bounded symbol name)."""
+    name = str(value or "").strip()
+    if len(name) > 256:
+        raise HTTPException(status_code=422, detail="target exceeds the 256 character limit.")
+    return name or None
+
+
+def _target_policy_of(payload: dict) -> str | None:
+    universal = payload.get("universal")
+    if not isinstance(universal, dict):
+        return None
+    value = universal.get("target_policy")
+    return value if isinstance(value, str) else None
+
+
 def _auth_required_page() -> str:
     """Friendly 401 page for humans.
 
@@ -1208,13 +1229,33 @@ async def code_repair_route(request: Request) -> JSONResponse:
 async def quick_binary_repair(
     binary: UploadFile = File(...),
     csrf: str = Form(...),
+    target: str = Form(""),
+    require_target: str = Form("0"),
+    allow_whole_image: str = Form("0"),
 ) -> JSONResponse:
-    """One-click binary repair; returns a downloadable candidate for any supported container."""
+    """One-click binary repair; returns a downloadable candidate for any supported container.
+
+    Safe default matches the review API: without a target and without an
+    explicit whole-image opt-in the request is analysis-only (422 here) and no
+    bytes are returned.
+    """
     _require_csrf(csrf)
+    target_name = _repair_target(target)
+    require = _form_flag(require_target)
+    allow_whole = _form_flag(allow_whole_image)
+    if require and target_name is None:
+        raise HTTPException(
+            status_code=422, detail="require_target requires a non-empty target."
+        )
     raw = await binary.read()
     if len(raw) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
-    patched, report = repair_binary_pipeline(raw, verify=True)
+    patched, report = repair_binary_pipeline(
+        raw, verify=True,
+        target=target_name,
+        require_target=require,
+        allow_whole_image=allow_whole,
+    )
     gate = (report.verification or {}).get("gate") or {}
     if patched is None or gate.get("success") is not True:
         if isinstance(gate, dict) and gate and gate.get("success") is not True:
@@ -1224,15 +1265,21 @@ async def quick_binary_repair(
                 report.error
                 or (report.limitations[-1] if report.limitations else "unsupported binary")
             )
-        return JSONResponse({"ok": False, "detail": detail, "report": report.to_dict()},
-                            status_code=422)
+        payload = report.to_dict()
+        return JSONResponse({
+            "ok": False, "detail": detail,
+            "target_policy": _target_policy_of(payload),
+            "report": payload,
+        }, status_code=422)
     import base64
+    payload = report.to_dict()
     suffix = {"elf": ".elf", "pe": ".exe", "macho": ".macho"}.get(report.format, ".bin")
     return JSONResponse({
         "ok": True,
+        "target_policy": _target_policy_of(payload),
         "filename": (Path(binary.filename or "sample.elf").stem + "-fixed" + suffix),
         "patched_base64": base64.b64encode(patched).decode("ascii"),
-        "report": report.to_dict(),
+        "report": payload,
     }, headers={"Cache-Control": "no-store"})
 
 
@@ -1278,10 +1325,26 @@ async def binary_repair(
     allow_static_only: str = Form("0"),
     backend: str = Form("auto"),
     strategy: str = Form("auto"),
+    target: str = Form(""),
+    require_target: str = Form("0"),
+    allow_whole_image: str = Form("0"),
     poc_manifest: UploadFile | None = File(None),
 ) -> JSONResponse:
-    """Repair any input; verified or (opt-in) static-only candidate or 422."""
+    """Repair any input; verified or (opt-in) static-only candidate or 422.
+
+    Safe default: no target and no ``allow_whole_image=1`` => analysis-only,
+    non-downloadable (422 for the HTTP caller) with target_policy recorded.
+    A target declares patch ownership; the opt-in enables the historical
+    whole-image mode explicitly.
+    """
     _require_csrf(csrf)
+    target_name = _repair_target(target)
+    require = _form_flag(require_target)
+    allow_whole = _form_flag(allow_whole_image)
+    if require and target_name is None:
+        raise HTTPException(
+            status_code=422, detail="require_target requires a non-empty target."
+        )
     raw = await binary.read()
     if len(raw) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Uploaded file exceeds the 20 MiB limit.")
@@ -1298,6 +1361,9 @@ async def binary_repair(
         verify=True,
         allow_static_only=static_ok,
         poc_manifest=parsed_poc,
+        target=target_name,
+        require_target=require,
+        allow_whole_image=allow_whole,
     )
     report = outcome.report
     payload = report.to_dict()
@@ -1311,6 +1377,7 @@ async def binary_repair(
                 "ok": False,
                 "detail": detail,
                 "disposition": report.disposition,
+                "target_policy": _target_policy_of(payload),
                 "report": payload,
                 "warnings": list(report.warnings),
             },
@@ -1321,6 +1388,7 @@ async def binary_repair(
         "ok": True,
         "verified": bool(outcome.verified),
         "disposition": report.disposition,
+        "target_policy": _target_policy_of(payload),
         "filename": (Path(binary.filename or "sample").stem + suffix),
         "patched_base64": base64.b64encode(outcome.candidate).decode("ascii"),
         "report": payload,

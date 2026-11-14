@@ -1515,6 +1515,50 @@
     card.appendChild(el("p", "agent-ai-note",
       "AI 只收到结构化验证报告（哈希、地址、限制），不接收二进制或源码；验收仍由确定性 gate 决定。"));
 
+    /* Optional declared target function: patch ownership. When filled, the
+       backend repairs only sinks inside that function and the gate records
+       patch.target_scope; the whole-image engine is never used. */
+    var targetWrap = el("div", "agent-question");
+    targetWrap.dataset.testid = "agent-target-wrap";
+    var targetLabel = el("label", null, "目标函数（可选，声明补丁归属）");
+    targetLabel.setAttribute("for", "agent-repair-target");
+    var targetInput = document.createElement("input");
+    targetInput.type = "text";
+    targetInput.id = "agent-repair-target";
+    targetInput.dataset.testid = "agent-repair-target";
+    targetInput.autocomplete = "off";
+    targetInput.maxLength = 256;
+    targetInput.placeholder = "例如 heap_bad（精确符号名或唯一子串）";
+    targetInput.style.padding = "7px 10px";
+    targetInput.style.border = "1px solid var(--ds-border-strong)";
+    targetInput.style.borderRadius = "10px";
+    targetInput.style.font = "inherit";
+    targetInput.style.fontSize = "13px";
+    targetInput.style.background = "var(--ds-surface)";
+    targetInput.style.color = "var(--ds-text)";
+    var targetHint = el("p", "agent-ai-note",
+      "填写后只修复该函数内的 sink，并记录 patch.target_scope；留空时默认安全策略不会输出全镜像候选。");
+    targetWrap.appendChild(targetLabel);
+    targetWrap.appendChild(targetInput);
+    targetWrap.appendChild(targetHint);
+    card.appendChild(targetWrap);
+
+    /* Explicit whole-image opt-in (default OFF): without it and without a
+       target the request is analysis-only -- no candidate is produced. The
+       label says target identity is not claimed, so it can never read as a
+       target repair. */
+    var allowWrap = el("label", "agent-ai-review");
+    allowWrap.dataset.testid = "agent-allow-whole-image-wrap";
+    var allowToggle = document.createElement("input");
+    allowToggle.type = "checkbox";
+    allowToggle.checked = false;
+    allowToggle.dataset.testid = "agent-allow-whole-image";
+    allowWrap.appendChild(allowToggle);
+    allowWrap.appendChild(el("span", null, "允许全镜像修复（不声明目标归属）"));
+    card.appendChild(allowWrap);
+    card.appendChild(el("p", "agent-ai-note",
+      "默认关闭：不填目标函数时只做分析、不输出候选。勾选后才允许历史全镜像修复；结果记录 target_policy=whole_image，不视为声明了目标函数。"));
+
     /* Optional PoC/regression manifest for the reviewed capacity-check profile.
        It is never required: without it the request still runs, and the gate can
        only return a non-successful (not verified) outcome. */
@@ -1547,7 +1591,9 @@
     var quick = el("button", "agent-btn", "一键修复（自动识别格式）");
     quick.type = "button";
     quick.dataset.testid = "agent-quick-repair";
-    quick.addEventListener("click", function () { quickRepair(quick, progress, bar, progressText, aiToggle); });
+    quick.addEventListener("click", function () {
+      quickRepair(quick, progress, bar, progressText, aiToggle, targetInput, allowToggle);
+    });
     actions.appendChild(quick);
     var create = el("button", "agent-btn ghost", "创建严格任务（高级）");
     create.type = "button";
@@ -1711,6 +1757,26 @@
     if (payload.report && payload.report.capacity) {
       meta.appendChild(el("span", "repair-chip", "capacity " + payload.report.capacity));
     }
+    var reportUniversal = (payload.report && payload.report.universal) || {};
+    var targetPolicy = payload.target_policy || reportUniversal.target_policy;
+    var targetScope = payload.target_scope || reportUniversal.target_scope;
+    var TARGET_POLICY_LABELS = {
+      target_scoped: "目标归属 target_scoped",
+      whole_image: "全镜像（未声明目标）",
+      analysis_only: "安全默认 analysis_only",
+      strict_no_target: "严格要求目标"
+    };
+    if (targetPolicy) {
+      var policyChip = el("span", "repair-chip",
+        TARGET_POLICY_LABELS[targetPolicy] || ("target_policy " + targetPolicy));
+      policyChip.dataset.testid = "agent-target-policy-chip";
+      policyChip.dataset.policy = targetPolicy;
+      meta.appendChild(policyChip);
+    }
+    if (targetScope && targetScope.name) {
+      meta.appendChild(el("span", "repair-chip",
+        "target " + targetScope.name + " @" + (targetScope.va ? "0x" + Number(targetScope.va).toString(16) : "?")));
+    }
     var strategy = payload.report && payload.report.strategy;
     if (strategy === "capacity") {
       /* Reviewed duplicated-capacity-check rewrite profile. Display only: the
@@ -1772,10 +1838,15 @@
     pushCard(card);
   }
 
-  function quickRepair(button, progress, bar, progressText, aiToggle) {
+  function quickRepair(button, progress, bar, progressText, aiToggle, targetInput, allowToggle) {
     if (!state.file) { pushMessage("assistant", "还没有样本文件，请先上传。"); return; }
     if (state.submitting) return;
     if (FIXTURE_MODE) { pushMessage("assistant", "演示模式不会生成文件。"); return; }
+    var targetName = targetInput ? String(targetInput.value || "").trim() : "";
+    if (targetName.length > 256) {
+      pushMessage("assistant", "目标函数名过长（最多 256 字符）。");
+      return;
+    }
     state.submitting = true;
     button.disabled = true;
     progress.hidden = false;
@@ -1789,6 +1860,15 @@
     }
     form.append("csrf", CSRF);
     form.append("ai_review", aiToggle && aiToggle.checked ? "1" : "0");
+    /* Safe-by-default plumbing: a declared target enables target-scoped repair
+       (require_target makes a mistyped target fail closed instead of silently
+       degrading to whole-image); the whole-image opt-in is explicit and off by
+       default. */
+    if (targetName) {
+      form.append("target", targetName);
+      form.append("require_target", "1");
+    }
+    form.append("allow_whole_image", allowToggle && allowToggle.checked ? "1" : "0");
     fetch("/api/binary/repair-review", { method: "POST", body: form })
       .then(function (response) {
         return response.json().then(function (data) { return { ok: response.ok, data: data }; });

@@ -321,7 +321,15 @@ def build(
     cell: dict[str, Any] | None = None,
     capacity: dict[str, Any] | None = None,
     target_scope: dict[str, Any] | None = None,
+    target_policy: str | None = None,
 ) -> UnifiedVerification:
+    """Build the unified evidence-profile packet and gate.
+
+    ``target_policy`` is the declared patch-ownership policy for the request
+    (``target_scoped`` / ``whole_image`` / ``analysis_only``).  It is recorded
+    in ``scope.target_policy`` and therefore included in ``report_sha256`` when
+    supplied; it never changes any check/status/outcome.
+    """
     checks: list[dict[str, Any]] = []
     supported = (format_name, arch) in supported_pairs()
     checks.append(_check(
@@ -703,6 +711,11 @@ def build(
         # Target identity is part of the reviewed scope: it is hashed into
         # ``report_sha256`` with the rest of the packet.
         packet["scope"]["target"] = dict(target_scope)
+    if target_policy is not None:
+        # Declared patch-ownership policy ("target_scoped" / "whole_image" /
+        # "analysis_only"): recorded before report_sha256 is computed so the
+        # hash commits to it.  Display/metadata only: no check semantics change.
+        packet["scope"]["target_policy"] = str(target_policy)
     if poc is not None:
         packet["poc"] = poc
     if external_poc is not None:

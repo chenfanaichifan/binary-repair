@@ -42,6 +42,7 @@ def _target_payload(report) -> dict:
     payload = {
         "target_scope": universal.get("target_scope"),
         "target_policy": universal.get("target_policy"),
+        "allow_whole_image": bool(universal.get("allow_whole_image")),
         "target_scope_check": check.get("status") if check else None,
     }
     if check:
@@ -110,6 +111,7 @@ def _repair_one(source: Path, output: Path | None, args) -> dict:
         poc_manifest=getattr(args, "poc_manifest", None),
         target=getattr(args, "target", None),
         require_target=bool(getattr(args, "require_target", False)),
+        allow_whole_image=bool(getattr(args, "allow_whole_image", False)),
     )
     report = outcome.report
     payload = report.to_dict()
@@ -176,6 +178,7 @@ def _batch(source_dir: Path, out_dir: Path, args) -> int:
             poc_manifest=getattr(args, "poc_manifest", None),
             target=getattr(args, "target", None),
             require_target=bool(getattr(args, "require_target", False)),
+            allow_whole_image=bool(getattr(args, "allow_whole_image", False)),
         )
         report = outcome.report
         target_payload = _target_payload(report)
@@ -234,6 +237,10 @@ def main() -> int:
     ap.add_argument("--require-target", action="store_true",
                     help="fail closed unless --target resolves to one function "
                          "(no whole-image candidate is returned)")
+    ap.add_argument("--allow-whole-image", action="store_true",
+                    help="explicitly allow the historical whole-image repair "
+                         "(target_policy=whole_image; target identity not claimed); "
+                         "without it or --target the request is analysis-only")
     ap.add_argument("--verify", dest="verify", action="store_true", default=True)
     ap.add_argument("--no-verify", dest="verify", action="store_false")
     ap.add_argument("--allow-static-only", action="store_true",
@@ -261,10 +268,10 @@ def main() -> int:
         out_dir = args.out or (args.batch / "repaired")
         return _batch(args.batch, out_dir, args)
 
-    if args.ai_path and (args.target or args.require_target):
+    if args.ai_path and (args.target or args.require_target or args.allow_whole_image):
         print(
-            "--target/--require-target are deterministic-pipeline options and "
-            "are not supported with --ai-path; omit one of them",
+            "--target/--require-target/--allow-whole-image are deterministic-"
+            "pipeline options and are not supported with --ai-path; omit one of them",
             file=sys.stderr,
         )
         return 2

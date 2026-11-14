@@ -627,6 +627,16 @@ class RepairOutcome:
             universal = {}
         else:
             universal = dict(universal)
+        # Legacy engine reports are plain dataclasses: their policy fields live
+        # on the dynamically-attached ``universal`` mapping, not in to_dict().
+        attached = getattr(self.report, "universal", None)
+        if isinstance(attached, Mapping):
+            for key in (
+                "target_policy", "target_scope", "allow_whole_image",
+                "manifest_routing",
+            ):
+                if key in attached:
+                    universal.setdefault(key, attached[key])
         if routing is not None:
             universal.setdefault("manifest_routing", routing)
         if universal:
@@ -638,6 +648,8 @@ class RepairOutcome:
             "download_allowed": bool(self.decision.get("success")),
             "filename": filename,
             "manifest_routing": routing,
+            "target_policy": universal.get("target_policy"),
+            "target_scope": universal.get("target_scope"),
             "report": report_payload,
             "verification": self.verification.packet,
             "gate": self.verification.packet["gate"],
@@ -666,6 +678,26 @@ def _manifest_routing(report: Any) -> str | None:
         }:
             return value
     return None
+
+
+def _set_target_policy(report: Any, policy: str) -> None:
+    """Record the declared patch-ownership policy on any report object.
+
+    ``whole_image`` is only reachable through the explicit
+    ``allow_whole_image=True`` opt-in; the default safe path never gets here
+    with a candidate.  Unified reports already carry the field and are left
+    untouched.
+    """
+    universal = getattr(report, "universal", None)
+    if not isinstance(universal, dict):
+        universal = {}
+        try:
+            setattr(report, "universal", universal)
+        except (AttributeError, TypeError):  # pragma: no cover - defensive
+            return
+    universal.setdefault("target_scope", None)
+    universal.setdefault("target_policy", policy)
+    universal.setdefault("allow_whole_image", policy == "whole_image")
 
 
 def _set_manifest_routing(report: Any, routing: str) -> None:
@@ -794,10 +826,23 @@ def _unified_verification(report: Any, raw: bytes, patched: bytes | None) -> Ver
             required_not_run=0,
             evidence_sha256=None,
         )
+        report_universal = getattr(report, "universal", None)
+        scope: dict[str, Any] = {
+            "format": getattr(report, "format", "unknown"),
+            "arch": getattr(report, "arch", "unknown"),
+        }
+        if isinstance(report_universal, Mapping):
+            policy = report_universal.get("target_policy")
+            if isinstance(policy, str) and policy:
+                # Safe-default/analysis-only transparency: the policy is
+                # recorded, but this packet has no checks and cannot succeed.
+                scope["target_policy"] = policy
+            scope_target = report_universal.get("target_scope")
+            if isinstance(scope_target, Mapping):
+                scope["target"] = dict(scope_target)
         packet = {
             "schema_version": 2,
-            "scope": {"format": getattr(report, "format", "unknown"),
-                      "arch": getattr(report, "arch", "unknown")},
+            "scope": scope,
             "checks": [],
             "missing": [],
             "report_sha256": "",
@@ -822,6 +867,9 @@ def run_direct_repair(
     client: Any | None = None,
     data_dir: str | Any | None = None,
     poc_manifest: dict[str, Any] | None = None,
+    target: str | dict[str, Any] | None = None,
+    require_target: bool = False,
+    allow_whole_image: bool = False,
 ) -> RepairOutcome:
     """Run the direct engine, build the gate, optionally review, then decide.
 
@@ -842,6 +890,14 @@ def run_direct_repair(
     was supplied (or the unified container-neutral pipeline was used) and
     ``"legacy_readonly"`` for the manifest-less legacy ELF path.  The legacy
     stack/emulated verification builder is never called with a manifest.
+
+    **Safe default:** without ``target`` and without an explicit
+    ``allow_whole_image=True`` opt-in, this function never evaluates the
+    whole-image legacy engine; the request yields an analysis-only,
+    non-downloadable fail-closed result (``target_policy="analysis_only"``).
+    The whole-image legacy fast path is only used when
+    ``allow_whole_image=True`` and no target is declared, and its packet records
+    ``target_policy="whole_image"`` -- never a target repair.
     """
     from app.services.binary_pipeline import detect_format, repair_any, repair_binary
 
@@ -853,6 +909,8 @@ def run_direct_repair(
         # request never touches the legacy stack/emulated verification builder.
         outcome = repair_any(
             raw, strategy="auto", verify=True, poc_manifest=poc_manifest,
+            target=target, require_target=require_target,
+            allow_whole_image=allow_whole_image,
         )
         patched = outcome.candidate
         report = outcome.report
@@ -872,9 +930,19 @@ def run_direct_repair(
         else:
             verification = _unified_verification(report, raw, patched)
         manifest_routing = MANIFEST_ROUTING_UNIFIED
-    elif (fmt, arch) == ("elf", "x86_64"):
+    elif (
+        (fmt, arch) == ("elf", "x86_64")
+        and target is None
+        and allow_whole_image
+    ):
+        # Explicit whole-image opt-in: the historical legacy fast path is
+        # allowed, and its packet records the whole-image policy.
         patched, report = repair_elf(raw)
-        verification = build_verification(report, original=raw, patched=patched)
+        verification = build_verification(
+            report, original=raw, patched=patched,
+            target_policy="whole_image",
+        )
+        _set_target_policy(report, "whole_image")
         manifest_routing = MANIFEST_ROUTING_LEGACY
         if patched is None:
             # Surface reviewed deterministic candidates that the legacy
@@ -882,14 +950,31 @@ def run_direct_repair(
             # capacity rewrites) even without a manifest.  Their unified
             # packet shows which evidence is missing; the decision stays
             # non-successful and no download is offered.
-            outcome = repair_any(raw, strategy="auto", verify=True)
+            outcome = repair_any(
+                raw, strategy="auto", verify=True, allow_whole_image=True,
+            )
             stored = getattr(outcome.report, "verification", None) or {}
             if stored.get("packet"):
                 report = outcome.report
                 patched = outcome.candidate
                 verification = _unified_verification(report, raw, patched)
     else:
-        patched, report = repair_binary(raw, verify=True)
+        # Target-scoped requests and the default safe path both go through the
+        # container-neutral pipeline directly.  No target + no explicit
+        # whole-image opt-in => analysis_only, no candidate, no downloadable
+        # evidence (fail closed by default).
+        outcome = repair_any(
+            raw, strategy="auto", verify=True, target=target,
+            require_target=require_target,
+            allow_whole_image=allow_whole_image,
+        )
+        patched = outcome.candidate
+        report = outcome.report
+        if target is None and not allow_whole_image:
+            # Safe-default record: the policy is explicit even though no
+            # candidate or success packet exists.  Set before the review
+            # packet is adapted so the synthetic packet carries it too.
+            _set_target_policy(report, "analysis_only")
         verification = _unified_verification(report, raw, patched)
         manifest_routing = MANIFEST_ROUTING_UNIFIED
     # Audit/CI surface: which gate this request was routed through.  Manifest

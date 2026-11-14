@@ -165,6 +165,7 @@ def build_verification(
     patched: bytes | None,
     external_poc: dict[str, Any] | None = None,
     target_scope: dict[str, Any] | None = None,
+    target_policy: str | None = None,
 ) -> Verification:
     """Build the structured report and gate for one engine result.
 
@@ -182,6 +183,12 @@ def build_verification(
     ``target_scope`` is accepted for interface parity with the unified gate;
     the legacy gate cannot enforce patch ownership, so it only records a
     non-required ``not_run`` note and never changes the legacy outcome.
+
+    ``target_policy`` (only reachable from the explicit
+    ``allow_whole_image=True`` legacy path) records the declared patch-ownership
+    policy in ``scope.target_policy`` and includes it in ``report_sha256``; it
+    never changes any check/status/outcome.  When omitted the packet is
+    byte-for-byte identical to the historical manifest-less packet.
     """
     mode = str(getattr(report, "mode", "") or "unsupported")
     strict = bool(getattr(report, "strict", False)) or mode == "strict"
@@ -540,6 +547,12 @@ def build_verification(
         "claim": _claim(report, strict=strict),
         "statement": SCOPE_STATEMENT,
     }
+    if target_policy is not None:
+        # Declared patch-ownership policy for the explicit whole-image opt-in.
+        # Recorded before the canonical report_sha256 is computed so the digest
+        # commits to it; check ids/statuses/outcomes are untouched, and a call
+        # without the kwarg keeps the historical packet bytes.
+        scope["target_policy"] = str(target_policy)
     candidate = {
         "present": candidate_present,
         "original_sha256": original_sha,
