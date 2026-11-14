@@ -443,17 +443,26 @@ def check_packet(report_or_packet: Any) -> dict[str, Any]:
             violations.append(
                 "manifest-bearing packet is validated by legacy quick-gate "
                 f"check ids: {legacy_ids}")
-        if not view["profile"]:
+        claims_validation = verified is True or view["download_allowed"] or (
+            disposition in VERIFIED_DISPOSITIONS)
+        if claims_validation and not view["profile"]:
             violations.append(
                 "manifest-bearing packet has no evidence profile: the "
                 "manifest differential must be validated by a unified profile")
+        elif not view["profile"]:
+            # Safe-default / analysis_only controls may carry a supplied manifest
+            # without building a unified packet: the invariant is "no simulated
+            # verification", measured by the not-verified/no-download rules.
+            limitations.append(
+                "manifest supplied but the safe-default/analysis_only path "
+                "produced no evidence profile; no verification claim is made")
         elif verified is True and checks and not any(
                 check_id.startswith(tuple(UNIFIED_CHECK_PREFIXES))
                 for check_id in ids):
             violations.append(
                 f"manifest-bearing packet profile {view['profile']!r} is not a "
                 "unified evidence-profile packet")
-        elif summary_only:
+        elif summary_only and claims_validation:
             limitations.append(
                 "summary acceptance record cannot prove unified profile check "
                 "ids (packet-level capture required for release)")
