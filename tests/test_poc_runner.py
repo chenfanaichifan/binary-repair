@@ -353,3 +353,62 @@ def test_lima_runner_executes_poc_manifest_in_guest():
     assert evidence.status == "fail"
     assert all(case.exit_code == 0 for case in evidence.regression)
     assert all(case.stdout == "hi\n" for case in evidence.regression)
+
+
+# ---------------------------------------------------------------------------
+# Declared no-input model (UAF-style manifests with an empty regression list)
+# ---------------------------------------------------------------------------
+
+def _no_input_manifest(original: bytes, *, declared: bool) -> dict:
+    manifest = _plain_manifest(original)
+    manifest["regression"] = []
+    if declared:
+        manifest["no_input"] = True
+    return manifest
+
+
+def test_manifest_no_input_must_be_boolean():
+    original = b"ORIGINAL"
+    manifest = _no_input_manifest(original, declared=True)
+    manifest["no_input"] = "yes"
+    with pytest.raises(ValueError):
+        load_manifest(manifest)
+    data = load_manifest(_no_input_manifest(original, declared=True))
+    assert data["no_input"] is True
+
+
+def test_no_input_declaration_is_recorded_in_the_evidence(monkeypatch):
+    calls: list[dict] = []
+    original, candidate = b"ORIGINAL-BINARY", b"CANDIDATE-BINARY"
+    _install_fake_runner(
+        monkeypatch, GuestRunner("native", "", "native_run"), calls,
+        original=original, candidate=candidate,
+    )
+    evidence = run_poc(original, candidate, _no_input_manifest(original, declared=True))
+    assert evidence.status == "pass"
+    assert evidence.no_input is True
+    assert evidence.stdout_signature == "not_applicable"
+    payload = evidence.to_dict()
+    assert payload["no_input"] is True
+    assert payload["stdout_signature"] == "not_applicable"
+    assert payload["regression"] == []
+    # Only the PoC differential ran; the declared model has no regression cases.
+    assert len(calls) == 2
+
+
+def test_undeclared_empty_regression_is_still_allowed_by_the_runner(monkeypatch):
+    calls: list[dict] = []
+    original, candidate = b"ORIGINAL-BINARY", b"CANDIDATE-BINARY"
+    _install_fake_runner(
+        monkeypatch, GuestRunner("native", "", "native_run"), calls,
+        original=original, candidate=candidate,
+    )
+    evidence = run_poc(
+        original, candidate, _no_input_manifest(original, declared=False),
+    )
+    # The runner records the honest evidence; the gate is what fails the
+    # undeclared empty regression (poc.native.regression stays failed).
+    assert evidence.status == "pass"
+    assert evidence.no_input is False
+    assert evidence.to_dict()["no_input"] is False
+    assert evidence.to_dict()["regression"] == []

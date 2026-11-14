@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "heap_bad",
+  "poc": [
+    {
+      "id": "heap-overflow-64",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false,
+        "exit_code": 0,
+        "stdout": "AAAAAAAAAAAAAAA\n"
+      }
+    },
+    {
+      "id": "heap-overflow-256",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false,
+        "exit_code": 0,
+        "stdout": "AAAAAAAAAAAAAAA\n"
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "heap-short-hi",
+      "argv": [
+        "hi"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      }
+    },
+    {
+      "id": "heap-short-10",
+      "argv": [
+        "0123456789"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "0123456789\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "0123456789\n"
+      }
+    },
+    {
+      "id": "heap-boundary-15",
+      "argv": [
+        "AAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "AAAAAAAAAAAAAAA\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "AAAAAAAAAAAAAAA\n"
+      }
+    }
+  ]
+}

@@ -180,12 +180,19 @@ def _decode_elf_plt_stub(code: bytes, va: int, arch: str) -> int | None:
                 return target
         return None
     if arch == "x86_64":
-        # Standard lazy PLT entry: jmp *GOT(%rip) at +6 / +2.
-        for start in (6, 2):
-            if len(code) >= start + 6:
-                target = _decode_x86_stub(code[start:], va + start)
-                if target is not None:
-                    return target
+        # x86-64 PLT stubs have several layouts across toolchains:
+        #   * lazy .plt entry: push/jmp resolver at +0, ``jmp *GOT(%rip)`` at +6;
+        #   * IBT/CET .plt / .plt.sec: ``endbr64`` then ``jmp *GOT(%rip)``;
+        #   * MPX-enabled: ``bnd jmp *GOT(%rip)`` (F2 prefix).
+        # The stable anchor is the ``FF 25 rel32`` opcode pair anywhere in the
+        # 16-byte stub; scanning by instruction position keeps every layout
+        # covered and the caller still validates the decoded slot against the
+        # relocation map, so a stray match cannot invent an import.
+        for start in range(0, max(len(code) - 5, 0)):
+            target = _decode_x86_stub(code[start:], va + start)
+            if target is not None:
+                return target
+        return None
     return None
 
 
@@ -268,6 +275,11 @@ def _elf_imports(elf: ELFFile, info: ContainerInfo) -> None:
     plt_names = [".plt"]
     if info.arch == "i386":
         # IBT-enabled i386 images keep the FF 25 abs32 jump in .plt.sec.
+        plt_names.append(".plt.sec")
+    elif info.arch == "x86_64":
+        # IBT/CET x86-64 images keep the GOT jumps in .plt.sec; without it the
+        # analyzer cannot resolve strcpy/malloc/... for default-toolchain
+        # dynamic ELF and sees zero sinks (a real capability gap).
         plt_names.append(".plt.sec")
     for plt_name in plt_names:
         plt = elf.get_section_by_name(plt_name)

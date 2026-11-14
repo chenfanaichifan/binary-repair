@@ -403,9 +403,12 @@ def build(
         # keep those checks not_run so the gate stays inconclusive (never a
         # fabricated pass, never a mislabelled rejection).
         def _poc_status(ok: bool) -> str:
-            if ok:
-                return CHECK_PASSED
-            return CHECK_NOT_RUN if not external_available else CHECK_FAILED
+            # Without an executed differential (runner unavailable) there is no
+            # evidence to claim either way: stay not_run, never FAILED and never
+            # a fabricated pass.
+            if not external_available:
+                return CHECK_NOT_RUN
+            return CHECK_PASSED if ok else CHECK_FAILED
 
         checks.append(_check(
             "poc.native.available",

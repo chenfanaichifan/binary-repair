@@ -135,3 +135,31 @@ def test_packet_hashes_bind_to_original_bytes():
     raw = VULN.read_bytes()
     _patched, _report, verification = _build(raw)
     assert verification.packet["candidate"]["original_sha256"] == hashlib.sha256(raw).hexdigest()
+
+
+def test_legacy_gate_declares_the_strict_template_profile():
+    patched, report, verification = _build(VULN.read_bytes())
+    statuses = {item["id"]: item["status"] for item in verification.packet["checks"]}
+    assert statuses["profile.declared"] == "passed"
+    assert statuses["profile.required_checks"] == "passed"
+    # Existing check ids stay present and unchanged.
+    for check_id in (
+        "format", "candidate.present", "candidate.identity.original",
+        "candidate.identity.patched", "patch.scope", "runtime.available",
+        "runtime.cases", "runtime.no_overflow", "strict.reviewed_template",
+    ):
+        assert statuses[check_id] == "passed", check_id
+    assert verification.gate.success is True
+
+
+def test_legacy_gate_profile_enforcement_stays_not_run_without_runtime(monkeypatch):
+    monkeypatch.setattr(
+        engine,
+        "_runtime_summary",
+        lambda patched, capacity: {"available": False, "error": "simulated evidence gap"},
+    )
+    _patched, _report, verification = _build(VULN.read_bytes())
+    statuses = {item["id"]: item["status"] for item in verification.packet["checks"]}
+    assert statuses["profile.declared"] == "passed"
+    assert statuses["profile.required_checks"] == "not_run"
+    assert verification.gate.outcome == "inconclusive"
