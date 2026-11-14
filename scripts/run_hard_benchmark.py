@@ -46,6 +46,82 @@ def _target_va(container: Any, target: str) -> int | None:
     return None
 
 
+def _scope_end(scope: Any) -> int | None:
+    if not isinstance(scope, dict):
+        return None
+    end = scope.get("end")
+    if isinstance(end, int) and not isinstance(end, bool):
+        return end
+    return None
+
+
+def _actions_in_target_scope(actions: list[dict[str, Any]], scope: Any) -> bool:
+    """Whether every produced action has a numeric site_va inside the scope.
+
+    An empty action list is not "in scope": target-strict mode only passes when
+    a candidate actually produced actions, and all of them belong to the target.
+    """
+    if not actions or not isinstance(scope, dict):
+        return False
+    start = scope.get("va")
+    end = _scope_end(scope)
+    if not isinstance(start, int) or isinstance(start, bool) or end is None:
+        return False
+    if end <= start:
+        return False
+    for action in actions:
+        if not isinstance(action, dict):
+            return False
+        site = action.get("site_va")
+        if not isinstance(site, int) or isinstance(site, bool):
+            return False
+        if not start <= site < end:
+            return False
+    return True
+
+
+def _baseline_target_strict(data: bytes, target: str) -> dict[str, Any]:
+    """Deterministic baseline under strict target mode.
+
+    Calls the deterministic pipeline with the declared benchmark target and
+    ``require_target=True``: the result records the resolved target scope and
+    whether every produced action stayed inside it.  This is the target-strict
+    counterpart of ``baseline`` (which is the historical whole-image result).
+    """
+    try:
+        outcome = repair_any(data, target=target, require_target=True, verify=True)
+    except Exception as exc:  # noqa: BLE001 - record, never crash the benchmark
+        return {
+            "attempted": True,
+            "disposition": "error",
+            "verified": False,
+            "error": f"{type(exc).__name__}: {exc}",
+            "target_scope": None,
+            "target_in_scope": False,
+            "target_scope_check": None,
+            "actions": [],
+        }
+    report = outcome.report
+    scope = report.universal.get("target_scope")
+    actions = [dict(action) for action in report.actions]
+    packet = (report.verification or {}).get("packet") or {}
+    check_status = None
+    for check in packet.get("checks") or []:
+        if check.get("id") == "patch.target_scope":
+            check_status = check.get("status")
+            break
+    return {
+        "attempted": True,
+        "disposition": report.disposition,
+        "verified": bool(outcome.verified),
+        "error": report.error,
+        "target_scope": dict(scope) if isinstance(scope, dict) else None,
+        "target_in_scope": _actions_in_target_scope(actions, scope),
+        "target_scope_check": check_status,
+        "actions": actions,
+    }
+
+
 def _inject_target(data: bytes, target: str, capacity: int, assembly: str,
                    allowed_calls: list[Any] | None = None) -> tuple[bytes | None, dict[str, Any]]:
     allowed_calls = list(allowed_calls or [])
@@ -230,6 +306,9 @@ def main() -> int:
                 "error": baseline.report.error,
             },
             "baseline_increment_zero": not baseline.verified,
+            "baseline_target_strict": _baseline_target_strict(
+                data, case["target"],
+            ),
             "baseline_target_aware": _baseline_target_attempt(
                 data, case["target"], int(case["capacity"]), poc,
             ),
@@ -320,7 +399,10 @@ def main() -> int:
         "ai_increment": sum(1 for r in results if r["ai_increment"]),
         "note": (
             "baseline is deterministic; AI target assembly is accepted only by "
-            "native/qemu PoC+regression. baseline_target_aware receives the same "
+            "native/qemu PoC+regression. baseline_target_strict calls "
+            "repair_any(target=<case target>, require_target=True) and records "
+            "the resolved target_scope plus target_in_scope (every produced "
+            "action inside the target). baseline_target_aware receives the same "
             "target/capacity hint; ai_blind uses the public AI path without target. "
             "allow_calls only permits direct calls already present in the target function."
         ),
@@ -328,6 +410,18 @@ def main() -> int:
         "repeats": args.repeats,
         "baseline_target_aware_verified": sum(
             1 for r in results if r["baseline_target_aware"].get("verified")
+        ),
+        "baseline_target_strict_analysis_only": sum(
+            1 for r in results
+            if r["baseline_target_strict"].get("disposition") == "analysis_only"
+        ),
+        "baseline_target_strict_verified": sum(
+            1 for r in results if r["baseline_target_strict"].get("verified")
+        ),
+        "baseline_target_strict_out_of_scope_actions": sum(
+            1 for r in results
+            if r["baseline_target_strict"].get("actions")
+            and not r["baseline_target_strict"].get("target_in_scope")
         ),
         "ai_blind_verified": sum(
             1 for r in results if (r.get("ai_blind") or {}).get("verified")

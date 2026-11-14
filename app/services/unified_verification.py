@@ -22,6 +22,9 @@ Required checks added by the acceptance-model harmonization (all fail closed):
                                rewrites re-derived from the raw bytes.
 * ``patch.rewrite``          - every recorded rewrite action re-derived from the
                                original/candidate bytes.
+* ``patch.target_scope``     - only when the caller declares a target function:
+                               every action carries a numeric ``site_va`` inside
+                               the declared half-open ``[va, end)`` range.
 * ``container.cell``         - the supplied matrix cell matches the container.
 * ``runtime.cell_tier``      - the runtime tier is declared for the cell.
 """
@@ -237,6 +240,69 @@ def _required_checks_check(
     )
 
 
+def _scope_address_inside(scope: dict[str, Any], address: object) -> bool:
+    """Whether ``address`` is a number inside the half-open scope range."""
+    va = scope.get("va")
+    end = scope.get("end")
+    if not isinstance(va, int) or isinstance(va, bool):
+        return False
+    if not isinstance(end, int) or isinstance(end, bool):
+        return False
+    if end <= va:
+        return False
+    if not isinstance(address, int) or isinstance(address, bool):
+        return False
+    return va <= address < end
+
+
+def _target_scope_check(
+    target_scope: dict[str, Any],
+    actions: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Required check: every recorded repair action belongs to the target.
+
+    The check is supplied by a caller that declared a target function.  It
+    fails closed on an empty action list, a malformed scope, an action without
+    a numeric ``site_va`` (the writer adds one for every action it produces),
+    and any action whose ``site_va`` lies outside the declared half-open
+    ``[va, end)`` range.
+    """
+    va = target_scope.get("va")
+    end = target_scope.get("end")
+    name = str(target_scope.get("name") or "").strip()
+    problems: list[str] = []
+    if not isinstance(va, int) or isinstance(va, bool):
+        problems.append("target scope has no numeric va")
+    if not isinstance(end, int) or isinstance(end, bool):
+        problems.append("target scope has no numeric end")
+    elif isinstance(va, int) and not isinstance(va, bool) and end <= va:
+        problems.append("target scope end is not greater than va")
+    if not actions:
+        problems.append("no repair action was recorded")
+    for index, action in enumerate(actions):
+        site_va = action.get("site_va") if isinstance(action, dict) else None
+        if not isinstance(site_va, int) or isinstance(site_va, bool):
+            problems.append(f"action[{index}] has no numeric site_va")
+        elif not _scope_address_inside(target_scope, site_va):
+            problems.append(
+                f"action[{index}] site_va={hex(site_va)} is outside the declared target"
+            )
+    span_va = hex(va) if isinstance(va, int) and not isinstance(va, bool) else "?"
+    span_end = hex(end) if isinstance(end, int) and not isinstance(end, bool) else "?"
+    detail = (
+        f"target={name or 'explicit'} scope=[{span_va},{span_end}) "
+        f"actions={len(actions)}"
+    )
+    if problems:
+        detail += "; " + "; ".join(problems[:3])
+    return _check(
+        "patch.target_scope",
+        "Every repair action lies inside the declared target function",
+        CHECK_FAILED if problems else CHECK_PASSED,
+        detail,
+    )
+
+
 def build(
     *,
     format_name: str,
@@ -254,6 +320,7 @@ def build(
     rewrite_actions: list[dict[str, Any]] | None = None,
     cell: dict[str, Any] | None = None,
     capacity: dict[str, Any] | None = None,
+    target_scope: dict[str, Any] | None = None,
 ) -> UnifiedVerification:
     checks: list[dict[str, Any]] = []
     supported = (format_name, arch) in supported_pairs()
@@ -602,6 +669,11 @@ def build(
             f"tier={runtime_tier} cell_tiers={list(cell_tiers)}",
         ))
     checks.append(_required_checks_check(effective, checks))
+    if target_scope is not None:
+        # Appended last so every historical check id/status and the declared
+        # profile required-check list stay unchanged; the check still counts in
+        # the normal failed/not_run success logic below.
+        checks.append(_target_scope_check(target_scope, actions))
 
     failed = [check for check in checks if check["status"] == CHECK_FAILED]
     not_run = [check for check in checks if check["status"] == CHECK_NOT_RUN]
@@ -627,6 +699,10 @@ def build(
         "actions": actions,
         "runtime": runtime.to_dict() if runtime is not None else None,
     }
+    if target_scope is not None:
+        # Target identity is part of the reviewed scope: it is hashed into
+        # ``report_sha256`` with the rest of the packet.
+        packet["scope"]["target"] = dict(target_scope)
     if poc is not None:
         packet["poc"] = poc
     if external_poc is not None:

@@ -9,6 +9,7 @@
       "poc": "fixtures/poc/elf-x86_64-loop.json",
       "reference_fix": "fixtures/hard-cases/loop_fix.S",
       "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
       "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
       "family": "non-template inline copy"
     },
@@ -31,6 +32,7 @@
       "poc": "fixtures/poc/hard-loop16.json",
       "reference_fix": "fixtures/hard-cases/loop16_fix.S",
       "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
       "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
       "family": "non-template inline copy"
     },
@@ -42,6 +44,7 @@
       "poc": "fixtures/poc/hard-loop32.json",
       "reference_fix": "fixtures/hard-cases/loop32_fix.S",
       "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
       "contract": "inline byte-copy loop into a 32-byte stack buffer; no libc call; bounded copy + NUL required",
       "family": "non-template inline copy"
     },
@@ -53,6 +56,7 @@
       "poc": "fixtures/poc/hard-reverse.json",
       "reference_fix": "fixtures/hard-cases/reverse_fix.S",
       "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
       "contract": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required",
       "family": "non-template inline copy"
     },
@@ -64,6 +68,7 @@
       "poc": "fixtures/poc/hard-multicall.json",
       "reference_fix": "fixtures/hard-cases/multicall_fix.c",
       "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
       "contract": "multicall hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
       "family": "semantic/multi-layer copy"
     },
@@ -75,6 +80,7 @@
       "poc": "fixtures/poc/hard-sprintf.json",
       "reference_fix": "fixtures/hard-cases/sprintf_fix.c",
       "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
       "contract": "sprintf hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
       "family": "semantic/multi-layer copy"
     },
@@ -86,6 +92,7 @@
       "poc": "fixtures/poc/hard-nonconst.json",
       "reference_fix": "fixtures/hard-cases/nonconst_fix.c",
       "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
       "contract": "nonconst hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
       "family": "semantic/multi-layer copy"
     },
@@ -97,6 +104,7 @@
       "poc": "fixtures/poc/hard-loop8.json",
       "reference_fix": "fixtures/hard-cases/loop8_fix.S",
       "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
       "contract": "inline byte-copy loop into a 8-byte stack buffer; bounded copy + NUL required",
       "family": "non-template inline copy"
     },
@@ -108,6 +116,7 @@
       "poc": "fixtures/poc/hard-loop64.json",
       "reference_fix": "fixtures/hard-cases/loop64_fix.S",
       "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
       "contract": "inline byte-copy loop into a 64-byte stack buffer; bounded copy + NUL required",
       "family": "non-template inline copy"
     },
@@ -130,6 +139,7 @@
       "poc": "fixtures/poc/heap-canary.json",
       "reference_fix": "fixtures/hard-cases/heap_canary_fix.c",
       "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
       "contract": "heap buffer[16] followed by a guard in one allocation; overflow corrupts the guard and exits 1; correct repair must reject oversized input and preserve valid behavior",
       "family": "heap silent overflow/guard"
     }

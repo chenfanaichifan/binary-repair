@@ -28,10 +28,15 @@ Anything outside the matrix returns no candidate.
 from __future__ import annotations
 
 import hashlib
+import inspect
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from app.services.containers import ContainerInfo, detect_container
+from app.services.containers import (
+    ContainerInfo,
+    detect_container,
+    resolve_function_scope,
+)
 from app.services.repair.analyzer import Analysis, Sink, analyze
 from app.services.repair.guards import abi_for
 from app.services.repair.writer import repair_with_sinks
@@ -49,6 +54,16 @@ from app.services.repair_matrix import (
 from app.services.runtime import emulated, macho_native
 
 MAX_INPUT_BYTES = 20 * 1024 * 1024
+
+#: P1 legacy-gate convergence: external PoC/regression manifests are only
+#: judgeable by the unified evidence-profile gate, never by the legacy
+#: stack/emulated gate.  A manifest-bearing ELF x86-64 request therefore never
+#: uses the whole-image legacy immediate engine; when no deterministic
+#: candidate is produced this explicit fail-closed reason is reported.
+MANIFEST_GATE_REQUIRED = (
+    "PoC manifest requests are verified only by the unified evidence-profile "
+    "gate; no deterministic candidate was produced"
+)
 
 # Backward-compatible legacy constant (format/arch pairs).  New code must use
 # ``repair_matrix`` so bitness/endianness are checked as well.
@@ -268,6 +283,13 @@ def _base_report(data: bytes, container: ContainerInfo) -> UnifiedBinaryReport:
             "detected": container.format in _CONTAINER_FORMATS,
             "repairable": cell is not None,
             "reason": "",
+            # Product/GUI/API default is the historical whole-image scan.  The
+            # field records whether the caller claimed target identity, so a
+            # whole-image patch can never be reported as repairing a declared
+            # target function.
+            "target_scope": None,
+            "target_policy": "whole_image",
+            "target_note": "whole-image policy: target identity not claimed",
         },
         matrix=_matrix_dict(cell),
         coverage=_coverage_dict(),
@@ -289,6 +311,103 @@ def _sink_to_finding(sink: Sink) -> dict[str, Any]:
         "strategy": SINK_CLASSES.get(sink.kind, {}).get("strategy", "none"),
         "detail": sink.detail,
     }
+
+
+# ---------------------------------------------------------------------------
+# Target-scoped repair: caller-declared patch ownership
+# ---------------------------------------------------------------------------
+
+def _scope_contains(scope: dict[str, Any] | None, address: object) -> bool:
+    """Whether ``address`` is a number inside the half-open target scope."""
+    if scope is None:
+        return True
+    lo = scope.get("va")
+    hi = scope.get("end")
+    if not isinstance(lo, int) or isinstance(lo, bool):
+        return False
+    if not isinstance(hi, int) or isinstance(hi, bool):
+        return False
+    if hi <= lo:
+        return False
+    if not isinstance(address, int) or isinstance(address, bool):
+        return False
+    return lo <= address < hi
+
+
+def _scope_label(scope: dict[str, Any] | None) -> str:
+    if scope is None:
+        return "whole image"
+    name = str(scope.get("name") or "").strip()
+    va = scope.get("va")
+    end = scope.get("end")
+    span = (
+        f"[{hex(int(va))},{hex(int(end))})"
+        if isinstance(va, int) and isinstance(end, int) else "[?,?)"
+    )
+    return f"target {name or 'explicit'} {span}"
+
+
+def _record_target_scope(
+    report: UnifiedBinaryReport,
+    scope: dict[str, Any] | None,
+) -> None:
+    """Record target identity/policy in the report for the gate and review UI."""
+    if scope is None:
+        report.universal.setdefault("target_scope", None)
+        report.universal.setdefault("target_policy", "whole_image")
+        report.universal.setdefault(
+            "target_note", "whole-image policy: target identity not claimed"
+        )
+        return
+    report.universal["target_scope"] = dict(scope)
+    report.universal["target_policy"] = "target_scoped"
+    report.universal["target_note"] = (
+        f"patch ownership restricted to {_scope_label(scope)}; actions outside "
+        "the scope are rejected"
+    )
+
+
+def _target_scope_violations(
+    actions: list[dict[str, Any]],
+    scope: dict[str, Any] | None,
+) -> list[str]:
+    """Return human-readable ownership violations for one action list."""
+    if scope is None:
+        return []
+    problems: list[str] = []
+    if not actions:
+        problems.append("no repair action was recorded")
+    for index, action in enumerate(actions):
+        site_va = action.get("site_va") if isinstance(action, dict) else None
+        if not isinstance(site_va, int) or isinstance(site_va, bool):
+            problems.append(f"action[{index}] has no numeric site_va")
+        elif not _scope_contains(scope, site_va):
+            problems.append(
+                f"action[{index}] site_va={hex(site_va)} is outside {_scope_label(scope)}"
+            )
+    return problems
+
+
+def _resolve_scope(
+    container: ContainerInfo,
+    target: str | dict[str, Any] | None,
+) -> tuple[dict[str, Any] | None, str]:
+    """Resolve ``target``; return ``(scope, error)`` (error non-empty on failure)."""
+    if target is None:
+        return None, ""
+    try:
+        scope = resolve_function_scope(container, target)
+    except Exception as exc:  # noqa: BLE001 - malformed metadata is evidence
+        return None, (
+            f"target {target!r} could not be resolved: "
+            f"{type(exc).__name__}: {exc}"
+        )
+    if scope is None:
+        return None, (
+            f"target {target!r} could not be resolved to a unique function "
+            "with a determinable end address"
+        )
+    return scope, ""
 
 
 def scan_binary(data: bytes) -> dict[str, Any]:
@@ -480,12 +599,24 @@ def _generic_repair(
     verify: bool,
     allow_static_only: bool,
     poc_manifest: dict[str, Any] | None = None,
+    target_scope: dict[str, Any] | None = None,
 ) -> RepairOutcome:
     analysis = analyze(data)
     all_sinks = analysis.patchable()
     report = _base_report(data, container)
+    _record_target_scope(report, target_scope)
+    if target_scope is not None:
+        all_sinks = [
+            sink for sink in all_sinks
+            if _scope_contains(target_scope, sink.call_va)
+        ]
     if not all_sinks:
         report.limitations = list(analysis.limitations)
+        if target_scope is not None:
+            report.limitations.append(
+                "target-scoped mode: no patchable sink lies inside "
+                f"{_scope_label(target_scope)}"
+            )
         report.error = report.limitations[-1] if report.limitations else "unsupported"
         report.universal["reason"] = report.error
         _set_disposition(report, "analysis_only")
@@ -521,7 +652,7 @@ def _generic_repair(
         data, container, result.patched, sinks, [dict(a) for a in result.actions],
         report=report, requested_strategy=strategy,
         verify=verify, allow_static_only=allow_static_only,
-        poc_manifest=poc_manifest,
+        poc_manifest=poc_manifest, target_scope=target_scope,
     )
 
 
@@ -609,6 +740,7 @@ def finish_candidate(
     poc_manifest: dict[str, Any] | None = None,
     rewrite_actions: list[dict[str, Any]] | None = None,
     capacity: dict[str, Any] | None = None,
+    target_scope: dict[str, Any] | None = None,
 ) -> RepairOutcome:
     """Apply the shared reparse/runtime/gate tail to any produced candidate.
 
@@ -616,8 +748,13 @@ def finish_candidate(
     candidate bytes may come from a template writer or from an AI-supplied
     machine-code/byte patch; the deterministic gate is the only authority that
     can turn them into ``verified_patch``.
+
+    ``target_scope`` is forwarded by a caller that declared a target function:
+    the candidate's repair actions must all belong to that scope and the
+    unified gate records the appended ``patch.target_scope`` check.
     """
     report.actions = [dict(action) for action in actions]
+    _record_target_scope(report, target_scope)
     report.offsets = [
         int(action["offset"]) for action in actions
         if isinstance(action.get("offset"), int)
@@ -667,6 +804,22 @@ def finish_candidate(
         )
         _set_disposition(report, "unsupported")
         return RepairOutcome(None, report)
+
+    if target_scope is not None:
+        # The pipeline-level ownership rule (independent of the gate check):
+        # a candidate whose actions left the declared target function is never
+        # returned, even when the runtime evidence would otherwise pass.
+        violations = _target_scope_violations(report.actions, target_scope)
+        if violations:
+            report.supported = False
+            report.candidate_available = False
+            report.status = "unsupported"
+            report.error = (
+                "target-scope enforcement failed: " + "; ".join(violations[:3])
+            )
+            report.limitations.append(report.error)
+            _set_disposition(report, "unsupported")
+            return RepairOutcome(None, report)
 
     patched_container = detect_container(patched)
     reparse_ok = (
@@ -794,6 +947,7 @@ def finish_candidate(
         rewrite_actions=rewrite_actions,
         cell=cell.to_dict() if cell is not None else None,
         capacity=capacity,
+        target_scope=target_scope,
     )
     report.verification = {
         "packet": verification.packet,
@@ -909,6 +1063,7 @@ def _finish_capacity(
     verify: bool,
     allow_static_only: bool,
     poc_manifest: dict[str, Any] | None,
+    target_scope: dict[str, Any] | None = None,
 ) -> RepairOutcome:
     """Gate one capacity candidate through the shared reparse/evidence tail.
 
@@ -933,6 +1088,7 @@ def _finish_capacity(
         poc_manifest=poc_manifest,
         rewrite_actions=actions,
         capacity=payload,
+        target_scope=target_scope,
     )
     verification = outcome.report.verification
     if isinstance(verification, dict) and not verification.get("engine"):
@@ -940,6 +1096,20 @@ def _finish_capacity(
         # any gate check or verdict.
         verification["engine"] = "capacity-check"
     return outcome
+
+
+def _capacity_engine_accepts_target_scope(engine: Any) -> bool:
+    """Whether the (possibly test-substituted) engine takes ``target_scope``."""
+    try:
+        parameters = inspect.signature(engine).parameters
+    except (TypeError, ValueError):
+        return False
+    if "target_scope" in parameters:
+        return True
+    return any(
+        parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters.values()
+    )
 
 
 def _attempt_capacity(
@@ -950,30 +1120,56 @@ def _attempt_capacity(
     verify: bool,
     allow_static_only: bool,
     poc_manifest: dict[str, Any] | None,
+    target_scope: dict[str, Any] | None = None,
 ) -> tuple[RepairOutcome | None, list[str]]:
     """Try the reviewed duplicated-capacity-check rewrite.
 
     Returns ``(outcome, diagnostics)``; ``outcome`` is ``None`` when the engine
     found no reviewed site (fail-closed) and the caller keeps its own report.
+    With ``target_scope`` supplied, only in-scope sites are eligible; a
+    candidate whose actions leave the scope is discarded (fail closed).
     """
     try:
         engine = _capacity_engine()
     except Exception as exc:  # noqa: BLE001 - optional engine must not crash the pipeline
         return None, [f"capacity-check engine unavailable: {type(exc).__name__}: {exc}"]
     try:
-        patched, cap_report = engine(data)
+        if target_scope is not None and _capacity_engine_accepts_target_scope(engine):
+            patched, cap_report = engine(data, target_scope=target_scope)
+        else:
+            patched, cap_report = engine(data)
     except Exception as exc:  # noqa: BLE001 - malformed input is evidence, not a crash
         return None, [f"capacity-check engine error: {type(exc).__name__}: {exc}"]
+    diagnostics = [
+        str(item) for item in (getattr(cap_report, "limitations", None) or [])
+        if str(item).strip()
+    ]
+    if target_scope is not None and patched is None and not any(
+        "inside" in text and "target" in text for text in diagnostics
+    ):
+        diagnostics.append(
+            "target-scoped mode: no reviewed capacity-check site inside "
+            f"{_scope_label(target_scope)}"
+        )
     if patched is None:
-        return None, [
-            str(item) for item in (getattr(cap_report, "limitations", None) or [])
-            if str(item).strip()
-        ]
+        return None, diagnostics
     payload = _capacity_payload(cap_report)
     actions = [dict(item) for item in payload.get("actions", []) if isinstance(item, dict)]
     if not actions:
         return None, ["capacity-check engine produced a candidate without rewrite actions"]
+    if target_scope is not None:
+        violations = _target_scope_violations(actions, target_scope)
+        if violations:
+            return None, diagnostics + [
+                "target-scope enforcement: capacity candidate discarded: "
+                + "; ".join(violations[:3])
+            ]
+        payload["sites"] = [
+            dict(site) for site in payload.get("sites", [])
+            if isinstance(site, dict) and _scope_contains(target_scope, site.get("site_va"))
+        ]
     report = _base_report(data, container)
+    _record_target_scope(report, target_scope)
     report.mode = "capacity-check"
     report.strategy = "capacity"
     report.findings = [
@@ -989,7 +1185,91 @@ def _attempt_capacity(
         verify=verify,
         allow_static_only=allow_static_only,
         poc_manifest=poc_manifest,
+        target_scope=target_scope,
     ), []
+
+
+def _targeted_elf_repair(
+    data: bytes,
+    container: ContainerInfo,
+    cell: Any,
+    *,
+    strategy: str,
+    verify: bool,
+    allow_static_only: bool,
+    poc_manifest: dict[str, Any] | None,
+    target_scope: dict[str, Any],
+) -> RepairOutcome:
+    """ELF x86-64 dispatch when a target function is declared.
+
+    The legacy whole-image immediate engine is deliberately not used: it has no
+    function identity model, so a candidate it produces could not be proven to
+    belong to the declared target.  The analyzer/writer and the reviewed
+    capacity engine are kept, with every sink/site filtered to the scope.
+
+    A supplied PoC manifest also forbids the legacy engine (its stack/emulated
+    gate cannot consume external PoC evidence), so this path is the target-scoped
+    deterministic-only route for manifest requests too.
+    """
+    if strategy == "capacity":
+        cap_outcome, diagnostics = _attempt_capacity(
+            data, container,
+            requested_strategy="capacity", verify=verify,
+            allow_static_only=allow_static_only, poc_manifest=poc_manifest,
+            target_scope=target_scope,
+        )
+        if cap_outcome is not None:
+            return cap_outcome
+        report = _base_report(data, container)
+        _record_target_scope(report, target_scope)
+        report.strategy = "capacity"
+        report.mode = "capacity-check"
+        report.supported = False
+        report.error = (
+            MANIFEST_GATE_REQUIRED if poc_manifest is not None
+            else (
+                diagnostics[-1] if diagnostics
+                else "no reviewed capacity-check divergence was found"
+            )
+        )
+        report.limitations = list(diagnostics) or [report.error]
+        report.universal["reason"] = report.error
+        _set_disposition(report, "analysis_only")
+        return RepairOutcome(None, report)
+    outcome = _generic_repair(
+        data, container, strategy=strategy, verify=verify,
+        allow_static_only=allow_static_only, poc_manifest=poc_manifest,
+        target_scope=target_scope,
+    )
+    if outcome.report.disposition != "analysis_only":
+        return outcome
+    # No analyzer sink inside the target: the reviewed capacity rewrite is the
+    # only other deterministic capability (auto mode only, mirroring the
+    # whole-image dispatch).
+    if strategy in {"", "auto"} and plans_strategy(cell, "capacity"):
+        cap_outcome, diagnostics = _attempt_capacity(
+            data, container,
+            requested_strategy="capacity", verify=verify,
+            allow_static_only=allow_static_only, poc_manifest=poc_manifest,
+            target_scope=target_scope,
+        )
+        if cap_outcome is not None:
+            return cap_outcome
+        for text in diagnostics:
+            if text not in outcome.report.limitations:
+                outcome.report.limitations.append(text)
+        # The primary reason stays the explicit "no sink inside the target"
+        # message; the capacity diagnostics above record that the only other
+        # deterministic engine was tried too.
+    if poc_manifest is not None:
+        # Manifest-bearing request: the explicit unified-gate-only reason is the
+        # fail-closed outcome (the legacy engine was never allowed to run).
+        if MANIFEST_GATE_REQUIRED not in outcome.report.limitations:
+            outcome.report.limitations.append(MANIFEST_GATE_REQUIRED)
+        outcome.report.error = MANIFEST_GATE_REQUIRED
+        outcome.report.universal["reason"] = MANIFEST_GATE_REQUIRED
+    _set_disposition(outcome.report, "analysis_only")
+    return outcome
 
 
 def repair_any(
@@ -1000,11 +1280,23 @@ def repair_any(
     verify: bool = True,
     allow_static_only: bool = False,
     poc_manifest: dict[str, Any] | None = None,
+    target: str | dict[str, Any] | None = None,
+    require_target: bool = False,
 ) -> RepairOutcome:
     """Repair any input; return a deterministic disposition and optional bytes.
 
     A candidate is returned only when it is verified, or when
     ``allow_static_only`` is explicitly enabled (then ``verified`` is false).
+
+    ``target`` declares the function whose repair is claimed: an exact symbol
+    name, a unique symbol substring, or an explicit ``{"va", "end"}`` range.
+    With a target, the whole-image legacy engine is skipped, every
+    analyzer/capacity site is filtered to the resolved scope, and every action
+    must carry a ``site_va`` inside it or no candidate is returned.  With
+    ``require_target=True`` a missing/unresolved target fails closed.  Without
+    either, the historical whole-image behaviour is preserved and the report
+    records ``universal["target_scope"] = None`` plus the whole-image policy
+    note (target identity not claimed).
     """
     container = detect_container(data)
     fmt, arch = container.format, container.arch
@@ -1058,7 +1350,102 @@ def repair_any(
         _set_disposition(report, "unsupported")
         return RepairOutcome(None, report)
 
+    # Resolve the caller-declared target before any repair path runs.  Target
+    # identity is resolved from the *original* container metadata (a candidate
+    # never changes its own symbol table).  Unresolved or missing-but-required
+    # targets fail closed with no candidate.
+    target_scope: dict[str, Any] | None = None
+    if target is not None or require_target:
+        if target is None:
+            reason = (
+                "strict target mode requires an explicit target function "
+                "(no whole-image candidate is returned)"
+            )
+            report = _base_report(data, container)
+            report.status = "unsupported"
+            report.error = reason
+            report.limitations = [reason]
+            report.universal["reason"] = reason
+            report.universal["target_policy"] = "strict_no_target"
+            report.universal["target_note"] = (
+                "strict target mode: a target is required and none was supplied"
+            )
+            _set_disposition(report, "unsupported")
+            return RepairOutcome(None, report)
+        target_scope, target_error = _resolve_scope(container, target)
+        if target_scope is None:
+            report = _base_report(data, container)
+            report.status = "unsupported"
+            report.error = target_error
+            report.limitations = [target_error]
+            report.universal["reason"] = target_error
+            report.universal["target_scope"] = None
+            report.universal["target_policy"] = "target_scoped"
+            report.universal["target_note"] = target_error
+            report.universal["target_requested"] = (
+                target if isinstance(target, str) else {
+                    key: target.get(key) for key in ("va", "end") if key in target
+                }
+            )
+            _set_disposition(report, "unsupported")
+            return RepairOutcome(None, report)
+
     if fmt == "elf" and arch == "x86_64":
+        if target_scope is not None:
+            # Target identity was declared: never fall back to the whole-image
+            # legacy immediate engine (it cannot prove patch ownership).
+            return _targeted_elf_repair(
+                data, container, cell,
+                strategy=strategy, verify=verify,
+                allow_static_only=allow_static_only,
+                poc_manifest=poc_manifest, target_scope=target_scope,
+            )
+        if poc_manifest is not None:
+            # P1 legacy-gate convergence: the legacy stack/emulated gate cannot
+            # consume external PoC evidence, so a manifest-bearing request is
+            # judged only by the unified evidence-profile gate.  Never run the
+            # whole-image legacy immediate engine; try the reviewed
+            # deterministic paths and otherwise fail closed explicitly.
+            if strategy == "capacity":
+                cap_outcome, diagnostics = _attempt_capacity(
+                    data, container,
+                    requested_strategy="capacity", verify=verify,
+                    allow_static_only=allow_static_only,
+                    poc_manifest=poc_manifest,
+                )
+                if cap_outcome is not None:
+                    return cap_outcome
+                report.strategy = "capacity"
+                report.mode = "capacity-check"
+                report.supported = False
+                report.error = MANIFEST_GATE_REQUIRED
+                report.limitations = list(diagnostics) or [report.error]
+                report.universal["reason"] = report.error
+                _set_disposition(report, "analysis_only")
+                return RepairOutcome(None, report)
+            if any(sink.kind == "unbounded_copy" for sink in analyze(data).patchable()):
+                return _generic_repair(
+                    data, container, strategy=strategy, verify=verify,
+                    allow_static_only=allow_static_only,
+                    poc_manifest=poc_manifest,
+                )
+            diagnostics: list[str] = []
+            if strategy in {"", "auto"} and plans_strategy(cell, "capacity"):
+                cap_outcome, diagnostics = _attempt_capacity(
+                    data, container,
+                    requested_strategy="capacity", verify=verify,
+                    allow_static_only=allow_static_only,
+                    poc_manifest=poc_manifest,
+                )
+                if cap_outcome is not None:
+                    return cap_outcome
+            report.strategy = "capacity" if strategy == "capacity" else report.strategy
+            report.supported = False
+            report.error = MANIFEST_GATE_REQUIRED
+            report.limitations = list(diagnostics) or [report.error]
+            report.universal["reason"] = report.error
+            _set_disposition(report, "analysis_only")
+            return RepairOutcome(None, report)
         # The reviewed duplicated-capacity-check rewrite has its own engine and
         # evidence profile: it is selected explicitly, or tried as the
         # fail-closed fallback when the legacy immediate engine finds nothing.
@@ -1178,6 +1565,7 @@ def repair_any(
     outcome = _generic_repair(
         data, container,
         strategy=strategy, verify=verify, allow_static_only=allow_static_only,
+        target_scope=target_scope,
     )
     outcome.report.matrix = _matrix_dict(cell)
     return outcome
@@ -1189,6 +1577,8 @@ def repair_binary(
     backend: str = "auto",
     strategy: str = "auto",
     verify: bool = True,
+    target: str | dict[str, Any] | None = None,
+    require_target: bool = False,
 ) -> tuple[bytes | None, UnifiedBinaryReport]:
     """Backward-compatible wrapper around :func:`repair_any`.
 
@@ -1199,6 +1589,7 @@ def repair_binary(
     outcome = repair_any(
         data, backend=backend, strategy=strategy,
         verify=verify, allow_static_only=not verify,
+        target=target, require_target=require_target,
     )
     candidate = outcome.candidate if outcome.download_allowed else None
     return candidate, outcome.report

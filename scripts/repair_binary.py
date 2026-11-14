@@ -30,6 +30,25 @@ def _write_candidate(path: Path, data: bytes) -> None:
     path.chmod(0o755)
 
 
+def _target_payload(report) -> dict:
+    """Target-scope identity + the gate's ``patch.target_scope`` check status."""
+    universal = getattr(report, "universal", {}) or {}
+    packet = (getattr(report, "verification", {}) or {}).get("packet") or {}
+    check = next(
+        (item for item in (packet.get("checks") or [])
+         if isinstance(item, dict) and item.get("id") == "patch.target_scope"),
+        None,
+    )
+    payload = {
+        "target_scope": universal.get("target_scope"),
+        "target_policy": universal.get("target_policy"),
+        "target_scope_check": check.get("status") if check else None,
+    }
+    if check:
+        payload["target_scope_check_detail"] = check.get("detail")
+    return payload
+
+
 def _repair_one(source: Path, output: Path | None, args) -> dict:
     data = source.read_bytes()
     if args.scan_only:
@@ -89,9 +108,12 @@ def _repair_one(source: Path, output: Path | None, args) -> dict:
         verify=args.verify,
         allow_static_only=args.allow_static_only,
         poc_manifest=getattr(args, "poc_manifest", None),
+        target=getattr(args, "target", None),
+        require_target=bool(getattr(args, "require_target", False)),
     )
     report = outcome.report
     payload = report.to_dict()
+    target_payload = _target_payload(report)
     if args.report:
         args.report.write_text(
             json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
@@ -105,6 +127,7 @@ def _repair_one(source: Path, output: Path | None, args) -> dict:
             "status": report.status,
             "error": report.error,
             "report": payload,
+            **target_payload,
         }
     _write_candidate(output, outcome.candidate)
     return {
@@ -124,6 +147,7 @@ def _repair_one(source: Path, output: Path | None, args) -> dict:
         "delivery": payload.get("delivery", {}),
         "warnings": list(report.warnings),
         "report": payload,
+        **target_payload,
     }
 
 
@@ -150,8 +174,11 @@ def _batch(source_dir: Path, out_dir: Path, args) -> int:
             data, backend=args.backend, strategy=args.strategy,
             verify=args.verify, allow_static_only=args.allow_static_only,
             poc_manifest=getattr(args, "poc_manifest", None),
+            target=getattr(args, "target", None),
+            require_target=bool(getattr(args, "require_target", False)),
         )
         report = outcome.report
+        target_payload = _target_payload(report)
         suffix = SUFFIX.get(report.format, ".bin")
         target = out_dir / (source.stem + "-fixed" + suffix)
         disposition = report.disposition
@@ -161,6 +188,7 @@ def _batch(source_dir: Path, out_dir: Path, args) -> int:
                 "arch": report.arch, "status": report.status,
                 "disposition": disposition,
                 "error": report.error or (report.limitations[-1] if report.limitations else ""),
+                **target_payload,
             }
             key = disposition if disposition in counts else "error"
             counts[key] += 1
@@ -173,6 +201,7 @@ def _batch(source_dir: Path, out_dir: Path, args) -> int:
                 "disposition": disposition,
                 "verified": bool(outcome.verified),
                 "verification_tier": (report.verification or {}).get("tier"),
+                **target_payload,
             }
             counts["verified" if outcome.verified else "static_only"] += 1
         records.append(record)
@@ -199,6 +228,12 @@ def main() -> int:
                     help="run one AI path (asm_roundtrip or binary_direct)")
     ap.add_argument("--poc", type=Path,
                     help="optional PoC/regression manifest JSON for the output")
+    ap.add_argument("--target", default=None,
+                    help="repair only the declared target function (exact symbol "
+                         "name, unique symbol substring, or explicit VA range)")
+    ap.add_argument("--require-target", action="store_true",
+                    help="fail closed unless --target resolves to one function "
+                         "(no whole-image candidate is returned)")
     ap.add_argument("--verify", dest="verify", action="store_true", default=True)
     ap.add_argument("--no-verify", dest="verify", action="store_false")
     ap.add_argument("--allow-static-only", action="store_true",
@@ -225,6 +260,14 @@ def main() -> int:
             return 2
         out_dir = args.out or (args.batch / "repaired")
         return _batch(args.batch, out_dir, args)
+
+    if args.ai_path and (args.target or args.require_target):
+        print(
+            "--target/--require-target are deterministic-pipeline options and "
+            "are not supported with --ai-path; omit one of them",
+            file=sys.stderr,
+        )
+        return 2
 
     if args.input is None:
         print("input is required unless --batch is used", file=sys.stderr)

@@ -21,6 +21,13 @@ def test_hard_cases_are_well_formed_and_baseline_fails():
         assert (ROOT / case["poc"]).is_file()
         assert (ROOT / case["reference_fix"]).is_file()
         assert case["baseline_expected"] in {"analysis_only", "rejected", "unsupported"}
+        # Target-strict baseline bookkeeping (contract T1): the field records the
+        # deterministic repair_any(target=...) expectation and never rewrites
+        # the historical whole-image baseline_expected.
+        strict_expected = case.get("baseline_expected_target_strict")
+        if strict_expected is not None:
+            assert strict_expected in {"analysis_only", "rejected", "unsupported"}
+            assert strict_expected != case["baseline_expected"]
 
 
 @pytest.mark.skipif(not LINUX_X64, reason="native PoC gate requires Linux x86-64")
@@ -36,3 +43,18 @@ def test_reference_assembly_case_passes_native_poc_gate(tmp_path: Path):
     assert summary["baseline_verified"] == 0
     assert summary["ai_verified"] == 1
     assert summary["ai_increment"] == 1
+    # Target-strict deterministic baseline is recorded next to the whole-image
+    # baseline: the target resolves, no action is produced outside it.
+    case = next(
+        item for item in json.loads(
+            (ROOT / "fixtures" / "hard-cases" / "cases.json").read_text()
+        )["cases"]
+        if item["id"] == "inline-byte-loop"
+    )
+    record = summary["cases"][0]
+    strict = record["baseline_target_strict"]
+    assert strict["attempted"] is True
+    assert strict["target_scope"]["name"] == case["target"]
+    assert strict["disposition"] == case["baseline_expected_target_strict"]
+    assert strict["actions"] == []
+    assert strict["target_in_scope"] is False
