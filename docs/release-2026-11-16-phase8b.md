@@ -1,6 +1,20 @@
 # Release 2026-11-16 Phase-8B: independent verification semantic closure
 
-Status: candidate release evidence for the Phase-8B verifier-semantics cycle.
+Status: Phase-8B release evidence for the verifier-semantics cycle.
+
+- Gated code SHA: `c5d87b570e4a2d87816d482e22871a7a49a35f7a`
+- Real GitHub-hosted CI: run 43703724955, conclusion success
+  (https://github.com/chenfanaichifan/binary-repair/actions/runs/43703724955)
+- Ubuntu verification: run 43703724942, conclusion success
+  (https://github.com/chenfanaichifan/binary-repair/actions/runs/43703724942)
+- Local frozen-tree nightly gate: 13/13 required checks passed on the gated
+  code SHA (`artifacts/release-gate-2026-11-16-phase8b/`, evidence branch
+  `release/2026-11-16-phase8b-evidence`, tag
+  `release-2026-11-16-phase8b-evidence`).
+- The final mainline commit carrying this note is a docs-only delta from the
+  gated code SHA; the gate and hosted CI evidence are bound to that gated SHA.
+  The self-hosted Lima nightly is `not_run` and is not claimed.
+
 This note does not claim a new vulnerability-repair capability, capability
 graduation, hidden-benchmark generalization, whole-program proof, or completion
 of Phase-8C..16.
