@@ -57,19 +57,19 @@ ACCEPTANCE_DIMENSIONS: tuple[dict[str, Any], ...] = (
         "id": "A01", "title": "identity (target/tree/format/arch/ABI)",
         "task_fields": ("target_sha", "tree_sha", "format", "arch", "abi"),
         "acceptance_fields": ("target", "format", "arch", "abi"),
-        "mismatch_ids": ("AM01", "AM02", "AM03", "AM04", "AM20"),
+        "mismatch_ids": ("AM01", "AM02", "AM03", "AM04", "AM20", "AM24"),
     },
     {
         "id": "A02", "title": "scope (vulnerability/function/module/whole_program)",
         "task_fields": ("scope",),
         "acceptance_fields": ("scope", "claims.scope"),
-        "mismatch_ids": ("AM05", "AM07", "AM19"),
+        "mismatch_ids": ("AM05", "AM07", "AM19", "AM21", "AM22"),
     },
     {
         "id": "A03", "title": "methods and evidence modes",
         "task_fields": ("required_methods", "required_evidence_modes"),
         "acceptance_fields": ("methods", "evidence[].methods", "evidence[].mode"),
-        "mismatch_ids": ("AM06", "AM13"),
+        "mismatch_ids": ("AM06", "AM13", "AM22"),
     },
     {
         "id": "A04", "title": "environment",
@@ -87,7 +87,7 @@ ACCEPTANCE_DIMENSIONS: tuple[dict[str, Any], ...] = (
         "id": "A06", "title": "evidence integrity (refs/hashes)",
         "task_fields": ("evidence_refs",),
         "acceptance_fields": ("evidence",),
-        "mismatch_ids": ("AM08", "AM15", "AM20"),
+        "mismatch_ids": ("AM08", "AM15", "AM20", "AM23"),
     },
     {
         "id": "A07", "title": "regression and statistics",
@@ -148,6 +148,16 @@ MISMATCH_RULES: tuple[dict[str, Any], ...] = (
      "required_actions": ("reject_unsupported_claim",)},
     {"id": "AM20", "code": "evidence_incomplete", "severity": "critical",
      "required_actions": ("collect_complete_evidence",)},
+    {"id": "AM21", "code": "repair_scope_mismatch", "severity": "critical",
+     "required_actions": ("reject_repair_scope_mismatch",)},
+    {"id": "AM22", "code": "semantic_scope_mismatch", "severity": "high",
+     "required_actions": ("collect_semantic_scope_evidence",)},
+    {"id": "AM23", "code": "oracle_quality_insufficient",
+     "severity": "critical",
+     "required_actions": ("require_independent_oracle",)},
+    {"id": "AM24", "code": "benchmark_version_mismatch",
+     "severity": "high",
+     "required_actions": ("reject_benchmark_version_mismatch",)},
 )
 
 MISMATCH_BY_ID = {rule["id"]: rule for rule in MISMATCH_RULES}
@@ -471,6 +481,124 @@ class AcceptanceModelMatcher:
                  f"{task_scope}")
         if not claims:
             flag("AM20", "claims record is missing from the acceptance")
+
+        # A09 repair scope ------------------------------------------------
+        task_target_scope = _as_dict(task.get("target_scope"))
+        repair_scope = _as_dict(acceptance.get("repair_scope"))
+        claimed_policy = _text(repair_scope.get("policy"))
+        task_policy = _text(task_target_scope.get("policy"))
+        task_scope_text = _text(task.get("scope"))
+        if claimed_policy:
+            if claimed_policy in {"whole_image", "whole_program"} and (
+                    task_policy == "target_scoped"
+                    or task_scope_text in {"function", "vulnerability"}):
+                flag("AM21",
+                     f"repair scope {claimed_policy!r} exceeds the declared "
+                     f"target scope {task_policy or task_scope_text!r}")
+            elif task_policy == "target_scoped" and claimed_policy not in {
+                    "target_scoped"}:
+                flag("AM21",
+                     f"repair scope {claimed_policy!r} contradicts the target "
+                     "scope policy 'target_scoped'")
+        target_name = _text(task_target_scope.get("name"))
+        modified_functions = [_text(item) for item in _as_list(
+            repair_scope.get("modified_functions"))]
+        if target_name and modified_functions:
+            outside = sorted({name for name in modified_functions
+                              if name and name != target_name})
+            if outside:
+                flag("AM21",
+                     f"modified functions {outside} are outside the declared "
+                     f"target function {target_name!r}")
+        target_va = task_target_scope.get("va")
+        target_end = task_target_scope.get("end")
+        if isinstance(target_va, int) and isinstance(target_end, int):
+            for action in _as_list(repair_scope.get("actions")):
+                action = _as_dict(action)
+                site = action.get("va", action.get("site_va"))
+                if isinstance(site, int) and not (target_va <= site < target_end):
+                    flag("AM21",
+                         f"repair action at {site:#x} is outside target range "
+                         f"[{target_va:#x}, {target_end:#x})")
+                    break
+
+        # A10 semantic scope ---------------------------------------------
+        semantic_scope = _as_dict(task.get("semantic_scope"))
+        semantic_coverage = _as_dict(acceptance.get("semantic_coverage"))
+        required_semantics = {
+            key: [_text(item) for item in _as_list(semantic_scope.get(key))]
+            for key in ("required_inputs", "required_paths", "required_behaviors")
+        }
+        if any(required_semantics.values()):
+            coverage_fields = {
+                "required_inputs": "inputs",
+                "required_paths": "paths",
+                "required_behaviors": "behaviors",
+            }
+            for required_key, required_values in required_semantics.items():
+                if not required_values:
+                    continue
+                covered = {_text(item) for item in _as_list(
+                    semantic_coverage.get(coverage_fields[required_key]))}
+                missing = [value for value in required_values
+                           if value not in covered]
+                if missing:
+                    flag("AM22",
+                         f"semantic coverage misses {required_key}: {missing}")
+            if semantic_coverage.get("complete") is False:
+                flag("AM22", "semantic coverage is explicitly incomplete")
+
+        # A11 oracle quality ---------------------------------------------
+        oracle = _as_dict(acceptance.get("oracle"))
+        oracle_kind = _text(oracle.get("kind"))
+        if oracle_kind:
+            if oracle_kind in {"reference_fix", "generator_self_report", "none"}:
+                flag("AM23",
+                     f"oracle kind {oracle_kind!r} is not an independent "
+                     "oracle")
+            elif oracle.get("independent") is False:
+                flag("AM23",
+                     f"oracle kind {oracle_kind!r} is not independent")
+        if bool(task.get("requires_independent_oracle")):
+            if not oracle_kind or oracle_kind in {
+                    "reference_fix", "generator_self_report", "none"}:
+                flag("AM23",
+                     "task requires an independent oracle but the acceptance "
+                     "does not provide one")
+
+        # A12 benchmark version ------------------------------------------
+        task_benchmark = _as_dict(task.get("benchmark"))
+        acceptance_benchmark = _as_dict(acceptance.get("benchmark"))
+        claims_benchmark = _as_dict(claims.get("benchmark"))
+        task_version = _text(task_benchmark.get("version")
+                             or task.get("benchmark_version"))
+        task_sample_set = _text(task_benchmark.get("sample_set_sha256")
+                                or task.get("benchmark_sample_set_sha256"))
+        if task_version or task_sample_set:
+            observed = {}
+            for label, source in (("acceptance", acceptance_benchmark),
+                                  ("claims", claims_benchmark)):
+                observed[label] = {
+                    "version": _text(source.get("version")),
+                    "sample_set_sha256": _text(
+                        source.get("sample_set_sha256")),
+                }
+            if not observed["acceptance"]["version"] and not observed[
+                    "claims"]["version"]:
+                flag("AM24",
+                     "task declares a benchmark version but the acceptance "
+                     "does not record one")
+            for label, record in observed.items():
+                if task_version and record["version"] and record[
+                        "version"] != task_version:
+                    flag("AM24",
+                         f"{label} benchmark version {record['version']!r} != "
+                         f"task {task_version!r}")
+                if task_sample_set and record["sample_set_sha256"] and record[
+                        "sample_set_sha256"] != task_sample_set:
+                    flag("AM24",
+                         f"{label} benchmark sample set does not match the "
+                         "task commitment")
 
         detected = sorted(set(mismatches))
         verified = not detected

@@ -48,8 +48,8 @@ def test_registry_dimensions_and_mismatch_classes_are_complete() -> None:
                              "A08"]
     assert len(set(dimension_ids)) == len(dimension_ids) == 8
     mismatch_ids = [rule["id"] for rule in MISMATCH_RULES]
-    assert mismatch_ids == [f"AM{index:02d}" for index in range(1, 21)]
-    assert len(set(mismatch_ids)) == len(mismatch_ids) == 20
+    assert mismatch_ids == [f"AM{index:02d}" for index in range(1, 25)]
+    assert len(set(mismatch_ids)) == len(mismatch_ids) == 24
     mapped = {mismatch_id for dim in ACCEPTANCE_DIMENSIONS
               for mismatch_id in dim["mismatch_ids"]}
     assert mapped == set(MISMATCH_IDS)
@@ -64,7 +64,7 @@ def test_registry_dimensions_and_mismatch_classes_are_complete() -> None:
 
 def test_matrix_has_40_plus_cases_and_covers_every_am_class(
         cases: list[dict]) -> None:
-    assert len(cases) >= 40
+    assert len(cases) >= 52
     assert len({case["case_id"] for case in cases}) == len(cases)
     covered = {mismatch_id for case in cases
                for mismatch_id in case["expected_mismatches"]}
@@ -213,10 +213,10 @@ def test_cli_json_matrix_report() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
-    assert payload["case_count"] >= 40
+    assert payload["case_count"] >= 52
     assert payload["recall"] == 1.0
     assert payload["precision"] == 1.0
-    assert len(payload["covered_am_classes"]) == 20
+    assert len(payload["covered_am_classes"]) == 24
     assert set(payload["mismatch_classes"]) == set(MISMATCH_IDS)
 
 
@@ -279,3 +279,81 @@ def test_cli_write_and_check_roundtrip(tmp_path: Path) -> None:
     )
     assert check.returncode == 0, check.stdout + check.stderr
     assert audit.check_artifacts(target) == []
+
+
+# ---------------------------------------------------------------------------
+# Phase-8 additive classes AM21-AM24
+# ---------------------------------------------------------------------------
+
+def _phase8_negative(case_id: str) -> dict:
+    case = next(case for case in audit.build_cases()
+                if case["case_id"] == case_id)
+    result = AcceptanceModelMatcher.match(case["task"], case["acceptance"])
+    expected = case["expected_mismatches"]
+    assert result["verified"] is False
+    assert result["mismatches"] == expected, (case_id, result["mismatches"])
+    return result
+
+
+def test_am21_repair_scope_escape_is_rejected() -> None:
+    result = _phase8_negative("negative-am21-repair-scope-escape")
+    assert "reject_repair_scope_mismatch" in result["required_actions"]
+
+
+def test_am21_out_of_target_function_and_range_is_rejected() -> None:
+    task, acceptance = audit._mutated(lambda task, acceptance: None)
+    task["target_scope"] = {"policy": "target_scoped", "name": "vuln_copy",
+                            "va": 4096, "end": 8192}
+    acceptance["repair_scope"] = {
+        "policy": "target_scoped",
+        "modified_functions": ["vuln_copy", "helper"],
+        "actions": [{"va": 9000}],
+    }
+    result = AcceptanceModelMatcher.match(task, acceptance)
+    assert result["verified"] is False
+    assert result["mismatches"] == ["AM21"]
+
+
+def test_am22_partial_semantic_scope_is_rejected() -> None:
+    result = _phase8_negative("negative-am22-semantic-scope-partial")
+    assert "collect_semantic_scope_evidence" in result["required_actions"]
+
+
+def test_am23_generator_self_report_is_not_an_oracle() -> None:
+    result = _phase8_negative("negative-am23-oracle-self-report")
+    assert "require_independent_oracle" in result["required_actions"]
+
+
+def test_am23_missing_required_oracle_is_rejected() -> None:
+    task, acceptance = audit._mutated(lambda task, acceptance: None)
+    task["requires_independent_oracle"] = True
+    result = AcceptanceModelMatcher.match(task, acceptance)
+    assert result["verified"] is False
+    assert "AM23" in result["mismatches"]
+
+
+def test_am24_benchmark_version_mismatch_is_rejected() -> None:
+    result = _phase8_negative("negative-am24-benchmark-version-mismatch")
+    assert "reject_benchmark_version_mismatch" in result["required_actions"]
+
+
+def test_am24_missing_benchmark_record_is_rejected() -> None:
+    task, acceptance = audit._mutated(lambda task, acceptance: None)
+    task["benchmark"] = {"version": "phase8-v1", "sample_set_sha256": "a" * 64}
+    result = AcceptanceModelMatcher.match(task, acceptance)
+    assert result["verified"] is False
+    assert "AM24" in result["mismatches"]
+
+
+def test_am21_am24_positive_cases_verify() -> None:
+    positives = [case for case in audit.build_cases()
+                 if not case["expected_mismatches"]
+                 and any(key in case["task"] or key in case["acceptance"]
+                         for key in ("target_scope", "semantic_scope",
+                                     "requires_independent_oracle",
+                                     "benchmark"))]
+    assert len(positives) >= 5
+    for case in positives:
+        result = AcceptanceModelMatcher.match(case["task"],
+                                              case["acceptance"])
+        assert result["verified"] is True, (case["case_id"], result)

@@ -652,3 +652,46 @@ recorded separately; Linux CI skips are not evidence.
 - `ld_preload` errno is process-exit TLS errno on native dynamic ELF; it is not
   a function-return capture and remains optional.
 
+
+## Phase-8A repair readiness (2026-11-16)
+
+Phase-8A adds measurement, contracts and independent-verification
+infrastructure only; it does not add a vulnerability-repair capability and
+does not upgrade any `verified` state.
+
+- Readiness audit: 30 user requirements G01-G30 (`scripts/audit_repair_readiness.py`,
+  `artifacts/phase8-readiness-2026-11-16/`) measured 13 implemented / 7 partial /
+  5 missing / 1 not_run / 4 non_goal. "Implemented" means the audit's code plus
+  test plus declared-artifact rule; it is not a capability promotion. G29 hidden
+  benchmark is `not_run` (`hidden_available=false`); no hidden split is claimed.
+- Ground-truth benchmark v1: 12 real fixture samples
+  (`benchmark/phase8-v1/manifest.json`), dev 8 / validation 4. Deterministic
+  repair run: 12/12 executed, detected 4, candidate produced 2, deterministic
+  verification 2, independent verification 0, false-verified 0. The independent
+  verifier rejected/witheld both deterministic claims because the resized guard
+  candidate and cave-bearing capacity candidate do not match the verifier's
+  equal-length/action-scope/ABI/oracle metadata model; those claims are recorded
+  as withdrawn, not as passes. This engine/verifier semantic gap is Phase-8B/8D
+  work.
+- Two i386 samples have no committed matching PoC oracle and are analysis-only;
+  the capacity sample uses a documented VA range (stripped fixture); two samples
+  have no committed reference-fix file. Compiler/optimization metadata are
+  wrapper-level `environment_metadata` with null/unavailable reasons because the
+  contract sample schema forbids extra per-sample fields.
+- Independent verifier MVP: 8 checks recomputed from raw bytes; generator
+  verdicts are never read and generator evidence is excluded. Hermetic selftest
+  is 11/11 and schema-validated. The committed
+  `artifacts/phase8-verification-2026-11-16/report.json` is a labelled
+  schema-conformance sample with decision `rejected`, not repair evidence.
+- Contracts: 12 total (6 new: binary-target, vulnerability-finding, root-cause,
+  verification, benchmark-sample, patch-candidate); acceptance AM21-AM24 added
+  (52-case matrix, 24/24 classes) and meta-audit is 28 scenarios. These are
+  acceptance rules, not new repair paths.
+- CI: phase-8 readiness/benchmark-manifest/verifier-selftest are non-gating shadow
+  steps; the release gate remains the existing 13 required checks. Hosted CI,
+  local frozen-tree gate and self-hosted Lima nightly remain separate evidence
+  layers; self-hosted nightly remains `not_run`.
+- Integrity correction: the committed
+  `artifacts/coverage-closure-2026-11-14/SHA256SUMS` had a stale digest for
+  `acceptance.json`; Phase-8A corrected only the checksum line to the actual
+  committed bytes. No acceptance content was changed.

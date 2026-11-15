@@ -377,8 +377,8 @@
   },
   "release_evidence": {
     "procedure": "scripts/release_freeze.py --mode nightly --sha <frozen-sha> runs release_gate.py --nightly --release-sha and writes a provenance bundle",
-    "artifact_dir": "artifacts/release-gate-2026-11-15-autonomy",
-    "evidence_branch": "release/2026-11-15-autonomy-evidence",
+    "artifact_dir": "artifacts/release-gate-2026-11-16-phase8a",
+    "evidence_branch": "release/2026-11-16-phase8a-evidence",
     "evidence_scope": "local frozen-tree nightly gate on the final release commit plus a real GitHub-hosted portable CI run; the self-hosted Lima nightly is not_run and is not claimed",
     "ci_status": "portable_hosted_success_self_hosted_not_run",
     "hosted_ci_run_id": 43626323294,
@@ -392,8 +392,8 @@
   "ci_evidence": {
     "schema_version": 2,
     "gated_sha": "bb1ee2ddf2d9c40cbbd4b44be4931602aca0fcee",
-    "evidence_branch": "release/2026-11-15-autonomy-evidence",
-    "evidence_tag": "release/2026-11-15-autonomy-evidence",
+    "evidence_branch": "release/2026-11-16-phase8a-evidence",
+    "evidence_tag": "release/2026-11-16-phase8a-evidence",
     "hosted_ci": {
       "workflow": "CI",
       "run_id": 43626323294,
@@ -510,6 +510,76 @@
       "upgraded verified capability",
       "automatic promotion of candidates to verified",
       "complete capability universe (undiscovered space is not measurable)"
+    ]
+  },
+  "phase8_readiness": {
+    "phase": "8A",
+    "base_sha": "2bfa112591614aa39d4d6b55ad9bb962b9718e7c",
+    "status": "implemented_readiness_foundation_no_new_repair_capability",
+    "new_vulnerability_repair_capability_this_phase": false,
+    "auto_upgrade_verified_this_phase": false,
+    "hidden_benchmark_this_phase": false,
+    "readiness_audit": {
+      "artifact_dir": "artifacts/phase8-readiness-2026-11-16",
+      "items": 30,
+      "counts": {
+        "implemented": 13,
+        "partial": 7,
+        "missing": 5,
+        "not_run": 1,
+        "non_goal": 4
+      },
+      "capability_claims": 0
+    },
+    "ground_truth_benchmark": {
+      "manifest": "benchmark/phase8-v1/manifest.json",
+      "samples": 12,
+      "dev": 8,
+      "validation": 4,
+      "hidden_available": false,
+      "results_artifact": "artifacts/phase8-benchmark-2026-11-16/results.json",
+      "executed": 12,
+      "detected": 4,
+      "candidate_produced": 2,
+      "deterministic_verified": 2,
+      "independently_verified": 0,
+      "false_verified": 0,
+      "verification_disagreements": 2,
+      "deterministic_claim_withdrawn": 2
+    },
+    "independent_verifier": {
+      "module": "app/services/independent_verifier.py",
+      "cli": "scripts/verify_repair.py",
+      "required_checks": 8,
+      "selftest_cases": 11,
+      "generator_verdicts_read": false,
+      "generator_evidence_excluded": true
+    },
+    "contracts": {
+      "total": 12,
+      "new": [
+        "binary-target",
+        "vulnerability-finding",
+        "root-cause",
+        "verification",
+        "benchmark-sample",
+        "patch-candidate"
+      ],
+      "acceptance_mismatch_classes": 24,
+      "acceptance_audit_cases": 52,
+      "meta_audit_scenarios": 28
+    },
+    "ci_evidence": {
+      "hosted_release_ci": "recorded_in_phase8a_evidence_bundle",
+      "self_hosted_nightly": "not_run",
+      "phase8a_shadow_checks": "non_gating_in_ci"
+    },
+    "not_claimed": [
+      "new vulnerability repair capability",
+      "independent verification of a real repaired binary",
+      "hidden benchmark generalization",
+      "capability promotion/graduation",
+      "self-hosted nightly run"
     ]
   }
 }

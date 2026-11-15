@@ -28,11 +28,23 @@ def _run_cli(*args: str) -> subprocess.CompletedProcess:
     )
 
 
+REQUIRED_ARTIFACTS = (
+    "artifacts/capability-universe-2026-11-16/dimension-registry.json",
+    "artifacts/gap-registry-2026-11-16/gaps.json",
+    "artifacts/autonomous-reflection-2026-11-16/reflection.json",
+)
+
+
 def _copy_tree(tmp_path: Path) -> Path:
     root = tmp_path / "root"
     shutil.copytree(CONTRACTS, root / "contracts")
     shutil.copytree(
         FIXTURES, root / "artifacts" / "contract-fixtures-2026-11-16")
+    for relative in REQUIRED_ARTIFACTS:
+        source = ROOT / relative
+        destination = root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, destination)
     return root
 
 
@@ -49,11 +61,11 @@ def _write(path: Path, payload: dict) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_all_six_contracts_exist_and_name_match() -> None:
+def test_all_twelve_contracts_exist_and_name_match() -> None:
     found = sorted(path.name for path in CONTRACTS.glob("*.schema.json"))
     expected = sorted(f"{name}.schema.json" for name in contracts.SCHEMA_NAMES)
     assert found == expected
-    assert len(contracts.SCHEMA_NAMES) == 6
+    assert len(contracts.SCHEMA_NAMES) == 12
 
 
 def test_schema_documents_are_structurally_valid() -> None:
@@ -95,9 +107,9 @@ def test_schema_document_checks_catch_broken_schema() -> None:
 def test_repository_contracts_and_fixtures_pass() -> None:
     report = contracts.run_check(ROOT, check_sums=True)
     assert report["ok"] is True, report["violations"]
-    assert report["schema_count"] == 6
-    assert report["fixtures"]["valid_passed"] == 6
-    assert report["fixtures"]["invalid_rejected"] == 6
+    assert report["schema_count"] == 12
+    assert report["fixtures"]["valid_passed"] == 12
+    assert report["fixtures"]["invalid_rejected"] == 12
     assert report["validator"] == "jsonschema"
     assert report["sums"]["ok"] is True
 
@@ -109,7 +121,7 @@ def test_cli_passes_and_reports_json() -> None:
     assert payload["ok"] is True
     assert payload["validator"] == "jsonschema"
     assert payload["fixtures"] == {
-        "valid_passed": 6, "invalid_rejected": 6, "total": 12,
+        "valid_passed": 12, "invalid_rejected": 12, "total": 24,
     }
 
 
@@ -119,14 +131,45 @@ def test_fallback_validator_semantics() -> None:
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
     assert payload["validator"] == "fallback"
-    assert payload["fixtures"]["valid_passed"] == 6
-    assert payload["fixtures"]["invalid_rejected"] == 6
+    assert payload["fixtures"]["valid_passed"] == 12
+    assert payload["fixtures"]["invalid_rejected"] == 12
 
 
 def test_every_schema_has_valid_and_invalid_fixture() -> None:
     for name in contracts.SCHEMA_NAMES:
         assert (FIXTURES / f"{name}.valid.json").is_file(), name
         assert (FIXTURES / f"{name}.invalid.json").is_file(), name
+
+
+def test_sums_covers_twelve_schemas_and_twenty_four_fixtures() -> None:
+    lines = [
+        line for line in SUMS.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert len(lines) == len(contracts.SCHEMA_NAMES) * 3
+    entries = dict(
+        (line.split("  ", 1)[1], line.split("  ", 1)[0])
+        for line in lines
+    )
+    for name in contracts.SCHEMA_NAMES:
+        assert f"contracts/{name}.schema.json" in entries
+        assert f"artifacts/contract-fixtures-2026-11-16/{name}.valid.json" in entries
+        assert f"artifacts/contract-fixtures-2026-11-16/{name}.invalid.json" in entries
+
+
+def test_artifact_integrations_old_pass_new_not_run() -> None:
+    report = contracts.run_check(ROOT, check_sums=True)
+    statuses = {item["id"]: item["status"] for item in report["integrations"]}
+    assert statuses["capability-universe"] == "validated"
+    assert statuses["gap-registry"] == "validated"
+    assert statuses["autonomous-reflection"] == "validated"
+    # New phase-8 artifacts may not be committed yet; they must be explicit
+    # not_run instead of failing the existing contracts.
+    assert statuses["benchmark-manifest"] in {"validated", "not_run"}
+    assert statuses["verification-report"] in {"validated", "not_run"}
+    assert [check["id"] for check in report["checks"]] == [
+        "schemas", "valid-fixtures", "invalid-fixtures", "artifacts", "sums",
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -242,7 +285,7 @@ def test_acceptance_registry_completeness_is_enforced(tmp_path: Path) -> None:
     _write(target, payload)
     report = contracts.run_check(root)
     assert report["ok"] is False
-    assert any("AM01-AM20" in item for item in report["violations"])
+    assert any("AM01-AM24" in item for item in report["violations"])
 
 
 def test_schema_ascii_rule_catches_non_ascii_title(tmp_path: Path) -> None:
@@ -292,3 +335,106 @@ def test_committed_phase7_artifacts_match_contracts() -> None:
         for index, record in enumerate(records):
             errors = [item.message for item in validator.iter_errors(record)]
             assert errors == [], (schema_name, path.name, index, errors[:2])
+
+
+# ---------------------------------------------------------------------------
+# Phase-8 contracts: cross-field semantics and tamper coverage
+# ---------------------------------------------------------------------------
+
+def _semantics(name: str, payload: dict) -> list[str]:
+    return contracts.CONTRACT_SEMANTICS[name](payload)
+
+
+def test_binary_target_semantics() -> None:
+    payload = _load(FIXTURES / "binary-target.valid.json")
+    assert _semantics("binary-target", payload) == []
+    broken = json.loads(json.dumps(payload))
+    broken["target_scope"] = {"policy": "target_scoped"}
+    assert any("target_scoped requires" in item
+               for item in _semantics("binary-target", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["identity"] = {"kind": "sha256", "value": "b" * 64}
+    assert any("must equal target_sha256" in item
+               for item in _semantics("binary-target", broken))
+
+
+def test_root_cause_requires_flow_evidence() -> None:
+    payload = _load(FIXTURES / "root-cause.valid.json")
+    assert _semantics("root-cause", payload) == []
+    broken = json.loads(json.dumps(payload))
+    broken["data_flow_evidence"] = []
+    broken["control_flow_evidence"] = []
+    assert any("at least one" in item for item in _semantics("root-cause", broken))
+
+
+def test_patch_candidate_verified_is_fail_closed() -> None:
+    payload = _load(FIXTURES / "patch-candidate.valid.json")
+    assert _semantics("patch-candidate", payload) == []
+    verified = json.loads(json.dumps(payload))
+    verified["status"] = "verified"
+    verified["verification_plan"]["independent_oracle"] = False
+    assert any("independent_oracle" in item
+               for item in _semantics("patch-candidate", verified))
+    verified["verification_plan"]["independent_oracle"] = True
+    verified["model_identity"]["status"] = "served-model-only"
+    assert any("untrusted model identity" in item
+               for item in _semantics("patch-candidate", verified))
+    broken = json.loads(json.dumps(payload))
+    broken["actions"][0]["before_hex"] = "00"
+    assert any("length must equal size*2" in item
+               for item in _semantics("patch-candidate", broken))
+
+
+def test_verification_verified_requires_independence_and_oracle() -> None:
+    payload = _load(FIXTURES / "verification.valid.json")
+    assert _semantics("verification", payload) == []
+    broken = json.loads(json.dumps(payload))
+    broken["independence"]["ok"] = False
+    assert any("independence.ok=true" in item
+               for item in _semantics("verification", broken))
+    broken = json.loads(json.dumps(payload))
+    for check in broken["checks"]:
+        check["independent"] = False
+    assert any("independent oracle" in item
+               for item in _semantics("verification", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["checks"][0]["status"] = "failed"
+    assert any("required checks" in item
+               for item in _semantics("verification", broken))
+
+
+def test_benchmark_sample_oracle_scope_consistency() -> None:
+    payload = _load(FIXTURES / "benchmark-sample.valid.json")
+    assert _semantics("benchmark-sample", payload) == []
+    broken = json.loads(json.dumps(payload))
+    broken["expected_scope"] = "analysis_only"
+    broken["oracle"]["kinds"] = ["external_poc"]
+    assert any("analysis_only expectation" in item
+               for item in _semantics("benchmark-sample", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["oracle"]["kinds"] = ["static"]
+    assert any("requires at least one independent oracle" in item
+               for item in _semantics("benchmark-sample", broken))
+
+
+def test_new_contract_invalid_fixtures_are_rejected(tmp_path: Path) -> None:
+    for name in ("binary-target", "vulnerability-finding", "root-cause",
+                 "patch-candidate", "verification", "benchmark-sample"):
+        fixture = FIXTURES / f"{name}.invalid.json"
+        payload = _load(fixture)
+        schema = _load(CONTRACTS / f"{name}.schema.json")
+        errors, _validator = contracts._validate_instance(
+            name, schema, payload, use_jsonschema=True)
+        assert errors, name
+
+
+def test_tampered_phase8_fixture_breaks_sums(tmp_path: Path) -> None:
+    root = _copy_tree(tmp_path)
+    target = (root / "artifacts" / "contract-fixtures-2026-11-16"
+              / "benchmark-sample.valid.json")
+    payload = _load(target)
+    payload["sample_id"] = "tampered-sample"
+    _write(target, payload)
+    report = contracts.run_check(root, check_sums=True)
+    assert report["ok"] is False
+    assert any("SUMS digest mismatch" in item for item in report["violations"])

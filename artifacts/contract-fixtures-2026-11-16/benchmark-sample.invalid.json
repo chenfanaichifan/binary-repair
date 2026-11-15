@@ -1,0 +1,45 @@
+{
+  "sample_id": "stack-strcpy-x86_64",
+  "format": "coff",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "little",
+  "vulnerability_class": "CWE-121",
+  "expected_scope": "function",
+  "target": {
+    "kind": "function",
+    "function": "main"
+  },
+  "source_refs": [
+    "fixtures/elf/vuln-strcpy-x86_64.elf",
+    "fixtures/poc/elf-x86_64-strcpy.json"
+  ],
+  "oracle": {
+    "kinds": [
+      "external_poc"
+    ],
+    "manifest_path": "fixtures/poc/elf-x86_64-strcpy.json",
+    "expected_original": "triggers",
+    "expected_candidate": "rejected"
+  },
+  "expected_analysis": {
+    "root_cause": "unbounded strcpy into stack buffer",
+    "function": "main",
+    "sink": "strcpy",
+    "capacity": 32
+  },
+  "reference_fix": "fixtures/hard-cases/loop_fix.S",
+  "expected_patch_properties": {
+    "strategy": "capacity",
+    "max_growth_bytes": 16
+  },
+  "negative_cases": [
+    "benign input must still pass"
+  ],
+  "split": "dev",
+  "hidden_available": true,
+  "hidden_commitment_sha256": null,
+  "evidence_refs": [
+    "fixtures/elf/vuln-strcpy-x86_64.elf"
+  ]
+}

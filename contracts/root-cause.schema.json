@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/root-cause.schema.json",
+  "title": "Root cause record",
+  "description": "One root-cause record for a vulnerability finding: root-cause statement, affected functions/objects, trigger conditions, machine-readable data-flow and control-flow evidence, confidence and explicit unknowns. At least one of data_flow_evidence/control_flow_evidence must be present.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "finding_id",
+    "root_cause",
+    "affected_functions",
+    "affected_objects",
+    "trigger_conditions",
+    "data_flow_evidence",
+    "control_flow_evidence",
+    "confidence",
+    "unknowns"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "finding_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,80}$"
+    },
+    "root_cause": {
+      "type": "string",
+      "minLength": 1
+    },
+    "affected_functions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "affected_objects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "trigger_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "data_flow_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "control_flow_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

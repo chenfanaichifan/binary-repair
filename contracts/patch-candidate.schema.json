@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/patch-candidate.schema.json",
+  "title": "Patch candidate record",
+  "description": "One patch candidate: identity and strategy, explicit target/original/candidate digests, modification range and byte actions, modified functions, expected behavior and security property, a verification plan, risk, generator/model identity, generation evidence and a fail-closed status. release_eligible is deliberately absent: a candidate can be at most verified by independent verification, never auto-promoted. A verified status requires an independent-oracle verification plan and a trustworthy model identity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "vulnerability_id",
+    "strategy_id",
+    "target_sha256",
+    "original_binary_sha256",
+    "candidate_binary_sha256",
+    "modification_range",
+    "actions",
+    "modified_functions",
+    "expected_behavior",
+    "security_property",
+    "verification_plan",
+    "risk_level",
+    "generator",
+    "model_identity",
+    "generation_evidence",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^cand-[A-Za-z0-9][A-Za-z0-9_.:-]{2,80}$"
+    },
+    "vulnerability_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,80}$"
+    },
+    "strategy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "original_binary_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_binary_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "modification_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end",
+        "size"
+      ],
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "offset",
+          "size",
+          "before_hex",
+          "after_hex"
+        ],
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "before_hex": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-fA-F]{2})+$"
+          },
+          "after_hex": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-fA-F]{2})+$"
+          }
+        }
+      }
+    },
+    "modified_functions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "expected_behavior": {
+      "type": "string",
+      "minLength": 1
+    },
+    "security_property": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verification_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_checks",
+        "independent_oracle",
+        "regression_required"
+      ],
+      "properties": {
+        "required_checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "independent_oracle": {
+          "type": "boolean"
+        },
+        "regression_required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generator_id"
+      ],
+      "properties": {
+        "generator_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "model_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested",
+        "served",
+        "status"
+      ],
+      "properties": {
+        "requested": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "served": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "exact",
+            "alias",
+            "served-model-only",
+            "unknown",
+            "mismatch"
+          ]
+        }
+      }
+    },
+    "generation_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "created",
+        "analysis_only",
+        "patch_candidate",
+        "verified",
+        "rejected",
+        "inconclusive",
+        "not_run",
+        "regression_failed",
+        "identity_mismatch"
+      ]
+    }
+  }
+}

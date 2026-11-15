@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "target_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "little",
+  "container": "elf-thin",
+  "target_scope": {
+    "policy": "target_scoped",
+    "name": "vuln_copy",
+    "va": 4198400,
+    "end": 4198500
+  },
+  "compiler": {
+    "name": "gcc",
+    "version": "13.2.0",
+    "opt_level": "-O2",
+    "available": true,
+    "reason": ""
+  },
+  "identity": {
+    "kind": "sha256",
+    "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+}

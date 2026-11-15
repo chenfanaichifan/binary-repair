@@ -138,6 +138,32 @@ CHECK_SPECS: tuple[dict[str, Any], ...] = (
         "required": True,
         "modes": ("full",),
     },
+    # Phase-8A shadow checks: advisory evidence only.  A missing script is an
+    # explicit not_run and a shadow result never satisfies a required check.
+    {
+        "id": "repair-readiness-audit",
+        "script": "scripts/audit_repair_readiness.py",
+        "args": ("--json",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
+    {
+        "id": "ground-truth-benchmark",
+        "script": "scripts/build_ground_truth_benchmark.py",
+        "args": ("--check",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
+    {
+        "id": "independent-verifier",
+        "script": "scripts/verify_repair.py",
+        "args": ("--selftest",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
 )
 
 
@@ -185,7 +211,8 @@ def run_check(
         "id": spec["id"],
         "script": spec["script"],
         "args": list(spec["args"]),
-        "required": bool(spec["required"]),
+        "required": bool(spec.get("required", True)),
+        "shadow": bool(spec.get("shadow", False)),
         "status": "not_run",
         "exit_code": None,
         "detail": "",
@@ -238,11 +265,13 @@ def audit(
         run_check(spec, root=root, run=run, timeout=timeout)
         for spec in checks_for_mode(mode)
     ]
-    failed = [check for check in checks if check["status"] == "failed" and check["required"]]
+    required_checks = [check for check in checks if check["required"]]
+    shadow_checks = [check for check in checks if check.get("shadow") is True]
+    failed = [check for check in required_checks if check["status"] == "failed"]
     not_run = [
         {"id": check["id"], "reason": check["detail"]}
-        for check in checks
-        if check["status"] == "not_run" and check["required"]
+        for check in required_checks
+        if check["status"] == "not_run"
     ]
     if failed:
         exit_code = 1
@@ -250,14 +279,28 @@ def audit(
         exit_code = 2
     else:
         exit_code = 0
+    shadow_summary = {
+        "count": len(shadow_checks),
+        "passed": [check["id"] for check in shadow_checks if check["status"] == "passed"],
+        "failed": [check["id"] for check in shadow_checks if check["status"] == "failed"],
+        "not_run": [check["id"] for check in shadow_checks if check["status"] == "not_run"],
+        "counted_as_pass": False,
+        "affects_exit_code": False,
+    }
     limitations = [
         "not_run checks are not evidence: a missing script/input never counts as a pass",
+        "shadow checks are advisory: they never count as a pass and never change the exit code",
         "this orchestration is static only; it does not run dynamic/Lima suites",
         "the audit never promotes capability or claims verified repair",
     ]
     if not_run:
         limitations.append(
             "a required check/input is missing; see not_run entries for the exact reason"
+        )
+    if shadow_summary["not_run"]:
+        limitations.append(
+            "one or more shadow checks are not_run (explicit, not a pass): "
+            + ", ".join(shadow_summary["not_run"])
         )
     return {
         "schema_version": SCHEMA_VERSION,
@@ -268,6 +311,7 @@ def audit(
         "checks": checks,
         "failed": [check["id"] for check in failed],
         "not_run": not_run,
+        "shadow_summary": shadow_summary,
         "limitations": limitations,
     }
 
@@ -287,14 +331,22 @@ def render_readme(payload: dict[str, Any]) -> str:
         "",
         "## Checks",
         "",
-        "| id | status | required | detail |",
-        "|---|---|---|---|",
+        "| id | status | required | shadow | detail |",
+        "|---|---|---|---|---|",
     ]
     for check in payload["checks"]:
         lines.append(
             f"| `{check['id']}` | {check['status']} | {check['required']} | "
-            f"{check['detail'].replace('|', '/')} |"
+            f"{check.get('shadow', False)} | {check['detail'].replace('|', '/')} |"
         )
+    shadow = payload.get("shadow_summary") or {}
+    lines.extend(["", "## Shadow checks", ""])
+    lines.append(
+        f"- count: {shadow.get('count', 0)}; passed: {shadow.get('passed', [])}; "
+        f"failed: {shadow.get('failed', [])}; not_run: {shadow.get('not_run', [])}"
+    )
+    lines.append("- shadow results are advisory: never counted as a pass and never"
+                 " change the exit code")
     lines.extend(["", "## Not run", ""])
     if payload["not_run"]:
         for item in payload["not_run"]:

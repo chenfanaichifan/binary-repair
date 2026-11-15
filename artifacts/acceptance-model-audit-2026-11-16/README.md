@@ -1,10 +1,10 @@
 # Acceptance-model audit matrix (2026-11-16)
 
 Deterministic matrix for the A01-A08 acceptance dimensions and the
-AM01-AM20 mismatch model (`app/services/acceptance_models.py`).
+AM01-AM24 mismatch model (`app/services/acceptance_models.py`).
 
-- cases: **43** (positive 4, negative 39)
-- AM classes covered by a negative case: 20/20 (AM01, AM02, AM03, AM04, AM05, AM06, AM07, AM08, AM09, AM10, AM11, AM12, AM13, AM14, AM15, AM16, AM17, AM18, AM19, AM20)
+- cases: **52** (positive 9, negative 43)
+- AM classes covered by a negative case: 24/24 (AM01, AM02, AM03, AM04, AM05, AM06, AM07, AM08, AM09, AM10, AM11, AM12, AM13, AM14, AM15, AM16, AM17, AM18, AM19, AM20, AM21, AM22, AM23, AM24)
 - recall: **1.0**, precision: **1.0**, ok: **True**
 
 ## Cases
@@ -31,8 +31,17 @@ AM01-AM20 mismatch model (`app/services/acceptance_models.py`).
 | negative-am18-independence | self-review independence violation is rejected | AM18 | AM18 | rejected | yes |
 | negative-am19-extra-claim | claims beyond the task contract are rejected | AM19 | AM19 | rejected | yes |
 | negative-am20-evidence-incomplete | incomplete evidence record is rejected | AM20 | AM20 | rejected | yes |
+| negative-am21-repair-scope-escape | whole-image repair scope exceeds a target_scoped task | AM21 | AM21 | rejected | yes |
+| negative-am22-semantic-scope-partial | partial semantic coverage is rejected | AM22 | AM22 | rejected | yes |
+| negative-am23-oracle-self-report | generator self-report cannot satisfy the oracle requirement | AM23 | AM23 | rejected | yes |
+| negative-am24-benchmark-version-mismatch | stale benchmark version/sample set is rejected | AM24 | AM24 | rejected | yes |
+| positive-benchmark-version | matching benchmark version and sample-set commitment verifies | - | - | verified | yes |
 | positive-declared-alias | a declared model alias is verified | - | - | verified | yes |
 | positive-exact-identity | complete exact-identity acceptance verifies | - | - | verified | yes |
+| positive-independent-oracle | an independent external oracle satisfies the oracle requirement | - | - | verified | yes |
+| positive-repair-scope-no-range | target-scoped repair without a VA range verifies | - | - | verified | yes |
+| positive-repair-scope-target | target-scoped repair actions inside the declared range verify | - | - | verified | yes |
+| positive-semantic-scope-complete | full semantic-scope coverage verifies | - | - | verified | yes |
 | positive-static-only | static-only task with static evidence verifies | - | - | verified | yes |
 | positive-whole-program | whole-program task with whole-program evidence verifies | - | - | verified | yes |
 | variant-am01-target-sha-other | any target SHA deviation is rejected | AM01 | AM01 | rejected | yes |

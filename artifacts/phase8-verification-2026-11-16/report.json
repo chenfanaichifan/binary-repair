@@ -1,0 +1,469 @@
+{
+  "checks": [
+    {
+      "detail": "original=c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4 candidate=e140f6ad983542b1c2ef764ceef253213d2b1f54d09c4227f50cb8ed4174aeb1",
+      "id": "identity",
+      "required": true,
+      "status": "passed",
+      "title": "Original/candidate identity and candidate change"
+    },
+    {
+      "detail": "format=elf arch=x86_64 bits=64 endian=little",
+      "id": "container",
+      "required": true,
+      "status": "passed",
+      "title": "Container re-parse and metadata agreement"
+    },
+    {
+      "detail": "actions=1 offsets=0x2a9d0",
+      "id": "action-replay",
+      "required": true,
+      "status": "passed",
+      "title": "Byte-level action replay from raw images"
+    },
+    {
+      "detail": "file offset range [174544, 174552)",
+      "id": "target-scope",
+      "required": true,
+      "status": "passed",
+      "title": "Candidate modifications stay inside the declared target scope"
+    },
+    {
+      "detail": "no abi_block was declared; ABI is unverifiable",
+      "id": "abi",
+      "required": true,
+      "status": "not_run",
+      "title": "Candidate instruction-block ABI validation"
+    },
+    {
+      "detail": "no independent oracle was supplied",
+      "id": "runtime-oracle",
+      "required": true,
+      "status": "not_run",
+      "title": "Independent external PoC differential and regression"
+    },
+    {
+      "detail": "no independent oracle was supplied; generator/reference evidence only; the only evidence is generator self-report/reference fix",
+      "id": "evidence-completeness",
+      "independent": true,
+      "required": true,
+      "status": "failed",
+      "title": "At least one independent oracle (no generator-only evidence)"
+    },
+    {
+      "detail": "no independent oracle evidence: generator/reference self-report alone is insufficient",
+      "id": "independence",
+      "required": true,
+      "status": "failed",
+      "title": "Generator/verifier independence and generator-evidence exclusion"
+    }
+  ],
+  "decision": "rejected",
+  "evidence": [
+    {
+      "candidate_sha256": "e140f6ad983542b1c2ef764ceef253213d2b1f54d09c4227f50cb8ed4174aeb1",
+      "kind": "candidate",
+      "original_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4"
+    },
+    {
+      "candidate": {
+        "arch": "x86_64",
+        "bits": 64,
+        "endian": "little",
+        "format": "elf",
+        "sections": [
+          {
+            "executable": false,
+            "name": "",
+            "offset": 0,
+            "size": 0,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".rodata",
+            "offset": 464,
+            "size": 115184,
+            "va": 16777680
+          },
+          {
+            "executable": false,
+            "name": ".eh_frame_hdr",
+            "offset": 115648,
+            "size": 9956,
+            "va": 16892864
+          },
+          {
+            "executable": false,
+            "name": ".eh_frame",
+            "offset": 125608,
+            "size": 48908,
+            "va": 16902824
+          },
+          {
+            "executable": true,
+            "name": ".text",
+            "offset": 174528,
+            "size": 588154,
+            "va": 16955840
+          },
+          {
+            "executable": false,
+            "name": ".tbss",
+            "offset": 762688,
+            "size": 262172,
+            "va": 17544000
+          },
+          {
+            "executable": false,
+            "name": ".data",
+            "offset": 762688,
+            "size": 19760,
+            "va": 17548096
+          },
+          {
+            "executable": false,
+            "name": ".bss",
+            "offset": 782448,
+            "size": 38976,
+            "va": 17567872
+          },
+          {
+            "executable": false,
+            "name": ".debug_loc",
+            "offset": 782448,
+            "size": 1818920,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_abbrev",
+            "offset": 2601368,
+            "size": 40262,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_info",
+            "offset": 2641630,
+            "size": 909304,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_str",
+            "offset": 3550934,
+            "size": 308823,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".comment",
+            "offset": 3859757,
+            "size": 41,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_line",
+            "offset": 3859798,
+            "size": 463464,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_ranges",
+            "offset": 4323262,
+            "size": 279344,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_pubnames",
+            "offset": 4602606,
+            "size": 80440,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_pubtypes",
+            "offset": 4683046,
+            "size": 110532,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_aranges",
+            "offset": 4793578,
+            "size": 240,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".symtab",
+            "offset": 4793824,
+            "size": 64440,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".shstrtab",
+            "offset": 4858264,
+            "size": 212,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".strtab",
+            "offset": 4858476,
+            "size": 51488,
+            "va": 0
+          }
+        ]
+      },
+      "kind": "container",
+      "original": {
+        "arch": "x86_64",
+        "bits": 64,
+        "endian": "little",
+        "format": "elf",
+        "sections": [
+          {
+            "executable": false,
+            "name": "",
+            "offset": 0,
+            "size": 0,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".rodata",
+            "offset": 464,
+            "size": 115184,
+            "va": 16777680
+          },
+          {
+            "executable": false,
+            "name": ".eh_frame_hdr",
+            "offset": 115648,
+            "size": 9956,
+            "va": 16892864
+          },
+          {
+            "executable": false,
+            "name": ".eh_frame",
+            "offset": 125608,
+            "size": 48908,
+            "va": 16902824
+          },
+          {
+            "executable": true,
+            "name": ".text",
+            "offset": 174528,
+            "size": 588154,
+            "va": 16955840
+          },
+          {
+            "executable": false,
+            "name": ".tbss",
+            "offset": 762688,
+            "size": 262172,
+            "va": 17544000
+          },
+          {
+            "executable": false,
+            "name": ".data",
+            "offset": 762688,
+            "size": 19760,
+            "va": 17548096
+          },
+          {
+            "executable": false,
+            "name": ".bss",
+            "offset": 782448,
+            "size": 38976,
+            "va": 17567872
+          },
+          {
+            "executable": false,
+            "name": ".debug_loc",
+            "offset": 782448,
+            "size": 1818920,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_abbrev",
+            "offset": 2601368,
+            "size": 40262,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_info",
+            "offset": 2641630,
+            "size": 909304,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_str",
+            "offset": 3550934,
+            "size": 308823,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".comment",
+            "offset": 3859757,
+            "size": 41,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_line",
+            "offset": 3859798,
+            "size": 463464,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_ranges",
+            "offset": 4323262,
+            "size": 279344,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_pubnames",
+            "offset": 4602606,
+            "size": 80440,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_pubtypes",
+            "offset": 4683046,
+            "size": 110532,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".debug_aranges",
+            "offset": 4793578,
+            "size": 240,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".symtab",
+            "offset": 4793824,
+            "size": 64440,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".shstrtab",
+            "offset": 4858264,
+            "size": 212,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".strtab",
+            "offset": 4858476,
+            "size": 51488,
+            "va": 0
+          }
+        ]
+      }
+    },
+    {
+      "actions": [
+        {
+          "after_hex": "9090909090909090",
+          "before_hex": "f0e8000000005548",
+          "offset": 174544,
+          "size": 8
+        }
+      ],
+      "claimed_actions": [
+        {
+          "after_hex": "9090909090909090",
+          "before_hex": "f0e8000000005548",
+          "offset": 174544,
+          "size": 8
+        }
+      ],
+      "kind": "actions"
+    },
+    {
+      "declared": {
+        "file_offset": 174544,
+        "name": ".text",
+        "policy": "target_scoped",
+        "size": 8
+      },
+      "kind": "target-scope",
+      "range": {
+        "detail": "file offset range [174544, 174552)",
+        "file_range": [
+          174544,
+          174552
+        ],
+        "kind": "target_scoped",
+        "va_range": null,
+        "whole_program": false
+      }
+    },
+    {
+      "kind": "abi",
+      "report": {}
+    },
+    {
+      "error": "no independent oracle was supplied",
+      "kind": "oracle",
+      "source": "none"
+    },
+    {
+      "detail": "no independent oracle was supplied; generator/reference evidence only; the only evidence is generator self-report/reference fix",
+      "kind": "evidence-completeness",
+      "ok": false,
+      "sources": [
+        "none"
+      ]
+    }
+  ],
+  "generator": {
+    "agent": "deterministic",
+    "generator_id": "phase8-schema-sample-generator/1",
+    "model": null,
+    "run_id": "schema-sample"
+  },
+  "independence": {
+    "generator_evidence_excluded": true,
+    "ok": false
+  },
+  "limitations": [
+    "abi: no abi_block was declared; ABI is unverifiable",
+    "fail-closed: only an all-required-passed result with a passing independent oracle can be verified",
+    "runtime-oracle: no independent oracle was supplied"
+  ],
+  "report_sha256": "e5f3c4cfe3b9ea96312e18cb088fd04baeb705c5c35d7ae1115d2d0b32f9c627",
+  "schema_version": 1,
+  "target": {
+    "arch": "x86_64",
+    "bits": 64,
+    "endian": "little",
+    "format": "elf",
+    "target_scope": {
+      "name": ".text",
+      "policy": "target_scoped"
+    },
+    "target_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4"
+  },
+  "verifier": {
+    "verifier_id": "independent-verifier/1",
+    "version": "1"
+  }
+}

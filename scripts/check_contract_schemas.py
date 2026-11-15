@@ -44,11 +44,39 @@ SCHEMA_NAMES: tuple[str, ...] = (
     "repair",
     "evidence",
     "reflection",
+    "benchmark-sample",
+    "verification",
+    "binary-target",
+    "vulnerability-finding",
+    "root-cause",
+    "patch-candidate",
 )
 CONTRACTS_DIRNAME = "contracts"
 FIXTURES_DIRNAME = "artifacts/contract-fixtures-2026-11-16"
 FIXTURE_KINDS = ("valid", "invalid")
 SUMS_FILENAME = "SHA256SUMS"
+
+#: Committed module artifacts that must keep validating against their contract.
+#: The third value is the collection key inside the JSON payload; ``None``
+#: means "one record (or a list under verifications/reports)".
+#: The last value marks the integration as required for this checkout.
+ARTIFACT_INTEGRATIONS: tuple[tuple[str, str, str, str | None, bool], ...] = (
+    ("capability-universe",
+     "artifacts/capability-universe-2026-11-16/dimension-registry.json",
+     "capability", "dimensions", True),
+    ("gap-registry",
+     "artifacts/gap-registry-2026-11-16/gaps.json",
+     "gap", "records", True),
+    ("autonomous-reflection",
+     "artifacts/autonomous-reflection-2026-11-16/reflection.json",
+     "reflection", "records", True),
+    ("benchmark-manifest",
+     "benchmark/phase8-v1/manifest.json",
+     "benchmark-sample", "samples", False),
+    ("verification-report",
+     "artifacts/phase8-verification-2026-11-16/report.json",
+     "verification", None, False),
+)
 
 SCHEMA_URL_PREFIX = "https://json-schema.org/"
 JSON_TYPES = frozenset({
@@ -265,10 +293,10 @@ def _acceptance_semantics(instance: Mapping[str, Any]) -> list[str]:
     if isinstance(mismatches, list):
         ids = [str(item.get("id")) for item in mismatches
                if isinstance(item, Mapping)]
-        expected = [f"AM{index:02d}" for index in range(1, 21)]
+        expected = [f"AM{index:02d}" for index in range(1, 25)]
         if ids != expected:
             violations.append(
-                "acceptance: mismatch class ids must be exactly AM01-AM20, "
+                "acceptance: mismatch class ids must be exactly AM01-AM24, "
                 f"got {ids}")
     result = instance.get("match_result")
     if isinstance(result, Mapping):
@@ -371,6 +399,144 @@ def _gap_semantics(instance: Mapping[str, Any]) -> list[str]:
     return violations
 
 
+def _verification_semantics(instance: Mapping[str, Any]) -> list[str]:
+    violations: list[str] = []
+    decision = instance.get("decision")
+    independence = instance.get("independence")
+    if not isinstance(independence, Mapping):
+        return ["verification: independence must be an object"]
+    checks = instance.get("checks")
+    checks = checks if isinstance(checks, list) else []
+    if decision == "verified":
+        if independence.get("ok") is not True:
+            violations.append(
+                "verification: verified requires independence.ok=true")
+        if independence.get("generator_evidence_excluded") is not True:
+            violations.append(
+                "verification: verified requires "
+                "independence.generator_evidence_excluded=true")
+        independent_passed = [
+            check for check in checks
+            if isinstance(check, Mapping)
+            and check.get("status") == "passed"
+            and check.get("independent") is True
+        ]
+        if not independent_passed:
+            violations.append(
+                "verification: verified requires at least one passed "
+                "independent oracle check")
+        required_failed = [
+            check for check in checks
+            if isinstance(check, Mapping)
+            and check.get("required") is True
+            and check.get("status") in {"failed", "not_run"}
+        ]
+        if required_failed:
+            violations.append(
+                "verification: verified forbids failed/not_run required checks")
+    return violations
+
+
+def _benchmark_sample_semantics(instance: Mapping[str, Any]) -> list[str]:
+    violations: list[str] = []
+    if instance.get("hidden_available") is not False:
+        violations.append("benchmark-sample: hidden_available must be false")
+    oracle = instance.get("oracle")
+    kinds = oracle.get("kinds") if isinstance(oracle, Mapping) else None
+    expected_scope = instance.get("expected_scope")
+    independent_kinds = {"external_poc", "native", "emulated"}
+    if isinstance(kinds, list):
+        independent = sorted(set(kinds) & independent_kinds)
+        if expected_scope == "analysis_only" and independent:
+            violations.append(
+                "benchmark-sample: analysis_only expectation must not claim "
+                "an independent runtime oracle")
+        if expected_scope in {"function", "whole_program"} and not independent:
+            violations.append(
+                "benchmark-sample: function/whole_program expectation requires "
+                "at least one independent oracle kind")
+    return violations
+
+
+def _binary_target_semantics(instance: Mapping[str, Any]) -> list[str]:
+    violations: list[str] = []
+    scope = instance.get("target_scope")
+    policy = scope.get("policy") if isinstance(scope, Mapping) else None
+    if policy == "target_scoped":
+        has_name = isinstance(scope, Mapping) and bool(str(scope.get("name") or ""))
+        has_range = (
+            isinstance(scope, Mapping)
+            and isinstance(scope.get("va"), int)
+            and isinstance(scope.get("end"), int)
+            and scope.get("end") > scope.get("va")
+        )
+        if not (has_name or has_range):
+            violations.append(
+                "binary-target: target_scoped requires a name or a valid VA range")
+    identity = instance.get("identity")
+    if isinstance(identity, Mapping) and identity.get("kind") == "sha256":
+        if identity.get("value") != instance.get("target_sha256"):
+            violations.append(
+                "binary-target: sha256 identity must equal target_sha256")
+    compiler = instance.get("compiler")
+    if isinstance(compiler, Mapping) and compiler.get("available") is False:
+        if not str(compiler.get("reason") or "").strip():
+            violations.append(
+                "binary-target: unavailable compiler requires a reason")
+    return violations
+
+
+def _root_cause_semantics(instance: Mapping[str, Any]) -> list[str]:
+    violations: list[str] = []
+    data_flow = instance.get("data_flow_evidence") or []
+    control_flow = instance.get("control_flow_evidence") or []
+    if not data_flow and not control_flow:
+        violations.append(
+            "root-cause: at least one of data_flow_evidence/"
+            "control_flow_evidence must be non-empty")
+    return violations
+
+
+def _patch_candidate_semantics(instance: Mapping[str, Any]) -> list[str]:
+    violations: list[str] = []
+    status = instance.get("status")
+    plan = instance.get("verification_plan")
+    if status == "verified":
+        if not isinstance(plan, Mapping) or plan.get("independent_oracle") is not True:
+            violations.append(
+                "patch-candidate: verified requires "
+                "verification_plan.independent_oracle=true")
+        model_identity = instance.get("model_identity")
+        identity_status = (
+            model_identity.get("status")
+            if isinstance(model_identity, Mapping) else None
+        )
+        if identity_status in {"served-model-only", "unknown", "mismatch"}:
+            violations.append(
+                "patch-candidate: verified forbids untrusted model identity "
+                f"status {identity_status!r}")
+    range_info = instance.get("modification_range")
+    if isinstance(range_info, Mapping):
+        start = range_info.get("start")
+        end = range_info.get("end")
+        size = range_info.get("size")
+        if isinstance(start, int) and isinstance(end, int) and isinstance(size, int):
+            if end - start != size:
+                violations.append(
+                    "patch-candidate: modification_range size must equal end-start")
+    for index, action in enumerate(instance.get("actions") or []):
+        if not isinstance(action, Mapping):
+            continue
+        for key in ("before_hex", "after_hex"):
+            value = action.get(key)
+            if isinstance(value, str) and isinstance(action.get("size"), int):
+                if len(value) != action["size"] * 2:
+                    violations.append(
+                        f"patch-candidate: actions[{index}].{key} length must "
+                        f"equal size*2")
+    return violations
+
+
 CONTRACT_SEMANTICS = {
     "acceptance": _acceptance_semantics,
     "repair": _repair_semantics,
@@ -378,6 +544,12 @@ CONTRACT_SEMANTICS = {
     "reflection": _reflection_semantics,
     "gap": _gap_semantics,
     "capability": lambda instance: [],
+    "benchmark-sample": _benchmark_sample_semantics,
+    "verification": _verification_semantics,
+    "binary-target": _binary_target_semantics,
+    "vulnerability-finding": lambda instance: [],
+    "root-cause": _root_cause_semantics,
+    "patch-candidate": _patch_candidate_semantics,
 }
 
 
@@ -535,6 +707,79 @@ def run_check(
                         f"{name}.invalid: invalid fixture was accepted")
                 else:
                     report["fixtures"]["invalid_rejected"] += 1
+    integrations: list[dict[str, Any]] = []
+    for integration_id, relative, schema_name, collection, required in (
+        ARTIFACT_INTEGRATIONS
+    ):
+        artifact_path = root / relative
+        entry: dict[str, Any] = {
+            "id": integration_id,
+            "path": relative,
+            "required": required,
+            "status": "not_run",
+            "record_count": 0,
+            "detail": "",
+        }
+        schema = loaded_schemas.get(schema_name)
+        if schema is None:
+            entry["detail"] = "contract schema unavailable"
+            if required:
+                violations.append(
+                    f"artifact {integration_id}: contract schema unavailable")
+            integrations.append(entry)
+            continue
+        if not artifact_path.is_file():
+            entry["detail"] = "artifact not committed in this checkout"
+            if required:
+                violations.append(
+                    f"artifact {integration_id}: required committed artifact "
+                    f"missing: {relative}")
+            integrations.append(entry)
+            continue
+        payload, error = _load_json(artifact_path)
+        if payload is None:
+            entry["detail"] = f"unreadable artifact: {error}"
+            violations.append(
+                f"artifact {integration_id}: unreadable ({error})")
+            integrations.append(entry)
+            continue
+        records: list[Any] = []
+        if collection is not None:
+            value = payload.get(collection) if isinstance(payload, Mapping) else None
+            if isinstance(value, list):
+                records = value
+        else:
+            if isinstance(payload, Mapping) and payload.get("decision"):
+                records = [payload]
+            elif isinstance(payload, Mapping) and isinstance(
+                    payload.get("verifications"), list):
+                records = list(payload["verifications"])
+            elif isinstance(payload, Mapping) and isinstance(
+                    payload.get("report"), Mapping):
+                records = [payload["report"]]
+        if not records:
+            entry["detail"] = "no records found in the expected collection"
+            integrations.append(entry)
+            continue
+        artifact_errors: list[str] = []
+        for index, record in enumerate(records):
+            errors, _validator_name = _validate_instance(
+                schema_name, schema, record, use_jsonschema=use_jsonschema)
+            if errors:
+                artifact_errors.append(f"record[{index}]: {errors[:2]}")
+            elif isinstance(record, Mapping):
+                artifact_errors.extend(CONTRACT_SEMANTICS[schema_name](record))
+        entry["record_count"] = len(records)
+        if artifact_errors:
+            entry["status"] = "failed"
+            entry["detail"] = artifact_errors[0]
+            violations.append(
+                f"artifact {integration_id}: committed records violate the "
+                f"contract: {artifact_errors[:2]}")
+        else:
+            entry["status"] = "validated"
+        integrations.append(entry)
+    report["integrations"] = integrations
     report["fixtures"]["total"] = 2 * len(SCHEMA_NAMES)
     if validator_names:
         report["validator"] = (
@@ -572,6 +817,9 @@ def run_check(
          "ok": report["fixtures"]["valid_passed"] == len(SCHEMA_NAMES)},
         {"id": "invalid-fixtures",
          "ok": report["fixtures"]["invalid_rejected"] == len(SCHEMA_NAMES)},
+        {"id": "artifacts",
+         "ok": all(item["status"] != "failed"
+                   for item in report.get("integrations", []))},
         {"id": "sums", "ok": bool(report["sums"]["ok"])},
     ]
     report["ok"] = not violations
@@ -595,6 +843,7 @@ def _format_text(report: Mapping[str, Any]) -> str:
             valid=report["fixtures"]["valid_passed"],
             invalid=report["fixtures"]["invalid_rejected"],
             total=report["fixtures"]["total"] // 2,
+            artifacts=len(report.get("integrations", [])),
             sums=report["sums"]["checked"],
             violations=len(report["violations"]),
         )

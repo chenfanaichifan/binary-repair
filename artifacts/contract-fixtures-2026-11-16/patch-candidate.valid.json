@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cand-fixture-001",
+  "vulnerability_id": "find-fixture-001",
+  "strategy_id": "immediate",
+  "target_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "original_binary_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "candidate_binary_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "modification_range": {
+    "start": 4096,
+    "end": 4112,
+    "size": 16
+  },
+  "actions": [
+    {
+      "offset": 4096,
+      "size": 16,
+      "before_hex": "488b45f04889c7e80000000031c05dc3",
+      "after_hex": "488b45f84889c7e80000000031c05dc3"
+    }
+  ],
+  "modified_functions": [
+    "vuln_copy"
+  ],
+  "expected_behavior": "unbounded copy becomes bounded",
+  "security_property": "no write beyond the 32-byte destination",
+  "verification_plan": {
+    "required_checks": [
+      "identity",
+      "runtime-oracle",
+      "regression"
+    ],
+    "independent_oracle": true,
+    "regression_required": true
+  },
+  "risk_level": "medium",
+  "generator": {
+    "generator_id": "repair_pipeline/1",
+    "agent": "deterministic",
+    "model": null,
+    "run_id": "run-fixture-001"
+  },
+  "model_identity": {
+    "requested": null,
+    "served": null,
+    "status": "unknown"
+  },
+  "generation_evidence": [
+    "artifacts/repair/run-fixture-001.json"
+  ],
+  "status": "patch_candidate"
+}

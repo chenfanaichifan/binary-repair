@@ -142,9 +142,9 @@
   ],
   "mismatch_classes": [
     {
-      "id": "AM21",
+      "id": "AM25",
       "code": "target_sha_mismatch",
-      "severity": "critical",
+      "severity": "verified",
       "required_actions": [
         "reject_target_sha_mismatch"
       ]

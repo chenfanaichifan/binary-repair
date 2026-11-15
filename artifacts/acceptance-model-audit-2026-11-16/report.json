@@ -1,5 +1,5 @@
 {
-  "case_count": 43,
+  "case_count": 52,
   "cases": [
     {
       "case_id": "negative-am01-target-sha",
@@ -262,6 +262,67 @@
       "purpose": "incomplete evidence record is rejected"
     },
     {
+      "case_id": "negative-am21-repair-scope-escape",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM21"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM21"
+      ],
+      "ok": true,
+      "purpose": "whole-image repair scope exceeds a target_scoped task"
+    },
+    {
+      "case_id": "negative-am22-semantic-scope-partial",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM22"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM22"
+      ],
+      "ok": true,
+      "purpose": "partial semantic coverage is rejected"
+    },
+    {
+      "case_id": "negative-am23-oracle-self-report",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM23"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM23"
+      ],
+      "ok": true,
+      "purpose": "generator self-report cannot satisfy the oracle requirement"
+    },
+    {
+      "case_id": "negative-am24-benchmark-version-mismatch",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM24"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM24"
+      ],
+      "ok": true,
+      "purpose": "stale benchmark version/sample set is rejected"
+    },
+    {
+      "case_id": "positive-benchmark-version",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "matching benchmark version and sample-set commitment verifies"
+    },
+    {
       "case_id": "positive-declared-alias",
       "decision": "verified",
       "detected_mismatches": [],
@@ -278,6 +339,42 @@
       "expected_mismatches": [],
       "ok": true,
       "purpose": "complete exact-identity acceptance verifies"
+    },
+    {
+      "case_id": "positive-independent-oracle",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "an independent external oracle satisfies the oracle requirement"
+    },
+    {
+      "case_id": "positive-repair-scope-no-range",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "target-scoped repair without a VA range verifies"
+    },
+    {
+      "case_id": "positive-repair-scope-target",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "target-scoped repair actions inside the declared range verify"
+    },
+    {
+      "case_id": "positive-semantic-scope-complete",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "full semantic-scope coverage verifies"
     },
     {
       "case_id": "positive-static-only",
@@ -567,10 +664,14 @@
     "AM17",
     "AM18",
     "AM19",
-    "AM20"
+    "AM20",
+    "AM21",
+    "AM22",
+    "AM23",
+    "AM24"
   ],
-  "detected_expected_instances": 40,
-  "detected_mismatch_instances": 40,
+  "detected_expected_instances": 44,
+  "detected_mismatch_instances": 44,
   "dimensions": [
     "A01",
     "A02",
@@ -581,7 +682,7 @@
     "A07",
     "A08"
   ],
-  "expected_mismatch_instances": 40,
+  "expected_mismatch_instances": 44,
   "failures": [],
   "false_positives": 0,
   "generated_by": "scripts/audit_acceptance_models.py",
@@ -605,11 +706,15 @@
     "AM17",
     "AM18",
     "AM19",
-    "AM20"
+    "AM20",
+    "AM21",
+    "AM22",
+    "AM23",
+    "AM24"
   ],
-  "negative_case_count": 39,
+  "negative_case_count": 43,
   "ok": true,
-  "positive_case_count": 4,
+  "positive_case_count": 9,
   "precision": 1.0,
   "recall": 1.0,
   "schema_version": 1

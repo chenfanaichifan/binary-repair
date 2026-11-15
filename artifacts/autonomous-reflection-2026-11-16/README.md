@@ -18,9 +18,9 @@ artifacts only (no network, no LLM, no dynamic probes).
 
 | input | status | sha256 |
 |---|---|---|
-| `acceptance_audit` (artifacts/acceptance-model-audit-2026-11-16/report.json) | read | `b55040ad143779e219709e10e9b39ae9b12f62512d431230eb33c9c47b9f256c` |
+| `acceptance_audit` (artifacts/acceptance-model-audit-2026-11-16/report.json) | read | `46fbd837fcf4523ae74415c1223def97e3af83d721d2082f7599ea2adba76c96` |
 | `coverage_matrix` (artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json) | read | `6c72abcac0f71b747f68a8f2b5fb4f4fd5b74de4629aa00a3fa9a8647251e3d8` |
-| `gap_candidates` (artifacts/gap-registry-2026-11-16/candidates.json) | read | `3842320b25d097cf614d0a9d9a97ae9dcc7a282e6969f52977083b85c09ebe12` |
+| `gap_candidates` (artifacts/gap-registry-2026-11-16/candidates.json) | read | `9b0122928ded2a6964ebb92a9ef69dcef164e8b910991f3665cf381264915259` |
 
 ## Not run
 
@@ -28,9 +28,9 @@ artifacts only (no network, no LLM, no dynamic probes).
 
 ## Summary
 
-- records: 91
-- failure types: {'capability': 12, 'evaluation': 58, 'infrastructure': 6, 'knowledge': 15}
-- capability decisions: {'analysis_only': 73, 'candidate': 12, 'not_run': 6}
+- records: 95
+- failure types: {'capability': 12, 'evaluation': 62, 'infrastructure': 6, 'knowledge': 15}
+- capability decisions: {'analysis_only': 77, 'candidate': 12, 'not_run': 6}
 - verified_true_count: 0 (must be 0)
 - candidate records: ['ref-150cc671412ef97a895b53f5', 'ref-4b9d1c6a004a18a1a4575bcc', 'ref-4eaf40e772a497fe4771c59e', 'ref-c2545e9f07b50425a6fe50bd', 'ref-63a5432c55d8a28cd94a909e', 'ref-07a2c5e033dda2645de5d325', 'ref-ce61eddf4bea8b3f71cbce91', 'ref-f48f689ee71e9cbb45482295', 'ref-b02c5cd52da0563856a9775a', 'ref-21f7d79c0b9b58d32d6a84c4', 'ref-7440f22f4f632142bb31cca4', 'ref-58a2df466d896ed4484699d6']
 

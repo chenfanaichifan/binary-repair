@@ -1,0 +1,1317 @@
+{
+  "audit_date": "2026-11-16",
+  "capability_claims": [],
+  "capability_claims_note": "no new repair capability is claimed and no verified state is upgraded by this audit",
+  "generated_by": "scripts/audit_repair_readiness.py",
+  "generated_from_sha": "2bfa112591614aa39d4d6b55ad9bb962b9718e7c",
+  "items": [
+    {
+      "artifact_probe": false,
+      "blocker": "external NVD corpus is not provisioned; the knowledge_source_scan discovery mechanism is declared not_run in this tree",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [],
+      "evidence_refs": [
+        "app.services.overflow_features",
+        "app/services/overflow_features.py",
+        "scripts/fetch_nvd_metadata.py",
+        "scripts/train_overflow_knowledge.py",
+        "tests/test_overflow_knowledge.py"
+      ],
+      "gap_id": "G01",
+      "ground_truth": {
+        "refs": [
+          "knowledge/nvd_sample.json",
+          "knowledge/overflow_kb.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "partial",
+      "next_action": "complete the missing deliverable for G01 and re-run this audit; only code+test(+artifact) evidence can move it to implemented",
+      "non_goal_ids": [],
+      "phase": "8A",
+      "priority": "P1",
+      "required_deliverable": "scanner code + test + provisioned knowledge corpus artifact",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_overflow_knowledge.py"
+      ],
+      "title": "\u5916\u90e8\u77e5\u8bc6\u626b\u63cf Knowledge Source Scanner",
+      "title_en": "External Knowledge Source Scanner",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [
+        "G01"
+      ],
+      "evidence_refs": [
+        "app.services.capability_dimensions",
+        "app/services/capability_dimensions.py",
+        "artifacts/capability-universe-2026-11-16",
+        "scripts/build_universe_dimension_registry.py",
+        "tests/test_capability_dimensions.py"
+      ],
+      "gap_id": "G02",
+      "ground_truth": {
+        "refs": [
+          "artifacts/capability-universe-2026-11-16/dimension-registry.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G02 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8A",
+      "priority": "P1",
+      "required_deliverable": "20-dimension registry + mapping artifact + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_capability_dimensions.py"
+      ],
+      "title": "\u672a\u77e5\u7ef4\u5ea6\u53d1\u73b0 Dimension Discovery Engine",
+      "title_en": "Dimension Discovery Engine",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "space outside the 240 measured cells is only tracked as undiscovered_space=not_measurable; no enumerated unknown inventory",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [
+        "G02"
+      ],
+      "evidence_refs": [
+        "app.services.capability_dimensions",
+        "app/services/capability_dimensions.py",
+        "artifacts/capability-universe-2026-11-15",
+        "scripts/check_universe_methodology.py",
+        "tests/test_universe_methodology.py"
+      ],
+      "gap_id": "G03",
+      "ground_truth": {
+        "refs": [
+          "artifacts/capability-universe-2026-11-16/dimension-registry.json",
+          "artifacts/capability-universe-2026-11-15/methodology.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "partial",
+      "next_action": "complete the missing deliverable for G03 and re-run this audit; only code+test(+artifact) evidence can move it to implemented",
+      "non_goal_ids": [],
+      "phase": "8A",
+      "priority": "P1",
+      "required_deliverable": "explicit unknown/undiscovered-space accounting with unknown=0 inside the universe and an honest statement outside it",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_universe_methodology.py"
+      ],
+      "title": "240 cells \u4e4b\u5916\u7684 unknown-space tracking",
+      "title_en": "Unknown-space tracking beyond 240 cells",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "no combination-discovery engine exists; the gap registry only has single-mechanism adapters",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": false,
+      "dependencies": [
+        "G02",
+        "G03"
+      ],
+      "evidence_refs": [],
+      "gap_id": "G04",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": false,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "missing",
+      "next_action": "build the G04 deliverable (combination engine + tests + candidate artifact) with tests before it appears in any readiness claim",
+      "non_goal_ids": [],
+      "phase": "8A",
+      "priority": "P2",
+      "required_deliverable": "combination engine + tests + candidate artifact",
+      "test_probe": false,
+      "test_refs": [],
+      "title": "\u4ea4\u53c9\u80fd\u529b\u7ec4\u5408 Combination Discovery",
+      "title_en": "Cross-capability Combination Discovery",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "mutation discovery is declared NOT RUN: no mutation engine/corpus exists in this tree",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": false,
+      "dependencies": [
+        "G07",
+        "G08"
+      ],
+      "evidence_refs": [],
+      "gap_id": "G05",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": false,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "missing",
+      "next_action": "build the G05 deliverable (mutation engine + deterministic seeds + tests) with tests before it appears in any readiness claim",
+      "non_goal_ids": [],
+      "phase": "8A",
+      "priority": "P2",
+      "required_deliverable": "mutation engine + deterministic seeds + tests",
+      "test_probe": false,
+      "test_refs": [],
+      "title": "Mutation-based Discovery",
+      "title_en": "Mutation-based Discovery",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "metamorphic discovery is declared NOT RUN: no relation engine exists in this tree",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": false,
+      "dependencies": [
+        "G07",
+        "G08"
+      ],
+      "evidence_refs": [],
+      "gap_id": "G06",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": false,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "missing",
+      "next_action": "build the G06 deliverable (metamorphic relation engine + fixtures + tests) with tests before it appears in any readiness claim",
+      "non_goal_ids": [],
+      "phase": "8A",
+      "priority": "P2",
+      "required_deliverable": "metamorphic relation engine + fixtures + tests",
+      "test_probe": false,
+      "test_refs": [],
+      "title": "Metamorphic Discovery",
+      "title_en": "Metamorphic Discovery",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [],
+      "evidence_refs": [
+        "app.services.binary_datasets",
+        "app/services/binary_datasets.py",
+        "scripts/analyze_local_binary_corpus.py",
+        "scripts/build_local_binary_corpus.py",
+        "tests/test_binary_datasets.py",
+        "tests/test_cgc_dataset.py"
+      ],
+      "gap_id": "G07",
+      "ground_truth": {
+        "refs": [
+          "knowledge/cgc_corpus.json",
+          "knowledge/local_binary_features.json",
+          "knowledge/binary_dataset_summary.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G07 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8A",
+      "priority": "P1",
+      "required_deliverable": "corpus builder/analyzer + committed corpus metadata + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_binary_datasets.py",
+        "tests/test_cgc_dataset.py"
+      ],
+      "title": "\u5916\u90e8\u4e8c\u8fdb\u5236\u6837\u672c\u5e93 Binary Corpus",
+      "title_en": "External Binary Corpus",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [
+        "G01",
+        "G07"
+      ],
+      "evidence_refs": [
+        "app.services.gap_registry",
+        "app/services/gap_registry.py",
+        "artifacts/gap-registry-2026-11-16",
+        "scripts/discover_capability_gaps.py",
+        "tests/test_gap_registry_discovery.py"
+      ],
+      "gap_id": "G08",
+      "ground_truth": {
+        "refs": [
+          "artifacts/gap-registry-2026-11-16/gaps.json",
+          "artifacts/gap-registry-2026-11-16/candidates.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G08 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8A",
+      "priority": "P1",
+      "required_deliverable": "unified GapRecord + deterministic ids/lineage + tests + artifact",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_gap_registry_discovery.py"
+      ],
+      "title": "\u65b0\u53d1\u73b0\u4e0e\u65e7 Gap \u53bb\u91cd/lineage",
+      "title_en": "Deduplication and lineage for findings vs old gaps",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "analyzer scope is same-function only: cross-function allocations and argument flows fail closed and are not tracked",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [],
+      "evidence_refs": [
+        "app.services.repair.analyzer",
+        "app.services.repair.call_targets",
+        "app/services/repair/analyzer.py",
+        "app/services/repair/call_targets.py",
+        "tests/test_repair_analyzer.py"
+      ],
+      "gap_id": "G09",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "partial",
+      "next_action": "complete the missing deliverable for G09 and re-run this audit; only code+test(+artifact) evidence can move it to implemented",
+      "non_goal_ids": [],
+      "phase": "8B",
+      "priority": "P0",
+      "required_deliverable": "inter-procedural data-flow analysis + fixtures + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_repair_analyzer.py"
+      ],
+      "title": "\u8de8\u51fd\u6570 Data-Flow",
+      "title_en": "Cross-function Data-Flow",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "explicit claims non-goal; no repair capability is claimed",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [
+        "G09"
+      ],
+      "evidence_refs": [
+        "app.services.repair.analyzer",
+        "app/services/repair/analyzer.py",
+        "tests/test_repair_analyzer.py"
+      ],
+      "gap_id": "G10",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "non_goal",
+      "next_action": "keep G10 mapped to its claims non-goal ids; re-review at the quarterly claims review, never promote without new measured evidence",
+      "non_goal_ids": [
+        "NG-non-goal-1"
+      ],
+      "phase": "8B",
+      "priority": "P0",
+      "required_deliverable": "alias-aware capacity analysis + fixtures + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_repair_analyzer.py"
+      ],
+      "title": "Pointer Alias",
+      "title_en": "Pointer Alias",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "explicit claims non-goal; no repair capability is claimed",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [
+        "G09"
+      ],
+      "evidence_refs": [
+        "app.services.repair.analyzer",
+        "app/services/repair/analyzer.py",
+        "tests/test_repair_analyzer.py"
+      ],
+      "gap_id": "G11",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "non_goal",
+      "next_action": "keep G11 mapped to its claims non-goal ids; re-review at the quarterly claims review, never promote without new measured evidence",
+      "non_goal_ids": [
+        "NG-non-goal-1"
+      ],
+      "phase": "8B",
+      "priority": "P0",
+      "required_deliverable": "global/struct capacity recovery + fixtures + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_repair_analyzer.py"
+      ],
+      "title": "\u5168\u5c40\u53d8\u91cf/\u7ed3\u6784\u4f53\u5bb9\u91cf\u63a8\u65ad",
+      "title_en": "Global variable / struct capacity inference",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "only the duplicated-range-check capacity rewrite is deterministic; general truncation/signedness analysis has no path",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [
+        "G09"
+      ],
+      "evidence_refs": [
+        "app.services.overflow_features",
+        "app.services.repair.capacity",
+        "app/services/overflow_features.py",
+        "app/services/repair/capacity.py",
+        "scripts/classify_overflow.py",
+        "tests/test_capacity_repair.py"
+      ],
+      "gap_id": "G12",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "partial",
+      "next_action": "complete the missing deliverable for G12 and re-run this audit; only code+test(+artifact) evidence can move it to implemented",
+      "non_goal_ids": [],
+      "phase": "8B",
+      "priority": "P0",
+      "required_deliverable": "integer analysis + deterministic repair templates + fixtures + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_capacity_repair.py"
+      ],
+      "title": "Integer \u6f0f\u6d1e\u5206\u6790\uff08range/overflow/truncation/signedness\uff09",
+      "title_en": "Integer vulnerability analysis (range/overflow/truncation/signedness)",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [],
+      "evidence_refs": [
+        "app.services.repair.guards",
+        "app.services.repair.writer",
+        "app/services/repair/guards.py",
+        "app/services/repair/writer.py",
+        "artifacts/coverage-closure-2026-11-14",
+        "tests/test_pe_strcpy_guard.py",
+        "tests/test_repair_guards.py"
+      ],
+      "gap_id": "G13",
+      "ground_truth": {
+        "refs": [
+          "fixtures/elf/vuln-strcpy-x86_64.elf"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G13 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8B",
+      "priority": "P0",
+      "required_deliverable": "string-sink analysis + guard repair + fixtures + runtime evidence",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_pe_strcpy_guard.py",
+        "tests/test_repair_guards.py"
+      ],
+      "title": "String \u6f0f\u6d1e\u5206\u6790",
+      "title_en": "String vulnerability analysis",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "explicit claims non-goal; no repair capability is claimed",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": false,
+      "dependencies": [
+        "G09"
+      ],
+      "evidence_refs": [],
+      "gap_id": "G14",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": false,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "non_goal",
+      "next_action": "keep G14 mapped to its claims non-goal ids; re-review at the quarterly claims review, never promote without new measured evidence",
+      "non_goal_ids": [
+        "NG-non-goal-2"
+      ],
+      "phase": "8B",
+      "priority": "P1",
+      "required_deliverable": "UAF lifetime analysis + repair + fixtures + tests",
+      "test_probe": false,
+      "test_refs": [],
+      "title": "UAF \u751f\u547d\u5468\u671f",
+      "title_en": "UAF lifetime",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "only direct calls already made by the target are resolvable; indirect calls are explicitly forbidden, not analyzed",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [],
+      "evidence_refs": [
+        "app.services.repair.call_targets",
+        "app/services/repair/call_targets.py",
+        "tests/test_ai_assembly_calls.py"
+      ],
+      "gap_id": "G15",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "partial",
+      "next_action": "complete the missing deliverable for G15 and re-run this audit; only code+test(+artifact) evidence can move it to implemented",
+      "non_goal_ids": [],
+      "phase": "8B",
+      "priority": "P0",
+      "required_deliverable": "indirect-call target analysis + allow-list + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_ai_assembly_calls.py"
+      ],
+      "title": "\u95f4\u63a5\u8c03\u7528\u5206\u6790",
+      "title_en": "Indirect call analysis",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "no path-sensitive analysis module exists; the analyzer is linear basic-block based",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": false,
+      "dependencies": [
+        "G09"
+      ],
+      "evidence_refs": [],
+      "gap_id": "G16",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": false,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "missing",
+      "next_action": "build the G16 deliverable (path-sensitive analysis + fixtures + tests) with tests before it appears in any readiness claim",
+      "non_goal_ids": [],
+      "phase": "8B",
+      "priority": "P1",
+      "required_deliverable": "path-sensitive analysis + fixtures + tests",
+      "test_probe": false,
+      "test_refs": [],
+      "title": "\u8def\u5f84\u654f\u611f\u5206\u6790",
+      "title_en": "Path-sensitive analysis",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "no concurrency/race analysis module exists in this tree",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": false,
+      "dependencies": [
+        "G16"
+      ],
+      "evidence_refs": [],
+      "gap_id": "G17",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": false,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "missing",
+      "next_action": "build the G17 deliverable (concurrency analysis + fixtures + tests) with tests before it appears in any readiness claim",
+      "non_goal_ids": [],
+      "phase": "8B",
+      "priority": "P1",
+      "required_deliverable": "concurrency analysis + fixtures + tests",
+      "test_probe": false,
+      "test_refs": [],
+      "title": "\u5e76\u53d1\u6f0f\u6d1e\u5206\u6790",
+      "title_en": "Concurrency vulnerability analysis",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "explicit claims non-goal; no repair capability is claimed",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [
+        "G13"
+      ],
+      "evidence_refs": [
+        "app.services.repair_matrix",
+        "app/services/repair_matrix.py",
+        "tests/test_repair_matrix.py"
+      ],
+      "gap_id": "G18",
+      "ground_truth": {
+        "refs": [
+          "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "non_goal",
+      "next_action": "keep G18 mapped to its claims non-goal ids; re-review at the quarterly claims review, never promote without new measured evidence",
+      "non_goal_ids": [
+        "NG-non-goal-3",
+        "NG-non-goal-4",
+        "NG-non-goal-5"
+      ],
+      "phase": "8B",
+      "priority": "P2",
+      "required_deliverable": "additional format/arch writers + fixtures + gate cells",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_repair_matrix.py"
+      ],
+      "title": "\u66f4\u591a\u4e8c\u8fdb\u5236\u683c\u5f0f/\u67b6\u6784\u8986\u76d6",
+      "title_en": "More binary format/architecture coverage",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [],
+      "evidence_refs": [
+        "app.services.repair_matrix",
+        "app/services/repair_matrix.py",
+        "tests/test_gate_profiles.py",
+        "tests/test_repair_matrix.py"
+      ],
+      "gap_id": "G19",
+      "ground_truth": {
+        "refs": [
+          "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G19 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8C",
+      "priority": "P0",
+      "required_deliverable": "strategy/evidence-profile registry + matrix + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_gate_profiles.py",
+        "tests/test_repair_matrix.py"
+      ],
+      "title": "Repair Strategy Registry",
+      "title_en": "Repair Strategy Registry",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [
+        "G19",
+        "G09",
+        "G12",
+        "G13"
+      ],
+      "evidence_refs": [
+        "app.services.obligations",
+        "app.services.repair.abi",
+        "app.services.repair_spec",
+        "app/services/obligations.py",
+        "app/services/repair/abi.py",
+        "app/services/repair_spec.py",
+        "artifacts/ai-repair-planning-2026-11-15",
+        "scripts/repair_binary.py",
+        "tests/test_repair_planning.py",
+        "tests/test_repair_spec.py"
+      ],
+      "gap_id": "G20",
+      "ground_truth": {
+        "refs": [
+          "artifacts/ai-repair-planning-2026-11-15/README.md"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G20 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8C",
+      "priority": "P0",
+      "required_deliverable": "planner + plan verification + tests + artifact",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_repair_planning.py",
+        "tests/test_repair_spec.py"
+      ],
+      "title": "Repair Planner",
+      "title_en": "Repair Planner",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [
+        "G20"
+      ],
+      "evidence_refs": [
+        "app.services.candidate_staging",
+        "app/services/candidate_staging.py",
+        "tests/integration/test_candidate_staging.py"
+      ],
+      "gap_id": "G21",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G21 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8C",
+      "priority": "P1",
+      "required_deliverable": "candidate staging boundary + API + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/integration/test_candidate_staging.py"
+      ],
+      "title": "Candidate Manager",
+      "title_en": "Candidate Manager",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [
+        "G19",
+        "G21"
+      ],
+      "evidence_refs": [
+        "app.services.repair.guards",
+        "app.services.repair.writer",
+        "app/services/repair/guards.py",
+        "app/services/repair/writer.py",
+        "artifacts/coverage-closure-2026-11-14",
+        "tests/test_repair_guards.py",
+        "tests/test_repair_i386_writer.py"
+      ],
+      "gap_id": "G22",
+      "ground_truth": {
+        "refs": [
+          "fixtures/elf/vuln-strcpy-x86_64.elf"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G22 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8C",
+      "priority": "P0",
+      "required_deliverable": "writer/application engine + re-derivation + fixtures + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_repair_guards.py",
+        "tests/test_repair_i386_writer.py"
+      ],
+      "title": "Patch Application Engine",
+      "title_en": "Patch Application Engine",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [
+        "G22"
+      ],
+      "evidence_refs": [
+        "app.services.binary_verification",
+        "app.services.containers",
+        "app.services.independent_verifier",
+        "app.services.unified_verification",
+        "app/services/binary_verification.py",
+        "app/services/containers.py",
+        "app/services/independent_verifier.py",
+        "app/services/unified_verification.py",
+        "artifacts/coverage-closure-2026-11-14",
+        "scripts/verify_repair.py",
+        "tests/test_binary_verification.py",
+        "tests/test_container_robustness.py",
+        "tests/test_independent_verifier.py"
+      ],
+      "gap_id": "G23",
+      "ground_truth": {
+        "refs": [
+          "artifacts/coverage-closure-2026-11-14/acceptance.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G23 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8D",
+      "priority": "P0",
+      "required_deliverable": "integrity/identity verifier + gate checks + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_binary_verification.py",
+        "tests/test_container_robustness.py",
+        "tests/test_independent_verifier.py"
+      ],
+      "title": "Binary Integrity Verifier",
+      "title_en": "Binary Integrity Verifier",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [
+        "G23",
+        "G22"
+      ],
+      "evidence_refs": [
+        "app.services.independent_verifier",
+        "app.services.runtime.capabilities",
+        "app.services.runtime.emulated",
+        "app.services.unified_verification",
+        "app/services/independent_verifier.py",
+        "app/services/runtime/capabilities.py",
+        "app/services/runtime/emulated.py",
+        "app/services/unified_verification.py",
+        "artifacts/coverage-closure-2026-11-14",
+        "tests/test_binary_verification.py",
+        "tests/test_poc_gate.py",
+        "tests/test_runtime_capabilities.py"
+      ],
+      "gap_id": "G24",
+      "ground_truth": {
+        "refs": [
+          "artifacts/coverage-closure-2026-11-14/acceptance.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G24 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8D",
+      "priority": "P0",
+      "required_deliverable": "unified semantic gate + runtime evidence + tests + acceptance",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_binary_verification.py",
+        "tests/test_poc_gate.py",
+        "tests/test_runtime_capabilities.py"
+      ],
+      "title": "Semantic Verifier",
+      "title_en": "Semantic Verifier",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [
+        "G24"
+      ],
+      "evidence_refs": [
+        "app.services.binary_verification",
+        "app.services.poc_runner",
+        "app/services/binary_verification.py",
+        "app/services/poc_runner.py",
+        "artifacts/coverage-closure-2026-11-14",
+        "tests/test_legacy_manifest_gate.py",
+        "tests/test_poc_gate.py",
+        "tests/test_poc_runner.py"
+      ],
+      "gap_id": "G25",
+      "ground_truth": {
+        "refs": [
+          "artifacts/coverage-closure-2026-11-14/acceptance.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G25 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8D",
+      "priority": "P0",
+      "required_deliverable": "PoC/regression runner + gate integration + tests + acceptance",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_legacy_manifest_gate.py",
+        "tests/test_poc_gate.py",
+        "tests/test_poc_runner.py"
+      ],
+      "title": "Regression Engine",
+      "title_en": "Regression Engine",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [
+        "G08",
+        "G20",
+        "G25"
+      ],
+      "evidence_refs": [
+        "app.services.reflection_engine",
+        "app/services/reflection_engine.py",
+        "artifacts/autonomous-reflection-2026-11-16",
+        "artifacts/autonomous-repair-audit-2026-11-16",
+        "scripts/autonomous_repair_audit.py",
+        "scripts/run_autonomous_reflection.py",
+        "tests/test_autonomous_repair_audit.py",
+        "tests/test_reflection_engine.py"
+      ],
+      "gap_id": "G26",
+      "ground_truth": {
+        "refs": [
+          "artifacts/autonomous-reflection-2026-11-16/README.md",
+          "artifacts/autonomous-repair-audit-2026-11-16/README.md"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G26 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8D",
+      "priority": "P1",
+      "required_deliverable": "reflection/experiment engine + audit + artifact + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_autonomous_repair_audit.py",
+        "tests/test_reflection_engine.py"
+      ],
+      "title": "Autonomous Experiment Engine",
+      "title_en": "Autonomous Experiment Engine",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [
+        "G23",
+        "G24",
+        "G25"
+      ],
+      "evidence_refs": [
+        "app.services.acceptance_models",
+        "app/services/acceptance_models.py",
+        "artifacts/acceptance-model-audit-2026-11-16",
+        "scripts/audit_acceptance_models.py",
+        "scripts/meta_audit.py",
+        "tests/test_acceptance_models.py",
+        "tests/test_meta_audit.py"
+      ],
+      "gap_id": "G27",
+      "ground_truth": {
+        "refs": [
+          "artifacts/acceptance-model-audit-2026-11-16/report.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "implemented",
+      "next_action": "keep G27 code+test evidence green; no new capability claim is made by this audit",
+      "non_goal_ids": [],
+      "phase": "8D",
+      "priority": "P1",
+      "required_deliverable": "acceptance model + mismatch matrix + meta-audit + tests + artifact",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_acceptance_models.py",
+        "tests/test_meta_audit.py"
+      ],
+      "title": "Acceptance Oracle Self-Audit",
+      "title_en": "Acceptance Oracle Self-Audit",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": true,
+      "blocker": "only 2 of 4 target providers have real recorded evidence; the other slots are not measured",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [
+        "G27"
+      ],
+      "evidence_refs": [
+        "app.services.provider",
+        "app/services/provider.py",
+        "artifacts/provider-matrix-2026-11-14",
+        "benchmark/phase8-v1",
+        "scripts/build_ground_truth_benchmark.py",
+        "scripts/run_multi_model_matrix.py",
+        "scripts/run_provider_matrix.py",
+        "tests/test_provider_coverage_artifact.py",
+        "tests/test_provider_matrix.py"
+      ],
+      "gap_id": "G28",
+      "ground_truth": {
+        "refs": [
+          "artifacts/provider-matrix-2026-11-14/summary.json",
+          "artifacts/multi-model-matrix-2026-11-14/README.md",
+          "benchmark/phase8-v1/manifest.json"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "partial",
+      "next_action": "complete the missing deliverable for G28 and re-run this audit; only code+test(+artifact) evidence can move it to implemented",
+      "non_goal_ids": [],
+      "phase": "8E",
+      "priority": "P1",
+      "required_deliverable": "provider matrix runner + targets + artifact + tests",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_provider_coverage_artifact.py",
+        "tests/test_provider_matrix.py"
+      ],
+      "title": "Multi-model Evaluation",
+      "title_en": "Multi-model Evaluation",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "hidden benchmark unavailable (hidden_available=false); the registry must never fabricate a hidden run",
+      "capability_claim": false,
+      "cli_probe": false,
+      "code_probe": true,
+      "dependencies": [
+        "G07",
+        "G28"
+      ],
+      "evidence_refs": [
+        "benchmark/phase8-v1/manifest.json",
+        "contracts/benchmark-sample.schema.json",
+        "scripts/build_ground_truth_benchmark.py"
+      ],
+      "gap_id": "G29",
+      "ground_truth": {
+        "refs": [],
+        "status": "not_applicable"
+      },
+      "ground_truth_status": "not_applicable",
+      "import_probe": false,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "not_run",
+      "next_action": "record G29 as unavailable/not_run; provision the external capability before any run is claimed",
+      "non_goal_ids": [],
+      "phase": "8E",
+      "priority": "P2",
+      "required_deliverable": "hidden benchmark contract + availability flag + runner",
+      "test_probe": true,
+      "test_refs": [
+        "benchmark/phase8-v1/manifest.json"
+      ],
+      "title": "Hidden Benchmark",
+      "title_en": "Hidden Benchmark",
+      "unresolved_non_goal_ids": []
+    },
+    {
+      "artifact_probe": false,
+      "blocker": "only the state machine and JSON contracts exist; an end-to-end promotion workflow with independent review is not audited",
+      "capability_claim": false,
+      "cli_probe": true,
+      "code_probe": true,
+      "dependencies": [
+        "G27",
+        "G28"
+      ],
+      "evidence_refs": [
+        "app.services.repair_states",
+        "app/services/repair_states.py",
+        "artifacts/contract-fixtures-2026-11-16",
+        "contracts/acceptance.schema.json",
+        "contracts/benchmark-sample.schema.json",
+        "contracts/repair.schema.json",
+        "contracts/verification.schema.json",
+        "scripts/check_contract_schemas.py",
+        "tests/test_contract_schemas.py",
+        "tests/test_contracts.py",
+        "tests/test_repair_states.py"
+      ],
+      "gap_id": "G30",
+      "ground_truth": {
+        "refs": [
+          "artifacts/contract-fixtures-2026-11-16/SHA256SUMS"
+        ],
+        "status": "present"
+      },
+      "ground_truth_status": "present",
+      "import_probe": true,
+      "independent_verifier": {
+        "refs": [],
+        "status": "absent"
+      },
+      "measured_status": "partial",
+      "next_action": "complete the missing deliverable for G30 and re-run this audit; only code+test(+artifact) evidence can move it to implemented",
+      "non_goal_ids": [],
+      "phase": "8E",
+      "priority": "P1",
+      "required_deliverable": "canonical repair states + contracts + promotion tests + fixture artifact",
+      "test_probe": true,
+      "test_refs": [
+        "tests/test_contract_schemas.py",
+        "tests/test_contracts.py",
+        "tests/test_repair_states.py"
+      ],
+      "title": "Capability Promotion Governance",
+      "title_en": "Capability Promotion Governance",
+      "unresolved_non_goal_ids": []
+    }
+  ],
+  "kind": "repair_readiness_audit",
+  "limitations": [
+    "probes are static file/string/import-spec checks; they do not run the repair pipeline, providers, benchmarks or PoCs",
+    "an item is implemented only by code+test(+artifact/ground-truth) evidence; documentation/contracts/registry paths cap it at partial",
+    "generated_from_sha is read from git rev-parse HEAD and makes the artifact tree-specific",
+    "capability space outside the measured universe is not enumerable here and stays an explicit limitation"
+  ],
+  "not_run": [
+    {
+      "gap_id": "G29",
+      "reason": "hidden benchmark unavailable (hidden_available=false); the registry must never fabricate a hidden run"
+    }
+  ],
+  "probe_mode": "read-only (no repair, no network, no provider/AI, no benchmark/PoC execution)",
+  "repo_root": ".",
+  "schema_version": 1,
+  "summary": {
+    "implemented": 13,
+    "missing": 5,
+    "non_goal": 4,
+    "not_run": 1,
+    "partial": 7,
+    "total": 30
+  }
+}

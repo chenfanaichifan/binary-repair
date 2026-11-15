@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "target_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "format": "elf",
+    "arch": "x86_64",
+    "bits": 64,
+    "endian": "little",
+    "container": "elf-thin",
+    "target_scope": {
+      "policy": "target_scoped",
+      "name": "vuln_copy",
+      "va": 4198400,
+      "end": 4198500
+    }
+  },
+  "generator": {
+    "generator_id": "repair_pipeline/1",
+    "agent": "deterministic",
+    "model": null,
+    "run_id": "run-fixture-001"
+  },
+  "verifier": {
+    "verifier_id": "independent-verifier/1",
+    "version": "1.0"
+  },
+  "independence": {
+    "ok": true,
+    "generator_evidence_excluded": true
+  },
+  "checks": [
+    {
+      "id": "identity",
+      "title": "original/candidate digests match bytes",
+      "status": "passed",
+      "required": true,
+      "independent": false,
+      "detail": "both digests recomputed from bytes"
+    },
+    {
+      "id": "runtime-oracle",
+      "title": "external PoC differential",
+      "status": "passed",
+      "required": true,
+      "independent": true,
+      "detail": "original triggers, candidate eliminates the crash"
+    },
+    {
+      "id": "regression",
+      "title": "healthy input regression",
+      "status": "passed",
+      "required": true,
+      "independent": true,
+      "detail": "stdout signature identical"
+    }
+  ],
+  "decision": "verified",
+  "evidence": [
+    "artifacts/fixtures/verification-fixture.json"
+  ],
+  "limitations": [],
+  "report_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+}

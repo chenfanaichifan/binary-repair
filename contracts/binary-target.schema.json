@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/binary-target.schema.json",
+  "title": "Binary target identity",
+  "description": "One binary target identity: content sha256, container/format/arch/bits/endian, the declared repair scope, an explicit (possibly unavailable) compiler/optimization declaration and a machine-readable identity token. A target_scoped scope must carry a name or a VA range; an analysis_only scope never owns a repair action.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "target_sha256",
+    "format",
+    "arch",
+    "bits",
+    "endian",
+    "container",
+    "target_scope",
+    "compiler",
+    "identity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "target_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "elf",
+        "macho",
+        "pe"
+      ]
+    },
+    "arch": {
+      "type": "string",
+      "enum": [
+        "x86_64",
+        "i386",
+        "arm64"
+      ]
+    },
+    "bits": {
+      "type": "integer",
+      "enum": [
+        32,
+        64
+      ]
+    },
+    "endian": {
+      "type": "string",
+      "enum": [
+        "little",
+        "big"
+      ]
+    },
+    "container": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "target_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy"
+      ],
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": [
+            "target_scoped",
+            "whole_image",
+            "analysis_only"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "va": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "compiler": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "opt_level",
+        "available",
+        "reason"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "opt_level": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "sha256",
+            "symbol",
+            "file_path"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

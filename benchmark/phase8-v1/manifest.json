@@ -1,0 +1,804 @@
+{
+  "schema_version": 1,
+  "kind": "ground_truth_benchmark",
+  "benchmark_id": "phase8-v1",
+  "generated_at": "2026-11-16T00:00:00Z",
+  "generated_at_note": "fixed deterministic constant for a reproducible manifest; this is not the build time and no wall clock is read",
+  "hidden_available": false,
+  "hidden_commitment_sha256": null,
+  "hidden_limitation": "no hidden benchmark split exists in this repository; hidden_available is always false and hidden_commitment_sha256 is null. No hidden-set claim is made and no commitment is fabricated.",
+  "sample_count": 12,
+  "split_counts": {
+    "dev": 8,
+    "validation": 4
+  },
+  "splits": {
+    "dev": [
+      "cwe121-public",
+      "hard-multicall",
+      "heap-capacity-x86_64",
+      "inline-loop",
+      "negative-control",
+      "stack-memcpy-x86",
+      "stack-strcpy-x86_64",
+      "uaf-noinput"
+    ],
+    "validation": [
+      "hard-nonconst",
+      "hard-sprintf",
+      "heap-canary",
+      "stack-strcpy-x86"
+    ]
+  },
+  "schema_integration": {
+    "status": "validated",
+    "schema_path": "contracts/benchmark-sample.schema.json",
+    "schema_sha256": "8c0d95f1f1aa989a36610726e1a37bfc4cb0af8c6bfd2fbc8e5634cc1caede46",
+    "validator": "jsonschema 4.26.0",
+    "reason": null,
+    "checked_samples": 12,
+    "violations": []
+  },
+  "dropped_samples": [],
+  "environment_metadata": {
+    "stack-strcpy-x86_64": {
+      "compiler": "0.17.1",
+      "compiler_unavailable_reason": null,
+      "opt": "-O0",
+      "opt_unavailable_reason": null
+    },
+    "stack-strcpy-x86": {
+      "compiler": "0.17.1",
+      "compiler_unavailable_reason": null,
+      "opt": "-O0",
+      "opt_unavailable_reason": null
+    },
+    "stack-memcpy-x86": {
+      "compiler": "0.17.1",
+      "compiler_unavailable_reason": null,
+      "opt": "-O0",
+      "opt_unavailable_reason": null
+    },
+    "heap-capacity-x86_64": {
+      "compiler": null,
+      "compiler_unavailable_reason": "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+      "opt": null,
+      "opt_unavailable_reason": "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed"
+    },
+    "inline-loop": {
+      "compiler": "0.17.1",
+      "compiler_unavailable_reason": null,
+      "opt": "-O0",
+      "opt_unavailable_reason": null
+    },
+    "cwe121-public": {
+      "compiler": null,
+      "compiler_unavailable_reason": "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+      "opt": null,
+      "opt_unavailable_reason": "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed"
+    },
+    "hard-multicall": {
+      "compiler": null,
+      "compiler_unavailable_reason": "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+      "opt": null,
+      "opt_unavailable_reason": "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed"
+    },
+    "hard-sprintf": {
+      "compiler": null,
+      "compiler_unavailable_reason": "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+      "opt": null,
+      "opt_unavailable_reason": "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed"
+    },
+    "hard-nonconst": {
+      "compiler": null,
+      "compiler_unavailable_reason": "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+      "opt": null,
+      "opt_unavailable_reason": "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed"
+    },
+    "uaf-noinput": {
+      "compiler": null,
+      "compiler_unavailable_reason": "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+      "opt": null,
+      "opt_unavailable_reason": "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed"
+    },
+    "heap-canary": {
+      "compiler": null,
+      "compiler_unavailable_reason": "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+      "opt": null,
+      "opt_unavailable_reason": "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed"
+    },
+    "negative-control": {
+      "compiler": "0.17.1",
+      "compiler_unavailable_reason": null,
+      "opt": "-O0",
+      "opt_unavailable_reason": null
+    }
+  },
+  "sample_notes": {
+    "stack-strcpy-x86_64": [
+      "no committed reference-fix file exists for this fixture; the PoC manifest is the oracle and the patch expectations are behavioural"
+    ],
+    "stack-strcpy-x86": [
+      "no committed PoC manifest matches this i386 fixture (no fixture_sha256 match), so no runtime oracle exists; the sample is retained as analysis-only coverage and must never be promoted to a verified expectation",
+      "the task draft suggested an emulated/static oracle, but the committed contract forbids runtime oracle kinds for analysis_only expectations and no emulated oracle runner exists; schema wins"
+    ],
+    "stack-memcpy-x86": [
+      "no committed PoC manifest matches this i386 fixture, so no runtime oracle exists; analysis-only coverage, never a verified expectation"
+    ],
+    "heap-capacity-x86_64": [
+      "the fixture is stripped, so the target is the reviewed site VA range from docs/architecture/capacity-check-repair.md (not a symbol claim)",
+      "no committed reference-fix file exists; the documented 16-byte rewrite and patched sha256 are the expected patch properties"
+    ],
+    "inline-loop": [
+      "hard-case contract is recorded in fixtures/hard-cases/cases.json (inline-byte-loop, capacity 16, baseline rejected)"
+    ],
+    "cwe121-public": [
+      "contract: reject length+1>50 with exit 1 and exact stderr; valid inputs preserved (fixtures/hard-cases/cases.json)"
+    ],
+    "hard-multicall": [
+      "hard-case contract recorded in fixtures/hard-cases/cases.json (hard-multicall, capacity 16, baseline rejected)"
+    ],
+    "hard-sprintf": [
+      "hard-case contract recorded in fixtures/hard-cases/cases.json (hard-sprintf, capacity 16, baseline rejected)"
+    ],
+    "hard-nonconst": [
+      "hard-case contract recorded in fixtures/hard-cases/cases.json (hard-nonconst, capacity 16, baseline rejected)"
+    ],
+    "uaf-noinput": [
+      "expected baseline is analysis_only (fixtures/hard-cases/cases.json); the committed task expects no verified claim for this class",
+      "the sample keeps its PoC manifest in the benchmark for reference, but the oracle declaration is static because the expectation is analysis_only (contract forbids runtime oracle kinds here)"
+    ],
+    "heap-canary": [
+      "hard-case contract recorded in fixtures/hard-cases/cases.json (heap-canary, capacity 16, baseline rejected)"
+    ],
+    "negative-control": [
+      "negative control selected from the fixture set: the committed PE/i386 control fixture (fixtures/pe/i386-control.exe) is explicitly outside the repair matrix; the pipeline must report unsupported / analysis-only and never write a verified candidate"
+    ]
+  },
+  "samples": [
+    {
+      "sample_id": "cwe121-public",
+      "sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "format": "elf",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "vulnerability_class": "CWE-121 stack buffer overflow (unchecked strcpy)",
+      "expected_scope": "function",
+      "target": {
+        "kind": "symbol",
+        "symbol": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
+      },
+      "source_refs": [
+        "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+        "fixtures/public/CWE121_src_char_declare_cpy_51b/src.c",
+        "fixtures/poc/cwe121.json",
+        "fixtures/hard-cases/cwe121_fix.c"
+      ],
+      "oracle": {
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/cwe121.json",
+        "expected_original": "{\"exit_code\":0}",
+        "expected_candidate": "{\"exit_code\":1,\"stderr\":\"ERROR: input exceeds destination capacity\\n\",\"stdout\":\"\"}"
+      },
+      "expected_analysis": {
+        "root_cause": "strcpy into char[50] without validating the input length",
+        "function": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+        "sink": "strcpy into stack destination",
+        "capacity": 50
+      },
+      "reference_fix": "fixtures/hard-cases/cwe121_fix.c",
+      "expected_patch_properties": {
+        "properties": [
+          "reject inputs with length+1 > 50 (exit 1 with contract stderr)",
+          "preserve the valid stdout behaviour"
+        ],
+        "reference_fix_available": true
+      },
+      "negative_cases": [
+        "cwe121-valid-0",
+        "cwe121-valid-1",
+        "cwe121-valid-10",
+        "cwe121-valid-49"
+      ],
+      "split": "dev",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=cwe121-unchecked-strcpy]",
+        "fixtures/poc/cwe121.json#poc/regression",
+        "fixtures/hard-cases/cwe121_fix.c#length-reject"
+      ]
+    },
+    {
+      "sample_id": "hard-multicall",
+      "sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "format": "elf",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "vulnerability_class": "CWE-121 non-template semantic/multi-layer copy",
+      "expected_scope": "function",
+      "target": {
+        "kind": "symbol",
+        "symbol": "multicall_bad"
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "fixtures/hard-cases/hard_cases.c",
+        "fixtures/poc/hard-multicall.json",
+        "fixtures/hard-cases/multicall_fix.c"
+      ],
+      "oracle": {
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-multicall.json",
+        "expected_original": "{\"crashed\":true}",
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":0}"
+      },
+      "expected_analysis": {
+        "root_cause": "input copied into a 16-byte destination through a non-template path",
+        "function": "multicall_bad",
+        "sink": "semantic/multi-layer copy",
+        "capacity": 16
+      },
+      "reference_fix": "fixtures/hard-cases/multicall_fix.c",
+      "expected_patch_properties": {
+        "properties": [
+          "reject inputs that do not fit the 16-byte destination",
+          "preserve normal short-input behaviour"
+        ],
+        "reference_fix_available": true
+      },
+      "negative_cases": [
+        "multicall-short"
+      ],
+      "split": "dev",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=hard-multicall]",
+        "fixtures/poc/hard-multicall.json#poc/regression",
+        "fixtures/hard-cases/multicall_fix.c#length-reject"
+      ]
+    },
+    {
+      "sample_id": "hard-nonconst",
+      "sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "format": "elf",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "vulnerability_class": "CWE-121 non-constant-length copy",
+      "expected_scope": "function",
+      "target": {
+        "kind": "symbol",
+        "symbol": "nonconst_bad"
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "fixtures/hard-cases/hard_cases.c",
+        "fixtures/poc/hard-nonconst.json",
+        "fixtures/hard-cases/nonconst_fix.c"
+      ],
+      "oracle": {
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-nonconst.json",
+        "expected_original": "{\"crashed\":true}",
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":0}"
+      },
+      "expected_analysis": {
+        "root_cause": "input copied into a 16-byte destination with non-constant length",
+        "function": "nonconst_bad",
+        "sink": "non-constant-length copy",
+        "capacity": 16
+      },
+      "reference_fix": "fixtures/hard-cases/nonconst_fix.c",
+      "expected_patch_properties": {
+        "properties": [
+          "reject inputs that do not fit the 16-byte destination",
+          "preserve normal short-input behaviour"
+        ],
+        "reference_fix_available": true
+      },
+      "negative_cases": [
+        "nonconst-short"
+      ],
+      "split": "validation",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=hard-nonconst]",
+        "fixtures/poc/hard-nonconst.json#poc/regression",
+        "fixtures/hard-cases/nonconst_fix.c#length-reject"
+      ]
+    },
+    {
+      "sample_id": "hard-sprintf",
+      "sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "format": "elf",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "vulnerability_class": "CWE-121 non-template sprintf/format expansion path",
+      "expected_scope": "function",
+      "target": {
+        "kind": "symbol",
+        "symbol": "sprintf_bad"
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "fixtures/hard-cases/hard_cases.c",
+        "fixtures/poc/hard-sprintf.json",
+        "fixtures/hard-cases/sprintf_fix.c"
+      ],
+      "oracle": {
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-sprintf.json",
+        "expected_original": "{\"crashed\":true}",
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":0}"
+      },
+      "expected_analysis": {
+        "root_cause": "input copied into a 16-byte destination through a non-template sprintf path",
+        "function": "sprintf_bad",
+        "sink": "sprintf/format expansion copy",
+        "capacity": 16
+      },
+      "reference_fix": "fixtures/hard-cases/sprintf_fix.c",
+      "expected_patch_properties": {
+        "properties": [
+          "reject inputs that do not fit the 16-byte destination",
+          "preserve normal short-input behaviour"
+        ],
+        "reference_fix_available": true
+      },
+      "negative_cases": [
+        "sprintf-short"
+      ],
+      "split": "validation",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=hard-sprintf]",
+        "fixtures/poc/hard-sprintf.json#poc/regression",
+        "fixtures/hard-cases/sprintf_fix.c#length-reject"
+      ]
+    },
+    {
+      "sample_id": "heap-canary",
+      "sha256": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+      "format": "elf",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "vulnerability_class": "CWE-121 heap buffer overflow / guard corruption",
+      "expected_scope": "function",
+      "target": {
+        "kind": "symbol",
+        "symbol": "heap_bad"
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+        "fixtures/hard-cases/heap_canary.c",
+        "fixtures/poc/heap-canary.json",
+        "fixtures/hard-cases/heap_canary_fix.c"
+      ],
+      "oracle": {
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/heap-canary.json",
+        "expected_original": "{\"exit_code\":1,\"stderr_contains\":\"HEAP GUARD CORRUPT\"}",
+        "expected_candidate": "{\"exit_code\":0}"
+      },
+      "expected_analysis": {
+        "root_cause": "unbounded copy into a 16-byte heap buffer followed by a guard word",
+        "function": "heap_bad",
+        "sink": "heap buffer copy / guard corruption",
+        "capacity": 16
+      },
+      "reference_fix": "fixtures/hard-cases/heap_canary_fix.c",
+      "expected_patch_properties": {
+        "properties": [
+          "reject oversized input before the copy (guard not corrupted)",
+          "preserve normal short-input behaviour"
+        ],
+        "reference_fix_available": true
+      },
+      "negative_cases": [
+        "heap-short"
+      ],
+      "split": "validation",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=heap-canary]",
+        "fixtures/poc/heap-canary.json#poc/regression",
+        "fixtures/hard-cases/heap_canary_fix.c#capacity-reject"
+      ]
+    },
+    {
+      "sample_id": "heap-capacity-x86_64",
+      "sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+      "format": "elf",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "vulnerability_class": "CWE-131/697/787 capacity-check confusion (destination validated against payload-pool size)",
+      "expected_scope": "function",
+      "target": {
+        "kind": "va_range",
+        "va": 4202713,
+        "end": 4202729
+      },
+      "source_refs": [
+        "fixtures/elf/vuln-capacity-confusion-x86_64.elf",
+        "fixtures/hard-cases/capacity_confusion.c",
+        "fixtures/poc/marcx-capacity.json"
+      ],
+      "oracle": {
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/marcx-capacity.json",
+        "expected_original": "{\"crashed\":true}",
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":1,\"stderr_contains\":\"span destination outside the output\"}"
+      },
+      "expected_analysis": {
+        "root_cause": "span destination range is validated against data_size instead of out_size",
+        "function": "render",
+        "sink": "OP_SPAN destination range check (CWE-131/697/787)",
+        "capacity": null
+      },
+      "reference_fix": null,
+      "expected_patch_properties": {
+        "site_va": "0x4020d9",
+        "rewrite_bytes": 16,
+        "patched_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+        "properties": [
+          "destination range validated against the output buffer capacity",
+          "16-byte in-place rewrite at the reviewed site"
+        ],
+        "reference_fix_available": false,
+        "documented_by": "docs/architecture/capacity-check-repair.md"
+      },
+      "negative_cases": [
+        "benign",
+        "benign-sparse",
+        "benign-crc",
+        "ctrl-span-equal-sizes",
+        "ctrl-span-no-sparse",
+        "ctrl-span-src-oob",
+        "ctrl-literal-dst-oob",
+        "bad-crc"
+      ],
+      "split": "dev",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "docs/architecture/capacity-check-repair.md#verified-fix-site",
+        "fixtures/poc/marcx-capacity.json#poc/regression",
+        "fixtures/hard-cases/capacity_confusion.c#span-check"
+      ]
+    },
+    {
+      "sample_id": "inline-loop",
+      "sha256": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+      "format": "elf",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "vulnerability_class": "CWE-121 non-template inline byte-copy loop",
+      "expected_scope": "function",
+      "target": {
+        "kind": "symbol",
+        "symbol": "vuln_copy"
+      },
+      "source_refs": [
+        "fixtures/elf/vuln-loop-x86_64.elf",
+        "fixtures/src/vuln_copy_loop_x86_64.S",
+        "fixtures/poc/elf-x86_64-loop.json",
+        "fixtures/hard-cases/loop_fix.S"
+      ],
+      "oracle": {
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/elf-x86_64-loop.json",
+        "expected_original": "{\"crashed\":true}",
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":0}"
+      },
+      "expected_analysis": {
+        "root_cause": "inlined byte-copy loop into a 16-byte stack buffer without a bound",
+        "function": "vuln_copy",
+        "sink": "inline byte-copy loop",
+        "capacity": 16
+      },
+      "reference_fix": "fixtures/hard-cases/loop_fix.S",
+      "expected_patch_properties": {
+        "properties": [
+          "copy capped at capacity-1 and NUL-terminated",
+          "short/boundary inputs keep exit code 0",
+          "oversized input no longer crashes"
+        ],
+        "reference_fix_available": true
+      },
+      "negative_cases": [
+        "loop-short",
+        "loop-boundary"
+      ],
+      "split": "dev",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/poc/elf-x86_64-loop.json#poc/regression",
+        "fixtures/hard-cases/loop_fix.S#bounded-loop",
+        "fixtures/src/vuln_copy_loop_x86_64.S#deliberately-not-strcpy"
+      ]
+    },
+    {
+      "sample_id": "negative-control",
+      "sha256": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+      "format": "pe",
+      "arch": "i386",
+      "bits": 32,
+      "endian": "little",
+      "vulnerability_class": "none (negative control: out-of-matrix PE/i386)",
+      "expected_scope": "analysis_only",
+      "target": {
+        "kind": "analysis_only"
+      },
+      "source_refs": [
+        "fixtures/pe/i386-control.exe",
+        "fixtures/src/control_i386.c"
+      ],
+      "oracle": {
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "expected_original": null,
+        "expected_candidate": null
+      },
+      "expected_analysis": {
+        "root_cause": null,
+        "function": null,
+        "sink": null,
+        "capacity": null
+      },
+      "reference_fix": null,
+      "expected_patch_properties": {
+        "properties": [],
+        "reference_fix_available": false,
+        "verification": "not_claimed",
+        "expected": "no vulnerability claim and no verified candidate"
+      },
+      "negative_cases": [],
+      "split": "dev",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/PROVENANCE.json#fixtures[name=pe-i386-control]",
+        "fixtures/src/control_i386.c#negative-control-comment"
+      ]
+    },
+    {
+      "sample_id": "stack-memcpy-x86",
+      "sha256": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
+      "format": "elf",
+      "arch": "i386",
+      "bits": 32,
+      "endian": "little",
+      "vulnerability_class": "CWE-121 immediate-length memcpy overflow (i386)",
+      "expected_scope": "analysis_only",
+      "target": {
+        "kind": "analysis_only"
+      },
+      "source_refs": [
+        "fixtures/elf/vuln-memcpy-x86.elf",
+        "fixtures/src/vuln_memcpy_elf32_x86.S",
+        "fixtures/src/main.c"
+      ],
+      "oracle": {
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "expected_original": null,
+        "expected_candidate": null
+      },
+      "expected_analysis": {
+        "root_cause": "memcpy with immediate length 64 into a 16-byte stack destination (i386)",
+        "function": "vuln_copy",
+        "sink": "memcpy immediate-length copy into stack buffer",
+        "capacity": 16
+      },
+      "reference_fix": null,
+      "expected_patch_properties": {
+        "properties": [],
+        "reference_fix_available": false,
+        "verification": "not_claimed"
+      },
+      "negative_cases": [],
+      "split": "dev",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/src/vuln_memcpy_elf32_x86.S#capacity-comment",
+        "fixtures/PROVENANCE.json#fixtures[name=elf-x86-memcpy]"
+      ]
+    },
+    {
+      "sample_id": "stack-strcpy-x86",
+      "sha256": "a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d",
+      "format": "elf",
+      "arch": "i386",
+      "bits": 32,
+      "endian": "little",
+      "vulnerability_class": "CWE-121 stack buffer overflow (unbounded strcpy, i386)",
+      "expected_scope": "analysis_only",
+      "target": {
+        "kind": "analysis_only"
+      },
+      "source_refs": [
+        "fixtures/elf/vuln-strcpy-x86.elf",
+        "fixtures/src/vuln_copy_elf32_x86.S",
+        "fixtures/src/main.c"
+      ],
+      "oracle": {
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "expected_original": null,
+        "expected_candidate": null
+      },
+      "expected_analysis": {
+        "root_cause": "unbounded strcpy into a 16-byte stack destination (i386)",
+        "function": "vuln_copy",
+        "sink": "strcpy call into stack buffer",
+        "capacity": 16
+      },
+      "reference_fix": null,
+      "expected_patch_properties": {
+        "properties": [],
+        "reference_fix_available": false,
+        "verification": "not_claimed"
+      },
+      "negative_cases": [],
+      "split": "validation",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/src/vuln_copy_elf32_x86.S#capacity-comment",
+        "fixtures/PROVENANCE.json#fixtures[name=elf-x86]"
+      ]
+    },
+    {
+      "sample_id": "stack-strcpy-x86_64",
+      "sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+      "format": "elf",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "vulnerability_class": "CWE-121 stack buffer overflow (unbounded strcpy)",
+      "expected_scope": "function",
+      "target": {
+        "kind": "symbol",
+        "symbol": "vuln_copy"
+      },
+      "source_refs": [
+        "fixtures/elf/vuln-strcpy-x86_64.elf",
+        "fixtures/src/vuln_copy_elf_x86_64.S",
+        "fixtures/src/main.c",
+        "fixtures/poc/elf-x86_64-strcpy.json"
+      ],
+      "oracle": {
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/elf-x86_64-strcpy.json",
+        "expected_original": "{\"crashed\":true}",
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":0}"
+      },
+      "expected_analysis": {
+        "root_cause": "unbounded strcpy into a 16-byte stack destination",
+        "function": "vuln_copy",
+        "sink": "strcpy call into stack buffer",
+        "capacity": 16
+      },
+      "reference_fix": null,
+      "expected_patch_properties": {
+        "properties": [
+          "bounded copy or length validation before strcpy",
+          "valid short input keeps exit code 0",
+          "oversized input no longer crashes the process"
+        ],
+        "reference_fix_available": false
+      },
+      "negative_cases": [
+        "short-hi",
+        "boundary-15"
+      ],
+      "split": "dev",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/poc/elf-x86_64-strcpy.json#poc/regression",
+        "fixtures/src/vuln_copy_elf_x86_64.S#capacity-comment",
+        "fixtures/PROVENANCE.json#fixtures[name=elf-x86_64]"
+      ]
+    },
+    {
+      "sample_id": "uaf-noinput",
+      "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+      "format": "elf",
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "vulnerability_class": "CWE-416 use-after-free (heap lifetime)",
+      "expected_scope": "analysis_only",
+      "target": {
+        "kind": "analysis_only"
+      },
+      "source_refs": [
+        "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
+        "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/src.c",
+        "fixtures/hard-cases/uaf_fix.c"
+      ],
+      "oracle": {
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "expected_original": null,
+        "expected_candidate": null
+      },
+      "expected_analysis": {
+        "root_cause": "read of a heap block after free() (use-after-free)",
+        "function": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+        "sink": "use-after-free heap read",
+        "capacity": 100
+      },
+      "reference_fix": "fixtures/hard-cases/uaf_fix.c",
+      "expected_patch_properties": {
+        "properties": [],
+        "reference_fix_available": true,
+        "verification": "not_claimed"
+      },
+      "negative_cases": [],
+      "split": "dev",
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=uaf-noinput]",
+        "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json",
+        "fixtures/hard-cases/uaf_fix.c#read-before-free"
+      ]
+    }
+  ],
+  "provenance": {
+    "builder": "scripts/build_ground_truth_benchmark.py",
+    "build_method": "deterministic assembly from committed fixtures/contracts; real SHA-256 recomputation; PoC manifests schema-loaded but not executed; no network, no git commands, no wall clock",
+    "fixture_sources": [
+      "fixtures/PROVENANCE.json",
+      "fixtures/hard-cases/cases.json",
+      "contracts/benchmark-sample.schema.json"
+    ],
+    "source_digest_sha256": "87123bc2df2db693bfe93ca0871eb5652a41707aa426709b5c5a5db4bc944756"
+  },
+  "limitations": [
+    "12 candidate samples; samples with insufficient oracle evidence are declared analysis_only and are never promoted to a verified expectation.",
+    "two i386 fixtures have no committed matching PoC manifest; they are retained as analysis-only coverage (explicitly noted per sample).",
+    "no hidden split exists; hidden_available=false and hidden_commitment_sha256=null, with an explicit limitation.",
+    "the benchmark measures deterministic repair readiness only; it does not call an AI provider or the network.",
+    "reference_fix is null where no committed reference-fix file exists; expected patch properties are behavioural/documented instead."
+  ]
+}

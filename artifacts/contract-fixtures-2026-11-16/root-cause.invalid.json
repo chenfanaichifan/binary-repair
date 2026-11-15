@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "finding_id": "find-fixture-001",
+  "root_cause": "strcpy copies attacker-controlled bytes into a 32-byte stack buffer",
+  "affected_objects": [
+    "stack buffer dest_rel=-32"
+  ],
+  "trigger_conditions": [
+    "argv[1] longer than 32 bytes"
+  ],
+  "data_flow_evidence": [
+    "argv[1] -> rdi -> strcpy dest"
+  ],
+  "control_flow_evidence": [
+    "unconditional call at 0x401234"
+  ],
+  "confidence": "verified",
+  "unknowns": [
+    "compiler optimization level not recorded"
+  ]
+}

@@ -35,7 +35,7 @@
       "label": "Acceptance-model audit report",
       "path": "artifacts/acceptance-model-audit-2026-11-16/report.json",
       "reason": "",
-      "sha256": "b55040ad143779e219709e10e9b39ae9b12f62512d431230eb33c9c47b9f256c",
+      "sha256": "46fbd837fcf4523ae74415c1223def97e3af83d721d2082f7599ea2adba76c96",
       "status": "read"
     },
     "coverage_matrix": {
@@ -49,7 +49,7 @@
       "label": "Gap Registry candidate records",
       "path": "artifacts/gap-registry-2026-11-16/candidates.json",
       "reason": "",
-      "sha256": "3842320b25d097cf614d0a9d9a97ae9dcc7a282e6969f52977083b85c09ebe12",
+      "sha256": "9b0122928ded2a6964ebb92a9ef69dcef164e8b910991f3665cf381264915259",
       "status": "read"
     }
   },
@@ -2611,6 +2611,249 @@
       "reflection_id": "ref-150cc671412ef97a895b53f5",
       "review_owner": "autonomous-audit",
       "root_cause_hypothesis": "hypothesis: the declared capability record does not cover the observed case; a bounded experiment can falsify this before any candidate is proposed",
+      "schema_version": 1,
+      "verified": false
+    },
+    {
+      "12_questions": [
+        {
+          "answer": "the matcher reports no acceptance mismatch",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM21",
+              "sha256": null
+            }
+          ],
+          "q": "Q01",
+          "status": "answered"
+        },
+        {
+          "answer": "acceptance mismatch ids: AM21",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM21",
+              "sha256": null
+            }
+          ],
+          "q": "Q02",
+          "status": "answered"
+        },
+        {
+          "answer": "2 machine-readable evidence item(s): artifact:artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape, gap:AM21",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM21",
+              "sha256": null
+            }
+          ],
+          "q": "Q03",
+          "status": "answered"
+        },
+        {
+          "answer": "evidence present (2 item(s)); classification is 'evaluation' but the capability decision remains 'analysis_only'",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM21",
+              "sha256": null
+            }
+          ],
+          "q": "Q04",
+          "status": "answered"
+        },
+        {
+          "answer": "no: no infrastructure marker is present",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM21",
+              "sha256": null
+            }
+          ],
+          "q": "Q05",
+          "status": "answered"
+        },
+        {
+          "answer": "no: the failure is classified as 'evaluation', not a capability gap",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM21",
+              "sha256": null
+            }
+          ],
+          "q": "Q06",
+          "status": "answered"
+        },
+        {
+          "answer": "unknown: no capability/cell/strategy pointer is recorded",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM21",
+              "sha256": null
+            }
+          ],
+          "q": "Q07",
+          "status": "unknown"
+        },
+        {
+          "answer": "hypothesis: the acceptance/evaluation model or the recorded expectation is wrong or incomplete; the capability is not implicated until the evaluation mismatch is resolved",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM21",
+              "sha256": null
+            }
+          ],
+          "q": "Q08",
+          "status": "answered"
+        },
+        {
+          "answer": "unknown: no experiment can be planned yet (evaluation mismatch: correct the acceptance/evaluation model before proposing a capability experiment)",
+          "evidence": [],
+          "q": "Q09",
+          "status": "unknown"
+        },
+        {
+          "answer": "unknown: no acceptance criteria are justified without a planned experiment",
+          "evidence": [],
+          "q": "Q10",
+          "status": "unknown"
+        },
+        {
+          "answer": "unknown: no regression plan is justified without an experiment",
+          "evidence": [],
+          "q": "Q11",
+          "status": "unknown"
+        },
+        {
+          "answer": "capability_decision='analysis_only'; review owner='autonomous-audit'; verified is always false",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM21",
+              "sha256": null
+            }
+          ],
+          "q": "Q12",
+          "status": "answered"
+        }
+      ],
+      "capability_decision": "analysis_only",
+      "diagnosis": "evaluation classification over 1 observation(s); capability decision analysis_only; verified is always false",
+      "experiment_plan": {
+        "acceptance_criteria": [],
+        "hypothesis": "cannot be planned from the available evidence; collect more evidence before proposing an experiment",
+        "independent_verification": [],
+        "reason": "evaluation mismatch: correct the acceptance/evaluation model before proposing a capability experiment",
+        "regression_checks": [],
+        "samples": [],
+        "status": "cannot_plan"
+      },
+      "failure_type": "evaluation",
+      "observations": [
+        {
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM21",
+              "sha256": null
+            }
+          ],
+          "expected": "the matcher reports no acceptance mismatch",
+          "metadata": {
+            "failure_type": "evaluation",
+            "samples": [
+              "AM21"
+            ],
+            "source_artifact": "artifacts/acceptance-model-audit-2026-11-16/report.json"
+          },
+          "observation_id": "acceptance-negative-am21-repair-scope-escape",
+          "observed": "acceptance mismatch ids: AM21",
+          "refs": [
+            "AM21",
+            "negative-am21-repair-scope-escape"
+          ],
+          "source": "acceptance-audit:artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am21-repair-scope-escape"
+        }
+      ],
+      "reflection_id": "ref-153e9532ed9b5983809c8f8f",
+      "review_owner": "autonomous-audit",
+      "root_cause_hypothesis": "hypothesis: the acceptance/evaluation model or the recorded expectation is wrong or incomplete; the capability is not implicated until the evaluation mismatch is resolved",
       "schema_version": 1,
       "verified": false
     },
@@ -8571,6 +8814,249 @@
     {
       "12_questions": [
         {
+          "answer": "the matcher reports no acceptance mismatch",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM24",
+              "sha256": null
+            }
+          ],
+          "q": "Q01",
+          "status": "answered"
+        },
+        {
+          "answer": "acceptance mismatch ids: AM24",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM24",
+              "sha256": null
+            }
+          ],
+          "q": "Q02",
+          "status": "answered"
+        },
+        {
+          "answer": "2 machine-readable evidence item(s): artifact:artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch, gap:AM24",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM24",
+              "sha256": null
+            }
+          ],
+          "q": "Q03",
+          "status": "answered"
+        },
+        {
+          "answer": "evidence present (2 item(s)); classification is 'evaluation' but the capability decision remains 'analysis_only'",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM24",
+              "sha256": null
+            }
+          ],
+          "q": "Q04",
+          "status": "answered"
+        },
+        {
+          "answer": "no: no infrastructure marker is present",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM24",
+              "sha256": null
+            }
+          ],
+          "q": "Q05",
+          "status": "answered"
+        },
+        {
+          "answer": "no: the failure is classified as 'evaluation', not a capability gap",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM24",
+              "sha256": null
+            }
+          ],
+          "q": "Q06",
+          "status": "answered"
+        },
+        {
+          "answer": "unknown: no capability/cell/strategy pointer is recorded",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM24",
+              "sha256": null
+            }
+          ],
+          "q": "Q07",
+          "status": "unknown"
+        },
+        {
+          "answer": "hypothesis: the acceptance/evaluation model or the recorded expectation is wrong or incomplete; the capability is not implicated until the evaluation mismatch is resolved",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM24",
+              "sha256": null
+            }
+          ],
+          "q": "Q08",
+          "status": "answered"
+        },
+        {
+          "answer": "unknown: no experiment can be planned yet (evaluation mismatch: correct the acceptance/evaluation model before proposing a capability experiment)",
+          "evidence": [],
+          "q": "Q09",
+          "status": "unknown"
+        },
+        {
+          "answer": "unknown: no acceptance criteria are justified without a planned experiment",
+          "evidence": [],
+          "q": "Q10",
+          "status": "unknown"
+        },
+        {
+          "answer": "unknown: no regression plan is justified without an experiment",
+          "evidence": [],
+          "q": "Q11",
+          "status": "unknown"
+        },
+        {
+          "answer": "capability_decision='analysis_only'; review owner='autonomous-audit'; verified is always false",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM24",
+              "sha256": null
+            }
+          ],
+          "q": "Q12",
+          "status": "answered"
+        }
+      ],
+      "capability_decision": "analysis_only",
+      "diagnosis": "evaluation classification over 1 observation(s); capability decision analysis_only; verified is always false",
+      "experiment_plan": {
+        "acceptance_criteria": [],
+        "hypothesis": "cannot be planned from the available evidence; collect more evidence before proposing an experiment",
+        "independent_verification": [],
+        "reason": "evaluation mismatch: correct the acceptance/evaluation model before proposing a capability experiment",
+        "regression_checks": [],
+        "samples": [],
+        "status": "cannot_plan"
+      },
+      "failure_type": "evaluation",
+      "observations": [
+        {
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM24",
+              "sha256": null
+            }
+          ],
+          "expected": "the matcher reports no acceptance mismatch",
+          "metadata": {
+            "failure_type": "evaluation",
+            "samples": [
+              "AM24"
+            ],
+            "source_artifact": "artifacts/acceptance-model-audit-2026-11-16/report.json"
+          },
+          "observation_id": "acceptance-negative-am24-benchmark-version-mismatch",
+          "observed": "acceptance mismatch ids: AM24",
+          "refs": [
+            "AM24",
+            "negative-am24-benchmark-version-mismatch"
+          ],
+          "source": "acceptance-audit:artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am24-benchmark-version-mismatch"
+        }
+      ],
+      "reflection_id": "ref-613218ad70d4e372993ebf9e",
+      "review_owner": "autonomous-audit",
+      "root_cause_hypothesis": "hypothesis: the acceptance/evaluation model or the recorded expectation is wrong or incomplete; the capability is not implicated until the evaluation mismatch is resolved",
+      "schema_version": 1,
+      "verified": false
+    },
+    {
+      "12_questions": [
+        {
           "answer": "the recorded capability gap is resolved with committed, independently verifiable evidence",
           "evidence": [
             {
@@ -9899,6 +10385,249 @@
         }
       ],
       "reflection_id": "ref-6dd1923c0fde55b1c8fce5ac",
+      "review_owner": "autonomous-audit",
+      "root_cause_hypothesis": "hypothesis: the acceptance/evaluation model or the recorded expectation is wrong or incomplete; the capability is not implicated until the evaluation mismatch is resolved",
+      "schema_version": 1,
+      "verified": false
+    },
+    {
+      "12_questions": [
+        {
+          "answer": "the matcher reports no acceptance mismatch",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM22",
+              "sha256": null
+            }
+          ],
+          "q": "Q01",
+          "status": "answered"
+        },
+        {
+          "answer": "acceptance mismatch ids: AM22",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM22",
+              "sha256": null
+            }
+          ],
+          "q": "Q02",
+          "status": "answered"
+        },
+        {
+          "answer": "2 machine-readable evidence item(s): artifact:artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial, gap:AM22",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM22",
+              "sha256": null
+            }
+          ],
+          "q": "Q03",
+          "status": "answered"
+        },
+        {
+          "answer": "evidence present (2 item(s)); classification is 'evaluation' but the capability decision remains 'analysis_only'",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM22",
+              "sha256": null
+            }
+          ],
+          "q": "Q04",
+          "status": "answered"
+        },
+        {
+          "answer": "no: no infrastructure marker is present",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM22",
+              "sha256": null
+            }
+          ],
+          "q": "Q05",
+          "status": "answered"
+        },
+        {
+          "answer": "no: the failure is classified as 'evaluation', not a capability gap",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM22",
+              "sha256": null
+            }
+          ],
+          "q": "Q06",
+          "status": "answered"
+        },
+        {
+          "answer": "unknown: no capability/cell/strategy pointer is recorded",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM22",
+              "sha256": null
+            }
+          ],
+          "q": "Q07",
+          "status": "unknown"
+        },
+        {
+          "answer": "hypothesis: the acceptance/evaluation model or the recorded expectation is wrong or incomplete; the capability is not implicated until the evaluation mismatch is resolved",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM22",
+              "sha256": null
+            }
+          ],
+          "q": "Q08",
+          "status": "answered"
+        },
+        {
+          "answer": "unknown: no experiment can be planned yet (evaluation mismatch: correct the acceptance/evaluation model before proposing a capability experiment)",
+          "evidence": [],
+          "q": "Q09",
+          "status": "unknown"
+        },
+        {
+          "answer": "unknown: no acceptance criteria are justified without a planned experiment",
+          "evidence": [],
+          "q": "Q10",
+          "status": "unknown"
+        },
+        {
+          "answer": "unknown: no regression plan is justified without an experiment",
+          "evidence": [],
+          "q": "Q11",
+          "status": "unknown"
+        },
+        {
+          "answer": "capability_decision='analysis_only'; review owner='autonomous-audit'; verified is always false",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM22",
+              "sha256": null
+            }
+          ],
+          "q": "Q12",
+          "status": "answered"
+        }
+      ],
+      "capability_decision": "analysis_only",
+      "diagnosis": "evaluation classification over 1 observation(s); capability decision analysis_only; verified is always false",
+      "experiment_plan": {
+        "acceptance_criteria": [],
+        "hypothesis": "cannot be planned from the available evidence; collect more evidence before proposing an experiment",
+        "independent_verification": [],
+        "reason": "evaluation mismatch: correct the acceptance/evaluation model before proposing a capability experiment",
+        "regression_checks": [],
+        "samples": [],
+        "status": "cannot_plan"
+      },
+      "failure_type": "evaluation",
+      "observations": [
+        {
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM22",
+              "sha256": null
+            }
+          ],
+          "expected": "the matcher reports no acceptance mismatch",
+          "metadata": {
+            "failure_type": "evaluation",
+            "samples": [
+              "AM22"
+            ],
+            "source_artifact": "artifacts/acceptance-model-audit-2026-11-16/report.json"
+          },
+          "observation_id": "acceptance-negative-am22-semantic-scope-partial",
+          "observed": "acceptance mismatch ids: AM22",
+          "refs": [
+            "AM22",
+            "negative-am22-semantic-scope-partial"
+          ],
+          "source": "acceptance-audit:artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am22-semantic-scope-partial"
+        }
+      ],
+      "reflection_id": "ref-6fb691cfd7b6836f244fed7c",
       "review_owner": "autonomous-audit",
       "root_cause_hypothesis": "hypothesis: the acceptance/evaluation model or the recorded expectation is wrong or incomplete; the capability is not implicated until the evaluation mismatch is resolved",
       "schema_version": 1,
@@ -14461,6 +15190,249 @@
       "reflection_id": "ref-a3c3c1a0185f83d2a399718f",
       "review_owner": "autonomous-audit",
       "root_cause_hypothesis": "hypothesis: an environment/tooling failure (runner, guest, network, timeout or filesystem) interrupted the observation; no capability conclusion is justified until the infrastructure issue is fixed",
+      "schema_version": 1,
+      "verified": false
+    },
+    {
+      "12_questions": [
+        {
+          "answer": "the matcher reports no acceptance mismatch",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM23",
+              "sha256": null
+            }
+          ],
+          "q": "Q01",
+          "status": "answered"
+        },
+        {
+          "answer": "acceptance mismatch ids: AM23",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM23",
+              "sha256": null
+            }
+          ],
+          "q": "Q02",
+          "status": "answered"
+        },
+        {
+          "answer": "2 machine-readable evidence item(s): artifact:artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report, gap:AM23",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM23",
+              "sha256": null
+            }
+          ],
+          "q": "Q03",
+          "status": "answered"
+        },
+        {
+          "answer": "evidence present (2 item(s)); classification is 'evaluation' but the capability decision remains 'analysis_only'",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM23",
+              "sha256": null
+            }
+          ],
+          "q": "Q04",
+          "status": "answered"
+        },
+        {
+          "answer": "no: no infrastructure marker is present",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM23",
+              "sha256": null
+            }
+          ],
+          "q": "Q05",
+          "status": "answered"
+        },
+        {
+          "answer": "no: the failure is classified as 'evaluation', not a capability gap",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM23",
+              "sha256": null
+            }
+          ],
+          "q": "Q06",
+          "status": "answered"
+        },
+        {
+          "answer": "unknown: no capability/cell/strategy pointer is recorded",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM23",
+              "sha256": null
+            }
+          ],
+          "q": "Q07",
+          "status": "unknown"
+        },
+        {
+          "answer": "hypothesis: the acceptance/evaluation model or the recorded expectation is wrong or incomplete; the capability is not implicated until the evaluation mismatch is resolved",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM23",
+              "sha256": null
+            }
+          ],
+          "q": "Q08",
+          "status": "answered"
+        },
+        {
+          "answer": "unknown: no experiment can be planned yet (evaluation mismatch: correct the acceptance/evaluation model before proposing a capability experiment)",
+          "evidence": [],
+          "q": "Q09",
+          "status": "unknown"
+        },
+        {
+          "answer": "unknown: no acceptance criteria are justified without a planned experiment",
+          "evidence": [],
+          "q": "Q10",
+          "status": "unknown"
+        },
+        {
+          "answer": "unknown: no regression plan is justified without an experiment",
+          "evidence": [],
+          "q": "Q11",
+          "status": "unknown"
+        },
+        {
+          "answer": "capability_decision='analysis_only'; review owner='autonomous-audit'; verified is always false",
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM23",
+              "sha256": null
+            }
+          ],
+          "q": "Q12",
+          "status": "answered"
+        }
+      ],
+      "capability_decision": "analysis_only",
+      "diagnosis": "evaluation classification over 1 observation(s); capability decision analysis_only; verified is always false",
+      "experiment_plan": {
+        "acceptance_criteria": [],
+        "hypothesis": "cannot be planned from the available evidence; collect more evidence before proposing an experiment",
+        "independent_verification": [],
+        "reason": "evaluation mismatch: correct the acceptance/evaluation model before proposing a capability experiment",
+        "regression_checks": [],
+        "samples": [],
+        "status": "cannot_plan"
+      },
+      "failure_type": "evaluation",
+      "observations": [
+        {
+          "evidence": [
+            {
+              "kind": "artifact",
+              "note": "acceptance audit case",
+              "ref": "artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report",
+              "sha256": null
+            },
+            {
+              "kind": "gap",
+              "note": "acceptance mismatch class",
+              "ref": "AM23",
+              "sha256": null
+            }
+          ],
+          "expected": "the matcher reports no acceptance mismatch",
+          "metadata": {
+            "failure_type": "evaluation",
+            "samples": [
+              "AM23"
+            ],
+            "source_artifact": "artifacts/acceptance-model-audit-2026-11-16/report.json"
+          },
+          "observation_id": "acceptance-negative-am23-oracle-self-report",
+          "observed": "acceptance mismatch ids: AM23",
+          "refs": [
+            "AM23",
+            "negative-am23-oracle-self-report"
+          ],
+          "source": "acceptance-audit:artifacts/acceptance-model-audit-2026-11-16/report.json#negative-am23-oracle-self-report"
+        }
+      ],
+      "reflection_id": "ref-a9752de77948d1f90b001f74",
+      "review_owner": "autonomous-audit",
+      "root_cause_hypothesis": "hypothesis: the acceptance/evaluation model or the recorded expectation is wrong or incomplete; the capability is not implicated until the evaluation mismatch is resolved",
       "schema_version": 1,
       "verified": false
     },
@@ -23914,18 +24886,18 @@
       "ref-58a2df466d896ed4484699d6"
     ],
     "capability_decision_counts": {
-      "analysis_only": 73,
+      "analysis_only": 77,
       "candidate": 12,
       "not_run": 6
     },
     "failure_type_counts": {
       "capability": 12,
-      "evaluation": 58,
+      "evaluation": 62,
       "infrastructure": 6,
       "knowledge": 15
     },
     "questions_per_record": 12,
-    "records": 91,
+    "records": 95,
     "verified_true_count": 0
   },
   "violations": []

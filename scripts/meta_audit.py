@@ -48,7 +48,7 @@ for entry in (ROOT, ROOT / "scripts"):
 
 MIN_RECALL = 0.8
 MIN_PRECISION = 1.0
-MIN_SCENARIOS = 26
+MIN_SCENARIOS = 28
 
 
 def _import_audit() -> Any:
@@ -796,6 +796,36 @@ def _acceptance_recall_scenarios() -> list[dict[str, Any]]:
         whole.get("verified") is False
         and "AM07" in _as_list(whole.get("mismatches"))
     )
+
+    oracle_task = _copy.deepcopy(BASE_TASK)
+    oracle_acceptance = _copy.deepcopy(BASE_ACCEPTANCE)
+    oracle_task["requires_independent_oracle"] = True
+    oracle_acceptance["oracle"] = {
+        "kind": "generator_self_report",
+        "independent": False,
+    }
+    oracle = AcceptanceModelMatcher.match(oracle_task, oracle_acceptance)
+    oracle_detected = bool(
+        oracle.get("verified") is False
+        and "AM23" in _as_list(oracle.get("mismatches"))
+    )
+
+    benchmark_task = _copy.deepcopy(BASE_TASK)
+    benchmark_acceptance = _copy.deepcopy(BASE_ACCEPTANCE)
+    benchmark_task["benchmark"] = {
+        "version": "phase8-v1",
+        "sample_set_sha256": "a" * 64,
+    }
+    benchmark_acceptance["benchmark"] = {
+        "version": "phase7-v1",
+        "sample_set_sha256": "b" * 64,
+    }
+    benchmark = AcceptanceModelMatcher.match(benchmark_task, benchmark_acceptance)
+    benchmark_detected = bool(
+        benchmark.get("verified") is False
+        and "AM24" in _as_list(benchmark.get("mismatches"))
+    )
+
     return [
         _scenario(
             "acceptance_served_model_only_masquerade", "recall", True,
@@ -808,6 +838,18 @@ def _acceptance_recall_scenarios() -> list[dict[str, Any]]:
             whole_detected,
             "single-function evidence cannot verify a whole-program claim "
             f"(matcher mismatches={whole.get('mismatches')})",
+        ),
+        _scenario(
+            "acceptance_oracle_self_report_masquerade", "recall", True,
+            oracle_detected,
+            "a generator self-report must not satisfy the independent-oracle "
+            f"requirement (matcher mismatches={oracle.get('mismatches')})",
+        ),
+        _scenario(
+            "benchmark_version_mismatch", "recall", True,
+            benchmark_detected,
+            "a stale benchmark version/sample-set commitment must be rejected "
+            f"(matcher mismatches={benchmark.get('mismatches')})",
         ),
     ]
 

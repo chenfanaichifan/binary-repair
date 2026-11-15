@@ -22,7 +22,8 @@
         "AM02",
         "AM03",
         "AM04",
-        "AM20"
+        "AM20",
+        "AM24"
       ]
     },
     {
@@ -38,7 +39,9 @@
       "mismatch_ids": [
         "AM05",
         "AM07",
-        "AM19"
+        "AM19",
+        "AM21",
+        "AM22"
       ]
     },
     {
@@ -55,7 +58,8 @@
       ],
       "mismatch_ids": [
         "AM06",
-        "AM13"
+        "AM13",
+        "AM22"
       ]
     },
     {
@@ -101,7 +105,8 @@
       "mismatch_ids": [
         "AM08",
         "AM15",
-        "AM20"
+        "AM20",
+        "AM23"
       ]
     },
     {
@@ -300,6 +305,38 @@
       "required_actions": [
         "collect_complete_evidence"
       ]
+    },
+    {
+      "id": "AM21",
+      "code": "repair_scope_mismatch",
+      "severity": "critical",
+      "required_actions": [
+        "reject_repair_scope_mismatch"
+      ]
+    },
+    {
+      "id": "AM22",
+      "code": "semantic_scope_mismatch",
+      "severity": "high",
+      "required_actions": [
+        "collect_semantic_scope_evidence"
+      ]
+    },
+    {
+      "id": "AM23",
+      "code": "oracle_quality_insufficient",
+      "severity": "critical",
+      "required_actions": [
+        "require_independent_oracle"
+      ]
+    },
+    {
+      "id": "AM24",
+      "code": "benchmark_version_mismatch",
+      "severity": "high",
+      "required_actions": [
+        "reject_benchmark_version_mismatch"
+      ]
     }
   ],
   "match_result": {
@@ -307,15 +344,15 @@
     "task_id": "task-fixture-001",
     "decision": "rejected",
     "mismatches": [
-      "AM01"
+      "AM21"
     ],
     "required_actions": [
-      "reject_target_sha_mismatch"
+      "reject_repair_scope_mismatch"
     ],
     "verified": false,
     "residual_risk": "critical",
     "reasons": [
-      "AM01: target_sha_mismatch: acceptance target sha differs from task target sha"
+      "AM21: repair_scope_mismatch: repair scope exceeds the target"
     ]
   }
 }

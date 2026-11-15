@@ -5,7 +5,7 @@ committed evidence. No provider calls, no network, no git commands, no
 wall-clock timestamps.
 
 - generated_at: `2026-11-14T00:00:00Z` (artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json#audit_date)
-- source digest: `2cb2aa74a25c02914e741a94b2946d72dcea4a64cedfb7a79252f4c620d45bd7`
+- source digest: `b79a815de303bff06b1524a54b5e8210654e8f202c4b68eafed3cf92d5a25a5e`
 - records: 64 (base 13 + discovery candidates 51)
 - validation: ok=True unique_ids=64
 

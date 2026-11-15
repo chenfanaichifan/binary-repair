@@ -2,8 +2,8 @@
 """Acceptance-model audit matrix.
 
 Builds the deterministic committed matrix
-``artifacts/acceptance-model-audit-2026-11-16/cases.json`` (>= 40 cases: positive
-baselines + at least one negative case per AM01-AM20 class, each annotated with
+``artifacts/acceptance-model-audit-2026-11-16/cases.json`` (>= 52 cases: positive
+baselines + at least one negative case per AM01-AM24 class, each annotated with
 ``expected_mismatches``), runs the pure
 ``app.services.acceptance_models.AcceptanceModelMatcher`` over it, and writes
 ``report.json`` / ``README.md`` / ``SHA256SUMS``.
@@ -402,6 +402,119 @@ def build_cases() -> list[dict[str, Any]]:
                        "task evidence reference without acceptance evidence",
                        ["AM20"]))
 
+    # --- Phase-8 additive classes AM21-AM24 (positive + negative) ---------
+    def _target_scope(with_range: bool) -> dict[str, Any]:
+        scope: dict[str, Any] = {"policy": "target_scoped", "name": "vuln_copy"}
+        if with_range:
+            scope.update({"va": 4096, "end": 8192})
+        return scope
+
+    # Positive: target-scoped repair actions stay inside the declared target.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["target_scope"] = _target_scope(with_range=True)
+    acceptance["repair_scope"] = {
+        "policy": "target_scoped",
+        "modified_functions": ["vuln_copy"],
+        "actions": [{"va": 5000}],
+    }
+    cases.append(_case(
+        task, acceptance, "positive-repair-scope-target",
+        "target-scoped repair actions inside the declared range verify", []))
+
+    # Positive: an action list without a VA range is not scope-escaped.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["target_scope"] = _target_scope(with_range=False)
+    acceptance["repair_scope"] = {
+        "policy": "target_scoped",
+        "modified_functions": ["vuln_copy"],
+        "actions": [{"va": 5000}],
+    }
+    cases.append(_case(
+        task, acceptance, "positive-repair-scope-no-range",
+        "target-scoped repair without a VA range verifies", []))
+
+    # Positive: complete semantic coverage of the declared behavior scope.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["semantic_scope"] = {
+        "required_inputs": ["input-a", "input-b"],
+        "required_paths": ["path-1"],
+        "required_behaviors": ["behavior-1"],
+    }
+    acceptance["semantic_coverage"] = {
+        "inputs": ["input-a", "input-b"],
+        "paths": ["path-1"],
+        "behaviors": ["behavior-1"],
+        "complete": True,
+    }
+    cases.append(_case(
+        task, acceptance, "positive-semantic-scope-complete",
+        "full semantic-scope coverage verifies", []))
+
+    # Positive: an independent external oracle satisfies the oracle bar.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["requires_independent_oracle"] = True
+    acceptance["oracle"] = {"kind": "external_poc", "independent": True}
+    cases.append(_case(
+        task, acceptance, "positive-independent-oracle",
+        "an independent external oracle satisfies the oracle requirement", []))
+
+    # Positive: acceptance uses the same benchmark version/commitment as task.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["benchmark"] = {"version": "phase8-v1",
+                         "sample_set_sha256": HEX_A}
+    acceptance["benchmark"] = {"version": "phase8-v1",
+                               "sample_set_sha256": HEX_A}
+    cases.append(_case(
+        task, acceptance, "positive-benchmark-version",
+        "matching benchmark version and sample-set commitment verifies", []))
+
+    # Negative AM21: whole-image scope claim for a target-scoped task.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["target_scope"] = _target_scope(with_range=True)
+    acceptance["repair_scope"] = {"policy": "whole_image"}
+    cases.append(_case(
+        task, acceptance, "negative-am21-repair-scope-escape",
+        "whole-image repair scope exceeds a target_scoped task", ["AM21"]))
+
+    # Negative AM22: behavior/regression evidence covers only part of the scope.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["semantic_scope"] = {
+        "required_inputs": ["input-a", "input-b"],
+        "required_paths": ["path-1"],
+        "required_behaviors": ["behavior-1"],
+    }
+    acceptance["semantic_coverage"] = {
+        "inputs": ["input-a"],
+        "paths": [],
+        "behaviors": [],
+        "complete": False,
+    }
+    cases.append(_case(
+        task, acceptance, "negative-am22-semantic-scope-partial",
+        "partial semantic coverage is rejected", ["AM22"]))
+
+    # Negative AM23: generator self-report is not an independent oracle.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["requires_independent_oracle"] = True
+    acceptance["oracle"] = {
+        "kind": "generator_self_report",
+        "independent": False,
+    }
+    cases.append(_case(
+        task, acceptance, "negative-am23-oracle-self-report",
+        "generator self-report cannot satisfy the oracle requirement",
+        ["AM23"]))
+
+    # Negative AM24: claim references a stale benchmark version.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["benchmark"] = {"version": "phase8-v1",
+                         "sample_set_sha256": HEX_A}
+    acceptance["benchmark"] = {"version": "phase7-v1",
+                               "sample_set_sha256": HEX_B}
+    cases.append(_case(
+        task, acceptance, "negative-am24-benchmark-version-mismatch",
+        "stale benchmark version/sample set is rejected", ["AM24"]))
+
     cases.sort(key=lambda case: case["case_id"])
     return cases
 
@@ -496,13 +609,13 @@ def _readme(report: dict[str, Any]) -> str:
         "# Acceptance-model audit matrix (2026-11-16)",
         "",
         "Deterministic matrix for the A01-A08 acceptance dimensions and the",
-        "AM01-AM20 mismatch model (`app/services/acceptance_models.py`).",
+        "AM01-AM24 mismatch model (`app/services/acceptance_models.py`).",
         "",
         f"- cases: **{report['case_count']}** "
         f"(positive {report['positive_case_count']}, negative "
         f"{report['negative_case_count']})",
         f"- AM classes covered by a negative case: "
-        f"{len(report['covered_am_classes'])}/20 "
+        f"{len(report['covered_am_classes'])}/{len(MISMATCH_IDS)} "
         f"({', '.join(report['covered_am_classes'])})",
         f"- recall: **{report['recall']}**, precision: "
         f"**{report['precision']}**, ok: **{report['ok']}**",

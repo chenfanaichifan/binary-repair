@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/benchmark-sample.schema.json",
+  "title": "Ground-truth benchmark sample",
+  "description": "One ground-truth benchmark sample: binary identity, vulnerability class, expected scope, oracle declaration, expected analysis, reference fix, negative cases, dev/validation split and hidden-set honesty fields. hidden_available is always false in the public manifest and the hidden commitment is either a real sha256 or explicit null with a limitation; a sample without an independent oracle must be declared analysis_only instead of being promoted to a verified expectation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sample_id",
+    "sha256",
+    "format",
+    "arch",
+    "bits",
+    "endian",
+    "vulnerability_class",
+    "expected_scope",
+    "target",
+    "source_refs",
+    "oracle",
+    "expected_analysis",
+    "reference_fix",
+    "expected_patch_properties",
+    "negative_cases",
+    "split",
+    "hidden_available",
+    "hidden_commitment_sha256",
+    "evidence_refs"
+  ],
+  "properties": {
+    "sample_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,80}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "elf",
+        "macho",
+        "pe"
+      ]
+    },
+    "arch": {
+      "type": "string",
+      "enum": [
+        "x86_64",
+        "i386",
+        "arm64"
+      ]
+    },
+    "bits": {
+      "type": "integer",
+      "enum": [
+        32,
+        64
+      ]
+    },
+    "endian": {
+      "type": "string",
+      "enum": [
+        "little",
+        "big"
+      ]
+    },
+    "vulnerability_class": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_scope": {
+      "type": "string",
+      "enum": [
+        "function",
+        "whole_program",
+        "analysis_only"
+      ]
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "function",
+            "symbol",
+            "va_range",
+            "whole_image",
+            "analysis_only"
+          ]
+        },
+        "function": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "va": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "oracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kinds",
+        "manifest_path",
+        "expected_original",
+        "expected_candidate"
+      ],
+      "properties": {
+        "kinds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "external_poc",
+              "native",
+              "emulated",
+              "static"
+            ]
+          }
+        },
+        "manifest_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expected_original": {
+          "type": [
+            "string",
+            "boolean",
+            "null"
+          ]
+        },
+        "expected_candidate": {
+          "type": [
+            "string",
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "expected_analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root_cause",
+        "function",
+        "sink",
+        "capacity"
+      ],
+      "properties": {
+        "root_cause": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "function": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sink": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "capacity": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "reference_fix": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expected_patch_properties": {
+      "type": "object"
+    },
+    "negative_cases": {
+      "type": "array",
+      "items": {
+        "type": [
+          "string",
+          "object"
+        ]
+      }
+    },
+    "split": {
+      "type": "string",
+      "enum": [
+        "dev",
+        "validation"
+      ]
+    },
+    "hidden_available": {
+      "const": false
+    },
+    "hidden_commitment_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

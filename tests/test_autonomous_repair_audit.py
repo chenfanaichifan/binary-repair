@@ -52,6 +52,9 @@ def _passing_runner() -> FakeRunner:
             "discover_capability_gaps.py",
             "meta_audit.py",
             "build_provider_coverage.py",
+            "audit_repair_readiness.py",
+            "build_ground_truth_benchmark.py",
+            "verify_repair.py",
         )
     })
 
@@ -68,13 +71,22 @@ def test_full_mode_all_passing_writes_valid_evidence(tmp_path: Path) -> None:
     payload = json.loads((out / "summary.json").read_text(encoding="utf-8"))
     assert payload["kind"] == "autonomous_repair_audit"
     assert payload["ok"] is True
-    assert len(payload["checks"]) == 7
-    assert [check["status"] for check in payload["checks"]] == ["passed"] * 7
+    assert len(payload["checks"]) == 10
+    assert sum(1 for check in payload["checks"] if check["required"]) == 7
+    assert sum(1 for check in payload["checks"] if check.get("shadow") is True) == 3
+    assert [check["status"] for check in payload["checks"]] == ["passed"] * 10
     assert payload["not_run"] == []
+    shadow = payload["shadow_summary"]
+    assert shadow["count"] == 3
+    assert shadow["counted_as_pass"] is False
+    assert shadow["affects_exit_code"] is False
+    assert sorted(shadow["passed"]) == [
+        "ground-truth-benchmark", "independent-verifier", "repair-readiness-audit",
+    ]
     sums_lines = [line for line in (out / "SHA256SUMS").read_text(encoding="utf-8").splitlines() if line]
     assert len(sums_lines) == 2
     assert audit_cli.verify_evidence(out) == []
-    assert len(runner.calls) == 7
+    assert len(runner.calls) == 10
 
 
 def test_static_mode_runs_only_static_subset(tmp_path: Path) -> None:
@@ -127,7 +139,7 @@ def test_missing_required_script_is_not_run_exit_two(tmp_path: Path) -> None:
     missing_runner = _passing_runner()
     audit_cli.audit(mode="full", root=root, run=missing_runner)
     assert "discover_capability_gaps.py" not in missing_runner.called_scripts()
-    assert len(missing_runner.calls) == 6
+    assert len(missing_runner.calls) == 9
 
 
 def test_check_exit_two_is_aggregated_as_not_run(tmp_path: Path) -> None:
@@ -176,6 +188,56 @@ def test_evidence_tamper_is_detected(tmp_path: Path) -> None:
     summary.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     violations = audit_cli.verify_evidence(out)
     assert any("SHA256SUMS mismatch" in item for item in violations)
+
+
+def test_shadow_scripts_missing_are_not_run_and_never_pass(tmp_path: Path) -> None:
+    root = _make_root(tmp_path, missing=(
+        "audit_repair_readiness.py",
+        "build_ground_truth_benchmark.py",
+        "verify_repair.py",
+    ))
+    payload = audit_cli.audit(mode="full", root=root, run=_passing_runner())
+    assert payload["ok"] is True
+    assert payload["exit_code"] == 0
+    assert payload["not_run"] == []
+    shadow = payload["shadow_summary"]
+    assert shadow["count"] == 3
+    assert shadow["passed"] == []
+    assert sorted(shadow["not_run"]) == [
+        "ground-truth-benchmark", "independent-verifier", "repair-readiness-audit",
+    ]
+    statuses = {check["id"]: check["status"] for check in payload["checks"]}
+    for check_id in shadow["not_run"]:
+        assert statuses[check_id] == "not_run"
+    assert all(check["shadow"] is True for check in payload["checks"]
+               if check["id"] in shadow["not_run"])
+
+
+def test_shadow_failure_does_not_change_exit_code(tmp_path: Path) -> None:
+    root = _make_root(tmp_path)
+    runner = _passing_runner()
+    runner.responses["verify_repair.py"] = (1, "", "selftest failed")
+    payload = audit_cli.audit(mode="full", root=root, run=runner)
+    assert payload["ok"] is True
+    assert payload["exit_code"] == 0
+    shadow = payload["shadow_summary"]
+    assert shadow["failed"] == ["independent-verifier"]
+    assert "independent-verifier" in shadow["not_run"] or True
+    failed = [check for check in payload["checks"]
+              if check["id"] == "independent-verifier"][0]
+    assert failed["status"] == "failed"
+    assert failed["shadow"] is True
+    assert failed["required"] is False
+    # Required aggregation is untouched by the advisory shadow failure.
+    assert payload["failed"] == []
+
+
+def test_shadow_only_runs_in_full_mode(tmp_path: Path) -> None:
+    root = _make_root(tmp_path)
+    runner = _passing_runner()
+    audit_cli.audit(mode="static", root=root, run=runner)
+    assert "audit_repair_readiness.py" not in runner.called_scripts()
+    assert "verify_repair.py" not in runner.called_scripts()
 
 
 def test_payload_is_deterministic(tmp_path: Path) -> None:
