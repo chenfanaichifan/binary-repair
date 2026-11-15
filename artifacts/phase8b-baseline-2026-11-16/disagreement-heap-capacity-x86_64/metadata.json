@@ -1,0 +1,32 @@
+{
+  "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+  "kind": "phase8b_verifier_metadata",
+  "note": "runner_metadata is exactly what the benchmark runner passes to the verifier; pipeline_resolved_scope is the producer fact that is NOT exchanged (gap V8B-02)",
+  "oracle_manifest": "fixtures/poc/marcx-capacity.json",
+  "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+  "pipeline_resolved_scope": {
+    "end": 4202729,
+    "name": "",
+    "source": "explicit",
+    "va": 4202713
+  },
+  "runner_metadata": {
+    "allow_whole_image": false,
+    "arch": "x86_64",
+    "bits": 64,
+    "endian": "little",
+    "format": "elf",
+    "generator": {
+      "generator_id": "deterministic-repair-any/app.services.binary_pipeline"
+    },
+    "target_scope": {
+      "end": 4202729,
+      "kind": "va_range",
+      "policy": "target_scoped",
+      "va": 4202713
+    },
+    "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+  },
+  "sample_id": "heap-capacity-x86_64",
+  "schema_version": 1
+}

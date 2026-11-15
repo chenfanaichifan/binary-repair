@@ -1,0 +1,225 @@
+{
+  "base_sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+  "items": [
+    {
+      "acceptance": [
+        "CLI --poc executes run_poc on the declared manifest",
+        "report records oracle runner/tier/status and evidence",
+        "declared-but-not-run oracle cannot yield verified"
+      ],
+      "affected_modules": [
+        "scripts/verify_repair.py",
+        "scripts/run_repair_benchmark.py",
+        "app/services/independent_verifier.py"
+      ],
+      "evidence_refs": [
+        "disagreement-stack-strcpy-x86_64/outcome.json",
+        "disagreement-heap-capacity-x86_64/outcome.json",
+        "verifier.cli.checks[runtime-oracle]=not_run",
+        "module_api_with_oracle.runtime-oracle=passed"
+      ],
+      "hypothesis": "the benchmark CLI adapter passes --poc, but verify_repair.py calls verify_repair() without run_poc, so the oracle is never executed and the verifier fails closed",
+      "id": "V8B-01",
+      "measured": {
+        "cli_runtime_oracle": "not_run",
+        "module_with_run_poc_runtime_oracle": "passed"
+      },
+      "required_fix": "wire the PoC runner into the CLI/module exchange and record the oracle evidence digest; never treat a declared path as an executed oracle",
+      "severity": "critical",
+      "title": "Oracle exchange: runner CLI --poc is not injected as run_poc"
+    },
+    {
+      "acceptance": [
+        "stack-strcpy candidate target-scope passes with exchanged scope",
+        "unresolved symbol still fails closed",
+        "scope evidence is in the report"
+      ],
+      "affected_modules": [
+        "scripts/verify_repair.py",
+        "scripts/run_repair_benchmark.py",
+        "app/services/binary_pipeline.py"
+      ],
+      "evidence_refs": [
+        "disagreement-stack-strcpy-x86_64/outcome.json",
+        "reproduction.resolved_scope (va/end produced by pipeline)",
+        "experiment E2 target-scope=passed after exchange"
+      ],
+      "hypothesis": "runner metadata only carries the manifest symbol/name; the verifier cannot resolve it, so target-scope is not_run",
+      "id": "V8B-02",
+      "measured": {
+        "heap_target_scope": "failed (associated change, separate gap)",
+        "stack_after_resolved_scope_exchange": "passed",
+        "stack_baseline_target_scope": "not_run"
+      },
+      "required_fix": "exchange the pipeline-resolved target scope (va/end/source) in the verifier metadata contract; fail closed if absent",
+      "severity": "critical",
+      "title": "Resolved target scope is not exchanged (symbol not turned into va/end)"
+    },
+    {
+      "acceptance": [
+        "cave/insertion candidates replay from the declared plan",
+        "replay mismatch fails closed",
+        "heap in-place rewrite still passes"
+      ],
+      "affected_modules": [
+        "app/services/independent_verifier.py",
+        "scripts/run_repair_benchmark.py"
+      ],
+      "evidence_refs": [
+        "disagreement-stack-strcpy-x86_64/outcome.json",
+        "reproduction.candidate_size=4915238 vs original 4911312",
+        "verifier.cli.checks[action-replay]=failed"
+      ],
+      "hypothesis": "the verifier fails immediately when len(original) != len(candidate); guard candidates inject a cave and grow the binary, so they can never pass replay",
+      "id": "V8B-03",
+      "measured": {
+        "heap_action_replay": "passed",
+        "heap_candidate_resized": false,
+        "stack_action_replay": "failed",
+        "stack_candidate_resized": true
+      },
+      "required_fix": "model a declared patch plan with actions/insertions/cave and replay it deterministically into the candidate bytes; keep byte-replay as a special case",
+      "severity": "critical",
+      "title": "Resized/cave candidates are rejected by rewrite-only action replay"
+    },
+    {
+      "acceptance": [
+        "associated changes are declared with kinds/scopes/hashes",
+        "verifier replays them and applies an explicit scope rule",
+        "undeclared out-of-scope actions still fail closed"
+      ],
+      "affected_modules": [
+        "app/services/binary_pipeline.py",
+        "app/services/repair/capacity.py",
+        "app/services/independent_verifier.py"
+      ],
+      "evidence_refs": [
+        "disagreement-heap-capacity-x86_64/outcome.json",
+        "reproduction.message_actions (offset 538624, size 49)",
+        "verifier.cli.checks[target-scope]=failed",
+        "pipeline gate outcome=success_within_scope"
+      ],
+      "hypothesis": "the capacity engine emits a message_actions associated change outside report.actions; the pipeline gate passes because it checks actions/site_va, while the verifier recomputes the raw diff and rejects the out-of-scope action",
+      "id": "V8B-04",
+      "measured": {
+        "capacity_message_actions": 1,
+        "pipeline_actions": 1,
+        "pipeline_gate": "success_within_scope",
+        "raw_diff_actions": 2,
+        "verifier_target_scope": "failed"
+      },
+      "required_fix": "declare associated changes in the outcome/plan contract and model/allow them explicitly inside the declared scope; never silently widen or bypass target scope",
+      "severity": "high",
+      "title": "Associated .rodata message action is not modeled; gate target-scope only sees report.actions"
+    },
+    {
+      "acceptance": [
+        "ABI check runs on a derived block",
+        "missing/unsupported ABI still fails closed",
+        "report records ABI evidence digest"
+      ],
+      "affected_modules": [
+        "app/services/independent_verifier.py",
+        "scripts/run_repair_benchmark.py"
+      ],
+      "evidence_refs": [
+        "disagreement-stack-strcpy-x86_64/outcome.json",
+        "disagreement-heap-capacity-x86_64/outcome.json",
+        "metadata has no abi_block",
+        "experiment E3 derived abi_block"
+      ],
+      "hypothesis": "the verifier only accepts metadata.abi_block; the runner and pipeline never derive/pass it, so ABI is always not_run",
+      "id": "V8B-05",
+      "measured": {
+        "baseline_abi": "not_run",
+        "derived_abi_block": "produced from resolved code range"
+      },
+      "required_fix": "derive ABI evidence from the patched function (block, arch, ABI id) and exchange it; keep the verifier authoritative",
+      "severity": "high",
+      "title": "ABI evidence is not derived or exchanged"
+    },
+    {
+      "acceptance": [
+        "plan round-trips through the contract",
+        "verifier replays from the plan",
+        "plan tamper fails closed"
+      ],
+      "affected_modules": [
+        "app/services/binary_pipeline.py",
+        "contracts/",
+        "scripts/verify_repair.py"
+      ],
+      "evidence_refs": [
+        "disagreement-stack-strcpy-x86_64/outcome.json",
+        "disagreement-heap-capacity-x86_64/outcome.json",
+        "outcome.json has no plan field",
+        "verifier checks have no plan check"
+      ],
+      "hypothesis": "the outcome contains actions but no versioned patch plan and the verifier has no plan check; resized/associated changes cannot be exchanged structurally",
+      "id": "V8B-06",
+      "measured": {
+        "patch_plan_contract": "absent",
+        "verifier_plan_check": "absent"
+      },
+      "required_fix": "add a patch-plan contract (plan id/version, original/target hashes, actions, associated changes, cave/insertion ranges) and require it in the verification contract",
+      "severity": "high",
+      "title": "Patch-plan contract is missing"
+    },
+    {
+      "acceptance": [
+        "every disagreement has candidate/plan/report artifacts",
+        "hashes bind the exchanged evidence",
+        "reproduction is possible offline"
+      ],
+      "affected_modules": [
+        "scripts/run_repair_benchmark.py"
+      ],
+      "evidence_refs": [
+        "artifacts/phase8-benchmark-2026-11-16/results.json",
+        "artifact directory contains only results.json/README.md/SHA256SUMS",
+        "runner code uses tempfile + unlink"
+      ],
+      "hypothesis": "the runner passes candidate bytes through a temporary file to the verifier and unlinks it; results.json stores only hashes and counters, so the disagreement is not reproducible from the artifact",
+      "id": "V8B-07",
+      "measured": {
+        "artifact_files": [
+          "results.json",
+          "README.md",
+          "SHA256SUMS"
+        ],
+        "candidate_saved": false,
+        "plan_saved": false,
+        "verifier_report_saved": false
+      },
+      "required_fix": "write candidate bytes, plan, metadata and verifier report into the disagreement artifact and exchange them by hash",
+      "severity": "high",
+      "title": "Runner does not save/exchange candidate bytes, plan or verifier report"
+    }
+  ],
+  "kind": "phase8b_verifier_gap_registry",
+  "limitations": [
+    "measured on the current host; dynamic oracle status is host-dependent and recorded, never faked",
+    "the candidate bytes are evidence-only and are not a correctness claim"
+  ],
+  "sample_ids": [
+    "stack-strcpy-x86_64",
+    "heap-capacity-x86_64"
+  ],
+  "schema_version": 1,
+  "summary": {
+    "by_severity": {
+      "critical": 3,
+      "high": 4
+    },
+    "confirmed": [
+      "V8B-01",
+      "V8B-02",
+      "V8B-03",
+      "V8B-04",
+      "V8B-05",
+      "V8B-06",
+      "V8B-07"
+    ],
+    "total": 7
+  }
+}

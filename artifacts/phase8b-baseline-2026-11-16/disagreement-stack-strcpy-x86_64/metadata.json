@@ -1,0 +1,30 @@
+{
+  "candidate_sha256": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4",
+  "kind": "phase8b_verifier_metadata",
+  "note": "runner_metadata is exactly what the benchmark runner passes to the verifier; pipeline_resolved_scope is the producer fact that is NOT exchanged (gap V8B-02)",
+  "oracle_manifest": "fixtures/poc/elf-x86_64-strcpy.json",
+  "original_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+  "pipeline_resolved_scope": {
+    "end": 16956128,
+    "name": "vuln_copy",
+    "source": "symbol",
+    "va": 16956084
+  },
+  "runner_metadata": {
+    "allow_whole_image": false,
+    "arch": "x86_64",
+    "bits": 64,
+    "endian": "little",
+    "format": "elf",
+    "generator": {
+      "generator_id": "deterministic-repair-any/app.services.binary_pipeline"
+    },
+    "target_scope": {
+      "name": "vuln_copy",
+      "policy": "target_scoped"
+    },
+    "target_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4"
+  },
+  "sample_id": "stack-strcpy-x86_64",
+  "schema_version": 1
+}

@@ -1,0 +1,4711 @@
+{
+  "baseline_runner_path": "CLI --json (the path the benchmark selected)",
+  "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+  "cli": {
+    "checks": [
+      {
+        "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+        "id": "identity",
+        "status": "passed"
+      },
+      {
+        "detail": "format=elf arch=x86_64 bits=64 endian=little",
+        "id": "container",
+        "status": "passed"
+      },
+      {
+        "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+        "id": "action-replay",
+        "status": "passed"
+      },
+      {
+        "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+        "id": "target-scope",
+        "status": "failed"
+      },
+      {
+        "detail": "no abi_block was declared; ABI is unverifiable",
+        "id": "abi",
+        "status": "not_run"
+      },
+      {
+        "detail": "no oracle runner is available",
+        "id": "runtime-oracle",
+        "status": "not_run"
+      },
+      {
+        "detail": "independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+        "id": "evidence-completeness",
+        "status": "not_run"
+      },
+      {
+        "detail": "generator identity is distinct and its evidence is excluded from the decision",
+        "id": "independence",
+        "status": "passed"
+      }
+    ],
+    "command_template": "scripts/verify_repair.py --original {original} --candidate {candidate} --metadata {metadata} --poc {oracle} --json",
+    "decision": "rejected",
+    "entry_point": "CLI --json",
+    "exit_code": 1,
+    "limitations": [
+      "abi: no abi_block was declared; ABI is unverifiable",
+      "evidence-completeness: independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+      "fail-closed: only an all-required-passed result with a passing independent oracle can be verified",
+      "runtime-oracle: no oracle runner is available"
+    ],
+    "report": {
+      "checks": [
+        {
+          "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+          "id": "identity",
+          "required": true,
+          "status": "passed",
+          "title": "Original/candidate identity and candidate change"
+        },
+        {
+          "detail": "format=elf arch=x86_64 bits=64 endian=little",
+          "id": "container",
+          "required": true,
+          "status": "passed",
+          "title": "Container re-parse and metadata agreement"
+        },
+        {
+          "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+          "id": "action-replay",
+          "required": true,
+          "status": "passed",
+          "title": "Byte-level action replay from raw images"
+        },
+        {
+          "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+          "id": "target-scope",
+          "required": true,
+          "status": "failed",
+          "title": "Candidate modifications stay inside the declared target scope"
+        },
+        {
+          "detail": "no abi_block was declared; ABI is unverifiable",
+          "id": "abi",
+          "required": true,
+          "status": "not_run",
+          "title": "Candidate instruction-block ABI validation"
+        },
+        {
+          "detail": "no oracle runner is available",
+          "id": "runtime-oracle",
+          "required": true,
+          "status": "not_run",
+          "title": "Independent external PoC differential and regression"
+        },
+        {
+          "detail": "independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+          "id": "evidence-completeness",
+          "independent": true,
+          "required": true,
+          "status": "not_run",
+          "title": "At least one independent oracle (no generator-only evidence)"
+        },
+        {
+          "detail": "generator identity is distinct and its evidence is excluded from the decision",
+          "id": "independence",
+          "required": true,
+          "status": "passed",
+          "title": "Generator/verifier independence and generator-evidence exclusion"
+        }
+      ],
+      "decision": "rejected",
+      "evidence": [
+        {
+          "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+          "kind": "candidate",
+          "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+        },
+        {
+          "candidate": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "sections": [
+              {
+                "executable": false,
+                "name": "",
+                "offset": 0,
+                "size": 0,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.property",
+                "offset": 624,
+                "size": 48,
+                "va": 4194928
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.build-id",
+                "offset": 672,
+                "size": 36,
+                "va": 4194976
+              },
+              {
+                "executable": false,
+                "name": ".note.ABI-tag",
+                "offset": 708,
+                "size": 32,
+                "va": 4195012
+              },
+              {
+                "executable": false,
+                "name": ".rela.plt",
+                "offset": 744,
+                "size": 528,
+                "va": 4195048
+              },
+              {
+                "executable": true,
+                "name": ".init",
+                "offset": 4096,
+                "size": 27,
+                "va": 4198400
+              },
+              {
+                "executable": true,
+                "name": ".plt",
+                "offset": 4128,
+                "size": 352,
+                "va": 4198432
+              },
+              {
+                "executable": true,
+                "name": ".text",
+                "offset": 4480,
+                "size": 521504,
+                "va": 4198784
+              },
+              {
+                "executable": true,
+                "name": ".fini",
+                "offset": 525984,
+                "size": 13,
+                "va": 4720288
+              },
+              {
+                "executable": false,
+                "name": ".rodata",
+                "offset": 528384,
+                "size": 117012,
+                "va": 4722688
+              },
+              {
+                "executable": false,
+                "name": "rodata.cst32",
+                "offset": 645408,
+                "size": 96,
+                "va": 4839712
+              },
+              {
+                "executable": false,
+                "name": ".eh_frame",
+                "offset": 645504,
+                "size": 39256,
+                "va": 4839808
+              },
+              {
+                "executable": false,
+                "name": ".gcc_except_table",
+                "offset": 684760,
+                "size": 458,
+                "va": 4879064
+              },
+              {
+                "executable": false,
+                "name": ".tdata",
+                "offset": 687952,
+                "size": 24,
+                "va": 4886352
+              },
+              {
+                "executable": false,
+                "name": ".tbss",
+                "offset": 687976,
+                "size": 64,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".init_array",
+                "offset": 687976,
+                "size": 8,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".fini_array",
+                "offset": 687984,
+                "size": 16,
+                "va": 4886384
+              },
+              {
+                "executable": false,
+                "name": ".data.rel.ro",
+                "offset": 688000,
+                "size": 16328,
+                "va": 4886400
+              },
+              {
+                "executable": false,
+                "name": ".got",
+                "offset": 704328,
+                "size": 144,
+                "va": 4902728
+              },
+              {
+                "executable": false,
+                "name": ".got.plt",
+                "offset": 704488,
+                "size": 200,
+                "va": 4902888
+              },
+              {
+                "executable": false,
+                "name": ".data",
+                "offset": 704704,
+                "size": 6648,
+                "va": 4903104
+              },
+              {
+                "executable": false,
+                "name": ".bss",
+                "offset": 711352,
+                "size": 22408,
+                "va": 4909760
+              },
+              {
+                "executable": false,
+                "name": ".comment",
+                "offset": 711352,
+                "size": 45,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".shstrtab",
+                "offset": 711397,
+                "size": 224,
+                "va": 0
+              }
+            ]
+          },
+          "kind": "container",
+          "original": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "sections": [
+              {
+                "executable": false,
+                "name": "",
+                "offset": 0,
+                "size": 0,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.property",
+                "offset": 624,
+                "size": 48,
+                "va": 4194928
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.build-id",
+                "offset": 672,
+                "size": 36,
+                "va": 4194976
+              },
+              {
+                "executable": false,
+                "name": ".note.ABI-tag",
+                "offset": 708,
+                "size": 32,
+                "va": 4195012
+              },
+              {
+                "executable": false,
+                "name": ".rela.plt",
+                "offset": 744,
+                "size": 528,
+                "va": 4195048
+              },
+              {
+                "executable": true,
+                "name": ".init",
+                "offset": 4096,
+                "size": 27,
+                "va": 4198400
+              },
+              {
+                "executable": true,
+                "name": ".plt",
+                "offset": 4128,
+                "size": 352,
+                "va": 4198432
+              },
+              {
+                "executable": true,
+                "name": ".text",
+                "offset": 4480,
+                "size": 521504,
+                "va": 4198784
+              },
+              {
+                "executable": true,
+                "name": ".fini",
+                "offset": 525984,
+                "size": 13,
+                "va": 4720288
+              },
+              {
+                "executable": false,
+                "name": ".rodata",
+                "offset": 528384,
+                "size": 117012,
+                "va": 4722688
+              },
+              {
+                "executable": false,
+                "name": "rodata.cst32",
+                "offset": 645408,
+                "size": 96,
+                "va": 4839712
+              },
+              {
+                "executable": false,
+                "name": ".eh_frame",
+                "offset": 645504,
+                "size": 39256,
+                "va": 4839808
+              },
+              {
+                "executable": false,
+                "name": ".gcc_except_table",
+                "offset": 684760,
+                "size": 458,
+                "va": 4879064
+              },
+              {
+                "executable": false,
+                "name": ".tdata",
+                "offset": 687952,
+                "size": 24,
+                "va": 4886352
+              },
+              {
+                "executable": false,
+                "name": ".tbss",
+                "offset": 687976,
+                "size": 64,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".init_array",
+                "offset": 687976,
+                "size": 8,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".fini_array",
+                "offset": 687984,
+                "size": 16,
+                "va": 4886384
+              },
+              {
+                "executable": false,
+                "name": ".data.rel.ro",
+                "offset": 688000,
+                "size": 16328,
+                "va": 4886400
+              },
+              {
+                "executable": false,
+                "name": ".got",
+                "offset": 704328,
+                "size": 144,
+                "va": 4902728
+              },
+              {
+                "executable": false,
+                "name": ".got.plt",
+                "offset": 704488,
+                "size": 200,
+                "va": 4902888
+              },
+              {
+                "executable": false,
+                "name": ".data",
+                "offset": 704704,
+                "size": 6648,
+                "va": 4903104
+              },
+              {
+                "executable": false,
+                "name": ".bss",
+                "offset": 711352,
+                "size": 22408,
+                "va": 4909760
+              },
+              {
+                "executable": false,
+                "name": ".comment",
+                "offset": 711352,
+                "size": 45,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".shstrtab",
+                "offset": 711397,
+                "size": 224,
+                "va": 0
+              }
+            ]
+          }
+        },
+        {
+          "actions": [
+            {
+              "after_hex": "4489e729f7720939d70f83c5feff",
+              "before_hex": "39f3720c89df29f739d70f83c4fe",
+              "offset": 8409,
+              "size": 14
+            },
+            {
+              "after_hex": "90",
+              "before_hex": "ff",
+              "offset": 8424,
+              "size": 1
+            },
+            {
+              "after_hex": "6f7574707574000000000000",
+              "before_hex": "7061796c6f616420706f6f6c",
+              "offset": 538661,
+              "size": 12
+            }
+          ],
+          "claimed_actions": [],
+          "kind": "actions"
+        },
+        {
+          "declared": {
+            "end": 4202729,
+            "kind": "va_range",
+            "policy": "target_scoped",
+            "va": 4202713
+          },
+          "kind": "target-scope",
+          "range": {
+            "detail": "VA range [0x4020d9, 0x4020e9)",
+            "file_range": null,
+            "kind": "va_range",
+            "va_range": [
+              4202713,
+              4202729
+            ],
+            "whole_program": false
+          }
+        },
+        {
+          "kind": "abi",
+          "report": {}
+        },
+        {
+          "error": "no oracle runner is available",
+          "kind": "oracle",
+          "source": "external-poc-manifest"
+        },
+        {
+          "detail": "independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+          "kind": "evidence-completeness",
+          "ok": false,
+          "sources": [
+            "external-poc-manifest"
+          ]
+        },
+        "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/fixtures/poc/marcx-capacity.json"
+      ],
+      "generator": {
+        "agent": null,
+        "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+        "model": null,
+        "run_id": null
+      },
+      "independence": {
+        "generator_evidence_excluded": true,
+        "ok": true
+      },
+      "limitations": [
+        "abi: no abi_block was declared; ABI is unverifiable",
+        "evidence-completeness: independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+        "fail-closed: only an all-required-passed result with a passing independent oracle can be verified",
+        "runtime-oracle: no oracle runner is available"
+      ],
+      "report_sha256": "c2d9544d055b802d390942de037d42365ffceea99b825fffcfc60be644be045c",
+      "schema_version": 1,
+      "target": {
+        "arch": "x86_64",
+        "bits": 64,
+        "endian": "little",
+        "format": "elf",
+        "target_scope": {
+          "end": 4202729,
+          "policy": "target_scoped",
+          "va": 4202713
+        },
+        "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+      },
+      "verifier": {
+        "verifier_id": "independent-verifier/1",
+        "version": "1"
+      }
+    },
+    "report_sha256": "c2d9544d055b802d390942de037d42365ffceea99b825fffcfc60be644be045c"
+  },
+  "experiments": [
+    {
+      "hypothesis": "V8B-01",
+      "id": "E0-module-no-oracle-injection",
+      "purpose": "module API without run_poc: verify oracle is not run",
+      "result": {
+        "checks": [
+          {
+            "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+            "id": "identity",
+            "status": "passed"
+          },
+          {
+            "detail": "format=elf arch=x86_64 bits=64 endian=little",
+            "id": "container",
+            "status": "passed"
+          },
+          {
+            "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+            "id": "action-replay",
+            "status": "passed"
+          },
+          {
+            "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+            "id": "target-scope",
+            "status": "failed"
+          },
+          {
+            "detail": "no abi_block was declared; ABI is unverifiable",
+            "id": "abi",
+            "status": "not_run"
+          },
+          {
+            "detail": "no oracle runner is available",
+            "id": "runtime-oracle",
+            "status": "not_run"
+          },
+          {
+            "detail": "independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+            "id": "evidence-completeness",
+            "status": "not_run"
+          },
+          {
+            "detail": "generator identity is distinct and its evidence is excluded from the decision",
+            "id": "independence",
+            "status": "passed"
+          }
+        ],
+        "decision": "rejected",
+        "entry_point": "module API",
+        "limitations": [
+          "abi: no abi_block was declared; ABI is unverifiable",
+          "evidence-completeness: independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+          "fail-closed: only an all-required-passed result with a passing independent oracle can be verified",
+          "runtime-oracle: no oracle runner is available"
+        ],
+        "report": {
+          "checks": [
+            {
+              "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+              "id": "identity",
+              "required": true,
+              "status": "passed",
+              "title": "Original/candidate identity and candidate change"
+            },
+            {
+              "detail": "format=elf arch=x86_64 bits=64 endian=little",
+              "id": "container",
+              "required": true,
+              "status": "passed",
+              "title": "Container re-parse and metadata agreement"
+            },
+            {
+              "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+              "id": "action-replay",
+              "required": true,
+              "status": "passed",
+              "title": "Byte-level action replay from raw images"
+            },
+            {
+              "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+              "id": "target-scope",
+              "required": true,
+              "status": "failed",
+              "title": "Candidate modifications stay inside the declared target scope"
+            },
+            {
+              "detail": "no abi_block was declared; ABI is unverifiable",
+              "id": "abi",
+              "required": true,
+              "status": "not_run",
+              "title": "Candidate instruction-block ABI validation"
+            },
+            {
+              "detail": "no oracle runner is available",
+              "id": "runtime-oracle",
+              "required": true,
+              "status": "not_run",
+              "title": "Independent external PoC differential and regression"
+            },
+            {
+              "detail": "independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+              "id": "evidence-completeness",
+              "independent": true,
+              "required": true,
+              "status": "not_run",
+              "title": "At least one independent oracle (no generator-only evidence)"
+            },
+            {
+              "detail": "generator identity is distinct and its evidence is excluded from the decision",
+              "id": "independence",
+              "required": true,
+              "status": "passed",
+              "title": "Generator/verifier independence and generator-evidence exclusion"
+            }
+          ],
+          "decision": "rejected",
+          "evidence": [
+            {
+              "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+              "kind": "candidate",
+              "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+            },
+            {
+              "candidate": {
+                "arch": "x86_64",
+                "bits": 64,
+                "endian": "little",
+                "format": "elf",
+                "sections": [
+                  {
+                    "executable": false,
+                    "name": "",
+                    "offset": 0,
+                    "size": 0,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.property",
+                    "offset": 624,
+                    "size": 48,
+                    "va": 4194928
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.build-id",
+                    "offset": 672,
+                    "size": 36,
+                    "va": 4194976
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.ABI-tag",
+                    "offset": 708,
+                    "size": 32,
+                    "va": 4195012
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rela.plt",
+                    "offset": 744,
+                    "size": 528,
+                    "va": 4195048
+                  },
+                  {
+                    "executable": true,
+                    "name": ".init",
+                    "offset": 4096,
+                    "size": 27,
+                    "va": 4198400
+                  },
+                  {
+                    "executable": true,
+                    "name": ".plt",
+                    "offset": 4128,
+                    "size": 352,
+                    "va": 4198432
+                  },
+                  {
+                    "executable": true,
+                    "name": ".text",
+                    "offset": 4480,
+                    "size": 521504,
+                    "va": 4198784
+                  },
+                  {
+                    "executable": true,
+                    "name": ".fini",
+                    "offset": 525984,
+                    "size": 13,
+                    "va": 4720288
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rodata",
+                    "offset": 528384,
+                    "size": 117012,
+                    "va": 4722688
+                  },
+                  {
+                    "executable": false,
+                    "name": "rodata.cst32",
+                    "offset": 645408,
+                    "size": 96,
+                    "va": 4839712
+                  },
+                  {
+                    "executable": false,
+                    "name": ".eh_frame",
+                    "offset": 645504,
+                    "size": 39256,
+                    "va": 4839808
+                  },
+                  {
+                    "executable": false,
+                    "name": ".gcc_except_table",
+                    "offset": 684760,
+                    "size": 458,
+                    "va": 4879064
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tdata",
+                    "offset": 687952,
+                    "size": 24,
+                    "va": 4886352
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tbss",
+                    "offset": 687976,
+                    "size": 64,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".init_array",
+                    "offset": 687976,
+                    "size": 8,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".fini_array",
+                    "offset": 687984,
+                    "size": 16,
+                    "va": 4886384
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data.rel.ro",
+                    "offset": 688000,
+                    "size": 16328,
+                    "va": 4886400
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got",
+                    "offset": 704328,
+                    "size": 144,
+                    "va": 4902728
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got.plt",
+                    "offset": 704488,
+                    "size": 200,
+                    "va": 4902888
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data",
+                    "offset": 704704,
+                    "size": 6648,
+                    "va": 4903104
+                  },
+                  {
+                    "executable": false,
+                    "name": ".bss",
+                    "offset": 711352,
+                    "size": 22408,
+                    "va": 4909760
+                  },
+                  {
+                    "executable": false,
+                    "name": ".comment",
+                    "offset": 711352,
+                    "size": 45,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".shstrtab",
+                    "offset": 711397,
+                    "size": 224,
+                    "va": 0
+                  }
+                ]
+              },
+              "kind": "container",
+              "original": {
+                "arch": "x86_64",
+                "bits": 64,
+                "endian": "little",
+                "format": "elf",
+                "sections": [
+                  {
+                    "executable": false,
+                    "name": "",
+                    "offset": 0,
+                    "size": 0,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.property",
+                    "offset": 624,
+                    "size": 48,
+                    "va": 4194928
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.build-id",
+                    "offset": 672,
+                    "size": 36,
+                    "va": 4194976
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.ABI-tag",
+                    "offset": 708,
+                    "size": 32,
+                    "va": 4195012
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rela.plt",
+                    "offset": 744,
+                    "size": 528,
+                    "va": 4195048
+                  },
+                  {
+                    "executable": true,
+                    "name": ".init",
+                    "offset": 4096,
+                    "size": 27,
+                    "va": 4198400
+                  },
+                  {
+                    "executable": true,
+                    "name": ".plt",
+                    "offset": 4128,
+                    "size": 352,
+                    "va": 4198432
+                  },
+                  {
+                    "executable": true,
+                    "name": ".text",
+                    "offset": 4480,
+                    "size": 521504,
+                    "va": 4198784
+                  },
+                  {
+                    "executable": true,
+                    "name": ".fini",
+                    "offset": 525984,
+                    "size": 13,
+                    "va": 4720288
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rodata",
+                    "offset": 528384,
+                    "size": 117012,
+                    "va": 4722688
+                  },
+                  {
+                    "executable": false,
+                    "name": "rodata.cst32",
+                    "offset": 645408,
+                    "size": 96,
+                    "va": 4839712
+                  },
+                  {
+                    "executable": false,
+                    "name": ".eh_frame",
+                    "offset": 645504,
+                    "size": 39256,
+                    "va": 4839808
+                  },
+                  {
+                    "executable": false,
+                    "name": ".gcc_except_table",
+                    "offset": 684760,
+                    "size": 458,
+                    "va": 4879064
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tdata",
+                    "offset": 687952,
+                    "size": 24,
+                    "va": 4886352
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tbss",
+                    "offset": 687976,
+                    "size": 64,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".init_array",
+                    "offset": 687976,
+                    "size": 8,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".fini_array",
+                    "offset": 687984,
+                    "size": 16,
+                    "va": 4886384
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data.rel.ro",
+                    "offset": 688000,
+                    "size": 16328,
+                    "va": 4886400
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got",
+                    "offset": 704328,
+                    "size": 144,
+                    "va": 4902728
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got.plt",
+                    "offset": 704488,
+                    "size": 200,
+                    "va": 4902888
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data",
+                    "offset": 704704,
+                    "size": 6648,
+                    "va": 4903104
+                  },
+                  {
+                    "executable": false,
+                    "name": ".bss",
+                    "offset": 711352,
+                    "size": 22408,
+                    "va": 4909760
+                  },
+                  {
+                    "executable": false,
+                    "name": ".comment",
+                    "offset": 711352,
+                    "size": 45,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".shstrtab",
+                    "offset": 711397,
+                    "size": 224,
+                    "va": 0
+                  }
+                ]
+              }
+            },
+            {
+              "actions": [
+                {
+                  "after_hex": "4489e729f7720939d70f83c5feff",
+                  "before_hex": "39f3720c89df29f739d70f83c4fe",
+                  "offset": 8409,
+                  "size": 14
+                },
+                {
+                  "after_hex": "90",
+                  "before_hex": "ff",
+                  "offset": 8424,
+                  "size": 1
+                },
+                {
+                  "after_hex": "6f7574707574000000000000",
+                  "before_hex": "7061796c6f616420706f6f6c",
+                  "offset": 538661,
+                  "size": 12
+                }
+              ],
+              "claimed_actions": [],
+              "kind": "actions"
+            },
+            {
+              "declared": {
+                "end": 4202729,
+                "kind": "va_range",
+                "policy": "target_scoped",
+                "va": 4202713
+              },
+              "kind": "target-scope",
+              "range": {
+                "detail": "VA range [0x4020d9, 0x4020e9)",
+                "file_range": null,
+                "kind": "va_range",
+                "va_range": [
+                  4202713,
+                  4202729
+                ],
+                "whole_program": false
+              }
+            },
+            {
+              "kind": "abi",
+              "report": {}
+            },
+            {
+              "error": "no oracle runner is available",
+              "kind": "oracle",
+              "source": "external-poc-manifest"
+            },
+            {
+              "detail": "independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+              "kind": "evidence-completeness",
+              "ok": false,
+              "sources": [
+                "external-poc-manifest"
+              ]
+            },
+            "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/fixtures/poc/marcx-capacity.json"
+          ],
+          "generator": {
+            "agent": null,
+            "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+            "model": null,
+            "run_id": null
+          },
+          "independence": {
+            "generator_evidence_excluded": true,
+            "ok": true
+          },
+          "limitations": [
+            "abi: no abi_block was declared; ABI is unverifiable",
+            "evidence-completeness: independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+            "fail-closed: only an all-required-passed result with a passing independent oracle can be verified",
+            "runtime-oracle: no oracle runner is available"
+          ],
+          "report_sha256": "c2d9544d055b802d390942de037d42365ffceea99b825fffcfc60be644be045c",
+          "schema_version": 1,
+          "target": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "target_scope": {
+              "end": 4202729,
+              "policy": "target_scoped",
+              "va": 4202713
+            },
+            "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+          },
+          "verifier": {
+            "verifier_id": "independent-verifier/1",
+            "version": "1"
+          }
+        },
+        "report_sha256": "c2d9544d055b802d390942de037d42365ffceea99b825fffcfc60be644be045c"
+      }
+    },
+    {
+      "hypothesis": "V8B-01",
+      "id": "E1-module-with-oracle-injection",
+      "purpose": "module API with real run_poc: oracle execution is available",
+      "result": {
+        "checks": [
+          {
+            "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+            "id": "identity",
+            "status": "passed"
+          },
+          {
+            "detail": "format=elf arch=x86_64 bits=64 endian=little",
+            "id": "container",
+            "status": "passed"
+          },
+          {
+            "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+            "id": "action-replay",
+            "status": "passed"
+          },
+          {
+            "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+            "id": "target-scope",
+            "status": "failed"
+          },
+          {
+            "detail": "no abi_block was declared; ABI is unverifiable",
+            "id": "abi",
+            "status": "not_run"
+          },
+          {
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+            "id": "runtime-oracle",
+            "status": "passed"
+          },
+          {
+            "detail": "one independent external oracle passed",
+            "id": "evidence-completeness",
+            "status": "passed"
+          },
+          {
+            "detail": "generator identity is distinct and its evidence is excluded from the decision",
+            "id": "independence",
+            "status": "passed"
+          }
+        ],
+        "decision": "rejected",
+        "entry_point": "module API + run_poc",
+        "limitations": [
+          "abi: no abi_block was declared; ABI is unverifiable",
+          "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+        ],
+        "report": {
+          "checks": [
+            {
+              "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+              "id": "identity",
+              "required": true,
+              "status": "passed",
+              "title": "Original/candidate identity and candidate change"
+            },
+            {
+              "detail": "format=elf arch=x86_64 bits=64 endian=little",
+              "id": "container",
+              "required": true,
+              "status": "passed",
+              "title": "Container re-parse and metadata agreement"
+            },
+            {
+              "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+              "id": "action-replay",
+              "required": true,
+              "status": "passed",
+              "title": "Byte-level action replay from raw images"
+            },
+            {
+              "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+              "id": "target-scope",
+              "required": true,
+              "status": "failed",
+              "title": "Candidate modifications stay inside the declared target scope"
+            },
+            {
+              "detail": "no abi_block was declared; ABI is unverifiable",
+              "id": "abi",
+              "required": true,
+              "status": "not_run",
+              "title": "Candidate instruction-block ABI validation"
+            },
+            {
+              "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+              "id": "runtime-oracle",
+              "independent": true,
+              "required": true,
+              "status": "passed",
+              "title": "Independent external PoC differential and regression"
+            },
+            {
+              "detail": "one independent external oracle passed",
+              "id": "evidence-completeness",
+              "independent": true,
+              "required": true,
+              "status": "passed",
+              "title": "At least one independent oracle (no generator-only evidence)"
+            },
+            {
+              "detail": "generator identity is distinct and its evidence is excluded from the decision",
+              "id": "independence",
+              "required": true,
+              "status": "passed",
+              "title": "Generator/verifier independence and generator-evidence exclusion"
+            }
+          ],
+          "decision": "rejected",
+          "evidence": [
+            {
+              "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+              "kind": "candidate",
+              "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+            },
+            {
+              "candidate": {
+                "arch": "x86_64",
+                "bits": 64,
+                "endian": "little",
+                "format": "elf",
+                "sections": [
+                  {
+                    "executable": false,
+                    "name": "",
+                    "offset": 0,
+                    "size": 0,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.property",
+                    "offset": 624,
+                    "size": 48,
+                    "va": 4194928
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.build-id",
+                    "offset": 672,
+                    "size": 36,
+                    "va": 4194976
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.ABI-tag",
+                    "offset": 708,
+                    "size": 32,
+                    "va": 4195012
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rela.plt",
+                    "offset": 744,
+                    "size": 528,
+                    "va": 4195048
+                  },
+                  {
+                    "executable": true,
+                    "name": ".init",
+                    "offset": 4096,
+                    "size": 27,
+                    "va": 4198400
+                  },
+                  {
+                    "executable": true,
+                    "name": ".plt",
+                    "offset": 4128,
+                    "size": 352,
+                    "va": 4198432
+                  },
+                  {
+                    "executable": true,
+                    "name": ".text",
+                    "offset": 4480,
+                    "size": 521504,
+                    "va": 4198784
+                  },
+                  {
+                    "executable": true,
+                    "name": ".fini",
+                    "offset": 525984,
+                    "size": 13,
+                    "va": 4720288
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rodata",
+                    "offset": 528384,
+                    "size": 117012,
+                    "va": 4722688
+                  },
+                  {
+                    "executable": false,
+                    "name": "rodata.cst32",
+                    "offset": 645408,
+                    "size": 96,
+                    "va": 4839712
+                  },
+                  {
+                    "executable": false,
+                    "name": ".eh_frame",
+                    "offset": 645504,
+                    "size": 39256,
+                    "va": 4839808
+                  },
+                  {
+                    "executable": false,
+                    "name": ".gcc_except_table",
+                    "offset": 684760,
+                    "size": 458,
+                    "va": 4879064
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tdata",
+                    "offset": 687952,
+                    "size": 24,
+                    "va": 4886352
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tbss",
+                    "offset": 687976,
+                    "size": 64,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".init_array",
+                    "offset": 687976,
+                    "size": 8,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".fini_array",
+                    "offset": 687984,
+                    "size": 16,
+                    "va": 4886384
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data.rel.ro",
+                    "offset": 688000,
+                    "size": 16328,
+                    "va": 4886400
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got",
+                    "offset": 704328,
+                    "size": 144,
+                    "va": 4902728
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got.plt",
+                    "offset": 704488,
+                    "size": 200,
+                    "va": 4902888
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data",
+                    "offset": 704704,
+                    "size": 6648,
+                    "va": 4903104
+                  },
+                  {
+                    "executable": false,
+                    "name": ".bss",
+                    "offset": 711352,
+                    "size": 22408,
+                    "va": 4909760
+                  },
+                  {
+                    "executable": false,
+                    "name": ".comment",
+                    "offset": 711352,
+                    "size": 45,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".shstrtab",
+                    "offset": 711397,
+                    "size": 224,
+                    "va": 0
+                  }
+                ]
+              },
+              "kind": "container",
+              "original": {
+                "arch": "x86_64",
+                "bits": 64,
+                "endian": "little",
+                "format": "elf",
+                "sections": [
+                  {
+                    "executable": false,
+                    "name": "",
+                    "offset": 0,
+                    "size": 0,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.property",
+                    "offset": 624,
+                    "size": 48,
+                    "va": 4194928
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.build-id",
+                    "offset": 672,
+                    "size": 36,
+                    "va": 4194976
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.ABI-tag",
+                    "offset": 708,
+                    "size": 32,
+                    "va": 4195012
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rela.plt",
+                    "offset": 744,
+                    "size": 528,
+                    "va": 4195048
+                  },
+                  {
+                    "executable": true,
+                    "name": ".init",
+                    "offset": 4096,
+                    "size": 27,
+                    "va": 4198400
+                  },
+                  {
+                    "executable": true,
+                    "name": ".plt",
+                    "offset": 4128,
+                    "size": 352,
+                    "va": 4198432
+                  },
+                  {
+                    "executable": true,
+                    "name": ".text",
+                    "offset": 4480,
+                    "size": 521504,
+                    "va": 4198784
+                  },
+                  {
+                    "executable": true,
+                    "name": ".fini",
+                    "offset": 525984,
+                    "size": 13,
+                    "va": 4720288
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rodata",
+                    "offset": 528384,
+                    "size": 117012,
+                    "va": 4722688
+                  },
+                  {
+                    "executable": false,
+                    "name": "rodata.cst32",
+                    "offset": 645408,
+                    "size": 96,
+                    "va": 4839712
+                  },
+                  {
+                    "executable": false,
+                    "name": ".eh_frame",
+                    "offset": 645504,
+                    "size": 39256,
+                    "va": 4839808
+                  },
+                  {
+                    "executable": false,
+                    "name": ".gcc_except_table",
+                    "offset": 684760,
+                    "size": 458,
+                    "va": 4879064
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tdata",
+                    "offset": 687952,
+                    "size": 24,
+                    "va": 4886352
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tbss",
+                    "offset": 687976,
+                    "size": 64,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".init_array",
+                    "offset": 687976,
+                    "size": 8,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".fini_array",
+                    "offset": 687984,
+                    "size": 16,
+                    "va": 4886384
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data.rel.ro",
+                    "offset": 688000,
+                    "size": 16328,
+                    "va": 4886400
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got",
+                    "offset": 704328,
+                    "size": 144,
+                    "va": 4902728
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got.plt",
+                    "offset": 704488,
+                    "size": 200,
+                    "va": 4902888
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data",
+                    "offset": 704704,
+                    "size": 6648,
+                    "va": 4903104
+                  },
+                  {
+                    "executable": false,
+                    "name": ".bss",
+                    "offset": 711352,
+                    "size": 22408,
+                    "va": 4909760
+                  },
+                  {
+                    "executable": false,
+                    "name": ".comment",
+                    "offset": 711352,
+                    "size": 45,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".shstrtab",
+                    "offset": 711397,
+                    "size": 224,
+                    "va": 0
+                  }
+                ]
+              }
+            },
+            {
+              "actions": [
+                {
+                  "after_hex": "4489e729f7720939d70f83c5feff",
+                  "before_hex": "39f3720c89df29f739d70f83c4fe",
+                  "offset": 8409,
+                  "size": 14
+                },
+                {
+                  "after_hex": "90",
+                  "before_hex": "ff",
+                  "offset": 8424,
+                  "size": 1
+                },
+                {
+                  "after_hex": "6f7574707574000000000000",
+                  "before_hex": "7061796c6f616420706f6f6c",
+                  "offset": 538661,
+                  "size": 12
+                }
+              ],
+              "claimed_actions": [],
+              "kind": "actions"
+            },
+            {
+              "declared": {
+                "end": 4202729,
+                "kind": "va_range",
+                "policy": "target_scoped",
+                "va": 4202713
+              },
+              "kind": "target-scope",
+              "range": {
+                "detail": "VA range [0x4020d9, 0x4020e9)",
+                "file_range": null,
+                "kind": "va_range",
+                "va_range": [
+                  4202713,
+                  4202729
+                ],
+                "whole_program": false
+              }
+            },
+            {
+              "kind": "abi",
+              "report": {}
+            },
+            {
+              "case_count": 8,
+              "errno_signature": "not_run",
+              "kind": "oracle",
+              "limitations": [],
+              "no_input": false,
+              "regression_count": 20,
+              "runner": "limactl",
+              "source": "external-poc-manifest",
+              "status": "pass",
+              "stdout_signature": "matched",
+              "tier": "emulated_run"
+            },
+            {
+              "detail": "one independent external oracle passed",
+              "kind": "evidence-completeness",
+              "ok": true,
+              "sources": [
+                "external-poc-manifest"
+              ]
+            },
+            "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/fixtures/poc/marcx-capacity.json"
+          ],
+          "generator": {
+            "agent": null,
+            "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+            "model": null,
+            "run_id": null
+          },
+          "independence": {
+            "generator_evidence_excluded": true,
+            "ok": true
+          },
+          "limitations": [
+            "abi: no abi_block was declared; ABI is unverifiable",
+            "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+          ],
+          "report_sha256": "0a8cc75c5255b94d7d98ec5826c0fabb4a1c24316ee5e876480bfe17f73c32b6",
+          "schema_version": 1,
+          "target": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "target_scope": {
+              "end": 4202729,
+              "policy": "target_scoped",
+              "va": 4202713
+            },
+            "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+          },
+          "verifier": {
+            "verifier_id": "independent-verifier/1",
+            "version": "1"
+          }
+        },
+        "report_sha256": "0a8cc75c5255b94d7d98ec5826c0fabb4a1c24316ee5e876480bfe17f73c32b6"
+      }
+    },
+    {
+      "hypothesis": "V8B-02",
+      "id": "E2-resolved-scope-exchange",
+      "purpose": "exchange the pipeline-resolved target scope instead of the manifest name/range",
+      "resolved_scope": {
+        "end": 4202729,
+        "name": "",
+        "source": "explicit",
+        "va": 4202713
+      },
+      "result": {
+        "checks": [
+          {
+            "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+            "id": "identity",
+            "status": "passed"
+          },
+          {
+            "detail": "format=elf arch=x86_64 bits=64 endian=little",
+            "id": "container",
+            "status": "passed"
+          },
+          {
+            "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+            "id": "action-replay",
+            "status": "passed"
+          },
+          {
+            "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+            "id": "target-scope",
+            "status": "failed"
+          },
+          {
+            "detail": "no abi_block was declared; ABI is unverifiable",
+            "id": "abi",
+            "status": "not_run"
+          },
+          {
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+            "id": "runtime-oracle",
+            "status": "passed"
+          },
+          {
+            "detail": "one independent external oracle passed",
+            "id": "evidence-completeness",
+            "status": "passed"
+          },
+          {
+            "detail": "generator identity is distinct and its evidence is excluded from the decision",
+            "id": "independence",
+            "status": "passed"
+          }
+        ],
+        "decision": "rejected",
+        "entry_point": "module API + resolved scope + oracle",
+        "limitations": [
+          "abi: no abi_block was declared; ABI is unverifiable",
+          "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+        ],
+        "report": {
+          "checks": [
+            {
+              "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+              "id": "identity",
+              "required": true,
+              "status": "passed",
+              "title": "Original/candidate identity and candidate change"
+            },
+            {
+              "detail": "format=elf arch=x86_64 bits=64 endian=little",
+              "id": "container",
+              "required": true,
+              "status": "passed",
+              "title": "Container re-parse and metadata agreement"
+            },
+            {
+              "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+              "id": "action-replay",
+              "required": true,
+              "status": "passed",
+              "title": "Byte-level action replay from raw images"
+            },
+            {
+              "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+              "id": "target-scope",
+              "required": true,
+              "status": "failed",
+              "title": "Candidate modifications stay inside the declared target scope"
+            },
+            {
+              "detail": "no abi_block was declared; ABI is unverifiable",
+              "id": "abi",
+              "required": true,
+              "status": "not_run",
+              "title": "Candidate instruction-block ABI validation"
+            },
+            {
+              "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+              "id": "runtime-oracle",
+              "independent": true,
+              "required": true,
+              "status": "passed",
+              "title": "Independent external PoC differential and regression"
+            },
+            {
+              "detail": "one independent external oracle passed",
+              "id": "evidence-completeness",
+              "independent": true,
+              "required": true,
+              "status": "passed",
+              "title": "At least one independent oracle (no generator-only evidence)"
+            },
+            {
+              "detail": "generator identity is distinct and its evidence is excluded from the decision",
+              "id": "independence",
+              "required": true,
+              "status": "passed",
+              "title": "Generator/verifier independence and generator-evidence exclusion"
+            }
+          ],
+          "decision": "rejected",
+          "evidence": [
+            {
+              "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+              "kind": "candidate",
+              "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+            },
+            {
+              "candidate": {
+                "arch": "x86_64",
+                "bits": 64,
+                "endian": "little",
+                "format": "elf",
+                "sections": [
+                  {
+                    "executable": false,
+                    "name": "",
+                    "offset": 0,
+                    "size": 0,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.property",
+                    "offset": 624,
+                    "size": 48,
+                    "va": 4194928
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.build-id",
+                    "offset": 672,
+                    "size": 36,
+                    "va": 4194976
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.ABI-tag",
+                    "offset": 708,
+                    "size": 32,
+                    "va": 4195012
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rela.plt",
+                    "offset": 744,
+                    "size": 528,
+                    "va": 4195048
+                  },
+                  {
+                    "executable": true,
+                    "name": ".init",
+                    "offset": 4096,
+                    "size": 27,
+                    "va": 4198400
+                  },
+                  {
+                    "executable": true,
+                    "name": ".plt",
+                    "offset": 4128,
+                    "size": 352,
+                    "va": 4198432
+                  },
+                  {
+                    "executable": true,
+                    "name": ".text",
+                    "offset": 4480,
+                    "size": 521504,
+                    "va": 4198784
+                  },
+                  {
+                    "executable": true,
+                    "name": ".fini",
+                    "offset": 525984,
+                    "size": 13,
+                    "va": 4720288
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rodata",
+                    "offset": 528384,
+                    "size": 117012,
+                    "va": 4722688
+                  },
+                  {
+                    "executable": false,
+                    "name": "rodata.cst32",
+                    "offset": 645408,
+                    "size": 96,
+                    "va": 4839712
+                  },
+                  {
+                    "executable": false,
+                    "name": ".eh_frame",
+                    "offset": 645504,
+                    "size": 39256,
+                    "va": 4839808
+                  },
+                  {
+                    "executable": false,
+                    "name": ".gcc_except_table",
+                    "offset": 684760,
+                    "size": 458,
+                    "va": 4879064
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tdata",
+                    "offset": 687952,
+                    "size": 24,
+                    "va": 4886352
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tbss",
+                    "offset": 687976,
+                    "size": 64,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".init_array",
+                    "offset": 687976,
+                    "size": 8,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".fini_array",
+                    "offset": 687984,
+                    "size": 16,
+                    "va": 4886384
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data.rel.ro",
+                    "offset": 688000,
+                    "size": 16328,
+                    "va": 4886400
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got",
+                    "offset": 704328,
+                    "size": 144,
+                    "va": 4902728
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got.plt",
+                    "offset": 704488,
+                    "size": 200,
+                    "va": 4902888
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data",
+                    "offset": 704704,
+                    "size": 6648,
+                    "va": 4903104
+                  },
+                  {
+                    "executable": false,
+                    "name": ".bss",
+                    "offset": 711352,
+                    "size": 22408,
+                    "va": 4909760
+                  },
+                  {
+                    "executable": false,
+                    "name": ".comment",
+                    "offset": 711352,
+                    "size": 45,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".shstrtab",
+                    "offset": 711397,
+                    "size": 224,
+                    "va": 0
+                  }
+                ]
+              },
+              "kind": "container",
+              "original": {
+                "arch": "x86_64",
+                "bits": 64,
+                "endian": "little",
+                "format": "elf",
+                "sections": [
+                  {
+                    "executable": false,
+                    "name": "",
+                    "offset": 0,
+                    "size": 0,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.property",
+                    "offset": 624,
+                    "size": 48,
+                    "va": 4194928
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.build-id",
+                    "offset": 672,
+                    "size": 36,
+                    "va": 4194976
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.ABI-tag",
+                    "offset": 708,
+                    "size": 32,
+                    "va": 4195012
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rela.plt",
+                    "offset": 744,
+                    "size": 528,
+                    "va": 4195048
+                  },
+                  {
+                    "executable": true,
+                    "name": ".init",
+                    "offset": 4096,
+                    "size": 27,
+                    "va": 4198400
+                  },
+                  {
+                    "executable": true,
+                    "name": ".plt",
+                    "offset": 4128,
+                    "size": 352,
+                    "va": 4198432
+                  },
+                  {
+                    "executable": true,
+                    "name": ".text",
+                    "offset": 4480,
+                    "size": 521504,
+                    "va": 4198784
+                  },
+                  {
+                    "executable": true,
+                    "name": ".fini",
+                    "offset": 525984,
+                    "size": 13,
+                    "va": 4720288
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rodata",
+                    "offset": 528384,
+                    "size": 117012,
+                    "va": 4722688
+                  },
+                  {
+                    "executable": false,
+                    "name": "rodata.cst32",
+                    "offset": 645408,
+                    "size": 96,
+                    "va": 4839712
+                  },
+                  {
+                    "executable": false,
+                    "name": ".eh_frame",
+                    "offset": 645504,
+                    "size": 39256,
+                    "va": 4839808
+                  },
+                  {
+                    "executable": false,
+                    "name": ".gcc_except_table",
+                    "offset": 684760,
+                    "size": 458,
+                    "va": 4879064
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tdata",
+                    "offset": 687952,
+                    "size": 24,
+                    "va": 4886352
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tbss",
+                    "offset": 687976,
+                    "size": 64,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".init_array",
+                    "offset": 687976,
+                    "size": 8,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".fini_array",
+                    "offset": 687984,
+                    "size": 16,
+                    "va": 4886384
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data.rel.ro",
+                    "offset": 688000,
+                    "size": 16328,
+                    "va": 4886400
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got",
+                    "offset": 704328,
+                    "size": 144,
+                    "va": 4902728
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got.plt",
+                    "offset": 704488,
+                    "size": 200,
+                    "va": 4902888
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data",
+                    "offset": 704704,
+                    "size": 6648,
+                    "va": 4903104
+                  },
+                  {
+                    "executable": false,
+                    "name": ".bss",
+                    "offset": 711352,
+                    "size": 22408,
+                    "va": 4909760
+                  },
+                  {
+                    "executable": false,
+                    "name": ".comment",
+                    "offset": 711352,
+                    "size": 45,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".shstrtab",
+                    "offset": 711397,
+                    "size": 224,
+                    "va": 0
+                  }
+                ]
+              }
+            },
+            {
+              "actions": [
+                {
+                  "after_hex": "4489e729f7720939d70f83c5feff",
+                  "before_hex": "39f3720c89df29f739d70f83c4fe",
+                  "offset": 8409,
+                  "size": 14
+                },
+                {
+                  "after_hex": "90",
+                  "before_hex": "ff",
+                  "offset": 8424,
+                  "size": 1
+                },
+                {
+                  "after_hex": "6f7574707574000000000000",
+                  "before_hex": "7061796c6f616420706f6f6c",
+                  "offset": 538661,
+                  "size": 12
+                }
+              ],
+              "claimed_actions": [],
+              "kind": "actions"
+            },
+            {
+              "declared": {
+                "end": 4202729,
+                "kind": "va_range",
+                "name": "target",
+                "policy": "target_scoped",
+                "va": 4202713
+              },
+              "kind": "target-scope",
+              "range": {
+                "detail": "VA range [0x4020d9, 0x4020e9)",
+                "file_range": null,
+                "kind": "va_range",
+                "va_range": [
+                  4202713,
+                  4202729
+                ],
+                "whole_program": false
+              }
+            },
+            {
+              "kind": "abi",
+              "report": {}
+            },
+            {
+              "case_count": 8,
+              "errno_signature": "not_run",
+              "kind": "oracle",
+              "limitations": [],
+              "no_input": false,
+              "regression_count": 20,
+              "runner": "limactl",
+              "source": "external-poc-manifest",
+              "status": "pass",
+              "stdout_signature": "matched",
+              "tier": "emulated_run"
+            },
+            {
+              "detail": "one independent external oracle passed",
+              "kind": "evidence-completeness",
+              "ok": true,
+              "sources": [
+                "external-poc-manifest"
+              ]
+            },
+            "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/fixtures/poc/marcx-capacity.json"
+          ],
+          "generator": {
+            "agent": null,
+            "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+            "model": null,
+            "run_id": null
+          },
+          "independence": {
+            "generator_evidence_excluded": true,
+            "ok": true
+          },
+          "limitations": [
+            "abi: no abi_block was declared; ABI is unverifiable",
+            "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+          ],
+          "report_sha256": "f93bea4ad399c46005435815e77cdc9797d992bae085bdfaf1916a854e7ac640",
+          "schema_version": 1,
+          "target": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "target_scope": {
+              "end": 4202729,
+              "name": "target",
+              "policy": "target_scoped",
+              "va": 4202713
+            },
+            "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+          },
+          "verifier": {
+            "verifier_id": "independent-verifier/1",
+            "version": "1"
+          }
+        },
+        "report_sha256": "f93bea4ad399c46005435815e77cdc9797d992bae085bdfaf1916a854e7ac640"
+      }
+    },
+    {
+      "derived_abi_block": {
+        "offset": 8409,
+        "size": 16
+      },
+      "hypothesis": "V8B-05",
+      "id": "E3-abi-block-derivation",
+      "purpose": "derive an ABI block from the resolved code range and feed it to the verifier",
+      "result": {
+        "checks": [
+          {
+            "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+            "id": "identity",
+            "status": "passed"
+          },
+          {
+            "detail": "format=elf arch=x86_64 bits=64 endian=little",
+            "id": "container",
+            "status": "passed"
+          },
+          {
+            "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+            "id": "action-replay",
+            "status": "passed"
+          },
+          {
+            "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+            "id": "target-scope",
+            "status": "failed"
+          },
+          {
+            "detail": "ABI report not ok (fatal=1); findings=['branch_target_unknown', 'no_ret']",
+            "id": "abi",
+            "status": "failed"
+          },
+          {
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+            "id": "runtime-oracle",
+            "status": "passed"
+          },
+          {
+            "detail": "one independent external oracle passed",
+            "id": "evidence-completeness",
+            "status": "passed"
+          },
+          {
+            "detail": "generator identity is distinct and its evidence is excluded from the decision",
+            "id": "independence",
+            "status": "passed"
+          }
+        ],
+        "decision": "rejected",
+        "entry_point": "module API + resolved scope + abi_block",
+        "limitations": [
+          "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+        ],
+        "report": {
+          "checks": [
+            {
+              "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+              "id": "identity",
+              "required": true,
+              "status": "passed",
+              "title": "Original/candidate identity and candidate change"
+            },
+            {
+              "detail": "format=elf arch=x86_64 bits=64 endian=little",
+              "id": "container",
+              "required": true,
+              "status": "passed",
+              "title": "Container re-parse and metadata agreement"
+            },
+            {
+              "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+              "id": "action-replay",
+              "required": true,
+              "status": "passed",
+              "title": "Byte-level action replay from raw images"
+            },
+            {
+              "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+              "id": "target-scope",
+              "required": true,
+              "status": "failed",
+              "title": "Candidate modifications stay inside the declared target scope"
+            },
+            {
+              "detail": "ABI report not ok (fatal=1); findings=['branch_target_unknown', 'no_ret']",
+              "id": "abi",
+              "required": true,
+              "status": "failed",
+              "title": "Candidate instruction-block ABI validation"
+            },
+            {
+              "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+              "id": "runtime-oracle",
+              "independent": true,
+              "required": true,
+              "status": "passed",
+              "title": "Independent external PoC differential and regression"
+            },
+            {
+              "detail": "one independent external oracle passed",
+              "id": "evidence-completeness",
+              "independent": true,
+              "required": true,
+              "status": "passed",
+              "title": "At least one independent oracle (no generator-only evidence)"
+            },
+            {
+              "detail": "generator identity is distinct and its evidence is excluded from the decision",
+              "id": "independence",
+              "required": true,
+              "status": "passed",
+              "title": "Generator/verifier independence and generator-evidence exclusion"
+            }
+          ],
+          "decision": "rejected",
+          "evidence": [
+            {
+              "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+              "kind": "candidate",
+              "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+            },
+            {
+              "candidate": {
+                "arch": "x86_64",
+                "bits": 64,
+                "endian": "little",
+                "format": "elf",
+                "sections": [
+                  {
+                    "executable": false,
+                    "name": "",
+                    "offset": 0,
+                    "size": 0,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.property",
+                    "offset": 624,
+                    "size": 48,
+                    "va": 4194928
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.build-id",
+                    "offset": 672,
+                    "size": 36,
+                    "va": 4194976
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.ABI-tag",
+                    "offset": 708,
+                    "size": 32,
+                    "va": 4195012
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rela.plt",
+                    "offset": 744,
+                    "size": 528,
+                    "va": 4195048
+                  },
+                  {
+                    "executable": true,
+                    "name": ".init",
+                    "offset": 4096,
+                    "size": 27,
+                    "va": 4198400
+                  },
+                  {
+                    "executable": true,
+                    "name": ".plt",
+                    "offset": 4128,
+                    "size": 352,
+                    "va": 4198432
+                  },
+                  {
+                    "executable": true,
+                    "name": ".text",
+                    "offset": 4480,
+                    "size": 521504,
+                    "va": 4198784
+                  },
+                  {
+                    "executable": true,
+                    "name": ".fini",
+                    "offset": 525984,
+                    "size": 13,
+                    "va": 4720288
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rodata",
+                    "offset": 528384,
+                    "size": 117012,
+                    "va": 4722688
+                  },
+                  {
+                    "executable": false,
+                    "name": "rodata.cst32",
+                    "offset": 645408,
+                    "size": 96,
+                    "va": 4839712
+                  },
+                  {
+                    "executable": false,
+                    "name": ".eh_frame",
+                    "offset": 645504,
+                    "size": 39256,
+                    "va": 4839808
+                  },
+                  {
+                    "executable": false,
+                    "name": ".gcc_except_table",
+                    "offset": 684760,
+                    "size": 458,
+                    "va": 4879064
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tdata",
+                    "offset": 687952,
+                    "size": 24,
+                    "va": 4886352
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tbss",
+                    "offset": 687976,
+                    "size": 64,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".init_array",
+                    "offset": 687976,
+                    "size": 8,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".fini_array",
+                    "offset": 687984,
+                    "size": 16,
+                    "va": 4886384
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data.rel.ro",
+                    "offset": 688000,
+                    "size": 16328,
+                    "va": 4886400
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got",
+                    "offset": 704328,
+                    "size": 144,
+                    "va": 4902728
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got.plt",
+                    "offset": 704488,
+                    "size": 200,
+                    "va": 4902888
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data",
+                    "offset": 704704,
+                    "size": 6648,
+                    "va": 4903104
+                  },
+                  {
+                    "executable": false,
+                    "name": ".bss",
+                    "offset": 711352,
+                    "size": 22408,
+                    "va": 4909760
+                  },
+                  {
+                    "executable": false,
+                    "name": ".comment",
+                    "offset": 711352,
+                    "size": 45,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".shstrtab",
+                    "offset": 711397,
+                    "size": 224,
+                    "va": 0
+                  }
+                ]
+              },
+              "kind": "container",
+              "original": {
+                "arch": "x86_64",
+                "bits": 64,
+                "endian": "little",
+                "format": "elf",
+                "sections": [
+                  {
+                    "executable": false,
+                    "name": "",
+                    "offset": 0,
+                    "size": 0,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.property",
+                    "offset": 624,
+                    "size": 48,
+                    "va": 4194928
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.build-id",
+                    "offset": 672,
+                    "size": 36,
+                    "va": 4194976
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.ABI-tag",
+                    "offset": 708,
+                    "size": 32,
+                    "va": 4195012
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rela.plt",
+                    "offset": 744,
+                    "size": 528,
+                    "va": 4195048
+                  },
+                  {
+                    "executable": true,
+                    "name": ".init",
+                    "offset": 4096,
+                    "size": 27,
+                    "va": 4198400
+                  },
+                  {
+                    "executable": true,
+                    "name": ".plt",
+                    "offset": 4128,
+                    "size": 352,
+                    "va": 4198432
+                  },
+                  {
+                    "executable": true,
+                    "name": ".text",
+                    "offset": 4480,
+                    "size": 521504,
+                    "va": 4198784
+                  },
+                  {
+                    "executable": true,
+                    "name": ".fini",
+                    "offset": 525984,
+                    "size": 13,
+                    "va": 4720288
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rodata",
+                    "offset": 528384,
+                    "size": 117012,
+                    "va": 4722688
+                  },
+                  {
+                    "executable": false,
+                    "name": "rodata.cst32",
+                    "offset": 645408,
+                    "size": 96,
+                    "va": 4839712
+                  },
+                  {
+                    "executable": false,
+                    "name": ".eh_frame",
+                    "offset": 645504,
+                    "size": 39256,
+                    "va": 4839808
+                  },
+                  {
+                    "executable": false,
+                    "name": ".gcc_except_table",
+                    "offset": 684760,
+                    "size": 458,
+                    "va": 4879064
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tdata",
+                    "offset": 687952,
+                    "size": 24,
+                    "va": 4886352
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tbss",
+                    "offset": 687976,
+                    "size": 64,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".init_array",
+                    "offset": 687976,
+                    "size": 8,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".fini_array",
+                    "offset": 687984,
+                    "size": 16,
+                    "va": 4886384
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data.rel.ro",
+                    "offset": 688000,
+                    "size": 16328,
+                    "va": 4886400
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got",
+                    "offset": 704328,
+                    "size": 144,
+                    "va": 4902728
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got.plt",
+                    "offset": 704488,
+                    "size": 200,
+                    "va": 4902888
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data",
+                    "offset": 704704,
+                    "size": 6648,
+                    "va": 4903104
+                  },
+                  {
+                    "executable": false,
+                    "name": ".bss",
+                    "offset": 711352,
+                    "size": 22408,
+                    "va": 4909760
+                  },
+                  {
+                    "executable": false,
+                    "name": ".comment",
+                    "offset": 711352,
+                    "size": 45,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".shstrtab",
+                    "offset": 711397,
+                    "size": 224,
+                    "va": 0
+                  }
+                ]
+              }
+            },
+            {
+              "actions": [
+                {
+                  "after_hex": "4489e729f7720939d70f83c5feff",
+                  "before_hex": "39f3720c89df29f739d70f83c4fe",
+                  "offset": 8409,
+                  "size": 14
+                },
+                {
+                  "after_hex": "90",
+                  "before_hex": "ff",
+                  "offset": 8424,
+                  "size": 1
+                },
+                {
+                  "after_hex": "6f7574707574000000000000",
+                  "before_hex": "7061796c6f616420706f6f6c",
+                  "offset": 538661,
+                  "size": 12
+                }
+              ],
+              "claimed_actions": [],
+              "kind": "actions"
+            },
+            {
+              "declared": {
+                "end": 4202729,
+                "kind": "va_range",
+                "name": "target",
+                "policy": "target_scoped",
+                "va": 4202713
+              },
+              "kind": "target-scope",
+              "range": {
+                "detail": "VA range [0x4020d9, 0x4020e9)",
+                "file_range": null,
+                "kind": "va_range",
+                "va_range": [
+                  4202713,
+                  4202729
+                ],
+                "whole_program": false
+              }
+            },
+            {
+              "kind": "abi",
+              "report": {
+                "fatal": 1,
+                "findings": [
+                  {
+                    "address": "0x5",
+                    "code": "branch_target_unknown",
+                    "detail": "conditional branch target 16 is outside the block",
+                    "severity": "warning"
+                  },
+                  {
+                    "address": "0x9",
+                    "code": "branch_target_unknown",
+                    "detail": "conditional branch target -300 is outside the block",
+                    "severity": "warning"
+                  },
+                  {
+                    "address": null,
+                    "code": "no_ret",
+                    "detail": "block has no ret",
+                    "severity": "fatal"
+                  }
+                ],
+                "ok": false
+              }
+            },
+            {
+              "case_count": 8,
+              "errno_signature": "not_run",
+              "kind": "oracle",
+              "limitations": [],
+              "no_input": false,
+              "regression_count": 20,
+              "runner": "limactl",
+              "source": "external-poc-manifest",
+              "status": "pass",
+              "stdout_signature": "matched",
+              "tier": "emulated_run"
+            },
+            {
+              "detail": "one independent external oracle passed",
+              "kind": "evidence-completeness",
+              "ok": true,
+              "sources": [
+                "external-poc-manifest"
+              ]
+            },
+            "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/fixtures/poc/marcx-capacity.json"
+          ],
+          "generator": {
+            "agent": null,
+            "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+            "model": null,
+            "run_id": null
+          },
+          "independence": {
+            "generator_evidence_excluded": true,
+            "ok": true
+          },
+          "limitations": [
+            "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+          ],
+          "report_sha256": "1eeae60b95c327c4098cab93e86c676d36951cdd33f7ce12b315f1ddfbd763a1",
+          "schema_version": 1,
+          "target": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "target_scope": {
+              "end": 4202729,
+              "name": "target",
+              "policy": "target_scoped",
+              "va": 4202713
+            },
+            "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+          },
+          "verifier": {
+            "verifier_id": "independent-verifier/1",
+            "version": "1"
+          }
+        },
+        "report_sha256": "1eeae60b95c327c4098cab93e86c676d36951cdd33f7ce12b315f1ddfbd763a1"
+      }
+    },
+    {
+      "hypothesis": "V8B-04",
+      "id": "E4-associated-change-modeling",
+      "message_actions": [
+        {
+          "after_hex": "6f705b25755d3a207370616e2064657374696e6174696f6e206f75747369646520746865206f7574707574000000000000",
+          "before_hex": "6f705b25755d3a207370616e2064657374696e6174696f6e206f75747369646520746865207061796c6f616420706f6f6c",
+          "kind": "rodata_message_align",
+          "new_text": "op[%u]: span destination outside the output",
+          "offset": 538624,
+          "old_text": "op[%u]: span destination outside the payload pool",
+          "size": 49,
+          "string_va": 4732928
+        }
+      ],
+      "note": "the verifier recomputes raw byte diffs and target-scope-checks recomputed actions; the metadata/contract has no associated-change field, so the .rodata action outside a va_range-only scope fails closed",
+      "purpose": "check whether the verifier/contract can model the capacity .rodata associated change",
+      "raw_diff_actions": [
+        {
+          "after_hex": "4489e729f7720939d70f83c5feff",
+          "before_hex": "39f3720c89df29f739d70f83c4fe",
+          "offset": 8409,
+          "size": 14
+        },
+        {
+          "after_hex": "90",
+          "before_hex": "ff",
+          "offset": 8424,
+          "size": 1
+        },
+        {
+          "after_hex": "6f7574707574000000000000",
+          "before_hex": "7061796c6f616420706f6f6c",
+          "offset": 538661,
+          "size": 12
+        }
+      ],
+      "result": {
+        "checks": [
+          {
+            "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+            "id": "identity",
+            "status": "passed"
+          },
+          {
+            "detail": "format=elf arch=x86_64 bits=64 endian=little",
+            "id": "container",
+            "status": "passed"
+          },
+          {
+            "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+            "id": "action-replay",
+            "status": "passed"
+          },
+          {
+            "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+            "id": "target-scope",
+            "status": "failed"
+          },
+          {
+            "detail": "no abi_block was declared; ABI is unverifiable",
+            "id": "abi",
+            "status": "not_run"
+          },
+          {
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+            "id": "runtime-oracle",
+            "status": "passed"
+          },
+          {
+            "detail": "one independent external oracle passed",
+            "id": "evidence-completeness",
+            "status": "passed"
+          },
+          {
+            "detail": "generator identity is distinct and its evidence is excluded from the decision",
+            "id": "independence",
+            "status": "passed"
+          }
+        ],
+        "decision": "rejected",
+        "entry_point": "module API + resolved scope + oracle",
+        "limitations": [
+          "abi: no abi_block was declared; ABI is unverifiable",
+          "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+        ],
+        "report": {
+          "checks": [
+            {
+              "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+              "id": "identity",
+              "required": true,
+              "status": "passed",
+              "title": "Original/candidate identity and candidate change"
+            },
+            {
+              "detail": "format=elf arch=x86_64 bits=64 endian=little",
+              "id": "container",
+              "required": true,
+              "status": "passed",
+              "title": "Container re-parse and metadata agreement"
+            },
+            {
+              "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+              "id": "action-replay",
+              "required": true,
+              "status": "passed",
+              "title": "Byte-level action replay from raw images"
+            },
+            {
+              "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+              "id": "target-scope",
+              "required": true,
+              "status": "failed",
+              "title": "Candidate modifications stay inside the declared target scope"
+            },
+            {
+              "detail": "no abi_block was declared; ABI is unverifiable",
+              "id": "abi",
+              "required": true,
+              "status": "not_run",
+              "title": "Candidate instruction-block ABI validation"
+            },
+            {
+              "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+              "id": "runtime-oracle",
+              "independent": true,
+              "required": true,
+              "status": "passed",
+              "title": "Independent external PoC differential and regression"
+            },
+            {
+              "detail": "one independent external oracle passed",
+              "id": "evidence-completeness",
+              "independent": true,
+              "required": true,
+              "status": "passed",
+              "title": "At least one independent oracle (no generator-only evidence)"
+            },
+            {
+              "detail": "generator identity is distinct and its evidence is excluded from the decision",
+              "id": "independence",
+              "required": true,
+              "status": "passed",
+              "title": "Generator/verifier independence and generator-evidence exclusion"
+            }
+          ],
+          "decision": "rejected",
+          "evidence": [
+            {
+              "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+              "kind": "candidate",
+              "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+            },
+            {
+              "candidate": {
+                "arch": "x86_64",
+                "bits": 64,
+                "endian": "little",
+                "format": "elf",
+                "sections": [
+                  {
+                    "executable": false,
+                    "name": "",
+                    "offset": 0,
+                    "size": 0,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.property",
+                    "offset": 624,
+                    "size": 48,
+                    "va": 4194928
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.build-id",
+                    "offset": 672,
+                    "size": 36,
+                    "va": 4194976
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.ABI-tag",
+                    "offset": 708,
+                    "size": 32,
+                    "va": 4195012
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rela.plt",
+                    "offset": 744,
+                    "size": 528,
+                    "va": 4195048
+                  },
+                  {
+                    "executable": true,
+                    "name": ".init",
+                    "offset": 4096,
+                    "size": 27,
+                    "va": 4198400
+                  },
+                  {
+                    "executable": true,
+                    "name": ".plt",
+                    "offset": 4128,
+                    "size": 352,
+                    "va": 4198432
+                  },
+                  {
+                    "executable": true,
+                    "name": ".text",
+                    "offset": 4480,
+                    "size": 521504,
+                    "va": 4198784
+                  },
+                  {
+                    "executable": true,
+                    "name": ".fini",
+                    "offset": 525984,
+                    "size": 13,
+                    "va": 4720288
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rodata",
+                    "offset": 528384,
+                    "size": 117012,
+                    "va": 4722688
+                  },
+                  {
+                    "executable": false,
+                    "name": "rodata.cst32",
+                    "offset": 645408,
+                    "size": 96,
+                    "va": 4839712
+                  },
+                  {
+                    "executable": false,
+                    "name": ".eh_frame",
+                    "offset": 645504,
+                    "size": 39256,
+                    "va": 4839808
+                  },
+                  {
+                    "executable": false,
+                    "name": ".gcc_except_table",
+                    "offset": 684760,
+                    "size": 458,
+                    "va": 4879064
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tdata",
+                    "offset": 687952,
+                    "size": 24,
+                    "va": 4886352
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tbss",
+                    "offset": 687976,
+                    "size": 64,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".init_array",
+                    "offset": 687976,
+                    "size": 8,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".fini_array",
+                    "offset": 687984,
+                    "size": 16,
+                    "va": 4886384
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data.rel.ro",
+                    "offset": 688000,
+                    "size": 16328,
+                    "va": 4886400
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got",
+                    "offset": 704328,
+                    "size": 144,
+                    "va": 4902728
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got.plt",
+                    "offset": 704488,
+                    "size": 200,
+                    "va": 4902888
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data",
+                    "offset": 704704,
+                    "size": 6648,
+                    "va": 4903104
+                  },
+                  {
+                    "executable": false,
+                    "name": ".bss",
+                    "offset": 711352,
+                    "size": 22408,
+                    "va": 4909760
+                  },
+                  {
+                    "executable": false,
+                    "name": ".comment",
+                    "offset": 711352,
+                    "size": 45,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".shstrtab",
+                    "offset": 711397,
+                    "size": 224,
+                    "va": 0
+                  }
+                ]
+              },
+              "kind": "container",
+              "original": {
+                "arch": "x86_64",
+                "bits": 64,
+                "endian": "little",
+                "format": "elf",
+                "sections": [
+                  {
+                    "executable": false,
+                    "name": "",
+                    "offset": 0,
+                    "size": 0,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.property",
+                    "offset": 624,
+                    "size": 48,
+                    "va": 4194928
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.gnu.build-id",
+                    "offset": 672,
+                    "size": 36,
+                    "va": 4194976
+                  },
+                  {
+                    "executable": false,
+                    "name": ".note.ABI-tag",
+                    "offset": 708,
+                    "size": 32,
+                    "va": 4195012
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rela.plt",
+                    "offset": 744,
+                    "size": 528,
+                    "va": 4195048
+                  },
+                  {
+                    "executable": true,
+                    "name": ".init",
+                    "offset": 4096,
+                    "size": 27,
+                    "va": 4198400
+                  },
+                  {
+                    "executable": true,
+                    "name": ".plt",
+                    "offset": 4128,
+                    "size": 352,
+                    "va": 4198432
+                  },
+                  {
+                    "executable": true,
+                    "name": ".text",
+                    "offset": 4480,
+                    "size": 521504,
+                    "va": 4198784
+                  },
+                  {
+                    "executable": true,
+                    "name": ".fini",
+                    "offset": 525984,
+                    "size": 13,
+                    "va": 4720288
+                  },
+                  {
+                    "executable": false,
+                    "name": ".rodata",
+                    "offset": 528384,
+                    "size": 117012,
+                    "va": 4722688
+                  },
+                  {
+                    "executable": false,
+                    "name": "rodata.cst32",
+                    "offset": 645408,
+                    "size": 96,
+                    "va": 4839712
+                  },
+                  {
+                    "executable": false,
+                    "name": ".eh_frame",
+                    "offset": 645504,
+                    "size": 39256,
+                    "va": 4839808
+                  },
+                  {
+                    "executable": false,
+                    "name": ".gcc_except_table",
+                    "offset": 684760,
+                    "size": 458,
+                    "va": 4879064
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tdata",
+                    "offset": 687952,
+                    "size": 24,
+                    "va": 4886352
+                  },
+                  {
+                    "executable": false,
+                    "name": ".tbss",
+                    "offset": 687976,
+                    "size": 64,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".init_array",
+                    "offset": 687976,
+                    "size": 8,
+                    "va": 4886376
+                  },
+                  {
+                    "executable": false,
+                    "name": ".fini_array",
+                    "offset": 687984,
+                    "size": 16,
+                    "va": 4886384
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data.rel.ro",
+                    "offset": 688000,
+                    "size": 16328,
+                    "va": 4886400
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got",
+                    "offset": 704328,
+                    "size": 144,
+                    "va": 4902728
+                  },
+                  {
+                    "executable": false,
+                    "name": ".got.plt",
+                    "offset": 704488,
+                    "size": 200,
+                    "va": 4902888
+                  },
+                  {
+                    "executable": false,
+                    "name": ".data",
+                    "offset": 704704,
+                    "size": 6648,
+                    "va": 4903104
+                  },
+                  {
+                    "executable": false,
+                    "name": ".bss",
+                    "offset": 711352,
+                    "size": 22408,
+                    "va": 4909760
+                  },
+                  {
+                    "executable": false,
+                    "name": ".comment",
+                    "offset": 711352,
+                    "size": 45,
+                    "va": 0
+                  },
+                  {
+                    "executable": false,
+                    "name": ".shstrtab",
+                    "offset": 711397,
+                    "size": 224,
+                    "va": 0
+                  }
+                ]
+              }
+            },
+            {
+              "actions": [
+                {
+                  "after_hex": "4489e729f7720939d70f83c5feff",
+                  "before_hex": "39f3720c89df29f739d70f83c4fe",
+                  "offset": 8409,
+                  "size": 14
+                },
+                {
+                  "after_hex": "90",
+                  "before_hex": "ff",
+                  "offset": 8424,
+                  "size": 1
+                },
+                {
+                  "after_hex": "6f7574707574000000000000",
+                  "before_hex": "7061796c6f616420706f6f6c",
+                  "offset": 538661,
+                  "size": 12
+                }
+              ],
+              "claimed_actions": [],
+              "kind": "actions"
+            },
+            {
+              "declared": {
+                "end": 4202729,
+                "kind": "va_range",
+                "name": "target",
+                "policy": "target_scoped",
+                "va": 4202713
+              },
+              "kind": "target-scope",
+              "range": {
+                "detail": "VA range [0x4020d9, 0x4020e9)",
+                "file_range": null,
+                "kind": "va_range",
+                "va_range": [
+                  4202713,
+                  4202729
+                ],
+                "whole_program": false
+              }
+            },
+            {
+              "kind": "abi",
+              "report": {}
+            },
+            {
+              "case_count": 8,
+              "errno_signature": "not_run",
+              "kind": "oracle",
+              "limitations": [],
+              "no_input": false,
+              "regression_count": 20,
+              "runner": "limactl",
+              "source": "external-poc-manifest",
+              "status": "pass",
+              "stdout_signature": "matched",
+              "tier": "emulated_run"
+            },
+            {
+              "detail": "one independent external oracle passed",
+              "kind": "evidence-completeness",
+              "ok": true,
+              "sources": [
+                "external-poc-manifest"
+              ]
+            },
+            "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/fixtures/poc/marcx-capacity.json"
+          ],
+          "generator": {
+            "agent": null,
+            "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+            "model": null,
+            "run_id": null
+          },
+          "independence": {
+            "generator_evidence_excluded": true,
+            "ok": true
+          },
+          "limitations": [
+            "abi: no abi_block was declared; ABI is unverifiable",
+            "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+          ],
+          "report_sha256": "f93bea4ad399c46005435815e77cdc9797d992bae085bdfaf1916a854e7ac640",
+          "schema_version": 1,
+          "target": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "target_scope": {
+              "end": 4202729,
+              "name": "target",
+              "policy": "target_scoped",
+              "va": 4202713
+            },
+            "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+          },
+          "verifier": {
+            "verifier_id": "independent-verifier/1",
+            "version": "1"
+          }
+        },
+        "report_sha256": "f93bea4ad399c46005435815e77cdc9797d992bae085bdfaf1916a854e7ac640"
+      }
+    }
+  ],
+  "kind": "phase8b_verifier_reports",
+  "limitations": [
+    "module_api_with_oracle and experiments may contain host-dependent oracle outcomes; they are reproduced where the host allows and recorded as not_run otherwise"
+  ],
+  "module_api": {
+    "checks": [
+      {
+        "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+        "id": "identity",
+        "status": "passed"
+      },
+      {
+        "detail": "format=elf arch=x86_64 bits=64 endian=little",
+        "id": "container",
+        "status": "passed"
+      },
+      {
+        "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+        "id": "action-replay",
+        "status": "passed"
+      },
+      {
+        "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+        "id": "target-scope",
+        "status": "failed"
+      },
+      {
+        "detail": "no abi_block was declared; ABI is unverifiable",
+        "id": "abi",
+        "status": "not_run"
+      },
+      {
+        "detail": "no oracle runner is available",
+        "id": "runtime-oracle",
+        "status": "not_run"
+      },
+      {
+        "detail": "independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+        "id": "evidence-completeness",
+        "status": "not_run"
+      },
+      {
+        "detail": "generator identity is distinct and its evidence is excluded from the decision",
+        "id": "independence",
+        "status": "passed"
+      }
+    ],
+    "decision": "rejected",
+    "entry_point": "module API",
+    "limitations": [
+      "abi: no abi_block was declared; ABI is unverifiable",
+      "evidence-completeness: independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+      "fail-closed: only an all-required-passed result with a passing independent oracle can be verified",
+      "runtime-oracle: no oracle runner is available"
+    ],
+    "report": {
+      "checks": [
+        {
+          "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+          "id": "identity",
+          "required": true,
+          "status": "passed",
+          "title": "Original/candidate identity and candidate change"
+        },
+        {
+          "detail": "format=elf arch=x86_64 bits=64 endian=little",
+          "id": "container",
+          "required": true,
+          "status": "passed",
+          "title": "Container re-parse and metadata agreement"
+        },
+        {
+          "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+          "id": "action-replay",
+          "required": true,
+          "status": "passed",
+          "title": "Byte-level action replay from raw images"
+        },
+        {
+          "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+          "id": "target-scope",
+          "required": true,
+          "status": "failed",
+          "title": "Candidate modifications stay inside the declared target scope"
+        },
+        {
+          "detail": "no abi_block was declared; ABI is unverifiable",
+          "id": "abi",
+          "required": true,
+          "status": "not_run",
+          "title": "Candidate instruction-block ABI validation"
+        },
+        {
+          "detail": "no oracle runner is available",
+          "id": "runtime-oracle",
+          "required": true,
+          "status": "not_run",
+          "title": "Independent external PoC differential and regression"
+        },
+        {
+          "detail": "independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+          "id": "evidence-completeness",
+          "independent": true,
+          "required": true,
+          "status": "not_run",
+          "title": "At least one independent oracle (no generator-only evidence)"
+        },
+        {
+          "detail": "generator identity is distinct and its evidence is excluded from the decision",
+          "id": "independence",
+          "required": true,
+          "status": "passed",
+          "title": "Generator/verifier independence and generator-evidence exclusion"
+        }
+      ],
+      "decision": "rejected",
+      "evidence": [
+        {
+          "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+          "kind": "candidate",
+          "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+        },
+        {
+          "candidate": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "sections": [
+              {
+                "executable": false,
+                "name": "",
+                "offset": 0,
+                "size": 0,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.property",
+                "offset": 624,
+                "size": 48,
+                "va": 4194928
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.build-id",
+                "offset": 672,
+                "size": 36,
+                "va": 4194976
+              },
+              {
+                "executable": false,
+                "name": ".note.ABI-tag",
+                "offset": 708,
+                "size": 32,
+                "va": 4195012
+              },
+              {
+                "executable": false,
+                "name": ".rela.plt",
+                "offset": 744,
+                "size": 528,
+                "va": 4195048
+              },
+              {
+                "executable": true,
+                "name": ".init",
+                "offset": 4096,
+                "size": 27,
+                "va": 4198400
+              },
+              {
+                "executable": true,
+                "name": ".plt",
+                "offset": 4128,
+                "size": 352,
+                "va": 4198432
+              },
+              {
+                "executable": true,
+                "name": ".text",
+                "offset": 4480,
+                "size": 521504,
+                "va": 4198784
+              },
+              {
+                "executable": true,
+                "name": ".fini",
+                "offset": 525984,
+                "size": 13,
+                "va": 4720288
+              },
+              {
+                "executable": false,
+                "name": ".rodata",
+                "offset": 528384,
+                "size": 117012,
+                "va": 4722688
+              },
+              {
+                "executable": false,
+                "name": "rodata.cst32",
+                "offset": 645408,
+                "size": 96,
+                "va": 4839712
+              },
+              {
+                "executable": false,
+                "name": ".eh_frame",
+                "offset": 645504,
+                "size": 39256,
+                "va": 4839808
+              },
+              {
+                "executable": false,
+                "name": ".gcc_except_table",
+                "offset": 684760,
+                "size": 458,
+                "va": 4879064
+              },
+              {
+                "executable": false,
+                "name": ".tdata",
+                "offset": 687952,
+                "size": 24,
+                "va": 4886352
+              },
+              {
+                "executable": false,
+                "name": ".tbss",
+                "offset": 687976,
+                "size": 64,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".init_array",
+                "offset": 687976,
+                "size": 8,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".fini_array",
+                "offset": 687984,
+                "size": 16,
+                "va": 4886384
+              },
+              {
+                "executable": false,
+                "name": ".data.rel.ro",
+                "offset": 688000,
+                "size": 16328,
+                "va": 4886400
+              },
+              {
+                "executable": false,
+                "name": ".got",
+                "offset": 704328,
+                "size": 144,
+                "va": 4902728
+              },
+              {
+                "executable": false,
+                "name": ".got.plt",
+                "offset": 704488,
+                "size": 200,
+                "va": 4902888
+              },
+              {
+                "executable": false,
+                "name": ".data",
+                "offset": 704704,
+                "size": 6648,
+                "va": 4903104
+              },
+              {
+                "executable": false,
+                "name": ".bss",
+                "offset": 711352,
+                "size": 22408,
+                "va": 4909760
+              },
+              {
+                "executable": false,
+                "name": ".comment",
+                "offset": 711352,
+                "size": 45,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".shstrtab",
+                "offset": 711397,
+                "size": 224,
+                "va": 0
+              }
+            ]
+          },
+          "kind": "container",
+          "original": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "sections": [
+              {
+                "executable": false,
+                "name": "",
+                "offset": 0,
+                "size": 0,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.property",
+                "offset": 624,
+                "size": 48,
+                "va": 4194928
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.build-id",
+                "offset": 672,
+                "size": 36,
+                "va": 4194976
+              },
+              {
+                "executable": false,
+                "name": ".note.ABI-tag",
+                "offset": 708,
+                "size": 32,
+                "va": 4195012
+              },
+              {
+                "executable": false,
+                "name": ".rela.plt",
+                "offset": 744,
+                "size": 528,
+                "va": 4195048
+              },
+              {
+                "executable": true,
+                "name": ".init",
+                "offset": 4096,
+                "size": 27,
+                "va": 4198400
+              },
+              {
+                "executable": true,
+                "name": ".plt",
+                "offset": 4128,
+                "size": 352,
+                "va": 4198432
+              },
+              {
+                "executable": true,
+                "name": ".text",
+                "offset": 4480,
+                "size": 521504,
+                "va": 4198784
+              },
+              {
+                "executable": true,
+                "name": ".fini",
+                "offset": 525984,
+                "size": 13,
+                "va": 4720288
+              },
+              {
+                "executable": false,
+                "name": ".rodata",
+                "offset": 528384,
+                "size": 117012,
+                "va": 4722688
+              },
+              {
+                "executable": false,
+                "name": "rodata.cst32",
+                "offset": 645408,
+                "size": 96,
+                "va": 4839712
+              },
+              {
+                "executable": false,
+                "name": ".eh_frame",
+                "offset": 645504,
+                "size": 39256,
+                "va": 4839808
+              },
+              {
+                "executable": false,
+                "name": ".gcc_except_table",
+                "offset": 684760,
+                "size": 458,
+                "va": 4879064
+              },
+              {
+                "executable": false,
+                "name": ".tdata",
+                "offset": 687952,
+                "size": 24,
+                "va": 4886352
+              },
+              {
+                "executable": false,
+                "name": ".tbss",
+                "offset": 687976,
+                "size": 64,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".init_array",
+                "offset": 687976,
+                "size": 8,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".fini_array",
+                "offset": 687984,
+                "size": 16,
+                "va": 4886384
+              },
+              {
+                "executable": false,
+                "name": ".data.rel.ro",
+                "offset": 688000,
+                "size": 16328,
+                "va": 4886400
+              },
+              {
+                "executable": false,
+                "name": ".got",
+                "offset": 704328,
+                "size": 144,
+                "va": 4902728
+              },
+              {
+                "executable": false,
+                "name": ".got.plt",
+                "offset": 704488,
+                "size": 200,
+                "va": 4902888
+              },
+              {
+                "executable": false,
+                "name": ".data",
+                "offset": 704704,
+                "size": 6648,
+                "va": 4903104
+              },
+              {
+                "executable": false,
+                "name": ".bss",
+                "offset": 711352,
+                "size": 22408,
+                "va": 4909760
+              },
+              {
+                "executable": false,
+                "name": ".comment",
+                "offset": 711352,
+                "size": 45,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".shstrtab",
+                "offset": 711397,
+                "size": 224,
+                "va": 0
+              }
+            ]
+          }
+        },
+        {
+          "actions": [
+            {
+              "after_hex": "4489e729f7720939d70f83c5feff",
+              "before_hex": "39f3720c89df29f739d70f83c4fe",
+              "offset": 8409,
+              "size": 14
+            },
+            {
+              "after_hex": "90",
+              "before_hex": "ff",
+              "offset": 8424,
+              "size": 1
+            },
+            {
+              "after_hex": "6f7574707574000000000000",
+              "before_hex": "7061796c6f616420706f6f6c",
+              "offset": 538661,
+              "size": 12
+            }
+          ],
+          "claimed_actions": [],
+          "kind": "actions"
+        },
+        {
+          "declared": {
+            "end": 4202729,
+            "kind": "va_range",
+            "policy": "target_scoped",
+            "va": 4202713
+          },
+          "kind": "target-scope",
+          "range": {
+            "detail": "VA range [0x4020d9, 0x4020e9)",
+            "file_range": null,
+            "kind": "va_range",
+            "va_range": [
+              4202713,
+              4202729
+            ],
+            "whole_program": false
+          }
+        },
+        {
+          "kind": "abi",
+          "report": {}
+        },
+        {
+          "error": "no oracle runner is available",
+          "kind": "oracle",
+          "source": "external-poc-manifest"
+        },
+        {
+          "detail": "independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+          "kind": "evidence-completeness",
+          "ok": false,
+          "sources": [
+            "external-poc-manifest"
+          ]
+        },
+        "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/fixtures/poc/marcx-capacity.json"
+      ],
+      "generator": {
+        "agent": null,
+        "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+        "model": null,
+        "run_id": null
+      },
+      "independence": {
+        "generator_evidence_excluded": true,
+        "ok": true
+      },
+      "limitations": [
+        "abi: no abi_block was declared; ABI is unverifiable",
+        "evidence-completeness: independent oracle declared but not executed (unavailable/inconclusive); evidence incomplete",
+        "fail-closed: only an all-required-passed result with a passing independent oracle can be verified",
+        "runtime-oracle: no oracle runner is available"
+      ],
+      "report_sha256": "c2d9544d055b802d390942de037d42365ffceea99b825fffcfc60be644be045c",
+      "schema_version": 1,
+      "target": {
+        "arch": "x86_64",
+        "bits": 64,
+        "endian": "little",
+        "format": "elf",
+        "target_scope": {
+          "end": 4202729,
+          "policy": "target_scoped",
+          "va": 4202713
+        },
+        "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+      },
+      "verifier": {
+        "verifier_id": "independent-verifier/1",
+        "version": "1"
+      }
+    },
+    "report_sha256": "c2d9544d055b802d390942de037d42365ffceea99b825fffcfc60be644be045c"
+  },
+  "module_api_with_oracle": {
+    "checks": [
+      {
+        "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+        "id": "identity",
+        "status": "passed"
+      },
+      {
+        "detail": "format=elf arch=x86_64 bits=64 endian=little",
+        "id": "container",
+        "status": "passed"
+      },
+      {
+        "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+        "id": "action-replay",
+        "status": "passed"
+      },
+      {
+        "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+        "id": "target-scope",
+        "status": "failed"
+      },
+      {
+        "detail": "no abi_block was declared; ABI is unverifiable",
+        "id": "abi",
+        "status": "not_run"
+      },
+      {
+        "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+        "id": "runtime-oracle",
+        "status": "passed"
+      },
+      {
+        "detail": "one independent external oracle passed",
+        "id": "evidence-completeness",
+        "status": "passed"
+      },
+      {
+        "detail": "generator identity is distinct and its evidence is excluded from the decision",
+        "id": "independence",
+        "status": "passed"
+      }
+    ],
+    "decision": "rejected",
+    "entry_point": "module API + run_poc",
+    "limitations": [
+      "abi: no abi_block was declared; ABI is unverifiable",
+      "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+    ],
+    "report": {
+      "checks": [
+        {
+          "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+          "id": "identity",
+          "required": true,
+          "status": "passed",
+          "title": "Original/candidate identity and candidate change"
+        },
+        {
+          "detail": "format=elf arch=x86_64 bits=64 endian=little",
+          "id": "container",
+          "required": true,
+          "status": "passed",
+          "title": "Container re-parse and metadata agreement"
+        },
+        {
+          "detail": "actions=3 offsets=0x20d9,0x20e8,0x83825",
+          "id": "action-replay",
+          "required": true,
+          "status": "passed",
+          "title": "Byte-level action replay from raw images"
+        },
+        {
+          "detail": "action at VA 0x483825..0x483830 escapes [0x4020d9, 0x4020e9)",
+          "id": "target-scope",
+          "required": true,
+          "status": "failed",
+          "title": "Candidate modifications stay inside the declared target scope"
+        },
+        {
+          "detail": "no abi_block was declared; ABI is unverifiable",
+          "id": "abi",
+          "required": true,
+          "status": "not_run",
+          "title": "Candidate instruction-block ABI validation"
+        },
+        {
+          "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+          "id": "runtime-oracle",
+          "independent": true,
+          "required": true,
+          "status": "passed",
+          "title": "Independent external PoC differential and regression"
+        },
+        {
+          "detail": "one independent external oracle passed",
+          "id": "evidence-completeness",
+          "independent": true,
+          "required": true,
+          "status": "passed",
+          "title": "At least one independent oracle (no generator-only evidence)"
+        },
+        {
+          "detail": "generator identity is distinct and its evidence is excluded from the decision",
+          "id": "independence",
+          "required": true,
+          "status": "passed",
+          "title": "Generator/verifier independence and generator-evidence exclusion"
+        }
+      ],
+      "decision": "rejected",
+      "evidence": [
+        {
+          "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+          "kind": "candidate",
+          "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+        },
+        {
+          "candidate": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "sections": [
+              {
+                "executable": false,
+                "name": "",
+                "offset": 0,
+                "size": 0,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.property",
+                "offset": 624,
+                "size": 48,
+                "va": 4194928
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.build-id",
+                "offset": 672,
+                "size": 36,
+                "va": 4194976
+              },
+              {
+                "executable": false,
+                "name": ".note.ABI-tag",
+                "offset": 708,
+                "size": 32,
+                "va": 4195012
+              },
+              {
+                "executable": false,
+                "name": ".rela.plt",
+                "offset": 744,
+                "size": 528,
+                "va": 4195048
+              },
+              {
+                "executable": true,
+                "name": ".init",
+                "offset": 4096,
+                "size": 27,
+                "va": 4198400
+              },
+              {
+                "executable": true,
+                "name": ".plt",
+                "offset": 4128,
+                "size": 352,
+                "va": 4198432
+              },
+              {
+                "executable": true,
+                "name": ".text",
+                "offset": 4480,
+                "size": 521504,
+                "va": 4198784
+              },
+              {
+                "executable": true,
+                "name": ".fini",
+                "offset": 525984,
+                "size": 13,
+                "va": 4720288
+              },
+              {
+                "executable": false,
+                "name": ".rodata",
+                "offset": 528384,
+                "size": 117012,
+                "va": 4722688
+              },
+              {
+                "executable": false,
+                "name": "rodata.cst32",
+                "offset": 645408,
+                "size": 96,
+                "va": 4839712
+              },
+              {
+                "executable": false,
+                "name": ".eh_frame",
+                "offset": 645504,
+                "size": 39256,
+                "va": 4839808
+              },
+              {
+                "executable": false,
+                "name": ".gcc_except_table",
+                "offset": 684760,
+                "size": 458,
+                "va": 4879064
+              },
+              {
+                "executable": false,
+                "name": ".tdata",
+                "offset": 687952,
+                "size": 24,
+                "va": 4886352
+              },
+              {
+                "executable": false,
+                "name": ".tbss",
+                "offset": 687976,
+                "size": 64,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".init_array",
+                "offset": 687976,
+                "size": 8,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".fini_array",
+                "offset": 687984,
+                "size": 16,
+                "va": 4886384
+              },
+              {
+                "executable": false,
+                "name": ".data.rel.ro",
+                "offset": 688000,
+                "size": 16328,
+                "va": 4886400
+              },
+              {
+                "executable": false,
+                "name": ".got",
+                "offset": 704328,
+                "size": 144,
+                "va": 4902728
+              },
+              {
+                "executable": false,
+                "name": ".got.plt",
+                "offset": 704488,
+                "size": 200,
+                "va": 4902888
+              },
+              {
+                "executable": false,
+                "name": ".data",
+                "offset": 704704,
+                "size": 6648,
+                "va": 4903104
+              },
+              {
+                "executable": false,
+                "name": ".bss",
+                "offset": 711352,
+                "size": 22408,
+                "va": 4909760
+              },
+              {
+                "executable": false,
+                "name": ".comment",
+                "offset": 711352,
+                "size": 45,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".shstrtab",
+                "offset": 711397,
+                "size": 224,
+                "va": 0
+              }
+            ]
+          },
+          "kind": "container",
+          "original": {
+            "arch": "x86_64",
+            "bits": 64,
+            "endian": "little",
+            "format": "elf",
+            "sections": [
+              {
+                "executable": false,
+                "name": "",
+                "offset": 0,
+                "size": 0,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.property",
+                "offset": 624,
+                "size": 48,
+                "va": 4194928
+              },
+              {
+                "executable": false,
+                "name": ".note.gnu.build-id",
+                "offset": 672,
+                "size": 36,
+                "va": 4194976
+              },
+              {
+                "executable": false,
+                "name": ".note.ABI-tag",
+                "offset": 708,
+                "size": 32,
+                "va": 4195012
+              },
+              {
+                "executable": false,
+                "name": ".rela.plt",
+                "offset": 744,
+                "size": 528,
+                "va": 4195048
+              },
+              {
+                "executable": true,
+                "name": ".init",
+                "offset": 4096,
+                "size": 27,
+                "va": 4198400
+              },
+              {
+                "executable": true,
+                "name": ".plt",
+                "offset": 4128,
+                "size": 352,
+                "va": 4198432
+              },
+              {
+                "executable": true,
+                "name": ".text",
+                "offset": 4480,
+                "size": 521504,
+                "va": 4198784
+              },
+              {
+                "executable": true,
+                "name": ".fini",
+                "offset": 525984,
+                "size": 13,
+                "va": 4720288
+              },
+              {
+                "executable": false,
+                "name": ".rodata",
+                "offset": 528384,
+                "size": 117012,
+                "va": 4722688
+              },
+              {
+                "executable": false,
+                "name": "rodata.cst32",
+                "offset": 645408,
+                "size": 96,
+                "va": 4839712
+              },
+              {
+                "executable": false,
+                "name": ".eh_frame",
+                "offset": 645504,
+                "size": 39256,
+                "va": 4839808
+              },
+              {
+                "executable": false,
+                "name": ".gcc_except_table",
+                "offset": 684760,
+                "size": 458,
+                "va": 4879064
+              },
+              {
+                "executable": false,
+                "name": ".tdata",
+                "offset": 687952,
+                "size": 24,
+                "va": 4886352
+              },
+              {
+                "executable": false,
+                "name": ".tbss",
+                "offset": 687976,
+                "size": 64,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".init_array",
+                "offset": 687976,
+                "size": 8,
+                "va": 4886376
+              },
+              {
+                "executable": false,
+                "name": ".fini_array",
+                "offset": 687984,
+                "size": 16,
+                "va": 4886384
+              },
+              {
+                "executable": false,
+                "name": ".data.rel.ro",
+                "offset": 688000,
+                "size": 16328,
+                "va": 4886400
+              },
+              {
+                "executable": false,
+                "name": ".got",
+                "offset": 704328,
+                "size": 144,
+                "va": 4902728
+              },
+              {
+                "executable": false,
+                "name": ".got.plt",
+                "offset": 704488,
+                "size": 200,
+                "va": 4902888
+              },
+              {
+                "executable": false,
+                "name": ".data",
+                "offset": 704704,
+                "size": 6648,
+                "va": 4903104
+              },
+              {
+                "executable": false,
+                "name": ".bss",
+                "offset": 711352,
+                "size": 22408,
+                "va": 4909760
+              },
+              {
+                "executable": false,
+                "name": ".comment",
+                "offset": 711352,
+                "size": 45,
+                "va": 0
+              },
+              {
+                "executable": false,
+                "name": ".shstrtab",
+                "offset": 711397,
+                "size": 224,
+                "va": 0
+              }
+            ]
+          }
+        },
+        {
+          "actions": [
+            {
+              "after_hex": "4489e729f7720939d70f83c5feff",
+              "before_hex": "39f3720c89df29f739d70f83c4fe",
+              "offset": 8409,
+              "size": 14
+            },
+            {
+              "after_hex": "90",
+              "before_hex": "ff",
+              "offset": 8424,
+              "size": 1
+            },
+            {
+              "after_hex": "6f7574707574000000000000",
+              "before_hex": "7061796c6f616420706f6f6c",
+              "offset": 538661,
+              "size": 12
+            }
+          ],
+          "claimed_actions": [],
+          "kind": "actions"
+        },
+        {
+          "declared": {
+            "end": 4202729,
+            "kind": "va_range",
+            "policy": "target_scoped",
+            "va": 4202713
+          },
+          "kind": "target-scope",
+          "range": {
+            "detail": "VA range [0x4020d9, 0x4020e9)",
+            "file_range": null,
+            "kind": "va_range",
+            "va_range": [
+              4202713,
+              4202729
+            ],
+            "whole_program": false
+          }
+        },
+        {
+          "kind": "abi",
+          "report": {}
+        },
+        {
+          "case_count": 8,
+          "errno_signature": "not_run",
+          "kind": "oracle",
+          "limitations": [],
+          "no_input": false,
+          "regression_count": 20,
+          "runner": "limactl",
+          "source": "external-poc-manifest",
+          "status": "pass",
+          "stdout_signature": "matched",
+          "tier": "emulated_run"
+        },
+        {
+          "detail": "one independent external oracle passed",
+          "kind": "evidence-completeness",
+          "ok": true,
+          "sources": [
+            "external-poc-manifest"
+          ]
+        },
+        "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/fixtures/poc/marcx-capacity.json"
+      ],
+      "generator": {
+        "agent": null,
+        "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+        "model": null,
+        "run_id": null
+      },
+      "independence": {
+        "generator_evidence_excluded": true,
+        "ok": true
+      },
+      "limitations": [
+        "abi: no abi_block was declared; ABI is unverifiable",
+        "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+      ],
+      "report_sha256": "0a8cc75c5255b94d7d98ec5826c0fabb4a1c24316ee5e876480bfe17f73c32b6",
+      "schema_version": 1,
+      "target": {
+        "arch": "x86_64",
+        "bits": 64,
+        "endian": "little",
+        "format": "elf",
+        "target_scope": {
+          "end": 4202729,
+          "policy": "target_scoped",
+          "va": 4202713
+        },
+        "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+      },
+      "verifier": {
+        "verifier_id": "independent-verifier/1",
+        "version": "1"
+      }
+    },
+    "report_sha256": "0a8cc75c5255b94d7d98ec5826c0fabb4a1c24316ee5e876480bfe17f73c32b6"
+  },
+  "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+  "sample_id": "heap-capacity-x86_64",
+  "schema_version": 1
+}
