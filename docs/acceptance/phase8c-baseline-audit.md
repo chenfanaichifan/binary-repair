@@ -1,34 +1,37 @@
 # Phase-8C C1 baseline & hidden benchmark readiness audit (2026-11-16)
 
-Read-only readiness audit on branch `feature/phase8c-ground-truth-v2` at
-`227f45b39d85a7cd95e8589beb07dcfc89cd22d7`. No production code, contracts,
-CI, claims, benchmark v1, release gate or Phase-8A/B evidence was modified; no
-network or AI was used. Machine-readable facts:
-`artifacts/phase8c-baseline-2026-11-16/phase8c-baseline-audit.json`; work
-breakdown: `.../phase8c-work-breakdown.json`; plans:
-`.../phase8c-hidden-isolation-plan.md`, `.../phase8c-lima-coordination-plan.md`;
-verdict: `.../phase8c-readiness.md`.
+Read-only readiness audit for Phase-8C ground-truth v2. This artifact was
+originally generated on `227f45b39d85a7cd95e8589beb07dcfc89cd22d7`; after the
+branch was rebased onto latest mainline `f42e6c4...` (external P16-R3) the C1
+facts were re-collected and the two verified samples were reproduced again into
+a temporary output. The current audit commit is `6d7ad861...` whose parent is
+the rebased mainline `f42e6c4...`. No production code, contracts, CI, claims,
+benchmark v1, release gate or Phase-8A/B evidence was modified; no network or
+AI was used. Machine-readable facts:
+`artifacts/phase8c-baseline-2026-11-16/phase8c-baseline-audit.json`.
 
 ## Q01 - mainline, release tag, evidence refs, drift
 
-- Branch head measured from read-only git metadata files (no git commands):
-  `227f45b39d85a7cd95e8589beb07dcfc89cd22d7`, which equals the expected
-  Phase-8C baseline; branch is `feature/phase8c-ground-truth-v2`.
-- Ref files present: tag `release-2026-11-16-phase8b` = `1bfdf674...`,
-  tag `release-2026-11-16-phase8b-evidence` = `1edcce2d...`; the
-  `release/2026-11-16-phase8b-evidence` branch ref is not present in this
-  worktree (evidence-branch only).
-- Claims Phase-8B block: phase8b base `dad21c98...`; gated CI SHA
-  `c5d87b57...`; local gate artifact
-  `artifacts/release-gate-2026-11-16-phase8b` is referenced but absent from
-  this worktree.
-- Drift: the expected mainline match is exact, so C1 uses `227f45b` as its
-  baseline. There is an **evidence-binding drift/warning**: Phase-8B release
-  evidence is bound to `c5d87b5` (and evidence tag `1edcce2d...`), not to the
-  current HEAD. Phase-8C artifacts must record their own base/gated SHA and
-  must not reuse Phase-8B evidence as if it covered this tree. This does not
-  block C2/C11 start; it blocks any final Phase-8C evidence claim that would
-  cite Phase-8B artifacts for the Phase-8C tree.
+- Original C1 baseline: `227f45b39d85a7cd95e8589beb07dcfc89cd22d7`.
+- Rebased mainline: `f42e6c4f39b584575f59b13d67f40572b3ca278c`; current audit
+  commit (branch `feature/phase8c-ground-truth-v2`):
+  `6d7ad861694e287cf446cdc195990bcf7889dd2c`, parent verified from the git
+  commit object to be `f42e6c4...`.
+- Ref files: tag `release-2026-11-16-phase8b` = `1bfdf674...`, evidence tag
+  `release-2026-11-16-phase8b-evidence` = `1edcce2d...`, evidence branch
+  `release/2026-11-16-phase8b-evidence` = `528304a9...` (the evidence branch ref
+  is now present; the referenced local gate artifact directory is still absent
+  from this worktree).
+- Post-audit drift (recorded truthfully): branch rebased from 227f45b to f42e6c4;
+  external P16-R3 added `app/services/elf_mapping.py`, changed
+  `verification_semantics.py`, changed claims/artifacts, added four v2 contracts
+  (contracts dir now 17) and changed
+  `artifacts/phase8b-benchmark-2026-11-16/results.json` (still
+  independently_verified=2, false_verified=0). The hidden private root also
+  appeared with mode 0700 (Lead-owned); C1 stats it only and never reads it.
+- Warnings: Phase-8B release evidence remains bound to gated SHA `c5d87b5...`,
+  not current HEAD; Phase-8C must record its own base/gated SHA and may not
+  reuse Phase-8B evidence as covering this tree. No mainline-parent mismatch.
 
 ## Q02 - v1 12-sample lossless v2 migration
 
@@ -36,170 +39,163 @@ verdict: `.../phase8c-readiness.md`.
   `e7e7eca43518dc1b953faccead6f301f80eee4a59f1f0550dc8aad1bbd712052`,
   schema_version 1, 12 samples, splits dev=8/validation=4, hidden_available
   false, hidden_commitment_sha256 null.
-- Migration matrix result: **12/12 samples present and lossless** - every
-  binary sha matches the committed bytes, source refs and evidence refs
-  resolve, all 19 required sample-schema fields are present, target/split/
-  oracle metadata are preserved. 4/12 samples have `reference_fix=null`
-  (analysis-only/negative-control or captured capacity sample); that is
-  optional evidence, never an oracle substitute.
-- v2 gaps to close in C2/C03 (no v1 loss): (a) manifest wrapper lacks an
-  explicit benchmark_version/v1->v2 mapping block; (b) hidden split/aggregate
-  policy and public-visibility contract are absent; (c) samples have no
-  optional authority block (contract supports it) for plan/associated-change
-  authorization; (d) results are not contract-pinned (Phase-8B added plan/
-  oracle/layout fields without a results-v2 contract); (e) no hidden commitment
-  contract; (f) reference_fix null must stay optional. Verdict: no migration
-  blocker; v2 contracts are C2 work.
+- Result: **12/12 samples present and lossless** - binary sha, all 19 required
+  sample fields, source/evidence refs, target/split/oracle metadata preserved.
+  4/12 reference_fix null (optional evidence, never an oracle substitute).
+- Current v2 gaps after P16-R3: the four v2 contracts now exist
+  (benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2,
+  hidden-benchmark-commitment), so C2 must reconcile/adopt them rather than
+  recreate; the v1->v2 migration builder/mapping artifact (C3) is still needed;
+  v1 samples do not yet carry authority/plan binding; the runner/results writer
+  does not yet emit v2 results; hidden_available remains false/commitment null;
+  reference_fix stays optional. Verdict: no migration blocker; C2/C3 work
+  narrowed to adoption + migration rather than contract creation.
 
-## Q03 - reproduce the two Phase-8B independently verified samples
+## Q03 - reproduce the two Phase-8B independently verified samples on f42
 
-- The two Phase-8B independently verified samples are
-  `stack-strcpy-x86_64` and `heap-capacity-x86_64` (Phase-8B results summary:
-  independently_verified=2, false_verified=0).
-- C1 reproduced them through `scripts/run_repair_benchmark.py --verifier auto`
-  using a temporary two-sample v1 manifest copy and a **temporary output
-  directory**; the committed Phase-8A/B evidence was not written.
-- Guest/Lima was available: `limactl 2.3.0`, instance `binaryrepair` Running
-  (aarch64), guest runner tier `emulated_run`.
-- Result: **2/2 reproduced and independently verified**:
-  stack candidate `1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4`
-  and heap candidate `93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2`,
-  both matching the Phase-8B committed candidate hashes; verifier decision
-  `verified`, oracle status `pass`, layout status `passed`, false_verified=0.
-  If the guest had been unavailable this record would be `not_run` with the
-  reason and no fabricated pass.
+- Guest/Lima available: `limactl 2.3.0`, instance `binaryrepair` Running
+  (aarch64), tier `emulated_run`.
+- Reproduced via `scripts/run_repair_benchmark.py --verifier auto` with a
+  temporary two-sample v1 manifest copy and a **temporary output**; committed
+  evidence untouched.
+- Change after rebase: **candidate hashes are unchanged** and the successful
+  run independently verifies both samples: stack
+  `1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4`, heap
+  `93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2`; verifier
+  decision `verified`, oracle `pass`, layout `passed`, false_verified=0.
+- **Reproduction is flaky across attempts**: the first f42 default run aborted
+  with `false_verified=1` (new verifier rejected a deterministic claim); the
+  diagnostic `--claim-policy withdraw` attempts then verified both samples, and
+  a second default run reproduced 2/2. `reproducibility_history` records both
+  attempts; stability = `flaky_observed_1_of_2_default_runs`. Therefore Phase-8C
+  must not claim unconditional 2/2 stability; blocker
+  `B-POST-REBASE-REPRODUCTION-FLAKY` (warning for verification claims) blocks
+  C12/C14 until the flake is triaged. If the guest had been unavailable the
+  record would be `not_run` with the reason and no fabricated pass.
 
 ## Q04 - schema reuse/extension matrix
 
-- Existing contracts: 13 (`capability`, `gap`, `acceptance`, `repair`,
-  `evidence`, `reflection`, `benchmark-sample`, `verification`, `binary-target`,
-  `vulnerability-finding`, `root-cause`, `patch-candidate`, `patch-plan`);
-  checker: 13/13 valid and 13/13 invalid fixtures, jsonschema validator, sums
-  verified, exit 0.
-- `benchmark-sample` (v1) has 19 required properties plus optional `authority`,
-  `hidden_available` const false and `hidden_commitment_sha256` (64-hex or
-  null). This is reusable for v2 samples with additive fields only.
-- Missing/extension needs: manifest-wrapper schema (benchmark_version,
-  v1->v2 map, corpus visibility, aggregate policy), hidden-commitment schema
-  (format/salt/reveal rules), results-v2 schema (benchmark_version,
-  visibility, plan/oracle/layout evidence, verifier id, hidden aggregate
-  fields), and optional per-sample v2 fields (authority, hidden eligibility,
-  plan binding, provenance/license). Existing 13 contracts must remain valid;
-  no breaking change to `benchmark-sample`.
-- Verdict: reuse the sample/verification/patch-plan contracts, add 3-4 new
-  contracts in C2, keep v1 artifacts valid.
+- Contracts: **17** (was 13): the original set plus
+  `benchmark-manifest-v2`, `benchmark-results-v2`,
+  `ground-truth-sample-v2`, `hidden-benchmark-commitment` from external P16-R3.
+  Checker: 17/17 valid + 17/17 invalid fixtures, jsonschema, sums verified,
+  exit 0.
+- Reuse: `benchmark-sample`/`ground-truth-sample-v2` for samples; `verification`
+  and `patch-plan` for verification/layout evidence; the new manifest-v2 and
+  results-v2 contracts cover the previously missing wrapper/results surfaces;
+  hidden commitment contract covers the hidden commitment format.
+- Remaining matrix work: adopt these contracts in the Phase-8C producers
+  (manifest migration, results writer, hidden campaign), bind v1 samples to the
+  authority/plan fields additively, and keep v1 artifacts valid. No breaking
+  change to `benchmark-sample` is needed.
+- Verdict: contract matrix largely landed externally; C2 is now
+  reconciliation + migration, not greenfield schema design.
 
 ## Q05 - hidden corpus isolation threat model
 
 - Private root design: default `$HOME/.binaryrepair/phase8c-hidden`, override
-  `PHASE8C_HIDDEN_ROOT`, mode `0700`; C1 observed the default root **absent**,
-  env unset; C1 neither created nor read any hidden corpus. `hidden_available`
-  remains false and the hidden commitment is null.
-- Threat model: same-UID/root processes can read the private root; the
-  isolation is **operational, not cryptographic**. Leak surfaces: logs,
-  exception messages, temp files, runner artifacts, CI artifact uploads,
-  environment dumps, public manifest/evidence refs, crash reports. Public
-  output is aggregate-only (counts/rates/CI only), never per-sample hidden ids,
-  bytes or hashes. Fork PRs/untrusted CI never receive the root or its secrets;
-  trusted jobs mount it read-only and sanitize artifacts by allowlist.
-- Commitment format (proposal): domain-separated SHA-256 over a canonical
-  hidden manifest (hmac sample id, binary sha, split, class, oracle refs,
-  expected outcome kind) with a campaign salt held outside the public tree;
-  publish the commitment before the run, reveal aggregate metrics after the
-  run (salt only if the Lead approves). Full plan:
-  `phase8c-hidden-isolation-plan.md`.
-- Verdict: design executable, but C05/C06/C08/C11 hidden execution remains
-  blocked until the Lead provisions the Lead-owned root. C2/C11 design/tests
-  can start without it.
+  `PHASE8C_HIDDEN_ROOT`, mode `0700`. Current observed state: root **exists**
+  with mode `0700`; env unset; C1 only stats it and never lists/reads hidden
+  contents (`hidden_corpus_created=false`, `hidden_corpus_read=false`).
+  `hidden_available` remains false and `hidden_commitment_sha256` null; no
+  hidden run is claimed.
+- Threat model: same-UID/root processes can read the private root; isolation is
+  **operational, not cryptographic**. Leak surfaces: logs, exception messages,
+  temp files, runner artifacts, CI artifact uploads, environment dumps, public
+  manifest/evidence refs, crash reports. Public output must be aggregate-only
+  (counts/rates/CI), never hidden sample ids/bytes/hashes. Fork PRs/untrusted CI
+  never receive the root; trusted jobs mount it read-only and sanitize artifacts.
+- Commitment format (proposal): domain-separated SHA-256 over a canonical hidden
+  manifest (hmac sample id, binary sha, split, class, oracle refs, expected
+  outcome kind) with a campaign salt outside the public tree; publish commitment
+  before run, reveal aggregates after (salt only with Lead approval). Full
+  plan: `phase8c-hidden-isolation-plan.md`.
+- Verdict: root now provisioned, but C1 does not read it; C05/C06/C08/C11
+  require Lead coordination and MUST record hidden results as not_run until an
+  authorized campaign executes. `hidden_available` stays false.
 
 ## Q06 - Lima serialization inventory and plan
 
-- Guest calls measured in `app/services/guest_runner.py` (limactl list/shell,
-  guest run), `app/services/poc_runner.py` (runner selection + staged run),
+- Guest calls: `app/services/guest_runner.py` (limactl list/shell/run),
+  `app/services/poc_runner.py` (runner selection + staged run),
   `scripts/run_hard_benchmark.py`, `scripts/run_repair_benchmark.py`,
   `scripts/release_gate.py` (identity probe + nightly real-Lima acceptance),
-  `scripts/verify_repair_benchmark.py` and the verifier oracle path
+  `scripts/verify_repair_benchmark.py`, the verifier oracle path
   (`scripts/verify_repair.py` / `independent_verifier`).
-- Current status: **no repository-wide global lock/lease** - concurrent
-  limactl invocations can interleave. Proposed C09: one advisory lock file at
+- Current status: **no repository-wide global lock/lease**; concurrent guest
+  invocations can interleave. Proposed C09: one advisory lock file at
   `$HOME/.binaryrepair/locks/lima-guest.lock`, `fcntl.flock` exclusive with a
   JSON lease `{run_id,pid,acquired_at,ttl_s,attempt,operation}`, reentrancy via
-  a per-run token, bounded acquire timeout with explicit `lock_timeout`
-  not_run evidence, stale-pid/ttl recovery, and attempt/wait/release evidence
-  fields. Callers must acquire around every limactl/guest run and release in a
-  `finally` block; nested calls reuse the lease.
+  per-run token, bounded acquire timeout with explicit `lock_timeout` not_run
+  evidence, stale-pid/ttl recovery, attempt/wait/release evidence. Callers
+  acquire around every limactl/guest run and release in `finally`; nested calls
+  reuse the lease.
 - Existing tests: `tests/test_guest_runner.py`, `tests/test_poc_runner.py`,
   `tests/test_verify_test_serial.py`,
   `tests/test_repair_benchmark_fixtures.py` and benchmark/verifier tests.
   Missing: lock acquire/release/timeout/reentrancy/stale-lease tests (C09).
-- Verdict: inventory complete; implementation is C09, no blocker for C2.
+- The flaky reproduction in Q03 strengthens the case for C09 serialization.
+- Verdict: inventory complete; implementation C09; no blocker for C2.
 
 ## Q07 - C2-C14 dependency graph, parallelism and ownership
 
-- Work breakdown (C1-C14) is in `phase8c-work-breakdown.json` with
-  dependencies, write scopes, hard acceptance and blockers. Parallel groups:
-  G1 can start together after C1: C02 contracts, C04 public corpus, C05 hidden
-  builder, C07 results v2, C09 Lima lock; G2 after contracts/root: C03
-  migration, C06 hidden commit/reveal, C08 runner v2; G3: C10 gate/CI shadow +
-  C11 hidden isolation tests; G4: C12 claims/readiness + C13 Phase-8D data prep;
-  G5: C14 final evidence/gate/report (Lead).
-- Serial constraints: C01 first; C02 before all v2 producers; C05 before
-  hidden consumers; C09 before gate/CI real guest runs. File ownership follows
-  the write scopes in the breakdown; hidden corpus/root is Lead-owned.
+- Work breakdown C1-C14 is in `phase8c-work-breakdown.json` with dependencies,
+  write scopes, hard acceptance and blockers. Parallel groups after C1:
+  G1={C02,C04,C05,C07,C09}; G2={C03,C06,C08}; G3={C10,C11}; G4={C12,C13};
+  G5={C14}. Serial: C01 first; C02 before producers; C05 before hidden
+  consumers; C09 before gate/CI real guest runs. File ownership follows the
+  breakdown write scopes; hidden root is Lead-owned.
 
 ## Q08 - gate/CI impact
 
-- v1 benchmark and its results stay unchanged; the release gate keeps its
-  current required-check matrix. Measured from `release_gate --list-checks`:
-  pr=4 checks, release=12 checks, nightly=13 checks. The task premise says
-  "release gate still 13 required"; measured release mode is 12 and nightly is
-  13 - C10 must confirm the intended release-mode count with the Lead and
-  document it, not silently change it.
-- Phase-8C checks are proposed as **shadow/non-gating** in CI:
-  `audit_phase8c_readiness.py --check`, v2 benchmark `--check`, hidden
-  isolation/commitment checks (hidden stays not_run until the root exists).
-  No Phase-8C check is added to the release gate required set in C1.
-- Claims/readiness: Phase-8B claims already say hidden benchmark this phase
-  false, no capability promotion; readiness G29 is `not_run` with
-  `hidden_available=false`. Phase-8C must keep G29 not_run until a Lead-owned
-  hidden run exists, and must not add a hidden aggregate claim before C05/C06.
+- v1 unchanged; measured release-gate checks: pr=4, release=12, nightly=13.
+  The task premise says 13 required; measured release is 12/nightly 13, so C10
+  must confirm the intended counts (B-GATE-COUNT) instead of silently changing.
+- Phase-8C checks remain shadow/non-gating: readiness `--check`, v2 benchmark
+  `--check`, hidden isolation checks (hidden not_run until an authorized
+  campaign). No Phase-8C check is added to the release-gate required set.
+- Claims/readiness: Phase-8B claims still say hidden benchmark this phase false
+  and no capability promotion; G29 remains not_run with hidden_available=false.
+  Phase-8C keeps G29 not_run and adds no hidden aggregate claim before an
+  authorized C05/C06 run. Evidence branch ref now exists; Phase-8B local gate
+  artifact dir is still absent locally.
 
 ## Q09 - Phase-8D gap/discovery data model preparation (not implemented)
 
-Fields that Phase-8C outputs must preserve so Phase-8D discovery can consume
-them without rework: benchmark_version (v1/v2) and sample visibility
-(public/hidden); sample/binary sha plus authority/provenance refs; oracle
-evidence refs (runner/tier/manifest sha) to separate oracle gaps from detector
-gaps; hidden commitment refs for aggregate-only records; discovery_source and
-proposed_experiment (already in GapRecord); dedup/lineage keys (sample sha +
-benchmark version + target); capability dimension ids D01-D20 and universe
-cell refs. GapRecord required fields are recorded in the baseline JSON. C1
-implements none of these; C13 prepares them.
+Preserve for Phase-8D: benchmark_version/visibility; sample/authority/provenance
+refs; oracle evidence refs (runner/tier/manifest sha); hidden commitment refs
+for aggregate-only records; discovery_source/proposed_experiment (already in
+GapRecord); dedup/lineage keys (sample sha + benchmark version + target);
+capability dimension ids D01-D20 and universe cell refs. C1 implements none;
+C13 prepares them. With 17 contracts now present, C13 can align to
+manifest-v2/results-v2/ground-truth-sample-v2 schemas directly.
 
 ## Q10 - final work breakdown, hard acceptance and blocker verdict
 
-- Work breakdown: C01 baseline/readiness (this task, done); C02 v2
-  contracts/migration; C03 v1->v2 migration; C04 public corpus; C05 hidden
-  builder; C06 hidden commit/reveal; C07 results v2; C08 runner v2; C09 Lima
+- Work breakdown: C01 baseline/readiness (this task); C02 v2 contract
+  reconciliation; C03 v1->v2 migration; C04 public corpus; C05 hidden builder;
+  C06 hidden commit/reveal; C07 results v2 adoption; C08 runner v2; C09 Lima
   lock; C10 gate/CI shadow; C11 hidden isolation red-team; C12
   claims/readiness; C13 Phase-8D data prep; C14 final evidence/gate/report.
-- Hard acceptance: v2 contracts + 12/12 lossless migration; hidden only under
-  Lead-owned root with aggregate-only public output and not_run when absent;
+- Hard acceptance: v2 contracts adopted + 12/12 lossless migration; hidden only
+  under Lead-owned root with aggregate-only output and not_run until authorized;
   single guest lock with lease/timeout/attempt evidence; v1 gate checks
-  unchanged and Phase-8C checks shadow; final evidence honest with no
-  capability promotion/verified auto-upgrade.
-- Blockers: B-HIDDEN-ROOT (hidden execution C05/C06/C08/C11 blocked until
-  Lead provisions the root; C1 did not create/read it); B-P8B-EVIDENCE-BINDING
-  (Phase-8B evidence bound to c5d87b5, not current HEAD; Phase-8C must bind its
-  own SHA; warning for C12/C14); B-TOOLCHAIN-ZIG (Zig absent, C04 limited to
-  clang/system toolchain); B-GATE-COUNT (release=12 vs stated 13; C10 must
-  confirm). Warnings: v1 manifest/reference-fix optionality, hidden aggregate
-  policy needs Lead approval, full-suite duration not measured in C1.
-- Verdict: C1 is **ready with warnings**; C2 (v2 contracts/migration) and C11
-  (hidden isolation design/tests) are unblocked to start. No new repair
-  capability is claimed and no verified state is upgraded by this audit.
-- Baseline facts collected: host darwin/arm64, Python 3.11.8, clang
-  `/usr/bin/clang`, no Zig, limactl 2.3.0 + Lima guest available; test tree:
-  222 test files / 2053 collected tests (full-suite duration not measured);
-  corpora: hard-cases 12 cases, repair-benchmark 10 cases, 4 public dirs,
-  4 Mach-O fixture dirs, 7 PE fixture dirs; contracts 13 with checker exit 0.
+  unchanged; final evidence honest with no capability promotion/verified
+  auto-upgrade.
+- Blockers/warnings: B-HIDDEN-ROOT (coordination_required: root exists 0700 but
+  C1 does not read it; hidden paths C05/C06/C08/C11 stay not_run until
+  authorized); B-P8B-EVIDENCE-BINDING (warning C12/C14); B-TOOLCHAIN-ZIG
+  (warning C04); B-GATE-COUNT (warning C10); **B-POST-REBASE-REPRODUCTION-FLAKY**
+  (warning for verification claims C12/C14: one f42 default reproduction failed
+  with false_verified=1 while diagnostic withdraw runs and a second default run
+  verified 2/2; triage before unconditional claims).
+- Status: `ok_rebaselined_with_flaky_reproduction`; C2 and C11 design/tests are
+  unblocked, but any Phase-8C claim of stable 2/2 verification on f42 is
+  blocked until the reproduction flake is triaged. No new repair capability is
+  claimed and no verified state is upgraded.
+- Baseline facts: host darwin/arm64, Python 3.11.8, clang /usr/bin/clang, no
+  Zig, limactl 2.3.0 + Lima guest available; test tree 226 files / 2105
+  collected tests (full-suite duration not measured); corpora hard-cases 12,
+  repair-benchmark 10, 4 public dirs, 4 Mach-O fixture dirs, 7 PE fixture dirs;
+  contracts 17 with checker exit 0; phase8b results sha
+  `c9e74902abb909457bdc0e40505666e1c550fe92c616c50667d64261160a6f3f`.

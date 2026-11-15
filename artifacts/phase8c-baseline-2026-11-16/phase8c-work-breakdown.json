@@ -1,5 +1,5 @@
 {
-  "base_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+  "base_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
   "blockers": [
     {
       "blocks": [
@@ -18,8 +18,8 @@
         "C11"
       ],
       "id": "B-HIDDEN-ROOT",
-      "severity": "blocker_for_hidden_paths",
-      "text": "Hidden private root is Lead-owned and absent; C1 does not create/read it. C05/C06/C08/C11 hidden paths remain blocked/not_run until the Lead provisions the root."
+      "severity": "coordination_required_for_hidden_paths",
+      "text": "Hidden private root is Lead-owned and now exists with mode 0700; C1 stats it only and never reads hidden contents. hidden_available remains false and no hidden run is claimed; C05/C06/C08/C11 still require Lead coordination and must keep hidden results not_run until executed under the private root."
     },
     {
       "blocks": [
@@ -115,13 +115,12 @@
     },
     {
       "acceptance": [
-        "v2 sample/manifest/hidden-commitment/results contracts exist",
-        "v1 12 samples validate losslessly as v2",
-        "existing 13 contracts/checker remain green",
-        "fixtures valid+invalid; SUMS deterministic"
+        "adopt/reconcile the 17 existing contracts (including the four v2 contracts delivered by external P16-R3) without breaking v1",
+        "v1 12 samples validate losslessly against the adopted v2 sample contract; add only missing additive fields",
+        "checker remains 17/17 valid + 17/17 invalid with deterministic SUMS"
       ],
       "blockers": [
-        "depends on C01 baseline matrix"
+        "depends on C01 baseline matrix; do not recreate the four v2 contracts already landed"
       ],
       "dependencies": [
         "C01"
@@ -129,12 +128,12 @@
       "id": "C02",
       "parallel_group": "G1",
       "phase": "8C",
-      "title": "Ground-truth v2 schema/contracts and migration mapping",
+      "title": "Adopt/reconcile the externally landed v2 contracts and migration mapping",
       "write_scopes": [
-        "contracts/ground-truth-benchmark-v2.schema.json",
-        "contracts/manifest-v2.schema.json",
-        "contracts/hidden-commitment.schema.json",
-        "contracts/results-v2.schema.json",
+        "contracts/benchmark-manifest-v2.schema.json",
+        "contracts/benchmark-results-v2.schema.json",
+        "contracts/ground-truth-sample-v2.schema.json",
+        "contracts/hidden-benchmark-commitment.schema.json",
         "artifacts/contract-fixtures-2026-11-16",
         "scripts/check_contract_schemas.py",
         "tests/test_contract_schemas.py"
@@ -191,7 +190,7 @@
         "no hidden bytes/ids in public artifacts; not_run when root absent"
       ],
       "blockers": [
-        "C05 execution requires Lead-owned private root; C1 does not create/read it (blocker for hidden run only, not C2)"
+        "Lead-owned private root now exists with mode 0700; C1 stats it only and never reads hidden contents. C05 needs Lead authorization before creating/reading hidden samples (blocker for hidden run only, not C2)"
       ],
       "dependencies": [
         "C02"

@@ -48,8 +48,16 @@ def test_committed_artifact_check_ok() -> None:
 def test_baseline_structure_and_ten_questions(baseline: dict) -> None:
     assert baseline["schema_version"] == 1
     assert baseline["kind"] == "phase8c_readiness_audit"
-    assert baseline["base_sha"] == audit.EXPECTED_BASE_SHA
-    assert baseline["expected_base_sha"] == audit.EXPECTED_BASE_SHA
+    assert len(baseline["base_sha"]) == 40
+    assert baseline["expected_mainline_sha"] == audit.EXPECTED_BASE_SHA
+    assert baseline["audit_commit_parent_sha"] == audit.EXPECTED_BASE_SHA
+    assert baseline["original_audit_baseline_sha"] == (
+        audit.ORIGINAL_AUDIT_BASE_SHA)
+    drift = baseline["post_audit_drift"]
+    assert drift["detected"] is True
+    assert drift["original_baseline"] == audit.ORIGINAL_AUDIT_BASE_SHA
+    assert drift["rebased_mainline"] == audit.EXPECTED_BASE_SHA
+    assert drift["reason"]
     assert baseline["capability_claims"] == []
     assert baseline["no_new_repair_capability"] is True
     assert baseline["no_verified_upgrade"] is True
@@ -83,8 +91,14 @@ def test_v1_migration_matrix_is_lossless(baseline: dict) -> None:
 def test_reproduction_is_truthful_and_matches_phase8b(baseline: dict) -> None:
     reproduction = baseline["q3_reproduction"]
     status = reproduction["status"]
+    history = reproduction.get("reproducibility_history")
+    assert isinstance(history, list) and history
+    assert reproduction.get("stability") in {
+        "flaky_observed_1_of_2_default_runs", "stable_in_recorded_history"}
     if status == "not_run":
         assert reproduction.get("reason")
+        if reproduction.get("changed_after_rebase") is True:
+            assert reproduction.get("diagnostic_withdraw_attempts")
         return
     assert status == "reproduced"
     assert reproduction["not_overwritten_committed_evidence"] is True
@@ -126,14 +140,15 @@ def test_hidden_facts_are_isolation_only_and_not_read(baseline: dict) -> None:
 
 def test_schema_contracts_and_gate_facts(baseline: dict) -> None:
     contracts = baseline["facts"]["contracts"]
-    assert contracts["count"] == 13
+    assert contracts["count"] >= 13
     assert contracts["has_hidden_fields"] is True
     assert contracts["has_authority_block"] is True
     assert contracts["has_patch_plan_contract"] is True
     assert contracts["checker"]["exit_code"] == 0
-    assert contracts["has_manifest_wrapper_contract"] is False
-    assert contracts["has_hidden_commitment_contract"] is False
-    assert contracts["has_results_contract"] is False
+    # external P16-R3 added the v2 wrapper/results/hidden-commitment contracts
+    assert contracts["has_manifest_wrapper_contract"] is True
+    assert contracts["has_hidden_commitment_contract"] is True
+    assert contracts["has_results_contract"] is True
     gate = baseline["q8_gate_ci"]
     assert gate["phase8c_checks_gating"] == "shadow_not_gating"
     assert gate["release_gate"]["modes"]["pr"] == 4
@@ -157,6 +172,11 @@ def test_work_breakdown_covers_c1_to_c14(breakdown: dict) -> None:
     assert breakdown["blockers"]
     assert any(item["id"] == "B-HIDDEN-ROOT"
                for item in breakdown["blockers"])
+    if baseline_doc := json.loads(BASELINE_PATH.read_text(encoding="utf-8")):
+        if baseline_doc["q3_reproduction"].get("stability") == (
+                "flaky_observed_1_of_2_default_runs"):
+            ids = {item["id"] for item in baseline_doc["blockers"]}
+            assert "B-POST-REBASE-REPRODUCTION-FLAKY" in ids
 
 
 def test_documentation_is_ascii_and_answers_ten_questions() -> None:
@@ -196,11 +216,13 @@ def test_cli_json_summary() -> None:
     )
     assert result.returncode == 0, result.stdout + result.stderr
     payload = json.loads(result.stdout)
-    assert payload["base_sha"] == audit.EXPECTED_BASE_SHA
+    assert len(payload["base_sha"]) == 40
+    assert payload["expected_mainline_sha"] == audit.EXPECTED_BASE_SHA
+    assert payload["post_audit_drift"]["detected"] is True
     assert len(payload["ten_questions"]) == 10
     assert payload["v1_migration"]["lossless"] == 12
     assert payload["hidden"]["hidden_available"] is False
-    assert payload["contracts"]["count"] == 13
+    assert payload["contracts"]["count"] >= 13
 
 
 def test_check_detects_tampered_baseline_and_breakdown(

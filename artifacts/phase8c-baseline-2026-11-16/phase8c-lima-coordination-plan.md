@@ -6,8 +6,8 @@ Status: inventory + design. No global lock is implemented in C1.
 
 | file | present | hit count | role |
 |---|---|---|---|
-| app/services/guest_runner.py | True | 27 | limactl probe/list/shell/run |
-| app/services/poc_runner.py | True | 7 | select guest runner + staged run |
+| app/services/guest_runner.py | True | 29 | limactl probe/list/shell/run |
+| app/services/poc_runner.py | True | 11 | select guest runner + staged run |
 | scripts/run_hard_benchmark.py | True | 0 | benchmark reproductions |
 | scripts/run_repair_benchmark.py | True | 0 | independent verification runs |
 | scripts/release_gate.py | True | 14 | nightly real-Lima acceptance + identity probe |

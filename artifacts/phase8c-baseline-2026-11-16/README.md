@@ -1,6 +1,6 @@
 # Phase-8C baseline & hidden readiness audit (C1)
 
-Read-only readiness audit for Phase-8C ground-truth v2 on `227f45b39d85a7cd95e8589beb07dcfc89cd22d7`. No production code/contracts/CI/claims/benchmark v1/release gate/Phase-8A-B artifacts were modified; no network/AI was used.
+Read-only readiness audit for Phase-8C ground-truth v2 on `6d7ad861694e287cf446cdc195990bcf7889dd2c`. No production code/contracts/CI/claims/benchmark v1/release gate/Phase-8A-B artifacts were modified; no network/AI was used.
 
 ## Files
 
@@ -24,7 +24,7 @@ pytest -q tests/test_phase8c_readiness.py
 ## Key facts
 
 - v1 manifest: benchmark/phase8-v1/manifest.json sha256 `e7e7eca43518dc1b953faccead6f301f80eee4a59f1f0550dc8aad1bbd712052`, 12 samples, splits {'dev': 8, 'validation': 4}, hidden=False
-- contracts: 13; checker exit 0
+- contracts: 17; checker exit 0
 - guest: {'available': True, 'kind': 'lima', 'tier': 'emulated_run', 'tool': '/opt/homebrew/bin/limactl', 'instance': 'binaryrepair'}
 - reproduction: reproduced
-- tests collected: 2053 (duration not measured in C1)
+- tests collected: 2105 (duration not measured in C1)

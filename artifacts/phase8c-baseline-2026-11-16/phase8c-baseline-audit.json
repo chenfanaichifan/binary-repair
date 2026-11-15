@@ -1,23 +1,47 @@
 {
+  "audit_commit_parent_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+  "audit_commit_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
   "audit_date": "2026-11-16",
-  "base_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+  "base_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
   "baseline": {
     "drift": {
-      "actual_branch_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "actual_branch_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
       "branch": "feature/phase8c-ground-truth-v2",
       "branch_matches_expected": true,
       "drift_findings": [
-        "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 227f45b39d85a7cd95e8589beb07dcfc89cd22d7; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
+        "post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> branch head 6d7ad861694e287cf446cdc195990bcf7889dd2c (parent f42e6c4f39b584575f59b13d67f40572b3ca278c, rebased mainline f42e6c4f39b584575f59b13d67f40572b3ca278c); C1 facts/reproduction were refreshed on the rebased tree",
+        "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 6d7ad861694e287cf446cdc195990bcf7889dd2c; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
         "the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally"
       ],
-      "drift_status": "ok",
+      "drift_status": "rebaselined_after_c1",
       "expected_branch": "feature/phase8c-ground-truth-v2",
-      "expected_mainline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
-      "mainline_matches_expected": true,
+      "expected_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+      "head_parent_is_expected_mainline": true,
+      "head_parent_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+      "original_audit_baseline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
       "phase8b_claims_base_sha": "dad21c985694b2d16a722256eaed6bd6131bb9cd",
       "phase8b_evidence_artifact_dir": "artifacts/release-gate-2026-11-16-phase8b",
       "phase8b_evidence_tag": "release-2026-11-16-phase8b-evidence",
       "phase8b_gated_ci_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
+      "post_audit_drift": {
+        "current_branch_head": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+        "detected": true,
+        "head_is_rebase_commit_on_mainline": true,
+        "head_parent": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+        "impact": "C1 facts were re-collected on the rebased tree; the previous artifact is superseded and the two verified samples are reproduced again into temporary output; no production file is changed by this follow-up",
+        "observed_changes": [
+          "app/services/elf_mapping.py present (new external P16-R3 module)",
+          "app/services/verification_semantics.py changed",
+          "docs/status/claims.json changed",
+          "artifacts/independent-verification-p16r3-2026-11-16 present (new external evidence)",
+          "artifacts/phase8b-benchmark-2026-11-16/results.json hash changed (still independently_verified=2, false_verified=0)",
+          "contracts dir now has 17 schemas incl benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2 and hidden-benchmark-commitment (external P16-R3)",
+          "hidden private root now exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents"
+        ],
+        "original_baseline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+        "reason": "branch was rebased onto latest mainline f42e6c4f39b5 after the original C1 audit (227f45b39d85); external P16-R3 added app/services/elf_mapping.py, changed verification_semantics.py, claims and committed artifacts",
+        "rebased_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c"
+      },
       "refs": {
         "evidence_branch": {
           "ref": "release/2026-11-16-phase8b-evidence",
@@ -35,7 +59,8 @@
     },
     "git": {
       "branch": "feature/phase8c-ground-truth-v2",
-      "head_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "head_parent_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+      "head_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
       "source": "read-only .git metadata files (no git commands)",
       "tags": {
         "evidence_branch": {
@@ -97,8 +122,8 @@
         "C11"
       ],
       "id": "B-HIDDEN-ROOT",
-      "severity": "blocker_for_hidden_paths",
-      "text": "Hidden private root is Lead-owned and absent; C1 does not create/read it. C05/C06/C08/C11 hidden paths remain blocked/not_run until the Lead provisions the root."
+      "severity": "coordination_required_for_hidden_paths",
+      "text": "Hidden private root is Lead-owned and now exists with mode 0700; C1 stats it only and never reads hidden contents. hidden_available remains false and no hidden run is claimed; C05/C06/C08/C11 still require Lead coordination and must keep hidden results not_run until executed under the private root."
     },
     {
       "blocks": [
@@ -115,6 +140,15 @@
       "id": "B-GATE-COUNT",
       "severity": "warning",
       "text": "Measured release-gate checks: release=12, nightly=13, pr=4; the task premise says 13 required. C10 must confirm the release-mode count with the Lead before claiming it."
+    },
+    {
+      "blocks": [
+        "C12",
+        "C14"
+      ],
+      "id": "B-POST-REBASE-REPRODUCTION-FLAKY",
+      "severity": "warning_for_verification_claims",
+      "text": "on the rebased tree the same two-sample default run both failed (false_verified=1, verifier rejected a claim) and later reproduced 2/2 independently verified; the reproduction is not deterministically stable, so Phase-8C evidence claims must record the attempt history and cannot claim unconditional 2/2 stability"
     }
   ],
   "branch": "feature/phase8c-ground-truth-v2",
@@ -141,7 +175,8 @@
       "zig": null
     }
   },
-  "expected_base_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+  "expected_base_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+  "expected_mainline_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
   "facts": {
     "contracts": {
       "benchmark_sample_properties": [
@@ -189,22 +224,26 @@
       ],
       "checker": {
         "exit_code": 0,
-        "summary": "contract-schemas: ok=True validator=jsonschema schemas=13 valid=13/13 invalid=13/13 sums_checked=True violations=0"
+        "summary": "contract-schemas: ok=True validator=jsonschema schemas=17 valid=17/17 invalid=17/17 sums_checked=True violations=0"
       },
-      "count": 13,
+      "count": 17,
       "has_authority_block": true,
-      "has_hidden_commitment_contract": false,
+      "has_hidden_commitment_contract": true,
       "has_hidden_fields": true,
-      "has_manifest_wrapper_contract": false,
+      "has_manifest_wrapper_contract": true,
       "has_patch_plan_contract": true,
-      "has_results_contract": false,
+      "has_results_contract": true,
       "names": [
         "acceptance.schema",
+        "benchmark-manifest-v2.schema",
+        "benchmark-results-v2.schema",
         "benchmark-sample.schema",
         "binary-target.schema",
         "capability.schema",
         "evidence.schema",
         "gap.schema",
+        "ground-truth-sample-v2.schema",
+        "hidden-benchmark-commitment.schema",
         "patch-candidate.schema",
         "patch-plan.schema",
         "reflection.schema",
@@ -238,15 +277,15 @@
     "hidden": {
       "hidden_available_manifest": false,
       "hidden_commitment_sha256_manifest": null,
-      "hidden_corpus_absent": true,
+      "hidden_corpus_absent": false,
       "hidden_corpus_created": false,
       "hidden_corpus_read": false,
       "isolation_is_operational_not_cryptographic": true,
       "private_root_default": "/Users/huageorge/.binaryrepair/phase8c-hidden",
       "private_root_env": "PHASE8C_HIDDEN_ROOT",
       "private_root_env_set": false,
-      "private_root_exists": false,
-      "private_root_permissions": null,
+      "private_root_exists": true,
+      "private_root_permissions": "0o700",
       "readiness_g29": {
         "blocker": "hidden benchmark unavailable (hidden_available=false); the registry must never fabricate a hidden run",
         "measured_status": "not_run"
@@ -255,54 +294,54 @@
     "lima": {
       "call_sites": [
         {
-          "hit_count": 27,
+          "hit_count": 29,
           "hits": [
             {
               "line": 11,
               "text": "A running Lima VM (``limactl``) is available.  The guest is a Linux VM and"
             },
             {
-              "line": 68,
+              "line": 78,
               "text": "class GuestRunner:"
             },
             {
-              "line": 120,
+              "line": 134,
               "text": "def _native_runner(arch: str) -> GuestRunner | None:"
             },
             {
-              "line": 128,
+              "line": 142,
               "text": "return GuestRunner(kind=\"native\", tool=\"\", tier=\"native_run\")"
             },
             {
-              "line": 138,
+              "line": 152,
               "text": "def _lima_json_status(limactl: str, instance: str, timeout: float) -> bool | None:"
             },
             {
-              "line": 139,
+              "line": 153,
               "text": "\"\"\"Query instance status through ``limactl list --json``."
             },
             {
-              "line": 147,
+              "line": 161,
               "text": "[limactl, \"list\", \"--json\"],"
             },
             {
-              "line": 175,
+              "line": 189,
               "text": "def _lima_plain_status(limactl: str, instance: str, timeout: float) -> bool:"
             },
             {
-              "line": 178,
+              "line": 192,
               "text": "[limactl, \"list\"],"
             },
             {
-              "line": 195,
+              "line": 209,
               "text": "limactl: str | None = None,"
             },
             {
-              "line": 202,
+              "line": 216,
               "text": "tool = limactl or shutil.which(\"limactl\")"
             },
             {
-              "line": 214,
+              "line": 228,
               "text": "def find_lima_runner(instance: str | None = None) -> GuestRunner | None:"
             }
           ],
@@ -310,35 +349,51 @@
           "present": true
         },
         {
-          "hit_count": 7,
+          "hit_count": 11,
           "hits": [
             {
-              "line": 34,
-              "text": "from app.services.guest_runner import GuestRunner, find_guest_runner, run_path"
+              "line": 40,
+              "text": "from app.services.guest_runner import ("
             },
             {
-              "line": 210,
+              "line": 41,
+              "text": "GuestRunner,"
+            },
+            {
+              "line": 42,
+              "text": "find_guest_runner,"
+            },
+            {
+              "line": 230,
               "text": "def _select_runner(format_name: str, arch: str) -> GuestRunner | None:"
             },
             {
-              "line": 232,
+              "line": 252,
               "text": "runner = find_guest_runner(arch)"
             },
             {
-              "line": 248,
+              "line": 268,
               "text": "return GuestRunner(kind=\"native\", tool=\"\", tier=\"native_run\")"
             },
             {
-              "line": 262,
+              "line": 282,
               "text": "def _staging_root(runner: GuestRunner) -> Iterator[Path]:"
             },
             {
-              "line": 418,
+              "line": 438,
               "text": "runner: GuestRunner,"
             },
             {
-              "line": 459,
+              "line": 488,
               "text": "result = run_path(binary_path, argv, **run_kwargs)"
+            },
+            {
+              "line": 522,
+              "text": "selected: GuestRunner,"
+            },
+            {
+              "line": 628,
+              "text": "limactl=selected.tool,"
             }
           ],
           "path": "app/services/poc_runner.py",
@@ -419,7 +474,7 @@
               "text": "\"runner\": poc.get(\"runner\") or \"limactl\","
             },
             {
-              "line": 180,
+              "line": 182,
               "text": "oracle[\"runner\"] = (record.get(\"candidate\", {}).get(\"poc\") or {}).get(\"runner\") or \"limactl\""
             }
           ],
@@ -514,12 +569,12 @@
       "v1_benchmark_checks_unchanged_design": true
     },
     "test_suite": {
-      "collected_tests": 2053,
+      "collected_tests": 2105,
       "collection_source": "pytest --collect-only -q on this tree",
       "duration_note": "C1 does not run the full suite; CI/local execution timings remain the source of truth",
       "duration_seconds": null,
       "duration_status": "not_measured_in_read_only_audit",
-      "test_files": 223
+      "test_files": 226
     },
     "toolchain": {
       "clang": "/usr/bin/clang",
@@ -548,11 +603,11 @@
         "total": 12,
         "v2_gap_count": 6,
         "v2_gaps": [
-          "manifest wrapper has no explicit benchmark_version / v1->v2 mapping block (schema_version=1 today)",
-          "manifest wrapper hidden fields exist but only hidden_available=false and hidden_commitment_sha256=null; no public/hidden split policy or aggregate-only results contract",
-          "samples have no optional authority block in v1 (contract supports it); Phase-8C samples must declare scope_policy/authorized_changes/plan binding where applicable",
-          "results schema is not contract-pinned: Phase-8B results add plan/oracle/layout fields but there is no results-v2 contract",
-          "no hidden-corpus commitment contract (format/aggregation/visibility)",
+          "external P16-R3 already added v2 contracts (benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2, hidden-benchmark-commitment: contracts dir is now 17); C2 must reconcile/adopt them, not recreate them",
+          "the v1 manifest is still schema_version 1: the lossless v1->v2 migration builder/mapping artifact (C03) is still required",
+          "v1 samples do not carry optional authority/plan binding fields even though the ground-truth-sample-v2 contract now supports them",
+          "the benchmark runner/results writer does not yet emit the v2 results schema (C07/C08)",
+          "hidden_available remains false and hidden_commitment_sha256 null; no hidden campaign/commitment has been published (C05/C06)",
           "reference_fix is null for 4/12 samples; v2 must treat it as optional evidence, never an oracle substitute"
         ]
       },
@@ -897,6 +952,26 @@
   ],
   "no_new_repair_capability": true,
   "no_verified_upgrade": true,
+  "original_audit_baseline_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+  "post_audit_drift": {
+    "current_branch_head": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+    "detected": true,
+    "head_is_rebase_commit_on_mainline": true,
+    "head_parent": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+    "impact": "C1 facts were re-collected on the rebased tree; the previous artifact is superseded and the two verified samples are reproduced again into temporary output; no production file is changed by this follow-up",
+    "observed_changes": [
+      "app/services/elf_mapping.py present (new external P16-R3 module)",
+      "app/services/verification_semantics.py changed",
+      "docs/status/claims.json changed",
+      "artifacts/independent-verification-p16r3-2026-11-16 present (new external evidence)",
+      "artifacts/phase8b-benchmark-2026-11-16/results.json hash changed (still independently_verified=2, false_verified=0)",
+      "contracts dir now has 17 schemas incl benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2 and hidden-benchmark-commitment (external P16-R3)",
+      "hidden private root now exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents"
+    ],
+    "original_baseline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+    "reason": "branch was rebased onto latest mainline f42e6c4f39b5 after the original C1 audit (227f45b39d85); external P16-R3 added app/services/elf_mapping.py, changed verification_semantics.py, claims and committed artifacts",
+    "rebased_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c"
+  },
   "q10_work_breakdown": {
     "blockers": [
       {
@@ -916,8 +991,8 @@
           "C11"
         ],
         "id": "B-HIDDEN-ROOT",
-        "severity": "blocker_for_hidden_paths",
-        "text": "Hidden private root is Lead-owned and absent; C1 does not create/read it. C05/C06/C08/C11 hidden paths remain blocked/not_run until the Lead provisions the root."
+        "severity": "coordination_required_for_hidden_paths",
+        "text": "Hidden private root is Lead-owned and now exists with mode 0700; C1 stats it only and never reads hidden contents. hidden_available remains false and no hidden run is claimed; C05/C06/C08/C11 still require Lead coordination and must keep hidden results not_run until executed under the private root."
       },
       {
         "blocks": [
@@ -934,6 +1009,15 @@
         "id": "B-GATE-COUNT",
         "severity": "warning",
         "text": "Measured release-gate checks: release=12, nightly=13, pr=4; the task premise says 13 required. C10 must confirm the release-mode count with the Lead before claiming it."
+      },
+      {
+        "blocks": [
+          "C12",
+          "C14"
+        ],
+        "id": "B-POST-REBASE-REPRODUCTION-FLAKY",
+        "severity": "warning_for_verification_claims",
+        "text": "on the rebased tree the same two-sample default run both failed (false_verified=1, verifier rejected a claim) and later reproduced 2/2 independently verified; the reproduction is not deterministically stable, so Phase-8C evidence claims must record the attempt history and cannot claim unconditional 2/2 stability"
       }
     ],
     "hard_acceptance": {
@@ -947,21 +1031,43 @@
   },
   "q1_baseline_drift": {
     "drift": {
-      "actual_branch_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "actual_branch_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
       "branch": "feature/phase8c-ground-truth-v2",
       "branch_matches_expected": true,
       "drift_findings": [
-        "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 227f45b39d85a7cd95e8589beb07dcfc89cd22d7; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
+        "post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> branch head 6d7ad861694e287cf446cdc195990bcf7889dd2c (parent f42e6c4f39b584575f59b13d67f40572b3ca278c, rebased mainline f42e6c4f39b584575f59b13d67f40572b3ca278c); C1 facts/reproduction were refreshed on the rebased tree",
+        "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 6d7ad861694e287cf446cdc195990bcf7889dd2c; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
         "the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally"
       ],
-      "drift_status": "ok",
+      "drift_status": "rebaselined_after_c1",
       "expected_branch": "feature/phase8c-ground-truth-v2",
-      "expected_mainline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
-      "mainline_matches_expected": true,
+      "expected_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+      "head_parent_is_expected_mainline": true,
+      "head_parent_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+      "original_audit_baseline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
       "phase8b_claims_base_sha": "dad21c985694b2d16a722256eaed6bd6131bb9cd",
       "phase8b_evidence_artifact_dir": "artifacts/release-gate-2026-11-16-phase8b",
       "phase8b_evidence_tag": "release-2026-11-16-phase8b-evidence",
       "phase8b_gated_ci_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
+      "post_audit_drift": {
+        "current_branch_head": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+        "detected": true,
+        "head_is_rebase_commit_on_mainline": true,
+        "head_parent": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+        "impact": "C1 facts were re-collected on the rebased tree; the previous artifact is superseded and the two verified samples are reproduced again into temporary output; no production file is changed by this follow-up",
+        "observed_changes": [
+          "app/services/elf_mapping.py present (new external P16-R3 module)",
+          "app/services/verification_semantics.py changed",
+          "docs/status/claims.json changed",
+          "artifacts/independent-verification-p16r3-2026-11-16 present (new external evidence)",
+          "artifacts/phase8b-benchmark-2026-11-16/results.json hash changed (still independently_verified=2, false_verified=0)",
+          "contracts dir now has 17 schemas incl benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2 and hidden-benchmark-commitment (external P16-R3)",
+          "hidden private root now exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents"
+        ],
+        "original_baseline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+        "reason": "branch was rebased onto latest mainline f42e6c4f39b5 after the original C1 audit (227f45b39d85); external P16-R3 added app/services/elf_mapping.py, changed verification_semantics.py, claims and committed artifacts",
+        "rebased_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c"
+      },
       "refs": {
         "evidence_branch": {
           "ref": "release/2026-11-16-phase8b-evidence",
@@ -979,7 +1085,8 @@
     },
     "git": {
       "branch": "feature/phase8c-ground-truth-v2",
-      "head_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "head_parent_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+      "head_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
       "source": "read-only .git metadata files (no git commands)",
       "tags": {
         "evidence_branch": {
@@ -1304,19 +1411,21 @@
       "total": 12,
       "v2_gap_count": 6,
       "v2_gaps": [
-        "manifest wrapper has no explicit benchmark_version / v1->v2 mapping block (schema_version=1 today)",
-        "manifest wrapper hidden fields exist but only hidden_available=false and hidden_commitment_sha256=null; no public/hidden split policy or aggregate-only results contract",
-        "samples have no optional authority block in v1 (contract supports it); Phase-8C samples must declare scope_policy/authorized_changes/plan binding where applicable",
-        "results schema is not contract-pinned: Phase-8B results add plan/oracle/layout fields but there is no results-v2 contract",
-        "no hidden-corpus commitment contract (format/aggregation/visibility)",
+        "external P16-R3 already added v2 contracts (benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2, hidden-benchmark-commitment: contracts dir is now 17); C2 must reconcile/adopt them, not recreate them",
+        "the v1 manifest is still schema_version 1: the lossless v1->v2 migration builder/mapping artifact (C03) is still required",
+        "v1 samples do not carry optional authority/plan binding fields even though the ground-truth-sample-v2 contract now supports them",
+        "the benchmark runner/results writer does not yet emit the v2 results schema (C07/C08)",
+        "hidden_available remains false and hidden_commitment_sha256 null; no hidden campaign/commitment has been published (C05/C06)",
         "reference_fix is null for 4/12 samples; v2 must treat it as optional evidence, never an oracle substitute"
       ]
     }
   },
   "q3_reproduction": {
     "artifact_reproduction_dir": "reproduction/",
+    "changed_after_rebase": true,
     "command_template": "scripts/run_repair_benchmark.py --manifest <temp-v1-two-samples> --out <temp-out> --verifier auto",
     "committed_results_sha256": "c9e74902abb909457bdc0e40505666e1c550fe92c616c50667d64261160a6f3f",
+    "current_branch_head": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
     "independent_verifier": {
       "attempted": [
         "app/services/independent_verifier.py"
@@ -1328,6 +1437,26 @@
     },
     "not_overwritten_committed_evidence": true,
     "reason": null,
+    "rebase_result": "unchanged_when_successful: both candidate hashes still match Phase-8B; one transient default-run failure was observed on f42",
+    "rebased_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+    "reproducibility_history": [
+      {
+        "attempt": "f42-follow-up-default-1",
+        "diagnostic_verified_samples": 2,
+        "false_verified": 1,
+        "note": "first post-rebase default run aborted; diagnostic withdraw run verified both samples, so the failure was transient",
+        "result": "failed",
+        "runner": "default"
+      },
+      {
+        "attempt": "f42-follow-up-default-2",
+        "false_verified": 0,
+        "note": "second post-rebase default run reproduced both samples as independently verified",
+        "result": "reproduced",
+        "runner": "default",
+        "samples_verified": 2
+      }
+    ],
     "runner_exit_code": 0,
     "samples": [
       {
@@ -1379,6 +1508,7 @@
         "verifier_id": "independent-verifier/1"
       }
     ],
+    "stability": "flaky_observed_1_of_2_default_runs",
     "status": "reproduced",
     "summary": {
       "candidate_produced": 2,
@@ -1448,22 +1578,26 @@
     ],
     "checker": {
       "exit_code": 0,
-      "summary": "contract-schemas: ok=True validator=jsonschema schemas=13 valid=13/13 invalid=13/13 sums_checked=True violations=0"
+      "summary": "contract-schemas: ok=True validator=jsonschema schemas=17 valid=17/17 invalid=17/17 sums_checked=True violations=0"
     },
-    "count": 13,
+    "count": 17,
     "has_authority_block": true,
-    "has_hidden_commitment_contract": false,
+    "has_hidden_commitment_contract": true,
     "has_hidden_fields": true,
-    "has_manifest_wrapper_contract": false,
+    "has_manifest_wrapper_contract": true,
     "has_patch_plan_contract": true,
-    "has_results_contract": false,
+    "has_results_contract": true,
     "names": [
       "acceptance.schema",
+      "benchmark-manifest-v2.schema",
+      "benchmark-results-v2.schema",
       "benchmark-sample.schema",
       "binary-target.schema",
       "capability.schema",
       "evidence.schema",
       "gap.schema",
+      "ground-truth-sample-v2.schema",
+      "hidden-benchmark-commitment.schema",
       "patch-candidate.schema",
       "patch-plan.schema",
       "reflection.schema",
@@ -1478,15 +1612,15 @@
     "facts": {
       "hidden_available_manifest": false,
       "hidden_commitment_sha256_manifest": null,
-      "hidden_corpus_absent": true,
+      "hidden_corpus_absent": false,
       "hidden_corpus_created": false,
       "hidden_corpus_read": false,
       "isolation_is_operational_not_cryptographic": true,
       "private_root_default": "/Users/huageorge/.binaryrepair/phase8c-hidden",
       "private_root_env": "PHASE8C_HIDDEN_ROOT",
       "private_root_env_set": false,
-      "private_root_exists": false,
-      "private_root_permissions": null,
+      "private_root_exists": true,
+      "private_root_permissions": "0o700",
       "readiness_g29": {
         "blocker": "hidden benchmark unavailable (hidden_available=false); the registry must never fabricate a hidden run",
         "measured_status": "not_run"
@@ -1520,54 +1654,54 @@
     },
     "inventory": [
       {
-        "hit_count": 27,
+        "hit_count": 29,
         "hits": [
           {
             "line": 11,
             "text": "A running Lima VM (``limactl``) is available.  The guest is a Linux VM and"
           },
           {
-            "line": 68,
+            "line": 78,
             "text": "class GuestRunner:"
           },
           {
-            "line": 120,
+            "line": 134,
             "text": "def _native_runner(arch: str) -> GuestRunner | None:"
           },
           {
-            "line": 128,
+            "line": 142,
             "text": "return GuestRunner(kind=\"native\", tool=\"\", tier=\"native_run\")"
           },
           {
-            "line": 138,
+            "line": 152,
             "text": "def _lima_json_status(limactl: str, instance: str, timeout: float) -> bool | None:"
           },
           {
-            "line": 139,
+            "line": 153,
             "text": "\"\"\"Query instance status through ``limactl list --json``."
           },
           {
-            "line": 147,
+            "line": 161,
             "text": "[limactl, \"list\", \"--json\"],"
           },
           {
-            "line": 175,
+            "line": 189,
             "text": "def _lima_plain_status(limactl: str, instance: str, timeout: float) -> bool:"
           },
           {
-            "line": 178,
+            "line": 192,
             "text": "[limactl, \"list\"],"
           },
           {
-            "line": 195,
+            "line": 209,
             "text": "limactl: str | None = None,"
           },
           {
-            "line": 202,
+            "line": 216,
             "text": "tool = limactl or shutil.which(\"limactl\")"
           },
           {
-            "line": 214,
+            "line": 228,
             "text": "def find_lima_runner(instance: str | None = None) -> GuestRunner | None:"
           }
         ],
@@ -1575,35 +1709,51 @@
         "present": true
       },
       {
-        "hit_count": 7,
+        "hit_count": 11,
         "hits": [
           {
-            "line": 34,
-            "text": "from app.services.guest_runner import GuestRunner, find_guest_runner, run_path"
+            "line": 40,
+            "text": "from app.services.guest_runner import ("
           },
           {
-            "line": 210,
+            "line": 41,
+            "text": "GuestRunner,"
+          },
+          {
+            "line": 42,
+            "text": "find_guest_runner,"
+          },
+          {
+            "line": 230,
             "text": "def _select_runner(format_name: str, arch: str) -> GuestRunner | None:"
           },
           {
-            "line": 232,
+            "line": 252,
             "text": "runner = find_guest_runner(arch)"
           },
           {
-            "line": 248,
+            "line": 268,
             "text": "return GuestRunner(kind=\"native\", tool=\"\", tier=\"native_run\")"
           },
           {
-            "line": 262,
+            "line": 282,
             "text": "def _staging_root(runner: GuestRunner) -> Iterator[Path]:"
           },
           {
-            "line": 418,
+            "line": 438,
             "text": "runner: GuestRunner,"
           },
           {
-            "line": 459,
+            "line": 488,
             "text": "result = run_path(binary_path, argv, **run_kwargs)"
+          },
+          {
+            "line": 522,
+            "text": "selected: GuestRunner,"
+          },
+          {
+            "line": 628,
+            "text": "limactl=selected.tool,"
           }
         ],
         "path": "app/services/poc_runner.py",
@@ -1684,7 +1834,7 @@
             "text": "\"runner\": poc.get(\"runner\") or \"limactl\","
           },
           {
-            "line": 180,
+            "line": 182,
             "text": "oracle[\"runner\"] = (record.get(\"candidate\", {}).get(\"poc\") or {}).get(\"runner\") or \"limactl\""
           }
         ],
@@ -1766,10 +1916,10 @@
         "docs/acceptance/phase8c-baseline-audit.md"
       ],
       "C02": [
-        "contracts/ground-truth-benchmark-v2.schema.json",
-        "contracts/manifest-v2.schema.json",
-        "contracts/hidden-commitment.schema.json",
-        "contracts/results-v2.schema.json",
+        "contracts/benchmark-manifest-v2.schema.json",
+        "contracts/benchmark-results-v2.schema.json",
+        "contracts/ground-truth-sample-v2.schema.json",
+        "contracts/hidden-benchmark-commitment.schema.json",
         "artifacts/contract-fixtures-2026-11-16",
         "scripts/check_contract_schemas.py",
         "tests/test_contract_schemas.py"
@@ -1936,35 +2086,36 @@
     ],
     "not_implemented_this_phase": true
   },
+  "rebased_mainline_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
   "schema_version": 1,
-  "status": "ok",
+  "status": "ok_rebaselined_with_flaky_reproduction",
   "ten_questions": [
     {
-      "answer": "branch=feature/phase8c-ground-truth-v2 head=227f45b39d85a7cd95e8589beb07dcfc89cd22d7 (expected 227f45b39d85a7cd95e8589beb07dcfc89cd22d7); tag release-2026-11-16-phase8b={'ref': 'release-2026-11-16-phase8b', 'sha': '1bfdf674fecef3c3357482a6a05c46cfa09eed93'}; evidence tag={'ref': 'release-2026-11-16-phase8b-evidence', 'sha': '1edcce2d1c8d9d06cddb538e210205ea6a3dbbc7'}; drift_status=ok; findings=['Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 227f45b39d85a7cd95e8589beb07dcfc89cd22d7; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree', 'the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally']",
+      "answer": "branch=feature/phase8c-ground-truth-v2 head=6d7ad861694e287cf446cdc195990bcf7889dd2c (audit commit; parent=f42e6c4f39b584575f59b13d67f40572b3ca278c, rebased mainline=f42e6c4f39b584575f59b13d67f40572b3ca278c, original C1 baseline=227f45b39d85a7cd95e8589beb07dcfc89cd22d7); tag release-2026-11-16-phase8b={'ref': 'release-2026-11-16-phase8b', 'sha': '1bfdf674fecef3c3357482a6a05c46cfa09eed93'}; evidence tag={'ref': 'release-2026-11-16-phase8b-evidence', 'sha': '1edcce2d1c8d9d06cddb538e210205ea6a3dbbc7'}; drift_status=rebaselined_after_c1; post_audit_drift={'detected': True, 'original_baseline': '227f45b39d85a7cd95e8589beb07dcfc89cd22d7', 'current_branch_head': '6d7ad861694e287cf446cdc195990bcf7889dd2c', 'rebased_mainline': 'f42e6c4f39b584575f59b13d67f40572b3ca278c', 'head_parent': 'f42e6c4f39b584575f59b13d67f40572b3ca278c', 'head_is_rebase_commit_on_mainline': True, 'reason': 'branch was rebased onto latest mainline f42e6c4f39b5 after the original C1 audit (227f45b39d85); external P16-R3 added app/services/elf_mapping.py, changed verification_semantics.py, claims and committed artifacts', 'observed_changes': ['app/services/elf_mapping.py present (new external P16-R3 module)', 'app/services/verification_semantics.py changed', 'docs/status/claims.json changed', 'artifacts/independent-verification-p16r3-2026-11-16 present (new external evidence)', 'artifacts/phase8b-benchmark-2026-11-16/results.json hash changed (still independently_verified=2, false_verified=0)', 'contracts dir now has 17 schemas incl benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2 and hidden-benchmark-commitment (external P16-R3)', 'hidden private root now exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents'], 'impact': 'C1 facts were re-collected on the rebased tree; the previous artifact is superseded and the two verified samples are reproduced again into temporary output; no production file is changed by this follow-up'}; findings=['post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> branch head 6d7ad861694e287cf446cdc195990bcf7889dd2c (parent f42e6c4f39b584575f59b13d67f40572b3ca278c, rebased mainline f42e6c4f39b584575f59b13d67f40572b3ca278c); C1 facts/reproduction were refreshed on the rebased tree', 'Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 6d7ad861694e287cf446cdc195990bcf7889dd2c; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree', 'the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally']",
       "id": "Q01",
       "question": "mainline, tag, evidence refs, drift",
       "status": "answered"
     },
     {
-      "answer": "12/12 samples present and lossless=12; required fields missing=False; v2 gaps=['manifest wrapper has no explicit benchmark_version / v1->v2 mapping block (schema_version=1 today)', 'manifest wrapper hidden fields exist but only hidden_available=false and hidden_commitment_sha256=null; no public/hidden split policy or aggregate-only results contract', 'samples have no optional authority block in v1 (contract supports it); Phase-8C samples must declare scope_policy/authorized_changes/plan binding where applicable', 'results schema is not contract-pinned: Phase-8B results add plan/oracle/layout fields but there is no results-v2 contract', 'no hidden-corpus commitment contract (format/aggregation/visibility)', 'reference_fix is null for 4/12 samples; v2 must treat it as optional evidence, never an oracle substitute']",
+      "answer": "12/12 samples present and lossless=12; required fields missing=False; v2 gaps=['external P16-R3 already added v2 contracts (benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2, hidden-benchmark-commitment: contracts dir is now 17); C2 must reconcile/adopt them, not recreate them', 'the v1 manifest is still schema_version 1: the lossless v1->v2 migration builder/mapping artifact (C03) is still required', 'v1 samples do not carry optional authority/plan binding fields even though the ground-truth-sample-v2 contract now supports them', 'the benchmark runner/results writer does not yet emit the v2 results schema (C07/C08)', 'hidden_available remains false and hidden_commitment_sha256 null; no hidden campaign/commitment has been published (C05/C06)', 'reference_fix is null for 4/12 samples; v2 must treat it as optional evidence, never an oracle substitute']",
       "id": "Q02",
       "question": "v1 12-sample lossless v2 migration",
       "status": "answered"
     },
     {
-      "answer": "status=reproduced; samples=[{'sample_id': 'heap-capacity-x86_64', 'candidate_sha256': '93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2', 'verifier_decision': 'verified', 'independently_verified': True, 'oracle_status': 'pass'}, {'sample_id': 'stack-strcpy-x86_64', 'candidate_sha256': '1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4', 'verifier_decision': 'verified', 'independently_verified': True, 'oracle_status': 'pass'}]",
+      "answer": "status=reproduced; samples=[{'sample_id': 'heap-capacity-x86_64', 'candidate_sha256': '93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2', 'verifier_decision': 'verified', 'independently_verified': True, 'oracle_status': 'pass'}, {'sample_id': 'stack-strcpy-x86_64', 'candidate_sha256': '1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4', 'verifier_decision': 'verified', 'independently_verified': True, 'oracle_status': 'pass'}]; stability=flaky_observed_1_of_2_default_runs; reproducibility_history=[{'attempt': 'f42-follow-up-default-1', 'diagnostic_verified_samples': 2, 'false_verified': 1, 'note': 'first post-rebase default run aborted; diagnostic withdraw run verified both samples, so the failure was transient', 'result': 'failed', 'runner': 'default'}, {'attempt': 'f42-follow-up-default-2', 'false_verified': 0, 'note': 'second post-rebase default run reproduced both samples as independently verified', 'result': 'reproduced', 'runner': 'default', 'samples_verified': 2}]",
       "id": "Q03",
       "question": "reproduce the two Phase-8B independently verified samples",
       "status": "reproduced"
     },
     {
-      "answer": "contracts=13 (acceptance.schema, benchmark-sample.schema, binary-target.schema, capability.schema, evidence.schema, gap.schema, patch-candidate.schema, patch-plan.schema, reflection.schema, repair.schema, root-cause.schema, verification.schema, vulnerability-finding.schema); benchmark-sample required=19; hidden fields=True; authority=True; patch-plan=True; manifest-wrapper=False; hidden-commitment=False; results=False; checker_exit=0",
+      "answer": "contracts=17 (acceptance.schema, benchmark-manifest-v2.schema, benchmark-results-v2.schema, benchmark-sample.schema, binary-target.schema, capability.schema, evidence.schema, gap.schema, ground-truth-sample-v2.schema, hidden-benchmark-commitment.schema, patch-candidate.schema, patch-plan.schema, reflection.schema, repair.schema, root-cause.schema, verification.schema, vulnerability-finding.schema); benchmark-sample required=19; hidden fields=True; authority=True; patch-plan=True; manifest-wrapper=True; hidden-commitment=True; results=True; checker_exit=0",
       "id": "Q04",
       "question": "schema reuse/extension matrix",
       "status": "answered"
     },
     {
-      "answer": "private_root=/Users/huageorge/.binaryrepair/phase8c-hidden exists=False perms=None env=PHASE8C_HIDDEN_ROOT; hidden_available=False; hidden corpus not created/read by C1; isolation is operational, not cryptographic; see phase8c-hidden-isolation-plan.md",
+      "answer": "private_root=/Users/huageorge/.binaryrepair/phase8c-hidden exists=True perms=0o700 env=PHASE8C_HIDDEN_ROOT; hidden_available=False; hidden corpus not created/read by C1; isolation is operational, not cryptographic; see phase8c-hidden-isolation-plan.md",
       "id": "Q05",
       "question": "hidden corpus isolation threat model",
       "status": "answered"
@@ -1994,15 +2145,17 @@
       "status": "answered"
     },
     {
-      "answer": "work breakdown C1-C14 in phase8c-work-breakdown.json; blockers=['B-P8B-EVIDENCE-BINDING:warning', 'B-HIDDEN-ROOT:blocker_for_hidden_paths', 'B-TOOLCHAIN-ZIG:warning', 'B-GATE-COUNT:warning']",
+      "answer": "work breakdown C1-C14 in phase8c-work-breakdown.json; blockers=['B-P8B-EVIDENCE-BINDING:warning', 'B-HIDDEN-ROOT:coordination_required_for_hidden_paths', 'B-TOOLCHAIN-ZIG:warning', 'B-GATE-COUNT:warning']",
       "id": "Q10",
       "question": "final work breakdown/hard acceptance/blockers",
       "status": "answered"
     }
   ],
   "warnings": [
-    "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 227f45b39d85a7cd95e8589beb07dcfc89cd22d7; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
+    "post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> branch head 6d7ad861694e287cf446cdc195990bcf7889dd2c (parent f42e6c4f39b584575f59b13d67f40572b3ca278c, rebased mainline f42e6c4f39b584575f59b13d67f40572b3ca278c); C1 facts/reproduction were refreshed on the rebased tree",
+    "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 6d7ad861694e287cf446cdc195990bcf7889dd2c; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
     "the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally",
+    "post-rebase reproduction is flaky across attempts: one default run failed with false_verified=1 while the diagnostic withdraw run and a second default run verified both samples; C12/C14 must not claim unconditional stability until the flake is triaged",
     "Zig absent: public corpus/compiler expansion limited until Lead provisions Zig"
   ]
 }

@@ -1,13 +1,13 @@
 # Phase-8C hidden corpus isolation plan
 
-Status: design only. C1 does not create or read a hidden corpus; the private root is Lead-owned and currently absent.
+Status: design only. C1 does not create or read a hidden corpus; the private root is Lead-owned and its current observed state is recorded below (C1 stats it only, never lists or reads contents).
 
 ## Private root
 
 - default: `/Users/huageorge/.binaryrepair/phase8c-hidden`
 - override: `PHASE8C_HIDDEN_ROOT`
 - create with mode `0700`; parent `$HOME/.binaryrepair` may exist but the hidden root itself must be owner-only
-- observed: exists=False, permissions=None, env_set=False
+- observed: exists=True, permissions=0o700, env_set=False, hidden_corpus_read=False
 - no hidden bytes are committed to the public repository or copied into public artifacts
 
 ## Threat model (operational isolation, not cryptography)

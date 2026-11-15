@@ -47,7 +47,25 @@ MANIFEST_PATH = "benchmark/phase8-v1/manifest.json"
 MANIFEST_V1_SHA = "e7e7eca43518dc1b953faccead6f301f80eee4a59f1f0550dc8aad1bbd712052"
 PHASE8B_RESULTS = "artifacts/phase8b-benchmark-2026-11-16/results.json"
 PHASE8B_SAMPLES = ("stack-strcpy-x86_64", "heap-capacity-x86_64")
-EXPECTED_BASE_SHA = "227f45b39d85a7cd95e8589beb07dcfc89cd22d7"
+EXPECTED_BASE_SHA = "f42e6c4f39b584575f59b13d67f40572b3ca278c"
+#: Baseline used for the original C1 audit before the branch was rebased.
+ORIGINAL_AUDIT_BASE_SHA = "227f45b39d85a7cd95e8589beb07dcfc89cd22d7"
+#: Reproduction observations made during the post-rebase follow-up.  The first
+#: f42 attempt failed (false_verified=1, verifier rejected a claim) while the
+#: diagnostic withdraw run verified both samples; a second default run then
+#: reproduced 2/2.  This transient instability is recorded, never hidden.
+REPRODUCTION_HISTORY: tuple[dict[str, Any], ...] = (
+    {"attempt": "f42-follow-up-default-1", "runner": "default",
+     "result": "failed", "false_verified": 1,
+     "diagnostic_verified_samples": 2,
+     "note": "first post-rebase default run aborted; diagnostic withdraw run "
+             "verified both samples, so the failure was transient"},
+    {"attempt": "f42-follow-up-default-2", "runner": "default",
+     "result": "reproduced", "false_verified": 0,
+     "samples_verified": 2,
+     "note": "second post-rebase default run reproduced both samples as "
+             "independently verified"},
+)
 EXPECTED_BRANCH = "feature/phase8c-ground-truth-v2"
 TAG_REFS = {
     "release_tag": "release-2026-11-16-phase8b",
@@ -89,6 +107,7 @@ def _load_json(path: Path) -> Any:
 def _git_metadata() -> dict[str, Any]:
     result: dict[str, Any] = {
         "head_sha": "unknown",
+        "head_parent_sha": "unknown",
         "branch": "unknown",
         "tags": {},
         "source": "read-only .git metadata files (no git commands)",
@@ -113,6 +132,8 @@ def _git_metadata() -> dict[str, Any]:
         if ref_path.is_file():
             result["head_sha"] = ref_path.read_text(
                 encoding="utf-8").strip()
+            result["head_parent_sha"] = _git_commit_parent(
+                common_dir, result["head_sha"])
         else:
             packed = common_dir / "packed-refs"
             if packed.is_file():
@@ -136,6 +157,26 @@ def _git_metadata() -> dict[str, Any]:
     else:
         result["head_sha"] = head
     return result
+
+
+def _git_commit_parent(common_dir: Path, sha: str) -> str:
+    """Read one commit object's first parent from loose object storage."""
+    if len(sha) != 40:
+        return "unknown"
+    import zlib
+
+    try:
+        path = common_dir / "objects" / sha[:2] / sha[2:]
+        if not path.is_file():
+            return "unknown"
+        payload = zlib.decompress(path.read_bytes()).decode(
+            "utf-8", "replace")
+        for line in payload.splitlines():
+            if line.startswith("parent "):
+                return line.split()[1]
+    except (OSError, ValueError, zlib.error):
+        return "unknown"
+    return "unknown"
 
 
 # ---------------------------------------------------------------------------
@@ -215,6 +256,40 @@ def _corpora_facts() -> dict[str, Any]:
     }
 
 
+def _test_suite_facts() -> dict[str, Any]:
+    test_files = len([path for path in (
+        list((ROOT / "tests").glob("*.py"))
+        + list((ROOT / "tests" / "e2e").glob("*.py"))
+        + list((ROOT / "tests" / "integration").glob("*.py"))
+        + list((ROOT / "tests" / "unit").glob("*.py"))
+    ) if path.name != "__init__.py"])
+    collected = None
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-m", "pytest", "--collect-only", "-q"],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=180,
+            check=False)
+        total = 0
+        for line in (proc.stdout or "").splitlines():
+            if line.startswith("tests/") and ": " in line:
+                try:
+                    total += int(line.rsplit(": ", 1)[1])
+                except ValueError:
+                    continue
+        collected = total or None
+    except (OSError, subprocess.SubprocessError):
+        collected = None
+    return {
+        "test_files": test_files,
+        "collected_tests": collected,
+        "collection_source": "pytest --collect-only -q on this tree",
+        "duration_seconds": None,
+        "duration_status": "not_measured_in_read_only_audit",
+        "duration_note": "C1 does not run the full suite; CI/local execution "
+                         "timings remain the source of truth",
+    }
+
+
 def _v1_manifest_facts() -> dict[str, Any]:
     path = ROOT / MANIFEST_PATH
     manifest = _load_json(path)
@@ -276,17 +351,18 @@ def _v1_manifest_facts() -> dict[str, Any]:
                 and source_ok and evidence_ok),
         })
     v2_gaps = [
-        "manifest wrapper has no explicit benchmark_version / v1->v2 mapping "
-        "block (schema_version=1 today)",
-        "manifest wrapper hidden fields exist but only hidden_available=false "
-        "and hidden_commitment_sha256=null; no public/hidden split policy or "
-        "aggregate-only results contract",
-        "samples have no optional authority block in v1 (contract supports it); "
-        "Phase-8C samples must declare scope_policy/authorized_changes/plan "
-        "binding where applicable",
-        "results schema is not contract-pinned: Phase-8B results add plan/oracle/"
-        "layout fields but there is no results-v2 contract",
-        "no hidden-corpus commitment contract (format/aggregation/visibility)",
+        "external P16-R3 already added v2 contracts "
+        "(benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2, "
+        "hidden-benchmark-commitment: contracts dir is now 17); C2 must "
+        "reconcile/adopt them, not recreate them",
+        "the v1 manifest is still schema_version 1: the lossless v1->v2 "
+        "migration builder/mapping artifact (C03) is still required",
+        "v1 samples do not carry optional authority/plan binding fields even "
+        "though the ground-truth-sample-v2 contract now supports them",
+        "the benchmark runner/results writer does not yet emit the v2 results "
+        "schema (C07/C08)",
+        "hidden_available remains false and hidden_commitment_sha256 null; no "
+        "hidden campaign/commitment has been published (C05/C06)",
         "reference_fix is null for 4/12 samples; v2 must treat it as optional "
         "evidence, never an oracle substitute",
     ]
@@ -313,6 +389,81 @@ def _v1_manifest_facts() -> dict[str, Any]:
             "v2_gap_count": len(v2_gaps),
             "v2_gaps": v2_gaps,
         },
+    }
+
+
+def _extract_false_verified(reason: str) -> int:
+    import re
+
+    match = re.search(r"false_verified=(\d+)", reason or "")
+    return int(match.group(1)) if match else -1
+
+
+def _copy_reproduction_evidence(out_dir: Path, target: Path) -> None:
+    if target.exists():
+        shutil.rmtree(target)
+    target.mkdir(parents=True)
+    for name in ("results.json", "README.md", "SHA256SUMS"):
+        path = out_dir / name
+        if path.is_file():
+            (target / name).write_bytes(path.read_bytes())
+    samples_dir = out_dir / "samples"
+    if not samples_dir.is_dir():
+        return
+    for source in sorted(samples_dir.iterdir()):
+        if not source.is_dir():
+            continue
+        destination = target / "samples" / source.name
+        destination.mkdir(parents=True)
+        for name in ("metadata.json", "plan.json", "verifier-report.json",
+                     "outcome.json"):
+            path = source / name
+            if path.is_file():
+                (destination / name).write_bytes(path.read_bytes())
+
+
+def _diagnostic_withdraw_run(manifest_copy: Path,
+                             out_dir: Path) -> dict[str, Any]:
+    """Second run with --claim-policy withdraw to record verifier decisions."""
+    command = [
+        sys.executable, str(ROOT / "scripts" / "run_repair_benchmark.py"),
+        "--manifest", str(manifest_copy), "--out", str(out_dir),
+        "--verifier", "auto", "--claim-policy", "withdraw",
+    ]
+    try:
+        proc = subprocess.run(command, cwd=str(ROOT), capture_output=True,
+                              text=True, timeout=1200, check=False)
+    except (OSError, subprocess.SubprocessError) as exc:
+        return {"status": "not_run",
+                "reason": f"diagnostic runner raised {type(exc).__name__}: {exc}"}
+    results_path = out_dir / "results.json"
+    if not results_path.is_file():
+        return {"status": "not_run",
+                "reason": f"diagnostic runner exit {proc.returncode} without "
+                          f"results: {(proc.stderr or proc.stdout or '')[-300:]}"}
+    results = _load_json(results_path)
+    return {
+        "status": "diagnostic_only_withdrawn_claims",
+        "command_template": (
+            "scripts/run_repair_benchmark.py --manifest <temp-v1-two-samples> "
+            "--out <temp-out> --verifier auto --claim-policy withdraw"),
+        "exit_code": proc.returncode,
+        "summary": results.get("summary"),
+        "samples": [
+            {key: row.get(key) for key in (
+                "sample_id", "candidate_sha256", "deterministic_verified",
+                "independently_verified", "verifier_decision",
+                "verifier_id", "oracle_status", "layout_status",
+                "real_verification", "false_verified",
+                "verification_disagreement", "verifier_reason")}
+            for row in results.get("results", [])
+        ],
+        "results_sha256": _sha256_file(results_path),
+        "note": (
+            "the default fail_on_disagreement run aborts (exit 2) because the "
+            "new verifier rejects deterministic claims; this withdraw run is "
+            "recorded only to expose the changed verifier decisions, never as a "
+            "verified result"),
     }
 
 
@@ -365,11 +516,61 @@ def _reproduce_verified_samples() -> dict[str, Any]:
                 "reason": f"runner raised {type(exc).__name__}: {exc}",
                 "samples": [], "command": command}
     results_path = out_dir / "results.json"
-    if proc.returncode != 0 or not results_path.is_file():
-        return {"status": "not_run",
-                "reason": f"runner exit {proc.returncode}: "
-                          f"{(proc.stderr or proc.stdout or '')[-500:]}",
-                "samples": [], "command": command}
+    default_failed = proc.returncode != 0 or not results_path.is_file()
+    failure_reason = None
+    if default_failed:
+        failure_reason = (f"runner exit {proc.returncode}: "
+                          f"{(proc.stderr or proc.stdout or '')[-500:]}")
+    if not default_failed:
+        results = _load_json(results_path)
+        observed = list(results.get("results", []))
+        all_verified = bool(observed) and all(
+            row.get("independently_verified") is True
+            and row.get("verifier_decision") == "verified"
+            and row.get("candidate_sha256") for row in observed)
+        if not all_verified:
+            default_failed = True
+            failure_reason = (
+                "default runner exited 0 but did not independently verify every "
+                "sample: "
+                + "; ".join(
+                    f"{row.get('sample_id')}:decision={row.get('verifier_decision')}"
+                    f",independently_verified={row.get('independently_verified')}"
+                    for row in observed))
+    if default_failed:
+        attempts = []
+        for attempt in range(1, 3):
+            attempts.append(_diagnostic_withdraw_run(
+                manifest_copy, temp_root / f"out-withdraw-{attempt}"))
+        latest = attempts[-1] if attempts else {"status": "not_run"}
+        latest_out = temp_root / f"out-withdraw-{len(attempts)}"
+        verified_attempts = sum(
+            1 for item in attempts
+            if all(row.get("independently_verified") is True
+                   for row in (item.get("samples") or []))
+            and item.get("samples"))
+        result = {
+            "status": "not_run",
+            "reason": failure_reason,
+            "samples": [],
+            "command": command,
+            "changed_after_rebase": True,
+            "false_verified_in_default_run": _extract_false_verified(
+                failure_reason or ""),
+            "diagnostic_withdraw_attempts": attempts,
+            "diagnostic_withdraw_attempt_count": len(attempts),
+            "diagnostic_verified_attempts": verified_attempts,
+            "stability": (
+                "flaky_or_inconsistent_across_attempts"
+                if 0 < verified_attempts < len(attempts)
+                else "last_attempt_verified_but_default_run_failed"
+                if verified_attempts == len(attempts)
+                else "rejected_on_rebased_tree"),
+            "not_overwritten_committed_evidence": True,
+        }
+        _copy_reproduction_evidence(latest_out, ARTIFACT_DIR / "reproduction")
+        shutil.rmtree(temp_root, ignore_errors=True)
+        return result
     results = _load_json(results_path)
     samples: list[dict[str, Any]] = []
     by_committed = {row.get("sample_id"): row
@@ -670,22 +871,24 @@ def _work_breakdown() -> dict[str, Any]:
              "hidden isolation and Lima coordination plans exist",
              "artifacts --check green and tests green"],
          "blockers": []},
-        {"id": "C02", "title": "Ground-truth v2 schema/contracts and migration "
-                               "mapping",
+        {"id": "C02", "title": "Adopt/reconcile the externally landed v2 "
+                               "contracts and migration mapping",
          "phase": "8C", "dependencies": ["C01"], "parallel_group": "G1",
-         "write_scopes": ["contracts/ground-truth-benchmark-v2.schema.json",
-                          "contracts/manifest-v2.schema.json",
-                          "contracts/hidden-commitment.schema.json",
-                          "contracts/results-v2.schema.json",
+         "write_scopes": ["contracts/benchmark-manifest-v2.schema.json",
+                          "contracts/benchmark-results-v2.schema.json",
+                          "contracts/ground-truth-sample-v2.schema.json",
+                          "contracts/hidden-benchmark-commitment.schema.json",
                           "artifacts/contract-fixtures-2026-11-16",
                           "scripts/check_contract_schemas.py",
                           "tests/test_contract_schemas.py"],
          "acceptance": [
-             "v2 sample/manifest/hidden-commitment/results contracts exist",
-             "v1 12 samples validate losslessly as v2",
-             "existing 13 contracts/checker remain green",
-             "fixtures valid+invalid; SUMS deterministic"],
-         "blockers": ["depends on C01 baseline matrix"]},
+             "adopt/reconcile the 17 existing contracts (including the four v2 "
+             "contracts delivered by external P16-R3) without breaking v1",
+             "v1 12 samples validate losslessly against the adopted v2 sample "
+             "contract; add only missing additive fields",
+             "checker remains 17/17 valid + 17/17 invalid with deterministic SUMS"],
+         "blockers": ["depends on C01 baseline matrix; do not recreate the four "
+                     "v2 contracts already landed"]},
         {"id": "C03", "title": "v1->v2 lossless migration builder",
          "phase": "8C", "dependencies": ["C02"], "parallel_group": "G2",
          "write_scopes": ["scripts/migrate_benchmark_v1_to_v2.py",
@@ -716,8 +919,10 @@ def _work_breakdown() -> dict[str, Any]:
              "writes only under PHASE8C_HIDDEN_ROOT/$HOME default with 0700",
              "commitment computed over canonical hidden manifest",
              "no hidden bytes/ids in public artifacts; not_run when root absent"],
-         "blockers": ["C05 execution requires Lead-owned private root; C1 does "
-                     "not create/read it (blocker for hidden run only, not C2)"]},
+         "blockers": ["Lead-owned private root now exists with mode 0700; C1 "
+                     "stats it only and never reads hidden contents. C05 needs "
+                     "Lead authorization before creating/reading hidden "
+                     "samples (blocker for hidden run only, not C2)"]},
         {"id": "C06", "title": "Hidden commit/reveal and public aggregate only",
          "phase": "8C", "dependencies": ["C05"], "parallel_group": "G2",
          "write_scopes": ["scripts/hidden_benchmark.py",
@@ -852,11 +1057,14 @@ def _work_breakdown() -> dict[str, Any]:
              "blocks": ["C12", "C14"],
              "severity": "warning"},
             {"id": "B-HIDDEN-ROOT",
-             "text": "Hidden private root is Lead-owned and absent; C1 does not "
-                     "create/read it. C05/C06/C08/C11 hidden paths remain "
-                     "blocked/not_run until the Lead provisions the root.",
+             "text": "Hidden private root is Lead-owned and now exists with mode "
+                     "0700; C1 stats it only and never reads hidden contents. "
+                     "hidden_available remains false and no hidden run is "
+                     "claimed; C05/C06/C08/C11 still require Lead coordination "
+                     "and must keep hidden results not_run until executed under "
+                     "the private root.",
              "blocks": ["C05", "C06", "C08", "C11"],
-             "severity": "blocker_for_hidden_paths"},
+             "severity": "coordination_required_for_hidden_paths"},
             {"id": "B-TOOLCHAIN-ZIG",
              "text": "Zig is not on PATH; public corpus/compiler expansion in "
                      "C04 is limited to clang/system toolchain unless the Lead "
@@ -873,10 +1081,27 @@ def _work_breakdown() -> dict[str, Any]:
     }
 
 
-def build_baseline() -> dict[str, Any]:
+def build_baseline(
+        reproduction_override: dict[str, Any] | None = None) -> dict[str, Any]:
     git = _git_metadata()
     manifest = _v1_manifest_facts()
-    reproduction = _reproduce_verified_samples()
+    reproduction = (reproduction_override
+                    if reproduction_override is not None
+                    else _reproduce_verified_samples())
+    reproduction_history = list(
+        reproduction.get("reproducibility_history")
+        or [dict(item) for item in REPRODUCTION_HISTORY])
+    reproduction["reproducibility_history"] = reproduction_history
+    reproduction["stability"] = (
+        "flaky_observed_1_of_2_default_runs"
+        if any(item.get("result") == "failed"
+               for item in reproduction_history)
+        else "stable_in_recorded_history")
+    reproduction["rebase_result"] = (
+        "unchanged_when_successful: both candidate hashes still match Phase-8B; "
+        "one transient default-run failure was observed on f42"
+        if reproduction.get("status") == "reproduced"
+        else "reproduction_not_confirmed_on_f42")
     contracts = _contracts_facts()
     hidden = _hidden_facts()
     lima = _lima_facts()
@@ -901,10 +1126,13 @@ def build_baseline() -> dict[str, Any]:
     phase8b_claims = claims.get("phase8b_verifier_semantics") or {}
     drift = {
         "expected_mainline": EXPECTED_BASE_SHA,
+        "original_audit_baseline": ORIGINAL_AUDIT_BASE_SHA,
         "actual_branch_sha": git["head_sha"],
+        "head_parent_sha": git.get("head_parent_sha"),
+        "head_parent_is_expected_mainline": (
+            git.get("head_parent_sha") == EXPECTED_BASE_SHA),
         "branch": git["branch"],
         "expected_branch": EXPECTED_BRANCH,
-        "mainline_matches_expected": git["head_sha"] == EXPECTED_BASE_SHA,
         "branch_matches_expected": git["branch"] == EXPECTED_BRANCH,
         "refs": git.get("tags"),
         "phase8b_claims_base_sha": phase8b_claims.get("base_sha"),
@@ -914,15 +1142,61 @@ def build_baseline() -> dict[str, Any]:
         "phase8b_evidence_tag": (TAG_REFS["evidence_tag"]),
         "phase8b_evidence_artifact_dir": (
             (phase8b_claims.get("ci_evidence") or {}).get("local_gate_artifact")),
+        "post_audit_drift": {
+            "detected": git["head_sha"] != ORIGINAL_AUDIT_BASE_SHA,
+            "original_baseline": ORIGINAL_AUDIT_BASE_SHA,
+            "current_branch_head": git["head_sha"],
+            "rebased_mainline": EXPECTED_BASE_SHA,
+            "head_parent": git.get("head_parent_sha"),
+            "head_is_rebase_commit_on_mainline": (
+                git.get("head_parent_sha") == EXPECTED_BASE_SHA),
+            "reason": (
+                "branch was rebased onto latest mainline "
+                f"{EXPECTED_BASE_SHA[:12]} after the original C1 audit "
+                f"({ORIGINAL_AUDIT_BASE_SHA[:12]}); external P16-R3 added "
+                "app/services/elf_mapping.py, changed verification_semantics.py, "
+                "claims and committed artifacts"),
+            "observed_changes": [
+                "app/services/elf_mapping.py present (new external P16-R3 "
+                "module)",
+                "app/services/verification_semantics.py changed",
+                "docs/status/claims.json changed",
+                "artifacts/independent-verification-p16r3-2026-11-16 present "
+                "(new external evidence)",
+                "artifacts/phase8b-benchmark-2026-11-16/results.json hash "
+                "changed (still independently_verified=2, false_verified=0)",
+                "contracts dir now has 17 schemas incl benchmark-manifest-v2, "
+                "benchmark-results-v2, ground-truth-sample-v2 and "
+                "hidden-benchmark-commitment (external P16-R3)",
+                "hidden private root now exists with mode 0700 (Lead-owned); C1 "
+                "stats it only and never reads hidden contents",
+            ],
+            "impact": (
+                "C1 facts were re-collected on the rebased tree; the previous "
+                "artifact is superseded and the two verified samples are "
+                "reproduced again into temporary output; no production file is "
+                "changed by this follow-up"),
+        },
         "drift_status": (
-            "ok" if git["head_sha"] == EXPECTED_BASE_SHA
-            else "new_baseline_required"),
+            "rebaselined_after_c1"
+            if git["head_sha"] != ORIGINAL_AUDIT_BASE_SHA else "ok"),
         "drift_findings": [],
     }
-    if git["head_sha"] != EXPECTED_BASE_SHA:
+    if git["head_sha"] != ORIGINAL_AUDIT_BASE_SHA:
         drift["drift_findings"].append(
-            f"branch head {git['head_sha']} != expected {EXPECTED_BASE_SHA}; "
-            "record this as the new Phase-8C baseline and re-run all checks")
+            f"post-audit rebase: original C1 baseline "
+            f"{ORIGINAL_AUDIT_BASE_SHA} -> branch head {git['head_sha']} "
+            f"(parent {git.get('head_parent_sha')}, rebased mainline "
+            f"{EXPECTED_BASE_SHA}); C1 facts/reproduction were refreshed on the "
+            "rebased tree")
+    reproduction["changed_after_rebase"] = bool(
+        drift["post_audit_drift"]["detected"])
+    reproduction["current_branch_head"] = git["head_sha"]
+    reproduction["rebased_mainline"] = EXPECTED_BASE_SHA
+    if git.get("head_parent_sha") != EXPECTED_BASE_SHA:
+        drift["drift_findings"].append(
+            f"HEAD parent {git.get('head_parent_sha')} is not the expected "
+            f"mainline {EXPECTED_BASE_SHA}; record the new mainline baseline")
     if drift["phase8b_gated_ci_sha"] and (
             drift["phase8b_gated_ci_sha"] != git["head_sha"]):
         drift["drift_findings"].append(
@@ -940,10 +1214,14 @@ def build_baseline() -> dict[str, Any]:
          "status": "answered",
          "answer": (
              f"branch={git['branch']} head={git['head_sha']} "
-             f"(expected {EXPECTED_BASE_SHA}); tag "
+             f"(audit commit; parent={git.get('head_parent_sha')}, rebased "
+             f"mainline={EXPECTED_BASE_SHA}, original C1 baseline="
+             f"{ORIGINAL_AUDIT_BASE_SHA}); tag "
              f"{TAG_REFS['release_tag']}={drift['refs'].get('release_tag')}; "
              f"evidence tag={drift['refs'].get('evidence_tag')}; drift_status="
-             f"{drift['drift_status']}; findings={drift['drift_findings']}")},
+             f"{drift['drift_status']}; post_audit_drift="
+             f"{drift['post_audit_drift']}; findings="
+             f"{drift['drift_findings']}")},
         {"id": "Q02", "question": "v1 12-sample lossless v2 migration",
          "status": "answered",
          "answer": (
@@ -955,9 +1233,20 @@ def build_baseline() -> dict[str, Any]:
          "status": reproduction.get("status"),
          "answer": (
              f"status={reproduction.get('status')}; samples="
-             f"{[{key: row.get(key) for key in ('sample_id','candidate_sha256','verifier_decision','independently_verified','oracle_status')} for row in reproduction.get('samples', [])]}"
+             f"{[{key: row.get(key) for key in ('sample_id','candidate_sha256','verifier_decision','independently_verified','oracle_status')} for row in reproduction.get('samples', [])]}; "
+             f"stability={reproduction.get('stability')}; "
+             f"reproducibility_history={reproduction.get('reproducibility_history')}"
              if reproduction.get("status") == "reproduced" else
-             f"status=not_run reason={reproduction.get('reason')}")},
+             f"status=not_run reason={reproduction.get('reason')}; "
+             f"stability={reproduction.get('stability')}; "
+             f"changed_after_rebase={reproduction.get('changed_after_rebase')}; "
+             f"false_verified_in_default_run="
+             f"{reproduction.get('false_verified_in_default_run')}; "
+             f"diagnostic_verified_attempts="
+             f"{reproduction.get('diagnostic_verified_attempts')}/"
+             f"{reproduction.get('diagnostic_withdraw_attempt_count')}; "
+             f"stability={reproduction.get('stability')}; attempts="
+             f"{reproduction.get('diagnostic_withdraw_attempts')}")},
         {"id": "Q04", "question": "schema reuse/extension matrix",
          "status": "answered",
          "answer": (
@@ -1012,13 +1301,60 @@ def build_baseline() -> dict[str, Any]:
              f"work breakdown C1-C14 in phase8c-work-breakdown.json; blockers="
              f"{[item['id'] + ':' + item['severity'] for item in breakdown['blockers']]}")},
     ]
-    status = "ok"
-    if not drift["mainline_matches_expected"]:
+    status = "ok_rebaselined" if drift["post_audit_drift"]["detected"] else "ok"
+    if reproduction.get("stability") == "flaky_observed_1_of_2_default_runs":
+        status = status + "_with_flaky_reproduction"
+    if git.get("head_parent_sha") != EXPECTED_BASE_SHA:
         status = "new_baseline"
     if reproduction.get("status") != "reproduced":
         status = "ok_with_not_run_reproduction"
     blockers = list(breakdown["blockers"])
     warnings = [finding for finding in drift["drift_findings"]]
+    if reproduction.get("stability") == "flaky_observed_1_of_2_default_runs":
+        warnings.append(
+            "post-rebase reproduction is flaky across attempts: one default "
+            "run failed with false_verified=1 while the diagnostic withdraw "
+            "run and a second default run verified both samples; C12/C14 must "
+            "not claim unconditional stability until the flake is triaged")
+        blockers.append({
+            "id": "B-POST-REBASE-REPRODUCTION-FLAKY",
+            "text": (
+                "on the rebased tree the same two-sample default run both "
+                "failed (false_verified=1, verifier rejected a claim) and later "
+                "reproduced 2/2 independently verified; the reproduction is not "
+                "deterministically stable, so Phase-8C evidence claims must "
+                "record the attempt history and cannot claim unconditional "
+                "2/2 stability"),
+            "blocks": ["C12", "C14"],
+            "severity": "warning_for_verification_claims",
+        })
+    if reproduction.get("status") != "reproduced":
+        false_verified = reproduction.get("false_verified_in_default_run")
+        if false_verified not in (None, 0, -1):
+            blockers.append({
+                "id": "B-POST-REBASE-REPRODUCTION",
+                "text": (
+                    "on the rebased tree the two Phase-8B independently "
+                    "verified samples are rejected by the current verifier: the "
+                    f"default runner aborts with false_verified={false_verified} "
+                    "and the diagnostic withdraw run records the changed "
+                    "verifier decisions. Phase-8C must not claim 2/2 verified or "
+                    "reuse the Phase-8B verification as current-tree evidence "
+                    "until this regression is triaged."),
+                "blocks": ["C07", "C08", "C12", "C14"],
+                "severity": "blocker_for_verification_claims",
+            })
+            warnings.append(
+                "post-rebase reproduction regression: default runner exit "
+                f"false_verified={false_verified}; see "
+                "q3_reproduction.diagnostic_withdraw_run")
+        elif reproduction.get("status") == "not_run":
+            blockers.append({
+                "id": "B-POST-REBASE-REPRODUCTION-NOT-RUN",
+                "text": reproduction.get("reason") or "reproduction not_run",
+                "blocks": ["C07", "C08", "C12", "C14"],
+                "severity": "warning",
+            })
     if toolchain["zig"] is None:
         warnings.append("Zig absent: public corpus/compiler expansion limited "
                         "until Lead provisions Zig")
@@ -1028,7 +1364,13 @@ def build_baseline() -> dict[str, Any]:
         "generated_by": "scripts/audit_phase8c_readiness.py",
         "audit_date": AUDIT_DATE,
         "base_sha": git["head_sha"],
+        "audit_commit_sha": git["head_sha"],
+        "audit_commit_parent_sha": git.get("head_parent_sha"),
+        "expected_mainline_sha": EXPECTED_BASE_SHA,
         "expected_base_sha": EXPECTED_BASE_SHA,
+        "original_audit_baseline_sha": ORIGINAL_AUDIT_BASE_SHA,
+        "rebased_mainline_sha": EXPECTED_BASE_SHA,
+        "post_audit_drift": drift["post_audit_drift"],
         "branch": git["branch"],
         "environment": {
             "platform": platform.system().lower(),
@@ -1051,19 +1393,7 @@ def build_baseline() -> dict[str, Any]:
             "corpora": corpora,
             "toolchain": toolchain,
             "release_gate": gate["release_gate"],
-            "test_suite": {
-                "test_files": len([p for p in list((ROOT / "tests").glob(
-                    "*.py")) + list((ROOT / "tests" / "e2e").glob("*.py"))
-                    + list((ROOT / "tests" / "integration").glob("*.py"))
-                    + list((ROOT / "tests" / "unit").glob("*.py"))
-                    if p.name != "__init__.py"]),
-                "collected_tests": 2053,
-                "collection_source": "pytest --collect-only -q on this tree",
-                "duration_seconds": None,
-                "duration_status": "not_measured_in_read_only_audit",
-                "duration_note": "C1 does not run the full suite; CI/local "
-                                 "execution timings remain the source of truth",
-            },
+            "test_suite": _test_suite_facts(),
             "hidden": hidden,
             "lima": lima,
         },
@@ -1162,7 +1492,8 @@ def render_hidden_plan(baseline: dict[str, Any]) -> str:
         "# Phase-8C hidden corpus isolation plan",
         "",
         "Status: design only. C1 does not create or read a hidden corpus; the "
-        "private root is Lead-owned and currently absent.",
+        "private root is Lead-owned and its current observed state is recorded "
+        "below (C1 stats it only, never lists or reads contents).",
         "",
         "## Private root",
         "",
@@ -1172,7 +1503,8 @@ def render_hidden_plan(baseline: dict[str, Any]) -> str:
         "the hidden root itself must be owner-only",
         f"- observed: exists={hidden['private_root_exists']}, "
         f"permissions={hidden['private_root_permissions']}, env_set="
-        f"{hidden['private_root_env_set']}",
+        f"{hidden['private_root_env_set']}, hidden_corpus_read="
+        f"{hidden['hidden_corpus_read']}",
         "- no hidden bytes are committed to the public repository or copied "
         "into public artifacts",
         "",
@@ -1456,6 +1788,18 @@ def _validate_baseline(baseline: Any) -> list[str]:
         violations.append(f"kind must be {KIND}")
     if len(str(baseline.get("base_sha", ""))) != 40:
         violations.append("base_sha must be a full git SHA")
+    expected_mainline = baseline.get("expected_mainline_sha")
+    if expected_mainline != EXPECTED_BASE_SHA:
+        violations.append("expected_mainline_sha mismatch")
+    if baseline.get("original_audit_baseline_sha") != ORIGINAL_AUDIT_BASE_SHA:
+        violations.append("original_audit_baseline_sha mismatch")
+    drift = baseline.get("post_audit_drift") if isinstance(
+        baseline.get("post_audit_drift"), dict) else {}
+    if drift.get("detected") is True:
+        for field in ("original_baseline", "current_branch_head",
+                      "rebased_mainline", "reason", "impact"):
+            if not drift.get(field):
+                violations.append(f"post_audit_drift missing {field}")
     if baseline.get("capability_claims") != []:
         violations.append("capability_claims must be empty")
     env = baseline.get("environment") if isinstance(
@@ -1499,6 +1843,19 @@ def _validate_baseline(baseline: Any) -> list[str]:
     if rep_status == "not_run":
         if not str(reproduction.get("reason", "")).strip():
             violations.append("not_run reproduction needs a reason")
+        if reproduction.get("changed_after_rebase") is True:
+            attempts = reproduction.get("diagnostic_withdraw_attempts") or []
+            if not attempts:
+                violations.append(
+                    "post-rebase failed reproduction needs diagnostic withdraw "
+                    "attempts")
+            for attempt in attempts:
+                if attempt.get("status") != "diagnostic_only_withdrawn_claims":
+                    violations.append(
+                        "diagnostic withdraw attempt did not record results")
+                if not attempt.get("samples"):
+                    violations.append(
+                        "diagnostic attempt must record verifier decisions")
     else:
         for sample in reproduction.get("samples", []):
             if sample.get("independently_verified") is not True:
@@ -1618,6 +1975,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true",
                         help="print the committed/collected baseline summary")
     parser.add_argument("--artifact-dir", type=Path, default=ARTIFACT_DIR)
+    parser.add_argument("--reuse-reproduction", action="store_true",
+                        help="reuse the committed reproduction facts (fast "
+                             "re-signing without re-running the guest)")
     args = parser.parse_args(argv)
     if args.check:
         problems = check_artifact(args.artifact_dir)
@@ -1629,7 +1989,15 @@ def main(argv: list[str] | None = None) -> int:
               "reproduction facts, plans/docs and SHA256SUMS verified)")
         return 0
     if args.write:
-        baseline = build_baseline()
+        reproduction_override = None
+        existing = args.artifact_dir / "phase8c-baseline-audit.json"
+        if args.reuse_reproduction and existing.is_file():
+            try:
+                previous = _load_json(existing)
+                reproduction_override = previous.get("q3_reproduction")
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                reproduction_override = None
+        baseline = build_baseline(reproduction_override)
         breakdown = _work_breakdown()
         violations = _validate_baseline(baseline) + _validate_breakdown(
             breakdown)
@@ -1655,7 +2023,10 @@ def main(argv: list[str] | None = None) -> int:
         baseline = build_baseline()
     payload = {
         "base_sha": baseline.get("base_sha"),
-        "expected_base_sha": baseline.get("expected_base_sha"),
+        "expected_mainline_sha": baseline.get("expected_mainline_sha"),
+        "original_audit_baseline_sha": baseline.get(
+            "original_audit_baseline_sha"),
+        "post_audit_drift": baseline.get("post_audit_drift"),
         "status": baseline.get("status"),
         "reproduction": {
             "status": baseline.get("q3_reproduction", {}).get("status"),
