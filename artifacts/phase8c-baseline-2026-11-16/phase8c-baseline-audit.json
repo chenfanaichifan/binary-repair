@@ -1,47 +1,81 @@
 {
-  "audit_commit_parent_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
-  "audit_commit_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+  "audit_commit_parent_sha": "a97dd703b6e4210883658a08dd013f118b37f4b2",
+  "audit_commit_sha": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
   "audit_date": "2026-11-16",
-  "base_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+  "base_sha": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
   "baseline": {
     "drift": {
-      "actual_branch_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+      "actual_branch_sha": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
       "branch": "feature/phase8c-ground-truth-v2",
       "branch_matches_expected": true,
       "drift_findings": [
-        "post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> branch head 6d7ad861694e287cf446cdc195990bcf7889dd2c (parent f42e6c4f39b584575f59b13d67f40572b3ca278c, rebased mainline f42e6c4f39b584575f59b13d67f40572b3ca278c); C1 facts/reproduction were refreshed on the rebased tree",
-        "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 6d7ad861694e287cf446cdc195990bcf7889dd2c; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
+        "post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> f42e6c4f39b584575f59b13d67f40572b3ca278c -> current mainline a1755a5e661665218da93e967a535e359932975a; branch head 910e4f7b8361dca25bb765a34cc603afff2e11f3 is 10 first-parent commit(s) after the mainline; C1 facts/reproduction were refreshed on the final rebased tree",
+        "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 910e4f7b8361dca25bb765a34cc603afff2e11f3; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
         "the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally"
       ],
       "drift_status": "rebaselined_after_c1",
       "expected_branch": "feature/phase8c-ground-truth-v2",
-      "expected_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
-      "head_parent_is_expected_mainline": true,
-      "head_parent_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+      "expected_mainline": "a1755a5e661665218da93e967a535e359932975a",
+      "first_parent_chain": [
+        "910e4f7b8361dca25bb765a34cc603afff2e11f3",
+        "a97dd703b6e4210883658a08dd013f118b37f4b2",
+        "f8476a975420245fee91964d057bc565ca2cb714",
+        "c5bc31a9ba923780026c8833d5439371c51a2743",
+        "a45b20518de00ee0048303e71898981277da2438",
+        "fe3c614d04cb084f9f564f5c5eb74054d7e44253",
+        "fd17af494f40b94542ccb9ee68333c9b5ddcdd36",
+        "c42dbc8dd058135d1ee7b771c087b75b9a62d5ae",
+        "07bf5029501e08cd61592c1de7b330f1dd46c04a",
+        "fe49a22470386d1f94661e9da6fd34f364f1958e",
+        "a1755a5e661665218da93e967a535e359932975a",
+        "658ff8c5e8182a2a6ded5851eed46ff3db44297d"
+      ],
+      "head_parent_is_expected_mainline": false,
+      "head_parent_sha": "a97dd703b6e4210883658a08dd013f118b37f4b2",
+      "mainline_ancestor_depth": 10,
+      "mainline_ancestor_sha": "a1755a5e661665218da93e967a535e359932975a",
+      "mainline_in_first_parent_chain": true,
       "original_audit_baseline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
       "phase8b_claims_base_sha": "dad21c985694b2d16a722256eaed6bd6131bb9cd",
       "phase8b_evidence_artifact_dir": "artifacts/release-gate-2026-11-16-phase8b",
       "phase8b_evidence_tag": "release-2026-11-16-phase8b-evidence",
       "phase8b_gated_ci_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
       "post_audit_drift": {
-        "current_branch_head": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+        "current_branch_head": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
         "detected": true,
+        "first_parent_chain": [
+          "910e4f7b8361dca25bb765a34cc603afff2e11f3",
+          "a97dd703b6e4210883658a08dd013f118b37f4b2",
+          "f8476a975420245fee91964d057bc565ca2cb714",
+          "c5bc31a9ba923780026c8833d5439371c51a2743",
+          "a45b20518de00ee0048303e71898981277da2438",
+          "fe3c614d04cb084f9f564f5c5eb74054d7e44253",
+          "fd17af494f40b94542ccb9ee68333c9b5ddcdd36",
+          "c42dbc8dd058135d1ee7b771c087b75b9a62d5ae",
+          "07bf5029501e08cd61592c1de7b330f1dd46c04a",
+          "fe49a22470386d1f94661e9da6fd34f364f1958e",
+          "a1755a5e661665218da93e967a535e359932975a",
+          "658ff8c5e8182a2a6ded5851eed46ff3db44297d"
+        ],
         "head_is_rebase_commit_on_mainline": true,
-        "head_parent": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
-        "impact": "C1 facts were re-collected on the rebased tree; the previous artifact is superseded and the two verified samples are reproduced again into temporary output; no production file is changed by this follow-up",
+        "head_parent": "a97dd703b6e4210883658a08dd013f118b37f4b2",
+        "impact": "C1 facts are re-collected on the final a1755a5-ordered tree; this artifact supersedes the f42 rebind and is the final C1 baseline record; the two Phase-8B samples are reproduced again into temporary output and the documented flake warning remains without blocking C12/C14",
+        "mainline_ancestor": "a1755a5e661665218da93e967a535e359932975a",
+        "mainline_ancestor_depth": 10,
         "observed_changes": [
-          "app/services/elf_mapping.py present (new external P16-R3 module)",
-          "app/services/verification_semantics.py changed",
-          "docs/status/claims.json changed",
-          "artifacts/independent-verification-p16r3-2026-11-16 present (new external evidence)",
-          "artifacts/phase8b-benchmark-2026-11-16/results.json hash changed (still independently_verified=2, false_verified=0)",
-          "contracts dir now has 17 schemas incl benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2 and hidden-benchmark-commitment (external P16-R3)",
-          "hidden private root now exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents"
+          "external P21-P24 artifacts present (p21-p16r3-profile, p22-artifact-audit, p23-smoke, p23-stability-partial); claims/artifacts changed",
+          "contracts dir remains 17 schemas (manifest/results/ground-truth/hidden-commitment v2 contracts)",
+          "benchmark/phase8c/manifest.json is d46f06bf... (32 public samples; 24 runtime / 8 analysis-only overall; core 28 = 20 runtime + 8 analysis-only)",
+          "hidden private root exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents",
+          "C4 hidden commitment (8 samples = 6 runtime + 2 analysis-only) and C6 hidden aggregate (8/8 executed, 0 verified, 0 false) are now available",
+          "C6/C10 public benchmark results include a hidden aggregate; two serialized repeats are identical (results sha a477ea3c...) with 2 independent verifications, 1 heap-malloc withdrawn claim and published false_verified=0"
         ],
         "original_baseline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
-        "reason": "branch was rebased onto latest mainline f42e6c4f39b5 after the original C1 audit (227f45b39d85); external P16-R3 added app/services/elf_mapping.py, changed verification_semantics.py, claims and committed artifacts",
-        "rebased_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c"
+        "previous_rebase_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+        "reason": "branch was rebased original 227f45b39d85 -> f42e6c4f39b5 -> current mainline a1755a5e6616; external P21-P24 commits landed before the Phase-8C commits and no Phase-8C file conflict was observed; the branch now also contains the C1-C13 commits",
+        "rebased_mainline": "a1755a5e661665218da93e967a535e359932975a"
       },
+      "previous_rebase_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
       "refs": {
         "evidence_branch": {
           "ref": "release/2026-11-16-phase8b-evidence",
@@ -59,8 +93,24 @@
     },
     "git": {
       "branch": "feature/phase8c-ground-truth-v2",
-      "head_parent_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
-      "head_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+      "first_parent_chain": [
+        "910e4f7b8361dca25bb765a34cc603afff2e11f3",
+        "a97dd703b6e4210883658a08dd013f118b37f4b2",
+        "f8476a975420245fee91964d057bc565ca2cb714",
+        "c5bc31a9ba923780026c8833d5439371c51a2743",
+        "a45b20518de00ee0048303e71898981277da2438",
+        "fe3c614d04cb084f9f564f5c5eb74054d7e44253",
+        "fd17af494f40b94542ccb9ee68333c9b5ddcdd36",
+        "c42dbc8dd058135d1ee7b771c087b75b9a62d5ae",
+        "07bf5029501e08cd61592c1de7b330f1dd46c04a",
+        "fe49a22470386d1f94661e9da6fd34f364f1958e",
+        "a1755a5e661665218da93e967a535e359932975a",
+        "658ff8c5e8182a2a6ded5851eed46ff3db44297d"
+      ],
+      "head_parent_sha": "a97dd703b6e4210883658a08dd013f118b37f4b2",
+      "head_sha": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
+      "mainline_ancestor_depth": 10,
+      "mainline_ancestor_sha": "a1755a5e661665218da93e967a535e359932975a",
       "source": "read-only .git metadata files (no git commands)",
       "tags": {
         "evidence_branch": {
@@ -116,17 +166,6 @@
     },
     {
       "blocks": [
-        "C05",
-        "C06",
-        "C08",
-        "C11"
-      ],
-      "id": "B-HIDDEN-ROOT",
-      "severity": "coordination_required_for_hidden_paths",
-      "text": "Hidden private root is Lead-owned and now exists with mode 0700; C1 stats it only and never reads hidden contents. hidden_available remains false and no hidden run is claimed; C05/C06/C08/C11 still require Lead coordination and must keep hidden results not_run until executed under the private root."
-    },
-    {
-      "blocks": [
         "C04"
       ],
       "id": "B-TOOLCHAIN-ZIG",
@@ -140,15 +179,6 @@
       "id": "B-GATE-COUNT",
       "severity": "warning",
       "text": "Measured release-gate checks: release=12, nightly=13, pr=4; the task premise says 13 required. C10 must confirm the release-mode count with the Lead before claiming it."
-    },
-    {
-      "blocks": [
-        "C12",
-        "C14"
-      ],
-      "id": "B-POST-REBASE-REPRODUCTION-FLAKY",
-      "severity": "warning_for_verification_claims",
-      "text": "on the rebased tree the same two-sample default run both failed (false_verified=1, verifier rejected a claim) and later reproduced 2/2 independently verified; the reproduction is not deterministically stable, so Phase-8C evidence claims must record the attempt history and cannot claim unconditional 2/2 stability"
     }
   ],
   "branch": "feature/phase8c-ground-truth-v2",
@@ -175,8 +205,8 @@
       "zig": null
     }
   },
-  "expected_base_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
-  "expected_mainline_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+  "expected_base_sha": "a1755a5e661665218da93e967a535e359932975a",
+  "expected_mainline_sha": "a1755a5e661665218da93e967a535e359932975a",
   "facts": {
     "contracts": {
       "benchmark_sample_properties": [
@@ -569,12 +599,12 @@
       "v1_benchmark_checks_unchanged_design": true
     },
     "test_suite": {
-      "collected_tests": 2105,
+      "collected_tests": 2232,
       "collection_source": "pytest --collect-only -q on this tree",
       "duration_note": "C1 does not run the full suite; CI/local execution timings remain the source of truth",
       "duration_seconds": null,
       "duration_status": "not_measured_in_read_only_audit",
-      "test_files": 226
+      "test_files": 237
     },
     "toolchain": {
       "clang": "/usr/bin/clang",
@@ -945,32 +975,48 @@
   "limitations": [
     "read-only audit: no production code/contracts/CI/claims/benchmark-v1/release-gate/Phase-8A-B artifacts were modified",
     "Phase-8B evidence is bound to its gated SHA, not necessarily the current mainline; Phase-8C must record its own evidence SHA",
-    "hidden corpus is Lead-owned and absent; hidden paths are designed but not executed in C1",
+    "hidden corpus is Lead-owned and exists; C1 records committed aggregate counts only and never reads hidden content",
     "full test-suite duration is not measured in C1; collected test count is recorded",
-    "Lima serialization is a design proposal; no global lock exists yet",
+    "Lima serialization was implemented by C11; C1 records the historical inventory/design rather than re-validating it",
     "dynamic reproduction depends on the local guest; not_run is recorded truthfully when unavailable"
   ],
   "no_new_repair_capability": true,
   "no_verified_upgrade": true,
   "original_audit_baseline_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
   "post_audit_drift": {
-    "current_branch_head": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+    "current_branch_head": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
     "detected": true,
+    "first_parent_chain": [
+      "910e4f7b8361dca25bb765a34cc603afff2e11f3",
+      "a97dd703b6e4210883658a08dd013f118b37f4b2",
+      "f8476a975420245fee91964d057bc565ca2cb714",
+      "c5bc31a9ba923780026c8833d5439371c51a2743",
+      "a45b20518de00ee0048303e71898981277da2438",
+      "fe3c614d04cb084f9f564f5c5eb74054d7e44253",
+      "fd17af494f40b94542ccb9ee68333c9b5ddcdd36",
+      "c42dbc8dd058135d1ee7b771c087b75b9a62d5ae",
+      "07bf5029501e08cd61592c1de7b330f1dd46c04a",
+      "fe49a22470386d1f94661e9da6fd34f364f1958e",
+      "a1755a5e661665218da93e967a535e359932975a",
+      "658ff8c5e8182a2a6ded5851eed46ff3db44297d"
+    ],
     "head_is_rebase_commit_on_mainline": true,
-    "head_parent": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
-    "impact": "C1 facts were re-collected on the rebased tree; the previous artifact is superseded and the two verified samples are reproduced again into temporary output; no production file is changed by this follow-up",
+    "head_parent": "a97dd703b6e4210883658a08dd013f118b37f4b2",
+    "impact": "C1 facts are re-collected on the final a1755a5-ordered tree; this artifact supersedes the f42 rebind and is the final C1 baseline record; the two Phase-8B samples are reproduced again into temporary output and the documented flake warning remains without blocking C12/C14",
+    "mainline_ancestor": "a1755a5e661665218da93e967a535e359932975a",
+    "mainline_ancestor_depth": 10,
     "observed_changes": [
-      "app/services/elf_mapping.py present (new external P16-R3 module)",
-      "app/services/verification_semantics.py changed",
-      "docs/status/claims.json changed",
-      "artifacts/independent-verification-p16r3-2026-11-16 present (new external evidence)",
-      "artifacts/phase8b-benchmark-2026-11-16/results.json hash changed (still independently_verified=2, false_verified=0)",
-      "contracts dir now has 17 schemas incl benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2 and hidden-benchmark-commitment (external P16-R3)",
-      "hidden private root now exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents"
+      "external P21-P24 artifacts present (p21-p16r3-profile, p22-artifact-audit, p23-smoke, p23-stability-partial); claims/artifacts changed",
+      "contracts dir remains 17 schemas (manifest/results/ground-truth/hidden-commitment v2 contracts)",
+      "benchmark/phase8c/manifest.json is d46f06bf... (32 public samples; 24 runtime / 8 analysis-only overall; core 28 = 20 runtime + 8 analysis-only)",
+      "hidden private root exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents",
+      "C4 hidden commitment (8 samples = 6 runtime + 2 analysis-only) and C6 hidden aggregate (8/8 executed, 0 verified, 0 false) are now available",
+      "C6/C10 public benchmark results include a hidden aggregate; two serialized repeats are identical (results sha a477ea3c...) with 2 independent verifications, 1 heap-malloc withdrawn claim and published false_verified=0"
     ],
     "original_baseline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
-    "reason": "branch was rebased onto latest mainline f42e6c4f39b5 after the original C1 audit (227f45b39d85); external P16-R3 added app/services/elf_mapping.py, changed verification_semantics.py, claims and committed artifacts",
-    "rebased_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c"
+    "previous_rebase_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+    "reason": "branch was rebased original 227f45b39d85 -> f42e6c4f39b5 -> current mainline a1755a5e6616; external P21-P24 commits landed before the Phase-8C commits and no Phase-8C file conflict was observed; the branch now also contains the C1-C13 commits",
+    "rebased_mainline": "a1755a5e661665218da93e967a535e359932975a"
   },
   "q10_work_breakdown": {
     "blockers": [
@@ -982,17 +1028,6 @@
         "id": "B-P8B-EVIDENCE-BINDING",
         "severity": "warning",
         "text": "Phase-8B release evidence is bound to gated SHA c5d87b5, not the current mainline 227f45b; Phase-8C must bind its own base/gated SHA and may not reuse the evidence as if it covered the Phase-8C tree."
-      },
-      {
-        "blocks": [
-          "C05",
-          "C06",
-          "C08",
-          "C11"
-        ],
-        "id": "B-HIDDEN-ROOT",
-        "severity": "coordination_required_for_hidden_paths",
-        "text": "Hidden private root is Lead-owned and now exists with mode 0700; C1 stats it only and never reads hidden contents. hidden_available remains false and no hidden run is claimed; C05/C06/C08/C11 still require Lead coordination and must keep hidden results not_run until executed under the private root."
       },
       {
         "blocks": [
@@ -1009,15 +1044,6 @@
         "id": "B-GATE-COUNT",
         "severity": "warning",
         "text": "Measured release-gate checks: release=12, nightly=13, pr=4; the task premise says 13 required. C10 must confirm the release-mode count with the Lead before claiming it."
-      },
-      {
-        "blocks": [
-          "C12",
-          "C14"
-        ],
-        "id": "B-POST-REBASE-REPRODUCTION-FLAKY",
-        "severity": "warning_for_verification_claims",
-        "text": "on the rebased tree the same two-sample default run both failed (false_verified=1, verifier rejected a claim) and later reproduced 2/2 independently verified; the reproduction is not deterministically stable, so Phase-8C evidence claims must record the attempt history and cannot claim unconditional 2/2 stability"
       }
     ],
     "hard_acceptance": {
@@ -1031,43 +1057,77 @@
   },
   "q1_baseline_drift": {
     "drift": {
-      "actual_branch_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+      "actual_branch_sha": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
       "branch": "feature/phase8c-ground-truth-v2",
       "branch_matches_expected": true,
       "drift_findings": [
-        "post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> branch head 6d7ad861694e287cf446cdc195990bcf7889dd2c (parent f42e6c4f39b584575f59b13d67f40572b3ca278c, rebased mainline f42e6c4f39b584575f59b13d67f40572b3ca278c); C1 facts/reproduction were refreshed on the rebased tree",
-        "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 6d7ad861694e287cf446cdc195990bcf7889dd2c; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
+        "post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> f42e6c4f39b584575f59b13d67f40572b3ca278c -> current mainline a1755a5e661665218da93e967a535e359932975a; branch head 910e4f7b8361dca25bb765a34cc603afff2e11f3 is 10 first-parent commit(s) after the mainline; C1 facts/reproduction were refreshed on the final rebased tree",
+        "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 910e4f7b8361dca25bb765a34cc603afff2e11f3; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
         "the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally"
       ],
       "drift_status": "rebaselined_after_c1",
       "expected_branch": "feature/phase8c-ground-truth-v2",
-      "expected_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
-      "head_parent_is_expected_mainline": true,
-      "head_parent_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+      "expected_mainline": "a1755a5e661665218da93e967a535e359932975a",
+      "first_parent_chain": [
+        "910e4f7b8361dca25bb765a34cc603afff2e11f3",
+        "a97dd703b6e4210883658a08dd013f118b37f4b2",
+        "f8476a975420245fee91964d057bc565ca2cb714",
+        "c5bc31a9ba923780026c8833d5439371c51a2743",
+        "a45b20518de00ee0048303e71898981277da2438",
+        "fe3c614d04cb084f9f564f5c5eb74054d7e44253",
+        "fd17af494f40b94542ccb9ee68333c9b5ddcdd36",
+        "c42dbc8dd058135d1ee7b771c087b75b9a62d5ae",
+        "07bf5029501e08cd61592c1de7b330f1dd46c04a",
+        "fe49a22470386d1f94661e9da6fd34f364f1958e",
+        "a1755a5e661665218da93e967a535e359932975a",
+        "658ff8c5e8182a2a6ded5851eed46ff3db44297d"
+      ],
+      "head_parent_is_expected_mainline": false,
+      "head_parent_sha": "a97dd703b6e4210883658a08dd013f118b37f4b2",
+      "mainline_ancestor_depth": 10,
+      "mainline_ancestor_sha": "a1755a5e661665218da93e967a535e359932975a",
+      "mainline_in_first_parent_chain": true,
       "original_audit_baseline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
       "phase8b_claims_base_sha": "dad21c985694b2d16a722256eaed6bd6131bb9cd",
       "phase8b_evidence_artifact_dir": "artifacts/release-gate-2026-11-16-phase8b",
       "phase8b_evidence_tag": "release-2026-11-16-phase8b-evidence",
       "phase8b_gated_ci_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
       "post_audit_drift": {
-        "current_branch_head": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+        "current_branch_head": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
         "detected": true,
+        "first_parent_chain": [
+          "910e4f7b8361dca25bb765a34cc603afff2e11f3",
+          "a97dd703b6e4210883658a08dd013f118b37f4b2",
+          "f8476a975420245fee91964d057bc565ca2cb714",
+          "c5bc31a9ba923780026c8833d5439371c51a2743",
+          "a45b20518de00ee0048303e71898981277da2438",
+          "fe3c614d04cb084f9f564f5c5eb74054d7e44253",
+          "fd17af494f40b94542ccb9ee68333c9b5ddcdd36",
+          "c42dbc8dd058135d1ee7b771c087b75b9a62d5ae",
+          "07bf5029501e08cd61592c1de7b330f1dd46c04a",
+          "fe49a22470386d1f94661e9da6fd34f364f1958e",
+          "a1755a5e661665218da93e967a535e359932975a",
+          "658ff8c5e8182a2a6ded5851eed46ff3db44297d"
+        ],
         "head_is_rebase_commit_on_mainline": true,
-        "head_parent": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
-        "impact": "C1 facts were re-collected on the rebased tree; the previous artifact is superseded and the two verified samples are reproduced again into temporary output; no production file is changed by this follow-up",
+        "head_parent": "a97dd703b6e4210883658a08dd013f118b37f4b2",
+        "impact": "C1 facts are re-collected on the final a1755a5-ordered tree; this artifact supersedes the f42 rebind and is the final C1 baseline record; the two Phase-8B samples are reproduced again into temporary output and the documented flake warning remains without blocking C12/C14",
+        "mainline_ancestor": "a1755a5e661665218da93e967a535e359932975a",
+        "mainline_ancestor_depth": 10,
         "observed_changes": [
-          "app/services/elf_mapping.py present (new external P16-R3 module)",
-          "app/services/verification_semantics.py changed",
-          "docs/status/claims.json changed",
-          "artifacts/independent-verification-p16r3-2026-11-16 present (new external evidence)",
-          "artifacts/phase8b-benchmark-2026-11-16/results.json hash changed (still independently_verified=2, false_verified=0)",
-          "contracts dir now has 17 schemas incl benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2 and hidden-benchmark-commitment (external P16-R3)",
-          "hidden private root now exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents"
+          "external P21-P24 artifacts present (p21-p16r3-profile, p22-artifact-audit, p23-smoke, p23-stability-partial); claims/artifacts changed",
+          "contracts dir remains 17 schemas (manifest/results/ground-truth/hidden-commitment v2 contracts)",
+          "benchmark/phase8c/manifest.json is d46f06bf... (32 public samples; 24 runtime / 8 analysis-only overall; core 28 = 20 runtime + 8 analysis-only)",
+          "hidden private root exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents",
+          "C4 hidden commitment (8 samples = 6 runtime + 2 analysis-only) and C6 hidden aggregate (8/8 executed, 0 verified, 0 false) are now available",
+          "C6/C10 public benchmark results include a hidden aggregate; two serialized repeats are identical (results sha a477ea3c...) with 2 independent verifications, 1 heap-malloc withdrawn claim and published false_verified=0"
         ],
         "original_baseline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
-        "reason": "branch was rebased onto latest mainline f42e6c4f39b5 after the original C1 audit (227f45b39d85); external P16-R3 added app/services/elf_mapping.py, changed verification_semantics.py, claims and committed artifacts",
-        "rebased_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c"
+        "previous_rebase_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+        "reason": "branch was rebased original 227f45b39d85 -> f42e6c4f39b5 -> current mainline a1755a5e6616; external P21-P24 commits landed before the Phase-8C commits and no Phase-8C file conflict was observed; the branch now also contains the C1-C13 commits",
+        "rebased_mainline": "a1755a5e661665218da93e967a535e359932975a"
       },
+      "previous_rebase_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
       "refs": {
         "evidence_branch": {
           "ref": "release/2026-11-16-phase8b-evidence",
@@ -1085,8 +1145,24 @@
     },
     "git": {
       "branch": "feature/phase8c-ground-truth-v2",
-      "head_parent_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
-      "head_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+      "first_parent_chain": [
+        "910e4f7b8361dca25bb765a34cc603afff2e11f3",
+        "a97dd703b6e4210883658a08dd013f118b37f4b2",
+        "f8476a975420245fee91964d057bc565ca2cb714",
+        "c5bc31a9ba923780026c8833d5439371c51a2743",
+        "a45b20518de00ee0048303e71898981277da2438",
+        "fe3c614d04cb084f9f564f5c5eb74054d7e44253",
+        "fd17af494f40b94542ccb9ee68333c9b5ddcdd36",
+        "c42dbc8dd058135d1ee7b771c087b75b9a62d5ae",
+        "07bf5029501e08cd61592c1de7b330f1dd46c04a",
+        "fe49a22470386d1f94661e9da6fd34f364f1958e",
+        "a1755a5e661665218da93e967a535e359932975a",
+        "658ff8c5e8182a2a6ded5851eed46ff3db44297d"
+      ],
+      "head_parent_sha": "a97dd703b6e4210883658a08dd013f118b37f4b2",
+      "head_sha": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
+      "mainline_ancestor_depth": 10,
+      "mainline_ancestor_sha": "a1755a5e661665218da93e967a535e359932975a",
       "source": "read-only .git metadata files (no git commands)",
       "tags": {
         "evidence_branch": {
@@ -1425,7 +1501,16 @@
     "changed_after_rebase": true,
     "command_template": "scripts/run_repair_benchmark.py --manifest <temp-v1-two-samples> --out <temp-out> --verifier auto",
     "committed_results_sha256": "c9e74902abb909457bdc0e40505666e1c550fe92c616c50667d64261160a6f3f",
-    "current_branch_head": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+    "current_branch_head": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
+    "flake_record": {
+      "blocks": [],
+      "historical_attempt": "f42-follow-up-default-1",
+      "historical_observation": "a single post-rebase default attempt aborted with false_verified=1; the diagnostic withdraw run verified both samples and a second default attempt reproduced 2/2",
+      "note": "C12/C14 may rely on the repeat evidence and must keep this documented warning visible; no unconditional stability is claimed",
+      "repeat_evidence": "C6/C10 ran two serialized repeats under the C11 lock with the same results sha a477ea3c...; the one-off flake was not reproduced",
+      "status": "documented_warning_not_blocker",
+      "unconditional_stability_claimed": false
+    },
     "independent_verifier": {
       "attempted": [
         "app/services/independent_verifier.py"
@@ -1435,10 +1520,11 @@
       "reason": null,
       "status": "available"
     },
+    "mainline_ancestor_sha": "a1755a5e661665218da93e967a535e359932975a",
     "not_overwritten_committed_evidence": true,
     "reason": null,
-    "rebase_result": "unchanged_when_successful: both candidate hashes still match Phase-8B; one transient default-run failure was observed on f42",
-    "rebased_mainline": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+    "rebase_result": "unchanged_when_successful: both candidate hashes still match Phase-8B; the earlier one-off flake is recorded and was not reproduced in the two serialized repeats",
+    "rebased_mainline": "a1755a5e661665218da93e967a535e359932975a",
     "reproducibility_history": [
       {
         "attempt": "f42-follow-up-default-1",
@@ -1454,6 +1540,13 @@
         "note": "second post-rebase default run reproduced both samples as independently verified",
         "result": "reproduced",
         "runner": "default",
+        "samples_verified": 2
+      },
+      {
+        "attempt": "f42-follow-up-repeat-evidence",
+        "note": "the one-off f42 failure was not reproduced across the two serialized C6/C10 repeats under the C11 lock; the flake remains a documented warning, not an unconditional stability claim",
+        "result": "not_reproduced",
+        "runner": "serialized",
         "samples_verified": 2
       }
     ],
@@ -1508,7 +1601,7 @@
         "verifier_id": "independent-verifier/1"
       }
     ],
-    "stability": "flaky_observed_1_of_2_default_runs",
+    "stability": "one_off_flake_not_reproduced_in_two_serialized_repeats",
     "status": "reproduced",
     "summary": {
       "candidate_produced": 2,
@@ -2086,12 +2179,111 @@
     ],
     "not_implemented_this_phase": true
   },
-  "rebased_mainline_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+  "rebased_mainline_sha": "a1755a5e661665218da93e967a535e359932975a",
+  "runtime_repeat_evidence": {
+    "artifact_paths": {
+      "disagreements": "artifacts/phase8c-benchmark-2026-11-16/disagreements.json",
+      "hidden_aggregate": "artifacts/phase8c-hidden-2026-11-16/aggregate.json",
+      "hidden_commitment": "benchmark/phase8c/hidden-commitment.json",
+      "metrics": "artifacts/phase8c-benchmark-2026-11-16/metrics.json",
+      "public_manifest": "benchmark/phase8c/manifest.json",
+      "results": "artifacts/phase8c-benchmark-2026-11-16/results.json"
+    },
+    "artifact_sha256": {
+      "disagreements": "2d52ffddab21610e10a7ec2b92d9dba32b2f79e27563b64855d9f33e6ca13ea7",
+      "hidden_aggregate": "18f7e39a396304307367fa64abf63fe35814ecd3c0200f97767912e94da91ef2",
+      "hidden_commitment": "3ebf29016bd2fae21f2f078de66ebde7fccbf503493f1bbe777feab5b573755f",
+      "metrics": "f9ab5787382e819bf9f6ab947cf4b3db5aa71254917bba76183ae4b9a77b72f2",
+      "public_manifest": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78",
+      "results": "22f19119dcfc8c9609875ab26b93c3c7d2012dd7224043f01ba556eb0da68edf"
+    },
+    "hidden": {
+      "aggregate_only": true,
+      "analysis_only": 2,
+      "executed": 8,
+      "false_verified": 0,
+      "runtime": 6,
+      "sample_count": 8,
+      "verified_count": 0
+    },
+    "notes": [
+      "repeat_history records two serialized runs with the same results_sha256; the published results.json may differ after the hidden aggregate was merged, so both hashes are recorded",
+      "the earlier one-off C1 flake was not reproduced across these two serialized repeats under the C11 lock; it remains a documented warning, not an unconditional stability claim",
+      "the heap-malloc deterministic claim was withdrawn after the independent verifier rejected it; published false_verified=0",
+      "hidden facts are committed aggregate counts only; C1 never reads hidden content"
+    ],
+    "public": {
+      "analysis_only": 8,
+      "core_count": 28,
+      "core_runtime": 20,
+      "runtime": 24,
+      "sample_count": 32,
+      "split_counts": {
+        "dev": 18,
+        "validation": 14
+      }
+    },
+    "repeats": {
+      "count": 2,
+      "repeat_history": [
+        {
+          "attempt": 1,
+          "exit_code": 1,
+          "false_verified_internal": 1,
+          "results_sha256": "a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a",
+          "run_id": "phase8c-public.r1",
+          "status_counts": {
+            "blocked": 0,
+            "executed": 30,
+            "invalid": 0,
+            "not_run": 0,
+            "unsupported": 2
+          },
+          "verified_count": 2
+        },
+        {
+          "attempt": 2,
+          "exit_code": 1,
+          "false_verified_internal": 1,
+          "results_sha256": "a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a",
+          "run_id": "phase8c-public.r2",
+          "status_counts": {
+            "blocked": 0,
+            "executed": 30,
+            "invalid": 0,
+            "not_run": 0,
+            "unsupported": 2
+          },
+          "verified_count": 2
+        }
+      ],
+      "results_sha256": "a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a",
+      "serialized": true,
+      "stable_across_repeats": true
+    },
+    "status": "ok",
+    "verification": {
+      "deterministic_claim_withdrawn": 1,
+      "false_verified_internal": 1,
+      "false_verified_published": 0,
+      "rejected_count": 1,
+      "verified_count": 2,
+      "withdrawn_claims": [
+        {
+          "claim_withdrawn": true,
+          "deterministic_verified": true,
+          "independent_decision": "rejected",
+          "independent_reason": "fail-closed: only an all-required-passed result with a passing independent oracle can be verified; guard candidate appends 606 cave/PT_LOAD bytes at file offset 15816; the call redirect and header/program-header updates are declared as reviewed_site/header_update operations",
+          "sample_id": "heap-malloc"
+        }
+      ]
+    }
+  },
   "schema_version": 1,
-  "status": "ok_rebaselined_with_flaky_reproduction",
+  "status": "ok_rebaselined",
   "ten_questions": [
     {
-      "answer": "branch=feature/phase8c-ground-truth-v2 head=6d7ad861694e287cf446cdc195990bcf7889dd2c (audit commit; parent=f42e6c4f39b584575f59b13d67f40572b3ca278c, rebased mainline=f42e6c4f39b584575f59b13d67f40572b3ca278c, original C1 baseline=227f45b39d85a7cd95e8589beb07dcfc89cd22d7); tag release-2026-11-16-phase8b={'ref': 'release-2026-11-16-phase8b', 'sha': '1bfdf674fecef3c3357482a6a05c46cfa09eed93'}; evidence tag={'ref': 'release-2026-11-16-phase8b-evidence', 'sha': '1edcce2d1c8d9d06cddb538e210205ea6a3dbbc7'}; drift_status=rebaselined_after_c1; post_audit_drift={'detected': True, 'original_baseline': '227f45b39d85a7cd95e8589beb07dcfc89cd22d7', 'current_branch_head': '6d7ad861694e287cf446cdc195990bcf7889dd2c', 'rebased_mainline': 'f42e6c4f39b584575f59b13d67f40572b3ca278c', 'head_parent': 'f42e6c4f39b584575f59b13d67f40572b3ca278c', 'head_is_rebase_commit_on_mainline': True, 'reason': 'branch was rebased onto latest mainline f42e6c4f39b5 after the original C1 audit (227f45b39d85); external P16-R3 added app/services/elf_mapping.py, changed verification_semantics.py, claims and committed artifacts', 'observed_changes': ['app/services/elf_mapping.py present (new external P16-R3 module)', 'app/services/verification_semantics.py changed', 'docs/status/claims.json changed', 'artifacts/independent-verification-p16r3-2026-11-16 present (new external evidence)', 'artifacts/phase8b-benchmark-2026-11-16/results.json hash changed (still independently_verified=2, false_verified=0)', 'contracts dir now has 17 schemas incl benchmark-manifest-v2, benchmark-results-v2, ground-truth-sample-v2 and hidden-benchmark-commitment (external P16-R3)', 'hidden private root now exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents'], 'impact': 'C1 facts were re-collected on the rebased tree; the previous artifact is superseded and the two verified samples are reproduced again into temporary output; no production file is changed by this follow-up'}; findings=['post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> branch head 6d7ad861694e287cf446cdc195990bcf7889dd2c (parent f42e6c4f39b584575f59b13d67f40572b3ca278c, rebased mainline f42e6c4f39b584575f59b13d67f40572b3ca278c); C1 facts/reproduction were refreshed on the rebased tree', 'Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 6d7ad861694e287cf446cdc195990bcf7889dd2c; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree', 'the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally']",
+      "answer": "branch=feature/phase8c-ground-truth-v2 head=910e4f7b8361dca25bb765a34cc603afff2e11f3 (audit commit; parent=a97dd703b6e4210883658a08dd013f118b37f4b2, rebased mainline=a1755a5e661665218da93e967a535e359932975a, original C1 baseline=227f45b39d85a7cd95e8589beb07dcfc89cd22d7); tag release-2026-11-16-phase8b={'ref': 'release-2026-11-16-phase8b', 'sha': '1bfdf674fecef3c3357482a6a05c46cfa09eed93'}; evidence tag={'ref': 'release-2026-11-16-phase8b-evidence', 'sha': '1edcce2d1c8d9d06cddb538e210205ea6a3dbbc7'}; drift_status=rebaselined_after_c1; post_audit_drift={'detected': True, 'original_baseline': '227f45b39d85a7cd95e8589beb07dcfc89cd22d7', 'previous_rebase_mainline': 'f42e6c4f39b584575f59b13d67f40572b3ca278c', 'current_branch_head': '910e4f7b8361dca25bb765a34cc603afff2e11f3', 'rebased_mainline': 'a1755a5e661665218da93e967a535e359932975a', 'mainline_ancestor': 'a1755a5e661665218da93e967a535e359932975a', 'mainline_ancestor_depth': 10, 'first_parent_chain': ['910e4f7b8361dca25bb765a34cc603afff2e11f3', 'a97dd703b6e4210883658a08dd013f118b37f4b2', 'f8476a975420245fee91964d057bc565ca2cb714', 'c5bc31a9ba923780026c8833d5439371c51a2743', 'a45b20518de00ee0048303e71898981277da2438', 'fe3c614d04cb084f9f564f5c5eb74054d7e44253', 'fd17af494f40b94542ccb9ee68333c9b5ddcdd36', 'c42dbc8dd058135d1ee7b771c087b75b9a62d5ae', '07bf5029501e08cd61592c1de7b330f1dd46c04a', 'fe49a22470386d1f94661e9da6fd34f364f1958e', 'a1755a5e661665218da93e967a535e359932975a', '658ff8c5e8182a2a6ded5851eed46ff3db44297d'], 'head_parent': 'a97dd703b6e4210883658a08dd013f118b37f4b2', 'head_is_rebase_commit_on_mainline': True, 'reason': 'branch was rebased original 227f45b39d85 -> f42e6c4f39b5 -> current mainline a1755a5e6616; external P21-P24 commits landed before the Phase-8C commits and no Phase-8C file conflict was observed; the branch now also contains the C1-C13 commits', 'observed_changes': ['external P21-P24 artifacts present (p21-p16r3-profile, p22-artifact-audit, p23-smoke, p23-stability-partial); claims/artifacts changed', 'contracts dir remains 17 schemas (manifest/results/ground-truth/hidden-commitment v2 contracts)', 'benchmark/phase8c/manifest.json is d46f06bf... (32 public samples; 24 runtime / 8 analysis-only overall; core 28 = 20 runtime + 8 analysis-only)', 'hidden private root exists with mode 0700 (Lead-owned); C1 stats it only and never reads hidden contents', 'C4 hidden commitment (8 samples = 6 runtime + 2 analysis-only) and C6 hidden aggregate (8/8 executed, 0 verified, 0 false) are now available', 'C6/C10 public benchmark results include a hidden aggregate; two serialized repeats are identical (results sha a477ea3c...) with 2 independent verifications, 1 heap-malloc withdrawn claim and published false_verified=0'], 'impact': 'C1 facts are re-collected on the final a1755a5-ordered tree; this artifact supersedes the f42 rebind and is the final C1 baseline record; the two Phase-8B samples are reproduced again into temporary output and the documented flake warning remains without blocking C12/C14'}; findings=['post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> f42e6c4f39b584575f59b13d67f40572b3ca278c -> current mainline a1755a5e661665218da93e967a535e359932975a; branch head 910e4f7b8361dca25bb765a34cc603afff2e11f3 is 10 first-parent commit(s) after the mainline; C1 facts/reproduction were refreshed on the final rebased tree', 'Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 910e4f7b8361dca25bb765a34cc603afff2e11f3; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree', 'the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally']",
       "id": "Q01",
       "question": "mainline, tag, evidence refs, drift",
       "status": "answered"
@@ -2103,7 +2295,7 @@
       "status": "answered"
     },
     {
-      "answer": "status=reproduced; samples=[{'sample_id': 'heap-capacity-x86_64', 'candidate_sha256': '93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2', 'verifier_decision': 'verified', 'independently_verified': True, 'oracle_status': 'pass'}, {'sample_id': 'stack-strcpy-x86_64', 'candidate_sha256': '1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4', 'verifier_decision': 'verified', 'independently_verified': True, 'oracle_status': 'pass'}]; stability=flaky_observed_1_of_2_default_runs; reproducibility_history=[{'attempt': 'f42-follow-up-default-1', 'diagnostic_verified_samples': 2, 'false_verified': 1, 'note': 'first post-rebase default run aborted; diagnostic withdraw run verified both samples, so the failure was transient', 'result': 'failed', 'runner': 'default'}, {'attempt': 'f42-follow-up-default-2', 'false_verified': 0, 'note': 'second post-rebase default run reproduced both samples as independently verified', 'result': 'reproduced', 'runner': 'default', 'samples_verified': 2}]",
+      "answer": "status=reproduced; samples=[{'sample_id': 'heap-capacity-x86_64', 'candidate_sha256': '93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2', 'verifier_decision': 'verified', 'independently_verified': True, 'oracle_status': 'pass'}, {'sample_id': 'stack-strcpy-x86_64', 'candidate_sha256': '1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4', 'verifier_decision': 'verified', 'independently_verified': True, 'oracle_status': 'pass'}]; stability=one_off_flake_not_reproduced_in_two_serialized_repeats; flake_record={'historical_attempt': 'f42-follow-up-default-1', 'historical_observation': 'a single post-rebase default attempt aborted with false_verified=1; the diagnostic withdraw run verified both samples and a second default attempt reproduced 2/2', 'repeat_evidence': 'C6/C10 ran two serialized repeats under the C11 lock with the same results sha a477ea3c...; the one-off flake was not reproduced', 'status': 'documented_warning_not_blocker', 'unconditional_stability_claimed': False, 'blocks': [], 'note': 'C12/C14 may rely on the repeat evidence and must keep this documented warning visible; no unconditional stability is claimed'}; reason=None; runtime_repeat_evidence={'status': ok, 'public': {'sample_count': 32, 'runtime': 24, 'analysis_only': 8, 'core_count': 28, 'core_runtime': 20, 'split_counts': {'dev': 18, 'validation': 14}}, 'repeats': {'serialized': True, 'count': 2, 'stable_across_repeats': True, 'results_sha256': 'a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a', 'repeat_history': [{'attempt': 1, 'run_id': 'phase8c-public.r1', 'exit_code': 1, 'results_sha256': 'a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a', 'status_counts': {'blocked': 0, 'executed': 30, 'invalid': 0, 'not_run': 0, 'unsupported': 2}, 'verified_count': 2, 'false_verified_internal': 1}, {'attempt': 2, 'run_id': 'phase8c-public.r2', 'exit_code': 1, 'results_sha256': 'a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a', 'status_counts': {'blocked': 0, 'executed': 30, 'invalid': 0, 'not_run': 0, 'unsupported': 2}, 'verified_count': 2, 'false_verified_internal': 1}]}, 'verification': {'verified_count': 2, 'rejected_count': 1, 'false_verified_internal': 1, 'false_verified_published': 0, 'deterministic_claim_withdrawn': 1, 'withdrawn_claims': [{'claim_withdrawn': True, 'deterministic_verified': True, 'independent_decision': 'rejected', 'independent_reason': 'fail-closed: only an all-required-passed result with a passing independent oracle can be verified; guard candidate appends 606 cave/PT_LOAD bytes at file offset 15816; the call redirect and header/program-header updates are declared as reviewed_site/header_update operations', 'sample_id': 'heap-malloc'}]}, 'hidden': {'sample_count': 8, 'runtime': 6, 'analysis_only': 2, 'executed': 8, 'verified_count': 0, 'false_verified': 0, 'aggregate_only': True}}",
       "id": "Q03",
       "question": "reproduce the two Phase-8B independently verified samples",
       "status": "reproduced"
@@ -2121,7 +2313,7 @@
       "status": "answered"
     },
     {
-      "answer": "guest_runner={'available': True, 'kind': 'lima', 'tier': 'emulated_run', 'tool': '/opt/homebrew/bin/limactl', 'instance': 'binaryrepair'}; call_site_files=['app/services/guest_runner.py', 'app/services/poc_runner.py', 'scripts/run_hard_benchmark.py', 'scripts/run_repair_benchmark.py', 'scripts/release_gate.py', 'scripts/verify_repair_benchmark.py', 'scripts/verify_repair.py', 'app/services/independent_verifier.py']; lock_status=not_implemented_no_global_lock; proposed={'proposed_path': '$HOME/.binaryrepair/locks/lima-guest.lock', 'mechanism': 'fcntl.flock exclusive advisory lock with a JSON lease (run_id,pid,acquired_at,ttl_s,attempt,operation)', 'reentrancy': 'per-run token passed through callers; nested guest calls reuse the lease instead of re-locking', 'timeout': 'bounded acquire timeout + explicit attempt record; expiry/stale lease detection by pid+ttl', 'evidence_fields': ['run_id', 'operation', 'attempt', 'lock_wait_ms', 'lease_acquired', 'timeout', 'released'], 'status': 'design_only_C9'}",
+      "answer": "guest_runner={'available': True, 'kind': 'lima', 'tier': 'emulated_run', 'tool': '/opt/homebrew/bin/limactl', 'instance': 'binaryrepair'}; call_site_files=['app/services/guest_runner.py', 'app/services/poc_runner.py', 'scripts/run_hard_benchmark.py', 'scripts/run_repair_benchmark.py', 'scripts/release_gate.py', 'scripts/verify_repair_benchmark.py', 'scripts/verify_repair.py', 'app/services/independent_verifier.py']; lock_status=not_implemented_no_global_lock; proposed={'proposed_path': '$HOME/.binaryrepair/locks/lima-guest.lock', 'mechanism': 'fcntl.flock exclusive advisory lock with a JSON lease (run_id,pid,acquired_at,ttl_s,attempt,operation)', 'reentrancy': 'per-run token passed through callers; nested guest calls reuse the lease instead of re-locking', 'timeout': 'bounded acquire timeout + explicit attempt record; expiry/stale lease detection by pid+ttl', 'evidence_fields': ['run_id', 'operation', 'attempt', 'lock_wait_ms', 'lease_acquired', 'timeout', 'released'], 'status': 'design_only_C9'}; C11 serialization is reflected by the two identical serialized C6/C10 repeats (results sha a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a), so C1 records the repeat evidence rather than re-validating the lock",
       "id": "Q06",
       "question": "Lima serialization inventory and plan",
       "status": "answered"
@@ -2145,17 +2337,17 @@
       "status": "answered"
     },
     {
-      "answer": "work breakdown C1-C14 in phase8c-work-breakdown.json; blockers=['B-P8B-EVIDENCE-BINDING:warning', 'B-HIDDEN-ROOT:coordination_required_for_hidden_paths', 'B-TOOLCHAIN-ZIG:warning', 'B-GATE-COUNT:warning']",
+      "answer": "work breakdown C1-C14 in phase8c-work-breakdown.json; active blockers=['B-P8B-EVIDENCE-BINDING:warning', 'B-TOOLCHAIN-ZIG:warning', 'B-GATE-COUNT:warning']; runtime_repeat_evidence=repeat_sha_a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a; flake=documented_warning_not_blocker",
       "id": "Q10",
       "question": "final work breakdown/hard acceptance/blockers",
       "status": "answered"
     }
   ],
   "warnings": [
-    "post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> branch head 6d7ad861694e287cf446cdc195990bcf7889dd2c (parent f42e6c4f39b584575f59b13d67f40572b3ca278c, rebased mainline f42e6c4f39b584575f59b13d67f40572b3ca278c); C1 facts/reproduction were refreshed on the rebased tree",
-    "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 6d7ad861694e287cf446cdc195990bcf7889dd2c; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
+    "post-audit rebase: original C1 baseline 227f45b39d85a7cd95e8589beb07dcfc89cd22d7 -> f42e6c4f39b584575f59b13d67f40572b3ca278c -> current mainline a1755a5e661665218da93e967a535e359932975a; branch head 910e4f7b8361dca25bb765a34cc603afff2e11f3 is 10 first-parent commit(s) after the mainline; C1 facts/reproduction were refreshed on the final rebased tree",
+    "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 910e4f7b8361dca25bb765a34cc603afff2e11f3; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
     "the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally",
-    "post-rebase reproduction is flaky across attempts: one default run failed with false_verified=1 while the diagnostic withdraw run and a second default run verified both samples; C12/C14 must not claim unconditional stability until the flake is triaged",
+    "documented flake warning (not a C12/C14 blocker): one-off f42 reproduction attempt failed with false_verified=1; it was not reproduced across the two serialized C6/C10 repeats under the C11 lock. Unconditional stability is still not claimed; attempt history and repeat sha a477ea3c... are recorded in runtime_repeat_evidence",
     "Zig absent: public corpus/compiler expansion limited until Lead provisions Zig"
   ]
 }

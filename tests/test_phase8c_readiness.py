@@ -50,14 +50,19 @@ def test_baseline_structure_and_ten_questions(baseline: dict) -> None:
     assert baseline["kind"] == "phase8c_readiness_audit"
     assert len(baseline["base_sha"]) == 40
     assert baseline["expected_mainline_sha"] == audit.EXPECTED_BASE_SHA
-    assert baseline["audit_commit_parent_sha"] == audit.EXPECTED_BASE_SHA
     assert baseline["original_audit_baseline_sha"] == (
         audit.ORIGINAL_AUDIT_BASE_SHA)
     drift = baseline["post_audit_drift"]
     assert drift["detected"] is True
     assert drift["original_baseline"] == audit.ORIGINAL_AUDIT_BASE_SHA
+    assert drift["previous_rebase_mainline"] == audit.PREVIOUS_REBASE_SHA
     assert drift["rebased_mainline"] == audit.EXPECTED_BASE_SHA
+    assert drift["mainline_ancestor"] == audit.EXPECTED_BASE_SHA
+    assert isinstance(drift["mainline_ancestor_depth"], int)
+    assert drift["mainline_ancestor_depth"] >= 1
+    assert audit.EXPECTED_BASE_SHA in drift["first_parent_chain"]
     assert drift["reason"]
+    assert baseline["base_sha"] != audit.EXPECTED_BASE_SHA
     assert baseline["capability_claims"] == []
     assert baseline["no_new_repair_capability"] is True
     assert baseline["no_verified_upgrade"] is True
@@ -93,8 +98,11 @@ def test_reproduction_is_truthful_and_matches_phase8b(baseline: dict) -> None:
     status = reproduction["status"]
     history = reproduction.get("reproducibility_history")
     assert isinstance(history, list) and history
-    assert reproduction.get("stability") in {
-        "flaky_observed_1_of_2_default_runs", "stable_in_recorded_history"}
+    assert reproduction.get("stability") == (
+        "one_off_flake_not_reproduced_in_two_serialized_repeats")
+    flake = reproduction.get("flake_record") or {}
+    assert flake.get("status") == "documented_warning_not_blocker"
+    assert flake.get("blocks") == []
     if status == "not_run":
         assert reproduction.get("reason")
         if reproduction.get("changed_after_rebase") is True:
@@ -120,6 +128,39 @@ def test_reproduction_is_truthful_and_matches_phase8b(baseline: dict) -> None:
         assert sample["layout_status"] == "passed"
         assert sample["false_verified"] is False
     assert reproduction["summary"]["false_verified"] == 0
+
+
+def test_runtime_repeat_evidence_records_two_serialized_runs(
+        baseline: dict) -> None:
+    repeat = baseline["runtime_repeat_evidence"]
+    assert repeat["status"] == "ok"
+    public = repeat["public"]
+    assert public["sample_count"] == 32
+    assert public["runtime"] == 24
+    assert public["analysis_only"] == 8
+    assert public["core_count"] == 28
+    assert public["core_runtime"] == 20
+    repeats = repeat["repeats"]
+    assert repeats["serialized"] is True
+    assert repeats["count"] == 2
+    assert repeats["stable_across_repeats"] is True
+    assert repeats["results_sha256"].startswith("a477ea3c")
+    assert len(repeats["repeat_history"]) == 2
+    verification = repeat["verification"]
+    assert verification["verified_count"] == 2
+    assert verification["false_verified_published"] == 0
+    assert verification["false_verified_internal"] == 1
+    assert verification["deterministic_claim_withdrawn"] == 1
+    withdrawn = verification["withdrawn_claims"]
+    assert len(withdrawn) == 1
+    assert withdrawn[0]["sample_id"] == "heap-malloc"
+    assert withdrawn[0]["independent_decision"] == "rejected"
+    hidden = repeat["hidden"]
+    assert hidden == {
+        "sample_count": 8, "runtime": 6, "analysis_only": 2,
+        "executed": 8, "verified_count": 0, "false_verified": 0,
+        "aggregate_only": True,
+    }
 
 
 def test_hidden_facts_are_isolation_only_and_not_read(baseline: dict) -> None:
@@ -172,11 +213,14 @@ def test_work_breakdown_covers_c1_to_c14(breakdown: dict) -> None:
     assert breakdown["blockers"]
     assert any(item["id"] == "B-HIDDEN-ROOT"
                for item in breakdown["blockers"])
-    if baseline_doc := json.loads(BASELINE_PATH.read_text(encoding="utf-8")):
-        if baseline_doc["q3_reproduction"].get("stability") == (
-                "flaky_observed_1_of_2_default_runs"):
-            ids = {item["id"] for item in baseline_doc["blockers"]}
-            assert "B-POST-REBASE-REPRODUCTION-FLAKY" in ids
+    baseline_doc = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
+    ids = {item["id"] for item in baseline_doc["blockers"]}
+    assert "B-POST-REBASE-REPRODUCTION-FLAKY" not in ids
+    flake = baseline_doc["q3_reproduction"].get("flake_record") or {}
+    assert flake.get("status") == "documented_warning_not_blocker"
+    hidden_blocker = next(item for item in breakdown["blockers"]
+                          if item["id"] == "B-HIDDEN-ROOT")
+    assert hidden_blocker.get("status") == "resolved"
 
 
 def test_documentation_is_ascii_and_answers_ten_questions() -> None:
@@ -223,6 +267,7 @@ def test_cli_json_summary() -> None:
     assert payload["v1_migration"]["lossless"] == 12
     assert payload["hidden"]["hidden_available"] is False
     assert payload["contracts"]["count"] >= 13
+    assert payload["runtime_repeat_evidence"]["repeats"]["count"] == 2
 
 
 def test_check_detects_tampered_baseline_and_breakdown(

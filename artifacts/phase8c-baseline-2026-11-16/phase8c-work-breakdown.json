@@ -1,5 +1,5 @@
 {
-  "base_sha": "6d7ad861694e287cf446cdc195990bcf7889dd2c",
+  "base_sha": "910e4f7b8361dca25bb765a34cc603afff2e11f3",
   "blockers": [
     {
       "blocks": [
@@ -11,15 +11,11 @@
       "text": "Phase-8B release evidence is bound to gated SHA c5d87b5, not the current mainline 227f45b; Phase-8C must bind its own base/gated SHA and may not reuse the evidence as if it covered the Phase-8C tree."
     },
     {
-      "blocks": [
-        "C05",
-        "C06",
-        "C08",
-        "C11"
-      ],
+      "blocks": [],
       "id": "B-HIDDEN-ROOT",
-      "severity": "coordination_required_for_hidden_paths",
-      "text": "Hidden private root is Lead-owned and now exists with mode 0700; C1 stats it only and never reads hidden contents. hidden_available remains false and no hidden run is claimed; C05/C06/C08/C11 still require Lead coordination and must keep hidden results not_run until executed under the private root."
+      "severity": "resolved_by_c4_and_c6",
+      "status": "resolved",
+      "text": "Resolved for C1: the Lead-owned hidden root exists with mode 0700, C4 published the hidden commitment and C6 recorded the hidden aggregate (8/6/2, 0 verified, 0 false); C1 never reads hidden content. Hidden campaign stays aggregate-only and not a C1 blocker."
     },
     {
       "blocks": [
