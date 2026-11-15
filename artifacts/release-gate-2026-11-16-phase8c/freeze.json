@@ -1,0 +1,51 @@
+{
+  "branch": "feature/phase8c-ground-truth-v2",
+  "clean_tree": true,
+  "evidence_scope": "frozen-tree gate evidence: proves the gated git tree identity, the measured checks and the recorded artifact digests, plus provenance. When runner.kind is local-frozen-tree this is not a GitHub Actions run; a CI run is a separate claim recorded from its own artifact.",
+  "exit_code": 0,
+  "expected_mainline": "record",
+  "gate_command": [
+    "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui/.venv/bin/python",
+    "scripts/release_gate.py",
+    "--nightly",
+    "--release-sha",
+    "4a7b2355ffc5225d013a777bc7d588abac58f944",
+    "--json",
+    "--evidence-out",
+    "artifacts/release-gate-2026-11-16-phase8c/gate.json"
+  ],
+  "gate_error": "",
+  "gate_rc": 0,
+  "gate_summary": {
+    "branch": "feature/phase8c-ground-truth-v2",
+    "clean_tree": true,
+    "frozen_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+    "mode": "nightly",
+    "not_run": null,
+    "ok": true,
+    "release_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+    "status_counts": {
+      "failed": 0,
+      "passed": 13,
+      "skipped": 0,
+      "unavailable": 0
+    },
+    "tree_sha": null,
+    "violations": []
+  },
+  "generated_at": "2026-11-15T19:14:01Z",
+  "head_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+  "kind": "release_freeze",
+  "mainline_sha_end": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+  "mainline_sha_start": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+  "mainline_unchanged": true,
+  "mode": "nightly",
+  "ok": true,
+  "requested_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+  "runner": {
+    "github": null,
+    "kind": "local-frozen-tree"
+  },
+  "schema_version": 1,
+  "tree_sha": "4bf501314b6469328d0256031990bfc402ce6677"
+}

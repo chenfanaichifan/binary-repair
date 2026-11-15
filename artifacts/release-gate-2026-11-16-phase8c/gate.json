@@ -1,0 +1,468 @@
+{
+  "artifacts": {
+    "artifacts/browser-e2e-2026-11-14/summary.json": {
+      "present": true,
+      "sha256": "e941adca4a96aac0ba3eeff4e7674945d0e910583dce4c394884e5c8d1e9d74d"
+    },
+    "artifacts/capability-gap-audit-2026-11-14/SHA256SUMS": {
+      "present": true,
+      "sha256": "0f3c379b43a47641c50f972295439ca4f84cd34a7a2f65ad710e9a8a93428786"
+    },
+    "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json": {
+      "present": true,
+      "sha256": "6c72abcac0f71b747f68a8f2b5fb4f4fd5b74de4629aa00a3fa9a8647251e3d8"
+    },
+    "artifacts/capability-gap-audit-2026-11-14/gap-report.md": {
+      "present": true,
+      "sha256": "e8e70082fd7d320ae470071432c82c2693550ad4fc6d7d1ba6640dcdf21bf210"
+    },
+    "artifacts/capability-universe-2026-11-15/methodology.json": {
+      "present": true,
+      "sha256": "e6b35563c8df7755b78a147e2e05388fb8136536d910290e6a93454ac775acc7"
+    },
+    "artifacts/coverage-closure-2026-11-14/README.md": {
+      "present": true,
+      "sha256": "d756c737d9bbfaa2fe3c48109511665da51289dd7229302b4a7021f12af282f1"
+    },
+    "artifacts/coverage-closure-2026-11-14/acceptance.json": {
+      "present": true,
+      "sha256": "43e39d0178c7b49a8f7e5c03d04c8abaa6c28a01fd72d2fc65ece57a87080870"
+    },
+    "artifacts/provider-coverage-2026-11-14/SHA256SUMS": {
+      "present": true,
+      "sha256": "83f268a58ce54718cb30d60977e8d8bdd3fea61b291402832c6121ff4674063c"
+    },
+    "artifacts/provider-coverage-2026-11-14/intl-unavailable.json": {
+      "present": true,
+      "sha256": "64353269fb8e3f1f502adb062b982c0908906038ece81fde831625ebb5e20d55"
+    },
+    "artifacts/provider-coverage-2026-11-14/summary.json": {
+      "present": true,
+      "sha256": "50abb16f4432ca2bc0e93222c8f5cc1e9be3259db7934e3ebe8d04a5219fc2f3"
+    },
+    "artifacts/provider-matrix-2026-11-14/SHA256SUMS": {
+      "present": true,
+      "sha256": "06c064739e000c7852f8d29a31f19fe85f1bf8b768a8e4f9cfd1d2ed3b57185a"
+    },
+    "artifacts/provider-matrix-2026-11-14/summary.json": {
+      "present": true,
+      "sha256": "0552c37d3c7a6b5ff45331e62d712a4809d4d60035325b730b4ddf42c9dd5ecb"
+    },
+    "docs/acceptance/capability-universe-2026-11-15.md": {
+      "present": true,
+      "sha256": "c4a7624aacabffda3f9ea0d39ed80e40db27d3683312b2092ee9f6be6a37d1a3"
+    },
+    "docs/acceptance/non-goal-roadmap-2026-11-14.md": {
+      "present": true,
+      "sha256": "b79158f3b951d9a54589e6e9fd09ff5e63c701d2d052f61d520e7abb6eb676af"
+    },
+    "docs/acceptance/non-goal-roadmap-2026-11-15.md": {
+      "present": true,
+      "sha256": "e3d7e157716e9b1c3ff440b413a2fd6073fccfab533284e84f24a6a543a9132b"
+    },
+    "docs/acceptance/non-goals-2026-11-14.md": {
+      "present": true,
+      "sha256": "def758b74c6bced1edbe5dab977684ac14ac7a6b85c15edb660159d5bb6ee7cd"
+    },
+    "docs/acceptance/platform-limits-2026-11-15.md": {
+      "present": true,
+      "sha256": "581df7b5a4b8500d8fd9be43fa712c7cdf7d7db2b737f900eb3eb5af150b5510"
+    },
+    "docs/operations/flake-quarantine-2026-11-15.json": {
+      "present": true,
+      "sha256": "1dd83ec2be31f7331c9b9d8817981cc23a517d246d693b494673a0b6b0e582c6"
+    },
+    "docs/release/CI-SIGNOFF-2026-11-15.md": {
+      "present": true,
+      "sha256": "d035e592d382f49c4f5b895a1f3ed5e9996d322d6e0e78f6dd623ed8c2352f4c"
+    },
+    "docs/status/claims.json": {
+      "present": true,
+      "sha256": "8d9cc585c574daf33b7b8cc0548b3fe8593eb1d62187690c0b8b0e0da6150710"
+    }
+  },
+  "branch": "feature/phase8c-ground-truth-v2",
+  "checks": [
+    {
+      "detail": "sha=4a7b2355ffc5225d013a777bc7d588abac58f944 branch=feature/phase8c-ground-truth-v2 clean_tree=True release_sha=4a7b2355ffc5225d013a777bc7d588abac58f944 resolved=4a7b2355ffc5225d013a777bc7d588abac58f944 MATCH",
+      "elapsed_ms": 0,
+      "id": "release-tree-identity",
+      "required": true,
+      "status": "passed",
+      "title": "Release tree identity: frozen SHA and clean worktree",
+      "violations": []
+    },
+    {
+      "detail": "open=[] non_goals=11 dynamic_unverified=6; dynamic_unverified=6 (allowed in static/PR mode)",
+      "elapsed_ms": 7435,
+      "id": "static-coverage-gate",
+      "required": true,
+      "status": "passed",
+      "title": "Static capability-audit coverage gate (no probes)",
+      "violations": []
+    },
+    {
+      "detail": "gaps=62 open=[] mitigated_residual=['RG-runtime-evidence::elf/x86_64/64/little::native_run'] non_goals=11 dynamic_unverified=6 claims_non_goals=12 mm_unresolved=[]",
+      "elapsed_ms": 3965,
+      "id": "claims-measurement-diff",
+      "required": true,
+      "status": "passed",
+      "title": "Measured audit vs declared claims/non-goals diff (static census)",
+      "violations": []
+    },
+    {
+      "detail": "roles: capacity=1 heap=1 target_scoped=1 controls=2",
+      "elapsed_ms": 0,
+      "id": "acceptance-contract",
+      "required": true,
+      "status": "passed",
+      "title": "Release acceptance capture (capacity + heap + target-scoped)",
+      "violations": []
+    },
+    {
+      "detail": "open=[] dynamic_unverified=0 universe_unknown=0 cells=240",
+      "elapsed_ms": 153629,
+      "id": "local-coverage-gate",
+      "required": true,
+      "status": "passed",
+      "title": "Local coverage gate (bounded probes + real-guest acceptance)",
+      "violations": []
+    },
+    {
+      "detail": "recall=1.0 precision=1.0 scenarios=30",
+      "elapsed_ms": 0,
+      "id": "meta-audit",
+      "required": true,
+      "status": "passed",
+      "title": "Meta-audit detector recall/precision over injected gaps",
+      "violations": []
+    },
+    {
+      "detail": "packets_checked=9 limitations=12",
+      "elapsed_ms": 0,
+      "id": "acceptance-invariants",
+      "required": true,
+      "status": "passed",
+      "title": "Acceptance invariant engine (packet/capture invariants)",
+      "violations": []
+    },
+    {
+      "detail": "cells=240 counts={'non_goal': 129, 'supported': 51, 'unavailable': 24, 'unknown': 0, 'verified': 36}",
+      "elapsed_ms": 0,
+      "id": "universe-unknown-zero",
+      "required": true,
+      "status": "passed",
+      "title": "Capability universe has zero unknown cells and mapped non-goals",
+      "violations": []
+    },
+    {
+      "detail": "builder=local-frozen-tree guest_available=True subjects=9 limactl=limactl version 2.3.0",
+      "elapsed_ms": 0,
+      "id": "provenance-complete",
+      "required": true,
+      "status": "passed",
+      "title": "Release provenance binds tree/artifacts/acceptance/runner/guest",
+      "violations": []
+    },
+    {
+      "detail": "cases=12 provider_status=ok target_strict_pass_rate=1.0 target_in_scope_rate=0.0",
+      "elapsed_ms": 0,
+      "id": "provider-matrix",
+      "required": true,
+      "status": "passed",
+      "title": "Real provider matrix evidence with target-strict measurement (T4)",
+      "violations": []
+    },
+    {
+      "detail": "rows=11 providers_completed_12case=2 models_completed_12case=4 identity_policy=True statistics=True cost_available=False seed_available=False",
+      "elapsed_ms": 0,
+      "id": "provider-coverage",
+      "required": true,
+      "status": "passed",
+      "title": "Provider/model coverage artifact: identity policy + statistics (P1)",
+      "violations": []
+    },
+    {
+      "detail": "runner=lima:limactl tier=emulated_run captured_in_seconds=47.7 (temporary dir, repository artifacts untouched)",
+      "elapsed_ms": 47683,
+      "id": "nightly-real-lima-acceptance",
+      "required": true,
+      "status": "passed",
+      "title": "Fresh real-Lima acceptance capture (temporary, artifacts untouched)",
+      "violations": []
+    },
+    {
+      "detail": "full pytest suite passed in 1225318 ms",
+      "elapsed_ms": 1225318,
+      "id": "full-pytest",
+      "required": true,
+      "status": "passed",
+      "title": "Full pytest suite (release gate)",
+      "violations": []
+    }
+  ],
+  "clean_tree": true,
+  "elapsed_ms": 1438629,
+  "environment": {
+    "kernel": "22.6.0",
+    "machine": "arm64",
+    "platform": "macOS-13.5-arm64-arm-64bit",
+    "python": "3.11.8"
+  },
+  "evidence_scope": "local frozen-tree gate; proves the gated git tree identity and the measured checks. It does not prove a GitHub Actions run or binary provenance beyond the recorded artifact digests.",
+  "exit_code": 0,
+  "frozen_matches_release": true,
+  "frozen_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+  "generated_at": "2026-11-15T19:13:55Z",
+  "kind": "release_gate_evidence",
+  "lima": {
+    "available": true,
+    "config_present": true,
+    "config_sha256": "ec70b504451fc3dc1b6d6f915ae9d80b4dfd4ce1e0a5e14ebeb574d9c3d22b2a",
+    "limactl_version": "limactl version 2.3.0",
+    "list_sha256": "047ba680666930ce474cef4f257035fd26e492e732abe9495ecdcab409d2f822",
+    "vms": [
+      "binaryrepair"
+    ]
+  },
+  "mitigated_residual": [
+    "RG-runtime-evidence::elf/x86_64/64/little::native_run"
+  ],
+  "mode": "nightly",
+  "not_run": [
+    "github_actions",
+    "international_provider_matrix",
+    "self_hosted_nightly_lima_capture"
+  ],
+  "notes": [],
+  "ok": true,
+  "provenance": {
+    "builder": {
+      "github": null,
+      "kernel": "22.6.0",
+      "kind": "local-frozen-tree",
+      "machine": "arm64",
+      "platform": "macOS-13.5-arm64-arm-64bit",
+      "python": "3.11.8"
+    },
+    "guest": {
+      "available": true,
+      "config_present": true,
+      "config_sha256": "ec70b504451fc3dc1b6d6f915ae9d80b4dfd4ce1e0a5e14ebeb574d9c3d22b2a",
+      "guest_uname": "Linux 6.8.0-147-generic aarch64",
+      "limactl_version": "limactl version 2.3.0",
+      "list_sha256": "047ba680666930ce474cef4f257035fd26e492e732abe9495ecdcab409d2f822",
+      "qemu_version": "qemu-x86_64 version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+      "vms": [
+        "binaryrepair"
+      ]
+    },
+    "invocation": {
+      "argv": [
+        "scripts/release_gate.py",
+        "--nightly",
+        "--release-sha",
+        "4a7b2355ffc5225d013a777bc7d588abac58f944",
+        "--json",
+        "--evidence-out",
+        "artifacts/release-gate-2026-11-16-phase8c/gate.json"
+      ],
+      "cwd": "/Users/huageorge/Desktop/AI驱动的二进制漏洞自动修复与正确性验证/binary-repair-gui",
+      "mode": "nightly",
+      "release_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944"
+    },
+    "materials": {
+      "acceptance_subjects": {
+        "available": true,
+        "cases": {
+          "heap_pipeline_with_manifest": {
+            "candidate_sha256": "ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73",
+            "checks_total": 19,
+            "disposition": "verified_patch",
+            "fixture_sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f",
+            "target_policy": "whole_image"
+          },
+          "heap_pipeline_without_manifest": {
+            "candidate_sha256": null,
+            "checks_total": 11,
+            "disposition": "not_verified",
+            "fixture_sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f",
+            "target_policy": "whole_image"
+          },
+          "heap_safe_default": {
+            "candidate_sha256": null,
+            "checks_total": 0,
+            "disposition": "analysis_only",
+            "fixture_sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f",
+            "target_policy": "analysis_only"
+          },
+          "heap_target_scoped": {
+            "candidate_sha256": "ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73",
+            "checks_total": 20,
+            "disposition": "verified_patch",
+            "target_scope": {
+              "end": 4198764,
+              "name": "heap_bad",
+              "source": "symbol",
+              "va": 4198704
+            }
+          },
+          "heap_wrong_target": {
+            "disposition": "analysis_only"
+          },
+          "marcx_pipeline_with_manifest": {
+            "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+            "checks_total": 21,
+            "disposition": "verified_patch",
+            "fixture_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+            "target_policy": "whole_image"
+          },
+          "marcx_pipeline_without_manifest": {
+            "candidate_sha256": null,
+            "checks_total": 13,
+            "disposition": "not_verified",
+            "fixture_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+            "target_policy": "whole_image"
+          },
+          "marcx_review_api": {
+            "checks_total": 21,
+            "patched_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+            "target_policy": "whole_image"
+          },
+          "marcx_safe_default": {
+            "candidate_sha256": null,
+            "checks_total": 0,
+            "disposition": "analysis_only",
+            "fixture_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+            "target_policy": "analysis_only"
+          }
+        }
+      },
+      "artifacts": {
+        "artifacts/browser-e2e-2026-11-14/summary.json": {
+          "present": true,
+          "sha256": "e941adca4a96aac0ba3eeff4e7674945d0e910583dce4c394884e5c8d1e9d74d"
+        },
+        "artifacts/capability-gap-audit-2026-11-14/SHA256SUMS": {
+          "present": true,
+          "sha256": "0f3c379b43a47641c50f972295439ca4f84cd34a7a2f65ad710e9a8a93428786"
+        },
+        "artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json": {
+          "present": true,
+          "sha256": "6c72abcac0f71b747f68a8f2b5fb4f4fd5b74de4629aa00a3fa9a8647251e3d8"
+        },
+        "artifacts/capability-gap-audit-2026-11-14/gap-report.md": {
+          "present": true,
+          "sha256": "e8e70082fd7d320ae470071432c82c2693550ad4fc6d7d1ba6640dcdf21bf210"
+        },
+        "artifacts/capability-universe-2026-11-15/methodology.json": {
+          "present": true,
+          "sha256": "e6b35563c8df7755b78a147e2e05388fb8136536d910290e6a93454ac775acc7"
+        },
+        "artifacts/coverage-closure-2026-11-14/README.md": {
+          "present": true,
+          "sha256": "d756c737d9bbfaa2fe3c48109511665da51289dd7229302b4a7021f12af282f1"
+        },
+        "artifacts/coverage-closure-2026-11-14/acceptance.json": {
+          "present": true,
+          "sha256": "43e39d0178c7b49a8f7e5c03d04c8abaa6c28a01fd72d2fc65ece57a87080870"
+        },
+        "artifacts/provider-coverage-2026-11-14/SHA256SUMS": {
+          "present": true,
+          "sha256": "83f268a58ce54718cb30d60977e8d8bdd3fea61b291402832c6121ff4674063c"
+        },
+        "artifacts/provider-coverage-2026-11-14/intl-unavailable.json": {
+          "present": true,
+          "sha256": "64353269fb8e3f1f502adb062b982c0908906038ece81fde831625ebb5e20d55"
+        },
+        "artifacts/provider-coverage-2026-11-14/summary.json": {
+          "present": true,
+          "sha256": "50abb16f4432ca2bc0e93222c8f5cc1e9be3259db7934e3ebe8d04a5219fc2f3"
+        },
+        "artifacts/provider-matrix-2026-11-14/SHA256SUMS": {
+          "present": true,
+          "sha256": "06c064739e000c7852f8d29a31f19fe85f1bf8b768a8e4f9cfd1d2ed3b57185a"
+        },
+        "artifacts/provider-matrix-2026-11-14/summary.json": {
+          "present": true,
+          "sha256": "0552c37d3c7a6b5ff45331e62d712a4809d4d60035325b730b4ddf42c9dd5ecb"
+        },
+        "docs/acceptance/capability-universe-2026-11-15.md": {
+          "present": true,
+          "sha256": "c4a7624aacabffda3f9ea0d39ed80e40db27d3683312b2092ee9f6be6a37d1a3"
+        },
+        "docs/acceptance/non-goal-roadmap-2026-11-14.md": {
+          "present": true,
+          "sha256": "b79158f3b951d9a54589e6e9fd09ff5e63c701d2d052f61d520e7abb6eb676af"
+        },
+        "docs/acceptance/non-goal-roadmap-2026-11-15.md": {
+          "present": true,
+          "sha256": "e3d7e157716e9b1c3ff440b413a2fd6073fccfab533284e84f24a6a543a9132b"
+        },
+        "docs/acceptance/non-goals-2026-11-14.md": {
+          "present": true,
+          "sha256": "def758b74c6bced1edbe5dab977684ac14ac7a6b85c15edb660159d5bb6ee7cd"
+        },
+        "docs/acceptance/platform-limits-2026-11-15.md": {
+          "present": true,
+          "sha256": "581df7b5a4b8500d8fd9be43fa712c7cdf7d7db2b737f900eb3eb5af150b5510"
+        },
+        "docs/operations/flake-quarantine-2026-11-15.json": {
+          "present": true,
+          "sha256": "1dd83ec2be31f7331c9b9d8817981cc23a517d246d693b494673a0b6b0e582c6"
+        },
+        "docs/release/CI-SIGNOFF-2026-11-15.md": {
+          "present": true,
+          "sha256": "d035e592d382f49c4f5b895a1f3ed5e9996d322d6e0e78f6dd623ed8c2352f4c"
+        },
+        "docs/status/claims.json": {
+          "present": true,
+          "sha256": "8d9cc585c574daf33b7b8cc0548b3fe8593eb1d62187690c0b8b0e0da6150710"
+        }
+      },
+      "claims_sha256": "8d9cc585c574daf33b7b8cc0548b3fe8593eb1d62187690c0b8b0e0da6150710",
+      "fixtures": {
+        "fixtures/elf/vuln-capacity-confusion-x86_64.elf": {
+          "present": true,
+          "sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+        },
+        "fixtures/hard-cases/vuln-heap-malloc-x86_64.elf": {
+          "present": true,
+          "sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f"
+        },
+        "fixtures/poc/marcx-capacity.json": {
+          "present": true,
+          "sha256": "95474e8c909d13ede2d735655a0b9754f9f302c08e45adeb91c50933d202436b"
+        }
+      },
+      "non_goals_doc": {
+        "path": "docs/acceptance/non-goals-2026-11-14.md",
+        "present": true,
+        "sha256": "def758b74c6bced1edbe5dab977684ac14ac7a6b85c15edb660159d5bb6ee7cd"
+      }
+    },
+    "not_run": [
+      "github_actions",
+      "international_provider_matrix",
+      "self_hosted_nightly_lima_capture"
+    ],
+    "schema_version": 1,
+    "subject": {
+      "branch": "feature/phase8c-ground-truth-v2",
+      "clean_tree": true,
+      "frozen_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+      "release_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+      "tree_sha": "4bf501314b6469328d0256031990bfc402ce6677"
+    }
+  },
+  "release_sha": "4a7b2355ffc5225d013a777bc7d588abac58f944",
+  "schema_version": 1,
+  "status_counts": {
+    "failed": 0,
+    "passed": 13,
+    "skipped": 0,
+    "unavailable": 0
+  },
+  "tree_sha": "4bf501314b6469328d0256031990bfc402ce6677",
+  "violations": []
+}
