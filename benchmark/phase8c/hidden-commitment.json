@@ -1,0 +1,52 @@
+{
+  "analysis_only_count": 2,
+  "benchmark_id": "phase8c-hidden",
+  "commitment_sha256": "eaec60aadd42388efb725a668b887465268c78fd257ec4622ac56eac571bae12",
+  "created_at": "2026-11-16T00:00:00Z",
+  "hidden_version": "phase8c-hidden-v1",
+  "kind": "hidden_benchmark_commitment",
+  "limitations": [
+    "hidden corpus contents, sample descriptions and per-sample reports stay private; this commitment publishes opaque ids and digests only",
+    "sample ids are domain-separated hashes: the public tree cannot map them back to variant descriptions",
+    "isolation is operational, not cryptographic; a same-UID or root reader of the private root can inspect the corpus",
+    "hidden_available and hidden aggregate claims remain false until an authorized campaign executes the hidden lane"
+  ],
+  "public_manifest_sha256": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78",
+  "runtime_count": 6,
+  "sample_count": 8,
+  "samples": [
+    {
+      "opaque_binary_sha256": "61f6114b511c558222664e07d57511722d2a10dbf0fcc37d7a7e75ad9050d4c8",
+      "opaque_sample_id": "0f76f7555f7c89b1d90d76aad85d769a449f389e6b71ad63a12dc856ffaf4bfa"
+    },
+    {
+      "opaque_binary_sha256": "31373ddb357bea842badc731588660ef78b74e0ae4c085f0de73d813f440e4d5",
+      "opaque_sample_id": "1ebe0b5f80f7958462166301380629f60d0fd4fcd9571c76411b4004fe57b5b3"
+    },
+    {
+      "opaque_binary_sha256": "f5751e0f137a7bfbd69d86fdc8bd20978c19e37c4644ce1fd88cf66ec0c94497",
+      "opaque_sample_id": "28e60afe8b9f0a1c686721db02a842a9986303abe432441ab77554b69cc9fbbd"
+    },
+    {
+      "opaque_binary_sha256": "116086aa3fc04a34b87a5e0e41cfd012537abcfc382cedbee6f4b95cbc7f1868",
+      "opaque_sample_id": "4d3ae13e85ad6527ffae48d9b3b86c66b0417c177ea01b81a3e8541e008bffc7"
+    },
+    {
+      "opaque_binary_sha256": "d4681d3e055e4c61d70109883a52415603728cc74f30d0c242e9c11c17e48849",
+      "opaque_sample_id": "4d7f5c62236520dc2ba20c543aadd33add999fbf095bc632dd2935b067924468"
+    },
+    {
+      "opaque_binary_sha256": "3c54d2b5a6a300ac76a77c8fd09f0c096bcdf581a798a30a2325f7291bc0d6d5",
+      "opaque_sample_id": "88efd2cb95243e5b1163c3385e4d6b36fb67549b78e525e3588b3e99d45c27ca"
+    },
+    {
+      "opaque_binary_sha256": "a4c6d10257f23c42fa6f83015e4ee6ac41c5bc0bf4dce356c3bbec71cd0fc545",
+      "opaque_sample_id": "a5460abdb0b0a1565b6aa7e0985f07626b323114c82b82c29783d5630e6a1509"
+    },
+    {
+      "opaque_binary_sha256": "e2381fd096fab964e6f48ea69a52d2d601575c72715193004be928fe4c7237a2",
+      "opaque_sample_id": "f3967a0f0bf5a9489de41587fd85b952e65fc5c9d285c01e3471407ab1809c7a"
+    }
+  ],
+  "schema_version": 1
+}
