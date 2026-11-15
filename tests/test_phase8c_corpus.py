@@ -386,3 +386,14 @@ def test_builder_has_no_ai_or_network_paths():
                       "assistant_llm", "openai", "siliconflow", "socket."):
         assert forbidden not in source, forbidden
     assert "no ai" in source or "no network" in source
+
+
+def test_check_is_host_portable_when_optional_zig_toolchain_is_absent(monkeypatch):
+    """CI hosts without Zig validate committed artifacts, not fresh metadata."""
+    import sys
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import build_phase8c_corpus as builder
+
+    monkeypatch.setattr(builder, "_zig_path", lambda: None)
+    ok, problems = builder.check_artifacts(builder.PUBLIC_DIR)
+    assert ok is True, problems[:10]

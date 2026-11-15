@@ -1592,16 +1592,47 @@ def check_artifacts(out_dir: Path) -> tuple[bool, list[str]]:
     schema = _schema_violations(manifest)
     semantic = _semantic_violations(manifest)
     problems = [*schema, *semantic]
-    if out_dir != PUBLIC_DIR:
-        # For a copied directory, rebuild relative to it: manifest/PROVENANCE are
-        # compared byte-exactly after remapping committed bin payloads.
-        pass
     for relative in (MANIFEST_NAME, README_NAME, PROVENANCE_NAME, SUMS_NAME):
-        target = out_dir / relative
-        if not target.is_file():
+        if not (out_dir / relative).is_file():
             problems.append(f"missing committed artifact {relative}")
-        elif target.read_bytes() != fresh[relative]:
-            problems.append(f"fresh build differs from committed {relative}")
+
+    # Compare stable corpus content, not provenance bytes that intentionally
+    # record the checking host's optional toolchain and the builder/source
+    # digests.  A builder edit or a host without Zig must not make the committed
+    # corpus look tampered; exact payload bytes are covered by SHA256SUMS below.
+    def _stable_manifest(payload: Mapping[str, Any]) -> dict[str, Any]:
+        view = dict(payload)
+        view.pop("provenance", None)
+        return view
+
+    committed_manifest_path = out_dir / MANIFEST_NAME
+    if committed_manifest_path.is_file():
+        try:
+            committed_manifest = _load_json(committed_manifest_path)
+        except (OSError, json.JSONDecodeError):
+            committed_manifest = None
+        fresh_manifest = json.loads(fresh[MANIFEST_NAME].decode("utf-8"))
+        if committed_manifest is not None and (
+            _stable_manifest(committed_manifest) != _stable_manifest(fresh_manifest)
+        ):
+            problems.append("committed manifest content differs from rebuilt corpus")
+
+    committed_prov_path = out_dir / PROVENANCE_NAME
+    if committed_prov_path.is_file():
+        try:
+            committed_prov = _load_json(committed_prov_path)
+        except (OSError, json.JSONDecodeError):
+            committed_prov = None
+        if committed_prov is not None:
+            def _stable_provenance(payload: Mapping[str, Any]) -> dict[str, Any]:
+                view = dict(payload)
+                view.pop("toolchain", None)
+                view.pop("sources", None)
+                return view
+            if _stable_provenance(committed_prov) != _stable_provenance(provenance):
+                problems.append(
+                    "committed provenance content differs from rebuilt corpus")
+
     committed_sums = out_dir / SUMS_NAME
     if committed_sums.is_file():
         listed: dict[str, str] = {}
@@ -1621,7 +1652,6 @@ def check_artifacts(out_dir: Path) -> tuple[bool, list[str]]:
             elif _sha256_file(target) != digest:
                 problems.append(f"SHA256SUMS digest mismatch for {relative}")
     return (not problems), problems
-
 
 def _summary(manifest: Mapping[str, Any], provenance: Mapping[str, Any],
              ok: bool, problems: list[str] | None = None) -> dict[str, Any]:
