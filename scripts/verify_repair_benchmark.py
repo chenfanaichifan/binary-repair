@@ -111,14 +111,16 @@ def verify_case(run_dir: Path, record: dict, case: dict) -> dict:
     artifact = candidate_meta.get("candidate_artifact")
     original_path = ROOT / case["binary"] if not Path(case["binary"]).is_absolute() else Path(case["binary"])
     if not artifact:
-        return {"case_id": case["id"], "decision": "not_run",
-                "reason": "no candidate artifact"}
+        return {"case_id": case["id"], "decision": "artifact_missing",
+                "status": "ARTIFACT_MISSING",
+                "reason": "no candidate artifact recorded"}
     candidate_path = Path(artifact)
     if not candidate_path.is_absolute():
         candidate_path = run_dir / candidate_path
     if not candidate_path.is_file() or not original_path.is_file():
-        return {"case_id": case["id"], "decision": "not_run",
-                "reason": "artifact missing"}
+        return {"case_id": case["id"], "decision": "artifact_missing",
+                "status": "ARTIFACT_MISSING",
+                "reason": "candidate or original artifact missing"}
     original = original_path.read_bytes()
     candidate = candidate_path.read_bytes()
     meta = _container_meta(original)
@@ -186,7 +188,15 @@ def verify_case(run_dir: Path, record: dict, case: dict) -> dict:
         patch_plan=plan, run_poc=run_poc,
     )
     validation = verifier.validate_verification_report(report)
+    status = report["decision"]
+    failed_ids = {c["id"] for c in report.get("checks") or []
+                  if c.get("status") == "failed"}
+    if "layout-plan" in failed_ids or "action-replay" in failed_ids:
+        status = "plan_rejected"
+    elif "abi" in failed_ids:
+        status = "abi_rejected"
     return {"case_id": case["id"], "decision": report["decision"],
+            "status": status,
             "report": report, "validation": validation,
             "generator_gate": (record.get("candidate") or {}).get("gate")}
 

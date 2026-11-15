@@ -111,6 +111,16 @@ def offset_to_va(container: dict[str, Any] | None, offset: int) -> int | None:
         return None
 
 
+def _elf_ptload_offset(data: bytes, va: int) -> int | None:
+    """True PT_LOAD-backed mapping for verifier ABI/cave evidence."""
+    try:
+        from app.services.elf_mapping import map_va as _map_va
+        mapping = _map_va(data, int(va))
+        return mapping.file_offset if mapping.ok else None
+    except Exception:  # noqa: BLE001 - fall back only on parser failure
+        return None
+
+
 def va_to_offset(container: dict[str, Any] | None, va: int) -> int | None:
     if not isinstance(container, dict):
         return None
@@ -754,12 +764,16 @@ def derive_abi_blocks(
         })
 
     arch = str(metadata.get("arch") or (container or {}).get("arch") or "")
+
+    def mapped_offset(va: int) -> int | None:
+        mapped = _elf_ptload_offset(candidate, int(va))
+        return mapped if mapped is not None else va_to_offset(container, int(va))
     for entry in plan.get("abi_blocks") or []:
         if not isinstance(entry, dict):
             continue
         va = int(entry.get("va") or 0)
         size = int(entry.get("size") or 0)
-        offset = va_to_offset(container, va)
+        offset = mapped_offset(va)
         add_block("plan.abi_blocks", str(entry.get("function") or ""), va, size, offset,
                   str(entry.get("arch") or arch))
         declared_sha = entry.get("evidence_sha256")
@@ -778,7 +792,7 @@ def derive_abi_blocks(
             va = int(entry.get("va") or 0)
             size = int(entry.get("size") or 0)
             add_block("metadata.abi_blocks", str(entry.get("function") or ""), va, size,
-                      va_to_offset(container, va), str(entry.get("arch") or arch))
+                      mapped_offset(va), str(entry.get("arch") or arch))
     old_block = metadata.get("abi_block")
     if not blocks and isinstance(old_block, dict):
         offset = old_block.get("offset", old_block.get("file_offset"))
@@ -812,7 +826,7 @@ def derive_abi_blocks(
     if not blocks and cave is not None:
         cave_va = int(cave.get("va") or 0)
         cave_size = int(cave.get("size") or 0)
-        offset = va_to_offset(container, cave_va)
+        offset = mapped_offset(cave_va)
         if offset is not None and cave_size > 0:
             add_block("cave", "guard_cave", cave_va, cave_size, offset, arch)
         else:

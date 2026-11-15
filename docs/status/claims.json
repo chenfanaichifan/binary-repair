@@ -42,7 +42,10 @@
     "N3+ register/stack native trace (gdb unavailable)",
     "AFL/symbolic execution campaign",
     "P16 10/10 independent verification states",
-    "PT_LOAD-backed cave ABI derivation in verifier"
+    "PT_LOAD-backed cave ABI derivation in verifier",
+    "P16-R3 CaveABIBlock exit-semantics for tail-jump/continuation",
+    "P16-R3 verifiable policy-issued Authorization Records",
+    "P16-R3 10/10 candidates independently verified"
   ],
   "non_goals": [
     {
@@ -289,7 +292,9 @@
     "independent verifier applied to 10 benchmark candidates (6 verified)",
     "CWE-121 / CWE-134 negative results retained without gate weakening",
     "real binary_pipeline patch-plan replay in benchmark verifier",
-    "P16 layout/action/target-scope checks pass for one CWE-122 candidate"
+    "P16 layout/action/target-scope checks pass for one CWE-122 candidate",
+    "P16-R3 PT_LOAD-backed cave ABI mapping",
+    "P16-R3 7/10 independent verification states verified with 1 rejected and 2 artifact_missing"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",
