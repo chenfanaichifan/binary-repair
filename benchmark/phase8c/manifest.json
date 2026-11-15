@@ -1,0 +1,2789 @@
+{
+  "benchmark_id": "phase8c-public-v2",
+  "generated_at": "2026-11-16T00:00:00Z",
+  "hidden_available": false,
+  "hidden_commitment": null,
+  "kind": "ground_truth_benchmark_v2",
+  "limitations": [
+    "public corpus only: hidden_available=false and hidden_commitment is null. The hidden commitment file benchmark/phase8c/hidden-commitment.json is owned by the C4/C6 hidden workflow; this builder never creates, reads or fabricates hidden contents.",
+    "compiler/ABI/linking/stripping/ranges unknown for some checked-in fixtures are explicit null/empty with per-sample limitations, never guessed.",
+    "the public split assignment for the new hard/repair/cross-arch groups is deterministic (hard 3/3, repair 3/3, cross-arch 2/2); the 12 v1 samples keep their v1 split.",
+    "runtime-oracle samples are 20 and analysis-only samples are 8 among the 28 core samples; variants add only independently validated compiler/flag builds.",
+    "no network and no AI provider are used by the builder; generated_at is the fixed Phase-8C timestamp."
+  ],
+  "provenance": {
+    "builder": "scripts/build_phase8c_corpus.py",
+    "migration_report_sha256": "a93de5e867ce100aced48232c0c04440d4654b6a2069b4e738e80da204719b85",
+    "source_digest_sha256": "b0fae6893740898f1ff185650e3c41590c3b68a9cd2e585ca8502830f0485b9a",
+    "source_manifest": "benchmark/phase8-v1/manifest.json"
+  },
+  "sample_count": 32,
+  "samples": [
+    {
+      "abi": null,
+      "affected_function": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=cwe121-unchecked-strcpy]",
+        "fixtures/poc/cwe121.json#poc/regression",
+        "fixtures/hard-cases/cwe121_fix.c#length-reject"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "properties": [
+          "reject inputs with length+1 > 50 (exit 1 with contract stderr)",
+          "preserve the valid stdout behaviour"
+        ],
+        "reference_fix_available": true
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+        "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "cwe121-valid-0",
+        "cwe121-valid-1",
+        "cwe121-valid-10",
+        "cwe121-valid-49"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": "{\"exit_code\":1,\"stderr\":\"ERROR: input exceeds destination capacity\\n\",\"stdout\":\"\"}",
+        "expected_original": "{\"exit_code\":0}",
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/cwe121.json",
+        "regression_case_ids": [
+          "cwe121-valid-0",
+          "cwe121-valid-1",
+          "cwe121-valid-10",
+          "cwe121-valid-49"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/cwe121_fix.c",
+        "sha256": "0d404fe7146c30e401be05cc53c5d09b491f8d4f6826f73584e9c61cc9cca6ca"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/cases.json#cases[id=cwe121-unchecked-strcpy]",
+          "fixtures/poc/cwe121.json#poc/regression",
+          "fixtures/hard-cases/cwe121_fix.c#length-reject"
+        ],
+        "statement": "strcpy into char[50] without validating the input length"
+      },
+      "sample_id": "cwe121-public",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe121-valid-0",
+          "cwe121-valid-1",
+          "cwe121-valid-10",
+          "cwe121-valid-49"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+        "fixtures/public/CWE121_src_char_declare_cpy_51b/src.c",
+        "fixtures/poc/cwe121.json",
+        "fixtures/hard-cases/cwe121_fix.c"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "stack_buffer_overflow",
+      "vulnerability_subtype": "CWE-121 stack buffer overflow (unchecked strcpy)"
+    },
+    {
+      "abi": null,
+      "affected_function": "vuln_loop16",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": "high",
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#hard-loop16",
+        "fixtures/poc/hard-loop16.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: inline byte-copy loop into a 16-byte stack buffer; bounded copy + NUL required",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['loop16-overflow-64', 'loop16-overflow-256'] (crash/abort), while regression case(s) ['loop16-short', 'loop16-boundary'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "vuln_loop16"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "compiler/version/flags for this checked-in fixture are not recorded in a committed build manifest; null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "loop16-short",
+        "loop16-boundary"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-loop16.json",
+        "regression_case_ids": [
+          "loop16-short",
+          "loop16-boundary"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/loop16_fix.S",
+        "sha256": "394231b17cc88b25fdf4a610676193b5ab41f012415a85c6ac9199d7fc98d4f2"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+          "fixtures/hard-cases/loop16_fix.S"
+        ],
+        "statement": "Reviewed root cause: inline byte-copy loop into a 16-byte stack buffer; bounded copy + NUL required"
+      },
+      "sample_id": "hard-loop16",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "loop16-short",
+          "loop16-boundary"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+        "fixtures/hard-cases/loop16_fix.S",
+        "fixtures/hard-cases/hard_loops.S",
+        "fixtures/hard-cases/cases.json#hard-loop16"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "vuln_loop16"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['loop16-overflow-64', 'loop16-overflow-256']",
+        "safe/regression behavior must be preserved per case(s) ['loop16-short', 'loop16-boundary']"
+      ],
+      "vulnerability_family": "non-template inline copy",
+      "vulnerability_subtype": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required"
+    },
+    {
+      "abi": null,
+      "affected_function": "vuln_loop32",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": "high",
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#hard-loop32",
+        "fixtures/poc/hard-loop32.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: inline byte-copy loop into a 32-byte stack buffer; bounded copy + NUL required",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['loop32-overflow-64', 'loop32-overflow-256'] (crash/abort), while regression case(s) ['loop32-short', 'loop32-boundary'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 32,
+        "oracle_kind": "external_poc",
+        "target": "vuln_loop32"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "compiler/version/flags for this checked-in fixture are not recorded in a committed build manifest; null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "loop32-short",
+        "loop32-boundary"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-loop32.json",
+        "regression_case_ids": [
+          "loop32-short",
+          "loop32-boundary"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/loop32_fix.S",
+        "sha256": "a97c8475d5101e43c3ddd3abebadf4e79a4de4ef2ab74002ece629c43970050f"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+          "fixtures/hard-cases/loop32_fix.S"
+        ],
+        "statement": "Reviewed root cause: inline byte-copy loop into a 32-byte stack buffer; bounded copy + NUL required"
+      },
+      "sample_id": "hard-loop32",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "loop32-short",
+          "loop32-boundary"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+        "fixtures/hard-cases/loop32_fix.S",
+        "fixtures/hard-cases/hard_loops.S",
+        "fixtures/hard-cases/cases.json#hard-loop32"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "vuln_loop32"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['loop32-overflow-64', 'loop32-overflow-256']",
+        "safe/regression behavior must be preserved per case(s) ['loop32-short', 'loop32-boundary']"
+      ],
+      "vulnerability_family": "non-template inline copy",
+      "vulnerability_subtype": "inline byte-copy loop into a 32-byte stack buffer; no libc call; bounded copy + NUL required"
+    },
+    {
+      "abi": null,
+      "affected_function": "vuln_loop64",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": "high",
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#hard-loop64",
+        "fixtures/poc/hard-loop64.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: inline byte-copy loop into a 64-byte stack buffer; bounded copy + NUL required",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['loop64-overflow-256'] (crash/abort), while regression case(s) ['loop64-short'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 64,
+        "oracle_kind": "external_poc",
+        "target": "vuln_loop64"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "compiler/version/flags for this checked-in fixture are not recorded in a committed build manifest; null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "loop64-short"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-loop64.json",
+        "regression_case_ids": [
+          "loop64-short"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/loop64_fix.S",
+        "sha256": "69578fdade0dfad48fbcb8b72f0d9d6296f0ab08441b314fef4a46e02d05297f"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+          "fixtures/hard-cases/loop64_fix.S"
+        ],
+        "statement": "Reviewed root cause: inline byte-copy loop into a 64-byte stack buffer; bounded copy + NUL required"
+      },
+      "sample_id": "hard-loop64",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "loop64-short"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+        "fixtures/hard-cases/loop64_fix.S",
+        "fixtures/hard-cases/hard_loops.S",
+        "fixtures/hard-cases/hard_loops_extra.S",
+        "fixtures/hard-cases/cases.json#hard-loop64"
+      ],
+      "split": "validation",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "vuln_loop64"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['loop64-overflow-256']",
+        "safe/regression behavior must be preserved per case(s) ['loop64-short']"
+      ],
+      "vulnerability_family": "non-template inline copy",
+      "vulnerability_subtype": "inline byte-copy loop into a 64-byte stack buffer; bounded copy + NUL required"
+    },
+    {
+      "abi": null,
+      "affected_function": "vuln_loop8",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": "high",
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#hard-loop8",
+        "fixtures/poc/hard-loop8.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: inline bounded-copy loop into an 8-byte stack buffer; bounded copy + NUL required",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['loop8-overflow-64', 'loop8-overflow-256'] (crash/abort), while regression case(s) ['loop8-short'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 8,
+        "oracle_kind": "external_poc",
+        "target": "vuln_loop8"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "compiler/version/flags for this checked-in fixture are not recorded in a committed build manifest; null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "loop8-short"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-loop8.json",
+        "regression_case_ids": [
+          "loop8-short"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/loop8_fix.S",
+        "sha256": "4dac385275775cdcce055b5e49de6694bb42756f987af21cb1d7afe8b59f1e08"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+          "fixtures/hard-cases/loop8_fix.S"
+        ],
+        "statement": "Reviewed root cause: inline bounded-copy loop into an 8-byte stack buffer; bounded copy + NUL required"
+      },
+      "sample_id": "hard-loop8",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "loop8-short"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+        "fixtures/hard-cases/loop8_fix.S",
+        "fixtures/hard-cases/hard_loops.S",
+        "fixtures/hard-cases/hard_loops_extra.S",
+        "fixtures/hard-cases/cases.json#hard-loop8"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "vuln_loop8"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['loop8-overflow-64', 'loop8-overflow-256']",
+        "safe/regression behavior must be preserved per case(s) ['loop8-short']"
+      ],
+      "vulnerability_family": "non-template inline copy",
+      "vulnerability_subtype": "inline byte-copy loop into a 8-byte stack buffer; bounded copy + NUL required"
+    },
+    {
+      "abi": null,
+      "affected_function": "multicall_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=hard-multicall]",
+        "fixtures/poc/hard-multicall.json#poc/regression",
+        "fixtures/hard-cases/multicall_fix.c#length-reject"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "properties": [
+          "reject inputs that do not fit the 16-byte destination",
+          "preserve normal short-input behaviour"
+        ],
+        "reference_fix_available": true
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+        "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "multicall-short"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":0}",
+        "expected_original": "{\"crashed\":true}",
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-multicall.json",
+        "regression_case_ids": [
+          "multicall-short"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/multicall_fix.c",
+        "sha256": "d7fab98aab8f7b3d6b8403f9f8280d3379a849e0e586bfe86b0042b6049a6347"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/cases.json#cases[id=hard-multicall]",
+          "fixtures/poc/hard-multicall.json#poc/regression",
+          "fixtures/hard-cases/multicall_fix.c#length-reject"
+        ],
+        "statement": "input copied into a 16-byte destination through a non-template path"
+      },
+      "sample_id": "hard-multicall",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "multicall-short"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "fixtures/hard-cases/hard_cases.c",
+        "fixtures/poc/hard-multicall.json",
+        "fixtures/hard-cases/multicall_fix.c"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "multicall_bad"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "non_template",
+      "vulnerability_subtype": "CWE-121 non-template semantic/multi-layer copy"
+    },
+    {
+      "abi": null,
+      "affected_function": "nonconst_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=hard-nonconst]",
+        "fixtures/poc/hard-nonconst.json#poc/regression",
+        "fixtures/hard-cases/nonconst_fix.c#length-reject"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "properties": [
+          "reject inputs that do not fit the 16-byte destination",
+          "preserve normal short-input behaviour"
+        ],
+        "reference_fix_available": true
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+        "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "nonconst-short"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":0}",
+        "expected_original": "{\"crashed\":true}",
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-nonconst.json",
+        "regression_case_ids": [
+          "nonconst-short"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/nonconst_fix.c",
+        "sha256": "9cd9180c19ceb64783bcd58c7227517d50f1c758ffd496017aa7c7dbcdabb06f"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/cases.json#cases[id=hard-nonconst]",
+          "fixtures/poc/hard-nonconst.json#poc/regression",
+          "fixtures/hard-cases/nonconst_fix.c#length-reject"
+        ],
+        "statement": "input copied into a 16-byte destination with non-constant length"
+      },
+      "sample_id": "hard-nonconst",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "nonconst-short"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "fixtures/hard-cases/hard_cases.c",
+        "fixtures/poc/hard-nonconst.json",
+        "fixtures/hard-cases/nonconst_fix.c"
+      ],
+      "split": "validation",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "nonconst_bad"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "non_template",
+      "vulnerability_subtype": "CWE-121 non-constant-length copy"
+    },
+    {
+      "abi": null,
+      "affected_function": "vuln_loop_reverse",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": "high",
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#hard-reverse",
+        "fixtures/poc/hard-reverse.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: reverse inline copy loop into a 16-byte stack buffer; bounded copy + NUL required",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['reverse-overflow-64', 'reverse-overflow-256'] (crash/abort), while regression case(s) ['reverse-short', 'reverse-boundary'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "vuln_loop_reverse"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "compiler/version/flags for this checked-in fixture are not recorded in a committed build manifest; null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "reverse-short",
+        "reverse-boundary"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-reverse.json",
+        "regression_case_ids": [
+          "reverse-short",
+          "reverse-boundary"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/reverse_fix.S",
+        "sha256": "394231b17cc88b25fdf4a610676193b5ab41f012415a85c6ac9199d7fc98d4f2"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+          "fixtures/hard-cases/reverse_fix.S"
+        ],
+        "statement": "Reviewed root cause: reverse inline copy loop into a 16-byte stack buffer; bounded copy + NUL required"
+      },
+      "sample_id": "hard-reverse",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "reverse-short",
+          "reverse-boundary"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+        "fixtures/hard-cases/reverse_fix.S",
+        "fixtures/hard-cases/hard_loops.S",
+        "fixtures/hard-cases/cases.json#hard-reverse"
+      ],
+      "split": "validation",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "vuln_loop_reverse"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['reverse-overflow-64', 'reverse-overflow-256']",
+        "safe/regression behavior must be preserved per case(s) ['reverse-short', 'reverse-boundary']"
+      ],
+      "vulnerability_family": "non-template inline copy",
+      "vulnerability_subtype": "inline byte-copy loop into a 16-byte stack buffer; no libc call; bounded copy + NUL required"
+    },
+    {
+      "abi": null,
+      "affected_function": "sprintf_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=hard-sprintf]",
+        "fixtures/poc/hard-sprintf.json#poc/regression",
+        "fixtures/hard-cases/sprintf_fix.c#length-reject"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "properties": [
+          "reject inputs that do not fit the 16-byte destination",
+          "preserve normal short-input behaviour"
+        ],
+        "reference_fix_available": true
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+        "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "sprintf-short"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":0}",
+        "expected_original": "{\"crashed\":true}",
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/hard-sprintf.json",
+        "regression_case_ids": [
+          "sprintf-short"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/sprintf_fix.c",
+        "sha256": "58f99c0e5126cdc874f5510d15b1cea8794ec73d79a49ac578f4a1942087eb2b"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/cases.json#cases[id=hard-sprintf]",
+          "fixtures/poc/hard-sprintf.json#poc/regression",
+          "fixtures/hard-cases/sprintf_fix.c#length-reject"
+        ],
+        "statement": "input copied into a 16-byte destination through a non-template sprintf path"
+      },
+      "sample_id": "hard-sprintf",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "sprintf-short"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "fixtures/hard-cases/hard_cases.c",
+        "fixtures/poc/hard-sprintf.json",
+        "fixtures/hard-cases/sprintf_fix.c"
+      ],
+      "split": "validation",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "sprintf_bad"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "non_template",
+      "vulnerability_subtype": "CWE-121 non-template sprintf/format expansion path"
+    },
+    {
+      "abi": null,
+      "affected_function": "heap_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=heap-canary]",
+        "fixtures/poc/heap-canary.json#poc/regression",
+        "fixtures/hard-cases/heap_canary_fix.c#capacity-reject"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "properties": [
+          "reject oversized input before the copy (guard not corrupted)",
+          "preserve normal short-input behaviour"
+        ],
+        "reference_fix_available": true
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+        "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "heap-short"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": "{\"exit_code\":0}",
+        "expected_original": "{\"exit_code\":1,\"stderr_contains\":\"HEAP GUARD CORRUPT\"}",
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/heap-canary.json",
+        "regression_case_ids": [
+          "heap-short"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/heap_canary_fix.c",
+        "sha256": "f23fc5bef1806ec4b4e4775fe0fd5a164a527e9042a8d360338fa461eb1d2499"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/cases.json#cases[id=heap-canary]",
+          "fixtures/poc/heap-canary.json#poc/regression",
+          "fixtures/hard-cases/heap_canary_fix.c#capacity-reject"
+        ],
+        "statement": "unbounded copy into a 16-byte heap buffer followed by a guard word"
+      },
+      "sample_id": "heap-canary",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "heap-short"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+        "fixtures/hard-cases/heap_canary.c",
+        "fixtures/poc/heap-canary.json",
+        "fixtures/hard-cases/heap_canary_fix.c"
+      ],
+      "split": "validation",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "heap_bad"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "heap_buffer_overflow",
+      "vulnerability_subtype": "CWE-121 heap buffer overflow / guard corruption"
+    },
+    {
+      "abi": null,
+      "affected_function": "render",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": null,
+      "cwe": "CWE-131",
+      "endian": "little",
+      "evidence_refs": [
+        "docs/architecture/capacity-check-repair.md#verified-fix-site",
+        "fixtures/poc/marcx-capacity.json#poc/regression",
+        "fixtures/hard-cases/capacity_confusion.c#span-check"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "documented_by": "docs/architecture/capacity-check-repair.md",
+        "patched_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+        "properties": [
+          "destination range validated against the output buffer capacity",
+          "16-byte in-place rewrite at the reviewed site"
+        ],
+        "reference_fix_available": false,
+        "rewrite_bytes": 16,
+        "site_va": "0x4020d9"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+        "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 has no reference fix for this sample; null",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "benign",
+        "benign-sparse",
+        "benign-crc",
+        "ctrl-span-equal-sizes",
+        "ctrl-span-no-sparse",
+        "ctrl-span-src-oob",
+        "ctrl-literal-dst-oob",
+        "bad-crc"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":1,\"stderr_contains\":\"span destination outside the output\"}",
+        "expected_original": "{\"crashed\":true}",
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/marcx-capacity.json",
+        "regression_case_ids": [
+          "benign",
+          "benign-sparse",
+          "benign-crc",
+          "ctrl-span-equal-sizes",
+          "ctrl-span-no-sparse",
+          "ctrl-span-src-oob",
+          "ctrl-literal-dst-oob",
+          "bad-crc"
+        ]
+      },
+      "reference_fix": null,
+      "root_cause": {
+        "evidence_refs": [
+          "docs/architecture/capacity-check-repair.md#verified-fix-site",
+          "fixtures/poc/marcx-capacity.json#poc/regression",
+          "fixtures/hard-cases/capacity_confusion.c#span-check"
+        ],
+        "statement": "span destination range is validated against data_size instead of out_size"
+      },
+      "sample_id": "heap-capacity-x86_64",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "benign",
+          "benign-sparse",
+          "benign-crc",
+          "ctrl-span-equal-sizes",
+          "ctrl-span-no-sparse",
+          "ctrl-span-src-oob",
+          "ctrl-literal-dst-oob",
+          "bad-crc"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/elf/vuln-capacity-confusion-x86_64.elf",
+        "fixtures/hard-cases/capacity_confusion.c",
+        "fixtures/poc/marcx-capacity.json"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "end": 4202729,
+        "kind": "va_range",
+        "va": 4202713
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "heap_capacity",
+      "vulnerability_subtype": "CWE-131/697/787 capacity-check confusion (destination validated against payload-pool size)"
+    },
+    {
+      "abi": null,
+      "affected_function": "heap_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": "high",
+      "cwe": "CWE-122",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/heap_capacity.c",
+        "fixtures/poc/heap-malloc.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: heap_bad copies argv[1] into a 16-byte malloc block with strcpy; a repaired path must reject/truncate oversized input and keep normal output",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['heap-overflow-64', 'heap-overflow-256'] (crash/abort), while regression case(s) ['heap-short-hi', 'heap-short-10', 'heap-boundary-15'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "heap_bad"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "compiler/flags for this checked-in heap fixture are recorded only in a source comment; null in the sample, not guessed",
+        "compiler/version/flags for this checked-in fixture are not recorded in a committed build manifest; null, not guessed",
+        "no committed reference fix for this fixture",
+        "no dedicated committed reference-fix source exists for vuln-heap-malloc-x86_64.elf; reference_fix is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "heap-short-hi",
+        "heap-short-10",
+        "heap-boundary-15"
+      ],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/heap-malloc.json",
+        "regression_case_ids": [
+          "heap-short-hi",
+          "heap-short-10",
+          "heap-boundary-15"
+        ]
+      },
+      "reference_fix": null,
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/vuln-heap-malloc-x86_64.elf",
+          "fixtures/hard-cases/heap_capacity.c"
+        ],
+        "statement": "Reviewed root cause: heap_bad copies argv[1] into a 16-byte malloc block with strcpy; a repaired path must reject/truncate oversized input and keep normal output"
+      },
+      "sample_id": "heap-malloc",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "heap-short-hi",
+          "heap-short-10",
+          "heap-boundary-15"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/hard-cases/vuln-heap-malloc-x86_64.elf",
+        "fixtures/hard-cases/heap_capacity.c",
+        "fixtures/poc/heap-malloc.json"
+      ],
+      "split": "validation",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "heap_bad"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['heap-overflow-64', 'heap-overflow-256']",
+        "safe/regression behavior must be preserved per case(s) ['heap-short-hi', 'heap-short-10', 'heap-boundary-15']"
+      ],
+      "vulnerability_family": "heap_buffer_overflow",
+      "vulnerability_subtype": "heap malloc capacity hard case (unbounded strcpy)"
+    },
+    {
+      "abi": null,
+      "affected_function": "vuln_copy",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": "0.17.1",
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/poc/elf-x86_64-loop.json#poc/regression",
+        "fixtures/hard-cases/loop_fix.S#bounded-loop",
+        "fixtures/src/vuln_copy_loop_x86_64.S#deliberately-not-strcpy"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "properties": [
+          "copy capped at capacity-1 and NUL-terminated",
+          "short/boundary inputs keep exit code 0",
+          "oversized input no longer crashes"
+        ],
+        "reference_fix_available": true
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "v1 environment metadata records only a toolchain version (0.17.1); the compiler name is null, not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "loop-short",
+        "loop-boundary"
+      ],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":0}",
+        "expected_original": "{\"crashed\":true}",
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/elf-x86_64-loop.json",
+        "regression_case_ids": [
+          "loop-short",
+          "loop-boundary"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/loop_fix.S",
+        "sha256": "8842523781ee9b955e4f1e6bd108248aa04260013134f72e0ce0f47be3281995"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/poc/elf-x86_64-loop.json#poc/regression",
+          "fixtures/hard-cases/loop_fix.S#bounded-loop",
+          "fixtures/src/vuln_copy_loop_x86_64.S#deliberately-not-strcpy"
+        ],
+        "statement": "inlined byte-copy loop into a 16-byte stack buffer without a bound"
+      },
+      "sample_id": "inline-loop",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "loop-short",
+          "loop-boundary"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/elf/vuln-loop-x86_64.elf",
+        "fixtures/src/vuln_copy_loop_x86_64.S",
+        "fixtures/poc/elf-x86_64-loop.json",
+        "fixtures/hard-cases/loop_fix.S"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "vuln_copy"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "non_template",
+      "vulnerability_subtype": "CWE-121 non-template inline byte-copy loop"
+    },
+    {
+      "abi": null,
+      "affected_function": null,
+      "affected_ranges": [],
+      "arch": "i386",
+      "binary_sha256": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+      "bits": 32,
+      "compiler": null,
+      "compiler_version": "0.17.1",
+      "confidence": null,
+      "cwe": null,
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/PROVENANCE.json#fixtures[name=pe-i386-control]",
+        "fixtures/src/control_i386.c#negative-control-comment"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "expected": "no vulnerability claim and no verified candidate",
+        "properties": [],
+        "reference_fix_available": false,
+        "verification": "not_claimed"
+      },
+      "expected_scope": "analysis_only",
+      "format": "pe",
+      "limitations": [
+        "v1 environment metadata records only a toolchain version (0.17.1); the compiler name is null, not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "v1 did not record a CWE id; null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 has no reference fix for this sample; null",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": null,
+        "expected_original": null,
+        "kind": "static",
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "regression_case_ids": []
+      },
+      "reference_fix": null,
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/PROVENANCE.json#fixtures[name=pe-i386-control]",
+          "fixtures/src/control_i386.c#negative-control-comment"
+        ],
+        "statement": "none (negative control: out-of-matrix PE/i386)"
+      },
+      "sample_id": "negative-control",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [],
+        "required": false
+      },
+      "source_refs": [
+        "fixtures/pe/i386-control.exe",
+        "fixtures/src/control_i386.c"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "analysis_only"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "negative_control",
+      "vulnerability_subtype": "none (negative control: out-of-matrix PE/i386)"
+    },
+    {
+      "abi": null,
+      "affected_function": "cwe122_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+      "bits": 64,
+      "compiler": "gcc",
+      "compiler_version": "13.3.0 (x86_64-linux-gnu)",
+      "confidence": "high",
+      "cwe": "CWE-122",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/repair-benchmark/cases.json#cwe122-heap-copy",
+        "fixtures/repair-benchmark/CWE122_heap_copy/build.json",
+        "fixtures/poc/repair-cwe122.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: CWE122 heap overflow: malloc(16) + memcpy(strlen+1); reject oversized input and preserve hi output",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['cwe122-overflow-64', 'cwe122-overflow-256'] (crash/abort), while regression case(s) ['cwe122-short'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "cwe122_bad"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "source case split field is 'dev'; the Phase-8C public split assignment is 'dev' per the approved public corpus table"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "cwe122-short"
+      ],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/repair-cwe122.json",
+        "regression_case_ids": [
+          "cwe122-short"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/repair-benchmark/CWE122_heap_copy/reference_fix.c",
+        "sha256": "2d0edb39c3c65f73b4950cd6431fd6b6131cdb498e740778c0be805b27e39425"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/repair-benchmark/CWE122_heap_copy/original.elf",
+          "fixtures/repair-benchmark/CWE122_heap_copy/reference_fix.c"
+        ],
+        "statement": "Reviewed root cause: CWE122 heap overflow: malloc(16) + memcpy(strlen+1); reject oversized input and preserve hi output"
+      },
+      "sample_id": "repair-cwe122",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe122-short"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/repair-benchmark/CWE122_heap_copy/original.elf",
+        "fixtures/repair-benchmark/CWE122_heap_copy/reference_fix.c",
+        "fixtures/repair-benchmark/CWE122_heap_copy/vuln.c",
+        "fixtures/repair-benchmark/CWE122_heap_copy/defect.json",
+        "fixtures/repair-benchmark/cases.json#cwe122-heap-copy"
+      ],
+      "split": "dev",
+      "stripping_status": "not_stripped",
+      "target": {
+        "kind": "symbol",
+        "symbol": "cwe122_bad"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['cwe122-overflow-64', 'cwe122-overflow-256']",
+        "safe/regression behavior must be preserved per case(s) ['cwe122-short']"
+      ],
+      "vulnerability_family": "heap copy semantic guard",
+      "vulnerability_subtype": "CWE122 heap overflow: malloc(16) + memcpy(strlen+1); reject oversized input and preserve hi output"
+    },
+    {
+      "abi": null,
+      "affected_function": "cwe125_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+      "bits": 64,
+      "compiler": "gcc",
+      "compiler_version": "13.3.0 (x86_64-linux-gnu)",
+      "confidence": "high",
+      "cwe": "CWE-125",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/repair-benchmark/cases.json#cwe125-oob-read",
+        "fixtures/repair-benchmark/CWE125_oob_read/build.json",
+        "fixtures/poc/repair-cwe125.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: OOB read: index unchecked for dst[16]; block out-of-range read and preserve valid output",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['cwe125-high-index'] (crash/abort), while regression case(s) ['cwe125-index-5'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "cwe125_bad"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "source case split field is 'dev'; the Phase-8C public split assignment is 'dev' per the approved public corpus table"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "cwe125-index-5"
+      ],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/repair-cwe125.json",
+        "regression_case_ids": [
+          "cwe125-index-5"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/repair-benchmark/CWE125_oob_read/reference_fix.c",
+        "sha256": "364b153c91815f9605404f11f9f5425b128167a27ad65a82799d76ebba2b1947"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/repair-benchmark/CWE125_oob_read/original.elf",
+          "fixtures/repair-benchmark/CWE125_oob_read/reference_fix.c"
+        ],
+        "statement": "Reviewed root cause: OOB read: index unchecked for dst[16]; block out-of-range read and preserve valid output"
+      },
+      "sample_id": "repair-cwe125",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe125-index-5"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/repair-benchmark/CWE125_oob_read/original.elf",
+        "fixtures/repair-benchmark/CWE125_oob_read/reference_fix.c",
+        "fixtures/repair-benchmark/CWE125_oob_read/vuln.c",
+        "fixtures/repair-benchmark/CWE125_oob_read/defect.json",
+        "fixtures/repair-benchmark/cases.json#cwe125-oob-read"
+      ],
+      "split": "dev",
+      "stripping_status": "not_stripped",
+      "target": {
+        "kind": "symbol",
+        "symbol": "cwe125_bad"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['cwe125-high-index']",
+        "safe/regression behavior must be preserved per case(s) ['cwe125-index-5']"
+      ],
+      "vulnerability_family": "CWE-125",
+      "vulnerability_subtype": "OOB read: index unchecked for dst[16]; block out-of-range read and preserve valid output"
+    },
+    {
+      "abi": null,
+      "affected_function": "cwe134_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "c74266a421fa3e61f33b1669d3ae22640672a5136cb22871326ab3a5ad16a56d",
+      "bits": 64,
+      "compiler": "gcc",
+      "compiler_version": "13.3.0 (x86_64-linux-gnu)",
+      "confidence": "high",
+      "cwe": "CWE-134",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/repair-benchmark/cases.json#cwe134-format-string",
+        "fixtures/repair-benchmark/CWE134_format_string/build.json",
+        "fixtures/poc/repair-cwe134.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: Uncontrolled format string: printf(src, bad ptr); fix format use and preserve valid output",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['cwe134-percent-s'] (crash/abort), while regression case(s) ['cwe134-hi'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "cwe134_bad"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "source case split field is 'hidden'; the Phase-8C public split assignment is 'dev' per the approved public corpus table"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "cwe134-hi"
+      ],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/repair-cwe134.json",
+        "regression_case_ids": [
+          "cwe134-hi"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/repair-benchmark/CWE134_format_string/reference_fix.c",
+        "sha256": "36c80a49c8a9d74f143ecd3535b1edda6794fb708ee06baaf3d61639711c1b28"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/repair-benchmark/CWE134_format_string/original.elf",
+          "fixtures/repair-benchmark/CWE134_format_string/reference_fix.c"
+        ],
+        "statement": "Reviewed root cause: Uncontrolled format string: printf(src, bad ptr); fix format use and preserve valid output"
+      },
+      "sample_id": "repair-cwe134",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe134-hi"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/repair-benchmark/CWE134_format_string/original.elf",
+        "fixtures/repair-benchmark/CWE134_format_string/reference_fix.c",
+        "fixtures/repair-benchmark/CWE134_format_string/vuln.c",
+        "fixtures/repair-benchmark/CWE134_format_string/defect.json",
+        "fixtures/repair-benchmark/cases.json#cwe134-format-string"
+      ],
+      "split": "dev",
+      "stripping_status": "not_stripped",
+      "target": {
+        "kind": "symbol",
+        "symbol": "cwe134_bad"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['cwe134-percent-s']",
+        "safe/regression behavior must be preserved per case(s) ['cwe134-hi']"
+      ],
+      "vulnerability_family": "CWE-134",
+      "vulnerability_subtype": "Uncontrolled format string: printf(src, bad ptr); fix format use and preserve valid output"
+    },
+    {
+      "abi": null,
+      "affected_function": "cwe190_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+      "bits": 64,
+      "compiler": "gcc",
+      "compiler_version": "13.3.0 (x86_64-linux-gnu)",
+      "confidence": "high",
+      "cwe": "CWE-190",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/repair-benchmark/cases.json#cwe190-integer-overflow",
+        "fixtures/repair-benchmark/CWE190_integer_overflow/build.json",
+        "fixtures/poc/repair-cwe190.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: Integer overflow: negative length reaches malloc/memcpy; reject invalid length and preserve normal output",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['cwe190-negative'] (crash/abort), while regression case(s) ['cwe190-len-4'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "cwe190_bad"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "source case split field is 'dev'; the Phase-8C public split assignment is 'validation' per the approved public corpus table"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "cwe190-len-4"
+      ],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/repair-cwe190.json",
+        "regression_case_ids": [
+          "cwe190-len-4"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/repair-benchmark/CWE190_integer_overflow/reference_fix.c",
+        "sha256": "3f24da2f35e97bfbc88871102b17c01b145a071899567b17d22e412d764bb8d9"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/repair-benchmark/CWE190_integer_overflow/original.elf",
+          "fixtures/repair-benchmark/CWE190_integer_overflow/reference_fix.c"
+        ],
+        "statement": "Reviewed root cause: Integer overflow: negative length reaches malloc/memcpy; reject invalid length and preserve normal output"
+      },
+      "sample_id": "repair-cwe190",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe190-len-4"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/repair-benchmark/CWE190_integer_overflow/original.elf",
+        "fixtures/repair-benchmark/CWE190_integer_overflow/reference_fix.c",
+        "fixtures/repair-benchmark/CWE190_integer_overflow/vuln.c",
+        "fixtures/repair-benchmark/CWE190_integer_overflow/defect.json",
+        "fixtures/repair-benchmark/cases.json#cwe190-integer-overflow"
+      ],
+      "split": "validation",
+      "stripping_status": "not_stripped",
+      "target": {
+        "kind": "symbol",
+        "symbol": "cwe190_bad"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['cwe190-negative']",
+        "safe/regression behavior must be preserved per case(s) ['cwe190-len-4']"
+      ],
+      "vulnerability_family": "CWE-190",
+      "vulnerability_subtype": "Integer overflow: negative length reaches malloc/memcpy; reject invalid length and preserve normal output"
+    },
+    {
+      "abi": null,
+      "affected_function": "cwe476_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+      "bits": 64,
+      "compiler": "gcc",
+      "compiler_version": "13.3.0 (x86_64-linux-gnu)",
+      "confidence": "high",
+      "cwe": "CWE-476",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/repair-benchmark/cases.json#cwe476-null-deref",
+        "fixtures/repair-benchmark/CWE476_null_deref/build.json",
+        "fixtures/poc/repair-cwe476.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: NULL dereference: unchecked pointer write; reject null path and preserve normal output",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['cwe476-null'] (crash/abort), while regression case(s) ['cwe476-ok'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "cwe476_bad"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "source case split field is 'hidden'; the Phase-8C public split assignment is 'validation' per the approved public corpus table"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "cwe476-ok"
+      ],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/repair-cwe476.json",
+        "regression_case_ids": [
+          "cwe476-ok"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/repair-benchmark/CWE476_null_deref/reference_fix.c",
+        "sha256": "f3ec4063e96a029a14e92d0a8107ccea8ea8e2e529fbfa925d1c2a5a0da2d3e8"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/repair-benchmark/CWE476_null_deref/original.elf",
+          "fixtures/repair-benchmark/CWE476_null_deref/reference_fix.c"
+        ],
+        "statement": "Reviewed root cause: NULL dereference: unchecked pointer write; reject null path and preserve normal output"
+      },
+      "sample_id": "repair-cwe476",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe476-ok"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/repair-benchmark/CWE476_null_deref/original.elf",
+        "fixtures/repair-benchmark/CWE476_null_deref/reference_fix.c",
+        "fixtures/repair-benchmark/CWE476_null_deref/vuln.c",
+        "fixtures/repair-benchmark/CWE476_null_deref/defect.json",
+        "fixtures/repair-benchmark/cases.json#cwe476-null-deref"
+      ],
+      "split": "validation",
+      "stripping_status": "not_stripped",
+      "target": {
+        "kind": "symbol",
+        "symbol": "cwe476_bad"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['cwe476-null']",
+        "safe/regression behavior must be preserved per case(s) ['cwe476-ok']"
+      ],
+      "vulnerability_family": "CWE-476",
+      "vulnerability_subtype": "NULL dereference: unchecked pointer write; reject null path and preserve normal output"
+    },
+    {
+      "abi": null,
+      "affected_function": "cwe787_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+      "bits": 64,
+      "compiler": "gcc",
+      "compiler_version": "13.3.0 (x86_64-linux-gnu)",
+      "confidence": "high",
+      "cwe": "CWE-787",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/repair-benchmark/cases.json#cwe787-index-write",
+        "fixtures/repair-benchmark/CWE787_index_write/build.json",
+        "fixtures/poc/repair-cwe787.json"
+      ],
+      "expected_fixed_behavior": "candidate must survive the PoC case(s) and preserve the regression case behavior: CWE787 out-of-bounds write: atoi index writes dst[index]; reject/clamp out-of-range index and preserve normal output",
+      "expected_original_behavior": "original binary does not survive the PoC case(s) ['cwe787-index-large'] (crash/abort), while regression case(s) ['cwe787-index-5', 'cwe787-index-15'] keep their recorded behavior",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "cwe787_bad"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "ABI/linking details are not declared for this fixture; null, not guessed",
+        "affected byte ranges are not recorded for this fixture; empty, not guessed",
+        "source case split field is 'dev'; the Phase-8C public split assignment is 'validation' per the approved public corpus table"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "cwe787-index-5",
+        "cwe787-index-15"
+      ],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/repair-cwe787.json",
+        "regression_case_ids": [
+          "cwe787-index-5",
+          "cwe787-index-15"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/repair-benchmark/CWE787_index_write/reference_fix.c",
+        "sha256": "23ec03964715f42c9668bb0e08658d10133f51d689e02e0e535f0a71b21ff0be"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/repair-benchmark/CWE787_index_write/original.elf",
+          "fixtures/repair-benchmark/CWE787_index_write/reference_fix.c"
+        ],
+        "statement": "Reviewed root cause: CWE787 out-of-bounds write: atoi index writes dst[index]; reject/clamp out-of-range index and preserve normal output"
+      },
+      "sample_id": "repair-cwe787",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe787-index-5",
+          "cwe787-index-15"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/repair-benchmark/CWE787_index_write/original.elf",
+        "fixtures/repair-benchmark/CWE787_index_write/reference_fix.c",
+        "fixtures/repair-benchmark/CWE787_index_write/vuln.c",
+        "fixtures/repair-benchmark/CWE787_index_write/defect.json",
+        "fixtures/repair-benchmark/cases.json#cwe787-index-write"
+      ],
+      "split": "validation",
+      "stripping_status": "not_stripped",
+      "target": {
+        "kind": "symbol",
+        "symbol": "cwe787_bad"
+      },
+      "trigger_conditions": [
+        "oversized input triggers the vulnerability per PoC case(s) ['cwe787-index-large']",
+        "safe/regression behavior must be preserved per case(s) ['cwe787-index-5', 'cwe787-index-15']"
+      ],
+      "vulnerability_family": "indexed write semantic guard",
+      "vulnerability_subtype": "CWE787 out-of-bounds write: atoi index writes dst[index]; reject/clamp out-of-range index and preserve normal output"
+    },
+    {
+      "abi": null,
+      "affected_function": "vuln_copy",
+      "affected_ranges": [],
+      "arch": "i386",
+      "binary_sha256": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
+      "bits": 32,
+      "compiler": null,
+      "compiler_version": "0.17.1",
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/src/vuln_memcpy_elf32_x86.S#capacity-comment",
+        "fixtures/PROVENANCE.json#fixtures[name=elf-x86-memcpy]"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "properties": [],
+        "reference_fix_available": false,
+        "verification": "not_claimed"
+      },
+      "expected_scope": "analysis_only",
+      "format": "elf",
+      "limitations": [
+        "v1 environment metadata records only a toolchain version (0.17.1); the compiler name is null, not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 has no reference fix for this sample; null",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": null,
+        "expected_original": null,
+        "kind": "static",
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "regression_case_ids": []
+      },
+      "reference_fix": null,
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/src/vuln_memcpy_elf32_x86.S#capacity-comment",
+          "fixtures/PROVENANCE.json#fixtures[name=elf-x86-memcpy]"
+        ],
+        "statement": "memcpy with immediate length 64 into a 16-byte stack destination (i386)"
+      },
+      "sample_id": "stack-memcpy-x86",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [],
+        "required": false
+      },
+      "source_refs": [
+        "fixtures/elf/vuln-memcpy-x86.elf",
+        "fixtures/src/vuln_memcpy_elf32_x86.S",
+        "fixtures/src/main.c"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "analysis_only"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "stack_buffer_overflow",
+      "vulnerability_subtype": "CWE-121 immediate-length memcpy overflow (i386)"
+    },
+    {
+      "abi": null,
+      "affected_function": "vuln_copy",
+      "affected_ranges": [],
+      "arch": "i386",
+      "binary_sha256": "a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d",
+      "bits": 32,
+      "compiler": null,
+      "compiler_version": "0.17.1",
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/src/vuln_copy_elf32_x86.S#capacity-comment",
+        "fixtures/PROVENANCE.json#fixtures[name=elf-x86]"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "properties": [],
+        "reference_fix_available": false,
+        "verification": "not_claimed"
+      },
+      "expected_scope": "analysis_only",
+      "format": "elf",
+      "limitations": [
+        "v1 environment metadata records only a toolchain version (0.17.1); the compiler name is null, not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 has no reference fix for this sample; null",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": null,
+        "expected_original": null,
+        "kind": "static",
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "regression_case_ids": []
+      },
+      "reference_fix": null,
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/src/vuln_copy_elf32_x86.S#capacity-comment",
+          "fixtures/PROVENANCE.json#fixtures[name=elf-x86]"
+        ],
+        "statement": "unbounded strcpy into a 16-byte stack destination (i386)"
+      },
+      "sample_id": "stack-strcpy-x86",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [],
+        "required": false
+      },
+      "source_refs": [
+        "fixtures/elf/vuln-strcpy-x86.elf",
+        "fixtures/src/vuln_copy_elf32_x86.S",
+        "fixtures/src/main.c"
+      ],
+      "split": "validation",
+      "stripping_status": null,
+      "target": {
+        "kind": "analysis_only"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "stack_buffer_overflow",
+      "vulnerability_subtype": "CWE-121 stack buffer overflow (unbounded strcpy, i386)"
+    },
+    {
+      "abi": null,
+      "affected_function": "vuln_copy",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": "0.17.1",
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/poc/elf-x86_64-strcpy.json#poc/regression",
+        "fixtures/src/vuln_copy_elf_x86_64.S#capacity-comment",
+        "fixtures/PROVENANCE.json#fixtures[name=elf-x86_64]"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "properties": [
+          "bounded copy or length validation before strcpy",
+          "valid short input keeps exit code 0",
+          "oversized input no longer crashes the process"
+        ],
+        "reference_fix_available": false
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "v1 environment metadata records only a toolchain version (0.17.1); the compiler name is null, not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 has no reference fix for this sample; null",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [
+        "short-hi",
+        "boundary-15"
+      ],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": "{\"crashed\":false,\"exit_code\":0}",
+        "expected_original": "{\"crashed\":true}",
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "fixtures/poc/elf-x86_64-strcpy.json",
+        "regression_case_ids": [
+          "short-hi",
+          "boundary-15"
+        ]
+      },
+      "reference_fix": null,
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/poc/elf-x86_64-strcpy.json#poc/regression",
+          "fixtures/src/vuln_copy_elf_x86_64.S#capacity-comment",
+          "fixtures/PROVENANCE.json#fixtures[name=elf-x86_64]"
+        ],
+        "statement": "unbounded strcpy into a 16-byte stack destination"
+      },
+      "sample_id": "stack-strcpy-x86_64",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "short-hi",
+          "boundary-15"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "fixtures/elf/vuln-strcpy-x86_64.elf",
+        "fixtures/src/vuln_copy_elf_x86_64.S",
+        "fixtures/src/main.c",
+        "fixtures/poc/elf-x86_64-strcpy.json"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "symbol",
+        "symbol": "vuln_copy"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "stack_buffer_overflow",
+      "vulnerability_subtype": "CWE-121 stack buffer overflow (unbounded strcpy)"
+    },
+    {
+      "abi": null,
+      "affected_function": "CWE416_Use_After_Free__malloc_free_char_01_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+      "bits": 64,
+      "compiler": null,
+      "compiler_version": null,
+      "confidence": null,
+      "cwe": "CWE-416",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/hard-cases/cases.json#cases[id=uaf-noinput]",
+        "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json",
+        "fixtures/hard-cases/uaf_fix.c#read-before-free"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {
+        "properties": [],
+        "reference_fix_available": true,
+        "verification": "not_claimed"
+      },
+      "expected_scope": "analysis_only",
+      "format": "elf",
+      "limitations": [
+        "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+        "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+        "v1 did not record abi; the v2 field is null, not guessed",
+        "v1 did not record linking_mode; the v2 field is null, not guessed",
+        "v1 did not record stripping_status; the v2 field is null, not guessed",
+        "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+        "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+        "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+        "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+        "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+        "v1 did not record confidence; the v2 field is null, not guessed"
+      ],
+      "linking_mode": null,
+      "negative_cases": [],
+      "optimization_level": null,
+      "oracle": {
+        "expected_candidate": null,
+        "expected_original": null,
+        "kind": "static",
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "regression_case_ids": []
+      },
+      "reference_fix": {
+        "path": "fixtures/hard-cases/uaf_fix.c",
+        "sha256": "70269f6d4eee0923ef33ad551300583b3e26411d101a31fe6b92a39687fbb8d3"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/hard-cases/cases.json#cases[id=uaf-noinput]",
+          "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json",
+          "fixtures/hard-cases/uaf_fix.c#read-before-free"
+        ],
+        "statement": "read of a heap block after free() (use-after-free)"
+      },
+      "sample_id": "uaf-noinput",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [],
+        "required": false
+      },
+      "source_refs": [
+        "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
+        "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/src.c",
+        "fixtures/hard-cases/uaf_fix.c"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "analysis_only"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "uaf",
+      "vulnerability_subtype": "CWE-416 use-after-free (heap lifetime)"
+    },
+    {
+      "abi": "sysv-amd64",
+      "affected_function": "cwe122_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "d4bc0b47675366053efabcb9c36faa15f91d78eae273b6b6e5bf364610cf4955",
+      "bits": 64,
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "confidence": "medium",
+      "cwe": "CWE-122",
+      "endian": "little",
+      "evidence_refs": [
+        "benchmark/phase8c/bin/variant-cwe122-O2.poc.json",
+        "benchmark/phase8c/bin/variant-cwe122-O2.build.json",
+        "fixtures/repair-benchmark/cases.json#cwe122-heap-copy"
+      ],
+      "expected_fixed_behavior": "candidate must survive the rebound PoC cases and preserve regression behavior of the source repair-benchmark case",
+      "expected_original_behavior": "variant original fails the rebound PoC differential exactly as the committed build record's executed oracle evidence shows",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "cwe122_bad",
+        "variant_of": "cwe122-heap-copy"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "compiler variant: behavior/build variation is recorded in the committed build record; the variant is public and NOT the hidden corpus",
+        "affected byte ranges are not recorded for this variant; empty, not guessed"
+      ],
+      "linking_mode": "dynamic",
+      "negative_cases": [
+        "cwe122-short"
+      ],
+      "optimization_level": "-O2",
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "benchmark/phase8c/bin/variant-cwe122-O2.poc.json",
+        "regression_case_ids": [
+          "cwe122-short"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/repair-benchmark/CWE122_heap_copy/reference_fix.c",
+        "sha256": "2d0edb39c3c65f73b4950cd6431fd6b6131cdb498e740778c0be805b27e39425"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "benchmark/phase8c/bin/variant-cwe122-O2.poc.json",
+          "benchmark/phase8c/bin/variant-cwe122-O2.build.json"
+        ],
+        "statement": "Reviewed root cause of the source repair-benchmark case, rebuilt as a compiler/flag variant; original oracle behavior was executed and observed vulnerable before inclusion."
+      },
+      "sample_id": "variant-cwe122-O2",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe122-short"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "benchmark/phase8c/bin/variant-cwe122-O2.elf",
+        "fixtures/repair-benchmark/CWE122_heap_copy/vuln.c",
+        "fixtures/repair-benchmark/CWE122_heap_copy/reference_fix.c",
+        "fixtures/repair-benchmark/cases.json",
+        "benchmark/phase8c/bin/variant-cwe122-O2.build.json"
+      ],
+      "split": "dev",
+      "stripping_status": "not_stripped",
+      "target": {
+        "kind": "symbol",
+        "symbol": "cwe122_bad"
+      },
+      "trigger_conditions": [
+        "oversized input per the rebound PoC cases triggers the vulnerability in the variant build"
+      ],
+      "vulnerability_family": "heap copy semantic guard",
+      "vulnerability_subtype": "CWE variant of cwe122-heap-copy built with -O2 and flags -O2 -g0 -fno-stack-protector -fno-pie -no-pie"
+    },
+    {
+      "abi": "sysv-amd64",
+      "affected_function": "cwe122_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "507a818ac1d2ca7b184fba6614b8a6ef8fb9ce8f54c73d0d41deec7924c536cf",
+      "bits": 64,
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "confidence": "medium",
+      "cwe": "CWE-122",
+      "endian": "little",
+      "evidence_refs": [
+        "benchmark/phase8c/bin/variant-cwe122-O2-stripped.poc.json",
+        "benchmark/phase8c/bin/variant-cwe122-O2-stripped.build.json",
+        "fixtures/repair-benchmark/cases.json#cwe122-heap-copy"
+      ],
+      "expected_fixed_behavior": "candidate must survive the rebound PoC cases and preserve regression behavior of the source repair-benchmark case",
+      "expected_original_behavior": "variant original fails the rebound PoC differential exactly as the committed build record's executed oracle evidence shows",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "cwe122_bad",
+        "variant_of": "cwe122-heap-copy"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "compiler variant: behavior/build variation is recorded in the committed build record; the variant is public and NOT the hidden corpus",
+        "affected byte ranges are not recorded for this variant; empty, not guessed"
+      ],
+      "linking_mode": "dynamic",
+      "negative_cases": [
+        "cwe122-short"
+      ],
+      "optimization_level": "-O2",
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.poc.json",
+        "regression_case_ids": [
+          "cwe122-short"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/repair-benchmark/CWE122_heap_copy/reference_fix.c",
+        "sha256": "2d0edb39c3c65f73b4950cd6431fd6b6131cdb498e740778c0be805b27e39425"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "benchmark/phase8c/bin/variant-cwe122-O2-stripped.poc.json",
+          "benchmark/phase8c/bin/variant-cwe122-O2-stripped.build.json"
+        ],
+        "statement": "Reviewed root cause of the source repair-benchmark case, rebuilt as a compiler/flag variant; original oracle behavior was executed and observed vulnerable before inclusion."
+      },
+      "sample_id": "variant-cwe122-O2-stripped",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe122-short"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "benchmark/phase8c/bin/variant-cwe122-O2-stripped.elf",
+        "fixtures/repair-benchmark/CWE122_heap_copy/vuln.c",
+        "fixtures/repair-benchmark/CWE122_heap_copy/reference_fix.c",
+        "fixtures/repair-benchmark/cases.json",
+        "benchmark/phase8c/bin/variant-cwe122-O2-stripped.build.json"
+      ],
+      "split": "validation",
+      "stripping_status": "stripped",
+      "target": {
+        "kind": "symbol",
+        "symbol": "cwe122_bad"
+      },
+      "trigger_conditions": [
+        "oversized input per the rebound PoC cases triggers the vulnerability in the variant build"
+      ],
+      "vulnerability_family": "heap copy semantic guard",
+      "vulnerability_subtype": "CWE variant of cwe122-heap-copy built with -O2 and flags -O2 -g0 -fno-stack-protector -fno-pie -no-pie -s"
+    },
+    {
+      "abi": "sysv-amd64",
+      "affected_function": "cwe125_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "2eb966a6cb1642e025150e840dc7ca1bf22b98e6c02a42ce305a5249ba94774d",
+      "bits": 64,
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "confidence": "medium",
+      "cwe": "CWE-125",
+      "endian": "little",
+      "evidence_refs": [
+        "benchmark/phase8c/bin/variant-cwe125-O3-static.poc.json",
+        "benchmark/phase8c/bin/variant-cwe125-O3-static.build.json",
+        "fixtures/repair-benchmark/cases.json#cwe125-oob-read"
+      ],
+      "expected_fixed_behavior": "candidate must survive the rebound PoC cases and preserve regression behavior of the source repair-benchmark case",
+      "expected_original_behavior": "variant original fails the rebound PoC differential exactly as the committed build record's executed oracle evidence shows",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "cwe125_bad",
+        "variant_of": "cwe125-oob-read"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "compiler variant: behavior/build variation is recorded in the committed build record; the variant is public and NOT the hidden corpus",
+        "affected byte ranges are not recorded for this variant; empty, not guessed"
+      ],
+      "linking_mode": "static",
+      "negative_cases": [
+        "cwe125-index-5"
+      ],
+      "optimization_level": "-O3",
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "benchmark/phase8c/bin/variant-cwe125-O3-static.poc.json",
+        "regression_case_ids": [
+          "cwe125-index-5"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/repair-benchmark/CWE125_oob_read/reference_fix.c",
+        "sha256": "364b153c91815f9605404f11f9f5425b128167a27ad65a82799d76ebba2b1947"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "benchmark/phase8c/bin/variant-cwe125-O3-static.poc.json",
+          "benchmark/phase8c/bin/variant-cwe125-O3-static.build.json"
+        ],
+        "statement": "Reviewed root cause of the source repair-benchmark case, rebuilt as a compiler/flag variant; original oracle behavior was executed and observed vulnerable before inclusion."
+      },
+      "sample_id": "variant-cwe125-O3-static",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe125-index-5"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "benchmark/phase8c/bin/variant-cwe125-O3-static.elf",
+        "fixtures/repair-benchmark/CWE125_oob_read/vuln.c",
+        "fixtures/repair-benchmark/CWE125_oob_read/reference_fix.c",
+        "fixtures/repair-benchmark/cases.json",
+        "benchmark/phase8c/bin/variant-cwe125-O3-static.build.json"
+      ],
+      "split": "dev",
+      "stripping_status": "not_stripped",
+      "target": {
+        "kind": "symbol",
+        "symbol": "cwe125_bad"
+      },
+      "trigger_conditions": [
+        "oversized input per the rebound PoC cases triggers the vulnerability in the variant build"
+      ],
+      "vulnerability_family": "CWE-125",
+      "vulnerability_subtype": "CWE variant of cwe125-oob-read built with -O3 and flags -O3 -g0 -fno-stack-protector -fno-pie -no-pie -static"
+    },
+    {
+      "abi": "sysv-amd64",
+      "affected_function": "cwe125_bad",
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "5b5f5887fddca7428012d4db7f88d1afb8856cf32b602019082c57d6c2902bfa",
+      "bits": 64,
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "confidence": "medium",
+      "cwe": "CWE-125",
+      "endian": "little",
+      "evidence_refs": [
+        "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.poc.json",
+        "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.build.json",
+        "fixtures/repair-benchmark/cases.json#cwe125-oob-read"
+      ],
+      "expected_fixed_behavior": "candidate must survive the rebound PoC cases and preserve regression behavior of the source repair-benchmark case",
+      "expected_original_behavior": "variant original fails the rebound PoC differential exactly as the committed build record's executed oracle evidence shows",
+      "expected_patch_properties": {
+        "capacity": 16,
+        "oracle_kind": "external_poc",
+        "target": "cwe125_bad",
+        "variant_of": "cwe125-oob-read"
+      },
+      "expected_scope": "function",
+      "format": "elf",
+      "limitations": [
+        "compiler variant: behavior/build variation is recorded in the committed build record; the variant is public and NOT the hidden corpus",
+        "affected byte ranges are not recorded for this variant; empty, not guessed"
+      ],
+      "linking_mode": "static",
+      "negative_cases": [
+        "cwe125-index-5"
+      ],
+      "optimization_level": "-Os",
+      "oracle": {
+        "expected_candidate": true,
+        "expected_original": false,
+        "kind": "external_poc",
+        "kinds": [
+          "external_poc"
+        ],
+        "manifest_path": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.poc.json",
+        "regression_case_ids": [
+          "cwe125-index-5"
+        ]
+      },
+      "reference_fix": {
+        "path": "fixtures/repair-benchmark/CWE125_oob_read/reference_fix.c",
+        "sha256": "364b153c91815f9605404f11f9f5425b128167a27ad65a82799d76ebba2b1947"
+      },
+      "root_cause": {
+        "evidence_refs": [
+          "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.poc.json",
+          "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.build.json"
+        ],
+        "statement": "Reviewed root cause of the source repair-benchmark case, rebuilt as a compiler/flag variant; original oracle behavior was executed and observed vulnerable before inclusion."
+      },
+      "sample_id": "variant-cwe125-Os-static-stripped",
+      "sample_version": 2,
+      "semantic_regression": {
+        "case_ids": [
+          "cwe125-index-5"
+        ],
+        "required": true
+      },
+      "source_refs": [
+        "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.elf",
+        "fixtures/repair-benchmark/CWE125_oob_read/vuln.c",
+        "fixtures/repair-benchmark/CWE125_oob_read/reference_fix.c",
+        "fixtures/repair-benchmark/cases.json",
+        "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.build.json"
+      ],
+      "split": "validation",
+      "stripping_status": "stripped",
+      "target": {
+        "kind": "symbol",
+        "symbol": "cwe125_bad"
+      },
+      "trigger_conditions": [
+        "oversized input per the rebound PoC cases triggers the vulnerability in the variant build"
+      ],
+      "vulnerability_family": "CWE-125",
+      "vulnerability_subtype": "CWE variant of cwe125-oob-read built with -Os and flags -Os -g0 -fno-stack-protector -fno-pie -no-pie -static -s"
+    },
+    {
+      "abi": null,
+      "affected_function": null,
+      "affected_ranges": [],
+      "arch": "arm64",
+      "binary_sha256": "089e01ecb01e0021e3b33c51f3a4369ea5baa71a8b37a83c18d84e4c7ab214e4",
+      "bits": 64,
+      "compiler": "clang",
+      "compiler_version": "Apple clang version 14.0.3 (clang-1403.0.22.14.1)",
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/PROVENANCE.json",
+        "fixtures/PROVENANCE.json#macho-arm64"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {},
+      "expected_scope": "analysis_only",
+      "format": "macho",
+      "limitations": [
+        "ABI/linking/stripping details are not declared for this fixture; null, not guessed",
+        "affected byte ranges and function names are not recorded for this fixture; empty/null, not guessed",
+        "cross-architecture analysis-only sample: no runtime oracle is claimed or executed for this format/arch in the public Phase-8C corpus"
+      ],
+      "linking_mode": null,
+      "negative_cases": [],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": null,
+        "expected_original": null,
+        "kind": "static",
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "regression_case_ids": []
+      },
+      "reference_fix": null,
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/PROVENANCE.json",
+          "fixtures/PROVENANCE.json#macho-arm64"
+        ],
+        "statement": "Cross-architecture unchecked-copy fixture: the fixture is declared for static analysis only in this phase; no runtime repair/verification claim is made."
+      },
+      "sample_id": "xarch-macho-arm64",
+      "sample_version": 2,
+      "semantic_regression": null,
+      "source_refs": [
+        "fixtures/macho/vuln-strcpy-arm64",
+        "fixtures/PROVENANCE.json",
+        "fixtures/PROVENANCE.json#macho-arm64"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "analysis_only"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "stack_buffer_overflow",
+      "vulnerability_subtype": "unchecked strcpy (cross-architecture analysis-only)"
+    },
+    {
+      "abi": null,
+      "affected_function": null,
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "8ddd7e40efba1942a9cfd1e2ada4831c17900faf55ba6e5bad909d404278cfbf",
+      "bits": 64,
+      "compiler": "clang",
+      "compiler_version": "Apple clang version 14.0.3 (clang-1403.0.22.14.1)",
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/PROVENANCE.json",
+        "fixtures/PROVENANCE.json#macho-x86_64"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {},
+      "expected_scope": "analysis_only",
+      "format": "macho",
+      "limitations": [
+        "ABI/linking/stripping details are not declared for this fixture; null, not guessed",
+        "affected byte ranges and function names are not recorded for this fixture; empty/null, not guessed",
+        "cross-architecture analysis-only sample: no runtime oracle is claimed or executed for this format/arch in the public Phase-8C corpus"
+      ],
+      "linking_mode": null,
+      "negative_cases": [],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": null,
+        "expected_original": null,
+        "kind": "static",
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "regression_case_ids": []
+      },
+      "reference_fix": null,
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/PROVENANCE.json",
+          "fixtures/PROVENANCE.json#macho-x86_64"
+        ],
+        "statement": "Cross-architecture unchecked-copy fixture: the fixture is declared for static analysis only in this phase; no runtime repair/verification claim is made."
+      },
+      "sample_id": "xarch-macho-x86_64",
+      "sample_version": 2,
+      "semantic_regression": null,
+      "source_refs": [
+        "fixtures/macho/vuln-strcpy-x86_64",
+        "fixtures/PROVENANCE.json",
+        "fixtures/PROVENANCE.json#macho-x86_64"
+      ],
+      "split": "dev",
+      "stripping_status": null,
+      "target": {
+        "kind": "analysis_only"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "stack_buffer_overflow",
+      "vulnerability_subtype": "unchecked strcpy (cross-architecture analysis-only)"
+    },
+    {
+      "abi": null,
+      "affected_function": null,
+      "affected_ranges": [],
+      "arch": "arm64",
+      "binary_sha256": "49ec2b4ec019fa754efa99d4adcf7e0ff369d59a623a6cd22a2e084a8e475c8d",
+      "bits": 64,
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/PROVENANCE.json",
+        "fixtures/PROVENANCE.json#pe-arm64"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {},
+      "expected_scope": "analysis_only",
+      "format": "pe",
+      "limitations": [
+        "ABI/linking/stripping details are not declared for this fixture; null, not guessed",
+        "affected byte ranges and function names are not recorded for this fixture; empty/null, not guessed",
+        "cross-architecture analysis-only sample: no runtime oracle is claimed or executed for this format/arch in the public Phase-8C corpus"
+      ],
+      "linking_mode": null,
+      "negative_cases": [],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": null,
+        "expected_original": null,
+        "kind": "static",
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "regression_case_ids": []
+      },
+      "reference_fix": null,
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/PROVENANCE.json",
+          "fixtures/PROVENANCE.json#pe-arm64"
+        ],
+        "statement": "Cross-architecture unchecked-copy fixture: the fixture is declared for static analysis only in this phase; no runtime repair/verification claim is made."
+      },
+      "sample_id": "xarch-pe-arm64",
+      "sample_version": 2,
+      "semantic_regression": null,
+      "source_refs": [
+        "fixtures/pe/vuln-strcpy-arm64.exe",
+        "fixtures/PROVENANCE.json",
+        "fixtures/PROVENANCE.json#pe-arm64"
+      ],
+      "split": "validation",
+      "stripping_status": null,
+      "target": {
+        "kind": "analysis_only"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "stack_buffer_overflow",
+      "vulnerability_subtype": "unchecked strcpy (cross-architecture analysis-only)"
+    },
+    {
+      "abi": null,
+      "affected_function": null,
+      "affected_ranges": [],
+      "arch": "x86_64",
+      "binary_sha256": "1dcafa9d93e010e7da787e3323376be6b8ac79c792a556ff2f5269ca20463fae",
+      "bits": 64,
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "confidence": null,
+      "cwe": "CWE-121",
+      "endian": "little",
+      "evidence_refs": [
+        "fixtures/PROVENANCE.json",
+        "fixtures/PROVENANCE.json#pe-x86_64"
+      ],
+      "expected_fixed_behavior": null,
+      "expected_original_behavior": null,
+      "expected_patch_properties": {},
+      "expected_scope": "analysis_only",
+      "format": "pe",
+      "limitations": [
+        "ABI/linking/stripping details are not declared for this fixture; null, not guessed",
+        "affected byte ranges and function names are not recorded for this fixture; empty/null, not guessed",
+        "cross-architecture analysis-only sample: no runtime oracle is claimed or executed for this format/arch in the public Phase-8C corpus"
+      ],
+      "linking_mode": null,
+      "negative_cases": [],
+      "optimization_level": "-O0",
+      "oracle": {
+        "expected_candidate": null,
+        "expected_original": null,
+        "kind": "static",
+        "kinds": [
+          "static"
+        ],
+        "manifest_path": null,
+        "regression_case_ids": []
+      },
+      "reference_fix": null,
+      "root_cause": {
+        "evidence_refs": [
+          "fixtures/PROVENANCE.json",
+          "fixtures/PROVENANCE.json#pe-x86_64"
+        ],
+        "statement": "Cross-architecture unchecked-copy fixture: the fixture is declared for static analysis only in this phase; no runtime repair/verification claim is made."
+      },
+      "sample_id": "xarch-pe-x64",
+      "sample_version": 2,
+      "semantic_regression": null,
+      "source_refs": [
+        "fixtures/pe/vuln-strcpy-x64.exe",
+        "fixtures/PROVENANCE.json",
+        "fixtures/PROVENANCE.json#pe-x86_64"
+      ],
+      "split": "validation",
+      "stripping_status": null,
+      "target": {
+        "kind": "analysis_only"
+      },
+      "trigger_conditions": [],
+      "vulnerability_family": "stack_buffer_overflow",
+      "vulnerability_subtype": "unchecked strcpy (cross-architecture analysis-only)"
+    }
+  ],
+  "schema_version": 2,
+  "split_counts": {
+    "dev": 18,
+    "validation": 14
+  }
+}

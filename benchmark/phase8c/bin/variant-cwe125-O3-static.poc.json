@@ -1,0 +1,38 @@
+{
+  "arch": "x86_64",
+  "description": "Phase-8C C8 compiler variant variant-cwe125-O3-static: original repair-benchmark PoC cases rebound to the variant binary",
+  "fixture_sha256": "2eb966a6cb1642e025150e840dc7ca1bf22b98e6c02a42ce305a5249ba94774d",
+  "format": "elf",
+  "poc": [
+    {
+      "argv": [
+        "100000000"
+      ],
+      "candidate": {
+        "crashed": false
+      },
+      "id": "cwe125-high-index",
+      "original": {
+        "crashed": true
+      }
+    }
+  ],
+  "regression": [
+    {
+      "argv": [
+        "5"
+      ],
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "5\n"
+      },
+      "id": "cwe125-index-5",
+      "original": {
+        "exit_code": 0,
+        "stdout": "5\n"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "target": "cwe125_bad"
+}

@@ -1,0 +1,81 @@
+{
+  "attempts": [
+    {
+      "attempt_id": "attempt-cwe122-musl-O2-static",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O2",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-static"
+      ],
+      "optimization": "-O2",
+      "oracle_validation": {
+        "evidence_sha256": "0cdf8cfb6391af6cfc2c6db19b9aa2c3e98367b0ef4ccfe3ab5e327e44c4e204",
+        "executed": true,
+        "original_poc_case_count": 2,
+        "original_vulnerable_observed": false,
+        "reason": "variant build does not reproduce the committed PoC's expected vulnerable original behavior (original PoC case did not crash); variant dropped rather than admitting an unvalidated build",
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "reason": "variant build does not reproduce the committed PoC's expected vulnerable original behavior (original PoC case did not crash); variant dropped rather than admitting an unvalidated build",
+      "source_sample": "repair-cwe122",
+      "status": "dropped",
+      "target": "x86_64-linux-musl"
+    },
+    {
+      "attempt_id": "attempt-cwe787-musl-O3-static",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O3",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-static"
+      ],
+      "optimization": "-O3",
+      "oracle_validation": {
+        "evidence_sha256": "67acfe5935a9a0b6fd06212d9b1e0be02eeedd3ba47e07e4a80427be385918f7",
+        "executed": true,
+        "original_poc_case_count": 1,
+        "original_vulnerable_observed": false,
+        "reason": "variant build does not reproduce the committed PoC's expected vulnerable original behavior (original PoC case did not crash); variant dropped rather than admitting an unvalidated build",
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "reason": "variant build does not reproduce the committed PoC's expected vulnerable original behavior (original PoC case did not crash); variant dropped rather than admitting an unvalidated build",
+      "source_sample": "repair-cwe787",
+      "status": "dropped",
+      "target": "x86_64-linux-musl"
+    },
+    {
+      "attempt_id": "attempt-cwe122-gnu-static",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O2",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-static"
+      ],
+      "optimization": "-O2",
+      "reason": "cross-compiler build failed: error: libc of the specified target requires dynamic linking",
+      "source_sample": "repair-cwe122",
+      "status": "dropped",
+      "target": "x86_64-linux-gnu"
+    }
+  ],
+  "generated_at": "2026-11-16T00:00:00Z",
+  "kind": "phase8c_variant_attempts",
+  "schema_version": 1
+}

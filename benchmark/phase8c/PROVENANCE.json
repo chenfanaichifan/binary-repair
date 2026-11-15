@@ -1,0 +1,1450 @@
+{
+  "benchmark_id": "phase8c-public-v2",
+  "builder": "scripts/build_phase8c_corpus.py",
+  "dropped_samples": [
+    {
+      "binary": "benchmark/phase8c/bin/variant-cwe122-O2.elf",
+      "binary_sha256": "d4bc0b47675366053efabcb9c36faa15f91d78eae273b6b6e5bf364610cf4955",
+      "build_record": "benchmark/phase8c/bin/variant-cwe122-O2.build.json",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O2",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie"
+      ],
+      "oracle_validation": {
+        "evidence_sha256": "113c12181cae8b292f517329e4af737faf880f361f606021d8d27c7a837cabd6",
+        "executed": true,
+        "expected_original_fail_observed": true,
+        "original_poc_case_count": 2,
+        "original_vulnerable_observed": true,
+        "reason": null,
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "poc": "benchmark/phase8c/bin/variant-cwe122-O2.poc.json",
+      "sample_id": "variant-cwe122-O2",
+      "source_sample": "repair-cwe122",
+      "status": "validated"
+    },
+    {
+      "binary": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.elf",
+      "binary_sha256": "507a818ac1d2ca7b184fba6614b8a6ef8fb9ce8f54c73d0d41deec7924c536cf",
+      "build_record": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.build.json",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O2",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-s"
+      ],
+      "oracle_validation": {
+        "evidence_sha256": "cbfa25215ae17d77ef295fa4db2f14784062e8eaf90de725e785bfaca696ead2",
+        "executed": true,
+        "expected_original_fail_observed": true,
+        "original_poc_case_count": 2,
+        "original_vulnerable_observed": true,
+        "reason": null,
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "poc": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.poc.json",
+      "sample_id": "variant-cwe122-O2-stripped",
+      "source_sample": "repair-cwe122",
+      "status": "validated"
+    },
+    {
+      "binary": "benchmark/phase8c/bin/variant-cwe125-O3-static.elf",
+      "binary_sha256": "2eb966a6cb1642e025150e840dc7ca1bf22b98e6c02a42ce305a5249ba94774d",
+      "build_record": "benchmark/phase8c/bin/variant-cwe125-O3-static.build.json",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O3",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-static"
+      ],
+      "oracle_validation": {
+        "evidence_sha256": "279ba30cd72b5a69f3e28c33afed9619e23f8eaaf9619b6c027d75c624f0f45b",
+        "executed": true,
+        "expected_original_fail_observed": true,
+        "original_poc_case_count": 1,
+        "original_vulnerable_observed": true,
+        "reason": null,
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "poc": "benchmark/phase8c/bin/variant-cwe125-O3-static.poc.json",
+      "sample_id": "variant-cwe125-O3-static",
+      "source_sample": "repair-cwe125",
+      "status": "validated"
+    },
+    {
+      "binary": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.elf",
+      "binary_sha256": "5b5f5887fddca7428012d4db7f88d1afb8856cf32b602019082c57d6c2902bfa",
+      "build_record": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.build.json",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-Os",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-static",
+        "-s"
+      ],
+      "oracle_validation": {
+        "evidence_sha256": "9d145e06af31087c556a26e038c8037a3917b0e5ae42cfa53fb76e1b39548c30",
+        "executed": true,
+        "expected_original_fail_observed": true,
+        "original_poc_case_count": 1,
+        "original_vulnerable_observed": true,
+        "reason": null,
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "poc": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.poc.json",
+      "sample_id": "variant-cwe125-Os-static-stripped",
+      "source_sample": "repair-cwe125",
+      "status": "validated"
+    }
+  ],
+  "generated_at": "2026-11-16T00:00:00Z",
+  "kind": "phase8c_public_corpus_provenance",
+  "limitations": [
+    "public corpus only: hidden_available=false and hidden_commitment is null. The hidden commitment file benchmark/phase8c/hidden-commitment.json is owned by the C4/C6 hidden workflow; this builder never creates, reads or fabricates hidden contents.",
+    "compiler/ABI/linking/stripping/ranges unknown for some checked-in fixtures are explicit null/empty with per-sample limitations, never guessed.",
+    "the public split assignment for the new hard/repair/cross-arch groups is deterministic (hard 3/3, repair 3/3, cross-arch 2/2); the 12 v1 samples keep their v1 split.",
+    "runtime-oracle samples are 20 and analysis-only samples are 8 among the 28 core samples; variants add only independently validated compiler/flag builds.",
+    "no network and no AI provider are used by the builder; generated_at is the fixed Phase-8C timestamp."
+  ],
+  "migration": {
+    "facts": [
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+          "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "cwe121-public",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "optimization_level",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+          "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "hard-multicall",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "optimization_level",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+          "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "hard-nonconst",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "optimization_level",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+          "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "hard-sprintf",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "optimization_level",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+          "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "heap-canary",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "optimization_level",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+          "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 has no reference fix for this sample; null",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "heap-capacity-x86_64",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "optimization_level",
+          "reference_fix",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "v1 environment metadata records only a toolchain version (0.17.1); the compiler name is null, not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "inline-loop",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "root_cause.statement",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "v1 environment metadata records only a toolchain version (0.17.1); the compiler name is null, not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "v1 did not record a CWE id; null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 has no reference fix for this sample; null",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "negative-control",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "cwe",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "reference_fix",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "v1 environment metadata records only a toolchain version (0.17.1); the compiler name is null, not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 has no reference fix for this sample; null",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "stack-memcpy-x86",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "reference_fix",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "v1 environment metadata records only a toolchain version (0.17.1); the compiler name is null, not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 has no reference fix for this sample; null",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "stack-strcpy-x86",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "reference_fix",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "v1 environment metadata records only a toolchain version (0.17.1); the compiler name is null, not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 has no reference fix for this sample; null",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "stack-strcpy-x86_64",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "reference_fix",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      },
+      {
+        "derived": [
+          "oracle.regression_case_ids",
+          "semantic_regression",
+          "vulnerability_family"
+        ],
+        "limitations": [
+          "compiler toolchain is not recorded in committed metadata for this fixture; not guessed",
+          "optimization level is not recorded in committed metadata for this fixture (the toolchain command may exist but no -O level is asserted); not guessed",
+          "v1 did not record abi; the v2 field is null, not guessed",
+          "v1 did not record linking_mode; the v2 field is null, not guessed",
+          "v1 did not record stripping_status; the v2 field is null, not guessed",
+          "vulnerability_family is a deterministic v2 grouping derived from the v1 sample/class; the original class text is preserved in vulnerability_subtype",
+          "v1 did not record trigger_conditions; the v2 field is empty, not guessed",
+          "v1 did not record affected_ranges; the v2 field is empty, not guessed",
+          "v1 did not record expected_original_behavior; the v2 field is null, not guessed",
+          "v1 did not record expected_fixed_behavior; the v2 field is null, not guessed",
+          "v1 did not record confidence; the v2 field is null, not guessed"
+        ],
+        "lossless": true,
+        "preserved": [
+          "sample_id",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "split",
+          "target",
+          "oracle.kind",
+          "oracle.kinds",
+          "oracle.manifest_path",
+          "oracle.expected_original",
+          "oracle.expected_candidate",
+          "reference_fix.path",
+          "source_refs",
+          "evidence_refs"
+        ],
+        "sample_id": "uaf-noinput",
+        "unknown": [
+          "abi",
+          "affected_ranges",
+          "compiler",
+          "confidence",
+          "expected_fixed_behavior",
+          "expected_original_behavior",
+          "linking_mode",
+          "optimization_level",
+          "stripping_status",
+          "trigger_conditions"
+        ]
+      }
+    ],
+    "lossless": true,
+    "report_sha256": "a93de5e867ce100aced48232c0c04440d4654b6a2069b4e738e80da204719b85",
+    "sample_count": 12
+  },
+  "schema_version": 1,
+  "source_manifest": {
+    "path": "benchmark/phase8-v1/manifest.json",
+    "sha256": "e7e7eca43518dc1b953faccead6f301f80eee4a59f1f0550dc8aad1bbd712052"
+  },
+  "sources": [
+    {
+      "path": "benchmark/phase8-v1/manifest.json",
+      "sha256": "e7e7eca43518dc1b953faccead6f301f80eee4a59f1f0550dc8aad1bbd712052"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.build.json",
+      "sha256": "5c8ffe41b5cd07e56b64c00450bcf811e325dc19f15ef2ec5e1dcafa83364200"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.elf",
+      "sha256": "507a818ac1d2ca7b184fba6614b8a6ef8fb9ce8f54c73d0d41deec7924c536cf"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.poc.json",
+      "sha256": "aa87b4efda7ff7f0cb285c58470d0fceb561f6d2901fc55f6df057cc0f63905e"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe122-O2.build.json",
+      "sha256": "5689701f2875abf458ad024122e29928b892446f1111608c0cf589ec959ba356"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe122-O2.elf",
+      "sha256": "d4bc0b47675366053efabcb9c36faa15f91d78eae273b6b6e5bf364610cf4955"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe122-O2.poc.json",
+      "sha256": "aaefa55db78159292f14f52f1f5c2069c2c0614c23954d47f6d0cc902ae10dc4"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe125-O3-static.build.json",
+      "sha256": "8df9b332871a0011c08f59083cd3040f63c97c8cbfca1963d951e02a518c26e4"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe125-O3-static.elf",
+      "sha256": "2eb966a6cb1642e025150e840dc7ca1bf22b98e6c02a42ce305a5249ba94774d"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe125-O3-static.poc.json",
+      "sha256": "775f9fef559a885cb9ccab53de52fe9c6c80a7dca4b679ca1c3e2e3329a0674f"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.build.json",
+      "sha256": "851acbe08307cc6c05934e66ee7f686dc3b79d8da5c5faa418d2e1b90c956c6a"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.elf",
+      "sha256": "5b5f5887fddca7428012d4db7f88d1afb8856cf32b602019082c57d6c2902bfa"
+    },
+    {
+      "path": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.poc.json",
+      "sha256": "7a88cabcf63b0775c8e08916950a25ca41b460405a0b9406b2d7d09d58349928"
+    },
+    {
+      "path": "contracts/benchmark-manifest-v2.schema.json",
+      "sha256": "0bafaef285ee0aed90afc479e3267e0ca5fa09b42cefd65c39ca1f0476e66820"
+    },
+    {
+      "path": "contracts/ground-truth-sample-v2.schema.json",
+      "sha256": "caf0f2b4de3e7295f5866a57c992ad01d7cdfabd739046118d180e7fc24f622f"
+    },
+    {
+      "path": "docs/architecture/capacity-check-repair.md",
+      "sha256": "703c5d608bdeaceed35be1b690494b0425287ef44c514069f38918e72bb1d2b6"
+    },
+    {
+      "path": "fixtures/PROVENANCE.json",
+      "sha256": "da09dc1a1eda7b22b35ccfeb236ee14ac34f75c17952a6b1b9ca2d34e972aa16"
+    },
+    {
+      "path": "fixtures/elf/vuln-capacity-confusion-x86_64.elf",
+      "sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+    },
+    {
+      "path": "fixtures/elf/vuln-loop-x86_64.elf",
+      "sha256": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf"
+    },
+    {
+      "path": "fixtures/elf/vuln-memcpy-x86.elf",
+      "sha256": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410"
+    },
+    {
+      "path": "fixtures/elf/vuln-strcpy-x86.elf",
+      "sha256": "a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d"
+    },
+    {
+      "path": "fixtures/elf/vuln-strcpy-x86_64.elf",
+      "sha256": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4"
+    },
+    {
+      "path": "fixtures/hard-cases/capacity_confusion.c",
+      "sha256": "b7455e3a4cddd0d64fe519032900a610f73db6155edad226982a30030435480c"
+    },
+    {
+      "path": "fixtures/hard-cases/cases.json",
+      "sha256": "97eb16925f5071756d9a80675b54ea167c5448f8838266a0720f7967e721b7e2"
+    },
+    {
+      "path": "fixtures/hard-cases/cwe121_fix.c",
+      "sha256": "0d404fe7146c30e401be05cc53c5d09b491f8d4f6826f73584e9c61cc9cca6ca"
+    },
+    {
+      "path": "fixtures/hard-cases/hard_cases.c",
+      "sha256": "178eafdc22617279b0faeb693d781dbc763bfc256ed8f37c77ac309a17a8ca26"
+    },
+    {
+      "path": "fixtures/hard-cases/hard_loops.S",
+      "sha256": "b23f3ffae7812068ba3e8e59d84d8b58859c5e801f472dc829093e16e53a23b9"
+    },
+    {
+      "path": "fixtures/hard-cases/hard_loops_extra.S",
+      "sha256": "4e8fbf8f593c45f5569528e3500ae3e741f8a5bbd911fcb15ed3e40ab94fee3a"
+    },
+    {
+      "path": "fixtures/hard-cases/heap_canary.c",
+      "sha256": "f3b24dfbbcdbcc7cf3fdb3728155b74b571f7d7d5e6cd981f1c78b673f300b70"
+    },
+    {
+      "path": "fixtures/hard-cases/heap_canary_fix.c",
+      "sha256": "f23fc5bef1806ec4b4e4775fe0fd5a164a527e9042a8d360338fa461eb1d2499"
+    },
+    {
+      "path": "fixtures/hard-cases/heap_capacity.c",
+      "sha256": "78827c86ec5ffc0f53926c82fe705139a5ee03dd791a22ef4de0459b4710f48d"
+    },
+    {
+      "path": "fixtures/hard-cases/loop16_fix.S",
+      "sha256": "394231b17cc88b25fdf4a610676193b5ab41f012415a85c6ac9199d7fc98d4f2"
+    },
+    {
+      "path": "fixtures/hard-cases/loop32_fix.S",
+      "sha256": "a97c8475d5101e43c3ddd3abebadf4e79a4de4ef2ab74002ece629c43970050f"
+    },
+    {
+      "path": "fixtures/hard-cases/loop64_fix.S",
+      "sha256": "69578fdade0dfad48fbcb8b72f0d9d6296f0ab08441b314fef4a46e02d05297f"
+    },
+    {
+      "path": "fixtures/hard-cases/loop8_fix.S",
+      "sha256": "4dac385275775cdcce055b5e49de6694bb42756f987af21cb1d7afe8b59f1e08"
+    },
+    {
+      "path": "fixtures/hard-cases/loop_fix.S",
+      "sha256": "8842523781ee9b955e4f1e6bd108248aa04260013134f72e0ce0f47be3281995"
+    },
+    {
+      "path": "fixtures/hard-cases/multicall_fix.c",
+      "sha256": "d7fab98aab8f7b3d6b8403f9f8280d3379a849e0e586bfe86b0042b6049a6347"
+    },
+    {
+      "path": "fixtures/hard-cases/nonconst_fix.c",
+      "sha256": "9cd9180c19ceb64783bcd58c7227517d50f1c758ffd496017aa7c7dbcdabb06f"
+    },
+    {
+      "path": "fixtures/hard-cases/reverse_fix.S",
+      "sha256": "394231b17cc88b25fdf4a610676193b5ab41f012415a85c6ac9199d7fc98d4f2"
+    },
+    {
+      "path": "fixtures/hard-cases/sprintf_fix.c",
+      "sha256": "58f99c0e5126cdc874f5510d15b1cea8794ec73d79a49ac578f4a1942087eb2b"
+    },
+    {
+      "path": "fixtures/hard-cases/uaf_fix.c",
+      "sha256": "70269f6d4eee0923ef33ad551300583b3e26411d101a31fe6b92a39687fbb8d3"
+    },
+    {
+      "path": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+      "sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f"
+    },
+    {
+      "path": "fixtures/hard-cases/vuln-hardcases-extra-x86_64.elf",
+      "sha256": "8209a1ea589742f3cbc4509a539cf7546e6fea34fa0d97cba10fc05506a97b09"
+    },
+    {
+      "path": "fixtures/hard-cases/vuln-hardcases-x86_64.elf",
+      "sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364"
+    },
+    {
+      "path": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+      "sha256": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b"
+    },
+    {
+      "path": "fixtures/hard-cases/vuln-heap-malloc-x86_64.elf",
+      "sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f"
+    },
+    {
+      "path": "fixtures/macho/vuln-strcpy-arm64",
+      "sha256": "089e01ecb01e0021e3b33c51f3a4369ea5baa71a8b37a83c18d84e4c7ab214e4"
+    },
+    {
+      "path": "fixtures/macho/vuln-strcpy-x86_64",
+      "sha256": "8ddd7e40efba1942a9cfd1e2ada4831c17900faf55ba6e5bad909d404278cfbf"
+    },
+    {
+      "path": "fixtures/pe/i386-control.exe",
+      "sha256": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789"
+    },
+    {
+      "path": "fixtures/pe/vuln-strcpy-arm64.exe",
+      "sha256": "49ec2b4ec019fa754efa99d4adcf7e0ff369d59a623a6cd22a2e084a8e475c8d"
+    },
+    {
+      "path": "fixtures/pe/vuln-strcpy-x64.exe",
+      "sha256": "1dcafa9d93e010e7da787e3323376be6b8ac79c792a556ff2f5269ca20463fae"
+    },
+    {
+      "path": "fixtures/poc/cwe121.json",
+      "sha256": "17c787c87bc8292e03b38e2fc4e1861cbd25384952a57693a32db920eb452e52"
+    },
+    {
+      "path": "fixtures/poc/elf-x86_64-loop.json",
+      "sha256": "99b286145fe6c3f41010071b1175d20a35a1e62e071922f5183f5efa692c138c"
+    },
+    {
+      "path": "fixtures/poc/elf-x86_64-strcpy.json",
+      "sha256": "15a4b21ed4324d49589f973b72ff57241ea3667cc6472d1fa88753cc14d0addd"
+    },
+    {
+      "path": "fixtures/poc/hard-loop16.json",
+      "sha256": "2fe938a8c4e7206adba5cc7c7bec61c89710521b12bd649680bfcdff5a833714"
+    },
+    {
+      "path": "fixtures/poc/hard-loop32.json",
+      "sha256": "9dba6a2b72cf42e44cadf717dfc260f4680a17a9e12238de280345f606807149"
+    },
+    {
+      "path": "fixtures/poc/hard-loop64.json",
+      "sha256": "0dbdff7b1624f4e8aae305a09c6814b54de2a8be371faa9c3433f567c3ec301a"
+    },
+    {
+      "path": "fixtures/poc/hard-loop8.json",
+      "sha256": "22d6806e750483be33c59247b0159636c005b7416e62a91a16e6042610d81c33"
+    },
+    {
+      "path": "fixtures/poc/hard-multicall.json",
+      "sha256": "eb66d3dd1ac48d3a67d2207b4ac3fa53aee51186a193b6ff08ad4dc0de661439"
+    },
+    {
+      "path": "fixtures/poc/hard-nonconst.json",
+      "sha256": "2c096e9cf92fddc8b0fa0475d402fb11689d25b288781dc7644f8170c9b582bb"
+    },
+    {
+      "path": "fixtures/poc/hard-reverse.json",
+      "sha256": "c1dfa402a9f574e79ee3c28f52d9a5c6800091ef9c01fbbcf671fa9bf690bb62"
+    },
+    {
+      "path": "fixtures/poc/hard-sprintf.json",
+      "sha256": "240ad9a0a93c1302b3122ae029647013a8aceb57919319baa49eeaef0c120e62"
+    },
+    {
+      "path": "fixtures/poc/heap-canary.json",
+      "sha256": "c2ad23f223d5eb8687cfde536c3210bb1d39795612b0c4bc8da4b54d8dbde15b"
+    },
+    {
+      "path": "fixtures/poc/heap-malloc.json",
+      "sha256": "1c76afbcf1ee72d8bde99210bb2fb6d53e02e4e8b7470cade4309e092c9a8a2a"
+    },
+    {
+      "path": "fixtures/poc/marcx-capacity.json",
+      "sha256": "95474e8c909d13ede2d735655a0b9754f9f302c08e45adeb91c50933d202436b"
+    },
+    {
+      "path": "fixtures/poc/repair-cwe122.json",
+      "sha256": "73702fd2f4803461c888a5e3a57c8ab12e412bdf2de51f0fb9d698cb625359c0"
+    },
+    {
+      "path": "fixtures/poc/repair-cwe125.json",
+      "sha256": "1a6df54c35d43f30690ba3ceb162e2778ee46150f026e6d2ca2c36b430e5d553"
+    },
+    {
+      "path": "fixtures/poc/repair-cwe134.json",
+      "sha256": "0c0ecd2ad17704dc31a637254589a80e97414ca0c2ff937a1c09f541bee61ec4"
+    },
+    {
+      "path": "fixtures/poc/repair-cwe190.json",
+      "sha256": "114a2546f2ebd12d1bc0a14a74fc760c2479b403bcb7b9cf19af0841b87b4540"
+    },
+    {
+      "path": "fixtures/poc/repair-cwe476.json",
+      "sha256": "33545e8e348aa0c25e1be4bc8c292dfe3d3f1f233244f8e6a325c35ebcddef57"
+    },
+    {
+      "path": "fixtures/poc/repair-cwe787.json",
+      "sha256": "3c05e5c30286cbe7bcb8a7ad2b89c0c6bc55190e9c97fcad376f78afcf4c60f4"
+    },
+    {
+      "path": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+      "sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393"
+    },
+    {
+      "path": "fixtures/public/CWE121_src_char_declare_cpy_51b/src.c",
+      "sha256": "a9189c80fe0349bc78320187e2578c11b95e7aa7f039fd95752c0c7053b35e99"
+    },
+    {
+      "path": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/contract.json",
+      "sha256": "8a2b408c9b1463ca8cb14692d11f1580f80816a74e81cc13310852f3700e3c3b"
+    },
+    {
+      "path": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
+      "sha256": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9"
+    },
+    {
+      "path": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/src.c",
+      "sha256": "fa84a6bb9df36a8a1ab4d33a7064746d9037247f7599d3cd39659478d4b7f42e"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE122_heap_copy/build.json",
+      "sha256": "a2142dadef5bc5cf3c8a8636228ba97f52a6185d5d89fbcad1aeaae6de9db2cd"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE122_heap_copy/defect.json",
+      "sha256": "501132f50b48414b2e0efd52507dd282bee4bcd193252e9aa8997aaa363e5779"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE122_heap_copy/original.elf",
+      "sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE122_heap_copy/reference_fix.c",
+      "sha256": "2d0edb39c3c65f73b4950cd6431fd6b6131cdb498e740778c0be805b27e39425"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE122_heap_copy/vuln.c",
+      "sha256": "3d5aa70b980eae5a07dcb8a082fb375803d1e289af238466fd2780a89fc6e279"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE125_oob_read/build.json",
+      "sha256": "d3b98331f334bbc77e6d9287469edd5ed17b84e046f83f3253a05ed17163360d"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE125_oob_read/defect.json",
+      "sha256": "e5ce11559cb0a9298b7c79aa8351260e9ab146d3f9f28055bf138c627d20ab14"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE125_oob_read/original.elf",
+      "sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE125_oob_read/reference_fix.c",
+      "sha256": "364b153c91815f9605404f11f9f5425b128167a27ad65a82799d76ebba2b1947"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE125_oob_read/vuln.c",
+      "sha256": "c52dd4984fd305316c9498178e9485aa7abf8bba8be75d83742d97e32196e0c6"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE134_format_string/build.json",
+      "sha256": "11fcbf9f052400c516cf08bb618d0dd4501d2a031cd987cf9c42dd62872d3fdb"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE134_format_string/defect.json",
+      "sha256": "a6fdfffda45be44650561be0edc4c1e5e4356f247bdd2c407eadfe22c3eb6d6f"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE134_format_string/original.elf",
+      "sha256": "c74266a421fa3e61f33b1669d3ae22640672a5136cb22871326ab3a5ad16a56d"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE134_format_string/reference_fix.c",
+      "sha256": "36c80a49c8a9d74f143ecd3535b1edda6794fb708ee06baaf3d61639711c1b28"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE134_format_string/vuln.c",
+      "sha256": "176279347e9b2c1845726ef0e576f950ae2e89bec09858b9221c84d9991e83bb"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE190_integer_overflow/build.json",
+      "sha256": "68085c21b5fffd6f4a0fdf5743ec2cb548c9c05e9adc099c2ac0c6ac2bf284e8"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE190_integer_overflow/defect.json",
+      "sha256": "0bc7caa443fcfc3beef2ccfdac42e5b792110536df5017fa273692a4d0aefd19"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE190_integer_overflow/original.elf",
+      "sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE190_integer_overflow/reference_fix.c",
+      "sha256": "3f24da2f35e97bfbc88871102b17c01b145a071899567b17d22e412d764bb8d9"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE190_integer_overflow/vuln.c",
+      "sha256": "ba8e5797fdee507a28906face614b771cf6ac448ac4012ac957e1fdd6d05453c"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE476_null_deref/build.json",
+      "sha256": "c64e5d6400e1d360471e539d6b35bdad7e117f989837b8c32549fbb93db7e598"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE476_null_deref/defect.json",
+      "sha256": "51996b322f24bea7b580f3af96c64ea429028b8de180fdd4fb33c844a28ef246"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE476_null_deref/original.elf",
+      "sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE476_null_deref/reference_fix.c",
+      "sha256": "f3ec4063e96a029a14e92d0a8107ccea8ea8e2e529fbfa925d1c2a5a0da2d3e8"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE476_null_deref/vuln.c",
+      "sha256": "994b3bc82ca169e61590cb24314f28dd9eeb61971631ab826d2250c7f5ec988f"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE787_index_write/build.json",
+      "sha256": "aec7794d1b66a490695e40c2ac23993b0853001b38c62c9f33010c8c9133b4ba"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE787_index_write/defect.json",
+      "sha256": "a5331663b3a6f822dcd35032f200c71fa5388b858b32e2a25eb2504ddc54c74f"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE787_index_write/original.elf",
+      "sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE787_index_write/reference_fix.c",
+      "sha256": "23ec03964715f42c9668bb0e08658d10133f51d689e02e0e535f0a71b21ff0be"
+    },
+    {
+      "path": "fixtures/repair-benchmark/CWE787_index_write/vuln.c",
+      "sha256": "8a2b39fec20e685fc33e7e58a650c4aff2065517301f68c366d362c2080add08"
+    },
+    {
+      "path": "fixtures/repair-benchmark/cases.json",
+      "sha256": "99f804ec5c2695355a93494d73b1e63db9674a7dc3e73a7f63d3dfc11f8fbee0"
+    },
+    {
+      "path": "fixtures/src/control_i386.c",
+      "sha256": "644c2c71177e2c08d44fc19d35404e8eb3544f604a0070cbe107eccd9910825a"
+    },
+    {
+      "path": "fixtures/src/main.c",
+      "sha256": "c28a5bd6ca51c5f74a888b2f3128bbc99e2627d60923dcb1e94ca9503f65cfae"
+    },
+    {
+      "path": "fixtures/src/vuln_copy_elf32_x86.S",
+      "sha256": "f41004026b62bc08e0d8170db89473163584d559089bfb7e216f1cc8f8bc2a03"
+    },
+    {
+      "path": "fixtures/src/vuln_copy_elf_x86_64.S",
+      "sha256": "05e8eb42ded4d89724dcc6c7e1d368b409fffb401b696f3e0314ed041a07d1bb"
+    },
+    {
+      "path": "fixtures/src/vuln_copy_loop_x86_64.S",
+      "sha256": "648aaa64a1b9d80ded95552af3523318bbc6323497afcff90d04bfa87f752680"
+    },
+    {
+      "path": "fixtures/src/vuln_memcpy_elf32_x86.S",
+      "sha256": "6868abfa6b00ac209dfd60cc5096b4f603528e63fc79fefb2de84ecbac70ec88"
+    },
+    {
+      "path": "scripts/build_phase8c_corpus.py",
+      "sha256": "6076e2623865e824e54c869dadccb4beb4c42545667818c0658a4eace79ca97a"
+    },
+    {
+      "path": "scripts/migrate_ground_truth_v2.py",
+      "sha256": "87a2eb8209c7be56876ab880e7985085d3b5c4307231c580b0c8609db8c16d3a"
+    }
+  ],
+  "toolchain": {
+    "clang": {
+      "path": "/usr/bin/clang",
+      "version": "Apple clang version 14.0.3 (clang-1403.0.22.14.1)"
+    },
+    "gcc": {
+      "path": "/usr/bin/gcc",
+      "version": "Apple clang version 14.0.3 (clang-1403.0.22.14.1)"
+    },
+    "zig": {
+      "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/.tmp/zigpkg/site/ziglang/zig",
+      "reason": null,
+      "status": "available",
+      "version": "0.17.1"
+    }
+  },
+  "variant_attempts": [
+    {
+      "attempt_id": "attempt-cwe122-musl-O2-static",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O2",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-static"
+      ],
+      "optimization": "-O2",
+      "oracle_validation": {
+        "evidence_sha256": "0cdf8cfb6391af6cfc2c6db19b9aa2c3e98367b0ef4ccfe3ab5e327e44c4e204",
+        "executed": true,
+        "original_poc_case_count": 2,
+        "original_vulnerable_observed": false,
+        "reason": "variant build does not reproduce the committed PoC's expected vulnerable original behavior (original PoC case did not crash); variant dropped rather than admitting an unvalidated build",
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "reason": "variant build does not reproduce the committed PoC's expected vulnerable original behavior (original PoC case did not crash); variant dropped rather than admitting an unvalidated build",
+      "source_sample": "repair-cwe122",
+      "status": "dropped",
+      "target": "x86_64-linux-musl"
+    },
+    {
+      "attempt_id": "attempt-cwe787-musl-O3-static",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O3",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-static"
+      ],
+      "optimization": "-O3",
+      "oracle_validation": {
+        "evidence_sha256": "67acfe5935a9a0b6fd06212d9b1e0be02eeedd3ba47e07e4a80427be385918f7",
+        "executed": true,
+        "original_poc_case_count": 1,
+        "original_vulnerable_observed": false,
+        "reason": "variant build does not reproduce the committed PoC's expected vulnerable original behavior (original PoC case did not crash); variant dropped rather than admitting an unvalidated build",
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "reason": "variant build does not reproduce the committed PoC's expected vulnerable original behavior (original PoC case did not crash); variant dropped rather than admitting an unvalidated build",
+      "source_sample": "repair-cwe787",
+      "status": "dropped",
+      "target": "x86_64-linux-musl"
+    },
+    {
+      "attempt_id": "attempt-cwe122-gnu-static",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O2",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-static"
+      ],
+      "optimization": "-O2",
+      "reason": "cross-compiler build failed: error: libc of the specified target requires dynamic linking",
+      "source_sample": "repair-cwe122",
+      "status": "dropped",
+      "target": "x86_64-linux-gnu"
+    }
+  ],
+  "variants": [
+    {
+      "binary": "benchmark/phase8c/bin/variant-cwe122-O2.elf",
+      "binary_sha256": "d4bc0b47675366053efabcb9c36faa15f91d78eae273b6b6e5bf364610cf4955",
+      "build_record": "benchmark/phase8c/bin/variant-cwe122-O2.build.json",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O2",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie"
+      ],
+      "oracle_validation": {
+        "evidence_sha256": "113c12181cae8b292f517329e4af737faf880f361f606021d8d27c7a837cabd6",
+        "executed": true,
+        "expected_original_fail_observed": true,
+        "original_poc_case_count": 2,
+        "original_vulnerable_observed": true,
+        "reason": null,
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "poc": "benchmark/phase8c/bin/variant-cwe122-O2.poc.json",
+      "sample_id": "variant-cwe122-O2",
+      "source_sample": "repair-cwe122",
+      "status": "validated"
+    },
+    {
+      "binary": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.elf",
+      "binary_sha256": "507a818ac1d2ca7b184fba6614b8a6ef8fb9ce8f54c73d0d41deec7924c536cf",
+      "build_record": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.build.json",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O2",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-s"
+      ],
+      "oracle_validation": {
+        "evidence_sha256": "cbfa25215ae17d77ef295fa4db2f14784062e8eaf90de725e785bfaca696ead2",
+        "executed": true,
+        "expected_original_fail_observed": true,
+        "original_poc_case_count": 2,
+        "original_vulnerable_observed": true,
+        "reason": null,
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "poc": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.poc.json",
+      "sample_id": "variant-cwe122-O2-stripped",
+      "source_sample": "repair-cwe122",
+      "status": "validated"
+    },
+    {
+      "binary": "benchmark/phase8c/bin/variant-cwe125-O3-static.elf",
+      "binary_sha256": "2eb966a6cb1642e025150e840dc7ca1bf22b98e6c02a42ce305a5249ba94774d",
+      "build_record": "benchmark/phase8c/bin/variant-cwe125-O3-static.build.json",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-O3",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-static"
+      ],
+      "oracle_validation": {
+        "evidence_sha256": "279ba30cd72b5a69f3e28c33afed9619e23f8eaaf9619b6c027d75c624f0f45b",
+        "executed": true,
+        "expected_original_fail_observed": true,
+        "original_poc_case_count": 1,
+        "original_vulnerable_observed": true,
+        "reason": null,
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "poc": "benchmark/phase8c/bin/variant-cwe125-O3-static.poc.json",
+      "sample_id": "variant-cwe125-O3-static",
+      "source_sample": "repair-cwe125",
+      "status": "validated"
+    },
+    {
+      "binary": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.elf",
+      "binary_sha256": "5b5f5887fddca7428012d4db7f88d1afb8856cf32b602019082c57d6c2902bfa",
+      "build_record": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.build.json",
+      "compiler": "zig",
+      "compiler_version": "0.17.1",
+      "flags": [
+        "-Os",
+        "-g0",
+        "-fno-stack-protector",
+        "-fno-pie",
+        "-no-pie",
+        "-static",
+        "-s"
+      ],
+      "oracle_validation": {
+        "evidence_sha256": "9d145e06af31087c556a26e038c8037a3917b0e5ae42cfa53fb76e1b39548c30",
+        "executed": true,
+        "expected_original_fail_observed": true,
+        "original_poc_case_count": 1,
+        "original_vulnerable_observed": true,
+        "reason": null,
+        "runner": "limactl",
+        "status": "fail",
+        "tier": "emulated_run"
+      },
+      "poc": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.poc.json",
+      "sample_id": "variant-cwe125-Os-static-stripped",
+      "source_sample": "repair-cwe125",
+      "status": "validated"
+    }
+  ]
+}

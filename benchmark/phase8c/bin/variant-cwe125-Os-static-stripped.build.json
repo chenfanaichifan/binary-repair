@@ -1,0 +1,53 @@
+{
+  "command": [
+    "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/.tmp/zigpkg/site/ziglang/zig",
+    "cc",
+    "-target",
+    "x86_64-linux-musl",
+    "-Os",
+    "-g0",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-no-pie",
+    "-static",
+    "-s",
+    "-o",
+    "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/benchmark/phase8c/bin/.variant-cwe125-Os-static-stripped.tmp.elf",
+    "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/fixtures/repair-benchmark/CWE125_oob_read/vuln.c"
+  ],
+  "compiler": "zig",
+  "compiler_version": "0.17.1",
+  "deterministic": false,
+  "flags": [
+    "-Os",
+    "-g0",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-no-pie",
+    "-static",
+    "-s"
+  ],
+  "linking_mode": "static",
+  "network": false,
+  "optimization": "-Os",
+  "oracle_validation": {
+    "evidence_sha256": "9d145e06af31087c556a26e038c8037a3917b0e5ae42cfa53fb76e1b39548c30",
+    "executed": true,
+    "expected_original_fail_observed": true,
+    "original_poc_case_count": 1,
+    "original_vulnerable_observed": true,
+    "reason": null,
+    "runner": "limactl",
+    "status": "fail",
+    "tier": "emulated_run"
+  },
+  "output": "benchmark/phase8c/bin/variant-cwe125-Os-static-stripped.elf",
+  "output_sha256": "5b5f5887fddca7428012d4db7f88d1afb8856cf32b602019082c57d6c2902bfa",
+  "sample_id": "variant-cwe125-Os-static-stripped",
+  "source": "fixtures/repair-benchmark/CWE125_oob_read/vuln.c",
+  "source_sample": "repair-cwe125",
+  "source_sha256": "c52dd4984fd305316c9498178e9485aa7abf8bba8be75d83742d97e32196e0c6",
+  "static": true,
+  "stripped": true,
+  "target": "x86_64-linux-musl"
+}

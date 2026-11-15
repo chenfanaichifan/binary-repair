@@ -1,0 +1,51 @@
+{
+  "command": [
+    "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/.tmp/zigpkg/site/ziglang/zig",
+    "cc",
+    "-target",
+    "x86_64-linux-gnu",
+    "-O2",
+    "-g0",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-no-pie",
+    "-s",
+    "-o",
+    "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/benchmark/phase8c/bin/.variant-cwe122-O2-stripped.tmp.elf",
+    "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/binary-repair-gui/fixtures/repair-benchmark/CWE122_heap_copy/vuln.c"
+  ],
+  "compiler": "zig",
+  "compiler_version": "0.17.1",
+  "deterministic": false,
+  "flags": [
+    "-O2",
+    "-g0",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-no-pie",
+    "-s"
+  ],
+  "linking_mode": "dynamic",
+  "network": false,
+  "optimization": "-O2",
+  "oracle_validation": {
+    "evidence_sha256": "cbfa25215ae17d77ef295fa4db2f14784062e8eaf90de725e785bfaca696ead2",
+    "executed": true,
+    "expected_original_fail_observed": true,
+    "original_poc_case_count": 2,
+    "original_vulnerable_observed": true,
+    "reason": null,
+    "runner": "limactl",
+    "status": "fail",
+    "tier": "emulated_run"
+  },
+  "output": "benchmark/phase8c/bin/variant-cwe122-O2-stripped.elf",
+  "output_sha256": "507a818ac1d2ca7b184fba6614b8a6ef8fb9ce8f54c73d0d41deec7924c536cf",
+  "sample_id": "variant-cwe122-O2-stripped",
+  "source": "fixtures/repair-benchmark/CWE122_heap_copy/vuln.c",
+  "source_sample": "repair-cwe122",
+  "source_sha256": "3d5aa70b980eae5a07dcb8a082fb375803d1e289af238466fd2780a89fc6e279",
+  "static": false,
+  "stripped": true,
+  "target": "x86_64-linux-gnu"
+}

@@ -1,0 +1,50 @@
+{
+  "arch": "x86_64",
+  "description": "Phase-8C C8 compiler variant variant-cwe122-O2-stripped: original repair-benchmark PoC cases rebound to the variant binary",
+  "fixture_sha256": "507a818ac1d2ca7b184fba6614b8a6ef8fb9ce8f54c73d0d41deec7924c536cf",
+  "format": "elf",
+  "poc": [
+    {
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "candidate": {
+        "crashed": false
+      },
+      "id": "cwe122-overflow-64",
+      "original": {
+        "crashed": true
+      }
+    },
+    {
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "candidate": {
+        "crashed": false
+      },
+      "id": "cwe122-overflow-256",
+      "original": {
+        "crashed": true
+      }
+    }
+  ],
+  "regression": [
+    {
+      "argv": [
+        "hi"
+      ],
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      },
+      "id": "cwe122-short",
+      "original": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "target": "cwe122_bad"
+}
