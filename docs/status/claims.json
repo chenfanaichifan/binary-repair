@@ -457,7 +457,8 @@
     },
     "self_hosted_nightly": {
       "status": "not_run",
-      "reason": "no self-hosted lima runner provisioned"
+      "reason": "no self-hosted lima runner provisioned; the local frozen-tree nightly gate is separate evidence",
+      "signoff": "docs/operations/phase8c-ci-signoff.md"
     }
   },
   "autonomy_foundation": {
