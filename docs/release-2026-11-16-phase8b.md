@@ -7,13 +7,15 @@ Status: Phase-8B release evidence for the verifier-semantics cycle.
   (https://github.com/chenfanaichifan/binary-repair/actions/runs/43703724955)
 - Ubuntu verification: run 43703724942, conclusion success
   (https://github.com/chenfanaichifan/binary-repair/actions/runs/43703724942)
-- Local frozen-tree nightly gate: 13/13 required checks passed on the gated
-  code SHA (`artifacts/release-gate-2026-11-16-phase8b/`, evidence branch
+- Local frozen-tree nightly gate: recorded on the evidence branch for the
+  final release commit (`artifacts/release-gate-2026-11-16-phase8b/`, branch
   `release/2026-11-16-phase8b-evidence`, tag
-  `release-2026-11-16-phase8b-evidence`).
-- The final mainline commit carrying this note is a docs-only delta from the
-  gated code SHA; the gate and hosted CI evidence are bound to that gated SHA.
-  The self-hosted Lima nightly is `not_run` and is not claimed.
+  `release-2026-11-16-phase8b-evidence`); the gate bundle carries the exact
+  gated SHA, tree SHA, 13 required-check results and the unmodified timestamped
+  evidence.
+- The hosted CI evidence above is bound to the code SHA named there; the final
+  release commit is separately frozen and gated on the release host. The
+  self-hosted Lima nightly is `not_run` and is not claimed.
 
 This note does not claim a new vulnerability-repair capability, capability
 graduation, hidden-benchmark generalization, whole-program proof, or completion
