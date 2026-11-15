@@ -10,8 +10,8 @@
   ],
   "declared_matrix": "exact cells in app/services/repair_matrix.py: ELF i386/x86_64/arm64, PE i386/x86_64/arm64, Mach-O x86_64/arm64 (little-endian thin only)",
   "latest_verified_ci": {
-    "run_id": 43703724955,
-    "head_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
+    "run_id": 43744573286,
+    "head_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
     "branch": "workbench-v3",
     "conclusion": "success"
   },
@@ -417,48 +417,47 @@
   },
   "release_evidence": {
     "procedure": "scripts/release_freeze.py --mode nightly --sha <frozen-sha> runs release_gate.py --nightly --release-sha and writes a provenance bundle",
-    "artifact_dir": "artifacts/release-gate-2026-11-16-phase8b",
-    "evidence_branch": "release/2026-11-16-phase8b-evidence",
-    "evidence_tag": "release-2026-11-16-phase8b-evidence",
+    "artifact_dir": "artifacts/release-gate-2026-11-16-phase8c",
+    "evidence_branch": "release/2026-11-16-phase8c-evidence",
+    "evidence_tag": "release-2026-11-16-phase8c-evidence",
     "evidence_scope": "local frozen-tree nightly gate on the final gated code SHA plus real GitHub-hosted portable CI and Ubuntu verification; self-hosted Lima nightly is not_run and is not claimed",
     "ci_status": "portable_hosted_success_self_hosted_not_run",
-    "hosted_ci_run_id": 43703724955,
-    "hosted_ci_run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43703724955",
-    "hosted_ci_head_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
+    "hosted_ci_run_id": 43744573286,
+    "hosted_ci_run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43744573286",
+    "hosted_ci_head_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
     "hosted_ci_conclusion": "success",
-    "ubuntu_verification_run_id": 43703724942,
-    "ubuntu_verification_run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43703724942",
+    "ubuntu_verification_run_id": 43744573230,
+    "ubuntu_verification_run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43744573230",
     "not_run": [
       "self_hosted_lima_nightly",
       "international_provider_matrix",
       "github_actions_inside_local_gate"
     ],
-    "gate_scope": "final gate artifact is recorded on the final docs commit in the evidence branch; the hosted CI SHA is the gated code SHA above"
+    "gate_scope": "final gate artifact is recorded on the final docs commit in the evidence branch; the hosted CI SHA is the gated code SHA"
   },
   "ci_evidence": {
     "schema_version": 2,
-    "gated_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
-    "evidence_branch": "release/2026-11-16-phase8b-evidence",
-    "evidence_tag": "release-2026-11-16-phase8b-evidence",
+    "gated_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
+    "evidence_branch": "release/2026-11-16-phase8c-evidence",
+    "evidence_tag": "release-2026-11-16-phase8c-evidence",
     "hosted_ci": {
       "workflow": "CI",
-      "run_id": 43703724955,
-      "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43703724955",
-      "head_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
+      "run_id": 43744573286,
+      "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43744573286",
+      "head_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
       "conclusion": "success",
-      "scope": "GitHub-hosted portable CI layer: static coverage gate, contract/acceptance/meta checks, targeted pytest, release_gate.py --pr, full non-browser pytest, and Phase-8B shadow checks; it does not reproduce host-specific capability measurements or the Lima nightly (self-hosted nightly is not_run)",
-      "gated_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a"
+      "scope": "GitHub-hosted portable CI: static gates, contracts, release_gate --pr, full non-browser pytest (serial), and Phase-8C shadow checks; it does not reproduce host-specific capability measurements or the Lima nightly (self-hosted nightly is not_run)",
+      "gated_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff"
     },
     "ubuntu_verification": {
-      "run_id": 43703724942,
-      "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43703724942",
-      "head_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
+      "run_id": 43744573230,
+      "run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43744573230",
+      "head_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
       "conclusion": "success"
     },
     "self_hosted_nightly": {
       "status": "not_run",
-      "reason": "no self-hosted lima runner provisioned",
-      "signoff": "docs/release/CI-SIGNOFF-2026-11-15.md"
+      "reason": "no self-hosted lima runner provisioned"
     }
   },
   "autonomy_foundation": {
@@ -876,6 +875,14 @@
       "cross-compiler verification with a second toolchain",
       "Phase-8D open-world discovery or Acceptance 2.0",
       "Phase-9-16 semantic/repair/reflection expansion"
-    ]
+    ],
+    "ci_evidence": {
+      "hosted_ci_run_id": 43744573286,
+      "hosted_ci_run_url": "https://github.com/chenfanaichifan/binary-repair/actions/runs/43744573286",
+      "hosted_ci_head_sha": "f1ba37eee5146b5bb5de97046a0f8b4b653538ff",
+      "conclusion": "success",
+      "ubuntu_verification_run_id": 43744573230,
+      "final_gate_sha_note": "final local nightly gate is recorded in the evidence branch; this CI run covers the gated code SHA"
+    }
   }
 }
