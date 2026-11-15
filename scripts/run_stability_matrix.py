@@ -18,6 +18,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+if str(ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts"))
+
+from verify_repair_benchmark import verify_case  # noqa: E402
 
 
 def _parse(spec: str) -> tuple[str, str]:
@@ -26,7 +30,7 @@ def _parse(spec: str) -> tuple[str, str]:
 
 
 def _run_one(spec: str, case_id: str, run_index: int,
-             args: argparse.Namespace) -> dict:
+             args: argparse.Namespace, case: dict | None = None) -> dict:
     provider, model = _parse(spec)
     slug = (provider + "-" + model).replace("/", "_").replace(":", "_")
     out = args.out / slug / case_id / f"run-{run_index}"
@@ -47,7 +51,7 @@ def _run_one(spec: str, case_id: str, run_index: int,
     record = {
         "spec": spec, "provider": provider, "model": model,
         "case_id": case_id, "run": run_index, "returncode": proc.returncode,
-        "stderr_tail": proc.stderr[-800:],
+        "stderr_tail": proc.stderr[-800:], "experiment_id": args.experiment_id,
     }
     try:
         summary = json.loads((out / "summary.json").read_text())
@@ -57,12 +61,35 @@ def _run_one(spec: str, case_id: str, run_index: int,
             "status": "completed",
             "gate": candidate.get("gate"),
             "repair_status": candidate.get("repair_status"),
-            "verified": candidate.get("gate") == "pass",
             "attempts": len(case.get("ai_attempts") or []),
             "plan_status": ((case.get("ai_attempts") or [{}])[0]
                             .get("plan_status")),
             "candidate_sha256": candidate.get("candidate_sha256"),
+            "candidate_artifact": candidate.get("candidate_artifact"),
         })
+        verification_status = "NOT_RUN"
+        if case is not None:
+            verification = verify_case(out, case, case)
+            verification_status = str(verification.get("status") or "NOT_RUN")
+            if (not candidate.get("candidate_artifact")
+                    and str(candidate.get("gate")) == "no_candidate"):
+                verification_status = "NO_CANDIDATE"
+            record["verification_status"] = verification_status
+            record["verification"] = verification
+        record["verified"] = verification_status == "verified"
+        manifest = {
+            "schema_version": 2, "run_kind": "stability_run",
+            "experiment_id": args.experiment_id,
+            "profile": str(args.profile) if args.profile else None,
+            "spec": spec, "model": model, "case_id": case_id,
+            "run": run_index,
+            "candidate_artifact": record.get("candidate_artifact"),
+            "candidate_sha256": record.get("candidate_sha256"),
+            "generator_gate": record.get("gate"),
+            "verification_status": record.get("verification_status"),
+            "status": record.get("status"),
+        }
+        (out / "run-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
         # populate independent evidence bundle
         ev = subprocess.run(
             [sys.executable, str(ROOT / "scripts" / "repair_evidence.py"),
@@ -78,6 +105,10 @@ def _run_one(spec: str, case_id: str, run_index: int,
 def aggregate(records: list[dict]) -> dict:
     eligible = [r for r in records if r.get("status") == "completed"]
     verified = [r for r in eligible if r.get("verified")]
+    status_counts: dict[str, int] = {}
+    for r in records:
+        key = str(r.get("verification_status") or "NOT_RUN")
+        status_counts[key] = status_counts.get(key, 0) + 1
     by_model: dict[str, dict] = {}
     by_case: dict[str, dict] = {}
     for r in records:
@@ -102,6 +133,7 @@ def aggregate(records: list[dict]) -> dict:
         "runs": len(records),
         "eligible_runs": len(eligible),
         "verified_runs": len(verified),
+        "status_counts": status_counts,
         "R_verified": (len(verified) / len(eligible)) if eligible else 0.0,
         "R_robustness": (len(verified) / len(records)) if records else 0.0,
         "per_model": by_model,
@@ -118,18 +150,24 @@ def main() -> int:
     ap.add_argument("--repeats", type=int, default=3)
     ap.add_argument("--max-repair-rounds", type=int, default=2)
     ap.add_argument("--timeout", type=int, default=1800)
+    ap.add_argument("--experiment-id", default="p18-60")
+    ap.add_argument("--profile", type=Path)
+    ap.add_argument("--smoke", action="store_true")
     args = ap.parse_args()
     if os.environ.get("BINARYREPAIR_LIVE_AI") != "1":
         print("refusing live provider calls without BINARYREPAIR_LIVE_AI=1")
         return 2
     manifest = json.loads(args.cases.read_text())
-    case_ids = [str(item["id"]) for item in manifest["cases"]]
+    by_id = {str(item["id"]): item for item in manifest["cases"]}
+    case_ids = list(by_id)
+    if args.smoke:
+        case_ids = case_ids[:1]
     args.out.mkdir(parents=True, exist_ok=True)
     records = []
     for spec in args.models:
         for case_id in case_ids:
             for run_index in range(1, max(1, args.repeats) + 1):
-                record = _run_one(spec, case_id, run_index, args)
+                record = _run_one(spec, case_id, run_index, args, by_id.get(case_id))
                 records.append(record)
                 print(json.dumps({k: record.get(k) for k in
                                   ("spec", "case_id", "run", "status", "gate",
@@ -143,7 +181,8 @@ def main() -> int:
              f"- eligible: {report['eligible_runs']}",
              f"- verified: {report['verified_runs']}",
              f"- R_verified: {report['R_verified']:.3f}",
-             f"- R_robustness: {report['R_robustness']:.3f}", ""]
+             f"- R_robustness: {report['R_robustness']:.3f}",
+             f"- statuses: `{json.dumps(report['status_counts'])}`", ""]
     (args.out / "README.md").write_text("\n".join(lines) + "\n")
     print(json.dumps({k: report[k] for k in
                       ("runs", "eligible_runs", "verified_runs", "R_verified")}))
