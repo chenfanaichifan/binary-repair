@@ -1711,20 +1711,6 @@ def build_hidden_corpus(
             "commitment": None,
             "written": False,
         }
-    if not resolved_zig:
-        return {
-            "status": "not_run",
-            "summary": _public_summary(
-                status="not_run", root=root, runtime_count=0, analysis_count=0,
-                commitment=None, commitment_written=False, toolchain=toolchain,
-                dropped_attempts=0,
-                limitations=["Zig compiler is unavailable (PATH or "
-                             ".tmp/zigpkg/site/ziglang/zig); hidden corpus "
-                             "not built, nothing faked"],
-            ),
-            "commitment": None,
-            "written": False,
-        }
     if not validate_oracles:
         return {
             "status": "blocked",
@@ -1735,6 +1721,20 @@ def build_hidden_corpus(
                 limitations=["--validate-oracles was not requested; runtime "
                              "samples cannot be admitted, so hidden_available "
                              "remains false"],
+            ),
+            "commitment": None,
+            "written": False,
+        }
+    if not resolved_zig:
+        return {
+            "status": "not_run",
+            "summary": _public_summary(
+                status="not_run", root=root, runtime_count=0, analysis_count=0,
+                commitment=None, commitment_written=False, toolchain=toolchain,
+                dropped_attempts=0,
+                limitations=["Zig compiler is unavailable (PATH or "
+                             ".tmp/zigpkg/site/ziglang/zig); hidden corpus "
+                             "not built, nothing faked"],
             ),
             "commitment": None,
             "written": False,

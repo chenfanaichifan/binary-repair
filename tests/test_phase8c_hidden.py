@@ -1052,3 +1052,23 @@ def test_insecure_root_check_precedes_optional_toolchain(tmp_path: Path, monkeyp
     )
     assert result["status"] == "violation"
     assert result["summary"]["hidden_available"] is False
+
+
+def test_cli_blocked_without_validation_precedes_optional_toolchain(
+    tmp_path: Path, monkeypatch
+):
+    """Omitting --validate-oracles is blocked even when Zig is unavailable."""
+    hidden = _hidden()
+    monkeypatch.setattr(hidden, "zig_path", lambda: None)
+    root = tmp_path / "blocked-root"
+    root.mkdir(mode=0o700)
+    os.chmod(root, 0o700)
+    result = hidden.build_hidden_corpus(
+        root=root,
+        public_manifest_path=PUBLIC_MANIFEST,
+        commitment_path=tmp_path / "commitment.json",
+        validate_oracles=False,
+        write_commitment=True,
+    )
+    assert result["status"] == "blocked"
+    assert result["summary"]["hidden_available"] is False
