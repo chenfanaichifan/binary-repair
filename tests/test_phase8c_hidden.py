@@ -1034,3 +1034,21 @@ def test_repo_tree_contains_no_hidden_material():
                       "build-report.json"):
         assert not (ROOT / forbidden).exists()
     assert not (ROOT / hidden.PRIVATE_MANIFEST_NAME).exists()
+
+
+def test_insecure_root_check_precedes_optional_toolchain(tmp_path: Path, monkeypatch):
+    """An insecure root is a violation even when Zig is unavailable (CI host)."""
+    hidden = _hidden()
+    root = tmp_path / "insecure-root-alone"
+    root.mkdir(mode=0o755)
+    os.chmod(root, 0o755)
+    monkeypatch.setattr(hidden, "zig_path", lambda: None)
+    result = hidden.build_hidden_corpus(
+        root=root,
+        public_manifest_path=PUBLIC_MANIFEST,
+        commitment_path=tmp_path / "commitment.json",
+        validate_oracles=True,
+        write_commitment=True,
+    )
+    assert result["status"] == "violation"
+    assert result["summary"]["hidden_available"] is False

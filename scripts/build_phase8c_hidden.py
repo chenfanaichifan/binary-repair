@@ -1696,6 +1696,21 @@ def build_hidden_corpus(
     public_manifest = _load_json(public_manifest_path)
     public_index = _public_sample_index(public_manifest)
     public_material = public_material_hashes(public_manifest)
+    _ensure_private_layout(root)
+    if not _root_is_secure(root):
+        return {
+            "status": "violation",
+            "summary": _public_summary(
+                status="violation", root=root, runtime_count=0,
+                analysis_count=0, commitment=None, commitment_written=False,
+                toolchain=toolchain, dropped_attempts=0,
+                limitations=["private hidden root permissions are not "
+                             "owner-only (0700); refusing to write hidden "
+                             "contents"],
+            ),
+            "commitment": None,
+            "written": False,
+        }
     if not resolved_zig:
         return {
             "status": "not_run",
@@ -1731,21 +1746,6 @@ def build_hidden_corpus(
         "version": version,
         "status": "available",
     }
-    _ensure_private_layout(root)
-    if not _root_is_secure(root):
-        return {
-            "status": "violation",
-            "summary": _public_summary(
-                status="violation", root=root, runtime_count=0,
-                analysis_count=0, commitment=None, commitment_written=False,
-                toolchain=toolchain, dropped_attempts=0,
-                limitations=["private hidden root permissions are not "
-                             "owner-only (0700); refusing to write hidden "
-                             "contents"],
-            ),
-            "commitment": None,
-            "written": False,
-        }
     for name in ("bin", "poc", "reference"):
         for stale in (root / name).glob("*"):
             if stale.is_file():
