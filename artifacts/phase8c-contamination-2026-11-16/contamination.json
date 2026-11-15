@@ -1,0 +1,300 @@
+{
+  "capability_claims": [],
+  "counts": {
+    "hidden_samples": 0,
+    "public_analysis_only": 8,
+    "public_core": 28,
+    "public_dev": 18,
+    "public_runtime": 20,
+    "public_samples": 32,
+    "public_validation": 14
+  },
+  "exact_duplicates": [
+    {
+      "digest_short": "7e915860fce0d54c",
+      "hidden_involved": false,
+      "kind": "binary",
+      "resolution": "same_binary_different_target_allowed",
+      "samples": [
+        "hard-multicall",
+        "hard-nonconst",
+        "hard-sprintf"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "8209a1ea589742f3",
+      "hidden_involved": false,
+      "kind": "binary",
+      "resolution": "same_binary_different_target_allowed",
+      "samples": [
+        "hard-loop64",
+        "hard-loop8"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "886125ec5dd28501",
+      "hidden_involved": false,
+      "kind": "binary",
+      "resolution": "same_binary_different_target_allowed",
+      "samples": [
+        "hard-loop16",
+        "hard-loop32",
+        "hard-reverse"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "2d0edb39c3c65f73",
+      "hidden_involved": false,
+      "kind": "reference",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "repair-cwe122",
+        "variant-cwe122-O2",
+        "variant-cwe122-O2-stripped"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "364b153c91815f96",
+      "hidden_involved": false,
+      "kind": "reference",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "repair-cwe125",
+        "variant-cwe125-O3-static",
+        "variant-cwe125-Os-static-stripped"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "394231b17cc88b25",
+      "hidden_involved": false,
+      "kind": "reference",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "hard-loop16",
+        "hard-reverse"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "178eafdc22617279",
+      "hidden_involved": false,
+      "kind": "source",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "hard-multicall",
+        "hard-nonconst",
+        "hard-sprintf"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "2d0edb39c3c65f73",
+      "hidden_involved": false,
+      "kind": "source",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "repair-cwe122",
+        "variant-cwe122-O2",
+        "variant-cwe122-O2-stripped"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "364b153c91815f96",
+      "hidden_involved": false,
+      "kind": "source",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "repair-cwe125",
+        "variant-cwe125-O3-static",
+        "variant-cwe125-Os-static-stripped"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "394231b17cc88b25",
+      "hidden_involved": false,
+      "kind": "source",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "hard-loop16",
+        "hard-reverse"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "3d5aa70b980eae5a",
+      "hidden_involved": false,
+      "kind": "source",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "repair-cwe122",
+        "variant-cwe122-O2",
+        "variant-cwe122-O2-stripped"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "4e8fbf8f593c45f5",
+      "hidden_involved": false,
+      "kind": "source",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "hard-loop64",
+        "hard-loop8"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "b23f3ffae7812068",
+      "hidden_involved": false,
+      "kind": "source",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "hard-loop16",
+        "hard-loop32",
+        "hard-loop64",
+        "hard-loop8",
+        "hard-reverse"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "c28a5bd6ca51c5f7",
+      "hidden_involved": false,
+      "kind": "source",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "stack-memcpy-x86",
+        "stack-strcpy-x86",
+        "stack-strcpy-x86_64"
+      ],
+      "severity": "note"
+    },
+    {
+      "digest_short": "c52dd4984fd30531",
+      "hidden_involved": false,
+      "kind": "source",
+      "resolution": "shared_declared_family_allowed",
+      "samples": [
+        "repair-cwe125",
+        "variant-cwe125-O3-static",
+        "variant-cwe125-Os-static-stripped"
+      ],
+      "severity": "note"
+    }
+  ],
+  "hidden": {
+    "content_included_in_report": false,
+    "reason": null,
+    "requested": false,
+    "status": "not_run"
+  },
+  "kind": "phase8c_contamination_audit",
+  "limitations": [
+    "public-only mode never reads hidden content; hidden mode is explicit and reports aggregate/classes only",
+    "opcode and text similarity are bounded heuristics, not proof of common origin; tokens are capped for deterministic runtime",
+    "declared variants/source families are explicit notes, not silently exempted",
+    "no corpus binary is executed; no network/AI is used"
+  ],
+  "mode": "public_only",
+  "near_duplicates": [
+    {
+      "hidden_involved": false,
+      "kind": "source_text",
+      "resolution": "declared_family_near_duplicate",
+      "samples": [
+        "hard-loop16",
+        "hard-loop64"
+      ],
+      "severity": "note",
+      "similarity": 0.968085,
+      "threshold": 0.9
+    },
+    {
+      "hidden_involved": false,
+      "kind": "source_text",
+      "resolution": "declared_family_near_duplicate",
+      "samples": [
+        "hard-loop16",
+        "hard-loop8"
+      ],
+      "severity": "note",
+      "similarity": 0.968085,
+      "threshold": 0.9
+    },
+    {
+      "hidden_involved": false,
+      "kind": "source_text",
+      "resolution": "declared_family_near_duplicate",
+      "samples": [
+        "hard-loop32",
+        "hard-loop64"
+      ],
+      "severity": "note",
+      "similarity": 0.968085,
+      "threshold": 0.9
+    },
+    {
+      "hidden_involved": false,
+      "kind": "source_text",
+      "resolution": "declared_family_near_duplicate",
+      "samples": [
+        "hard-loop32",
+        "hard-loop8"
+      ],
+      "severity": "note",
+      "similarity": 0.968085,
+      "threshold": 0.9
+    },
+    {
+      "hidden_involved": false,
+      "kind": "source_text",
+      "resolution": "declared_family_near_duplicate",
+      "samples": [
+        "hard-loop64",
+        "hard-reverse"
+      ],
+      "severity": "note",
+      "similarity": 0.968085,
+      "threshold": 0.9
+    },
+    {
+      "hidden_involved": false,
+      "kind": "source_text",
+      "resolution": "declared_family_near_duplicate",
+      "samples": [
+        "hard-loop8",
+        "hard-reverse"
+      ],
+      "severity": "note",
+      "similarity": 0.968085,
+      "threshold": 0.9
+    }
+  ],
+  "public_manifest": {
+    "actual_sample_count": 32,
+    "hidden_available": false,
+    "path": "benchmark/phase8c/manifest.json",
+    "sample_count": 32,
+    "sha256": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78"
+  },
+  "resolutions": [
+    "declared_family_near_duplicate",
+    "same_binary_different_target_allowed",
+    "shared_declared_family_allowed"
+  ],
+  "schema_version": 1,
+  "status": "ok",
+  "thresholds": {
+    "binary_executable_ngram_jaccard": 0.9,
+    "opcode_ngram": 4,
+    "source_text_similarity": 0.9
+  },
+  "verdict": "clean"
+}

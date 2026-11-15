@@ -1,0 +1,21 @@
+{
+  "accepted": 0,
+  "ai_invoked": false,
+  "candidates": [],
+  "external_root": null,
+  "kind": "phase8c_external_ingestion",
+  "limitations": [
+    "local-only ingestion; no network/AI"
+  ],
+  "merge": {
+    "auto_merge_allowed": false,
+    "hidden_merge_performed": false,
+    "public_merge_performed": false
+  },
+  "mode": "external_local",
+  "network_used": false,
+  "reason": "no --external-root supplied; external ingestion not run",
+  "rejected": 0,
+  "schema_version": 1,
+  "status": "not_run"
+}

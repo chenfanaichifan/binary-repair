@@ -1,0 +1,114 @@
+{
+  "capability_claims": [],
+  "checks": [
+    {
+      "detail": "32 samples",
+      "id": "public-count",
+      "status": "pass"
+    },
+    {
+      "detail": "core 28",
+      "id": "public-core-count",
+      "status": "pass"
+    },
+    {
+      "detail": "20 runtime / 8 analysis-only",
+      "id": "public-runtime-analysis",
+      "status": "pass"
+    },
+    {
+      "detail": "{'dev': 18, 'validation': 14}",
+      "id": "public-split-counts",
+      "status": "pass"
+    },
+    {
+      "detail": "12/12 lossless",
+      "id": "v1-migration",
+      "status": "pass"
+    },
+    {
+      "detail": "4/4",
+      "id": "v2-contracts",
+      "status": "pass"
+    },
+    {
+      "detail": "all corpus evidence hashes verify",
+      "id": "public-sums",
+      "status": "pass"
+    },
+    {
+      "detail": "public contamination verdict clean",
+      "id": "contamination",
+      "status": "pass"
+    },
+    {
+      "detail": "status=not_run; no merge",
+      "id": "external",
+      "status": "pass"
+    },
+    {
+      "detail": "no hidden paths in public artifacts",
+      "id": "hidden-leaks",
+      "status": "pass"
+    }
+  ],
+  "contamination": {
+    "findings": 21,
+    "mode": "public_only",
+    "status": "ok",
+    "verdict": "clean"
+  },
+  "counts": {
+    "actual_sample_count": 32,
+    "analysis_only_count": 8,
+    "core_count": 28,
+    "hidden_available": false,
+    "runtime_count": 20,
+    "sample_count": 32,
+    "split_counts": {
+      "dev": 18,
+      "validation": 14
+    }
+  },
+  "external": {
+    "accepted": 0,
+    "merge": {
+      "auto_merge_allowed": false,
+      "hidden_merge_performed": false,
+      "public_merge_performed": false
+    },
+    "rejected": 0,
+    "status": "not_run"
+  },
+  "hidden_available": false,
+  "hidden_commitment": null,
+  "kind": "phase8c_quality_audit",
+  "leaks": [],
+  "limitations": [
+    "public-only mode is CI-capable and performs no hidden run",
+    "full mode requires explicit hidden root/commitment/results and records not_run instead of faking a pass",
+    "contamination/quality checks are evidence validation, not a proof of corpus correctness",
+    "no network/AI is used"
+  ],
+  "mode": "public_only",
+  "public_manifest": "benchmark/phase8c/manifest.json",
+  "public_manifest_sha256": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78",
+  "results": null,
+  "schema_version": 1,
+  "status": "ok_public_only",
+  "v1_migration": {
+    "migrated": 12,
+    "missing": [],
+    "total": 12
+  },
+  "v2_contracts": {
+    "parsed": 4,
+    "present": [
+      "benchmark-manifest-v2.schema.json",
+      "benchmark-results-v2.schema.json",
+      "ground-truth-sample-v2.schema.json",
+      "hidden-benchmark-commitment.schema.json"
+    ],
+    "total": 4
+  }
+}
