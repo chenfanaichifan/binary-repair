@@ -1,0 +1,18 @@
+{
+  "ai_provider_used": false,
+  "clang": "Apple clang version 14.0.3 (clang-1403.0.22.14.1)",
+  "generated_at": "2026-11-16T00:00:00Z",
+  "git_head": "1a847de6f83edb34a8ada539bbb01855887a32b6",
+  "hidden_material_committed": false,
+  "hidden_root_mode": "0o700",
+  "hidden_root_present": true,
+  "kind": "phase8c_environment",
+  "lima_instance": "binaryrepair",
+  "limactl": "time=\"2026-11-15T23:43:44+08:00\" level=fatal msg=\"unknown command \\\"version\\\" for \\\"limactl\\\"\"",
+  "machine": "arm64",
+  "network_used": false,
+  "platform": "Darwin",
+  "python": "3.11.8",
+  "schema_version": 1,
+  "zig": "0.17.1"
+}

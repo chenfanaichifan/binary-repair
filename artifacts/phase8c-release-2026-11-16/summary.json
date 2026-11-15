@@ -1,0 +1,114 @@
+{
+  "base_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+  "baseline": {
+    "expected_mainline_sha": "a1755a5e661665218da93e967a535e359932975a",
+    "path": "artifacts/phase8c-baseline-2026-11-16/phase8c-baseline-audit.json",
+    "sha256": "ba3fd5400a3c7614af8f396733cb32d38402a9ba8e43a5334c746b38cdba16af"
+  },
+  "contamination": {
+    "hidden_path": "artifacts/phase8c-contamination-2026-11-16/hidden/contamination.json",
+    "hidden_sha256": "f7ed0305213ec0d0618a6e651b59111090317663edf081da2d6ae7c88ec12b1e",
+    "hidden_verdict": "clean",
+    "public_path": "artifacts/phase8c-contamination-2026-11-16/contamination.json",
+    "public_sha256": "e9ff87c88a1a1e6d27931527000e5c4201d2926bb68858cc774c0611af7f3a02",
+    "public_verdict": "clean"
+  },
+  "contracts": {
+    "count": 17,
+    "schemas": [
+      {
+        "path": "contracts/ground-truth-sample-v2.schema.json",
+        "sha256": "caf0f2b4de3e7295f5866a57c992ad01d7cdfabd739046118d180e7fc24f622f"
+      },
+      {
+        "path": "contracts/benchmark-manifest-v2.schema.json",
+        "sha256": "0bafaef285ee0aed90afc479e3267e0ca5fa09b42cefd65c39ca1f0476e66820"
+      },
+      {
+        "path": "contracts/hidden-benchmark-commitment.schema.json",
+        "sha256": "3df2a0359f4c5e826034ddd4f84b9a3251b17763a67af3f47ab02cadb9044929"
+      },
+      {
+        "path": "contracts/benchmark-results-v2.schema.json",
+        "sha256": "37f6b5a9bd414687c254164d2aa4863653105c79c6fd1c09f0960abe039170bf"
+      }
+    ]
+  },
+  "generated_at": "2026-11-16T00:00:00Z",
+  "hidden_benchmark": {
+    "aggregate_path": "artifacts/phase8c-hidden-2026-11-16/aggregate.json",
+    "aggregate_sha256": "18f7e39a396304307367fa64abf63fe35814ecd3c0200f97767912e94da91ef2",
+    "analysis_only_count": 2,
+    "commitment_file_sha256": "3ebf29016bd2fae21f2f078de66ebde7fccbf503493f1bbe777feab5b573755f",
+    "commitment_path": "benchmark/phase8c/hidden-commitment.json",
+    "commitment_sha256": "eaec60aadd42388efb725a668b887465268c78fd257ec4622ac56eac571bae12",
+    "executed": 8,
+    "false_verified": 0,
+    "material_committed": false,
+    "public_manifest_advertised": false,
+    "rejected": 0,
+    "runtime_count": 6,
+    "sample_count": 8,
+    "verified": 0
+  },
+  "integration_mainline_sha": "a1755a5e661665218da93e967a535e359932975a",
+  "kind": "phase8c_release_evidence",
+  "limitations": [
+    "hidden corpus material, sample descriptions and per-sample reports are not distributed; only opaque commitment digests and aggregate counts are published",
+    "hidden isolation is operational (0700 private root, no CI access, aggregate-only output), not cryptographic against a same-UID/root reader",
+    "the public manifest keeps hidden_commitment=null to avoid a circular manifest/commitment digest; the separate committed commitment artifact is canonical",
+    "the hidden aggregate has 0 independently verified repairs: 8 executed, 6 eligible runtime cases, 0 candidates; this is measured coverage, not a capability claim",
+    "one public deterministic claim (heap-malloc) was withdrawn after an independent ABI rejection; published false_verified remains 0 and the disagreement is preserved",
+    "the earlier one-off C1 reproduction flake was not reproduced across two serialized repeats under the C11 lock, but unconditional stability is not claimed",
+    "external-sample ingestion is not_run because no local external corpus was provided; Phase-8D open-world discovery is not implemented",
+    "cross-toolchain variants use one Zig 0.17.1 toolchain; cross-compiler verification with a second Linux compiler is not claimed",
+    "no new vulnerability-repair capability, hidden availability, capability promotion, Phase-8D or Phase-9-16 work is claimed"
+  ],
+  "not_claimed": [
+    "hidden corpus availability/distribution",
+    "hidden generalisation or independently verified hidden repairs",
+    "new vulnerability-repair capability",
+    "capability promotion or automatic upgrade",
+    "Phase-8D open-world discovery or Phase-9-16 semantic/repair expansion"
+  ],
+  "phase": "8C",
+  "public_benchmark": {
+    "analysis_only_samples": 8,
+    "core_samples": 28,
+    "deterministic_claim_withdrawn": 1,
+    "eligible_repair_cases": 24,
+    "executed": 30,
+    "false_verified": 0,
+    "manifest_path": "benchmark/phase8c/manifest.json",
+    "manifest_sha256": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78",
+    "public_samples": 32,
+    "rejected": 1,
+    "repeats": 2,
+    "results_path": "benchmark/phase8c/results.json",
+    "results_sha256": "22f19119dcfc8c9609875ab26b93c3c7d2012dd7224043f01ba556eb0da68edf",
+    "runtime_oracle_samples": 24,
+    "sample_count": 32,
+    "split_counts": {
+      "dev": 18,
+      "validation": 14
+    },
+    "stable_across_repeats": true,
+    "unsupported": 2,
+    "verified": 2,
+    "verified_repair_rate": 0.083333
+  },
+  "quality": {
+    "full_path": "artifacts/phase8c-quality-2026-11-16/full/quality.json",
+    "full_sha256": "f87230aa5d6b0376c1b9b7860bbda87d51fefcd0d4b22871bb3216373ddd756b",
+    "full_status": "ok",
+    "hidden_aggregate": "pass",
+    "hidden_contamination": "pass",
+    "public_path": "artifacts/phase8c-quality-2026-11-16/quality.json",
+    "public_sha256": "810063897ddec3a8c65499b66a5df7daa5d809c6783776d28399cf2481b5b765",
+    "warnings": [
+      "hidden-public-consistency"
+    ]
+  },
+  "schema_version": 1,
+  "status": "ok_with_limitations"
+}

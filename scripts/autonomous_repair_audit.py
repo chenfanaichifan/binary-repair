@@ -230,6 +230,14 @@ CHECK_SPECS: tuple[dict[str, Any], ...] = (
         "shadow": True,
         "modes": ("full",),
     },
+    {
+        "id": "phase8c-release-evidence",
+        "script": "scripts/audit_phase8c_evidence.py",
+        "args": ("--check",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
 )
 
 

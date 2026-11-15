@@ -126,6 +126,9 @@ jobs:
       - name: Phase-8C shadow benchmark artifact (non-gating)
         continue-on-error: true
         run: python scripts/run_phase8c_benchmark.py --check-artifact
+      - name: Phase-8C shadow release evidence (non-gating)
+        continue-on-error: true
+        run: python scripts/audit_phase8c_evidence.py --check
       - name: Coverage regression gate (static, no network)
         run: python scripts/verify_coverage_gate.py --static-only
       # Serial execution by policy: Lima guests and the real PoC differential are

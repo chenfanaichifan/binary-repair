@@ -746,3 +746,60 @@ promote any capability state.
 - Phase-8C (hidden/external corpus), Phase-8D (open-world discovery and
   Acceptance 2.0), Phase-9/10 (cross-function and remaining vulnerability
   families), and Phase-11..16 remain future work and are not claimed.
+
+## Phase-8C ground truth, hidden benchmark and benchmark integrity (2026-11-16)
+
+Phase-8C builds evaluation and governance infrastructure. It does not add a
+vulnerability-repair algorithm, promote capability, or prove hidden
+generalisation.
+
+- Ground Truth v2 adds four contracts (sample, public manifest, hidden
+  commitment, benchmark results), for 17 contracts total; the old 13 contracts
+  and Phase-8A/8B artifacts remain valid. All 12 v1 samples migrate losslessly
+  (same ids, binary hashes, splits, targets, oracles, references and evidence).
+- The public corpus has 32 samples: 28 core (12 migrations, 12 committed
+  hard/repair cases, 4 cross-architecture analysis-only) plus 4 admitted Zig
+  compiler/optimization variants. Counts are 24 runtime-oracle and 8
+  analysis-only; dev 18 / validation 14. Two variants remain unsupported when
+  the target function range cannot be resolved; they are counted as
+  `unsupported`, not as passes.
+- Public benchmark results: 30 executed, 2 unsupported, 3 verification
+  attempts, 2 independently verified, 1 rejected, published
+  `false_verified=0`, and 1 deterministic claim (`heap-malloc`) withdrawn after
+  an independent ABI rejection. The two verified public repairs are
+  deterministic fixture repairs under declared target scope, not arbitrary
+  binary/vulnerability/whole-program evidence. Eligible repair rate is 2/24;
+  detection/root-cause/localization are 3/24. The two serialized repeats were
+  identical, but unconditional stability is not claimed.
+- The hidden corpus has 8 samples (6 validated runtime + 2 analysis-only), all
+  executed with 0 candidates, 0 independently verified and 0 false verified.
+  Hidden binaries, PoCs, reference fixes, paths and per-sample ids are not
+  committed. Only opaque commitment digests and aggregate counts are public.
+  Isolation is operational (0700 private root, no CI access, aggregate-only
+  output), not cryptographic against a same-UID/root reader. Hidden
+  generalisation is explicitly not claimed.
+- Hidden/public contamination is clean after regenerating an initial hidden
+  variant that was byte-identical to a public compiler variant. Public and
+  hidden exact/near-duplicate checks are recorded; the public manifest keeps
+  `hidden_commitment=null` intentionally because binding a commitment that hashes
+  the manifest would be circular. Full quality records this as a warning, not a
+  fabricated pass or a hidden-availability claim.
+- The hidden aggregate has no independently verified hidden repair. The
+  difference between public fixture verification and hidden coverage is a real
+  capability/generalisation gap, not an evidence pass.
+- C11 serializes Lima operations used through `run_path`/`run_poc` with an
+  advisory flock lease, bounded timeout, typed blocked state and attempt
+  evidence. Direct `limactl` probes emitted by some scripts outside those paths
+  are not covered. A host with no compatible runner records
+  `not_run`/`unavailable`, never a pass.
+- The earlier one-off Phase-B reproduction flake was not reproduced across two
+  serialized repeats under the C11 lock; it remains a documented warning.
+  No unconditional reproducibility or stability claim is made.
+- External-sample ingestion is `not_run` because no local external corpus was
+  provided. The four compiler variants use one Zig 0.17.1 toolchain; a second
+  Linux compiler and an international provider matrix were not available. No
+  cross-compiler verification or provider-generalization claim is made.
+- Phase-8C CI/audit checks are non-gating shadow evidence. The release gate
+  remains the existing 13 required nightly checks; self-hosted Lima nightly is
+  `not_run` and is not claimed. Phase-8D open-world discovery/Acceptance 2.0 and
+  Phase-9-16 semantic/repair/reflection expansion are not implemented.

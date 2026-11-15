@@ -735,5 +735,147 @@
       "self-hosted nightly run",
       "Phase-8C..16 completion"
     ]
+  },
+  "phase8c_ground_truth": {
+    "phase": "8C",
+    "base_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+    "integration_mainline_sha": "a1755a5e661665218da93e967a535e359932975a",
+    "status": "implemented_ground_truth_hidden_benchmark_and_integrity_no_capability_promotion",
+    "new_vulnerability_repair_capability_this_phase": false,
+    "auto_upgrade_verified_this_phase": false,
+    "hidden_benchmark_run_this_phase": true,
+    "hidden_material_distributed": false,
+    "capability_promotion_this_phase": false,
+    "baseline_audit": {
+      "artifact_dir": "artifacts/phase8c-baseline-2026-11-16",
+      "status": "ok_rebaselined",
+      "original_baseline_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "previous_rebase_sha": "f42e6c4f39b584575f59b13d67f40572b3ca278c",
+      "expected_mainline_sha": "a1755a5e661665218da93e967a535e359932975a",
+      "v1_migration_lossless": true,
+      "v1_samples": 12,
+      "phase8b_reproduction_verified": 2,
+      "reproduction_candidates_match": true,
+      "flake_warning": "one-off f42 C1 default-run false_verified observed before C11 lock; not reproduced across two serialized repeats; unconditional stability not claimed",
+      "warning_blockers": [
+        "B-P8B-EVIDENCE-BINDING",
+        "B-TOOLCHAIN-ZIG",
+        "B-GATE-COUNT"
+      ]
+    },
+    "contracts": {
+      "count": 17,
+      "new": [
+        "ground-truth-sample-v2",
+        "benchmark-manifest-v2",
+        "hidden-benchmark-commitment",
+        "benchmark-results-v2"
+      ],
+      "old_13_unchanged": true
+    },
+    "ground_truth_v2": {
+      "public_manifest": "benchmark/phase8c/manifest.json",
+      "public_manifest_sha256": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78",
+      "public_samples": 32,
+      "core_samples": 28,
+      "split_counts": {
+        "dev": 18,
+        "validation": 14
+      },
+      "runtime_oracle_samples": 24,
+      "analysis_only_samples": 8,
+      "v1_migrated": 12,
+      "hard_case_added": 6,
+      "repair_benchmark_added": 6,
+      "cross_arch_analysis_only": 4,
+      "compiler_variants": 4,
+      "cross_compiler_verified": false,
+      "cross_compiler_note": "four variants use one Zig 0.17.1 toolchain; no second Linux compiler was available"
+    },
+    "public_benchmark": {
+      "results_path": "benchmark/phase8c/results.json",
+      "results_sha256": "22f19119dcfc8c9609875ab26b93c3c7d2012dd7224043f01ba556eb0da68edf",
+      "artifact_dir": "artifacts/phase8c-benchmark-2026-11-16",
+      "executed": 30,
+      "unsupported": 2,
+      "not_run": 0,
+      "blocked": 0,
+      "invalid": 0,
+      "verified": 2,
+      "rejected": 1,
+      "false_verified": 0,
+      "deterministic_claim_withdrawn": 1,
+      "withdrawn_sample": "heap-malloc",
+      "withdrawn_reason": "independent verifier ABI rejection: branch_target_unknown, call_target_not_allowed, no_ret",
+      "eligible_repair_cases": 24,
+      "verified_repair_rate": 0.083333,
+      "detection_rate": 0.125,
+      "root_cause_match_rate": 0.125,
+      "localization_rate": 0.125,
+      "repeats": 2,
+      "stable_across_repeats": true,
+      "repeat_results_sha256": "a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a"
+    },
+    "hidden_benchmark": {
+      "commitment_path": "benchmark/phase8c/hidden-commitment.json",
+      "commitment_file_sha256": "3ebf29016bd2fae21f2f078de66ebde7fccbf503493f1bbe777feab5b573755f",
+      "commitment_sha256": "eaec60aadd42388efb725a668b887465268c78fd257ec4622ac56eac571bae12",
+      "sample_count": 8,
+      "runtime_count": 6,
+      "analysis_only_count": 2,
+      "aggregate_path": "artifacts/phase8c-hidden-2026-11-16/aggregate.json",
+      "aggregate_sha256": "18f7e39a396304307367fa64abf63fe35814ecd3c0200f97767912e94da91ef2",
+      "executed": 8,
+      "verified": 0,
+      "rejected": 0,
+      "false_verified": 0,
+      "hidden_available": false,
+      "material_committed": false,
+      "public_manifest_advertised": false,
+      "note": "private material is retained by the owner; only opaque commitment and aggregate are published"
+    },
+    "contamination": {
+      "public_path": "artifacts/phase8c-contamination-2026-11-16/contamination.json",
+      "hidden_path": "artifacts/phase8c-contamination-2026-11-16/hidden/contamination.json",
+      "public_verdict": "clean",
+      "hidden_verdict": "clean",
+      "public_hidden_unresolved_overlaps": 0,
+      "initial_hidden_public_overlap_regenerated": true
+    },
+    "quality": {
+      "public_path": "artifacts/phase8c-quality-2026-11-16/quality.json",
+      "full_path": "artifacts/phase8c-quality-2026-11-16/full/quality.json",
+      "public_status": "ok_public_only",
+      "full_status": "ok",
+      "warnings": [
+        "public manifest does not advertise the separate hidden commitment"
+      ],
+      "hidden_contamination": "pass",
+      "hidden_aggregate": "pass"
+    },
+    "guest_coordination": {
+      "module": "app/services/guest_coordinator.py",
+      "mechanism": "flock lease + reentrant process-local lock + bounded timeout + attempt evidence",
+      "lima_run_path_run_poc_serialized": true,
+      "direct_limactl_probes_serialized": false
+    },
+    "external_ingestion": {
+      "status": "not_run",
+      "reason": "no local external corpus was provided; no network ingestion is used by CI"
+    },
+    "evidence": {
+      "bundle_dir": "artifacts/phase8c-release-2026-11-16",
+      "runner_check": "23/23 check-artifact checks"
+    },
+    "not_claimed": [
+      "hidden material availability or distribution",
+      "hidden generalisation or independently verified hidden repairs",
+      "new vulnerability-repair capability",
+      "automatic upgrade or capability promotion",
+      "arbitrary binary/vulnerability/whole-program repair",
+      "cross-compiler verification with a second toolchain",
+      "Phase-8D open-world discovery or Acceptance 2.0",
+      "Phase-9-16 semantic/repair/reflection expansion"
+    ]
   }
 }
