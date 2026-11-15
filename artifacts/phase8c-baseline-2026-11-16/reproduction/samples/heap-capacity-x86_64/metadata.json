@@ -1,0 +1,132 @@
+{
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "little",
+  "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+  "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+  "target_scope": {
+    "policy": "target_scoped",
+    "va": 4202713,
+    "end": 4202729,
+    "kind": "va_range"
+  },
+  "allow_whole_image": false,
+  "generator": {
+    "generator_id": "deterministic-repair-any/app.services.binary_pipeline"
+  },
+  "patch_plan": {
+    "schema_version": 1,
+    "generator_id": "binary-pipeline/deterministic",
+    "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+    "candidate_id": "cand-93e27f2fc543b2c9652efe63",
+    "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+    "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+    "strategy": "capacity_check_rewrite",
+    "scope_policy": "target_scoped_associated",
+    "target_scope": {
+      "policy": "target_scoped_associated",
+      "va": 4202713,
+      "end": 4202729
+    },
+    "operations": [
+      {
+        "kind": "write",
+        "original_offset": 8409,
+        "candidate_offset": 8409,
+        "size": 14,
+        "before_hex": "39f3720c89df29f739d70f83c4fe",
+        "after_hex": "4489e729f7720939d70f83c5feff",
+        "reason": "reviewed_site",
+        "site_va": 4202713
+      },
+      {
+        "kind": "write",
+        "original_offset": 8424,
+        "candidate_offset": 8424,
+        "size": 1,
+        "before_hex": "ff",
+        "after_hex": "90",
+        "reason": "reviewed_site",
+        "site_va": 4202713
+      },
+      {
+        "kind": "write",
+        "original_offset": 538661,
+        "candidate_offset": 538661,
+        "size": 12,
+        "before_hex": "7061796c6f616420706f6f6c",
+        "after_hex": "6f7574707574000000000000",
+        "reason": "rodata_message",
+        "authorization_ref": "authorization:capacity-message:v1 sha256=d5e2ce15164cc5fd25ac8301f31b7349ddcaba427a5b3b8d303a32de1ce77f1e"
+      }
+    ],
+    "cave": null,
+    "relocations": [],
+    "abi_blocks": [
+      {
+        "function": "reviewed-function",
+        "va": 4200784,
+        "size": 2864,
+        "arch": "x86_64",
+        "abi_id": "sysv-amd64",
+        "evidence_sha256": "490b7e317530f602a2b3cdf6c6ce8862a65a8451017703db493cf73e8477790c"
+      }
+    ],
+    "oracle": {
+      "manifest_sha256": "95474e8c909d13ede2d735655a0b9754f9f302c08e45adeb91c50933d202436b",
+      "runner": "limactl",
+      "tier": "emulated_run",
+      "status": "executed"
+    },
+    "limitations": [
+      "plan replay covers every changed byte; raw-diff bytes not declared by the plan are rejected"
+    ],
+    "plan_id": "plan-08ca1131a6ba58cf7214d33c"
+  },
+  "actions": [
+    {
+      "kind": "capacity_check_rewrite",
+      "offset": 8409,
+      "size": 16,
+      "before_hex": "39f3720c89df29f739d70f83c4feffff",
+      "after_hex": "4489e729f7720939d70f83c5feffff90",
+      "site_va": 4202713,
+      "bad_capacity": "ebx",
+      "good_capacity": "r12d"
+    }
+  ],
+  "message_actions": [
+    {
+      "kind": "rodata_message_align",
+      "offset": 538624,
+      "size": 49,
+      "before_hex": "6f705b25755d3a207370616e2064657374696e6174696f6e206f75747369646520746865207061796c6f616420706f6f6c",
+      "after_hex": "6f705b25755d3a207370616e2064657374696e6174696f6e206f75747369646520746865206f7574707574000000000000",
+      "string_va": 4732928,
+      "old_text": "op[%u]: span destination outside the payload pool",
+      "new_text": "op[%u]: span destination outside the output"
+    }
+  ],
+  "abi_block": {
+    "offset": 6480,
+    "size": 2864,
+    "arch": "x86_64",
+    "function": "reviewed-function",
+    "abi_id": "sysv-amd64"
+  },
+  "oracle_manifest": "fixtures/poc/marcx-capacity.json",
+  "authority": {
+    "scope_policy": "target_scoped_associated",
+    "authorized_changes": [
+      {
+        "kind": "rodata_message",
+        "reason": "reviewed capacity message rewrite",
+        "authorization_ref": "authorization:capacity-message:v1 sha256=5d18ae1df34413f970e8f4e83ec0b23a2da70606391a930646b67713a93ffdc4",
+        "file_offset": 538624,
+        "size": 49,
+        "section": ".rodata"
+      }
+    ]
+  }
+}

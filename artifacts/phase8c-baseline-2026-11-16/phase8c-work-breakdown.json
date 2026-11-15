@@ -1,0 +1,414 @@
+{
+  "base_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+  "blockers": [
+    {
+      "blocks": [
+        "C12",
+        "C14"
+      ],
+      "id": "B-P8B-EVIDENCE-BINDING",
+      "severity": "warning",
+      "text": "Phase-8B release evidence is bound to gated SHA c5d87b5, not the current mainline 227f45b; Phase-8C must bind its own base/gated SHA and may not reuse the evidence as if it covered the Phase-8C tree."
+    },
+    {
+      "blocks": [
+        "C05",
+        "C06",
+        "C08",
+        "C11"
+      ],
+      "id": "B-HIDDEN-ROOT",
+      "severity": "blocker_for_hidden_paths",
+      "text": "Hidden private root is Lead-owned and absent; C1 does not create/read it. C05/C06/C08/C11 hidden paths remain blocked/not_run until the Lead provisions the root."
+    },
+    {
+      "blocks": [
+        "C04"
+      ],
+      "id": "B-TOOLCHAIN-ZIG",
+      "severity": "warning",
+      "text": "Zig is not on PATH; public corpus/compiler expansion in C04 is limited to clang/system toolchain unless the Lead provisions Zig."
+    },
+    {
+      "blocks": [
+        "C10"
+      ],
+      "id": "B-GATE-COUNT",
+      "severity": "warning",
+      "text": "Measured release-gate checks: release=12, nightly=13, pr=4; the task premise says 13 required. C10 must confirm the release-mode count with the Lead before claiming it."
+    }
+  ],
+  "generated_by": "scripts/audit_phase8c_readiness.py",
+  "kind": "phase8c_work_breakdown",
+  "parallel_groups": {
+    "G0": [
+      "C01"
+    ],
+    "G1": [
+      "C02",
+      "C04",
+      "C05",
+      "C07",
+      "C09"
+    ],
+    "G2": [
+      "C03",
+      "C06",
+      "C08"
+    ],
+    "G3": [
+      "C10",
+      "C11"
+    ],
+    "G4": [
+      "C12",
+      "C13"
+    ],
+    "G5": [
+      "C14"
+    ]
+  },
+  "plan_source": "task-39 description + 10-question approved Phase-8C plan context in the task board (no separate Phase-8C plan document is checked into this tree)",
+  "schema_version": 1,
+  "serial_constraints": [
+    "C01 before any Phase-8C production work",
+    "C02 contracts before C03/C04/C05/C07/C08/C13",
+    "C05 before C06/C08/C11 hidden paths",
+    "C09 before gate/CI shadow real guest runs (C10/C14)"
+  ],
+  "task_ids": [
+    "C01",
+    "C02",
+    "C03",
+    "C04",
+    "C05",
+    "C06",
+    "C07",
+    "C08",
+    "C09",
+    "C10",
+    "C11",
+    "C12",
+    "C13",
+    "C14"
+  ],
+  "tasks": [
+    {
+      "acceptance": [
+        "10/10 questions answered with machine-recorded facts",
+        "v1 12/12 migration matrix complete; reproduction 2/2 or not_run",
+        "hidden isolation and Lima coordination plans exist",
+        "artifacts --check green and tests green"
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "id": "C01",
+      "parallel_group": "G0",
+      "phase": "8C",
+      "title": "Baseline & hidden readiness audit (this task)",
+      "write_scopes": [
+        "scripts/audit_phase8c_readiness.py",
+        "tests/test_phase8c_readiness.py",
+        "artifacts/phase8c-baseline-2026-11-16",
+        "docs/acceptance/phase8c-baseline-audit.md"
+      ]
+    },
+    {
+      "acceptance": [
+        "v2 sample/manifest/hidden-commitment/results contracts exist",
+        "v1 12 samples validate losslessly as v2",
+        "existing 13 contracts/checker remain green",
+        "fixtures valid+invalid; SUMS deterministic"
+      ],
+      "blockers": [
+        "depends on C01 baseline matrix"
+      ],
+      "dependencies": [
+        "C01"
+      ],
+      "id": "C02",
+      "parallel_group": "G1",
+      "phase": "8C",
+      "title": "Ground-truth v2 schema/contracts and migration mapping",
+      "write_scopes": [
+        "contracts/ground-truth-benchmark-v2.schema.json",
+        "contracts/manifest-v2.schema.json",
+        "contracts/hidden-commitment.schema.json",
+        "contracts/results-v2.schema.json",
+        "artifacts/contract-fixtures-2026-11-16",
+        "scripts/check_contract_schemas.py",
+        "tests/test_contract_schemas.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "12/12 v1 samples migrate byte-identically (sha/split/target/oracle/reference/evidence preserved)",
+        "migration diff report has zero loss",
+        "v2 manifest/SUMS deterministic"
+      ],
+      "blockers": [
+        "C02 contracts"
+      ],
+      "dependencies": [
+        "C02"
+      ],
+      "id": "C03",
+      "parallel_group": "G2",
+      "phase": "8C",
+      "title": "v1->v2 lossless migration builder",
+      "write_scopes": [
+        "scripts/migrate_benchmark_v1_to_v2.py",
+        "benchmark/phase8-v2",
+        "tests/test_benchmark_v2_migration.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "new public samples have author/provenance/license metadata",
+        "sha/oracle/target validated; no hidden bytes",
+        "corpus builder --check deterministic"
+      ],
+      "blockers": [
+        "Zig toolchain absent; compiler expansion limited to clang/system toolchain unless Lead provisions Zig"
+      ],
+      "dependencies": [
+        "C02"
+      ],
+      "id": "C04",
+      "parallel_group": "G1",
+      "phase": "8C",
+      "title": "Public corpus expansion with provenance",
+      "write_scopes": [
+        "fixtures/phase8c-public",
+        "scripts/build_phase8c_public_corpus.py",
+        "tests/test_phase8c_public_corpus.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "writes only under PHASE8C_HIDDEN_ROOT/$HOME default with 0700",
+        "commitment computed over canonical hidden manifest",
+        "no hidden bytes/ids in public artifacts; not_run when root absent"
+      ],
+      "blockers": [
+        "C05 execution requires Lead-owned private root; C1 does not create/read it (blocker for hidden run only, not C2)"
+      ],
+      "dependencies": [
+        "C02"
+      ],
+      "id": "C05",
+      "parallel_group": "G1",
+      "phase": "8C",
+      "title": "Hidden corpus private builder (Lead-owned root)",
+      "write_scopes": [
+        "scripts/build_hidden_corpus.py",
+        "tests/test_hidden_corpus_builder.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "publish commitment before run; reveal/aggregate after run",
+        "public output has aggregate metrics only, no sample ids/bytes",
+        "verification/audit of commitment chain"
+      ],
+      "blockers": [
+        "C05 root"
+      ],
+      "dependencies": [
+        "C05"
+      ],
+      "id": "C06",
+      "parallel_group": "G2",
+      "phase": "8C",
+      "title": "Hidden commit/reveal and public aggregate only",
+      "write_scopes": [
+        "scripts/hidden_benchmark.py",
+        "tests/test_hidden_benchmark.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "results v2 includes benchmark_version/visibility, plan/oracle/layout/verifier ids, no not_run-as-pass",
+        "v1 results remain readable"
+      ],
+      "blockers": [
+        "C02 results contract"
+      ],
+      "dependencies": [
+        "C02"
+      ],
+      "id": "C07",
+      "parallel_group": "G1",
+      "phase": "8C",
+      "title": "Results v2 + verifier evidence exchange",
+      "write_scopes": [
+        "scripts/run_repair_benchmark.py",
+        "app/services/independent_verifier.py? (consumer only)",
+        "tests/test_repair_benchmark_results_v2.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "public mode reads public manifest only; hidden mode reads private root and emits aggregates only",
+        "isolation tests (no temp leakage, cleanup, env sanitization)"
+      ],
+      "blockers": [
+        "C06 hidden harness"
+      ],
+      "dependencies": [
+        "C07",
+        "C06"
+      ],
+      "id": "C08",
+      "parallel_group": "G2",
+      "phase": "8C",
+      "title": "Benchmark runner v2 (public/hidden modes)",
+      "write_scopes": [
+        "scripts/run_repair_benchmark.py",
+        "tests/test_repair_benchmark_v2.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "single advisory lock + lease with timeout/attempt evidence",
+        "reentrant nested calls reuse lease; no deadlock",
+        "existing guest/poc/gate tests green; serialized runs produce identical evidence"
+      ],
+      "blockers": [],
+      "dependencies": [
+        "C01"
+      ],
+      "id": "C09",
+      "parallel_group": "G1",
+      "phase": "8C",
+      "title": "Lima serialization/lease layer",
+      "write_scopes": [
+        "app/services/guest_runner.py",
+        "app/services/poc_runner.py",
+        "scripts/run_hard_benchmark.py",
+        "scripts/run_repair_benchmark.py",
+        "scripts/release_gate.py",
+        "scripts/verify_repair_benchmark.py",
+        "tests/test_guest_runner.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "v1 checks unchanged; Phase-8C checks shadow/non-gating",
+        "release gate required-check count documented (release=12, nightly=13 measured) with no silent change",
+        "tamper/missing phase8c artifacts detected"
+      ],
+      "blockers": [
+        "C1 measured release/nightly 12/13 checks; Lead must confirm the '13 required' premise for release mode"
+      ],
+      "dependencies": [
+        "C07",
+        "C09"
+      ],
+      "id": "C10",
+      "parallel_group": "G3",
+      "phase": "8C",
+      "title": "Gate/CI shadow integration",
+      "write_scopes": [
+        ".github/workflows/ci.yml",
+        "scripts/release_gate.py",
+        "scripts/autonomous_repair_audit.py",
+        "tests/test_release_gate.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "permission/env/log/report/error leak tests; commit and aggregate only; fork-PR/CI isolation documented and checked",
+        "no hidden ids/bytes in public artifacts or errors"
+      ],
+      "blockers": [
+        "C05 root; hidden checks remain not_run until root is provisioned"
+      ],
+      "dependencies": [
+        "C05",
+        "C06",
+        "C08"
+      ],
+      "id": "C11",
+      "parallel_group": "G3",
+      "phase": "8C",
+      "title": "Hidden isolation enforcement and red-team tests",
+      "write_scopes": [
+        "tests/test_hidden_isolation.py",
+        "scripts/check_hidden_isolation.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "phase8c block with base/gated SHA, hidden not_run status, no capability promotion",
+        "G29 stays not_run until hidden run; release claims honest"
+      ],
+      "blockers": [
+        "Lead-owned claims"
+      ],
+      "dependencies": [
+        "C10",
+        "C11"
+      ],
+      "id": "C12",
+      "parallel_group": "G4",
+      "phase": "8C",
+      "title": "Claims/readiness/limitations update",
+      "write_scopes": [
+        "docs/status/claims.json",
+        "docs/acceptance/LIMITATIONS.md",
+        "artifacts/phase8-readiness-2026-11-16"
+      ]
+    },
+    {
+      "acceptance": [
+        "fields listed in C1 8D-prep are present/round-trip",
+        "v2 results and v1 artifacts can feed discovery without loss",
+        "no discovery implementation beyond schema/field prep"
+      ],
+      "blockers": [
+        "C02 results contract"
+      ],
+      "dependencies": [
+        "C07"
+      ],
+      "id": "C13",
+      "parallel_group": "G4",
+      "phase": "8C",
+      "title": "Phase-8D gap/discovery data preparation",
+      "write_scopes": [
+        "app/services/gap_registry.py",
+        "scripts/discover_capability_gaps.py",
+        "tests/test_gap_registry_discovery.py"
+      ]
+    },
+    {
+      "acceptance": [
+        "v1+v2 artifacts and gate evidence frozen; hidden status honest",
+        "full suite + release gate + evidence/tag verification",
+        "final report states no new repair capability/verified upgrade"
+      ],
+      "blockers": [
+        "all previous C tasks"
+      ],
+      "dependencies": [
+        "C03",
+        "C04",
+        "C08",
+        "C10",
+        "C11",
+        "C12",
+        "C13"
+      ],
+      "id": "C14",
+      "parallel_group": "G5",
+      "phase": "8C",
+      "title": "Final Phase-8C evidence/gate/report (Lead)",
+      "write_scopes": [
+        "docs/release-2026-11-16-phase8c.md",
+        "artifacts/release-gate-2026-11-16-phase8c",
+        "docs/status/claims.json"
+      ]
+    }
+  ]
+}

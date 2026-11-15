@@ -1,0 +1,2008 @@
+{
+  "audit_date": "2026-11-16",
+  "base_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+  "baseline": {
+    "drift": {
+      "actual_branch_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "branch": "feature/phase8c-ground-truth-v2",
+      "branch_matches_expected": true,
+      "drift_findings": [
+        "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 227f45b39d85a7cd95e8589beb07dcfc89cd22d7; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
+        "the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally"
+      ],
+      "drift_status": "ok",
+      "expected_branch": "feature/phase8c-ground-truth-v2",
+      "expected_mainline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "mainline_matches_expected": true,
+      "phase8b_claims_base_sha": "dad21c985694b2d16a722256eaed6bd6131bb9cd",
+      "phase8b_evidence_artifact_dir": "artifacts/release-gate-2026-11-16-phase8b",
+      "phase8b_evidence_tag": "release-2026-11-16-phase8b-evidence",
+      "phase8b_gated_ci_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
+      "refs": {
+        "evidence_branch": {
+          "ref": "release/2026-11-16-phase8b-evidence",
+          "sha": "528304a95ecb55bec5a1cdf8382050a8453980e0"
+        },
+        "evidence_tag": {
+          "ref": "release-2026-11-16-phase8b-evidence",
+          "sha": "1edcce2d1c8d9d06cddb538e210205ea6a3dbbc7"
+        },
+        "release_tag": {
+          "ref": "release-2026-11-16-phase8b",
+          "sha": "1bfdf674fecef3c3357482a6a05c46cfa09eed93"
+        }
+      }
+    },
+    "git": {
+      "branch": "feature/phase8c-ground-truth-v2",
+      "head_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "source": "read-only .git metadata files (no git commands)",
+      "tags": {
+        "evidence_branch": {
+          "ref": "release/2026-11-16-phase8b-evidence",
+          "sha": "528304a95ecb55bec5a1cdf8382050a8453980e0"
+        },
+        "evidence_tag": {
+          "ref": "release-2026-11-16-phase8b-evidence",
+          "sha": "1edcce2d1c8d9d06cddb538e210205ea6a3dbbc7"
+        },
+        "release_tag": {
+          "ref": "release-2026-11-16-phase8b",
+          "sha": "1bfdf674fecef3c3357482a6a05c46cfa09eed93"
+        }
+      }
+    },
+    "phase8b_benchmark": {
+      "independently_verified_samples": [
+        "heap-capacity-x86_64",
+        "stack-strcpy-x86_64"
+      ],
+      "path": "artifacts/phase8b-benchmark-2026-11-16/results.json",
+      "sha256": "c9e74902abb909457bdc0e40505666e1c550fe92c616c50667d64261160a6f3f",
+      "summary": {
+        "candidate_produced": 2,
+        "detected": 4,
+        "deterministic_claim_withdrawn": 0,
+        "deterministic_verified": 2,
+        "dev": 8,
+        "executed": 12,
+        "false_verified": 0,
+        "independently_verified": 2,
+        "independently_verified_unknown": 10,
+        "integrity_ok": 2,
+        "not_run": 0,
+        "regression_ok": 2,
+        "samples": 12,
+        "validation": 4,
+        "verification_disagreements": 0,
+        "vuln_eliminated": 2
+      }
+    }
+  },
+  "blockers": [
+    {
+      "blocks": [
+        "C12",
+        "C14"
+      ],
+      "id": "B-P8B-EVIDENCE-BINDING",
+      "severity": "warning",
+      "text": "Phase-8B release evidence is bound to gated SHA c5d87b5, not the current mainline 227f45b; Phase-8C must bind its own base/gated SHA and may not reuse the evidence as if it covered the Phase-8C tree."
+    },
+    {
+      "blocks": [
+        "C05",
+        "C06",
+        "C08",
+        "C11"
+      ],
+      "id": "B-HIDDEN-ROOT",
+      "severity": "blocker_for_hidden_paths",
+      "text": "Hidden private root is Lead-owned and absent; C1 does not create/read it. C05/C06/C08/C11 hidden paths remain blocked/not_run until the Lead provisions the root."
+    },
+    {
+      "blocks": [
+        "C04"
+      ],
+      "id": "B-TOOLCHAIN-ZIG",
+      "severity": "warning",
+      "text": "Zig is not on PATH; public corpus/compiler expansion in C04 is limited to clang/system toolchain unless the Lead provisions Zig."
+    },
+    {
+      "blocks": [
+        "C10"
+      ],
+      "id": "B-GATE-COUNT",
+      "severity": "warning",
+      "text": "Measured release-gate checks: release=12, nightly=13, pr=4; the task premise says 13 required. C10 must confirm the release-mode count with the Lead before claiming it."
+    }
+  ],
+  "branch": "feature/phase8c-ground-truth-v2",
+  "capability_claims": [],
+  "environment": {
+    "ai_invoked": false,
+    "machine": "arm64",
+    "network_used": false,
+    "platform": "darwin",
+    "probe_mode": "read-only facts + deterministic temp reproduction; no production writes, no network, no AI",
+    "python": "3.11.8",
+    "toolchain": {
+      "clang": "/usr/bin/clang",
+      "guest_runner": {
+        "available": true,
+        "instance": "binaryrepair",
+        "kind": "lima",
+        "tier": "emulated_run",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lima_instance_running": true,
+      "limactl": "/opt/homebrew/bin/limactl",
+      "limactl_version": "limactl version 2.3.0",
+      "zig": null
+    }
+  },
+  "expected_base_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+  "facts": {
+    "contracts": {
+      "benchmark_sample_properties": [
+        "arch",
+        "authority",
+        "bits",
+        "endian",
+        "evidence_refs",
+        "expected_analysis",
+        "expected_patch_properties",
+        "expected_scope",
+        "format",
+        "hidden_available",
+        "hidden_commitment_sha256",
+        "negative_cases",
+        "oracle",
+        "reference_fix",
+        "sample_id",
+        "sha256",
+        "source_refs",
+        "split",
+        "target",
+        "vulnerability_class"
+      ],
+      "benchmark_sample_required": [
+        "sample_id",
+        "sha256",
+        "format",
+        "arch",
+        "bits",
+        "endian",
+        "vulnerability_class",
+        "expected_scope",
+        "target",
+        "source_refs",
+        "oracle",
+        "expected_analysis",
+        "reference_fix",
+        "expected_patch_properties",
+        "negative_cases",
+        "split",
+        "hidden_available",
+        "hidden_commitment_sha256",
+        "evidence_refs"
+      ],
+      "checker": {
+        "exit_code": 0,
+        "summary": "contract-schemas: ok=True validator=jsonschema schemas=13 valid=13/13 invalid=13/13 sums_checked=True violations=0"
+      },
+      "count": 13,
+      "has_authority_block": true,
+      "has_hidden_commitment_contract": false,
+      "has_hidden_fields": true,
+      "has_manifest_wrapper_contract": false,
+      "has_patch_plan_contract": true,
+      "has_results_contract": false,
+      "names": [
+        "acceptance.schema",
+        "benchmark-sample.schema",
+        "binary-target.schema",
+        "capability.schema",
+        "evidence.schema",
+        "gap.schema",
+        "patch-candidate.schema",
+        "patch-plan.schema",
+        "reflection.schema",
+        "repair.schema",
+        "root-cause.schema",
+        "verification.schema",
+        "vulnerability-finding.schema"
+      ]
+    },
+    "corpora": {
+      "hard_cases": {
+        "count": 12,
+        "path": "fixtures/hard-cases/cases.json",
+        "sha256": "97eb16925f5071756d9a80675b54ea167c5448f8838266a0720f7967e721b7e2"
+      },
+      "macho_fixture_count": 4,
+      "pe_fixture_count": 7,
+      "public_dir_count": 3,
+      "public_dirs": [
+        "CWE121_src_char_declare_cpy_51b",
+        "CWE416_Use_After_Free__malloc_free_char_01",
+        "CWE416_Use_After_Free__malloc_free_char_01_noinput"
+      ],
+      "public_root_present": true,
+      "repair_benchmark": {
+        "count": 10,
+        "path": "fixtures/repair-benchmark/cases.json",
+        "sha256": "99f804ec5c2695355a93494d73b1e63db9674a7dc3e73a7f63d3dfc11f8fbee0"
+      }
+    },
+    "hidden": {
+      "hidden_available_manifest": false,
+      "hidden_commitment_sha256_manifest": null,
+      "hidden_corpus_absent": true,
+      "hidden_corpus_created": false,
+      "hidden_corpus_read": false,
+      "isolation_is_operational_not_cryptographic": true,
+      "private_root_default": "/Users/huageorge/.binaryrepair/phase8c-hidden",
+      "private_root_env": "PHASE8C_HIDDEN_ROOT",
+      "private_root_env_set": false,
+      "private_root_exists": false,
+      "private_root_permissions": null,
+      "readiness_g29": {
+        "blocker": "hidden benchmark unavailable (hidden_available=false); the registry must never fabricate a hidden run",
+        "measured_status": "not_run"
+      }
+    },
+    "lima": {
+      "call_sites": [
+        {
+          "hit_count": 27,
+          "hits": [
+            {
+              "line": 11,
+              "text": "A running Lima VM (``limactl``) is available.  The guest is a Linux VM and"
+            },
+            {
+              "line": 68,
+              "text": "class GuestRunner:"
+            },
+            {
+              "line": 120,
+              "text": "def _native_runner(arch: str) -> GuestRunner | None:"
+            },
+            {
+              "line": 128,
+              "text": "return GuestRunner(kind=\"native\", tool=\"\", tier=\"native_run\")"
+            },
+            {
+              "line": 138,
+              "text": "def _lima_json_status(limactl: str, instance: str, timeout: float) -> bool | None:"
+            },
+            {
+              "line": 139,
+              "text": "\"\"\"Query instance status through ``limactl list --json``."
+            },
+            {
+              "line": 147,
+              "text": "[limactl, \"list\", \"--json\"],"
+            },
+            {
+              "line": 175,
+              "text": "def _lima_plain_status(limactl: str, instance: str, timeout: float) -> bool:"
+            },
+            {
+              "line": 178,
+              "text": "[limactl, \"list\"],"
+            },
+            {
+              "line": 195,
+              "text": "limactl: str | None = None,"
+            },
+            {
+              "line": 202,
+              "text": "tool = limactl or shutil.which(\"limactl\")"
+            },
+            {
+              "line": 214,
+              "text": "def find_lima_runner(instance: str | None = None) -> GuestRunner | None:"
+            }
+          ],
+          "path": "app/services/guest_runner.py",
+          "present": true
+        },
+        {
+          "hit_count": 7,
+          "hits": [
+            {
+              "line": 34,
+              "text": "from app.services.guest_runner import GuestRunner, find_guest_runner, run_path"
+            },
+            {
+              "line": 210,
+              "text": "def _select_runner(format_name: str, arch: str) -> GuestRunner | None:"
+            },
+            {
+              "line": 232,
+              "text": "runner = find_guest_runner(arch)"
+            },
+            {
+              "line": 248,
+              "text": "return GuestRunner(kind=\"native\", tool=\"\", tier=\"native_run\")"
+            },
+            {
+              "line": 262,
+              "text": "def _staging_root(runner: GuestRunner) -> Iterator[Path]:"
+            },
+            {
+              "line": 418,
+              "text": "runner: GuestRunner,"
+            },
+            {
+              "line": 459,
+              "text": "result = run_path(binary_path, argv, **run_kwargs)"
+            }
+          ],
+          "path": "app/services/poc_runner.py",
+          "present": true
+        },
+        {
+          "hit_count": 0,
+          "hits": [],
+          "path": "scripts/run_hard_benchmark.py",
+          "present": true
+        },
+        {
+          "hit_count": 0,
+          "hits": [],
+          "path": "scripts/run_repair_benchmark.py",
+          "present": true
+        },
+        {
+          "hit_count": 14,
+          "hits": [
+            {
+              "line": 1749,
+              "text": "def probe_guest_runner() -> dict[str, Any]:"
+            },
+            {
+              "line": 1753,
+              "text": "from app.services.guest_runner import find_guest_runner  # noqa: PLC0415"
+            },
+            {
+              "line": 1758,
+              "text": "\"reason\": f\"guest_runner import failed: {type(exc).__name__}: {exc}\","
+            },
+            {
+              "line": 1761,
+              "text": "runner = find_guest_runner(\"x86_64\")"
+            },
+            {
+              "line": 1797,
+              "text": "probe = (runner_probe or probe_guest_runner)()"
+            },
+            {
+              "line": 2256,
+              "text": "version = run([\"limactl\", \"--version\"], Path(\"/\"), 30.0)"
+            },
+            {
+              "line": 2258,
+              "text": "identity[\"limactl_version\"] = version.stdout.strip()"
+            },
+            {
+              "line": 2259,
+              "text": "listing = run([\"limactl\", \"list\", \"--json\"], Path(\"/\"), 30.0)"
+            },
+            {
+              "line": 2266,
+              "text": "# ``limactl list --json`` is newline-delimited JSON on some versions."
+            },
+            {
+              "line": 2385,
+              "text": "[\"limactl\", \"shell\", \"binaryrepair\", \"--\", \"uname\", \"-srm\"],"
+            },
+            {
+              "line": 2391,
+              "text": "[\"limactl\", \"shell\", \"binaryrepair\", \"--\", \"qemu-x86_64\","
+            },
+            {
+              "line": 2399,
+              "text": "info = run([\"limactl\", \"info\", \"binaryrepair\"], Path(\"/\"), 60.0)"
+            }
+          ],
+          "path": "scripts/release_gate.py",
+          "present": true
+        },
+        {
+          "hit_count": 2,
+          "hits": [
+            {
+              "line": 101,
+              "text": "\"runner\": poc.get(\"runner\") or \"limactl\","
+            },
+            {
+              "line": 180,
+              "text": "oracle[\"runner\"] = (record.get(\"candidate\", {}).get(\"poc\") or {}).get(\"runner\") or \"limactl\""
+            }
+          ],
+          "path": "scripts/verify_repair_benchmark.py",
+          "present": true
+        },
+        {
+          "hit_count": 0,
+          "hits": [],
+          "path": "scripts/verify_repair.py",
+          "present": true
+        },
+        {
+          "hit_count": 0,
+          "hits": [],
+          "path": "app/services/independent_verifier.py",
+          "present": true
+        }
+      ],
+      "evidence": "guest_runner runs one limactl invocation per call; release_gate, poc_runner, benchmark runners and verifier can invoke the guest concurrently; there is no repository-wide advisory lock/lease",
+      "global_lock": {
+        "evidence_fields": [
+          "run_id",
+          "operation",
+          "attempt",
+          "lock_wait_ms",
+          "lease_acquired",
+          "timeout",
+          "released"
+        ],
+        "mechanism": "fcntl.flock exclusive advisory lock with a JSON lease (run_id,pid,acquired_at,ttl_s,attempt,operation)",
+        "proposed_path": "$HOME/.binaryrepair/locks/lima-guest.lock",
+        "reentrancy": "per-run token passed through callers; nested guest calls reuse the lease instead of re-locking",
+        "status": "design_only_C9",
+        "timeout": "bounded acquire timeout + explicit attempt record; expiry/stale lease detection by pid+ttl"
+      },
+      "serialization_status": "not_implemented_no_global_lock",
+      "test_refs": [
+        "tests/test_guest_runner.py",
+        "tests/test_poc_runner.py",
+        "tests/test_verify_test_serial.py",
+        "tests/test_repair_benchmark_fixtures.py"
+      ]
+    },
+    "release_gate": {
+      "measured_matches_premise": true,
+      "mode_checks": {
+        "nightly": [
+          "release-tree-identity",
+          "static-coverage-gate",
+          "claims-measurement-diff",
+          "acceptance-contract",
+          "local-coverage-gate",
+          "meta-audit",
+          "acceptance-invariants",
+          "universe-unknown-zero",
+          "provenance-complete",
+          "provider-matrix",
+          "provider-coverage",
+          "nightly-real-lima-acceptance",
+          "full-pytest"
+        ],
+        "pr": [
+          "release-tree-identity",
+          "static-coverage-gate",
+          "claims-measurement-diff",
+          "targeted-pytest"
+        ],
+        "release": [
+          "release-tree-identity",
+          "static-coverage-gate",
+          "claims-measurement-diff",
+          "acceptance-contract",
+          "local-coverage-gate",
+          "meta-audit",
+          "acceptance-invariants",
+          "universe-unknown-zero",
+          "provenance-complete",
+          "provider-matrix",
+          "provider-coverage",
+          "full-pytest"
+        ]
+      },
+      "modes": {
+        "nightly": 13,
+        "pr": 4,
+        "release": 12
+      },
+      "nightly_mode_required": 13,
+      "release_mode_required": 12,
+      "task_premise_13_required": 13,
+      "v1_benchmark_checks_unchanged_design": true
+    },
+    "test_suite": {
+      "collected_tests": 2053,
+      "collection_source": "pytest --collect-only -q on this tree",
+      "duration_note": "C1 does not run the full suite; CI/local execution timings remain the source of truth",
+      "duration_seconds": null,
+      "duration_status": "not_measured_in_read_only_audit",
+      "test_files": 223
+    },
+    "toolchain": {
+      "clang": "/usr/bin/clang",
+      "guest_runner": {
+        "available": true,
+        "instance": "binaryrepair",
+        "kind": "lima",
+        "tier": "emulated_run",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lima_instance_running": true,
+      "limactl": "/opt/homebrew/bin/limactl",
+      "limactl_version": "limactl version 2.3.0",
+      "zig": null
+    },
+    "v1_benchmark": {
+      "actual_sample_count": 12,
+      "dropped_samples": [],
+      "hidden_available": false,
+      "hidden_commitment_sha256": null,
+      "kind": "ground_truth_benchmark",
+      "migration_summary": {
+        "all_required_fields_present": true,
+        "hidden_false": true,
+        "lossless": 12,
+        "total": 12,
+        "v2_gap_count": 6,
+        "v2_gaps": [
+          "manifest wrapper has no explicit benchmark_version / v1->v2 mapping block (schema_version=1 today)",
+          "manifest wrapper hidden fields exist but only hidden_available=false and hidden_commitment_sha256=null; no public/hidden split policy or aggregate-only results contract",
+          "samples have no optional authority block in v1 (contract supports it); Phase-8C samples must declare scope_policy/authorized_changes/plan binding where applicable",
+          "results schema is not contract-pinned: Phase-8B results add plan/oracle/layout fields but there is no results-v2 contract",
+          "no hidden-corpus commitment contract (format/aggregation/visibility)",
+          "reference_fix is null for 4/12 samples; v2 must treat it as optional evidence, never an oracle substitute"
+        ]
+      },
+      "path": "benchmark/phase8-v1/manifest.json",
+      "sample_count": 12,
+      "sample_matrix": [
+        {
+          "authority_present": false,
+          "binary": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+          "binary_sha256_actual": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+          "binary_sha256_expected": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "external_poc"
+          ],
+          "oracle_manifest": "fixtures/poc/cwe121.json",
+          "oracle_manifest_loadable": false,
+          "reference_fix": "fixtures/hard-cases/cwe121_fix.c",
+          "required_schema_fields_missing": [],
+          "sample_id": "cwe121-public",
+          "source_refs_resolvable": true,
+          "split": "dev",
+          "target": {
+            "kind": "symbol",
+            "symbol": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+          "binary_sha256_actual": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "binary_sha256_expected": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "external_poc"
+          ],
+          "oracle_manifest": "fixtures/poc/hard-multicall.json",
+          "oracle_manifest_loadable": false,
+          "reference_fix": "fixtures/hard-cases/multicall_fix.c",
+          "required_schema_fields_missing": [],
+          "sample_id": "hard-multicall",
+          "source_refs_resolvable": true,
+          "split": "dev",
+          "target": {
+            "kind": "symbol",
+            "symbol": "multicall_bad"
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+          "binary_sha256_actual": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "binary_sha256_expected": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "external_poc"
+          ],
+          "oracle_manifest": "fixtures/poc/hard-nonconst.json",
+          "oracle_manifest_loadable": false,
+          "reference_fix": "fixtures/hard-cases/nonconst_fix.c",
+          "required_schema_fields_missing": [],
+          "sample_id": "hard-nonconst",
+          "source_refs_resolvable": true,
+          "split": "validation",
+          "target": {
+            "kind": "symbol",
+            "symbol": "nonconst_bad"
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+          "binary_sha256_actual": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "binary_sha256_expected": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "external_poc"
+          ],
+          "oracle_manifest": "fixtures/poc/hard-sprintf.json",
+          "oracle_manifest_loadable": false,
+          "reference_fix": "fixtures/hard-cases/sprintf_fix.c",
+          "required_schema_fields_missing": [],
+          "sample_id": "hard-sprintf",
+          "source_refs_resolvable": true,
+          "split": "validation",
+          "target": {
+            "kind": "symbol",
+            "symbol": "sprintf_bad"
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+          "binary_sha256_actual": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+          "binary_sha256_expected": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "external_poc"
+          ],
+          "oracle_manifest": "fixtures/poc/heap-canary.json",
+          "oracle_manifest_loadable": false,
+          "reference_fix": "fixtures/hard-cases/heap_canary_fix.c",
+          "required_schema_fields_missing": [],
+          "sample_id": "heap-canary",
+          "source_refs_resolvable": true,
+          "split": "validation",
+          "target": {
+            "kind": "symbol",
+            "symbol": "heap_bad"
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/elf/vuln-capacity-confusion-x86_64.elf",
+          "binary_sha256_actual": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+          "binary_sha256_expected": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "external_poc"
+          ],
+          "oracle_manifest": "fixtures/poc/marcx-capacity.json",
+          "oracle_manifest_loadable": false,
+          "reference_fix": null,
+          "required_schema_fields_missing": [],
+          "sample_id": "heap-capacity-x86_64",
+          "source_refs_resolvable": true,
+          "split": "dev",
+          "target": {
+            "end": 4202729,
+            "kind": "va_range",
+            "va": 4202713
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/elf/vuln-loop-x86_64.elf",
+          "binary_sha256_actual": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+          "binary_sha256_expected": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "external_poc"
+          ],
+          "oracle_manifest": "fixtures/poc/elf-x86_64-loop.json",
+          "oracle_manifest_loadable": false,
+          "reference_fix": "fixtures/hard-cases/loop_fix.S",
+          "required_schema_fields_missing": [],
+          "sample_id": "inline-loop",
+          "source_refs_resolvable": true,
+          "split": "dev",
+          "target": {
+            "kind": "symbol",
+            "symbol": "vuln_copy"
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/pe/i386-control.exe",
+          "binary_sha256_actual": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+          "binary_sha256_expected": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "static"
+          ],
+          "oracle_manifest": null,
+          "oracle_manifest_loadable": null,
+          "reference_fix": null,
+          "required_schema_fields_missing": [],
+          "sample_id": "negative-control",
+          "source_refs_resolvable": true,
+          "split": "dev",
+          "target": {
+            "kind": "analysis_only"
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/elf/vuln-memcpy-x86.elf",
+          "binary_sha256_actual": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
+          "binary_sha256_expected": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "static"
+          ],
+          "oracle_manifest": null,
+          "oracle_manifest_loadable": null,
+          "reference_fix": null,
+          "required_schema_fields_missing": [],
+          "sample_id": "stack-memcpy-x86",
+          "source_refs_resolvable": true,
+          "split": "dev",
+          "target": {
+            "kind": "analysis_only"
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/elf/vuln-strcpy-x86.elf",
+          "binary_sha256_actual": "a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d",
+          "binary_sha256_expected": "a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "static"
+          ],
+          "oracle_manifest": null,
+          "oracle_manifest_loadable": null,
+          "reference_fix": null,
+          "required_schema_fields_missing": [],
+          "sample_id": "stack-strcpy-x86",
+          "source_refs_resolvable": true,
+          "split": "validation",
+          "target": {
+            "kind": "analysis_only"
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/elf/vuln-strcpy-x86_64.elf",
+          "binary_sha256_actual": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+          "binary_sha256_expected": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "external_poc"
+          ],
+          "oracle_manifest": "fixtures/poc/elf-x86_64-strcpy.json",
+          "oracle_manifest_loadable": false,
+          "reference_fix": null,
+          "required_schema_fields_missing": [],
+          "sample_id": "stack-strcpy-x86_64",
+          "source_refs_resolvable": true,
+          "split": "dev",
+          "target": {
+            "kind": "symbol",
+            "symbol": "vuln_copy"
+          },
+          "target_complete": true
+        },
+        {
+          "authority_present": false,
+          "binary": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
+          "binary_sha256_actual": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+          "binary_sha256_expected": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+          "binary_sha_matches": true,
+          "evidence_refs_resolvable": true,
+          "hidden_available": false,
+          "lossless_v1_sample": true,
+          "oracle_kinds": [
+            "static"
+          ],
+          "oracle_manifest": null,
+          "oracle_manifest_loadable": null,
+          "reference_fix": "fixtures/hard-cases/uaf_fix.c",
+          "required_schema_fields_missing": [],
+          "sample_id": "uaf-noinput",
+          "source_refs_resolvable": true,
+          "split": "dev",
+          "target": {
+            "kind": "analysis_only"
+          },
+          "target_complete": true
+        }
+      ],
+      "schema_version": 1,
+      "sha256": "e7e7eca43518dc1b953faccead6f301f80eee4a59f1f0550dc8aad1bbd712052",
+      "sha256_expected": "e7e7eca43518dc1b953faccead6f301f80eee4a59f1f0550dc8aad1bbd712052",
+      "sha_matches_expected": true,
+      "split_counts_actual": {
+        "dev": 8,
+        "validation": 4
+      },
+      "splits": {
+        "dev": [
+          "cwe121-public",
+          "hard-multicall",
+          "heap-capacity-x86_64",
+          "inline-loop",
+          "negative-control",
+          "stack-memcpy-x86",
+          "stack-strcpy-x86_64",
+          "uaf-noinput"
+        ],
+        "validation": [
+          "hard-nonconst",
+          "hard-sprintf",
+          "heap-canary",
+          "stack-strcpy-x86"
+        ]
+      }
+    }
+  },
+  "generated_by": "scripts/audit_phase8c_readiness.py",
+  "kind": "phase8c_readiness_audit",
+  "limitations": [
+    "read-only audit: no production code/contracts/CI/claims/benchmark-v1/release-gate/Phase-8A-B artifacts were modified",
+    "Phase-8B evidence is bound to its gated SHA, not necessarily the current mainline; Phase-8C must record its own evidence SHA",
+    "hidden corpus is Lead-owned and absent; hidden paths are designed but not executed in C1",
+    "full test-suite duration is not measured in C1; collected test count is recorded",
+    "Lima serialization is a design proposal; no global lock exists yet",
+    "dynamic reproduction depends on the local guest; not_run is recorded truthfully when unavailable"
+  ],
+  "no_new_repair_capability": true,
+  "no_verified_upgrade": true,
+  "q10_work_breakdown": {
+    "blockers": [
+      {
+        "blocks": [
+          "C12",
+          "C14"
+        ],
+        "id": "B-P8B-EVIDENCE-BINDING",
+        "severity": "warning",
+        "text": "Phase-8B release evidence is bound to gated SHA c5d87b5, not the current mainline 227f45b; Phase-8C must bind its own base/gated SHA and may not reuse the evidence as if it covered the Phase-8C tree."
+      },
+      {
+        "blocks": [
+          "C05",
+          "C06",
+          "C08",
+          "C11"
+        ],
+        "id": "B-HIDDEN-ROOT",
+        "severity": "blocker_for_hidden_paths",
+        "text": "Hidden private root is Lead-owned and absent; C1 does not create/read it. C05/C06/C08/C11 hidden paths remain blocked/not_run until the Lead provisions the root."
+      },
+      {
+        "blocks": [
+          "C04"
+        ],
+        "id": "B-TOOLCHAIN-ZIG",
+        "severity": "warning",
+        "text": "Zig is not on PATH; public corpus/compiler expansion in C04 is limited to clang/system toolchain unless the Lead provisions Zig."
+      },
+      {
+        "blocks": [
+          "C10"
+        ],
+        "id": "B-GATE-COUNT",
+        "severity": "warning",
+        "text": "Measured release-gate checks: release=12, nightly=13, pr=4; the task premise says 13 required. C10 must confirm the release-mode count with the Lead before claiming it."
+      }
+    ],
+    "hard_acceptance": {
+      "C10": "v1 gate checks unchanged; Phase-8C checks shadow; release/nightly required counts documented",
+      "C14": "frozen v2+v1 evidence, honest hidden not_run, no capability promotion/verified auto-upgrade",
+      "C2": "v2 contracts + lossless v1->v2 migration (12/12) with deterministic artifacts",
+      "C5/C6/C8/C11": "hidden paths write/read only the Lead-owned root; public aggregate only; not_run when unavailable",
+      "C9": "single advisory guest lock with lease/timeout/attempt evidence and no deadlock"
+    },
+    "work_breakdown_file": "phase8c-work-breakdown.json"
+  },
+  "q1_baseline_drift": {
+    "drift": {
+      "actual_branch_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "branch": "feature/phase8c-ground-truth-v2",
+      "branch_matches_expected": true,
+      "drift_findings": [
+        "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 227f45b39d85a7cd95e8589beb07dcfc89cd22d7; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
+        "the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally"
+      ],
+      "drift_status": "ok",
+      "expected_branch": "feature/phase8c-ground-truth-v2",
+      "expected_mainline": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "mainline_matches_expected": true,
+      "phase8b_claims_base_sha": "dad21c985694b2d16a722256eaed6bd6131bb9cd",
+      "phase8b_evidence_artifact_dir": "artifacts/release-gate-2026-11-16-phase8b",
+      "phase8b_evidence_tag": "release-2026-11-16-phase8b-evidence",
+      "phase8b_gated_ci_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a",
+      "refs": {
+        "evidence_branch": {
+          "ref": "release/2026-11-16-phase8b-evidence",
+          "sha": "528304a95ecb55bec5a1cdf8382050a8453980e0"
+        },
+        "evidence_tag": {
+          "ref": "release-2026-11-16-phase8b-evidence",
+          "sha": "1edcce2d1c8d9d06cddb538e210205ea6a3dbbc7"
+        },
+        "release_tag": {
+          "ref": "release-2026-11-16-phase8b",
+          "sha": "1bfdf674fecef3c3357482a6a05c46cfa09eed93"
+        }
+      }
+    },
+    "git": {
+      "branch": "feature/phase8c-ground-truth-v2",
+      "head_sha": "227f45b39d85a7cd95e8589beb07dcfc89cd22d7",
+      "source": "read-only .git metadata files (no git commands)",
+      "tags": {
+        "evidence_branch": {
+          "ref": "release/2026-11-16-phase8b-evidence",
+          "sha": "528304a95ecb55bec5a1cdf8382050a8453980e0"
+        },
+        "evidence_tag": {
+          "ref": "release-2026-11-16-phase8b-evidence",
+          "sha": "1edcce2d1c8d9d06cddb538e210205ea6a3dbbc7"
+        },
+        "release_tag": {
+          "ref": "release-2026-11-16-phase8b",
+          "sha": "1bfdf674fecef3c3357482a6a05c46cfa09eed93"
+        }
+      }
+    }
+  },
+  "q2_v1_migration": {
+    "matrix": [
+      {
+        "authority_present": false,
+        "binary": "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+        "binary_sha256_actual": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+        "binary_sha256_expected": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "external_poc"
+        ],
+        "oracle_manifest": "fixtures/poc/cwe121.json",
+        "oracle_manifest_loadable": false,
+        "reference_fix": "fixtures/hard-cases/cwe121_fix.c",
+        "required_schema_fields_missing": [],
+        "sample_id": "cwe121-public",
+        "source_refs_resolvable": true,
+        "split": "dev",
+        "target": {
+          "kind": "symbol",
+          "symbol": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "binary_sha256_actual": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "binary_sha256_expected": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "external_poc"
+        ],
+        "oracle_manifest": "fixtures/poc/hard-multicall.json",
+        "oracle_manifest_loadable": false,
+        "reference_fix": "fixtures/hard-cases/multicall_fix.c",
+        "required_schema_fields_missing": [],
+        "sample_id": "hard-multicall",
+        "source_refs_resolvable": true,
+        "split": "dev",
+        "target": {
+          "kind": "symbol",
+          "symbol": "multicall_bad"
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "binary_sha256_actual": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "binary_sha256_expected": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "external_poc"
+        ],
+        "oracle_manifest": "fixtures/poc/hard-nonconst.json",
+        "oracle_manifest_loadable": false,
+        "reference_fix": "fixtures/hard-cases/nonconst_fix.c",
+        "required_schema_fields_missing": [],
+        "sample_id": "hard-nonconst",
+        "source_refs_resolvable": true,
+        "split": "validation",
+        "target": {
+          "kind": "symbol",
+          "symbol": "nonconst_bad"
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "binary_sha256_actual": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "binary_sha256_expected": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "external_poc"
+        ],
+        "oracle_manifest": "fixtures/poc/hard-sprintf.json",
+        "oracle_manifest_loadable": false,
+        "reference_fix": "fixtures/hard-cases/sprintf_fix.c",
+        "required_schema_fields_missing": [],
+        "sample_id": "hard-sprintf",
+        "source_refs_resolvable": true,
+        "split": "validation",
+        "target": {
+          "kind": "symbol",
+          "symbol": "sprintf_bad"
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/hard-cases/vuln-heap-canary-x86_64.elf",
+        "binary_sha256_actual": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+        "binary_sha256_expected": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "external_poc"
+        ],
+        "oracle_manifest": "fixtures/poc/heap-canary.json",
+        "oracle_manifest_loadable": false,
+        "reference_fix": "fixtures/hard-cases/heap_canary_fix.c",
+        "required_schema_fields_missing": [],
+        "sample_id": "heap-canary",
+        "source_refs_resolvable": true,
+        "split": "validation",
+        "target": {
+          "kind": "symbol",
+          "symbol": "heap_bad"
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/elf/vuln-capacity-confusion-x86_64.elf",
+        "binary_sha256_actual": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+        "binary_sha256_expected": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "external_poc"
+        ],
+        "oracle_manifest": "fixtures/poc/marcx-capacity.json",
+        "oracle_manifest_loadable": false,
+        "reference_fix": null,
+        "required_schema_fields_missing": [],
+        "sample_id": "heap-capacity-x86_64",
+        "source_refs_resolvable": true,
+        "split": "dev",
+        "target": {
+          "end": 4202729,
+          "kind": "va_range",
+          "va": 4202713
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/elf/vuln-loop-x86_64.elf",
+        "binary_sha256_actual": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+        "binary_sha256_expected": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "external_poc"
+        ],
+        "oracle_manifest": "fixtures/poc/elf-x86_64-loop.json",
+        "oracle_manifest_loadable": false,
+        "reference_fix": "fixtures/hard-cases/loop_fix.S",
+        "required_schema_fields_missing": [],
+        "sample_id": "inline-loop",
+        "source_refs_resolvable": true,
+        "split": "dev",
+        "target": {
+          "kind": "symbol",
+          "symbol": "vuln_copy"
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/pe/i386-control.exe",
+        "binary_sha256_actual": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+        "binary_sha256_expected": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "static"
+        ],
+        "oracle_manifest": null,
+        "oracle_manifest_loadable": null,
+        "reference_fix": null,
+        "required_schema_fields_missing": [],
+        "sample_id": "negative-control",
+        "source_refs_resolvable": true,
+        "split": "dev",
+        "target": {
+          "kind": "analysis_only"
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/elf/vuln-memcpy-x86.elf",
+        "binary_sha256_actual": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
+        "binary_sha256_expected": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "static"
+        ],
+        "oracle_manifest": null,
+        "oracle_manifest_loadable": null,
+        "reference_fix": null,
+        "required_schema_fields_missing": [],
+        "sample_id": "stack-memcpy-x86",
+        "source_refs_resolvable": true,
+        "split": "dev",
+        "target": {
+          "kind": "analysis_only"
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/elf/vuln-strcpy-x86.elf",
+        "binary_sha256_actual": "a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d",
+        "binary_sha256_expected": "a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "static"
+        ],
+        "oracle_manifest": null,
+        "oracle_manifest_loadable": null,
+        "reference_fix": null,
+        "required_schema_fields_missing": [],
+        "sample_id": "stack-strcpy-x86",
+        "source_refs_resolvable": true,
+        "split": "validation",
+        "target": {
+          "kind": "analysis_only"
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/elf/vuln-strcpy-x86_64.elf",
+        "binary_sha256_actual": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+        "binary_sha256_expected": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "external_poc"
+        ],
+        "oracle_manifest": "fixtures/poc/elf-x86_64-strcpy.json",
+        "oracle_manifest_loadable": false,
+        "reference_fix": null,
+        "required_schema_fields_missing": [],
+        "sample_id": "stack-strcpy-x86_64",
+        "source_refs_resolvable": true,
+        "split": "dev",
+        "target": {
+          "kind": "symbol",
+          "symbol": "vuln_copy"
+        },
+        "target_complete": true
+      },
+      {
+        "authority_present": false,
+        "binary": "fixtures/public/CWE416_Use_After_Free__malloc_free_char_01_noinput/original.elf",
+        "binary_sha256_actual": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+        "binary_sha256_expected": "c9c2632e792c5acd0311cc3a5e4eb3fde538eb05d0de9c6601711e84b7b123c9",
+        "binary_sha_matches": true,
+        "evidence_refs_resolvable": true,
+        "hidden_available": false,
+        "lossless_v1_sample": true,
+        "oracle_kinds": [
+          "static"
+        ],
+        "oracle_manifest": null,
+        "oracle_manifest_loadable": null,
+        "reference_fix": "fixtures/hard-cases/uaf_fix.c",
+        "required_schema_fields_missing": [],
+        "sample_id": "uaf-noinput",
+        "source_refs_resolvable": true,
+        "split": "dev",
+        "target": {
+          "kind": "analysis_only"
+        },
+        "target_complete": true
+      }
+    ],
+    "summary": {
+      "all_required_fields_present": true,
+      "hidden_false": true,
+      "lossless": 12,
+      "total": 12,
+      "v2_gap_count": 6,
+      "v2_gaps": [
+        "manifest wrapper has no explicit benchmark_version / v1->v2 mapping block (schema_version=1 today)",
+        "manifest wrapper hidden fields exist but only hidden_available=false and hidden_commitment_sha256=null; no public/hidden split policy or aggregate-only results contract",
+        "samples have no optional authority block in v1 (contract supports it); Phase-8C samples must declare scope_policy/authorized_changes/plan binding where applicable",
+        "results schema is not contract-pinned: Phase-8B results add plan/oracle/layout fields but there is no results-v2 contract",
+        "no hidden-corpus commitment contract (format/aggregation/visibility)",
+        "reference_fix is null for 4/12 samples; v2 must treat it as optional evidence, never an oracle substitute"
+      ]
+    }
+  },
+  "q3_reproduction": {
+    "artifact_reproduction_dir": "reproduction/",
+    "command_template": "scripts/run_repair_benchmark.py --manifest <temp-v1-two-samples> --out <temp-out> --verifier auto",
+    "committed_results_sha256": "c9e74902abb909457bdc0e40505666e1c550fe92c616c50667d64261160a6f3f",
+    "independent_verifier": {
+      "attempted": [
+        "app/services/independent_verifier.py"
+      ],
+      "entry_point": "verify_repair keyword API (plan/scope/ABI/oracle exchange)",
+      "path": "app/services/independent_verifier.py",
+      "reason": null,
+      "status": "available"
+    },
+    "not_overwritten_committed_evidence": true,
+    "reason": null,
+    "runner_exit_code": 0,
+    "samples": [
+      {
+        "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+        "candidate_sha_matches_phase8b": true,
+        "deterministic_verified": true,
+        "false_verified": false,
+        "independently_verified": true,
+        "layout_status": "passed",
+        "oracle_status": "pass",
+        "poc_status": "pass",
+        "real_verification": true,
+        "sample_id": "heap-capacity-x86_64",
+        "status": "reproduced",
+        "temp_evidence_files": {
+          "candidate.bin": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+          "metadata.json": "7dd67186ef82f4fa287881d4df1a4a5d52826aad0b75e3251a33eea1a0804f17",
+          "original.bin": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+          "outcome.json": "5435698b98f77a60d610f701343900c106d7ba4c26d403f28e0154215d4ebbd3",
+          "plan.json": "b487762001dbfbedafdffcade1f2eb47999f16ee75f3f27e2454341dac1cff50",
+          "verifier-report.json": "5457f70bbf72ccaec3063e5c580ea2aa329991c25405c04214052858c742a12d"
+        },
+        "verification_disagreement": false,
+        "verifier_decision": "verified",
+        "verifier_id": "independent-verifier/1"
+      },
+      {
+        "candidate_sha256": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4",
+        "candidate_sha_matches_phase8b": true,
+        "deterministic_verified": true,
+        "false_verified": false,
+        "independently_verified": true,
+        "layout_status": "passed",
+        "oracle_status": "pass",
+        "poc_status": "pass",
+        "real_verification": true,
+        "sample_id": "stack-strcpy-x86_64",
+        "status": "reproduced",
+        "temp_evidence_files": {
+          "candidate.bin": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4",
+          "metadata.json": "92c4189a3629c0d0a4027998a904b8c76009fe026d617dee01e41046232ba921",
+          "original.bin": "c81017fafff3f57fee32331a6de9a3c77b702069a92f3b19eab77798416295a4",
+          "outcome.json": "238bdf5b66541559dd1dcf5f2f9b62794b27a6f4d33a3946974fb2c1a7b32088",
+          "plan.json": "7634f180989b5ed76780eba5e6641ff6b1b8c38ce86b3fd80fec60c92f9f9032",
+          "verifier-report.json": "5bb93b285d6c97ef8fe9c56676f064a559f5148a42ac98ee3cd654786866320d"
+        },
+        "verification_disagreement": false,
+        "verifier_decision": "verified",
+        "verifier_id": "independent-verifier/1"
+      }
+    ],
+    "status": "reproduced",
+    "summary": {
+      "candidate_produced": 2,
+      "detected": 2,
+      "deterministic_claim_withdrawn": 0,
+      "deterministic_verified": 2,
+      "dev": 2,
+      "executed": 2,
+      "false_verified": 0,
+      "independently_verified": 2,
+      "independently_verified_unknown": 0,
+      "integrity_ok": 2,
+      "not_run": 0,
+      "regression_ok": 2,
+      "samples": 2,
+      "validation": 0,
+      "verification_disagreements": 0,
+      "vuln_eliminated": 2
+    },
+    "temp_out": "ephemeral tempfile (deleted after this audit; committed evidence is never overwritten)",
+    "temp_readme_sha256": "714a03ea457d622df2bee602f6c9df211da4fe15595e42fc177621802afa258f",
+    "temp_results_sha256": "aa1fc011d0afcfe164b4d990ce9978043576c280f102437045f2094f2d5b734e"
+  },
+  "q4_schema_reuse": {
+    "benchmark_sample_properties": [
+      "arch",
+      "authority",
+      "bits",
+      "endian",
+      "evidence_refs",
+      "expected_analysis",
+      "expected_patch_properties",
+      "expected_scope",
+      "format",
+      "hidden_available",
+      "hidden_commitment_sha256",
+      "negative_cases",
+      "oracle",
+      "reference_fix",
+      "sample_id",
+      "sha256",
+      "source_refs",
+      "split",
+      "target",
+      "vulnerability_class"
+    ],
+    "benchmark_sample_required": [
+      "sample_id",
+      "sha256",
+      "format",
+      "arch",
+      "bits",
+      "endian",
+      "vulnerability_class",
+      "expected_scope",
+      "target",
+      "source_refs",
+      "oracle",
+      "expected_analysis",
+      "reference_fix",
+      "expected_patch_properties",
+      "negative_cases",
+      "split",
+      "hidden_available",
+      "hidden_commitment_sha256",
+      "evidence_refs"
+    ],
+    "checker": {
+      "exit_code": 0,
+      "summary": "contract-schemas: ok=True validator=jsonschema schemas=13 valid=13/13 invalid=13/13 sums_checked=True violations=0"
+    },
+    "count": 13,
+    "has_authority_block": true,
+    "has_hidden_commitment_contract": false,
+    "has_hidden_fields": true,
+    "has_manifest_wrapper_contract": false,
+    "has_patch_plan_contract": true,
+    "has_results_contract": false,
+    "names": [
+      "acceptance.schema",
+      "benchmark-sample.schema",
+      "binary-target.schema",
+      "capability.schema",
+      "evidence.schema",
+      "gap.schema",
+      "patch-candidate.schema",
+      "patch-plan.schema",
+      "reflection.schema",
+      "repair.schema",
+      "root-cause.schema",
+      "verification.schema",
+      "vulnerability-finding.schema"
+    ]
+  },
+  "q5_hidden_isolation": {
+    "commitment_format": "domain-separated SHA-256 over a canonical hidden manifest (sample_id_hmac, binary_sha256, split, class, oracle refs, expected outcomes) with a campaign salt held outside the public tree; publish commitment, reveal aggregate + salt only after the campaign if Lead approves",
+    "facts": {
+      "hidden_available_manifest": false,
+      "hidden_commitment_sha256_manifest": null,
+      "hidden_corpus_absent": true,
+      "hidden_corpus_created": false,
+      "hidden_corpus_read": false,
+      "isolation_is_operational_not_cryptographic": true,
+      "private_root_default": "/Users/huageorge/.binaryrepair/phase8c-hidden",
+      "private_root_env": "PHASE8C_HIDDEN_ROOT",
+      "private_root_env_set": false,
+      "private_root_exists": false,
+      "private_root_permissions": null,
+      "readiness_g29": {
+        "blocker": "hidden benchmark unavailable (hidden_available=false); the registry must never fabricate a hidden run",
+        "measured_status": "not_run"
+      }
+    },
+    "plan_file": "phase8c-hidden-isolation-plan.md",
+    "threat_model": [
+      "same-UID/root can read the private root: isolation is operational, not cryptographic",
+      "leak surfaces: logs, errors, temp files, reports, CI artifacts, environment dumps, public manifest/evidence refs",
+      "public output must be aggregate-only (counts/rates/CIs), never per-sample hidden ids/bytes/hashes",
+      "fork PRs and untrusted CI must never receive hidden root secrets or mounted volumes"
+    ]
+  },
+  "q5_hidden_plan_file": "phase8c-hidden-isolation-plan.md",
+  "q6_lima": {
+    "design": {
+      "evidence_fields": [
+        "run_id",
+        "operation",
+        "attempt",
+        "lock_wait_ms",
+        "lease_acquired",
+        "timeout",
+        "released"
+      ],
+      "mechanism": "fcntl.flock exclusive advisory lock with a JSON lease (run_id,pid,acquired_at,ttl_s,attempt,operation)",
+      "proposed_path": "$HOME/.binaryrepair/locks/lima-guest.lock",
+      "reentrancy": "per-run token passed through callers; nested guest calls reuse the lease instead of re-locking",
+      "status": "design_only_C9",
+      "timeout": "bounded acquire timeout + explicit attempt record; expiry/stale lease detection by pid+ttl"
+    },
+    "inventory": [
+      {
+        "hit_count": 27,
+        "hits": [
+          {
+            "line": 11,
+            "text": "A running Lima VM (``limactl``) is available.  The guest is a Linux VM and"
+          },
+          {
+            "line": 68,
+            "text": "class GuestRunner:"
+          },
+          {
+            "line": 120,
+            "text": "def _native_runner(arch: str) -> GuestRunner | None:"
+          },
+          {
+            "line": 128,
+            "text": "return GuestRunner(kind=\"native\", tool=\"\", tier=\"native_run\")"
+          },
+          {
+            "line": 138,
+            "text": "def _lima_json_status(limactl: str, instance: str, timeout: float) -> bool | None:"
+          },
+          {
+            "line": 139,
+            "text": "\"\"\"Query instance status through ``limactl list --json``."
+          },
+          {
+            "line": 147,
+            "text": "[limactl, \"list\", \"--json\"],"
+          },
+          {
+            "line": 175,
+            "text": "def _lima_plain_status(limactl: str, instance: str, timeout: float) -> bool:"
+          },
+          {
+            "line": 178,
+            "text": "[limactl, \"list\"],"
+          },
+          {
+            "line": 195,
+            "text": "limactl: str | None = None,"
+          },
+          {
+            "line": 202,
+            "text": "tool = limactl or shutil.which(\"limactl\")"
+          },
+          {
+            "line": 214,
+            "text": "def find_lima_runner(instance: str | None = None) -> GuestRunner | None:"
+          }
+        ],
+        "path": "app/services/guest_runner.py",
+        "present": true
+      },
+      {
+        "hit_count": 7,
+        "hits": [
+          {
+            "line": 34,
+            "text": "from app.services.guest_runner import GuestRunner, find_guest_runner, run_path"
+          },
+          {
+            "line": 210,
+            "text": "def _select_runner(format_name: str, arch: str) -> GuestRunner | None:"
+          },
+          {
+            "line": 232,
+            "text": "runner = find_guest_runner(arch)"
+          },
+          {
+            "line": 248,
+            "text": "return GuestRunner(kind=\"native\", tool=\"\", tier=\"native_run\")"
+          },
+          {
+            "line": 262,
+            "text": "def _staging_root(runner: GuestRunner) -> Iterator[Path]:"
+          },
+          {
+            "line": 418,
+            "text": "runner: GuestRunner,"
+          },
+          {
+            "line": 459,
+            "text": "result = run_path(binary_path, argv, **run_kwargs)"
+          }
+        ],
+        "path": "app/services/poc_runner.py",
+        "present": true
+      },
+      {
+        "hit_count": 0,
+        "hits": [],
+        "path": "scripts/run_hard_benchmark.py",
+        "present": true
+      },
+      {
+        "hit_count": 0,
+        "hits": [],
+        "path": "scripts/run_repair_benchmark.py",
+        "present": true
+      },
+      {
+        "hit_count": 14,
+        "hits": [
+          {
+            "line": 1749,
+            "text": "def probe_guest_runner() -> dict[str, Any]:"
+          },
+          {
+            "line": 1753,
+            "text": "from app.services.guest_runner import find_guest_runner  # noqa: PLC0415"
+          },
+          {
+            "line": 1758,
+            "text": "\"reason\": f\"guest_runner import failed: {type(exc).__name__}: {exc}\","
+          },
+          {
+            "line": 1761,
+            "text": "runner = find_guest_runner(\"x86_64\")"
+          },
+          {
+            "line": 1797,
+            "text": "probe = (runner_probe or probe_guest_runner)()"
+          },
+          {
+            "line": 2256,
+            "text": "version = run([\"limactl\", \"--version\"], Path(\"/\"), 30.0)"
+          },
+          {
+            "line": 2258,
+            "text": "identity[\"limactl_version\"] = version.stdout.strip()"
+          },
+          {
+            "line": 2259,
+            "text": "listing = run([\"limactl\", \"list\", \"--json\"], Path(\"/\"), 30.0)"
+          },
+          {
+            "line": 2266,
+            "text": "# ``limactl list --json`` is newline-delimited JSON on some versions."
+          },
+          {
+            "line": 2385,
+            "text": "[\"limactl\", \"shell\", \"binaryrepair\", \"--\", \"uname\", \"-srm\"],"
+          },
+          {
+            "line": 2391,
+            "text": "[\"limactl\", \"shell\", \"binaryrepair\", \"--\", \"qemu-x86_64\","
+          },
+          {
+            "line": 2399,
+            "text": "info = run([\"limactl\", \"info\", \"binaryrepair\"], Path(\"/\"), 60.0)"
+          }
+        ],
+        "path": "scripts/release_gate.py",
+        "present": true
+      },
+      {
+        "hit_count": 2,
+        "hits": [
+          {
+            "line": 101,
+            "text": "\"runner\": poc.get(\"runner\") or \"limactl\","
+          },
+          {
+            "line": 180,
+            "text": "oracle[\"runner\"] = (record.get(\"candidate\", {}).get(\"poc\") or {}).get(\"runner\") or \"limactl\""
+          }
+        ],
+        "path": "scripts/verify_repair_benchmark.py",
+        "present": true
+      },
+      {
+        "hit_count": 0,
+        "hits": [],
+        "path": "scripts/verify_repair.py",
+        "present": true
+      },
+      {
+        "hit_count": 0,
+        "hits": [],
+        "path": "app/services/independent_verifier.py",
+        "present": true
+      }
+    ],
+    "plan_file": "phase8c-lima-coordination-plan.md",
+    "serialization_status": "not_implemented_no_global_lock"
+  },
+  "q7_dependencies": {
+    "parallel_groups": {
+      "G0": [
+        "C01"
+      ],
+      "G1": [
+        "C02",
+        "C04",
+        "C05",
+        "C07",
+        "C09"
+      ],
+      "G2": [
+        "C03",
+        "C06",
+        "C08"
+      ],
+      "G3": [
+        "C10",
+        "C11"
+      ],
+      "G4": [
+        "C12",
+        "C13"
+      ],
+      "G5": [
+        "C14"
+      ]
+    },
+    "serial_constraints": [
+      "C01 before any Phase-8C production work",
+      "C02 contracts before C03/C04/C05/C07/C08/C13",
+      "C05 before C06/C08/C11 hidden paths",
+      "C09 before gate/CI shadow real guest runs (C10/C14)"
+    ],
+    "tasks": [
+      "C01",
+      "C02",
+      "C03",
+      "C04",
+      "C05",
+      "C06",
+      "C07",
+      "C08",
+      "C09",
+      "C10",
+      "C11",
+      "C12",
+      "C13",
+      "C14"
+    ],
+    "write_scopes": {
+      "C01": [
+        "scripts/audit_phase8c_readiness.py",
+        "tests/test_phase8c_readiness.py",
+        "artifacts/phase8c-baseline-2026-11-16",
+        "docs/acceptance/phase8c-baseline-audit.md"
+      ],
+      "C02": [
+        "contracts/ground-truth-benchmark-v2.schema.json",
+        "contracts/manifest-v2.schema.json",
+        "contracts/hidden-commitment.schema.json",
+        "contracts/results-v2.schema.json",
+        "artifacts/contract-fixtures-2026-11-16",
+        "scripts/check_contract_schemas.py",
+        "tests/test_contract_schemas.py"
+      ],
+      "C03": [
+        "scripts/migrate_benchmark_v1_to_v2.py",
+        "benchmark/phase8-v2",
+        "tests/test_benchmark_v2_migration.py"
+      ],
+      "C04": [
+        "fixtures/phase8c-public",
+        "scripts/build_phase8c_public_corpus.py",
+        "tests/test_phase8c_public_corpus.py"
+      ],
+      "C05": [
+        "scripts/build_hidden_corpus.py",
+        "tests/test_hidden_corpus_builder.py"
+      ],
+      "C06": [
+        "scripts/hidden_benchmark.py",
+        "tests/test_hidden_benchmark.py"
+      ],
+      "C07": [
+        "scripts/run_repair_benchmark.py",
+        "app/services/independent_verifier.py? (consumer only)",
+        "tests/test_repair_benchmark_results_v2.py"
+      ],
+      "C08": [
+        "scripts/run_repair_benchmark.py",
+        "tests/test_repair_benchmark_v2.py"
+      ],
+      "C09": [
+        "app/services/guest_runner.py",
+        "app/services/poc_runner.py",
+        "scripts/run_hard_benchmark.py",
+        "scripts/run_repair_benchmark.py",
+        "scripts/release_gate.py",
+        "scripts/verify_repair_benchmark.py",
+        "tests/test_guest_runner.py"
+      ],
+      "C10": [
+        ".github/workflows/ci.yml",
+        "scripts/release_gate.py",
+        "scripts/autonomous_repair_audit.py",
+        "tests/test_release_gate.py"
+      ],
+      "C11": [
+        "tests/test_hidden_isolation.py",
+        "scripts/check_hidden_isolation.py"
+      ],
+      "C12": [
+        "docs/status/claims.json",
+        "docs/acceptance/LIMITATIONS.md",
+        "artifacts/phase8-readiness-2026-11-16"
+      ],
+      "C13": [
+        "app/services/gap_registry.py",
+        "scripts/discover_capability_gaps.py",
+        "tests/test_gap_registry_discovery.py"
+      ],
+      "C14": [
+        "docs/release-2026-11-16-phase8c.md",
+        "artifacts/release-gate-2026-11-16-phase8c",
+        "docs/status/claims.json"
+      ]
+    }
+  },
+  "q8_gate_ci": {
+    "claims": {
+      "hidden_benchmark_this_phase": false,
+      "no_capability_promotion": true,
+      "phase8b_base_sha": "dad21c985694b2d16a722256eaed6bd6131bb9cd",
+      "phase8b_block_present": true,
+      "phase8b_gated_ci_sha": "c5d87b570e4a2d87816d482e22871a7a49a35f7a"
+    },
+    "phase8c_checks": [
+      "audit_phase8c_readiness.py --check (shadow, non-gating in CI)",
+      "run_repair_benchmark.py --check on v2 artifacts (shadow)",
+      "hidden isolation/commitment verification (shadow; hidden remains not_run until Lead provisions the private root)"
+    ],
+    "phase8c_checks_gating": "shadow_not_gating",
+    "readiness_g29": {
+      "blocker": "hidden benchmark unavailable (hidden_available=false); the registry must never fabricate a hidden run",
+      "measured_status": "not_run"
+    },
+    "readiness_g29_impact": "Phase-8C must keep G29 not_run until a Lead-owned hidden root is provisioned; no public claim may read hidden_available=true",
+    "release_gate": {
+      "measured_matches_premise": true,
+      "mode_checks": {
+        "nightly": [
+          "release-tree-identity",
+          "static-coverage-gate",
+          "claims-measurement-diff",
+          "acceptance-contract",
+          "local-coverage-gate",
+          "meta-audit",
+          "acceptance-invariants",
+          "universe-unknown-zero",
+          "provenance-complete",
+          "provider-matrix",
+          "provider-coverage",
+          "nightly-real-lima-acceptance",
+          "full-pytest"
+        ],
+        "pr": [
+          "release-tree-identity",
+          "static-coverage-gate",
+          "claims-measurement-diff",
+          "targeted-pytest"
+        ],
+        "release": [
+          "release-tree-identity",
+          "static-coverage-gate",
+          "claims-measurement-diff",
+          "acceptance-contract",
+          "local-coverage-gate",
+          "meta-audit",
+          "acceptance-invariants",
+          "universe-unknown-zero",
+          "provenance-complete",
+          "provider-matrix",
+          "provider-coverage",
+          "full-pytest"
+        ]
+      },
+      "modes": {
+        "nightly": 13,
+        "pr": 4,
+        "release": 12
+      },
+      "nightly_mode_required": 13,
+      "release_mode_required": 12,
+      "task_premise_13_required": 13,
+      "v1_benchmark_checks_unchanged_design": true
+    }
+  },
+  "q9_phase8d_prep": {
+    "fields_to_prepare_in_phase8c_outputs": [
+      "benchmark_version (v1|v2) and hidden/public visibility of every sample/result",
+      "sample/binary sha + authority/provenance refs so a discovery candidate can point at real bytes",
+      "oracle evidence refs (runner/tier/manifest sha) to distinguish oracle gaps from detector gaps",
+      "commitment_ref for hidden aggregates (never per-sample hidden identifiers)",
+      "discovery_source and proposed_experiment for every candidate (already in GapRecord; v2 must preserve them in results v2)",
+      "dedup/lineage keys (sample sha + benchmark version + target) so v2 and v1 gaps do not duplicate",
+      "capability dimension ids (D01-D20) and universe cell refs for mapping discovered gaps back to the registry"
+    ],
+    "gap_registry_required_fields": [
+      "schema_version",
+      "gap_id",
+      "discovery_source",
+      "category",
+      "subcategory",
+      "target",
+      "observed_failure",
+      "existing_capability",
+      "severity",
+      "status",
+      "evidence_refs",
+      "proposed_experiment",
+      "owner",
+      "review_by",
+      "verification_required",
+      "false_verified_risk"
+    ],
+    "not_implemented_this_phase": true
+  },
+  "schema_version": 1,
+  "status": "ok",
+  "ten_questions": [
+    {
+      "answer": "branch=feature/phase8c-ground-truth-v2 head=227f45b39d85a7cd95e8589beb07dcfc89cd22d7 (expected 227f45b39d85a7cd95e8589beb07dcfc89cd22d7); tag release-2026-11-16-phase8b={'ref': 'release-2026-11-16-phase8b', 'sha': '1bfdf674fecef3c3357482a6a05c46cfa09eed93'}; evidence tag={'ref': 'release-2026-11-16-phase8b-evidence', 'sha': '1edcce2d1c8d9d06cddb538e210205ea6a3dbbc7'}; drift_status=ok; findings=['Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 227f45b39d85a7cd95e8589beb07dcfc89cd22d7; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree', 'the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally']",
+      "id": "Q01",
+      "question": "mainline, tag, evidence refs, drift",
+      "status": "answered"
+    },
+    {
+      "answer": "12/12 samples present and lossless=12; required fields missing=False; v2 gaps=['manifest wrapper has no explicit benchmark_version / v1->v2 mapping block (schema_version=1 today)', 'manifest wrapper hidden fields exist but only hidden_available=false and hidden_commitment_sha256=null; no public/hidden split policy or aggregate-only results contract', 'samples have no optional authority block in v1 (contract supports it); Phase-8C samples must declare scope_policy/authorized_changes/plan binding where applicable', 'results schema is not contract-pinned: Phase-8B results add plan/oracle/layout fields but there is no results-v2 contract', 'no hidden-corpus commitment contract (format/aggregation/visibility)', 'reference_fix is null for 4/12 samples; v2 must treat it as optional evidence, never an oracle substitute']",
+      "id": "Q02",
+      "question": "v1 12-sample lossless v2 migration",
+      "status": "answered"
+    },
+    {
+      "answer": "status=reproduced; samples=[{'sample_id': 'heap-capacity-x86_64', 'candidate_sha256': '93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2', 'verifier_decision': 'verified', 'independently_verified': True, 'oracle_status': 'pass'}, {'sample_id': 'stack-strcpy-x86_64', 'candidate_sha256': '1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4', 'verifier_decision': 'verified', 'independently_verified': True, 'oracle_status': 'pass'}]",
+      "id": "Q03",
+      "question": "reproduce the two Phase-8B independently verified samples",
+      "status": "reproduced"
+    },
+    {
+      "answer": "contracts=13 (acceptance.schema, benchmark-sample.schema, binary-target.schema, capability.schema, evidence.schema, gap.schema, patch-candidate.schema, patch-plan.schema, reflection.schema, repair.schema, root-cause.schema, verification.schema, vulnerability-finding.schema); benchmark-sample required=19; hidden fields=True; authority=True; patch-plan=True; manifest-wrapper=False; hidden-commitment=False; results=False; checker_exit=0",
+      "id": "Q04",
+      "question": "schema reuse/extension matrix",
+      "status": "answered"
+    },
+    {
+      "answer": "private_root=/Users/huageorge/.binaryrepair/phase8c-hidden exists=False perms=None env=PHASE8C_HIDDEN_ROOT; hidden_available=False; hidden corpus not created/read by C1; isolation is operational, not cryptographic; see phase8c-hidden-isolation-plan.md",
+      "id": "Q05",
+      "question": "hidden corpus isolation threat model",
+      "status": "answered"
+    },
+    {
+      "answer": "guest_runner={'available': True, 'kind': 'lima', 'tier': 'emulated_run', 'tool': '/opt/homebrew/bin/limactl', 'instance': 'binaryrepair'}; call_site_files=['app/services/guest_runner.py', 'app/services/poc_runner.py', 'scripts/run_hard_benchmark.py', 'scripts/run_repair_benchmark.py', 'scripts/release_gate.py', 'scripts/verify_repair_benchmark.py', 'scripts/verify_repair.py', 'app/services/independent_verifier.py']; lock_status=not_implemented_no_global_lock; proposed={'proposed_path': '$HOME/.binaryrepair/locks/lima-guest.lock', 'mechanism': 'fcntl.flock exclusive advisory lock with a JSON lease (run_id,pid,acquired_at,ttl_s,attempt,operation)', 'reentrancy': 'per-run token passed through callers; nested guest calls reuse the lease instead of re-locking', 'timeout': 'bounded acquire timeout + explicit attempt record; expiry/stale lease detection by pid+ttl', 'evidence_fields': ['run_id', 'operation', 'attempt', 'lock_wait_ms', 'lease_acquired', 'timeout', 'released'], 'status': 'design_only_C9'}",
+      "id": "Q06",
+      "question": "Lima serialization inventory and plan",
+      "status": "answered"
+    },
+    {
+      "answer": "tasks=['C01', 'C02', 'C03', 'C04', 'C05', 'C06', 'C07', 'C08', 'C09', 'C10', 'C11', 'C12', 'C13', 'C14']; parallel_groups={'G0': ['C01'], 'G1': ['C02', 'C04', 'C05', 'C07', 'C09'], 'G2': ['C03', 'C06', 'C08'], 'G3': ['C10', 'C11'], 'G4': ['C12', 'C13'], 'G5': ['C14']}; serial=['C01 before any Phase-8C production work', 'C02 contracts before C03/C04/C05/C07/C08/C13', 'C05 before C06/C08/C11 hidden paths', 'C09 before gate/CI shadow real guest runs (C10/C14)']",
+      "id": "Q07",
+      "question": "C2-C14 dependency graph and parallelism",
+      "status": "answered"
+    },
+    {
+      "answer": "release_gate modes={'pr': 4, 'release': 12, 'nightly': 13}; release=12 nightly=13 pr=4; shadow=shadow_not_gating; claims_g29={'measured_status': 'not_run', 'blocker': 'hidden benchmark unavailable (hidden_available=false); the registry must never fabricate a hidden run'}",
+      "id": "Q08",
+      "question": "gate/CI impact",
+      "status": "answered"
+    },
+    {
+      "answer": "prepare fields (not implemented this phase): benchmark_version (v1|v2) and hidden/public visibility of every sample/result; sample/binary sha + authority/provenance refs so a discovery candidate can point at real bytes; oracle evidence refs (runner/tier/manifest sha) to distinguish oracle gaps from detector gaps; commitment_ref for hidden aggregates (never per-sample hidden identifiers); discovery_source and proposed_experiment for every candidate (already in GapRecord; v2 must preserve them in results v2); dedup/lineage keys (sample sha + benchmark version + target) so v2 and v1 gaps do not duplicate; capability dimension ids (D01-D20) and universe cell refs for mapping discovered gaps back to the registry",
+      "id": "Q09",
+      "question": "Phase-8D gap/discovery data preparation",
+      "status": "answered"
+    },
+    {
+      "answer": "work breakdown C1-C14 in phase8c-work-breakdown.json; blockers=['B-P8B-EVIDENCE-BINDING:warning', 'B-HIDDEN-ROOT:blocker_for_hidden_paths', 'B-TOOLCHAIN-ZIG:warning', 'B-GATE-COUNT:warning']",
+      "id": "Q10",
+      "question": "final work breakdown/hard acceptance/blockers",
+      "status": "answered"
+    }
+  ],
+  "warnings": [
+    "Phase-8B release evidence is bound to gated SHA c5d87b570e4a2d87816d482e22871a7a49a35f7a, not the current HEAD 227f45b39d85a7cd95e8589beb07dcfc89cd22d7; Phase-8C must record its own base/gated SHA and cannot reuse the Phase-8B evidence as covering this tree",
+    "the Phase-8B local gate artifact directory referenced by claims is not present in this worktree (evidence branch only); no file-level evidence binding is available locally",
+    "Zig absent: public corpus/compiler expansion limited until Lead provisions Zig"
+  ]
+}
