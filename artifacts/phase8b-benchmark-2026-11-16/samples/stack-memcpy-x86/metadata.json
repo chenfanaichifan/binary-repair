@@ -1,0 +1,20 @@
+{
+  "format": "elf",
+  "arch": "i386",
+  "bits": 32,
+  "endian": "little",
+  "target_sha256": "0bbe1c86f88d06469ccd2847d57be17c43d34f34a60b4ec2387e0d148cab6410",
+  "candidate_sha256": null,
+  "target_scope": {
+    "policy": "target_scoped"
+  },
+  "allow_whole_image": false,
+  "generator": {
+    "generator_id": "deterministic-repair-any/app.services.binary_pipeline"
+  },
+  "patch_plan": null,
+  "actions": [],
+  "message_actions": [],
+  "abi_block": null,
+  "oracle_manifest": null
+}

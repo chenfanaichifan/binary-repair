@@ -53,6 +53,8 @@ def test_meta_audit_scenarios_cover_recall_and_precision() -> None:
         "acceptance_whole_program_masquerade",
         "acceptance_oracle_self_report_masquerade",
         "benchmark_version_mismatch",
+        "acceptance_layout_replay_mismatch",
+        "acceptance_associated_change_unauthorized",
     }
     precision_ids = {
         "gate_rejects_fabricated_open_gap",

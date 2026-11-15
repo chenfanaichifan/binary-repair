@@ -11,7 +11,9 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
+for entry in (ROOT, ROOT / "scripts"):
+    if str(entry) not in sys.path:
+        sys.path.insert(0, str(entry))
 
 import check_contract_schemas as contracts  # noqa: E402
 
@@ -65,7 +67,7 @@ def test_all_twelve_contracts_exist_and_name_match() -> None:
     found = sorted(path.name for path in CONTRACTS.glob("*.schema.json"))
     expected = sorted(f"{name}.schema.json" for name in contracts.SCHEMA_NAMES)
     assert found == expected
-    assert len(contracts.SCHEMA_NAMES) == 12
+    assert len(contracts.SCHEMA_NAMES) == 13
 
 
 def test_schema_documents_are_structurally_valid() -> None:
@@ -107,9 +109,9 @@ def test_schema_document_checks_catch_broken_schema() -> None:
 def test_repository_contracts_and_fixtures_pass() -> None:
     report = contracts.run_check(ROOT, check_sums=True)
     assert report["ok"] is True, report["violations"]
-    assert report["schema_count"] == 12
-    assert report["fixtures"]["valid_passed"] == 12
-    assert report["fixtures"]["invalid_rejected"] == 12
+    assert report["schema_count"] == 13
+    assert report["fixtures"]["valid_passed"] == 13
+    assert report["fixtures"]["invalid_rejected"] == 13
     assert report["validator"] == "jsonschema"
     assert report["sums"]["ok"] is True
 
@@ -121,7 +123,7 @@ def test_cli_passes_and_reports_json() -> None:
     assert payload["ok"] is True
     assert payload["validator"] == "jsonschema"
     assert payload["fixtures"] == {
-        "valid_passed": 12, "invalid_rejected": 12, "total": 24,
+        "valid_passed": 13, "invalid_rejected": 13, "total": 26,
     }
 
 
@@ -131,8 +133,8 @@ def test_fallback_validator_semantics() -> None:
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
     assert payload["validator"] == "fallback"
-    assert payload["fixtures"]["valid_passed"] == 12
-    assert payload["fixtures"]["invalid_rejected"] == 12
+    assert payload["fixtures"]["valid_passed"] == 13
+    assert payload["fixtures"]["invalid_rejected"] == 13
 
 
 def test_every_schema_has_valid_and_invalid_fixture() -> None:
@@ -141,7 +143,7 @@ def test_every_schema_has_valid_and_invalid_fixture() -> None:
         assert (FIXTURES / f"{name}.invalid.json").is_file(), name
 
 
-def test_sums_covers_twelve_schemas_and_twenty_four_fixtures() -> None:
+def test_sums_covers_all_schemas_and_fixtures() -> None:
     lines = [
         line for line in SUMS.read_text(encoding="utf-8").splitlines()
         if line.strip()
@@ -419,7 +421,8 @@ def test_benchmark_sample_oracle_scope_consistency() -> None:
 
 def test_new_contract_invalid_fixtures_are_rejected(tmp_path: Path) -> None:
     for name in ("binary-target", "vulnerability-finding", "root-cause",
-                 "patch-candidate", "verification", "benchmark-sample"):
+                 "patch-candidate", "verification", "benchmark-sample",
+                 "patch-plan"):
         fixture = FIXTURES / f"{name}.invalid.json"
         payload = _load(fixture)
         schema = _load(CONTRACTS / f"{name}.schema.json")
@@ -438,3 +441,182 @@ def test_tampered_phase8_fixture_breaks_sums(tmp_path: Path) -> None:
     report = contracts.run_check(root, check_sums=True)
     assert report["ok"] is False
     assert any("SUMS digest mismatch" in item for item in report["violations"])
+
+
+# ---------------------------------------------------------------------------
+# Phase-8B: patch-plan contract and layout-aware verification/benchmark fields
+# ---------------------------------------------------------------------------
+
+def test_patch_plan_fixtures_and_semantics() -> None:
+    payload = _load(FIXTURES / "patch-plan.valid.json")
+    assert _semantics("patch-plan", payload) == []
+    broken = json.loads(json.dumps(payload))
+    broken["operations"][0]["candidate_offset"] = None
+    broken["operations"][0]["kind"] = "replace"
+    assert any("candidate_offset" in item
+               for item in _semantics("patch-plan", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["operations"][0]["before_hex"] = "00"
+    assert any("before_hex length" in item
+               for item in _semantics("patch-plan", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["operations"][1]["authorization_ref"] = None
+    assert any("authorization_ref" in item
+               for item in _semantics("patch-plan", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["cave"] = {"va": 4096, "size": 16, "executable": False,
+                      "method": "append"}
+    broken["operations"][0]["kind"] = "insert"
+    broken["operations"][0]["reason"] = "guard_cave"
+    assert any("executable" in item
+               for item in _semantics("patch-plan", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["operations"][0]["site_va"] = 100
+    assert any("outside the declared target range" in item
+               for item in _semantics("patch-plan", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["scope_policy"] = "whole_image"
+    assert any("must match" in item for item in _semantics("patch-plan", broken))
+
+
+def test_verification_layout_semantics() -> None:
+    payload = _load(FIXTURES / "verification.valid.json")
+    assert _semantics("verification", payload) == []
+    broken = json.loads(json.dumps(payload))
+    broken["layout_evidence"]["replay_ok"] = False
+    assert any("replay_ok" in item for item in _semantics("verification", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["checks"] = [check for check in broken["checks"]
+                        if check["id"] != "layout-plan"]
+    assert any("layout-plan" in item
+               for item in _semantics("verification", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["oracle_evidence"]["evidence_sha256"] = ""
+    assert any("evidence_sha256" in item
+               for item in _semantics("verification", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["oracle_evidence"]["status"] = "not_run"
+    assert any("not_run/unavailable" in item
+               for item in _semantics("verification", broken))
+
+
+def test_benchmark_authority_semantics() -> None:
+    payload = _load(FIXTURES / "benchmark-sample.valid.json")
+    assert _semantics("benchmark-sample", payload) == []
+    broken = json.loads(json.dumps(payload))
+    broken["authority"]["authorized_changes"][0]["authorization_ref"] = ""
+    assert any("authorization_ref" in item
+               for item in _semantics("benchmark-sample", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["authority"]["authorized_changes"][0].pop("file_offset")
+    broken["authority"]["authorized_changes"][0].pop("size")
+    assert any("locator" in item
+               for item in _semantics("benchmark-sample", broken))
+    broken = json.loads(json.dumps(payload))
+    broken["authority"]["scope_policy"] = "target_scoped_associated"
+    broken["authority"]["authorized_changes"] = []
+    assert any("requires at least one authorized change" in item
+               for item in _semantics("benchmark-sample", broken))
+
+
+def test_old_benchmark_and_verification_fixtures_stay_compatible() -> None:
+    benchmark = _load(FIXTURES / "benchmark-sample.valid.json")
+    benchmark.pop("authority", None)
+    schema = _load(CONTRACTS / "benchmark-sample.schema.json")
+    errors, _validator = contracts._validate_instance(
+        "benchmark-sample", schema, benchmark, use_jsonschema=True)
+    assert errors == []
+    assert contracts.CONTRACT_SEMANTICS["benchmark-sample"](benchmark) == []
+    verification = _load(FIXTURES / "verification.valid.json")
+    for key in ("patch_plan_sha256", "oracle_evidence", "layout_evidence"):
+        verification.pop(key, None)
+    verification["checks"] = [check for check in verification["checks"]
+                              if check["id"] != "layout-plan"]
+    schema = _load(CONTRACTS / "verification.schema.json")
+    errors, _validator = contracts._validate_instance(
+        "verification", schema, verification, use_jsonschema=True)
+    assert errors == []
+    assert contracts.CONTRACT_SEMANTICS["verification"](verification) == []
+
+
+# ---------------------------------------------------------------------------
+# Acceptance contract alignment: A01-A08 + AM01-AM28 (Phase-8B follow-up)
+# ---------------------------------------------------------------------------
+
+def _runtime_acceptance_payload() -> dict:
+    from app.services.acceptance_models import (
+        ACCEPTANCE_DIMENSIONS,
+        MISMATCH_RULES,
+    )
+
+    dimensions = [
+        {
+            "id": dimension["id"],
+            "title": dimension["title"],
+            "task_fields": list(dimension["task_fields"]),
+            "acceptance_fields": list(dimension["acceptance_fields"]),
+            "mismatch_ids": list(dimension["mismatch_ids"]),
+        }
+        for dimension in ACCEPTANCE_DIMENSIONS
+    ]
+    mismatch_classes = [
+        {
+            "id": rule["id"],
+            "code": rule["code"],
+            "severity": rule["severity"],
+            "required_actions": list(rule["required_actions"]),
+        }
+        for rule in MISMATCH_RULES
+    ]
+    return {
+        "schema_version": 1,
+        "dimensions": dimensions,
+        "mismatch_classes": mismatch_classes,
+        "match_result": {
+            "schema_version": 1,
+            "task_id": "runtime-registry",
+            "decision": "rejected",
+            "mismatches": ["AM25"],
+            "required_actions": ["reject_candidate_layout_mismatch"],
+            "verified": False,
+            "residual_risk": "critical",
+            "reasons": [
+                "AM25: candidate_layout_mismatch: plan operation missing from layout"
+            ],
+        },
+    }
+
+
+def test_acceptance_contract_represents_runtime_am28_registry() -> None:
+    jsonschema = pytest.importorskip("jsonschema")
+    schema = _load(CONTRACTS / "acceptance.schema.json")
+    assert schema["properties"]["mismatch_classes"]["maxItems"] == 28
+    validator = jsonschema.Draft202012Validator(schema)
+    payload = _runtime_acceptance_payload()
+    assert [item["id"] for item in payload["mismatch_classes"]] == [
+        f"AM{index:02d}" for index in range(1, 29)
+    ]
+    errors = [item.message for item in validator.iter_errors(payload)]
+    assert errors == [], errors
+
+
+def test_acceptance_contract_keeps_legacy_am24_fixture_valid() -> None:
+    jsonschema = pytest.importorskip("jsonschema")
+    schema = _load(CONTRACTS / "acceptance.schema.json")
+    validator = jsonschema.Draft202012Validator(schema)
+    fixture = _load(FIXTURES / "acceptance.valid.json")
+    assert len(fixture["mismatch_classes"]) == 24
+    errors = [item.message for item in validator.iter_errors(fixture)]
+    assert errors == [], errors
+
+
+def test_acceptance_contract_rejects_undeclared_am29() -> None:
+    jsonschema = pytest.importorskip("jsonschema")
+    schema = _load(CONTRACTS / "acceptance.schema.json")
+    validator = jsonschema.Draft202012Validator(schema)
+    payload = _runtime_acceptance_payload()
+    payload["mismatch_classes"][-1]["id"] = "AM29"
+    payload["match_result"]["mismatches"] = ["AM29"]
+    errors = [item.message for item in validator.iter_errors(payload)]
+    assert errors
+    assert any("AM29" in item or "does not match" in item for item in errors)

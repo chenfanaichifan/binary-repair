@@ -303,6 +303,339 @@ def _target_scope_check(
     )
 
 
+_PLAN_ASSOCIATED_REASONS = frozenset({"rodata_message", "header_update", "relocation"})
+
+
+def _elf_exec_ranges(data: bytes | None) -> list[tuple[int, int]]:
+    """Minimal little-endian ELF PT_LOAD PF_X ranges (cave-executable proof)."""
+    if not isinstance(data, (bytes, bytearray)) or len(data) < 52 or bytes(data[:4]) != b"\x7fELF":
+        return []
+    data = bytes(data)
+    ranges: list[tuple[int, int]] = []
+    try:
+        if data[4] == 2:
+            import struct
+
+            e_phoff = struct.unpack_from("<Q", data, 32)[0]
+            e_phentsize = struct.unpack_from("<H", data, 54)[0]
+            e_phnum = struct.unpack_from("<H", data, 56)[0]
+            for index in range(e_phnum):
+                start = e_phoff + index * e_phentsize
+                if start + 56 > len(data):
+                    break
+                p_type, p_flags = struct.unpack_from("<II", data, start)
+                p_vaddr = struct.unpack_from("<Q", data, start + 16)[0]
+                p_memsz = struct.unpack_from("<Q", data, start + 40)[0]
+                if p_type == 1 and (p_flags & 1):
+                    ranges.append((p_vaddr, p_vaddr + p_memsz))
+        elif data[4] == 1:
+            import struct
+
+            e_phoff = struct.unpack_from("<I", data, 28)[0]
+            e_phentsize = struct.unpack_from("<H", data, 42)[0]
+            e_phnum = struct.unpack_from("<H", data, 44)[0]
+            for index in range(e_phnum):
+                start = e_phoff + index * e_phentsize
+                if start + 32 > len(data):
+                    break
+                p_type, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_flags = struct.unpack_from(
+                    "<IIIIIII", data, start
+                )
+                if p_type == 1 and (p_flags & 1):
+                    ranges.append((p_vaddr, p_vaddr + p_memsz))
+    except (TypeError, ValueError, struct.error):
+        return []
+    return ranges
+
+
+def _pe_exec_ranges(data: bytes) -> list[tuple[int, int]]:
+    """PE executable section VA ranges (IMAGE_SCN_MEM_EXECUTE)."""
+    if len(data) < 0x40 or data[:2] != b"MZ":
+        return []
+    ranges: list[tuple[int, int]] = []
+    try:
+        import struct
+
+        pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
+        if data[pe_offset:pe_offset + 4] != b"PE\x00\x00":
+            return []
+        coff = pe_offset + 4
+        section_count = struct.unpack_from("<H", data, coff + 2)[0]
+        optional_size = struct.unpack_from("<H", data, coff + 16)[0]
+        optional = coff + 20
+        magic = struct.unpack_from("<H", data, optional)[0]
+        image_base = (
+            struct.unpack_from("<Q", data, optional + 24)[0]
+            if magic == 0x20B
+            else struct.unpack_from("<I", data, optional + 28)[0]
+        )
+        table = optional + optional_size
+        for index in range(section_count):
+            start = table + index * 40
+            if start + 40 > len(data):
+                break
+            virtual_size = struct.unpack_from("<I", data, start + 8)[0]
+            virtual_address = struct.unpack_from("<I", data, start + 12)[0]
+            raw_size = struct.unpack_from("<I", data, start + 16)[0]
+            characteristics = struct.unpack_from("<I", data, start + 36)[0]
+            if not characteristics & 0x20000000:
+                continue
+            size = max(virtual_size, raw_size)
+            if size:
+                ranges.append((image_base + virtual_address,
+                               image_base + virtual_address + size))
+    except (ValueError, struct.error):
+        return []
+    return ranges
+
+
+def _macho_exec_ranges(data: bytes) -> list[tuple[int, int]]:
+    """Mach-O executable segment VM ranges (initprot & VM_PROT_EXECUTE)."""
+    if len(data) < 32:
+        return []
+    magic = int.from_bytes(data[:4], "little")
+    if magic not in (0xFEEDFACF, 0xFEEDFACE):
+        return []
+    is_64 = magic == 0xFEEDFACF
+    import struct
+
+    ranges: list[tuple[int, int]] = []
+    try:
+        ncmds = struct.unpack_from("<I", data, 16)[0]
+        offset = 32 if is_64 else 28
+        for _ in range(ncmds):
+            if offset + 8 > len(data):
+                break
+            cmd, cmdsize = struct.unpack_from("<II", data, offset)
+            if cmdsize < 8 or offset + cmdsize > len(data):
+                break
+            if cmd in (0x19, 0x1):
+                if is_64:
+                    vmaddr = struct.unpack_from("<Q", data, offset + 24)[0]
+                    vmsize = struct.unpack_from("<Q", data, offset + 32)[0]
+                    initprot = struct.unpack_from("<i", data, offset + 60)[0]
+                else:
+                    vmaddr = struct.unpack_from("<I", data, offset + 24)[0]
+                    vmsize = struct.unpack_from("<I", data, offset + 28)[0]
+                    initprot = struct.unpack_from("<i", data, offset + 44)[0]
+                if initprot & 4 and vmsize:
+                    ranges.append((vmaddr, vmaddr + vmsize))
+            offset += cmdsize
+    except (ValueError, struct.error):
+        return []
+    return ranges
+
+
+def _executable_ranges(data: bytes | None) -> list[tuple[int, int]]:
+    if not isinstance(data, (bytes, bytearray)):
+        return []
+    payload = bytes(data)
+    return _elf_exec_ranges(payload) or _pe_exec_ranges(payload) or _macho_exec_ranges(payload)
+
+
+def _plan_replay_check(
+    plan: dict[str, Any],
+    original: bytes,
+    candidate: bytes | None,
+) -> dict[str, Any]:
+    """Plan-aware replacement for ``patch.rewrite`` (fail-closed)."""
+    problems: list[str] = []
+    if candidate is None:
+        problems.append("no candidate bytes")
+        return _check(
+            "patch.rewrite",
+            "The declared patch plan deterministically replays to the candidate",
+            CHECK_FAILED,
+            "no candidate bytes",
+        )
+    if plan.get("target_sha256") != _sha(original):
+        problems.append("plan target_sha256 does not match the original bytes")
+    if plan.get("candidate_sha256") != _sha(candidate):
+        problems.append("plan candidate_sha256 does not match the candidate bytes")
+    operations = plan.get("operations")
+    if not isinstance(operations, list) or not operations:
+        problems.append("plan has no operations")
+        operations = []
+    inserts: list[dict[str, Any]] = []
+    writes: list[tuple[int, dict[str, Any]]] = []
+    for index, operation in enumerate(operations):
+        if not isinstance(operation, dict):
+            problems.append(f"operation[{index}] is not an object")
+            continue
+        kind = str(operation.get("kind") or "")
+        size = operation.get("size")
+        before_hex = str(operation.get("before_hex") or "")
+        after_hex = str(operation.get("after_hex") or "")
+        if not isinstance(size, int) or isinstance(size, bool) or size <= 0:
+            problems.append(f"operation[{index}] has invalid size")
+            continue
+        if kind == "insert":
+            if before_hex or len(after_hex) != size * 2:
+                problems.append(f"operation[{index}] insert has invalid before/after hex")
+                continue
+        elif len(before_hex) != size * 2 or len(after_hex) != size * 2:
+            problems.append(f"operation[{index}] hex length does not match size")
+            continue
+        reason = str(operation.get("reason") or "")
+        if reason in _PLAN_ASSOCIATED_REASONS and not operation.get("authorization_ref"):
+            problems.append(
+                f"operation[{index}] reason={reason} has no authorization_ref"
+            )
+        if kind in {"insert", "replace"} and not isinstance(
+            operation.get("candidate_offset"), int
+        ):
+            problems.append(f"operation[{index}] {kind} has no candidate_offset")
+        if kind == "insert":
+            if before_hex:
+                problems.append(f"operation[{index}] insert has non-empty before_hex")
+            inserts.append(operation)
+        elif kind in {"write", "replace"}:
+            writes.append((int(operation.get("candidate_offset", operation.get("original_offset", 0))), operation))
+        else:
+            problems.append(f"operation[{index}] has invalid kind {kind!r}")
+    output = bytearray(original)
+    for operation in sorted(inserts, key=lambda item: int(item.get("candidate_offset", 0))):
+        candidate_offset = int(operation.get("candidate_offset", 0))
+        after = bytes.fromhex(str(operation.get("after_hex")))
+        if candidate_offset < 0 or candidate_offset > len(output):
+            problems.append(f"insert candidate_offset={candidate_offset} out of range")
+            continue
+        output[candidate_offset:candidate_offset] = after
+    for candidate_offset, operation in sorted(writes, key=lambda item: item[0]):
+        original_offset = int(operation.get("original_offset", 0))
+        size = int(operation.get("size"))
+        before = bytes.fromhex(str(operation.get("before_hex")))
+        after = bytes.fromhex(str(operation.get("after_hex")))
+        if original_offset < 0 or original_offset + size > len(original):
+            problems.append(f"write original_offset={original_offset} out of range")
+            continue
+        if original[original_offset:original_offset + size] != before:
+            problems.append(
+                f"write original bytes at 0x{original_offset:x} do not match before_hex"
+            )
+            continue
+        if candidate_offset < 0 or candidate_offset + size > len(output):
+            problems.append(f"write candidate_offset={candidate_offset} out of range")
+            continue
+        if bytes(output[candidate_offset:candidate_offset + size]) != before:
+            problems.append(
+                f"write candidate bytes at 0x{candidate_offset:x} do not match before_hex"
+            )
+            continue
+        output[candidate_offset:candidate_offset + size] = after
+    if bytes(output) != candidate:
+        first = next(
+            (index for index in range(min(len(output), len(candidate)))
+             if output[index] != candidate[index]),
+            min(len(output), len(candidate)),
+        )
+        problems.append(
+            f"plan replay does not equal the candidate (lengths {len(output)}/{len(candidate)}, "
+            f"first mismatch at {first})"
+        )
+    cave = plan.get("cave")
+    if cave is not None:
+        if not isinstance(cave, dict):
+            problems.append("cave is not an object")
+        else:
+            cave_va = cave.get("va")
+            cave_size = cave.get("size")
+            if not isinstance(cave_va, int) or not isinstance(cave_size, int) or cave_size <= 0:
+                problems.append("cave has invalid va/size")
+            elif cave.get("executable") is not True:
+                problems.append("cave is not declared executable")
+            else:
+                exec_ranges = _executable_ranges(candidate)
+                covered = any(
+                    start <= cave_va and cave_va + cave_size <= end
+                    for start, end in exec_ranges
+                )
+                if not covered:
+                    problems.append(
+                        f"cave [{cave_va:#x},{cave_va + cave_size:#x}) is not inside a "
+                        "candidate executable PT_LOAD"
+                    )
+            if isinstance(cave_size, int) and cave_size <= 0:
+                problems.append("cave size must be positive")
+    detail = (
+        f"plan={plan.get('plan_id')} operations={len(operations)} "
+        f"inserts={len(inserts)} writes={len(writes)} cave={cave is not None}"
+    )
+    if problems:
+        detail += "; " + "; ".join(problems[:4])
+    return _check(
+        "patch.rewrite",
+        "The declared patch plan deterministically replays to the candidate",
+        CHECK_FAILED if problems else CHECK_PASSED,
+        detail,
+    )
+
+
+def _plan_target_scope_check(
+    plan: dict[str, Any],
+    target_scope: dict[str, Any],
+    candidate: bytes | None,
+) -> dict[str, Any]:
+    """Plan-aware replacement for ``patch.target_scope`` (fail-closed)."""
+    problems: list[str] = []
+    va = target_scope.get("va")
+    end = target_scope.get("end")
+    plan_scope = plan.get("target_scope") if isinstance(plan.get("target_scope"), dict) else {}
+    if not isinstance(va, int) or not isinstance(end, int) or end <= va:
+        problems.append("target scope has no valid numeric va/end")
+    if plan_scope.get("va") != va or plan_scope.get("end") != end:
+        problems.append("plan target_scope does not match the declared target scope")
+    scope_policy = str(plan.get("scope_policy") or "")
+    associated = 0
+    reviewed = 0
+    for index, operation in enumerate(plan.get("operations") or []):
+        if not isinstance(operation, dict):
+            problems.append(f"operation[{index}] is not an object")
+            continue
+        reason = str(operation.get("reason") or "")
+        if reason == "reviewed_site":
+            reviewed += 1
+            site_va = operation.get("site_va")
+            if not isinstance(site_va, int) or isinstance(site_va, bool):
+                problems.append(f"operation[{index}] reviewed_site has no site_va")
+            elif not (va <= site_va < end):
+                problems.append(
+                    f"operation[{index}] reviewed site_va={site_va:#x} escapes [{va:#x},{end:#x})"
+                )
+        elif reason in _PLAN_ASSOCIATED_REASONS:
+            associated += 1
+            if not operation.get("authorization_ref"):
+                problems.append(
+                    f"operation[{index}] associated reason={reason} has no authorization_ref"
+                )
+            if scope_policy not in {"target_scoped_associated", "whole_image"}:
+                problems.append(
+                    f"operation[{index}] associated change is not authorized by scope_policy={scope_policy}"
+                )
+        elif reason == "guard_cave":
+            associated += 1
+            cave = plan.get("cave")
+            if not isinstance(cave, dict) or cave.get("executable") is not True:
+                problems.append("guard_cave operation without an executable cave")
+            if not operation.get("authorization_ref"):
+                problems.append("guard_cave operation has no authorization_ref")
+        else:
+            problems.append(f"operation[{index}] has invalid reason {reason!r}")
+    detail = (
+        f"plan_scope=[{hex(va) if isinstance(va, int) else '?'},"
+        f"{hex(end) if isinstance(end, int) else '?'}) policy={scope_policy} "
+        f"reviewed={reviewed} associated={associated}"
+    )
+    if problems:
+        detail += "; " + "; ".join(problems[:4])
+    return _check(
+        "patch.target_scope",
+        "Every plan operation lies inside the declared target or an authorized associated range",
+        CHECK_FAILED if problems else CHECK_PASSED,
+        detail,
+    )
+
+
 def build(
     *,
     format_name: str,
@@ -322,6 +655,7 @@ def build(
     capacity: dict[str, Any] | None = None,
     target_scope: dict[str, Any] | None = None,
     target_policy: str | None = None,
+    patch_plan: dict[str, Any] | None = None,
 ) -> UnifiedVerification:
     """Build the unified evidence-profile packet and gate.
 
@@ -650,7 +984,9 @@ def build(
             original,
             candidate,
         ))
-    if effective_rewrite is not None:
+    if patch_plan is not None:
+        checks.append(_plan_replay_check(patch_plan, original, candidate))
+    elif effective_rewrite is not None:
         checks.append(_rewrite_check(
             "patch.rewrite",
             "Every recorded rewrite action re-derives from the original and "
@@ -690,7 +1026,10 @@ def build(
         # Appended last so every historical check id/status and the declared
         # profile required-check list stay unchanged; the check still counts in
         # the normal failed/not_run success logic below.
-        checks.append(_target_scope_check(target_scope, actions))
+        if patch_plan is not None:
+            checks.append(_plan_target_scope_check(patch_plan, target_scope, candidate))
+        else:
+            checks.append(_target_scope_check(target_scope, actions))
 
     failed = [check for check in checks if check["status"] == CHECK_FAILED]
     not_run = [check for check in checks if check["status"] == CHECK_NOT_RUN]
@@ -731,6 +1070,8 @@ def build(
         packet["poc_native"] = external_poc
     if capacity is not None:
         packet["capacity"] = capacity
+    if patch_plan is not None:
+        packet["patch_plan"] = patch_plan
     if success:
         outcome = "success_within_scope"
     elif failed:

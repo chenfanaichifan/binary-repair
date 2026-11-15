@@ -1,5 +1,5 @@
 {
-  "case_count": 52,
+  "case_count": 62,
   "cases": [
     {
       "case_id": "negative-am01-target-sha",
@@ -314,6 +314,102 @@
       "purpose": "stale benchmark version/sample set is rejected"
     },
     {
+      "case_id": "negative-am25-layout-missing",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM25"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM25"
+      ],
+      "ok": true,
+      "purpose": "a patch plan without candidate layout evidence is rejected"
+    },
+    {
+      "case_id": "negative-am25-operation-mismatch",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM25"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM25"
+      ],
+      "ok": true,
+      "purpose": "a plan operation missing from the candidate layout is rejected"
+    },
+    {
+      "case_id": "negative-am26-associated-out-of-range",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM26"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM26"
+      ],
+      "ok": true,
+      "purpose": "an associated change outside the authorized range is rejected"
+    },
+    {
+      "case_id": "negative-am26-unauthorized-associated",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM26"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM26"
+      ],
+      "ok": true,
+      "purpose": "an associated change without authorization is rejected"
+    },
+    {
+      "case_id": "negative-am27-abi-missing",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM27"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM27"
+      ],
+      "ok": true,
+      "purpose": "executable modification without derivable ABI evidence is rejected"
+    },
+    {
+      "case_id": "negative-am28-oracle-metadata",
+      "decision": "rejected",
+      "detected_mismatches": [
+        "AM28"
+      ],
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM28"
+      ],
+      "ok": true,
+      "purpose": "incomplete / not executed oracle metadata is rejected"
+    },
+    {
+      "case_id": "positive-abi-derived",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "derivable ABI evidence satisfies the ABI requirement"
+    },
+    {
+      "case_id": "positive-associated-authorized",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "an authorized associated rodata change verifies"
+    },
+    {
       "case_id": "positive-benchmark-version",
       "decision": "verified",
       "detected_mismatches": [],
@@ -348,6 +444,24 @@
       "expected_mismatches": [],
       "ok": true,
       "purpose": "an independent external oracle satisfies the oracle requirement"
+    },
+    {
+      "case_id": "positive-oracle-metadata",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "complete executed-oracle metadata verifies"
+    },
+    {
+      "case_id": "positive-patch-plan-replay",
+      "decision": "verified",
+      "detected_mismatches": [],
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "ok": true,
+      "purpose": "a declared patch plan replays into the candidate layout"
     },
     {
       "case_id": "positive-repair-scope-no-range",
@@ -668,10 +782,14 @@
     "AM21",
     "AM22",
     "AM23",
-    "AM24"
+    "AM24",
+    "AM25",
+    "AM26",
+    "AM27",
+    "AM28"
   ],
-  "detected_expected_instances": 44,
-  "detected_mismatch_instances": 44,
+  "detected_expected_instances": 50,
+  "detected_mismatch_instances": 50,
   "dimensions": [
     "A01",
     "A02",
@@ -682,7 +800,7 @@
     "A07",
     "A08"
   ],
-  "expected_mismatch_instances": 44,
+  "expected_mismatch_instances": 50,
   "failures": [],
   "false_positives": 0,
   "generated_by": "scripts/audit_acceptance_models.py",
@@ -710,11 +828,15 @@
     "AM21",
     "AM22",
     "AM23",
-    "AM24"
+    "AM24",
+    "AM25",
+    "AM26",
+    "AM27",
+    "AM28"
   ],
-  "negative_case_count": 43,
+  "negative_case_count": 49,
   "ok": true,
-  "positive_case_count": 9,
+  "positive_case_count": 13,
   "precision": 1.0,
   "recall": 1.0,
   "schema_version": 1

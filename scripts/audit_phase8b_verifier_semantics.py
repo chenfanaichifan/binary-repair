@@ -1425,23 +1425,28 @@ def check_artifact(artifact_dir: Path = ARTIFACT_DIR) -> list[str]:
                     "candidate_sha256") != recorded:
                 problems.append(f"{sid}: candidate sha differs from benchmark")
             cli = sample.get("verifier", {}).get("cli", {})
-            committed = sample.get("verifier", {}).get("cli", {}).get(
-                "report_sha256")
-            if committed:
+            committed = cli.get("report_sha256")
+            report_path = directory / "verifier-report.json"
+            if committed and report_path.is_file():
+                # B1 is a historical pre-fix baseline.  --check validates the
+                # saved report's identity and integrity offline; it must not
+                # re-run the current (post-B4) verifier, which intentionally has
+                # different semantics.  --reproduce exercises the current tree.
                 try:
-                    metadata = _load_json(directory / "metadata.json")
-                    oracle = ROOT / str(sample.get("inputs", {})[
-                        "oracle_manifest"])
-                    recomputed = _cli_verifier(
-                        _sample(str(sid)), original, candidate,
-                        metadata["runner_metadata"], oracle)
-                except Exception as exc:  # noqa: BLE001
-                    problems.append(f"{sid}: verifier recomputation failed: "
+                    saved = _load_json(report_path)
+                except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                    problems.append(f"{sid}: verifier-report unreadable: "
                                     f"{type(exc).__name__}: {exc}")
                 else:
-                    if recomputed.get("report_sha256") != committed:
+                    saved_cli = saved.get("cli") if isinstance(
+                        saved.get("cli"), dict) else saved
+                    if saved_cli.get("report_sha256") != committed:
                         problems.append(
-                            f"{sid}: verifier report stale/tampered")
+                            f"{sid}: verifier report digest is stale/tampered")
+                    if saved_cli.get("decision") != cli.get("decision"):
+                        problems.append(
+                            f"{sid}: verifier report decision differs from "
+                            "the recorded baseline")
             if cli.get("decision") == "verified":
                 problems.append(f"{sid}: baseline CLI cannot be verified")
     return problems

@@ -48,7 +48,7 @@ for entry in (ROOT, ROOT / "scripts"):
 
 MIN_RECALL = 0.8
 MIN_PRECISION = 1.0
-MIN_SCENARIOS = 28
+MIN_SCENARIOS = 30
 
 
 def _import_audit() -> Any:
@@ -826,6 +826,66 @@ def _acceptance_recall_scenarios() -> list[dict[str, Any]]:
         and "AM24" in _as_list(benchmark.get("mismatches"))
     )
 
+    layout_task = _copy.deepcopy(BASE_TASK)
+    layout_acceptance = _copy.deepcopy(BASE_ACCEPTANCE)
+    layout_task["patch_plan"] = {
+        "plan_sha256": "a" * 64,
+        "candidate_sha256": "c" * 64,
+        "operations": [{
+            "kind": "write",
+            "original_offset": 8409,
+            "candidate_offset": 8409,
+            "size": 16,
+            "before_hex": "39f3720c89df29f739d70f83c4feffff",
+            "after_hex": "4489e729f7720939d70f83c5feffff90",
+            "site_va": 4202713,
+            "reason": "reviewed_site",
+            "authorization_ref": None,
+        }],
+        "cave": None,
+        "relocations": [],
+    }
+    layout_acceptance["candidate_sha256"] = "c" * 64
+    layout_acceptance["layout_evidence"] = {
+        "patch_plan_sha256": "a" * 64,
+        "replay_ok": True,
+        "changed_ranges": [{
+            "original_offset": 8409,
+            "candidate_offset": 8409,
+            "size": 8,
+            "kind": "write",
+        }],
+        "cave": None,
+        "relocations": [],
+        "abi_blocks": [{
+            "function": "main",
+            "va": 4202713,
+            "size": 16,
+            "arch": "x86_64",
+        }],
+    }
+    layout = AcceptanceModelMatcher.match(layout_task, layout_acceptance)
+    layout_detected = bool(
+        layout.get("verified") is False
+        and "AM25" in _as_list(layout.get("mismatches"))
+    )
+
+    associated_task = _copy.deepcopy(BASE_TASK)
+    associated_acceptance = _copy.deepcopy(BASE_ACCEPTANCE)
+    associated_acceptance["associated_changes"] = [{
+        "kind": "rodata_message",
+        "file_offset": 538624,
+        "size": 49,
+        "section": ".rodata",
+        "authorization_ref": "",
+    }]
+    associated = AcceptanceModelMatcher.match(
+        associated_task, associated_acceptance)
+    associated_detected = bool(
+        associated.get("verified") is False
+        and "AM26" in _as_list(associated.get("mismatches"))
+    )
+
     return [
         _scenario(
             "acceptance_served_model_only_masquerade", "recall", True,
@@ -850,6 +910,18 @@ def _acceptance_recall_scenarios() -> list[dict[str, Any]]:
             benchmark_detected,
             "a stale benchmark version/sample-set commitment must be rejected "
             f"(matcher mismatches={benchmark.get('mismatches')})",
+        ),
+        _scenario(
+            "acceptance_layout_replay_mismatch", "recall", True,
+            layout_detected,
+            "a plan operation missing from the candidate layout must be "
+            f"rejected (matcher mismatches={layout.get('mismatches')})",
+        ),
+        _scenario(
+            "acceptance_associated_change_unauthorized", "recall", True,
+            associated_detected,
+            "an associated change without authorization must be rejected "
+            f"(matcher mismatches={associated.get('mismatches')})",
         ),
     ]
 

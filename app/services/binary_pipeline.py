@@ -29,6 +29,8 @@ from __future__ import annotations
 
 import hashlib
 import inspect
+import json
+from pathlib import Path
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -107,6 +109,7 @@ class UnifiedBinaryReport:
     warnings: list[str] = field(default_factory=list)
     ai: dict[str, Any] = field(default_factory=dict)
     poc: dict[str, Any] = field(default_factory=dict)
+    patch_plan: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -793,6 +796,600 @@ def _evidence_profile(
     )
 
 
+# ---------------------------------------------------------------------------
+# Patch plan (Phase-8B B5): the structural description of one candidate.
+# ---------------------------------------------------------------------------
+
+_PATCH_PLAN_SCHEMA = Path(__file__).resolve().parents[2] / "contracts" / "patch-plan.schema.json"
+_ASSOCIATED_REASONS = frozenset({"rodata_message", "header_update", "relocation"})
+_PLAN_REASONS = frozenset({
+    "reviewed_site", "guard_cave", "rodata_message", "header_update", "relocation",
+})
+
+
+def _canonical_json(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _plan_hex(data: bytes) -> str:
+    return data.hex()
+
+
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _elf_exec_segments(data: bytes) -> list[tuple[int, int]]:
+    """Minimal little-endian ELF PT_LOAD PF_X ranges (cave-executable check)."""
+    if len(data) < 52 or data[:4] != b"\x7fELF":
+        return []
+    ei_class = data[4]
+    ei_data = data[5]
+    if ei_data != 1:
+        return []
+    try:
+        if ei_class == 2:
+            e_phoff = struct_unpack(data, 32, "<Q")
+            e_phentsize = struct_unpack(data, 54, "<H")
+            e_phnum = struct_unpack(data, 56, "<H")
+            start = e_phoff
+            for _ in range(e_phnum):
+                if start + 56 > len(data):
+                    break
+                p_type, p_flags = struct_unpack(data, start, "<II")
+                p_vaddr = struct_unpack(data, start + 16, "<Q")
+                p_memsz = struct_unpack(data, start + 40, "<Q")
+                if p_type == 1 and (p_flags & 1):
+                    yield (p_vaddr, p_vaddr + p_memsz)
+                start += e_phentsize
+        else:
+            e_phoff = struct_unpack(data, 28, "<I")
+            e_phentsize = struct_unpack(data, 42, "<H")
+            e_phnum = struct_unpack(data, 44, "<H")
+            start = e_phoff
+            for _ in range(e_phnum):
+                if start + 32 > len(data):
+                    break
+                p_type, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_flags = struct_unpack(
+                    data, start, "<IIIIIII"
+                )
+                if p_type == 1 and (p_flags & 1):
+                    yield (p_vaddr, p_vaddr + p_memsz)
+                start += e_phentsize
+    except (TypeError, ValueError):
+        return []
+
+
+def _elf_metadata_ranges(data: bytes) -> list[tuple[int, int]]:
+    """ELF header/program-header/section-header file ranges (metadata writes)."""
+    if len(data) < 64 or data[:4] != b"\x7fELF":
+        return []
+    ranges: list[tuple[int, int]] = [(0, 64)]
+    try:
+        import struct as _struct
+
+        if data[4] == 2:
+            e_phoff = _struct.unpack_from("<Q", data, 32)[0]
+            e_phnum = _struct.unpack_from("<H", data, 56)[0]
+            e_phentsize = _struct.unpack_from("<H", data, 54)[0]
+            e_shoff = _struct.unpack_from("<Q", data, 40)[0]
+            e_shnum = _struct.unpack_from("<H", data, 60)[0]
+            e_shentsize = _struct.unpack_from("<H", data, 58)[0]
+        else:
+            e_phoff = _struct.unpack_from("<I", data, 28)[0]
+            e_phnum = _struct.unpack_from("<H", data, 44)[0]
+            e_phentsize = _struct.unpack_from("<H", data, 42)[0]
+            e_shoff = _struct.unpack_from("<I", data, 32)[0]
+            e_shnum = _struct.unpack_from("<H", data, 48)[0]
+            e_shentsize = _struct.unpack_from("<H", data, 46)[0]
+        if e_phoff and e_phnum:
+            ranges.append((e_phoff, e_phoff + e_phnum * e_phentsize))
+        if e_shoff and e_shnum:
+            ranges.append((e_shoff, e_shoff + e_shnum * e_shentsize))
+    except (TypeError, ValueError, _struct.error):
+        pass
+    return ranges
+
+
+def _elf_load_segments(data: bytes) -> list[dict[str, int]]:
+    """PT_LOAD entries as dicts (offset, va, filesz, memsz, flags)."""
+    segments: list[dict[str, int]] = []
+    if len(data) < 64 or data[:4] != b"\x7fELF":
+        return segments
+    try:
+        import struct as _struct
+
+        if data[4] == 2:
+            phoff = _struct.unpack_from("<Q", data, 32)[0]
+            phentsize = _struct.unpack_from("<H", data, 54)[0]
+            phnum = _struct.unpack_from("<H", data, 56)[0]
+            for index in range(phnum):
+                start = phoff + index * phentsize
+                if start + 56 > len(data):
+                    break
+                p_type, p_flags = _struct.unpack_from("<II", data, start)
+                if p_type != 1:
+                    continue
+                segments.append({
+                    "offset": _struct.unpack_from("<Q", data, start + 8)[0],
+                    "va": _struct.unpack_from("<Q", data, start + 16)[0],
+                    "filesz": _struct.unpack_from("<Q", data, start + 32)[0],
+                    "memsz": _struct.unpack_from("<Q", data, start + 40)[0],
+                    "flags": p_flags,
+                })
+        elif data[4] == 1:
+            phoff = _struct.unpack_from("<I", data, 28)[0]
+            phentsize = _struct.unpack_from("<H", data, 42)[0]
+            phnum = _struct.unpack_from("<H", data, 44)[0]
+            for index in range(phnum):
+                start = phoff + index * phentsize
+                if start + 32 > len(data):
+                    break
+                p_type, p_offset, p_vaddr, _paddr, p_filesz, p_memsz, p_flags = (
+                    _struct.unpack_from("<IIIIIII", data, start)
+                )
+                if p_type != 1:
+                    continue
+                segments.append({
+                    "offset": p_offset,
+                    "va": p_vaddr,
+                    "filesz": p_filesz,
+                    "memsz": p_memsz,
+                    "flags": p_flags,
+                })
+    except (TypeError, ValueError, _struct.error):
+        return segments
+    return segments
+
+
+def _va_file_offset(container: ContainerInfo, va: int) -> int | None:
+    for section in getattr(container, "sections", []) or []:
+        sec_va = getattr(section, "va", None)
+        sec_size = getattr(section, "size", None)
+        sec_offset = getattr(section, "offset", None)
+        if (
+            isinstance(sec_va, int) and isinstance(sec_size, int) and sec_size > 0
+            and isinstance(sec_offset, int)
+            and sec_va <= va < sec_va + sec_size
+        ):
+            return sec_offset + (va - sec_va)
+    return None
+
+
+def _guard_action_file_offsets(
+    container: ContainerInfo, actions: list[dict[str, Any]]
+) -> list[tuple[int, int]]:
+    mapped: list[tuple[int, int]] = []
+    for action in actions:
+        site_va = action.get("site_va")
+        if isinstance(site_va, int) and not isinstance(site_va, bool):
+            offset = _va_file_offset(container, site_va)
+            if offset is not None:
+                mapped.append((offset, site_va))
+    return mapped
+
+
+def struct_unpack(data: bytes, offset: int, fmt: str) -> Any:
+    import struct as _struct
+
+    return _struct.unpack_from(fmt, data, offset)[0]
+
+
+def _diff_hunks(original: bytes, candidate: bytes) -> list[tuple[int, int, bytes, bytes]]:
+    """Contiguous equal-length byte hunks (original != candidate)."""
+    if len(original) != len(candidate):
+        raise ValueError("hunks require equal-length inputs")
+    hunks: list[tuple[int, int, bytes, bytes]] = []
+    start: int | None = None
+    for index in range(len(original)):
+        if original[index] != candidate[index] and start is None:
+            start = index
+        elif original[index] == candidate[index] and start is not None:
+            hunks.append((start, index - start, original[start:index], candidate[start:index]))
+            start = None
+    if start is not None:
+        hunks.append((start, len(original) - start, original[start:], candidate[start:]))
+    return hunks
+
+
+def _action_ranges(actions: list[dict[str, Any]]) -> list[tuple[int, int, str, dict[str, Any]]]:
+    ranges: list[tuple[int, int, str, dict[str, Any]]] = []
+    for action in actions:
+        offset = action.get("offset")
+        size = action.get("size")
+        if isinstance(offset, int) and not isinstance(offset, bool) and offset >= 0 \
+                and isinstance(size, int) and not isinstance(size, bool) and size > 0:
+            ranges.append((offset, offset + size, "reviewed_site", action))
+    return ranges
+
+
+def _capacity_message_actions(capacity: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if not isinstance(capacity, dict):
+        return []
+    actions = capacity.get("message_actions")
+    return [dict(item) for item in actions if isinstance(item, dict)] if isinstance(actions, list) else []
+
+
+def _operation_reason(
+    offset: int,
+    size: int,
+    action_ranges: list[tuple[int, int, str, dict[str, Any]]],
+    message_ranges: list[tuple[int, int, dict[str, Any]]],
+    original_len: int,
+) -> tuple[str, str | None, int | None, int | None]:
+    """Classify one candidate region: (reason, authorization_ref, site_va, message_sha)."""
+    end = offset + size
+    for start, stop, reason, action in action_ranges:
+        if offset < stop and end > start:
+            site_va = action.get("site_va")
+            site = site_va if isinstance(site_va, int) and not isinstance(site_va, bool) else None
+            return reason, None, site, None
+    for start, stop, action in message_ranges:
+        if offset < stop and end > start:
+            digest = _sha256_text(_canonical_json({
+                "kind": "rodata_message",
+                "offset": int(action.get("offset", start)),
+                "size": int(action.get("size", stop - start)),
+                "before_hex": str(action.get("before_hex") or ""),
+                "after_hex": str(action.get("after_hex") or ""),
+                "old_text": str(action.get("old_text") or ""),
+                "new_text": str(action.get("new_text") or ""),
+            }))
+            return "rodata_message", f"authorization:capacity-message:v1 sha256={digest}", None, digest
+    if offset < 0x400 or offset >= original_len and offset < 0x1000:
+        return "header_update", "authorization:elf-metadata:v1", None, None
+    return "reviewed_site", None, None, None
+
+
+def _capacity_function_range(data: bytes, container: ContainerInfo, va: int) -> tuple[int, int] | None:
+    """Real function range via the reviewed capacity analysis (stripped ELF64).
+
+    The capacity engine already computes function starts from call targets; a
+    stripped fixture has no symbol-backed function, so this reviewed derivation
+    is the real containing range (next function start / end of the code region).
+    """
+    if container.format != "elf" or container.arch != "x86_64":
+        return None
+    try:
+        from app.services.repair import capacity as _capacity
+
+        analysis = _capacity._analyse(data)
+        if analysis.code is None or not analysis.instructions:
+            return None
+        starts = _capacity._function_starts(analysis.code, analysis.instructions)
+        import bisect
+
+        position = bisect.bisect_right(starts, va) - 1
+        if position < 0:
+            return None
+        start_va = int(starts[position])
+        end_va = (
+            int(starts[position + 1]) if position + 1 < len(starts)
+            else int(analysis.code.vaddr + len(analysis.code.data))
+        )
+        if start_va <= va < end_va and end_va > start_va:
+            return start_va, end_va
+    except Exception:  # noqa: BLE001 - advisory derivation, never a correctness gate
+        return None
+    return None
+
+
+def _derive_abi_blocks(
+    data: bytes,
+    container: ContainerInfo,
+    scope: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    """Derive ABI evidence from a real function range (symbol or reviewed range)."""
+    if not isinstance(scope, dict):
+        return []
+    va = scope.get("va")
+    end = scope.get("end")
+    if not isinstance(va, int) or not isinstance(end, int) or end <= va:
+        return []
+    function = str(scope.get("name") or "")
+    source = str(scope.get("source") or "")
+    if source != "symbol" or not function:
+        derived = _capacity_function_range(data, container, int(va))
+        if derived is None:
+            return []
+        va, end = derived
+        function = "reviewed-function"
+    offset = _va_file_offset(container, int(va))
+    size = int(end - va)
+    if offset is None or offset < 0 or offset + size > len(data):
+        return []
+    chunk = data[offset:offset + size]
+    block = {
+        "function": function,
+        "va": int(va),
+        "size": size,
+        "arch": str(container.arch),
+        "abi_id": {"x86_64": "sysv-amd64", "i386": "sysv-i386", "arm64": "aapcs64"}.get(
+            str(container.arch), "unknown"
+        ),
+        "evidence_sha256": _sha(chunk),
+    }
+    return [block]
+
+
+def _build_patch_plan(
+    data: bytes,
+    patched: bytes,
+    container: ContainerInfo,
+    actions: list[dict[str, Any]],
+    capacity: dict[str, Any] | None,
+    external_poc: dict[str, Any] | None,
+    poc_manifest: dict[str, Any] | None,
+    target_scope: dict[str, Any] | None,
+    target_policy: str | None,
+) -> dict[str, Any] | None:
+    """Build a versioned patch plan that deterministically replays to the candidate.
+
+    Fail-closed: an unsupported resize shape (deletion) or a plan that fails the
+    committed schema returns None, so the old no-plan gate path applies and the
+    candidate is not claimed as layout-verified.
+    """
+    if not actions or len(patched) < len(data):
+        return None
+    target_sha256 = _sha(data)
+    candidate_sha256 = _sha(patched)
+    message_actions = _capacity_message_actions(capacity)
+    message_ranges = [
+        (int(a.get("offset", 0)), int(a.get("offset", 0)) + int(a.get("size", 1)), a)
+        for a in message_actions
+        if isinstance(a.get("offset"), int) and isinstance(a.get("size"), int)
+    ]
+    action_ranges = _action_ranges(actions)
+    operations: list[dict[str, Any]] = []
+    limitations: list[str] = []
+    if len(patched) == len(data):
+        for start, size, before, after in _diff_hunks(data, patched):
+            reason, auth, site_va, _digest = _operation_reason(
+                start, size, action_ranges, message_ranges, len(data)
+            )
+            operation: dict[str, Any] = {
+                "kind": "write",
+                "original_offset": start,
+                "candidate_offset": start,
+                "size": size,
+                "before_hex": _plan_hex(before),
+                "after_hex": _plan_hex(after),
+                "reason": reason,
+            }
+            if site_va is not None:
+                operation["site_va"] = site_va
+            if auth is not None:
+                operation["authorization_ref"] = auth
+            operations.append(operation)
+    else:
+        # The writer keeps the original file span and either appends a new
+        # PT_LOAD/cave region at the end (guard) or rewrites metadata in place.
+        # Represent the raw diff as equal-length writes over the original span
+        # plus one declared insert for the appended cave bytes.
+        metadata_ranges = _elf_metadata_ranges(data)
+        guard_offsets = _guard_action_file_offsets(container, actions)
+        redirect_ranges: list[tuple[int, int, int]] = []
+        for guard_offset, guard_site_va in guard_offsets:
+            if guard_offset + 5 <= len(data) and data[guard_offset:guard_offset + 1] in {b"\xe8", b"\xff"}:
+                redirect_ranges.append((guard_offset, guard_offset + 5, guard_site_va))
+        guard_action = next(
+            (action for action in actions if str(action.get("kind") or "") == "guard"),
+            None,
+        )
+        base_span = min(len(data), len(patched))
+        redirect_covered: set[int] = set()
+        for redirect_offset, redirect_end, redirect_site_va in redirect_ranges:
+            operations.append({
+                "kind": "write",
+                "original_offset": redirect_offset,
+                "candidate_offset": redirect_offset,
+                "size": redirect_end - redirect_offset,
+                "before_hex": _plan_hex(data[redirect_offset:redirect_end]),
+                "after_hex": _plan_hex(patched[redirect_offset:redirect_end]),
+                "reason": "reviewed_site",
+                "site_va": redirect_site_va,
+            })
+            redirect_covered.update(range(redirect_offset, redirect_end))
+        for start, size, before, after in _diff_hunks(
+            data[:base_span], patched[:base_span]
+        ):
+            if any(offset in redirect_covered for offset in range(start, start + size)):
+                continue
+            reason, auth, site_va, _digest = _operation_reason(
+                start, size, action_ranges, message_ranges, len(data)
+            )
+            if reason == "reviewed_site" and site_va is None:
+                for guard_offset, guard_site_va in guard_offsets:
+                    if abs(start - guard_offset) <= 16:
+                        site_va = guard_site_va
+                        break
+            if reason != "rodata_message" and any(
+                low <= start < high for low, high in metadata_ranges
+            ):
+                reason = "header_update"
+                auth = "authorization:elf-metadata:v1"
+            operation = {
+                "kind": "write",
+                "original_offset": start,
+                "candidate_offset": start,
+                "size": size,
+                "before_hex": _plan_hex(before),
+                "after_hex": _plan_hex(after),
+                "reason": reason,
+            }
+            if site_va is not None:
+                operation["site_va"] = site_va
+            if auth is not None:
+                operation["authorization_ref"] = auth
+            operations.append(operation)
+        appended = patched[base_span:]
+        if appended:
+            operations.append({
+                "kind": "insert",
+                "original_offset": base_span,
+                "candidate_offset": base_span,
+                "size": len(appended),
+                "before_hex": "",
+                "after_hex": _plan_hex(appended),
+                "reason": "guard_cave",
+                "authorization_ref": "authorization:guard-cave:v1",
+            })
+            limitations.append(
+                f"guard candidate appends {len(appended)} cave/PT_LOAD bytes at file "
+                f"offset {base_span}; the call redirect and header/program-header "
+                "updates are declared as reviewed_site/header_update operations"
+            )
+        if guard_action is not None and appended:
+            original_segments = _elf_load_segments(data)
+            candidate_segments = _elf_load_segments(patched)
+            original_keys = {(seg["offset"], seg["va"], seg["filesz"]) for seg in original_segments}
+            new_exec = [
+                seg for seg in candidate_segments
+                if (seg["flags"] & 1)
+                and (seg["offset"], seg["va"], seg["filesz"]) not in original_keys
+                and base_span <= seg["offset"] <= len(patched)
+                and seg["filesz"] > 0
+            ]
+            if new_exec:
+                cave_segment = max(new_exec, key=lambda seg: seg["offset"])
+                cave = {
+                    "va": int(cave_segment["va"]),
+                    "size": int(cave_segment["filesz"]),
+                    "executable": True,
+                    "method": str(guard_action.get("method") or "guard-cave"),
+                }
+            else:
+                cave_va = guard_action.get("cave_va")
+                cave_va_int = int(cave_va, 16) if isinstance(cave_va, str) else (
+                    cave_va if isinstance(cave_va, int) and not isinstance(cave_va, bool) else None
+                )
+                cave = {
+                    "va": cave_va_int if cave_va_int is not None else 0,
+                    "size": len(appended),
+                    "executable": True,
+                    "method": str(guard_action.get("method") or "guard-cave"),
+                }
+        else:
+            cave = None
+    if not operations:
+        return None
+    scope: dict[str, Any]
+    if isinstance(target_scope, dict) and isinstance(target_scope.get("va"), int):
+        scope = {"policy": "target_scoped"}
+        if target_scope.get("name"):
+            scope["name"] = str(target_scope["name"])
+        scope["va"] = int(target_scope["va"])
+        scope["end"] = int(target_scope["end"])
+    else:
+        scope = {"policy": "whole_image" if not target_scope else "target_scoped"}
+        if isinstance(target_scope, dict):
+            if target_scope.get("name"):
+                scope["name"] = str(target_scope["name"])
+            if isinstance(target_scope.get("va"), int):
+                scope["va"] = int(target_scope["va"])
+            if isinstance(target_scope.get("end"), int):
+                scope["end"] = int(target_scope["end"])
+    associated = any(op.get("reason") in _ASSOCIATED_REASONS or op.get("kind") == "insert"
+                     for op in operations)
+    scope_policy = "target_scoped"
+    if scope.get("policy") == "whole_image":
+        scope_policy = "whole_image"
+    elif associated:
+        scope_policy = "target_scoped_associated"
+    scope["policy"] = scope_policy
+    oracle: dict[str, Any] | None = None
+    if isinstance(poc_manifest, dict):
+        manifest_sha = _sha256_text(_canonical_json(poc_manifest))
+        oracle = {
+            "manifest_sha256": manifest_sha,
+            "runner": str((external_poc or {}).get("runner") or "poc_runner"),
+            "tier": str((external_poc or {}).get("tier") or "emulated_run"),
+            "status": "executed" if (external_poc or {}).get("status") in {"pass", "fail"} else "not_run",
+        }
+        if external_poc is not None:
+            oracle["status"] = (
+                "executed" if external_poc.get("status") in {"pass", "fail"} else "not_run"
+            )
+    try:
+        patched_container = detect_container(patched)
+    except Exception:  # noqa: BLE001 - advisory; no ABI block if unmappable
+        patched_container = container
+    abi_blocks = _derive_abi_blocks(
+        patched,
+        patched_container,
+        scope if scope.get("policy") != "whole_image" else None,
+    )
+    if not limitations:
+        limitations = ["plan replay covers every changed byte; raw-diff bytes not declared by the plan are rejected"]
+    plan: dict[str, Any] = {
+        "schema_version": 1,
+        "generator_id": "binary-pipeline/deterministic",
+        "original_sha256": target_sha256,
+        "candidate_id": "cand-" + candidate_sha256[:24],
+        "target_sha256": target_sha256,
+        "candidate_sha256": candidate_sha256,
+        "strategy": str(actions[0].get("kind") or "deterministic"),
+        "scope_policy": scope_policy,
+        "target_scope": scope,
+        "operations": operations,
+        "cave": cave if len(patched) != len(data) else None,
+        "relocations": [],
+        "abi_blocks": abi_blocks,
+        "oracle": oracle,
+        "limitations": limitations,
+    }
+    plan["plan_id"] = "plan-" + _sha256_text(_canonical_json(plan))[:24]
+    problems = _validate_patch_plan(plan)
+    if problems:
+        return None
+    return plan
+
+
+def _validate_patch_plan(plan: dict[str, Any]) -> list[str]:
+    """Validate against the committed schema (jsonschema when present)."""
+    problems: list[str] = []
+    if _PATCH_PLAN_SCHEMA.is_file():
+        try:
+            import jsonschema  # type: ignore[import-untyped]
+
+            schema = json.loads(_PATCH_PLAN_SCHEMA.read_text(encoding="utf-8"))
+            validator = jsonschema.Draft202012Validator(schema)
+            for error in sorted(validator.iter_errors(plan), key=str):
+                where = "/".join(str(part) for part in error.absolute_path) or "<root>"
+                problems.append(f"schema {where}: {error.message}")
+        except ImportError:
+            problems.extend(_validate_plan_locally(plan))
+        except (OSError, json.JSONDecodeError) as exc:
+            problems.append(f"patch-plan schema unreadable: {exc}")
+    else:
+        problems.extend(_validate_plan_locally(plan))
+    if plan.get("target_sha256") != plan.get("original_sha256"):
+        problems.append("target_sha256 does not equal original_sha256")
+    for operation in plan.get("operations") or []:
+        if operation.get("kind") in {"insert", "replace"} and not isinstance(
+            operation.get("candidate_offset"), int
+        ):
+            problems.append("insert/replace operation has no candidate_offset")
+        if operation.get("reason") in _ASSOCIATED_REASONS and not operation.get(
+            "authorization_ref"
+        ):
+            problems.append(f"{operation.get('reason')} operation has no authorization_ref")
+    return problems
+
+
+def _validate_plan_locally(plan: dict[str, Any]) -> list[str]:
+    problems: list[str] = []
+    required = ("schema_version", "candidate_id", "target_sha256", "candidate_sha256",
+                "strategy", "scope_policy", "target_scope", "operations", "cave",
+                "relocations", "abi_blocks", "oracle", "limitations")
+    for field_name in required:
+        if field_name not in plan:
+            problems.append(f"missing field {field_name}")
+    if not plan.get("operations"):
+        problems.append("empty operations")
+    return problems
+
+
 def finish_candidate(
     data: bytes,
     container: ContainerInfo,
@@ -1001,6 +1598,29 @@ def finish_candidate(
         rewrite_actions=rewrite_actions,
     )
     cell = repair_cell(container)
+    # Phase-8B B5: structural patch plan for every produced candidate.  The plan
+    # is built from the actual original/candidate bytes and the engine actions;
+    # it is exchanged into the unified gate (plan-aware rewrite/target-scope)
+    # and kept on the report for the independent verifier.
+    patch_plan = _build_patch_plan(
+        data,
+        patched,
+        container,
+        actions,
+        capacity,
+        external_poc,
+        poc_manifest,
+        report.universal.get("target_scope") if isinstance(report.universal, dict) else None,
+        target_policy,
+    )
+    report.patch_plan = patch_plan
+    if patch_plan is not None:
+        report.limitations.append(
+            "patch plan: "
+            f"{len(patch_plan.get('operations') or [])} declared operation(s), "
+            f"scope_policy={patch_plan.get('scope_policy')}, "
+            f"plan_id={patch_plan.get('plan_id')}"
+        )
     # The declared evidence model for the external-PoC profiles is the manifest
     # differential; the stack/Unicorn runtime model is not part of that claim,
     # so the two oracles are never mixed in one gate packet.
@@ -1023,6 +1643,7 @@ def finish_candidate(
         capacity=capacity,
         target_scope=target_scope,
         target_policy=target_policy,
+        patch_plan=patch_plan,
     )
     report.verification = {
         "packet": verification.packet,

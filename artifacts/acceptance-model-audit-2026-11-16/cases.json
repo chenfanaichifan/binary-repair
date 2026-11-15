@@ -1,5 +1,5 @@
 {
-  "case_count": 52,
+  "case_count": 62,
   "cases": [
     {
       "acceptance": {
@@ -3429,6 +3429,1260 @@
       "acceptance": {
         "abi": "sysv",
         "arch": "x86_64",
+        "candidate_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "claims": {
+          "extra_claims": [],
+          "scope": "function"
+        },
+        "environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "evidence": [
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-1",
+            "methods": [
+              "static_analysis"
+            ],
+            "mode": "static",
+            "regression": false,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          },
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-2",
+            "methods": [
+              "dynamic_reproduction",
+              "regression_suite"
+            ],
+            "mode": "dynamic",
+            "regression": true,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          }
+        ],
+        "evidence_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "model_identity": {
+          "requested": "deepseek-chat",
+          "served": "deepseek-chat",
+          "status": "exact"
+        },
+        "scope": "function",
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "negative-am25-layout-missing",
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM25"
+      ],
+      "purpose": "a patch plan without candidate layout evidence is rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "evidence_refs": [
+          {
+            "evidence_id": "ev-1",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-2",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "expected_evidence_manifest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "model_identity": {
+          "allowed_aliases": [
+            "deepseek-flash"
+          ],
+          "requested": "deepseek-chat"
+        },
+        "patch_plan": {
+          "candidate_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "cave": null,
+          "operations": [
+            {
+              "after_hex": "4489e729f7720939d70f83c5feffff90",
+              "authorization_ref": null,
+              "before_hex": "39f3720c89df29f739d70f83c4feffff",
+              "candidate_offset": 8409,
+              "kind": "write",
+              "original_offset": 8409,
+              "reason": "reviewed_site",
+              "site_va": 4202713,
+              "size": 16
+            }
+          ],
+          "plan_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "relocations": []
+        },
+        "required_environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "required_evidence_modes": [
+          "static",
+          "dynamic"
+        ],
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "required_tool_versions": {
+          "gate": "1.0.0"
+        },
+        "requires_regression": true,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "acceptance-matrix",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "candidate_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "claims": {
+          "extra_claims": [],
+          "scope": "function"
+        },
+        "environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "evidence": [
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-1",
+            "methods": [
+              "static_analysis"
+            ],
+            "mode": "static",
+            "regression": false,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          },
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-2",
+            "methods": [
+              "dynamic_reproduction",
+              "regression_suite"
+            ],
+            "mode": "dynamic",
+            "regression": true,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          }
+        ],
+        "evidence_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "layout_evidence": {
+          "abi_blocks": [
+            {
+              "arch": "x86_64",
+              "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "function": "main",
+              "size": 16,
+              "va": 4202713
+            }
+          ],
+          "cave": null,
+          "changed_ranges": [
+            {
+              "candidate_offset": 8409,
+              "kind": "write",
+              "original_offset": 8409,
+              "size": 8
+            }
+          ],
+          "patch_plan_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "relocations": [],
+          "replay_ok": true
+        },
+        "methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "model_identity": {
+          "requested": "deepseek-chat",
+          "served": "deepseek-chat",
+          "status": "exact"
+        },
+        "scope": "function",
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "negative-am25-operation-mismatch",
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM25"
+      ],
+      "purpose": "a plan operation missing from the candidate layout is rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "evidence_refs": [
+          {
+            "evidence_id": "ev-1",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-2",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "expected_evidence_manifest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "model_identity": {
+          "allowed_aliases": [
+            "deepseek-flash"
+          ],
+          "requested": "deepseek-chat"
+        },
+        "patch_plan": {
+          "candidate_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "cave": null,
+          "operations": [
+            {
+              "after_hex": "4489e729f7720939d70f83c5feffff90",
+              "authorization_ref": null,
+              "before_hex": "39f3720c89df29f739d70f83c4feffff",
+              "candidate_offset": 8409,
+              "kind": "write",
+              "original_offset": 8409,
+              "reason": "reviewed_site",
+              "site_va": 4202713,
+              "size": 16
+            }
+          ],
+          "plan_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "relocations": []
+        },
+        "required_environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "required_evidence_modes": [
+          "static",
+          "dynamic"
+        ],
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "required_tool_versions": {
+          "gate": "1.0.0"
+        },
+        "requires_regression": true,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "acceptance-matrix",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "associated_changes": [
+          {
+            "authorization_ref": "auth-fixture-001",
+            "file_offset": 538624,
+            "kind": "rodata_message",
+            "section": ".rodata",
+            "size": 49
+          }
+        ],
+        "claims": {
+          "extra_claims": [],
+          "scope": "function"
+        },
+        "environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "evidence": [
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-1",
+            "methods": [
+              "static_analysis"
+            ],
+            "mode": "static",
+            "regression": false,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          },
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-2",
+            "methods": [
+              "dynamic_reproduction",
+              "regression_suite"
+            ],
+            "mode": "dynamic",
+            "regression": true,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          }
+        ],
+        "evidence_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "model_identity": {
+          "requested": "deepseek-chat",
+          "served": "deepseek-chat",
+          "status": "exact"
+        },
+        "scope": "function",
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "negative-am26-associated-out-of-range",
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM26"
+      ],
+      "purpose": "an associated change outside the authorized range is rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "authority": {
+          "authorized_changes": [
+            {
+              "authorization_ref": "auth-fixture-001",
+              "file_offset": 538624,
+              "kind": "rodata_message",
+              "size": 16
+            }
+          ],
+          "scope_policy": "target_scoped_associated"
+        },
+        "evidence_refs": [
+          {
+            "evidence_id": "ev-1",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-2",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "expected_evidence_manifest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "model_identity": {
+          "allowed_aliases": [
+            "deepseek-flash"
+          ],
+          "requested": "deepseek-chat"
+        },
+        "required_environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "required_evidence_modes": [
+          "static",
+          "dynamic"
+        ],
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "required_tool_versions": {
+          "gate": "1.0.0"
+        },
+        "requires_regression": true,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "acceptance-matrix",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "associated_changes": [
+          {
+            "authorization_ref": "",
+            "file_offset": 538624,
+            "kind": "rodata_message",
+            "section": ".rodata",
+            "size": 49
+          }
+        ],
+        "claims": {
+          "extra_claims": [],
+          "scope": "function"
+        },
+        "environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "evidence": [
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-1",
+            "methods": [
+              "static_analysis"
+            ],
+            "mode": "static",
+            "regression": false,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          },
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-2",
+            "methods": [
+              "dynamic_reproduction",
+              "regression_suite"
+            ],
+            "mode": "dynamic",
+            "regression": true,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          }
+        ],
+        "evidence_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "model_identity": {
+          "requested": "deepseek-chat",
+          "served": "deepseek-chat",
+          "status": "exact"
+        },
+        "scope": "function",
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "negative-am26-unauthorized-associated",
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM26"
+      ],
+      "purpose": "an associated change without authorization is rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "evidence_refs": [
+          {
+            "evidence_id": "ev-1",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-2",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "expected_evidence_manifest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "model_identity": {
+          "allowed_aliases": [
+            "deepseek-flash"
+          ],
+          "requested": "deepseek-chat"
+        },
+        "required_environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "required_evidence_modes": [
+          "static",
+          "dynamic"
+        ],
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "required_tool_versions": {
+          "gate": "1.0.0"
+        },
+        "requires_regression": true,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "acceptance-matrix",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "claims": {
+          "extra_claims": [],
+          "scope": "function"
+        },
+        "environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "evidence": [
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-1",
+            "methods": [
+              "static_analysis"
+            ],
+            "mode": "static",
+            "regression": false,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          },
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-2",
+            "methods": [
+              "dynamic_reproduction",
+              "regression_suite"
+            ],
+            "mode": "dynamic",
+            "regression": true,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          }
+        ],
+        "evidence_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "model_identity": {
+          "requested": "deepseek-chat",
+          "served": "deepseek-chat",
+          "status": "exact"
+        },
+        "scope": "function",
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "negative-am27-abi-missing",
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM27"
+      ],
+      "purpose": "executable modification without derivable ABI evidence is rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "evidence_refs": [
+          {
+            "evidence_id": "ev-1",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-2",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "expected_evidence_manifest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "model_identity": {
+          "allowed_aliases": [
+            "deepseek-flash"
+          ],
+          "requested": "deepseek-chat"
+        },
+        "required_environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "required_evidence_modes": [
+          "static",
+          "dynamic"
+        ],
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "required_tool_versions": {
+          "gate": "1.0.0"
+        },
+        "requires_abi_evidence": true,
+        "requires_regression": true,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "acceptance-matrix",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "claims": {
+          "extra_claims": [],
+          "scope": "function"
+        },
+        "environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "evidence": [
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-1",
+            "methods": [
+              "static_analysis"
+            ],
+            "mode": "static",
+            "regression": false,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          },
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-2",
+            "methods": [
+              "dynamic_reproduction",
+              "regression_suite"
+            ],
+            "mode": "dynamic",
+            "regression": true,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          }
+        ],
+        "evidence_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "model_identity": {
+          "requested": "deepseek-chat",
+          "served": "deepseek-chat",
+          "status": "exact"
+        },
+        "oracle_evidence": {
+          "expected": {},
+          "manifest_sha256": "short",
+          "runner": "",
+          "status": "not_run",
+          "tier": "unavailable"
+        },
+        "scope": "function",
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "negative-am28-oracle-metadata",
+      "expected_decision": "rejected",
+      "expected_mismatches": [
+        "AM28"
+      ],
+      "purpose": "incomplete / not executed oracle metadata is rejected",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "evidence_refs": [
+          {
+            "evidence_id": "ev-1",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-2",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "expected_evidence_manifest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "model_identity": {
+          "allowed_aliases": [
+            "deepseek-flash"
+          ],
+          "requested": "deepseek-chat"
+        },
+        "required_environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "required_evidence_modes": [
+          "static",
+          "dynamic"
+        ],
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "required_tool_versions": {
+          "gate": "1.0.0"
+        },
+        "requires_regression": true,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "acceptance-matrix",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "abi": "sysv",
+        "abi_blocks": [
+          {
+            "arch": "x86_64",
+            "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "function": "main",
+            "size": 16,
+            "va": 4202713
+          }
+        ],
+        "arch": "x86_64",
+        "claims": {
+          "extra_claims": [],
+          "scope": "function"
+        },
+        "environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "evidence": [
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-1",
+            "methods": [
+              "static_analysis"
+            ],
+            "mode": "static",
+            "regression": false,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          },
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-2",
+            "methods": [
+              "dynamic_reproduction",
+              "regression_suite"
+            ],
+            "mode": "dynamic",
+            "regression": true,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          }
+        ],
+        "evidence_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "model_identity": {
+          "requested": "deepseek-chat",
+          "served": "deepseek-chat",
+          "status": "exact"
+        },
+        "scope": "function",
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "positive-abi-derived",
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "purpose": "derivable ABI evidence satisfies the ABI requirement",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "evidence_refs": [
+          {
+            "evidence_id": "ev-1",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-2",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "expected_evidence_manifest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "model_identity": {
+          "allowed_aliases": [
+            "deepseek-flash"
+          ],
+          "requested": "deepseek-chat"
+        },
+        "required_environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "required_evidence_modes": [
+          "static",
+          "dynamic"
+        ],
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "required_tool_versions": {
+          "gate": "1.0.0"
+        },
+        "requires_abi_evidence": true,
+        "requires_regression": true,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "acceptance-matrix",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "associated_changes": [
+          {
+            "authorization_ref": "auth-fixture-001",
+            "file_offset": 538624,
+            "kind": "rodata_message",
+            "section": ".rodata",
+            "size": 16
+          }
+        ],
+        "claims": {
+          "extra_claims": [],
+          "scope": "function"
+        },
+        "environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "evidence": [
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-1",
+            "methods": [
+              "static_analysis"
+            ],
+            "mode": "static",
+            "regression": false,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          },
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-2",
+            "methods": [
+              "dynamic_reproduction",
+              "regression_suite"
+            ],
+            "mode": "dynamic",
+            "regression": true,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          }
+        ],
+        "evidence_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "model_identity": {
+          "requested": "deepseek-chat",
+          "served": "deepseek-chat",
+          "status": "exact"
+        },
+        "scope": "function",
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "positive-associated-authorized",
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "purpose": "an authorized associated rodata change verifies",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "authority": {
+          "authorized_changes": [
+            {
+              "authorization_ref": "auth-fixture-001",
+              "file_offset": 538624,
+              "kind": "rodata_message",
+              "size": 49
+            }
+          ],
+          "scope_policy": "target_scoped_associated"
+        },
+        "evidence_refs": [
+          {
+            "evidence_id": "ev-1",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-2",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "expected_evidence_manifest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "model_identity": {
+          "allowed_aliases": [
+            "deepseek-flash"
+          ],
+          "requested": "deepseek-chat"
+        },
+        "required_environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "required_evidence_modes": [
+          "static",
+          "dynamic"
+        ],
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "required_tool_versions": {
+          "gate": "1.0.0"
+        },
+        "requires_regression": true,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "acceptance-matrix",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "abi": "sysv",
+        "arch": "x86_64",
         "benchmark": {
           "sample_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "version": "phase8-v1"
@@ -3987,6 +5241,338 @@
           "gate": "1.0.0"
         },
         "requires_independent_oracle": true,
+        "requires_regression": true,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "acceptance-matrix",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "claims": {
+          "extra_claims": [],
+          "scope": "function"
+        },
+        "environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "evidence": [
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-1",
+            "methods": [
+              "static_analysis"
+            ],
+            "mode": "static",
+            "regression": false,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          },
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-2",
+            "methods": [
+              "dynamic_reproduction",
+              "regression_suite"
+            ],
+            "mode": "dynamic",
+            "regression": true,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          }
+        ],
+        "evidence_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "model_identity": {
+          "requested": "deepseek-chat",
+          "served": "deepseek-chat",
+          "status": "exact"
+        },
+        "oracle_evidence": {
+          "evidence_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "expected": {
+            "expected_candidate": "rejected",
+            "expected_original": "triggers"
+          },
+          "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "runner": "lima-guest",
+          "status": "executed",
+          "tier": "emulated_run"
+        },
+        "scope": "function",
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "positive-oracle-metadata",
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "purpose": "complete executed-oracle metadata verifies",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "evidence_refs": [
+          {
+            "evidence_id": "ev-1",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-2",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "expected_evidence_manifest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "model_identity": {
+          "allowed_aliases": [
+            "deepseek-flash"
+          ],
+          "requested": "deepseek-chat"
+        },
+        "required_environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "required_evidence_modes": [
+          "static",
+          "dynamic"
+        ],
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "required_tool_versions": {
+          "gate": "1.0.0"
+        },
+        "requires_regression": true,
+        "scope": "function",
+        "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_id": "acceptance-matrix",
+        "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "acceptance": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "candidate_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "claims": {
+          "extra_claims": [],
+          "scope": "function"
+        },
+        "environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "evidence": [
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-1",
+            "methods": [
+              "static_analysis"
+            ],
+            "mode": "static",
+            "regression": false,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          },
+          {
+            "author": "alice",
+            "environment": {
+              "arch": "x86_64",
+              "platform": "linux",
+              "runtime_tier": "emulated_run"
+            },
+            "evidence_id": "ev-2",
+            "methods": [
+              "dynamic_reproduction",
+              "regression_suite"
+            ],
+            "mode": "dynamic",
+            "regression": true,
+            "repeats": 3,
+            "reviewer": "bob",
+            "scope": "function",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "tool_versions": {
+              "gate": "1.0.0"
+            }
+          }
+        ],
+        "evidence_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "independence": {
+          "authors": [
+            "alice"
+          ],
+          "reviewers": [
+            "bob"
+          ],
+          "self_review": false,
+          "shared_source": false
+        },
+        "layout_evidence": {
+          "abi_blocks": [
+            {
+              "arch": "x86_64",
+              "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "function": "main",
+              "size": 16,
+              "va": 4202713
+            }
+          ],
+          "cave": null,
+          "changed_ranges": [
+            {
+              "candidate_offset": 8409,
+              "kind": "write",
+              "original_offset": 8409,
+              "size": 16
+            }
+          ],
+          "patch_plan_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "relocations": [],
+          "replay_ok": true
+        },
+        "methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "model_identity": {
+          "requested": "deepseek-chat",
+          "served": "deepseek-chat",
+          "status": "exact"
+        },
+        "scope": "function",
+        "target": {
+          "abi": "sysv",
+          "arch": "x86_64",
+          "format": "elf",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tree_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "case_id": "positive-patch-plan-replay",
+      "expected_decision": "verified",
+      "expected_mismatches": [],
+      "purpose": "a declared patch plan replays into the candidate layout",
+      "task": {
+        "abi": "sysv",
+        "arch": "x86_64",
+        "evidence_refs": [
+          {
+            "evidence_id": "ev-1",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          {
+            "evidence_id": "ev-2",
+            "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        ],
+        "expected_evidence_manifest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "format": "elf",
+        "model_identity": {
+          "allowed_aliases": [
+            "deepseek-flash"
+          ],
+          "requested": "deepseek-chat"
+        },
+        "patch_plan": {
+          "candidate_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "cave": null,
+          "operations": [
+            {
+              "after_hex": "4489e729f7720939d70f83c5feffff90",
+              "authorization_ref": null,
+              "before_hex": "39f3720c89df29f739d70f83c4feffff",
+              "candidate_offset": 8409,
+              "kind": "write",
+              "original_offset": 8409,
+              "reason": "reviewed_site",
+              "site_va": 4202713,
+              "size": 16
+            }
+          ],
+          "plan_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "relocations": []
+        },
+        "required_environment": {
+          "arch": "x86_64",
+          "platform": "linux",
+          "runtime_tier": "emulated_run"
+        },
+        "required_evidence_modes": [
+          "static",
+          "dynamic"
+        ],
+        "required_methods": [
+          "static_analysis",
+          "dynamic_reproduction",
+          "regression_suite"
+        ],
+        "required_repeats": 3,
+        "required_tool_versions": {
+          "gate": "1.0.0"
+        },
         "requires_regression": true,
         "scope": "function",
         "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",

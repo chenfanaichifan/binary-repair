@@ -515,6 +515,180 @@ def build_cases() -> list[dict[str, Any]]:
         task, acceptance, "negative-am24-benchmark-version-mismatch",
         "stale benchmark version/sample set is rejected", ["AM24"]))
 
+    # --- Phase-8B additive classes AM25-AM28 -----------------------------
+    def _plan_operation() -> dict[str, Any]:
+        return {
+            "kind": "write",
+            "original_offset": 8409,
+            "candidate_offset": 8409,
+            "size": 16,
+            "before_hex": "39f3720c89df29f739d70f83c4feffff",
+            "after_hex": "4489e729f7720939d70f83c5feffff90",
+            "site_va": 4202713,
+            "reason": "reviewed_site",
+            "authorization_ref": None,
+        }
+
+    def _layout_range(size: int = 16) -> dict[str, Any]:
+        return {"original_offset": 8409, "candidate_offset": 8409,
+                "size": size, "kind": "write"}
+
+    def _abi_block() -> dict[str, Any]:
+        return {"function": "main", "va": 4202713, "size": 16,
+                "arch": "x86_64", "evidence_sha256": HEX_A}
+
+    # Positive: patch plan replay and candidate layout agree.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["patch_plan"] = {
+        "plan_sha256": HEX_A,
+        "candidate_sha256": HEX_C,
+        "operations": [_plan_operation()],
+        "cave": None,
+        "relocations": [],
+    }
+    acceptance["candidate_sha256"] = HEX_C
+    acceptance["layout_evidence"] = {
+        "patch_plan_sha256": HEX_A,
+        "replay_ok": True,
+        "changed_ranges": [_layout_range()],
+        "cave": None,
+        "relocations": [],
+        "abi_blocks": [_abi_block()],
+    }
+    cases.append(_case(
+        task, acceptance, "positive-patch-plan-replay",
+        "a declared patch plan replays into the candidate layout", []))
+
+    # Positive: an associated rodata change inside an authorized range.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["authority"] = {
+        "scope_policy": "target_scoped_associated",
+        "authorized_changes": [
+            {"kind": "rodata_message", "file_offset": 538624, "size": 49,
+             "authorization_ref": "auth-fixture-001"},
+        ],
+    }
+    acceptance["associated_changes"] = [
+        {"kind": "rodata_message", "file_offset": 538624, "size": 16,
+         "section": ".rodata",
+         "authorization_ref": "auth-fixture-001"},
+    ]
+    cases.append(_case(
+        task, acceptance, "positive-associated-authorized",
+        "an authorized associated rodata change verifies", []))
+
+    # Positive: executable modification carries derivable ABI evidence.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["requires_abi_evidence"] = True
+    acceptance["abi_blocks"] = [_abi_block()]
+    cases.append(_case(
+        task, acceptance, "positive-abi-derived",
+        "derivable ABI evidence satisfies the ABI requirement", []))
+
+    # Positive: complete oracle metadata for an executed oracle.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    acceptance["oracle_evidence"] = {
+        "manifest_sha256": HEX_A,
+        "runner": "lima-guest",
+        "tier": "emulated_run",
+        "status": "executed",
+        "evidence_sha256": HEX_B,
+        "expected": {"expected_original": "triggers",
+                     "expected_candidate": "rejected"},
+    }
+    cases.append(_case(
+        task, acceptance, "positive-oracle-metadata",
+        "complete executed-oracle metadata verifies", []))
+
+    # Negative AM25: plan exchanged but no candidate layout evidence.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["patch_plan"] = {
+        "plan_sha256": HEX_A,
+        "candidate_sha256": HEX_C,
+        "operations": [_plan_operation()],
+        "cave": None,
+        "relocations": [],
+    }
+    acceptance["candidate_sha256"] = HEX_C
+    cases.append(_case(
+        task, acceptance, "negative-am25-layout-missing",
+        "a patch plan without candidate layout evidence is rejected",
+        ["AM25"]))
+
+    # Negative AM25: declared operation missing from the candidate layout.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["patch_plan"] = {
+        "plan_sha256": HEX_A,
+        "candidate_sha256": HEX_C,
+        "operations": [_plan_operation()],
+        "cave": None,
+        "relocations": [],
+    }
+    acceptance["candidate_sha256"] = HEX_C
+    acceptance["layout_evidence"] = {
+        "patch_plan_sha256": HEX_A,
+        "replay_ok": True,
+        "changed_ranges": [_layout_range(size=8)],
+        "cave": None,
+        "relocations": [],
+        "abi_blocks": [_abi_block()],
+    }
+    cases.append(_case(
+        task, acceptance, "negative-am25-operation-mismatch",
+        "a plan operation missing from the candidate layout is rejected",
+        ["AM25"]))
+
+    # Negative AM26: associated change without authorization metadata.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    acceptance["associated_changes"] = [
+        {"kind": "rodata_message", "file_offset": 538624, "size": 49,
+         "section": ".rodata", "authorization_ref": ""},
+    ]
+    cases.append(_case(
+        task, acceptance, "negative-am26-unauthorized-associated",
+        "an associated change without authorization is rejected",
+        ["AM26"]))
+
+    # Negative AM26: associated change outside the authorized range.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["authority"] = {
+        "scope_policy": "target_scoped_associated",
+        "authorized_changes": [
+            {"kind": "rodata_message", "file_offset": 538624, "size": 16,
+             "authorization_ref": "auth-fixture-001"},
+        ],
+    }
+    acceptance["associated_changes"] = [
+        {"kind": "rodata_message", "file_offset": 538624, "size": 49,
+         "section": ".rodata",
+         "authorization_ref": "auth-fixture-001"},
+    ]
+    cases.append(_case(
+        task, acceptance, "negative-am26-associated-out-of-range",
+        "an associated change outside the authorized range is rejected",
+        ["AM26"]))
+
+    # Negative AM27: executable change without derivable ABI evidence.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    task["requires_abi_evidence"] = True
+    cases.append(_case(
+        task, acceptance, "negative-am27-abi-missing",
+        "executable modification without derivable ABI evidence is rejected",
+        ["AM27"]))
+
+    # Negative AM28: incomplete oracle metadata / not independently executed.
+    task, acceptance = _mutated(lambda task, acceptance: None)
+    acceptance["oracle_evidence"] = {
+        "manifest_sha256": "short",
+        "runner": "",
+        "tier": "unavailable",
+        "status": "not_run",
+        "expected": {},
+    }
+    cases.append(_case(
+        task, acceptance, "negative-am28-oracle-metadata",
+        "incomplete / not executed oracle metadata is rejected", ["AM28"]))
+
     cases.sort(key=lambda case: case["case_id"])
     return cases
 

@@ -1,0 +1,15 @@
+{
+  "not_run": false,
+  "detected": false,
+  "candidate_produced": false,
+  "integrity": null,
+  "deterministic_verified": false,
+  "disposition": "analysis_only",
+  "strategy": "none",
+  "poc_status": null,
+  "runtime_tier": null,
+  "gate_outcome": null,
+  "error": "PoC manifest requests are verified only by the unified evidence-profile gate; no deterministic candidate was produced",
+  "candidate_sha256": null,
+  "patched_sha256": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf"
+}

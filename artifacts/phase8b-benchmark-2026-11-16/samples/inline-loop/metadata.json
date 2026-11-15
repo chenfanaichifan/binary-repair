@@ -1,0 +1,23 @@
+{
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "little",
+  "target_sha256": "c9c9c26b7621c841807764ad214cda92768399b0d46f2bbbbe0c6f6c17aa0acf",
+  "candidate_sha256": null,
+  "target_scope": {
+    "policy": "target_scoped",
+    "name": "vuln_copy",
+    "va": 16955348,
+    "end": 16955392
+  },
+  "allow_whole_image": false,
+  "generator": {
+    "generator_id": "deterministic-repair-any/app.services.binary_pipeline"
+  },
+  "patch_plan": null,
+  "actions": [],
+  "message_actions": [],
+  "abi_block": null,
+  "oracle_manifest": "fixtures/poc/elf-x86_64-loop.json"
+}

@@ -56,7 +56,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 MANIFEST_PATH = "benchmark/phase8-v1/manifest.json"
-ARTIFACT_DIR = ROOT / "artifacts" / "phase8-benchmark-2026-11-16"
+ARTIFACT_DIR = ROOT / "artifacts" / "phase8b-benchmark-2026-11-16"
 ARTIFACT_FILES = ("results.json", "README.md")
 SCHEMA_VERSION = 1
 KIND = "repair_benchmark_results"
@@ -193,6 +193,13 @@ def execute_repair(sample: dict[str, Any]) -> dict[str, Any]:
             "runtime_tier": None,
             "gate_outcome": None,
             "error": f"{type(exc).__name__}: {exc}",
+            "patch_plan": None,
+            "resolved_scope": None,
+            "actions": [],
+            "message_actions": [],
+            "abi_blocks": [],
+            "layout_checks": {},
+            "gate_success": False,
             "_candidate_bytes": None,
         }
     report = outcome.report
@@ -229,6 +236,17 @@ def execute_repair(sample: dict[str, Any]) -> dict[str, Any]:
         vuln_eliminated = None
     runtime = report.runtime if isinstance(report.runtime, dict) else {}
     universal = report.universal if isinstance(report.universal, dict) else {}
+    verification = report.verification if isinstance(report.verification, dict) else {}
+    packet = verification.get("packet") if isinstance(verification.get("packet"), dict) else {}
+    capacity_packet = packet.get("capacity") if isinstance(packet.get("capacity"), dict) else {}
+    message_actions = capacity_packet.get("message_actions") if isinstance(
+        capacity_packet.get("message_actions"), list
+    ) else []
+    plan_checks = {
+        str(check.get("id")): str(check.get("status"))
+        for check in (packet.get("checks") or [])
+        if isinstance(check, dict) and str(check.get("id") or "").startswith("patch.")
+    }
     return {
         "not_run": False,
         "not_run_reason": None,
@@ -246,6 +264,14 @@ def execute_repair(sample: dict[str, Any]) -> dict[str, Any]:
         "runtime_tier": runtime.get("tier") or poc.get("tier"),
         "gate_outcome": gate.get("outcome"),
         "error": report.error,
+        "patch_plan": report.patch_plan,
+        "resolved_scope": universal.get("target_scope"),
+        "actions": [dict(item) for item in (report.actions or [])],
+        "message_actions": message_actions,
+        "abi_blocks": list((report.patch_plan or {}).get("abi_blocks") or []),
+        "layout_checks": plan_checks,
+        "gate_success": bool((verification.get("gate") or {}).get("success")),
+        "verifier_id": None,
         "_candidate_bytes": candidate,
     }
 
@@ -279,7 +305,16 @@ def discover_verifier(mode: str = "none") -> tuple[Callable[..., Any] | None, di
             ),
             "path": None,
         }
-    search = list(VERIFIER_CANDIDATES) if mode == "auto" else [mode]
+    if mode == "auto":
+        # Prefer the in-tree verifier module API (it can receive the patch plan,
+        # resolved scope, ABI block and a real run_poc oracle); the CLI is only
+        # used when it actually supports --plan and executes the oracle.
+        search = ["app/services/independent_verifier.py"] + [
+            candidate for candidate in VERIFIER_CANDIDATES
+            if candidate != "app/services/independent_verifier.py"
+        ]
+    else:
+        search = [mode]
     attempted: list[str] = []
     reasons: list[str] = []
     for relative in search:
@@ -294,11 +329,18 @@ def discover_verifier(mode: str = "none") -> tuple[Callable[..., Any] | None, di
         adapter = None
         entry = None
         if relative.endswith("scripts/verify_repair.py"):
+            cli_source = (ROOT / relative).read_text(encoding="utf-8")
+            if "--plan" not in cli_source or "run_poc" not in cli_source:
+                reasons.append(
+                    f"{relative}: CLI lacks required --plan/run_poc oracle exchange "
+                    "(task-35 interface incomplete)"
+                )
+                continue
             adapter = _verify_repair_cli_adapter()
-            entry = "CLI --json"
+            entry = "CLI --json --plan --poc + run_poc"
         elif callable(getattr(module, "verify_repair", None)):
             adapter = _independent_verifier_adapter(module)
-            entry = "verify_repair keyword API"
+            entry = "verify_repair keyword API (plan/scope/ABI/oracle exchange)"
         if adapter is not None:
             return adapter, {
                 "status": "available",
@@ -331,7 +373,8 @@ def _verify_repair_cli_adapter() -> Callable[..., Any]:
     """Adapter for the gui-docs CLI ``scripts/verify_repair.py --json``."""
 
     def adapter(sample: dict[str, Any], original_path: Path,
-                candidate_path: Path | None) -> dict[str, Any]:
+                candidate_path: Path | None,
+                metadata: dict[str, Any] | None = None) -> dict[str, Any]:
         if candidate_path is None:
             return {
                 "decision": "not_run",
@@ -348,7 +391,7 @@ def _verify_repair_cli_adapter() -> Callable[..., Any]:
             scope["kind"] = "va_range"
             scope["va"] = target.get("va")
             scope["end"] = target.get("end")
-        metadata = {
+        exchange = {**metadata} if isinstance(metadata, dict) else {
             "format": sample.get("format"),
             "arch": sample.get("arch"),
             "bits": sample.get("bits"),
@@ -360,9 +403,14 @@ def _verify_repair_cli_adapter() -> Callable[..., Any]:
                 "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
             },
         }
+        cli_source = (ROOT / "scripts" / "verify_repair.py").read_text(encoding="utf-8")
         with tempfile.TemporaryDirectory(prefix="phase8-verifier-") as tmp:
             metadata_path = Path(tmp) / "metadata.json"
-            metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+            metadata_path.write_text(json.dumps(exchange), encoding="utf-8")
+            plan_path = None
+            if "--plan" in cli_source and isinstance(exchange.get("patch_plan"), dict):
+                plan_path = Path(tmp) / "plan.json"
+                plan_path.write_text(json.dumps(exchange["patch_plan"]), encoding="utf-8")
             command = [
                 sys.executable, str(ROOT / "scripts" / "verify_repair.py"),
                 "--original", str(original_path),
@@ -373,6 +421,8 @@ def _verify_repair_cli_adapter() -> Callable[..., Any]:
             manifest_path = (sample.get("oracle") or {}).get("manifest_path")
             if manifest_path:
                 command += ["--poc", str(ROOT / manifest_path)]
+            if plan_path is not None:
+                command += ["--plan", str(plan_path)]
             try:
                 result = subprocess.run(
                     command, cwd=str(ROOT), capture_output=True, text=True,
@@ -410,7 +460,8 @@ def _independent_verifier_adapter(module: Any) -> Callable[..., Any]:
     """Adapter for the committed ``app.services.independent_verifier`` API."""
 
     def adapter(sample: dict[str, Any], original_path: Path,
-                candidate_path: Path | None) -> dict[str, Any]:
+                candidate_path: Path | None,
+                metadata: dict[str, Any] | None = None) -> dict[str, Any]:
         if candidate_path is None:
             return {
                 "decision": "not_run",
@@ -424,18 +475,21 @@ def _independent_verifier_adapter(module: Any) -> Callable[..., Any]:
             scope["kind"] = "va_range"
             scope["va"] = target.get("va")
             scope["end"] = target.get("end")
-        metadata = {
-            "format": sample.get("format"),
-            "arch": sample.get("arch"),
-            "bits": sample.get("bits"),
-            "endian": sample.get("endian"),
-            "target_sha256": sample.get("sha256"),
-            "target_scope": scope,
-            "allow_whole_image": False,
-            "generator": {
-                "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
-            },
-        }
+        if isinstance(metadata, dict):
+            exchange = {**metadata}
+        else:
+            exchange = {
+                "format": sample.get("format"),
+                "arch": sample.get("arch"),
+                "bits": sample.get("bits"),
+                "endian": sample.get("endian"),
+                "target_sha256": sample.get("sha256"),
+                "target_scope": scope,
+                "allow_whole_image": False,
+                "generator": {
+                    "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+                },
+            }
         oracle = None
         run_poc = None
         manifest_path = (sample.get("oracle") or {}).get("manifest_path")
@@ -448,14 +502,21 @@ def _independent_verifier_adapter(module: Any) -> Callable[..., Any]:
             except Exception:  # noqa: BLE001 - verifier records oracle unavailable
                 run_poc = None
         try:
-            report = module.verify_repair(
-                original=original_path.read_bytes(),
-                candidate=candidate_path.read_bytes(),
-                metadata=metadata,
-                oracle=oracle,
-                generator=metadata["generator"],
-                run_poc=run_poc,
-            )
+            import inspect as _inspect
+
+            parameters = set(_inspect.signature(module.verify_repair).parameters)
+            call_kwargs: dict[str, Any] = {
+                "original": original_path.read_bytes(),
+                "candidate": candidate_path.read_bytes(),
+                "metadata": exchange,
+                "oracle": oracle,
+                "generator": exchange["generator"],
+                "run_poc": run_poc,
+            }
+            for extra in ("patch_plan", "abi_block", "authority", "claimed_actions"):
+                if extra in parameters:
+                    call_kwargs[extra] = exchange.get(extra)
+            report = module.verify_repair(**call_kwargs)
         except Exception as exc:  # noqa: BLE001 - verifier failure is evidence
             return {"decision": "error", "reason": f"{type(exc).__name__}: {exc}"}
         limitations = report.get("limitations") or []
@@ -468,12 +529,131 @@ def _independent_verifier_adapter(module: Any) -> Callable[..., Any]:
     return adapter
 
 
+_CAPACITY_MESSAGE_AUTHORIZATION = "authorization:capacity-message:v1"
+
+
+def _file_offset_for_va(data: bytes, va: int) -> int | None:
+    from app.services.containers import detect_container
+
+    container = detect_container(data)
+    for section in getattr(container, "sections", []) or []:
+        sec_va = getattr(section, "va", None)
+        sec_size = getattr(section, "size", None)
+        sec_offset = getattr(section, "offset", None)
+        if (
+            isinstance(sec_va, int) and isinstance(sec_size, int) and sec_size > 0
+            and isinstance(sec_offset, int) and sec_va <= va < sec_va + sec_size
+        ):
+            return sec_offset + (va - sec_va)
+    return None
+
+
+def build_verifier_metadata(sample: dict[str, Any], raw: dict[str, Any]) -> dict[str, Any]:
+    """Exchange resolved scope, plan, actions, ABI evidence and oracle metadata."""
+    original = (ROOT / sample_binary_path(sample)).read_bytes()
+    scope = raw.get("resolved_scope") if isinstance(raw.get("resolved_scope"), dict) else {}
+    plan = raw.get("patch_plan") if isinstance(raw.get("patch_plan"), dict) else None
+    target_scope: dict[str, Any] = {"policy": "target_scoped"}
+    if scope.get("name"):
+        target_scope["name"] = str(scope["name"])
+    if isinstance(scope.get("va"), int):
+        target_scope["va"] = int(scope["va"])
+    if isinstance(scope.get("end"), int):
+        target_scope["end"] = int(scope["end"])
+    if scope.get("source") == "explicit":
+        target_scope["kind"] = "va_range"
+    abi_block = None
+    abi_blocks = raw.get("abi_blocks") if isinstance(raw.get("abi_blocks"), list) else []
+    if abi_blocks and isinstance(abi_blocks[0], dict):
+        block = abi_blocks[0]
+        va = block.get("va")
+        size = block.get("size")
+        if isinstance(va, int) and isinstance(size, int) and size > 0:
+            offset = _file_offset_for_va(original, va)
+            if offset is not None:
+                abi_block = {
+                    "offset": offset,
+                    "size": size,
+                    "arch": str(block.get("arch") or sample.get("arch") or ""),
+                    "function": str(block.get("function") or "target"),
+                    "abi_id": str(block.get("abi_id") or ""),
+                }
+    authority = None
+    if sample.get("sample_id") == "heap-capacity-x86_64":
+        message_actions = raw.get("message_actions") or []
+        authorized = []
+        for action in message_actions:
+            if not isinstance(action, dict):
+                continue
+            offset = action.get("offset")
+            size = action.get("size")
+            if not isinstance(offset, int) or not isinstance(size, int):
+                continue
+            digest = _sha256_bytes(
+                json.dumps(action, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            )
+            authorized.append({
+                "kind": "rodata_message",
+                "reason": "reviewed capacity message rewrite",
+                "authorization_ref": f"authorization:capacity-message:v1 sha256={digest}",
+                "file_offset": offset,
+                "size": size,
+                "section": ".rodata",
+            })
+        if authorized:
+            authority = {
+                "scope_policy": "target_scoped_associated",
+                "authorized_changes": authorized,
+            }
+    exchange_plan = None
+    if isinstance(plan, dict):
+        exchange_plan = json.loads(json.dumps(plan))
+        oracle = exchange_plan.get("oracle")
+        manifest_path = (sample.get("oracle") or {}).get("manifest_path")
+        if isinstance(oracle, dict) and manifest_path:
+            try:
+                oracle["manifest_sha256"] = _sha256_bytes(
+                    (ROOT / manifest_path).read_bytes()
+                )
+            except OSError:
+                pass
+            oracle.pop("evidence_sha256", None)
+    metadata = {
+        "format": sample.get("format"),
+        "arch": sample.get("arch"),
+        "bits": sample.get("bits"),
+        "endian": sample.get("endian"),
+        "target_sha256": sample.get("sha256"),
+        "candidate_sha256": raw.get("candidate_sha256"),
+        "target_scope": target_scope,
+        "allow_whole_image": False,
+        "generator": {
+            "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+        },
+        "patch_plan": exchange_plan,
+        "actions": raw.get("actions") or [],
+        "message_actions": raw.get("message_actions") or [],
+        "abi_block": abi_block,
+        "oracle_manifest": (sample.get("oracle") or {}).get("manifest_path"),
+    }
+    if authority is not None:
+        metadata["authority"] = authority
+    return metadata
+
+
 def _call_verifier(verifier: Callable[..., Any], sample: dict[str, Any],
-                   candidate_path: Path | None) -> dict[str, Any]:
+                   candidate_path: Path | None,
+                   metadata: dict[str, Any] | None = None) -> dict[str, Any]:
     """Invoke an injected verifier; normalize dict/bool/None results."""
+    import inspect as _inspect
+
     original_path = ROOT / sample_binary_path(sample)
     try:
-        result = verifier(sample, original_path, candidate_path)
+        parameters = len(_inspect.signature(verifier).parameters)
+        if parameters >= 4 and metadata is not None:
+            result = verifier(sample, original_path, candidate_path, metadata)
+        else:
+            result = verifier(sample, original_path, candidate_path)
     except Exception as exc:  # noqa: BLE001 - recorded as verifier failure
         return {"decision": "error", "reason": f"{type(exc).__name__}: {exc}"}
     if result is None:
@@ -499,6 +679,34 @@ def _call_verifier(verifier: Callable[..., Any], sample: dict[str, Any],
 # ---------------------------------------------------------------------------
 # Benchmark execution
 # ---------------------------------------------------------------------------
+
+
+def _plan_sha256(plan: Any) -> str | None:
+    if not isinstance(plan, dict):
+        return None
+    return _sha256_bytes(
+        json.dumps(plan, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    )
+
+
+def _inner_verifier_report(independent: dict[str, Any]) -> dict[str, Any] | None:
+    report = independent.get("report") if isinstance(independent, dict) else None
+    if not isinstance(report, dict):
+        return None
+    inner = report.get("report")
+    if isinstance(inner, dict) and "verifier" in inner:
+        return inner
+    return report if "verifier" in report else None
+
+
+def _verifier_id(independent: dict[str, Any]) -> str | None:
+    report = _inner_verifier_report(independent)
+    if not isinstance(report, dict):
+        return None
+    verifier = report.get("verifier")
+    if isinstance(verifier, dict):
+        return str(verifier.get("verifier_id") or "") or None
+    return None
 
 
 def run_benchmark(
@@ -538,6 +746,11 @@ def run_benchmark(
     results: list[dict[str, Any]] = []
     for sample in samples:
         raw = repair_fn(sample)
+        metadata: dict[str, Any] | None = None
+        try:
+            metadata = build_verifier_metadata(sample, raw)
+        except Exception:  # noqa: BLE001 - metadata is evidence, not a verdict
+            metadata = None
         independent: dict[str, Any]
         if raw.get("not_run"):
             independent = {
@@ -556,11 +769,13 @@ def run_benchmark(
                     handle.write(candidate_bytes)
                     candidate_path = Path(handle.name)
                 try:
-                    independent = _call_verifier(verifier, sample, candidate_path)
+                    independent = _call_verifier(
+                        verifier, sample, candidate_path, metadata
+                    )
                 finally:
                     candidate_path.unlink(missing_ok=True)
             else:
-                independent = _call_verifier(verifier, sample, None)
+                independent = _call_verifier(verifier, sample, None, metadata)
         else:
             independent = {
                 "decision": "not_run",
@@ -600,8 +815,34 @@ def run_benchmark(
             "verifier_reason": independent.get("reason"),
             "verification_disagreement": bool(false_verified),
             "deterministic_claim_withdrawn": False,
+            "patch_plan_sha256": _plan_sha256(raw.get("patch_plan")),
+            "verifier_id": _verifier_id(independent),
+            "oracle_status": raw.get("poc_status") or "not_run",
+            "layout_status": (raw.get("layout_checks") or {}).get("patch.rewrite") or "not_run",
+            "real_verification": independently_verified is True,
             "not_run_reason": raw.get("not_run_reason"),
             "error": raw.get("error"),
+            "abi_blocks": list(raw.get("abi_blocks") or []),
+        }
+        original_bytes = None
+        try:
+            original_bytes = (ROOT / sample_binary_path(sample)).read_bytes()
+        except OSError:
+            original_bytes = None
+        result["_evidence"] = {
+            "original_bytes": original_bytes,
+            "candidate_bytes": raw.get("_candidate_bytes"),
+            "outcome": {
+                key: raw.get(key) for key in (
+                    "not_run", "detected", "candidate_produced", "integrity",
+                    "deterministic_verified", "disposition", "strategy",
+                    "poc_status", "runtime_tier", "gate_outcome", "error",
+                    "candidate_sha256", "patched_sha256",
+                ) if not key.startswith("_")
+            },
+            "metadata": metadata,
+            "plan": metadata.get("patch_plan") if isinstance(metadata, dict) else None,
+            "verifier_report": _inner_verifier_report(independent) or independent.get("report"),
         }
         results.append(result)
     return _aggregate(manifest, results, status, claim_policy)
@@ -716,6 +957,21 @@ def _aggregate(manifest: dict[str, Any], results: list[dict[str, Any]],
                 "verifier; must be 0"
             ),
             "not_run": "repair or verification could not be executed; reason recorded",
+            "patch_plan_sha256": (
+                "sha256 of the exchanged patch plan (canonical JSON) when a "
+                "candidate/plan was produced"
+            ),
+            "verifier_id": "independent verifier identity from its report",
+            "oracle_status": "declared PoC oracle status (pass/fail/not_run/unavailable)",
+            "layout_status": (
+                "pipeline plan-aware patch.rewrite status (passed/failed/not_run); "
+                "stack guard insertions and associated rodata changes are declared "
+                "in the exchanged plan"
+            ),
+            "real_verification": (
+                "true only when the independent verifier decision is verified "
+                "with an executed oracle (never inferred)"
+            ),
         },
         "summary": summary,
         "by_class": by_class,
@@ -730,8 +986,9 @@ def _aggregate(manifest: dict[str, Any], results: list[dict[str, Any]],
             "independently verified.",
             "host-unavailable or raised repair calls are recorded as not_run with "
             "an explicit reason; availability is never fabricated.",
-            "candidates are not persisted in the results artifact; only their "
-            "sha256 identities are recorded.",
+            "candidate bytes, patch plans, exchanged metadata and independent "
+            "verifier reports are persisted per sample under samples/<sample_id>/ "
+            "and covered by SHA256SUMS (evidence only; not executed by the runner).",
         ] + ([
             f"{summary['verification_disagreements']} deterministic verified "
             "claim(s) were withdrawn after independent verification rejected "
@@ -769,7 +1026,7 @@ def render_readme(results: dict[str, Any]) -> str:
     summary = results["summary"]
     verifier = results["independent_verifier"]
     lines: list[str] = [
-        "# Deterministic repair benchmark results (Phase-8A, 2026-11-16)",
+        "# Deterministic repair benchmark results (Phase-8B, 2026-11-16)",
         "",
         "Generated by `scripts/run_repair_benchmark.py` from the committed",
         "ground-truth manifest. The runner uses the **deterministic** repair engine",
@@ -784,7 +1041,11 @@ def render_readme(results: dict[str, Any]) -> str:
         + (f" - {verifier.get('reason')}" if verifier.get("reason") else ""),
         "",
         "Artifact files: `results.json` (per-sample + aggregate), `README.md`",
-        "(this file), `SHA256SUMS` (covers both; never itself).",
+        "(this file), `SHA256SUMS` (covers every listed file; never itself) and",
+        "`samples/<sample_id>/` evidence: `original.bin`, `candidate.bin`,",
+        "`outcome.json`, `metadata.json` (exchanged plan/scope/ABI/oracle),",
+        "`plan.json` (patch plan, when produced) and `verifier-report.json`",
+        "(independent verifier report, when run).",
         "",
         "## Summary",
         "",
@@ -834,8 +1095,8 @@ def render_readme(results: dict[str, Any]) -> str:
         "",
         "## Per-sample results",
         "",
-        "| sample_id | split | detected | candidate | integrity | vuln_eliminated | regression | independently_verified | not_run | false_verified | disposition |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
+        "| sample_id | split | detected | candidate | integrity | vuln_eliminated | regression | independently_verified | false_verified | verifier | plan layout | disposition |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for result in results["results"]:
         lines.append(
@@ -844,7 +1105,8 @@ def render_readme(results: dict[str, Any]) -> str:
             f"{_fmt(result['integrity'])} | {_fmt(result['vuln_eliminated'])} | "
             f"{_fmt(result['regression'])} | "
             f"{_fmt(result['independently_verified'])} | "
-            f"{_fmt(result['not_run'])} | {_fmt(result['false_verified'])} | "
+            f"{_fmt(result['false_verified'])} | "
+            f"{result.get('verifier_decision')} | {result.get('layout_status')} | "
             f"{result['disposition']} |"
         )
     lines += [
@@ -869,26 +1131,80 @@ def render_readme(results: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _public_results(results: dict[str, Any]) -> dict[str, Any]:
+    """Results without private evidence bytes (safe for results.json)."""
+    public = {
+        key: value for key, value in results.items() if not key.startswith("_")
+    }
+    public["results"] = [
+        {key: value for key, value in result.items() if not key.startswith("_")}
+        for result in results.get("results") or []
+    ]
+    return public
+
+
+def _evidence_files(results: dict[str, Any]) -> dict[str, bytes]:
+    """Per-candidate evidence files (relative path -> bytes)."""
+    files: dict[str, bytes] = {}
+    for result in results.get("results") or []:
+        evidence = result.get("_evidence")
+        if not isinstance(evidence, dict):
+            continue
+        sample_id = str(result.get("sample_id") or "sample")
+        base = f"samples/{sample_id}"
+        original = evidence.get("original_bytes")
+        if isinstance(original, (bytes, bytearray)):
+            files[f"{base}/original.bin"] = bytes(original)
+        candidate = evidence.get("candidate_bytes")
+        if isinstance(candidate, (bytes, bytearray)):
+            files[f"{base}/candidate.bin"] = bytes(candidate)
+        for name, payload in (
+            ("outcome.json", evidence.get("outcome")),
+            ("metadata.json", evidence.get("metadata")),
+            ("plan.json", evidence.get("plan")),
+            ("verifier-report.json", evidence.get("verifier_report")),
+        ):
+            if payload is None:
+                continue
+            files[f"{base}/{name}"] = (
+                json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
+            ).encode("utf-8")
+    return files
+
+
 def build_results_artifact(results: dict[str, Any]) -> dict[str, bytes]:
+    public = _public_results(results)
     results_bytes = (
-        json.dumps(results, indent=2, ensure_ascii=False) + "\n"
+        json.dumps(public, indent=2, ensure_ascii=False) + "\n"
     ).encode("utf-8")
     files: dict[str, bytes] = {
         "results.json": results_bytes,
-        "README.md": render_readme(results).encode("utf-8"),
+        "README.md": render_readme(public).encode("utf-8"),
     }
-    files["SHA256SUMS"] = render_sha256sums(files)
     return files
 
 
 def write_results(results: dict[str, Any], out_dir: Path) -> list[dict[str, str]]:
     files = build_results_artifact(results)
+    evidence_files = _evidence_files(results)
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[dict[str, str]] = []
-    for name in (*ARTIFACT_FILES, "SHA256SUMS"):
+    for name, payload in files.items():
         target = out_dir / name
-        target.write_bytes(files[name])
-        written.append({"path": str(target), "sha256": _sha256_bytes(files[name])})
+        target.write_bytes(payload)
+        written.append({"path": str(target), "sha256": _sha256_bytes(payload)})
+    for relative, payload in sorted(evidence_files.items()):
+        target = out_dir / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+        written.append({"path": str(target), "sha256": _sha256_bytes(payload)})
+    sums_lines = [
+        f"{_sha256_bytes(payload)}  {relative}"
+        for relative, payload in sorted({**files, **evidence_files}.items())
+    ]
+    sums = ("\n".join(sums_lines) + "\n").encode("utf-8")
+    (out_dir / "SHA256SUMS").write_bytes(sums)
+    written.append({"path": str(out_dir / "SHA256SUMS"), "sha256": _sha256_bytes(sums)})
     return written
 
 
@@ -914,6 +1230,13 @@ def summarize(results: dict[str, Any]) -> dict[str, Any]:
                 "not_run": result["not_run"],
                 "false_verified": result["false_verified"],
                 "disposition": result["disposition"],
+                "patch_plan_sha256": result.get("patch_plan_sha256"),
+                "verifier_id": result.get("verifier_id"),
+                "oracle_status": result.get("oracle_status"),
+                "layout_status": result.get("layout_status"),
+                "verifier_decision": result.get("verifier_decision"),
+                "real_verification": result.get("real_verification"),
+                "abi_blocks": result.get("abi_blocks"),
             }
             for result in results["results"]
         ],

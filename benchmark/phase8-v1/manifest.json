@@ -33,7 +33,7 @@
   "schema_integration": {
     "status": "validated",
     "schema_path": "contracts/benchmark-sample.schema.json",
-    "schema_sha256": "8c0d95f1f1aa989a36610726e1a37bfc4cb0af8c6bfd2fbc8e5634cc1caede46",
+    "schema_sha256": "a32cc39e22d78d617cbebfd7e7d043d71de36a25eb1a6f2ccbe0ddb2f27a2884",
     "validator": "jsonschema 4.26.0",
     "reason": null,
     "checked_samples": 12,
@@ -792,7 +792,7 @@
       "fixtures/hard-cases/cases.json",
       "contracts/benchmark-sample.schema.json"
     ],
-    "source_digest_sha256": "87123bc2df2db693bfe93ca0871eb5652a41707aa426709b5c5a5db4bc944756"
+    "source_digest_sha256": "98a0156ab7e75a54f50c53b8dc20996e82a85b37c7b3ac8fe1ab76a6d2007d31"
   },
   "limitations": [
     "12 candidate samples; samples with insufficient oracle evidence are declared analysis_only and are never promoted to a verified expectation.",

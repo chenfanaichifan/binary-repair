@@ -1,0 +1,15 @@
+{
+  "not_run": false,
+  "detected": false,
+  "candidate_produced": false,
+  "integrity": null,
+  "deterministic_verified": false,
+  "disposition": "analysis_only",
+  "strategy": "none",
+  "poc_status": null,
+  "runtime_tier": null,
+  "gate_outcome": null,
+  "error": "whole-image repair requires an explicit target or allow_whole_image=True; the default policy produces no candidate and cannot verify one",
+  "candidate_sha256": null,
+  "patched_sha256": "3a5cb2cda02a81f9fde920d0621cd23b091c8cdf684d72f47a49cf6b0f45c789"
+}

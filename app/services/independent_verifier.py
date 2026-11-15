@@ -35,6 +35,8 @@ import json
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
+from app.services import verification_semantics as semantics
+
 SCHEMA_VERSION = 1
 VERIFIER_ID = "independent-verifier/1"
 CHECK_STATUSES = ("passed", "failed", "not_run")
@@ -42,6 +44,7 @@ DECISIONS = ("verified", "rejected", "inconclusive", "not_run")
 CHECK_ORDER = (
     "identity",
     "container",
+    "layout-plan",
     "action-replay",
     "target-scope",
     "abi",
@@ -52,6 +55,7 @@ CHECK_ORDER = (
 CHECK_TITLES = {
     "identity": "Original/candidate identity and candidate change",
     "container": "Container re-parse and metadata agreement",
+    "layout-plan": "Patch-plan replay (layout/cave/associated changes)",
     "action-replay": "Byte-level action replay from raw images",
     "target-scope": "Candidate modifications stay inside the declared target scope",
     "abi": "Candidate instruction-block ABI validation",
@@ -64,7 +68,7 @@ TARGET_FORMATS = ("elf", "macho", "pe")
 TARGET_ARCHES = ("x86_64", "i386", "arm64")
 TARGET_BITS = (32, 64)
 TARGET_ENDIANS = ("little", "big")
-TARGET_POLICIES = ("target_scoped", "whole_image", "analysis_only")
+TARGET_POLICIES = ("target_scoped", "target_scoped_associated", "whole_image", "analysis_only")
 #: Sentinel id used only when the generator did not declare an identity; the
 #: independence check still fails, so this can never produce a verified result.
 UNDECLARED_GENERATOR = "undeclared-generator"
@@ -256,12 +260,19 @@ def _default_detect(data: bytes) -> dict[str, Any]:
             })
     except (TypeError, ValueError):
         sections = []
+    symbols = []
+    try:
+        for va, name in sorted(getattr(container, "symbols", {}).items()):
+            symbols.append({"va": int(va), "name": str(name)})
+    except (TypeError, ValueError, AttributeError):
+        symbols = []
     return {
         "format": fmt,
         "arch": arch,
         "bits": bits,
         "endian": str(getattr(container, "endian", "little") or "little"),
         "sections": sections,
+        "symbols": symbols,
     }
 
 
@@ -286,6 +297,15 @@ def _default_abi_check(code: bytes, arch: str) -> dict[str, Any]:
         "fatal": len(getattr(report, "fatal", []) or []),
         "findings": findings,
     }
+
+
+def _default_run_poc() -> Callable[..., Any] | None:
+    """Lazily return the real external PoC runner (never an AI/provider call)."""
+    try:
+        from app.services.poc_runner import run_poc
+    except Exception:  # pragma: no cover - import failure is environment
+        return None
+    return run_poc
 
 
 def _normalize_oracle_evidence(oracle: Any, *, original: bytes, candidate: bytes,
@@ -692,6 +712,387 @@ def _check_evidence(checks: list[dict[str, Any]], oracle: Any,
             "sources": [oracle_summary.get("source")] if oracle_summary else []}
 
 
+
+def _check_layout_plan(
+    checks: list[dict[str, Any]],
+    original: bytes,
+    candidate: bytes,
+    plan: dict[str, Any] | None,
+    container: dict[str, Any],
+    length_changed: bool,
+) -> dict[str, Any]:
+    """Plan replay check; resized candidates need a plan (no blanket rejection)."""
+    if plan is None:
+        if length_changed:
+            detail = (
+                f"candidate size changed ({len(original)} -> {len(candidate)}); a patch plan "
+                "with declared insert/cave operations is required to replay a layout change"
+            )
+            checks.append(_check("layout-plan", "not_run", detail))
+            return {"present": False, "required": True, "status": "not_run",
+                    "replay": None, "plan_sha256": None, "problems": [detail]}
+        checks.append(_check(
+            "layout-plan", "not_run",
+            "no patch plan supplied; equal-size rewrite path uses raw byte replay",
+            required=False,
+        ))
+        return {"present": False, "required": False, "status": "not_run",
+                "replay": None, "plan_sha256": None, "problems": []}
+    replay = semantics.replay_plan(original, candidate, plan, container)
+    plan_sha = str(replay.get("plan_sha256") or semantics.canonical_plan_sha256(plan))
+    if replay.get("ok"):
+        detail = (
+            f"plan {plan_sha[:16]} replay matches the candidate: operations="
+            f"{replay.get('operations')} changed_ranges={len(replay.get('changed_ranges') or [])} "
+            f"cave={'yes' if replay.get('cave') else 'no'} "
+            f"associated={len(replay.get('associated_changes') or [])}"
+        )
+        checks.append(_check("layout-plan", "passed", detail))
+        status = "passed"
+    else:
+        problems = list(replay.get("problems") or ["patch plan replay failed"])
+        checks.append(_check("layout-plan", "failed", "; ".join(problems[:5])))
+        status = "failed"
+    return {
+        "present": True,
+        "required": True,
+        "status": status,
+        "replay": replay,
+        "plan_sha256": plan_sha,
+        "problems": list(replay.get("problems") or []),
+    }
+
+
+def _check_action_replay_v8b(
+    checks: list[dict[str, Any]],
+    metadata: dict[str, Any],
+    original: bytes,
+    candidate: bytes,
+    claimed_actions: Iterable[Any] | None,
+    plan: dict[str, Any] | None,
+    layout: dict[str, Any],
+) -> dict[str, Any]:
+    """Plan-aware action replay; rewrite-only path stays for equal-size no-plan."""
+    if plan is not None:
+        replay = layout.get("replay") or {}
+        if replay.get("ok"):
+            checks.append(_check(
+                "action-replay", "passed",
+                f"plan replay covers all changed bytes: changed_ranges="
+                f"{len(replay.get('changed_ranges') or [])}",
+            ))
+            return {"actions": [], "claimed_actions": [], "plan_covered": True}
+        problems = list(layout.get("problems") or ["patch plan replay failed"])
+        checks.append(_check("action-replay", "failed", "; ".join(problems[:5])))
+        return {"actions": [], "claimed_actions": [], "plan_covered": True}
+    if len(original) != len(candidate):
+        checks.append(_check(
+            "action-replay", "not_run",
+            "resized candidate without a patch plan cannot be replayed by rewrite-only "
+            "action replay; a patch plan is required",
+        ))
+        return {"actions": [], "claimed_actions": []}
+    return _check_action_replay(checks, metadata, original, candidate, claimed_actions)
+
+
+def _check_target_scope_plan(
+    checks: list[dict[str, Any]],
+    plan: dict[str, Any],
+    replay: dict[str, Any],
+    container: dict[str, Any],
+) -> dict[str, Any]:
+    result = semantics.validate_scope(plan, replay, container)
+    checks.append(_check("target-scope", result["status"], result["detail"]))
+    return {
+        "declared": plan.get("target_scope"),
+        "range": result.get("target_scope"),
+        "validation": result,
+    }
+
+
+def _check_abi_v8b(
+    checks: list[dict[str, Any]],
+    metadata: dict[str, Any],
+    original: bytes,
+    candidate: bytes,
+    abi_check: Callable[[bytes, str], dict[str, Any]],
+    *,
+    plan: dict[str, Any] | None,
+    container: dict[str, Any],
+) -> dict[str, Any]:
+    derivation = semantics.derive_abi_blocks(
+        plan if isinstance(plan, dict) else {}, original, candidate, container, metadata,
+    )
+    status = derivation.get("status")
+    if status == "not_run":
+        detail = "; ".join(derivation.get("limitations") or []) or (
+            "no ABI block can be derived; ABI is unverifiable"
+        )
+        checks.append(_check("abi", "not_run", detail))
+        return {"derivation": derivation, "reports": []}
+    if status == "failed":
+        checks.append(_check(
+            "abi", "failed", "; ".join(derivation.get("problems") or ["ABI derivation failed"]),
+        ))
+        return {"derivation": derivation, "reports": []}
+    reports: list[dict[str, Any]] = []
+    fatal: list[str] = []
+    unsupported = False
+    unavailable: str | None = None
+    for block in derivation.get("blocks") or []:
+        if block.get("block_hex") is not None:
+            try:
+                data = bytes.fromhex(str(block["block_hex"]))
+            except ValueError:
+                fatal.append(f"{block.get('source')}: invalid derived block hex")
+                continue
+        else:
+            offset = block.get("file_offset")
+            size = block.get("size")
+            chunk = _hex_at(candidate, int(offset or 0), int(size or 0))
+            if offset is None or chunk is None:
+                fatal.append(f"{block.get('source')}: derived ABI block is outside the candidate")
+                continue
+            data = bytes.fromhex(chunk)
+        arch = str(block.get("arch") or metadata.get("arch") or "")
+        report = abi_check(data, arch)
+        summary = {
+            "source": block.get("source"),
+            "function": block.get("function"),
+            "va": block.get("va"),
+            "size": block.get("size"),
+            "file_offset": block.get("file_offset"),
+            "block_sha256": block.get("block_sha256"),
+            "arch": arch,
+        }
+        reports.append({"block": summary, "report": report})
+        if not isinstance(report, dict):
+            unavailable = "ABI checker returned no report"
+            continue
+        if report.get("unavailable"):
+            unavailable = str(report["unavailable"])
+            continue
+        codes = {str(item.get("code") or "") for item in report.get("findings") or []}
+        if codes & {"unsupported_arch", "abi_check_not_implemented"}:
+            unsupported = True
+            continue
+        if not report.get("ok") or int(report.get("fatal") or 0) > 0:
+            fatal.append(
+                f"{block.get('source')}@{block.get('va')}: fatal={report.get('fatal')} "
+                f"findings={sorted(codes)[:5]}"
+            )
+    if unavailable is not None:
+        checks.append(_check("abi", "not_run", unavailable))
+    elif unsupported:
+        checks.append(_check(
+            "abi", "not_run",
+            f"ABI checks are not implemented for arch {metadata.get('arch')!r}; "
+            "explicit limitation recorded",
+        ))
+    elif fatal:
+        checks.append(_check("abi", "failed", "ABI report not ok: " + "; ".join(fatal[:4])))
+    else:
+        sources = ",".join(str(block.get("source")) for block in derivation.get("blocks") or [])
+        checks.append(_check(
+            "abi", "passed",
+            f"ABI ok for {len(reports)} derived block(s) sources={sources}",
+        ))
+    return {"derivation": derivation, "reports": reports}
+
+
+def _plan_oracle_problems(
+    plan: dict[str, Any] | None,
+    oracle_summary: dict[str, Any],
+    oracle_input: Any,
+) -> list[str]:
+    """Consistency checks between the plan's declared oracle and executed evidence."""
+    if not isinstance(plan, dict) or not isinstance(plan.get("oracle"), dict):
+        return []
+    declared = plan["oracle"]
+    problems: list[str] = []
+    executed = oracle_summary.get("status") in {"pass", "fail"}
+    if declared.get("status") == "executed" and not executed:
+        problems.append(
+            "plan declares an executed oracle but the independent oracle was not executed"
+        )
+    if executed:
+        if declared.get("runner") and oracle_summary.get("runner") != declared.get("runner"):
+            problems.append("plan oracle.runner does not match the executed runner")
+        if declared.get("tier") and oracle_summary.get("tier") != declared.get("tier"):
+            problems.append("plan oracle.tier does not match the executed oracle tier")
+    declared_manifest = declared.get("manifest_sha256")
+    if isinstance(declared_manifest, str):
+        actual_manifest = None
+        if isinstance(oracle_input, (str, Path)):
+            try:
+                actual_manifest = _sha256(Path(oracle_input).read_bytes())
+            except OSError:
+                actual_manifest = None
+        elif isinstance(oracle_input, dict) and isinstance(oracle_input.get("manifest"), dict):
+            actual_manifest = _sha256(
+                _canonical(oracle_input["manifest"]).encode("ascii")
+            )
+        elif isinstance(oracle_input, dict) and isinstance(oracle_input.get("manifest"), (str, Path)):
+            try:
+                actual_manifest = _sha256(Path(oracle_input["manifest"]).read_bytes())
+            except OSError:
+                actual_manifest = None
+        if actual_manifest is not None and actual_manifest != declared_manifest.lower():
+            problems.append("plan oracle.manifest_sha256 does not match the supplied manifest")
+    declared_evidence = declared.get("evidence_sha256")
+    if isinstance(declared_evidence, str) and executed:
+        payload = {key: value for key, value in oracle_summary.items() if key != "evidence_sha256"}
+        actual_evidence = _sha256(_canonical(payload).encode("ascii"))
+        if actual_evidence != declared_evidence.lower():
+            problems.append("plan oracle.evidence_sha256 does not match the oracle evidence")
+    return problems
+
+
+def _target_scope_for_report(plan: dict[str, Any] | None,
+                             metadata: dict[str, Any]) -> dict[str, Any]:
+    if isinstance(plan, dict) and isinstance(plan.get("target_scope"), dict):
+        raw = plan["target_scope"]
+        policy = str(raw.get("policy") or plan.get("scope_policy") or "")
+        if policy in TARGET_POLICIES:
+            scope: dict[str, Any] = {"policy": policy}
+            if isinstance(raw.get("name"), str) and raw["name"]:
+                scope["name"] = raw["name"]
+            for key in ("va", "end"):
+                value = raw.get(key)
+                if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+                    scope[key] = value
+            return scope
+    return _normalize_target_scope(metadata)
+
+
+def _build_layout_evidence(plan: dict[str, Any] | None,
+                           layout: dict[str, Any]) -> dict[str, Any] | None:
+    replay = layout.get("replay") if isinstance(layout, dict) else None
+    if plan is None or not isinstance(replay, dict):
+        return None
+    ranges = []
+    for item in replay.get("changed_ranges") or []:
+        kind = str(item.get("kind") or "write")
+        if kind not in semantics.REPLAY_KINDS:
+            kind = "write"
+        ranges.append({
+            "original_offset": int(item["original_offset"]),
+            "candidate_offset": item.get("candidate_offset"),
+            "size": int(item["size"]),
+            "kind": kind,
+        })
+    if not ranges:
+        return None
+    cave = replay.get("cave")
+    cave_payload = None
+    if isinstance(cave, dict):
+        cave_payload = {
+            "va": int(cave.get("va") or 0),
+            "size": int(cave.get("size") or 0),
+            "executable": bool(cave.get("executable")),
+            "method": str(cave.get("method") or ""),
+        }
+        if not (cave_payload["size"] > 0 and cave_payload["method"]):
+            cave_payload = None
+    associated = []
+    for item in replay.get("associated_changes") or []:
+        kind = str(item.get("kind") or "")
+        if kind not in semantics.ASSOCIATED_REASONS:
+            continue
+        section = str(item.get("section") or "")
+        auth = str(item.get("authorization_ref") or "")
+        if not section or not auth:
+            continue
+        associated.append({
+            "kind": kind,
+            "offset": int(item.get("offset") or 0),
+            "size": int(item.get("size") or 0),
+            "section": section,
+            "authorization_ref": auth,
+        })
+    abi_blocks = []
+    for block in plan.get("abi_blocks") or []:
+        if not isinstance(block, dict):
+            continue
+        entry = {
+            "function": str(block.get("function") or ""),
+            "va": int(block.get("va") or 0),
+            "size": int(block.get("size") or 0),
+            "arch": str(block.get("arch") or ""),
+        }
+        if not (entry["function"] and entry["size"] > 0 and entry["arch"] in semantics.ABI_ARCHES):
+            continue
+        for key in ("abi_id", "evidence_sha256"):
+            if isinstance(block.get(key), str) and block[key]:
+                entry[key] = block[key]
+        abi_blocks.append(entry)
+    return {
+        "patch_plan_sha256": str(layout.get("plan_sha256") or semantics.canonical_plan_sha256(plan)),
+        "replay_ok": bool(replay.get("ok")),
+        "changed_ranges": ranges,
+        "cave": cave_payload,
+        "associated_changes": associated,
+        "abi_blocks": abi_blocks,
+    }
+
+
+def _build_oracle_evidence(
+    plan: dict[str, Any] | None,
+    oracle_summary: dict[str, Any],
+    oracle_input: Any,
+) -> dict[str, Any] | None:
+    if not oracle_summary:
+        return None
+    status_value = oracle_summary.get("status")
+    status = "executed" if status_value in {"pass", "fail"} else (
+        "unavailable" if status_value == "unavailable" else "not_run"
+    )
+    plan_oracle = plan.get("oracle") if isinstance(plan, dict) and isinstance(plan.get("oracle"), dict) else {}
+    manifest_sha = plan_oracle.get("manifest_sha256") if isinstance(
+        plan_oracle.get("manifest_sha256"), str
+    ) else None
+    if manifest_sha is None and oracle_input is not None:
+        manifest = oracle_input
+        if isinstance(oracle_input, dict) and "manifest" in oracle_input:
+            manifest = oracle_input["manifest"]
+        if isinstance(manifest, (str, Path)):
+            try:
+                manifest_sha = _sha256(Path(manifest).read_bytes())
+            except OSError:
+                manifest_sha = None
+        elif isinstance(manifest, dict):
+            manifest_sha = _sha256(_canonical(manifest).encode("ascii"))
+    if manifest_sha is None:
+        return None
+    runner = oracle_summary.get("runner") or plan_oracle.get("runner") or (
+        "none" if status != "executed" else "unknown"
+    )
+    tier = oracle_summary.get("tier") or plan_oracle.get("tier") or (
+        "unavailable" if status != "executed" else None
+    )
+    if tier not in semantics.ORACLE_TIERS:
+        tier = "unavailable"
+    payload: dict[str, Any] = {
+        "manifest_sha256": str(manifest_sha),
+        "runner": str(runner) if runner else "none",
+        "tier": tier,
+        "status": status,
+    }
+    evidence_sha = plan_oracle.get("evidence_sha256")
+    if status == "executed":
+        payload["evidence_sha256"] = _sha256(
+            _canonical({key: value for key, value in oracle_summary.items()
+                        if key != "evidence_sha256"}).encode("ascii")
+        )
+    elif isinstance(evidence_sha, str):
+        payload["evidence_sha256"] = evidence_sha
+    for key in ("expected",):
+        value = plan_oracle.get(key) if isinstance(plan_oracle, dict) else None
+        if isinstance(value, dict):
+            payload["expected"] = value
+    return payload
+
+
 def verify_repair(
     *,
     original: bytes,
@@ -700,11 +1101,17 @@ def verify_repair(
     oracle: Any = None,
     generator: dict[str, Any] | None = None,
     claimed_actions: Iterable[Any] | None = None,
+    patch_plan: dict[str, Any] | None = None,
     detect: Callable[[bytes], dict[str, Any]] | None = None,
     abi_check: Callable[[bytes, str], dict[str, Any]] | None = None,
     run_poc: Callable[..., Any] | None = None,
 ) -> dict[str, Any]:
-    """Independently verify one repair candidate; never trusts a generator verdict."""
+    """Independently verify one repair candidate; never trusts a generator verdict.
+
+    ``patch_plan`` is optional; when supplied (or resized candidates are seen) the
+    verifier replays the declared layout, validates scope/cave/associated changes,
+    derives ABI evidence and executes the independent oracle itself.
+    """
     if not isinstance(metadata, dict):
         metadata = {}
     if not isinstance(original, (bytes, bytearray)) or not isinstance(candidate, (bytes, bytearray)):
@@ -713,14 +1120,34 @@ def verify_repair(
     candidate_bytes = bytes(candidate)
     detect_fn = detect or _default_detect
     abi_fn = abi_check or _default_abi_check
+    plan = patch_plan if isinstance(patch_plan, dict) else None
+    if plan is None and isinstance(metadata.get("patch_plan"), dict):
+        plan = metadata["patch_plan"]
 
     checks: list[dict[str, Any]] = []
     identity = _check_identity(checks, metadata, original_bytes, candidate_bytes)
     container = _check_container(checks, metadata, original_bytes, candidate_bytes, detect_fn)
-    replay = _check_action_replay(checks, metadata, original_bytes, candidate_bytes, claimed_actions)
-    scope = _check_target_scope(checks, metadata, replay["actions"],
-                                container.get("candidate") or {}, replay["claimed_actions"])
-    abi = _check_abi(checks, metadata, candidate_bytes, abi_fn)
+    container_view = container.get("candidate") if isinstance(container, dict) else {}
+    container_view = container_view if isinstance(container_view, dict) else {}
+    length_changed = len(original_bytes) != len(candidate_bytes)
+    layout = _check_layout_plan(
+        checks, original_bytes, candidate_bytes, plan, container_view, length_changed,
+    )
+    replay = layout.get("replay") if isinstance(layout.get("replay"), dict) else None
+    action_replay = _check_action_replay_v8b(
+        checks, metadata, original_bytes, candidate_bytes, claimed_actions, plan, layout,
+    )
+    if plan is not None and replay is not None:
+        scope = _check_target_scope_plan(checks, plan, replay, container_view)
+    else:
+        scope = _check_target_scope(
+            checks, metadata, action_replay["actions"], container_view,
+            action_replay["claimed_actions"],
+        )
+    abi = _check_abi_v8b(
+        checks, metadata, original_bytes, candidate_bytes, abi_fn,
+        plan=plan, container=container_view,
+    )
 
     raw_generator = generator if generator is not None else metadata.get("generator")
     sanitized_generator, generator_problems = _sanitize_generator(raw_generator)
@@ -728,13 +1155,25 @@ def verify_repair(
     raw_generator_verdict_present = bool(
         isinstance(raw_generator, dict) and (set(raw_generator) & verdict_keys)
     )
+    runner = run_poc if run_poc is not None else _default_run_poc()
     oracle_evidence, oracle_source, oracle_error = _normalize_oracle_evidence(
-        oracle, original=original_bytes, candidate=candidate_bytes, run_poc=run_poc,
+        oracle, original=original_bytes, candidate=candidate_bytes, run_poc=runner,
     )
     oracle_summary = _check_oracle(
         checks, oracle_evidence, oracle_source, oracle_error, metadata,
         identity["original_sha256"], identity["candidate_sha256"],
     )
+    plan_oracle_problems = _plan_oracle_problems(plan, oracle_summary, oracle)
+    if plan_oracle_problems:
+        oracle_check = next(check for check in checks if check["id"] == "runtime-oracle")
+        detail = oracle_check["detail"]
+        oracle_check["status"] = "failed"
+        oracle_check["detail"] = (
+            (detail + "; " if detail else "") + "; ".join(plan_oracle_problems[:4])
+        )
+        oracle_summary = {**oracle_summary, "status": "fail",
+                          "limitations": list(oracle_summary.get("limitations") or [])
+                          + plan_oracle_problems}
     runtime_status = next(
         check["status"] for check in checks if check["id"] == "runtime-oracle"
     )
@@ -748,16 +1187,26 @@ def verify_repair(
         raw_generator_verdict_present=raw_generator_verdict_present,
     )
 
+    target_scope_report = _target_scope_for_report(plan, metadata)
+    policy = str(target_scope_report.get("policy") or "analysis_only")
     failed = [check for check in checks if check["required"] and check["status"] == "failed"]
     not_run = [check for check in checks if check["required"] and check["status"] == "not_run"]
     decision = "rejected" if failed else ("not_run" if not_run else "verified")
     if oracle_summary.get("status") == "inconclusive" and not failed:
         decision = "inconclusive"
-
     independent_passed = [
         check for check in checks if check.get("independent") is True and check["status"] == "passed"
     ]
     if decision == "verified" and not (independence["ok"] and independent_passed):
+        decision = "rejected"
+    layout_evidence = _build_layout_evidence(plan, layout)
+    if decision == "verified" and layout_evidence is not None:
+        layout_check = next(check for check in checks if check["id"] == "layout-plan")
+        if not layout_evidence["replay_ok"] or layout_check["status"] != "passed":
+            decision = "rejected"
+    if policy == "whole_image" and decision == "verified":
+        decision = "rejected"
+    if policy in {"whole_image", "analysis_only"} and decision == "verified":
         decision = "rejected"
 
     limitations: list[str] = []
@@ -766,12 +1215,19 @@ def verify_repair(
             "fail-closed: only an all-required-passed result with a passing independent "
             "oracle can be verified"
         )
+    if policy == "whole_image":
+        limitations.append("whole_image scope cannot be verified in Phase-8B")
     limitations.extend(str(item) for item in oracle_summary.get("limitations") or [])
     for check in checks:
         if check["status"] == "not_run":
             limitations.append(f"{check['id']}: {check['detail']}")
     if decision == "rejected" and not failed and not independence["ok"]:
         limitations.append("independence requirement was not satisfied")
+    if isinstance(replay, dict):
+        limitations.extend(str(item) for item in replay.get("limitations") or [])
+        if not replay.get("ok"):
+            limitations.extend(str(item) for item in replay.get("problems") or [])
+    limitations.extend(str(item) for item in abi.get("derivation", {}).get("limitations") or [])
     limitations = sorted({item for item in limitations if isinstance(item, str) and item})
 
     container_candidate = container.get("candidate") if isinstance(container, dict) else {}
@@ -779,21 +1235,28 @@ def verify_repair(
     target = {
         **target_fields,
         "target_sha256": identity["original_sha256"],
-        "target_scope": _normalize_target_scope(metadata),
+        "target_scope": target_scope_report,
     }
     evidence_list: list[Any] = [
         {"kind": "candidate", "original_sha256": identity["original_sha256"],
          "candidate_sha256": identity["candidate_sha256"]},
         {"kind": "container", "original": container.get("original"),
          "candidate": container.get("candidate")},
-        {"kind": "actions", "actions": replay["actions"],
-         "claimed_actions": replay["claimed_actions"]},
+        {"kind": "actions", "actions": action_replay["actions"],
+         "claimed_actions": action_replay["claimed_actions"]},
         {"kind": "target-scope", "declared": scope.get("declared"),
          "range": scope.get("range")},
-        {"kind": "abi", "report": abi},
+        {"kind": "abi", "derivation": abi.get("derivation"),
+         "reports": abi.get("reports")},
         {"kind": "oracle", **oracle_summary},
         {"kind": "evidence-completeness", **evidence},
     ]
+    if isinstance(replay, dict):
+        evidence_list.append({"kind": "layout-plan", "plan_sha256": layout.get("plan_sha256"),
+                              "replay_ok": replay.get("ok"),
+                              "changed_ranges": replay.get("changed_ranges"),
+                              "cave": replay.get("cave"),
+                              "associated_changes": replay.get("associated_changes")})
     if isinstance(oracle, (str, Path)):
         evidence_list.append(str(oracle))
 
@@ -808,6 +1271,15 @@ def verify_repair(
         "evidence": evidence_list,
         "limitations": limitations,
     }
+    if plan is not None:
+        report["patch_plan_sha256"] = str(
+            layout.get("plan_sha256") or semantics.canonical_plan_sha256(plan)
+        )
+    oracle_evidence_payload = _build_oracle_evidence(plan, oracle_summary, oracle)
+    if oracle_evidence_payload is not None:
+        report["oracle_evidence"] = oracle_evidence_payload
+    if layout_evidence is not None:
+        report["layout_evidence"] = layout_evidence
     report["report_sha256"] = _sha256(_canonical(report).encode("ascii"))
     return report
 
@@ -884,6 +1356,30 @@ def validate_verification_report(report: dict[str, Any]) -> dict[str, Any]:
                     and item.get("status") != "passed"):
                 violations.append("verified requires every required check to pass")
                 break
+        if ((report.get("target") or {}).get("target_scope") or {}).get("policy") == "whole_image":
+            violations.append("verified is impossible for whole_image scope in Phase-8B")
+    layout_evidence = report.get("layout_evidence")
+    if isinstance(layout_evidence, dict):
+        if (isinstance(report.get("patch_plan_sha256"), str)
+                and report["patch_plan_sha256"] != layout_evidence.get("patch_plan_sha256")):
+            violations.append(
+                "patch_plan_sha256 must equal layout_evidence.patch_plan_sha256"
+            )
+        if report.get("decision") == "verified":
+            if layout_evidence.get("replay_ok") is not True:
+                violations.append("verified with layout_evidence requires replay_ok=true")
+            layout_check = [
+                item for item in report.get("checks") or []
+                if isinstance(item, dict) and item.get("id") == "layout-plan"
+            ]
+            if not layout_check or layout_check[0].get("status") != "passed":
+                violations.append(
+                    "verified with layout_evidence requires a passed layout-plan check"
+                )
+    oracle_evidence = report.get("oracle_evidence")
+    if (report.get("decision") == "verified" and isinstance(oracle_evidence, dict)
+            and oracle_evidence.get("status") != "executed"):
+        violations.append("verified with oracle_evidence requires an executed oracle")
     return {"ok": not violations, "method": method, "violations": violations}
 
 

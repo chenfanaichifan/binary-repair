@@ -3,8 +3,8 @@
 Deterministic matrix for the A01-A08 acceptance dimensions and the
 AM01-AM24 mismatch model (`app/services/acceptance_models.py`).
 
-- cases: **52** (positive 9, negative 43)
-- AM classes covered by a negative case: 24/24 (AM01, AM02, AM03, AM04, AM05, AM06, AM07, AM08, AM09, AM10, AM11, AM12, AM13, AM14, AM15, AM16, AM17, AM18, AM19, AM20, AM21, AM22, AM23, AM24)
+- cases: **62** (positive 13, negative 49)
+- AM classes covered by a negative case: 28/28 (AM01, AM02, AM03, AM04, AM05, AM06, AM07, AM08, AM09, AM10, AM11, AM12, AM13, AM14, AM15, AM16, AM17, AM18, AM19, AM20, AM21, AM22, AM23, AM24, AM25, AM26, AM27, AM28)
 - recall: **1.0**, precision: **1.0**, ok: **True**
 
 ## Cases
@@ -35,10 +35,20 @@ AM01-AM24 mismatch model (`app/services/acceptance_models.py`).
 | negative-am22-semantic-scope-partial | partial semantic coverage is rejected | AM22 | AM22 | rejected | yes |
 | negative-am23-oracle-self-report | generator self-report cannot satisfy the oracle requirement | AM23 | AM23 | rejected | yes |
 | negative-am24-benchmark-version-mismatch | stale benchmark version/sample set is rejected | AM24 | AM24 | rejected | yes |
+| negative-am25-layout-missing | a patch plan without candidate layout evidence is rejected | AM25 | AM25 | rejected | yes |
+| negative-am25-operation-mismatch | a plan operation missing from the candidate layout is rejected | AM25 | AM25 | rejected | yes |
+| negative-am26-associated-out-of-range | an associated change outside the authorized range is rejected | AM26 | AM26 | rejected | yes |
+| negative-am26-unauthorized-associated | an associated change without authorization is rejected | AM26 | AM26 | rejected | yes |
+| negative-am27-abi-missing | executable modification without derivable ABI evidence is rejected | AM27 | AM27 | rejected | yes |
+| negative-am28-oracle-metadata | incomplete / not executed oracle metadata is rejected | AM28 | AM28 | rejected | yes |
+| positive-abi-derived | derivable ABI evidence satisfies the ABI requirement | - | - | verified | yes |
+| positive-associated-authorized | an authorized associated rodata change verifies | - | - | verified | yes |
 | positive-benchmark-version | matching benchmark version and sample-set commitment verifies | - | - | verified | yes |
 | positive-declared-alias | a declared model alias is verified | - | - | verified | yes |
 | positive-exact-identity | complete exact-identity acceptance verifies | - | - | verified | yes |
 | positive-independent-oracle | an independent external oracle satisfies the oracle requirement | - | - | verified | yes |
+| positive-oracle-metadata | complete executed-oracle metadata verifies | - | - | verified | yes |
+| positive-patch-plan-replay | a declared patch plan replays into the candidate layout | - | - | verified | yes |
 | positive-repair-scope-no-range | target-scoped repair without a VA range verifies | - | - | verified | yes |
 | positive-repair-scope-target | target-scoped repair actions inside the declared range verify | - | - | verified | yes |
 | positive-semantic-scope-complete | full semantic-scope coverage verifies | - | - | verified | yes |

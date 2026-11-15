@@ -63,13 +63,14 @@ ACCEPTANCE_DIMENSIONS: tuple[dict[str, Any], ...] = (
         "id": "A02", "title": "scope (vulnerability/function/module/whole_program)",
         "task_fields": ("scope",),
         "acceptance_fields": ("scope", "claims.scope"),
-        "mismatch_ids": ("AM05", "AM07", "AM19", "AM21", "AM22"),
+        "mismatch_ids": ("AM05", "AM07", "AM19", "AM21", "AM22", "AM25",
+                          "AM26"),
     },
     {
         "id": "A03", "title": "methods and evidence modes",
         "task_fields": ("required_methods", "required_evidence_modes"),
         "acceptance_fields": ("methods", "evidence[].methods", "evidence[].mode"),
-        "mismatch_ids": ("AM06", "AM13", "AM22"),
+        "mismatch_ids": ("AM06", "AM13", "AM22", "AM27"),
     },
     {
         "id": "A04", "title": "environment",
@@ -87,7 +88,7 @@ ACCEPTANCE_DIMENSIONS: tuple[dict[str, Any], ...] = (
         "id": "A06", "title": "evidence integrity (refs/hashes)",
         "task_fields": ("evidence_refs",),
         "acceptance_fields": ("evidence",),
-        "mismatch_ids": ("AM08", "AM15", "AM20", "AM23"),
+        "mismatch_ids": ("AM08", "AM15", "AM20", "AM23", "AM28"),
     },
     {
         "id": "A07", "title": "regression and statistics",
@@ -158,6 +159,18 @@ MISMATCH_RULES: tuple[dict[str, Any], ...] = (
     {"id": "AM24", "code": "benchmark_version_mismatch",
      "severity": "high",
      "required_actions": ("reject_benchmark_version_mismatch",)},
+    {"id": "AM25", "code": "candidate_layout_mismatch",
+     "severity": "critical",
+     "required_actions": ("reject_candidate_layout_mismatch",)},
+    {"id": "AM26", "code": "unauthorized_associated_change",
+     "severity": "critical",
+     "required_actions": ("reject_unauthorized_associated_change",)},
+    {"id": "AM27", "code": "abi_evidence_incomplete",
+     "severity": "high",
+     "required_actions": ("collect_derived_abi_evidence",)},
+    {"id": "AM28", "code": "oracle_metadata_incomplete",
+     "severity": "high",
+     "required_actions": ("collect_oracle_metadata",)},
 )
 
 MISMATCH_BY_ID = {rule["id"]: rule for rule in MISMATCH_RULES}
@@ -599,6 +612,217 @@ class AcceptanceModelMatcher:
                     flag("AM24",
                          f"{label} benchmark sample set does not match the "
                          "task commitment")
+
+        # A13 candidate layout (plan/candidate consistency) ----------------
+        plan = _as_dict(task.get("patch_plan"))
+        layout = _as_dict(acceptance.get("layout_evidence")) or _as_dict(
+            acceptance.get("candidate_layout"))
+        if plan:
+            plan_sha = _text(plan.get("plan_sha256")
+                             or plan.get("patch_plan_sha256"))
+            layout_sha = _text(layout.get("patch_plan_sha256")
+                               or layout.get("plan_sha256"))
+            if not layout:
+                flag("AM25", "a patch plan was exchanged but no candidate "
+                             "layout evidence is present")
+            else:
+                if plan_sha and layout_sha and plan_sha != layout_sha:
+                    flag("AM25",
+                         f"candidate layout plan sha {layout_sha} != plan "
+                         f"{plan_sha}")
+                plan_candidate_sha = _text(plan.get("candidate_sha256"))
+                acceptance_candidate_sha = _text(
+                    acceptance.get("candidate_sha256"))
+                if (plan_candidate_sha and acceptance_candidate_sha
+                        and plan_candidate_sha != acceptance_candidate_sha):
+                    flag("AM25",
+                         "candidate sha does not match the declared plan")
+                if layout.get("replay_ok") is not True:
+                    flag("AM25",
+                         "candidate layout replay is not declared successful")
+                ranges = [_as_dict(item) for item in _as_list(
+                    layout.get("changed_ranges"))]
+                for operation in _as_list(plan.get("operations")):
+                    operation = _as_dict(operation)
+                    reason = _text(operation.get("reason"))
+                    expected_kind = (
+                        "associated"
+                        if reason in {"rodata_message", "header_update",
+                                      "relocation"}
+                        else _text(operation.get("kind"))
+                    )
+                    offset = operation.get("original_offset")
+                    size = operation.get("size")
+                    covered = any(
+                        item.get("kind") == expected_kind
+                        and item.get("original_offset") == offset
+                        and item.get("size") == size
+                        for item in ranges
+                    )
+                    if not covered:
+                        flag("AM25",
+                             "plan operation "
+                             f"(kind={expected_kind}, offset={offset}, "
+                             f"size={size}) is missing from the candidate "
+                             "layout ranges")
+                plan_cave = _as_dict(plan.get("cave"))
+                if plan_cave:
+                    layout_cave = _as_dict(layout.get("cave"))
+                    if not layout_cave:
+                        flag("AM25",
+                             "plan declares a cave but the layout evidence "
+                             "does not")
+                    elif (layout_cave.get("va") != plan_cave.get("va")
+                          or layout_cave.get("size") != plan_cave.get("size")):
+                        flag("AM25",
+                             "layout cave does not match the plan cave")
+                plan_relocations = [_as_dict(item) for item in _as_list(
+                    plan.get("relocations"))]
+                if plan_relocations:
+                    layout_relocations = [_as_dict(item) for item in _as_list(
+                        layout.get("relocations"))]
+                    layout_offsets = {
+                        (item.get("offset"), item.get("size"))
+                        for item in layout_relocations
+                    }
+                    for relocation in plan_relocations:
+                        if (relocation.get("offset"),
+                                relocation.get("size")) not in layout_offsets:
+                            flag("AM25",
+                                 "plan relocation is missing from the "
+                                 "candidate layout evidence")
+
+        # A14 authorized associated changes --------------------------------
+        associated = [
+            _as_dict(item) for item in _as_list(
+                acceptance.get("associated_changes")
+                or layout.get("associated_changes")
+            )
+        ]
+        if acceptance.get("associated_changes_authorized") is False:
+            flag("AM26", "associated changes are explicitly unauthorized")
+        if associated:
+            authority = _as_dict(task.get("authority")) or _as_dict(
+                acceptance.get("authority"))
+            authorized = [
+                _as_dict(item) for item in _as_list(
+                    authority.get("authorized_changes")
+                    or task.get("authorized_changes")
+                    or acceptance.get("authorized_changes")
+                )
+            ]
+            for change in associated:
+                if not _text(change.get("authorization_ref")):
+                    flag("AM26",
+                         "associated change has no authorization_ref")
+                    continue
+                if not authorized:
+                    flag("AM26",
+                         "associated change is declared without any authority "
+                         "record")
+                    continue
+                kind = _text(change.get("kind"))
+                change_offset = change.get("file_offset")
+                change_size = change.get("size")
+                change_va = change.get("va")
+                change_end = change.get("end")
+                matched = False
+                for allowed in authorized:
+                    if _text(allowed.get("kind")) != kind:
+                        continue
+                    if (isinstance(change_offset, int)
+                            and isinstance(change_size, int)
+                            and isinstance(allowed.get("file_offset"), int)
+                            and isinstance(allowed.get("size"), int)):
+                        allowed_start = allowed["file_offset"]
+                        allowed_stop = allowed_start + allowed["size"]
+                        if (change_offset >= allowed_start
+                                and change_offset + change_size
+                                <= allowed_stop):
+                            matched = True
+                            break
+                    if (isinstance(change_va, int)
+                            and isinstance(change_end, int)
+                            and isinstance(allowed.get("va"), int)
+                            and isinstance(allowed.get("end"), int)):
+                        if (change_va >= allowed["va"]
+                                and change_end <= allowed["end"]):
+                            matched = True
+                            break
+                if not matched:
+                    flag("AM26",
+                         f"associated change kind={kind!r} at "
+                         f"offset={change_offset}/va={change_va} is outside "
+                         "the authorized ranges")
+
+        # A15 derived ABI evidence -----------------------------------------
+        executable_changes = [
+            item for item in _as_list(layout.get("changed_ranges"))
+            if _as_dict(item).get("kind") in {"write", "insert", "replace"}
+        ]
+        requires_abi = bool(
+            task.get("requires_abi_evidence")
+            or acceptance.get("abi_required")
+            or executable_changes
+        )
+        if requires_abi:
+            abi_blocks = [
+                _as_dict(item) for item in _as_list(
+                    acceptance.get("abi_blocks")
+                    or layout.get("abi_blocks")
+                )
+            ]
+            abi_evidence = _as_dict(acceptance.get("abi_evidence"))
+            if not abi_blocks and not abi_evidence:
+                flag("AM27",
+                     "executable modification has no derivable ABI evidence")
+            for block in abi_blocks:
+                if (not _text(block.get("function"))
+                        or not isinstance(block.get("va"), int)
+                        or not isinstance(block.get("size"), int)
+                        or _text(block.get("arch")) not in
+                        {"x86_64", "i386", "arm64"}):
+                    flag("AM27",
+                         "ABI evidence block is not independently derivable")
+            if abi_evidence:
+                if abi_evidence.get("derived") is False:
+                    flag("AM27",
+                         "ABI evidence is declared as not independently "
+                         "derived")
+                if (not _text(abi_evidence.get("arch"))
+                        or not isinstance(abi_evidence.get("va"), int)):
+                    flag("AM27",
+                         "ABI evidence is missing arch/va derivation facts")
+
+        # A16 oracle metadata / independent execution ----------------------
+        oracle_evidence = _as_dict(acceptance.get("oracle_evidence"))
+        if oracle_evidence:
+            runner = _text(oracle_evidence.get("runner"))
+            tier = _text(oracle_evidence.get("tier"))
+            manifest_sha = _text(oracle_evidence.get("manifest_sha256"))
+            status = _text(oracle_evidence.get("status"))
+            evidence_sha = _text(oracle_evidence.get("evidence_sha256"))
+            expected = _as_dict(oracle_evidence.get("expected"))
+            if not runner:
+                flag("AM28", "oracle_evidence has no runner")
+            if tier not in {"native_run", "emulated_run", "static_only"}:
+                flag("AM28",
+                     f"oracle_evidence tier {tier!r} is not a runnable tier")
+            if len(manifest_sha) != 64 or any(
+                    char not in "0123456789abcdef" for char in manifest_sha):
+                flag("AM28",
+                     "oracle_evidence manifest_sha256 is missing/invalid")
+            if status != "executed":
+                flag("AM28",
+                     "oracle was not independently executed "
+                     f"(status={status or 'missing'!r})")
+            if not evidence_sha:
+                flag("AM28",
+                     "executed oracle has no evidence_sha256")
+            for field in ("expected_original", "expected_candidate"):
+                if expected.get(field) in (None, ""):
+                    flag("AM28",
+                         f"oracle_evidence is missing expected.{field}")
 
         detected = sorted(set(mismatches))
         verified = not detected

@@ -1,0 +1,23 @@
+{
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "little",
+  "target_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+  "candidate_sha256": null,
+  "target_scope": {
+    "policy": "target_scoped",
+    "name": "nonconst_bad",
+    "va": 16960576,
+    "end": 16960688
+  },
+  "allow_whole_image": false,
+  "generator": {
+    "generator_id": "deterministic-repair-any/app.services.binary_pipeline"
+  },
+  "patch_plan": null,
+  "actions": [],
+  "message_actions": [],
+  "abi_block": null,
+  "oracle_manifest": "fixtures/poc/hard-nonconst.json"
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "plan_id": "plan-fixture-001",
+  "generator_id": "deterministic-repair-any/1",
+  "original_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "candidate_id": "cand-fixture-001",
+  "target_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "candidate_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "strategy": "capacity",
+  "scope_policy": "target_scoped_associated",
+  "target_scope": {
+    "policy": "target_scoped_associated",
+    "va": 4202713,
+    "end": 4202729
+  },
+  "operations": [
+    {
+      "kind": "delete",
+      "original_offset": 8409,
+      "candidate_offset": 8409,
+      "size": 16,
+      "before_hex": "39f3720c89df29f739d70f83c4feffff",
+      "after_hex": "4489e729f7720939d70f83c5feffff90",
+      "site_va": 4202713,
+      "reason": "reviewed_site",
+      "authorization_ref": null
+    },
+    {
+      "kind": "write",
+      "original_offset": 538624,
+      "candidate_offset": 538624,
+      "size": 16,
+      "before_hex": "41414141414141414141414141414141",
+      "after_hex": "42424242424242424242424242424242",
+      "reason": "rodata_message",
+      "authorization_ref": "auth-fixture-rodata-001"
+    }
+  ],
+  "cave": null,
+  "relocations": [],
+  "abi_blocks": [
+    {
+      "function": "main",
+      "va": 4202713,
+      "size": 16,
+      "arch": "x86_64",
+      "abi_id": "sysv-amd64",
+      "evidence_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+  ],
+  "oracle": {
+    "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "runner": "lima-guest",
+    "tier": "emulated_run",
+    "status": "executed",
+    "evidence_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  }
+}

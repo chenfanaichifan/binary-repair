@@ -1,0 +1,23 @@
+{
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "little",
+  "target_sha256": "d0e5a2a4ed1e06e8bb494fbc0010da815a89b109092e1649bc1fe75adbc6cb0b",
+  "candidate_sha256": null,
+  "target_scope": {
+    "policy": "target_scoped",
+    "name": "heap_bad",
+    "va": 16955952,
+    "end": 16956464
+  },
+  "allow_whole_image": false,
+  "generator": {
+    "generator_id": "deterministic-repair-any/app.services.binary_pipeline"
+  },
+  "patch_plan": null,
+  "actions": [],
+  "message_actions": [],
+  "abi_block": null,
+  "oracle_manifest": "fixtures/poc/heap-canary.json"
+}

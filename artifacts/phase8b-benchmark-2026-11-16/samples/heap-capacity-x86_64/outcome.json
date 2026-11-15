@@ -1,0 +1,15 @@
+{
+  "not_run": false,
+  "detected": true,
+  "candidate_produced": true,
+  "integrity": true,
+  "deterministic_verified": true,
+  "disposition": "verified_patch",
+  "strategy": "capacity",
+  "poc_status": "pass",
+  "runtime_tier": "emulated_run",
+  "gate_outcome": "success_within_scope",
+  "error": null,
+  "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+  "patched_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2"
+}

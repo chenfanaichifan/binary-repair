@@ -50,6 +50,7 @@ SCHEMA_NAMES: tuple[str, ...] = (
     "vulnerability-finding",
     "root-cause",
     "patch-candidate",
+    "patch-plan",
 )
 CONTRACTS_DIRNAME = "contracts"
 FIXTURES_DIRNAME = "artifacts/contract-fixtures-2026-11-16"
@@ -434,6 +435,51 @@ def _verification_semantics(instance: Mapping[str, Any]) -> list[str]:
         if required_failed:
             violations.append(
                 "verification: verified forbids failed/not_run required checks")
+    layout = instance.get("layout_evidence")
+    if decision == "verified" and isinstance(layout, Mapping):
+        if layout.get("replay_ok") is not True:
+            violations.append(
+                "verification: verified with layout evidence requires replay_ok=true")
+        layout_passed = [
+            check for check in checks
+            if isinstance(check, Mapping)
+            and str(check.get("id")) == "layout-plan"
+            and check.get("status") == "passed"
+        ]
+        if not layout_passed:
+            violations.append(
+                "verification: verified with layout evidence requires a passed "
+                "layout-plan check")
+        oracle_passed = [
+            check for check in checks
+            if isinstance(check, Mapping)
+            and "oracle" in str(check.get("id"))
+            and check.get("status") == "passed"
+            and check.get("independent") is True
+        ]
+        if not oracle_passed:
+            violations.append(
+                "verification: verified with layout evidence requires a passed "
+                "independent oracle check")
+        for change in layout.get("associated_changes") or []:
+            if isinstance(change, Mapping) and not str(
+                    change.get("authorization_ref") or "").strip():
+                violations.append(
+                    "verification: associated changes require authorization_ref")
+    oracle = instance.get("oracle_evidence")
+    if isinstance(oracle, Mapping):
+        status = oracle.get("status")
+        if status == "executed":
+            if oracle.get("tier") == "unavailable":
+                violations.append(
+                    "verification: executed oracle cannot use tier=unavailable")
+            if not oracle.get("evidence_sha256"):
+                violations.append(
+                    "verification: executed oracle requires evidence_sha256")
+        if status in {"not_run", "unavailable"} and decision == "verified":
+            violations.append(
+                "verification: verified decision cannot use a not_run/unavailable "
+                "oracle")
     return violations
 
 
@@ -441,6 +487,34 @@ def _benchmark_sample_semantics(instance: Mapping[str, Any]) -> list[str]:
     violations: list[str] = []
     if instance.get("hidden_available") is not False:
         violations.append("benchmark-sample: hidden_available must be false")
+    authority = instance.get("authority")
+    if isinstance(authority, Mapping):
+        policy = authority.get("scope_policy")
+        changes = authority.get("authorized_changes") or []
+        if policy == "target_scoped_associated" and not changes:
+            violations.append(
+                "benchmark-sample: target_scoped_associated authority requires "
+                "at least one authorized change")
+        for change in changes:
+            if not isinstance(change, Mapping):
+                continue
+            if not str(change.get("authorization_ref") or "").strip():
+                violations.append(
+                    "benchmark-sample: authorized change requires authorization_ref")
+            has_offset = (
+                isinstance(change.get("file_offset"), int)
+                and isinstance(change.get("size"), int)
+                and change["size"] >= 1
+            )
+            has_range = (
+                isinstance(change.get("va"), int)
+                and isinstance(change.get("end"), int)
+                and change["end"] > change["va"]
+            )
+            if not (has_offset or has_range):
+                violations.append(
+                    "benchmark-sample: authorized change requires a file_offset+size "
+                    "or va+end locator")
     oracle = instance.get("oracle")
     kinds = oracle.get("kinds") if isinstance(oracle, Mapping) else None
     expected_scope = instance.get("expected_scope")
@@ -537,6 +611,74 @@ def _patch_candidate_semantics(instance: Mapping[str, Any]) -> list[str]:
     return violations
 
 
+def _patch_plan_semantics(instance: Mapping[str, Any]) -> list[str]:
+    violations: list[str] = []
+    scope_policy = instance.get("scope_policy")
+    target_scope = instance.get("target_scope")
+    target_scope = target_scope if isinstance(target_scope, Mapping) else {}
+    if target_scope.get("policy") != scope_policy:
+        violations.append(
+            "patch-plan: scope_policy and target_scope.policy must match")
+    va = target_scope.get("va")
+    end = target_scope.get("end")
+    cave = instance.get("cave")
+    associated_reasons = {"rodata_message", "header_update", "relocation"}
+    for index, operation in enumerate(instance.get("operations") or []):
+        if not isinstance(operation, Mapping):
+            continue
+        kind = operation.get("kind")
+        size = operation.get("size")
+        before = operation.get("before_hex") or ""
+        after = operation.get("after_hex") or ""
+        if kind in {"insert", "replace"} and not isinstance(
+                operation.get("candidate_offset"), int):
+            violations.append(
+                f"patch-plan: operations[{index}] {kind} requires candidate_offset")
+        if isinstance(size, int) and size >= 1:
+            if len(after) != size * 2:
+                violations.append(
+                    f"patch-plan: operations[{index}].after_hex length must "
+                    f"equal size*2")
+            if kind in {"write", "replace"} and len(before) != size * 2:
+                violations.append(
+                    f"patch-plan: operations[{index}].before_hex length must "
+                    f"equal size*2")
+            if kind == "insert" and before:
+                violations.append(
+                    f"patch-plan: operations[{index}] insert must have empty "
+                    "before_hex")
+        reason = operation.get("reason")
+        if reason in associated_reasons and not str(
+                operation.get("authorization_ref") or "").strip():
+            violations.append(
+                f"patch-plan: operations[{index}] associated change requires "
+                "authorization_ref")
+        if scope_policy in {"target_scoped", "target_scoped_associated"}:
+            if not (isinstance(va, int) and isinstance(end, int) and end > va):
+                violations.append(
+                    "patch-plan: target_scoped scope requires a va/end range")
+            site = operation.get("site_va")
+            if reason not in associated_reasons:
+                if not isinstance(site, int):
+                    violations.append(
+                        f"patch-plan: operations[{index}] non-associated "
+                        "operation requires site_va")
+                elif isinstance(va, int) and isinstance(end, int) and not (
+                        va <= site < end):
+                    violations.append(
+                        f"patch-plan: operations[{index}] site_va outside the "
+                        "declared target range")
+        if kind == "insert" or reason == "guard_cave":
+            if not isinstance(cave, Mapping):
+                violations.append(
+                    "patch-plan: cave/insertion requires a cave declaration")
+            elif cave.get("executable") is not True:
+                violations.append(
+                    "patch-plan: cave required by guard_cave/insert must be "
+                    "executable")
+    return violations
+
+
 CONTRACT_SEMANTICS = {
     "acceptance": _acceptance_semantics,
     "repair": _repair_semantics,
@@ -550,6 +692,7 @@ CONTRACT_SEMANTICS = {
     "vulnerability-finding": lambda instance: [],
     "root-cause": _root_cause_semantics,
     "patch-candidate": _patch_candidate_semantics,
+    "patch-plan": _patch_plan_semantics,
 }
 
 

@@ -4,11 +4,14 @@
 Usage::
 
     python scripts/verify_repair.py --original PATH --candidate PATH \
-        --metadata PATH [--poc PATH] [--json]
+        --metadata PATH [--poc PATH] [--plan PATH] [--json]
     python scripts/verify_repair.py --selftest [--json]
 
 The verifier re-derives everything from raw bytes and an independent oracle; it
-never reads a generator verdict.  Exit codes:
+never reads a generator verdict.  ``--plan`` exchanges the patch plan (layout,
+cave, associated changes); when it is supplied the verifier replays the plan
+and requires candidate equality.  ``--poc`` is always executed through
+``app.services.poc_runner.run_poc``.  Exit codes:
 
 * ``0`` verified (or a passing self-test);
 * ``1`` rejected/inconclusive, or a tamper/self-test failure;
@@ -65,8 +68,13 @@ def _selftest_stubs(oracle_status: str = "pass", abi_ok: bool = True) -> dict[st
             "arch": "x86_64",
             "bits": 64,
             "endian": "little",
-            "sections": [{"name": ".text", "va": 0x401000, "size": 256,
-                          "offset": 0, "executable": True}],
+            "sections": [
+                {"name": ".text", "va": 0x401000, "size": 256,
+                 "offset": 0, "executable": True},
+                {"name": ".rodata", "va": 0x402000, "size": 128,
+                 "offset": 256, "executable": False},
+            ],
+            "symbols": [{"va": 0x401000, "name": "vuln_fn"}],
         }
 
     def abi_check(code: bytes, arch: str) -> dict[str, Any]:
@@ -117,6 +125,101 @@ def _selftest_metadata(original: bytes, candidate: bytes, *,
     return metadata
 
 
+
+def _redirect_bytes(site_va: int, cave_va: int) -> bytes:
+    import struct
+
+    rel = cave_va - (site_va + 5)
+    return b"\xe9" + struct.pack("<i", rel)
+
+
+def _selftest_plan(original: bytes, candidate: bytes, *, scope_policy: str = "target_scoped",
+                   associated: bool = False, plan_tamper: bool = False,
+                   oracle_runner: str = "native", cave: dict[str, Any] | None = None,
+                   operations: list[dict[str, Any]] | None = None,
+                   abi_blocks: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    import hashlib
+
+    def sha(data: bytes) -> str:
+        return hashlib.sha256(data).hexdigest()
+
+    scope = {"policy": scope_policy, "name": "vuln_fn", "va": 0x401000, "end": 0x401100}
+    if operations is None:
+        site_va = 0x401020
+        after = _redirect_bytes(site_va, 0x500000)
+        operations = [{
+            "kind": "write", "original_offset": 32, "candidate_offset": None, "size": 5,
+            "before_hex": original[32:37].hex(), "after_hex": after.hex(),
+            "site_va": site_va, "reason": "reviewed_site", "authorization_ref": None,
+        }]
+        if associated:
+            operations.append({
+                "kind": "write", "original_offset": 260, "candidate_offset": None, "size": 8,
+                "before_hex": original[260:268].hex(),
+                "after_hex": bytes((byte ^ 0xFF) for byte in original[260:268]).hex(),
+                "site_va": None, "reason": "rodata_message",
+                "authorization_ref": "selftest:rodata-message",
+            })
+    if plan_tamper:
+        operations = [dict(operations[0])]
+        operations[0]["after_hex"] = "90" + operations[0]["after_hex"][2:]
+    if abi_blocks is None:
+        abi_blocks = [{
+            "function": "vuln_fn", "va": 0x401000, "size": 64, "arch": "x86_64",
+            "evidence_sha256": sha(candidate[0:64]),
+        }]
+    plan = {
+        "schema_version": 1,
+        "candidate_id": "cand-selftest-layout",
+        "target_sha256": sha(original),
+        "candidate_sha256": sha(candidate),
+        "strategy": "guard_cave" if cave else "reviewed_site",
+        "scope_policy": scope_policy,
+        "target_scope": scope,
+        "operations": operations,
+        "cave": cave,
+        "relocations": [],
+        "abi_blocks": abi_blocks,
+        "oracle": {
+            "manifest_sha256": hashlib.sha256(
+                json.dumps({"format": "elf", "arch": "x86_64"}, sort_keys=True,
+                           separators=(",", ":")).encode("ascii")
+            ).hexdigest(),
+            "runner": oracle_runner,
+            "tier": "native_run" if oracle_runner == "native" else "emulated_run",
+            "status": "executed",
+        },
+        "limitations": [],
+    }
+    return plan
+
+
+def _selftest_resized_case() -> tuple[bytes, bytes, dict[str, Any]]:
+    fixtures = _selftest_fixtures()
+    original = fixtures["original"]
+    site_va = 0x401020
+    after = _redirect_bytes(site_va, 0x500000)
+    candidate = bytearray(original)
+    candidate[32:37] = after
+    appended = b"\x00" * 16 + b"\x31\xc0\xc3"
+    candidate.extend(appended)
+    candidate = bytes(candidate)
+    plan = _selftest_plan(
+        original, candidate,
+        cave={"va": 0x500000, "size": 3, "executable": True, "method": "selftest"},
+    )
+    # guard_cave insertion must replay the appended bytes exactly.
+    plan["operations"].append({
+        "kind": "insert", "original_offset": len(original),
+        "candidate_offset": len(original), "size": len(appended),
+        "before_hex": "", "after_hex": appended.hex(),
+        "site_va": site_va, "reason": "guard_cave", "authorization_ref": None,
+    })
+    # The reviewed_site write is 5 bytes in this plan.
+    plan["operations"][0]["size"] = 5
+    return original, candidate, plan
+
+
 def run_selftest() -> dict[str, Any]:
     """Hermetic fail-closed self-test; returns a structured report."""
     fixtures = _selftest_fixtures()
@@ -130,17 +233,23 @@ def run_selftest() -> dict[str, Any]:
                  metadata: dict[str, Any], *,
                  oracle: Any = {"manifest": {"format": "elf", "arch": "x86_64"}},
                  claimed_actions: Any = None, stubs: dict[str, Any] | None = None,
-                 generator: dict[str, Any] | None = None) -> dict[str, Any]:
+                 generator: dict[str, Any] | None = None,
+                 patch_plan: dict[str, Any] | None = None,
+                 case_original: bytes | None = None,
+                 case_candidate: bytes | None = None) -> dict[str, Any]:
         nonlocal schema_method
         active = stubs or _selftest_stubs()
+        use_original = case_original if case_original is not None else original
+        use_candidate = case_candidate if case_candidate is not None else candidate
         try:
             report = verifier.verify_repair(
-                original=original,
-                candidate=candidate,
+                original=use_original,
+                candidate=use_candidate,
                 metadata=metadata,
                 oracle=oracle,
                 generator=generator,
                 claimed_actions=claimed_actions if claimed_actions is not None else actions,
+                patch_plan=patch_plan,
                 detect=active["detect"],
                 abi_check=active["abi_check"],
                 run_poc=active["run_poc"],
@@ -212,6 +321,89 @@ def run_selftest() -> dict[str, Any]:
     run_case("oracle-failure", "rejected", 1, base_metadata,
              stubs=_selftest_stubs(oracle_status="fail"))
 
+    # 11. resized guard candidate with a valid plan replays and verifies.
+    resized_original, resized_candidate, resized_plan = _selftest_resized_case()
+    run_case("valid-resized-plan", "verified", 0,
+             _selftest_metadata(resized_original, resized_candidate),
+             patch_plan=resized_plan,
+             case_original=resized_original, case_candidate=resized_candidate)
+
+    # 12. resized candidate without a plan -> explicit not_run (no blanket reject).
+    run_case("resized-without-plan", "not_run", 2,
+             _selftest_metadata(resized_original, resized_candidate),
+             case_original=resized_original, case_candidate=resized_candidate)
+
+    # 13. plan tamper (after_hex) -> rejected.
+    run_case("plan-tamper", "rejected", 1,
+             _selftest_metadata(resized_original, resized_candidate),
+             patch_plan={**resized_plan, "operations": [
+                 {**resized_plan["operations"][0],
+                  "after_hex": "90" + resized_plan["operations"][0]["after_hex"][2:]},
+                 resized_plan["operations"][1],
+             ]},
+             case_original=resized_original, case_candidate=resized_candidate)
+
+    # 14. target_scoped_associated plan with an authorized .rodata message change.
+    associated_candidate = bytearray(original)
+    associated_candidate[32:40] = b"\x90" * 8
+    associated_candidate[260:268] = bytes((byte ^ 0xFF) for byte in original[260:268])
+    associated_candidate = bytes(associated_candidate)
+    associated_plan = _selftest_plan(
+        original, associated_candidate, scope_policy="target_scoped_associated",
+        associated=True, operations=[
+            {"kind": "write", "original_offset": 32, "candidate_offset": None, "size": 8,
+             "before_hex": original[32:40].hex(),
+             "after_hex": associated_candidate[32:40].hex(),
+             "site_va": 0x401020, "reason": "reviewed_site", "authorization_ref": None},
+            {"kind": "write", "original_offset": 260, "candidate_offset": None, "size": 8,
+             "before_hex": original[260:268].hex(),
+             "after_hex": associated_candidate[260:268].hex(),
+             "site_va": None, "reason": "rodata_message",
+             "authorization_ref": "selftest:rodata-message"},
+        ])
+    run_case("associated-rodata-plan", "verified", 0,
+             _selftest_metadata(original, associated_candidate),
+             patch_plan=associated_plan,
+             case_candidate=associated_candidate,
+             claimed_actions=[{"offset": 32, "size": 8,
+                               "before_hex": original[32:40].hex(),
+                               "after_hex": associated_candidate[32:40].hex()}])
+
+    # 15. associated change without authorization_ref -> rejected.
+    unauthorized_plan = {**associated_plan, "operations": [
+        associated_plan["operations"][0],
+        {**associated_plan["operations"][1], "authorization_ref": None},
+    ]}
+    run_case("associated-without-authorization", "rejected", 1,
+             _selftest_metadata(original, associated_candidate),
+             patch_plan=unauthorized_plan,
+             case_candidate=associated_candidate)
+
+    # 16. whole_image plan can never be verified in Phase-8B -> rejected.
+    whole_plan = {**associated_plan, "scope_policy": "whole_image",
+                  "target_scope": {"policy": "whole_image", "name": "image"}}
+    run_case("whole-image-plan", "rejected", 1,
+             _selftest_metadata(original, associated_candidate),
+             patch_plan=whole_plan,
+             case_candidate=associated_candidate)
+
+    # 17. plan oracle/runnner mismatch with the executed oracle -> rejected.
+    oracle_mismatch_plan = {**associated_plan, "oracle": {
+        "manifest_sha256": associated_plan["oracle"]["manifest_sha256"],
+        "runner": "different-runner", "tier": "static_only", "status": "executed",
+    }}
+    run_case("plan-oracle-mismatch", "rejected", 1,
+             _selftest_metadata(original, associated_candidate),
+             patch_plan=oracle_mismatch_plan,
+             case_candidate=associated_candidate)
+
+    # 18. plan with fatal ABI evidence -> rejected.
+    run_case("plan-abi-failure", "rejected", 1,
+             _selftest_metadata(original, associated_candidate),
+             patch_plan=associated_plan,
+             case_candidate=associated_candidate,
+             stubs=_selftest_stubs(abi_ok=False))
+
     # 11. determinism: same input -> identical report sha (and schema valid)
     first = verifier.verify_repair(
         original=original, candidate=candidate, metadata=_selftest_metadata(original, candidate),
@@ -258,7 +450,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--candidate", type=Path, help="candidate binary path")
     parser.add_argument("--metadata", type=Path, help="target/generator metadata JSON path")
     parser.add_argument("--poc", type=Path, default=None,
-                        help="external PoC manifest path (independent oracle)")
+                        help="external PoC manifest path (independent oracle; executed)")
+    parser.add_argument("--plan", type=Path, default=None,
+                        help="patch plan JSON path (layout/cave/associated replay)")
     parser.add_argument("--selftest", action="store_true",
                         help="run the hermetic fail-closed self-test and exit")
     parser.add_argument("--json", action="store_true", help="print JSON")
@@ -297,7 +491,12 @@ def main(argv: list[str] | None = None) -> int:
         original = args.original.read_bytes()
         candidate = args.candidate.read_bytes()
         metadata = json.loads(args.metadata.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        patch_plan = None
+        if args.plan is not None:
+            patch_plan = json.loads(args.plan.read_text(encoding="utf-8"))
+            if not isinstance(patch_plan, dict):
+                raise ValueError("--plan must contain a JSON object")
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         message = f"{type(exc).__name__}: {exc}"
         if args.json:
             print(json.dumps({"ok": False, "error": message}))
@@ -315,6 +514,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         report = verifier.verify_repair(
             original=original, candidate=candidate, metadata=metadata, oracle=oracle,
+            patch_plan=patch_plan,
         )
     except verifier.UnsupportedVerificationTarget as exc:
         if args.json:

@@ -48,8 +48,8 @@ def test_registry_dimensions_and_mismatch_classes_are_complete() -> None:
                              "A08"]
     assert len(set(dimension_ids)) == len(dimension_ids) == 8
     mismatch_ids = [rule["id"] for rule in MISMATCH_RULES]
-    assert mismatch_ids == [f"AM{index:02d}" for index in range(1, 25)]
-    assert len(set(mismatch_ids)) == len(mismatch_ids) == 24
+    assert mismatch_ids == [f"AM{index:02d}" for index in range(1, 29)]
+    assert len(set(mismatch_ids)) == len(mismatch_ids) == 28
     mapped = {mismatch_id for dim in ACCEPTANCE_DIMENSIONS
               for mismatch_id in dim["mismatch_ids"]}
     assert mapped == set(MISMATCH_IDS)
@@ -64,7 +64,7 @@ def test_registry_dimensions_and_mismatch_classes_are_complete() -> None:
 
 def test_matrix_has_40_plus_cases_and_covers_every_am_class(
         cases: list[dict]) -> None:
-    assert len(cases) >= 52
+    assert len(cases) >= 60
     assert len({case["case_id"] for case in cases}) == len(cases)
     covered = {mismatch_id for case in cases
                for mismatch_id in case["expected_mismatches"]}
@@ -213,10 +213,10 @@ def test_cli_json_matrix_report() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
-    assert payload["case_count"] >= 52
+    assert payload["case_count"] >= 60
     assert payload["recall"] == 1.0
     assert payload["precision"] == 1.0
-    assert len(payload["covered_am_classes"]) == 24
+    assert len(payload["covered_am_classes"]) == 28
     assert set(payload["mismatch_classes"]) == set(MISMATCH_IDS)
 
 
@@ -353,6 +353,111 @@ def test_am21_am24_positive_cases_verify() -> None:
                                      "requires_independent_oracle",
                                      "benchmark"))]
     assert len(positives) >= 5
+    for case in positives:
+        result = AcceptanceModelMatcher.match(case["task"],
+                                              case["acceptance"])
+        assert result["verified"] is True, (case["case_id"], result)
+
+
+# ---------------------------------------------------------------------------
+# Phase-8B additive classes AM25-AM28
+# ---------------------------------------------------------------------------
+
+def _phase8b_case(case_id: str) -> dict:
+    case = next(case for case in audit.build_cases()
+                if case["case_id"] == case_id)
+    result = AcceptanceModelMatcher.match(case["task"], case["acceptance"])
+    assert result["mismatches"] == case["expected_mismatches"], (
+        case_id, result["mismatches"])
+    return result
+
+
+def test_am25_candidate_layout_mismatch_rejected() -> None:
+    result = _phase8b_case("negative-am25-layout-missing")
+    assert result["verified"] is False
+    assert "reject_candidate_layout_mismatch" in result["required_actions"]
+    operation = _phase8b_case("negative-am25-operation-mismatch")
+    assert "AM25" in operation["mismatches"]
+
+
+def test_am25_layout_cave_and_relocation_consistency() -> None:
+    task, acceptance = audit._mutated(lambda task, acceptance: None)
+    task["patch_plan"] = {
+        "plan_sha256": "a" * 64,
+        "candidate_sha256": "c" * 64,
+        "operations": [{
+            "kind": "insert",
+            "original_offset": 8409,
+            "candidate_offset": 4915238,
+            "size": 16,
+            "before_hex": "",
+            "after_hex": "90" * 16,
+            "site_va": 16956099,
+            "reason": "guard_cave",
+            "authorization_ref": None,
+        }],
+        "cave": {"va": 4915200, "size": 64, "executable": True,
+                 "method": "append"},
+        "relocations": [],
+    }
+    acceptance["candidate_sha256"] = "c" * 64
+    acceptance["layout_evidence"] = {
+        "patch_plan_sha256": "a" * 64,
+        "replay_ok": True,
+        "changed_ranges": [{"original_offset": 8409,
+                            "candidate_offset": 4915238,
+                            "size": 16, "kind": "insert"}],
+        "cave": {"va": 4915200, "size": 64, "executable": True,
+                 "method": "append"},
+        "relocations": [],
+        "abi_blocks": [{"function": "main", "va": 16956084, "size": 16,
+                        "arch": "x86_64"}],
+    }
+    result = AcceptanceModelMatcher.match(task, acceptance)
+    assert result["verified"] is True, result
+
+
+def test_am26_associated_change_authorization() -> None:
+    result = _phase8b_case("negative-am26-unauthorized-associated")
+    assert "reject_unauthorized_associated_change" in result["required_actions"]
+    out_of_range = _phase8b_case("negative-am26-associated-out-of-range")
+    assert "AM26" in out_of_range["mismatches"]
+
+
+def test_am27_abi_evidence_requirement() -> None:
+    result = _phase8b_case("negative-am27-abi-missing")
+    assert "collect_derived_abi_evidence" in result["required_actions"]
+    task, acceptance = audit._mutated(lambda task, acceptance: None)
+    task["requires_abi_evidence"] = True
+    acceptance["abi_blocks"] = [{"function": "main", "va": 4202713,
+                                 "size": 16, "arch": "x86_64"}]
+    assert AcceptanceModelMatcher.match(task, acceptance)["verified"] is True
+
+
+def test_am28_oracle_metadata_requirement() -> None:
+    result = _phase8b_case("negative-am28-oracle-metadata")
+    assert "collect_oracle_metadata" in result["required_actions"]
+    task, acceptance = audit._mutated(lambda task, acceptance: None)
+    acceptance["oracle_evidence"] = {
+        "manifest_sha256": "a" * 64,
+        "runner": "lima-guest",
+        "tier": "emulated_run",
+        "status": "executed",
+        "evidence_sha256": "b" * 64,
+        "expected": {"expected_original": "triggers",
+                     "expected_candidate": "rejected"},
+    }
+    assert AcceptanceModelMatcher.match(task, acceptance)["verified"] is True
+
+
+def test_am25_am28_phase8b_positive_cases_verify() -> None:
+    positives = [case for case in audit.build_cases()
+                 if not case["expected_mismatches"]
+                 and any(key in case["task"] or key in case["acceptance"]
+                         for key in ("patch_plan", "authority",
+                                     "requires_abi_evidence",
+                                     "oracle_evidence", "abi_blocks"))]
+    assert len(positives) >= 4
     for case in positives:
         result = AcceptanceModelMatcher.match(case["task"],
                                               case["acceptance"])
