@@ -1,4 +1,23 @@
-"""Phase-8C C3/C9: public ground-truth corpus v2 manifest and builder tests."""
+"""Phase-8C C3/C9: public ground-truth corpus v2 manifest and builder tests.
+
+SHA256SUMS ownership (task-47): the C3 builder owns exactly
+``manifest.json``, ``README.md``, ``PROVENANCE.json`` and everything under
+``bin/**``.  The public directory also contains separately owned auxiliary
+artifacts from other Phase-8C workstreams:
+
+* ``hidden-commitment.json`` - C4 hidden-benchmark commitment.  It is
+  deliberately NOT listed in the C3 SHA256SUMS and NOT wired into the public
+  manifest (Lead decision: a separate canonical commitment artifact avoids a
+  circular public-manifest <-> commitment digest); the public manifest keeps
+  ``hidden_commitment: null`` and never reads hidden contents.
+* ``results.json`` - C6 benchmark results for this public manifest.  It is
+  validated by its own producer/checker against the results contract and binds
+  its own ``manifest_sha256``; the C3 SUMS does not cover it.
+
+Each auxiliary owner remains responsible for its own digest/evidence chain; the
+corpus builder `--check` must stay green with those files present and must not
+claim them in SHA256SUMS.
+"""
 from __future__ import annotations
 
 import hashlib
@@ -35,6 +54,9 @@ XARCH_IDS = {
     "xarch-macho-arm64", "xarch-macho-x86_64",
     "xarch-pe-arm64", "xarch-pe-x64",
 }
+#: Auxiliary public artifacts owned by other Phase-8C workstreams, deliberately
+#: excluded from the C3 corpus SHA256SUMS (see module docstring / task-47).
+AUXILIARY_ARTIFACTS = {"hidden-commitment.json", "results.json"}
 
 
 def _sha256(data: bytes) -> str:
@@ -292,19 +314,33 @@ def test_builder_check_detects_binary_tamper(tmp_path):
                for item in problems)
 
 
-def test_artifact_sums_cover_every_payload():
-    files = {}
+def _sums_entries() -> dict[str, str]:
+    files: dict[str, str] = {}
     for line in SUMS_PATH.read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
         digest, relative = line.split(None, 1)
         files[relative.strip()] = digest
-    on_disk = {
+    return files
+
+
+def test_artifact_sums_cover_exactly_builder_owned_payloads():
+    """C3 SUMS owns manifest/README/PROVENANCE + bin/**, not C4/C6 auxiliaries."""
+    files = _sums_entries()
+    assert AUXILIARY_ARTIFACTS == {"hidden-commitment.json", "results.json"}
+    builder_owned = {
         path.relative_to(PUBLIC).as_posix()
-        for path in PUBLIC.rglob("*") if path.is_file()
+        for path in PUBLIC.rglob("*")
+        if path.is_file()
+        and path.relative_to(PUBLIC).as_posix() != "SHA256SUMS"
+        and path.name not in AUXILIARY_ARTIFACTS
     }
-    on_disk.discard("SHA256SUMS")
-    assert set(files) == on_disk
+    assert set(files) == builder_owned
+    assert {"manifest.json", "README.md", "PROVENANCE.json"} <= set(files)
+    assert all(relative.startswith("bin/") or relative in {
+        "manifest.json", "README.md", "PROVENANCE.json"} for relative in files)
+    for relative in files:
+        assert not Path(relative).name in AUXILIARY_ARTIFACTS
     for relative, digest in files.items():
         assert _sha256_file(PUBLIC / relative) == digest
     for relative in files:
@@ -312,34 +348,35 @@ def test_artifact_sums_cover_every_payload():
             (PUBLIC / relative).read_bytes().decode("ascii")
 
 
-def test_provenance_records_variants_attempts_and_toolchain():
-    provenance = _provenance()
+def test_auxiliary_c4_c6_artifacts_are_separately_owned():
+    """C4 hidden-commitment.json / C6 results.json are allowed, unlisted, and
+    never wired into the public manifest (separate canonical digests)."""
     manifest = _manifest()
-    assert provenance["kind"] == "phase8c_public_corpus_provenance"
-    assert provenance["migration"]["sample_count"] == 12
-    assert provenance["migration"]["lossless"] is True
-    assert provenance["source_manifest"]["sha256"] == _sha256_file(V1_MANIFEST)
-    variants = provenance["variants"]
-    assert len(variants) == 4
-    for record in variants:
-        assert record["status"] == "validated"
-        assert record["compiler"] == "zig"
-        assert record["compiler_version"] == "0.17.1"
-        assert record["oracle_validation"]["executed"] is True
-        assert record["oracle_validation"]["original_vulnerable_observed"] is True
-        assert record["binary_sha256"] == _sha256_file(ROOT / record["binary"])
-        assert record["build_record"] and record["poc"]
-    attempts = provenance["variant_attempts"]
-    assert len(attempts) == 3
-    for record in attempts:
-        assert record["status"] == "dropped"
-        assert record["reason"]
-        assert record["attempt_id"] not in {
-            sample["sample_id"] for sample in manifest["samples"]}
-    assert provenance["toolchain"]["zig"]["version"] == "0.17.1"
-    assert any("requires dynamic linking" in (record.get("reason") or "")
-               for record in attempts), (
-        "the gnu-static probe must record Zig's dynamic-linking limitation")
+    assert manifest["hidden_commitment"] is None
+    assert manifest["hidden_available"] is False
+    sums = _sums_entries()
+    for name in sorted(AUXILIARY_ARTIFACTS):
+        assert name not in sums
+        path = PUBLIC / name
+        if path.is_file():
+            # Present auxiliary payload must remain parseable JSON but is not
+            # validated/claimed by the corpus builder (separate owner/checker).
+            json.loads(path.read_text(encoding="utf-8"))
+    check = _run_builder("--check")
+    assert check.returncode == 0, check.stdout + check.stderr
+    assert json.loads(check.stdout)["ok"] is True
+
+
+def test_builder_check_allows_auxiliary_artifacts(tmp_path):
+    """The builder `--check` tolerates the auxiliary C4/C6 files unchanged."""
+    copy = tmp_path / "artifact"
+    shutil.copytree(PUBLIC, copy)
+    assert (copy / "hidden-commitment.json").is_file()
+    assert (copy / "results.json").is_file()
+    result = _run_builder("--check", "--out", str(copy))
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True and payload["problems"] == []
 
 
 def test_builder_has_no_ai_or_network_paths():

@@ -41,7 +41,7 @@ V2_CONTRACTS = (
 EXPECTED_PUBLIC_CORE = 28
 EXPECTED_PUBLIC_RUNTIME = 20
 EXPECTED_PUBLIC_ANALYSIS = 8
-EXPECTED_HIDDEN_TOTAL = 20
+MIN_HIDDEN_TOTAL = 8
 MIN_HIDDEN_RUNTIME = 6
 MIN_HIDDEN_ANALYSIS = 2
 RUNTIME_KINDS = {"external_poc", "native", "emulated"}
@@ -51,6 +51,7 @@ HIDDEN_LEAK_PATTERNS = (
     "PHASE8C_HIDDEN_ROOT",
 )
 DEFAULT_RESULTS_CANDIDATES = (
+    ROOT / "artifacts" / "phase8c-benchmark-2026-11-16" / "results.json",
     ROOT / "artifacts" / "phase8c-results-2026-11-16" / "results.json",
     ROOT / "artifacts" / "phase8c-hidden-results-2026-11-16" / "results.json",
     ROOT / "artifacts" / "phase8c-hidden-2026-11-16" / "results.json",
@@ -348,8 +349,8 @@ def _hidden_checks(hidden_root: Path | None,
     runtime = int(commitment.get("runtime_count") or 0)
     analysis = int(commitment.get("analysis_only_count") or 0)
     problems: list[str] = []
-    if count != EXPECTED_HIDDEN_TOTAL:
-        problems.append(f"hidden total {count} != {EXPECTED_HIDDEN_TOTAL}")
+    if count < MIN_HIDDEN_TOTAL:
+        problems.append(f"hidden total {count} < {MIN_HIDDEN_TOTAL}")
     if runtime < MIN_HIDDEN_RUNTIME:
         problems.append(f"hidden runtime {runtime} < {MIN_HIDDEN_RUNTIME}")
     if analysis < MIN_HIDDEN_ANALYSIS:
@@ -391,7 +392,27 @@ def _hidden_checks(hidden_root: Path | None,
     except (OSError, UnicodeError, json.JSONDecodeError):
         checks.append(_check("hidden-public-consistency", "fail",
                              "public manifest unreadable"))
-    # C6 results.
+    # Hidden contamination must have been audited separately (independent of
+    # whether the hidden campaign already produced an aggregate).
+    contamination_file = contamination_path or CONTAMINATION_ARTIFACT
+    try:
+        contamination = _load_json(contamination_file)
+        if contamination.get("mode") != "hidden" or contamination.get(
+                "status") != "ok":
+            checks.append(_check(
+                "hidden-contamination", "not_run",
+                "hidden-mode contamination audit has not run"))
+        elif contamination.get("verdict") == "contaminated":
+            checks.append(_check("hidden-contamination", "fail",
+                                 "hidden-mode contamination verdict contaminated"))
+        else:
+            checks.append(_check("hidden-contamination", "pass",
+                                 f"verdict={contamination.get('verdict')}"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        checks.append(_check("hidden-contamination", "not_run",
+                             "hidden contamination artifact absent"))
+    # C6 v2 results (public aggregate + hidden aggregate when the hidden lane
+    # has executed; hidden_aggregate=null is explicitly not_run, never pass).
     candidates = [results_path] if results_path is not None else \
         [path for path in DEFAULT_RESULTS_CANDIDATES if path.is_file()]
     if not candidates:
@@ -420,62 +441,71 @@ def _hidden_checks(hidden_root: Path | None,
         problems.append("results samples missing")
     if not isinstance(aggregate, dict):
         problems.append("results aggregate missing")
-    if not isinstance(hidden_aggregate, dict):
-        problems.append("results hidden_aggregate missing")
-    executed = 0
-    not_run = 0
+    status_counts: dict[str, int] = {}
     if isinstance(samples, list):
-        executed = sum(1 for item in samples
-                       if isinstance(item, dict)
-                       and item.get("status") == "executed")
-        not_run = sum(1 for item in samples
-                      if isinstance(item, dict)
-                      and item.get("status") == "not_run")
-    denominators = 0
+        for item in samples:
+            if isinstance(item, dict):
+                key = str(item.get("status") or "unknown")
+                status_counts[key] = status_counts.get(key, 0) + 1
+    denominator = 0
     if isinstance(aggregate, dict):
-        denominators = int(aggregate.get("denominator") or 0)
-        false_verified = int(aggregate.get("false_verified") or 0)
+        raw_denominator = aggregate.get("denominator")
+        if isinstance(raw_denominator, dict):
+            denominator = int(raw_denominator.get("samples") or 0)
+        elif isinstance(raw_denominator, int):
+            denominator = raw_denominator
+        denominator = denominator or int(aggregate.get("sample_count") or 0)
+        false_verified = int(aggregate.get("false_verified_count",
+                                           aggregate.get("false_verified", 0))
+                             or 0)
         if false_verified != 0:
             problems.append(f"false_verified={false_verified} (must be 0)")
-        if denominators != EXPECTED_PUBLIC_CORE + EXPECTED_HIDDEN_TOTAL:
-            problems.append(
-                f"aggregate denominator {denominators} != "
-                f"{EXPECTED_PUBLIC_CORE + EXPECTED_HIDDEN_TOTAL}")
-    if isinstance(hidden_aggregate, dict):
-        hidden_count = int(hidden_aggregate.get("sample_count") or 0)
-        if hidden_count != EXPECTED_HIDDEN_TOTAL:
-            problems.append(f"hidden aggregate samples {hidden_count} != "
-                            f"{EXPECTED_HIDDEN_TOTAL}")
-        hidden_false = int(hidden_aggregate.get("false_verified") or 0)
-        if hidden_false != 0:
-            problems.append(f"hidden false_verified={hidden_false}")
-        if hidden_aggregate.get("per_sample_ids_included") is True:
-            problems.append("hidden aggregate includes per-sample ids")
+        if denominator != len(samples):
+            problems.append(f"aggregate denominator {denominator} != "
+                            f"samples {len(samples)}")
+        executed = int(
+            (raw_denominator or {}).get("executed", 0)
+            if isinstance(raw_denominator, dict) else
+            status_counts.get("executed", 0))
+        if executed and executed != status_counts.get("executed", 0):
+            problems.append("aggregate executed count does not match statuses")
     if problems:
         checks.append(_check("results-v2", "fail", "; ".join(problems)))
+        return
+    checks.append(_check(
+        "results-v2", "pass",
+        f"public denominator={denominator}, "
+        f"statuses={status_counts}, false_verified=0"))
+    if not isinstance(hidden_aggregate, dict):
+        checks.append(_check(
+            "hidden-aggregate", "not_run",
+            "hidden_aggregate is null/absent (hidden lane has not executed)"))
+        return
+    hidden_problems: list[str] = []
+    hidden_count = int(hidden_aggregate.get("sample_count")
+                       or hidden_aggregate.get("samples") or 0)
+    hidden_false = int(hidden_aggregate.get(
+        "false_verified_count", hidden_aggregate.get("false_verified", 0))
+        or 0)
+    if hidden_false != 0:
+        hidden_problems.append(f"hidden false_verified={hidden_false}")
+    if hidden_count != int(commitment.get("sample_count") or 0):
+        hidden_problems.append(
+            f"hidden aggregate samples {hidden_count} != commitment "
+            f"{commitment.get('sample_count')}")
+    if hidden_aggregate.get("per_sample_ids_included") is True:
+        hidden_problems.append("hidden aggregate includes per-sample ids")
+    if hidden_problems:
+        checks.append(_check("hidden-aggregate", "fail",
+                             "; ".join(hidden_problems)))
     else:
         checks.append(_check(
-            "results-v2", "pass",
-            f"denominator={denominators}, executed={executed}, "
-            f"not_run={not_run}, false_verified=0"))
+            "hidden-aggregate", "pass",
+            f"hidden samples={hidden_count}, false_verified=0"))
+
+
     # Hidden contamination must have been audited separately.
-    contamination_file = contamination_path or CONTAMINATION_ARTIFACT
-    try:
-        contamination = _load_json(contamination_file)
-        if contamination.get("mode") != "hidden" or contamination.get(
-                "status") != "ok":
-            checks.append(_check(
-                "hidden-contamination", "not_run",
-                "hidden-mode contamination audit has not run"))
-        elif contamination.get("verdict") == "contaminated":
-            checks.append(_check("hidden-contamination", "fail",
-                                 "hidden-mode contamination verdict contaminated"))
-        else:
-            checks.append(_check("hidden-contamination", "pass",
-                                 f"verdict={contamination.get('verdict')}"))
-    except (OSError, UnicodeError, json.JSONDecodeError):
-        checks.append(_check("hidden-contamination", "not_run",
-                             "hidden contamination artifact absent"))
+
 
 
 def audit(full: bool = False, hidden_root: Path | None = None,

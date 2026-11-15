@@ -276,8 +276,14 @@ def _public_samples(manifest: dict[str, Any],
 def _hidden_samples(root: Path,
                     manifest_path: Path | None
                     ) -> tuple[list[dict[str, Any]], str]:
-    path = manifest_path or (root / "manifest.json")
-    if not path.is_file():
+    path = manifest_path
+    if path is None:
+        for name in ("manifest.json", "hidden-manifest.json"):
+            candidate = root / name
+            if candidate.is_file():
+                path = candidate
+                break
+    if path is None or not path.is_file():
         return [], "hidden manifest missing"
     try:
         manifest = _load_json(path)
@@ -295,6 +301,14 @@ def _hidden_samples(root: Path,
         if candidate.get("binary_path") or candidate.get("binary"):
             candidate["binary_path"] = str(
                 root / str(candidate.get("binary_path") or candidate["binary"]))
+        else:
+            sample_id = str(candidate.get("sample_id")
+                            or candidate.get("opaque_sample_id") or "")
+            for extension in ("", ".elf", ".bin"):
+                binary_candidate = root / "bin" / f"{sample_id}{extension}"
+                if sample_id and binary_candidate.is_file():
+                    candidate["binary_path"] = str(binary_candidate)
+                    break
         facts.append(_sample_facts(candidate, {}, hidden=True))
     return facts, "hidden mode enabled"
 
@@ -332,7 +346,13 @@ def _exact_duplicates(samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     res, sev = "exact_binary_duplicate_same_target", "contaminated"
             else:
                 if hidden:
-                    res, sev = "contaminated_public_hidden_overlap", "contaminated"
+                    # C4 explicitly derives hidden variants from committed
+                    # public fixtures and reuses their reference/PoC/source
+                    # material; that provenance sharing is an explicit note.
+                    # Hidden binaries are NOT exempt: a public binary reused
+                    # by a hidden sample is contamination and is handled above.
+                    res, sev = ("hidden_derivation_shared_public_fixture",
+                                "note")
                 elif same_family:
                     res, sev = "shared_declared_family_allowed", "note"
                 elif distinct_targets:
@@ -359,7 +379,7 @@ def _exact_duplicates(samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
         hidden = any(item["hidden"] for item in unique)
         families = {item["family"] for item in unique if not item["hidden"]}
         if hidden:
-            res, sev = "contaminated_public_hidden_overlap", "contaminated"
+            res, sev = "hidden_derivation_shared_public_fixture", "note"
         elif len(families) == 1:
             res, sev = "shared_declared_family_allowed", "note"
         elif all(_different_targets(unique[0], item) for item in unique[1:]):

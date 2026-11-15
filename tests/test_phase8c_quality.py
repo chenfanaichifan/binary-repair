@@ -142,7 +142,8 @@ def test_full_mode_with_synthetic_hidden_inputs_passes(tmp_path: Path) -> None:
         "benchmark_id": "phase8c-v1",
         "manifest_sha256": public_sha,
         "generated_at": "2026-11-16T00:00:00Z",
-        "samples": [],
+        "samples": [{"sample_id": f"s{index}", "status": "executed"}
+                    for index in range(48)],
         "aggregate": {"denominator": 48, "executed": 48,
                       "false_verified": 0},
         "hidden_aggregate": {"sample_count": 20, "runtime_count": 14,
