@@ -180,6 +180,56 @@ CHECK_SPECS: tuple[dict[str, Any], ...] = (
         "shadow": True,
         "modes": ("full",),
     },
+    # Phase-8C shadow checks: public-only evidence.  Hidden corpus and real
+    # Lima runs stay reference-host evidence and never satisfy a required check.
+    {
+        "id": "phase8c-baseline-audit",
+        "script": "scripts/audit_phase8c_readiness.py",
+        "args": ("--check",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
+    {
+        "id": "phase8c-ground-truth-v2",
+        "script": "scripts/migrate_ground_truth_v2.py",
+        "args": ("--check",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
+    {
+        "id": "phase8c-public-corpus",
+        "script": "scripts/build_phase8c_corpus.py",
+        "args": ("--check",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
+    {
+        "id": "phase8c-contamination",
+        "script": "scripts/audit_phase8c_contamination.py",
+        "args": ("--check",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
+    {
+        "id": "phase8c-quality",
+        "script": "scripts/audit_phase8c_quality.py",
+        "args": ("--public-only", "--check"),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
+    {
+        "id": "phase8c-benchmark-artifact",
+        "script": "scripts/run_phase8c_benchmark.py",
+        "args": ("--check-artifact",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
 )
 
 

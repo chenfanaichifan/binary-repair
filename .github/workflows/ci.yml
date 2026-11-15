@@ -106,6 +106,26 @@ jobs:
       - name: Phase-8B shadow real-verification evidence (non-gating)
         continue-on-error: true
         run: python scripts/check_phase8b_verification.py --json
+      # Phase-8C shadow checks: public-only/CI-portable evidence. Hidden corpus
+      # and real Lima runs remain reference-host evidence and are not CI claims.
+      - name: Phase-8C shadow baseline read-only audit (non-gating)
+        continue-on-error: true
+        run: python scripts/audit_phase8c_readiness.py --check
+      - name: Phase-8C shadow ground-truth v2 migration (non-gating)
+        continue-on-error: true
+        run: python scripts/migrate_ground_truth_v2.py --check
+      - name: Phase-8C shadow public corpus manifest (non-gating)
+        continue-on-error: true
+        run: python scripts/build_phase8c_corpus.py --check
+      - name: Phase-8C shadow public contamination audit (non-gating)
+        continue-on-error: true
+        run: python scripts/audit_phase8c_contamination.py --check
+      - name: Phase-8C shadow public quality audit (non-gating)
+        continue-on-error: true
+        run: python scripts/audit_phase8c_quality.py --public-only --check
+      - name: Phase-8C shadow benchmark artifact (non-gating)
+        continue-on-error: true
+        run: python scripts/run_phase8c_benchmark.py --check-artifact
       - name: Coverage regression gate (static, no network)
         run: python scripts/verify_coverage_gate.py --static-only
       # Serial execution by policy: Lima guests and the real PoC differential are
