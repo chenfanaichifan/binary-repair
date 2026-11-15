@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "kind": "repair_evidence",
+  "source_run": "/tmp/p23-smoke2/deepseek-deepseek-flash/hard-multicall/run-1",
+  "provided_at": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 1,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "ai_verified": 0,
+  "reference_note": "reference fixes are separate and are not AI evidence",
+  "manifest": {
+    "schema_version": 2,
+    "run_kind": "stability_run",
+    "experiment_id": "p23-smoke",
+    "profile": "experiments/p21-p16r3-658ff8c/profile.json",
+    "spec": "deepseek:deepseek-flash",
+    "model": "deepseek-flash",
+    "case_id": "hard-multicall",
+    "run": 1,
+    "candidate_artifact": null,
+    "candidate_sha256": null,
+    "generator_gate": "plan_invalid",
+    "verification_status": "PLAN_INVALID",
+    "status": "completed"
+  },
+  "cases": [
+    {
+      "case_id": "hard-multicall",
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "gate": "plan_invalid",
+      "repair_status": "PLAN_INVALID",
+      "candidate_sha256": null,
+      "candidate_file": null,
+      "native_failure": null,
+      "plan_status": null,
+      "attempts": 1
+    }
+  ],
+  "hashes": {
+    "summary.json": "9bc9fb118fbd42b1d1d539f8a373162aee12093d62f600a22f90d475fe07ea2a",
+    "run-manifest.json": "a10f78412d7c877477d91c6cacf2dda3c7f5d1dc21bf12a2f7bf848933982e86"
+  }
+}

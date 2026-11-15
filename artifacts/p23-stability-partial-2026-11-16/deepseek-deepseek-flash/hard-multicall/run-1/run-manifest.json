@@ -1,0 +1,15 @@
+{
+  "schema_version": 2,
+  "run_kind": "stability_run",
+  "experiment_id": "p23-60-f42e6c4",
+  "profile": "experiments/p21-p16r3-658ff8c/profile.json",
+  "spec": "deepseek:deepseek-flash",
+  "model": "deepseek-flash",
+  "case_id": "hard-multicall",
+  "run": 1,
+  "candidate_artifact": null,
+  "candidate_sha256": null,
+  "generator_gate": "plan_invalid",
+  "verification_status": "PLAN_INVALID",
+  "status": "completed"
+}

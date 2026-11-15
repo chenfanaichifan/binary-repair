@@ -45,7 +45,15 @@
     "PT_LOAD-backed cave ABI derivation in verifier",
     "P16-R3 CaveABIBlock exit-semantics for tail-jump/continuation",
     "P16-R3 verifiable policy-issued Authorization Records",
-    "P16-R3 10/10 candidates independently verified"
+    "P16-R3 10/10 candidates independently verified",
+    "P23 full 60-run stability matrix",
+    "P24 full-matrix statistical report",
+    "P25 CaveABIBlock exit semantics",
+    "P26 policy-issued Authorization Record",
+    "P27 CWE-121 behavior contract repair",
+    "P28 CWE-134 repair",
+    "P29 GDB N3-N6 trace",
+    "P30 AFL++ campaign"
   ],
   "non_goals": [
     {
@@ -294,7 +302,10 @@
     "real binary_pipeline patch-plan replay in benchmark verifier",
     "P16 layout/action/target-scope checks pass for one CWE-122 candidate",
     "P16-R3 PT_LOAD-backed cave ABI mapping",
-    "P16-R3 7/10 independent verification states verified with 1 rejected and 2 artifact_missing"
+    "P16-R3 7/10 independent verification states verified with 1 rejected and 2 artifact_missing",
+    "P21 frozen P16-R3 experiment profile",
+    "P22 artifact audit for 10 benchmark cases",
+    "P23 independent stability runner and smoke test"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",

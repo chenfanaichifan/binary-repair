@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "kind": "artifact_audit",
+  "cases": [
+    {
+      "case_id": "hard-multicall",
+      "status": "RECOVERED_HISTORICAL",
+      "reason": "candidate from original run record",
+      "original": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f"
+      },
+      "poc": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/poc/hard-multicall.json",
+        "sha256": "eb66d3dd1ac48d3a67d2207b4ac3fa53aee51186a193b6ff08ad4dc0de661439"
+      },
+      "candidate": {
+        "path": "/tmp/p7final-flash/candidates/hard-multicall.bin",
+        "sha256": "755223f5443c598581376f6947b815b6abb2682326adc72d858ddccb634e96f1"
+      },
+      "run_dir": "/tmp/p7final-flash",
+      "independent_verification": "verified"
+    },
+    {
+      "case_id": "hard-sprintf",
+      "status": "RECOVERED_HISTORICAL",
+      "reason": "candidate from original run record",
+      "original": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f"
+      },
+      "poc": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/poc/hard-sprintf.json",
+        "sha256": "240ad9a0a93c1302b3122ae029647013a8aceb57919319baa49eeaef0c120e62"
+      },
+      "candidate": {
+        "path": "/tmp/p7final-flash/candidates/hard-sprintf.bin",
+        "sha256": "93a9e360e5e5571b065cd58019c776c0597af96cb4226f673be06d34c0d6d4e9"
+      },
+      "run_dir": "/tmp/p7final-flash",
+      "independent_verification": "verified"
+    },
+    {
+      "case_id": "hard-nonconst",
+      "status": "RECOVERED_HISTORICAL",
+      "reason": "candidate from original run record",
+      "original": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f"
+      },
+      "poc": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/poc/hard-nonconst.json",
+        "sha256": "2c096e9cf92fddc8b0fa0475d402fb11689d25b288781dc7644f8170c9b582bb"
+      },
+      "candidate": {
+        "path": "/tmp/p7final-flash/candidates/hard-nonconst.bin",
+        "sha256": "5ee9cb881d6ecbe2494f04a1e421ac1e38e9c0e0baf9b557f0da4a38bf98ded2"
+      },
+      "run_dir": "/tmp/p7final-flash",
+      "independent_verification": "verified"
+    },
+    {
+      "case_id": "cwe121-unchecked-strcpy",
+      "status": "RECOVERED_HISTORICAL",
+      "reason": "candidate from original run record",
+      "original": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+        "sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393"
+      },
+      "poc": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/poc/cwe121.json",
+        "sha256": "17c787c87bc8292e03b38e2fc4e1861cbd25384952a57693a32db920eb452e52"
+      },
+      "candidate": {
+        "path": "/tmp/p7final-flash/candidates/cwe121-unchecked-strcpy.bin",
+        "sha256": "e5b3b495a9b07b306cd7ed37439bc540349b1cfd2b49629b4a64daaf693a043a"
+      },
+      "run_dir": "/tmp/p7final-flash",
+      "independent_verification": "rejected"
+    },
+    {
+      "case_id": "cwe122-heap-copy",
+      "status": "RECOVERED_HISTORICAL",
+      "reason": "candidate from original run record",
+      "original": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/repair-benchmark/CWE122_heap_copy/original.elf",
+        "sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2"
+      },
+      "poc": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/poc/repair-cwe122.json",
+        "sha256": "73702fd2f4803461c888a5e3a57c8ab12e412bdf2de51f0fb9d698cb625359c0"
+      },
+      "candidate": {
+        "path": "/tmp/p7final-flash/candidates/cwe122-heap-copy.bin",
+        "sha256": "5575de4e5d94c87ef2f97f0c09a25cb7918e2a5bcfffe37c9ced60d24323c5bb"
+      },
+      "run_dir": "/tmp/p7final-flash",
+      "independent_verification": "verified"
+    },
+    {
+      "case_id": "cwe787-index-write",
+      "status": "ARTIFACT_MISSING_CONFIRMED",
+      "reason": "run record exists but candidate artifact is missing",
+      "original": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/repair-benchmark/CWE787_index_write/original.elf",
+        "sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b"
+      },
+      "poc": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/poc/repair-cwe787.json",
+        "sha256": "3c05e5c30286cbe7bcb8a7ad2b89c0c6bc55190e9c97fcad376f78afcf4c60f4"
+      },
+      "candidate": {
+        "path": null,
+        "sha256": null
+      },
+      "run_dir": "/tmp/p7final-flash",
+      "independent_verification": "artifact_missing"
+    },
+    {
+      "case_id": "cwe125-oob-read",
+      "status": "RECOVERED_HISTORICAL",
+      "reason": "candidate from original run record",
+      "original": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/repair-benchmark/CWE125_oob_read/original.elf",
+        "sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c"
+      },
+      "poc": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/poc/repair-cwe125.json",
+        "sha256": "1a6df54c35d43f30690ba3ceb162e2778ee46150f026e6d2ca2c36b430e5d553"
+      },
+      "candidate": {
+        "path": "/tmp/p13b-cwe125-oob-read/candidates/cwe125-oob-read.bin",
+        "sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba"
+      },
+      "run_dir": "/tmp/p13b-cwe125-oob-read",
+      "independent_verification": "verified"
+    },
+    {
+      "case_id": "cwe190-integer-overflow",
+      "status": "RECOVERED_HISTORICAL",
+      "reason": "candidate from original run record",
+      "original": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/repair-benchmark/CWE190_integer_overflow/original.elf",
+        "sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156"
+      },
+      "poc": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/poc/repair-cwe190.json",
+        "sha256": "114a2546f2ebd12d1bc0a14a74fc760c2479b403bcb7b9cf19af0841b87b4540"
+      },
+      "candidate": {
+        "path": "/tmp/p13b-cwe190-integer-overflow/candidates/cwe190-integer-overflow.bin",
+        "sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9"
+      },
+      "run_dir": "/tmp/p13b-cwe190-integer-overflow",
+      "independent_verification": "verified"
+    },
+    {
+      "case_id": "cwe476-null-deref",
+      "status": "RECOVERED_HISTORICAL",
+      "reason": "candidate from original run record",
+      "original": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/repair-benchmark/CWE476_null_deref/original.elf",
+        "sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c"
+      },
+      "poc": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/poc/repair-cwe476.json",
+        "sha256": "33545e8e348aa0c25e1be4bc8c292dfe3d3f1f233244f8e6a325c35ebcddef57"
+      },
+      "candidate": {
+        "path": "/tmp/p13b-cwe476-null-deref/candidates/cwe476-null-deref.bin",
+        "sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b"
+      },
+      "run_dir": "/tmp/p13b-cwe476-null-deref",
+      "independent_verification": "verified"
+    },
+    {
+      "case_id": "cwe134-format-string",
+      "status": "ARTIFACT_MISSING_CONFIRMED",
+      "reason": "run record exists but candidate artifact is missing",
+      "original": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/repair-benchmark/CWE134_format_string/original.elf",
+        "sha256": "c74266a421fa3e61f33b1669d3ae22640672a5136cb22871326ab3a5ad16a56d"
+      },
+      "poc": {
+        "path": "/Users/huageorge/Desktop/AI\u9a71\u52a8\u7684\u4e8c\u8fdb\u5236\u6f0f\u6d1e\u81ea\u52a8\u4fee\u590d\u4e0e\u6b63\u786e\u6027\u9a8c\u8bc1/worktree-feature-final/fixtures/poc/repair-cwe134.json",
+        "sha256": "0c0ecd2ad17704dc31a637254589a80e97414ca0c2ff937a1c09f541bee61ec4"
+      },
+      "candidate": {
+        "path": null,
+        "sha256": null
+      },
+      "run_dir": "/tmp/p13b-cwe134-format-string",
+      "independent_verification": "artifact_missing"
+    }
+  ]
+}

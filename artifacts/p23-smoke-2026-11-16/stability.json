@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "kind": "repair_stability",
+  "generated_at": "2026-11-15T14:47:57Z",
+  "runs": 1,
+  "eligible_runs": 1,
+  "verified_runs": 0,
+  "status_counts": {
+    "PLAN_INVALID": 1
+  },
+  "R_verified": 0.0,
+  "R_robustness": 0.0,
+  "per_model": {
+    "deepseek:deepseek-flash": {
+      "runs": 1,
+      "verified": 0,
+      "eligible": 1,
+      "failures": {
+        "PLAN_INVALID": 1
+      }
+    }
+  },
+  "per_case": {
+    "hard-multicall": {
+      "runs": 1,
+      "verified": 0
+    }
+  },
+  "records": [
+    {
+      "spec": "deepseek:deepseek-flash",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "case_id": "hard-multicall",
+      "run": 1,
+      "returncode": 0,
+      "stderr_tail": "",
+      "experiment_id": "p23-smoke",
+      "status": "completed",
+      "gate": "plan_invalid",
+      "repair_status": "PLAN_INVALID",
+      "attempts": 1,
+      "plan_status": null,
+      "candidate_sha256": null,
+      "candidate_artifact": null,
+      "verification_status": "PLAN_INVALID",
+      "verified": false,
+      "evidence_ok": true
+    }
+  ]
+}

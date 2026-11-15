@@ -30,7 +30,7 @@ def _parse(spec: str) -> tuple[str, str]:
 
 
 def _run_one(spec: str, case_id: str, run_index: int,
-             args: argparse.Namespace, case: dict | None = None) -> dict:
+             args: argparse.Namespace, bench_case: dict | None = None) -> dict:
     provider, model = _parse(spec)
     slug = (provider + "-" + model).replace("/", "_").replace(":", "_")
     out = args.out / slug / case_id / f"run-{run_index}"
@@ -55,27 +55,28 @@ def _run_one(spec: str, case_id: str, run_index: int,
     }
     try:
         summary = json.loads((out / "summary.json").read_text())
-        case = (summary.get("cases") or [{}])[0]
-        candidate = case.get("candidate") or {}
+        record_case = (summary.get("cases") or [{}])[0]
+        candidate = record_case.get("candidate") or {}
         record.update({
             "status": "completed",
             "gate": candidate.get("gate"),
             "repair_status": candidate.get("repair_status"),
-            "attempts": len(case.get("ai_attempts") or []),
-            "plan_status": ((case.get("ai_attempts") or [{}])[0]
+            "attempts": len(record_case.get("ai_attempts") or []),
+            "plan_status": ((record_case.get("ai_attempts") or [{}])[0]
                             .get("plan_status")),
             "candidate_sha256": candidate.get("candidate_sha256"),
             "candidate_artifact": candidate.get("candidate_artifact"),
         })
         verification_status = "NOT_RUN"
-        if case is not None:
-            verification = verify_case(out, case, case)
+        if candidate.get("candidate_artifact") and bench_case is not None:
+            verification = verify_case(out, record_case, bench_case)
             verification_status = str(verification.get("status") or "NOT_RUN")
-            if (not candidate.get("candidate_artifact")
-                    and str(candidate.get("gate")) == "no_candidate"):
-                verification_status = "NO_CANDIDATE"
-            record["verification_status"] = verification_status
             record["verification"] = verification
+        elif candidate.get("gate") in {"plan_invalid", "no_candidate"}:
+            verification_status = "PLAN_INVALID"
+        elif not candidate.get("candidate_artifact"):
+            verification_status = "NO_CANDIDATE"
+        record["verification_status"] = verification_status
         record["verified"] = verification_status == "verified"
         manifest = {
             "schema_version": 2, "run_kind": "stability_run",

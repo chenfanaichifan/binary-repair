@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "profile_id": "p21-p16r3-658ff8c",
+  "generated_at": "2026-11-15T14:46:20Z",
+  "source_commit": "658ff8c5e8182a2a6ded5851eed46ff3db44297d",
+  "verifier_profile": "P16R3_PLAN_AWARE",
+  "authorization_profile": "STATIC_REFERENCE_ONLY",
+  "semantic_trace": "NOT_RUN",
+  "fuzzing": "NOT_RUN",
+  "models": [
+    "deepseek:deepseek-flash",
+    "deepseek:deepseek-v4-pro"
+  ],
+  "hashes": {
+    "benchmark": "99f804ec5c2695355a93494d73b1e63db9674a7dc3e73a7f63d3dfc11f8fbee0",
+    "verifier_module": "f27e808a76ae0de65864666893a26cc4652366b295fca183e0186ccbf91e0ac3",
+    "verification_semantics": "65305bfbccd2ae422c1d955ba5e68dbdfeda9c2bb583fb4d8dd7c76ea05ed1b1",
+    "patch_plan_schema": "c296ac33954d1267291f66136be18ff786a0fc730941222b8c0c22974d17b210",
+    "verification_schema": "a70bb4ed959b3d19a5277bf1dce483f04ff30d9e375cba5603bf726ec2e77fc0",
+    "repairspec_module": "7109cd243828fc0f89722e5cc651d4ab7ae68e046cd40939a8f21615891c474a",
+    "p16r3_verification": "2638b7696063fadd3185544293c0a8f6606bde6f10bb37a707203255e897874e"
+  },
+  "missing_inputs": [],
+  "tests": {
+    "tests": "2044",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "9",
+    "time": "929.798"
+  },
+  "case_ids": [
+    "hard-multicall",
+    "hard-sprintf",
+    "hard-nonconst",
+    "cwe121-unchecked-strcpy",
+    "cwe122-heap-copy",
+    "cwe787-index-write",
+    "cwe125-oob-read",
+    "cwe190-integer-overflow",
+    "cwe476-null-deref",
+    "cwe134-format-string"
+  ],
+  "notes": [
+    "P16-R3 strict plan-aware profile; not a policy-issued authorization profile"
+  ]
+}
