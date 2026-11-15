@@ -1170,8 +1170,15 @@ def _build_patch_plan(
         guard_offsets = _guard_action_file_offsets(container, actions)
         redirect_ranges: list[tuple[int, int, int]] = []
         for guard_offset, guard_site_va in guard_offsets:
-            if guard_offset + 5 <= len(data) and data[guard_offset:guard_offset + 1] in {b"\xe8", b"\xff"}:
-                redirect_ranges.append((guard_offset, guard_offset + 5, guard_site_va))
+            # x86 PE32 direct-IAT calls are ``FF 15 abs32`` (6 bytes); ELF/x86
+            # E8 calls are 5 bytes.  The plan must cover the whole redirection or
+            # replay leaves the trailing byte unpatched (PE32 IAT regression).
+            if guard_offset + 1 < len(data) and data[guard_offset] == 0xFF and data[guard_offset + 1] == 0x15:
+                redirect_size = 6
+            else:
+                redirect_size = 5
+            if guard_offset + redirect_size <= len(data) and data[guard_offset:guard_offset + 1] in {b"\xe8", b"\xff"}:
+                redirect_ranges.append((guard_offset, guard_offset + redirect_size, guard_site_va))
         guard_action = next(
             (action for action in actions if str(action.get("kind") or "") == "guard"),
             None,
@@ -1263,12 +1270,19 @@ def _build_patch_plan(
                 cave_va_int = int(cave_va, 16) if isinstance(cave_va, str) else (
                     cave_va if isinstance(cave_va, int) and not isinstance(cave_va, bool) else None
                 )
-                cave = {
-                    "va": cave_va_int if cave_va_int is not None else 0,
-                    "size": len(appended),
-                    "executable": True,
-                    "method": str(guard_action.get("method") or "guard-cave"),
-                }
+                if cave_va_int is None:
+                    # No cave address in the engine action: this is not a real
+                    # guard plan (e.g. a synthetic finish_candidate call), so
+                    # fall back to the legacy no-plan gate instead of declaring
+                    # a bogus cave at VA 0.
+                    cave = None
+                else:
+                    cave = {
+                        "va": cave_va_int,
+                        "size": len(appended),
+                        "executable": True,
+                        "method": str(guard_action.get("method") or "guard-cave"),
+                    }
         else:
             cave = None
     if not operations:
