@@ -3074,7 +3074,7 @@
       var fresh = FRESH_SESSION;
       var greeting =
         "描述二进制问题，我会请求引导计划；也可直接粘贴带漏洞的代码。\n" +
-        "计划未接通会明确说明；创建/执行需你确认，结论由验收引擎给出。";
+        "计划服务还没接通时我会直说「未接通」；创建/执行需你确认，结论由验收引擎给出。";
       if (fresh) {
         try { window.localStorage.removeItem(historyKey()); } catch (error) { /* ignore */ }
         state.entries = [];
