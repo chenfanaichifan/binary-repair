@@ -2,15 +2,17 @@
 from __future__ import annotations
 
 import base64
+import contextlib
 import hashlib
 import json
 import platform
 import sys
+import threading
 from pathlib import Path
 
 import pytest
 
-from app.services import poc_runner
+from app.services import guest_coordinator, poc_runner
 from app.services.binary_pipeline import repair_any
 from app.services.guest_runner import GuestResult, GuestRunner, find_guest_runner
 from app.services.poc_runner import load_manifest, parse_strace_errors, run_poc
@@ -31,6 +33,18 @@ def _isolate_capability_cache():
     capabilities.clear_cache()
     yield
     capabilities.clear_cache()
+
+
+@pytest.fixture(autouse=True)
+def _isolate_guest_lock(tmp_path: Path, monkeypatch):
+    """Hermetic Lima guest lock for every test (no writes to the real $HOME)."""
+
+    monkeypatch.setattr(guest_coordinator, "_STATES", {})
+    guest_coordinator.clear_attempt_history()
+    monkeypatch.setenv(guest_coordinator.LOCK_ENV, str(tmp_path / "lima-guest.lock"))
+    monkeypatch.setenv(guest_coordinator.TIMEOUT_ENV, "60")
+    yield
+    guest_coordinator.clear_attempt_history()
 
 
 def _b64(data: bytes) -> str:
@@ -108,7 +122,8 @@ def _install_fake_runner(
     monkeypatch.setattr(poc_runner, "find_guest_runner", lambda arch: runner)
 
     def fake_run_path(path, argv, *, arch="x86_64", stdin=b"", timeout=10.0,
-                      runner=None, cwd=None):  # noqa: ANN001
+                      runner=None, cwd=None, lock_timeout=None,
+                      lock_purpose=None):  # noqa: ANN001
         binary = Path(path)
         binary_bytes = binary.read_bytes()
         calls.append(
@@ -260,6 +275,13 @@ def test_lima_staging_lives_under_configured_dir(monkeypatch, tmp_path: Path):
     assert calls[0]["binary_mode"] == 0o700
     assert stage_base.exists()
     assert not case_dir.parent.exists()  # the unique staged root was removed
+    # The outer run_poc lease records attempt evidence even without a real guest.
+    assert evidence.lock_attempts
+    assert evidence.lock_attempts[0]["purpose"] == "poc_runner.run_poc"
+    assert evidence.lock_attempts[0]["instance"] == "binaryrepair"
+    assert evidence.lock_attempts[0]["acquired"] is True
+    assert evidence.lock_attempts[0]["released"] is True
+    assert evidence.lock_blocked is False
 
 
 def test_runner_unavailable_is_reported_not_faked(monkeypatch):
@@ -456,3 +478,224 @@ def test_ld_preload_errno_probe_captures_process_exit_errno():
     assert evidence.errno_probe == "ld_preload"
     assert evidence.errno_signature == "matched"
     assert all(case.errno_value is not None for case in evidence.regression)
+
+
+# ------------------------------------------------- Lima guest-lock integration
+
+
+class _LockHolder:
+    """Hold the Lima guest lock in a daemon thread (foreign-thread contention)."""
+
+    def __init__(self, purpose: str = "test-holder"):
+        self.purpose = purpose
+        self.ready = threading.Event()
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+
+    def _run(self) -> None:
+        lease = guest_coordinator.acquire_lima_guest_lock(
+            purpose=self.purpose, instance="binaryrepair", timeout=10,
+        )
+        self.ready.set()
+        self._stop.wait(60)
+        lease.release()
+
+    def __enter__(self):
+        self._thread.start()
+        assert self.ready.wait(15), "lock holder did not start"
+        return self
+
+    def __exit__(self, exc_type, exc, tb):  # noqa: ANN001
+        self._stop.set()
+        self._thread.join(timeout=15)
+        return False
+
+
+def _fake_lima_runner() -> GuestRunner:
+    return GuestRunner(
+        kind="lima", tool="/fake/limactl", tier="emulated_run",
+        instance="binaryrepair",
+    )
+
+
+def test_lima_lock_timeout_blocks_run_poc_without_execution(monkeypatch):
+    original = b"ORIGINAL-BINARY"
+    manifest = _plain_manifest(original)
+    calls: list[object] = []
+
+    def _must_not_execute(*args, **kwargs):  # noqa: ANN001
+        calls.append(args)
+        raise AssertionError("run_poc must not execute on a lock timeout")
+
+    monkeypatch.setattr(poc_runner, "_select_runner", lambda fmt, arch: _fake_lima_runner())
+    monkeypatch.setattr(poc_runner, "run_path", _must_not_execute)
+    with _LockHolder():
+        evidence = run_poc(original, b"CANDIDATE", manifest, lock_timeout=0.2)
+
+    assert calls == []
+    assert evidence.status == "unavailable"
+    assert evidence.lock_blocked is True
+    assert evidence.cases == [] and evidence.regression == []
+    assert evidence.lock_attempts
+    assert any(record["timeout"] for record in evidence.lock_attempts)
+    assert any(
+        "guest lock timeout" in item and "not executed" in item
+        for item in evidence.limitations
+    )
+
+
+def test_lima_lock_unavailable_blocks_run_poc_without_execution(
+    tmp_path: Path, monkeypatch,
+):
+    original = b"ORIGINAL-BINARY"
+    manifest = _plain_manifest(original)
+    calls: list[object] = []
+
+    def _must_not_execute(*args, **kwargs):  # noqa: ANN001
+        calls.append(args)
+        raise AssertionError("run_poc must not execute when the lock is unusable")
+
+    monkeypatch.setattr(poc_runner, "_select_runner", lambda fmt, arch: _fake_lima_runner())
+    monkeypatch.setattr(poc_runner, "run_path", _must_not_execute)
+    monkeypatch.setenv(
+        guest_coordinator.LOCK_ENV,
+        str(tmp_path / "missing-parent" / "lima.lock"),
+    )
+    evidence = run_poc(original, b"CANDIDATE", manifest)
+
+    assert calls == []
+    assert evidence.status == "unavailable"
+    assert evidence.lock_blocked is True
+    assert any(
+        "guest lock unavailable" in item for item in evidence.limitations
+    )
+
+
+def test_lima_lock_attempts_recorded_on_success(monkeypatch):
+    original = b"ORIGINAL-BINARY"
+    manifest = _plain_manifest(original)
+    run_kwargs: list[dict] = []
+
+    def fake_run_path(path, argv, **kwargs):  # noqa: ANN001, ANN003
+        run_kwargs.append(dict(kwargs))
+        purpose = kwargs.get("lock_purpose", "")
+        is_original = purpose.endswith("original")
+        if argv and argv[0] == "crash":  # the PoC case
+            if is_original:
+                return GuestResult(
+                    True, exit_code=139,
+                    stderr=b"qemu: uncaught target signal 11",
+                    crashed=True, runner="limactl", tier="emulated_run",
+                )
+            return GuestResult(
+                True, exit_code=1, crashed=False,
+                runner="limactl", tier="emulated_run",
+            )
+        return GuestResult(
+            True, exit_code=0, stdout=b"ok\n", crashed=False,
+            runner="limactl", tier="emulated_run",
+        )
+
+    monkeypatch.setattr(poc_runner, "_select_runner", lambda fmt, arch: _fake_lima_runner())
+    monkeypatch.setattr(poc_runner, "run_path", fake_run_path)
+    evidence = run_poc(original, b"CANDIDATE", manifest)
+
+    assert evidence.status == "pass"
+    assert evidence.lock_blocked is False
+    assert evidence.lock_attempts
+    outer = [
+        record for record in evidence.lock_attempts
+        if record["purpose"] == "poc_runner.run_poc"
+    ]
+    assert len(outer) == 1
+    assert outer[0]["acquired"] is True and outer[0]["released"] is True
+    assert outer[0]["instance"] == "binaryrepair"
+    assert outer[0]["limactl"]["tool"] == "/fake/limactl"
+    # Lima lock kwargs are forwarded to the per-case execution only for Lima.
+    assert run_kwargs
+    assert all(
+        kwargs["lock_purpose"].startswith("poc_runner.run_path:")
+        for kwargs in run_kwargs
+    )
+    assert all("lock_timeout" not in kwargs for kwargs in run_kwargs)
+
+
+def test_native_poc_run_has_no_lock_attempts(monkeypatch):
+    calls: list[dict] = []
+    runner = GuestRunner(kind="native", tool="", tier="native_run")
+    _install_fake_runner(
+        monkeypatch, runner, calls,
+        original=b"ORIGINAL-BINARY", candidate=b"CANDIDATE",
+    )
+    original = b"ORIGINAL-BINARY"
+    evidence = run_poc(original, b"CANDIDATE", _plain_manifest(original))
+    assert evidence.status == "pass"
+    assert evidence.lock_attempts == []
+    assert evidence.lock_blocked is False
+
+
+def _foreign_acquire_times_out(timeout: float) -> bool:
+    outcome: dict[str, bool] = {}
+
+    def worker() -> None:
+        try:
+            lease = guest_coordinator.acquire_lima_guest_lock(
+                purpose="foreign-check", instance="binaryrepair", timeout=timeout,
+            )
+            lease.release()
+        except guest_coordinator.GuestLockTimeout:
+            outcome["timeout"] = True
+
+    thread = threading.Thread(target=worker)
+    thread.start()
+    thread.join(timeout=10)
+    return bool(outcome.get("timeout"))
+
+
+def test_lima_lock_is_held_while_staging(monkeypatch):
+    original = b"ORIGINAL-BINARY"
+    manifest = _plain_manifest(original)
+    observations: dict[str, object] = {}
+    real_staging_root = poc_runner._staging_root
+
+    @contextlib.contextmanager
+    def spy_staging_root(runner):  # noqa: ANN001
+        with real_staging_root(runner) as root:
+            observations["lock_held_during_staging"] = _foreign_acquire_times_out(0.15)
+            yield root
+
+    monkeypatch.setattr(poc_runner, "_staging_root", spy_staging_root)
+    monkeypatch.setattr(
+        poc_runner, "_select_runner", lambda fmt, arch: _fake_lima_runner(),
+    )
+    monkeypatch.setattr(
+        poc_runner, "run_path",
+        lambda *args, **kwargs: GuestResult(
+            True, exit_code=0, stdout=b"ok\n", runner="limactl",
+            tier="emulated_run",
+        ),
+    )
+    evidence = run_poc(original, original, manifest)
+    assert observations["lock_held_during_staging"] is True
+    assert evidence.lock_attempts
+
+
+def test_lima_lock_released_after_staging_failure(monkeypatch):
+    original = b"ORIGINAL-BINARY"
+    manifest = _plain_manifest(original)
+    monkeypatch.setattr(
+        poc_runner, "_select_runner", lambda fmt, arch: _fake_lima_runner(),
+    )
+
+    def failing_staging_root(runner):  # noqa: ANN001
+        raise OSError("staging directory unavailable")
+
+    monkeypatch.setattr(poc_runner, "_staging_root", failing_staging_root)
+    evidence = run_poc(original, b"CANDIDATE", manifest)
+    assert evidence.status == "fail"
+    assert any("staging failed" in item for item in evidence.limitations)
+    # The lease must not leak: an immediate foreign acquisition succeeds.
+    lease = guest_coordinator.acquire_lima_guest_lock(
+        purpose="after-failure", instance="binaryrepair", timeout=1,
+    )
+    lease.release()

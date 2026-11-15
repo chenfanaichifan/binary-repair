@@ -13,7 +13,12 @@ repaired binaries and returns typed evidence.  It is deliberately conservative:
   ``argv`` is replaced by its absolute path, so file-based PoCs (archives,
   inputs) need no host/guest path juggling;
 - for the Lima tier the staging directory lives under ``$HOME`` (the guest
-  mounts the host home read-only at the same path) and is removed afterwards.
+  mounts the host home read-only at the same path) and is removed afterwards;
+- the Lima tier is serialised through :mod:`app.services.guest_coordinator`: the
+  exclusive guest lease covers staging, the guest-view freshness wait and every
+  case execution.  A lock timeout/unavailable path returns
+  ``status="unavailable"`` with ``lock_blocked=True`` and attempt evidence
+  (``lock_attempts``) instead of executing the untrusted target.
 """
 from __future__ import annotations
 
@@ -31,7 +36,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterator
 
-from app.services.guest_runner import GuestRunner, find_guest_runner, run_path
+from app.services import guest_coordinator
+from app.services.guest_runner import (
+    GuestRunner,
+    find_guest_runner,
+    lima_instance_name,
+    run_path,
+)
 from app.services.runtime import capabilities
 from app.services.errno_signature import compare as compare_errno_state
 
@@ -62,6 +73,8 @@ class CaseResult:
     expected_ok: bool = False
     syscall_errors: list[str] = field(default_factory=list)
     errno_value: int | None = None
+    lock_blocked: bool = False
+    lock_attempts: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -78,6 +91,7 @@ class CaseResult:
             "expected_ok": self.expected_ok,
             "syscall_errors": list(self.syscall_errors),
             "errno_value": self.errno_value,
+            "lock_blocked": self.lock_blocked,
         }
 
 
@@ -95,6 +109,10 @@ class PocEvidence:
     limitations: list[str] = field(default_factory=list)
     original_sha256: str = ""
     candidate_sha256: str | None = None
+    #: Lima guest-lock attempt evidence (empty for native/qemu runs).
+    lock_attempts: list[dict[str, Any]] = field(default_factory=list)
+    #: The Lima guest lock timed out/was unavailable: no case was executed.
+    lock_blocked: bool = False
 
     @property
     def passed(self) -> bool:
@@ -115,6 +133,8 @@ class PocEvidence:
             "poc": [case.to_dict() for case in self.cases],
             "regression": [case.to_dict() for case in self.regression],
             "limitations": list(self.limitations),
+            "lock_attempts": [dict(record) for record in self.lock_attempts],
+            "lock_blocked": self.lock_blocked,
         }
 
 
@@ -420,6 +440,7 @@ def _run_case(
     stdin: bytes,
     timeout: float,
     errno_probe: str = "",
+    lock_timeout: float | None = None,
 ) -> CaseResult:
     case_dir = _prepare_case_dir(root, group, index, case)
     # Both sides of the differential are executed from the *same* staged path so
@@ -456,6 +477,14 @@ def _run_case(
         run_kwargs["wrapper"] = wrapper
     if extra_env:
         run_kwargs["extra_env"] = extra_env
+    if runner.kind == "lima":
+        # Lock kwargs are Lima-tier only; native/qemu execution is never locked.
+        run_kwargs["lock_purpose"] = (
+            f"poc_runner.run_path:{case['id']}:"
+            f"{'original' if is_original else 'candidate'}"
+        )
+        if lock_timeout is not None:
+            run_kwargs["lock_timeout"] = lock_timeout
     result = run_path(binary_path, argv, **run_kwargs)
     syscall_errors: list[str] = []
     if wrapper and trace_path.is_file():
@@ -483,7 +512,54 @@ def _run_case(
         expected_ok=ok,
         syscall_errors=syscall_errors,
         errno_value=errno_value,
+        lock_blocked=result.lock_blocked,
+        lock_attempts=list(result.lock_attempts),
     )
+
+
+def _run_all_groups(
+    *,
+    selected: GuestRunner,
+    spec: dict[str, Any],
+    original: bytes,
+    candidate: bytes,
+    root: Path,
+    timeout: float,
+    errno_probe: str,
+    lock_timeout: float | None,
+) -> tuple[list[CaseResult], list[CaseResult], list[CaseResult], list[CaseResult]]:
+    """Run the PoC and regression groups against original and candidate."""
+
+    arch = str(spec["arch"])
+
+    def run_group(group: str) -> tuple[list[CaseResult], list[CaseResult]]:
+        originals: list[CaseResult] = []
+        candidates: list[CaseResult] = []
+        for index, case in enumerate(spec[group]):
+            stdin = b""
+            if case.get("stdin_base64"):
+                stdin = base64.b64decode(case["stdin_base64"], validate=True)
+            for is_original in (True, False):
+                result = _run_case(
+                    binary_bytes=original if is_original else candidate,
+                    case=case,
+                    group=group,
+                    index=index,
+                    is_original=is_original,
+                    arch=arch,
+                    runner=selected,
+                    root=root,
+                    stdin=stdin,
+                    timeout=timeout,
+                    errno_probe=errno_probe,
+                    lock_timeout=lock_timeout,
+                )
+                (originals if is_original else candidates).append(result)
+        return originals, candidates
+
+    original_poc, candidate_poc = run_group("poc")
+    original_regression, candidate_regression = run_group("regression")
+    return original_poc, candidate_poc, original_regression, candidate_regression
 
 
 def run_poc(
@@ -492,6 +568,7 @@ def run_poc(
     manifest: dict[str, Any] | str | Path,
     *,
     timeout: float = DEFAULT_TIMEOUT,
+    lock_timeout: float | None = None,
 ) -> PocEvidence:
     evidence = PocEvidence(original_sha256=_sha(original))
     try:
@@ -538,35 +615,53 @@ def run_poc(
     evidence.tier = selected.tier
     arch = str(spec["arch"])
 
+    # Only the Lima tier is serialised.  The guest lease covers staging, the
+    # guest-view freshness wait (inside run_path) and every case execution so
+    # concurrent benchmark/verifier runs cannot interleave on the shared VM.
+    lease: guest_coordinator.GuestLease | None = None
+    if selected.kind == "lima":
+        instance = (selected.instance or lima_instance_name()).strip()
+        try:
+            lease = guest_coordinator.acquire_lima_guest_lock(
+                purpose="poc_runner.run_poc",
+                instance=instance,
+                limactl=selected.tool,
+                timeout=lock_timeout,
+            )
+        except guest_coordinator.GuestLockError as exc:
+            blocked_kind = (
+                "timeout"
+                if isinstance(exc, guest_coordinator.GuestLockTimeout)
+                else "unavailable"
+            )
+            evidence.status = "unavailable"
+            evidence.lock_blocked = True
+            evidence.lock_attempts = list(exc.attempts)
+            evidence.limitations.append(
+                f"Lima guest lock {blocked_kind}: blocked, the PoC was not "
+                f"executed ({exc})"
+            )
+            return evidence
+
     try:
-        with _staging_root(selected) as root:
-
-            def run_group(group: str) -> tuple[list[CaseResult], list[CaseResult]]:
-                originals: list[CaseResult] = []
-                candidates: list[CaseResult] = []
-                for index, case in enumerate(spec[group]):
-                    stdin = b""
-                    if case.get("stdin_base64"):
-                        stdin = base64.b64decode(case["stdin_base64"], validate=True)
-                    for is_original in (True, False):
-                        result = _run_case(
-                            binary_bytes=original if is_original else candidate,
-                            case=case,
-                            group=group,
-                            index=index,
-                            is_original=is_original,
-                            arch=arch,
-                            runner=selected,
-                            root=root,
-                            stdin=stdin,
-                            timeout=timeout,
-                            errno_probe=evidence.errno_probe,
-                        )
-                        (originals if is_original else candidates).append(result)
-                return originals, candidates
-
-            original_poc, candidate_poc = run_group("poc")
-            original_regression, candidate_regression = run_group("regression")
+        try:
+            with _staging_root(selected) as root:
+                groups = _run_all_groups(
+                    selected=selected,
+                    spec=spec,
+                    original=original,
+                    candidate=candidate,
+                    root=root,
+                    timeout=timeout,
+                    errno_probe=evidence.errno_probe,
+                    lock_timeout=lock_timeout,
+                )
+        finally:
+            if lease is not None:
+                # Release in a finally so a staging/execution error can never
+                # leave the shared guest permanently locked.
+                lease.release()
+                evidence.lock_attempts = list(lease.attempts)
     except OSError as exc:
         evidence.status = "fail"
         evidence.limitations.append(
@@ -578,10 +673,36 @@ def run_poc(
         evidence.limitations.append(f"invalid PoC case data: {exc}")
         return evidence
 
+    (
+        original_poc,
+        candidate_poc,
+        original_regression,
+        candidate_regression,
+    ) = groups
+
     # Preserve the historical evidence layout: all original cases first, then
     # the candidate cases of the same group.
     evidence.cases = original_poc + candidate_poc
     evidence.regression = original_regression + candidate_regression
+
+    blocked_cases = [
+        case for case in evidence.cases + evidence.regression if case.lock_blocked
+    ]
+    if blocked_cases:
+        # A nested guest-lock failure must never be reported as an execution
+        # failure or a pass: the evidence is unavailable/blocked.
+        evidence.status = "unavailable"
+        evidence.lock_blocked = True
+        case_attempts = [
+            record for case in blocked_cases for record in case.lock_attempts
+        ]
+        if case_attempts:
+            evidence.lock_attempts = list(evidence.lock_attempts) + case_attempts
+        evidence.limitations.append(
+            "Lima guest lock blocked one or more case executions; PoC evidence "
+            "is unavailable and no case result may be treated as verified"
+        )
+        return evidence
 
     if any(case.error or case.timed_out for case in evidence.cases + evidence.regression):
         evidence.status = "fail"

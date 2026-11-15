@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from app.services import guest_runner
+from app.services import guest_coordinator, guest_runner
 from app.services.guest_runner import (
     GuestRunner,
     crash_detected,
@@ -24,6 +24,18 @@ STRCPY = ROOT / "fixtures/elf/vuln-strcpy-x86_64.elf"
 _RUNNER = find_guest_runner("x86_64")
 LIMA = _RUNNER is not None and _RUNNER.kind == "lima"
 NATIVE = GuestRunner(kind="native", tool="", tier="native_run")
+
+
+@pytest.fixture(autouse=True)
+def _isolate_guest_lock(tmp_path: Path, monkeypatch):
+    """Hermetic Lima guest lock for every test (no writes to the real $HOME)."""
+
+    monkeypatch.setattr(guest_coordinator, "_STATES", {})
+    guest_coordinator.clear_attempt_history()
+    monkeypatch.setenv(guest_coordinator.LOCK_ENV, str(tmp_path / "lima-guest.lock"))
+    monkeypatch.setenv(guest_coordinator.TIMEOUT_ENV, "60")
+    yield
+    guest_coordinator.clear_attempt_history()
 
 
 def test_guest_runner_is_explicit_when_qemu_missing():
@@ -286,6 +298,12 @@ def test_lima_run_path_executes_static_x86_64_elf():
     assert result.stdout == b"hi\n"
     assert result.runner == Path(_RUNNER.tool).name
     assert result.tier == "emulated_run"
+    # The Lima tier is serialised and records attempt evidence.
+    assert result.lock_blocked is False
+    assert result.lock_attempts
+    assert result.lock_attempts[0]["acquired"] is True
+    assert result.lock_attempts[0]["released"] is True
+    assert result.lock_attempts[0]["instance"] == _RUNNER.instance
 
 
 @pytest.mark.skipif(not LIMA, reason="running Lima guest runner is required")

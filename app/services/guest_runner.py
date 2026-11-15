@@ -22,6 +22,13 @@ shell-style ``128 + signal`` codes 132..139, and ``target signal`` /
 by a signal surfaces as exit code 255; for x86-64 targets the guest's
 qemu-user-powered binfmt wrapper prints the ``target signal`` marker, which is
 what classifies those runs as crashes.
+
+Only the Lima tier is serialised: :func:`run_path` holds the cross-process guest
+lease from :mod:`app.services.guest_coordinator` across the guest-view freshness
+wait and the actual guest execution, so concurrent staging/execution runs cannot
+interleave.  ``GuestResult.lock_attempts`` carries the attempt evidence and
+``GuestResult.lock_blocked`` marks a timeout/unavailable lock (nothing was
+executed).  Native and qemu-user runs never touch the lock.
 """
 from __future__ import annotations
 
@@ -33,8 +40,11 @@ import subprocess
 import sys
 import tempfile
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
+
+from app.services import guest_coordinator
 
 LIMA_INSTANCE_ENV = "BINARYREPAIR_LIMA_INSTANCE"
 DEFAULT_LIMA_INSTANCE = "binaryrepair"
@@ -86,6 +96,10 @@ class GuestResult:
     crashed: bool = False
     runner: str = ""
     tier: str = ""
+    #: Guest-lock attempt evidence (Lima tier only; empty for native/qemu).
+    lock_attempts: list[dict[str, Any]] = field(default_factory=list)
+    #: The Lima guest lock timed out/was unavailable: nothing was executed.
+    lock_blocked: bool = False
 
 
 def _normalize_arch(arch: str) -> str:
@@ -337,6 +351,15 @@ def wait_for_lima_guest_view(
     )
 
 
+def _lock_blocked_error(exc: guest_coordinator.GuestLockError) -> str:
+    kind = (
+        "timeout/blocked"
+        if isinstance(exc, guest_coordinator.GuestLockTimeout)
+        else "unavailable/blocked"
+    )
+    return f"guest lock {kind}: {exc}"
+
+
 def run_path(
     path: Path | str,
     argv: list[str] | None = None,
@@ -348,12 +371,21 @@ def run_path(
     cwd: Path | str | None = None,
     wrapper: list[str] | None = None,
     extra_env: dict[str, str] | None = None,
+    lock_timeout: float | None = None,
+    lock_purpose: str | None = None,
 ) -> GuestResult:
     """Execute *path* with *argv* in a native/qemu/Lima environment.
 
     ``argv`` are the arguments passed to the target (not including the target
     path itself).  When no runner can be selected, ``available`` is ``False``
     and nothing is executed.
+
+    For the Lima tier the exclusive guest lease is held across the guest-view
+    freshness wait and the actual execution (:mod:`app.services.guest_coordinator`);
+    ``lock_timeout`` overrides the configured wait (env
+    ``BINARYREPAIR_GUEST_LOCK_TIMEOUT``) and ``lock_purpose`` labels the attempt
+    evidence.  A lock timeout/unavailable path returns ``lock_blocked=True`` and
+    never executes the target.  Native/qemu-user execution is unaffected.
     """
 
     selected = runner if runner is not None else find_guest_runner(arch)
@@ -370,6 +402,15 @@ def run_path(
     common = {"runner": name, "tier": selected.tier, "tool": name}
     args = [str(arg) for arg in (argv or [])]
 
+    lock_attempts: list[dict[str, Any]] = []
+    lock_lease: guest_coordinator.GuestLease | None = None
+    stale_error: str | None = None
+    timeout_expired = False
+    os_error: str | None = None
+    proc: subprocess.CompletedProcess | None = None
+    command: list[str]
+    env: dict[str, str] | None
+
     if selected.kind == "lima":
         instance = (selected.instance or lima_instance_name()).strip()
         if not instance:
@@ -384,13 +425,21 @@ def run_path(
                 ),
                 **common,
             )
-        stale_error = wait_for_lima_guest_view(
-            selected.tool, instance, Path(exec_path).absolute(),
-        )
-        if stale_error is not None:
-            # Do not execute a stale binary: evidence must stay unavailable
-            # rather than a fabricated qemu SIGBUS crash.
-            return GuestResult(True, error=stale_error, **common)
+        try:
+            lock_lease = guest_coordinator.acquire_lima_guest_lock(
+                purpose=str(lock_purpose or "guest_runner.run_path"),
+                instance=instance,
+                limactl=selected.tool,
+                timeout=lock_timeout,
+            )
+        except guest_coordinator.GuestLockError as exc:
+            return GuestResult(
+                True,
+                error=_lock_blocked_error(exc),
+                lock_blocked=True,
+                lock_attempts=list(exc.attempts),
+                **common,
+            )
         command = [
             selected.tool,
             "shell",
@@ -420,21 +469,51 @@ def run_path(
             env.update({str(k): str(v) for k, v in extra_env.items()})
 
     try:
-        proc = subprocess.run(
-            command,
-            input=stdin,
-            capture_output=True,
-            timeout=timeout,
-            cwd=str(run_cwd),
-            env=env,
-            check=False,
-        )
+        try:
+            if selected.kind == "lima":
+                # The stale-view wait happens while the guest lease is held so a
+                # sibling process cannot restage/overwrite the binary between the
+                # freshness check and the execution.
+                stale_error = wait_for_lima_guest_view(
+                    selected.tool, instance, Path(exec_path).absolute(),
+                )
+            if stale_error is None:
+                proc = subprocess.run(
+                    command,
+                    input=stdin,
+                    capture_output=True,
+                    timeout=timeout,
+                    cwd=str(run_cwd),
+                    env=env,
+                    check=False,
+                )
+        finally:
+            if lock_lease is not None:
+                lock_lease.release()
+                lock_attempts = list(lock_lease.attempts)
     except subprocess.TimeoutExpired:
-        return GuestResult(True, timed_out=True, error="timeout", **common)
+        timeout_expired = True
     except OSError as exc:
-        return GuestResult(True, error=f"{type(exc).__name__}: {exc}", **common)
+        os_error = f"{type(exc).__name__}: {exc}"
     except subprocess.SubprocessError as exc:  # pragma: no cover - defensive
-        return GuestResult(True, error=f"{type(exc).__name__}: {exc}", **common)
+        os_error = f"{type(exc).__name__}: {exc}"
+
+    if stale_error is not None:
+        # Do not execute a stale binary: evidence must stay unavailable rather
+        # than a fabricated qemu SIGBUS crash.
+        return GuestResult(
+            True, error=stale_error, lock_attempts=lock_attempts, **common,
+        )
+    if timeout_expired:
+        return GuestResult(
+            True, timed_out=True, error="timeout", lock_attempts=lock_attempts,
+            **common,
+        )
+    if os_error is not None or proc is None:
+        return GuestResult(
+            True, error=os_error or "execution did not start",
+            lock_attempts=lock_attempts, **common,
+        )
 
     stdout = proc.stdout or b""
     stderr = proc.stderr or b""
@@ -447,6 +526,7 @@ def run_path(
             stdout=stdout,
             stderr=stderr,
             error=f"limactl failed to launch the target: {message[:300]}",
+            lock_attempts=lock_attempts,
             **common,
         )
     return GuestResult(
@@ -455,6 +535,7 @@ def run_path(
         stderr=stderr,
         exit_code=proc.returncode,
         crashed=crash_detected(proc.returncode, stderr),
+        lock_attempts=lock_attempts,
         **common,
     )
 
