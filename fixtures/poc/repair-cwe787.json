@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "cwe787_bad",
+  "poc": [
+    {
+      "id": "cwe787-index-large",
+      "argv": [
+        "1000000"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "cwe787-index-5",
+      "argv": [
+        "5"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "ok\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "ok\n"
+      }
+    },
+    {
+      "id": "cwe787-index-15",
+      "argv": [
+        "15"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "ok\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "ok\n"
+      }
+    }
+  ]
+}

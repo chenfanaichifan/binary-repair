@@ -63,4 +63,5 @@ def test_invalid_plan_is_typed_and_not_assembly():
     result = _ai_plan_attempt(client, BINARY.read_bytes(), CASE, "full", False, None)
     assert result["plan"] is None
     assert result["plan_error"].startswith("permitted_call_not_allowed")
-    assert client.calls == 1
+    # invalid plan gets one planner-feedback retry
+    assert client.calls == 2

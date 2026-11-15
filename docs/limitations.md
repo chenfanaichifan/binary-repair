@@ -26,10 +26,11 @@ general-purpose binary rewriter and does not claim universal correctness.
   (`strlen/memcpy/memset/strcat/atoi`), syscall templates
   (`write/exit`), a reviewed `fputs(x, stderr)` rewrite, and a typed
   `malloc/free` refusal.  Memory-management semantics are not templated;
-- general non-loop Path A/B success.  Three non-loop hard cases now pass with
-  a structured RepairSpec + ABI-strict assembly path; this is still a small,
-  same-binary set, not a family/generalization proof.  A reference-locked
-  CWE416/UAF repair passes separately and is never counted as AI.
+- general non-loop Path A/B success.  Four binaries / three CWE classes are
+  now represented in a small cross-binary benchmark; the best run verified
+  4/6, including one unseen binary.  This is still a small, stochastic sample,
+  not a generalization proof.  A reference-locked CWE416/UAF repair passes
+  separately and is never counted as AI.
 
 ## 4-model matrix conclusion
 

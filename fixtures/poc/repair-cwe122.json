@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "fixture_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+  "format": "elf",
+  "arch": "x86_64",
+  "target": "cwe122_bad",
+  "poc": [
+    {
+      "id": "cwe122-overflow-64",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false
+      }
+    },
+    {
+      "id": "cwe122-overflow-256",
+      "argv": [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "cwe122-short",
+      "argv": [
+        "hi"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "hi\n"
+      }
+    }
+  ]
+}

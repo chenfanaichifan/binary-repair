@@ -27,6 +27,7 @@ ALLOWED_IMPORT_NAMES = frozenset({
     "strcpy", "strncpy", "strcat", "stpcpy", "memcpy", "memmove", "memset",
     "puts", "printf", "sprintf", "snprintf", "fputs", "fprintf",
     "strlen", "malloc", "calloc", "realloc", "free", "exit", "_exit", "abort",
+    "atoi", "strtol", "strtoul",
     "read", "write", "printLine",
 })
 

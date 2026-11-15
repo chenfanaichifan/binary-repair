@@ -49,6 +49,14 @@ simple semantic-versioning policy for delivery snapshots.
   identity; 3 runs each over 12 cases, native PoC.  Both 6/12 (loop 6/6,
   non-loop 0/6), stable.  Evidence `artifacts/multi-model-matrix-2026-11-14/`.
 
+## P5–P9 (2026-11-15)
+
+- native semantic feedback retry with real failure evidence
+- RepairSpec v2 schema/validation, v1 compatibility
+- cross-binary benchmark (4 binaries / CWE121/122/787)
+- model qualification (two models, 2/6 each, different cases)
+- versioned repair evidence bundle builder/checker
+
 ## Phase A/B (2026-11-15)
 
 - RepairSpec planner + ABI-strict assembly: 3/3 non-loop AI verified

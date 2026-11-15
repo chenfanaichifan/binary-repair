@@ -32,7 +32,8 @@
     "5-6 model matrix: only 4 real models; GLM-Z1 probe timed out; no additional provider key",
     "full runtime TLS/libc errno capture; current errno probe is a syscall-signature proxy and optional",
     "exact TLS errno at arbitrary function return; LD_PRELOAD probe is process-exit only",
-    "native semantic feedback retry for future failing candidates; not needed by the 3/3 passing set"
+    "native semantic feedback retry for future failing candidates; not needed by the 3/3 passing set",
+    "3-repeat cross-binary stability run; current P9 evidence is one run per case"
   ],
   "non_goals": [
     {
@@ -265,7 +266,12 @@
     "cave relocation mapped through PT_LOAD, fixing SHT_NOBITS .tbss offset corruption",
     "3/3 AI-verified non-loop hard cases (hard-multicall, hard-sprintf, hard-nonconst)",
     "raw assembly/candidate/native-failure evidence and run manifests",
-    "deepseek-flash 3/3 AI-verified non-loop; deepseek-v4-pro 0/3 under same RepairSpec/ABI pipeline"
+    "deepseek-flash 3/3 AI-verified non-loop; deepseek-v4-pro 0/3 under same RepairSpec/ABI pipeline",
+    "native semantic feedback retry with real fail-then-pass evidence",
+    "RepairSpec v2 nested schema + consistency validation (v1 compatible)",
+    "cross-binary benchmark: 4 binaries / CWE121, CWE122, CWE787; best AI run 4/6",
+    "model qualification: flash 2/6, v4-pro 2/6, different cases verified",
+    "versioned repair evidence bundle builder/checker"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",

@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "cwe": "CWE-787",
+  "title": "out-of-bounds write: atoi index into dst[16]",
+  "mechanism": "bounds-check",
+  "trigger": "argv[1] integer >= 16 or large enough to fault"
+}

@@ -36,7 +36,8 @@ from app.services.poc_runner import run_poc  # noqa: E402
 from app.services.repair.analyzer import Sink  # noqa: E402
 from app.services.repair.call_targets import discover_allowed_calls  # noqa: E402
 from app.services.repair.abi import check_block as check_abi  # noqa: E402
-from app.services.repair_spec import RepairSpec, validate_spec  # noqa: E402
+from app.services.repair_spec import RepairSpec, spec_from_plan, validate_spec  # noqa: E402
+from app.services.native_feedback import analyze_native_failure  # noqa: E402
 from app.services.repair.writer import repair_with_sinks  # noqa: E402
 
 PLAN_MAX_TOKENS = 900
@@ -381,12 +382,14 @@ def _prompt_packet(data: bytes, target: str, capacity: int, contract: str,
                    contract_level: str = "full",
                    allowed_calls: list[Any] | None = None,
                    callee_context: dict[str, Any] | None = None,
-                   repair_spec: RepairSpec | None = None) -> dict[str, Any]:
+                   repair_spec: RepairSpec | None = None,
+                   native_feedback: dict[str, Any] | None = None,
+                   sink_kind: str = "unbounded_copy") -> dict[str, Any]:
     container = detect_container(data)
     va = _target_va(container, target)
     if va is None:
         raise ValueError(f"target not found: {target}")
-    sink = Sink(kind="unbounded_copy", arch=container.arch, function_va=va,
+    sink = Sink(kind=sink_kind, arch=container.arch, function_va=va,
                 capacity=capacity, patchable=True)
     listing = _disassemble_function(data, container, sink)
     allowed_calls = list(allowed_calls or [])
@@ -396,6 +399,8 @@ def _prompt_packet(data: bytes, target: str, capacity: int, contract: str,
         packet["callee_context"] = callee_context
     if repair_spec is not None:
         packet["repair_spec"] = repair_spec.to_dict()
+    if native_feedback is not None:
+        packet["native_feedback"] = native_feedback
     call_rule = (
         "no external calls, syscalls, privileged instructions or indirect jumps"
         if not allowed_calls else
@@ -629,6 +634,8 @@ def _ai_plan_attempt(
     contract_level: str,
     allow_calls_flag: bool,
     callee_context: dict[str, Any] | None = None,
+    native_feedback: dict[str, Any] | None = None,
+    prior_plan: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """One planner call; never generates or injects assembly."""
     from app.services.ai_binary_repair import _ai_base
@@ -643,26 +650,60 @@ def _ai_plan_attempt(
     packet = _prompt_packet(
         data, case["target"], int(case["capacity"]), case["contract"],
         contract_level, allowed_calls, callee_context,
+        native_feedback=native_feedback,
+        sink_kind=str(case.get("sink_kind") or "unbounded_copy"),
     )
+    if prior_plan is not None:
+        packet["prior_repair_spec"] = prior_plan
     packet["task"] = "repair_plan"
     packet["required_fields"] = list(PLAN_FIELDS)
     started = time.perf_counter()
-    parsed, error = _call_model(
-        client, system_prompt=PLAN_SYSTEM_PROMPT, packet=packet,
-        max_tokens=PLAN_MAX_TOKENS, ai=ai_meta,
-    )
-    spec, plan_error = (None, "empty_plan")
+    attempts: list[dict[str, Any]] = []
+    spec = None
     raw_plan = None
-    if parsed is not None:
-        raw_plan = parsed
-        scope = _target_scope_of(data, case["target"])
-        spec, plan_error = validate_spec(
-            parsed, case=case,
-            allowed_calls={item.name for item in allowed_calls},
-            target_scope=scope,
+    plan_error = "empty_plan"
+    last_ai: dict[str, Any] = ai_meta
+    scope = _target_scope_of(data, case["target"])
+    for attempt_index in range(2):
+        attempt_meta: dict[str, Any] = _ai_base("hard_target_plan")
+        parsed, error = _call_model(
+            client, system_prompt=PLAN_SYSTEM_PROMPT, packet=dict(packet),
+            max_tokens=PLAN_MAX_TOKENS, ai=attempt_meta,
         )
+        attempt_raw = parsed if parsed is not None else None
+        attempt_spec = None
+        attempt_error = "empty_plan"
+        if parsed is not None:
+            attempt_spec, attempt_error = validate_spec(
+                parsed, case=case,
+                allowed_calls={item.name for item in allowed_calls},
+                target_scope=scope,
+            )
+        attempts.append({
+            "attempt": attempt_index + 1,
+            "status": "valid" if attempt_spec is not None else "invalid",
+            "error": attempt_error,
+            "model": attempt_meta.get("model"),
+            "model_requested": attempt_meta.get("model_requested"),
+            "usage": attempt_meta.get("usage"),
+            "latency_ms": attempt_meta.get("latency_ms"),
+            "raw_plan": attempt_raw,
+        })
+        last_ai = attempt_meta
+        if attempt_spec is not None:
+            spec, raw_plan, plan_error = attempt_spec, attempt_raw, ""
+            break
+        plan_error = attempt_error
+        if attempt_index == 0:
+            packet = dict(packet)
+            packet["previous_plan_error"] = attempt_error
+            packet["previous_plan_raw"] = attempt_raw
+            packet["retry_instruction"] = (
+                "Return a single JSON RepairSpec; do not use markdown or prose. "
+                "Fix the exact validation error shown in previous_plan_error."
+            )
     return {
-        "ai": ai_meta,
+        "ai": last_ai,
         "raw_plan": raw_plan,
         "plan": spec.to_dict() if spec is not None else None,
         "plan_sha256": (
@@ -670,8 +711,9 @@ def _ai_plan_attempt(
             if spec is not None else None
         ),
         "plan_error": plan_error,
-        "error": error or (plan_error if spec is None else None),
+        "error": plan_error if spec is None else None,
         "allowed_calls": [item.to_dict() for item in allowed_calls],
+        "attempts": attempts,
         "elapsed_ms": max(0, int((time.perf_counter() - started) * 1000)),
     }
 
@@ -684,6 +726,7 @@ def _ai_prompt_attempt(
     allow_calls_flag: bool,
     callee_context: dict[str, Any] | None = None,
     repair_spec: RepairSpec | None = None,
+    native_feedback: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """One real/scripted model call for the target assembly repair.
 
@@ -703,6 +746,8 @@ def _ai_prompt_attempt(
     packet = _prompt_packet(
         data, case["target"], int(case["capacity"]), case["contract"],
         contract_level, allowed_calls, callee_context, repair_spec,
+        native_feedback,
+        sink_kind=str(case.get("sink_kind") or "unbounded_copy"),
     )
     started = time.perf_counter()
     attempts: list[dict[str, Any]] = []
@@ -812,13 +857,14 @@ def _allowed_call_objects(call_targets: list[dict[str, Any]]) -> list[Any]:
 
 
 def _write_candidate(out_dir: Path | None, case: dict[str, Any],
-                     patched: bytes | None) -> str | None:
+                     patched: bytes | None, label: str = "") -> str | None:
     if out_dir is None or patched is None:
         return None
     directory = out_dir / "candidates"
     directory.mkdir(parents=True, exist_ok=True)
     name = re.sub(r"[^A-Za-z0-9._-]+", "_", str(case["id"]))
-    path = directory / f"{name}.bin"
+    suffix = f"__{label}" if label else ""
+    path = directory / f"{name}{suffix}.bin"
     path.write_bytes(patched)
     return str(path)
 
@@ -831,6 +877,7 @@ def _apply_assembly_and_evaluate(
     call_targets: list[dict[str, Any]],
     out_dir: Path | None = None,
     abi_strict: bool = False,
+    artifact_label: str = "",
 ) -> dict[str, Any]:
     """Inject the returned assembly at the case target and run the PoC gate."""
     started = time.perf_counter()
@@ -840,7 +887,7 @@ def _apply_assembly_and_evaluate(
         abi_strict=abi_strict,
     )
     candidate = _evaluate(data, patched, poc, case, injection)
-    artifact = _write_candidate(out_dir, case, patched)
+    artifact = _write_candidate(out_dir, case, patched, artifact_label)
     if artifact:
         candidate["candidate_artifact"] = artifact
     return {
@@ -849,6 +896,131 @@ def _apply_assembly_and_evaluate(
         "patched": patched,
         "elapsed_ms": max(0, int((time.perf_counter() - started) * 1000)),
     }
+
+
+
+
+def _poc_evidence_namespace(candidate: dict[str, Any]) -> Any:
+    from types import SimpleNamespace
+
+    poc = candidate.get("poc") or {}
+    def rows(items: Any) -> list[Any]:
+        out=[]
+        for item in items or []:
+            if not isinstance(item, dict):
+                continue
+            out.append(SimpleNamespace(**{
+                "case_id": item.get("case_id", ""),
+                "kind": item.get("kind", ""),
+                "executable": item.get("executable", ""),
+                "exit_code": item.get("exit_code"),
+                "crashed": bool(item.get("crashed", False)),
+                "timed_out": bool(item.get("timed_out", False)),
+                "stdout": item.get("stdout", ""),
+                "stderr": item.get("stderr", ""),
+                "expected_ok": bool(item.get("expected_ok", False)),
+            }))
+        return out
+    return SimpleNamespace(
+        status=poc.get("status", candidate.get("poc_status", "not_run")),
+        cases=rows(poc.get("poc")),
+        regression=rows(poc.get("regression")),
+    )
+
+
+def _semantic_retry_attempt(
+    *,
+    client: Any,
+    data: bytes,
+    case: dict[str, Any],
+    poc: dict[str, Any],
+    prior: dict[str, Any],
+    contract_level: str,
+    allow_calls: bool,
+    callee_context: dict[str, Any] | None,
+    abi_strict: bool,
+    out: Path,
+    repeat: int,
+    round_index: int,
+) -> dict[str, Any] | None:
+    """One bounded native-feedback round. Returns None when not retryable."""
+    from app.services.native_feedback import analyze_native_failure
+    candidate = prior.get("candidate") or {}
+    feedback_obj = analyze_native_failure(
+        _poc_evidence_namespace(candidate),
+        injection=prior.get("injection") or {},
+        case_id=str(case.get("id") or ""),
+    )
+    if feedback_obj is None or not feedback_obj.retryable:
+        return None
+    feedback = feedback_obj.to_dict()
+    prior_plan = (prior.get("plan") or {}).get("plan")
+    plan_attempt = _ai_plan_attempt(
+        client, data, case, contract_level, allow_calls,
+        callee_context, native_feedback=feedback, prior_plan=prior_plan,
+    )
+    if plan_attempt.get("plan") is None:
+        return {
+            "repeat": repeat, "round": round_index,
+            "status": "plan_invalid",
+            "error": plan_attempt.get("plan_error"),
+            "plan": plan_attempt, "native_feedback": feedback,
+            "assembly_returned": False, "attempted": True, "verified": False,
+            "candidate": {"gate": "plan_invalid", "poc_status": "not_run",
+                          "repair_status": "PLAN_INVALID",
+                          "plan_error": plan_attempt.get("plan_error")},
+            "injection": {}, "target_scope": None,
+            "target_scope_check": "not_run", "target_in_scope": False,
+            "elapsed_ms": plan_attempt.get("elapsed_ms"),
+        }
+    spec = RepairSpec(**plan_attempt["plan"])
+    prompt = _ai_prompt_attempt(
+        client, data, case, contract_level, allow_calls, callee_context,
+        repair_spec=spec, native_feedback=feedback,
+    )
+    attempt: dict[str, Any] = {
+        "repeat": repeat, "round": round_index,
+        "plan": plan_attempt,
+        "native_feedback": feedback,
+        "model": prompt["ai"].get("model"),
+        "model_requested": prompt["ai"].get("model_requested"),
+        "status": prompt["ai"].get("status"),
+        "error": prompt["ai"].get("error"),
+        "plan_status": "valid",
+        "plan_sha256": plan_attempt.get("plan_sha256"),
+        "usage": prompt["ai"].get("usage"),
+        "latency_ms": prompt["ai"].get("latency_ms"),
+        "request_id": prompt["ai"].get("request_id"),
+        "assembly_returned": prompt["assembly"] is not None,
+        "assembly_sha256": (
+            hashlib.sha256(prompt["assembly"].encode()).hexdigest()
+            if prompt["assembly"] is not None else None),
+        "assembly": prompt["assembly"],
+        "assembly_attempts": prompt.get("attempts"),
+        "validation_error": prompt.get("validation_error"),
+        "validation_error_class": prompt.get("validation_error_class"),
+        "allowed_calls": prompt["allowed_calls"],
+        "target_in_scope": False, "target_scope_check": "not_run",
+        "target_scope": None, "attempted": True, "verified": False,
+    }
+    if prompt["assembly"] is None:
+        return attempt
+    applied = _apply_assembly_and_evaluate(
+        data, case, poc, prompt["assembly"], prompt["allowed_calls"],
+        out_dir=out, abi_strict=abi_strict,
+        artifact_label=f"r{repeat}a{round_index}",
+    )
+    scope, scope_check, in_scope = _ai_target_scope(data, case, applied["injection"])
+    attempt.update({
+        "injection": applied["injection"],
+        "candidate": applied["candidate"],
+        "target_scope": scope,
+        "target_scope_check": scope_check,
+        "target_in_scope": in_scope,
+        "verified": applied["candidate"].get("gate") == "pass",
+        "elapsed_ms": prompt["elapsed_ms"] + applied["elapsed_ms"],
+    })
+    return attempt
 
 
 def _ai_target_scope(
@@ -884,6 +1056,9 @@ def main() -> int:
     ap.add_argument("--client", choices=("real", "reference"), default="real")
     ap.add_argument("--case", default="",
                     help="case id, or a comma-separated list of case ids")
+    ap.add_argument("--cases", type=Path,
+                    default=ROOT / "fixtures" / "hard-cases" / "cases.json",
+                    help="benchmark case manifest (default: hard-cases)")
     ap.add_argument("--contract-level", choices=("full", "generic", "none"), default="full")
     ap.add_argument("--repeats", type=int, default=1)
     ap.add_argument("--allow-calls", action="store_true",
@@ -892,6 +1067,10 @@ def main() -> int:
                     help="optional export_with_callees JSON to include in the target prompt")
     ap.add_argument("--repair-plan", action="store_true",
                     help="run a structured RepairSpec planner before assembly generation")
+    ap.add_argument("--semantic-retry", action="store_true",
+                    help="retry with typed native failure feedback (bounded)")
+    ap.add_argument("--max-repair-rounds", type=int, default=2,
+                    help="bounded plan/assembly rounds when --semantic-retry is used")
     ap.add_argument("--abi-strict", action="store_true",
                     help="reject blocks with fatal static ABI findings before injection")
     ap.add_argument("--target-strict", action="store_true",
@@ -903,7 +1082,8 @@ def main() -> int:
     args = ap.parse_args()
     out = args.out
     out.mkdir(parents=True, exist_ok=True)
-    cases = json.loads((ROOT / "fixtures" / "hard-cases" / "cases.json").read_text())["cases"]
+    cases_path = args.cases if args.cases.is_absolute() else ROOT / args.cases
+    cases = json.loads(cases_path.read_text())["cases"]
     selected_cases = [item.strip() for item in args.case.split(",") if item.strip()]
     if selected_cases:
         cases = [case for case in cases if case["id"] in selected_cases]
@@ -1066,7 +1246,7 @@ def main() -> int:
                             "elapsed_ms": plan_attempt.get("elapsed_ms"),
                         })
                         continue
-                    repair_spec = RepairSpec(**plan_attempt["plan"])
+                    repair_spec = spec_from_plan(plan_attempt["plan"])
                 prompt = _ai_prompt_attempt(
                     client, data, case, args.contract_level, args.allow_calls,
                     callee_context, repair_spec=repair_spec,
@@ -1136,6 +1316,39 @@ def main() -> int:
                 ai_attempts.append(attempt)
                 if attempt["verified"]:
                     break
+                if args.semantic_retry:
+                    prior = attempt
+                    max_rounds = max(1, min(3, int(args.max_repair_rounds)))
+                    for round_index in range(2, max_rounds + 1):
+                        retry = _semantic_retry_attempt(
+                            client=client, data=data, case=case, poc=poc,
+                            prior=prior, contract_level=args.contract_level,
+                            allow_calls=args.allow_calls,
+                            callee_context=callee_context,
+                            abi_strict=args.abi_strict, out=out,
+                            repeat=repeat, round_index=round_index,
+                        )
+                        if retry is None:
+                            break
+                        ai_attempts.append(retry)
+                        if retry["verified"]:
+                            chosen = {
+                                "ai": {**_ai_meta_unused(),
+                                       "status": retry.get("status")},
+                                "injection": retry.get("injection") or {},
+                                "candidate": retry.get("candidate") or {},
+                                "target_scope": retry.get("target_scope"),
+                                "target_scope_check": retry.get("target_scope_check"),
+                                "target_in_scope": bool(retry.get("target_in_scope")),
+                                "elapsed_ms": retry.get("elapsed_ms"),
+                                "usage": retry.get("usage"),
+                                "request_id": retry.get("request_id"),
+                                "model_returned": retry.get("model"),
+                                "model_requested": retry.get("model_requested"),
+                                "error": retry.get("error"),
+                            }
+                            break
+                        prior = retry
         record["ai_attempts"] = ai_attempts
         if chosen is None:
             if ai_attempts:

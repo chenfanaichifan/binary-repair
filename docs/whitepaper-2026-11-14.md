@@ -24,10 +24,12 @@ Patcherex2 或 assembly 注入 → native PoC/regression/副作用 gate。
 3. 小参数免费模型即便有相同上下文/符号解析器，仍全量 0/12；
 4. 精确 TLS errno 不是 syscall errno；后者只能是代理；新增 LD_PRELOAD
    进程退出 errno 探针（native dynamic ELF）仍不是函数返回点。
-5. 非 loop 泛化：在 RepairSpec + ABI-strict + cave relocation 修复后，
-   hard-multicall / hard-sprintf / hard-nonconst 三例 **AI verified PASS**
-   （deepseek-flash）；同一管线 deepseek-v4-pro 为 0/3，证明能力仍依赖模型；
-   UAF 参考修复单独 PASS，不计入 AI。
+5. 非 loop 泛化：RepairSpec + ABI-strict + cave relocation 在 4 个二进制、
+   3 类 CWE 的小型 benchmark 上，DeepSeek flash 最佳 run 为 4/6，
+   包含一个未见二进制 CWE122；但同代码 qualification 为 2/6，模型/pro 也
+   各 2/6 且成功 case 不同，说明结果仍随机且规模不足。
+6. P5 native feedback 已有真实“首轮 fail → 第二轮 PASS”证据；CWE787 的
+   绝对分支标签仍是 typed assembly failure。
 
 ## 不可判定 / 未覆盖
 

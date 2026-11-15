@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "cwe": "CWE-122",
+  "title": "heap-based buffer overflow: malloc(16) + unchecked memcpy",
+  "mechanism": "bounds-check",
+  "trigger": "argv[1] longer than 15 bytes"
+}

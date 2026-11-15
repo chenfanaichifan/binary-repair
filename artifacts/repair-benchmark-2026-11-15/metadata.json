@@ -1,0 +1,218 @@
+{
+  "schema_version": 2,
+  "kind": "repair_evidence",
+  "source_run": "/tmp/p7final-flash",
+  "provided_at": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "funnel": {
+    "VERIFIED": 4,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 1,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 1,
+    "REGRESSION_FAILED": 0
+  },
+  "ai_verified": 4,
+  "reference_note": "reference fixes are separate and are not AI evidence",
+  "manifest": {
+    "schema_version": 1,
+    "run_kind": "hard_benchmark",
+    "client": "real",
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-flash",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-flash",
+        "configured": true,
+        "errors": []
+      },
+      "model_configured": "deepseek-flash",
+      "status": "ok"
+    },
+    "case_ids": [
+      "hard-multicall",
+      "hard-sprintf",
+      "hard-nonconst",
+      "cwe121-unchecked-strcpy",
+      "cwe122-heap-copy",
+      "cwe787-index-write"
+    ],
+    "model": "deepseek-flash",
+    "repair_plan": true,
+    "abi_strict": true,
+    "funnel": {
+      "VERIFIED": 4,
+      "PLAN_INVALID": 0,
+      "ASSEMBLY_REJECTED": 1,
+      "ABI_REJECTED": 0,
+      "INJECTION_FAILED": 0,
+      "NO_CANDIDATE": 0,
+      "NATIVE_FAILED": 0,
+      "SECURITY_FAILED": 1,
+      "REGRESSION_FAILED": 0
+    },
+    "cases": [
+      {
+        "case_id": "hard-multicall",
+        "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "candidate_sha256": "755223f5443c598581376f6947b815b6abb2682326adc72d858ddccb634e96f1",
+        "candidate_artifact": "/tmp/p7final-flash/candidates/hard-multicall.bin",
+        "repair_status": "VERIFIED",
+        "gate": "pass"
+      },
+      {
+        "case_id": "hard-sprintf",
+        "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "candidate_sha256": "93a9e360e5e5571b065cd58019c776c0597af96cb4226f673be06d34c0d6d4e9",
+        "candidate_artifact": "/tmp/p7final-flash/candidates/hard-sprintf.bin",
+        "repair_status": "VERIFIED",
+        "gate": "pass"
+      },
+      {
+        "case_id": "hard-nonconst",
+        "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "candidate_sha256": "5ee9cb881d6ecbe2494f04a1e421ac1e38e9c0e0baf9b557f0da4a38bf98ded2",
+        "candidate_artifact": "/tmp/p7final-flash/candidates/hard-nonconst.bin",
+        "repair_status": "VERIFIED",
+        "gate": "pass"
+      },
+      {
+        "case_id": "cwe121-unchecked-strcpy",
+        "input_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+        "candidate_sha256": "e5b3b495a9b07b306cd7ed37439bc540349b1cfd2b49629b4a64daaf693a043a",
+        "candidate_artifact": "/tmp/p7final-flash/candidates/cwe121-unchecked-strcpy.bin",
+        "repair_status": "SECURITY_FAILED",
+        "gate": "fail"
+      },
+      {
+        "case_id": "cwe122-heap-copy",
+        "input_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+        "candidate_sha256": "5575de4e5d94c87ef2f97f0c09a25cb7918e2a5bcfffe37c9ced60d24323c5bb",
+        "candidate_artifact": "/tmp/p7final-flash/candidates/cwe122-heap-copy.bin",
+        "repair_status": "VERIFIED",
+        "gate": "pass"
+      },
+      {
+        "case_id": "cwe787-index-write",
+        "input_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+        "candidate_sha256": null,
+        "candidate_artifact": null,
+        "repair_status": "ASSEMBLY_REJECTED",
+        "gate": "no_candidate"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "hard-multicall",
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "gate": "pass",
+      "repair_status": "VERIFIED",
+      "candidate_sha256": "755223f5443c598581376f6947b815b6abb2682326adc72d858ddccb634e96f1",
+      "candidate_file": "candidates/hard-multicall.bin",
+      "native_failure": null,
+      "plan_status": "valid",
+      "attempts": 1
+    },
+    {
+      "case_id": "hard-sprintf",
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "gate": "pass",
+      "repair_status": "VERIFIED",
+      "candidate_sha256": "93a9e360e5e5571b065cd58019c776c0597af96cb4226f673be06d34c0d6d4e9",
+      "candidate_file": "candidates/hard-sprintf.bin",
+      "native_failure": null,
+      "plan_status": "valid",
+      "attempts": 1
+    },
+    {
+      "case_id": "hard-nonconst",
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "gate": "pass",
+      "repair_status": "VERIFIED",
+      "candidate_sha256": "5ee9cb881d6ecbe2494f04a1e421ac1e38e9c0e0baf9b557f0da4a38bf98ded2",
+      "candidate_file": "candidates/hard-nonconst.bin",
+      "native_failure": null,
+      "plan_status": "valid",
+      "attempts": 1
+    },
+    {
+      "case_id": "cwe121-unchecked-strcpy",
+      "input_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "gate": "fail",
+      "repair_status": "SECURITY_FAILED",
+      "candidate_sha256": "e5b3b495a9b07b306cd7ed37439bc540349b1cfd2b49629b4a64daaf693a043a",
+      "candidate_file": "candidates/cwe121-unchecked-strcpy.bin",
+      "native_failure": {
+        "stage": "native_gate",
+        "error_class": "stdout_or_exit_mismatch",
+        "case_id": "cwe121-invalid-51",
+        "kind": "poc",
+        "exit_code": 0,
+        "crashed": false,
+        "signal": null,
+        "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+        "stderr": "",
+        "timed_out": false,
+        "expected_ok": false
+      },
+      "plan_status": "valid",
+      "attempts": 2
+    },
+    {
+      "case_id": "cwe122-heap-copy",
+      "input_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+      "gate": "pass",
+      "repair_status": "VERIFIED",
+      "candidate_sha256": "5575de4e5d94c87ef2f97f0c09a25cb7918e2a5bcfffe37c9ced60d24323c5bb",
+      "candidate_file": "candidates/cwe122-heap-copy.bin",
+      "native_failure": null,
+      "plan_status": "valid",
+      "attempts": 1
+    },
+    {
+      "case_id": "cwe787-index-write",
+      "input_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+      "gate": "no_candidate",
+      "repair_status": "ASSEMBLY_REJECTED",
+      "candidate_sha256": null,
+      "candidate_file": null,
+      "native_failure": null,
+      "plan_status": "valid",
+      "attempts": 1
+    }
+  ],
+  "hashes": {
+    "summary.json": "ad5a598a0be0f0481726360b0d172bef574f25f9d76c1f572f19919d17dcdbae",
+    "run-manifest.json": "a02b476a3d5b2c8b17cda77545d7245dcfd5473bf09a9bebbfe4dd125c2c3502"
+  }
+}

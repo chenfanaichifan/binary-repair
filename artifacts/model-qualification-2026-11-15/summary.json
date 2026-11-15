@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "kind": "model_qualification",
+  "generated_at": "2026-11-15T04:59:01Z",
+  "cases_path": "fixtures/repair-benchmark/cases.json",
+  "records": [
+    {
+      "spec": "deepseek:deepseek-flash",
+      "provider": "deepseek",
+      "model_requested": "deepseek-flash",
+      "returncode": 0,
+      "stdout_tail": "{\"case\": \"hard-multicall\", \"baseline\": \"rejected\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"pass\", \"ai_target_in_scope\": true, \"increment\": true}\n{\"case\": \"hard-sprintf\", \"baseline\": \"rejected\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"fail\", \"ai_target_in_scope\": true, \"increment\": false}\n{\"case\": \"hard-nonconst\", \"baseline\": \"rejected\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"pass\", \"ai_target_in_scope\": true, \"increment\": true}\n{\"case\": \"cwe121-unchecked-strcpy\", \"baseline\": \"analysis_only\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"fail\", \"ai_target_in_scope\": true, \"increment\": false}\n{\"case\": \"cwe122-heap-copy\", \"baseline\": \"analysis_only\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"plan_invalid\", \"ai_gate\": \"plan_invalid\", \"ai_target_in_scope\": false, \"increment\": false}\n{\"case\": \"cwe787-index-write\", \"baseline\": \"analysis_only\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"ai_target_in_scope\": false, \"increment\": false}\n{\"out\": \"/tmp/qualification-final/deepseek-deepseek-flash\", \"baseline_verified\": 0, \"ai_verified\": 2, \"ai_increment\": 2}\n",
+      "stderr_tail": "",
+      "summary_path": "/tmp/qualification-final/deepseek-deepseek-flash/summary.json",
+      "manifest_path": "/tmp/qualification-final/deepseek-deepseek-flash/run-manifest.json",
+      "status": "completed",
+      "ai_verified": 2,
+      "ai_increment": 2,
+      "funnel": {
+        "VERIFIED": 2,
+        "PLAN_INVALID": 1,
+        "ASSEMBLY_REJECTED": 1,
+        "ABI_REJECTED": 0,
+        "INJECTION_FAILED": 0,
+        "NO_CANDIDATE": 0,
+        "NATIVE_FAILED": 0,
+        "SECURITY_FAILED": 2,
+        "REGRESSION_FAILED": 0
+      },
+      "case_results": [
+        {
+          "case": "hard-multicall",
+          "gate": "pass",
+          "repair_status": "VERIFIED",
+          "candidate_sha256": "2fd28b820a4cec1748f8dbf79b54e0a0fcb6ba07c14ce55cd52adc936b9d030e"
+        },
+        {
+          "case": "hard-sprintf",
+          "gate": "fail",
+          "repair_status": "SECURITY_FAILED",
+          "candidate_sha256": "8eaa1852adee68dec3930bc8818bdb2c25c268daf931ccdc4f59d89d2148a9b1"
+        },
+        {
+          "case": "hard-nonconst",
+          "gate": "pass",
+          "repair_status": "VERIFIED",
+          "candidate_sha256": "dbc8d726d4690aaf862ce2079b2ddcabbcf1bc632418d87eaf302d316a374ffb"
+        },
+        {
+          "case": "cwe121-unchecked-strcpy",
+          "gate": "fail",
+          "repair_status": "SECURITY_FAILED",
+          "candidate_sha256": "b27b25d05f4a39c5eb25260761459049607f0bad0cc86b5cb3b663debe6c5bdd"
+        },
+        {
+          "case": "cwe122-heap-copy",
+          "gate": "plan_invalid",
+          "repair_status": "PLAN_INVALID",
+          "candidate_sha256": null
+        },
+        {
+          "case": "cwe787-index-write",
+          "gate": "no_candidate",
+          "repair_status": "ASSEMBLY_REJECTED",
+          "candidate_sha256": null
+        }
+      ],
+      "provider_metadata": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-flash",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-flash",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-flash",
+        "status": "ok"
+      }
+    },
+    {
+      "spec": "deepseek:deepseek-v4-pro",
+      "provider": "deepseek",
+      "model_requested": "deepseek-v4-pro",
+      "returncode": 0,
+      "stdout_tail": "{\"case\": \"hard-multicall\", \"baseline\": \"rejected\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"ai_target_in_scope\": false, \"increment\": false}\n{\"case\": \"hard-sprintf\", \"baseline\": \"rejected\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"pass\", \"ai_target_in_scope\": true, \"increment\": true}\n{\"case\": \"hard-nonconst\", \"baseline\": \"rejected\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"ai_target_in_scope\": false, \"increment\": false}\n{\"case\": \"cwe121-unchecked-strcpy\", \"baseline\": \"analysis_only\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"fail\", \"ai_target_in_scope\": true, \"increment\": false}\n{\"case\": \"cwe122-heap-copy\", \"baseline\": \"analysis_only\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"pass\", \"ai_target_in_scope\": true, \"increment\": true}\n{\"case\": \"cwe787-index-write\", \"baseline\": \"analysis_only\", \"baseline_target_strict\": \"analysis_only\", \"target_strict_matches\": true, \"ai_status\": \"accepted\", \"ai_gate\": \"no_candidate\", \"ai_target_in_scope\": false, \"increment\": false}\n{\"out\": \"/tmp/qualification-final/deepseek-deepseek-v4-pro\", \"baseline_verified\": 0, \"ai_verified\": 2, \"ai_increment\": 2}\n",
+      "stderr_tail": "",
+      "summary_path": "/tmp/qualification-final/deepseek-deepseek-v4-pro/summary.json",
+      "manifest_path": "/tmp/qualification-final/deepseek-deepseek-v4-pro/run-manifest.json",
+      "status": "completed",
+      "ai_verified": 2,
+      "ai_increment": 2,
+      "funnel": {
+        "VERIFIED": 2,
+        "PLAN_INVALID": 0,
+        "ASSEMBLY_REJECTED": 1,
+        "ABI_REJECTED": 1,
+        "INJECTION_FAILED": 1,
+        "NO_CANDIDATE": 0,
+        "NATIVE_FAILED": 0,
+        "SECURITY_FAILED": 1,
+        "REGRESSION_FAILED": 0
+      },
+      "case_results": [
+        {
+          "case": "hard-multicall",
+          "gate": "no_candidate",
+          "repair_status": "ABI_REJECTED",
+          "candidate_sha256": null
+        },
+        {
+          "case": "hard-sprintf",
+          "gate": "pass",
+          "repair_status": "VERIFIED",
+          "candidate_sha256": "e74f27d1788ac62fe5ccba6e6f5e0be0142b312d0fac099eb568028e97cc1746"
+        },
+        {
+          "case": "hard-nonconst",
+          "gate": "no_candidate",
+          "repair_status": "INJECTION_FAILED",
+          "candidate_sha256": null
+        },
+        {
+          "case": "cwe121-unchecked-strcpy",
+          "gate": "fail",
+          "repair_status": "SECURITY_FAILED",
+          "candidate_sha256": "cff3ae890368407a4f9773df6af218a10a0e46f47a7f477e58d6364b6bd5d204"
+        },
+        {
+          "case": "cwe122-heap-copy",
+          "gate": "pass",
+          "repair_status": "VERIFIED",
+          "candidate_sha256": "7d2786d782e6af3a1efa32b12dadcd29439c09dca436415755bc419b09b87843"
+        },
+        {
+          "case": "cwe787-index-write",
+          "gate": "no_candidate",
+          "repair_status": "ASSEMBLY_REJECTED",
+          "candidate_sha256": null
+        }
+      ],
+      "provider_metadata": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-v4-pro",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-v4-pro",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-v4-pro",
+        "status": "ok"
+      }
+    }
+  ]
+}
