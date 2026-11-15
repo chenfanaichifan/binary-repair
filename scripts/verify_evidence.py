@@ -45,6 +45,7 @@ DEFAULT_BUNDLES = (
     "artifacts/ai-repair-planning-2026-11-15",
     "artifacts/model-qualification-2026-11-15",
     "artifacts/repair-benchmark-2026-11-15",
+    "artifacts/independent-verification-2026-11-16",
     "artifacts/repair-benchmark-expansion-2026-11-16",
     "artifacts/repair-spec-v2-2026-11-16",
     "artifacts/stability-2026-11-16",

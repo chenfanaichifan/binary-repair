@@ -1,0 +1,5293 @@
+{
+  "schema_version": 1,
+  "kind": "independent_benchmark_verification",
+  "cases": [
+    {
+      "case_id": "hard-multicall",
+      "decision": "verified",
+      "report": {
+        "schema_version": 1,
+        "target": {
+          "format": "elf",
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "target_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "target_scope": {
+            "policy": "whole_image",
+            "name": "multicall_bad"
+          }
+        },
+        "generator": {
+          "generator_id": "ai-repair-benchmark/1",
+          "agent": "repair-pipeline",
+          "model": "deepseek-flash",
+          "run_id": "hard-multicall"
+        },
+        "verifier": {
+          "verifier_id": "independent-verifier/1",
+          "version": "1"
+        },
+        "independence": {
+          "ok": true,
+          "generator_evidence_excluded": true
+        },
+        "checks": [
+          {
+            "id": "identity",
+            "title": "Original/candidate identity and candidate change",
+            "status": "passed",
+            "required": true,
+            "detail": "original=7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f candidate=755223f5443c598581376f6947b815b6abb2682326adc72d858ddccb634e96f1"
+          },
+          {
+            "id": "container",
+            "title": "Container re-parse and metadata agreement",
+            "status": "passed",
+            "required": true,
+            "detail": "format=elf arch=x86_64 bits=64 endian=little"
+          },
+          {
+            "id": "action-replay",
+            "title": "Byte-level action replay from raw images",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=7 offsets=0x38,0x1c8,0x1cc,0x1d0,0x1ef,0x1fe,0x2bb60; allow_resize append_size=2341"
+          },
+          {
+            "id": "target-scope",
+            "title": "Candidate modifications stay inside the declared target scope",
+            "status": "passed",
+            "required": true,
+            "detail": "explicit whole-image opt-in"
+          },
+          {
+            "id": "abi",
+            "title": "Candidate instruction-block ABI validation",
+            "status": "passed",
+            "required": true,
+            "detail": "block 4980736+109 arch='x86_64' ABI ok"
+          },
+          {
+            "id": "runtime-oracle",
+            "title": "Independent external PoC differential and regression",
+            "status": "passed",
+            "required": true,
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=4)",
+            "independent": true
+          },
+          {
+            "id": "evidence-completeness",
+            "title": "At least one independent oracle (no generator-only evidence)",
+            "status": "passed",
+            "required": true,
+            "detail": "one independent external oracle passed",
+            "independent": true
+          },
+          {
+            "id": "independence",
+            "title": "Generator/verifier independence and generator-evidence exclusion",
+            "status": "passed",
+            "required": true,
+            "detail": "generator identity is distinct and its evidence is excluded from the decision"
+          }
+        ],
+        "decision": "verified",
+        "evidence": [
+          {
+            "kind": "candidate",
+            "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+            "candidate_sha256": "755223f5443c598581376f6947b815b6abb2682326adc72d858ddccb634e96f1"
+          },
+          {
+            "kind": "container",
+            "original": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".rodata",
+                  "va": 16777680,
+                  "size": 118480,
+                  "offset": 464,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 16896160,
+                  "size": 10148,
+                  "offset": 118944,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 16906312,
+                  "size": 49756,
+                  "offset": 129096,
+                  "executable": false
+                },
+                {
+                  "name": ".text",
+                  "va": 16960176,
+                  "size": 599354,
+                  "offset": 178864,
+                  "executable": true
+                },
+                {
+                  "name": ".tbss",
+                  "va": 17559536,
+                  "size": 262172,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 17563632,
+                  "size": 20384,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 17584128,
+                  "size": 38976,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_loc",
+                  "va": 0,
+                  "size": 1835219,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 44099,
+                  "offset": 2633827,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 924750,
+                  "offset": 2677926,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 311271,
+                  "offset": 3602676,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 41,
+                  "offset": 3913947,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 473409,
+                  "offset": 3913988,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_ranges",
+                  "va": 0,
+                  "size": 280912,
+                  "offset": 4387397,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubnames",
+                  "va": 0,
+                  "size": 80440,
+                  "offset": 4668309,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubtypes",
+                  "va": 0,
+                  "size": 110532,
+                  "offset": 4748749,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 240,
+                  "offset": 4859281,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 65472,
+                  "offset": 4859528,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 212,
+                  "offset": 4925000,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 51945,
+                  "offset": 4925212,
+                  "executable": false
+                }
+              ]
+            },
+            "candidate": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".rodata",
+                  "va": 16777680,
+                  "size": 118480,
+                  "offset": 464,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 16896160,
+                  "size": 10148,
+                  "offset": 118944,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 16906312,
+                  "size": 49756,
+                  "offset": 129096,
+                  "executable": false
+                },
+                {
+                  "name": ".text",
+                  "va": 16960176,
+                  "size": 599354,
+                  "offset": 178864,
+                  "executable": true
+                },
+                {
+                  "name": ".tbss",
+                  "va": 17559536,
+                  "size": 262172,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 17563632,
+                  "size": 20384,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 17584128,
+                  "size": 38976,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_loc",
+                  "va": 0,
+                  "size": 1835219,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 44099,
+                  "offset": 2633827,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 924750,
+                  "offset": 2677926,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 311271,
+                  "offset": 3602676,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 41,
+                  "offset": 3913947,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 473409,
+                  "offset": 3913988,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_ranges",
+                  "va": 0,
+                  "size": 280912,
+                  "offset": 4387397,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubnames",
+                  "va": 0,
+                  "size": 80440,
+                  "offset": 4668309,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubtypes",
+                  "va": 0,
+                  "size": 110532,
+                  "offset": 4748749,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 240,
+                  "offset": 4859281,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 65472,
+                  "offset": 4859528,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 212,
+                  "offset": 4925000,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 51945,
+                  "offset": 4925212,
+                  "executable": false
+                }
+              ]
+            }
+          },
+          {
+            "kind": "actions",
+            "actions": [
+              {
+                "offset": 56,
+                "size": 1,
+                "before_hex": "07",
+                "after_hex": "08"
+              },
+              {
+                "offset": 456,
+                "size": 1,
+                "before_hex": "00",
+                "after_hex": "01"
+              },
+              {
+                "offset": 460,
+                "size": 1,
+                "before_hex": "00",
+                "after_hex": "05"
+              },
+              {
+                "offset": 464,
+                "size": 30,
+                "before_hex": "2d2b20202030583078002f6465762f747479002e64656275675f696e666f",
+                "after_hex": "00004c000000000000f00c010000000000f00c01000000006d0000000000"
+              },
+              {
+                "offset": 495,
+                "size": 14,
+                "before_hex": "434c49434f4c4f525f464f524345",
+                "after_hex": "006d000000000000000010000000"
+              },
+              {
+                "offset": 510,
+                "size": 2,
+                "before_hex": "1b5b",
+                "after_hex": "0000"
+              },
+              {
+                "offset": 179040,
+                "size": 5,
+                "before_hex": "554889e548",
+                "after_hex": "e99b240a00"
+              }
+            ],
+            "claimed_actions": []
+          },
+          {
+            "kind": "target-scope",
+            "declared": {
+              "policy": "whole_image",
+              "name": "multicall_bad"
+            },
+            "range": {
+              "kind": "whole_image",
+              "file_range": null,
+              "va_range": null,
+              "whole_program": true,
+              "detail": "explicit whole-image opt-in"
+            }
+          },
+          {
+            "kind": "abi",
+            "report": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          {
+            "kind": "oracle",
+            "source": "external-poc-manifest",
+            "status": "pass",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "errno_signature": "not_run",
+            "no_input": false,
+            "case_count": 4,
+            "regression_count": 2,
+            "limitations": []
+          },
+          {
+            "kind": "evidence-completeness",
+            "ok": true,
+            "detail": "one independent external oracle passed",
+            "sources": [
+              "external-poc-manifest"
+            ]
+          }
+        ],
+        "limitations": [],
+        "report_sha256": "bbe0f1961951aa0c23c68edd9fe59ddb395deb623d41ce0b431159711424aa49"
+      },
+      "validation": {
+        "ok": true,
+        "method": "jsonschema",
+        "violations": []
+      },
+      "generator_gate": "pass"
+    },
+    {
+      "case_id": "hard-sprintf",
+      "decision": "verified",
+      "report": {
+        "schema_version": 1,
+        "target": {
+          "format": "elf",
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "target_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "target_scope": {
+            "policy": "whole_image",
+            "name": "sprintf_bad"
+          }
+        },
+        "generator": {
+          "generator_id": "ai-repair-benchmark/1",
+          "agent": "repair-pipeline",
+          "model": "deepseek-flash",
+          "run_id": "hard-sprintf"
+        },
+        "verifier": {
+          "verifier_id": "independent-verifier/1",
+          "version": "1"
+        },
+        "independence": {
+          "ok": true,
+          "generator_evidence_excluded": true
+        },
+        "checks": [
+          {
+            "id": "identity",
+            "title": "Original/candidate identity and candidate change",
+            "status": "passed",
+            "required": true,
+            "detail": "original=7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f candidate=93a9e360e5e5571b065cd58019c776c0597af96cb4226f673be06d34c0d6d4e9"
+          },
+          {
+            "id": "container",
+            "title": "Container re-parse and metadata agreement",
+            "status": "passed",
+            "required": true,
+            "detail": "format=elf arch=x86_64 bits=64 endian=little"
+          },
+          {
+            "id": "action-replay",
+            "title": "Byte-level action replay from raw images",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=7 offsets=0x38,0x1c8,0x1cc,0x1d0,0x1ef,0x1fe,0x2bbe0; allow_resize append_size=2359"
+          },
+          {
+            "id": "target-scope",
+            "title": "Candidate modifications stay inside the declared target scope",
+            "status": "passed",
+            "required": true,
+            "detail": "explicit whole-image opt-in"
+          },
+          {
+            "id": "abi",
+            "title": "Candidate instruction-block ABI validation",
+            "status": "passed",
+            "required": true,
+            "detail": "block 4980736+127 arch='x86_64' ABI ok"
+          },
+          {
+            "id": "runtime-oracle",
+            "title": "Independent external PoC differential and regression",
+            "status": "passed",
+            "required": true,
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=4)",
+            "independent": true
+          },
+          {
+            "id": "evidence-completeness",
+            "title": "At least one independent oracle (no generator-only evidence)",
+            "status": "passed",
+            "required": true,
+            "detail": "one independent external oracle passed",
+            "independent": true
+          },
+          {
+            "id": "independence",
+            "title": "Generator/verifier independence and generator-evidence exclusion",
+            "status": "passed",
+            "required": true,
+            "detail": "generator identity is distinct and its evidence is excluded from the decision"
+          }
+        ],
+        "decision": "verified",
+        "evidence": [
+          {
+            "kind": "candidate",
+            "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+            "candidate_sha256": "93a9e360e5e5571b065cd58019c776c0597af96cb4226f673be06d34c0d6d4e9"
+          },
+          {
+            "kind": "container",
+            "original": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".rodata",
+                  "va": 16777680,
+                  "size": 118480,
+                  "offset": 464,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 16896160,
+                  "size": 10148,
+                  "offset": 118944,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 16906312,
+                  "size": 49756,
+                  "offset": 129096,
+                  "executable": false
+                },
+                {
+                  "name": ".text",
+                  "va": 16960176,
+                  "size": 599354,
+                  "offset": 178864,
+                  "executable": true
+                },
+                {
+                  "name": ".tbss",
+                  "va": 17559536,
+                  "size": 262172,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 17563632,
+                  "size": 20384,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 17584128,
+                  "size": 38976,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_loc",
+                  "va": 0,
+                  "size": 1835219,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 44099,
+                  "offset": 2633827,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 924750,
+                  "offset": 2677926,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 311271,
+                  "offset": 3602676,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 41,
+                  "offset": 3913947,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 473409,
+                  "offset": 3913988,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_ranges",
+                  "va": 0,
+                  "size": 280912,
+                  "offset": 4387397,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubnames",
+                  "va": 0,
+                  "size": 80440,
+                  "offset": 4668309,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubtypes",
+                  "va": 0,
+                  "size": 110532,
+                  "offset": 4748749,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 240,
+                  "offset": 4859281,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 65472,
+                  "offset": 4859528,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 212,
+                  "offset": 4925000,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 51945,
+                  "offset": 4925212,
+                  "executable": false
+                }
+              ]
+            },
+            "candidate": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".rodata",
+                  "va": 16777680,
+                  "size": 118480,
+                  "offset": 464,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 16896160,
+                  "size": 10148,
+                  "offset": 118944,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 16906312,
+                  "size": 49756,
+                  "offset": 129096,
+                  "executable": false
+                },
+                {
+                  "name": ".text",
+                  "va": 16960176,
+                  "size": 599354,
+                  "offset": 178864,
+                  "executable": true
+                },
+                {
+                  "name": ".tbss",
+                  "va": 17559536,
+                  "size": 262172,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 17563632,
+                  "size": 20384,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 17584128,
+                  "size": 38976,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_loc",
+                  "va": 0,
+                  "size": 1835219,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 44099,
+                  "offset": 2633827,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 924750,
+                  "offset": 2677926,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 311271,
+                  "offset": 3602676,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 41,
+                  "offset": 3913947,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 473409,
+                  "offset": 3913988,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_ranges",
+                  "va": 0,
+                  "size": 280912,
+                  "offset": 4387397,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubnames",
+                  "va": 0,
+                  "size": 80440,
+                  "offset": 4668309,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubtypes",
+                  "va": 0,
+                  "size": 110532,
+                  "offset": 4748749,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 240,
+                  "offset": 4859281,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 65472,
+                  "offset": 4859528,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 212,
+                  "offset": 4925000,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 51945,
+                  "offset": 4925212,
+                  "executable": false
+                }
+              ]
+            }
+          },
+          {
+            "kind": "actions",
+            "actions": [
+              {
+                "offset": 56,
+                "size": 1,
+                "before_hex": "07",
+                "after_hex": "08"
+              },
+              {
+                "offset": 456,
+                "size": 1,
+                "before_hex": "00",
+                "after_hex": "01"
+              },
+              {
+                "offset": 460,
+                "size": 1,
+                "before_hex": "00",
+                "after_hex": "05"
+              },
+              {
+                "offset": 464,
+                "size": 30,
+                "before_hex": "2d2b20202030583078002f6465762f747479002e64656275675f696e666f",
+                "after_hex": "00004c000000000000f00c010000000000f00c01000000007f0000000000"
+              },
+              {
+                "offset": 495,
+                "size": 14,
+                "before_hex": "434c49434f4c4f525f464f524345",
+                "after_hex": "007f000000000000000010000000"
+              },
+              {
+                "offset": 510,
+                "size": 2,
+                "before_hex": "1b5b",
+                "after_hex": "0000"
+              },
+              {
+                "offset": 179168,
+                "size": 5,
+                "before_hex": "554889e548",
+                "after_hex": "e91b240a00"
+              }
+            ],
+            "claimed_actions": []
+          },
+          {
+            "kind": "target-scope",
+            "declared": {
+              "policy": "whole_image",
+              "name": "sprintf_bad"
+            },
+            "range": {
+              "kind": "whole_image",
+              "file_range": null,
+              "va_range": null,
+              "whole_program": true,
+              "detail": "explicit whole-image opt-in"
+            }
+          },
+          {
+            "kind": "abi",
+            "report": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          {
+            "kind": "oracle",
+            "source": "external-poc-manifest",
+            "status": "pass",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "errno_signature": "not_run",
+            "no_input": false,
+            "case_count": 4,
+            "regression_count": 2,
+            "limitations": []
+          },
+          {
+            "kind": "evidence-completeness",
+            "ok": true,
+            "detail": "one independent external oracle passed",
+            "sources": [
+              "external-poc-manifest"
+            ]
+          }
+        ],
+        "limitations": [],
+        "report_sha256": "25be19d631ae9567ca74485b268395caa214d77f6925598fb7360f249237293b"
+      },
+      "validation": {
+        "ok": true,
+        "method": "jsonschema",
+        "violations": []
+      },
+      "generator_gate": "pass"
+    },
+    {
+      "case_id": "hard-nonconst",
+      "decision": "verified",
+      "report": {
+        "schema_version": 1,
+        "target": {
+          "format": "elf",
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "target_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "target_scope": {
+            "policy": "whole_image",
+            "name": "nonconst_bad"
+          }
+        },
+        "generator": {
+          "generator_id": "ai-repair-benchmark/1",
+          "agent": "repair-pipeline",
+          "model": "deepseek-flash",
+          "run_id": "hard-nonconst"
+        },
+        "verifier": {
+          "verifier_id": "independent-verifier/1",
+          "version": "1"
+        },
+        "independence": {
+          "ok": true,
+          "generator_evidence_excluded": true
+        },
+        "checks": [
+          {
+            "id": "identity",
+            "title": "Original/candidate identity and candidate change",
+            "status": "passed",
+            "required": true,
+            "detail": "original=7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f candidate=5ee9cb881d6ecbe2494f04a1e421ac1e38e9c0e0baf9b557f0da4a38bf98ded2"
+          },
+          {
+            "id": "container",
+            "title": "Container re-parse and metadata agreement",
+            "status": "passed",
+            "required": true,
+            "detail": "format=elf arch=x86_64 bits=64 endian=little"
+          },
+          {
+            "id": "action-replay",
+            "title": "Byte-level action replay from raw images",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=7 offsets=0x38,0x1c8,0x1cc,0x1d0,0x1ef,0x1fe,0x2bc40; allow_resize append_size=2354"
+          },
+          {
+            "id": "target-scope",
+            "title": "Candidate modifications stay inside the declared target scope",
+            "status": "passed",
+            "required": true,
+            "detail": "explicit whole-image opt-in"
+          },
+          {
+            "id": "abi",
+            "title": "Candidate instruction-block ABI validation",
+            "status": "passed",
+            "required": true,
+            "detail": "block 4980736+122 arch='x86_64' ABI ok"
+          },
+          {
+            "id": "runtime-oracle",
+            "title": "Independent external PoC differential and regression",
+            "status": "passed",
+            "required": true,
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=4)",
+            "independent": true
+          },
+          {
+            "id": "evidence-completeness",
+            "title": "At least one independent oracle (no generator-only evidence)",
+            "status": "passed",
+            "required": true,
+            "detail": "one independent external oracle passed",
+            "independent": true
+          },
+          {
+            "id": "independence",
+            "title": "Generator/verifier independence and generator-evidence exclusion",
+            "status": "passed",
+            "required": true,
+            "detail": "generator identity is distinct and its evidence is excluded from the decision"
+          }
+        ],
+        "decision": "verified",
+        "evidence": [
+          {
+            "kind": "candidate",
+            "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+            "candidate_sha256": "5ee9cb881d6ecbe2494f04a1e421ac1e38e9c0e0baf9b557f0da4a38bf98ded2"
+          },
+          {
+            "kind": "container",
+            "original": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".rodata",
+                  "va": 16777680,
+                  "size": 118480,
+                  "offset": 464,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 16896160,
+                  "size": 10148,
+                  "offset": 118944,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 16906312,
+                  "size": 49756,
+                  "offset": 129096,
+                  "executable": false
+                },
+                {
+                  "name": ".text",
+                  "va": 16960176,
+                  "size": 599354,
+                  "offset": 178864,
+                  "executable": true
+                },
+                {
+                  "name": ".tbss",
+                  "va": 17559536,
+                  "size": 262172,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 17563632,
+                  "size": 20384,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 17584128,
+                  "size": 38976,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_loc",
+                  "va": 0,
+                  "size": 1835219,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 44099,
+                  "offset": 2633827,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 924750,
+                  "offset": 2677926,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 311271,
+                  "offset": 3602676,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 41,
+                  "offset": 3913947,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 473409,
+                  "offset": 3913988,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_ranges",
+                  "va": 0,
+                  "size": 280912,
+                  "offset": 4387397,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubnames",
+                  "va": 0,
+                  "size": 80440,
+                  "offset": 4668309,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubtypes",
+                  "va": 0,
+                  "size": 110532,
+                  "offset": 4748749,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 240,
+                  "offset": 4859281,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 65472,
+                  "offset": 4859528,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 212,
+                  "offset": 4925000,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 51945,
+                  "offset": 4925212,
+                  "executable": false
+                }
+              ]
+            },
+            "candidate": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".rodata",
+                  "va": 16777680,
+                  "size": 118480,
+                  "offset": 464,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 16896160,
+                  "size": 10148,
+                  "offset": 118944,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 16906312,
+                  "size": 49756,
+                  "offset": 129096,
+                  "executable": false
+                },
+                {
+                  "name": ".text",
+                  "va": 16960176,
+                  "size": 599354,
+                  "offset": 178864,
+                  "executable": true
+                },
+                {
+                  "name": ".tbss",
+                  "va": 17559536,
+                  "size": 262172,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 17563632,
+                  "size": 20384,
+                  "offset": 778224,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 17584128,
+                  "size": 38976,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_loc",
+                  "va": 0,
+                  "size": 1835219,
+                  "offset": 798608,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 44099,
+                  "offset": 2633827,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 924750,
+                  "offset": 2677926,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 311271,
+                  "offset": 3602676,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 41,
+                  "offset": 3913947,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 473409,
+                  "offset": 3913988,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_ranges",
+                  "va": 0,
+                  "size": 280912,
+                  "offset": 4387397,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubnames",
+                  "va": 0,
+                  "size": 80440,
+                  "offset": 4668309,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_pubtypes",
+                  "va": 0,
+                  "size": 110532,
+                  "offset": 4748749,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 240,
+                  "offset": 4859281,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 65472,
+                  "offset": 4859528,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 212,
+                  "offset": 4925000,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 51945,
+                  "offset": 4925212,
+                  "executable": false
+                }
+              ]
+            }
+          },
+          {
+            "kind": "actions",
+            "actions": [
+              {
+                "offset": 56,
+                "size": 1,
+                "before_hex": "07",
+                "after_hex": "08"
+              },
+              {
+                "offset": 456,
+                "size": 1,
+                "before_hex": "00",
+                "after_hex": "01"
+              },
+              {
+                "offset": 460,
+                "size": 1,
+                "before_hex": "00",
+                "after_hex": "05"
+              },
+              {
+                "offset": 464,
+                "size": 30,
+                "before_hex": "2d2b20202030583078002f6465762f747479002e64656275675f696e666f",
+                "after_hex": "00004c000000000000f00c010000000000f00c01000000007a0000000000"
+              },
+              {
+                "offset": 495,
+                "size": 14,
+                "before_hex": "434c49434f4c4f525f464f524345",
+                "after_hex": "007a000000000000000010000000"
+              },
+              {
+                "offset": 510,
+                "size": 2,
+                "before_hex": "1b5b",
+                "after_hex": "0000"
+              },
+              {
+                "offset": 179264,
+                "size": 5,
+                "before_hex": "554889e548",
+                "after_hex": "e9bb230a00"
+              }
+            ],
+            "claimed_actions": []
+          },
+          {
+            "kind": "target-scope",
+            "declared": {
+              "policy": "whole_image",
+              "name": "nonconst_bad"
+            },
+            "range": {
+              "kind": "whole_image",
+              "file_range": null,
+              "va_range": null,
+              "whole_program": true,
+              "detail": "explicit whole-image opt-in"
+            }
+          },
+          {
+            "kind": "abi",
+            "report": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          {
+            "kind": "oracle",
+            "source": "external-poc-manifest",
+            "status": "pass",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "errno_signature": "not_run",
+            "no_input": false,
+            "case_count": 4,
+            "regression_count": 2,
+            "limitations": []
+          },
+          {
+            "kind": "evidence-completeness",
+            "ok": true,
+            "detail": "one independent external oracle passed",
+            "sources": [
+              "external-poc-manifest"
+            ]
+          }
+        ],
+        "limitations": [],
+        "report_sha256": "7b8ca572855fd2d80b32bf08b4c8e961dc3ccca6d3648a1da759e8995f316306"
+      },
+      "validation": {
+        "ok": true,
+        "method": "jsonschema",
+        "violations": []
+      },
+      "generator_gate": "pass"
+    },
+    {
+      "case_id": "cwe121-unchecked-strcpy",
+      "decision": "rejected",
+      "report": {
+        "schema_version": 1,
+        "target": {
+          "format": "elf",
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "target_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+          "target_scope": {
+            "policy": "whole_image",
+            "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
+          }
+        },
+        "generator": {
+          "generator_id": "ai-repair-benchmark/1",
+          "agent": "repair-pipeline",
+          "model": "deepseek-flash",
+          "run_id": "cwe121-unchecked-strcpy"
+        },
+        "verifier": {
+          "verifier_id": "independent-verifier/1",
+          "version": "1"
+        },
+        "independence": {
+          "ok": true,
+          "generator_evidence_excluded": true
+        },
+        "checks": [
+          {
+            "id": "identity",
+            "title": "Original/candidate identity and candidate change",
+            "status": "passed",
+            "required": true,
+            "detail": "original=aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393 candidate=e5b3b495a9b07b306cd7ed37439bc540349b1cfd2b49629b4a64daaf693a043a"
+          },
+          {
+            "id": "container",
+            "title": "Container re-parse and metadata agreement",
+            "status": "passed",
+            "required": true,
+            "detail": "format=elf arch=x86_64 bits=64 endian=little"
+          },
+          {
+            "id": "action-replay",
+            "title": "Byte-level action replay from raw images",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=9 offsets=0x200,0x204,0x208,0x210,0x218,0x220,0x228,0x230; allow_resize append_size=1944"
+          },
+          {
+            "id": "target-scope",
+            "title": "Candidate modifications stay inside the declared target scope",
+            "status": "passed",
+            "required": true,
+            "detail": "explicit whole-image opt-in"
+          },
+          {
+            "id": "abi",
+            "title": "Candidate instruction-block ABI validation",
+            "status": "passed",
+            "required": true,
+            "detail": "block 28672+64 arch='x86_64' ABI ok"
+          },
+          {
+            "id": "runtime-oracle",
+            "title": "Independent external PoC differential and regression",
+            "status": "failed",
+            "required": true,
+            "detail": "oracle status=fail: no reason reported",
+            "independent": true
+          },
+          {
+            "id": "evidence-completeness",
+            "title": "At least one independent oracle (no generator-only evidence)",
+            "status": "failed",
+            "required": true,
+            "detail": "the independent oracle did not produce passing evidence",
+            "independent": true
+          },
+          {
+            "id": "independence",
+            "title": "Generator/verifier independence and generator-evidence exclusion",
+            "status": "passed",
+            "required": true,
+            "detail": "generator identity is distinct and its evidence is excluded from the decision"
+          }
+        ],
+        "decision": "rejected",
+        "evidence": [
+          {
+            "kind": "candidate",
+            "original_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+            "candidate_sha256": "e5b3b495a9b07b306cd7ed37439bc540349b1cfd2b49629b4a64daaf693a043a"
+          },
+          {
+            "kind": "container",
+            "original": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 336,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195624,
+                  "size": 184,
+                  "offset": 1320,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195808,
+                  "size": 28,
+                  "offset": 1504,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195840,
+                  "size": 80,
+                  "offset": 1536,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195920,
+                  "size": 72,
+                  "offset": 1616,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195992,
+                  "size": 240,
+                  "offset": 1688,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 176,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198608,
+                  "size": 160,
+                  "offset": 4304,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198768,
+                  "size": 1900,
+                  "offset": 4464,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4200668,
+                  "size": 13,
+                  "offset": 6364,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 136,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202632,
+                  "size": 372,
+                  "offset": 8328,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4203008,
+                  "size": 1444,
+                  "offset": 8704,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 104,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210768,
+                  "size": 24,
+                  "offset": 12368,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210816,
+                  "size": 32,
+                  "offset": 12392,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12392,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 144,
+                  "offset": 12437,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 3415,
+                  "offset": 12581,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 1103,
+                  "offset": 15996,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 880,
+                  "offset": 17099,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 1777,
+                  "offset": 17979,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 684,
+                  "offset": 19756,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 2256,
+                  "offset": 20440,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 1359,
+                  "offset": 22696,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 24055,
+                  "executable": false
+                }
+              ]
+            },
+            "candidate": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 336,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195624,
+                  "size": 184,
+                  "offset": 1320,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195808,
+                  "size": 28,
+                  "offset": 1504,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195840,
+                  "size": 80,
+                  "offset": 1536,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195920,
+                  "size": 72,
+                  "offset": 1616,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195992,
+                  "size": 240,
+                  "offset": 1688,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 176,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198608,
+                  "size": 160,
+                  "offset": 4304,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198768,
+                  "size": 1900,
+                  "offset": 4464,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4200668,
+                  "size": 13,
+                  "offset": 6364,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 136,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202632,
+                  "size": 372,
+                  "offset": 8328,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4203008,
+                  "size": 1444,
+                  "offset": 8704,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 104,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210768,
+                  "size": 24,
+                  "offset": 12368,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210816,
+                  "size": 32,
+                  "offset": 12392,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12392,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 144,
+                  "offset": 12437,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 3415,
+                  "offset": 12581,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 1103,
+                  "offset": 15996,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 880,
+                  "offset": 17099,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 1777,
+                  "offset": 17979,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 684,
+                  "offset": 19756,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 2256,
+                  "offset": 20440,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 1359,
+                  "offset": 22696,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 24055,
+                  "executable": false
+                }
+              ]
+            }
+          },
+          {
+            "kind": "actions",
+            "actions": [
+              {
+                "offset": 512,
+                "size": 1,
+                "before_hex": "04",
+                "after_hex": "01"
+              },
+              {
+                "offset": 516,
+                "size": 1,
+                "before_hex": "04",
+                "after_hex": "05"
+              },
+              {
+                "offset": 520,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0070"
+              },
+              {
+                "offset": 528,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 536,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 544,
+                "size": 1,
+                "before_hex": "44",
+                "after_hex": "40"
+              },
+              {
+                "offset": 552,
+                "size": 1,
+                "before_hex": "44",
+                "after_hex": "40"
+              },
+              {
+                "offset": 560,
+                "size": 2,
+                "before_hex": "0400",
+                "after_hex": "0010"
+              },
+              {
+                "offset": 4784,
+                "size": 5,
+                "before_hex": "f30f1efa55",
+                "after_hex": "e94b3d0000"
+              }
+            ],
+            "claimed_actions": []
+          },
+          {
+            "kind": "target-scope",
+            "declared": {
+              "policy": "whole_image",
+              "name": "CWE121_Stack_Based_Buffer_Overflow__src_char_declare_cpy_51b_badSink"
+            },
+            "range": {
+              "kind": "whole_image",
+              "file_range": null,
+              "va_range": null,
+              "whole_program": true,
+              "detail": "explicit whole-image opt-in"
+            }
+          },
+          {
+            "kind": "abi",
+            "report": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          {
+            "kind": "oracle",
+            "source": "external-poc-manifest",
+            "status": "fail",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "errno_signature": "not_run",
+            "no_input": false,
+            "case_count": 4,
+            "regression_count": 8,
+            "limitations": []
+          },
+          {
+            "kind": "evidence-completeness",
+            "ok": false,
+            "detail": "no passing independent evidence",
+            "sources": [
+              "external-poc-manifest"
+            ]
+          }
+        ],
+        "limitations": [
+          "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+        ],
+        "report_sha256": "3aa298b572779e398a9e7cec8bb23363fb0cdf668a3109cf1fb37fb8862bf2d9"
+      },
+      "validation": {
+        "ok": true,
+        "method": "jsonschema",
+        "violations": []
+      },
+      "generator_gate": "fail"
+    },
+    {
+      "case_id": "cwe122-heap-copy",
+      "decision": "not_run",
+      "report": {
+        "schema_version": 1,
+        "target": {
+          "format": "elf",
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "target_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+          "target_scope": {
+            "policy": "whole_image",
+            "name": "cwe122_bad"
+          }
+        },
+        "generator": {
+          "generator_id": "ai-repair-benchmark/1",
+          "agent": "repair-pipeline",
+          "model": "deepseek-flash",
+          "run_id": "cwe122-heap-copy"
+        },
+        "verifier": {
+          "verifier_id": "independent-verifier/1",
+          "version": "1"
+        },
+        "independence": {
+          "ok": true,
+          "generator_evidence_excluded": true
+        },
+        "checks": [
+          {
+            "id": "identity",
+            "title": "Original/candidate identity and candidate change",
+            "status": "passed",
+            "required": true,
+            "detail": "original=69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2 candidate=5575de4e5d94c87ef2f97f0c09a25cb7918e2a5bcfffe37c9ced60d24323c5bb"
+          },
+          {
+            "id": "container",
+            "title": "Container re-parse and metadata agreement",
+            "status": "passed",
+            "required": true,
+            "detail": "format=elf arch=x86_64 bits=64 endian=little"
+          },
+          {
+            "id": "action-replay",
+            "title": "Byte-level action replay from raw images",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=9 offsets=0x200,0x204,0x208,0x210,0x218,0x220,0x228,0x230; allow_resize append_size=1365"
+          },
+          {
+            "id": "target-scope",
+            "title": "Candidate modifications stay inside the declared target scope",
+            "status": "passed",
+            "required": true,
+            "detail": "explicit whole-image opt-in"
+          },
+          {
+            "id": "abi",
+            "title": "Candidate instruction-block ABI validation",
+            "status": "not_run",
+            "required": true,
+            "detail": "no abi_block was declared; ABI is unverifiable"
+          },
+          {
+            "id": "runtime-oracle",
+            "title": "Independent external PoC differential and regression",
+            "status": "passed",
+            "required": true,
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=4)",
+            "independent": true
+          },
+          {
+            "id": "evidence-completeness",
+            "title": "At least one independent oracle (no generator-only evidence)",
+            "status": "passed",
+            "required": true,
+            "detail": "one independent external oracle passed",
+            "independent": true
+          },
+          {
+            "id": "independence",
+            "title": "Generator/verifier independence and generator-evidence exclusion",
+            "status": "passed",
+            "required": true,
+            "detail": "generator identity is distinct and its evidence is excluded from the decision"
+          }
+        ],
+        "decision": "not_run",
+        "evidence": [
+          {
+            "kind": "candidate",
+            "original_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+            "candidate_sha256": "5575de4e5d94c87ef2f97f0c09a25cb7918e2a5bcfffe37c9ced60d24323c5bb"
+          },
+          {
+            "kind": "container",
+            "original": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 264,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195552,
+                  "size": 129,
+                  "offset": 1248,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195682,
+                  "size": 22,
+                  "offset": 1378,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195704,
+                  "size": 64,
+                  "offset": 1400,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195768,
+                  "size": 72,
+                  "offset": 1464,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195840,
+                  "size": 168,
+                  "offset": 1536,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 128,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198560,
+                  "size": 112,
+                  "offset": 4256,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198672,
+                  "size": 429,
+                  "offset": 4368,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4199104,
+                  "size": 13,
+                  "offset": 4800,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 23,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202520,
+                  "size": 60,
+                  "offset": 8216,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4202584,
+                  "size": 196,
+                  "offset": 8280,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 80,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210744,
+                  "size": 16,
+                  "offset": 12344,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210784,
+                  "size": 16,
+                  "offset": 12360,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12360,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 48,
+                  "offset": 12405,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 955,
+                  "offset": 12453,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 397,
+                  "offset": 13408,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 173,
+                  "offset": 13805,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 684,
+                  "offset": 13978,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 270,
+                  "offset": 14662,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 1008,
+                  "offset": 14936,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 556,
+                  "offset": 15944,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 16500,
+                  "executable": false
+                }
+              ]
+            },
+            "candidate": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 264,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195552,
+                  "size": 129,
+                  "offset": 1248,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195682,
+                  "size": 22,
+                  "offset": 1378,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195704,
+                  "size": 64,
+                  "offset": 1400,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195768,
+                  "size": 72,
+                  "offset": 1464,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195840,
+                  "size": 168,
+                  "offset": 1536,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 128,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198560,
+                  "size": 112,
+                  "offset": 4256,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198672,
+                  "size": 429,
+                  "offset": 4368,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4199104,
+                  "size": 13,
+                  "offset": 4800,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 23,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202520,
+                  "size": 60,
+                  "offset": 8216,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4202584,
+                  "size": 196,
+                  "offset": 8280,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 80,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210744,
+                  "size": 16,
+                  "offset": 12344,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210784,
+                  "size": 16,
+                  "offset": 12360,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12360,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 48,
+                  "offset": 12405,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 955,
+                  "offset": 12453,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 397,
+                  "offset": 13408,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 173,
+                  "offset": 13805,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 684,
+                  "offset": 13978,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 270,
+                  "offset": 14662,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 1008,
+                  "offset": 14936,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 556,
+                  "offset": 15944,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 16500,
+                  "executable": false
+                }
+              ]
+            }
+          },
+          {
+            "kind": "actions",
+            "actions": [
+              {
+                "offset": 512,
+                "size": 1,
+                "before_hex": "04",
+                "after_hex": "01"
+              },
+              {
+                "offset": 516,
+                "size": 1,
+                "before_hex": "04",
+                "after_hex": "05"
+              },
+              {
+                "offset": 520,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 528,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 536,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 544,
+                "size": 1,
+                "before_hex": "44",
+                "after_hex": "7d"
+              },
+              {
+                "offset": 552,
+                "size": 1,
+                "before_hex": "44",
+                "after_hex": "7d"
+              },
+              {
+                "offset": 560,
+                "size": 2,
+                "before_hex": "0400",
+                "after_hex": "0010"
+              },
+              {
+                "offset": 4598,
+                "size": 5,
+                "before_hex": "f30f1efa55",
+                "after_hex": "e9053e0000"
+              }
+            ],
+            "claimed_actions": []
+          },
+          {
+            "kind": "target-scope",
+            "declared": {
+              "policy": "whole_image",
+              "name": "cwe122_bad"
+            },
+            "range": {
+              "kind": "whole_image",
+              "file_range": null,
+              "va_range": null,
+              "whole_program": true,
+              "detail": "explicit whole-image opt-in"
+            }
+          },
+          {
+            "kind": "abi",
+            "report": {}
+          },
+          {
+            "kind": "oracle",
+            "source": "external-poc-manifest",
+            "status": "pass",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "errno_signature": "not_run",
+            "no_input": false,
+            "case_count": 4,
+            "regression_count": 2,
+            "limitations": []
+          },
+          {
+            "kind": "evidence-completeness",
+            "ok": true,
+            "detail": "one independent external oracle passed",
+            "sources": [
+              "external-poc-manifest"
+            ]
+          }
+        ],
+        "limitations": [
+          "abi: no abi_block was declared; ABI is unverifiable",
+          "fail-closed: only an all-required-passed result with a passing independent oracle can be verified"
+        ],
+        "report_sha256": "814a7cb1b55f266543b134cdbcf158e27f332af80bb19501cd692b3b5f70f9bf"
+      },
+      "validation": {
+        "ok": true,
+        "method": "jsonschema",
+        "violations": []
+      },
+      "generator_gate": "pass"
+    },
+    {
+      "case_id": "cwe787-index-write",
+      "decision": "not_run",
+      "reason": "no candidate artifact"
+    },
+    {
+      "case_id": "cwe125-oob-read",
+      "decision": "verified",
+      "report": {
+        "schema_version": 1,
+        "target": {
+          "format": "elf",
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "target_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+          "target_scope": {
+            "policy": "whole_image",
+            "name": "cwe125_bad"
+          }
+        },
+        "generator": {
+          "generator_id": "ai-repair-benchmark/1",
+          "agent": "repair-pipeline",
+          "model": "deepseek-flash",
+          "run_id": "cwe125-oob-read"
+        },
+        "verifier": {
+          "verifier_id": "independent-verifier/1",
+          "version": "1"
+        },
+        "independence": {
+          "ok": true,
+          "generator_evidence_excluded": true
+        },
+        "checks": [
+          {
+            "id": "identity",
+            "title": "Original/candidate identity and candidate change",
+            "status": "passed",
+            "required": true,
+            "detail": "original=27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c candidate=18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba"
+          },
+          {
+            "id": "container",
+            "title": "Container re-parse and metadata agreement",
+            "status": "passed",
+            "required": true,
+            "detail": "format=elf arch=x86_64 bits=64 endian=little"
+          },
+          {
+            "id": "action-replay",
+            "title": "Byte-level action replay from raw images",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=9 offsets=0x200,0x204,0x208,0x210,0x218,0x220,0x228,0x230; allow_resize append_size=1693"
+          },
+          {
+            "id": "target-scope",
+            "title": "Candidate modifications stay inside the declared target scope",
+            "status": "passed",
+            "required": true,
+            "detail": "explicit whole-image opt-in"
+          },
+          {
+            "id": "abi",
+            "title": "Candidate instruction-block ABI validation",
+            "status": "passed",
+            "required": true,
+            "detail": "block 20480+101 arch='x86_64' ABI ok"
+          },
+          {
+            "id": "runtime-oracle",
+            "title": "Independent external PoC differential and regression",
+            "status": "passed",
+            "required": true,
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=2)",
+            "independent": true
+          },
+          {
+            "id": "evidence-completeness",
+            "title": "At least one independent oracle (no generator-only evidence)",
+            "status": "passed",
+            "required": true,
+            "detail": "one independent external oracle passed",
+            "independent": true
+          },
+          {
+            "id": "independence",
+            "title": "Generator/verifier independence and generator-evidence exclusion",
+            "status": "passed",
+            "required": true,
+            "detail": "generator identity is distinct and its evidence is excluded from the decision"
+          }
+        ],
+        "decision": "verified",
+        "evidence": [
+          {
+            "kind": "candidate",
+            "original_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+            "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba"
+          },
+          {
+            "kind": "container",
+            "original": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 168,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195456,
+                  "size": 87,
+                  "offset": 1152,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195544,
+                  "size": 14,
+                  "offset": 1240,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195560,
+                  "size": 48,
+                  "offset": 1256,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195608,
+                  "size": 72,
+                  "offset": 1304,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195680,
+                  "size": 72,
+                  "offset": 1376,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 64,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198496,
+                  "size": 48,
+                  "offset": 4192,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198544,
+                  "size": 412,
+                  "offset": 4240,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4198956,
+                  "size": 13,
+                  "offset": 4652,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 27,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202524,
+                  "size": 60,
+                  "offset": 8220,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4202584,
+                  "size": 196,
+                  "offset": 8280,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 48,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210712,
+                  "size": 16,
+                  "offset": 12312,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210752,
+                  "size": 16,
+                  "offset": 12328,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12328,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 48,
+                  "offset": 12373,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 879,
+                  "offset": 12421,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 360,
+                  "offset": 13300,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 194,
+                  "offset": 13660,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 653,
+                  "offset": 13854,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 259,
+                  "offset": 14507,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 912,
+                  "offset": 14768,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 466,
+                  "offset": 15680,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 16146,
+                  "executable": false
+                }
+              ]
+            },
+            "candidate": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 168,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195456,
+                  "size": 87,
+                  "offset": 1152,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195544,
+                  "size": 14,
+                  "offset": 1240,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195560,
+                  "size": 48,
+                  "offset": 1256,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195608,
+                  "size": 72,
+                  "offset": 1304,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195680,
+                  "size": 72,
+                  "offset": 1376,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 64,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198496,
+                  "size": 48,
+                  "offset": 4192,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198544,
+                  "size": 412,
+                  "offset": 4240,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4198956,
+                  "size": 13,
+                  "offset": 4652,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 27,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202524,
+                  "size": 60,
+                  "offset": 8220,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4202584,
+                  "size": 196,
+                  "offset": 8280,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 48,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210712,
+                  "size": 16,
+                  "offset": 12312,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210752,
+                  "size": 16,
+                  "offset": 12328,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12328,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 48,
+                  "offset": 12373,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 879,
+                  "offset": 12421,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 360,
+                  "offset": 13300,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 194,
+                  "offset": 13660,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 653,
+                  "offset": 13854,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 259,
+                  "offset": 14507,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 912,
+                  "offset": 14768,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 466,
+                  "offset": 15680,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 16146,
+                  "executable": false
+                }
+              ]
+            }
+          },
+          {
+            "kind": "actions",
+            "actions": [
+              {
+                "offset": 512,
+                "size": 1,
+                "before_hex": "04",
+                "after_hex": "01"
+              },
+              {
+                "offset": 516,
+                "size": 1,
+                "before_hex": "04",
+                "after_hex": "05"
+              },
+              {
+                "offset": 520,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 528,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 536,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 544,
+                "size": 1,
+                "before_hex": "44",
+                "after_hex": "65"
+              },
+              {
+                "offset": 552,
+                "size": 1,
+                "before_hex": "44",
+                "after_hex": "65"
+              },
+              {
+                "offset": 560,
+                "size": 2,
+                "before_hex": "0400",
+                "after_hex": "0010"
+              },
+              {
+                "offset": 4470,
+                "size": 5,
+                "before_hex": "f30f1efa55",
+                "after_hex": "e9853e0000"
+              }
+            ],
+            "claimed_actions": []
+          },
+          {
+            "kind": "target-scope",
+            "declared": {
+              "policy": "whole_image",
+              "name": "cwe125_bad"
+            },
+            "range": {
+              "kind": "whole_image",
+              "file_range": null,
+              "va_range": null,
+              "whole_program": true,
+              "detail": "explicit whole-image opt-in"
+            }
+          },
+          {
+            "kind": "abi",
+            "report": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          {
+            "kind": "oracle",
+            "source": "external-poc-manifest",
+            "status": "pass",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "errno_signature": "not_run",
+            "no_input": false,
+            "case_count": 2,
+            "regression_count": 2,
+            "limitations": []
+          },
+          {
+            "kind": "evidence-completeness",
+            "ok": true,
+            "detail": "one independent external oracle passed",
+            "sources": [
+              "external-poc-manifest"
+            ]
+          }
+        ],
+        "limitations": [],
+        "report_sha256": "2557aa975538c6736740ed8b279dc922f6ab728f9f475b158e33afb41754750c"
+      },
+      "validation": {
+        "ok": true,
+        "method": "jsonschema",
+        "violations": []
+      },
+      "generator_gate": "pass"
+    },
+    {
+      "case_id": "cwe190-integer-overflow",
+      "decision": "verified",
+      "report": {
+        "schema_version": 1,
+        "target": {
+          "format": "elf",
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "target_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+          "target_scope": {
+            "policy": "whole_image",
+            "name": "cwe190_bad"
+          }
+        },
+        "generator": {
+          "generator_id": "ai-repair-benchmark/1",
+          "agent": "repair-pipeline",
+          "model": "deepseek-flash",
+          "run_id": "cwe190-integer-overflow"
+        },
+        "verifier": {
+          "verifier_id": "independent-verifier/1",
+          "version": "1"
+        },
+        "independence": {
+          "ok": true,
+          "generator_evidence_excluded": true
+        },
+        "checks": [
+          {
+            "id": "identity",
+            "title": "Original/candidate identity and candidate change",
+            "status": "passed",
+            "required": true,
+            "detail": "original=307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156 candidate=c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9"
+          },
+          {
+            "id": "container",
+            "title": "Container re-parse and metadata agreement",
+            "status": "passed",
+            "required": true,
+            "detail": "format=elf arch=x86_64 bits=64 endian=little"
+          },
+          {
+            "id": "action-replay",
+            "title": "Byte-level action replay from raw images",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=9 offsets=0x200,0x204,0x208,0x210,0x218,0x220,0x228,0x230; allow_resize append_size=1304"
+          },
+          {
+            "id": "target-scope",
+            "title": "Candidate modifications stay inside the declared target scope",
+            "status": "passed",
+            "required": true,
+            "detail": "explicit whole-image opt-in"
+          },
+          {
+            "id": "abi",
+            "title": "Candidate instruction-block ABI validation",
+            "status": "passed",
+            "required": true,
+            "detail": "block 20480+152 arch='x86_64' ABI ok"
+          },
+          {
+            "id": "runtime-oracle",
+            "title": "Independent external PoC differential and regression",
+            "status": "passed",
+            "required": true,
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=2)",
+            "independent": true
+          },
+          {
+            "id": "evidence-completeness",
+            "title": "At least one independent oracle (no generator-only evidence)",
+            "status": "passed",
+            "required": true,
+            "detail": "one independent external oracle passed",
+            "independent": true
+          },
+          {
+            "id": "independence",
+            "title": "Generator/verifier independence and generator-evidence exclusion",
+            "status": "passed",
+            "required": true,
+            "detail": "generator identity is distinct and its evidence is excluded from the decision"
+          }
+        ],
+        "decision": "verified",
+        "evidence": [
+          {
+            "kind": "candidate",
+            "original_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+            "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9"
+          },
+          {
+            "kind": "container",
+            "original": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 264,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195552,
+                  "size": 127,
+                  "offset": 1248,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195680,
+                  "size": 22,
+                  "offset": 1376,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195704,
+                  "size": 64,
+                  "offset": 1400,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195768,
+                  "size": 72,
+                  "offset": 1464,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195840,
+                  "size": 168,
+                  "offset": 1536,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 128,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198560,
+                  "size": 112,
+                  "offset": 4256,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198672,
+                  "size": 456,
+                  "offset": 4368,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4199128,
+                  "size": 13,
+                  "offset": 4824,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 21,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202520,
+                  "size": 60,
+                  "offset": 8216,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4202584,
+                  "size": 196,
+                  "offset": 8280,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 80,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210744,
+                  "size": 16,
+                  "offset": 12344,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210784,
+                  "size": 16,
+                  "offset": 12360,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12360,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 48,
+                  "offset": 12405,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 961,
+                  "offset": 12453,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 399,
+                  "offset": 13414,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 246,
+                  "offset": 13813,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 682,
+                  "offset": 14059,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 276,
+                  "offset": 14741,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 1008,
+                  "offset": 15024,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 554,
+                  "offset": 16032,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 16586,
+                  "executable": false
+                }
+              ]
+            },
+            "candidate": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 264,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195552,
+                  "size": 127,
+                  "offset": 1248,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195680,
+                  "size": 22,
+                  "offset": 1376,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195704,
+                  "size": 64,
+                  "offset": 1400,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195768,
+                  "size": 72,
+                  "offset": 1464,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195840,
+                  "size": 168,
+                  "offset": 1536,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 128,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198560,
+                  "size": 112,
+                  "offset": 4256,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198672,
+                  "size": 456,
+                  "offset": 4368,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4199128,
+                  "size": 13,
+                  "offset": 4824,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 21,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202520,
+                  "size": 60,
+                  "offset": 8216,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4202584,
+                  "size": 196,
+                  "offset": 8280,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 80,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210744,
+                  "size": 16,
+                  "offset": 12344,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210784,
+                  "size": 16,
+                  "offset": 12360,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12360,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 48,
+                  "offset": 12405,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 961,
+                  "offset": 12453,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 399,
+                  "offset": 13414,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 246,
+                  "offset": 13813,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 682,
+                  "offset": 14059,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 276,
+                  "offset": 14741,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 1008,
+                  "offset": 15024,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 554,
+                  "offset": 16032,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 16586,
+                  "executable": false
+                }
+              ]
+            }
+          },
+          {
+            "kind": "actions",
+            "actions": [
+              {
+                "offset": 512,
+                "size": 1,
+                "before_hex": "04",
+                "after_hex": "01"
+              },
+              {
+                "offset": 516,
+                "size": 1,
+                "before_hex": "04",
+                "after_hex": "05"
+              },
+              {
+                "offset": 520,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 528,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 536,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 544,
+                "size": 1,
+                "before_hex": "44",
+                "after_hex": "98"
+              },
+              {
+                "offset": 552,
+                "size": 1,
+                "before_hex": "44",
+                "after_hex": "98"
+              },
+              {
+                "offset": 560,
+                "size": 2,
+                "before_hex": "0400",
+                "after_hex": "0010"
+              },
+              {
+                "offset": 4598,
+                "size": 5,
+                "before_hex": "f30f1efa55",
+                "after_hex": "e9053e0000"
+              }
+            ],
+            "claimed_actions": []
+          },
+          {
+            "kind": "target-scope",
+            "declared": {
+              "policy": "whole_image",
+              "name": "cwe190_bad"
+            },
+            "range": {
+              "kind": "whole_image",
+              "file_range": null,
+              "va_range": null,
+              "whole_program": true,
+              "detail": "explicit whole-image opt-in"
+            }
+          },
+          {
+            "kind": "abi",
+            "report": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          {
+            "kind": "oracle",
+            "source": "external-poc-manifest",
+            "status": "pass",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "errno_signature": "not_run",
+            "no_input": false,
+            "case_count": 2,
+            "regression_count": 2,
+            "limitations": []
+          },
+          {
+            "kind": "evidence-completeness",
+            "ok": true,
+            "detail": "one independent external oracle passed",
+            "sources": [
+              "external-poc-manifest"
+            ]
+          }
+        ],
+        "limitations": [],
+        "report_sha256": "d4cbbcb11e29de7830923d9215c8aee54648a8829295f5d2f1c107fbb4895b7d"
+      },
+      "validation": {
+        "ok": true,
+        "method": "jsonschema",
+        "violations": []
+      },
+      "generator_gate": "pass"
+    },
+    {
+      "case_id": "cwe476-null-deref",
+      "decision": "verified",
+      "report": {
+        "schema_version": 1,
+        "target": {
+          "format": "elf",
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "target_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+          "target_scope": {
+            "policy": "whole_image",
+            "name": "cwe476_bad"
+          }
+        },
+        "generator": {
+          "generator_id": "ai-repair-benchmark/1",
+          "agent": "repair-pipeline",
+          "model": "deepseek-flash",
+          "run_id": "cwe476-null-deref"
+        },
+        "verifier": {
+          "verifier_id": "independent-verifier/1",
+          "version": "1"
+        },
+        "independence": {
+          "ok": true,
+          "generator_evidence_excluded": true
+        },
+        "checks": [
+          {
+            "id": "identity",
+            "title": "Original/candidate identity and candidate change",
+            "status": "passed",
+            "required": true,
+            "detail": "original=7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c candidate=25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b"
+          },
+          {
+            "id": "container",
+            "title": "Container re-parse and metadata agreement",
+            "status": "passed",
+            "required": true,
+            "detail": "format=elf arch=x86_64 bits=64 endian=little"
+          },
+          {
+            "id": "action-replay",
+            "title": "Byte-level action replay from raw images",
+            "status": "passed",
+            "required": true,
+            "detail": "actions=9 offsets=0x200,0x204,0x208,0x210,0x218,0x220,0x228,0x230; allow_resize append_size=1665"
+          },
+          {
+            "id": "target-scope",
+            "title": "Candidate modifications stay inside the declared target scope",
+            "status": "passed",
+            "required": true,
+            "detail": "explicit whole-image opt-in"
+          },
+          {
+            "id": "abi",
+            "title": "Candidate instruction-block ABI validation",
+            "status": "passed",
+            "required": true,
+            "detail": "block 20480+65 arch='x86_64' ABI ok"
+          },
+          {
+            "id": "runtime-oracle",
+            "title": "Independent external PoC differential and regression",
+            "status": "passed",
+            "required": true,
+            "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=2)",
+            "independent": true
+          },
+          {
+            "id": "evidence-completeness",
+            "title": "At least one independent oracle (no generator-only evidence)",
+            "status": "passed",
+            "required": true,
+            "detail": "one independent external oracle passed",
+            "independent": true
+          },
+          {
+            "id": "independence",
+            "title": "Generator/verifier independence and generator-evidence exclusion",
+            "status": "passed",
+            "required": true,
+            "detail": "generator identity is distinct and its evidence is excluded from the decision"
+          }
+        ],
+        "decision": "verified",
+        "evidence": [
+          {
+            "kind": "candidate",
+            "original_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+            "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b"
+          },
+          {
+            "kind": "container",
+            "original": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 168,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195456,
+                  "size": 92,
+                  "offset": 1152,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195548,
+                  "size": 14,
+                  "offset": 1244,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195568,
+                  "size": 48,
+                  "offset": 1264,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195616,
+                  "size": 72,
+                  "offset": 1312,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195688,
+                  "size": 72,
+                  "offset": 1384,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 64,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198496,
+                  "size": 48,
+                  "offset": 4192,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198544,
+                  "size": 380,
+                  "offset": 4240,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4198924,
+                  "size": 13,
+                  "offset": 4620,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 25,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202524,
+                  "size": 60,
+                  "offset": 8220,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4202584,
+                  "size": 196,
+                  "offset": 8280,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 48,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210712,
+                  "size": 16,
+                  "offset": 12312,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210752,
+                  "size": 16,
+                  "offset": 12328,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12328,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 48,
+                  "offset": 12373,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 849,
+                  "offset": 12421,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 349,
+                  "offset": 13270,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 199,
+                  "offset": 13619,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 658,
+                  "offset": 13818,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 261,
+                  "offset": 14476,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 912,
+                  "offset": 14744,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 483,
+                  "offset": 15656,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 16139,
+                  "executable": false
+                }
+              ]
+            },
+            "candidate": {
+              "format": "elf",
+              "arch": "x86_64",
+              "bits": 64,
+              "endian": "little",
+              "sections": [
+                {
+                  "name": "",
+                  "va": 0,
+                  "size": 0,
+                  "offset": 0,
+                  "executable": false
+                },
+                {
+                  "name": ".interp",
+                  "va": 4195096,
+                  "size": 28,
+                  "offset": 792,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.property",
+                  "va": 4195128,
+                  "size": 48,
+                  "offset": 824,
+                  "executable": false
+                },
+                {
+                  "name": ".note.gnu.build-id",
+                  "va": 4195176,
+                  "size": 36,
+                  "offset": 872,
+                  "executable": false
+                },
+                {
+                  "name": ".note.ABI-tag",
+                  "va": 4195212,
+                  "size": 32,
+                  "offset": 908,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.hash",
+                  "va": 4195248,
+                  "size": 36,
+                  "offset": 944,
+                  "executable": false
+                },
+                {
+                  "name": ".dynsym",
+                  "va": 4195288,
+                  "size": 168,
+                  "offset": 984,
+                  "executable": false
+                },
+                {
+                  "name": ".dynstr",
+                  "va": 4195456,
+                  "size": 92,
+                  "offset": 1152,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version",
+                  "va": 4195548,
+                  "size": 14,
+                  "offset": 1244,
+                  "executable": false
+                },
+                {
+                  "name": ".gnu.version_r",
+                  "va": 4195568,
+                  "size": 48,
+                  "offset": 1264,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.dyn",
+                  "va": 4195616,
+                  "size": 72,
+                  "offset": 1312,
+                  "executable": false
+                },
+                {
+                  "name": ".rela.plt",
+                  "va": 4195688,
+                  "size": 72,
+                  "offset": 1384,
+                  "executable": false
+                },
+                {
+                  "name": ".init",
+                  "va": 4198400,
+                  "size": 27,
+                  "offset": 4096,
+                  "executable": true
+                },
+                {
+                  "name": ".plt",
+                  "va": 4198432,
+                  "size": 64,
+                  "offset": 4128,
+                  "executable": true
+                },
+                {
+                  "name": ".plt.sec",
+                  "va": 4198496,
+                  "size": 48,
+                  "offset": 4192,
+                  "executable": true
+                },
+                {
+                  "name": ".text",
+                  "va": 4198544,
+                  "size": 380,
+                  "offset": 4240,
+                  "executable": true
+                },
+                {
+                  "name": ".fini",
+                  "va": 4198924,
+                  "size": 13,
+                  "offset": 4620,
+                  "executable": true
+                },
+                {
+                  "name": ".rodata",
+                  "va": 4202496,
+                  "size": 25,
+                  "offset": 8192,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame_hdr",
+                  "va": 4202524,
+                  "size": 60,
+                  "offset": 8220,
+                  "executable": false
+                },
+                {
+                  "name": ".eh_frame",
+                  "va": 4202584,
+                  "size": 196,
+                  "offset": 8280,
+                  "executable": false
+                },
+                {
+                  "name": ".init_array",
+                  "va": 4210168,
+                  "size": 8,
+                  "offset": 11768,
+                  "executable": false
+                },
+                {
+                  "name": ".fini_array",
+                  "va": 4210176,
+                  "size": 8,
+                  "offset": 11776,
+                  "executable": false
+                },
+                {
+                  "name": ".dynamic",
+                  "va": 4210184,
+                  "size": 464,
+                  "offset": 11784,
+                  "executable": false
+                },
+                {
+                  "name": ".got",
+                  "va": 4210648,
+                  "size": 16,
+                  "offset": 12248,
+                  "executable": false
+                },
+                {
+                  "name": ".got.plt",
+                  "va": 4210664,
+                  "size": 48,
+                  "offset": 12264,
+                  "executable": false
+                },
+                {
+                  "name": ".data",
+                  "va": 4210712,
+                  "size": 16,
+                  "offset": 12312,
+                  "executable": false
+                },
+                {
+                  "name": ".bss",
+                  "va": 4210752,
+                  "size": 16,
+                  "offset": 12328,
+                  "executable": false
+                },
+                {
+                  "name": ".comment",
+                  "va": 0,
+                  "size": 45,
+                  "offset": 12328,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_aranges",
+                  "va": 0,
+                  "size": 48,
+                  "offset": 12373,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_info",
+                  "va": 0,
+                  "size": 849,
+                  "offset": 12421,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_abbrev",
+                  "va": 0,
+                  "size": 349,
+                  "offset": 13270,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line",
+                  "va": 0,
+                  "size": 199,
+                  "offset": 13619,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_str",
+                  "va": 0,
+                  "size": 658,
+                  "offset": 13818,
+                  "executable": false
+                },
+                {
+                  "name": ".debug_line_str",
+                  "va": 0,
+                  "size": 261,
+                  "offset": 14476,
+                  "executable": false
+                },
+                {
+                  "name": ".symtab",
+                  "va": 0,
+                  "size": 912,
+                  "offset": 14744,
+                  "executable": false
+                },
+                {
+                  "name": ".strtab",
+                  "va": 0,
+                  "size": 483,
+                  "offset": 15656,
+                  "executable": false
+                },
+                {
+                  "name": ".shstrtab",
+                  "va": 0,
+                  "size": 367,
+                  "offset": 16139,
+                  "executable": false
+                }
+              ]
+            }
+          },
+          {
+            "kind": "actions",
+            "actions": [
+              {
+                "offset": 512,
+                "size": 1,
+                "before_hex": "04",
+                "after_hex": "01"
+              },
+              {
+                "offset": 516,
+                "size": 1,
+                "before_hex": "04",
+                "after_hex": "05"
+              },
+              {
+                "offset": 520,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 528,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 536,
+                "size": 2,
+                "before_hex": "6803",
+                "after_hex": "0050"
+              },
+              {
+                "offset": 544,
+                "size": 1,
+                "before_hex": "44",
+                "after_hex": "41"
+              },
+              {
+                "offset": 552,
+                "size": 1,
+                "before_hex": "44",
+                "after_hex": "41"
+              },
+              {
+                "offset": 560,
+                "size": 2,
+                "before_hex": "0400",
+                "after_hex": "0010"
+              },
+              {
+                "offset": 4470,
+                "size": 5,
+                "before_hex": "f30f1efa55",
+                "after_hex": "e9853e0000"
+              }
+            ],
+            "claimed_actions": []
+          },
+          {
+            "kind": "target-scope",
+            "declared": {
+              "policy": "whole_image",
+              "name": "cwe476_bad"
+            },
+            "range": {
+              "kind": "whole_image",
+              "file_range": null,
+              "va_range": null,
+              "whole_program": true,
+              "detail": "explicit whole-image opt-in"
+            }
+          },
+          {
+            "kind": "abi",
+            "report": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          {
+            "kind": "oracle",
+            "source": "external-poc-manifest",
+            "status": "pass",
+            "runner": "limactl",
+            "tier": "emulated_run",
+            "stdout_signature": "matched",
+            "errno_signature": "not_run",
+            "no_input": false,
+            "case_count": 2,
+            "regression_count": 2,
+            "limitations": []
+          },
+          {
+            "kind": "evidence-completeness",
+            "ok": true,
+            "detail": "one independent external oracle passed",
+            "sources": [
+              "external-poc-manifest"
+            ]
+          }
+        ],
+        "limitations": [],
+        "report_sha256": "9ee97f6c650f9064d7c0eb23a3aa53012667c907dd4a8d1ea2025f40ea7bf092"
+      },
+      "validation": {
+        "ok": true,
+        "method": "jsonschema",
+        "violations": []
+      },
+      "generator_gate": "pass"
+    },
+    {
+      "case_id": "cwe134-format-string",
+      "decision": "not_run",
+      "reason": "no candidate artifact"
+    }
+  ]
+}

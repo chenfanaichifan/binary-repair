@@ -36,7 +36,11 @@
     "3-repeat cross-binary stability run; current P9 evidence is one run per case",
     "register/stack native trace (gdb unavailable)",
     "CWE-134 AI repair success",
-    "AFL/fuzzing campaign"
+    "AFL/fuzzing campaign",
+    "full 8/8 independent verification coverage",
+    "expanded 48/60-run stability experiment",
+    "N3+ register/stack native trace (gdb unavailable)",
+    "AFL/symbolic execution campaign"
   ],
   "non_goals": [
     {
@@ -279,7 +283,9 @@
     "P11 36-run stability: 19/36 with per-run evidence",
     "P12 real RepairSpec v2 plan and native trace",
     "P13 benchmark expansion to 8 binaries / 7 CWE",
-    "hidden-split CWE-476 AI verified"
+    "hidden-split CWE-476 AI verified",
+    "independent verifier applied to 10 benchmark candidates (6 verified)",
+    "CWE-121 / CWE-134 negative results retained without gate weakening"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",

@@ -635,6 +635,25 @@ def _evaluate(data: bytes, patched: bytes | None, poc: dict, case: dict,
 
 
 
+
+
+def _poc_expectations(case: dict[str, Any]) -> dict[str, Any] | None:
+    """Expose the already-declared candidate PoC/regression expectations."""
+    path = case.get("poc")
+    if not path:
+        return None
+    try:
+        spec = json.loads((ROOT / path).read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+    rows = []
+    for kind in ("poc", "regression"):
+        for item in spec.get(kind) or []:
+            candidate = item.get("candidate") or {}
+            rows.append({"kind": kind, "case_id": item.get("id"),
+                         "expected_candidate": candidate})
+    return {"rows": rows}
+
 def _ai_plan_attempt(
     client: Any,
     data: bytes,
@@ -661,6 +680,9 @@ def _ai_plan_attempt(
         native_feedback=native_feedback,
         sink_kind=str(case.get("sink_kind") or "unbounded_copy"),
     )
+    poc_expect = _poc_expectations(case)
+    if poc_expect is not None:
+        packet["poc_expectations"] = poc_expect
     if prior_plan is not None:
         packet["prior_repair_spec"] = prior_plan
     packet["task"] = "repair_plan"
@@ -760,6 +782,9 @@ def _ai_prompt_attempt(
         native_feedback,
         sink_kind=str(case.get("sink_kind") or "unbounded_copy"),
     )
+    poc_expect = _poc_expectations(case)
+    if poc_expect is not None:
+        packet["poc_expectations"] = poc_expect
     started = time.perf_counter()
     attempts: list[dict[str, Any]] = []
     assembly: str | None = None
@@ -993,7 +1018,7 @@ def _semantic_retry_attempt(
             "target_scope_check": "not_run", "target_in_scope": False,
             "elapsed_ms": plan_attempt.get("elapsed_ms"),
         }
-    spec = RepairSpec(**plan_attempt["plan"])
+    spec = spec_from_plan(plan_attempt["plan"])
     prompt = _ai_prompt_attempt(
         client, data, case, contract_level, allow_calls, callee_context,
         repair_spec=spec, native_feedback=feedback,

@@ -2121,7 +2121,7 @@
       },
       {
         "path": "docs/status/claims.json",
-        "sha256": "e5af1e522280021ed1ab9f7637b29796a0dbd2f9459df3883b11a07bad18dfe1"
+        "sha256": "6155d85a4d262e36e45b51984dfac97de558089bb38ba38bc54430e29a568f08"
       },
       {
         "path": "scripts/check_universe_methodology.py",
@@ -2145,10 +2145,10 @@
       },
       {
         "path": "artifacts/capability-universe-2026-11-16/dimension-registry.json",
-        "sha256": "443129686ddae5e1c7af6913aa352027c9c0d17d9e38773201eac6d9fb8f42f1"
+        "sha256": "11ec790f207e53f13c2ee815f34324be195de65e183fd91c670dcb422f359f7a"
       }
     ],
-    "source_digest_sha256": "eed3900217d5235ed93fc3ce8bfa4684ad5ece7d08ccc64e1e00d8ab16bc943b",
+    "source_digest_sha256": "14dccfa2f05329cc26291cda6d9547677b9e93c566daca249df3649f4020d7b1",
     "environment": {
       "platform": "darwin",
       "python": "3.11.8"

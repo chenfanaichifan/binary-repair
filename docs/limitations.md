@@ -31,7 +31,8 @@ general-purpose binary rewriter and does not claim universal correctness.
   case; CWE-134 remains rejected.  The 36-run stability result is 19/36 (about
   53%), so this is stochastic evidence, not deterministic generalization.  A
   reference-locked CWE416/UAF repair passes separately and is never counted as
-  AI.
+  AI.  P16 independent verification covers 10 candidates (6 verified) but not
+  the full 8/8 set; CWE-121 and CWE-134 remain negative.
 
 ## 4-model matrix conclusion
 

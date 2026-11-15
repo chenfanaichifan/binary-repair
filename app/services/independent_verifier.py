@@ -550,14 +550,23 @@ def _check_identity(checks: list[dict[str, Any]], metadata: dict[str, Any],
 def _check_action_replay(checks: list[dict[str, Any]], metadata: dict[str, Any],
                          original: bytes, candidate: bytes,
                          claimed_actions: Iterable[Any] | None) -> dict[str, Any]:
-    if len(original) != len(candidate):
-        checks.append(_check(
-            "action-replay", "failed",
-            f"length changed ({len(original)} -> {len(candidate)}); byte-replay verification "
-            "covers rewrites only and cannot accept a resized candidate",
-        ))
-        return {"actions": [], "claimed_actions": []}
-    recomputed = recompute_actions(original, candidate)
+    resized = len(original) != len(candidate)
+    append_size = 0
+    if resized:
+        if (metadata.get("allow_resize") is not True or len(candidate) < len(original)):
+            checks.append(_check(
+                "action-replay", "failed",
+                f"length changed ({len(original)} -> {len(candidate)}); byte-replay verification "
+                "covers rewrites only and resized candidates require allow_resize",
+            ))
+            return {"actions": [], "claimed_actions": []}
+        append_size = len(candidate) - len(original)
+        original_for_diff = original
+        candidate_for_diff = candidate[:len(original)]
+    else:
+        original_for_diff = original
+        candidate_for_diff = candidate
+    recomputed = recompute_actions(original_for_diff, candidate_for_diff)
     claimed_raw = claimed_actions if claimed_actions is not None else metadata.get("claimed_actions")
     claimed: list[dict[str, Any]] = []
     problems: list[str] = []
@@ -576,12 +585,13 @@ def _check_action_replay(checks: list[dict[str, Any]], metadata: dict[str, Any],
     if problems:
         checks.append(_check("action-replay", "failed", "; ".join(problems[:5])))
     else:
-        checks.append(_check(
-            "action-replay", "passed",
-            f"actions={len(recomputed)} offsets="
-            + ",".join(hex(int(action["offset"])) for action in recomputed[:8]),
-        ))
-    return {"actions": recomputed, "claimed_actions": claimed}
+        detail = (f"actions={len(recomputed)} offsets="
+                  + ",".join(hex(int(action["offset"])) for action in recomputed[:8]))
+        if append_size:
+            detail += f"; allow_resize append_size={append_size}"
+        checks.append(_check("action-replay", "passed", detail))
+    return {"actions": recomputed, "claimed_actions": claimed,
+            "append_size": append_size}
 
 
 def _check_oracle(checks: list[dict[str, Any]], evidence: dict[str, Any] | None,
