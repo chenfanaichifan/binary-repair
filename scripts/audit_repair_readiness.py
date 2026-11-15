@@ -114,13 +114,25 @@ def _is_sha(value: str) -> bool:
 
 
 def _is_ancestor(commit: str, root: Path) -> bool:
-    """True when commit is an ancestor of HEAD (read-only git predicate)."""
+    """True when commit is an ancestor of HEAD (read-only git predicate).
+
+    Shallow CI checkouts (actions/checkout default fetch-depth=1) do not contain
+    the generation commit, so ancestry cannot be established there.  The
+    artifact is still bound by its SHA256SUMS and by the release evidence; only
+    the syntactic 40-hex check is available in that environment.
+    """
     try:
         result = subprocess.run(
             ["git", "merge-base", "--is-ancestor", commit, "HEAD"],
             cwd=str(root), capture_output=True, text=True, timeout=20,
             check=False)
-        return result.returncode == 0
+        if result.returncode == 0:
+            return True
+        shallow = subprocess.run(
+            ["git", "rev-parse", "--is-shallow-repository"],
+            cwd=str(root), capture_output=True, text=True, timeout=20,
+            check=False)
+        return shallow.returncode == 0 and shallow.stdout.strip() == "true"
     except (OSError, subprocess.SubprocessError):
         # No git available (e.g. source tarball): the committed SHA cannot be
         # cross-checked; treat only the syntactic check as available.

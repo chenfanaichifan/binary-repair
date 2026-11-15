@@ -141,6 +141,15 @@ limited to their declared scope.
 | G29 | Hidden Benchmark | 8E | P2 | not_run | hidden benchmark unavailable (hidden_available=false); the registry must never fabricate a hidden run |
 | G30 | Capability Promotion Governance | 8E | P1 | partial | only the state machine and JSON contracts exist; an end-to-end promotion workflow with independent review is not audited |
 
+## 9a. Shallow-checkout note
+
+`audit_repair_readiness.py --check` verifies that the committed
+`generated_from_sha` is an ancestor of HEAD when full git history is present
+(local release gate).  In a shallow CI checkout (`actions/checkout` default
+depth) the generation commit is absent; the checker then falls back to the
+syntactic 40-hex SHA check plus the artifact's SHA256SUMS binding, and does not
+report a false failure.  The release evidence binds the final SHA separately.
+
 ## 10. Honesty statement
 
 This round **adds no new repair capability and does not upgrade any `verified`
