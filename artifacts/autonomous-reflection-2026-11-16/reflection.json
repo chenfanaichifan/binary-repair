@@ -49,7 +49,7 @@
       "label": "Gap Registry candidate records",
       "path": "artifacts/gap-registry-2026-11-16/candidates.json",
       "reason": "",
-      "sha256": "de756d97086d65ff4b55ce11d50429a9fdece093b2a0ba317f9e49fb4dd3b7d0",
+      "sha256": "587b37a72767fbe512c5fe75cd8def90e2ba25a14841a17f5cd40c2348dd315d",
       "status": "read"
     }
   },
