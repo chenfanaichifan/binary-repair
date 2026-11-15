@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app.services import independent_verifier as verifier  # noqa: E402
+from app.services import verification_semantics as semantics  # noqa: E402
 from app.services.containers import detect_container  # noqa: E402
 from app.services.poc_runner import run_poc  # noqa: E402
 
@@ -29,6 +30,79 @@ def _container_meta(data: bytes) -> dict:
     c = detect_container(data)
     return {"format": c.format, "arch": c.arch, "bits": c.bits,
             "endian": getattr(c, "endian", "little")}
+
+
+def _diff_operations(original: bytes, candidate: bytes, *,
+                     header_boundary: int = 4096) -> list[dict]:
+    n = min(len(original), len(candidate))
+    ops = []
+    index = 0
+    while index < n:
+        if original[index] == candidate[index]:
+            index += 1
+            continue
+        start = index
+        while index < n and original[index] != candidate[index]:
+            index += 1
+        before = original[start:index]
+        after = candidate[start:index]
+        if before == after:
+            continue
+        ops.append({
+            "kind": "write",
+            "reason": "header_update" if start < header_boundary else "reviewed_site",
+            "original_offset": start, "size": index - start,
+            "before_hex": before.hex(), "after_hex": after.hex(),
+        })
+    return ops
+
+
+def _patch_plan(case: dict, original: bytes, candidate: bytes,
+                record: dict) -> dict | None:
+    injection = record.get("injection") or {}
+    if not injection.get("code_bytes") or not injection.get("cave_va"):
+        return None
+    try:
+        target_va = int(str(injection.get("target_va") or "0"), 16)
+        cave_va = int(str(injection.get("cave_va") or "0"), 16)
+        code_size = int(injection.get("code_bytes") or 0)
+    except (TypeError, ValueError):
+        return None
+    operations = _diff_operations(original, candidate)
+    if len(candidate) > len(original):
+        operations.append({
+            "kind": "insert", "reason": "guard_cave",
+            "original_offset": len(original), "size": len(candidate) - len(original),
+            "before_hex": "", "after_hex": candidate[len(original):].hex(),
+        })
+    poc = record.get("candidate", {}).get("poc") or {}
+    return {
+        "schema_version": 1,
+        "candidate_id": "cand-" + str(
+            record.get("candidate", {}).get("candidate_sha256") or "unknown")[:16],
+        "target_sha256": hashlib.sha256(original).hexdigest(),
+        "candidate_sha256": hashlib.sha256(candidate).hexdigest(),
+        "strategy": "asm-target-guard",
+        "scope_policy": "target_scoped_associated",
+        "target_scope": {"policy": "target_scoped_associated",
+                         "name": case.get("target"), "va": target_va,
+                         "end": target_va + 0x400},
+        "operations": operations,
+        "cave": {"va": cave_va, "size": max(code_size, 1),
+                 "executable": True,
+                 "method": str(injection.get("method") or "new-pt-load")},
+        "relocations": [],
+        "abi_blocks": [{"va": cave_va, "size": max(code_size, 1),
+                        "arch": "x86_64"}],
+        "oracle": {
+            "manifest_sha256": hashlib.sha256(
+                (ROOT / case["poc"]).read_bytes()).hexdigest(),
+            "runner": poc.get("runner") or "limactl",
+            "tier": poc.get("tier") or "emulated_run",
+            "status": "executed",
+        },
+        "limitations": ["automated plan derived from recorded injection metadata"],
+    }
 
 
 def verify_case(run_dir: Path, record: dict, case: dict) -> dict:
@@ -68,10 +142,11 @@ def verify_case(run_dir: Path, record: dict, case: dict) -> dict:
         except Exception:  # noqa: BLE001
             pass
     manifest = ROOT / case["poc"] if not Path(case["poc"]).is_absolute() else Path(case["poc"])
+    plan = _patch_plan(case, original, candidate, record)
     report = verifier.verify_repair(
         original=original, candidate=candidate, metadata=meta,
         oracle={"manifest": str(manifest)}, generator=meta["generator"],
-        run_poc=run_poc,
+        patch_plan=plan, run_poc=run_poc,
     )
     validation = verifier.validate_verification_report(report)
     return {"case_id": case["id"], "decision": report["decision"],

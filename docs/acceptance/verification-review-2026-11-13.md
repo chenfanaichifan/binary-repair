@@ -159,7 +159,7 @@ remains future work.  Do not claim "AI repaired arbitrary binaries" or
 
 ## 8. Final local verification
 
-- macOS 13.5 arm64: **1966 tests, 0 failed, 0 errors, 9 skipped** (920.5 s).
+- macOS 13.5 arm64: **2041 tests, 0 failed, 0 errors, 9 skipped** (731.0 s).
 - Linux VM Ubuntu 24.04 arm64: **1966 tests, 0 failed, 0 errors, 18 skipped** (pending Linux/CI).
 - `scripts/verify_evidence.py`: 11 fixture rows + 110 source rows PASS;
   v5 bundle 38 files PASS; AI bundle 9 files PASS.
