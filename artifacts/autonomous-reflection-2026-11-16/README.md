@@ -20,7 +20,7 @@ artifacts only (no network, no LLM, no dynamic probes).
 |---|---|---|
 | `acceptance_audit` (artifacts/acceptance-model-audit-2026-11-16/report.json) | read | `46fbd837fcf4523ae74415c1223def97e3af83d721d2082f7599ea2adba76c96` |
 | `coverage_matrix` (artifacts/capability-gap-audit-2026-11-14/coverage-matrix.json) | read | `6c72abcac0f71b747f68a8f2b5fb4f4fd5b74de4629aa00a3fa9a8647251e3d8` |
-| `gap_candidates` (artifacts/gap-registry-2026-11-16/candidates.json) | read | `5e77f190103e2593ae12c70805c32c2f5cf57a327ea67ed34587c96d2eaaedf4` |
+| `gap_candidates` (artifacts/gap-registry-2026-11-16/candidates.json) | read | `f39d3733a8b89a3d251c112245d1f45d6f5b9def2dfbba3cc7aac7c536ccc853` |
 
 ## Not run
 
