@@ -2344,3 +2344,7 @@ def repair_binary(
     )
     candidate = outcome.candidate if outcome.download_allowed else None
     return candidate, outcome.report
+
+
+# Public name used by the benchmark/verifier integration.
+build_patch_plan = _build_patch_plan

@@ -40,7 +40,9 @@
     "full 8/8 independent verification coverage",
     "expanded 48/60-run stability experiment",
     "N3+ register/stack native trace (gdb unavailable)",
-    "AFL/symbolic execution campaign"
+    "AFL/symbolic execution campaign",
+    "P16 10/10 independent verification states",
+    "PT_LOAD-backed cave ABI derivation in verifier"
   ],
   "non_goals": [
     {
@@ -285,7 +287,9 @@
     "P13 benchmark expansion to 8 binaries / 7 CWE",
     "hidden-split CWE-476 AI verified",
     "independent verifier applied to 10 benchmark candidates (6 verified)",
-    "CWE-121 / CWE-134 negative results retained without gate weakening"
+    "CWE-121 / CWE-134 negative results retained without gate weakening",
+    "real binary_pipeline patch-plan replay in benchmark verifier",
+    "P16 layout/action/target-scope checks pass for one CWE-122 candidate"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",

@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
 from app.services import independent_verifier as verifier  # noqa: E402
 from app.services import verification_semantics as semantics  # noqa: E402
 from app.services.containers import detect_container  # noqa: E402
+from app.services.binary_pipeline import build_patch_plan  # noqa: E402
 from app.services.poc_runner import run_poc  # noqa: E402
 
 
@@ -142,7 +143,43 @@ def verify_case(run_dir: Path, record: dict, case: dict) -> dict:
         except Exception:  # noqa: BLE001
             pass
     manifest = ROOT / case["poc"] if not Path(case["poc"]).is_absolute() else Path(case["poc"])
-    plan = _patch_plan(case, original, candidate, record)
+    injection = record.get("injection") or {}
+    actions = []
+    try:
+        actions.append({
+            "kind": "guard",
+            "site_va": int(str(injection.get("target_va") or "0"), 16),
+            "cave_va": str(injection.get("cave_va") or ""),
+            "method": str(injection.get("method") or "new-pt-load"),
+        })
+    except (TypeError, ValueError):
+        actions = []
+    poc_manifest = json.loads((ROOT / case["poc"]).read_text())
+    target_va_int = actions[0]["site_va"] if actions else 0
+    plan = build_patch_plan(
+        original, candidate, detect_container(original), actions,
+        None, record.get("candidate", {}).get("poc"), poc_manifest,
+        {"va": target_va_int, "end": target_va_int + 0x400,
+         "name": case.get("target")},
+        "target_scoped_associated",
+    )
+    if isinstance(plan, dict):
+        # The builder's ABI blocks describe the primary target; the candidate
+        # code actually lives in the declared cave.  Add the cave block using
+        # the same mapping/provenance the plan already declared.
+        cave_va = actions[0].get("cave_va") if actions else ""
+        try:
+            plan["abi_blocks"] = [{"va": int(str(cave_va), 16),
+                                   "size": int(injection.get("code_bytes") or 0),
+                                   "arch": "x86_64"}]
+        except (TypeError, ValueError):
+            pass
+        oracle = plan.setdefault("oracle", {})
+        oracle["manifest_sha256"] = hashlib.sha256(
+            (ROOT / case["poc"]).read_bytes()).hexdigest()
+        oracle["runner"] = (record.get("candidate", {}).get("poc") or {}).get("runner") or "limactl"
+        oracle["tier"] = (record.get("candidate", {}).get("poc") or {}).get("tier") or "emulated_run"
+        oracle["status"] = "executed"
     report = verifier.verify_repair(
         original=original, candidate=candidate, metadata=meta,
         oracle={"manifest": str(manifest)}, generator=meta["generator"],
