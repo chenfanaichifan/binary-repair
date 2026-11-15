@@ -164,6 +164,22 @@ CHECK_SPECS: tuple[dict[str, Any], ...] = (
         "shadow": True,
         "modes": ("full",),
     },
+    {
+        "id": "phase8b-baseline-audit",
+        "script": "scripts/audit_phase8b_verifier_semantics.py",
+        "args": ("--check",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
+    {
+        "id": "phase8b-real-verification",
+        "script": "scripts/check_phase8b_verification.py",
+        "args": ("--json",),
+        "required": False,
+        "shadow": True,
+        "modes": ("full",),
+    },
 )
 
 

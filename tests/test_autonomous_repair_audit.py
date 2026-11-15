@@ -55,6 +55,8 @@ def _passing_runner() -> FakeRunner:
             "audit_repair_readiness.py",
             "build_ground_truth_benchmark.py",
             "verify_repair.py",
+            "audit_phase8b_verifier_semantics.py",
+            "check_phase8b_verification.py",
         )
     })
 
@@ -71,22 +73,24 @@ def test_full_mode_all_passing_writes_valid_evidence(tmp_path: Path) -> None:
     payload = json.loads((out / "summary.json").read_text(encoding="utf-8"))
     assert payload["kind"] == "autonomous_repair_audit"
     assert payload["ok"] is True
-    assert len(payload["checks"]) == 10
+    assert len(payload["checks"]) == 12
     assert sum(1 for check in payload["checks"] if check["required"]) == 7
-    assert sum(1 for check in payload["checks"] if check.get("shadow") is True) == 3
-    assert [check["status"] for check in payload["checks"]] == ["passed"] * 10
+    assert sum(1 for check in payload["checks"] if check.get("shadow") is True) == 5
+    assert [check["status"] for check in payload["checks"]] == ["passed"] * 12
     assert payload["not_run"] == []
     shadow = payload["shadow_summary"]
-    assert shadow["count"] == 3
+    assert shadow["count"] == 5
     assert shadow["counted_as_pass"] is False
     assert shadow["affects_exit_code"] is False
     assert sorted(shadow["passed"]) == [
-        "ground-truth-benchmark", "independent-verifier", "repair-readiness-audit",
+        "ground-truth-benchmark", "independent-verifier",
+        "phase8b-baseline-audit", "phase8b-real-verification",
+        "repair-readiness-audit",
     ]
     sums_lines = [line for line in (out / "SHA256SUMS").read_text(encoding="utf-8").splitlines() if line]
     assert len(sums_lines) == 2
     assert audit_cli.verify_evidence(out) == []
-    assert len(runner.calls) == 10
+    assert len(runner.calls) == 12
 
 
 def test_static_mode_runs_only_static_subset(tmp_path: Path) -> None:
@@ -139,7 +143,7 @@ def test_missing_required_script_is_not_run_exit_two(tmp_path: Path) -> None:
     missing_runner = _passing_runner()
     audit_cli.audit(mode="full", root=root, run=missing_runner)
     assert "discover_capability_gaps.py" not in missing_runner.called_scripts()
-    assert len(missing_runner.calls) == 9
+    assert len(missing_runner.calls) == 11
 
 
 def test_check_exit_two_is_aggregated_as_not_run(tmp_path: Path) -> None:
@@ -195,16 +199,20 @@ def test_shadow_scripts_missing_are_not_run_and_never_pass(tmp_path: Path) -> No
         "audit_repair_readiness.py",
         "build_ground_truth_benchmark.py",
         "verify_repair.py",
+        "audit_phase8b_verifier_semantics.py",
+        "check_phase8b_verification.py",
     ))
     payload = audit_cli.audit(mode="full", root=root, run=_passing_runner())
     assert payload["ok"] is True
     assert payload["exit_code"] == 0
     assert payload["not_run"] == []
     shadow = payload["shadow_summary"]
-    assert shadow["count"] == 3
+    assert shadow["count"] == 5
     assert shadow["passed"] == []
     assert sorted(shadow["not_run"]) == [
-        "ground-truth-benchmark", "independent-verifier", "repair-readiness-audit",
+        "ground-truth-benchmark", "independent-verifier",
+        "phase8b-baseline-audit", "phase8b-real-verification",
+        "repair-readiness-audit",
     ]
     statuses = {check["id"]: check["status"] for check in payload["checks"]}
     for check_id in shadow["not_run"]:

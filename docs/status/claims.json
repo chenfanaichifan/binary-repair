@@ -595,5 +595,96 @@
       "capability promotion/graduation",
       "self-hosted nightly run"
     ]
+  },
+  "phase8b_verifier_semantics": {
+    "phase": "8B",
+    "base_sha": "dad21c985694b2d16a722256eaed6bd6131bb9cd",
+    "status": "implemented_verifier_semantics_and_real_sample_verification_no_capability_promotion",
+    "new_vulnerability_repair_capability_this_phase": false,
+    "auto_upgrade_verified_this_phase": false,
+    "hidden_benchmark_this_phase": false,
+    "capability_promotion_this_phase": false,
+    "baseline_audit": {
+      "artifact_dir": "artifacts/phase8b-baseline-2026-11-16",
+      "base_sha": "bd9cbf63c395dfa98cb16845bee3f817805adaf5",
+      "disagreements_reproduced": 2,
+      "gap_ids": [
+        "V8B-01",
+        "V8B-02",
+        "V8B-03",
+        "V8B-04",
+        "V8B-05",
+        "V8B-06",
+        "V8B-07"
+      ],
+      "confirmed_gaps": 7,
+      "candidate_defect_observed": false,
+      "candidate_verified_claim": false,
+      "evidence_only_not_executed": true
+    },
+    "verifier": {
+      "module": "app/services/independent_verifier.py",
+      "cli": "scripts/verify_repair.py",
+      "required_checks": 9,
+      "selftest_cases": 19,
+      "layout_replay": "write|insert|replace with byte-exact candidate reconstruction",
+      "generator_verdicts_read": false,
+      "generator_evidence_excluded": true,
+      "whole_image_verified": false,
+      "abi_derivation": "plan/metadata/symbol-backed function/guard cave; unavailable is not_run",
+      "oracle": "verifier executes poc_runner.run_poc; not_run is never pass",
+      "resized_without_plan": "not_run, never verified"
+    },
+    "real_verification": {
+      "artifact_dir": "artifacts/phase8b-benchmark-2026-11-16",
+      "manifest": "benchmark/phase8-v1/manifest.json",
+      "samples": 12,
+      "executed": 12,
+      "candidate_produced": 2,
+      "independently_verified": 2,
+      "verified_samples": [
+        "stack-strcpy-x86_64",
+        "heap-capacity-x86_64"
+      ],
+      "false_verified": 0,
+      "verification_disagreements": 0,
+      "deterministic_claim_withdrawn": 0,
+      "oracle_runner": "limactl",
+      "oracle_tier": "emulated_run",
+      "oracle_executed": true,
+      "analysis_only_samples": 10,
+      "analysis_only_independently_verified_claimed": false
+    },
+    "contracts": {
+      "total": 13,
+      "new": [
+        "patch-plan"
+      ],
+      "acceptance_mismatch_classes": 28,
+      "acceptance_audit_cases": 62,
+      "meta_audit_scenarios": 30,
+      "new_acceptance_mismatches": [
+        "AM25",
+        "AM26",
+        "AM27",
+        "AM28"
+      ]
+    },
+    "ci_evidence": {
+      "hosted_release_ci": "recorded_in_phase8b_evidence_bundle",
+      "self_hosted_nightly": "not_run",
+      "phase8b_shadow_checks": "non_gating_in_ci",
+      "sha256sums": "required_in_evidence_bundle"
+    },
+    "not_claimed": [
+      "new vulnerability repair capability",
+      "upgraded general verified capability",
+      "hidden benchmark generalization",
+      "whole-image verified proof",
+      "capability promotion/graduation",
+      "automatic promotion of candidates to verified",
+      "self-hosted nightly run",
+      "Phase-8C..16 completion"
+    ]
   }
 }

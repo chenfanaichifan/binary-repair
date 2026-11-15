@@ -695,3 +695,54 @@ does not upgrade any `verified` state.
   `artifacts/coverage-closure-2026-11-14/SHA256SUMS` had a stale digest for
   `acceptance.json`; Phase-8A corrected only the checksum line to the actual
   committed bytes. No acceptance content was changed.
+
+## Phase-8B verifier semantics and real-sample verification (2026-11-16)
+
+Phase-8B closes the verifier semantic/evidence-exchange gaps found by Phase-8A,
+but it is still not a general vulnerability-repair capability and does not
+promote any capability state.
+
+- The two Phase-8A disagreements were reproduced with the deterministic engine
+  (candidate bytes match Phase-8A): `stack-strcpy-x86_64` is a resized
+  guard/cave candidate and `heap-capacity-x86_64` is a same-length capacity
+  rewrite with an associated `.rodata` message action. B1 found no observed
+  candidate defect; the failures were oracle-wiring, resolved-scope, layout
+  replay, associated-change, ABI-evidence, patch-plan and runner-exchange gaps.
+  Candidates in the B1 artifact remain evidence-only and are not correctness
+  claims.
+- The independent verifier now accepts a versioned `patch-plan` and replays
+  `write`/`insert`/`replace` operations from raw bytes to an exact candidate
+  match. It validates declared target scope, associated changes with an explicit
+  `authorization_ref`, executable cave mapping/redirect, relocation coverage,
+  ABI blocks and an independently executed `poc_runner` oracle. A resized
+  candidate without a plan is `not_run`, never verified. `whole_image` is never
+  verified in Phase-8B.
+- Real reference-host run of the 12-sample Phase-8A manifest:
+  `artifacts/phase8b-benchmark-2026-11-16/` records 12 executed, 2 candidates,
+  **2 independently verified** (`stack-strcpy-x86_64`, `heap-capacity-x86_64`),
+  `false_verified=0`, `verification_disagreements=0`. The oracle actually ran
+  through the guest runner (`runner=limactl`, `tier=emulated_run`). The other 10
+  samples produced no candidate and are analysis-only; they are not claimed as
+  independently verified.
+- The two verified candidates are two deterministic fixture repairs under
+  declared target scope plus an executed function-level PoC differential. They
+  are not evidence for arbitrary binaries, arbitrary vulnerability classes,
+  whole-program semantics, all architectures/formats, or production safety.
+- Heap ABI evidence uses the reviewed containing-function range from the
+  stripped fixture's capacity analysis, because the fixture has no symbol-backed
+  function range. The verifier requires a derivable ABI block; it does not guess
+  a site-sized range. If a future candidate has no derivable ABI evidence, ABI
+  remains `not_run` and the candidate cannot be verified.
+- Oracle availability is host-dependent. The committed run recorded a real
+  booted guest execution; a host without a compatible runner must record
+  `not_run`/`unavailable`, which is never treated as a pass.
+- Contracts are now 13 total (new `patch-plan`; verification/benchmark-sample
+  compatibility extensions); acceptance adds AM25-AM28 and now has 62 cases /
+  28 classes; meta-audit has 30 scenarios. These are acceptance/evidence rules,
+  not new repair paths or capability graduations.
+- CI adds Phase-8B baseline-audit and real-verification evidence checks as
+  non-gating shadow steps. The release gate remains the existing 13 required
+  checks; self-hosted Lima nightly remains `not_run` and is not claimed.
+- Phase-8C (hidden/external corpus), Phase-8D (open-world discovery and
+  Acceptance 2.0), Phase-9/10 (cross-function and remaining vulnerability
+  families), and Phase-11..16 remain future work and are not claimed.

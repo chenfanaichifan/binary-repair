@@ -15,6 +15,13 @@ Machine-readable phase flags:
     hidden_benchmark_run_this_phase: false
     capability_graduation_this_phase: false
 
+Naming note (2026-11-16): a separate cross-cutting **Phase-8B
+verifier-semantics cycle** closed the Phase-8A verification disagreement and
+performed two real independent verifications; it is *not* the roadmap band 8B
+analysis capability work (G09-G18), which remains not implemented. See
+`docs/release-2026-11-16-phase8b.md` and the `phase8b_verifier_semantics`
+block in `docs/status/claims.json`.
+
 ## 1. G01-G30 mapping to Phase 8A-8E
 
 The 30 Phase-8 user requirements (G01-G30) are taken verbatim from the

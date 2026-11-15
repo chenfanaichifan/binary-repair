@@ -100,6 +100,12 @@ jobs:
       - name: Phase-8 shadow independent verifier selftest (non-gating)
         continue-on-error: true
         run: python scripts/verify_repair.py --selftest
+      - name: Phase-8B shadow verifier baseline audit (non-gating)
+        continue-on-error: true
+        run: python scripts/audit_phase8b_verifier_semantics.py --check
+      - name: Phase-8B shadow real-verification evidence (non-gating)
+        continue-on-error: true
+        run: python scripts/check_phase8b_verification.py --json
       - name: Coverage regression gate (static, no network)
         run: python scripts/verify_coverage_gate.py --static-only
       # Serial execution by policy: Lima guests and the real PoC differential are
