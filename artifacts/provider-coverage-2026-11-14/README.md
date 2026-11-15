@@ -6,7 +6,7 @@ to build it.
 
 - generated_at: `2026-11-14T13:08:04Z` (artifacts/provider-matrix-2026-11-14/summary.json#generated_at;
   deterministic source-derived timestamp, not build wall clock)
-- source digest: `2192152ce44e79b8014c5471836c5889718db28b7a410dc8eced1b2cd6a2ea09`
+- source digest: `7aba4f032a826fe33b7efaa4ffb83bcc7f541ace9af3f85f65998efbd761444a`
 - cited source files: 32
 
 Artifact files: `summary.json` (machine-readable), `README.md` (this file),
