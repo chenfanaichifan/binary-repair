@@ -17,7 +17,7 @@ history and historical evidence remain in the source repository
 
 ```text
 Repository  https://github.com/leesirleesirlee-star/Binary_Repair
-Version     v1.2.1
+Version     v1.2.2
 Source      chenfanaichifan/binary-repair
             release/v1.2.1 @ 3418491 (source and corrected documentation)
 ```

@@ -3,6 +3,23 @@
 All notable changes to this project are documented here. This project follows a
 simple semantic-versioning policy for delivery snapshots.
 
+## [1.2.2] — 2026-11-15
+
+Merges the two 2026-11-12 lines that had been living as separate branches: the
+backend/agent workbench line (`workbench-v3`, 57 commits — binary-dataset
+adapters and splits, the CGC subset, the 256K-token multi-agent reviewer loop
+and bounded AI adjudication) and the M2 interface refresh
+(`ui-workbench-2026-11-12`, 10 commits — workbench refresh, focus mode, live
+status panel, configure-model toggle, compressed onboarding). The interface
+refresh now sits on top of the workbench line, so the two are one history.
+
+- Two checks the merge surfaced were repaired by keeping the behaviour rather
+  than by relaxing the check: the state-panel test pins the focus toggle that
+  replaced the collapse button, and the shortened onboarding greeting keeps
+  the wording the browser e2e test asserts.
+- No acceptance evidence, hash, verdict or engine rule changed; this is a
+  packaging merge of two already-recorded work lines.
+
 ## [Unreleased]
 
 ### Added
@@ -251,7 +268,10 @@ Initial public MVP snapshot imported from the original development repository's
 - `v1.1.1` is the curated test/upload fix.
 - `v1.1.2` is the comparison-UI snapshot.
 - `v1.1.3` is the v1.1.2 path hotfix.
-- `v1.2.0` is the current upload-gate / P1 replay snapshot.
+- `v1.2.0` is the upload-gate / P1 replay snapshot.
+- `v1.2.1` is the public documentation and API-key hardening snapshot.
+- `v1.2.2` merges the 2026-11-12 backend/agent workbench line with the M2
+  interface refresh.
 - Future changes that alter accepted behavior or evidence scope should use a new
   version and a new annotated tag rather than moving an existing tag.
 
