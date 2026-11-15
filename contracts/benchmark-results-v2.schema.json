@@ -1,0 +1,377 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/benchmark-results-v2.schema.json",
+  "title": "Benchmark results v2 (public samples + hidden aggregate)",
+  "description": "One benchmark results v2 document: manifest digest, per-public-sample results (status executed/not_run/blocked/unsupported/invalid plus detection/root-cause/localization/strategy/candidate/verification/regression/environment/false-verified/not-run-reason), an aggregate with explicit denominators, and an optional hidden aggregate that contains counts only (never per-sample hidden ids).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "benchmark_id",
+    "manifest_sha256",
+    "generated_at",
+    "samples",
+    "aggregate",
+    "hidden_aggregate",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "kind": {
+      "const": "benchmark_results_v2"
+    },
+    "benchmark_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "samples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sample_id",
+          "status",
+          "detection",
+          "root_cause",
+          "localization",
+          "strategy",
+          "candidate",
+          "verification",
+          "regression",
+          "environment",
+          "false_verified",
+          "not_run_reason"
+        ],
+        "properties": {
+          "sample_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "executed",
+              "not_run",
+              "blocked",
+              "unsupported",
+              "invalid"
+            ]
+          },
+          "detection": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "root_cause": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "localization": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "strategy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "candidate": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "produced",
+              "sha256"
+            ],
+            "properties": {
+              "produced": {
+                "type": "boolean"
+              },
+              "sha256": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          },
+          "verification": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "decision",
+              "evidence_sha256"
+            ],
+            "properties": {
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "verified",
+                  "rejected",
+                  "inconclusive",
+                  "not_run"
+                ]
+              },
+              "evidence_sha256": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          },
+          "regression": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "environment": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tier",
+              "runner",
+              "oracle_status"
+            ],
+            "properties": {
+              "tier": {
+                "type": "string",
+                "enum": [
+                  "native_run",
+                  "emulated_run",
+                  "static_only",
+                  "unavailable"
+                ]
+              },
+              "runner": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "oracle_status": {
+                "type": "string",
+                "enum": [
+                  "executed",
+                  "not_run",
+                  "unavailable"
+                ]
+              }
+            }
+          },
+          "false_verified": {
+            "type": "boolean"
+          },
+          "not_run_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "aggregate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_count",
+        "status_counts",
+        "verified_count",
+        "rejected_count",
+        "false_verified_count",
+        "denominator"
+      ],
+      "properties": {
+        "sample_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executed",
+            "not_run",
+            "blocked",
+            "unsupported",
+            "invalid"
+          ],
+          "properties": {
+            "executed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "not_run": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "blocked": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unsupported": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "invalid": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "verified_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rejected_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "false_verified_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "denominator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "samples",
+            "executed",
+            "verification_attempted"
+          ],
+          "properties": {
+            "samples": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "executed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "verification_attempted": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "hidden_aggregate": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "sample_count",
+        "status_counts",
+        "verified_count",
+        "rejected_count",
+        "false_verified_count",
+        "denominator"
+      ],
+      "properties": {
+        "sample_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executed",
+            "not_run",
+            "blocked",
+            "unsupported",
+            "invalid"
+          ],
+          "properties": {
+            "executed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "not_run": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "blocked": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unsupported": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "invalid": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "verified_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rejected_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "false_verified_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "denominator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "samples",
+            "executed",
+            "verification_attempted"
+          ],
+          "properties": {
+            "samples": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "executed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "verification_attempted": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

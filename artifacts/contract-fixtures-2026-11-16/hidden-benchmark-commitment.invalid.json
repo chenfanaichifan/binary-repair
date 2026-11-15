@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "kind": "hidden_benchmark_commitment",
+  "benchmark_id": "phase8c-v1",
+  "hidden_version": "v1",
+  "sample_count": 1,
+  "runtime_count": 2,
+  "analysis_only_count": 1,
+  "commitment_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "public_manifest_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "created_at": "2026-11-16T00:00:00Z",
+  "samples": [
+    {
+      "opaque_sample_id": "samples/secret.bin",
+      "opaque_binary_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    {
+      "opaque_sample_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "opaque_binary_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  ],
+  "limitations": [
+    "isolation is operational, not cryptographic; opaque ids only"
+  ]
+}

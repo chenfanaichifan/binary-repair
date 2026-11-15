@@ -1,0 +1,82 @@
+{
+  "sample_id": "cwe121-public-v2",
+  "sample_version": 2,
+  "binary_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "format": "elf",
+  "arch": "x86_64",
+  "bits": 64,
+  "endian": "little",
+  "abi": null,
+  "compiler": null,
+  "compiler_version": "0.17.1",
+  "optimization_level": "-O0",
+  "linking_mode": null,
+  "stripping_status": null,
+  "vulnerability_family": "stack_buffer_overflow",
+  "vulnerability_subtype": "CWE-121 stack buffer overflow (unchecked strcpy)",
+  "cwe": "CWE-121",
+  "expected_scope": "function",
+  "target": {
+    "kind": "symbol",
+    "symbol": "CWE121_Stack_Based_Buffer_Overflow_badSink"
+  },
+  "root_cause": {
+    "statement": "strcpy into a char[50] destination without validating the input length",
+    "evidence_refs": [
+      "fixtures/public/CWE121_src_char_declare_cpy_51b/src.c#L10"
+    ]
+  },
+  "trigger_conditions": [
+    "input longer than the destination capacity"
+  ],
+  "affected_function": "CWE121_Stack_Based_Buffer_Overflow_badSink",
+  "affected_ranges": [
+    {
+      "kind": "va_range",
+      "va": 4198400,
+      "end": 4198500
+    }
+  ],
+  "oracle": {
+    "kind": "external_poc",
+    "kinds": [
+      "external_poc"
+    ],
+    "manifest_path": "fixtures/poc/cwe121.json",
+    "expected_original": "{\"exit_code\": 0}",
+    "expected_candidate": "{\"exit_code\": 1}",
+    "regression_case_ids": [
+      "cwe121-valid-0"
+    ]
+  },
+  "reference_fix": {
+    "path": "fixtures/hard-cases/cwe121_fix.c",
+    "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "expected_original_behavior": null,
+  "expected_fixed_behavior": null,
+  "semantic_regression": {
+    "required": true,
+    "case_ids": [
+      "cwe121-valid-0"
+    ]
+  },
+  "expected_patch_properties": {
+    "strategy": "guard"
+  },
+  "negative_cases": [
+    "cwe121-valid-0"
+  ],
+  "split": "dev",
+  "source_refs": [
+    "fixtures/public/CWE121_src_char_declare_cpy_51b/original.elf",
+    "fixtures/hard-cases/cwe121_fix.c"
+  ],
+  "evidence_refs": [
+    "fixtures/hard-cases/cases.json#cases[id=cwe121-unchecked-strcpy]"
+  ],
+  "confidence": "high",
+  "limitations": [
+    "v1 migration did not record abi/linking_mode/stripping_status/behavior contracts; these fields are null, not guessed"
+  ]
+}

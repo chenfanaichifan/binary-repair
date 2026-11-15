@@ -1,0 +1,586 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://binaryrepair.local/contracts/benchmark-manifest-v2.schema.json",
+  "title": "Ground-truth benchmark manifest v2 (public wrapper)",
+  "description": "One public ground-truth benchmark manifest v2: schema_version=2, fixed generated_at, public samples conforming to ground-truth-sample-v2, sample/split counts, an opaque hidden-commitment reference with counts (never hidden contents), provenance and limitations. hidden_available is false for the public manifest.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "benchmark_id",
+    "generated_at",
+    "hidden_available",
+    "samples",
+    "sample_count",
+    "split_counts",
+    "hidden_commitment",
+    "provenance",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "kind": {
+      "const": "ground_truth_benchmark_v2"
+    },
+    "benchmark_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hidden_available": {
+      "const": false
+    },
+    "samples": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "title": "Ground-truth benchmark sample v2",
+        "description": "One lossless ground-truth benchmark sample v2: binary identity and build environment, vulnerability family/subtype/CWE, expected scope and target, structured root cause and trigger conditions, affected function/ranges, oracle declaration with regression case ids, reference fix with digest, expected behavior and semantic regression contract, negative cases, dev/validation split, provenance/evidence refs, confidence and explicit limitations. Unknown values are null with a limitation, never guessed; public split is dev or validation only and the sample never carries hidden contents.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sample_id",
+          "sample_version",
+          "binary_sha256",
+          "format",
+          "arch",
+          "bits",
+          "endian",
+          "abi",
+          "compiler",
+          "compiler_version",
+          "optimization_level",
+          "linking_mode",
+          "stripping_status",
+          "vulnerability_family",
+          "vulnerability_subtype",
+          "cwe",
+          "expected_scope",
+          "target",
+          "root_cause",
+          "trigger_conditions",
+          "affected_function",
+          "affected_ranges",
+          "oracle",
+          "reference_fix",
+          "expected_original_behavior",
+          "expected_fixed_behavior",
+          "semantic_regression",
+          "expected_patch_properties",
+          "negative_cases",
+          "split",
+          "source_refs",
+          "evidence_refs",
+          "confidence",
+          "limitations"
+        ],
+        "properties": {
+          "sample_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,80}$"
+          },
+          "sample_version": {
+            "const": 2
+          },
+          "binary_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "elf",
+              "macho",
+              "pe"
+            ]
+          },
+          "arch": {
+            "type": "string",
+            "enum": [
+              "x86_64",
+              "i386",
+              "arm64"
+            ]
+          },
+          "bits": {
+            "type": "integer",
+            "enum": [
+              32,
+              64
+            ]
+          },
+          "endian": {
+            "type": "string",
+            "enum": [
+              "little",
+              "big"
+            ]
+          },
+          "abi": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "compiler": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "compiler_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "optimization_level": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "linking_mode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stripping_status": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "stripped",
+              "not_stripped",
+              null
+            ]
+          },
+          "vulnerability_family": {
+            "type": "string",
+            "minLength": 1
+          },
+          "vulnerability_subtype": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cwe": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^CWE-[0-9]{1,4}$"
+          },
+          "expected_scope": {
+            "type": "string",
+            "enum": [
+              "function",
+              "whole_program",
+              "analysis_only"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "function",
+                  "symbol",
+                  "va_range",
+                  "whole_image",
+                  "analysis_only"
+                ]
+              },
+              "function": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": "string"
+              },
+              "va": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "root_cause": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "statement",
+              "evidence_refs"
+            ],
+            "properties": {
+              "statement": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "trigger_conditions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "affected_function": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "affected_ranges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "file_offset",
+                    "va_range",
+                    "function"
+                  ]
+                },
+                "file_offset": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "va": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "end": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "size": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "function": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "oracle": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "manifest_path",
+              "expected_original",
+              "expected_candidate",
+              "regression_case_ids"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "external_poc",
+                  "native",
+                  "emulated",
+                  "static",
+                  "analysis_only"
+                ]
+              },
+              "kinds": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "external_poc",
+                    "native",
+                    "emulated",
+                    "static",
+                    "analysis_only"
+                  ]
+                }
+              },
+              "manifest_path": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "expected_original": {
+                "type": [
+                  "string",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expected_candidate": {
+                "type": [
+                  "string",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "regression_case_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "reference_fix": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          },
+          "expected_original_behavior": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expected_fixed_behavior": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "semantic_regression": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "required",
+              "case_ids"
+            ],
+            "properties": {
+              "required": {
+                "type": "boolean"
+              },
+              "case_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "expected_patch_properties": {
+            "type": "object"
+          },
+          "negative_cases": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "split": {
+            "type": "string",
+            "enum": [
+              "dev",
+              "validation"
+            ]
+          },
+          "source_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "evidence_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "confidence": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              null
+            ]
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "sample_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "split_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dev",
+        "validation"
+      ],
+      "properties": {
+        "dev": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "validation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "hidden_commitment": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "commitment_sha256",
+        "counts"
+      ],
+      "properties": {
+        "ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "commitment_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sample_count",
+            "runtime_count",
+            "analysis_only_count"
+          ],
+          "properties": {
+            "sample_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "runtime_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "analysis_only_count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "builder",
+        "source_digest_sha256"
+      ],
+      "properties": {
+        "builder": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_digest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_manifest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "migration_report_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

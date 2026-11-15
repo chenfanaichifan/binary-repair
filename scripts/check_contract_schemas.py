@@ -51,11 +51,26 @@ SCHEMA_NAMES: tuple[str, ...] = (
     "root-cause",
     "patch-candidate",
     "patch-plan",
+    "ground-truth-sample-v2",
+    "benchmark-manifest-v2",
+    "hidden-benchmark-commitment",
+    "benchmark-results-v2",
 )
 CONTRACTS_DIRNAME = "contracts"
 FIXTURES_DIRNAME = "artifacts/contract-fixtures-2026-11-16"
 FIXTURE_KINDS = ("valid", "invalid")
 SUMS_FILENAME = "SHA256SUMS"
+
+#: Optional whole-document artifacts (one payload = one contract instance).
+#: Missing files are explicit not_run because Phase-8C owners commit them later.
+WHOLE_ARTIFACT_INTEGRATIONS: tuple[tuple[str, str, str], ...] = (
+    ("phase8c-public-manifest", "benchmark/phase8c/manifest.json",
+     "benchmark-manifest-v2"),
+    ("phase8c-hidden-commitment", "benchmark/phase8c/hidden-commitment.json",
+     "hidden-benchmark-commitment"),
+    ("phase8c-results", "benchmark/phase8c/results.json",
+     "benchmark-results-v2"),
+)
 
 #: Committed module artifacts that must keep validating against their contract.
 #: The third value is the collection key inside the JSON payload; ``None``
@@ -679,6 +694,212 @@ def _patch_plan_semantics(instance: Mapping[str, Any]) -> list[str]:
     return violations
 
 
+def _ground_truth_sample_v2_semantics(instance: Mapping[str, Any]) -> list[str]:
+    violations: list[str] = []
+    limitations = instance.get("limitations") or []
+    null_fields = [
+        field for field in (
+            "abi", "compiler", "linking_mode", "stripping_status", "cwe",
+            "affected_function", "expected_original_behavior",
+            "expected_fixed_behavior", "semantic_regression", "confidence",
+        )
+        if instance.get(field) is None
+    ]
+    if null_fields and not limitations:
+        violations.append(
+            "ground-truth-sample-v2: null unknown fields require explicit "
+            f"limitations (null={null_fields})")
+    if not instance.get("trigger_conditions") and not limitations:
+        violations.append(
+            "ground-truth-sample-v2: empty trigger_conditions require a limitation")
+    if not instance.get("affected_ranges") and not limitations:
+        violations.append(
+            "ground-truth-sample-v2: empty affected_ranges require a limitation")
+    reference = instance.get("reference_fix")
+    if reference is None and not limitations:
+        violations.append(
+            "ground-truth-sample-v2: null reference_fix requires a limitation")
+    if isinstance(reference, Mapping) and reference.get("sha256") is None \
+            and not limitations:
+        violations.append(
+            "ground-truth-sample-v2: unknown reference_fix sha256 requires a "
+            "limitation")
+    oracle = instance.get("oracle") or {}
+    kinds = set(oracle.get("kinds") or [])
+    if oracle.get("kind"):
+        kinds.add(oracle.get("kind"))
+    runtime_kinds = kinds & {"external_poc", "native", "emulated"}
+    expected_scope = instance.get("expected_scope")
+    if expected_scope in {"function", "whole_program"} and not runtime_kinds:
+        violations.append(
+            "ground-truth-sample-v2: function/whole_program expectation requires "
+            "an independent runtime oracle kind")
+    if expected_scope == "analysis_only" and runtime_kinds:
+        violations.append(
+            "ground-truth-sample-v2: analysis_only expectation must not claim a "
+            "runtime oracle")
+    return violations
+
+
+def _benchmark_manifest_v2_semantics(instance: Mapping[str, Any]) -> list[str]:
+    violations: list[str] = []
+    samples = instance.get("samples") or []
+    if instance.get("sample_count") != len(samples):
+        violations.append(
+            "benchmark-manifest-v2: sample_count must equal len(samples)")
+    split_counts = instance.get("split_counts") or {}
+    actual: dict[str, int] = {}
+    for sample in samples:
+        if isinstance(sample, Mapping):
+            split = str(sample.get("split"))
+            actual[split] = actual.get(split, 0) + 1
+    for split in ("dev", "validation"):
+        if split_counts.get(split) != actual.get(split, 0):
+            violations.append(
+                f"benchmark-manifest-v2: split_counts.{split} does not match "
+                "the samples")
+    if sum(int(value) for value in split_counts.values()) != len(samples):
+        violations.append(
+            "benchmark-manifest-v2: split counts must sum to the sample count")
+    commitment = instance.get("hidden_commitment")
+    if isinstance(commitment, Mapping):
+        counts = commitment.get("counts") or {}
+        if counts.get("sample_count") != (
+                counts.get("runtime_count", 0)
+                + counts.get("analysis_only_count", 0)):
+            violations.append(
+                "benchmark-manifest-v2: hidden commitment counts must sum to "
+                "the hidden sample count")
+        ref = commitment.get("ref")
+        sha = commitment.get("commitment_sha256")
+        if (ref is None) != (sha is None):
+            violations.append(
+                "benchmark-manifest-v2: hidden commitment ref and digest must "
+                "be both present or both null")
+        if counts.get("sample_count", 0) > 0 and ref is None:
+            violations.append(
+                "benchmark-manifest-v2: hidden samples require a commitment ref")
+    return violations
+
+
+def _hidden_commitment_semantics(instance: Mapping[str, Any]) -> list[str]:
+    violations: list[str] = []
+    samples = instance.get("samples") or []
+    if instance.get("sample_count") != len(samples):
+        violations.append(
+            "hidden-benchmark-commitment: sample_count must equal len(samples)")
+    if instance.get("runtime_count", 0) + instance.get(
+            "analysis_only_count", 0) != instance.get("sample_count"):
+        violations.append(
+            "hidden-benchmark-commitment: runtime_count + analysis_only_count "
+            "must equal sample_count")
+    ids = [
+        sample.get("opaque_sample_id") for sample in samples
+        if isinstance(sample, Mapping)
+    ]
+    if len(set(ids)) != len(ids):
+        violations.append(
+            "hidden-benchmark-commitment: opaque sample ids must be unique")
+
+    def _walk_strings(value: Any) -> list[str]:
+        found: list[str] = []
+        if isinstance(value, str):
+            found.append(value)
+        elif isinstance(value, Mapping):
+            for item in value.values():
+                found.extend(_walk_strings(item))
+        elif isinstance(value, list):
+            for item in value:
+                found.extend(_walk_strings(item))
+        return found
+
+    leaked = [
+        text for text in _walk_strings(instance)
+        if "/" in text or "\\" in text
+    ]
+    if leaked:
+        violations.append(
+            "hidden-benchmark-commitment: paths/content are not allowed in a "
+            f"commitment ({leaked[:2]})")
+    return violations
+
+
+def _benchmark_results_v2_semantics(instance: Mapping[str, Any]) -> list[str]:
+    violations: list[str] = []
+    samples = [sample for sample in (instance.get("samples") or [])
+               if isinstance(sample, Mapping)]
+    aggregate = instance.get("aggregate") or {}
+    if aggregate.get("sample_count") != len(samples):
+        violations.append(
+            "benchmark-results-v2: aggregate.sample_count must equal len(samples)")
+    status_counts = aggregate.get("status_counts") or {}
+    actual_status: dict[str, int] = {}
+    for sample in samples:
+        status = str(sample.get("status"))
+        actual_status[status] = actual_status.get(status, 0) + 1
+    for status in ("executed", "not_run", "blocked", "unsupported", "invalid"):
+        if status_counts.get(status) != actual_status.get(status, 0):
+            violations.append(
+                f"benchmark-results-v2: status_counts.{status} does not match "
+                "the samples")
+    verified = 0
+    rejected = 0
+    false_verified = 0
+    attempted = 0
+    for sample in samples:
+        verification = sample.get("verification") or {}
+        decision = str(verification.get("decision"))
+        if decision == "verified":
+            verified += 1
+        if decision == "rejected":
+            rejected += 1
+        if str(sample.get("status")) == "executed" and decision != "not_run":
+            attempted += 1
+        if sample.get("false_verified") is True:
+            false_verified += 1
+            if decision != "verified":
+                violations.append(
+                    "benchmark-results-v2: false_verified requires a verified "
+                    "generator/verifier decision")
+        if str(sample.get("status")) == "not_run" and not str(
+                sample.get("not_run_reason") or "").strip():
+            violations.append(
+                "benchmark-results-v2: not_run samples require a not_run_reason")
+    if aggregate.get("verified_count") != verified:
+        violations.append(
+            "benchmark-results-v2: verified_count does not match the samples")
+    if aggregate.get("rejected_count") != rejected:
+        violations.append(
+            "benchmark-results-v2: rejected_count does not match the samples")
+    if aggregate.get("false_verified_count") != false_verified:
+        violations.append(
+            "benchmark-results-v2: false_verified_count does not match the samples")
+    denominator = aggregate.get("denominator") or {}
+    if denominator.get("samples") != len(samples):
+        violations.append(
+            "benchmark-results-v2: denominator.samples does not match")
+    if denominator.get("executed") != actual_status.get("executed", 0):
+        violations.append(
+            "benchmark-results-v2: denominator.executed does not match")
+    if denominator.get("verification_attempted") != attempted:
+        violations.append(
+            "benchmark-results-v2: denominator.verification_attempted does not "
+            "match")
+    hidden = instance.get("hidden_aggregate")
+    if isinstance(hidden, Mapping):
+        status = hidden.get("status_counts") or {}
+        if sum(int(value) for value in status.values()) != hidden.get(
+                "sample_count"):
+            violations.append(
+                "benchmark-results-v2: hidden aggregate status counts must sum "
+                "to its sample_count")
+        if (hidden.get("denominator") or {}).get("samples") != hidden.get(
+                "sample_count"):
+            violations.append(
+                "benchmark-results-v2: hidden aggregate denominator mismatch")
+    return violations
+
+
 CONTRACT_SEMANTICS = {
     "acceptance": _acceptance_semantics,
     "repair": _repair_semantics,
@@ -693,6 +914,10 @@ CONTRACT_SEMANTICS = {
     "root-cause": _root_cause_semantics,
     "patch-candidate": _patch_candidate_semantics,
     "patch-plan": _patch_plan_semantics,
+    "ground-truth-sample-v2": _ground_truth_sample_v2_semantics,
+    "benchmark-manifest-v2": _benchmark_manifest_v2_semantics,
+    "hidden-benchmark-commitment": _hidden_commitment_semantics,
+    "benchmark-results-v2": _benchmark_results_v2_semantics,
 }
 
 
@@ -918,6 +1143,48 @@ def run_check(
             entry["detail"] = artifact_errors[0]
             violations.append(
                 f"artifact {integration_id}: committed records violate the "
+                f"contract: {artifact_errors[:2]}")
+        else:
+            entry["status"] = "validated"
+        integrations.append(entry)
+    for integration_id, relative, schema_name in WHOLE_ARTIFACT_INTEGRATIONS:
+        artifact_path = root / relative
+        entry = {
+            "id": integration_id,
+            "path": relative,
+            "required": False,
+            "status": "not_run",
+            "record_count": 0,
+            "detail": "",
+        }
+        schema = loaded_schemas.get(schema_name)
+        if schema is None:
+            entry["detail"] = "contract schema unavailable"
+            integrations.append(entry)
+            continue
+        if not artifact_path.is_file():
+            entry["detail"] = "artifact not committed in this checkout"
+            integrations.append(entry)
+            continue
+        payload, error = _load_json(artifact_path)
+        if payload is None:
+            entry["status"] = "failed"
+            entry["detail"] = f"unreadable artifact: {error}"
+            violations.append(
+                f"artifact {integration_id}: unreadable ({error})")
+            integrations.append(entry)
+            continue
+        errors, _validator_name = _validate_instance(
+            schema_name, schema, payload, use_jsonschema=use_jsonschema)
+        artifact_errors = list(errors)
+        if not artifact_errors and isinstance(payload, Mapping):
+            artifact_errors.extend(CONTRACT_SEMANTICS[schema_name](payload))
+        entry["record_count"] = 1
+        if artifact_errors:
+            entry["status"] = "failed"
+            entry["detail"] = artifact_errors[0]
+            violations.append(
+                f"artifact {integration_id}: committed document violates the "
                 f"contract: {artifact_errors[:2]}")
         else:
             entry["status"] = "validated"

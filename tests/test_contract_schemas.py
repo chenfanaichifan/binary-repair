@@ -63,11 +63,11 @@ def _write(path: Path, payload: dict) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_all_twelve_contracts_exist_and_name_match() -> None:
+def test_all_contracts_exist_and_name_match() -> None:
     found = sorted(path.name for path in CONTRACTS.glob("*.schema.json"))
     expected = sorted(f"{name}.schema.json" for name in contracts.SCHEMA_NAMES)
     assert found == expected
-    assert len(contracts.SCHEMA_NAMES) == 13
+    assert len(contracts.SCHEMA_NAMES) == 17
 
 
 def test_schema_documents_are_structurally_valid() -> None:
@@ -109,9 +109,9 @@ def test_schema_document_checks_catch_broken_schema() -> None:
 def test_repository_contracts_and_fixtures_pass() -> None:
     report = contracts.run_check(ROOT, check_sums=True)
     assert report["ok"] is True, report["violations"]
-    assert report["schema_count"] == 13
-    assert report["fixtures"]["valid_passed"] == 13
-    assert report["fixtures"]["invalid_rejected"] == 13
+    assert report["schema_count"] == 17
+    assert report["fixtures"]["valid_passed"] == 17
+    assert report["fixtures"]["invalid_rejected"] == 17
     assert report["validator"] == "jsonschema"
     assert report["sums"]["ok"] is True
 
@@ -123,7 +123,7 @@ def test_cli_passes_and_reports_json() -> None:
     assert payload["ok"] is True
     assert payload["validator"] == "jsonschema"
     assert payload["fixtures"] == {
-        "valid_passed": 13, "invalid_rejected": 13, "total": 26,
+        "valid_passed": 17, "invalid_rejected": 17, "total": 34,
     }
 
 
@@ -133,8 +133,8 @@ def test_fallback_validator_semantics() -> None:
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
     assert payload["validator"] == "fallback"
-    assert payload["fixtures"]["valid_passed"] == 13
-    assert payload["fixtures"]["invalid_rejected"] == 13
+    assert payload["fixtures"]["valid_passed"] == 17
+    assert payload["fixtures"]["invalid_rejected"] == 17
 
 
 def test_every_schema_has_valid_and_invalid_fixture() -> None:
@@ -422,7 +422,9 @@ def test_benchmark_sample_oracle_scope_consistency() -> None:
 def test_new_contract_invalid_fixtures_are_rejected(tmp_path: Path) -> None:
     for name in ("binary-target", "vulnerability-finding", "root-cause",
                  "patch-candidate", "verification", "benchmark-sample",
-                 "patch-plan"):
+                 "patch-plan", "ground-truth-sample-v2",
+                 "benchmark-manifest-v2", "hidden-benchmark-commitment",
+                 "benchmark-results-v2"):
         fixture = FIXTURES / f"{name}.invalid.json"
         payload = _load(fixture)
         schema = _load(CONTRACTS / f"{name}.schema.json")

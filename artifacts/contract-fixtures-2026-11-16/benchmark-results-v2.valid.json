@@ -1,0 +1,53 @@
+{
+  "schema_version": 2,
+  "kind": "benchmark_results_v2",
+  "benchmark_id": "phase8c-v1",
+  "manifest_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "generated_at": "2026-11-16T00:00:00Z",
+  "samples": [
+    {
+      "sample_id": "cwe121-public-v2",
+      "status": "executed",
+      "detection": true,
+      "root_cause": true,
+      "localization": true,
+      "strategy": "external_poc",
+      "candidate": {
+        "produced": true,
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "verification": {
+        "decision": "verified",
+        "evidence_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      "regression": true,
+      "environment": {
+        "tier": "emulated_run",
+        "runner": "lima-guest",
+        "oracle_status": "executed"
+      },
+      "false_verified": false,
+      "not_run_reason": null
+    }
+  ],
+  "aggregate": {
+    "sample_count": 1,
+    "status_counts": {
+      "executed": 1,
+      "not_run": 0,
+      "blocked": 0,
+      "unsupported": 0,
+      "invalid": 0
+    },
+    "verified_count": 1,
+    "rejected_count": 0,
+    "false_verified_count": 0,
+    "denominator": {
+      "samples": 1,
+      "executed": 1,
+      "verification_attempted": 1
+    }
+  },
+  "hidden_aggregate": null,
+  "limitations": []
+}
