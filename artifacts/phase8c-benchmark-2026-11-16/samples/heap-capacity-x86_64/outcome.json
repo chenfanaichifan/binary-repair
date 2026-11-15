@@ -1,0 +1,2257 @@
+{
+  "binary_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5",
+  "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+  "detection": true,
+  "deterministic_claim_withdrawn": false,
+  "disposition": "verified_patch",
+  "environment": {
+    "oracle_status": "executed",
+    "runner": "limactl",
+    "tier": "emulated_run"
+  },
+  "false_verified": false,
+  "guest_lock_attempts": [
+    {
+      "acquired": true,
+      "attempt": 1,
+      "attempted_at_s": 1794756244.881823,
+      "depth": 1,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.152,
+      "operation": "phase8c_benchmark.heap-capacity-x86_64",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "phase8c_benchmark.heap-capacity-x86_64",
+      "reentrant": false,
+      "release_depth": 0,
+      "released": true,
+      "released_at_s": 1794756289.620363,
+      "run_id": "phase8c-public.r1.10",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.152
+    },
+    {
+      "acquired": true,
+      "attempt": 2,
+      "attempted_at_s": 1794756246.827096,
+      "depth": 2,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.004,
+      "operation": "poc_runner.run_poc",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_poc",
+      "reentrant": true,
+      "release_depth": 1,
+      "released": true,
+      "released_at_s": 1794756268.443135,
+      "run_id": "3bf5f02541ea49b68dd1512cd1e2e294",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.004
+    },
+    {
+      "acquired": true,
+      "attempt": 3,
+      "attempted_at_s": 1794756246.828942,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:poc-overflow-720:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-overflow-720:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756248.15379,
+      "run_id": "8112f8ebe84f4d39bf9319954cb09451",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 4,
+      "attempted_at_s": 1794756248.156207,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:poc-overflow-720:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-overflow-720:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756248.331297,
+      "run_id": "c0226f0443b74fd5a060f20df708e689",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 5,
+      "attempted_at_s": 1794756248.3323011,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:poc-span-note-min:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-span-note-min:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756249.567413,
+      "run_id": "36a217086a8e4b99b2e6b7f976f24d03",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 6,
+      "attempted_at_s": 1794756249.568531,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.001,
+      "operation": "poc_runner.run_path:poc-span-note-min:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-span-note-min:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756249.7168992,
+      "run_id": "2b8815f9663e4d5fbbb77e0bdc6144c2",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.001
+    },
+    {
+      "acquired": true,
+      "attempt": 7,
+      "attempted_at_s": 1794756249.7179,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.001,
+      "operation": "poc_runner.run_path:poc-span-note:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-span-note:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756252.9137752,
+      "run_id": "7fc7612a8065451da5f43cc8106f5751",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.001
+    },
+    {
+      "acquired": true,
+      "attempt": 8,
+      "attempted_at_s": 1794756252.976313,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.004,
+      "operation": "poc_runner.run_path:poc-span-note:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-span-note:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756258.282725,
+      "run_id": "3474d63055c745b9b7475db307c0f38e",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.004
+    },
+    {
+      "acquired": true,
+      "attempt": 9,
+      "attempted_at_s": 1794756258.322071,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.003,
+      "operation": "poc_runner.run_path:poc-overflow-nocrc:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-overflow-nocrc:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756263.79089,
+      "run_id": "1ca2e7361bd84b6d9f98d960e9a81226",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.003
+    },
+    {
+      "acquired": true,
+      "attempt": 10,
+      "attempted_at_s": 1794756263.7934139,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:poc-overflow-nocrc:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-overflow-nocrc:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756264.0714939,
+      "run_id": "dae7c7b3c5294ec190c1333b54f04699",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 11,
+      "attempted_at_s": 1794756264.07349,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756264.280063,
+      "run_id": "574b1bf435e74adbba11f4ebd8e2a5f3",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 12,
+      "attempted_at_s": 1794756264.2814121,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756264.47498,
+      "run_id": "08543a7ba6134ed3b239695968cf3c47",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 13,
+      "attempted_at_s": 1794756264.476032,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign-sparse:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign-sparse:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756264.675971,
+      "run_id": "7129f450e89246ac8644f780880dc1f8",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 14,
+      "attempted_at_s": 1794756264.6773891,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign-sparse:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign-sparse:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756264.865203,
+      "run_id": "6bcf84d9be3f4d7fbd17caf17339ed50",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 15,
+      "attempted_at_s": 1794756264.8663218,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign-crc:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign-crc:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756265.072319,
+      "run_id": "b1cf36a053564d9aab1690d03ef15972",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 16,
+      "attempted_at_s": 1794756265.0735848,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign-crc:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign-crc:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756265.27948,
+      "run_id": "27d9db55b089410d801c81d609fa90c1",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 17,
+      "attempted_at_s": 1794756265.281142,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-span-equal-sizes:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-equal-sizes:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756265.498541,
+      "run_id": "c7e82bdd62584403b8faedc5ffece71b",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 18,
+      "attempted_at_s": 1794756265.499698,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-span-equal-sizes:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-equal-sizes:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756265.819635,
+      "run_id": "b2419dbdcde14e13a7ac3992b64fb59d",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 19,
+      "attempted_at_s": 1794756265.8208241,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-span-no-sparse:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-no-sparse:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756266.0178251,
+      "run_id": "98192b491865412786ba7c32f05a4af1",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 20,
+      "attempted_at_s": 1794756266.020422,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-span-no-sparse:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-no-sparse:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756266.248309,
+      "run_id": "730ceba9e5864ff79545e562083ced7d",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 21,
+      "attempted_at_s": 1794756266.24947,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.001,
+      "operation": "poc_runner.run_path:ctrl-span-src-oob:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-src-oob:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756266.473126,
+      "run_id": "9e20eb7e06e14bf5851fb8cf05d06153",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.001
+    },
+    {
+      "acquired": true,
+      "attempt": 22,
+      "attempted_at_s": 1794756266.474329,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-span-src-oob:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-src-oob:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756266.694588,
+      "run_id": "0200e05d01684aa8b6887596ef18425d",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 23,
+      "attempted_at_s": 1794756266.695791,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.001,
+      "operation": "poc_runner.run_path:ctrl-literal-dst-oob:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-literal-dst-oob:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756266.889185,
+      "run_id": "6f405efbe36e4f28abca1c8ccf5de0ed",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.001
+    },
+    {
+      "acquired": true,
+      "attempt": 24,
+      "attempted_at_s": 1794756266.8907578,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-literal-dst-oob:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-literal-dst-oob:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756267.1035771,
+      "run_id": "735cdf94bd814cc58de19a70c6c98790",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 25,
+      "attempted_at_s": 1794756267.10506,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:bad-crc:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:bad-crc:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756267.3370938,
+      "run_id": "b606d11e735942f9818834ca3f1beda3",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 26,
+      "attempted_at_s": 1794756267.338513,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:bad-crc:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:bad-crc:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756267.565822,
+      "run_id": "bffa53101f3041bb9200b6398f1c4905",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 27,
+      "attempted_at_s": 1794756267.5670972,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:help:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:help:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756267.786489,
+      "run_id": "0c29b0ad61ab447cb63b3da631d9c6ef",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 28,
+      "attempted_at_s": 1794756267.7879739,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:help:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:help:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756267.984255,
+      "run_id": "e51d328486024d6c94eceb09174b4db6",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 29,
+      "attempted_at_s": 1794756267.985475,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:list-poc-archive:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:list-poc-archive:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756268.2152572,
+      "run_id": "667ca60b4e50451490d4fd49a352a025",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 30,
+      "attempted_at_s": 1794756268.2165241,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:list-poc-archive:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:list-poc-archive:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756268.440887,
+      "run_id": "3699f296d1f4493bba2fa4b78a6538f1",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 31,
+      "attempted_at_s": 1794756270.420269,
+      "depth": 2,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.004,
+      "operation": "poc_runner.run_poc",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_poc",
+      "reentrant": true,
+      "release_depth": 1,
+      "released": true,
+      "released_at_s": 1794756289.618519,
+      "run_id": "179d9dc29a9648a18b92299af504b262",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.004
+    },
+    {
+      "acquired": true,
+      "attempt": 32,
+      "attempted_at_s": 1794756270.421206,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.001,
+      "operation": "poc_runner.run_path:poc-overflow-720:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-overflow-720:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756272.0211048,
+      "run_id": "16d39c3335b3457aaa0b8e6f482f0492",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.001
+    },
+    {
+      "acquired": true,
+      "attempt": 33,
+      "attempted_at_s": 1794756272.024231,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.004,
+      "operation": "poc_runner.run_path:poc-overflow-720:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-overflow-720:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756272.298263,
+      "run_id": "c9f1047a95994886bb0b0ed96de639c9",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.004
+    },
+    {
+      "acquired": true,
+      "attempt": 34,
+      "attempted_at_s": 1794756272.2996511,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.001,
+      "operation": "poc_runner.run_path:poc-span-note-min:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-span-note-min:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756275.128696,
+      "run_id": "cc042b5c88064664b2126c08d9b168f3",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.001
+    },
+    {
+      "acquired": true,
+      "attempt": 35,
+      "attempted_at_s": 1794756275.2520509,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.004,
+      "operation": "poc_runner.run_path:poc-span-note-min:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-span-note-min:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756280.377574,
+      "run_id": "ecd434d95b704f749489c3c93d32ce42",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.004
+    },
+    {
+      "acquired": true,
+      "attempt": 36,
+      "attempted_at_s": 1794756280.427683,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.003,
+      "operation": "poc_runner.run_path:poc-span-note:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-span-note:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756283.838743,
+      "run_id": "4a9d2207debd4e6ea838b9b0347ca434",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.003
+    },
+    {
+      "acquired": true,
+      "attempt": 37,
+      "attempted_at_s": 1794756283.841075,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:poc-span-note:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-span-note:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756284.084918,
+      "run_id": "9d0372b8e2b6438085aa6d5c47c570d1",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 38,
+      "attempted_at_s": 1794756284.0864792,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:poc-overflow-nocrc:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-overflow-nocrc:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756285.519764,
+      "run_id": "26e5e00caa0149a8a0af92c912616874",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 39,
+      "attempted_at_s": 1794756285.5222359,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.004,
+      "operation": "poc_runner.run_path:poc-overflow-nocrc:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:poc-overflow-nocrc:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756285.8211,
+      "run_id": "de2cfcd3acd8487fb38737a91dd40b37",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.004
+    },
+    {
+      "acquired": true,
+      "attempt": 40,
+      "attempted_at_s": 1794756285.822631,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756286.045493,
+      "run_id": "77de0a804c9b46efbd235c3bf73000cc",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 41,
+      "attempted_at_s": 1794756286.046987,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756286.247977,
+      "run_id": "c7421c60b5bb4e00a4f88571b948b4b1",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 42,
+      "attempted_at_s": 1794756286.249673,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign-sparse:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign-sparse:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756286.437972,
+      "run_id": "083a9046f06d4797a60cce80b07724bf",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 43,
+      "attempted_at_s": 1794756286.439699,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign-sparse:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign-sparse:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756286.634228,
+      "run_id": "f302de8d751e404fa678965970114448",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 44,
+      "attempted_at_s": 1794756286.6356428,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign-crc:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign-crc:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756286.824127,
+      "run_id": "80a93155ce0043beb73f21fa48cbd7fb",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 45,
+      "attempted_at_s": 1794756286.8268192,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:benign-crc:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:benign-crc:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756287.0158222,
+      "run_id": "beab04a8ca1d41109b7863d5f12da45e",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 46,
+      "attempted_at_s": 1794756287.0172648,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-span-equal-sizes:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-equal-sizes:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756287.224946,
+      "run_id": "19e5be6dc90040e990e82f14e44befa4",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 47,
+      "attempted_at_s": 1794756287.226431,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-span-equal-sizes:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-equal-sizes:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756287.411724,
+      "run_id": "96c987c658b74ab79c6f6a6ecd49dc3a",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 48,
+      "attempted_at_s": 1794756287.412933,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.003,
+      "operation": "poc_runner.run_path:ctrl-span-no-sparse:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-no-sparse:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756287.596002,
+      "run_id": "ba2e141260a240c7a9bfee5e348710e9",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.003
+    },
+    {
+      "acquired": true,
+      "attempt": 49,
+      "attempted_at_s": 1794756287.597707,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-span-no-sparse:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-no-sparse:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756287.775174,
+      "run_id": "5a26079568f44d91a8939234960b26f3",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 50,
+      "attempted_at_s": 1794756287.776435,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-span-src-oob:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-src-oob:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756287.968714,
+      "run_id": "d7c18b6369d642c1b094dd86dd274386",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 51,
+      "attempted_at_s": 1794756287.972168,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-span-src-oob:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-span-src-oob:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756288.18844,
+      "run_id": "89ea920f17a74585aadbbd843528ccaf",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 52,
+      "attempted_at_s": 1794756288.190068,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-literal-dst-oob:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-literal-dst-oob:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756288.377216,
+      "run_id": "fdd04336377b4d62b8156e60771c38ff",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 53,
+      "attempted_at_s": 1794756288.3785758,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:ctrl-literal-dst-oob:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:ctrl-literal-dst-oob:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756288.545535,
+      "run_id": "6c161c0ede3140faa8589842b7834527",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 54,
+      "attempted_at_s": 1794756288.546705,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:bad-crc:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:bad-crc:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756288.73546,
+      "run_id": "7355f64c47bb46869869abb9fe2c13f0",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 55,
+      "attempted_at_s": 1794756288.736952,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:bad-crc:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:bad-crc:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756288.9121559,
+      "run_id": "6516dc106b074520a0578c6ca23c0ade",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 56,
+      "attempted_at_s": 1794756288.9133928,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:help:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:help:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756289.095262,
+      "run_id": "ace4071852d34af6beb7995ea81333b6",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 57,
+      "attempted_at_s": 1794756289.0964968,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:help:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:help:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756289.2624881,
+      "run_id": "ad226728540747c89beeecac92b55e2d",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 58,
+      "attempted_at_s": 1794756289.263841,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:list-poc-archive:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:list-poc-archive:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756289.432846,
+      "run_id": "cd59a602e6f64fa79947d3fbc9c838b1",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 59,
+      "attempted_at_s": 1794756289.433941,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:list-poc-archive:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:list-poc-archive:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756289.615926,
+      "run_id": "259e9b5dfad94ab0955d50fefc595e0e",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    }
+  ],
+  "limitations": [
+    "semantic regression is bounded to the declared regression/PoC case ids; it is not a full semantic-equivalence proof of the candidate",
+    "scanned 5 inlined range-check block(s) in the code region",
+    "In-place rewrite of one reviewed inlined range-check block; no code cave, no segment or program-header change.",
+    "Semantic equivalence of the rewritten predicate is established by the duplicated check shape and verified end-to-end by the supplied PoC/regression cases; this is not a whole-program proof.",
+    "patch plan: 3 declared operation(s), scope_policy=target_scoped_associated, plan_id=plan-08ca1131a6ba58cf7214d33c"
+  ],
+  "localization": true,
+  "not_run_reason": null,
+  "regression": true,
+  "root_cause": true,
+  "sample_id": "heap-capacity-x86_64",
+  "semantic_regression": "accepted",
+  "status": "executed",
+  "strategy": "capacity",
+  "verification": {
+    "decision": "verified",
+    "evidence_sha256": "4e7802fd672a1ca1b9a722dd93eafcf57a239b1dc7626a0a1dabe42300149210",
+    "reason": "plan replay covers every changed byte; raw-diff bytes not declared by the plan are rejected"
+  },
+  "verifier_report": {
+    "checks": [
+      {
+        "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+        "id": "identity",
+        "required": true,
+        "status": "passed",
+        "title": "Original/candidate identity and candidate change"
+      },
+      {
+        "detail": "format=elf arch=x86_64 bits=64 endian=little",
+        "id": "container",
+        "required": true,
+        "status": "passed",
+        "title": "Container re-parse and metadata agreement"
+      },
+      {
+        "detail": "plan 05503398723dc60e replay matches the candidate: operations=3 changed_ranges=3 cave=no associated=1",
+        "id": "layout-plan",
+        "required": true,
+        "status": "passed",
+        "title": "Patch-plan replay (layout/cave/associated changes)"
+      },
+      {
+        "detail": "plan replay covers all changed bytes: changed_ranges=3",
+        "id": "action-replay",
+        "required": true,
+        "status": "passed",
+        "title": "Byte-level action replay from raw images"
+      },
+      {
+        "detail": "policy=target_scoped_associated scope=[0x4020d9, 0x4020e9) ops=3 reviewed_sites=2",
+        "id": "target-scope",
+        "required": true,
+        "status": "passed",
+        "title": "Candidate modifications stay inside the declared target scope"
+      },
+      {
+        "detail": "ABI ok for 1 derived block(s) sources=plan.abi_blocks",
+        "id": "abi",
+        "required": true,
+        "status": "passed",
+        "title": "Candidate instruction-block ABI validation"
+      },
+      {
+        "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+        "id": "runtime-oracle",
+        "independent": true,
+        "required": true,
+        "status": "passed",
+        "title": "Independent external PoC differential and regression"
+      },
+      {
+        "detail": "one independent external oracle passed",
+        "id": "evidence-completeness",
+        "independent": true,
+        "required": true,
+        "status": "passed",
+        "title": "At least one independent oracle (no generator-only evidence)"
+      },
+      {
+        "detail": "generator identity is distinct and its evidence is excluded from the decision",
+        "id": "independence",
+        "required": true,
+        "status": "passed",
+        "title": "Generator/verifier independence and generator-evidence exclusion"
+      }
+    ],
+    "decision": "verified",
+    "evidence": [
+      {
+        "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+        "kind": "candidate",
+        "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+      },
+      {
+        "candidate": {
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "format": "elf",
+          "sections": [
+            {
+              "executable": false,
+              "name": "",
+              "offset": 0,
+              "size": 0,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".note.gnu.property",
+              "offset": 624,
+              "size": 48,
+              "va": 4194928
+            },
+            {
+              "executable": false,
+              "name": ".note.gnu.build-id",
+              "offset": 672,
+              "size": 36,
+              "va": 4194976
+            },
+            {
+              "executable": false,
+              "name": ".note.ABI-tag",
+              "offset": 708,
+              "size": 32,
+              "va": 4195012
+            },
+            {
+              "executable": false,
+              "name": ".rela.plt",
+              "offset": 744,
+              "size": 528,
+              "va": 4195048
+            },
+            {
+              "executable": true,
+              "name": ".init",
+              "offset": 4096,
+              "size": 27,
+              "va": 4198400
+            },
+            {
+              "executable": true,
+              "name": ".plt",
+              "offset": 4128,
+              "size": 352,
+              "va": 4198432
+            },
+            {
+              "executable": true,
+              "name": ".text",
+              "offset": 4480,
+              "size": 521504,
+              "va": 4198784
+            },
+            {
+              "executable": true,
+              "name": ".fini",
+              "offset": 525984,
+              "size": 13,
+              "va": 4720288
+            },
+            {
+              "executable": false,
+              "name": ".rodata",
+              "offset": 528384,
+              "size": 117012,
+              "va": 4722688
+            },
+            {
+              "executable": false,
+              "name": "rodata.cst32",
+              "offset": 645408,
+              "size": 96,
+              "va": 4839712
+            },
+            {
+              "executable": false,
+              "name": ".eh_frame",
+              "offset": 645504,
+              "size": 39256,
+              "va": 4839808
+            },
+            {
+              "executable": false,
+              "name": ".gcc_except_table",
+              "offset": 684760,
+              "size": 458,
+              "va": 4879064
+            },
+            {
+              "executable": false,
+              "name": ".tdata",
+              "offset": 687952,
+              "size": 24,
+              "va": 4886352
+            },
+            {
+              "executable": false,
+              "name": ".tbss",
+              "offset": 687976,
+              "size": 64,
+              "va": 4886376
+            },
+            {
+              "executable": false,
+              "name": ".init_array",
+              "offset": 687976,
+              "size": 8,
+              "va": 4886376
+            },
+            {
+              "executable": false,
+              "name": ".fini_array",
+              "offset": 687984,
+              "size": 16,
+              "va": 4886384
+            },
+            {
+              "executable": false,
+              "name": ".data.rel.ro",
+              "offset": 688000,
+              "size": 16328,
+              "va": 4886400
+            },
+            {
+              "executable": false,
+              "name": ".got",
+              "offset": 704328,
+              "size": 144,
+              "va": 4902728
+            },
+            {
+              "executable": false,
+              "name": ".got.plt",
+              "offset": 704488,
+              "size": 200,
+              "va": 4902888
+            },
+            {
+              "executable": false,
+              "name": ".data",
+              "offset": 704704,
+              "size": 6648,
+              "va": 4903104
+            },
+            {
+              "executable": false,
+              "name": ".bss",
+              "offset": 711352,
+              "size": 22408,
+              "va": 4909760
+            },
+            {
+              "executable": false,
+              "name": ".comment",
+              "offset": 711352,
+              "size": 45,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".shstrtab",
+              "offset": 711397,
+              "size": 224,
+              "va": 0
+            }
+          ],
+          "symbols": []
+        },
+        "kind": "container",
+        "original": {
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "format": "elf",
+          "sections": [
+            {
+              "executable": false,
+              "name": "",
+              "offset": 0,
+              "size": 0,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".note.gnu.property",
+              "offset": 624,
+              "size": 48,
+              "va": 4194928
+            },
+            {
+              "executable": false,
+              "name": ".note.gnu.build-id",
+              "offset": 672,
+              "size": 36,
+              "va": 4194976
+            },
+            {
+              "executable": false,
+              "name": ".note.ABI-tag",
+              "offset": 708,
+              "size": 32,
+              "va": 4195012
+            },
+            {
+              "executable": false,
+              "name": ".rela.plt",
+              "offset": 744,
+              "size": 528,
+              "va": 4195048
+            },
+            {
+              "executable": true,
+              "name": ".init",
+              "offset": 4096,
+              "size": 27,
+              "va": 4198400
+            },
+            {
+              "executable": true,
+              "name": ".plt",
+              "offset": 4128,
+              "size": 352,
+              "va": 4198432
+            },
+            {
+              "executable": true,
+              "name": ".text",
+              "offset": 4480,
+              "size": 521504,
+              "va": 4198784
+            },
+            {
+              "executable": true,
+              "name": ".fini",
+              "offset": 525984,
+              "size": 13,
+              "va": 4720288
+            },
+            {
+              "executable": false,
+              "name": ".rodata",
+              "offset": 528384,
+              "size": 117012,
+              "va": 4722688
+            },
+            {
+              "executable": false,
+              "name": "rodata.cst32",
+              "offset": 645408,
+              "size": 96,
+              "va": 4839712
+            },
+            {
+              "executable": false,
+              "name": ".eh_frame",
+              "offset": 645504,
+              "size": 39256,
+              "va": 4839808
+            },
+            {
+              "executable": false,
+              "name": ".gcc_except_table",
+              "offset": 684760,
+              "size": 458,
+              "va": 4879064
+            },
+            {
+              "executable": false,
+              "name": ".tdata",
+              "offset": 687952,
+              "size": 24,
+              "va": 4886352
+            },
+            {
+              "executable": false,
+              "name": ".tbss",
+              "offset": 687976,
+              "size": 64,
+              "va": 4886376
+            },
+            {
+              "executable": false,
+              "name": ".init_array",
+              "offset": 687976,
+              "size": 8,
+              "va": 4886376
+            },
+            {
+              "executable": false,
+              "name": ".fini_array",
+              "offset": 687984,
+              "size": 16,
+              "va": 4886384
+            },
+            {
+              "executable": false,
+              "name": ".data.rel.ro",
+              "offset": 688000,
+              "size": 16328,
+              "va": 4886400
+            },
+            {
+              "executable": false,
+              "name": ".got",
+              "offset": 704328,
+              "size": 144,
+              "va": 4902728
+            },
+            {
+              "executable": false,
+              "name": ".got.plt",
+              "offset": 704488,
+              "size": 200,
+              "va": 4902888
+            },
+            {
+              "executable": false,
+              "name": ".data",
+              "offset": 704704,
+              "size": 6648,
+              "va": 4903104
+            },
+            {
+              "executable": false,
+              "name": ".bss",
+              "offset": 711352,
+              "size": 22408,
+              "va": 4909760
+            },
+            {
+              "executable": false,
+              "name": ".comment",
+              "offset": 711352,
+              "size": 45,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".shstrtab",
+              "offset": 711397,
+              "size": 224,
+              "va": 0
+            }
+          ],
+          "symbols": []
+        }
+      },
+      {
+        "actions": [],
+        "claimed_actions": [],
+        "kind": "actions"
+      },
+      {
+        "declared": {
+          "end": 4202729,
+          "policy": "target_scoped_associated",
+          "va": 4202713
+        },
+        "kind": "target-scope",
+        "range": {
+          "end": 4202729,
+          "policy": "target_scoped_associated",
+          "va": 4202713
+        }
+      },
+      {
+        "derivation": {
+          "blocks": [
+            {
+              "arch": "x86_64",
+              "block_sha256": "490b7e317530f602a2b3cdf6c6ce8862a65a8451017703db493cf73e8477790c",
+              "file_offset": 6480,
+              "function": "reviewed-function",
+              "size": 2864,
+              "source": "plan.abi_blocks",
+              "va": 4200784
+            }
+          ],
+          "limitations": [],
+          "problems": [],
+          "status": "ok"
+        },
+        "kind": "abi",
+        "reports": [
+          {
+            "block": {
+              "arch": "x86_64",
+              "block_sha256": "490b7e317530f602a2b3cdf6c6ce8862a65a8451017703db493cf73e8477790c",
+              "file_offset": 6480,
+              "function": "reviewed-function",
+              "size": 2864,
+              "source": "plan.abi_blocks",
+              "va": 4200784
+            },
+            "report": {
+              "fatal": 0,
+              "findings": [],
+              "ok": true
+            }
+          }
+        ]
+      },
+      {
+        "case_count": 8,
+        "errno_signature": "not_run",
+        "kind": "oracle",
+        "limitations": [],
+        "no_input": false,
+        "regression_count": 20,
+        "runner": "limactl",
+        "source": "external-poc-manifest",
+        "status": "pass",
+        "stdout_signature": "matched",
+        "tier": "emulated_run"
+      },
+      {
+        "detail": "one independent external oracle passed",
+        "kind": "evidence-completeness",
+        "ok": true,
+        "sources": [
+          "external-poc-manifest"
+        ]
+      },
+      {
+        "associated_changes": [
+          {
+            "authorization_ref": "authorization:capacity-message:v1 sha256=d5e2ce15164cc5fd25ac8301f31b7349ddcaba427a5b3b8d303a32de1ce77f1e",
+            "kind": "rodata_message",
+            "offset": 538661,
+            "section": ".rodata",
+            "size": 12
+          }
+        ],
+        "cave": null,
+        "changed_ranges": [
+          {
+            "candidate_offset": 8409,
+            "kind": "write",
+            "original_offset": 8409,
+            "size": 14
+          },
+          {
+            "candidate_offset": 8424,
+            "kind": "write",
+            "original_offset": 8424,
+            "size": 1
+          },
+          {
+            "candidate_offset": 538661,
+            "kind": "associated",
+            "original_offset": 538661,
+            "size": 12
+          }
+        ],
+        "kind": "layout-plan",
+        "plan_sha256": "05503398723dc60e7c4cb0f69ca67f6b6cc803ef60b01c4d4cdb8ba00794f0a5",
+        "replay_ok": true
+      },
+      "<repo>/fixtures/poc/marcx-capacity.json"
+    ],
+    "generator": {
+      "agent": null,
+      "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+      "model": null,
+      "run_id": null
+    },
+    "independence": {
+      "generator_evidence_excluded": true,
+      "ok": true
+    },
+    "layout_evidence": {
+      "abi_blocks": [
+        {
+          "abi_id": "sysv-amd64",
+          "arch": "x86_64",
+          "evidence_sha256": "490b7e317530f602a2b3cdf6c6ce8862a65a8451017703db493cf73e8477790c",
+          "function": "reviewed-function",
+          "size": 2864,
+          "va": 4200784
+        }
+      ],
+      "associated_changes": [
+        {
+          "authorization_ref": "authorization:capacity-message:v1 sha256=d5e2ce15164cc5fd25ac8301f31b7349ddcaba427a5b3b8d303a32de1ce77f1e",
+          "kind": "rodata_message",
+          "offset": 538661,
+          "section": ".rodata",
+          "size": 12
+        }
+      ],
+      "cave": null,
+      "changed_ranges": [
+        {
+          "candidate_offset": 8409,
+          "kind": "write",
+          "original_offset": 8409,
+          "size": 14
+        },
+        {
+          "candidate_offset": 8424,
+          "kind": "write",
+          "original_offset": 8424,
+          "size": 1
+        },
+        {
+          "candidate_offset": 538661,
+          "kind": "associated",
+          "original_offset": 538661,
+          "size": 12
+        }
+      ],
+      "patch_plan_sha256": "05503398723dc60e7c4cb0f69ca67f6b6cc803ef60b01c4d4cdb8ba00794f0a5",
+      "replay_ok": true
+    },
+    "limitations": [
+      "plan replay covers every changed byte; raw-diff bytes not declared by the plan are rejected"
+    ],
+    "oracle_evidence": {
+      "evidence_sha256": "fecf9dc7517cd8b40feeb43d258c51d573fc6eb134dbfc8e9343f8ccf9c18c06",
+      "manifest_sha256": "95474e8c909d13ede2d735655a0b9754f9f302c08e45adeb91c50933d202436b",
+      "runner": "limactl",
+      "status": "executed",
+      "tier": "emulated_run"
+    },
+    "patch_plan_sha256": "05503398723dc60e7c4cb0f69ca67f6b6cc803ef60b01c4d4cdb8ba00794f0a5",
+    "report_sha256": "4e7802fd672a1ca1b9a722dd93eafcf57a239b1dc7626a0a1dabe42300149210",
+    "schema_version": 1,
+    "target": {
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "format": "elf",
+      "target_scope": {
+        "end": 4202729,
+        "policy": "target_scoped_associated",
+        "va": 4202713
+      },
+      "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+    },
+    "verifier": {
+      "verifier_id": "independent-verifier/1",
+      "version": "1"
+    }
+  }
+}

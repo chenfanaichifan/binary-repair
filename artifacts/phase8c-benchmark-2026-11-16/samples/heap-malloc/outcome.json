@@ -1,0 +1,1641 @@
+{
+  "binary_sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f",
+  "candidate_sha256": "ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73",
+  "detection": true,
+  "deterministic_claim_withdrawn": true,
+  "disposition": "verified_patch",
+  "environment": {
+    "oracle_status": "executed",
+    "runner": "limactl",
+    "tier": "emulated_run"
+  },
+  "false_verified": false,
+  "guest_lock_attempts": [
+    {
+      "acquired": true,
+      "attempt": 1,
+      "attempted_at_s": 1794756293.4800692,
+      "depth": 1,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 3691.953,
+      "operation": "phase8c_benchmark.heap-malloc",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "phase8c_benchmark.heap-malloc",
+      "reentrant": false,
+      "release_depth": 0,
+      "released": true,
+      "released_at_s": 1794756308.2677069,
+      "run_id": "phase8c-public.r1.11",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 3691.953
+    },
+    {
+      "acquired": true,
+      "attempt": 2,
+      "attempted_at_s": 1794756293.619145,
+      "depth": 2,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.007,
+      "operation": "poc_runner.run_poc",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_poc",
+      "reentrant": true,
+      "release_depth": 1,
+      "released": true,
+      "released_at_s": 1794756301.3585129,
+      "run_id": "d448f1690d714a719fa15926acab32cd",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.007
+    },
+    {
+      "acquired": true,
+      "attempt": 3,
+      "attempted_at_s": 1794756293.6203399,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-overflow-64:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-overflow-64:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756295.1672041,
+      "run_id": "1bca83acc4544bceb7b3792b34c874dc",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 4,
+      "attempted_at_s": 1794756295.169811,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-overflow-64:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-overflow-64:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756295.391127,
+      "run_id": "7595b240a02d4ad7a34ef95c11b809a5",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 5,
+      "attempted_at_s": 1794756295.391888,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-overflow-256:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-overflow-256:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756296.851507,
+      "run_id": "fbc39eaa968b4efcb067d7bb259afea1",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 6,
+      "attempted_at_s": 1794756296.853206,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.003,
+      "operation": "poc_runner.run_path:heap-overflow-256:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-overflow-256:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756297.149673,
+      "run_id": "c890f8c6c48e4151b68a1168a2fbcd1b",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.003
+    },
+    {
+      "acquired": true,
+      "attempt": 7,
+      "attempted_at_s": 1794756297.150741,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-short-hi:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-short-hi:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756297.3883898,
+      "run_id": "7e832dc11fae425fb2b76aa2752ff9f3",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 8,
+      "attempted_at_s": 1794756297.391071,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-short-hi:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-short-hi:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756298.524338,
+      "run_id": "edf2cd0006fe4ea4a61b800a2450d392",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 9,
+      "attempted_at_s": 1794756298.525907,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-short-10:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-short-10:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756298.738796,
+      "run_id": "39d10f5fe5c24ccab1a2320c747a1a71",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 10,
+      "attempted_at_s": 1794756298.739881,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-short-10:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-short-10:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756299.985309,
+      "run_id": "eb732b9692964b6e8c19b3a1de1cdac9",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 11,
+      "attempted_at_s": 1794756299.986897,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-boundary-15:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-boundary-15:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756300.2519228,
+      "run_id": "13d982c8f9e64c078320068f47cb6ee0",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 12,
+      "attempted_at_s": 1794756300.2530391,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-boundary-15:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-boundary-15:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756301.353584,
+      "run_id": "07eac9cc2e8645bb8beec5794d7863bd",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 13,
+      "attempted_at_s": 1794756301.4912372,
+      "depth": 2,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.004,
+      "operation": "poc_runner.run_poc",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_poc",
+      "reentrant": true,
+      "release_depth": 1,
+      "released": true,
+      "released_at_s": 1794756308.266772,
+      "run_id": "0da936277c99411f9af29148accd6275",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.004
+    },
+    {
+      "acquired": true,
+      "attempt": 14,
+      "attempted_at_s": 1794756301.492175,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.001,
+      "operation": "poc_runner.run_path:heap-overflow-64:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-overflow-64:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756302.9106472,
+      "run_id": "9b91b186da42486c99fe0d6503961c74",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.001
+    },
+    {
+      "acquired": true,
+      "attempt": 15,
+      "attempted_at_s": 1794756302.912107,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.003,
+      "operation": "poc_runner.run_path:heap-overflow-64:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-overflow-64:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756303.0904262,
+      "run_id": "0cb072a2b0c3473fbdc2a8b724a59cb4",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.003
+    },
+    {
+      "acquired": true,
+      "attempt": 16,
+      "attempted_at_s": 1794756303.0913332,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.001,
+      "operation": "poc_runner.run_path:heap-overflow-256:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-overflow-256:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756304.343528,
+      "run_id": "bfc95cab20ac46d48734a3abafefbe7a",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.001
+    },
+    {
+      "acquired": true,
+      "attempt": 17,
+      "attempted_at_s": 1794756304.345503,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.003,
+      "operation": "poc_runner.run_path:heap-overflow-256:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-overflow-256:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756304.5543602,
+      "run_id": "59e8b53dd8c84409b936b3bc7980190f",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.003
+    },
+    {
+      "acquired": true,
+      "attempt": 18,
+      "attempted_at_s": 1794756304.556022,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.004,
+      "operation": "poc_runner.run_path:heap-short-hi:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-short-hi:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756304.758401,
+      "run_id": "9883989d0de146dab1b6ee5514ed2f49",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.004
+    },
+    {
+      "acquired": true,
+      "attempt": 19,
+      "attempted_at_s": 1794756304.759259,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-short-hi:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-short-hi:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756305.8287868,
+      "run_id": "9f0113037c2b4461820af87b4e697873",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 20,
+      "attempted_at_s": 1794756305.8297431,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-short-10:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-short-10:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756305.981814,
+      "run_id": "6667b21ef8044a3492196a2a6a3c115c",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 21,
+      "attempted_at_s": 1794756305.982986,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-short-10:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-short-10:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756307.0671759,
+      "run_id": "4bcc50984c5b43c1bc1fc41878988a1c",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    },
+    {
+      "acquired": true,
+      "attempt": 22,
+      "attempted_at_s": 1794756307.067891,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.005,
+      "operation": "poc_runner.run_path:heap-boundary-15:original",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-boundary-15:original",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756307.216188,
+      "run_id": "332c80f0c01246da90b23f608a08145c",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.005
+    },
+    {
+      "acquired": true,
+      "attempt": 23,
+      "attempted_at_s": 1794756307.2170649,
+      "depth": 3,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.002,
+      "operation": "poc_runner.run_path:heap-boundary-15:candidate",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "poc_runner.run_path:heap-boundary-15:candidate",
+      "reentrant": true,
+      "release_depth": 2,
+      "released": true,
+      "released_at_s": 1794756308.26605,
+      "run_id": "0bac930c261c47a087de68d6a2f6a511",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.002
+    }
+  ],
+  "limitations": [
+    "semantic regression is bounded to the declared regression/PoC case ids; it is not a full semantic-equivalence proof of the candidate",
+    "patch plan: 10 declared operation(s), scope_policy=target_scoped_associated, plan_id=plan-15242f2a9355487f321fdd14"
+  ],
+  "localization": true,
+  "not_run_reason": null,
+  "regression": true,
+  "root_cause": true,
+  "sample_id": "heap-malloc",
+  "semantic_regression": "accepted",
+  "status": "executed",
+  "strategy": "guard",
+  "verification": {
+    "decision": "rejected",
+    "evidence_sha256": "58ad5246ae8046d7518525cc5c680e8ffd5ec275a0aaa734e4d59497c0b6443c",
+    "reason": "fail-closed: only an all-required-passed result with a passing independent oracle can be verified; guard candidate appends 606 cave/PT_LOAD bytes at file offset 15816; the call redirect and header/program-header updates are declared as reviewed_site/header_update operations"
+  },
+  "verifier_report": {
+    "checks": [
+      {
+        "detail": "original=0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f candidate=ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73",
+        "id": "identity",
+        "required": true,
+        "status": "passed",
+        "title": "Original/candidate identity and candidate change"
+      },
+      {
+        "detail": "format=elf arch=x86_64 bits=64 endian=little",
+        "id": "container",
+        "required": true,
+        "status": "passed",
+        "title": "Container re-parse and metadata agreement"
+      },
+      {
+        "detail": "plan c4b03a9cff52804b replay matches the candidate: operations=10 changed_ranges=10 cave=yes associated=8",
+        "id": "layout-plan",
+        "required": true,
+        "status": "passed",
+        "title": "Patch-plan replay (layout/cave/associated changes)"
+      },
+      {
+        "detail": "plan replay covers all changed bytes: changed_ranges=10",
+        "id": "action-replay",
+        "required": true,
+        "status": "passed",
+        "title": "Byte-level action replay from raw images"
+      },
+      {
+        "detail": "policy=target_scoped_associated scope=[0x401130, 0x40116c) ops=10 reviewed_sites=1",
+        "id": "target-scope",
+        "required": true,
+        "status": "passed",
+        "title": "Candidate modifications stay inside the declared target scope"
+      },
+      {
+        "detail": "ABI report not ok: plan.abi_blocks@4198704: fatal=3 findings=['branch_target_unknown', 'call_target_not_allowed', 'no_ret']",
+        "id": "abi",
+        "required": true,
+        "status": "failed",
+        "title": "Candidate instruction-block ABI validation"
+      },
+      {
+        "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=4)",
+        "id": "runtime-oracle",
+        "independent": true,
+        "required": true,
+        "status": "passed",
+        "title": "Independent external PoC differential and regression"
+      },
+      {
+        "detail": "one independent external oracle passed",
+        "id": "evidence-completeness",
+        "independent": true,
+        "required": true,
+        "status": "passed",
+        "title": "At least one independent oracle (no generator-only evidence)"
+      },
+      {
+        "detail": "generator identity is distinct and its evidence is excluded from the decision",
+        "id": "independence",
+        "required": true,
+        "status": "passed",
+        "title": "Generator/verifier independence and generator-evidence exclusion"
+      }
+    ],
+    "decision": "rejected",
+    "evidence": [
+      {
+        "candidate_sha256": "ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73",
+        "kind": "candidate",
+        "original_sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f"
+      },
+      {
+        "candidate": {
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "format": "elf",
+          "sections": [
+            {
+              "executable": false,
+              "name": "",
+              "offset": 0,
+              "size": 0,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".interp",
+              "offset": 792,
+              "size": 28,
+              "va": 4195096
+            },
+            {
+              "executable": false,
+              "name": ".note.gnu.property",
+              "offset": 824,
+              "size": 32,
+              "va": 4195128
+            },
+            {
+              "executable": false,
+              "name": ".note.gnu.build-id",
+              "offset": 856,
+              "size": 36,
+              "va": 4195160
+            },
+            {
+              "executable": false,
+              "name": ".note.ABI-tag",
+              "offset": 892,
+              "size": 32,
+              "va": 4195196
+            },
+            {
+              "executable": false,
+              "name": ".gnu.hash",
+              "offset": 928,
+              "size": 28,
+              "va": 4195232
+            },
+            {
+              "executable": false,
+              "name": ".dynsym",
+              "offset": 960,
+              "size": 168,
+              "va": 4195264
+            },
+            {
+              "executable": false,
+              "name": ".dynstr",
+              "offset": 1128,
+              "size": 91,
+              "va": 4195432
+            },
+            {
+              "executable": false,
+              "name": ".gnu.version",
+              "offset": 1220,
+              "size": 14,
+              "va": 4195524
+            },
+            {
+              "executable": false,
+              "name": ".gnu.version_r",
+              "offset": 1240,
+              "size": 48,
+              "va": 4195544
+            },
+            {
+              "executable": false,
+              "name": ".rela.dyn",
+              "offset": 1288,
+              "size": 144,
+              "va": 4195592
+            },
+            {
+              "executable": true,
+              "name": ".init",
+              "offset": 4096,
+              "size": 27,
+              "va": 4198400
+            },
+            {
+              "executable": true,
+              "name": ".text",
+              "offset": 4128,
+              "size": 331,
+              "va": 4198432
+            },
+            {
+              "executable": true,
+              "name": ".fini",
+              "offset": 4460,
+              "size": 13,
+              "va": 4198764
+            },
+            {
+              "executable": false,
+              "name": ".rodata",
+              "offset": 8192,
+              "size": 4,
+              "va": 4202496
+            },
+            {
+              "executable": false,
+              "name": ".eh_frame_hdr",
+              "offset": 8196,
+              "size": 44,
+              "va": 4202500
+            },
+            {
+              "executable": false,
+              "name": ".eh_frame",
+              "offset": 8240,
+              "size": 132,
+              "va": 4202544
+            },
+            {
+              "executable": false,
+              "name": ".init_array",
+              "offset": 11800,
+              "size": 8,
+              "va": 4210200
+            },
+            {
+              "executable": false,
+              "name": ".fini_array",
+              "offset": 11808,
+              "size": 8,
+              "va": 4210208
+            },
+            {
+              "executable": false,
+              "name": ".dynamic",
+              "offset": 11816,
+              "size": 400,
+              "va": 4210216
+            },
+            {
+              "executable": false,
+              "name": ".got",
+              "offset": 12216,
+              "size": 48,
+              "va": 4210616
+            },
+            {
+              "executable": false,
+              "name": ".got.plt",
+              "offset": 12264,
+              "size": 24,
+              "va": 4210664
+            },
+            {
+              "executable": false,
+              "name": ".data",
+              "offset": 12288,
+              "size": 16,
+              "va": 4210688
+            },
+            {
+              "executable": false,
+              "name": ".bss",
+              "offset": 12304,
+              "size": 8,
+              "va": 4210704
+            },
+            {
+              "executable": false,
+              "name": ".comment",
+              "offset": 12304,
+              "size": 45,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".symtab",
+              "offset": 12352,
+              "size": 912,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".strtab",
+              "offset": 13264,
+              "size": 489,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".shstrtab",
+              "offset": 13753,
+              "size": 268,
+              "va": 0
+            }
+          ],
+          "symbols": [
+            {
+              "name": "_init",
+              "va": 4198400
+            },
+            {
+              "name": "main",
+              "va": 4198432
+            },
+            {
+              "name": "_start",
+              "va": 4198464
+            },
+            {
+              "name": "_dl_relocate_static_pie",
+              "va": 4198512
+            },
+            {
+              "name": "deregister_tm_clones",
+              "va": 4198528
+            },
+            {
+              "name": "register_tm_clones",
+              "va": 4198576
+            },
+            {
+              "name": "__do_global_dtors_aux",
+              "va": 4198640
+            },
+            {
+              "name": "frame_dummy",
+              "va": 4198688
+            },
+            {
+              "name": "heap_bad",
+              "va": 4198704
+            },
+            {
+              "name": "_fini",
+              "va": 4198764
+            }
+          ]
+        },
+        "kind": "container",
+        "original": {
+          "arch": "x86_64",
+          "bits": 64,
+          "endian": "little",
+          "format": "elf",
+          "sections": [
+            {
+              "executable": false,
+              "name": "",
+              "offset": 0,
+              "size": 0,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".interp",
+              "offset": 792,
+              "size": 28,
+              "va": 4195096
+            },
+            {
+              "executable": false,
+              "name": ".note.gnu.property",
+              "offset": 824,
+              "size": 32,
+              "va": 4195128
+            },
+            {
+              "executable": false,
+              "name": ".note.gnu.build-id",
+              "offset": 856,
+              "size": 36,
+              "va": 4195160
+            },
+            {
+              "executable": false,
+              "name": ".note.ABI-tag",
+              "offset": 892,
+              "size": 32,
+              "va": 4195196
+            },
+            {
+              "executable": false,
+              "name": ".gnu.hash",
+              "offset": 928,
+              "size": 28,
+              "va": 4195232
+            },
+            {
+              "executable": false,
+              "name": ".dynsym",
+              "offset": 960,
+              "size": 168,
+              "va": 4195264
+            },
+            {
+              "executable": false,
+              "name": ".dynstr",
+              "offset": 1128,
+              "size": 91,
+              "va": 4195432
+            },
+            {
+              "executable": false,
+              "name": ".gnu.version",
+              "offset": 1220,
+              "size": 14,
+              "va": 4195524
+            },
+            {
+              "executable": false,
+              "name": ".gnu.version_r",
+              "offset": 1240,
+              "size": 48,
+              "va": 4195544
+            },
+            {
+              "executable": false,
+              "name": ".rela.dyn",
+              "offset": 1288,
+              "size": 144,
+              "va": 4195592
+            },
+            {
+              "executable": true,
+              "name": ".init",
+              "offset": 4096,
+              "size": 27,
+              "va": 4198400
+            },
+            {
+              "executable": true,
+              "name": ".text",
+              "offset": 4128,
+              "size": 331,
+              "va": 4198432
+            },
+            {
+              "executable": true,
+              "name": ".fini",
+              "offset": 4460,
+              "size": 13,
+              "va": 4198764
+            },
+            {
+              "executable": false,
+              "name": ".rodata",
+              "offset": 8192,
+              "size": 4,
+              "va": 4202496
+            },
+            {
+              "executable": false,
+              "name": ".eh_frame_hdr",
+              "offset": 8196,
+              "size": 44,
+              "va": 4202500
+            },
+            {
+              "executable": false,
+              "name": ".eh_frame",
+              "offset": 8240,
+              "size": 132,
+              "va": 4202544
+            },
+            {
+              "executable": false,
+              "name": ".init_array",
+              "offset": 11800,
+              "size": 8,
+              "va": 4210200
+            },
+            {
+              "executable": false,
+              "name": ".fini_array",
+              "offset": 11808,
+              "size": 8,
+              "va": 4210208
+            },
+            {
+              "executable": false,
+              "name": ".dynamic",
+              "offset": 11816,
+              "size": 400,
+              "va": 4210216
+            },
+            {
+              "executable": false,
+              "name": ".got",
+              "offset": 12216,
+              "size": 48,
+              "va": 4210616
+            },
+            {
+              "executable": false,
+              "name": ".got.plt",
+              "offset": 12264,
+              "size": 24,
+              "va": 4210664
+            },
+            {
+              "executable": false,
+              "name": ".data",
+              "offset": 12288,
+              "size": 16,
+              "va": 4210688
+            },
+            {
+              "executable": false,
+              "name": ".bss",
+              "offset": 12304,
+              "size": 8,
+              "va": 4210704
+            },
+            {
+              "executable": false,
+              "name": ".comment",
+              "offset": 12304,
+              "size": 45,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".symtab",
+              "offset": 12352,
+              "size": 912,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".strtab",
+              "offset": 13264,
+              "size": 489,
+              "va": 0
+            },
+            {
+              "executable": false,
+              "name": ".shstrtab",
+              "offset": 13753,
+              "size": 268,
+              "va": 0
+            }
+          ],
+          "symbols": [
+            {
+              "name": "_init",
+              "va": 4198400
+            },
+            {
+              "name": "main",
+              "va": 4198432
+            },
+            {
+              "name": "_start",
+              "va": 4198464
+            },
+            {
+              "name": "_dl_relocate_static_pie",
+              "va": 4198512
+            },
+            {
+              "name": "deregister_tm_clones",
+              "va": 4198528
+            },
+            {
+              "name": "register_tm_clones",
+              "va": 4198576
+            },
+            {
+              "name": "__do_global_dtors_aux",
+              "va": 4198640
+            },
+            {
+              "name": "frame_dummy",
+              "va": 4198688
+            },
+            {
+              "name": "heap_bad",
+              "va": 4198704
+            },
+            {
+              "name": "_fini",
+              "va": 4198764
+            }
+          ]
+        }
+      },
+      {
+        "actions": [],
+        "claimed_actions": [],
+        "kind": "actions"
+      },
+      {
+        "declared": {
+          "end": 4198764,
+          "name": "heap_bad",
+          "policy": "target_scoped_associated",
+          "va": 4198704
+        },
+        "kind": "target-scope",
+        "range": {
+          "end": 4198764,
+          "name": "heap_bad",
+          "policy": "target_scoped_associated",
+          "va": 4198704
+        }
+      },
+      {
+        "derivation": {
+          "blocks": [
+            {
+              "arch": "x86_64",
+              "block_sha256": "c15420fcf575024f6404b97d43bdf1522fa6cdd3a9376e666ba22431db008c9c",
+              "file_offset": 4400,
+              "function": "reviewed-function",
+              "size": 59,
+              "source": "plan.abi_blocks",
+              "va": 4198704
+            }
+          ],
+          "limitations": [],
+          "problems": [],
+          "status": "ok"
+        },
+        "kind": "abi",
+        "reports": [
+          {
+            "block": {
+              "arch": "x86_64",
+              "block_sha256": "c15420fcf575024f6404b97d43bdf1522fa6cdd3a9376e666ba22431db008c9c",
+              "file_offset": 4400,
+              "function": "reviewed-function",
+              "size": 59,
+              "source": "plan.abi_blocks",
+              "va": 4198704
+            },
+            "report": {
+              "fatal": 3,
+              "findings": [
+                {
+                  "address": "0xe",
+                  "code": "call_target_not_allowed",
+                  "detail": "call target None not in allowed targets",
+                  "severity": "fatal"
+                },
+                {
+                  "address": "0x26",
+                  "code": "call_target_not_allowed",
+                  "detail": "call target None not in allowed targets",
+                  "severity": "fatal"
+                },
+                {
+                  "address": "0x35",
+                  "code": "branch_target_unknown",
+                  "detail": "jmp target None is outside the block",
+                  "severity": "warning"
+                },
+                {
+                  "address": null,
+                  "code": "no_ret",
+                  "detail": "block has no ret",
+                  "severity": "fatal"
+                }
+              ],
+              "ok": false
+            }
+          }
+        ]
+      },
+      {
+        "case_count": 4,
+        "errno_signature": "not_run",
+        "kind": "oracle",
+        "limitations": [],
+        "no_input": false,
+        "regression_count": 6,
+        "runner": "limactl",
+        "source": "external-poc-manifest",
+        "status": "pass",
+        "stdout_signature": "matched",
+        "tier": "emulated_run"
+      },
+      {
+        "detail": "one independent external oracle passed",
+        "kind": "evidence-completeness",
+        "ok": true,
+        "sources": [
+          "external-poc-manifest"
+        ]
+      },
+      {
+        "associated_changes": [
+          {
+            "authorization_ref": "authorization:elf-metadata:v1",
+            "kind": "header_update",
+            "offset": 512,
+            "section": "elf_header",
+            "size": 1
+          },
+          {
+            "authorization_ref": "authorization:elf-metadata:v1",
+            "kind": "header_update",
+            "offset": 516,
+            "section": "elf_header",
+            "size": 1
+          },
+          {
+            "authorization_ref": "authorization:elf-metadata:v1",
+            "kind": "header_update",
+            "offset": 520,
+            "section": "elf_header",
+            "size": 2
+          },
+          {
+            "authorization_ref": "authorization:elf-metadata:v1",
+            "kind": "header_update",
+            "offset": 528,
+            "section": "elf_header",
+            "size": 2
+          },
+          {
+            "authorization_ref": "authorization:elf-metadata:v1",
+            "kind": "header_update",
+            "offset": 536,
+            "section": "elf_header",
+            "size": 2
+          },
+          {
+            "authorization_ref": "authorization:elf-metadata:v1",
+            "kind": "header_update",
+            "offset": 544,
+            "section": "elf_header",
+            "size": 1
+          },
+          {
+            "authorization_ref": "authorization:elf-metadata:v1",
+            "kind": "header_update",
+            "offset": 552,
+            "section": "elf_header",
+            "size": 1
+          },
+          {
+            "authorization_ref": "authorization:elf-metadata:v1",
+            "kind": "header_update",
+            "offset": 560,
+            "section": "elf_header",
+            "size": 2
+          }
+        ],
+        "cave": {
+          "executable": true,
+          "method": "new-pt-load",
+          "size": 38,
+          "va": 4214784
+        },
+        "changed_ranges": [
+          {
+            "candidate_offset": 512,
+            "kind": "associated",
+            "original_offset": 512,
+            "size": 1
+          },
+          {
+            "candidate_offset": 516,
+            "kind": "associated",
+            "original_offset": 516,
+            "size": 1
+          },
+          {
+            "candidate_offset": 520,
+            "kind": "associated",
+            "original_offset": 520,
+            "size": 2
+          },
+          {
+            "candidate_offset": 528,
+            "kind": "associated",
+            "original_offset": 528,
+            "size": 2
+          },
+          {
+            "candidate_offset": 536,
+            "kind": "associated",
+            "original_offset": 536,
+            "size": 2
+          },
+          {
+            "candidate_offset": 544,
+            "kind": "associated",
+            "original_offset": 544,
+            "size": 1
+          },
+          {
+            "candidate_offset": 552,
+            "kind": "associated",
+            "original_offset": 552,
+            "size": 1
+          },
+          {
+            "candidate_offset": 560,
+            "kind": "associated",
+            "original_offset": 560,
+            "size": 2
+          },
+          {
+            "candidate_offset": 4429,
+            "kind": "write",
+            "original_offset": 4429,
+            "size": 6
+          },
+          {
+            "candidate_offset": 15816,
+            "kind": "insert",
+            "original_offset": 15816,
+            "size": 606
+          }
+        ],
+        "kind": "layout-plan",
+        "plan_sha256": "c4b03a9cff52804bfee832f7368667cb6096fdc80d47725b81cd2ef3575fa987",
+        "replay_ok": true
+      },
+      "<repo>/fixtures/poc/heap-malloc.json"
+    ],
+    "generator": {
+      "agent": null,
+      "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+      "model": null,
+      "run_id": null
+    },
+    "independence": {
+      "generator_evidence_excluded": true,
+      "ok": true
+    },
+    "layout_evidence": {
+      "abi_blocks": [
+        {
+          "abi_id": "sysv-amd64",
+          "arch": "x86_64",
+          "evidence_sha256": "c15420fcf575024f6404b97d43bdf1522fa6cdd3a9376e666ba22431db008c9c",
+          "function": "reviewed-function",
+          "size": 59,
+          "va": 4198704
+        }
+      ],
+      "associated_changes": [
+        {
+          "authorization_ref": "authorization:elf-metadata:v1",
+          "kind": "header_update",
+          "offset": 512,
+          "section": "elf_header",
+          "size": 1
+        },
+        {
+          "authorization_ref": "authorization:elf-metadata:v1",
+          "kind": "header_update",
+          "offset": 516,
+          "section": "elf_header",
+          "size": 1
+        },
+        {
+          "authorization_ref": "authorization:elf-metadata:v1",
+          "kind": "header_update",
+          "offset": 520,
+          "section": "elf_header",
+          "size": 2
+        },
+        {
+          "authorization_ref": "authorization:elf-metadata:v1",
+          "kind": "header_update",
+          "offset": 528,
+          "section": "elf_header",
+          "size": 2
+        },
+        {
+          "authorization_ref": "authorization:elf-metadata:v1",
+          "kind": "header_update",
+          "offset": 536,
+          "section": "elf_header",
+          "size": 2
+        },
+        {
+          "authorization_ref": "authorization:elf-metadata:v1",
+          "kind": "header_update",
+          "offset": 544,
+          "section": "elf_header",
+          "size": 1
+        },
+        {
+          "authorization_ref": "authorization:elf-metadata:v1",
+          "kind": "header_update",
+          "offset": 552,
+          "section": "elf_header",
+          "size": 1
+        },
+        {
+          "authorization_ref": "authorization:elf-metadata:v1",
+          "kind": "header_update",
+          "offset": 560,
+          "section": "elf_header",
+          "size": 2
+        }
+      ],
+      "cave": {
+        "executable": true,
+        "method": "new-pt-load",
+        "size": 38,
+        "va": 4214784
+      },
+      "changed_ranges": [
+        {
+          "candidate_offset": 512,
+          "kind": "associated",
+          "original_offset": 512,
+          "size": 1
+        },
+        {
+          "candidate_offset": 516,
+          "kind": "associated",
+          "original_offset": 516,
+          "size": 1
+        },
+        {
+          "candidate_offset": 520,
+          "kind": "associated",
+          "original_offset": 520,
+          "size": 2
+        },
+        {
+          "candidate_offset": 528,
+          "kind": "associated",
+          "original_offset": 528,
+          "size": 2
+        },
+        {
+          "candidate_offset": 536,
+          "kind": "associated",
+          "original_offset": 536,
+          "size": 2
+        },
+        {
+          "candidate_offset": 544,
+          "kind": "associated",
+          "original_offset": 544,
+          "size": 1
+        },
+        {
+          "candidate_offset": 552,
+          "kind": "associated",
+          "original_offset": 552,
+          "size": 1
+        },
+        {
+          "candidate_offset": 560,
+          "kind": "associated",
+          "original_offset": 560,
+          "size": 2
+        },
+        {
+          "candidate_offset": 4429,
+          "kind": "write",
+          "original_offset": 4429,
+          "size": 6
+        },
+        {
+          "candidate_offset": 15816,
+          "kind": "insert",
+          "original_offset": 15816,
+          "size": 606
+        }
+      ],
+      "patch_plan_sha256": "c4b03a9cff52804bfee832f7368667cb6096fdc80d47725b81cd2ef3575fa987",
+      "replay_ok": true
+    },
+    "limitations": [
+      "fail-closed: only an all-required-passed result with a passing independent oracle can be verified",
+      "guard candidate appends 606 cave/PT_LOAD bytes at file offset 15816; the call redirect and header/program-header updates are declared as reviewed_site/header_update operations"
+    ],
+    "oracle_evidence": {
+      "evidence_sha256": "2804a4d2268e2617ae8496117942c7f6d251d9ccbe5ac21f77dce1004b658ea8",
+      "manifest_sha256": "1c76afbcf1ee72d8bde99210bb2fb6d53e02e4e8b7470cade4309e092c9a8a2a",
+      "runner": "limactl",
+      "status": "executed",
+      "tier": "emulated_run"
+    },
+    "patch_plan_sha256": "c4b03a9cff52804bfee832f7368667cb6096fdc80d47725b81cd2ef3575fa987",
+    "report_sha256": "58ad5246ae8046d7518525cc5c680e8ffd5ec275a0aaa734e4d59497c0b6443c",
+    "schema_version": 1,
+    "target": {
+      "arch": "x86_64",
+      "bits": 64,
+      "endian": "little",
+      "format": "elf",
+      "target_scope": {
+        "end": 4198764,
+        "name": "heap_bad",
+        "policy": "target_scoped_associated",
+        "va": 4198704
+      },
+      "target_sha256": "0f65a2d2ffe1ebf91f717d5edc78928cb8ee219e3f73e623b256f87bdcc4381f"
+    },
+    "verifier": {
+      "verifier_id": "independent-verifier/1",
+      "version": "1"
+    }
+  }
+}

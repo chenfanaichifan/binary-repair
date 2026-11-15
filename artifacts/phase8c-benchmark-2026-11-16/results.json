@@ -1,0 +1,820 @@
+{
+  "aggregate": {
+    "denominator": {
+      "executed": 30,
+      "samples": 32,
+      "verification_attempted": 3
+    },
+    "false_verified_count": 0,
+    "rejected_count": 1,
+    "sample_count": 32,
+    "status_counts": {
+      "blocked": 0,
+      "executed": 30,
+      "invalid": 0,
+      "not_run": 0,
+      "unsupported": 2
+    },
+    "verified_count": 2
+  },
+  "benchmark_id": "phase8c-public-v2",
+  "generated_at": "2026-11-16T00:00:00Z",
+  "hidden_aggregate": {
+    "denominator": {
+      "executed": 8,
+      "samples": 8,
+      "verification_attempted": 0
+    },
+    "false_verified_count": 0,
+    "rejected_count": 0,
+    "sample_count": 8,
+    "status_counts": {
+      "blocked": 0,
+      "executed": 8,
+      "invalid": 0,
+      "not_run": 0,
+      "unsupported": 0
+    },
+    "verified_count": 0
+  },
+  "kind": "benchmark_results_v2",
+  "limitations": [
+    "deterministic repair evidence only: no AI provider and no network is used by this runner.",
+    "verified_count counts independent-verifier decisions only; the deterministic engine's own gate is never accepted as verification.",
+    "single-run evidence is not an unconditional stability claim (C1 warning B-POST-REBASE-REPRODUCTION-FLAKY): repeated serialized runs and their attempt history must be recorded before claiming stability",
+    "1 deterministic verified claim(s) were rejected by the independent verifier and withdrawn from the published claim",
+    "hidden aggregate present: counts only, committed under the hidden aggregate path; no per-sample hidden ids/paths/content are published"
+  ],
+  "manifest_sha256": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78",
+  "samples": [
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "cwe121-public",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "hard-loop16",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "hard-loop32",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "hard-loop64",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "hard-loop8",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "hard-multicall",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "hard-nonconst",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "hard-reverse",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "hard-sprintf",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "heap-canary",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": true,
+        "sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2"
+      },
+      "detection": true,
+      "environment": {
+        "oracle_status": "executed",
+        "runner": "limactl",
+        "tier": "emulated_run"
+      },
+      "false_verified": false,
+      "localization": true,
+      "not_run_reason": null,
+      "regression": true,
+      "root_cause": true,
+      "sample_id": "heap-capacity-x86_64",
+      "status": "executed",
+      "strategy": "capacity",
+      "verification": {
+        "decision": "verified",
+        "evidence_sha256": "4e7802fd672a1ca1b9a722dd93eafcf57a239b1dc7626a0a1dabe42300149210"
+      }
+    },
+    {
+      "candidate": {
+        "produced": true,
+        "sha256": "ea22260535efca37dca19404c700ce29e6da1f45b3af24d3903c8d27fdf6fb73"
+      },
+      "detection": true,
+      "environment": {
+        "oracle_status": "executed",
+        "runner": "limactl",
+        "tier": "emulated_run"
+      },
+      "false_verified": false,
+      "localization": true,
+      "not_run_reason": null,
+      "regression": true,
+      "root_cause": true,
+      "sample_id": "heap-malloc",
+      "status": "executed",
+      "strategy": "guard",
+      "verification": {
+        "decision": "rejected",
+        "evidence_sha256": "58ad5246ae8046d7518525cc5c680e8ffd5ec275a0aaa734e4d59497c0b6443c"
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "inline-loop",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": null,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": null,
+      "sample_id": "negative-control",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "repair-cwe122",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "repair-cwe125",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "repair-cwe134",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "repair-cwe190",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "repair-cwe476",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "repair-cwe787",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": true,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": null,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": null,
+      "sample_id": "stack-memcpy-x86",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": true,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": null,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": null,
+      "sample_id": "stack-strcpy-x86",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": true,
+        "sha256": "1bc66b2ee28e2370cca1fcea624378e72afcafeac02c1da4eead689cd64ff6f4"
+      },
+      "detection": true,
+      "environment": {
+        "oracle_status": "executed",
+        "runner": "limactl",
+        "tier": "emulated_run"
+      },
+      "false_verified": false,
+      "localization": true,
+      "not_run_reason": null,
+      "regression": true,
+      "root_cause": true,
+      "sample_id": "stack-strcpy-x86_64",
+      "status": "executed",
+      "strategy": "guard",
+      "verification": {
+        "decision": "verified",
+        "evidence_sha256": "39ff1debab52dddad967e247fcd47c52f38a217b8bbe7cc0aae6be9cc8046b84"
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": null,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": null,
+      "sample_id": "uaf-noinput",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "variant-cwe122-O2",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": null,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "unavailable"
+      },
+      "false_verified": false,
+      "localization": null,
+      "not_run_reason": "variant-cwe122-O2-stripped: deterministic engine disposition unsupported: target 'cwe122_bad' could not be resolved to a unique function with a determinable end address",
+      "regression": null,
+      "root_cause": null,
+      "sample_id": "variant-cwe122-O2-stripped",
+      "status": "unsupported",
+      "strategy": null,
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": false,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": false,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": false,
+      "sample_id": "variant-cwe125-O3-static",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": null,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "unavailable"
+      },
+      "false_verified": false,
+      "localization": null,
+      "not_run_reason": "variant-cwe125-Os-static-stripped: deterministic engine disposition unsupported: target 'cwe125_bad' could not be resolved to a unique function with a determinable end address",
+      "regression": null,
+      "root_cause": null,
+      "sample_id": "variant-cwe125-Os-static-stripped",
+      "status": "unsupported",
+      "strategy": null,
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": true,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": null,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": null,
+      "sample_id": "xarch-macho-arm64",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": true,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": null,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": null,
+      "sample_id": "xarch-macho-x86_64",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": true,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": null,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": null,
+      "sample_id": "xarch-pe-arm64",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    },
+    {
+      "candidate": {
+        "produced": false,
+        "sha256": null
+      },
+      "detection": true,
+      "environment": {
+        "oracle_status": "not_run",
+        "runner": null,
+        "tier": "static_only"
+      },
+      "false_verified": false,
+      "localization": null,
+      "not_run_reason": null,
+      "regression": null,
+      "root_cause": null,
+      "sample_id": "xarch-pe-x64",
+      "status": "executed",
+      "strategy": "none",
+      "verification": {
+        "decision": "not_run",
+        "evidence_sha256": null
+      }
+    }
+  ],
+  "schema_version": 2
+}

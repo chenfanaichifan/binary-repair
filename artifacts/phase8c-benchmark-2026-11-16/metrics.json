@@ -1,0 +1,1022 @@
+{
+  "by_arch": {
+    "arm64": {
+      "analysis_only": {
+        "detection": {
+          "count": 2,
+          "denominator": 2,
+          "rate": 1.0
+        },
+        "sample_count": 2
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "eligible_repair_cases": 0,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "sample_count": 2,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 2,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      }
+    },
+    "i386": {
+      "analysis_only": {
+        "detection": {
+          "count": 2,
+          "denominator": 3,
+          "rate": 0.666667
+        },
+        "sample_count": 3
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "eligible_repair_cases": 0,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "sample_count": 3,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 3,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      }
+    },
+    "x86_64": {
+      "analysis_only": {
+        "detection": {
+          "count": 2,
+          "denominator": 3,
+          "rate": 0.666667
+        },
+        "sample_count": 3
+      },
+      "detection": {
+        "count": 3,
+        "denominator": 24,
+        "rate": 0.125
+      },
+      "eligible_repair_cases": 24,
+      "false_verified_internal": 1,
+      "localization": {
+        "count": 3,
+        "denominator": 24,
+        "rate": 0.125
+      },
+      "root_cause_match": {
+        "count": 3,
+        "denominator": 24,
+        "rate": 0.125
+      },
+      "sample_count": 27,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 25,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 2
+      },
+      "verification": {
+        "attempted": 3,
+        "rejected": 1,
+        "verified": 2
+      },
+      "verified_repair": {
+        "count": 2,
+        "denominator": 24,
+        "rate": 0.083333
+      }
+    }
+  },
+  "by_family": {
+    "CWE-125": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 3,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 3,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 3,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 3,
+        "rate": 0.0
+      },
+      "sample_count": 3,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 2,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 1
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 3,
+        "rate": null
+      }
+    },
+    "CWE-134": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 1,
+        "rate": null
+      }
+    },
+    "CWE-190": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 1,
+        "rate": null
+      }
+    },
+    "CWE-476": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 1,
+        "rate": null
+      }
+    },
+    "heap copy semantic guard": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 3,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 3,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 3,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 3,
+        "rate": 0.0
+      },
+      "sample_count": 3,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 2,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 1
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 3,
+        "rate": null
+      }
+    },
+    "heap_buffer_overflow": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 1,
+        "denominator": 2,
+        "rate": 0.5
+      },
+      "eligible_repair_cases": 2,
+      "false_verified_internal": 1,
+      "localization": {
+        "count": 1,
+        "denominator": 2,
+        "rate": 0.5
+      },
+      "root_cause_match": {
+        "count": 1,
+        "denominator": 2,
+        "rate": 0.5
+      },
+      "sample_count": 2,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 2,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 1,
+        "rejected": 1,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 2,
+        "rate": 0.0
+      }
+    },
+    "heap_capacity": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 1,
+        "denominator": 1,
+        "rate": 1.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 1,
+        "denominator": 1,
+        "rate": 1.0
+      },
+      "root_cause_match": {
+        "count": 1,
+        "denominator": 1,
+        "rate": 1.0
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 1,
+        "rejected": 0,
+        "verified": 1
+      },
+      "verified_repair": {
+        "count": 1,
+        "denominator": 1,
+        "rate": 1.0
+      }
+    },
+    "indexed write semantic guard": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 1,
+        "rate": null
+      }
+    },
+    "negative_control": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 1,
+          "rate": 0.0
+        },
+        "sample_count": 1
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "eligible_repair_cases": 0,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      }
+    },
+    "non-template inline copy": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 5,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 5,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 5,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 5,
+        "rate": 0.0
+      },
+      "sample_count": 5,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 5,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 5,
+        "rate": null
+      }
+    },
+    "non_template": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 4,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 4,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 4,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 4,
+        "rate": 0.0
+      },
+      "sample_count": 4,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 4,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 4,
+        "rate": null
+      }
+    },
+    "stack_buffer_overflow": {
+      "analysis_only": {
+        "detection": {
+          "count": 6,
+          "denominator": 6,
+          "rate": 1.0
+        },
+        "sample_count": 6
+      },
+      "detection": {
+        "count": 1,
+        "denominator": 2,
+        "rate": 0.5
+      },
+      "eligible_repair_cases": 2,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 1,
+        "denominator": 2,
+        "rate": 0.5
+      },
+      "root_cause_match": {
+        "count": 1,
+        "denominator": 2,
+        "rate": 0.5
+      },
+      "sample_count": 8,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 8,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 1,
+        "rejected": 0,
+        "verified": 1
+      },
+      "verified_repair": {
+        "count": 1,
+        "denominator": 2,
+        "rate": 0.5
+      }
+    },
+    "uaf": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 1,
+          "rate": 0.0
+        },
+        "sample_count": 1
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "eligible_repair_cases": 0,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      }
+    }
+  },
+  "by_format": {
+    "elf": {
+      "analysis_only": {
+        "detection": {
+          "count": 2,
+          "denominator": 3,
+          "rate": 0.666667
+        },
+        "sample_count": 3
+      },
+      "detection": {
+        "count": 3,
+        "denominator": 24,
+        "rate": 0.125
+      },
+      "eligible_repair_cases": 24,
+      "false_verified_internal": 1,
+      "localization": {
+        "count": 3,
+        "denominator": 24,
+        "rate": 0.125
+      },
+      "root_cause_match": {
+        "count": 3,
+        "denominator": 24,
+        "rate": 0.125
+      },
+      "sample_count": 27,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 25,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 2
+      },
+      "verification": {
+        "attempted": 3,
+        "rejected": 1,
+        "verified": 2
+      },
+      "verified_repair": {
+        "count": 2,
+        "denominator": 24,
+        "rate": 0.083333
+      }
+    },
+    "macho": {
+      "analysis_only": {
+        "detection": {
+          "count": 2,
+          "denominator": 2,
+          "rate": 1.0
+        },
+        "sample_count": 2
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "eligible_repair_cases": 0,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "sample_count": 2,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 2,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      }
+    },
+    "pe": {
+      "analysis_only": {
+        "detection": {
+          "count": 2,
+          "denominator": 3,
+          "rate": 0.666667
+        },
+        "sample_count": 3
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "eligible_repair_cases": 0,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "sample_count": 3,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 3,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      }
+    }
+  },
+  "claim_policy": "withdraw",
+  "denominator_policy": "verified_repair_rate = independently verified / eligible repair cases; eligible = expected_scope function|whole_program AND real runtime oracle AND judgeable expected behaviour.  analysis_only samples are excluded from repair rates and reported separately; a zero denominator yields null, never a fabricated 0.",
+  "deterministic_claim_withdrawn": 1,
+  "false_verified_internal": 1,
+  "independent_verifier": {
+    "available": true,
+    "detail": "loaded verifier independent-verifier/1",
+    "id": "independent-verifier/1",
+    "requested": "auto"
+  },
+  "kind": "phase8c_layered_metrics",
+  "overall": {
+    "analysis_only": {
+      "detection": {
+        "count": 6,
+        "denominator": 8,
+        "rate": 0.75
+      },
+      "sample_count": 8
+    },
+    "detection": {
+      "count": 3,
+      "denominator": 24,
+      "rate": 0.125
+    },
+    "eligible_repair_cases": 24,
+    "false_verified_internal": 1,
+    "localization": {
+      "count": 3,
+      "denominator": 24,
+      "rate": 0.125
+    },
+    "root_cause_match": {
+      "count": 3,
+      "denominator": 24,
+      "rate": 0.125
+    },
+    "sample_count": 32,
+    "status_counts": {
+      "blocked": 0,
+      "executed": 30,
+      "invalid": 0,
+      "not_run": 0,
+      "unsupported": 2
+    },
+    "verification": {
+      "attempted": 3,
+      "rejected": 1,
+      "verified": 2
+    },
+    "verified_repair": {
+      "count": 2,
+      "denominator": 24,
+      "rate": 0.083333
+    }
+  },
+  "repeat_history": [
+    {
+      "attempt": 1,
+      "dispatch_order": [
+        "cwe121-public",
+        "hard-loop16",
+        "hard-loop32",
+        "hard-loop64",
+        "hard-loop8",
+        "hard-multicall",
+        "hard-nonconst",
+        "hard-reverse",
+        "hard-sprintf",
+        "heap-canary",
+        "heap-capacity-x86_64",
+        "heap-malloc",
+        "inline-loop",
+        "negative-control",
+        "repair-cwe122",
+        "repair-cwe125",
+        "repair-cwe134",
+        "repair-cwe190",
+        "repair-cwe476",
+        "repair-cwe787",
+        "stack-memcpy-x86",
+        "stack-strcpy-x86",
+        "stack-strcpy-x86_64",
+        "uaf-noinput",
+        "variant-cwe122-O2",
+        "variant-cwe122-O2-stripped",
+        "variant-cwe125-O3-static",
+        "variant-cwe125-Os-static-stripped",
+        "xarch-macho-arm64",
+        "xarch-macho-x86_64",
+        "xarch-pe-arm64",
+        "xarch-pe-x64"
+      ],
+      "exit_code": 1,
+      "false_verified_internal": 1,
+      "results_sha256": "a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a",
+      "run_id": "phase8c-public.r1",
+      "status_counts": {
+        "blocked": 0,
+        "executed": 30,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 2
+      },
+      "verified_count": 2
+    },
+    {
+      "attempt": 2,
+      "dispatch_order": [
+        "cwe121-public",
+        "hard-loop16",
+        "hard-loop32",
+        "hard-loop64",
+        "hard-loop8",
+        "hard-multicall",
+        "hard-nonconst",
+        "hard-reverse",
+        "hard-sprintf",
+        "heap-canary",
+        "heap-capacity-x86_64",
+        "heap-malloc",
+        "inline-loop",
+        "negative-control",
+        "repair-cwe122",
+        "repair-cwe125",
+        "repair-cwe134",
+        "repair-cwe190",
+        "repair-cwe476",
+        "repair-cwe787",
+        "stack-memcpy-x86",
+        "stack-strcpy-x86",
+        "stack-strcpy-x86_64",
+        "uaf-noinput",
+        "variant-cwe122-O2",
+        "variant-cwe122-O2-stripped",
+        "variant-cwe125-O3-static",
+        "variant-cwe125-Os-static-stripped",
+        "xarch-macho-arm64",
+        "xarch-macho-x86_64",
+        "xarch-pe-arm64",
+        "xarch-pe-x64"
+      ],
+      "exit_code": 1,
+      "false_verified_internal": 1,
+      "results_sha256": "a477ea3cbea062c03f3ee91b8fdd779ecf70f6bbb6e119a37e19fd881e688b4a",
+      "run_id": "phase8c-public.r2",
+      "status_counts": {
+        "blocked": 0,
+        "executed": 30,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 2
+      },
+      "verified_count": 2
+    }
+  ],
+  "repeats": 2,
+  "schema_version": 1,
+  "stable_across_repeats": true
+}

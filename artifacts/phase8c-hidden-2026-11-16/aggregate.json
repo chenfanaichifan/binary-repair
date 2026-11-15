@@ -1,0 +1,560 @@
+{
+  "aggregate": {
+    "denominator": {
+      "executed": 8,
+      "samples": 8,
+      "verification_attempted": 0
+    },
+    "false_verified_count": 0,
+    "rejected_count": 0,
+    "sample_count": 8,
+    "status_counts": {
+      "blocked": 0,
+      "executed": 8,
+      "invalid": 0,
+      "not_run": 0,
+      "unsupported": 0
+    },
+    "verified_count": 0
+  },
+  "analysis_only": {
+    "detection": {
+      "count": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "sample_count": 2
+  },
+  "benchmark_id": "phase8c-hidden",
+  "by_arch": {
+    "arm64": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 1,
+          "rate": 0.0
+        },
+        "sample_count": 1
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "eligible_repair_cases": 0,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      }
+    },
+    "x86_64": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 1,
+          "rate": 0.0
+        },
+        "sample_count": 1
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 6,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 6,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 6,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 6,
+        "rate": 0.0
+      },
+      "sample_count": 7,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 7,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 6,
+        "rate": null
+      }
+    }
+  },
+  "by_family": {
+    "CWE-125": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 1,
+        "rate": null
+      }
+    },
+    "CWE-134": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 1,
+        "rate": null
+      }
+    },
+    "CWE-190": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 1,
+        "rate": null
+      }
+    },
+    "CWE-476": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 1,
+        "rate": null
+      }
+    },
+    "heap copy semantic guard": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 1,
+          "rate": 0.0
+        },
+        "sample_count": 1
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "sample_count": 2,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 2,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 1,
+        "rate": null
+      }
+    },
+    "indexed write semantic guard": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 1,
+          "rate": 0.0
+        },
+        "sample_count": 1
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 1,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 1,
+        "rate": 0.0
+      },
+      "sample_count": 2,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 2,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 1,
+        "rate": null
+      }
+    }
+  },
+  "by_format": {
+    "elf": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "sample_count": 0
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 6,
+        "rate": 0.0
+      },
+      "eligible_repair_cases": 6,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 6,
+        "rate": 0.0
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 6,
+        "rate": 0.0
+      },
+      "sample_count": 6,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 6,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 6,
+        "rate": null
+      }
+    },
+    "macho": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 1,
+          "rate": 0.0
+        },
+        "sample_count": 1
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "eligible_repair_cases": 0,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      }
+    },
+    "pe": {
+      "analysis_only": {
+        "detection": {
+          "count": 0,
+          "denominator": 1,
+          "rate": 0.0
+        },
+        "sample_count": 1
+      },
+      "detection": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "eligible_repair_cases": 0,
+      "false_verified_internal": 0,
+      "localization": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "root_cause_match": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "sample_count": 1,
+      "status_counts": {
+        "blocked": 0,
+        "executed": 1,
+        "invalid": 0,
+        "not_run": 0,
+        "unsupported": 0
+      },
+      "verification": {
+        "attempted": 0,
+        "rejected": 0,
+        "verified": 0
+      },
+      "verified_repair": {
+        "count": 0,
+        "denominator": 0,
+        "rate": null
+      }
+    }
+  },
+  "commitment_sha256": "eaec60aadd42388efb725a668b887465268c78fd257ec4622ac56eac571bae12",
+  "denominator": {
+    "executed": 8,
+    "samples": 8,
+    "verification_attempted": 0
+  },
+  "deterministic_claim_withdrawn": 0,
+  "false_verified_count": 0,
+  "false_verified_internal": 0,
+  "generated_at": "hidden",
+  "hidden_manifest_sha256": "cb59855c953972c445604da4333ff268c100cd6f42630661b0356ebb40b8be22",
+  "hidden_version": null,
+  "kind": "phase8c_hidden_aggregate",
+  "limitations": [
+    "hidden aggregate contains counts only: no per-sample ids, paths, bytes, candidate hashes or case details are published.",
+    "single-run evidence is not an unconditional stability claim (C1 warning B-POST-REBASE-REPRODUCTION-FLAKY): repeated serialized runs and their attempt history must be recorded before claiming stability"
+  ],
+  "private_report_sha256": "ccbce7e271a257dcd3b1d06f0382cdd3225e60166920032004da2cbae7251ae1",
+  "public_manifest_sha256": "d46f06bfef59ae7116d888ea2b5810fcf518a9d5c5a178a5cef73996fac72b78",
+  "rejected_count": 0,
+  "sample_count": 8,
+  "schema_version": 1,
+  "status_counts": {
+    "blocked": 0,
+    "executed": 8,
+    "invalid": 0,
+    "not_run": 0,
+    "unsupported": 0
+  },
+  "verified_count": 0
+}

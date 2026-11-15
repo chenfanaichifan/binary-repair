@@ -1,0 +1,28 @@
+{
+  "binary_sha256": "49ec2b4ec019fa754efa99d4adcf7e0ff369d59a623a6cd22a2e084a8e475c8d",
+  "candidate_sha256": null,
+  "detection": true,
+  "deterministic_claim_withdrawn": false,
+  "disposition": "analysis_only",
+  "environment": {
+    "oracle_status": "not_run",
+    "runner": null,
+    "tier": "static_only"
+  },
+  "false_verified": false,
+  "guest_lock_attempts": [],
+  "limitations": [],
+  "localization": null,
+  "not_run_reason": null,
+  "regression": null,
+  "root_cause": null,
+  "sample_id": "xarch-pe-arm64",
+  "semantic_regression": "not_run",
+  "status": "executed",
+  "strategy": "none",
+  "verification": {
+    "decision": "not_run",
+    "evidence_sha256": null,
+    "reason": "analysis-only sample: no candidate is produced"
+  }
+}

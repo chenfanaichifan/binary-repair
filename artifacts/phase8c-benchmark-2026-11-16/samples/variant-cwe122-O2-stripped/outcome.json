@@ -1,0 +1,30 @@
+{
+  "binary_sha256": "507a818ac1d2ca7b184fba6614b8a6ef8fb9ce8f54c73d0d41deec7924c536cf",
+  "candidate_sha256": null,
+  "detection": null,
+  "deterministic_claim_withdrawn": false,
+  "disposition": null,
+  "environment": {
+    "oracle_status": "not_run",
+    "runner": null,
+    "tier": "unavailable"
+  },
+  "false_verified": false,
+  "guest_lock_attempts": [],
+  "limitations": [
+    "variant-cwe122-O2-stripped: deterministic engine disposition unsupported: target 'cwe122_bad' could not be resolved to a unique function with a determinable end address"
+  ],
+  "localization": null,
+  "not_run_reason": "variant-cwe122-O2-stripped: deterministic engine disposition unsupported: target 'cwe122_bad' could not be resolved to a unique function with a determinable end address",
+  "regression": null,
+  "root_cause": null,
+  "sample_id": "variant-cwe122-O2-stripped",
+  "semantic_regression": "not_run",
+  "status": "unsupported",
+  "strategy": null,
+  "verification": {
+    "decision": "not_run",
+    "evidence_sha256": null,
+    "reason": "variant-cwe122-O2-stripped: deterministic engine disposition unsupported: target 'cwe122_bad' could not be resolved to a unique function with a determinable end address"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "binary_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+  "candidate_sha256": null,
+  "detection": false,
+  "deterministic_claim_withdrawn": false,
+  "disposition": "analysis_only",
+  "environment": {
+    "oracle_status": "not_run",
+    "runner": null,
+    "tier": "static_only"
+  },
+  "false_verified": false,
+  "guest_lock_attempts": [
+    {
+      "acquired": true,
+      "attempt": 1,
+      "attempted_at_s": 1794756311.4649642,
+      "depth": 1,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.223,
+      "operation": "phase8c_benchmark.repair-cwe125",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "phase8c_benchmark.repair-cwe125",
+      "reentrant": false,
+      "release_depth": 0,
+      "released": true,
+      "released_at_s": 1794756311.475059,
+      "run_id": "phase8c-public.r1.15",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.223
+    }
+  ],
+  "limitations": [
+    "no oracle evidence was supplied; semantic regression was not evaluated (never a pass)",
+    "no patchable copy sink with a recoverable capacity was found",
+    "target-scoped mode: no patchable sink lies inside target cwe125_bad [0x401176,0x4011d2)",
+    "scanned 0 inlined range-check block(s) in the code region",
+    "target-scoped mode: no reviewed capacity-check site inside target cwe125_bad [0x401176,0x4011d2)",
+    "PoC manifest requests are verified only by the unified evidence-profile gate; no deterministic candidate was produced"
+  ],
+  "localization": false,
+  "not_run_reason": null,
+  "regression": null,
+  "root_cause": false,
+  "sample_id": "repair-cwe125",
+  "semantic_regression": "not_run",
+  "status": "executed",
+  "strategy": "none",
+  "verification": {
+    "decision": "not_run",
+    "evidence_sha256": null,
+    "reason": "no candidate bytes exist to independently verify"
+  }
+}

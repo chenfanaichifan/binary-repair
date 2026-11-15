@@ -1,0 +1,629 @@
+{
+  "checks": [
+    {
+      "detail": "original=72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5 candidate=93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+      "id": "identity",
+      "required": true,
+      "status": "passed",
+      "title": "Original/candidate identity and candidate change"
+    },
+    {
+      "detail": "format=elf arch=x86_64 bits=64 endian=little",
+      "id": "container",
+      "required": true,
+      "status": "passed",
+      "title": "Container re-parse and metadata agreement"
+    },
+    {
+      "detail": "plan 05503398723dc60e replay matches the candidate: operations=3 changed_ranges=3 cave=no associated=1",
+      "id": "layout-plan",
+      "required": true,
+      "status": "passed",
+      "title": "Patch-plan replay (layout/cave/associated changes)"
+    },
+    {
+      "detail": "plan replay covers all changed bytes: changed_ranges=3",
+      "id": "action-replay",
+      "required": true,
+      "status": "passed",
+      "title": "Byte-level action replay from raw images"
+    },
+    {
+      "detail": "policy=target_scoped_associated scope=[0x4020d9, 0x4020e9) ops=3 reviewed_sites=2",
+      "id": "target-scope",
+      "required": true,
+      "status": "passed",
+      "title": "Candidate modifications stay inside the declared target scope"
+    },
+    {
+      "detail": "ABI ok for 1 derived block(s) sources=plan.abi_blocks",
+      "id": "abi",
+      "required": true,
+      "status": "passed",
+      "title": "Candidate instruction-block ABI validation"
+    },
+    {
+      "detail": "independent oracle passed (runner=limactl tier=emulated_run cases=8)",
+      "id": "runtime-oracle",
+      "independent": true,
+      "required": true,
+      "status": "passed",
+      "title": "Independent external PoC differential and regression"
+    },
+    {
+      "detail": "one independent external oracle passed",
+      "id": "evidence-completeness",
+      "independent": true,
+      "required": true,
+      "status": "passed",
+      "title": "At least one independent oracle (no generator-only evidence)"
+    },
+    {
+      "detail": "generator identity is distinct and its evidence is excluded from the decision",
+      "id": "independence",
+      "required": true,
+      "status": "passed",
+      "title": "Generator/verifier independence and generator-evidence exclusion"
+    }
+  ],
+  "decision": "verified",
+  "evidence": [
+    {
+      "candidate_sha256": "93e27f2fc543b2c9652efe638adafbf239ba58965b07b5beda3e516817b033a2",
+      "kind": "candidate",
+      "original_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+    },
+    {
+      "candidate": {
+        "arch": "x86_64",
+        "bits": 64,
+        "endian": "little",
+        "format": "elf",
+        "sections": [
+          {
+            "executable": false,
+            "name": "",
+            "offset": 0,
+            "size": 0,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".note.gnu.property",
+            "offset": 624,
+            "size": 48,
+            "va": 4194928
+          },
+          {
+            "executable": false,
+            "name": ".note.gnu.build-id",
+            "offset": 672,
+            "size": 36,
+            "va": 4194976
+          },
+          {
+            "executable": false,
+            "name": ".note.ABI-tag",
+            "offset": 708,
+            "size": 32,
+            "va": 4195012
+          },
+          {
+            "executable": false,
+            "name": ".rela.plt",
+            "offset": 744,
+            "size": 528,
+            "va": 4195048
+          },
+          {
+            "executable": true,
+            "name": ".init",
+            "offset": 4096,
+            "size": 27,
+            "va": 4198400
+          },
+          {
+            "executable": true,
+            "name": ".plt",
+            "offset": 4128,
+            "size": 352,
+            "va": 4198432
+          },
+          {
+            "executable": true,
+            "name": ".text",
+            "offset": 4480,
+            "size": 521504,
+            "va": 4198784
+          },
+          {
+            "executable": true,
+            "name": ".fini",
+            "offset": 525984,
+            "size": 13,
+            "va": 4720288
+          },
+          {
+            "executable": false,
+            "name": ".rodata",
+            "offset": 528384,
+            "size": 117012,
+            "va": 4722688
+          },
+          {
+            "executable": false,
+            "name": "rodata.cst32",
+            "offset": 645408,
+            "size": 96,
+            "va": 4839712
+          },
+          {
+            "executable": false,
+            "name": ".eh_frame",
+            "offset": 645504,
+            "size": 39256,
+            "va": 4839808
+          },
+          {
+            "executable": false,
+            "name": ".gcc_except_table",
+            "offset": 684760,
+            "size": 458,
+            "va": 4879064
+          },
+          {
+            "executable": false,
+            "name": ".tdata",
+            "offset": 687952,
+            "size": 24,
+            "va": 4886352
+          },
+          {
+            "executable": false,
+            "name": ".tbss",
+            "offset": 687976,
+            "size": 64,
+            "va": 4886376
+          },
+          {
+            "executable": false,
+            "name": ".init_array",
+            "offset": 687976,
+            "size": 8,
+            "va": 4886376
+          },
+          {
+            "executable": false,
+            "name": ".fini_array",
+            "offset": 687984,
+            "size": 16,
+            "va": 4886384
+          },
+          {
+            "executable": false,
+            "name": ".data.rel.ro",
+            "offset": 688000,
+            "size": 16328,
+            "va": 4886400
+          },
+          {
+            "executable": false,
+            "name": ".got",
+            "offset": 704328,
+            "size": 144,
+            "va": 4902728
+          },
+          {
+            "executable": false,
+            "name": ".got.plt",
+            "offset": 704488,
+            "size": 200,
+            "va": 4902888
+          },
+          {
+            "executable": false,
+            "name": ".data",
+            "offset": 704704,
+            "size": 6648,
+            "va": 4903104
+          },
+          {
+            "executable": false,
+            "name": ".bss",
+            "offset": 711352,
+            "size": 22408,
+            "va": 4909760
+          },
+          {
+            "executable": false,
+            "name": ".comment",
+            "offset": 711352,
+            "size": 45,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".shstrtab",
+            "offset": 711397,
+            "size": 224,
+            "va": 0
+          }
+        ],
+        "symbols": []
+      },
+      "kind": "container",
+      "original": {
+        "arch": "x86_64",
+        "bits": 64,
+        "endian": "little",
+        "format": "elf",
+        "sections": [
+          {
+            "executable": false,
+            "name": "",
+            "offset": 0,
+            "size": 0,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".note.gnu.property",
+            "offset": 624,
+            "size": 48,
+            "va": 4194928
+          },
+          {
+            "executable": false,
+            "name": ".note.gnu.build-id",
+            "offset": 672,
+            "size": 36,
+            "va": 4194976
+          },
+          {
+            "executable": false,
+            "name": ".note.ABI-tag",
+            "offset": 708,
+            "size": 32,
+            "va": 4195012
+          },
+          {
+            "executable": false,
+            "name": ".rela.plt",
+            "offset": 744,
+            "size": 528,
+            "va": 4195048
+          },
+          {
+            "executable": true,
+            "name": ".init",
+            "offset": 4096,
+            "size": 27,
+            "va": 4198400
+          },
+          {
+            "executable": true,
+            "name": ".plt",
+            "offset": 4128,
+            "size": 352,
+            "va": 4198432
+          },
+          {
+            "executable": true,
+            "name": ".text",
+            "offset": 4480,
+            "size": 521504,
+            "va": 4198784
+          },
+          {
+            "executable": true,
+            "name": ".fini",
+            "offset": 525984,
+            "size": 13,
+            "va": 4720288
+          },
+          {
+            "executable": false,
+            "name": ".rodata",
+            "offset": 528384,
+            "size": 117012,
+            "va": 4722688
+          },
+          {
+            "executable": false,
+            "name": "rodata.cst32",
+            "offset": 645408,
+            "size": 96,
+            "va": 4839712
+          },
+          {
+            "executable": false,
+            "name": ".eh_frame",
+            "offset": 645504,
+            "size": 39256,
+            "va": 4839808
+          },
+          {
+            "executable": false,
+            "name": ".gcc_except_table",
+            "offset": 684760,
+            "size": 458,
+            "va": 4879064
+          },
+          {
+            "executable": false,
+            "name": ".tdata",
+            "offset": 687952,
+            "size": 24,
+            "va": 4886352
+          },
+          {
+            "executable": false,
+            "name": ".tbss",
+            "offset": 687976,
+            "size": 64,
+            "va": 4886376
+          },
+          {
+            "executable": false,
+            "name": ".init_array",
+            "offset": 687976,
+            "size": 8,
+            "va": 4886376
+          },
+          {
+            "executable": false,
+            "name": ".fini_array",
+            "offset": 687984,
+            "size": 16,
+            "va": 4886384
+          },
+          {
+            "executable": false,
+            "name": ".data.rel.ro",
+            "offset": 688000,
+            "size": 16328,
+            "va": 4886400
+          },
+          {
+            "executable": false,
+            "name": ".got",
+            "offset": 704328,
+            "size": 144,
+            "va": 4902728
+          },
+          {
+            "executable": false,
+            "name": ".got.plt",
+            "offset": 704488,
+            "size": 200,
+            "va": 4902888
+          },
+          {
+            "executable": false,
+            "name": ".data",
+            "offset": 704704,
+            "size": 6648,
+            "va": 4903104
+          },
+          {
+            "executable": false,
+            "name": ".bss",
+            "offset": 711352,
+            "size": 22408,
+            "va": 4909760
+          },
+          {
+            "executable": false,
+            "name": ".comment",
+            "offset": 711352,
+            "size": 45,
+            "va": 0
+          },
+          {
+            "executable": false,
+            "name": ".shstrtab",
+            "offset": 711397,
+            "size": 224,
+            "va": 0
+          }
+        ],
+        "symbols": []
+      }
+    },
+    {
+      "actions": [],
+      "claimed_actions": [],
+      "kind": "actions"
+    },
+    {
+      "declared": {
+        "end": 4202729,
+        "policy": "target_scoped_associated",
+        "va": 4202713
+      },
+      "kind": "target-scope",
+      "range": {
+        "end": 4202729,
+        "policy": "target_scoped_associated",
+        "va": 4202713
+      }
+    },
+    {
+      "derivation": {
+        "blocks": [
+          {
+            "arch": "x86_64",
+            "block_sha256": "490b7e317530f602a2b3cdf6c6ce8862a65a8451017703db493cf73e8477790c",
+            "file_offset": 6480,
+            "function": "reviewed-function",
+            "size": 2864,
+            "source": "plan.abi_blocks",
+            "va": 4200784
+          }
+        ],
+        "limitations": [],
+        "problems": [],
+        "status": "ok"
+      },
+      "kind": "abi",
+      "reports": [
+        {
+          "block": {
+            "arch": "x86_64",
+            "block_sha256": "490b7e317530f602a2b3cdf6c6ce8862a65a8451017703db493cf73e8477790c",
+            "file_offset": 6480,
+            "function": "reviewed-function",
+            "size": 2864,
+            "source": "plan.abi_blocks",
+            "va": 4200784
+          },
+          "report": {
+            "fatal": 0,
+            "findings": [],
+            "ok": true
+          }
+        }
+      ]
+    },
+    {
+      "case_count": 8,
+      "errno_signature": "not_run",
+      "kind": "oracle",
+      "limitations": [],
+      "no_input": false,
+      "regression_count": 20,
+      "runner": "limactl",
+      "source": "external-poc-manifest",
+      "status": "pass",
+      "stdout_signature": "matched",
+      "tier": "emulated_run"
+    },
+    {
+      "detail": "one independent external oracle passed",
+      "kind": "evidence-completeness",
+      "ok": true,
+      "sources": [
+        "external-poc-manifest"
+      ]
+    },
+    {
+      "associated_changes": [
+        {
+          "authorization_ref": "authorization:capacity-message:v1 sha256=d5e2ce15164cc5fd25ac8301f31b7349ddcaba427a5b3b8d303a32de1ce77f1e",
+          "kind": "rodata_message",
+          "offset": 538661,
+          "section": ".rodata",
+          "size": 12
+        }
+      ],
+      "cave": null,
+      "changed_ranges": [
+        {
+          "candidate_offset": 8409,
+          "kind": "write",
+          "original_offset": 8409,
+          "size": 14
+        },
+        {
+          "candidate_offset": 8424,
+          "kind": "write",
+          "original_offset": 8424,
+          "size": 1
+        },
+        {
+          "candidate_offset": 538661,
+          "kind": "associated",
+          "original_offset": 538661,
+          "size": 12
+        }
+      ],
+      "kind": "layout-plan",
+      "plan_sha256": "05503398723dc60e7c4cb0f69ca67f6b6cc803ef60b01c4d4cdb8ba00794f0a5",
+      "replay_ok": true
+    },
+    "<repo>/fixtures/poc/marcx-capacity.json"
+  ],
+  "generator": {
+    "agent": null,
+    "generator_id": "deterministic-repair-any/app.services.binary_pipeline",
+    "model": null,
+    "run_id": null
+  },
+  "independence": {
+    "generator_evidence_excluded": true,
+    "ok": true
+  },
+  "layout_evidence": {
+    "abi_blocks": [
+      {
+        "abi_id": "sysv-amd64",
+        "arch": "x86_64",
+        "evidence_sha256": "490b7e317530f602a2b3cdf6c6ce8862a65a8451017703db493cf73e8477790c",
+        "function": "reviewed-function",
+        "size": 2864,
+        "va": 4200784
+      }
+    ],
+    "associated_changes": [
+      {
+        "authorization_ref": "authorization:capacity-message:v1 sha256=d5e2ce15164cc5fd25ac8301f31b7349ddcaba427a5b3b8d303a32de1ce77f1e",
+        "kind": "rodata_message",
+        "offset": 538661,
+        "section": ".rodata",
+        "size": 12
+      }
+    ],
+    "cave": null,
+    "changed_ranges": [
+      {
+        "candidate_offset": 8409,
+        "kind": "write",
+        "original_offset": 8409,
+        "size": 14
+      },
+      {
+        "candidate_offset": 8424,
+        "kind": "write",
+        "original_offset": 8424,
+        "size": 1
+      },
+      {
+        "candidate_offset": 538661,
+        "kind": "associated",
+        "original_offset": 538661,
+        "size": 12
+      }
+    ],
+    "patch_plan_sha256": "05503398723dc60e7c4cb0f69ca67f6b6cc803ef60b01c4d4cdb8ba00794f0a5",
+    "replay_ok": true
+  },
+  "limitations": [
+    "plan replay covers every changed byte; raw-diff bytes not declared by the plan are rejected"
+  ],
+  "oracle_evidence": {
+    "evidence_sha256": "fecf9dc7517cd8b40feeb43d258c51d573fc6eb134dbfc8e9343f8ccf9c18c06",
+    "manifest_sha256": "95474e8c909d13ede2d735655a0b9754f9f302c08e45adeb91c50933d202436b",
+    "runner": "limactl",
+    "status": "executed",
+    "tier": "emulated_run"
+  },
+  "patch_plan_sha256": "05503398723dc60e7c4cb0f69ca67f6b6cc803ef60b01c4d4cdb8ba00794f0a5",
+  "report_sha256": "4e7802fd672a1ca1b9a722dd93eafcf57a239b1dc7626a0a1dabe42300149210",
+  "schema_version": 1,
+  "target": {
+    "arch": "x86_64",
+    "bits": 64,
+    "endian": "little",
+    "format": "elf",
+    "target_scope": {
+      "end": 4202729,
+      "policy": "target_scoped_associated",
+      "va": 4202713
+    },
+    "target_sha256": "72fb53cbac09f576e037f730b07a7850ce8e129fb8c9a72c2c707c121d54b0d5"
+  },
+  "verifier": {
+    "verifier_id": "independent-verifier/1",
+    "version": "1"
+  }
+}

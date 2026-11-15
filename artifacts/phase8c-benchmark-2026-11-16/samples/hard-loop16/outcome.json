@@ -1,0 +1,62 @@
+{
+  "binary_sha256": "886125ec5dd28501743bc59660418ab460ac745864f45077c905d7a67ea92364",
+  "candidate_sha256": null,
+  "detection": false,
+  "deterministic_claim_withdrawn": false,
+  "disposition": "analysis_only",
+  "environment": {
+    "oracle_status": "not_run",
+    "runner": null,
+    "tier": "static_only"
+  },
+  "false_verified": false,
+  "guest_lock_attempts": [
+    {
+      "acquired": true,
+      "attempt": 1,
+      "attempted_at_s": 1794756221.633609,
+      "depth": 1,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.21,
+      "operation": "phase8c_benchmark.hard-loop16",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "phase8c_benchmark.hard-loop16",
+      "reentrant": false,
+      "release_depth": 0,
+      "released": true,
+      "released_at_s": 1794756224.2875059,
+      "run_id": "phase8c-public.r1.1",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.21
+    }
+  ],
+  "limitations": [
+    "no oracle evidence was supplied; semantic regression was not evaluated (never a pass)",
+    "target-scoped mode: no patchable sink lies inside target vuln_loop16 [0x102cf74,0x102cf96)",
+    "scanned 0 inlined range-check block(s) in the code region",
+    "target-scoped mode: no reviewed capacity-check site inside target vuln_loop16 [0x102cf74,0x102cf96)",
+    "PoC manifest requests are verified only by the unified evidence-profile gate; no deterministic candidate was produced"
+  ],
+  "localization": false,
+  "not_run_reason": null,
+  "regression": null,
+  "root_cause": false,
+  "sample_id": "hard-loop16",
+  "semantic_regression": "not_run",
+  "status": "executed",
+  "strategy": "none",
+  "verification": {
+    "decision": "not_run",
+    "evidence_sha256": null,
+    "reason": "no candidate bytes exist to independently verify"
+  }
+}

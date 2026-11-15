@@ -1,0 +1,28 @@
+{
+  "binary_sha256": "a739546885fcb31ef5936bcab3270bbb597ffffe60eb1c10c107a858554aad0d",
+  "candidate_sha256": null,
+  "detection": true,
+  "deterministic_claim_withdrawn": false,
+  "disposition": "analysis_only",
+  "environment": {
+    "oracle_status": "not_run",
+    "runner": null,
+    "tier": "static_only"
+  },
+  "false_verified": false,
+  "guest_lock_attempts": [],
+  "limitations": [],
+  "localization": null,
+  "not_run_reason": null,
+  "regression": null,
+  "root_cause": null,
+  "sample_id": "stack-strcpy-x86",
+  "semantic_regression": "not_run",
+  "status": "executed",
+  "strategy": "none",
+  "verification": {
+    "decision": "not_run",
+    "evidence_sha256": null,
+    "reason": "analysis-only sample: no candidate is produced"
+  }
+}

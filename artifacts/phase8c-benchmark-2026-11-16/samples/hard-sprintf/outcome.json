@@ -1,0 +1,62 @@
+{
+  "binary_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+  "candidate_sha256": null,
+  "detection": false,
+  "deterministic_claim_withdrawn": false,
+  "disposition": "analysis_only",
+  "environment": {
+    "oracle_status": "not_run",
+    "runner": null,
+    "tier": "static_only"
+  },
+  "false_verified": false,
+  "guest_lock_attempts": [
+    {
+      "acquired": true,
+      "attempt": 1,
+      "attempted_at_s": 1794756239.777936,
+      "depth": 1,
+      "instance": "binaryrepair",
+      "lease_acquired": true,
+      "limactl": {
+        "basename": "limactl",
+        "instance": "binaryrepair",
+        "tool": "/opt/homebrew/bin/limactl"
+      },
+      "lock_wait_ms": 0.239,
+      "operation": "phase8c_benchmark.hard-sprintf",
+      "pid": 48088,
+      "prior_lease_pid": null,
+      "prior_lease_stale": false,
+      "purpose": "phase8c_benchmark.hard-sprintf",
+      "reentrant": false,
+      "release_depth": 0,
+      "released": true,
+      "released_at_s": 1794756242.3017752,
+      "run_id": "phase8c-public.r1.8",
+      "timeout": false,
+      "ttl_s": 900.0,
+      "wait_ms": 0.239
+    }
+  ],
+  "limitations": [
+    "no oracle evidence was supplied; semantic regression was not evaluated (never a pass)",
+    "target-scoped mode: no patchable sink lies inside target sprintf_bad [0x102cbe0,0x102cc40)",
+    "scanned 0 inlined range-check block(s) in the code region",
+    "target-scoped mode: no reviewed capacity-check site inside target sprintf_bad [0x102cbe0,0x102cc40)",
+    "PoC manifest requests are verified only by the unified evidence-profile gate; no deterministic candidate was produced"
+  ],
+  "localization": false,
+  "not_run_reason": null,
+  "regression": null,
+  "root_cause": false,
+  "sample_id": "hard-sprintf",
+  "semantic_regression": "not_run",
+  "status": "executed",
+  "strategy": "none",
+  "verification": {
+    "decision": "not_run",
+    "evidence_sha256": null,
+    "reason": "no candidate bytes exist to independently verify"
+  }
+}

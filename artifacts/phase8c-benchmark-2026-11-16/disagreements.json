@@ -1,0 +1,9 @@
+[
+  {
+    "claim_withdrawn": true,
+    "deterministic_verified": true,
+    "independent_decision": "rejected",
+    "independent_reason": "fail-closed: only an all-required-passed result with a passing independent oracle can be verified; guard candidate appends 606 cave/PT_LOAD bytes at file offset 15816; the call redirect and header/program-header updates are declared as reviewed_site/header_update operations",
+    "sample_id": "heap-malloc"
+  }
+]
