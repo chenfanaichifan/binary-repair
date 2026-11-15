@@ -291,26 +291,34 @@ def test_retired_setup_page_redirects_and_job_creation_still_works():
     assert resumed.status_code == 200
     assert f'data-job-id="{job_id}"' in resumed.text
 
-def test_state_panel_can_collapse_into_a_single_column():
-    """The side panel folds away so the conversation gets the full width."""
+def test_state_panel_stays_wide_and_focus_mode_expands_the_conversation():
+    """The state panel no longer folds; "专注对话" buys the width instead.
+
+    M2's 2026-11-12 workbench refresh removed the collapse button, so the
+    console widens the conversation by hiding the header and tabs rather than
+    by collapsing the state panel. The panel keeps its own width and resizer.
+    """
     page = client.get("/agent/new")
     assert page.status_code == 200
-    assert 'data-testid="agent-side-toggle"' in page.text
-    assert 'aria-controls="agent-side"' in page.text
-    assert 'aria-expanded="true"' in page.text
-    assert "收起状态面板" in page.text
+    assert 'data-testid="agent-side-toggle"' not in page.text
+    assert "收起状态面板" not in page.text
     assert 'id="agent-side"' in page.text
-    # The toggle sits in the row, outside the tablist, so it is not a tab.
+    assert 'id="agent-side-resizer"' in page.text
+    assert 'data-testid="agent-focus-toggle"' in page.text
+    assert 'id="agent-focus-exit"' in page.text
+    assert 'aria-pressed="false"' in page.text
+    # The focus toggle sits in the row, outside the tablist, so it is not a tab.
     assert AGENT_TEMPLATE.index('class="agent-tabs-row"') < AGENT_TEMPLATE.index(
-        'id="agent-side-toggle"'
+        'id="agent-focus-toggle"'
     )
     assert AGENT_TEMPLATE.index('class="agent-tabs"') < AGENT_TEMPLATE.index(
-        'id="agent-side-toggle"'
+        'id="agent-focus-toggle"'
     )
 
-    assert "br.agent.side.collapsed" in AGENT_JS
-    assert "is-side-collapsed" in AGENT_JS
-    assert "aria-expanded" in AGENT_JS
+    assert "br.agent.focus" in AGENT_JS
+    assert "agent-focus" in AGENT_JS
+    assert "agent-focus-toggle" in AGENT_JS
+    assert "aria-pressed" in AGENT_JS
 
     css = (BASE_DIR / "app" / "static" / "css" / "agent.css").read_text(encoding="utf-8")
     collapsed = css.split(".agent-body.is-side-collapsed", 1)[1]
