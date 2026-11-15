@@ -1,0 +1,37 @@
+{
+  "fixture_sha256": "c74266a421fa3e61f33b1669d3ae22640672a5136cb22871326ab3a5ad16a56d",
+  "target": "cwe134_bad",
+  "poc": [
+    {
+      "id": "cwe134-percent-s",
+      "argv": [
+        "%s"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "cwe134-hi",
+      "argv": [
+        "hi"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "hi"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "hi"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "format": "elf",
+  "arch": "x86_64"
+}

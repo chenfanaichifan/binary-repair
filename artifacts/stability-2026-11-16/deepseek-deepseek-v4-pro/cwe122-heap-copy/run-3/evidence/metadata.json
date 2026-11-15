@@ -1,0 +1,106 @@
+{
+  "schema_version": 2,
+  "kind": "repair_evidence",
+  "source_run": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe122-heap-copy/run-3",
+  "provided_at": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-v4-pro",
+    "status": "ok"
+  },
+  "funnel": {
+    "VERIFIED": 1,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "ai_verified": 1,
+  "reference_note": "reference fixes are separate and are not AI evidence",
+  "manifest": {
+    "schema_version": 1,
+    "run_kind": "hard_benchmark",
+    "client": "real",
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-v4-pro",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-v4-pro",
+        "configured": true,
+        "errors": []
+      },
+      "model_configured": "deepseek-v4-pro",
+      "status": "ok"
+    },
+    "case_ids": [
+      "cwe122-heap-copy"
+    ],
+    "model": "deepseek-v4-pro",
+    "repair_plan": true,
+    "abi_strict": true,
+    "funnel": {
+      "VERIFIED": 1,
+      "PLAN_INVALID": 0,
+      "ASSEMBLY_REJECTED": 0,
+      "ABI_REJECTED": 0,
+      "INJECTION_FAILED": 0,
+      "NO_CANDIDATE": 0,
+      "NATIVE_FAILED": 0,
+      "SECURITY_FAILED": 0,
+      "REGRESSION_FAILED": 0
+    },
+    "cases": [
+      {
+        "case_id": "cwe122-heap-copy",
+        "input_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+        "candidate_sha256": "ac46f1c53f5aef2a55b05e7521c11067b66d32bd51da45d3481193f28928f25b",
+        "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe122-heap-copy/run-3/candidates/cwe122-heap-copy.bin",
+        "repair_status": "VERIFIED",
+        "gate": "pass"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "cwe122-heap-copy",
+      "input_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+      "gate": "pass",
+      "repair_status": "VERIFIED",
+      "candidate_sha256": "ac46f1c53f5aef2a55b05e7521c11067b66d32bd51da45d3481193f28928f25b",
+      "candidate_file": "candidates/cwe122-heap-copy.bin",
+      "native_failure": null,
+      "plan_status": "valid",
+      "attempts": 1
+    }
+  ],
+  "hashes": {
+    "summary.json": "46c466d1409c6d47898e84f0b7808c866b4f6be77dc1aa418f6252680887de8d",
+    "run-manifest.json": "222cf5d2062e7f4980ff996195540b0ed3aaf7dc95956686eb8b74dd11d5ed72"
+  }
+}

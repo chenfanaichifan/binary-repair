@@ -1,0 +1,2764 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "cwe125-oob-read",
+        "binary_id": "repair-cwe125",
+        "route": "asm_repair",
+        "binary": "fixtures/repair-benchmark/CWE125_oob_read/original.elf",
+        "target": "cwe125_bad",
+        "capacity": 16,
+        "arch": "x86_64",
+        "sink_kind": "indexed_read",
+        "poc": "fixtures/poc/repair-cwe125.json",
+        "reference_fix": "fixtures/repair-benchmark/CWE125_oob_read/reference_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "OOB read: index unchecked for dst[16]; block out-of-range read and preserve valid output",
+        "family": "CWE-125",
+        "cwe": "CWE-125",
+        "required_verification": [
+          "security",
+          "regression"
+        ],
+        "split": "dev"
+      },
+      "input_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+      "baseline": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 257,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 257,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target cwe125_bad [0x401176,0x4011d2)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "cwe125_bad",
+          "va": 4198774,
+          "end": 4198866,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 11,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "not_attempted",
+        "disposition": "analysis_only",
+        "verified": false,
+        "elapsed_ms": 0
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-flash",
+              "status": "not_attempted",
+              "latency_ms": 3593,
+              "plan_sha256": "9ab5d9a8f5769e2a2acf4bae034d2363bc4feffa9171b88e4ea45c9a03e11221",
+              "error": null,
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 1175,
+                "completion_tokens": 574,
+                "total_tokens": 1749,
+                "latency_ms": 3591
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true
+            },
+            "raw_plan": {
+              "schema_version": 2,
+              "vulnerability": {
+                "type": "out-of-bounds read",
+                "cwe": "CWE-125",
+                "root_cause": "The value returned by atoi() is used directly as an index into the 16-byte stack buffer at [rbp-0x20] without any bounds check, so a negative or >=16 index causes an out-of-bounds byte read that is then passed to printf."
+              },
+              "program_context": {
+                "function": "cwe125_bad",
+                "addresses": [
+                  "0x401176",
+                  "0x4011d1"
+                ],
+                "registers": [
+                  "rdi",
+                  "rax",
+                  "rdx",
+                  "rbp",
+                  "rsp",
+                  "eax",
+                  "esi",
+                  "edi"
+                ],
+                "memory": [
+                  "[rbp-0x28] (saved arg pointer)",
+                  "[rbp-0x20..rbp-0x11] (16-byte table)",
+                  "[rbp-4] (parsed index)"
+                ],
+                "capacity": 16,
+                "allowed_calls": [
+                  {
+                    "name": "printf",
+                    "target_va": "0x401060"
+                  },
+                  {
+                    "name": "atoi",
+                    "target_va": "0x401080"
+                  }
+                ]
+              },
+              "security_invariants": [
+                "The index used to read the table must satisfy 0 <= index < 16.",
+                "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret."
+              ],
+              "repair": {
+                "strategy": "After atoi(), validate the returned index; if it is negative or >=16, skip the table read and the printf call (block the out-of-range read) while preserving normal output for valid indices.",
+                "failure_behavior": "On out-of-range index, perform no table read and no printf; return normally without leaking adjacent stack memory.",
+                "expected_behavior": "For 0 <= index < 16, print the same character as the original via printf with format at 0x402004; for any other index, produce no output and return."
+              },
+              "abi": {
+                "architecture": "x86_64",
+                "calling_convention": "SysV"
+              },
+              "verification": {
+                "security_conditions": [
+                  "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                  "No call other than 0x401060 and 0x401080 is emitted.",
+                  "Function ends with ret and preserves callee-saved registers per SysV."
+                ],
+                "regression_conditions": [
+                  "Valid inputs 0..15 produce identical printf output to the original.",
+                  "Return value/stack cleanup (leave; ret) unchanged."
+                ]
+              },
+              "confidence": "high",
+              "evidence_refs": [
+                "static.target",
+                "static.disassembly",
+                "static.abi",
+                "poc.input"
+              ]
+            },
+            "plan": {
+              "schema_version": 2,
+              "vulnerability": {
+                "type": "out-of-bounds read",
+                "root_cause": "The value returned by atoi() is used directly as an index into the 16-byte stack buffer at [rbp-0x20] without any bounds check, so a negative or >=16 index causes an out-of-bounds byte read that is then passed to printf.",
+                "cwe": "CWE-125"
+              },
+              "program_context": {
+                "function": "cwe125_bad",
+                "addresses": [
+                  "0x401176",
+                  "0x4011d1"
+                ],
+                "registers": [
+                  "rdi",
+                  "rax",
+                  "rdx",
+                  "rbp",
+                  "rsp",
+                  "eax",
+                  "esi",
+                  "edi"
+                ],
+                "memory": [
+                  "[rbp-0x28] (saved arg pointer)",
+                  "[rbp-0x20..rbp-0x11] (16-byte table)",
+                  "[rbp-4] (parsed index)"
+                ],
+                "capacity": 16,
+                "allowed_calls": [
+                  "printf",
+                  "atoi"
+                ]
+              },
+              "security_invariants": [
+                "The index used to read the table must satisfy 0 <= index < 16.",
+                "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret."
+              ],
+              "repair": {
+                "strategy": "bounds_check",
+                "failure_behavior": "On out-of-range index, perform no table read and no printf; return normally without leaking adjacent stack memory.",
+                "expected_behavior": "For 0 <= index < 16, print the same character as the original via printf with format at 0x402004; for any other index, produce no output and return."
+              },
+              "abi": {
+                "architecture": "x86_64",
+                "calling_convention": "sysv_amd64"
+              },
+              "verification": {
+                "security_conditions": [
+                  "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                  "No call other than 0x401060 and 0x401080 is emitted.",
+                  "Function ends with ret and preserves callee-saved registers per SysV."
+                ],
+                "regression_conditions": [
+                  "Valid inputs 0..15 produce identical printf output to the original.",
+                  "Return value/stack cleanup (leave; ret) unchanged."
+                ],
+                "required_inputs": []
+              },
+              "confidence": "high",
+              "evidence_refs": [
+                "static.target",
+                "static.disassembly",
+                "static.abi",
+                "poc.input"
+              ]
+            },
+            "plan_sha256": "a014d34483b3ac05a70f3db1df638d7040eb77d02ce1da6cee50812e8632e18f",
+            "plan_error": "",
+            "error": null,
+            "allowed_calls": [
+              {
+                "name": "printf",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "attempts": [
+              {
+                "attempt": 1,
+                "status": "valid",
+                "error": "",
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "usage": {
+                  "prompt_tokens": 1175,
+                  "completion_tokens": 574,
+                  "total_tokens": 1749,
+                  "latency_ms": 3591
+                },
+                "latency_ms": 3593,
+                "raw_plan": {
+                  "schema_version": 2,
+                  "vulnerability": {
+                    "type": "out-of-bounds read",
+                    "cwe": "CWE-125",
+                    "root_cause": "The value returned by atoi() is used directly as an index into the 16-byte stack buffer at [rbp-0x20] without any bounds check, so a negative or >=16 index causes an out-of-bounds byte read that is then passed to printf."
+                  },
+                  "program_context": {
+                    "function": "cwe125_bad",
+                    "addresses": [
+                      "0x401176",
+                      "0x4011d1"
+                    ],
+                    "registers": [
+                      "rdi",
+                      "rax",
+                      "rdx",
+                      "rbp",
+                      "rsp",
+                      "eax",
+                      "esi",
+                      "edi"
+                    ],
+                    "memory": [
+                      "[rbp-0x28] (saved arg pointer)",
+                      "[rbp-0x20..rbp-0x11] (16-byte table)",
+                      "[rbp-4] (parsed index)"
+                    ],
+                    "capacity": 16,
+                    "allowed_calls": [
+                      {
+                        "name": "printf",
+                        "target_va": "0x401060"
+                      },
+                      {
+                        "name": "atoi",
+                        "target_va": "0x401080"
+                      }
+                    ]
+                  },
+                  "security_invariants": [
+                    "The index used to read the table must satisfy 0 <= index < 16.",
+                    "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                    "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret."
+                  ],
+                  "repair": {
+                    "strategy": "After atoi(), validate the returned index; if it is negative or >=16, skip the table read and the printf call (block the out-of-range read) while preserving normal output for valid indices.",
+                    "failure_behavior": "On out-of-range index, perform no table read and no printf; return normally without leaking adjacent stack memory.",
+                    "expected_behavior": "For 0 <= index < 16, print the same character as the original via printf with format at 0x402004; for any other index, produce no output and return."
+                  },
+                  "abi": {
+                    "architecture": "x86_64",
+                    "calling_convention": "SysV"
+                  },
+                  "verification": {
+                    "security_conditions": [
+                      "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                      "No call other than 0x401060 and 0x401080 is emitted.",
+                      "Function ends with ret and preserves callee-saved registers per SysV."
+                    ],
+                    "regression_conditions": [
+                      "Valid inputs 0..15 produce identical printf output to the original.",
+                      "Return value/stack cleanup (leave; ret) unchanged."
+                    ]
+                  },
+                  "confidence": "high",
+                  "evidence_refs": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ]
+                }
+              }
+            ],
+            "elapsed_ms": 3596
+          },
+          "model": "deepseek-flash",
+          "model_requested": "deepseek-flash",
+          "status": "accepted",
+          "error": null,
+          "plan_status": "valid",
+          "plan_sha256": "a014d34483b3ac05a70f3db1df638d7040eb77d02ce1da6cee50812e8632e18f",
+          "usage": {
+            "prompt_tokens": 1674,
+            "completion_tokens": 278,
+            "total_tokens": 1952,
+            "latency_ms": 2625
+          },
+          "latency_ms": 2626,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "059efe96a3acf7dffe2c7b88cc8c321dd8e98346bba25bb12ef38de36153bbe6",
+          "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmovabs rax, 0x3736353433323130\nmovabs rdx, 0x6665646362613938\nmov qword ptr [rbp - 0x20], rax\nmov qword ptr [rbp - 0x18], rdx\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Ldone\ncmp eax, 16\njge .Ldone\ncdqe\nmovzx eax, byte ptr [rbp + rax - 0x20]\nmovsx eax, al\nmov esi, eax\nmov edi, 0x402004\nmov eax, 0\ncall 0x401060\n.Ldone:\nnop\nleave\nret\n",
+          "assembly_attempts": [
+            {
+              "attempt": 1,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "059efe96a3acf7dffe2c7b88cc8c321dd8e98346bba25bb12ef38de36153bbe6",
+              "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmovabs rax, 0x3736353433323130\nmovabs rdx, 0x6665646362613938\nmov qword ptr [rbp - 0x20], rax\nmov qword ptr [rbp - 0x18], rdx\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Ldone\ncmp eax, 16\njge .Ldone\ncdqe\nmovzx eax, byte ptr [rbp + rax - 0x20]\nmovsx eax, al\nmov esi, eax\nmov edi, 0x402004\nmov eax, 0\ncall 0x401060\n.Ldone:\nnop\nleave\nret\n",
+              "validation_error": null,
+              "validation_error_class": null,
+              "diagnostics": [],
+              "usage": {
+                "prompt_tokens": 1674,
+                "completion_tokens": 278,
+                "total_tokens": 1952,
+                "latency_ms": 2625
+              },
+              "latency_ms": 2626,
+              "model": "deepseek-flash",
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true,
+              "request_id": null
+            }
+          ],
+          "validation_error": null,
+          "validation_error_class": null,
+          "allowed_calls": [
+            {
+              "name": "printf",
+              "target_va": "0x401060",
+              "source": "import"
+            },
+            {
+              "name": "atoi",
+              "target_va": "0x401080",
+              "source": "import"
+            }
+          ],
+          "target_in_scope": true,
+          "target_scope_check": "passed",
+          "target_scope": {
+            "name": "cwe125_bad",
+            "va": 4198774,
+            "end": 4198866,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": true,
+          "injection": {
+            "target_va": "0x401176",
+            "cave_va": "0x405000",
+            "method": "new-pt-load",
+            "code_bytes": 101,
+            "code_hex": "f30f1efa554889e54883ec3048897dd848b8303132333435363748ba3839616263646566488945e0488955e8488b45d84889c7e8000000008945fc8b45fc85c0782083f8107d1b48980fb64405e00fbec089c6bf04204000b800000000e80000000090c9c3",
+            "code_disassembly": [
+              {
+                "address": "0x0",
+                "bytes": "f30f1efa",
+                "mnemonic": "endbr64",
+                "operands": ""
+              },
+              {
+                "address": "0x4",
+                "bytes": "55",
+                "mnemonic": "push",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x5",
+                "bytes": "4889e5",
+                "mnemonic": "mov",
+                "operands": "rbp, rsp"
+              },
+              {
+                "address": "0x8",
+                "bytes": "4883ec30",
+                "mnemonic": "sub",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0xc",
+                "bytes": "48897dd8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x28], rdi"
+              },
+              {
+                "address": "0x10",
+                "bytes": "48b83031323334353637",
+                "mnemonic": "movabs",
+                "operands": "rax, 0x3736353433323130"
+              },
+              {
+                "address": "0x1a",
+                "bytes": "48ba3839616263646566",
+                "mnemonic": "movabs",
+                "operands": "rdx, 0x6665646362613938"
+              },
+              {
+                "address": "0x24",
+                "bytes": "488945e0",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x20], rax"
+              },
+              {
+                "address": "0x28",
+                "bytes": "488955e8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x18], rdx"
+              },
+              {
+                "address": "0x2c",
+                "bytes": "488b45d8",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 0x28]"
+              },
+              {
+                "address": "0x30",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x33",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x38"
+              },
+              {
+                "address": "0x38",
+                "bytes": "8945fc",
+                "mnemonic": "mov",
+                "operands": "dword ptr [rbp - 4], eax"
+              },
+              {
+                "address": "0x3b",
+                "bytes": "8b45fc",
+                "mnemonic": "mov",
+                "operands": "eax, dword ptr [rbp - 4]"
+              },
+              {
+                "address": "0x3e",
+                "bytes": "85c0",
+                "mnemonic": "test",
+                "operands": "eax, eax"
+              },
+              {
+                "address": "0x40",
+                "bytes": "7820",
+                "mnemonic": "js",
+                "operands": "0x62"
+              },
+              {
+                "address": "0x42",
+                "bytes": "83f810",
+                "mnemonic": "cmp",
+                "operands": "eax, 0x10"
+              },
+              {
+                "address": "0x45",
+                "bytes": "7d1b",
+                "mnemonic": "jge",
+                "operands": "0x62"
+              },
+              {
+                "address": "0x47",
+                "bytes": "4898",
+                "mnemonic": "cdqe",
+                "operands": ""
+              },
+              {
+                "address": "0x49",
+                "bytes": "0fb64405e0",
+                "mnemonic": "movzx",
+                "operands": "eax, byte ptr [rbp + rax - 0x20]"
+              },
+              {
+                "address": "0x4e",
+                "bytes": "0fbec0",
+                "mnemonic": "movsx",
+                "operands": "eax, al"
+              },
+              {
+                "address": "0x51",
+                "bytes": "89c6",
+                "mnemonic": "mov",
+                "operands": "esi, eax"
+              },
+              {
+                "address": "0x53",
+                "bytes": "bf04204000",
+                "mnemonic": "mov",
+                "operands": "edi, 0x402004"
+              },
+              {
+                "address": "0x58",
+                "bytes": "b800000000",
+                "mnemonic": "mov",
+                "operands": "eax, 0"
+              },
+              {
+                "address": "0x5d",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x62"
+              },
+              {
+                "address": "0x62",
+                "bytes": "90",
+                "mnemonic": "nop",
+                "operands": ""
+              },
+              {
+                "address": "0x63",
+                "bytes": "c9",
+                "mnemonic": "leave",
+                "operands": ""
+              },
+              {
+                "address": "0x64",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              }
+            ],
+            "assembly_sha256": "b8715d24f6aefc29dc2220f1a22807d12e9ea5816d3230dca343605ac2683945",
+            "call_targets": [
+              {
+                "name": "printf",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "call_relocations": 2,
+            "abi": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          "candidate": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "runner": "limactl",
+            "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+            "poc": {
+              "schema_version": 1,
+              "status": "pass",
+              "runner": "limactl",
+              "tier": "emulated_run",
+              "stdout_signature": "matched",
+              "errno_signature": "not_run",
+              "errno_probe": "",
+              "no_input": false,
+              "original_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+              "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+              "poc": [
+                {
+                  "case_id": "cwe125-high-index",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe125-high-index",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "",
+                  "stderr": "",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "regression": [
+                {
+                  "case_id": "cwe125-index-5",
+                  "kind": "regression",
+                  "executable": "original",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "5\n",
+                  "stderr": "",
+                  "stdout_hex": "350a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe125-index-5",
+                  "kind": "regression",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "5\n",
+                  "stderr": "",
+                  "stdout_hex": "350a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "limitations": []
+            },
+            "repair_status": "VERIFIED",
+            "candidate_artifact": "/tmp/p13b-cwe125-oob-read/candidates/cwe125-oob-read.bin"
+          },
+          "elapsed_ms": 5605,
+          "evidence_links": {
+            "schema_version": 1,
+            "spec_version": 2,
+            "plan_sha256": "a014d34483b3ac05a70f3db1df638d7040eb77d02ce1da6cee50812e8632e18f",
+            "assembly_sha256": "059efe96a3acf7dffe2c7b88cc8c321dd8e98346bba25bb12ef38de36153bbe6",
+            "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+            "gate": "pass",
+            "links": [
+              {
+                "claim": "The index used to read the table must satisfy 0 <= index < 16.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "No call other than 0x401060 and 0x401080 is emitted.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "Function ends with ret and preserves callee-saved registers per SysV.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              }
+            ],
+            "native_feedback_class": null
+          }
+        }
+      ],
+      "injection": {
+        "target_va": "0x401176",
+        "cave_va": "0x405000",
+        "method": "new-pt-load",
+        "code_bytes": 101,
+        "code_hex": "f30f1efa554889e54883ec3048897dd848b8303132333435363748ba3839616263646566488945e0488955e8488b45d84889c7e8000000008945fc8b45fc85c0782083f8107d1b48980fb64405e00fbec089c6bf04204000b800000000e80000000090c9c3",
+        "code_disassembly": [
+          {
+            "address": "0x0",
+            "bytes": "f30f1efa",
+            "mnemonic": "endbr64",
+            "operands": ""
+          },
+          {
+            "address": "0x4",
+            "bytes": "55",
+            "mnemonic": "push",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x5",
+            "bytes": "4889e5",
+            "mnemonic": "mov",
+            "operands": "rbp, rsp"
+          },
+          {
+            "address": "0x8",
+            "bytes": "4883ec30",
+            "mnemonic": "sub",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0xc",
+            "bytes": "48897dd8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x28], rdi"
+          },
+          {
+            "address": "0x10",
+            "bytes": "48b83031323334353637",
+            "mnemonic": "movabs",
+            "operands": "rax, 0x3736353433323130"
+          },
+          {
+            "address": "0x1a",
+            "bytes": "48ba3839616263646566",
+            "mnemonic": "movabs",
+            "operands": "rdx, 0x6665646362613938"
+          },
+          {
+            "address": "0x24",
+            "bytes": "488945e0",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x20], rax"
+          },
+          {
+            "address": "0x28",
+            "bytes": "488955e8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x18], rdx"
+          },
+          {
+            "address": "0x2c",
+            "bytes": "488b45d8",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 0x28]"
+          },
+          {
+            "address": "0x30",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x33",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x38"
+          },
+          {
+            "address": "0x38",
+            "bytes": "8945fc",
+            "mnemonic": "mov",
+            "operands": "dword ptr [rbp - 4], eax"
+          },
+          {
+            "address": "0x3b",
+            "bytes": "8b45fc",
+            "mnemonic": "mov",
+            "operands": "eax, dword ptr [rbp - 4]"
+          },
+          {
+            "address": "0x3e",
+            "bytes": "85c0",
+            "mnemonic": "test",
+            "operands": "eax, eax"
+          },
+          {
+            "address": "0x40",
+            "bytes": "7820",
+            "mnemonic": "js",
+            "operands": "0x62"
+          },
+          {
+            "address": "0x42",
+            "bytes": "83f810",
+            "mnemonic": "cmp",
+            "operands": "eax, 0x10"
+          },
+          {
+            "address": "0x45",
+            "bytes": "7d1b",
+            "mnemonic": "jge",
+            "operands": "0x62"
+          },
+          {
+            "address": "0x47",
+            "bytes": "4898",
+            "mnemonic": "cdqe",
+            "operands": ""
+          },
+          {
+            "address": "0x49",
+            "bytes": "0fb64405e0",
+            "mnemonic": "movzx",
+            "operands": "eax, byte ptr [rbp + rax - 0x20]"
+          },
+          {
+            "address": "0x4e",
+            "bytes": "0fbec0",
+            "mnemonic": "movsx",
+            "operands": "eax, al"
+          },
+          {
+            "address": "0x51",
+            "bytes": "89c6",
+            "mnemonic": "mov",
+            "operands": "esi, eax"
+          },
+          {
+            "address": "0x53",
+            "bytes": "bf04204000",
+            "mnemonic": "mov",
+            "operands": "edi, 0x402004"
+          },
+          {
+            "address": "0x58",
+            "bytes": "b800000000",
+            "mnemonic": "mov",
+            "operands": "eax, 0"
+          },
+          {
+            "address": "0x5d",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x62"
+          },
+          {
+            "address": "0x62",
+            "bytes": "90",
+            "mnemonic": "nop",
+            "operands": ""
+          },
+          {
+            "address": "0x63",
+            "bytes": "c9",
+            "mnemonic": "leave",
+            "operands": ""
+          },
+          {
+            "address": "0x64",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          }
+        ],
+        "assembly_sha256": "b8715d24f6aefc29dc2220f1a22807d12e9ea5816d3230dca343605ac2683945",
+        "call_targets": [
+          {
+            "name": "printf",
+            "target_va": "0x401060",
+            "source": "import"
+          },
+          {
+            "name": "atoi",
+            "target_va": "0x401080",
+            "source": "import"
+          }
+        ],
+        "call_relocations": 2,
+        "abi": {
+          "ok": true,
+          "fatal": 0,
+          "findings": []
+        }
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "limactl",
+        "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "stdout_signature": "matched",
+          "errno_signature": "not_run",
+          "errno_probe": "",
+          "no_input": false,
+          "original_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+          "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+          "poc": [
+            {
+              "case_id": "cwe125-high-index",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe125-high-index",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "cwe125-index-5",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "5\n",
+              "stderr": "",
+              "stdout_hex": "350a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe125-index-5",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "5\n",
+              "stderr": "",
+              "stdout_hex": "350a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "limitations": []
+        },
+        "repair_status": "VERIFIED",
+        "candidate_artifact": "/tmp/p13b-cwe125-oob-read/candidates/cwe125-oob-read.bin"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "status": "accepted",
+        "latency_ms": 2626,
+        "plan_sha256": "c9dce227b20d9b497e85dc803b88bf24a47d45e28d51b3eb1679e018298da5fb",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1674,
+          "completion_tokens": 278,
+          "total_tokens": 1952,
+          "latency_ms": 2625
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-flash",
+        "model_identity_ok": true
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1674,
+          "completion_tokens": 278,
+          "total_tokens": 1952,
+          "latency_ms": 2625
+        },
+        "request_id": null,
+        "elapsed_ms": 5605,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe125_bad",
+          "va": 4198774,
+          "end": 4198866,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 3593,
+                "plan_sha256": "9ab5d9a8f5769e2a2acf4bae034d2363bc4feffa9171b88e4ea45c9a03e11221",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1175,
+                  "completion_tokens": 574,
+                  "total_tokens": 1749,
+                  "latency_ms": 3591
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "out-of-bounds read",
+                  "cwe": "CWE-125",
+                  "root_cause": "The value returned by atoi() is used directly as an index into the 16-byte stack buffer at [rbp-0x20] without any bounds check, so a negative or >=16 index causes an out-of-bounds byte read that is then passed to printf."
+                },
+                "program_context": {
+                  "function": "cwe125_bad",
+                  "addresses": [
+                    "0x401176",
+                    "0x4011d1"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rax",
+                    "rdx",
+                    "rbp",
+                    "rsp",
+                    "eax",
+                    "esi",
+                    "edi"
+                  ],
+                  "memory": [
+                    "[rbp-0x28] (saved arg pointer)",
+                    "[rbp-0x20..rbp-0x11] (16-byte table)",
+                    "[rbp-4] (parsed index)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    {
+                      "name": "printf",
+                      "target_va": "0x401060"
+                    },
+                    {
+                      "name": "atoi",
+                      "target_va": "0x401080"
+                    }
+                  ]
+                },
+                "security_invariants": [
+                  "The index used to read the table must satisfy 0 <= index < 16.",
+                  "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                  "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret."
+                ],
+                "repair": {
+                  "strategy": "After atoi(), validate the returned index; if it is negative or >=16, skip the table read and the printf call (block the out-of-range read) while preserving normal output for valid indices.",
+                  "failure_behavior": "On out-of-range index, perform no table read and no printf; return normally without leaking adjacent stack memory.",
+                  "expected_behavior": "For 0 <= index < 16, print the same character as the original via printf with format at 0x402004; for any other index, produce no output and return."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "SysV"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                    "No call other than 0x401060 and 0x401080 is emitted.",
+                    "Function ends with ret and preserves callee-saved registers per SysV."
+                  ],
+                  "regression_conditions": [
+                    "Valid inputs 0..15 produce identical printf output to the original.",
+                    "Return value/stack cleanup (leave; ret) unchanged."
+                  ]
+                },
+                "confidence": "high",
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "out-of-bounds read",
+                  "root_cause": "The value returned by atoi() is used directly as an index into the 16-byte stack buffer at [rbp-0x20] without any bounds check, so a negative or >=16 index causes an out-of-bounds byte read that is then passed to printf.",
+                  "cwe": "CWE-125"
+                },
+                "program_context": {
+                  "function": "cwe125_bad",
+                  "addresses": [
+                    "0x401176",
+                    "0x4011d1"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rax",
+                    "rdx",
+                    "rbp",
+                    "rsp",
+                    "eax",
+                    "esi",
+                    "edi"
+                  ],
+                  "memory": [
+                    "[rbp-0x28] (saved arg pointer)",
+                    "[rbp-0x20..rbp-0x11] (16-byte table)",
+                    "[rbp-4] (parsed index)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    "printf",
+                    "atoi"
+                  ]
+                },
+                "security_invariants": [
+                  "The index used to read the table must satisfy 0 <= index < 16.",
+                  "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                  "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret."
+                ],
+                "repair": {
+                  "strategy": "bounds_check",
+                  "failure_behavior": "On out-of-range index, perform no table read and no printf; return normally without leaking adjacent stack memory.",
+                  "expected_behavior": "For 0 <= index < 16, print the same character as the original via printf with format at 0x402004; for any other index, produce no output and return."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "sysv_amd64"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                    "No call other than 0x401060 and 0x401080 is emitted.",
+                    "Function ends with ret and preserves callee-saved registers per SysV."
+                  ],
+                  "regression_conditions": [
+                    "Valid inputs 0..15 produce identical printf output to the original.",
+                    "Return value/stack cleanup (leave; ret) unchanged."
+                  ],
+                  "required_inputs": []
+                },
+                "confidence": "high",
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan_sha256": "a014d34483b3ac05a70f3db1df638d7040eb77d02ce1da6cee50812e8632e18f",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "printf",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 1175,
+                    "completion_tokens": 574,
+                    "total_tokens": 1749,
+                    "latency_ms": 3591
+                  },
+                  "latency_ms": 3593,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "out-of-bounds read",
+                      "cwe": "CWE-125",
+                      "root_cause": "The value returned by atoi() is used directly as an index into the 16-byte stack buffer at [rbp-0x20] without any bounds check, so a negative or >=16 index causes an out-of-bounds byte read that is then passed to printf."
+                    },
+                    "program_context": {
+                      "function": "cwe125_bad",
+                      "addresses": [
+                        "0x401176",
+                        "0x4011d1"
+                      ],
+                      "registers": [
+                        "rdi",
+                        "rax",
+                        "rdx",
+                        "rbp",
+                        "rsp",
+                        "eax",
+                        "esi",
+                        "edi"
+                      ],
+                      "memory": [
+                        "[rbp-0x28] (saved arg pointer)",
+                        "[rbp-0x20..rbp-0x11] (16-byte table)",
+                        "[rbp-4] (parsed index)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        {
+                          "name": "printf",
+                          "target_va": "0x401060"
+                        },
+                        {
+                          "name": "atoi",
+                          "target_va": "0x401080"
+                        }
+                      ]
+                    },
+                    "security_invariants": [
+                      "The index used to read the table must satisfy 0 <= index < 16.",
+                      "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                      "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret."
+                    ],
+                    "repair": {
+                      "strategy": "After atoi(), validate the returned index; if it is negative or >=16, skip the table read and the printf call (block the out-of-range read) while preserving normal output for valid indices.",
+                      "failure_behavior": "On out-of-range index, perform no table read and no printf; return normally without leaking adjacent stack memory.",
+                      "expected_behavior": "For 0 <= index < 16, print the same character as the original via printf with format at 0x402004; for any other index, produce no output and return."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                        "No call other than 0x401060 and 0x401080 is emitted.",
+                        "Function ends with ret and preserves callee-saved registers per SysV."
+                      ],
+                      "regression_conditions": [
+                        "Valid inputs 0..15 produce identical printf output to the original.",
+                        "Return value/stack cleanup (leave; ret) unchanged."
+                      ]
+                    },
+                    "confidence": "high",
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                }
+              ],
+              "elapsed_ms": 3596
+            },
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "a014d34483b3ac05a70f3db1df638d7040eb77d02ce1da6cee50812e8632e18f",
+            "usage": {
+              "prompt_tokens": 1674,
+              "completion_tokens": 278,
+              "total_tokens": 1952,
+              "latency_ms": 2625
+            },
+            "latency_ms": 2626,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "059efe96a3acf7dffe2c7b88cc8c321dd8e98346bba25bb12ef38de36153bbe6",
+            "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmovabs rax, 0x3736353433323130\nmovabs rdx, 0x6665646362613938\nmov qword ptr [rbp - 0x20], rax\nmov qword ptr [rbp - 0x18], rdx\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Ldone\ncmp eax, 16\njge .Ldone\ncdqe\nmovzx eax, byte ptr [rbp + rax - 0x20]\nmovsx eax, al\nmov esi, eax\nmov edi, 0x402004\nmov eax, 0\ncall 0x401060\n.Ldone:\nnop\nleave\nret\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "059efe96a3acf7dffe2c7b88cc8c321dd8e98346bba25bb12ef38de36153bbe6",
+                "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmovabs rax, 0x3736353433323130\nmovabs rdx, 0x6665646362613938\nmov qword ptr [rbp - 0x20], rax\nmov qword ptr [rbp - 0x18], rdx\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Ldone\ncmp eax, 16\njge .Ldone\ncdqe\nmovzx eax, byte ptr [rbp + rax - 0x20]\nmovsx eax, al\nmov esi, eax\nmov edi, 0x402004\nmov eax, 0\ncall 0x401060\n.Ldone:\nnop\nleave\nret\n",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 1674,
+                  "completion_tokens": 278,
+                  "total_tokens": 1952,
+                  "latency_ms": 2625
+                },
+                "latency_ms": 2626,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "printf",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "cwe125_bad",
+              "va": 4198774,
+              "end": 4198866,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x401176",
+              "cave_va": "0x405000",
+              "method": "new-pt-load",
+              "code_bytes": 101,
+              "code_hex": "f30f1efa554889e54883ec3048897dd848b8303132333435363748ba3839616263646566488945e0488955e8488b45d84889c7e8000000008945fc8b45fc85c0782083f8107d1b48980fb64405e00fbec089c6bf04204000b800000000e80000000090c9c3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "f30f1efa",
+                  "mnemonic": "endbr64",
+                  "operands": ""
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x5",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "4883ec30",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0xc",
+                  "bytes": "48897dd8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x28], rdi"
+                },
+                {
+                  "address": "0x10",
+                  "bytes": "48b83031323334353637",
+                  "mnemonic": "movabs",
+                  "operands": "rax, 0x3736353433323130"
+                },
+                {
+                  "address": "0x1a",
+                  "bytes": "48ba3839616263646566",
+                  "mnemonic": "movabs",
+                  "operands": "rdx, 0x6665646362613938"
+                },
+                {
+                  "address": "0x24",
+                  "bytes": "488945e0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x20], rax"
+                },
+                {
+                  "address": "0x28",
+                  "bytes": "488955e8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x18], rdx"
+                },
+                {
+                  "address": "0x2c",
+                  "bytes": "488b45d8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x30",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x33",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x38"
+                },
+                {
+                  "address": "0x38",
+                  "bytes": "8945fc",
+                  "mnemonic": "mov",
+                  "operands": "dword ptr [rbp - 4], eax"
+                },
+                {
+                  "address": "0x3b",
+                  "bytes": "8b45fc",
+                  "mnemonic": "mov",
+                  "operands": "eax, dword ptr [rbp - 4]"
+                },
+                {
+                  "address": "0x3e",
+                  "bytes": "85c0",
+                  "mnemonic": "test",
+                  "operands": "eax, eax"
+                },
+                {
+                  "address": "0x40",
+                  "bytes": "7820",
+                  "mnemonic": "js",
+                  "operands": "0x62"
+                },
+                {
+                  "address": "0x42",
+                  "bytes": "83f810",
+                  "mnemonic": "cmp",
+                  "operands": "eax, 0x10"
+                },
+                {
+                  "address": "0x45",
+                  "bytes": "7d1b",
+                  "mnemonic": "jge",
+                  "operands": "0x62"
+                },
+                {
+                  "address": "0x47",
+                  "bytes": "4898",
+                  "mnemonic": "cdqe",
+                  "operands": ""
+                },
+                {
+                  "address": "0x49",
+                  "bytes": "0fb64405e0",
+                  "mnemonic": "movzx",
+                  "operands": "eax, byte ptr [rbp + rax - 0x20]"
+                },
+                {
+                  "address": "0x4e",
+                  "bytes": "0fbec0",
+                  "mnemonic": "movsx",
+                  "operands": "eax, al"
+                },
+                {
+                  "address": "0x51",
+                  "bytes": "89c6",
+                  "mnemonic": "mov",
+                  "operands": "esi, eax"
+                },
+                {
+                  "address": "0x53",
+                  "bytes": "bf04204000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 0x402004"
+                },
+                {
+                  "address": "0x58",
+                  "bytes": "b800000000",
+                  "mnemonic": "mov",
+                  "operands": "eax, 0"
+                },
+                {
+                  "address": "0x5d",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x62"
+                },
+                {
+                  "address": "0x62",
+                  "bytes": "90",
+                  "mnemonic": "nop",
+                  "operands": ""
+                },
+                {
+                  "address": "0x63",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x64",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "b8715d24f6aefc29dc2220f1a22807d12e9ea5816d3230dca343605ac2683945",
+              "call_targets": [
+                {
+                  "name": "printf",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+                "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+                "poc": [
+                  {
+                    "case_id": "cwe125-high-index",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe125-high-index",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "cwe125-index-5",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "5\n",
+                    "stderr": "",
+                    "stdout_hex": "350a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe125-index-5",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "5\n",
+                    "stderr": "",
+                    "stdout_hex": "350a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/p13b-cwe125-oob-read/candidates/cwe125-oob-read.bin"
+            },
+            "elapsed_ms": 5605,
+            "evidence_links": {
+              "schema_version": 1,
+              "spec_version": 2,
+              "plan_sha256": "a014d34483b3ac05a70f3db1df638d7040eb77d02ce1da6cee50812e8632e18f",
+              "assembly_sha256": "059efe96a3acf7dffe2c7b88cc8c321dd8e98346bba25bb12ef38de36153bbe6",
+              "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+              "gate": "pass",
+              "links": [
+                {
+                  "claim": "The index used to read the table must satisfy 0 <= index < 16.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No call other than 0x401060 and 0x401080 is emitted.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "Function ends with ret and preserves callee-saved registers per SysV.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                }
+              ],
+              "native_feedback_class": null
+            }
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1674,
+          "completion_tokens": 278,
+          "total_tokens": 1952,
+          "latency_ms": 2625
+        },
+        "request_id": null,
+        "elapsed_ms": 5605,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe125_bad",
+          "va": 4198774,
+          "end": 4198866,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 3593,
+                "plan_sha256": "9ab5d9a8f5769e2a2acf4bae034d2363bc4feffa9171b88e4ea45c9a03e11221",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1175,
+                  "completion_tokens": 574,
+                  "total_tokens": 1749,
+                  "latency_ms": 3591
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "out-of-bounds read",
+                  "cwe": "CWE-125",
+                  "root_cause": "The value returned by atoi() is used directly as an index into the 16-byte stack buffer at [rbp-0x20] without any bounds check, so a negative or >=16 index causes an out-of-bounds byte read that is then passed to printf."
+                },
+                "program_context": {
+                  "function": "cwe125_bad",
+                  "addresses": [
+                    "0x401176",
+                    "0x4011d1"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rax",
+                    "rdx",
+                    "rbp",
+                    "rsp",
+                    "eax",
+                    "esi",
+                    "edi"
+                  ],
+                  "memory": [
+                    "[rbp-0x28] (saved arg pointer)",
+                    "[rbp-0x20..rbp-0x11] (16-byte table)",
+                    "[rbp-4] (parsed index)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    {
+                      "name": "printf",
+                      "target_va": "0x401060"
+                    },
+                    {
+                      "name": "atoi",
+                      "target_va": "0x401080"
+                    }
+                  ]
+                },
+                "security_invariants": [
+                  "The index used to read the table must satisfy 0 <= index < 16.",
+                  "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                  "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret."
+                ],
+                "repair": {
+                  "strategy": "After atoi(), validate the returned index; if it is negative or >=16, skip the table read and the printf call (block the out-of-range read) while preserving normal output for valid indices.",
+                  "failure_behavior": "On out-of-range index, perform no table read and no printf; return normally without leaking adjacent stack memory.",
+                  "expected_behavior": "For 0 <= index < 16, print the same character as the original via printf with format at 0x402004; for any other index, produce no output and return."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "SysV"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                    "No call other than 0x401060 and 0x401080 is emitted.",
+                    "Function ends with ret and preserves callee-saved registers per SysV."
+                  ],
+                  "regression_conditions": [
+                    "Valid inputs 0..15 produce identical printf output to the original.",
+                    "Return value/stack cleanup (leave; ret) unchanged."
+                  ]
+                },
+                "confidence": "high",
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "out-of-bounds read",
+                  "root_cause": "The value returned by atoi() is used directly as an index into the 16-byte stack buffer at [rbp-0x20] without any bounds check, so a negative or >=16 index causes an out-of-bounds byte read that is then passed to printf.",
+                  "cwe": "CWE-125"
+                },
+                "program_context": {
+                  "function": "cwe125_bad",
+                  "addresses": [
+                    "0x401176",
+                    "0x4011d1"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rax",
+                    "rdx",
+                    "rbp",
+                    "rsp",
+                    "eax",
+                    "esi",
+                    "edi"
+                  ],
+                  "memory": [
+                    "[rbp-0x28] (saved arg pointer)",
+                    "[rbp-0x20..rbp-0x11] (16-byte table)",
+                    "[rbp-4] (parsed index)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    "printf",
+                    "atoi"
+                  ]
+                },
+                "security_invariants": [
+                  "The index used to read the table must satisfy 0 <= index < 16.",
+                  "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                  "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret."
+                ],
+                "repair": {
+                  "strategy": "bounds_check",
+                  "failure_behavior": "On out-of-range index, perform no table read and no printf; return normally without leaking adjacent stack memory.",
+                  "expected_behavior": "For 0 <= index < 16, print the same character as the original via printf with format at 0x402004; for any other index, produce no output and return."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "sysv_amd64"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                    "No call other than 0x401060 and 0x401080 is emitted.",
+                    "Function ends with ret and preserves callee-saved registers per SysV."
+                  ],
+                  "regression_conditions": [
+                    "Valid inputs 0..15 produce identical printf output to the original.",
+                    "Return value/stack cleanup (leave; ret) unchanged."
+                  ],
+                  "required_inputs": []
+                },
+                "confidence": "high",
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan_sha256": "a014d34483b3ac05a70f3db1df638d7040eb77d02ce1da6cee50812e8632e18f",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "printf",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 1175,
+                    "completion_tokens": 574,
+                    "total_tokens": 1749,
+                    "latency_ms": 3591
+                  },
+                  "latency_ms": 3593,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "out-of-bounds read",
+                      "cwe": "CWE-125",
+                      "root_cause": "The value returned by atoi() is used directly as an index into the 16-byte stack buffer at [rbp-0x20] without any bounds check, so a negative or >=16 index causes an out-of-bounds byte read that is then passed to printf."
+                    },
+                    "program_context": {
+                      "function": "cwe125_bad",
+                      "addresses": [
+                        "0x401176",
+                        "0x4011d1"
+                      ],
+                      "registers": [
+                        "rdi",
+                        "rax",
+                        "rdx",
+                        "rbp",
+                        "rsp",
+                        "eax",
+                        "esi",
+                        "edi"
+                      ],
+                      "memory": [
+                        "[rbp-0x28] (saved arg pointer)",
+                        "[rbp-0x20..rbp-0x11] (16-byte table)",
+                        "[rbp-4] (parsed index)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        {
+                          "name": "printf",
+                          "target_va": "0x401060"
+                        },
+                        {
+                          "name": "atoi",
+                          "target_va": "0x401080"
+                        }
+                      ]
+                    },
+                    "security_invariants": [
+                      "The index used to read the table must satisfy 0 <= index < 16.",
+                      "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                      "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret."
+                    ],
+                    "repair": {
+                      "strategy": "After atoi(), validate the returned index; if it is negative or >=16, skip the table read and the printf call (block the out-of-range read) while preserving normal output for valid indices.",
+                      "failure_behavior": "On out-of-range index, perform no table read and no printf; return normally without leaking adjacent stack memory.",
+                      "expected_behavior": "For 0 <= index < 16, print the same character as the original via printf with format at 0x402004; for any other index, produce no output and return."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                        "No call other than 0x401060 and 0x401080 is emitted.",
+                        "Function ends with ret and preserves callee-saved registers per SysV."
+                      ],
+                      "regression_conditions": [
+                        "Valid inputs 0..15 produce identical printf output to the original.",
+                        "Return value/stack cleanup (leave; ret) unchanged."
+                      ]
+                    },
+                    "confidence": "high",
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                }
+              ],
+              "elapsed_ms": 3596
+            },
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "a014d34483b3ac05a70f3db1df638d7040eb77d02ce1da6cee50812e8632e18f",
+            "usage": {
+              "prompt_tokens": 1674,
+              "completion_tokens": 278,
+              "total_tokens": 1952,
+              "latency_ms": 2625
+            },
+            "latency_ms": 2626,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "059efe96a3acf7dffe2c7b88cc8c321dd8e98346bba25bb12ef38de36153bbe6",
+            "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmovabs rax, 0x3736353433323130\nmovabs rdx, 0x6665646362613938\nmov qword ptr [rbp - 0x20], rax\nmov qword ptr [rbp - 0x18], rdx\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Ldone\ncmp eax, 16\njge .Ldone\ncdqe\nmovzx eax, byte ptr [rbp + rax - 0x20]\nmovsx eax, al\nmov esi, eax\nmov edi, 0x402004\nmov eax, 0\ncall 0x401060\n.Ldone:\nnop\nleave\nret\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "059efe96a3acf7dffe2c7b88cc8c321dd8e98346bba25bb12ef38de36153bbe6",
+                "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmovabs rax, 0x3736353433323130\nmovabs rdx, 0x6665646362613938\nmov qword ptr [rbp - 0x20], rax\nmov qword ptr [rbp - 0x18], rdx\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Ldone\ncmp eax, 16\njge .Ldone\ncdqe\nmovzx eax, byte ptr [rbp + rax - 0x20]\nmovsx eax, al\nmov esi, eax\nmov edi, 0x402004\nmov eax, 0\ncall 0x401060\n.Ldone:\nnop\nleave\nret\n",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 1674,
+                  "completion_tokens": 278,
+                  "total_tokens": 1952,
+                  "latency_ms": 2625
+                },
+                "latency_ms": 2626,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "printf",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "cwe125_bad",
+              "va": 4198774,
+              "end": 4198866,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x401176",
+              "cave_va": "0x405000",
+              "method": "new-pt-load",
+              "code_bytes": 101,
+              "code_hex": "f30f1efa554889e54883ec3048897dd848b8303132333435363748ba3839616263646566488945e0488955e8488b45d84889c7e8000000008945fc8b45fc85c0782083f8107d1b48980fb64405e00fbec089c6bf04204000b800000000e80000000090c9c3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "f30f1efa",
+                  "mnemonic": "endbr64",
+                  "operands": ""
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x5",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "4883ec30",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0xc",
+                  "bytes": "48897dd8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x28], rdi"
+                },
+                {
+                  "address": "0x10",
+                  "bytes": "48b83031323334353637",
+                  "mnemonic": "movabs",
+                  "operands": "rax, 0x3736353433323130"
+                },
+                {
+                  "address": "0x1a",
+                  "bytes": "48ba3839616263646566",
+                  "mnemonic": "movabs",
+                  "operands": "rdx, 0x6665646362613938"
+                },
+                {
+                  "address": "0x24",
+                  "bytes": "488945e0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x20], rax"
+                },
+                {
+                  "address": "0x28",
+                  "bytes": "488955e8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x18], rdx"
+                },
+                {
+                  "address": "0x2c",
+                  "bytes": "488b45d8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x30",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x33",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x38"
+                },
+                {
+                  "address": "0x38",
+                  "bytes": "8945fc",
+                  "mnemonic": "mov",
+                  "operands": "dword ptr [rbp - 4], eax"
+                },
+                {
+                  "address": "0x3b",
+                  "bytes": "8b45fc",
+                  "mnemonic": "mov",
+                  "operands": "eax, dword ptr [rbp - 4]"
+                },
+                {
+                  "address": "0x3e",
+                  "bytes": "85c0",
+                  "mnemonic": "test",
+                  "operands": "eax, eax"
+                },
+                {
+                  "address": "0x40",
+                  "bytes": "7820",
+                  "mnemonic": "js",
+                  "operands": "0x62"
+                },
+                {
+                  "address": "0x42",
+                  "bytes": "83f810",
+                  "mnemonic": "cmp",
+                  "operands": "eax, 0x10"
+                },
+                {
+                  "address": "0x45",
+                  "bytes": "7d1b",
+                  "mnemonic": "jge",
+                  "operands": "0x62"
+                },
+                {
+                  "address": "0x47",
+                  "bytes": "4898",
+                  "mnemonic": "cdqe",
+                  "operands": ""
+                },
+                {
+                  "address": "0x49",
+                  "bytes": "0fb64405e0",
+                  "mnemonic": "movzx",
+                  "operands": "eax, byte ptr [rbp + rax - 0x20]"
+                },
+                {
+                  "address": "0x4e",
+                  "bytes": "0fbec0",
+                  "mnemonic": "movsx",
+                  "operands": "eax, al"
+                },
+                {
+                  "address": "0x51",
+                  "bytes": "89c6",
+                  "mnemonic": "mov",
+                  "operands": "esi, eax"
+                },
+                {
+                  "address": "0x53",
+                  "bytes": "bf04204000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 0x402004"
+                },
+                {
+                  "address": "0x58",
+                  "bytes": "b800000000",
+                  "mnemonic": "mov",
+                  "operands": "eax, 0"
+                },
+                {
+                  "address": "0x5d",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x62"
+                },
+                {
+                  "address": "0x62",
+                  "bytes": "90",
+                  "mnemonic": "nop",
+                  "operands": ""
+                },
+                {
+                  "address": "0x63",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x64",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "b8715d24f6aefc29dc2220f1a22807d12e9ea5816d3230dca343605ac2683945",
+              "call_targets": [
+                {
+                  "name": "printf",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c",
+                "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+                "poc": [
+                  {
+                    "case_id": "cwe125-high-index",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe125-high-index",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "cwe125-index-5",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "5\n",
+                    "stderr": "",
+                    "stdout_hex": "350a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe125-index-5",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "5\n",
+                    "stderr": "",
+                    "stdout_hex": "350a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/p13b-cwe125-oob-read/candidates/cwe125-oob-read.bin"
+            },
+            "elapsed_ms": 5605,
+            "evidence_links": {
+              "schema_version": 1,
+              "spec_version": 2,
+              "plan_sha256": "a014d34483b3ac05a70f3db1df638d7040eb77d02ce1da6cee50812e8632e18f",
+              "assembly_sha256": "059efe96a3acf7dffe2c7b88cc8c321dd8e98346bba25bb12ef38de36153bbe6",
+              "candidate_sha256": "18768a78c772514cc6def14f8f2c4ad207235f39fae20f53c16927de5baa0eba",
+              "gate": "pass",
+              "links": [
+                {
+                  "claim": "The index used to read the table must satisfy 0 <= index < 16.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No byte outside [rbp-0x20, rbp-0x11] may be read as table data.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "Only direct calls to 0x401060 and 0x401080 are permitted; function terminates with ret.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No memory access at [rbp+rax-0x20] occurs unless 0 <= rax < 16.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No call other than 0x401060 and 0x401080 is emitted.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "Function ends with ret and preserves callee-saved registers per SysV.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                }
+              ],
+              "native_feedback_class": null
+            }
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-flash",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-flash",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-flash",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-flash",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 9505,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "cwe125_bad",
+        "va": 4198774,
+        "end": 4198866,
+        "source": "symbol"
+      },
+      "target_scope_check": "passed",
+      "target_in_scope": true,
+      "ai_increment": true,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 1,
+  "ai_increment": 1,
+  "funnel": {
+    "VERIFIED": 1,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 1,
+  "ai_target_in_scope": 1,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 9505,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

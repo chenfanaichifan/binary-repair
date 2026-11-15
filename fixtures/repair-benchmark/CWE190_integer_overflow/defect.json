@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "cwe": "CWE-190",
+  "title": "CWE190_integer_overflow",
+  "mechanism": "bounds-check"
+}

@@ -5,7 +5,11 @@ the original hard-case binary (3 cases), the public CWE121 binary, and two
 project-authored x86-64 fixtures:
 
 - `CWE122_heap_copy`: malloc(16) + unchecked memcpy;
-- `CWE787_index_write`: unchecked atoi index write.
+- `CWE787_index_write`: unchecked atoi index write;
+- `CWE125_oob_read`, `CWE190_integer_overflow`, `CWE476_null_deref`,
+  `CWE134_format_string`: additional independent binaries with hidden split.
+
+Current set: 8 binaries, CWE-121/122/125/134/190/476/787.
 
 The new fixtures are built with `x86_64-linux-gnu-gcc -O0 -g
 -fno-stack-protector -fno-pie -no-pie`; `build.json` records the hash.  The

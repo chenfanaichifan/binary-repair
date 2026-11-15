@@ -1,0 +1,4341 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "cwe190-integer-overflow",
+        "binary_id": "repair-cwe190",
+        "route": "asm_repair",
+        "binary": "fixtures/repair-benchmark/CWE190_integer_overflow/original.elf",
+        "target": "cwe190_bad",
+        "capacity": 16,
+        "arch": "x86_64",
+        "sink_kind": "integer_overflow",
+        "poc": "fixtures/poc/repair-cwe190.json",
+        "reference_fix": "fixtures/repair-benchmark/CWE190_integer_overflow/reference_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "Integer overflow: negative length reaches malloc/memcpy; reject invalid length and preserve normal output",
+        "family": "CWE-190",
+        "cwe": "CWE-190",
+        "required_verification": [
+          "security",
+          "regression"
+        ],
+        "split": "dev"
+      },
+      "input_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+      "baseline": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 203,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 203,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target cwe190_bad [0x4011f6,0x40127e)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "cwe190_bad",
+          "va": 4198902,
+          "end": 4199038,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 12,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "not_attempted",
+        "disposition": "analysis_only",
+        "verified": false,
+        "elapsed_ms": 0
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-flash",
+              "status": "not_attempted",
+              "latency_ms": 3590,
+              "plan_sha256": "43c279bcdadea353ba44a56a02e7d0ad4cfb6eede19be2a81e798b43d0d63f6c",
+              "error": null,
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 2597,
+                "completion_tokens": 900,
+                "total_tokens": 3497,
+                "latency_ms": 3589
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true
+            },
+            "raw_plan": {
+              "schema_version": 2,
+              "vulnerability": {
+                "type": "integer_overflow",
+                "cwe": "CWE-190",
+                "root_cause": "atoi return value is stored as a signed 32-bit int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for the memcpy length and NUL terminator offset. A negative or INT_MAX input yields a huge/negative size passed to malloc/memcpy, causing undersized allocation and out-of-bounds write."
+              },
+              "program_context": {
+                "function": "cwe190_bad",
+                "addresses": [
+                  "0x4011f6",
+                  "0x4011fa",
+                  "0x4011fb",
+                  "0x4011fe",
+                  "0x401202",
+                  "0x401206",
+                  "0x40120a",
+                  "0x40120d",
+                  "0x401212",
+                  "0x401215",
+                  "0x401218",
+                  "0x40121b",
+                  "0x40121d",
+                  "0x401220",
+                  "0x401225",
+                  "0x401229",
+                  "0x40122e",
+                  "0x401230",
+                  "0x401235",
+                  "0x40123a",
+                  "0x40123d",
+                  "0x401240",
+                  "0x401244",
+                  "0x401248",
+                  "0x40124b",
+                  "0x40124e",
+                  "0x401253",
+                  "0x401256",
+                  "0x401259",
+                  "0x40125d",
+                  "0x401260",
+                  "0x401263",
+                  "0x401267",
+                  "0x40126a",
+                  "0x40126f",
+                  "0x401273",
+                  "0x401276",
+                  "0x40127b",
+                  "0x40127c",
+                  "0x40127d"
+                ],
+                "registers": [
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rax",
+                  "rcx",
+                  "rbp",
+                  "rsp"
+                ],
+                "memory": [
+                  "[rbp-0x18] input pointer",
+                  "[rbp-0x10] buffer pointer",
+                  "[rbp-4] parsed length (int)"
+                ],
+                "capacity": 16,
+                "allowed_calls": [
+                  {
+                    "name": "free",
+                    "source": "import",
+                    "target_va": "0x4010a0"
+                  },
+                  {
+                    "name": "puts",
+                    "source": "import",
+                    "target_va": "0x4010b0"
+                  },
+                  {
+                    "name": "memcpy",
+                    "source": "import",
+                    "target_va": "0x4010d0"
+                  },
+                  {
+                    "name": "malloc",
+                    "source": "import",
+                    "target_va": "0x4010e0"
+                  },
+                  {
+                    "name": "atoi",
+                    "source": "import",
+                    "target_va": "0x4010f0"
+                  },
+                  {
+                    "name": "exit",
+                    "source": "import",
+                    "target_va": "0x401100"
+                  }
+                ]
+              },
+              "security_invariants": [
+                "parsed length must be validated as non-negative before use",
+                "allocation size must be length+1 computed without signed overflow",
+                "memcpy length must equal validated non-negative length",
+                "NUL terminator must be written at buffer[length] within allocated region",
+                "no out-of-bounds write beyond allocated buffer"
+              ],
+              "repair": {
+                "strategy": "After atoi, reject negative length and INT_MAX overflow of length+1 by calling exit(1); otherwise compute size as 64-bit (length+1) for malloc, use zero-extended 64-bit length for memcpy and NUL offset. Preserve normal output via puts and free.",
+                "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+              },
+              "abi": {
+                "architecture": "x86_64",
+                "calling_convention": "SysV"
+              },
+              "verification": {
+                "security_conditions": [
+                  "negative input does not reach malloc/memcpy with huge size",
+                  "length==INT_MAX does not overflow allocation size",
+                  "memcpy size equals validated length",
+                  "NUL write index equals validated length and is within allocation"
+                ],
+                "regression_conditions": [
+                  "valid input still prints the copied string via puts",
+                  "buffer is freed exactly once",
+                  "function returns normally for valid inputs",
+                  "only direct calls to allowed_calls target addresses are emitted"
+                ]
+              },
+              "confidence": "high",
+              "evidence_refs": [
+                "static.target",
+                "static.disassembly",
+                "static.abi",
+                "poc.input"
+              ]
+            },
+            "plan": {
+              "schema_version": 2,
+              "vulnerability": {
+                "type": "integer_overflow",
+                "root_cause": "atoi return value is stored as a signed 32-bit int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for the memcpy length and NUL terminator offset. A negative or INT_MAX input yields a huge/negative size passed to malloc/memcpy, causing undersized allocation and out-of-bounds write.",
+                "cwe": "CWE-190"
+              },
+              "program_context": {
+                "function": "cwe190_bad",
+                "addresses": [
+                  "0x4011f6",
+                  "0x4011fa",
+                  "0x4011fb",
+                  "0x4011fe",
+                  "0x401202",
+                  "0x401206",
+                  "0x40120a",
+                  "0x40120d",
+                  "0x401212",
+                  "0x401215",
+                  "0x401218",
+                  "0x40121b",
+                  "0x40121d",
+                  "0x401220",
+                  "0x401225",
+                  "0x401229",
+                  "0x40122e",
+                  "0x401230",
+                  "0x401235",
+                  "0x40123a",
+                  "0x40123d",
+                  "0x401240",
+                  "0x401244",
+                  "0x401248",
+                  "0x40124b",
+                  "0x40124e",
+                  "0x401253",
+                  "0x401256",
+                  "0x401259",
+                  "0x40125d",
+                  "0x401260",
+                  "0x401263",
+                  "0x401267",
+                  "0x40126a",
+                  "0x40126f",
+                  "0x401273",
+                  "0x401276",
+                  "0x40127b",
+                  "0x40127c",
+                  "0x40127d"
+                ],
+                "registers": [
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rax",
+                  "rcx",
+                  "rbp",
+                  "rsp"
+                ],
+                "memory": [
+                  "[rbp-0x18] input pointer",
+                  "[rbp-0x10] buffer pointer",
+                  "[rbp-4] parsed length (int)"
+                ],
+                "capacity": 16,
+                "allowed_calls": [
+                  "free",
+                  "puts",
+                  "memcpy",
+                  "malloc",
+                  "atoi",
+                  "exit"
+                ]
+              },
+              "security_invariants": [
+                "parsed length must be validated as non-negative before use",
+                "allocation size must be length+1 computed without signed overflow",
+                "memcpy length must equal validated non-negative length",
+                "NUL terminator must be written at buffer[length] within allocated region",
+                "no out-of-bounds write beyond allocated buffer"
+              ],
+              "repair": {
+                "strategy": "guard_input_length",
+                "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+              },
+              "abi": {
+                "architecture": "x86_64",
+                "calling_convention": "sysv_amd64"
+              },
+              "verification": {
+                "security_conditions": [
+                  "negative input does not reach malloc/memcpy with huge size",
+                  "length==INT_MAX does not overflow allocation size",
+                  "memcpy size equals validated length",
+                  "NUL write index equals validated length and is within allocation"
+                ],
+                "regression_conditions": [
+                  "valid input still prints the copied string via puts",
+                  "buffer is freed exactly once",
+                  "function returns normally for valid inputs",
+                  "only direct calls to allowed_calls target addresses are emitted"
+                ],
+                "required_inputs": []
+              },
+              "confidence": "high",
+              "evidence_refs": [
+                "static.target",
+                "static.disassembly",
+                "static.abi",
+                "poc.input"
+              ]
+            },
+            "plan_sha256": "c3ea820164bceeb5b0a4636972baf4a774755822abadfdd38495fd6212b6db3d",
+            "plan_error": "",
+            "error": null,
+            "allowed_calls": [
+              {
+                "name": "free",
+                "target_va": "0x4010a0",
+                "source": "import"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x4010b0",
+                "source": "import"
+              },
+              {
+                "name": "memcpy",
+                "target_va": "0x4010d0",
+                "source": "import"
+              },
+              {
+                "name": "malloc",
+                "target_va": "0x4010e0",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x4010f0",
+                "source": "import"
+              },
+              {
+                "name": "exit",
+                "target_va": "0x401100",
+                "source": "import"
+              }
+            ],
+            "attempts": [
+              {
+                "attempt": 1,
+                "status": "invalid",
+                "error": "permitted_call_not_allowed:atoi@0x4010f0,exit@0x401100,free@0x4010a0,malloc@0x4010e0,memcpy@0x4010d0,puts@0x4010b0",
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "usage": {
+                  "prompt_tokens": 1570,
+                  "completion_tokens": 832,
+                  "total_tokens": 2402,
+                  "latency_ms": 4609
+                },
+                "latency_ms": 4610,
+                "raw_plan": {
+                  "schema_version": 2,
+                  "vulnerability": {
+                    "type": "integer_overflow",
+                    "cwe": "CWE-190",
+                    "root_cause": "atoi return value stored as signed int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for memcpy length and NUL terminator offset. A negative or INT_MAX input causes a huge/negative size passed to malloc/memcpy, leading to undersized allocation and out-of-bounds write."
+                  },
+                  "program_context": {
+                    "function": "cwe190_bad",
+                    "addresses": [
+                      "0x4011f6",
+                      "0x4011fa",
+                      "0x4011fb",
+                      "0x4011fe",
+                      "0x401202",
+                      "0x401206",
+                      "0x40120a",
+                      "0x40120d",
+                      "0x401212",
+                      "0x401215",
+                      "0x401218",
+                      "0x40121b",
+                      "0x40121d",
+                      "0x401220",
+                      "0x401225",
+                      "0x401229",
+                      "0x40122e",
+                      "0x401230",
+                      "0x401235",
+                      "0x40123a",
+                      "0x40123d",
+                      "0x401240",
+                      "0x401244",
+                      "0x401248",
+                      "0x40124b",
+                      "0x40124e",
+                      "0x401253",
+                      "0x401256",
+                      "0x401259",
+                      "0x40125d",
+                      "0x401260",
+                      "0x401263",
+                      "0x401267",
+                      "0x40126a",
+                      "0x40126f",
+                      "0x401273",
+                      "0x401276",
+                      "0x40127b",
+                      "0x40127c",
+                      "0x40127d"
+                    ],
+                    "registers": [
+                      "rdi",
+                      "rsi",
+                      "rdx",
+                      "rax",
+                      "rcx",
+                      "rbp",
+                      "rsp"
+                    ],
+                    "memory": [
+                      "[rbp-0x18] input pointer",
+                      "[rbp-0x10] buffer pointer",
+                      "[rbp-4] parsed length (int)"
+                    ],
+                    "capacity": 16,
+                    "allowed_calls": [
+                      "free@0x4010a0",
+                      "puts@0x4010b0",
+                      "memcpy@0x4010d0",
+                      "malloc@0x4010e0",
+                      "atoi@0x4010f0",
+                      "exit@0x401100"
+                    ]
+                  },
+                  "security_invariants": [
+                    "parsed length must be validated as non-negative before use",
+                    "allocation size must be length+1 computed without signed overflow",
+                    "memcpy length must equal validated non-negative length",
+                    "NUL terminator must be written at buffer[length] within allocated region",
+                    "no out-of-bounds write beyond allocated buffer"
+                  ],
+                  "repair": {
+                    "strategy": "After atoi, reject negative length (and INT_MAX overflow of length+1) by exiting with status 1; otherwise compute size as 64-bit (length+1) for malloc, use zero-extended 64-bit length for memcpy and NUL offset. Preserve normal output via puts and free.",
+                    "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                    "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+                  },
+                  "abi": {
+                    "architecture": "x86_64",
+                    "calling_convention": "SysV"
+                  },
+                  "verification": {
+                    "security_conditions": [
+                      "negative input does not reach malloc/memcpy with huge size",
+                      "length==INT_MAX does not overflow allocation size",
+                      "memcpy size equals validated length",
+                      "NUL write index equals validated length and is within allocation"
+                    ],
+                    "regression_conditions": [
+                      "valid input still prints the copied string via puts",
+                      "buffer is freed exactly once",
+                      "function returns normally for valid inputs",
+                      "only direct calls to allowed_calls target addresses are emitted"
+                    ]
+                  },
+                  "confidence": "high",
+                  "evidence_refs": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ]
+                }
+              },
+              {
+                "attempt": 2,
+                "status": "valid",
+                "error": "",
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "usage": {
+                  "prompt_tokens": 2597,
+                  "completion_tokens": 900,
+                  "total_tokens": 3497,
+                  "latency_ms": 3589
+                },
+                "latency_ms": 3590,
+                "raw_plan": {
+                  "schema_version": 2,
+                  "vulnerability": {
+                    "type": "integer_overflow",
+                    "cwe": "CWE-190",
+                    "root_cause": "atoi return value is stored as a signed 32-bit int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for the memcpy length and NUL terminator offset. A negative or INT_MAX input yields a huge/negative size passed to malloc/memcpy, causing undersized allocation and out-of-bounds write."
+                  },
+                  "program_context": {
+                    "function": "cwe190_bad",
+                    "addresses": [
+                      "0x4011f6",
+                      "0x4011fa",
+                      "0x4011fb",
+                      "0x4011fe",
+                      "0x401202",
+                      "0x401206",
+                      "0x40120a",
+                      "0x40120d",
+                      "0x401212",
+                      "0x401215",
+                      "0x401218",
+                      "0x40121b",
+                      "0x40121d",
+                      "0x401220",
+                      "0x401225",
+                      "0x401229",
+                      "0x40122e",
+                      "0x401230",
+                      "0x401235",
+                      "0x40123a",
+                      "0x40123d",
+                      "0x401240",
+                      "0x401244",
+                      "0x401248",
+                      "0x40124b",
+                      "0x40124e",
+                      "0x401253",
+                      "0x401256",
+                      "0x401259",
+                      "0x40125d",
+                      "0x401260",
+                      "0x401263",
+                      "0x401267",
+                      "0x40126a",
+                      "0x40126f",
+                      "0x401273",
+                      "0x401276",
+                      "0x40127b",
+                      "0x40127c",
+                      "0x40127d"
+                    ],
+                    "registers": [
+                      "rdi",
+                      "rsi",
+                      "rdx",
+                      "rax",
+                      "rcx",
+                      "rbp",
+                      "rsp"
+                    ],
+                    "memory": [
+                      "[rbp-0x18] input pointer",
+                      "[rbp-0x10] buffer pointer",
+                      "[rbp-4] parsed length (int)"
+                    ],
+                    "capacity": 16,
+                    "allowed_calls": [
+                      {
+                        "name": "free",
+                        "source": "import",
+                        "target_va": "0x4010a0"
+                      },
+                      {
+                        "name": "puts",
+                        "source": "import",
+                        "target_va": "0x4010b0"
+                      },
+                      {
+                        "name": "memcpy",
+                        "source": "import",
+                        "target_va": "0x4010d0"
+                      },
+                      {
+                        "name": "malloc",
+                        "source": "import",
+                        "target_va": "0x4010e0"
+                      },
+                      {
+                        "name": "atoi",
+                        "source": "import",
+                        "target_va": "0x4010f0"
+                      },
+                      {
+                        "name": "exit",
+                        "source": "import",
+                        "target_va": "0x401100"
+                      }
+                    ]
+                  },
+                  "security_invariants": [
+                    "parsed length must be validated as non-negative before use",
+                    "allocation size must be length+1 computed without signed overflow",
+                    "memcpy length must equal validated non-negative length",
+                    "NUL terminator must be written at buffer[length] within allocated region",
+                    "no out-of-bounds write beyond allocated buffer"
+                  ],
+                  "repair": {
+                    "strategy": "After atoi, reject negative length and INT_MAX overflow of length+1 by calling exit(1); otherwise compute size as 64-bit (length+1) for malloc, use zero-extended 64-bit length for memcpy and NUL offset. Preserve normal output via puts and free.",
+                    "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                    "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+                  },
+                  "abi": {
+                    "architecture": "x86_64",
+                    "calling_convention": "SysV"
+                  },
+                  "verification": {
+                    "security_conditions": [
+                      "negative input does not reach malloc/memcpy with huge size",
+                      "length==INT_MAX does not overflow allocation size",
+                      "memcpy size equals validated length",
+                      "NUL write index equals validated length and is within allocation"
+                    ],
+                    "regression_conditions": [
+                      "valid input still prints the copied string via puts",
+                      "buffer is freed exactly once",
+                      "function returns normally for valid inputs",
+                      "only direct calls to allowed_calls target addresses are emitted"
+                    ]
+                  },
+                  "confidence": "high",
+                  "evidence_refs": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ]
+                }
+              }
+            ],
+            "elapsed_ms": 8205
+          },
+          "model": "deepseek-flash",
+          "model_requested": "deepseek-flash",
+          "status": "accepted",
+          "error": null,
+          "plan_status": "valid",
+          "plan_sha256": "c3ea820164bceeb5b0a4636972baf4a774755822abadfdd38495fd6212b6db3d",
+          "usage": {
+            "prompt_tokens": 2344,
+            "completion_tokens": 450,
+            "total_tokens": 2794,
+            "latency_ms": 2340
+          },
+          "latency_ms": 2344,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "b27412ed82115c0899834fd7e53d1e7212bf6fadb91cc86395de752e2eef675e",
+          "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010f0\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Linvalid\ncmp eax, 0x7fffffff\nje .Linvalid\nadd eax, 1\nmovsxd rdi, eax\ncall 0x4010e0\nmov qword ptr [rbp - 0x10], rax\ncmp qword ptr [rbp - 0x10], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmovsxd rdx, dword ptr [rbp - 4]\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 0x10]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010d0\nmovsxd rdx, dword ptr [rbp - 4]\nmov rax, qword ptr [rbp - 0x10]\nadd rax, rdx\nmov byte ptr [rax], 0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Linvalid:\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+          "assembly_attempts": [
+            {
+              "attempt": 1,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "b27412ed82115c0899834fd7e53d1e7212bf6fadb91cc86395de752e2eef675e",
+              "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010f0\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Linvalid\ncmp eax, 0x7fffffff\nje .Linvalid\nadd eax, 1\nmovsxd rdi, eax\ncall 0x4010e0\nmov qword ptr [rbp - 0x10], rax\ncmp qword ptr [rbp - 0x10], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmovsxd rdx, dword ptr [rbp - 4]\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 0x10]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010d0\nmovsxd rdx, dword ptr [rbp - 4]\nmov rax, qword ptr [rbp - 0x10]\nadd rax, rdx\nmov byte ptr [rax], 0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Linvalid:\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+              "validation_error": null,
+              "validation_error_class": null,
+              "diagnostics": [],
+              "usage": {
+                "prompt_tokens": 2344,
+                "completion_tokens": 450,
+                "total_tokens": 2794,
+                "latency_ms": 2340
+              },
+              "latency_ms": 2344,
+              "model": "deepseek-flash",
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true,
+              "request_id": null
+            }
+          ],
+          "validation_error": null,
+          "validation_error_class": null,
+          "allowed_calls": [
+            {
+              "name": "free",
+              "target_va": "0x4010a0",
+              "source": "import"
+            },
+            {
+              "name": "puts",
+              "target_va": "0x4010b0",
+              "source": "import"
+            },
+            {
+              "name": "memcpy",
+              "target_va": "0x4010d0",
+              "source": "import"
+            },
+            {
+              "name": "malloc",
+              "target_va": "0x4010e0",
+              "source": "import"
+            },
+            {
+              "name": "atoi",
+              "target_va": "0x4010f0",
+              "source": "import"
+            },
+            {
+              "name": "exit",
+              "target_va": "0x401100",
+              "source": "import"
+            }
+          ],
+          "target_in_scope": true,
+          "target_scope_check": "passed",
+          "target_scope": {
+            "name": "cwe190_bad",
+            "va": 4198902,
+            "end": 4199038,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": true,
+          "injection": {
+            "target_va": "0x4011f6",
+            "cave_va": "0x405000",
+            "method": "new-pt-load",
+            "code_bytes": 152,
+            "code_hex": "f30f1efa554889e54883ec2048897de8488b45e84889c7e8000000008945fc8b45fc85c078663dffffff7f745f83c0014863f8e800000000488945f048837df000750abf01000000e800000000486355fc488b4de8488b45f04889ce4889c7e800000000486355fc488b45f04801d0c60000488b45f04889c7e800000000488b45f04889c7e800000000c9c3bf01000000e800000000c9c3",
+            "code_disassembly": [
+              {
+                "address": "0x0",
+                "bytes": "f30f1efa",
+                "mnemonic": "endbr64",
+                "operands": ""
+              },
+              {
+                "address": "0x4",
+                "bytes": "55",
+                "mnemonic": "push",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x5",
+                "bytes": "4889e5",
+                "mnemonic": "mov",
+                "operands": "rbp, rsp"
+              },
+              {
+                "address": "0x8",
+                "bytes": "4883ec20",
+                "mnemonic": "sub",
+                "operands": "rsp, 0x20"
+              },
+              {
+                "address": "0xc",
+                "bytes": "48897de8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x18], rdi"
+              },
+              {
+                "address": "0x10",
+                "bytes": "488b45e8",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 0x18]"
+              },
+              {
+                "address": "0x14",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x17",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x1c"
+              },
+              {
+                "address": "0x1c",
+                "bytes": "8945fc",
+                "mnemonic": "mov",
+                "operands": "dword ptr [rbp - 4], eax"
+              },
+              {
+                "address": "0x1f",
+                "bytes": "8b45fc",
+                "mnemonic": "mov",
+                "operands": "eax, dword ptr [rbp - 4]"
+              },
+              {
+                "address": "0x22",
+                "bytes": "85c0",
+                "mnemonic": "test",
+                "operands": "eax, eax"
+              },
+              {
+                "address": "0x24",
+                "bytes": "7866",
+                "mnemonic": "js",
+                "operands": "0x8c"
+              },
+              {
+                "address": "0x26",
+                "bytes": "3dffffff7f",
+                "mnemonic": "cmp",
+                "operands": "eax, 0x7fffffff"
+              },
+              {
+                "address": "0x2b",
+                "bytes": "745f",
+                "mnemonic": "je",
+                "operands": "0x8c"
+              },
+              {
+                "address": "0x2d",
+                "bytes": "83c001",
+                "mnemonic": "add",
+                "operands": "eax, 1"
+              },
+              {
+                "address": "0x30",
+                "bytes": "4863f8",
+                "mnemonic": "movsxd",
+                "operands": "rdi, eax"
+              },
+              {
+                "address": "0x33",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x38"
+              },
+              {
+                "address": "0x38",
+                "bytes": "488945f0",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x10], rax"
+              },
+              {
+                "address": "0x3c",
+                "bytes": "48837df000",
+                "mnemonic": "cmp",
+                "operands": "qword ptr [rbp - 0x10], 0"
+              },
+              {
+                "address": "0x41",
+                "bytes": "750a",
+                "mnemonic": "jne",
+                "operands": "0x4d"
+              },
+              {
+                "address": "0x43",
+                "bytes": "bf01000000",
+                "mnemonic": "mov",
+                "operands": "edi, 1"
+              },
+              {
+                "address": "0x48",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x4d"
+              },
+              {
+                "address": "0x4d",
+                "bytes": "486355fc",
+                "mnemonic": "movsxd",
+                "operands": "rdx, dword ptr [rbp - 4]"
+              },
+              {
+                "address": "0x51",
+                "bytes": "488b4de8",
+                "mnemonic": "mov",
+                "operands": "rcx, qword ptr [rbp - 0x18]"
+              },
+              {
+                "address": "0x55",
+                "bytes": "488b45f0",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 0x10]"
+              },
+              {
+                "address": "0x59",
+                "bytes": "4889ce",
+                "mnemonic": "mov",
+                "operands": "rsi, rcx"
+              },
+              {
+                "address": "0x5c",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x5f",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x64"
+              },
+              {
+                "address": "0x64",
+                "bytes": "486355fc",
+                "mnemonic": "movsxd",
+                "operands": "rdx, dword ptr [rbp - 4]"
+              },
+              {
+                "address": "0x68",
+                "bytes": "488b45f0",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 0x10]"
+              },
+              {
+                "address": "0x6c",
+                "bytes": "4801d0",
+                "mnemonic": "add",
+                "operands": "rax, rdx"
+              },
+              {
+                "address": "0x6f",
+                "bytes": "c60000",
+                "mnemonic": "mov",
+                "operands": "byte ptr [rax], 0"
+              },
+              {
+                "address": "0x72",
+                "bytes": "488b45f0",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 0x10]"
+              },
+              {
+                "address": "0x76",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x79",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x7e"
+              },
+              {
+                "address": "0x7e",
+                "bytes": "488b45f0",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 0x10]"
+              },
+              {
+                "address": "0x82",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x85",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x8a"
+              },
+              {
+                "address": "0x8a",
+                "bytes": "c9",
+                "mnemonic": "leave",
+                "operands": ""
+              },
+              {
+                "address": "0x8b",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              },
+              {
+                "address": "0x8c",
+                "bytes": "bf01000000",
+                "mnemonic": "mov",
+                "operands": "edi, 1"
+              },
+              {
+                "address": "0x91",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x96"
+              },
+              {
+                "address": "0x96",
+                "bytes": "c9",
+                "mnemonic": "leave",
+                "operands": ""
+              },
+              {
+                "address": "0x97",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              }
+            ],
+            "assembly_sha256": "417aaa4dda4411292dadbf7183bfe5185d5f559cd51361e7f76791c62721fc80",
+            "call_targets": [
+              {
+                "name": "free",
+                "target_va": "0x4010a0",
+                "source": "import"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x4010b0",
+                "source": "import"
+              },
+              {
+                "name": "memcpy",
+                "target_va": "0x4010d0",
+                "source": "import"
+              },
+              {
+                "name": "malloc",
+                "target_va": "0x4010e0",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x4010f0",
+                "source": "import"
+              },
+              {
+                "name": "exit",
+                "target_va": "0x401100",
+                "source": "import"
+              }
+            ],
+            "call_relocations": 7,
+            "abi": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          "candidate": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "runner": "limactl",
+            "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+            "poc": {
+              "schema_version": 1,
+              "status": "pass",
+              "runner": "limactl",
+              "tier": "emulated_run",
+              "stdout_signature": "matched",
+              "errno_signature": "not_run",
+              "errno_probe": "",
+              "no_input": false,
+              "original_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+              "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+              "poc": [
+                {
+                  "case_id": "cwe190-negative",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "",
+                  "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe190-negative",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 1,
+                  "crashed": false,
+                  "stdout": "",
+                  "stderr": "",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "regression": [
+                {
+                  "case_id": "cwe190-len-4",
+                  "kind": "regression",
+                  "executable": "original",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "4\n",
+                  "stderr": "",
+                  "stdout_hex": "340a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe190-len-4",
+                  "kind": "regression",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "4\n",
+                  "stderr": "",
+                  "stdout_hex": "340a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "limitations": []
+            },
+            "repair_status": "VERIFIED",
+            "candidate_artifact": "/tmp/p13b-cwe190-integer-overflow/candidates/cwe190-integer-overflow.bin"
+          },
+          "elapsed_ms": 5324,
+          "evidence_links": {
+            "schema_version": 1,
+            "spec_version": 2,
+            "plan_sha256": "c3ea820164bceeb5b0a4636972baf4a774755822abadfdd38495fd6212b6db3d",
+            "assembly_sha256": "b27412ed82115c0899834fd7e53d1e7212bf6fadb91cc86395de752e2eef675e",
+            "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+            "gate": "pass",
+            "links": [
+              {
+                "claim": "parsed length must be validated as non-negative before use",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "allocation size must be length+1 computed without signed overflow",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "memcpy length must equal validated non-negative length",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "NUL terminator must be written at buffer[length] within allocated region",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "no out-of-bounds write beyond allocated buffer",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "negative input does not reach malloc/memcpy with huge size",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "length==INT_MAX does not overflow allocation size",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "memcpy size equals validated length",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "NUL write index equals validated length and is within allocation",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              }
+            ],
+            "native_feedback_class": null
+          }
+        }
+      ],
+      "injection": {
+        "target_va": "0x4011f6",
+        "cave_va": "0x405000",
+        "method": "new-pt-load",
+        "code_bytes": 152,
+        "code_hex": "f30f1efa554889e54883ec2048897de8488b45e84889c7e8000000008945fc8b45fc85c078663dffffff7f745f83c0014863f8e800000000488945f048837df000750abf01000000e800000000486355fc488b4de8488b45f04889ce4889c7e800000000486355fc488b45f04801d0c60000488b45f04889c7e800000000488b45f04889c7e800000000c9c3bf01000000e800000000c9c3",
+        "code_disassembly": [
+          {
+            "address": "0x0",
+            "bytes": "f30f1efa",
+            "mnemonic": "endbr64",
+            "operands": ""
+          },
+          {
+            "address": "0x4",
+            "bytes": "55",
+            "mnemonic": "push",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x5",
+            "bytes": "4889e5",
+            "mnemonic": "mov",
+            "operands": "rbp, rsp"
+          },
+          {
+            "address": "0x8",
+            "bytes": "4883ec20",
+            "mnemonic": "sub",
+            "operands": "rsp, 0x20"
+          },
+          {
+            "address": "0xc",
+            "bytes": "48897de8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x18], rdi"
+          },
+          {
+            "address": "0x10",
+            "bytes": "488b45e8",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 0x18]"
+          },
+          {
+            "address": "0x14",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x17",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x1c"
+          },
+          {
+            "address": "0x1c",
+            "bytes": "8945fc",
+            "mnemonic": "mov",
+            "operands": "dword ptr [rbp - 4], eax"
+          },
+          {
+            "address": "0x1f",
+            "bytes": "8b45fc",
+            "mnemonic": "mov",
+            "operands": "eax, dword ptr [rbp - 4]"
+          },
+          {
+            "address": "0x22",
+            "bytes": "85c0",
+            "mnemonic": "test",
+            "operands": "eax, eax"
+          },
+          {
+            "address": "0x24",
+            "bytes": "7866",
+            "mnemonic": "js",
+            "operands": "0x8c"
+          },
+          {
+            "address": "0x26",
+            "bytes": "3dffffff7f",
+            "mnemonic": "cmp",
+            "operands": "eax, 0x7fffffff"
+          },
+          {
+            "address": "0x2b",
+            "bytes": "745f",
+            "mnemonic": "je",
+            "operands": "0x8c"
+          },
+          {
+            "address": "0x2d",
+            "bytes": "83c001",
+            "mnemonic": "add",
+            "operands": "eax, 1"
+          },
+          {
+            "address": "0x30",
+            "bytes": "4863f8",
+            "mnemonic": "movsxd",
+            "operands": "rdi, eax"
+          },
+          {
+            "address": "0x33",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x38"
+          },
+          {
+            "address": "0x38",
+            "bytes": "488945f0",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x10], rax"
+          },
+          {
+            "address": "0x3c",
+            "bytes": "48837df000",
+            "mnemonic": "cmp",
+            "operands": "qword ptr [rbp - 0x10], 0"
+          },
+          {
+            "address": "0x41",
+            "bytes": "750a",
+            "mnemonic": "jne",
+            "operands": "0x4d"
+          },
+          {
+            "address": "0x43",
+            "bytes": "bf01000000",
+            "mnemonic": "mov",
+            "operands": "edi, 1"
+          },
+          {
+            "address": "0x48",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x4d"
+          },
+          {
+            "address": "0x4d",
+            "bytes": "486355fc",
+            "mnemonic": "movsxd",
+            "operands": "rdx, dword ptr [rbp - 4]"
+          },
+          {
+            "address": "0x51",
+            "bytes": "488b4de8",
+            "mnemonic": "mov",
+            "operands": "rcx, qword ptr [rbp - 0x18]"
+          },
+          {
+            "address": "0x55",
+            "bytes": "488b45f0",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 0x10]"
+          },
+          {
+            "address": "0x59",
+            "bytes": "4889ce",
+            "mnemonic": "mov",
+            "operands": "rsi, rcx"
+          },
+          {
+            "address": "0x5c",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x5f",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x64"
+          },
+          {
+            "address": "0x64",
+            "bytes": "486355fc",
+            "mnemonic": "movsxd",
+            "operands": "rdx, dword ptr [rbp - 4]"
+          },
+          {
+            "address": "0x68",
+            "bytes": "488b45f0",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 0x10]"
+          },
+          {
+            "address": "0x6c",
+            "bytes": "4801d0",
+            "mnemonic": "add",
+            "operands": "rax, rdx"
+          },
+          {
+            "address": "0x6f",
+            "bytes": "c60000",
+            "mnemonic": "mov",
+            "operands": "byte ptr [rax], 0"
+          },
+          {
+            "address": "0x72",
+            "bytes": "488b45f0",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 0x10]"
+          },
+          {
+            "address": "0x76",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x79",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x7e"
+          },
+          {
+            "address": "0x7e",
+            "bytes": "488b45f0",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 0x10]"
+          },
+          {
+            "address": "0x82",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x85",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x8a"
+          },
+          {
+            "address": "0x8a",
+            "bytes": "c9",
+            "mnemonic": "leave",
+            "operands": ""
+          },
+          {
+            "address": "0x8b",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          },
+          {
+            "address": "0x8c",
+            "bytes": "bf01000000",
+            "mnemonic": "mov",
+            "operands": "edi, 1"
+          },
+          {
+            "address": "0x91",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x96"
+          },
+          {
+            "address": "0x96",
+            "bytes": "c9",
+            "mnemonic": "leave",
+            "operands": ""
+          },
+          {
+            "address": "0x97",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          }
+        ],
+        "assembly_sha256": "417aaa4dda4411292dadbf7183bfe5185d5f559cd51361e7f76791c62721fc80",
+        "call_targets": [
+          {
+            "name": "free",
+            "target_va": "0x4010a0",
+            "source": "import"
+          },
+          {
+            "name": "puts",
+            "target_va": "0x4010b0",
+            "source": "import"
+          },
+          {
+            "name": "memcpy",
+            "target_va": "0x4010d0",
+            "source": "import"
+          },
+          {
+            "name": "malloc",
+            "target_va": "0x4010e0",
+            "source": "import"
+          },
+          {
+            "name": "atoi",
+            "target_va": "0x4010f0",
+            "source": "import"
+          },
+          {
+            "name": "exit",
+            "target_va": "0x401100",
+            "source": "import"
+          }
+        ],
+        "call_relocations": 7,
+        "abi": {
+          "ok": true,
+          "fatal": 0,
+          "findings": []
+        }
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "limactl",
+        "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "stdout_signature": "matched",
+          "errno_signature": "not_run",
+          "errno_probe": "",
+          "no_input": false,
+          "original_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+          "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+          "poc": [
+            {
+              "case_id": "cwe190-negative",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe190-negative",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "cwe190-len-4",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "4\n",
+              "stderr": "",
+              "stdout_hex": "340a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe190-len-4",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "4\n",
+              "stderr": "",
+              "stdout_hex": "340a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "limitations": []
+        },
+        "repair_status": "VERIFIED",
+        "candidate_artifact": "/tmp/p13b-cwe190-integer-overflow/candidates/cwe190-integer-overflow.bin"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "status": "accepted",
+        "latency_ms": 2344,
+        "plan_sha256": "e01e7c6273b1258d85200d3ce6462155ef7c585e0173a044862c489b915bac22",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 2344,
+          "completion_tokens": 450,
+          "total_tokens": 2794,
+          "latency_ms": 2340
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-flash",
+        "model_identity_ok": true
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 2344,
+          "completion_tokens": 450,
+          "total_tokens": 2794,
+          "latency_ms": 2340
+        },
+        "request_id": null,
+        "elapsed_ms": 5324,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe190_bad",
+          "va": 4198902,
+          "end": 4199038,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 3590,
+                "plan_sha256": "43c279bcdadea353ba44a56a02e7d0ad4cfb6eede19be2a81e798b43d0d63f6c",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 2597,
+                  "completion_tokens": 900,
+                  "total_tokens": 3497,
+                  "latency_ms": 3589
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "integer_overflow",
+                  "cwe": "CWE-190",
+                  "root_cause": "atoi return value is stored as a signed 32-bit int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for the memcpy length and NUL terminator offset. A negative or INT_MAX input yields a huge/negative size passed to malloc/memcpy, causing undersized allocation and out-of-bounds write."
+                },
+                "program_context": {
+                  "function": "cwe190_bad",
+                  "addresses": [
+                    "0x4011f6",
+                    "0x4011fa",
+                    "0x4011fb",
+                    "0x4011fe",
+                    "0x401202",
+                    "0x401206",
+                    "0x40120a",
+                    "0x40120d",
+                    "0x401212",
+                    "0x401215",
+                    "0x401218",
+                    "0x40121b",
+                    "0x40121d",
+                    "0x401220",
+                    "0x401225",
+                    "0x401229",
+                    "0x40122e",
+                    "0x401230",
+                    "0x401235",
+                    "0x40123a",
+                    "0x40123d",
+                    "0x401240",
+                    "0x401244",
+                    "0x401248",
+                    "0x40124b",
+                    "0x40124e",
+                    "0x401253",
+                    "0x401256",
+                    "0x401259",
+                    "0x40125d",
+                    "0x401260",
+                    "0x401263",
+                    "0x401267",
+                    "0x40126a",
+                    "0x40126f",
+                    "0x401273",
+                    "0x401276",
+                    "0x40127b",
+                    "0x40127c",
+                    "0x40127d"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rsi",
+                    "rdx",
+                    "rax",
+                    "rcx",
+                    "rbp",
+                    "rsp"
+                  ],
+                  "memory": [
+                    "[rbp-0x18] input pointer",
+                    "[rbp-0x10] buffer pointer",
+                    "[rbp-4] parsed length (int)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    {
+                      "name": "free",
+                      "source": "import",
+                      "target_va": "0x4010a0"
+                    },
+                    {
+                      "name": "puts",
+                      "source": "import",
+                      "target_va": "0x4010b0"
+                    },
+                    {
+                      "name": "memcpy",
+                      "source": "import",
+                      "target_va": "0x4010d0"
+                    },
+                    {
+                      "name": "malloc",
+                      "source": "import",
+                      "target_va": "0x4010e0"
+                    },
+                    {
+                      "name": "atoi",
+                      "source": "import",
+                      "target_va": "0x4010f0"
+                    },
+                    {
+                      "name": "exit",
+                      "source": "import",
+                      "target_va": "0x401100"
+                    }
+                  ]
+                },
+                "security_invariants": [
+                  "parsed length must be validated as non-negative before use",
+                  "allocation size must be length+1 computed without signed overflow",
+                  "memcpy length must equal validated non-negative length",
+                  "NUL terminator must be written at buffer[length] within allocated region",
+                  "no out-of-bounds write beyond allocated buffer"
+                ],
+                "repair": {
+                  "strategy": "After atoi, reject negative length and INT_MAX overflow of length+1 by calling exit(1); otherwise compute size as 64-bit (length+1) for malloc, use zero-extended 64-bit length for memcpy and NUL offset. Preserve normal output via puts and free.",
+                  "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                  "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "SysV"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "negative input does not reach malloc/memcpy with huge size",
+                    "length==INT_MAX does not overflow allocation size",
+                    "memcpy size equals validated length",
+                    "NUL write index equals validated length and is within allocation"
+                  ],
+                  "regression_conditions": [
+                    "valid input still prints the copied string via puts",
+                    "buffer is freed exactly once",
+                    "function returns normally for valid inputs",
+                    "only direct calls to allowed_calls target addresses are emitted"
+                  ]
+                },
+                "confidence": "high",
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "integer_overflow",
+                  "root_cause": "atoi return value is stored as a signed 32-bit int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for the memcpy length and NUL terminator offset. A negative or INT_MAX input yields a huge/negative size passed to malloc/memcpy, causing undersized allocation and out-of-bounds write.",
+                  "cwe": "CWE-190"
+                },
+                "program_context": {
+                  "function": "cwe190_bad",
+                  "addresses": [
+                    "0x4011f6",
+                    "0x4011fa",
+                    "0x4011fb",
+                    "0x4011fe",
+                    "0x401202",
+                    "0x401206",
+                    "0x40120a",
+                    "0x40120d",
+                    "0x401212",
+                    "0x401215",
+                    "0x401218",
+                    "0x40121b",
+                    "0x40121d",
+                    "0x401220",
+                    "0x401225",
+                    "0x401229",
+                    "0x40122e",
+                    "0x401230",
+                    "0x401235",
+                    "0x40123a",
+                    "0x40123d",
+                    "0x401240",
+                    "0x401244",
+                    "0x401248",
+                    "0x40124b",
+                    "0x40124e",
+                    "0x401253",
+                    "0x401256",
+                    "0x401259",
+                    "0x40125d",
+                    "0x401260",
+                    "0x401263",
+                    "0x401267",
+                    "0x40126a",
+                    "0x40126f",
+                    "0x401273",
+                    "0x401276",
+                    "0x40127b",
+                    "0x40127c",
+                    "0x40127d"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rsi",
+                    "rdx",
+                    "rax",
+                    "rcx",
+                    "rbp",
+                    "rsp"
+                  ],
+                  "memory": [
+                    "[rbp-0x18] input pointer",
+                    "[rbp-0x10] buffer pointer",
+                    "[rbp-4] parsed length (int)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    "free",
+                    "puts",
+                    "memcpy",
+                    "malloc",
+                    "atoi",
+                    "exit"
+                  ]
+                },
+                "security_invariants": [
+                  "parsed length must be validated as non-negative before use",
+                  "allocation size must be length+1 computed without signed overflow",
+                  "memcpy length must equal validated non-negative length",
+                  "NUL terminator must be written at buffer[length] within allocated region",
+                  "no out-of-bounds write beyond allocated buffer"
+                ],
+                "repair": {
+                  "strategy": "guard_input_length",
+                  "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                  "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "sysv_amd64"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "negative input does not reach malloc/memcpy with huge size",
+                    "length==INT_MAX does not overflow allocation size",
+                    "memcpy size equals validated length",
+                    "NUL write index equals validated length and is within allocation"
+                  ],
+                  "regression_conditions": [
+                    "valid input still prints the copied string via puts",
+                    "buffer is freed exactly once",
+                    "function returns normally for valid inputs",
+                    "only direct calls to allowed_calls target addresses are emitted"
+                  ],
+                  "required_inputs": []
+                },
+                "confidence": "high",
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan_sha256": "c3ea820164bceeb5b0a4636972baf4a774755822abadfdd38495fd6212b6db3d",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "free",
+                  "target_va": "0x4010a0",
+                  "source": "import"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x4010b0",
+                  "source": "import"
+                },
+                {
+                  "name": "memcpy",
+                  "target_va": "0x4010d0",
+                  "source": "import"
+                },
+                {
+                  "name": "malloc",
+                  "target_va": "0x4010e0",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x4010f0",
+                  "source": "import"
+                },
+                {
+                  "name": "exit",
+                  "target_va": "0x401100",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "invalid",
+                  "error": "permitted_call_not_allowed:atoi@0x4010f0,exit@0x401100,free@0x4010a0,malloc@0x4010e0,memcpy@0x4010d0,puts@0x4010b0",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 1570,
+                    "completion_tokens": 832,
+                    "total_tokens": 2402,
+                    "latency_ms": 4609
+                  },
+                  "latency_ms": 4610,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "integer_overflow",
+                      "cwe": "CWE-190",
+                      "root_cause": "atoi return value stored as signed int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for memcpy length and NUL terminator offset. A negative or INT_MAX input causes a huge/negative size passed to malloc/memcpy, leading to undersized allocation and out-of-bounds write."
+                    },
+                    "program_context": {
+                      "function": "cwe190_bad",
+                      "addresses": [
+                        "0x4011f6",
+                        "0x4011fa",
+                        "0x4011fb",
+                        "0x4011fe",
+                        "0x401202",
+                        "0x401206",
+                        "0x40120a",
+                        "0x40120d",
+                        "0x401212",
+                        "0x401215",
+                        "0x401218",
+                        "0x40121b",
+                        "0x40121d",
+                        "0x401220",
+                        "0x401225",
+                        "0x401229",
+                        "0x40122e",
+                        "0x401230",
+                        "0x401235",
+                        "0x40123a",
+                        "0x40123d",
+                        "0x401240",
+                        "0x401244",
+                        "0x401248",
+                        "0x40124b",
+                        "0x40124e",
+                        "0x401253",
+                        "0x401256",
+                        "0x401259",
+                        "0x40125d",
+                        "0x401260",
+                        "0x401263",
+                        "0x401267",
+                        "0x40126a",
+                        "0x40126f",
+                        "0x401273",
+                        "0x401276",
+                        "0x40127b",
+                        "0x40127c",
+                        "0x40127d"
+                      ],
+                      "registers": [
+                        "rdi",
+                        "rsi",
+                        "rdx",
+                        "rax",
+                        "rcx",
+                        "rbp",
+                        "rsp"
+                      ],
+                      "memory": [
+                        "[rbp-0x18] input pointer",
+                        "[rbp-0x10] buffer pointer",
+                        "[rbp-4] parsed length (int)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        "free@0x4010a0",
+                        "puts@0x4010b0",
+                        "memcpy@0x4010d0",
+                        "malloc@0x4010e0",
+                        "atoi@0x4010f0",
+                        "exit@0x401100"
+                      ]
+                    },
+                    "security_invariants": [
+                      "parsed length must be validated as non-negative before use",
+                      "allocation size must be length+1 computed without signed overflow",
+                      "memcpy length must equal validated non-negative length",
+                      "NUL terminator must be written at buffer[length] within allocated region",
+                      "no out-of-bounds write beyond allocated buffer"
+                    ],
+                    "repair": {
+                      "strategy": "After atoi, reject negative length (and INT_MAX overflow of length+1) by exiting with status 1; otherwise compute size as 64-bit (length+1) for malloc, use zero-extended 64-bit length for memcpy and NUL offset. Preserve normal output via puts and free.",
+                      "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                      "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "negative input does not reach malloc/memcpy with huge size",
+                        "length==INT_MAX does not overflow allocation size",
+                        "memcpy size equals validated length",
+                        "NUL write index equals validated length and is within allocation"
+                      ],
+                      "regression_conditions": [
+                        "valid input still prints the copied string via puts",
+                        "buffer is freed exactly once",
+                        "function returns normally for valid inputs",
+                        "only direct calls to allowed_calls target addresses are emitted"
+                      ]
+                    },
+                    "confidence": "high",
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                },
+                {
+                  "attempt": 2,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 2597,
+                    "completion_tokens": 900,
+                    "total_tokens": 3497,
+                    "latency_ms": 3589
+                  },
+                  "latency_ms": 3590,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "integer_overflow",
+                      "cwe": "CWE-190",
+                      "root_cause": "atoi return value is stored as a signed 32-bit int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for the memcpy length and NUL terminator offset. A negative or INT_MAX input yields a huge/negative size passed to malloc/memcpy, causing undersized allocation and out-of-bounds write."
+                    },
+                    "program_context": {
+                      "function": "cwe190_bad",
+                      "addresses": [
+                        "0x4011f6",
+                        "0x4011fa",
+                        "0x4011fb",
+                        "0x4011fe",
+                        "0x401202",
+                        "0x401206",
+                        "0x40120a",
+                        "0x40120d",
+                        "0x401212",
+                        "0x401215",
+                        "0x401218",
+                        "0x40121b",
+                        "0x40121d",
+                        "0x401220",
+                        "0x401225",
+                        "0x401229",
+                        "0x40122e",
+                        "0x401230",
+                        "0x401235",
+                        "0x40123a",
+                        "0x40123d",
+                        "0x401240",
+                        "0x401244",
+                        "0x401248",
+                        "0x40124b",
+                        "0x40124e",
+                        "0x401253",
+                        "0x401256",
+                        "0x401259",
+                        "0x40125d",
+                        "0x401260",
+                        "0x401263",
+                        "0x401267",
+                        "0x40126a",
+                        "0x40126f",
+                        "0x401273",
+                        "0x401276",
+                        "0x40127b",
+                        "0x40127c",
+                        "0x40127d"
+                      ],
+                      "registers": [
+                        "rdi",
+                        "rsi",
+                        "rdx",
+                        "rax",
+                        "rcx",
+                        "rbp",
+                        "rsp"
+                      ],
+                      "memory": [
+                        "[rbp-0x18] input pointer",
+                        "[rbp-0x10] buffer pointer",
+                        "[rbp-4] parsed length (int)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        {
+                          "name": "free",
+                          "source": "import",
+                          "target_va": "0x4010a0"
+                        },
+                        {
+                          "name": "puts",
+                          "source": "import",
+                          "target_va": "0x4010b0"
+                        },
+                        {
+                          "name": "memcpy",
+                          "source": "import",
+                          "target_va": "0x4010d0"
+                        },
+                        {
+                          "name": "malloc",
+                          "source": "import",
+                          "target_va": "0x4010e0"
+                        },
+                        {
+                          "name": "atoi",
+                          "source": "import",
+                          "target_va": "0x4010f0"
+                        },
+                        {
+                          "name": "exit",
+                          "source": "import",
+                          "target_va": "0x401100"
+                        }
+                      ]
+                    },
+                    "security_invariants": [
+                      "parsed length must be validated as non-negative before use",
+                      "allocation size must be length+1 computed without signed overflow",
+                      "memcpy length must equal validated non-negative length",
+                      "NUL terminator must be written at buffer[length] within allocated region",
+                      "no out-of-bounds write beyond allocated buffer"
+                    ],
+                    "repair": {
+                      "strategy": "After atoi, reject negative length and INT_MAX overflow of length+1 by calling exit(1); otherwise compute size as 64-bit (length+1) for malloc, use zero-extended 64-bit length for memcpy and NUL offset. Preserve normal output via puts and free.",
+                      "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                      "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "negative input does not reach malloc/memcpy with huge size",
+                        "length==INT_MAX does not overflow allocation size",
+                        "memcpy size equals validated length",
+                        "NUL write index equals validated length and is within allocation"
+                      ],
+                      "regression_conditions": [
+                        "valid input still prints the copied string via puts",
+                        "buffer is freed exactly once",
+                        "function returns normally for valid inputs",
+                        "only direct calls to allowed_calls target addresses are emitted"
+                      ]
+                    },
+                    "confidence": "high",
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                }
+              ],
+              "elapsed_ms": 8205
+            },
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "c3ea820164bceeb5b0a4636972baf4a774755822abadfdd38495fd6212b6db3d",
+            "usage": {
+              "prompt_tokens": 2344,
+              "completion_tokens": 450,
+              "total_tokens": 2794,
+              "latency_ms": 2340
+            },
+            "latency_ms": 2344,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "b27412ed82115c0899834fd7e53d1e7212bf6fadb91cc86395de752e2eef675e",
+            "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010f0\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Linvalid\ncmp eax, 0x7fffffff\nje .Linvalid\nadd eax, 1\nmovsxd rdi, eax\ncall 0x4010e0\nmov qword ptr [rbp - 0x10], rax\ncmp qword ptr [rbp - 0x10], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmovsxd rdx, dword ptr [rbp - 4]\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 0x10]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010d0\nmovsxd rdx, dword ptr [rbp - 4]\nmov rax, qword ptr [rbp - 0x10]\nadd rax, rdx\nmov byte ptr [rax], 0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Linvalid:\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "b27412ed82115c0899834fd7e53d1e7212bf6fadb91cc86395de752e2eef675e",
+                "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010f0\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Linvalid\ncmp eax, 0x7fffffff\nje .Linvalid\nadd eax, 1\nmovsxd rdi, eax\ncall 0x4010e0\nmov qword ptr [rbp - 0x10], rax\ncmp qword ptr [rbp - 0x10], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmovsxd rdx, dword ptr [rbp - 4]\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 0x10]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010d0\nmovsxd rdx, dword ptr [rbp - 4]\nmov rax, qword ptr [rbp - 0x10]\nadd rax, rdx\nmov byte ptr [rax], 0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Linvalid:\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 2344,
+                  "completion_tokens": 450,
+                  "total_tokens": 2794,
+                  "latency_ms": 2340
+                },
+                "latency_ms": 2344,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "free",
+                "target_va": "0x4010a0",
+                "source": "import"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x4010b0",
+                "source": "import"
+              },
+              {
+                "name": "memcpy",
+                "target_va": "0x4010d0",
+                "source": "import"
+              },
+              {
+                "name": "malloc",
+                "target_va": "0x4010e0",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x4010f0",
+                "source": "import"
+              },
+              {
+                "name": "exit",
+                "target_va": "0x401100",
+                "source": "import"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "cwe190_bad",
+              "va": 4198902,
+              "end": 4199038,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x4011f6",
+              "cave_va": "0x405000",
+              "method": "new-pt-load",
+              "code_bytes": 152,
+              "code_hex": "f30f1efa554889e54883ec2048897de8488b45e84889c7e8000000008945fc8b45fc85c078663dffffff7f745f83c0014863f8e800000000488945f048837df000750abf01000000e800000000486355fc488b4de8488b45f04889ce4889c7e800000000486355fc488b45f04801d0c60000488b45f04889c7e800000000488b45f04889c7e800000000c9c3bf01000000e800000000c9c3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "f30f1efa",
+                  "mnemonic": "endbr64",
+                  "operands": ""
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x5",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "4883ec20",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x20"
+                },
+                {
+                  "address": "0xc",
+                  "bytes": "48897de8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x18], rdi"
+                },
+                {
+                  "address": "0x10",
+                  "bytes": "488b45e8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x18]"
+                },
+                {
+                  "address": "0x14",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x17",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x1c"
+                },
+                {
+                  "address": "0x1c",
+                  "bytes": "8945fc",
+                  "mnemonic": "mov",
+                  "operands": "dword ptr [rbp - 4], eax"
+                },
+                {
+                  "address": "0x1f",
+                  "bytes": "8b45fc",
+                  "mnemonic": "mov",
+                  "operands": "eax, dword ptr [rbp - 4]"
+                },
+                {
+                  "address": "0x22",
+                  "bytes": "85c0",
+                  "mnemonic": "test",
+                  "operands": "eax, eax"
+                },
+                {
+                  "address": "0x24",
+                  "bytes": "7866",
+                  "mnemonic": "js",
+                  "operands": "0x8c"
+                },
+                {
+                  "address": "0x26",
+                  "bytes": "3dffffff7f",
+                  "mnemonic": "cmp",
+                  "operands": "eax, 0x7fffffff"
+                },
+                {
+                  "address": "0x2b",
+                  "bytes": "745f",
+                  "mnemonic": "je",
+                  "operands": "0x8c"
+                },
+                {
+                  "address": "0x2d",
+                  "bytes": "83c001",
+                  "mnemonic": "add",
+                  "operands": "eax, 1"
+                },
+                {
+                  "address": "0x30",
+                  "bytes": "4863f8",
+                  "mnemonic": "movsxd",
+                  "operands": "rdi, eax"
+                },
+                {
+                  "address": "0x33",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x38"
+                },
+                {
+                  "address": "0x38",
+                  "bytes": "488945f0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x10], rax"
+                },
+                {
+                  "address": "0x3c",
+                  "bytes": "48837df000",
+                  "mnemonic": "cmp",
+                  "operands": "qword ptr [rbp - 0x10], 0"
+                },
+                {
+                  "address": "0x41",
+                  "bytes": "750a",
+                  "mnemonic": "jne",
+                  "operands": "0x4d"
+                },
+                {
+                  "address": "0x43",
+                  "bytes": "bf01000000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 1"
+                },
+                {
+                  "address": "0x48",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x4d"
+                },
+                {
+                  "address": "0x4d",
+                  "bytes": "486355fc",
+                  "mnemonic": "movsxd",
+                  "operands": "rdx, dword ptr [rbp - 4]"
+                },
+                {
+                  "address": "0x51",
+                  "bytes": "488b4de8",
+                  "mnemonic": "mov",
+                  "operands": "rcx, qword ptr [rbp - 0x18]"
+                },
+                {
+                  "address": "0x55",
+                  "bytes": "488b45f0",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x10]"
+                },
+                {
+                  "address": "0x59",
+                  "bytes": "4889ce",
+                  "mnemonic": "mov",
+                  "operands": "rsi, rcx"
+                },
+                {
+                  "address": "0x5c",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x5f",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x64"
+                },
+                {
+                  "address": "0x64",
+                  "bytes": "486355fc",
+                  "mnemonic": "movsxd",
+                  "operands": "rdx, dword ptr [rbp - 4]"
+                },
+                {
+                  "address": "0x68",
+                  "bytes": "488b45f0",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x10]"
+                },
+                {
+                  "address": "0x6c",
+                  "bytes": "4801d0",
+                  "mnemonic": "add",
+                  "operands": "rax, rdx"
+                },
+                {
+                  "address": "0x6f",
+                  "bytes": "c60000",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rax], 0"
+                },
+                {
+                  "address": "0x72",
+                  "bytes": "488b45f0",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x10]"
+                },
+                {
+                  "address": "0x76",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x79",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x7e"
+                },
+                {
+                  "address": "0x7e",
+                  "bytes": "488b45f0",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x10]"
+                },
+                {
+                  "address": "0x82",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x85",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x8a"
+                },
+                {
+                  "address": "0x8a",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x8b",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                },
+                {
+                  "address": "0x8c",
+                  "bytes": "bf01000000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 1"
+                },
+                {
+                  "address": "0x91",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x96"
+                },
+                {
+                  "address": "0x96",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x97",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "417aaa4dda4411292dadbf7183bfe5185d5f559cd51361e7f76791c62721fc80",
+              "call_targets": [
+                {
+                  "name": "free",
+                  "target_va": "0x4010a0",
+                  "source": "import"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x4010b0",
+                  "source": "import"
+                },
+                {
+                  "name": "memcpy",
+                  "target_va": "0x4010d0",
+                  "source": "import"
+                },
+                {
+                  "name": "malloc",
+                  "target_va": "0x4010e0",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x4010f0",
+                  "source": "import"
+                },
+                {
+                  "name": "exit",
+                  "target_va": "0x401100",
+                  "source": "import"
+                }
+              ],
+              "call_relocations": 7,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+                "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+                "poc": [
+                  {
+                    "case_id": "cwe190-negative",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe190-negative",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 1,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "cwe190-len-4",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "4\n",
+                    "stderr": "",
+                    "stdout_hex": "340a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe190-len-4",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "4\n",
+                    "stderr": "",
+                    "stdout_hex": "340a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/p13b-cwe190-integer-overflow/candidates/cwe190-integer-overflow.bin"
+            },
+            "elapsed_ms": 5324,
+            "evidence_links": {
+              "schema_version": 1,
+              "spec_version": 2,
+              "plan_sha256": "c3ea820164bceeb5b0a4636972baf4a774755822abadfdd38495fd6212b6db3d",
+              "assembly_sha256": "b27412ed82115c0899834fd7e53d1e7212bf6fadb91cc86395de752e2eef675e",
+              "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+              "gate": "pass",
+              "links": [
+                {
+                  "claim": "parsed length must be validated as non-negative before use",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "allocation size must be length+1 computed without signed overflow",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "memcpy length must equal validated non-negative length",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "NUL terminator must be written at buffer[length] within allocated region",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "no out-of-bounds write beyond allocated buffer",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "negative input does not reach malloc/memcpy with huge size",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "length==INT_MAX does not overflow allocation size",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "memcpy size equals validated length",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "NUL write index equals validated length and is within allocation",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                }
+              ],
+              "native_feedback_class": null
+            }
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 2344,
+          "completion_tokens": 450,
+          "total_tokens": 2794,
+          "latency_ms": 2340
+        },
+        "request_id": null,
+        "elapsed_ms": 5324,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe190_bad",
+          "va": 4198902,
+          "end": 4199038,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 3590,
+                "plan_sha256": "43c279bcdadea353ba44a56a02e7d0ad4cfb6eede19be2a81e798b43d0d63f6c",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 2597,
+                  "completion_tokens": 900,
+                  "total_tokens": 3497,
+                  "latency_ms": 3589
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "integer_overflow",
+                  "cwe": "CWE-190",
+                  "root_cause": "atoi return value is stored as a signed 32-bit int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for the memcpy length and NUL terminator offset. A negative or INT_MAX input yields a huge/negative size passed to malloc/memcpy, causing undersized allocation and out-of-bounds write."
+                },
+                "program_context": {
+                  "function": "cwe190_bad",
+                  "addresses": [
+                    "0x4011f6",
+                    "0x4011fa",
+                    "0x4011fb",
+                    "0x4011fe",
+                    "0x401202",
+                    "0x401206",
+                    "0x40120a",
+                    "0x40120d",
+                    "0x401212",
+                    "0x401215",
+                    "0x401218",
+                    "0x40121b",
+                    "0x40121d",
+                    "0x401220",
+                    "0x401225",
+                    "0x401229",
+                    "0x40122e",
+                    "0x401230",
+                    "0x401235",
+                    "0x40123a",
+                    "0x40123d",
+                    "0x401240",
+                    "0x401244",
+                    "0x401248",
+                    "0x40124b",
+                    "0x40124e",
+                    "0x401253",
+                    "0x401256",
+                    "0x401259",
+                    "0x40125d",
+                    "0x401260",
+                    "0x401263",
+                    "0x401267",
+                    "0x40126a",
+                    "0x40126f",
+                    "0x401273",
+                    "0x401276",
+                    "0x40127b",
+                    "0x40127c",
+                    "0x40127d"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rsi",
+                    "rdx",
+                    "rax",
+                    "rcx",
+                    "rbp",
+                    "rsp"
+                  ],
+                  "memory": [
+                    "[rbp-0x18] input pointer",
+                    "[rbp-0x10] buffer pointer",
+                    "[rbp-4] parsed length (int)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    {
+                      "name": "free",
+                      "source": "import",
+                      "target_va": "0x4010a0"
+                    },
+                    {
+                      "name": "puts",
+                      "source": "import",
+                      "target_va": "0x4010b0"
+                    },
+                    {
+                      "name": "memcpy",
+                      "source": "import",
+                      "target_va": "0x4010d0"
+                    },
+                    {
+                      "name": "malloc",
+                      "source": "import",
+                      "target_va": "0x4010e0"
+                    },
+                    {
+                      "name": "atoi",
+                      "source": "import",
+                      "target_va": "0x4010f0"
+                    },
+                    {
+                      "name": "exit",
+                      "source": "import",
+                      "target_va": "0x401100"
+                    }
+                  ]
+                },
+                "security_invariants": [
+                  "parsed length must be validated as non-negative before use",
+                  "allocation size must be length+1 computed without signed overflow",
+                  "memcpy length must equal validated non-negative length",
+                  "NUL terminator must be written at buffer[length] within allocated region",
+                  "no out-of-bounds write beyond allocated buffer"
+                ],
+                "repair": {
+                  "strategy": "After atoi, reject negative length and INT_MAX overflow of length+1 by calling exit(1); otherwise compute size as 64-bit (length+1) for malloc, use zero-extended 64-bit length for memcpy and NUL offset. Preserve normal output via puts and free.",
+                  "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                  "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "SysV"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "negative input does not reach malloc/memcpy with huge size",
+                    "length==INT_MAX does not overflow allocation size",
+                    "memcpy size equals validated length",
+                    "NUL write index equals validated length and is within allocation"
+                  ],
+                  "regression_conditions": [
+                    "valid input still prints the copied string via puts",
+                    "buffer is freed exactly once",
+                    "function returns normally for valid inputs",
+                    "only direct calls to allowed_calls target addresses are emitted"
+                  ]
+                },
+                "confidence": "high",
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "integer_overflow",
+                  "root_cause": "atoi return value is stored as a signed 32-bit int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for the memcpy length and NUL terminator offset. A negative or INT_MAX input yields a huge/negative size passed to malloc/memcpy, causing undersized allocation and out-of-bounds write.",
+                  "cwe": "CWE-190"
+                },
+                "program_context": {
+                  "function": "cwe190_bad",
+                  "addresses": [
+                    "0x4011f6",
+                    "0x4011fa",
+                    "0x4011fb",
+                    "0x4011fe",
+                    "0x401202",
+                    "0x401206",
+                    "0x40120a",
+                    "0x40120d",
+                    "0x401212",
+                    "0x401215",
+                    "0x401218",
+                    "0x40121b",
+                    "0x40121d",
+                    "0x401220",
+                    "0x401225",
+                    "0x401229",
+                    "0x40122e",
+                    "0x401230",
+                    "0x401235",
+                    "0x40123a",
+                    "0x40123d",
+                    "0x401240",
+                    "0x401244",
+                    "0x401248",
+                    "0x40124b",
+                    "0x40124e",
+                    "0x401253",
+                    "0x401256",
+                    "0x401259",
+                    "0x40125d",
+                    "0x401260",
+                    "0x401263",
+                    "0x401267",
+                    "0x40126a",
+                    "0x40126f",
+                    "0x401273",
+                    "0x401276",
+                    "0x40127b",
+                    "0x40127c",
+                    "0x40127d"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rsi",
+                    "rdx",
+                    "rax",
+                    "rcx",
+                    "rbp",
+                    "rsp"
+                  ],
+                  "memory": [
+                    "[rbp-0x18] input pointer",
+                    "[rbp-0x10] buffer pointer",
+                    "[rbp-4] parsed length (int)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    "free",
+                    "puts",
+                    "memcpy",
+                    "malloc",
+                    "atoi",
+                    "exit"
+                  ]
+                },
+                "security_invariants": [
+                  "parsed length must be validated as non-negative before use",
+                  "allocation size must be length+1 computed without signed overflow",
+                  "memcpy length must equal validated non-negative length",
+                  "NUL terminator must be written at buffer[length] within allocated region",
+                  "no out-of-bounds write beyond allocated buffer"
+                ],
+                "repair": {
+                  "strategy": "guard_input_length",
+                  "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                  "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "sysv_amd64"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "negative input does not reach malloc/memcpy with huge size",
+                    "length==INT_MAX does not overflow allocation size",
+                    "memcpy size equals validated length",
+                    "NUL write index equals validated length and is within allocation"
+                  ],
+                  "regression_conditions": [
+                    "valid input still prints the copied string via puts",
+                    "buffer is freed exactly once",
+                    "function returns normally for valid inputs",
+                    "only direct calls to allowed_calls target addresses are emitted"
+                  ],
+                  "required_inputs": []
+                },
+                "confidence": "high",
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan_sha256": "c3ea820164bceeb5b0a4636972baf4a774755822abadfdd38495fd6212b6db3d",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "free",
+                  "target_va": "0x4010a0",
+                  "source": "import"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x4010b0",
+                  "source": "import"
+                },
+                {
+                  "name": "memcpy",
+                  "target_va": "0x4010d0",
+                  "source": "import"
+                },
+                {
+                  "name": "malloc",
+                  "target_va": "0x4010e0",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x4010f0",
+                  "source": "import"
+                },
+                {
+                  "name": "exit",
+                  "target_va": "0x401100",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "invalid",
+                  "error": "permitted_call_not_allowed:atoi@0x4010f0,exit@0x401100,free@0x4010a0,malloc@0x4010e0,memcpy@0x4010d0,puts@0x4010b0",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 1570,
+                    "completion_tokens": 832,
+                    "total_tokens": 2402,
+                    "latency_ms": 4609
+                  },
+                  "latency_ms": 4610,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "integer_overflow",
+                      "cwe": "CWE-190",
+                      "root_cause": "atoi return value stored as signed int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for memcpy length and NUL terminator offset. A negative or INT_MAX input causes a huge/negative size passed to malloc/memcpy, leading to undersized allocation and out-of-bounds write."
+                    },
+                    "program_context": {
+                      "function": "cwe190_bad",
+                      "addresses": [
+                        "0x4011f6",
+                        "0x4011fa",
+                        "0x4011fb",
+                        "0x4011fe",
+                        "0x401202",
+                        "0x401206",
+                        "0x40120a",
+                        "0x40120d",
+                        "0x401212",
+                        "0x401215",
+                        "0x401218",
+                        "0x40121b",
+                        "0x40121d",
+                        "0x401220",
+                        "0x401225",
+                        "0x401229",
+                        "0x40122e",
+                        "0x401230",
+                        "0x401235",
+                        "0x40123a",
+                        "0x40123d",
+                        "0x401240",
+                        "0x401244",
+                        "0x401248",
+                        "0x40124b",
+                        "0x40124e",
+                        "0x401253",
+                        "0x401256",
+                        "0x401259",
+                        "0x40125d",
+                        "0x401260",
+                        "0x401263",
+                        "0x401267",
+                        "0x40126a",
+                        "0x40126f",
+                        "0x401273",
+                        "0x401276",
+                        "0x40127b",
+                        "0x40127c",
+                        "0x40127d"
+                      ],
+                      "registers": [
+                        "rdi",
+                        "rsi",
+                        "rdx",
+                        "rax",
+                        "rcx",
+                        "rbp",
+                        "rsp"
+                      ],
+                      "memory": [
+                        "[rbp-0x18] input pointer",
+                        "[rbp-0x10] buffer pointer",
+                        "[rbp-4] parsed length (int)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        "free@0x4010a0",
+                        "puts@0x4010b0",
+                        "memcpy@0x4010d0",
+                        "malloc@0x4010e0",
+                        "atoi@0x4010f0",
+                        "exit@0x401100"
+                      ]
+                    },
+                    "security_invariants": [
+                      "parsed length must be validated as non-negative before use",
+                      "allocation size must be length+1 computed without signed overflow",
+                      "memcpy length must equal validated non-negative length",
+                      "NUL terminator must be written at buffer[length] within allocated region",
+                      "no out-of-bounds write beyond allocated buffer"
+                    ],
+                    "repair": {
+                      "strategy": "After atoi, reject negative length (and INT_MAX overflow of length+1) by exiting with status 1; otherwise compute size as 64-bit (length+1) for malloc, use zero-extended 64-bit length for memcpy and NUL offset. Preserve normal output via puts and free.",
+                      "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                      "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "negative input does not reach malloc/memcpy with huge size",
+                        "length==INT_MAX does not overflow allocation size",
+                        "memcpy size equals validated length",
+                        "NUL write index equals validated length and is within allocation"
+                      ],
+                      "regression_conditions": [
+                        "valid input still prints the copied string via puts",
+                        "buffer is freed exactly once",
+                        "function returns normally for valid inputs",
+                        "only direct calls to allowed_calls target addresses are emitted"
+                      ]
+                    },
+                    "confidence": "high",
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                },
+                {
+                  "attempt": 2,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 2597,
+                    "completion_tokens": 900,
+                    "total_tokens": 3497,
+                    "latency_ms": 3589
+                  },
+                  "latency_ms": 3590,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "integer_overflow",
+                      "cwe": "CWE-190",
+                      "root_cause": "atoi return value is stored as a signed 32-bit int at [rbp-4]; length+1 is computed in 32-bit (add eax,1) then sign-extended via cdqe for malloc, and the same signed int is sign-extended via movsxd for the memcpy length and NUL terminator offset. A negative or INT_MAX input yields a huge/negative size passed to malloc/memcpy, causing undersized allocation and out-of-bounds write."
+                    },
+                    "program_context": {
+                      "function": "cwe190_bad",
+                      "addresses": [
+                        "0x4011f6",
+                        "0x4011fa",
+                        "0x4011fb",
+                        "0x4011fe",
+                        "0x401202",
+                        "0x401206",
+                        "0x40120a",
+                        "0x40120d",
+                        "0x401212",
+                        "0x401215",
+                        "0x401218",
+                        "0x40121b",
+                        "0x40121d",
+                        "0x401220",
+                        "0x401225",
+                        "0x401229",
+                        "0x40122e",
+                        "0x401230",
+                        "0x401235",
+                        "0x40123a",
+                        "0x40123d",
+                        "0x401240",
+                        "0x401244",
+                        "0x401248",
+                        "0x40124b",
+                        "0x40124e",
+                        "0x401253",
+                        "0x401256",
+                        "0x401259",
+                        "0x40125d",
+                        "0x401260",
+                        "0x401263",
+                        "0x401267",
+                        "0x40126a",
+                        "0x40126f",
+                        "0x401273",
+                        "0x401276",
+                        "0x40127b",
+                        "0x40127c",
+                        "0x40127d"
+                      ],
+                      "registers": [
+                        "rdi",
+                        "rsi",
+                        "rdx",
+                        "rax",
+                        "rcx",
+                        "rbp",
+                        "rsp"
+                      ],
+                      "memory": [
+                        "[rbp-0x18] input pointer",
+                        "[rbp-0x10] buffer pointer",
+                        "[rbp-4] parsed length (int)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        {
+                          "name": "free",
+                          "source": "import",
+                          "target_va": "0x4010a0"
+                        },
+                        {
+                          "name": "puts",
+                          "source": "import",
+                          "target_va": "0x4010b0"
+                        },
+                        {
+                          "name": "memcpy",
+                          "source": "import",
+                          "target_va": "0x4010d0"
+                        },
+                        {
+                          "name": "malloc",
+                          "source": "import",
+                          "target_va": "0x4010e0"
+                        },
+                        {
+                          "name": "atoi",
+                          "source": "import",
+                          "target_va": "0x4010f0"
+                        },
+                        {
+                          "name": "exit",
+                          "source": "import",
+                          "target_va": "0x401100"
+                        }
+                      ]
+                    },
+                    "security_invariants": [
+                      "parsed length must be validated as non-negative before use",
+                      "allocation size must be length+1 computed without signed overflow",
+                      "memcpy length must equal validated non-negative length",
+                      "NUL terminator must be written at buffer[length] within allocated region",
+                      "no out-of-bounds write beyond allocated buffer"
+                    ],
+                    "repair": {
+                      "strategy": "After atoi, reject negative length and INT_MAX overflow of length+1 by calling exit(1); otherwise compute size as 64-bit (length+1) for malloc, use zero-extended 64-bit length for memcpy and NUL offset. Preserve normal output via puts and free.",
+                      "failure_behavior": "On invalid length (negative or length==INT_MAX causing overflow), call exit(1) without allocating or copying.",
+                      "expected_behavior": "For valid non-negative length, allocate length+1 bytes, copy length bytes from input, NUL-terminate, puts the buffer, free it, and return."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "negative input does not reach malloc/memcpy with huge size",
+                        "length==INT_MAX does not overflow allocation size",
+                        "memcpy size equals validated length",
+                        "NUL write index equals validated length and is within allocation"
+                      ],
+                      "regression_conditions": [
+                        "valid input still prints the copied string via puts",
+                        "buffer is freed exactly once",
+                        "function returns normally for valid inputs",
+                        "only direct calls to allowed_calls target addresses are emitted"
+                      ]
+                    },
+                    "confidence": "high",
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                }
+              ],
+              "elapsed_ms": 8205
+            },
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "c3ea820164bceeb5b0a4636972baf4a774755822abadfdd38495fd6212b6db3d",
+            "usage": {
+              "prompt_tokens": 2344,
+              "completion_tokens": 450,
+              "total_tokens": 2794,
+              "latency_ms": 2340
+            },
+            "latency_ms": 2344,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "b27412ed82115c0899834fd7e53d1e7212bf6fadb91cc86395de752e2eef675e",
+            "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010f0\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Linvalid\ncmp eax, 0x7fffffff\nje .Linvalid\nadd eax, 1\nmovsxd rdi, eax\ncall 0x4010e0\nmov qword ptr [rbp - 0x10], rax\ncmp qword ptr [rbp - 0x10], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmovsxd rdx, dword ptr [rbp - 4]\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 0x10]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010d0\nmovsxd rdx, dword ptr [rbp - 4]\nmov rax, qword ptr [rbp - 0x10]\nadd rax, rdx\nmov byte ptr [rax], 0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Linvalid:\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "b27412ed82115c0899834fd7e53d1e7212bf6fadb91cc86395de752e2eef675e",
+                "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010f0\nmov dword ptr [rbp - 4], eax\nmov eax, dword ptr [rbp - 4]\ntest eax, eax\njs .Linvalid\ncmp eax, 0x7fffffff\nje .Linvalid\nadd eax, 1\nmovsxd rdi, eax\ncall 0x4010e0\nmov qword ptr [rbp - 0x10], rax\ncmp qword ptr [rbp - 0x10], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmovsxd rdx, dword ptr [rbp - 4]\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 0x10]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010d0\nmovsxd rdx, dword ptr [rbp - 4]\nmov rax, qword ptr [rbp - 0x10]\nadd rax, rdx\nmov byte ptr [rax], 0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 0x10]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Linvalid:\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 2344,
+                  "completion_tokens": 450,
+                  "total_tokens": 2794,
+                  "latency_ms": 2340
+                },
+                "latency_ms": 2344,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "free",
+                "target_va": "0x4010a0",
+                "source": "import"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x4010b0",
+                "source": "import"
+              },
+              {
+                "name": "memcpy",
+                "target_va": "0x4010d0",
+                "source": "import"
+              },
+              {
+                "name": "malloc",
+                "target_va": "0x4010e0",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x4010f0",
+                "source": "import"
+              },
+              {
+                "name": "exit",
+                "target_va": "0x401100",
+                "source": "import"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "cwe190_bad",
+              "va": 4198902,
+              "end": 4199038,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x4011f6",
+              "cave_va": "0x405000",
+              "method": "new-pt-load",
+              "code_bytes": 152,
+              "code_hex": "f30f1efa554889e54883ec2048897de8488b45e84889c7e8000000008945fc8b45fc85c078663dffffff7f745f83c0014863f8e800000000488945f048837df000750abf01000000e800000000486355fc488b4de8488b45f04889ce4889c7e800000000486355fc488b45f04801d0c60000488b45f04889c7e800000000488b45f04889c7e800000000c9c3bf01000000e800000000c9c3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "f30f1efa",
+                  "mnemonic": "endbr64",
+                  "operands": ""
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x5",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "4883ec20",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x20"
+                },
+                {
+                  "address": "0xc",
+                  "bytes": "48897de8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x18], rdi"
+                },
+                {
+                  "address": "0x10",
+                  "bytes": "488b45e8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x18]"
+                },
+                {
+                  "address": "0x14",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x17",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x1c"
+                },
+                {
+                  "address": "0x1c",
+                  "bytes": "8945fc",
+                  "mnemonic": "mov",
+                  "operands": "dword ptr [rbp - 4], eax"
+                },
+                {
+                  "address": "0x1f",
+                  "bytes": "8b45fc",
+                  "mnemonic": "mov",
+                  "operands": "eax, dword ptr [rbp - 4]"
+                },
+                {
+                  "address": "0x22",
+                  "bytes": "85c0",
+                  "mnemonic": "test",
+                  "operands": "eax, eax"
+                },
+                {
+                  "address": "0x24",
+                  "bytes": "7866",
+                  "mnemonic": "js",
+                  "operands": "0x8c"
+                },
+                {
+                  "address": "0x26",
+                  "bytes": "3dffffff7f",
+                  "mnemonic": "cmp",
+                  "operands": "eax, 0x7fffffff"
+                },
+                {
+                  "address": "0x2b",
+                  "bytes": "745f",
+                  "mnemonic": "je",
+                  "operands": "0x8c"
+                },
+                {
+                  "address": "0x2d",
+                  "bytes": "83c001",
+                  "mnemonic": "add",
+                  "operands": "eax, 1"
+                },
+                {
+                  "address": "0x30",
+                  "bytes": "4863f8",
+                  "mnemonic": "movsxd",
+                  "operands": "rdi, eax"
+                },
+                {
+                  "address": "0x33",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x38"
+                },
+                {
+                  "address": "0x38",
+                  "bytes": "488945f0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x10], rax"
+                },
+                {
+                  "address": "0x3c",
+                  "bytes": "48837df000",
+                  "mnemonic": "cmp",
+                  "operands": "qword ptr [rbp - 0x10], 0"
+                },
+                {
+                  "address": "0x41",
+                  "bytes": "750a",
+                  "mnemonic": "jne",
+                  "operands": "0x4d"
+                },
+                {
+                  "address": "0x43",
+                  "bytes": "bf01000000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 1"
+                },
+                {
+                  "address": "0x48",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x4d"
+                },
+                {
+                  "address": "0x4d",
+                  "bytes": "486355fc",
+                  "mnemonic": "movsxd",
+                  "operands": "rdx, dword ptr [rbp - 4]"
+                },
+                {
+                  "address": "0x51",
+                  "bytes": "488b4de8",
+                  "mnemonic": "mov",
+                  "operands": "rcx, qword ptr [rbp - 0x18]"
+                },
+                {
+                  "address": "0x55",
+                  "bytes": "488b45f0",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x10]"
+                },
+                {
+                  "address": "0x59",
+                  "bytes": "4889ce",
+                  "mnemonic": "mov",
+                  "operands": "rsi, rcx"
+                },
+                {
+                  "address": "0x5c",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x5f",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x64"
+                },
+                {
+                  "address": "0x64",
+                  "bytes": "486355fc",
+                  "mnemonic": "movsxd",
+                  "operands": "rdx, dword ptr [rbp - 4]"
+                },
+                {
+                  "address": "0x68",
+                  "bytes": "488b45f0",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x10]"
+                },
+                {
+                  "address": "0x6c",
+                  "bytes": "4801d0",
+                  "mnemonic": "add",
+                  "operands": "rax, rdx"
+                },
+                {
+                  "address": "0x6f",
+                  "bytes": "c60000",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rax], 0"
+                },
+                {
+                  "address": "0x72",
+                  "bytes": "488b45f0",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x10]"
+                },
+                {
+                  "address": "0x76",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x79",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x7e"
+                },
+                {
+                  "address": "0x7e",
+                  "bytes": "488b45f0",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x10]"
+                },
+                {
+                  "address": "0x82",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x85",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x8a"
+                },
+                {
+                  "address": "0x8a",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x8b",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                },
+                {
+                  "address": "0x8c",
+                  "bytes": "bf01000000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 1"
+                },
+                {
+                  "address": "0x91",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x96"
+                },
+                {
+                  "address": "0x96",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x97",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "417aaa4dda4411292dadbf7183bfe5185d5f559cd51361e7f76791c62721fc80",
+              "call_targets": [
+                {
+                  "name": "free",
+                  "target_va": "0x4010a0",
+                  "source": "import"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x4010b0",
+                  "source": "import"
+                },
+                {
+                  "name": "memcpy",
+                  "target_va": "0x4010d0",
+                  "source": "import"
+                },
+                {
+                  "name": "malloc",
+                  "target_va": "0x4010e0",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x4010f0",
+                  "source": "import"
+                },
+                {
+                  "name": "exit",
+                  "target_va": "0x401100",
+                  "source": "import"
+                }
+              ],
+              "call_relocations": 7,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+                "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+                "poc": [
+                  {
+                    "case_id": "cwe190-negative",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe190-negative",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 1,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "cwe190-len-4",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "4\n",
+                    "stderr": "",
+                    "stdout_hex": "340a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe190-len-4",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "4\n",
+                    "stderr": "",
+                    "stdout_hex": "340a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/p13b-cwe190-integer-overflow/candidates/cwe190-integer-overflow.bin"
+            },
+            "elapsed_ms": 5324,
+            "evidence_links": {
+              "schema_version": 1,
+              "spec_version": 2,
+              "plan_sha256": "c3ea820164bceeb5b0a4636972baf4a774755822abadfdd38495fd6212b6db3d",
+              "assembly_sha256": "b27412ed82115c0899834fd7e53d1e7212bf6fadb91cc86395de752e2eef675e",
+              "candidate_sha256": "c1b994780b341aa43a1a2c5ff0448af4d0584501c4aa69d5ec86ef28b67822b9",
+              "gate": "pass",
+              "links": [
+                {
+                  "claim": "parsed length must be validated as non-negative before use",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "allocation size must be length+1 computed without signed overflow",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "memcpy length must equal validated non-negative length",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "NUL terminator must be written at buffer[length] within allocated region",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "no out-of-bounds write beyond allocated buffer",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "negative input does not reach malloc/memcpy with huge size",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "length==INT_MAX does not overflow allocation size",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "memcpy size equals validated length",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "NUL write index equals validated length and is within allocation",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                }
+              ],
+              "native_feedback_class": null
+            }
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-flash",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-flash",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-flash",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-flash",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 13799,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "cwe190_bad",
+        "va": 4198902,
+        "end": 4199038,
+        "source": "symbol"
+      },
+      "target_scope_check": "passed",
+      "target_in_scope": true,
+      "ai_increment": true,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 1,
+  "ai_increment": 1,
+  "funnel": {
+    "VERIFIED": 1,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 1,
+  "ai_target_in_scope": 1,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 13799,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

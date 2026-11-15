@@ -26,11 +26,12 @@ general-purpose binary rewriter and does not claim universal correctness.
   (`strlen/memcpy/memset/strcat/atoi`), syscall templates
   (`write/exit`), a reviewed `fputs(x, stderr)` rewrite, and a typed
   `malloc/free` refusal.  Memory-management semantics are not templated;
-- general non-loop Path A/B success.  Four binaries / three CWE classes are
-  now represented in a small cross-binary benchmark; the best run verified
-  4/6, including one unseen binary.  This is still a small, stochastic sample,
-  not a generalization proof.  A reference-locked CWE416/UAF repair passes
-  separately and is never counted as AI.
+- general non-loop Path A/B success.  The benchmark now has 8 binaries and
+  7 CWE classes.  CWE-125/190/476 were verified, including the hidden CWE-476
+  case; CWE-134 remains rejected.  The 36-run stability result is 19/36 (about
+  53%), so this is stochastic evidence, not deterministic generalization.  A
+  reference-locked CWE416/UAF repair passes separately and is never counted as
+  AI.
 
 ## 4-model matrix conclusion
 

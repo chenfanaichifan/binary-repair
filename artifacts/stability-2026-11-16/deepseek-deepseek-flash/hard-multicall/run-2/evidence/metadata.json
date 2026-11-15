@@ -1,0 +1,106 @@
+{
+  "schema_version": 2,
+  "kind": "repair_evidence",
+  "source_run": "/tmp/stability-p11/deepseek-deepseek-flash/hard-multicall/run-2",
+  "provided_at": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 1,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "ai_verified": 0,
+  "reference_note": "reference fixes are separate and are not AI evidence",
+  "manifest": {
+    "schema_version": 1,
+    "run_kind": "hard_benchmark",
+    "client": "real",
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-flash",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-flash",
+        "configured": true,
+        "errors": []
+      },
+      "model_configured": "deepseek-flash",
+      "status": "ok"
+    },
+    "case_ids": [
+      "hard-multicall"
+    ],
+    "model": "deepseek-flash",
+    "repair_plan": true,
+    "abi_strict": true,
+    "funnel": {
+      "VERIFIED": 0,
+      "PLAN_INVALID": 0,
+      "ASSEMBLY_REJECTED": 0,
+      "ABI_REJECTED": 0,
+      "INJECTION_FAILED": 0,
+      "NO_CANDIDATE": 0,
+      "NATIVE_FAILED": 1,
+      "SECURITY_FAILED": 0,
+      "REGRESSION_FAILED": 0
+    },
+    "cases": [
+      {
+        "case_id": "hard-multicall",
+        "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+        "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-flash/hard-multicall/run-2/candidates/hard-multicall.bin",
+        "repair_status": "NATIVE_FAILED",
+        "gate": "fail"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "hard-multicall",
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "gate": "fail",
+      "repair_status": "NATIVE_FAILED",
+      "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+      "candidate_file": "candidates/hard-multicall.bin",
+      "native_failure": null,
+      "plan_status": "valid",
+      "attempts": 1
+    }
+  ],
+  "hashes": {
+    "summary.json": "f9550228353acdf4fbd2ea8e7955a4a256dbfe3767efc66cbab911c22dc83212",
+    "run-manifest.json": "6c5458ac110a19cbf78dbdc5ad1db9367453ebb4c48bb24e0a962a79812f70db"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "run_kind": "hard_benchmark",
+  "client": "real",
+  "provider": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-v4-pro",
+    "status": "ok"
+  },
+  "case_ids": [
+    "cwe121-unchecked-strcpy"
+  ],
+  "model": "deepseek-v4-pro",
+  "repair_plan": true,
+  "abi_strict": true,
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 1,
+    "REGRESSION_FAILED": 0
+  },
+  "cases": [
+    {
+      "case_id": "cwe121-unchecked-strcpy",
+      "input_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "candidate_sha256": "cff3ae890368407a4f9773df6af218a10a0e46f47a7f477e58d6364b6bd5d204",
+      "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe121-unchecked-strcpy/run-1/candidates/cwe121-unchecked-strcpy.bin",
+      "repair_status": "SECURITY_FAILED",
+      "gate": "fail"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "schema_version": 2,
+  "kind": "repair_evidence",
+  "source_run": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe121-unchecked-strcpy/run-2",
+  "provided_at": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-v4-pro",
+    "status": "ok"
+  },
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 1,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "ai_verified": 0,
+  "reference_note": "reference fixes are separate and are not AI evidence",
+  "manifest": {
+    "schema_version": 1,
+    "run_kind": "hard_benchmark",
+    "client": "real",
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-v4-pro",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-v4-pro",
+        "configured": true,
+        "errors": []
+      },
+      "model_configured": "deepseek-v4-pro",
+      "status": "ok"
+    },
+    "case_ids": [
+      "cwe121-unchecked-strcpy"
+    ],
+    "model": "deepseek-v4-pro",
+    "repair_plan": true,
+    "abi_strict": true,
+    "funnel": {
+      "VERIFIED": 0,
+      "PLAN_INVALID": 1,
+      "ASSEMBLY_REJECTED": 0,
+      "ABI_REJECTED": 0,
+      "INJECTION_FAILED": 0,
+      "NO_CANDIDATE": 0,
+      "NATIVE_FAILED": 0,
+      "SECURITY_FAILED": 0,
+      "REGRESSION_FAILED": 0
+    },
+    "cases": [
+      {
+        "case_id": "cwe121-unchecked-strcpy",
+        "input_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+        "candidate_sha256": null,
+        "candidate_artifact": null,
+        "repair_status": "PLAN_INVALID",
+        "gate": "plan_invalid"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "cwe121-unchecked-strcpy",
+      "input_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "gate": "plan_invalid",
+      "repair_status": "PLAN_INVALID",
+      "candidate_sha256": null,
+      "candidate_file": null,
+      "native_failure": null,
+      "plan_status": null,
+      "attempts": 1
+    }
+  ],
+  "hashes": {
+    "summary.json": "b04a833c660d75187fc9b9814eb9583d3d93a8251c953d19ec2d44638ea4c696",
+    "run-manifest.json": "4a0f87aa0cfae25f97a5605108ed34329cc4ebe2e16333b642793af83d5f318f"
+  }
+}

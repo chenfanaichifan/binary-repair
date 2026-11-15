@@ -1,0 +1,2690 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "hard-multicall",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "multicall_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-multicall.json",
+        "reference_fix": "fixtures/hard-cases/multicall_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "multicall hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy",
+        "binary_id": "hard-cases",
+        "route": "asm_repair",
+        "cwe": "CWE-121/122/787 semantic copy",
+        "arch": "x86_64",
+        "sink_kind": "unbounded_copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 3346,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 3346,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target multicall_bad [0x102cb60,0x102cbb0)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 2888,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false,
+        "elapsed_ms": 3002
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-flash",
+              "status": "not_attempted",
+              "latency_ms": 3703,
+              "plan_sha256": "c77bbc8866a8c0020d8fa781f140fe0aee38265cbbf3498637b82fff948d96ec",
+              "error": null,
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 1029,
+                "completion_tokens": 724,
+                "total_tokens": 1753,
+                "latency_ms": 3701
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true
+            },
+            "raw_plan": {
+              "schema_version": 1,
+              "vulnerability_type": "stack_buffer_overflow",
+              "root_cause": "The function passes a pointer to a 16-byte stack buffer (rbp-0x20) to helper_copy without any length bound, so an input longer than the destination capacity overflows the stack buffer.",
+              "affected_function": "multicall_bad",
+              "affected_addresses": [
+                "0x102cb60",
+                "0x102cb75",
+                "0x102cb79",
+                "0x102cb7d",
+                "0x102cb81",
+                "0x102cb85",
+                "0x102cb8a",
+                "0x102cb8e",
+                "0x102cb93",
+                "0x102cb9c",
+                "0x102cba0",
+                "0x102cba3",
+                "0x102cba5",
+                "0x102cba9",
+                "0x102cbaa"
+              ],
+              "affected_registers": [
+                "rdi",
+                "rsi",
+                "rax",
+                "rcx",
+                "rbp",
+                "rsp"
+              ],
+              "affected_memory": [
+                "stack buffer at rbp-0x20 (16 bytes)",
+                "saved canary at rbp-8",
+                "saved rbp at rbp",
+                "return address at rbp+8"
+              ],
+              "original_behavior": "Stores the input pointer at rbp-0x28, computes the destination address rbp-0x20, calls helper_copy(dest, input) with no length limit, then calls puts(dest), verifies the stack canary, and returns.",
+              "required_invariant": "At most 15 bytes of input are copied into the 16-byte destination, followed by a NUL terminator; the stack canary and return address are never overwritten.",
+              "repair_strategy": "Before calling helper_copy, bound the copy to the destination capacity minus one byte (15 bytes) and ensure NUL termination, rejecting or truncating inputs that do not fit while preserving normal behavior for valid inputs.",
+              "failure_behavior": "If the input does not fit within 15 bytes, do not overflow the buffer; either truncate to 15 bytes plus NUL or return without copying, leaving the canary and return address intact.",
+              "permitted_calls": [
+                {
+                  "name": "helper_copy",
+                  "source": "direct",
+                  "target_va": "0x102cbb0"
+                },
+                {
+                  "name": "puts",
+                  "source": "direct",
+                  "target_va": "0x108a31c"
+                }
+              ],
+              "expected_behavior": "For valid inputs (length <= 15), copy the input into the 16-byte buffer, NUL-terminate, print it with puts, verify the canary, and return normally. For oversized inputs, reject or truncate so no bytes beyond the buffer are written.",
+              "verification_conditions": [
+                "Input of length 15 is copied fully and NUL-terminated, and puts prints it correctly.",
+                "Input of length 16 or greater does not overwrite the canary at rbp-8 or the return address at rbp+8.",
+                "The stack canary check at 0x102cba0 still passes for all inputs.",
+                "Only direct calls to 0x102cbb0 and 0x108a31c are emitted; no indirect jumps or syscalls.",
+                "The function terminates with ret and preserves the SysV calling convention."
+              ],
+              "confidence": 0.9
+            },
+            "plan": {
+              "schema_version": 1,
+              "vulnerability_type": "stack_buffer_overflow",
+              "root_cause": "The function passes a pointer to a 16-byte stack buffer (rbp-0x20) to helper_copy without any length bound, so an input longer than the destination capacity overflows the stack buffer.",
+              "affected_function": "multicall_bad",
+              "affected_addresses": [
+                "0x102cb60",
+                "0x102cb75",
+                "0x102cb79",
+                "0x102cb7d",
+                "0x102cb81",
+                "0x102cb85",
+                "0x102cb8a",
+                "0x102cb8e",
+                "0x102cb93",
+                "0x102cb9c",
+                "0x102cba0",
+                "0x102cba3",
+                "0x102cba5",
+                "0x102cba9",
+                "0x102cbaa"
+              ],
+              "affected_registers": [
+                "rdi",
+                "rsi",
+                "rax",
+                "rcx",
+                "rbp",
+                "rsp"
+              ],
+              "affected_memory": [
+                "stack buffer at rbp-0x20 (16 bytes)",
+                "saved canary at rbp-8",
+                "saved rbp at rbp",
+                "return address at rbp+8"
+              ],
+              "original_behavior": "Stores the input pointer at rbp-0x28, computes the destination address rbp-0x20, calls helper_copy(dest, input) with no length limit, then calls puts(dest), verifies the stack canary, and returns.",
+              "required_invariant": "At most 15 bytes of input are copied into the 16-byte destination, followed by a NUL terminator; the stack canary and return address are never overwritten.",
+              "repair_strategy": "Before calling helper_copy, bound the copy to the destination capacity minus one byte (15 bytes) and ensure NUL termination, rejecting or truncating inputs that do not fit while preserving normal behavior for valid inputs.",
+              "failure_behavior": "If the input does not fit within 15 bytes, do not overflow the buffer; either truncate to 15 bytes plus NUL or return without copying, leaving the canary and return address intact.",
+              "permitted_calls": [
+                "helper_copy",
+                "puts"
+              ],
+              "expected_behavior": "For valid inputs (length <= 15), copy the input into the 16-byte buffer, NUL-terminate, print it with puts, verify the canary, and return normally. For oversized inputs, reject or truncate so no bytes beyond the buffer are written.",
+              "verification_conditions": [
+                "Input of length 15 is copied fully and NUL-terminated, and puts prints it correctly.",
+                "Input of length 16 or greater does not overwrite the canary at rbp-8 or the return address at rbp+8.",
+                "The stack canary check at 0x102cba0 still passes for all inputs.",
+                "Only direct calls to 0x102cbb0 and 0x108a31c are emitted; no indirect jumps or syscalls.",
+                "The function terminates with ret and preserves the SysV calling convention."
+              ],
+              "confidence": "high"
+            },
+            "plan_sha256": "1ca9caefe644f64802de0cda4d866fcb7106cd1b90c4260e092c2981190cb081",
+            "plan_error": "",
+            "error": null,
+            "allowed_calls": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "attempts": [
+              {
+                "attempt": 1,
+                "status": "valid",
+                "error": "",
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "usage": {
+                  "prompt_tokens": 1029,
+                  "completion_tokens": 724,
+                  "total_tokens": 1753,
+                  "latency_ms": 3701
+                },
+                "latency_ms": 3703,
+                "raw_plan": {
+                  "schema_version": 1,
+                  "vulnerability_type": "stack_buffer_overflow",
+                  "root_cause": "The function passes a pointer to a 16-byte stack buffer (rbp-0x20) to helper_copy without any length bound, so an input longer than the destination capacity overflows the stack buffer.",
+                  "affected_function": "multicall_bad",
+                  "affected_addresses": [
+                    "0x102cb60",
+                    "0x102cb75",
+                    "0x102cb79",
+                    "0x102cb7d",
+                    "0x102cb81",
+                    "0x102cb85",
+                    "0x102cb8a",
+                    "0x102cb8e",
+                    "0x102cb93",
+                    "0x102cb9c",
+                    "0x102cba0",
+                    "0x102cba3",
+                    "0x102cba5",
+                    "0x102cba9",
+                    "0x102cbaa"
+                  ],
+                  "affected_registers": [
+                    "rdi",
+                    "rsi",
+                    "rax",
+                    "rcx",
+                    "rbp",
+                    "rsp"
+                  ],
+                  "affected_memory": [
+                    "stack buffer at rbp-0x20 (16 bytes)",
+                    "saved canary at rbp-8",
+                    "saved rbp at rbp",
+                    "return address at rbp+8"
+                  ],
+                  "original_behavior": "Stores the input pointer at rbp-0x28, computes the destination address rbp-0x20, calls helper_copy(dest, input) with no length limit, then calls puts(dest), verifies the stack canary, and returns.",
+                  "required_invariant": "At most 15 bytes of input are copied into the 16-byte destination, followed by a NUL terminator; the stack canary and return address are never overwritten.",
+                  "repair_strategy": "Before calling helper_copy, bound the copy to the destination capacity minus one byte (15 bytes) and ensure NUL termination, rejecting or truncating inputs that do not fit while preserving normal behavior for valid inputs.",
+                  "failure_behavior": "If the input does not fit within 15 bytes, do not overflow the buffer; either truncate to 15 bytes plus NUL or return without copying, leaving the canary and return address intact.",
+                  "permitted_calls": [
+                    {
+                      "name": "helper_copy",
+                      "source": "direct",
+                      "target_va": "0x102cbb0"
+                    },
+                    {
+                      "name": "puts",
+                      "source": "direct",
+                      "target_va": "0x108a31c"
+                    }
+                  ],
+                  "expected_behavior": "For valid inputs (length <= 15), copy the input into the 16-byte buffer, NUL-terminate, print it with puts, verify the canary, and return normally. For oversized inputs, reject or truncate so no bytes beyond the buffer are written.",
+                  "verification_conditions": [
+                    "Input of length 15 is copied fully and NUL-terminated, and puts prints it correctly.",
+                    "Input of length 16 or greater does not overwrite the canary at rbp-8 or the return address at rbp+8.",
+                    "The stack canary check at 0x102cba0 still passes for all inputs.",
+                    "Only direct calls to 0x102cbb0 and 0x108a31c are emitted; no indirect jumps or syscalls.",
+                    "The function terminates with ret and preserves the SysV calling convention."
+                  ],
+                  "confidence": 0.9
+                }
+              }
+            ],
+            "elapsed_ms": 3737
+          },
+          "model": "deepseek-flash",
+          "model_requested": "deepseek-flash",
+          "status": "accepted",
+          "error": null,
+          "plan_status": "valid",
+          "plan_sha256": "1ca9caefe644f64802de0cda4d866fcb7106cd1b90c4260e092c2981190cb081",
+          "usage": {
+            "prompt_tokens": 1739,
+            "completion_tokens": 342,
+            "total_tokens": 2081,
+            "latency_ms": 1578
+          },
+          "latency_ms": 1580,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "e876d15ca3004fe787d5e4bdc34abd91e848ded8906036d3b6b86764dbe42fae",
+          "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nxor ecx, ecx\n.Lcopy_loop:\ncmp ecx, 15\njae .Lcopy_done\nmov al, byte ptr [rsi + rcx]\ntest al, al\nje .Lcopy_done\nmov byte ptr [rdi + rcx], al\ninc ecx\njmp .Lcopy_loop\n.Lcopy_done:\nmov byte ptr [rdi + rcx], 0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lcanary_fail\nadd rsp, 0x30\npop rbp\nret\n.Lcanary_fail:\ncall 0x108a31c\nadd rsp, 0x30\npop rbp\nret",
+          "assembly_attempts": [
+            {
+              "attempt": 1,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "e876d15ca3004fe787d5e4bdc34abd91e848ded8906036d3b6b86764dbe42fae",
+              "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nxor ecx, ecx\n.Lcopy_loop:\ncmp ecx, 15\njae .Lcopy_done\nmov al, byte ptr [rsi + rcx]\ntest al, al\nje .Lcopy_done\nmov byte ptr [rdi + rcx], al\ninc ecx\njmp .Lcopy_loop\n.Lcopy_done:\nmov byte ptr [rdi + rcx], 0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lcanary_fail\nadd rsp, 0x30\npop rbp\nret\n.Lcanary_fail:\ncall 0x108a31c\nadd rsp, 0x30\npop rbp\nret",
+              "validation_error": null,
+              "validation_error_class": null,
+              "diagnostics": [],
+              "usage": {
+                "prompt_tokens": 1739,
+                "completion_tokens": 342,
+                "total_tokens": 2081,
+                "latency_ms": 1578
+              },
+              "latency_ms": 1580,
+              "model": "deepseek-flash",
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true,
+              "request_id": null
+            }
+          ],
+          "validation_error": null,
+          "validation_error_class": null,
+          "allowed_calls": [
+            {
+              "name": "helper_copy",
+              "target_va": "0x102cbb0",
+              "source": "direct"
+            },
+            {
+              "name": "puts",
+              "target_va": "0x108a31c",
+              "source": "direct"
+            }
+          ],
+          "target_in_scope": true,
+          "target_scope_check": "passed",
+          "target_scope": {
+            "name": "multicall_bad",
+            "va": 16960352,
+            "end": 16960432,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": false,
+          "injection": {
+            "target_va": "0x102cb60",
+            "cave_va": "0x10cf000",
+            "method": "new-pt-load",
+            "code_bytes": 106,
+            "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b75d8488d7de048897dd031c983f90f730e8a040e84c0740788040fffc1ebedc6040f00488b7dd0e80000000064488b042528000000488b4df84839c875064883c4305dc3e8000000004883c4305dc3",
+            "code_disassembly": [
+              {
+                "address": "0x0",
+                "bytes": "55",
+                "mnemonic": "push",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x1",
+                "bytes": "4889e5",
+                "mnemonic": "mov",
+                "operands": "rbp, rsp"
+              },
+              {
+                "address": "0x4",
+                "bytes": "4883ec30",
+                "mnemonic": "sub",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0x8",
+                "bytes": "64488b042528000000",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr fs:[0x28]"
+              },
+              {
+                "address": "0x11",
+                "bytes": "488945f8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 8], rax"
+              },
+              {
+                "address": "0x15",
+                "bytes": "48897dd8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x28], rdi"
+              },
+              {
+                "address": "0x19",
+                "bytes": "488b75d8",
+                "mnemonic": "mov",
+                "operands": "rsi, qword ptr [rbp - 0x28]"
+              },
+              {
+                "address": "0x1d",
+                "bytes": "488d7de0",
+                "mnemonic": "lea",
+                "operands": "rdi, [rbp - 0x20]"
+              },
+              {
+                "address": "0x21",
+                "bytes": "48897dd0",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x30], rdi"
+              },
+              {
+                "address": "0x25",
+                "bytes": "31c9",
+                "mnemonic": "xor",
+                "operands": "ecx, ecx"
+              },
+              {
+                "address": "0x27",
+                "bytes": "83f90f",
+                "mnemonic": "cmp",
+                "operands": "ecx, 0xf"
+              },
+              {
+                "address": "0x2a",
+                "bytes": "730e",
+                "mnemonic": "jae",
+                "operands": "0x3a"
+              },
+              {
+                "address": "0x2c",
+                "bytes": "8a040e",
+                "mnemonic": "mov",
+                "operands": "al, byte ptr [rsi + rcx]"
+              },
+              {
+                "address": "0x2f",
+                "bytes": "84c0",
+                "mnemonic": "test",
+                "operands": "al, al"
+              },
+              {
+                "address": "0x31",
+                "bytes": "7407",
+                "mnemonic": "je",
+                "operands": "0x3a"
+              },
+              {
+                "address": "0x33",
+                "bytes": "88040f",
+                "mnemonic": "mov",
+                "operands": "byte ptr [rdi + rcx], al"
+              },
+              {
+                "address": "0x36",
+                "bytes": "ffc1",
+                "mnemonic": "inc",
+                "operands": "ecx"
+              },
+              {
+                "address": "0x38",
+                "bytes": "ebed",
+                "mnemonic": "jmp",
+                "operands": "0x27"
+              },
+              {
+                "address": "0x3a",
+                "bytes": "c6040f00",
+                "mnemonic": "mov",
+                "operands": "byte ptr [rdi + rcx], 0"
+              },
+              {
+                "address": "0x3e",
+                "bytes": "488b7dd0",
+                "mnemonic": "mov",
+                "operands": "rdi, qword ptr [rbp - 0x30]"
+              },
+              {
+                "address": "0x42",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x47"
+              },
+              {
+                "address": "0x47",
+                "bytes": "64488b042528000000",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr fs:[0x28]"
+              },
+              {
+                "address": "0x50",
+                "bytes": "488b4df8",
+                "mnemonic": "mov",
+                "operands": "rcx, qword ptr [rbp - 8]"
+              },
+              {
+                "address": "0x54",
+                "bytes": "4839c8",
+                "mnemonic": "cmp",
+                "operands": "rax, rcx"
+              },
+              {
+                "address": "0x57",
+                "bytes": "7506",
+                "mnemonic": "jne",
+                "operands": "0x5f"
+              },
+              {
+                "address": "0x59",
+                "bytes": "4883c430",
+                "mnemonic": "add",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0x5d",
+                "bytes": "5d",
+                "mnemonic": "pop",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x5e",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              },
+              {
+                "address": "0x5f",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x64"
+              },
+              {
+                "address": "0x64",
+                "bytes": "4883c430",
+                "mnemonic": "add",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0x68",
+                "bytes": "5d",
+                "mnemonic": "pop",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x69",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              }
+            ],
+            "assembly_sha256": "63fc628680dac948f0b8a5a7b3b66588b84381e1fedd03f44d94b9217431fae2",
+            "call_targets": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "call_relocations": 2,
+            "abi": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          "candidate": {
+            "gate": "fail",
+            "poc_status": "fail",
+            "runner": "limactl",
+            "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+            "poc": {
+              "schema_version": 1,
+              "status": "fail",
+              "runner": "limactl",
+              "tier": "emulated_run",
+              "stdout_signature": "not_run",
+              "errno_signature": "not_run",
+              "errno_probe": "",
+              "no_input": false,
+              "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+              "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+              "poc": [
+                {
+                  "case_id": "multicall-overflow-64",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "multicall-overflow-256",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": null,
+                  "crashed": false,
+                  "stdout": "",
+                  "stderr": "",
+                  "stdout_hex": "",
+                  "timed_out": true,
+                  "error": "timeout",
+                  "expected_ok": false,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "multicall-overflow-64",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "AAAAAAAAAAAAAAA\n",
+                  "stderr": "",
+                  "stdout_hex": "4141414141414141414141414141410a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "multicall-overflow-256",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "AAAAAAAAAAAAAAA\n",
+                  "stderr": "",
+                  "stdout_hex": "4141414141414141414141414141410a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "regression": [
+                {
+                  "case_id": "multicall-short",
+                  "kind": "regression",
+                  "executable": "original",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "hi\n",
+                  "stderr": "",
+                  "stdout_hex": "68690a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "multicall-short",
+                  "kind": "regression",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "hi\n",
+                  "stderr": "",
+                  "stdout_hex": "68690a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "limitations": [
+                "one or more PoC/regression executions failed to run"
+              ]
+            },
+            "repair_status": "NATIVE_FAILED",
+            "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-flash/hard-multicall/run-2/candidates/hard-multicall.bin"
+          },
+          "elapsed_ms": 18624
+        }
+      ],
+      "injection": {
+        "target_va": "0x102cb60",
+        "cave_va": "0x10cf000",
+        "method": "new-pt-load",
+        "code_bytes": 106,
+        "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b75d8488d7de048897dd031c983f90f730e8a040e84c0740788040fffc1ebedc6040f00488b7dd0e80000000064488b042528000000488b4df84839c875064883c4305dc3e8000000004883c4305dc3",
+        "code_disassembly": [
+          {
+            "address": "0x0",
+            "bytes": "55",
+            "mnemonic": "push",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x1",
+            "bytes": "4889e5",
+            "mnemonic": "mov",
+            "operands": "rbp, rsp"
+          },
+          {
+            "address": "0x4",
+            "bytes": "4883ec30",
+            "mnemonic": "sub",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0x8",
+            "bytes": "64488b042528000000",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr fs:[0x28]"
+          },
+          {
+            "address": "0x11",
+            "bytes": "488945f8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 8], rax"
+          },
+          {
+            "address": "0x15",
+            "bytes": "48897dd8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x28], rdi"
+          },
+          {
+            "address": "0x19",
+            "bytes": "488b75d8",
+            "mnemonic": "mov",
+            "operands": "rsi, qword ptr [rbp - 0x28]"
+          },
+          {
+            "address": "0x1d",
+            "bytes": "488d7de0",
+            "mnemonic": "lea",
+            "operands": "rdi, [rbp - 0x20]"
+          },
+          {
+            "address": "0x21",
+            "bytes": "48897dd0",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x30], rdi"
+          },
+          {
+            "address": "0x25",
+            "bytes": "31c9",
+            "mnemonic": "xor",
+            "operands": "ecx, ecx"
+          },
+          {
+            "address": "0x27",
+            "bytes": "83f90f",
+            "mnemonic": "cmp",
+            "operands": "ecx, 0xf"
+          },
+          {
+            "address": "0x2a",
+            "bytes": "730e",
+            "mnemonic": "jae",
+            "operands": "0x3a"
+          },
+          {
+            "address": "0x2c",
+            "bytes": "8a040e",
+            "mnemonic": "mov",
+            "operands": "al, byte ptr [rsi + rcx]"
+          },
+          {
+            "address": "0x2f",
+            "bytes": "84c0",
+            "mnemonic": "test",
+            "operands": "al, al"
+          },
+          {
+            "address": "0x31",
+            "bytes": "7407",
+            "mnemonic": "je",
+            "operands": "0x3a"
+          },
+          {
+            "address": "0x33",
+            "bytes": "88040f",
+            "mnemonic": "mov",
+            "operands": "byte ptr [rdi + rcx], al"
+          },
+          {
+            "address": "0x36",
+            "bytes": "ffc1",
+            "mnemonic": "inc",
+            "operands": "ecx"
+          },
+          {
+            "address": "0x38",
+            "bytes": "ebed",
+            "mnemonic": "jmp",
+            "operands": "0x27"
+          },
+          {
+            "address": "0x3a",
+            "bytes": "c6040f00",
+            "mnemonic": "mov",
+            "operands": "byte ptr [rdi + rcx], 0"
+          },
+          {
+            "address": "0x3e",
+            "bytes": "488b7dd0",
+            "mnemonic": "mov",
+            "operands": "rdi, qword ptr [rbp - 0x30]"
+          },
+          {
+            "address": "0x42",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x47"
+          },
+          {
+            "address": "0x47",
+            "bytes": "64488b042528000000",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr fs:[0x28]"
+          },
+          {
+            "address": "0x50",
+            "bytes": "488b4df8",
+            "mnemonic": "mov",
+            "operands": "rcx, qword ptr [rbp - 8]"
+          },
+          {
+            "address": "0x54",
+            "bytes": "4839c8",
+            "mnemonic": "cmp",
+            "operands": "rax, rcx"
+          },
+          {
+            "address": "0x57",
+            "bytes": "7506",
+            "mnemonic": "jne",
+            "operands": "0x5f"
+          },
+          {
+            "address": "0x59",
+            "bytes": "4883c430",
+            "mnemonic": "add",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0x5d",
+            "bytes": "5d",
+            "mnemonic": "pop",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x5e",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          },
+          {
+            "address": "0x5f",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x64"
+          },
+          {
+            "address": "0x64",
+            "bytes": "4883c430",
+            "mnemonic": "add",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0x68",
+            "bytes": "5d",
+            "mnemonic": "pop",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x69",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          }
+        ],
+        "assembly_sha256": "63fc628680dac948f0b8a5a7b3b66588b84381e1fedd03f44d94b9217431fae2",
+        "call_targets": [
+          {
+            "name": "helper_copy",
+            "target_va": "0x102cbb0",
+            "source": "direct"
+          },
+          {
+            "name": "puts",
+            "target_va": "0x108a31c",
+            "source": "direct"
+          }
+        ],
+        "call_relocations": 2,
+        "abi": {
+          "ok": true,
+          "fatal": 0,
+          "findings": []
+        }
+      },
+      "candidate": {
+        "gate": "fail",
+        "poc_status": "fail",
+        "runner": "limactl",
+        "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+        "poc": {
+          "schema_version": 1,
+          "status": "fail",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "stdout_signature": "not_run",
+          "errno_signature": "not_run",
+          "errno_probe": "",
+          "no_input": false,
+          "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+          "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+          "poc": [
+            {
+              "case_id": "multicall-overflow-64",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "multicall-overflow-256",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": null,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": true,
+              "error": "timeout",
+              "expected_ok": false,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "multicall-overflow-64",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "AAAAAAAAAAAAAAA\n",
+              "stderr": "",
+              "stdout_hex": "4141414141414141414141414141410a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "multicall-overflow-256",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "AAAAAAAAAAAAAAA\n",
+              "stderr": "",
+              "stdout_hex": "4141414141414141414141414141410a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "multicall-short",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "hi\n",
+              "stderr": "",
+              "stdout_hex": "68690a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "multicall-short",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "hi\n",
+              "stderr": "",
+              "stdout_hex": "68690a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "limitations": [
+            "one or more PoC/regression executions failed to run"
+          ]
+        },
+        "repair_status": "NATIVE_FAILED",
+        "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-flash/hard-multicall/run-2/candidates/hard-multicall.bin"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "status": "accepted",
+        "latency_ms": 1580,
+        "plan_sha256": "6312f5f31dc1c350a9937b02e25c25d6704b0ffcd7e71484017abff28fedf21f",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1739,
+          "completion_tokens": 342,
+          "total_tokens": 2081,
+          "latency_ms": 1578
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-flash",
+        "model_identity_ok": true
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "fail",
+          "poc_status": "fail",
+          "runner": "limactl",
+          "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1739,
+          "completion_tokens": 342,
+          "total_tokens": 2081,
+          "latency_ms": 1578
+        },
+        "request_id": null,
+        "elapsed_ms": 18624,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 3703,
+                "plan_sha256": "c77bbc8866a8c0020d8fa781f140fe0aee38265cbbf3498637b82fff948d96ec",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1029,
+                  "completion_tokens": 724,
+                  "total_tokens": 1753,
+                  "latency_ms": 3701
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "stack_buffer_overflow",
+                "root_cause": "The function passes a pointer to a 16-byte stack buffer (rbp-0x20) to helper_copy without any length bound, so an input longer than the destination capacity overflows the stack buffer.",
+                "affected_function": "multicall_bad",
+                "affected_addresses": [
+                  "0x102cb60",
+                  "0x102cb75",
+                  "0x102cb79",
+                  "0x102cb7d",
+                  "0x102cb81",
+                  "0x102cb85",
+                  "0x102cb8a",
+                  "0x102cb8e",
+                  "0x102cb93",
+                  "0x102cb9c",
+                  "0x102cba0",
+                  "0x102cba3",
+                  "0x102cba5",
+                  "0x102cba9",
+                  "0x102cbaa"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rax",
+                  "rcx",
+                  "rbp",
+                  "rsp"
+                ],
+                "affected_memory": [
+                  "stack buffer at rbp-0x20 (16 bytes)",
+                  "saved canary at rbp-8",
+                  "saved rbp at rbp",
+                  "return address at rbp+8"
+                ],
+                "original_behavior": "Stores the input pointer at rbp-0x28, computes the destination address rbp-0x20, calls helper_copy(dest, input) with no length limit, then calls puts(dest), verifies the stack canary, and returns.",
+                "required_invariant": "At most 15 bytes of input are copied into the 16-byte destination, followed by a NUL terminator; the stack canary and return address are never overwritten.",
+                "repair_strategy": "Before calling helper_copy, bound the copy to the destination capacity minus one byte (15 bytes) and ensure NUL termination, rejecting or truncating inputs that do not fit while preserving normal behavior for valid inputs.",
+                "failure_behavior": "If the input does not fit within 15 bytes, do not overflow the buffer; either truncate to 15 bytes plus NUL or return without copying, leaving the canary and return address intact.",
+                "permitted_calls": [
+                  {
+                    "name": "helper_copy",
+                    "source": "direct",
+                    "target_va": "0x102cbb0"
+                  },
+                  {
+                    "name": "puts",
+                    "source": "direct",
+                    "target_va": "0x108a31c"
+                  }
+                ],
+                "expected_behavior": "For valid inputs (length <= 15), copy the input into the 16-byte buffer, NUL-terminate, print it with puts, verify the canary, and return normally. For oversized inputs, reject or truncate so no bytes beyond the buffer are written.",
+                "verification_conditions": [
+                  "Input of length 15 is copied fully and NUL-terminated, and puts prints it correctly.",
+                  "Input of length 16 or greater does not overwrite the canary at rbp-8 or the return address at rbp+8.",
+                  "The stack canary check at 0x102cba0 still passes for all inputs.",
+                  "Only direct calls to 0x102cbb0 and 0x108a31c are emitted; no indirect jumps or syscalls.",
+                  "The function terminates with ret and preserves the SysV calling convention."
+                ],
+                "confidence": 0.9
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "stack_buffer_overflow",
+                "root_cause": "The function passes a pointer to a 16-byte stack buffer (rbp-0x20) to helper_copy without any length bound, so an input longer than the destination capacity overflows the stack buffer.",
+                "affected_function": "multicall_bad",
+                "affected_addresses": [
+                  "0x102cb60",
+                  "0x102cb75",
+                  "0x102cb79",
+                  "0x102cb7d",
+                  "0x102cb81",
+                  "0x102cb85",
+                  "0x102cb8a",
+                  "0x102cb8e",
+                  "0x102cb93",
+                  "0x102cb9c",
+                  "0x102cba0",
+                  "0x102cba3",
+                  "0x102cba5",
+                  "0x102cba9",
+                  "0x102cbaa"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rax",
+                  "rcx",
+                  "rbp",
+                  "rsp"
+                ],
+                "affected_memory": [
+                  "stack buffer at rbp-0x20 (16 bytes)",
+                  "saved canary at rbp-8",
+                  "saved rbp at rbp",
+                  "return address at rbp+8"
+                ],
+                "original_behavior": "Stores the input pointer at rbp-0x28, computes the destination address rbp-0x20, calls helper_copy(dest, input) with no length limit, then calls puts(dest), verifies the stack canary, and returns.",
+                "required_invariant": "At most 15 bytes of input are copied into the 16-byte destination, followed by a NUL terminator; the stack canary and return address are never overwritten.",
+                "repair_strategy": "Before calling helper_copy, bound the copy to the destination capacity minus one byte (15 bytes) and ensure NUL termination, rejecting or truncating inputs that do not fit while preserving normal behavior for valid inputs.",
+                "failure_behavior": "If the input does not fit within 15 bytes, do not overflow the buffer; either truncate to 15 bytes plus NUL or return without copying, leaving the canary and return address intact.",
+                "permitted_calls": [
+                  "helper_copy",
+                  "puts"
+                ],
+                "expected_behavior": "For valid inputs (length <= 15), copy the input into the 16-byte buffer, NUL-terminate, print it with puts, verify the canary, and return normally. For oversized inputs, reject or truncate so no bytes beyond the buffer are written.",
+                "verification_conditions": [
+                  "Input of length 15 is copied fully and NUL-terminated, and puts prints it correctly.",
+                  "Input of length 16 or greater does not overwrite the canary at rbp-8 or the return address at rbp+8.",
+                  "The stack canary check at 0x102cba0 still passes for all inputs.",
+                  "Only direct calls to 0x102cbb0 and 0x108a31c are emitted; no indirect jumps or syscalls.",
+                  "The function terminates with ret and preserves the SysV calling convention."
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "1ca9caefe644f64802de0cda4d866fcb7106cd1b90c4260e092c2981190cb081",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "helper_copy",
+                  "target_va": "0x102cbb0",
+                  "source": "direct"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 1029,
+                    "completion_tokens": 724,
+                    "total_tokens": 1753,
+                    "latency_ms": 3701
+                  },
+                  "latency_ms": 3703,
+                  "raw_plan": {
+                    "schema_version": 1,
+                    "vulnerability_type": "stack_buffer_overflow",
+                    "root_cause": "The function passes a pointer to a 16-byte stack buffer (rbp-0x20) to helper_copy without any length bound, so an input longer than the destination capacity overflows the stack buffer.",
+                    "affected_function": "multicall_bad",
+                    "affected_addresses": [
+                      "0x102cb60",
+                      "0x102cb75",
+                      "0x102cb79",
+                      "0x102cb7d",
+                      "0x102cb81",
+                      "0x102cb85",
+                      "0x102cb8a",
+                      "0x102cb8e",
+                      "0x102cb93",
+                      "0x102cb9c",
+                      "0x102cba0",
+                      "0x102cba3",
+                      "0x102cba5",
+                      "0x102cba9",
+                      "0x102cbaa"
+                    ],
+                    "affected_registers": [
+                      "rdi",
+                      "rsi",
+                      "rax",
+                      "rcx",
+                      "rbp",
+                      "rsp"
+                    ],
+                    "affected_memory": [
+                      "stack buffer at rbp-0x20 (16 bytes)",
+                      "saved canary at rbp-8",
+                      "saved rbp at rbp",
+                      "return address at rbp+8"
+                    ],
+                    "original_behavior": "Stores the input pointer at rbp-0x28, computes the destination address rbp-0x20, calls helper_copy(dest, input) with no length limit, then calls puts(dest), verifies the stack canary, and returns.",
+                    "required_invariant": "At most 15 bytes of input are copied into the 16-byte destination, followed by a NUL terminator; the stack canary and return address are never overwritten.",
+                    "repair_strategy": "Before calling helper_copy, bound the copy to the destination capacity minus one byte (15 bytes) and ensure NUL termination, rejecting or truncating inputs that do not fit while preserving normal behavior for valid inputs.",
+                    "failure_behavior": "If the input does not fit within 15 bytes, do not overflow the buffer; either truncate to 15 bytes plus NUL or return without copying, leaving the canary and return address intact.",
+                    "permitted_calls": [
+                      {
+                        "name": "helper_copy",
+                        "source": "direct",
+                        "target_va": "0x102cbb0"
+                      },
+                      {
+                        "name": "puts",
+                        "source": "direct",
+                        "target_va": "0x108a31c"
+                      }
+                    ],
+                    "expected_behavior": "For valid inputs (length <= 15), copy the input into the 16-byte buffer, NUL-terminate, print it with puts, verify the canary, and return normally. For oversized inputs, reject or truncate so no bytes beyond the buffer are written.",
+                    "verification_conditions": [
+                      "Input of length 15 is copied fully and NUL-terminated, and puts prints it correctly.",
+                      "Input of length 16 or greater does not overwrite the canary at rbp-8 or the return address at rbp+8.",
+                      "The stack canary check at 0x102cba0 still passes for all inputs.",
+                      "Only direct calls to 0x102cbb0 and 0x108a31c are emitted; no indirect jumps or syscalls.",
+                      "The function terminates with ret and preserves the SysV calling convention."
+                    ],
+                    "confidence": 0.9
+                  }
+                }
+              ],
+              "elapsed_ms": 3737
+            },
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "1ca9caefe644f64802de0cda4d866fcb7106cd1b90c4260e092c2981190cb081",
+            "usage": {
+              "prompt_tokens": 1739,
+              "completion_tokens": 342,
+              "total_tokens": 2081,
+              "latency_ms": 1578
+            },
+            "latency_ms": 1580,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "e876d15ca3004fe787d5e4bdc34abd91e848ded8906036d3b6b86764dbe42fae",
+            "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nxor ecx, ecx\n.Lcopy_loop:\ncmp ecx, 15\njae .Lcopy_done\nmov al, byte ptr [rsi + rcx]\ntest al, al\nje .Lcopy_done\nmov byte ptr [rdi + rcx], al\ninc ecx\njmp .Lcopy_loop\n.Lcopy_done:\nmov byte ptr [rdi + rcx], 0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lcanary_fail\nadd rsp, 0x30\npop rbp\nret\n.Lcanary_fail:\ncall 0x108a31c\nadd rsp, 0x30\npop rbp\nret",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "e876d15ca3004fe787d5e4bdc34abd91e848ded8906036d3b6b86764dbe42fae",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nxor ecx, ecx\n.Lcopy_loop:\ncmp ecx, 15\njae .Lcopy_done\nmov al, byte ptr [rsi + rcx]\ntest al, al\nje .Lcopy_done\nmov byte ptr [rdi + rcx], al\ninc ecx\njmp .Lcopy_loop\n.Lcopy_done:\nmov byte ptr [rdi + rcx], 0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lcanary_fail\nadd rsp, 0x30\npop rbp\nret\n.Lcanary_fail:\ncall 0x108a31c\nadd rsp, 0x30\npop rbp\nret",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 1739,
+                  "completion_tokens": 342,
+                  "total_tokens": 2081,
+                  "latency_ms": 1578
+                },
+                "latency_ms": 1580,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "multicall_bad",
+              "va": 16960352,
+              "end": 16960432,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": false,
+            "injection": {
+              "target_va": "0x102cb60",
+              "cave_va": "0x10cf000",
+              "method": "new-pt-load",
+              "code_bytes": 106,
+              "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b75d8488d7de048897dd031c983f90f730e8a040e84c0740788040fffc1ebedc6040f00488b7dd0e80000000064488b042528000000488b4df84839c875064883c4305dc3e8000000004883c4305dc3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x1",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "4883ec30",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x11",
+                  "bytes": "488945f8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 8], rax"
+                },
+                {
+                  "address": "0x15",
+                  "bytes": "48897dd8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x28], rdi"
+                },
+                {
+                  "address": "0x19",
+                  "bytes": "488b75d8",
+                  "mnemonic": "mov",
+                  "operands": "rsi, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x1d",
+                  "bytes": "488d7de0",
+                  "mnemonic": "lea",
+                  "operands": "rdi, [rbp - 0x20]"
+                },
+                {
+                  "address": "0x21",
+                  "bytes": "48897dd0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x30], rdi"
+                },
+                {
+                  "address": "0x25",
+                  "bytes": "31c9",
+                  "mnemonic": "xor",
+                  "operands": "ecx, ecx"
+                },
+                {
+                  "address": "0x27",
+                  "bytes": "83f90f",
+                  "mnemonic": "cmp",
+                  "operands": "ecx, 0xf"
+                },
+                {
+                  "address": "0x2a",
+                  "bytes": "730e",
+                  "mnemonic": "jae",
+                  "operands": "0x3a"
+                },
+                {
+                  "address": "0x2c",
+                  "bytes": "8a040e",
+                  "mnemonic": "mov",
+                  "operands": "al, byte ptr [rsi + rcx]"
+                },
+                {
+                  "address": "0x2f",
+                  "bytes": "84c0",
+                  "mnemonic": "test",
+                  "operands": "al, al"
+                },
+                {
+                  "address": "0x31",
+                  "bytes": "7407",
+                  "mnemonic": "je",
+                  "operands": "0x3a"
+                },
+                {
+                  "address": "0x33",
+                  "bytes": "88040f",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rdi + rcx], al"
+                },
+                {
+                  "address": "0x36",
+                  "bytes": "ffc1",
+                  "mnemonic": "inc",
+                  "operands": "ecx"
+                },
+                {
+                  "address": "0x38",
+                  "bytes": "ebed",
+                  "mnemonic": "jmp",
+                  "operands": "0x27"
+                },
+                {
+                  "address": "0x3a",
+                  "bytes": "c6040f00",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rdi + rcx], 0"
+                },
+                {
+                  "address": "0x3e",
+                  "bytes": "488b7dd0",
+                  "mnemonic": "mov",
+                  "operands": "rdi, qword ptr [rbp - 0x30]"
+                },
+                {
+                  "address": "0x42",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x47"
+                },
+                {
+                  "address": "0x47",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x50",
+                  "bytes": "488b4df8",
+                  "mnemonic": "mov",
+                  "operands": "rcx, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x54",
+                  "bytes": "4839c8",
+                  "mnemonic": "cmp",
+                  "operands": "rax, rcx"
+                },
+                {
+                  "address": "0x57",
+                  "bytes": "7506",
+                  "mnemonic": "jne",
+                  "operands": "0x5f"
+                },
+                {
+                  "address": "0x59",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x5d",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x5e",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                },
+                {
+                  "address": "0x5f",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x64"
+                },
+                {
+                  "address": "0x64",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x68",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x69",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "63fc628680dac948f0b8a5a7b3b66588b84381e1fedd03f44d94b9217431fae2",
+              "call_targets": [
+                {
+                  "name": "helper_copy",
+                  "target_va": "0x102cbb0",
+                  "source": "direct"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "fail",
+              "poc_status": "fail",
+              "runner": "limactl",
+              "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+              "poc": {
+                "schema_version": 1,
+                "status": "fail",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "not_run",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+                "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+                "poc": [
+                  {
+                    "case_id": "multicall-overflow-64",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-256",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": null,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": true,
+                    "error": "timeout",
+                    "expected_ok": false,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-64",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "AAAAAAAAAAAAAAA\n",
+                    "stderr": "",
+                    "stdout_hex": "4141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-256",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "AAAAAAAAAAAAAAA\n",
+                    "stderr": "",
+                    "stdout_hex": "4141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "multicall-short",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-short",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": [
+                  "one or more PoC/regression executions failed to run"
+                ]
+              },
+              "repair_status": "NATIVE_FAILED",
+              "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-flash/hard-multicall/run-2/candidates/hard-multicall.bin"
+            },
+            "elapsed_ms": 18624
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "fail",
+          "poc_status": "fail",
+          "runner": "limactl",
+          "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1739,
+          "completion_tokens": 342,
+          "total_tokens": 2081,
+          "latency_ms": 1578
+        },
+        "request_id": null,
+        "elapsed_ms": 18624,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 3703,
+                "plan_sha256": "c77bbc8866a8c0020d8fa781f140fe0aee38265cbbf3498637b82fff948d96ec",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1029,
+                  "completion_tokens": 724,
+                  "total_tokens": 1753,
+                  "latency_ms": 3701
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "stack_buffer_overflow",
+                "root_cause": "The function passes a pointer to a 16-byte stack buffer (rbp-0x20) to helper_copy without any length bound, so an input longer than the destination capacity overflows the stack buffer.",
+                "affected_function": "multicall_bad",
+                "affected_addresses": [
+                  "0x102cb60",
+                  "0x102cb75",
+                  "0x102cb79",
+                  "0x102cb7d",
+                  "0x102cb81",
+                  "0x102cb85",
+                  "0x102cb8a",
+                  "0x102cb8e",
+                  "0x102cb93",
+                  "0x102cb9c",
+                  "0x102cba0",
+                  "0x102cba3",
+                  "0x102cba5",
+                  "0x102cba9",
+                  "0x102cbaa"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rax",
+                  "rcx",
+                  "rbp",
+                  "rsp"
+                ],
+                "affected_memory": [
+                  "stack buffer at rbp-0x20 (16 bytes)",
+                  "saved canary at rbp-8",
+                  "saved rbp at rbp",
+                  "return address at rbp+8"
+                ],
+                "original_behavior": "Stores the input pointer at rbp-0x28, computes the destination address rbp-0x20, calls helper_copy(dest, input) with no length limit, then calls puts(dest), verifies the stack canary, and returns.",
+                "required_invariant": "At most 15 bytes of input are copied into the 16-byte destination, followed by a NUL terminator; the stack canary and return address are never overwritten.",
+                "repair_strategy": "Before calling helper_copy, bound the copy to the destination capacity minus one byte (15 bytes) and ensure NUL termination, rejecting or truncating inputs that do not fit while preserving normal behavior for valid inputs.",
+                "failure_behavior": "If the input does not fit within 15 bytes, do not overflow the buffer; either truncate to 15 bytes plus NUL or return without copying, leaving the canary and return address intact.",
+                "permitted_calls": [
+                  {
+                    "name": "helper_copy",
+                    "source": "direct",
+                    "target_va": "0x102cbb0"
+                  },
+                  {
+                    "name": "puts",
+                    "source": "direct",
+                    "target_va": "0x108a31c"
+                  }
+                ],
+                "expected_behavior": "For valid inputs (length <= 15), copy the input into the 16-byte buffer, NUL-terminate, print it with puts, verify the canary, and return normally. For oversized inputs, reject or truncate so no bytes beyond the buffer are written.",
+                "verification_conditions": [
+                  "Input of length 15 is copied fully and NUL-terminated, and puts prints it correctly.",
+                  "Input of length 16 or greater does not overwrite the canary at rbp-8 or the return address at rbp+8.",
+                  "The stack canary check at 0x102cba0 still passes for all inputs.",
+                  "Only direct calls to 0x102cbb0 and 0x108a31c are emitted; no indirect jumps or syscalls.",
+                  "The function terminates with ret and preserves the SysV calling convention."
+                ],
+                "confidence": 0.9
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "stack_buffer_overflow",
+                "root_cause": "The function passes a pointer to a 16-byte stack buffer (rbp-0x20) to helper_copy without any length bound, so an input longer than the destination capacity overflows the stack buffer.",
+                "affected_function": "multicall_bad",
+                "affected_addresses": [
+                  "0x102cb60",
+                  "0x102cb75",
+                  "0x102cb79",
+                  "0x102cb7d",
+                  "0x102cb81",
+                  "0x102cb85",
+                  "0x102cb8a",
+                  "0x102cb8e",
+                  "0x102cb93",
+                  "0x102cb9c",
+                  "0x102cba0",
+                  "0x102cba3",
+                  "0x102cba5",
+                  "0x102cba9",
+                  "0x102cbaa"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rax",
+                  "rcx",
+                  "rbp",
+                  "rsp"
+                ],
+                "affected_memory": [
+                  "stack buffer at rbp-0x20 (16 bytes)",
+                  "saved canary at rbp-8",
+                  "saved rbp at rbp",
+                  "return address at rbp+8"
+                ],
+                "original_behavior": "Stores the input pointer at rbp-0x28, computes the destination address rbp-0x20, calls helper_copy(dest, input) with no length limit, then calls puts(dest), verifies the stack canary, and returns.",
+                "required_invariant": "At most 15 bytes of input are copied into the 16-byte destination, followed by a NUL terminator; the stack canary and return address are never overwritten.",
+                "repair_strategy": "Before calling helper_copy, bound the copy to the destination capacity minus one byte (15 bytes) and ensure NUL termination, rejecting or truncating inputs that do not fit while preserving normal behavior for valid inputs.",
+                "failure_behavior": "If the input does not fit within 15 bytes, do not overflow the buffer; either truncate to 15 bytes plus NUL or return without copying, leaving the canary and return address intact.",
+                "permitted_calls": [
+                  "helper_copy",
+                  "puts"
+                ],
+                "expected_behavior": "For valid inputs (length <= 15), copy the input into the 16-byte buffer, NUL-terminate, print it with puts, verify the canary, and return normally. For oversized inputs, reject or truncate so no bytes beyond the buffer are written.",
+                "verification_conditions": [
+                  "Input of length 15 is copied fully and NUL-terminated, and puts prints it correctly.",
+                  "Input of length 16 or greater does not overwrite the canary at rbp-8 or the return address at rbp+8.",
+                  "The stack canary check at 0x102cba0 still passes for all inputs.",
+                  "Only direct calls to 0x102cbb0 and 0x108a31c are emitted; no indirect jumps or syscalls.",
+                  "The function terminates with ret and preserves the SysV calling convention."
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "1ca9caefe644f64802de0cda4d866fcb7106cd1b90c4260e092c2981190cb081",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "helper_copy",
+                  "target_va": "0x102cbb0",
+                  "source": "direct"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 1029,
+                    "completion_tokens": 724,
+                    "total_tokens": 1753,
+                    "latency_ms": 3701
+                  },
+                  "latency_ms": 3703,
+                  "raw_plan": {
+                    "schema_version": 1,
+                    "vulnerability_type": "stack_buffer_overflow",
+                    "root_cause": "The function passes a pointer to a 16-byte stack buffer (rbp-0x20) to helper_copy without any length bound, so an input longer than the destination capacity overflows the stack buffer.",
+                    "affected_function": "multicall_bad",
+                    "affected_addresses": [
+                      "0x102cb60",
+                      "0x102cb75",
+                      "0x102cb79",
+                      "0x102cb7d",
+                      "0x102cb81",
+                      "0x102cb85",
+                      "0x102cb8a",
+                      "0x102cb8e",
+                      "0x102cb93",
+                      "0x102cb9c",
+                      "0x102cba0",
+                      "0x102cba3",
+                      "0x102cba5",
+                      "0x102cba9",
+                      "0x102cbaa"
+                    ],
+                    "affected_registers": [
+                      "rdi",
+                      "rsi",
+                      "rax",
+                      "rcx",
+                      "rbp",
+                      "rsp"
+                    ],
+                    "affected_memory": [
+                      "stack buffer at rbp-0x20 (16 bytes)",
+                      "saved canary at rbp-8",
+                      "saved rbp at rbp",
+                      "return address at rbp+8"
+                    ],
+                    "original_behavior": "Stores the input pointer at rbp-0x28, computes the destination address rbp-0x20, calls helper_copy(dest, input) with no length limit, then calls puts(dest), verifies the stack canary, and returns.",
+                    "required_invariant": "At most 15 bytes of input are copied into the 16-byte destination, followed by a NUL terminator; the stack canary and return address are never overwritten.",
+                    "repair_strategy": "Before calling helper_copy, bound the copy to the destination capacity minus one byte (15 bytes) and ensure NUL termination, rejecting or truncating inputs that do not fit while preserving normal behavior for valid inputs.",
+                    "failure_behavior": "If the input does not fit within 15 bytes, do not overflow the buffer; either truncate to 15 bytes plus NUL or return without copying, leaving the canary and return address intact.",
+                    "permitted_calls": [
+                      {
+                        "name": "helper_copy",
+                        "source": "direct",
+                        "target_va": "0x102cbb0"
+                      },
+                      {
+                        "name": "puts",
+                        "source": "direct",
+                        "target_va": "0x108a31c"
+                      }
+                    ],
+                    "expected_behavior": "For valid inputs (length <= 15), copy the input into the 16-byte buffer, NUL-terminate, print it with puts, verify the canary, and return normally. For oversized inputs, reject or truncate so no bytes beyond the buffer are written.",
+                    "verification_conditions": [
+                      "Input of length 15 is copied fully and NUL-terminated, and puts prints it correctly.",
+                      "Input of length 16 or greater does not overwrite the canary at rbp-8 or the return address at rbp+8.",
+                      "The stack canary check at 0x102cba0 still passes for all inputs.",
+                      "Only direct calls to 0x102cbb0 and 0x108a31c are emitted; no indirect jumps or syscalls.",
+                      "The function terminates with ret and preserves the SysV calling convention."
+                    ],
+                    "confidence": 0.9
+                  }
+                }
+              ],
+              "elapsed_ms": 3737
+            },
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "1ca9caefe644f64802de0cda4d866fcb7106cd1b90c4260e092c2981190cb081",
+            "usage": {
+              "prompt_tokens": 1739,
+              "completion_tokens": 342,
+              "total_tokens": 2081,
+              "latency_ms": 1578
+            },
+            "latency_ms": 1580,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "e876d15ca3004fe787d5e4bdc34abd91e848ded8906036d3b6b86764dbe42fae",
+            "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nxor ecx, ecx\n.Lcopy_loop:\ncmp ecx, 15\njae .Lcopy_done\nmov al, byte ptr [rsi + rcx]\ntest al, al\nje .Lcopy_done\nmov byte ptr [rdi + rcx], al\ninc ecx\njmp .Lcopy_loop\n.Lcopy_done:\nmov byte ptr [rdi + rcx], 0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lcanary_fail\nadd rsp, 0x30\npop rbp\nret\n.Lcanary_fail:\ncall 0x108a31c\nadd rsp, 0x30\npop rbp\nret",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "e876d15ca3004fe787d5e4bdc34abd91e848ded8906036d3b6b86764dbe42fae",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\nxor ecx, ecx\n.Lcopy_loop:\ncmp ecx, 15\njae .Lcopy_done\nmov al, byte ptr [rsi + rcx]\ntest al, al\nje .Lcopy_done\nmov byte ptr [rdi + rcx], al\ninc ecx\njmp .Lcopy_loop\n.Lcopy_done:\nmov byte ptr [rdi + rcx], 0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lcanary_fail\nadd rsp, 0x30\npop rbp\nret\n.Lcanary_fail:\ncall 0x108a31c\nadd rsp, 0x30\npop rbp\nret",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 1739,
+                  "completion_tokens": 342,
+                  "total_tokens": 2081,
+                  "latency_ms": 1578
+                },
+                "latency_ms": 1580,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "multicall_bad",
+              "va": 16960352,
+              "end": 16960432,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": false,
+            "injection": {
+              "target_va": "0x102cb60",
+              "cave_va": "0x10cf000",
+              "method": "new-pt-load",
+              "code_bytes": 106,
+              "code_hex": "554889e54883ec3064488b042528000000488945f848897dd8488b75d8488d7de048897dd031c983f90f730e8a040e84c0740788040fffc1ebedc6040f00488b7dd0e80000000064488b042528000000488b4df84839c875064883c4305dc3e8000000004883c4305dc3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x1",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "4883ec30",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x11",
+                  "bytes": "488945f8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 8], rax"
+                },
+                {
+                  "address": "0x15",
+                  "bytes": "48897dd8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x28], rdi"
+                },
+                {
+                  "address": "0x19",
+                  "bytes": "488b75d8",
+                  "mnemonic": "mov",
+                  "operands": "rsi, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x1d",
+                  "bytes": "488d7de0",
+                  "mnemonic": "lea",
+                  "operands": "rdi, [rbp - 0x20]"
+                },
+                {
+                  "address": "0x21",
+                  "bytes": "48897dd0",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x30], rdi"
+                },
+                {
+                  "address": "0x25",
+                  "bytes": "31c9",
+                  "mnemonic": "xor",
+                  "operands": "ecx, ecx"
+                },
+                {
+                  "address": "0x27",
+                  "bytes": "83f90f",
+                  "mnemonic": "cmp",
+                  "operands": "ecx, 0xf"
+                },
+                {
+                  "address": "0x2a",
+                  "bytes": "730e",
+                  "mnemonic": "jae",
+                  "operands": "0x3a"
+                },
+                {
+                  "address": "0x2c",
+                  "bytes": "8a040e",
+                  "mnemonic": "mov",
+                  "operands": "al, byte ptr [rsi + rcx]"
+                },
+                {
+                  "address": "0x2f",
+                  "bytes": "84c0",
+                  "mnemonic": "test",
+                  "operands": "al, al"
+                },
+                {
+                  "address": "0x31",
+                  "bytes": "7407",
+                  "mnemonic": "je",
+                  "operands": "0x3a"
+                },
+                {
+                  "address": "0x33",
+                  "bytes": "88040f",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rdi + rcx], al"
+                },
+                {
+                  "address": "0x36",
+                  "bytes": "ffc1",
+                  "mnemonic": "inc",
+                  "operands": "ecx"
+                },
+                {
+                  "address": "0x38",
+                  "bytes": "ebed",
+                  "mnemonic": "jmp",
+                  "operands": "0x27"
+                },
+                {
+                  "address": "0x3a",
+                  "bytes": "c6040f00",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rdi + rcx], 0"
+                },
+                {
+                  "address": "0x3e",
+                  "bytes": "488b7dd0",
+                  "mnemonic": "mov",
+                  "operands": "rdi, qword ptr [rbp - 0x30]"
+                },
+                {
+                  "address": "0x42",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x47"
+                },
+                {
+                  "address": "0x47",
+                  "bytes": "64488b042528000000",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr fs:[0x28]"
+                },
+                {
+                  "address": "0x50",
+                  "bytes": "488b4df8",
+                  "mnemonic": "mov",
+                  "operands": "rcx, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x54",
+                  "bytes": "4839c8",
+                  "mnemonic": "cmp",
+                  "operands": "rax, rcx"
+                },
+                {
+                  "address": "0x57",
+                  "bytes": "7506",
+                  "mnemonic": "jne",
+                  "operands": "0x5f"
+                },
+                {
+                  "address": "0x59",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x5d",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x5e",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                },
+                {
+                  "address": "0x5f",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x64"
+                },
+                {
+                  "address": "0x64",
+                  "bytes": "4883c430",
+                  "mnemonic": "add",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0x68",
+                  "bytes": "5d",
+                  "mnemonic": "pop",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x69",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "63fc628680dac948f0b8a5a7b3b66588b84381e1fedd03f44d94b9217431fae2",
+              "call_targets": [
+                {
+                  "name": "helper_copy",
+                  "target_va": "0x102cbb0",
+                  "source": "direct"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "fail",
+              "poc_status": "fail",
+              "runner": "limactl",
+              "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+              "poc": {
+                "schema_version": 1,
+                "status": "fail",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "not_run",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+                "candidate_sha256": "03fdd720394459df059ed600e8b7df9f3cc519787c1cbe2d15b7c123a99405dc",
+                "poc": [
+                  {
+                    "case_id": "multicall-overflow-64",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-256",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": null,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": true,
+                    "error": "timeout",
+                    "expected_ok": false,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-64",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "AAAAAAAAAAAAAAA\n",
+                    "stderr": "",
+                    "stdout_hex": "4141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-overflow-256",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "AAAAAAAAAAAAAAA\n",
+                    "stderr": "",
+                    "stdout_hex": "4141414141414141414141414141410a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "multicall-short",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "multicall-short",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": [
+                  "one or more PoC/regression executions failed to run"
+                ]
+              },
+              "repair_status": "NATIVE_FAILED",
+              "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-flash/hard-multicall/run-2/candidates/hard-multicall.bin"
+            },
+            "elapsed_ms": 18624
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-flash",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-flash",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-flash",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-flash",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 33202,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "multicall_bad",
+        "va": 16960352,
+        "end": 16960432,
+        "source": "symbol"
+      },
+      "target_scope_check": "passed",
+      "target_in_scope": true,
+      "ai_increment": false,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 0,
+  "ai_increment": 0,
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 1,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 0,
+  "ai_target_in_scope": 1,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 33206,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

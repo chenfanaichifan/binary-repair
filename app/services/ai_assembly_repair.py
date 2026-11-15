@@ -38,6 +38,14 @@ from app.services.ai_binary_repair import (
 )
 from app.services.binary_pipeline import finish_candidate
 from app.services.repair.analyzer import Sink
+from app.services.repair.assembly_diagnostics import (
+    AssemblyDiagnostic,
+    AssemblyPreflightError,
+    parse_assembler_stderr,
+    policy_error,
+)
+from app.services.repair.assembly_feedback import build_assembly_feedback
+from app.services.repair.assembly_policy import check_assembly_policy
 from app.services.repair.writer import _inject_blob
 
 ASM_PATH = "asm_roundtrip"
@@ -54,11 +62,12 @@ _TRIPLE = {
 # block has no unresolved external relocation and cannot escape to arbitrary
 # code; syscall and privileged instructions are refused as well.
 _SAFE_X86 = frozenset({
-    "mov", "movzx", "movsx", "movabs", "lea", "push", "pop",
+    "mov", "movzx", "movsx", "movsxd", "movabs", "lea", "push", "pop",
     "add", "sub", "and", "or", "xor", "cmp", "test", "inc", "dec",
     "shl", "shr", "sar", "xchg", "not", "neg",
     "jmp", "je", "jne", "jz", "jnz", "ja", "jae", "jb", "jbe",
-    "jg", "jge", "jl", "jle", "ret", "leave", "nop", "endbr64",
+    "jg", "jge", "jl", "jle", "js", "jns", "jo", "jno", "jp", "jnp",
+    "ret", "leave", "nop", "endbr64",
     "endbr32", "cdqe", "cqo", "cwde", "cdq",
     "sete", "setne", "setz", "setnz", "seta", "setae", "setb", "setbe",
     "setg", "setge", "setl", "setle", "cmove", "cmovne", "cmova", "cmovae",
@@ -213,6 +222,9 @@ def _validate_assembly_text(text: str, arch: str,
         raise ValueError("empty assembly")
     if len(text) > 12_000:
         raise ValueError("assembly text too large")
+    policy = check_assembly_policy(text, arch, allowed_calls)
+    if not policy.ok:
+        raise policy_error([item.to_dict() for item in policy.diagnostics])
     allowed_by_va, allowed_by_name = _call_maps(allowed_calls)
     cleaned = _strip_comments(text, arch)
     body: list[str] = []
@@ -275,8 +287,15 @@ def _assemble(text: str, arch: str) -> bytes:
             capture_output=True, text=True, timeout=30,
         )
         if proc.returncode != 0:
-            detail = (proc.stderr or proc.stdout or "").strip().splitlines()
-            raise ValueError("assembler rejected repair: " + (detail[-1][:160] if detail else "unknown"))
+            stderr = (proc.stderr or proc.stdout or "").strip()
+            diagnostics = parse_assembler_stderr(stderr)
+            last = stderr.splitlines()[-1] if stderr.splitlines() else "unknown"
+            exc = AssemblyPreflightError(
+                "assembler rejected repair: " + last[:160],
+            )
+            exc.error_class = "assembly_assemble"
+            exc.diagnostics = diagnostics
+            raise exc
         try:
             with obj.open("rb") as handle:
                 section = ELFFile(handle).get_section_by_name(".text")
@@ -311,8 +330,15 @@ def _assemble_with_relocations(text: str, arch: str) -> tuple[bytes, list[dict[s
             capture_output=True, text=True, timeout=30,
         )
         if proc.returncode != 0:
-            detail = (proc.stderr or proc.stdout or "").strip().splitlines()
-            raise ValueError("assembler rejected repair: " + (detail[-1][:160] if detail else "unknown"))
+            stderr = (proc.stderr or proc.stdout or "").strip()
+            diagnostics = parse_assembler_stderr(stderr)
+            last = stderr.splitlines()[-1] if stderr.splitlines() else "unknown"
+            exc = AssemblyPreflightError(
+                "assembler rejected repair: " + last[:160],
+                "assembly_assemble", None,
+            )
+            exc.diagnostics = diagnostics
+            raise exc
         with obj.open("rb") as handle:
             elf = ELFFile(handle)
             section = elf.get_section_by_name(".text")
@@ -636,3 +662,13 @@ def asm_contract() -> dict[str, Any]:
         "arches": sorted(ASM_SUPPORTED_ARCH),
         "ai_outputs": ["assembly"],
     }
+
+
+def assembly_feedback_packet(text: str, exc: BaseException) -> dict[str, Any]:
+    diagnostics = [item.to_dict() for item in getattr(exc, "diagnostics", [])]
+    if not diagnostics:
+        diagnostics = [AssemblyDiagnostic(
+            error_class=str(getattr(exc, "error_class", "assembly_validation")),
+            message=str(exc)[:500],
+        ).to_dict()]
+    return build_assembly_feedback(text, diagnostics)

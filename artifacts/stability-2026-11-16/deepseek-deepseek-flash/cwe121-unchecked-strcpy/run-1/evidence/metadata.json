@@ -1,0 +1,118 @@
+{
+  "schema_version": 2,
+  "kind": "repair_evidence",
+  "source_run": "/tmp/stability-p11/deepseek-deepseek-flash/cwe121-unchecked-strcpy/run-1",
+  "provided_at": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 1,
+    "REGRESSION_FAILED": 0
+  },
+  "ai_verified": 0,
+  "reference_note": "reference fixes are separate and are not AI evidence",
+  "manifest": {
+    "schema_version": 1,
+    "run_kind": "hard_benchmark",
+    "client": "real",
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-flash",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-flash",
+        "configured": true,
+        "errors": []
+      },
+      "model_configured": "deepseek-flash",
+      "status": "ok"
+    },
+    "case_ids": [
+      "cwe121-unchecked-strcpy"
+    ],
+    "model": "deepseek-flash",
+    "repair_plan": true,
+    "abi_strict": true,
+    "funnel": {
+      "VERIFIED": 0,
+      "PLAN_INVALID": 0,
+      "ASSEMBLY_REJECTED": 0,
+      "ABI_REJECTED": 0,
+      "INJECTION_FAILED": 0,
+      "NO_CANDIDATE": 0,
+      "NATIVE_FAILED": 0,
+      "SECURITY_FAILED": 1,
+      "REGRESSION_FAILED": 0
+    },
+    "cases": [
+      {
+        "case_id": "cwe121-unchecked-strcpy",
+        "input_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+        "candidate_sha256": "9bcf78dd6931701cba8a94a63a8d7d9ff33b2ffba07061c6888964ee01311083",
+        "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-flash/cwe121-unchecked-strcpy/run-1/candidates/cwe121-unchecked-strcpy.bin",
+        "repair_status": "SECURITY_FAILED",
+        "gate": "fail"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "cwe121-unchecked-strcpy",
+      "input_sha256": "aa42815704d9ffc65b3a49821b3cc6189126a738a7e02d668dec250982408393",
+      "gate": "fail",
+      "repair_status": "SECURITY_FAILED",
+      "candidate_sha256": "9bcf78dd6931701cba8a94a63a8d7d9ff33b2ffba07061c6888964ee01311083",
+      "candidate_file": "candidates/cwe121-unchecked-strcpy.bin",
+      "native_failure": {
+        "stage": "native_gate",
+        "error_class": "stdout_or_exit_mismatch",
+        "case_id": "cwe121-invalid-51",
+        "kind": "poc",
+        "exit_code": 0,
+        "crashed": false,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "timed_out": false,
+        "expected_ok": false
+      },
+      "plan_status": "valid",
+      "attempts": 2
+    }
+  ],
+  "hashes": {
+    "summary.json": "a40592e8020b7cd9a1422ef3af0fbb4c4c74eac3b109f761bdcc139c4174e4c6",
+    "run-manifest.json": "9dee44ca967f9dd10618565fdf7afea6efd8db486589f5fc4a278a0ded6b9452"
+  }
+}

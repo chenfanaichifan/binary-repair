@@ -155,6 +155,7 @@ def validate_spec(parsed: Any, *, case: Mapping[str, Any],
 V2_FIELDS = frozenset({
     "schema_version", "vulnerability", "program_context",
     "security_invariants", "repair", "abi", "verification", "confidence",
+    "evidence_refs",
 })
 V2_STRATEGIES = frozenset({
     "guard_input_length", "bounds_check", "lifetime", "format_string",
@@ -172,6 +173,7 @@ class RepairSpecV2:
     abi: dict[str, str]
     verification: dict[str, list[str]]
     confidence: str = "medium"
+    evidence_refs: list[str] = field(default_factory=list)
     schema_version: int = 2
 
     def to_dict(self) -> dict[str, Any]:
@@ -184,6 +186,7 @@ class RepairSpecV2:
             "abi": dict(self.abi),
             "verification": {k: list(v) for k, v in self.verification.items()},
             "confidence": self.confidence,
+            "evidence_refs": list(self.evidence_refs),
         }
 
 
@@ -225,6 +228,23 @@ def validate_spec_v2(parsed: Mapping[str, Any], *, case: Mapping[str, Any],
     strategy, error = _v2_text(repair.get("strategy"), "repair.strategy")
     if error: return None, error
     if strategy not in V2_STRATEGIES:
+        low = strategy.lower()
+        aliases = (
+            ("format", "format_string"),
+            ("lifetime", "lifetime"),
+            ("use-after-free", "lifetime"),
+            ("double-free", "lifetime"),
+            ("null", "null_check"),
+            ("integer", "integer_range_check"),
+            ("length", "guard_input_length"),
+            ("size", "guard_input_length"),
+            ("copy", "guard_input_length"),
+            ("bound", "bounds_check"),
+            ("index", "bounds_check"),
+            ("range", "bounds_check"),
+        )
+        strategy = next((canon for token, canon in aliases if token in low), "")
+    if strategy not in V2_STRATEGIES:
         return None, "unsupported_repair_strategy"
     failure, error = _v2_text(repair.get("failure_behavior"), "repair.failure_behavior")
     if error: return None, error
@@ -234,17 +254,44 @@ def validate_spec_v2(parsed: Mapping[str, Any], *, case: Mapping[str, Any],
     if error: return None, error
     calling, error = _v2_text(abi.get("calling_convention"), "abi.calling_convention")
     if error: return None, error
-    if str(case.get("arch") or "") and arch != str(case.get("arch")):
+    arch_norm = arch.lower().replace("-", "_")
+    case_arch = str(case.get("arch") or "").lower().replace("-", "_")
+    if case_arch and arch_norm != case_arch:
         return None, "abi_arch_mismatch"
-    if V2_ABI.get(arch) and calling != V2_ABI[arch]:
+    calling_norm = " ".join(calling.lower().replace("_", " ").split())
+    canonical_calling = {
+        "sysv amd64": "sysv_amd64",
+        "systemv amd64": "sysv_amd64",
+        "system v amd64": "sysv_amd64",
+        "sysv": "sysv_amd64",
+        "systemv": "sysv_amd64",
+        "cdecl": "cdecl",
+        "aapcs64": "aapcs64",
+    }.get(calling_norm)
+    if canonical_calling is None:
+        canonical_calling = calling_norm.replace(" ", "_")
+    if V2_ABI.get(arch_norm) and canonical_calling != V2_ABI[arch_norm]:
         return None, "abi_calling_convention_mismatch"
-    required_calls = context.get("allowed_calls", [])
-    if not isinstance(required_calls, list) or not all(isinstance(x, str) for x in required_calls):
+    raw_calls = context.get("allowed_calls", [])
+    if not isinstance(raw_calls, list):
         return None, "invalid_allowed_calls"
+    required_calls: list[str] = []
+    for item in raw_calls:
+        if isinstance(item, str):
+            name = item
+        elif isinstance(item, Mapping):
+            name = item.get("name")
+        else:
+            return None, "invalid_allowed_calls"
+        if not isinstance(name, str) or not name:
+            return None, "invalid_allowed_calls"
+        required_calls.append(name)
     allowed = {str(x) for x in allowed_calls}
     if any(x not in allowed for x in required_calls):
         return None, "permitted_call_not_allowed:" + ",".join(sorted(set(required_calls) - allowed))
     addresses = context.get("addresses", [])
+    if isinstance(addresses, Mapping):
+        addresses = [str(value) for value in addresses.values()]
     if not isinstance(addresses, list) or not all(isinstance(x, str) for x in addresses):
         return None, "invalid_affected_addresses"
     start = end = None
@@ -276,24 +323,32 @@ def validate_spec_v2(parsed: Mapping[str, Any], *, case: Mapping[str, Any],
         confidence = "high" if confidence >= 0.75 else "medium" if confidence >= 0.4 else "low"
     if confidence not in {"low", "medium", "high"}:
         return None, "invalid_confidence"
+    refs = parsed.get("evidence_refs", [])
+    if not isinstance(refs, list) or not all(isinstance(x, str) and x.strip() for x in refs):
+        return None, "invalid_evidence_refs"
     return RepairSpecV2(
         vulnerability={"type": vuln_type, "root_cause": root,
                        **({"cwe": str(vulnerability["cwe"])} if vulnerability.get("cwe") else {})},
         program_context={
             "function": function, "addresses": list(addresses),
             "registers": list(context.get("registers", [])),
-            "memory": list(context.get("memory", [])),
+            "memory": (
+                [f"{key}={value}" for key, value in context["memory"].items()]
+                if isinstance(context.get("memory"), Mapping)
+                else list(context.get("memory", []))
+            ),
             "capacity": context.get("capacity"),
             "allowed_calls": list(required_calls),
         },
         security_invariants=[str(x) for x in invariants],
         repair={"strategy": strategy, "failure_behavior": failure,
                 "expected_behavior": expected},
-        abi={"architecture": arch, "calling_convention": calling},
+        abi={"architecture": arch_norm, "calling_convention": canonical_calling},
         verification={"security_conditions": [str(x) for x in security],
                       "regression_conditions": [str(x) for x in regression],
                       "required_inputs": [str(x) for x in verification.get("required_inputs", [])]},
         confidence=confidence,
+        evidence_refs=[str(x) for x in refs],
     ), ""
 
 
@@ -307,5 +362,6 @@ def spec_from_plan(plan: Mapping[str, Any]) -> RepairSpec | RepairSpecV2:
             abi=dict(plan.get("abi") or {}),
             verification={k: list(v) for k, v in (plan.get("verification") or {}).items()},
             confidence=str(plan.get("confidence", "medium")),
+            evidence_refs=list(plan.get("evidence_refs") or []),
         )
     return RepairSpec(**plan)

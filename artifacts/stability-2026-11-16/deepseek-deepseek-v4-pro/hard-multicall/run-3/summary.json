@@ -1,0 +1,1465 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-v4-pro",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "hard-multicall",
+        "binary": "fixtures/hard-cases/vuln-hardcases-c-x86_64.elf",
+        "target": "multicall_bad",
+        "capacity": 16,
+        "poc": "fixtures/poc/hard-multicall.json",
+        "reference_fix": "fixtures/hard-cases/multicall_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "multicall hard case: target function copies an input into a 16-byte destination through a non-template path; reject inputs that do not fit and preserve normal behavior",
+        "family": "semantic/multi-layer copy",
+        "binary_id": "hard-cases",
+        "route": "asm_repair",
+        "cwe": "CWE-121/122/787 semantic copy",
+        "arch": "x86_64",
+        "sink_kind": "unbounded_copy"
+      },
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "baseline": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 3245,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "rejected",
+        "status": "not_verified",
+        "verified": false,
+        "error": "verification gate did not pass",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c1537b90892a64888ee97d9d914a3d1f14bc8f16a4af90db0d0e806e3774268d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": "rejected",
+          "reason": "regression_failed",
+          "required_checks": 10,
+          "required_not_run": 0,
+          "failed_checks": [
+            "runtime.cases",
+            "runtime.no_overflow",
+            "profile.required_checks"
+          ],
+          "not_run_checks": [],
+          "tier": "emulated_run",
+          "engine": "unicorn-x86-64",
+          "scope": {
+            "format": "elf64-little",
+            "arch": "x86_64",
+            "mode": "bounds-only",
+            "strategy": "immediate",
+            "capacity": 16,
+            "strict": false,
+            "claim": "The immediate read/write length is rewritten to the stack capacity; stack overflow is prevented for the modeled paths.",
+            "statement": "Direct ELF64 x86-64 bytes; runtime evidence is Unicorn x86-64 emulation with modeled syscalls, not a host-kernel run. Success is within the stated scope only.",
+            "target_policy": "whole_image"
+          }
+        },
+        "elapsed_ms": 3245,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target multicall_bad [0x102cb60,0x102cbb0)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 2525,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "invalid",
+        "disposition": "unsupported",
+        "verified": false,
+        "elapsed_ms": 4914
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-v4-pro",
+              "status": "not_attempted",
+              "latency_ms": 6506,
+              "plan_sha256": "4c0e6ac4d277bc6eed4248304240bdaaa1a4f8545221d9db949d86a32c19f6d6",
+              "error": null,
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 1026,
+                "completion_tokens": 723,
+                "total_tokens": 1749,
+                "latency_ms": 6503
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true
+            },
+            "raw_plan": {
+              "schema_version": 1,
+              "vulnerability_type": "unbounded_copy",
+              "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, leading to a buffer overflow if the input is too long.",
+              "affected_function": "multicall_bad",
+              "affected_addresses": [
+                "0x102cb60",
+                "0x102cb61",
+                "0x102cb64",
+                "0x102cb68",
+                "0x102cb71",
+                "0x102cb75",
+                "0x102cb79",
+                "0x102cb7d",
+                "0x102cb81",
+                "0x102cb85",
+                "0x102cb8a",
+                "0x102cb8e",
+                "0x102cb93",
+                "0x102cb9c",
+                "0x102cba0",
+                "0x102cba3",
+                "0x102cba5",
+                "0x102cba9",
+                "0x102cbaa"
+              ],
+              "affected_registers": [
+                "rdi",
+                "rsi",
+                "rax",
+                "rcx"
+              ],
+              "affected_memory": [
+                "stack buffer at [rbp - 0x20] (16 bytes)",
+                "stack canary at [rbp - 8]"
+              ],
+              "original_behavior": "The function copies the input string into a local buffer and then prints it using puts. It does not check the length of the input, so a long input can overflow the buffer and corrupt the stack canary or other data.",
+              "required_invariant": "The input string must fit within the 16-byte buffer (including the null terminator), i.e., its length must be at most 15 bytes. If the input is longer, the function must not overflow the buffer and should handle the error gracefully.",
+              "repair_strategy": "Before copying, check the length of the input string. If the length is greater than 15, skip the copy and print an error message or simply return without copying. Otherwise, proceed with the copy and print as before.",
+              "failure_behavior": "If the input is too long, the function should not copy any data into the buffer and should return without printing the input. It may optionally print an error message, but no overflow should occur.",
+              "permitted_calls": [
+                {
+                  "name": "helper_copy",
+                  "source": "direct",
+                  "target_va": "0x102cbb0"
+                },
+                {
+                  "name": "puts",
+                  "source": "direct",
+                  "target_va": "0x108a31c"
+                }
+              ],
+              "expected_behavior": "For valid inputs (length <= 15), the function copies the input to the buffer and prints it. For invalid inputs (length > 15), the function does not copy and does not print the input, returning safely.",
+              "verification_conditions": [
+                "The function does not write more than 15 bytes plus a null terminator to the buffer.",
+                "The stack canary is not modified.",
+                "The function returns normally for both valid and invalid inputs.",
+                "Only the allowed calls are made."
+              ],
+              "confidence": 0.95
+            },
+            "plan": {
+              "schema_version": 1,
+              "vulnerability_type": "unbounded_copy",
+              "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, leading to a buffer overflow if the input is too long.",
+              "affected_function": "multicall_bad",
+              "affected_addresses": [
+                "0x102cb60",
+                "0x102cb61",
+                "0x102cb64",
+                "0x102cb68",
+                "0x102cb71",
+                "0x102cb75",
+                "0x102cb79",
+                "0x102cb7d",
+                "0x102cb81",
+                "0x102cb85",
+                "0x102cb8a",
+                "0x102cb8e",
+                "0x102cb93",
+                "0x102cb9c",
+                "0x102cba0",
+                "0x102cba3",
+                "0x102cba5",
+                "0x102cba9",
+                "0x102cbaa"
+              ],
+              "affected_registers": [
+                "rdi",
+                "rsi",
+                "rax",
+                "rcx"
+              ],
+              "affected_memory": [
+                "stack buffer at [rbp - 0x20] (16 bytes)",
+                "stack canary at [rbp - 8]"
+              ],
+              "original_behavior": "The function copies the input string into a local buffer and then prints it using puts. It does not check the length of the input, so a long input can overflow the buffer and corrupt the stack canary or other data.",
+              "required_invariant": "The input string must fit within the 16-byte buffer (including the null terminator), i.e., its length must be at most 15 bytes. If the input is longer, the function must not overflow the buffer and should handle the error gracefully.",
+              "repair_strategy": "Before copying, check the length of the input string. If the length is greater than 15, skip the copy and print an error message or simply return without copying. Otherwise, proceed with the copy and print as before.",
+              "failure_behavior": "If the input is too long, the function should not copy any data into the buffer and should return without printing the input. It may optionally print an error message, but no overflow should occur.",
+              "permitted_calls": [
+                "helper_copy",
+                "puts"
+              ],
+              "expected_behavior": "For valid inputs (length <= 15), the function copies the input to the buffer and prints it. For invalid inputs (length > 15), the function does not copy and does not print the input, returning safely.",
+              "verification_conditions": [
+                "The function does not write more than 15 bytes plus a null terminator to the buffer.",
+                "The stack canary is not modified.",
+                "The function returns normally for both valid and invalid inputs.",
+                "Only the allowed calls are made."
+              ],
+              "confidence": "high"
+            },
+            "plan_sha256": "e2ac1600557f2281f95ac798d9e02f0d79658b9006a89dcaac0239ee32f8c886",
+            "plan_error": "",
+            "error": null,
+            "allowed_calls": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "attempts": [
+              {
+                "attempt": 1,
+                "status": "valid",
+                "error": "",
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "usage": {
+                  "prompt_tokens": 1026,
+                  "completion_tokens": 723,
+                  "total_tokens": 1749,
+                  "latency_ms": 6503
+                },
+                "latency_ms": 6506,
+                "raw_plan": {
+                  "schema_version": 1,
+                  "vulnerability_type": "unbounded_copy",
+                  "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, leading to a buffer overflow if the input is too long.",
+                  "affected_function": "multicall_bad",
+                  "affected_addresses": [
+                    "0x102cb60",
+                    "0x102cb61",
+                    "0x102cb64",
+                    "0x102cb68",
+                    "0x102cb71",
+                    "0x102cb75",
+                    "0x102cb79",
+                    "0x102cb7d",
+                    "0x102cb81",
+                    "0x102cb85",
+                    "0x102cb8a",
+                    "0x102cb8e",
+                    "0x102cb93",
+                    "0x102cb9c",
+                    "0x102cba0",
+                    "0x102cba3",
+                    "0x102cba5",
+                    "0x102cba9",
+                    "0x102cbaa"
+                  ],
+                  "affected_registers": [
+                    "rdi",
+                    "rsi",
+                    "rax",
+                    "rcx"
+                  ],
+                  "affected_memory": [
+                    "stack buffer at [rbp - 0x20] (16 bytes)",
+                    "stack canary at [rbp - 8]"
+                  ],
+                  "original_behavior": "The function copies the input string into a local buffer and then prints it using puts. It does not check the length of the input, so a long input can overflow the buffer and corrupt the stack canary or other data.",
+                  "required_invariant": "The input string must fit within the 16-byte buffer (including the null terminator), i.e., its length must be at most 15 bytes. If the input is longer, the function must not overflow the buffer and should handle the error gracefully.",
+                  "repair_strategy": "Before copying, check the length of the input string. If the length is greater than 15, skip the copy and print an error message or simply return without copying. Otherwise, proceed with the copy and print as before.",
+                  "failure_behavior": "If the input is too long, the function should not copy any data into the buffer and should return without printing the input. It may optionally print an error message, but no overflow should occur.",
+                  "permitted_calls": [
+                    {
+                      "name": "helper_copy",
+                      "source": "direct",
+                      "target_va": "0x102cbb0"
+                    },
+                    {
+                      "name": "puts",
+                      "source": "direct",
+                      "target_va": "0x108a31c"
+                    }
+                  ],
+                  "expected_behavior": "For valid inputs (length <= 15), the function copies the input to the buffer and prints it. For invalid inputs (length > 15), the function does not copy and does not print the input, returning safely.",
+                  "verification_conditions": [
+                    "The function does not write more than 15 bytes plus a null terminator to the buffer.",
+                    "The stack canary is not modified.",
+                    "The function returns normally for both valid and invalid inputs.",
+                    "Only the allowed calls are made."
+                  ],
+                  "confidence": 0.95
+                }
+              }
+            ],
+            "elapsed_ms": 6540
+          },
+          "model": "deepseek-v4-pro",
+          "model_requested": "deepseek-v4-pro",
+          "status": "accepted",
+          "error": null,
+          "plan_status": "valid",
+          "plan_sha256": "e2ac1600557f2281f95ac798d9e02f0d79658b9006a89dcaac0239ee32f8c886",
+          "usage": {
+            "prompt_tokens": 2104,
+            "completion_tokens": 240,
+            "total_tokens": 2344,
+            "latency_ms": 2920
+          },
+          "latency_ms": 2923,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "37fea072eb9fc4e3c2a9e5fd9c17bacc5989174ba5bc37189b3479a6de9b2cf2",
+          "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x102cbb0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lbad\nadd rsp, 0x30\npop rbp\nret\n.Lbad:\ncall __stack_chk_fail\n",
+          "assembly_attempts": [
+            {
+              "attempt": 1,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "37fea072eb9fc4e3c2a9e5fd9c17bacc5989174ba5bc37189b3479a6de9b2cf2",
+              "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x102cbb0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lbad\nadd rsp, 0x30\npop rbp\nret\n.Lbad:\ncall __stack_chk_fail\n",
+              "validation_error": "call target is not allowed: call __stack_chk_fail",
+              "validation_error_class": "injection",
+              "diagnostics": [],
+              "usage": {
+                "prompt_tokens": 1663,
+                "completion_tokens": 240,
+                "total_tokens": 1903,
+                "latency_ms": 2778
+              },
+              "latency_ms": 2781,
+              "model": "deepseek-v4-pro",
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true,
+              "request_id": null
+            },
+            {
+              "attempt": 2,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "37fea072eb9fc4e3c2a9e5fd9c17bacc5989174ba5bc37189b3479a6de9b2cf2",
+              "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x102cbb0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lbad\nadd rsp, 0x30\npop rbp\nret\n.Lbad:\ncall __stack_chk_fail\n",
+              "validation_error": "call target is not allowed: call __stack_chk_fail",
+              "validation_error_class": "injection",
+              "diagnostics": [],
+              "usage": {
+                "prompt_tokens": 2104,
+                "completion_tokens": 240,
+                "total_tokens": 2344,
+                "latency_ms": 2920
+              },
+              "latency_ms": 2923,
+              "model": "deepseek-v4-pro",
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true,
+              "request_id": null
+            }
+          ],
+          "validation_error": "call target is not allowed: call __stack_chk_fail",
+          "validation_error_class": "injection",
+          "allowed_calls": [
+            {
+              "name": "helper_copy",
+              "target_va": "0x102cbb0",
+              "source": "direct"
+            },
+            {
+              "name": "puts",
+              "target_va": "0x108a31c",
+              "source": "direct"
+            }
+          ],
+          "target_in_scope": false,
+          "target_scope_check": "not_run",
+          "target_scope": {
+            "name": "multicall_bad",
+            "va": 16960352,
+            "end": 16960432,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": false,
+          "injection": {
+            "stage": "validation",
+            "error_class": "injection",
+            "error_token": null,
+            "error": "assembly validation: ValueError: call target is not allowed: call __stack_chk_fail"
+          },
+          "candidate": {
+            "gate": "no_candidate",
+            "poc_status": "not_run",
+            "injection_error_class": "injection",
+            "injection_error_token": null,
+            "injection_error": "assembly validation: ValueError: call target is not allowed: call __stack_chk_fail",
+            "no_candidate_reason": "injection",
+            "repair_status": "INJECTION_FAILED"
+          },
+          "elapsed_ms": 5837
+        }
+      ],
+      "injection": {
+        "stage": "validation",
+        "error_class": "injection",
+        "error_token": null,
+        "error": "assembly validation: ValueError: call target is not allowed: call __stack_chk_fail"
+      },
+      "candidate": {
+        "gate": "no_candidate",
+        "poc_status": "not_run",
+        "injection_error_class": "injection",
+        "injection_error_token": null,
+        "injection_error": "assembly validation: ValueError: call target is not allowed: call __stack_chk_fail",
+        "no_candidate_reason": "injection",
+        "repair_status": "INJECTION_FAILED"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 2923,
+        "plan_sha256": "6c80df26b335a40a903d95fb08c12cee42966010fc3bcc578198c4c97a3c35be",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 2104,
+          "completion_tokens": 240,
+          "total_tokens": 2344,
+          "latency_ms": 2920
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true,
+        "validation_error": "call target is not allowed: call __stack_chk_fail",
+        "validation_error_class": "injection"
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "no_candidate",
+          "poc_status": "not_run",
+          "runner": null,
+          "candidate_sha256": null,
+          "no_candidate_reason": "injection",
+          "injection_error_class": "injection"
+        },
+        "candidate_sha256": null,
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-v4-pro",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-v4-pro",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-v4-pro",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-v4-pro",
+        "model_returned": "deepseek-v4-pro",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 2104,
+          "completion_tokens": 240,
+          "total_tokens": 2344,
+          "latency_ms": 2920
+        },
+        "request_id": null,
+        "elapsed_ms": 5837,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-v4-pro",
+                "status": "not_attempted",
+                "latency_ms": 6506,
+                "plan_sha256": "4c0e6ac4d277bc6eed4248304240bdaaa1a4f8545221d9db949d86a32c19f6d6",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1026,
+                  "completion_tokens": 723,
+                  "total_tokens": 1749,
+                  "latency_ms": 6503
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "unbounded_copy",
+                "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, leading to a buffer overflow if the input is too long.",
+                "affected_function": "multicall_bad",
+                "affected_addresses": [
+                  "0x102cb60",
+                  "0x102cb61",
+                  "0x102cb64",
+                  "0x102cb68",
+                  "0x102cb71",
+                  "0x102cb75",
+                  "0x102cb79",
+                  "0x102cb7d",
+                  "0x102cb81",
+                  "0x102cb85",
+                  "0x102cb8a",
+                  "0x102cb8e",
+                  "0x102cb93",
+                  "0x102cb9c",
+                  "0x102cba0",
+                  "0x102cba3",
+                  "0x102cba5",
+                  "0x102cba9",
+                  "0x102cbaa"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rax",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "stack buffer at [rbp - 0x20] (16 bytes)",
+                  "stack canary at [rbp - 8]"
+                ],
+                "original_behavior": "The function copies the input string into a local buffer and then prints it using puts. It does not check the length of the input, so a long input can overflow the buffer and corrupt the stack canary or other data.",
+                "required_invariant": "The input string must fit within the 16-byte buffer (including the null terminator), i.e., its length must be at most 15 bytes. If the input is longer, the function must not overflow the buffer and should handle the error gracefully.",
+                "repair_strategy": "Before copying, check the length of the input string. If the length is greater than 15, skip the copy and print an error message or simply return without copying. Otherwise, proceed with the copy and print as before.",
+                "failure_behavior": "If the input is too long, the function should not copy any data into the buffer and should return without printing the input. It may optionally print an error message, but no overflow should occur.",
+                "permitted_calls": [
+                  {
+                    "name": "helper_copy",
+                    "source": "direct",
+                    "target_va": "0x102cbb0"
+                  },
+                  {
+                    "name": "puts",
+                    "source": "direct",
+                    "target_va": "0x108a31c"
+                  }
+                ],
+                "expected_behavior": "For valid inputs (length <= 15), the function copies the input to the buffer and prints it. For invalid inputs (length > 15), the function does not copy and does not print the input, returning safely.",
+                "verification_conditions": [
+                  "The function does not write more than 15 bytes plus a null terminator to the buffer.",
+                  "The stack canary is not modified.",
+                  "The function returns normally for both valid and invalid inputs.",
+                  "Only the allowed calls are made."
+                ],
+                "confidence": 0.95
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "unbounded_copy",
+                "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, leading to a buffer overflow if the input is too long.",
+                "affected_function": "multicall_bad",
+                "affected_addresses": [
+                  "0x102cb60",
+                  "0x102cb61",
+                  "0x102cb64",
+                  "0x102cb68",
+                  "0x102cb71",
+                  "0x102cb75",
+                  "0x102cb79",
+                  "0x102cb7d",
+                  "0x102cb81",
+                  "0x102cb85",
+                  "0x102cb8a",
+                  "0x102cb8e",
+                  "0x102cb93",
+                  "0x102cb9c",
+                  "0x102cba0",
+                  "0x102cba3",
+                  "0x102cba5",
+                  "0x102cba9",
+                  "0x102cbaa"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rax",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "stack buffer at [rbp - 0x20] (16 bytes)",
+                  "stack canary at [rbp - 8]"
+                ],
+                "original_behavior": "The function copies the input string into a local buffer and then prints it using puts. It does not check the length of the input, so a long input can overflow the buffer and corrupt the stack canary or other data.",
+                "required_invariant": "The input string must fit within the 16-byte buffer (including the null terminator), i.e., its length must be at most 15 bytes. If the input is longer, the function must not overflow the buffer and should handle the error gracefully.",
+                "repair_strategy": "Before copying, check the length of the input string. If the length is greater than 15, skip the copy and print an error message or simply return without copying. Otherwise, proceed with the copy and print as before.",
+                "failure_behavior": "If the input is too long, the function should not copy any data into the buffer and should return without printing the input. It may optionally print an error message, but no overflow should occur.",
+                "permitted_calls": [
+                  "helper_copy",
+                  "puts"
+                ],
+                "expected_behavior": "For valid inputs (length <= 15), the function copies the input to the buffer and prints it. For invalid inputs (length > 15), the function does not copy and does not print the input, returning safely.",
+                "verification_conditions": [
+                  "The function does not write more than 15 bytes plus a null terminator to the buffer.",
+                  "The stack canary is not modified.",
+                  "The function returns normally for both valid and invalid inputs.",
+                  "Only the allowed calls are made."
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "e2ac1600557f2281f95ac798d9e02f0d79658b9006a89dcaac0239ee32f8c886",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "helper_copy",
+                  "target_va": "0x102cbb0",
+                  "source": "direct"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-v4-pro",
+                  "model_requested": "deepseek-v4-pro",
+                  "usage": {
+                    "prompt_tokens": 1026,
+                    "completion_tokens": 723,
+                    "total_tokens": 1749,
+                    "latency_ms": 6503
+                  },
+                  "latency_ms": 6506,
+                  "raw_plan": {
+                    "schema_version": 1,
+                    "vulnerability_type": "unbounded_copy",
+                    "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, leading to a buffer overflow if the input is too long.",
+                    "affected_function": "multicall_bad",
+                    "affected_addresses": [
+                      "0x102cb60",
+                      "0x102cb61",
+                      "0x102cb64",
+                      "0x102cb68",
+                      "0x102cb71",
+                      "0x102cb75",
+                      "0x102cb79",
+                      "0x102cb7d",
+                      "0x102cb81",
+                      "0x102cb85",
+                      "0x102cb8a",
+                      "0x102cb8e",
+                      "0x102cb93",
+                      "0x102cb9c",
+                      "0x102cba0",
+                      "0x102cba3",
+                      "0x102cba5",
+                      "0x102cba9",
+                      "0x102cbaa"
+                    ],
+                    "affected_registers": [
+                      "rdi",
+                      "rsi",
+                      "rax",
+                      "rcx"
+                    ],
+                    "affected_memory": [
+                      "stack buffer at [rbp - 0x20] (16 bytes)",
+                      "stack canary at [rbp - 8]"
+                    ],
+                    "original_behavior": "The function copies the input string into a local buffer and then prints it using puts. It does not check the length of the input, so a long input can overflow the buffer and corrupt the stack canary or other data.",
+                    "required_invariant": "The input string must fit within the 16-byte buffer (including the null terminator), i.e., its length must be at most 15 bytes. If the input is longer, the function must not overflow the buffer and should handle the error gracefully.",
+                    "repair_strategy": "Before copying, check the length of the input string. If the length is greater than 15, skip the copy and print an error message or simply return without copying. Otherwise, proceed with the copy and print as before.",
+                    "failure_behavior": "If the input is too long, the function should not copy any data into the buffer and should return without printing the input. It may optionally print an error message, but no overflow should occur.",
+                    "permitted_calls": [
+                      {
+                        "name": "helper_copy",
+                        "source": "direct",
+                        "target_va": "0x102cbb0"
+                      },
+                      {
+                        "name": "puts",
+                        "source": "direct",
+                        "target_va": "0x108a31c"
+                      }
+                    ],
+                    "expected_behavior": "For valid inputs (length <= 15), the function copies the input to the buffer and prints it. For invalid inputs (length > 15), the function does not copy and does not print the input, returning safely.",
+                    "verification_conditions": [
+                      "The function does not write more than 15 bytes plus a null terminator to the buffer.",
+                      "The stack canary is not modified.",
+                      "The function returns normally for both valid and invalid inputs.",
+                      "Only the allowed calls are made."
+                    ],
+                    "confidence": 0.95
+                  }
+                }
+              ],
+              "elapsed_ms": 6540
+            },
+            "model": "deepseek-v4-pro",
+            "model_requested": "deepseek-v4-pro",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "e2ac1600557f2281f95ac798d9e02f0d79658b9006a89dcaac0239ee32f8c886",
+            "usage": {
+              "prompt_tokens": 2104,
+              "completion_tokens": 240,
+              "total_tokens": 2344,
+              "latency_ms": 2920
+            },
+            "latency_ms": 2923,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "37fea072eb9fc4e3c2a9e5fd9c17bacc5989174ba5bc37189b3479a6de9b2cf2",
+            "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x102cbb0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lbad\nadd rsp, 0x30\npop rbp\nret\n.Lbad:\ncall __stack_chk_fail\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "37fea072eb9fc4e3c2a9e5fd9c17bacc5989174ba5bc37189b3479a6de9b2cf2",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x102cbb0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lbad\nadd rsp, 0x30\npop rbp\nret\n.Lbad:\ncall __stack_chk_fail\n",
+                "validation_error": "call target is not allowed: call __stack_chk_fail",
+                "validation_error_class": "injection",
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 1663,
+                  "completion_tokens": 240,
+                  "total_tokens": 1903,
+                  "latency_ms": 2778
+                },
+                "latency_ms": 2781,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              },
+              {
+                "attempt": 2,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "37fea072eb9fc4e3c2a9e5fd9c17bacc5989174ba5bc37189b3479a6de9b2cf2",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x102cbb0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lbad\nadd rsp, 0x30\npop rbp\nret\n.Lbad:\ncall __stack_chk_fail\n",
+                "validation_error": "call target is not allowed: call __stack_chk_fail",
+                "validation_error_class": "injection",
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 2104,
+                  "completion_tokens": 240,
+                  "total_tokens": 2344,
+                  "latency_ms": 2920
+                },
+                "latency_ms": 2923,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": "call target is not allowed: call __stack_chk_fail",
+            "validation_error_class": "injection",
+            "allowed_calls": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": false,
+            "target_scope_check": "not_run",
+            "target_scope": {
+              "name": "multicall_bad",
+              "va": 16960352,
+              "end": 16960432,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": false,
+            "injection": {
+              "stage": "validation",
+              "error_class": "injection",
+              "error_token": null,
+              "error": "assembly validation: ValueError: call target is not allowed: call __stack_chk_fail"
+            },
+            "candidate": {
+              "gate": "no_candidate",
+              "poc_status": "not_run",
+              "injection_error_class": "injection",
+              "injection_error_token": null,
+              "injection_error": "assembly validation: ValueError: call target is not allowed: call __stack_chk_fail",
+              "no_candidate_reason": "injection",
+              "repair_status": "INJECTION_FAILED"
+            },
+            "elapsed_ms": 5837
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "no_candidate",
+          "poc_status": "not_run",
+          "runner": null,
+          "candidate_sha256": null,
+          "no_candidate_reason": "injection",
+          "injection_error_class": "injection"
+        },
+        "candidate_sha256": null,
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-v4-pro",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-v4-pro",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-v4-pro",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-v4-pro",
+        "model_returned": "deepseek-v4-pro",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 2104,
+          "completion_tokens": 240,
+          "total_tokens": 2344,
+          "latency_ms": 2920
+        },
+        "request_id": null,
+        "elapsed_ms": 5837,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "multicall_bad",
+          "va": 16960352,
+          "end": 16960432,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-v4-pro",
+                "status": "not_attempted",
+                "latency_ms": 6506,
+                "plan_sha256": "4c0e6ac4d277bc6eed4248304240bdaaa1a4f8545221d9db949d86a32c19f6d6",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1026,
+                  "completion_tokens": 723,
+                  "total_tokens": 1749,
+                  "latency_ms": 6503
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "unbounded_copy",
+                "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, leading to a buffer overflow if the input is too long.",
+                "affected_function": "multicall_bad",
+                "affected_addresses": [
+                  "0x102cb60",
+                  "0x102cb61",
+                  "0x102cb64",
+                  "0x102cb68",
+                  "0x102cb71",
+                  "0x102cb75",
+                  "0x102cb79",
+                  "0x102cb7d",
+                  "0x102cb81",
+                  "0x102cb85",
+                  "0x102cb8a",
+                  "0x102cb8e",
+                  "0x102cb93",
+                  "0x102cb9c",
+                  "0x102cba0",
+                  "0x102cba3",
+                  "0x102cba5",
+                  "0x102cba9",
+                  "0x102cbaa"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rax",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "stack buffer at [rbp - 0x20] (16 bytes)",
+                  "stack canary at [rbp - 8]"
+                ],
+                "original_behavior": "The function copies the input string into a local buffer and then prints it using puts. It does not check the length of the input, so a long input can overflow the buffer and corrupt the stack canary or other data.",
+                "required_invariant": "The input string must fit within the 16-byte buffer (including the null terminator), i.e., its length must be at most 15 bytes. If the input is longer, the function must not overflow the buffer and should handle the error gracefully.",
+                "repair_strategy": "Before copying, check the length of the input string. If the length is greater than 15, skip the copy and print an error message or simply return without copying. Otherwise, proceed with the copy and print as before.",
+                "failure_behavior": "If the input is too long, the function should not copy any data into the buffer and should return without printing the input. It may optionally print an error message, but no overflow should occur.",
+                "permitted_calls": [
+                  {
+                    "name": "helper_copy",
+                    "source": "direct",
+                    "target_va": "0x102cbb0"
+                  },
+                  {
+                    "name": "puts",
+                    "source": "direct",
+                    "target_va": "0x108a31c"
+                  }
+                ],
+                "expected_behavior": "For valid inputs (length <= 15), the function copies the input to the buffer and prints it. For invalid inputs (length > 15), the function does not copy and does not print the input, returning safely.",
+                "verification_conditions": [
+                  "The function does not write more than 15 bytes plus a null terminator to the buffer.",
+                  "The stack canary is not modified.",
+                  "The function returns normally for both valid and invalid inputs.",
+                  "Only the allowed calls are made."
+                ],
+                "confidence": 0.95
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "unbounded_copy",
+                "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, leading to a buffer overflow if the input is too long.",
+                "affected_function": "multicall_bad",
+                "affected_addresses": [
+                  "0x102cb60",
+                  "0x102cb61",
+                  "0x102cb64",
+                  "0x102cb68",
+                  "0x102cb71",
+                  "0x102cb75",
+                  "0x102cb79",
+                  "0x102cb7d",
+                  "0x102cb81",
+                  "0x102cb85",
+                  "0x102cb8a",
+                  "0x102cb8e",
+                  "0x102cb93",
+                  "0x102cb9c",
+                  "0x102cba0",
+                  "0x102cba3",
+                  "0x102cba5",
+                  "0x102cba9",
+                  "0x102cbaa"
+                ],
+                "affected_registers": [
+                  "rdi",
+                  "rsi",
+                  "rax",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "stack buffer at [rbp - 0x20] (16 bytes)",
+                  "stack canary at [rbp - 8]"
+                ],
+                "original_behavior": "The function copies the input string into a local buffer and then prints it using puts. It does not check the length of the input, so a long input can overflow the buffer and corrupt the stack canary or other data.",
+                "required_invariant": "The input string must fit within the 16-byte buffer (including the null terminator), i.e., its length must be at most 15 bytes. If the input is longer, the function must not overflow the buffer and should handle the error gracefully.",
+                "repair_strategy": "Before copying, check the length of the input string. If the length is greater than 15, skip the copy and print an error message or simply return without copying. Otherwise, proceed with the copy and print as before.",
+                "failure_behavior": "If the input is too long, the function should not copy any data into the buffer and should return without printing the input. It may optionally print an error message, but no overflow should occur.",
+                "permitted_calls": [
+                  "helper_copy",
+                  "puts"
+                ],
+                "expected_behavior": "For valid inputs (length <= 15), the function copies the input to the buffer and prints it. For invalid inputs (length > 15), the function does not copy and does not print the input, returning safely.",
+                "verification_conditions": [
+                  "The function does not write more than 15 bytes plus a null terminator to the buffer.",
+                  "The stack canary is not modified.",
+                  "The function returns normally for both valid and invalid inputs.",
+                  "Only the allowed calls are made."
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "e2ac1600557f2281f95ac798d9e02f0d79658b9006a89dcaac0239ee32f8c886",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "helper_copy",
+                  "target_va": "0x102cbb0",
+                  "source": "direct"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x108a31c",
+                  "source": "direct"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-v4-pro",
+                  "model_requested": "deepseek-v4-pro",
+                  "usage": {
+                    "prompt_tokens": 1026,
+                    "completion_tokens": 723,
+                    "total_tokens": 1749,
+                    "latency_ms": 6503
+                  },
+                  "latency_ms": 6506,
+                  "raw_plan": {
+                    "schema_version": 1,
+                    "vulnerability_type": "unbounded_copy",
+                    "root_cause": "The function copies an input string into a fixed-size 16-byte stack buffer without checking the length, leading to a buffer overflow if the input is too long.",
+                    "affected_function": "multicall_bad",
+                    "affected_addresses": [
+                      "0x102cb60",
+                      "0x102cb61",
+                      "0x102cb64",
+                      "0x102cb68",
+                      "0x102cb71",
+                      "0x102cb75",
+                      "0x102cb79",
+                      "0x102cb7d",
+                      "0x102cb81",
+                      "0x102cb85",
+                      "0x102cb8a",
+                      "0x102cb8e",
+                      "0x102cb93",
+                      "0x102cb9c",
+                      "0x102cba0",
+                      "0x102cba3",
+                      "0x102cba5",
+                      "0x102cba9",
+                      "0x102cbaa"
+                    ],
+                    "affected_registers": [
+                      "rdi",
+                      "rsi",
+                      "rax",
+                      "rcx"
+                    ],
+                    "affected_memory": [
+                      "stack buffer at [rbp - 0x20] (16 bytes)",
+                      "stack canary at [rbp - 8]"
+                    ],
+                    "original_behavior": "The function copies the input string into a local buffer and then prints it using puts. It does not check the length of the input, so a long input can overflow the buffer and corrupt the stack canary or other data.",
+                    "required_invariant": "The input string must fit within the 16-byte buffer (including the null terminator), i.e., its length must be at most 15 bytes. If the input is longer, the function must not overflow the buffer and should handle the error gracefully.",
+                    "repair_strategy": "Before copying, check the length of the input string. If the length is greater than 15, skip the copy and print an error message or simply return without copying. Otherwise, proceed with the copy and print as before.",
+                    "failure_behavior": "If the input is too long, the function should not copy any data into the buffer and should return without printing the input. It may optionally print an error message, but no overflow should occur.",
+                    "permitted_calls": [
+                      {
+                        "name": "helper_copy",
+                        "source": "direct",
+                        "target_va": "0x102cbb0"
+                      },
+                      {
+                        "name": "puts",
+                        "source": "direct",
+                        "target_va": "0x108a31c"
+                      }
+                    ],
+                    "expected_behavior": "For valid inputs (length <= 15), the function copies the input to the buffer and prints it. For invalid inputs (length > 15), the function does not copy and does not print the input, returning safely.",
+                    "verification_conditions": [
+                      "The function does not write more than 15 bytes plus a null terminator to the buffer.",
+                      "The stack canary is not modified.",
+                      "The function returns normally for both valid and invalid inputs.",
+                      "Only the allowed calls are made."
+                    ],
+                    "confidence": 0.95
+                  }
+                }
+              ],
+              "elapsed_ms": 6540
+            },
+            "model": "deepseek-v4-pro",
+            "model_requested": "deepseek-v4-pro",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "e2ac1600557f2281f95ac798d9e02f0d79658b9006a89dcaac0239ee32f8c886",
+            "usage": {
+              "prompt_tokens": 2104,
+              "completion_tokens": 240,
+              "total_tokens": 2344,
+              "latency_ms": 2920
+            },
+            "latency_ms": 2923,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "37fea072eb9fc4e3c2a9e5fd9c17bacc5989174ba5bc37189b3479a6de9b2cf2",
+            "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x102cbb0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lbad\nadd rsp, 0x30\npop rbp\nret\n.Lbad:\ncall __stack_chk_fail\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "37fea072eb9fc4e3c2a9e5fd9c17bacc5989174ba5bc37189b3479a6de9b2cf2",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x102cbb0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lbad\nadd rsp, 0x30\npop rbp\nret\n.Lbad:\ncall __stack_chk_fail\n",
+                "validation_error": "call target is not allowed: call __stack_chk_fail",
+                "validation_error_class": "injection",
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 1663,
+                  "completion_tokens": 240,
+                  "total_tokens": 1903,
+                  "latency_ms": 2778
+                },
+                "latency_ms": 2781,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              },
+              {
+                "attempt": 2,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "37fea072eb9fc4e3c2a9e5fd9c17bacc5989174ba5bc37189b3479a6de9b2cf2",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov rax, qword ptr fs:[0x28]\nmov qword ptr [rbp - 8], rax\nmov qword ptr [rbp - 0x28], rdi\nmov rsi, qword ptr [rbp - 0x28]\nlea rdi, [rbp - 0x20]\nmov qword ptr [rbp - 0x30], rdi\ncall 0x102cbb0\nmov rdi, qword ptr [rbp - 0x30]\ncall 0x108a31c\nmov rax, qword ptr fs:[0x28]\nmov rcx, qword ptr [rbp - 8]\ncmp rax, rcx\njne .Lbad\nadd rsp, 0x30\npop rbp\nret\n.Lbad:\ncall __stack_chk_fail\n",
+                "validation_error": "call target is not allowed: call __stack_chk_fail",
+                "validation_error_class": "injection",
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 2104,
+                  "completion_tokens": 240,
+                  "total_tokens": 2344,
+                  "latency_ms": 2920
+                },
+                "latency_ms": 2923,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": "call target is not allowed: call __stack_chk_fail",
+            "validation_error_class": "injection",
+            "allowed_calls": [
+              {
+                "name": "helper_copy",
+                "target_va": "0x102cbb0",
+                "source": "direct"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x108a31c",
+                "source": "direct"
+              }
+            ],
+            "target_in_scope": false,
+            "target_scope_check": "not_run",
+            "target_scope": {
+              "name": "multicall_bad",
+              "va": 16960352,
+              "end": 16960432,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": false,
+            "injection": {
+              "stage": "validation",
+              "error_class": "injection",
+              "error_token": null,
+              "error": "assembly validation: ValueError: call target is not allowed: call __stack_chk_fail"
+            },
+            "candidate": {
+              "gate": "no_candidate",
+              "poc_status": "not_run",
+              "injection_error_class": "injection",
+              "injection_error_token": null,
+              "injection_error": "assembly validation: ValueError: call target is not allowed: call __stack_chk_fail",
+              "no_candidate_reason": "injection",
+              "repair_status": "INJECTION_FAILED"
+            },
+            "elapsed_ms": 5837
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-v4-pro",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-v4-pro",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-v4-pro",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-v4-pro",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 24682,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "multicall_bad",
+        "va": 16960352,
+        "end": 16960432,
+        "source": "symbol"
+      },
+      "target_scope_check": "not_run",
+      "target_in_scope": false,
+      "ai_increment": false,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 0,
+  "ai_increment": 0,
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 1,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 0,
+  "ai_target_in_scope": 0,
+  "ai_no_candidate_reasons": {
+    "injection": 1
+  },
+  "ai_injection_error_classes": {
+    "injection": 1
+  },
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 24682,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

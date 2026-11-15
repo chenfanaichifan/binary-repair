@@ -1,0 +1,2133 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-v4-pro",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "cwe787-index-write",
+        "binary_id": "repair-cwe787",
+        "route": "asm_repair",
+        "binary": "fixtures/repair-benchmark/CWE787_index_write/original.elf",
+        "target": "cwe787_bad",
+        "capacity": 16,
+        "arch": "x86_64",
+        "sink_kind": "indexed_write",
+        "poc": "fixtures/poc/repair-cwe787.json",
+        "reference_fix": "fixtures/repair-benchmark/CWE787_index_write/reference_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "CWE787 out-of-bounds write: atoi index writes dst[index]; reject/clamp out-of-range index and preserve normal output",
+        "family": "indexed write semantic guard",
+        "cwe": "CWE-787",
+        "required_verification": [
+          "security",
+          "regression"
+        ]
+      },
+      "input_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+      "baseline": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 243,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 243,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target cwe787_bad [0x401176,0x4011b4)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "cwe787_bad",
+          "va": 4198774,
+          "end": 4198836,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 11,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "not_attempted",
+        "disposition": "analysis_only",
+        "verified": false,
+        "elapsed_ms": 0
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-v4-pro",
+              "status": "not_attempted",
+              "latency_ms": 4489,
+              "plan_sha256": "c26bd4c065fd7cf28cf8ef8d46b39dcf3a1697d335e7657e5f4ad331f72a4780",
+              "error": null,
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 966,
+                "completion_tokens": 425,
+                "total_tokens": 1391,
+                "latency_ms": 4487
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true
+            },
+            "raw_plan": {
+              "schema_version": 1,
+              "vulnerability_type": "CWE787",
+              "root_cause": "The function uses the result of atoi as an index into a stack buffer without validating that the index is within bounds. A negative index or an index >= 16 causes an out-of-bounds write.",
+              "affected_function": "cwe787_bad",
+              "affected_addresses": [
+                "0x4011a0"
+              ],
+              "affected_registers": [
+                "rax",
+                "rdi",
+                "rbp"
+              ],
+              "affected_memory": [
+                "stack buffer at rbp-0x20, size 16"
+              ],
+              "original_behavior": "Reads an integer from the command-line argument, writes byte 0x58 at dst[index], then prints a fixed string.",
+              "required_invariant": "The write must be within the bounds of the 16-byte stack buffer. For valid indices (0-15), the write occurs and the string is printed. For invalid indices, the write is skipped and the string is still printed.",
+              "repair_strategy": "After calling atoi, check if the index is negative or >= 16. If so, skip the write. Otherwise, perform the write. Always print the string.",
+              "failure_behavior": "If the index is out of bounds, the write is not performed, but the program continues to print the string and returns normally.",
+              "permitted_calls": [
+                "puts",
+                "atoi"
+              ],
+              "expected_behavior": "For valid indices, the byte is written and the string is printed. For invalid indices, the write is skipped and the string is printed.",
+              "verification_conditions": [
+                "Index 0: write at rbp-0x20, print string",
+                "Index 15: write at rbp-0x11, print string",
+                "Index -1: no write, print string",
+                "Index 16: no write, print string"
+              ],
+              "confidence": 0.95
+            },
+            "plan": {
+              "schema_version": 1,
+              "vulnerability_type": "CWE787",
+              "root_cause": "The function uses the result of atoi as an index into a stack buffer without validating that the index is within bounds. A negative index or an index >= 16 causes an out-of-bounds write.",
+              "affected_function": "cwe787_bad",
+              "affected_addresses": [
+                "0x4011a0"
+              ],
+              "affected_registers": [
+                "rax",
+                "rdi",
+                "rbp"
+              ],
+              "affected_memory": [
+                "stack buffer at rbp-0x20, size 16"
+              ],
+              "original_behavior": "Reads an integer from the command-line argument, writes byte 0x58 at dst[index], then prints a fixed string.",
+              "required_invariant": "The write must be within the bounds of the 16-byte stack buffer. For valid indices (0-15), the write occurs and the string is printed. For invalid indices, the write is skipped and the string is still printed.",
+              "repair_strategy": "After calling atoi, check if the index is negative or >= 16. If so, skip the write. Otherwise, perform the write. Always print the string.",
+              "failure_behavior": "If the index is out of bounds, the write is not performed, but the program continues to print the string and returns normally.",
+              "permitted_calls": [
+                "puts",
+                "atoi"
+              ],
+              "expected_behavior": "For valid indices, the byte is written and the string is printed. For invalid indices, the write is skipped and the string is printed.",
+              "verification_conditions": [
+                "Index 0: write at rbp-0x20, print string",
+                "Index 15: write at rbp-0x11, print string",
+                "Index -1: no write, print string",
+                "Index 16: no write, print string"
+              ],
+              "confidence": "high"
+            },
+            "plan_sha256": "b465f4876c62b28465c176587a1b29afe4fb4ef3462d5ab377b946c03c6036df",
+            "plan_error": "",
+            "error": null,
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "attempts": [
+              {
+                "attempt": 1,
+                "status": "valid",
+                "error": "",
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "usage": {
+                  "prompt_tokens": 966,
+                  "completion_tokens": 425,
+                  "total_tokens": 1391,
+                  "latency_ms": 4487
+                },
+                "latency_ms": 4489,
+                "raw_plan": {
+                  "schema_version": 1,
+                  "vulnerability_type": "CWE787",
+                  "root_cause": "The function uses the result of atoi as an index into a stack buffer without validating that the index is within bounds. A negative index or an index >= 16 causes an out-of-bounds write.",
+                  "affected_function": "cwe787_bad",
+                  "affected_addresses": [
+                    "0x4011a0"
+                  ],
+                  "affected_registers": [
+                    "rax",
+                    "rdi",
+                    "rbp"
+                  ],
+                  "affected_memory": [
+                    "stack buffer at rbp-0x20, size 16"
+                  ],
+                  "original_behavior": "Reads an integer from the command-line argument, writes byte 0x58 at dst[index], then prints a fixed string.",
+                  "required_invariant": "The write must be within the bounds of the 16-byte stack buffer. For valid indices (0-15), the write occurs and the string is printed. For invalid indices, the write is skipped and the string is still printed.",
+                  "repair_strategy": "After calling atoi, check if the index is negative or >= 16. If so, skip the write. Otherwise, perform the write. Always print the string.",
+                  "failure_behavior": "If the index is out of bounds, the write is not performed, but the program continues to print the string and returns normally.",
+                  "permitted_calls": [
+                    "puts",
+                    "atoi"
+                  ],
+                  "expected_behavior": "For valid indices, the byte is written and the string is printed. For invalid indices, the write is skipped and the string is printed.",
+                  "verification_conditions": [
+                    "Index 0: write at rbp-0x20, print string",
+                    "Index 15: write at rbp-0x11, print string",
+                    "Index -1: no write, print string",
+                    "Index 16: no write, print string"
+                  ],
+                  "confidence": 0.95
+                }
+              }
+            ],
+            "elapsed_ms": 4492
+          },
+          "model": "deepseek-v4-pro",
+          "model_requested": "deepseek-v4-pro",
+          "status": "accepted",
+          "error": null,
+          "plan_status": "valid",
+          "plan_sha256": "b465f4876c62b28465c176587a1b29afe4fb4ef3462d5ab377b946c03c6036df",
+          "usage": {
+            "prompt_tokens": 1399,
+            "completion_tokens": 208,
+            "total_tokens": 1607,
+            "latency_ms": 2142
+          },
+          "latency_ms": 2145,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "743923efaa0580754e821ef83df0a8b710bac68e92d81150aef1f75115652736",
+          "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\ncmp dword ptr [rbp - 4], 0\njs skip_write\ncmp dword ptr [rbp - 4], 15\njg skip_write\nmov eax, dword ptr [rbp - 4]\ncdqe\nmov byte ptr [rbp + rax - 0x20], 0x58\nskip_write:\nmov edi, 0x402004\ncall 0x401060\nleave\nret",
+          "assembly_attempts": [
+            {
+              "attempt": 1,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "743923efaa0580754e821ef83df0a8b710bac68e92d81150aef1f75115652736",
+              "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\ncmp dword ptr [rbp - 4], 0\njs skip_write\ncmp dword ptr [rbp - 4], 15\njg skip_write\nmov eax, dword ptr [rbp - 4]\ncdqe\nmov byte ptr [rbp + rax - 0x20], 0x58\nskip_write:\nmov edi, 0x402004\ncall 0x401060\nleave\nret",
+              "validation_error": null,
+              "validation_error_class": null,
+              "diagnostics": [],
+              "usage": {
+                "prompt_tokens": 1399,
+                "completion_tokens": 208,
+                "total_tokens": 1607,
+                "latency_ms": 2142
+              },
+              "latency_ms": 2145,
+              "model": "deepseek-v4-pro",
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true,
+              "request_id": null
+            }
+          ],
+          "validation_error": null,
+          "validation_error_class": null,
+          "allowed_calls": [
+            {
+              "name": "puts",
+              "target_va": "0x401060",
+              "source": "import"
+            },
+            {
+              "name": "atoi",
+              "target_va": "0x401080",
+              "source": "import"
+            }
+          ],
+          "target_in_scope": true,
+          "target_scope_check": "passed",
+          "target_scope": {
+            "name": "cwe787_bad",
+            "va": 4198774,
+            "end": 4198836,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": true,
+          "injection": {
+            "target_va": "0x401176",
+            "cave_va": "0x405000",
+            "method": "new-pt-load",
+            "code_bytes": 65,
+            "code_hex": "f30f1efa554889e54883ec3048897dd8488b45d84889c7e8000000008945fc837dfc007810837dfc0f7f0a8b45fc4898c64405e058bf04204000e800000000c9c3",
+            "code_disassembly": [
+              {
+                "address": "0x0",
+                "bytes": "f30f1efa",
+                "mnemonic": "endbr64",
+                "operands": ""
+              },
+              {
+                "address": "0x4",
+                "bytes": "55",
+                "mnemonic": "push",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x5",
+                "bytes": "4889e5",
+                "mnemonic": "mov",
+                "operands": "rbp, rsp"
+              },
+              {
+                "address": "0x8",
+                "bytes": "4883ec30",
+                "mnemonic": "sub",
+                "operands": "rsp, 0x30"
+              },
+              {
+                "address": "0xc",
+                "bytes": "48897dd8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x28], rdi"
+              },
+              {
+                "address": "0x10",
+                "bytes": "488b45d8",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 0x28]"
+              },
+              {
+                "address": "0x14",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x17",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x1c"
+              },
+              {
+                "address": "0x1c",
+                "bytes": "8945fc",
+                "mnemonic": "mov",
+                "operands": "dword ptr [rbp - 4], eax"
+              },
+              {
+                "address": "0x1f",
+                "bytes": "837dfc00",
+                "mnemonic": "cmp",
+                "operands": "dword ptr [rbp - 4], 0"
+              },
+              {
+                "address": "0x23",
+                "bytes": "7810",
+                "mnemonic": "js",
+                "operands": "0x35"
+              },
+              {
+                "address": "0x25",
+                "bytes": "837dfc0f",
+                "mnemonic": "cmp",
+                "operands": "dword ptr [rbp - 4], 0xf"
+              },
+              {
+                "address": "0x29",
+                "bytes": "7f0a",
+                "mnemonic": "jg",
+                "operands": "0x35"
+              },
+              {
+                "address": "0x2b",
+                "bytes": "8b45fc",
+                "mnemonic": "mov",
+                "operands": "eax, dword ptr [rbp - 4]"
+              },
+              {
+                "address": "0x2e",
+                "bytes": "4898",
+                "mnemonic": "cdqe",
+                "operands": ""
+              },
+              {
+                "address": "0x30",
+                "bytes": "c64405e058",
+                "mnemonic": "mov",
+                "operands": "byte ptr [rbp + rax - 0x20], 0x58"
+              },
+              {
+                "address": "0x35",
+                "bytes": "bf04204000",
+                "mnemonic": "mov",
+                "operands": "edi, 0x402004"
+              },
+              {
+                "address": "0x3a",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x3f"
+              },
+              {
+                "address": "0x3f",
+                "bytes": "c9",
+                "mnemonic": "leave",
+                "operands": ""
+              },
+              {
+                "address": "0x40",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              }
+            ],
+            "assembly_sha256": "2e7cb1a68eb0a76fc6c28a7e1a4cef41aa021c729555ddd82704e665ce00ed8b",
+            "call_targets": [
+              {
+                "name": "puts",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "call_relocations": 2,
+            "abi": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          "candidate": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "runner": "limactl",
+            "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+            "poc": {
+              "schema_version": 1,
+              "status": "pass",
+              "runner": "limactl",
+              "tier": "emulated_run",
+              "stdout_signature": "matched",
+              "errno_signature": "not_run",
+              "errno_probe": "",
+              "no_input": false,
+              "original_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+              "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+              "poc": [
+                {
+                  "case_id": "cwe787-index-large",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe787-index-large",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "ok\n",
+                  "stderr": "",
+                  "stdout_hex": "6f6b0a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "regression": [
+                {
+                  "case_id": "cwe787-index-5",
+                  "kind": "regression",
+                  "executable": "original",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "ok\n",
+                  "stderr": "",
+                  "stdout_hex": "6f6b0a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe787-index-15",
+                  "kind": "regression",
+                  "executable": "original",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "ok\n",
+                  "stderr": "",
+                  "stdout_hex": "6f6b0a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe787-index-5",
+                  "kind": "regression",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "ok\n",
+                  "stderr": "",
+                  "stdout_hex": "6f6b0a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe787-index-15",
+                  "kind": "regression",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "ok\n",
+                  "stderr": "",
+                  "stdout_hex": "6f6b0a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "limitations": []
+            },
+            "repair_status": "VERIFIED",
+            "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe787-index-write/run-1/candidates/cwe787-index-write.bin"
+          },
+          "elapsed_ms": 6030
+        }
+      ],
+      "injection": {
+        "target_va": "0x401176",
+        "cave_va": "0x405000",
+        "method": "new-pt-load",
+        "code_bytes": 65,
+        "code_hex": "f30f1efa554889e54883ec3048897dd8488b45d84889c7e8000000008945fc837dfc007810837dfc0f7f0a8b45fc4898c64405e058bf04204000e800000000c9c3",
+        "code_disassembly": [
+          {
+            "address": "0x0",
+            "bytes": "f30f1efa",
+            "mnemonic": "endbr64",
+            "operands": ""
+          },
+          {
+            "address": "0x4",
+            "bytes": "55",
+            "mnemonic": "push",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x5",
+            "bytes": "4889e5",
+            "mnemonic": "mov",
+            "operands": "rbp, rsp"
+          },
+          {
+            "address": "0x8",
+            "bytes": "4883ec30",
+            "mnemonic": "sub",
+            "operands": "rsp, 0x30"
+          },
+          {
+            "address": "0xc",
+            "bytes": "48897dd8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x28], rdi"
+          },
+          {
+            "address": "0x10",
+            "bytes": "488b45d8",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 0x28]"
+          },
+          {
+            "address": "0x14",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x17",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x1c"
+          },
+          {
+            "address": "0x1c",
+            "bytes": "8945fc",
+            "mnemonic": "mov",
+            "operands": "dword ptr [rbp - 4], eax"
+          },
+          {
+            "address": "0x1f",
+            "bytes": "837dfc00",
+            "mnemonic": "cmp",
+            "operands": "dword ptr [rbp - 4], 0"
+          },
+          {
+            "address": "0x23",
+            "bytes": "7810",
+            "mnemonic": "js",
+            "operands": "0x35"
+          },
+          {
+            "address": "0x25",
+            "bytes": "837dfc0f",
+            "mnemonic": "cmp",
+            "operands": "dword ptr [rbp - 4], 0xf"
+          },
+          {
+            "address": "0x29",
+            "bytes": "7f0a",
+            "mnemonic": "jg",
+            "operands": "0x35"
+          },
+          {
+            "address": "0x2b",
+            "bytes": "8b45fc",
+            "mnemonic": "mov",
+            "operands": "eax, dword ptr [rbp - 4]"
+          },
+          {
+            "address": "0x2e",
+            "bytes": "4898",
+            "mnemonic": "cdqe",
+            "operands": ""
+          },
+          {
+            "address": "0x30",
+            "bytes": "c64405e058",
+            "mnemonic": "mov",
+            "operands": "byte ptr [rbp + rax - 0x20], 0x58"
+          },
+          {
+            "address": "0x35",
+            "bytes": "bf04204000",
+            "mnemonic": "mov",
+            "operands": "edi, 0x402004"
+          },
+          {
+            "address": "0x3a",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x3f"
+          },
+          {
+            "address": "0x3f",
+            "bytes": "c9",
+            "mnemonic": "leave",
+            "operands": ""
+          },
+          {
+            "address": "0x40",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          }
+        ],
+        "assembly_sha256": "2e7cb1a68eb0a76fc6c28a7e1a4cef41aa021c729555ddd82704e665ce00ed8b",
+        "call_targets": [
+          {
+            "name": "puts",
+            "target_va": "0x401060",
+            "source": "import"
+          },
+          {
+            "name": "atoi",
+            "target_va": "0x401080",
+            "source": "import"
+          }
+        ],
+        "call_relocations": 2,
+        "abi": {
+          "ok": true,
+          "fatal": 0,
+          "findings": []
+        }
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "limactl",
+        "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "stdout_signature": "matched",
+          "errno_signature": "not_run",
+          "errno_probe": "",
+          "no_input": false,
+          "original_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+          "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+          "poc": [
+            {
+              "case_id": "cwe787-index-large",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe787-index-large",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "ok\n",
+              "stderr": "",
+              "stdout_hex": "6f6b0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "cwe787-index-5",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "ok\n",
+              "stderr": "",
+              "stdout_hex": "6f6b0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe787-index-15",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "ok\n",
+              "stderr": "",
+              "stdout_hex": "6f6b0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe787-index-5",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "ok\n",
+              "stderr": "",
+              "stdout_hex": "6f6b0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe787-index-15",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "ok\n",
+              "stderr": "",
+              "stdout_hex": "6f6b0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "limitations": []
+        },
+        "repair_status": "VERIFIED",
+        "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe787-index-write/run-1/candidates/cwe787-index-write.bin"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 2145,
+        "plan_sha256": "d14077c022b56eb266426df0129433d84838d60989a1a04a941e6bb36a8b5307",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1399,
+          "completion_tokens": 208,
+          "total_tokens": 1607,
+          "latency_ms": 2142
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-v4-pro",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-v4-pro",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-v4-pro",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-v4-pro",
+        "model_returned": "deepseek-v4-pro",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1399,
+          "completion_tokens": 208,
+          "total_tokens": 1607,
+          "latency_ms": 2142
+        },
+        "request_id": null,
+        "elapsed_ms": 6030,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe787_bad",
+          "va": 4198774,
+          "end": 4198836,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-v4-pro",
+                "status": "not_attempted",
+                "latency_ms": 4489,
+                "plan_sha256": "c26bd4c065fd7cf28cf8ef8d46b39dcf3a1697d335e7657e5f4ad331f72a4780",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 966,
+                  "completion_tokens": 425,
+                  "total_tokens": 1391,
+                  "latency_ms": 4487
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "CWE787",
+                "root_cause": "The function uses the result of atoi as an index into a stack buffer without validating that the index is within bounds. A negative index or an index >= 16 causes an out-of-bounds write.",
+                "affected_function": "cwe787_bad",
+                "affected_addresses": [
+                  "0x4011a0"
+                ],
+                "affected_registers": [
+                  "rax",
+                  "rdi",
+                  "rbp"
+                ],
+                "affected_memory": [
+                  "stack buffer at rbp-0x20, size 16"
+                ],
+                "original_behavior": "Reads an integer from the command-line argument, writes byte 0x58 at dst[index], then prints a fixed string.",
+                "required_invariant": "The write must be within the bounds of the 16-byte stack buffer. For valid indices (0-15), the write occurs and the string is printed. For invalid indices, the write is skipped and the string is still printed.",
+                "repair_strategy": "After calling atoi, check if the index is negative or >= 16. If so, skip the write. Otherwise, perform the write. Always print the string.",
+                "failure_behavior": "If the index is out of bounds, the write is not performed, but the program continues to print the string and returns normally.",
+                "permitted_calls": [
+                  "puts",
+                  "atoi"
+                ],
+                "expected_behavior": "For valid indices, the byte is written and the string is printed. For invalid indices, the write is skipped and the string is printed.",
+                "verification_conditions": [
+                  "Index 0: write at rbp-0x20, print string",
+                  "Index 15: write at rbp-0x11, print string",
+                  "Index -1: no write, print string",
+                  "Index 16: no write, print string"
+                ],
+                "confidence": 0.95
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "CWE787",
+                "root_cause": "The function uses the result of atoi as an index into a stack buffer without validating that the index is within bounds. A negative index or an index >= 16 causes an out-of-bounds write.",
+                "affected_function": "cwe787_bad",
+                "affected_addresses": [
+                  "0x4011a0"
+                ],
+                "affected_registers": [
+                  "rax",
+                  "rdi",
+                  "rbp"
+                ],
+                "affected_memory": [
+                  "stack buffer at rbp-0x20, size 16"
+                ],
+                "original_behavior": "Reads an integer from the command-line argument, writes byte 0x58 at dst[index], then prints a fixed string.",
+                "required_invariant": "The write must be within the bounds of the 16-byte stack buffer. For valid indices (0-15), the write occurs and the string is printed. For invalid indices, the write is skipped and the string is still printed.",
+                "repair_strategy": "After calling atoi, check if the index is negative or >= 16. If so, skip the write. Otherwise, perform the write. Always print the string.",
+                "failure_behavior": "If the index is out of bounds, the write is not performed, but the program continues to print the string and returns normally.",
+                "permitted_calls": [
+                  "puts",
+                  "atoi"
+                ],
+                "expected_behavior": "For valid indices, the byte is written and the string is printed. For invalid indices, the write is skipped and the string is printed.",
+                "verification_conditions": [
+                  "Index 0: write at rbp-0x20, print string",
+                  "Index 15: write at rbp-0x11, print string",
+                  "Index -1: no write, print string",
+                  "Index 16: no write, print string"
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "b465f4876c62b28465c176587a1b29afe4fb4ef3462d5ab377b946c03c6036df",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "puts",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-v4-pro",
+                  "model_requested": "deepseek-v4-pro",
+                  "usage": {
+                    "prompt_tokens": 966,
+                    "completion_tokens": 425,
+                    "total_tokens": 1391,
+                    "latency_ms": 4487
+                  },
+                  "latency_ms": 4489,
+                  "raw_plan": {
+                    "schema_version": 1,
+                    "vulnerability_type": "CWE787",
+                    "root_cause": "The function uses the result of atoi as an index into a stack buffer without validating that the index is within bounds. A negative index or an index >= 16 causes an out-of-bounds write.",
+                    "affected_function": "cwe787_bad",
+                    "affected_addresses": [
+                      "0x4011a0"
+                    ],
+                    "affected_registers": [
+                      "rax",
+                      "rdi",
+                      "rbp"
+                    ],
+                    "affected_memory": [
+                      "stack buffer at rbp-0x20, size 16"
+                    ],
+                    "original_behavior": "Reads an integer from the command-line argument, writes byte 0x58 at dst[index], then prints a fixed string.",
+                    "required_invariant": "The write must be within the bounds of the 16-byte stack buffer. For valid indices (0-15), the write occurs and the string is printed. For invalid indices, the write is skipped and the string is still printed.",
+                    "repair_strategy": "After calling atoi, check if the index is negative or >= 16. If so, skip the write. Otherwise, perform the write. Always print the string.",
+                    "failure_behavior": "If the index is out of bounds, the write is not performed, but the program continues to print the string and returns normally.",
+                    "permitted_calls": [
+                      "puts",
+                      "atoi"
+                    ],
+                    "expected_behavior": "For valid indices, the byte is written and the string is printed. For invalid indices, the write is skipped and the string is printed.",
+                    "verification_conditions": [
+                      "Index 0: write at rbp-0x20, print string",
+                      "Index 15: write at rbp-0x11, print string",
+                      "Index -1: no write, print string",
+                      "Index 16: no write, print string"
+                    ],
+                    "confidence": 0.95
+                  }
+                }
+              ],
+              "elapsed_ms": 4492
+            },
+            "model": "deepseek-v4-pro",
+            "model_requested": "deepseek-v4-pro",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "b465f4876c62b28465c176587a1b29afe4fb4ef3462d5ab377b946c03c6036df",
+            "usage": {
+              "prompt_tokens": 1399,
+              "completion_tokens": 208,
+              "total_tokens": 1607,
+              "latency_ms": 2142
+            },
+            "latency_ms": 2145,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "743923efaa0580754e821ef83df0a8b710bac68e92d81150aef1f75115652736",
+            "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\ncmp dword ptr [rbp - 4], 0\njs skip_write\ncmp dword ptr [rbp - 4], 15\njg skip_write\nmov eax, dword ptr [rbp - 4]\ncdqe\nmov byte ptr [rbp + rax - 0x20], 0x58\nskip_write:\nmov edi, 0x402004\ncall 0x401060\nleave\nret",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "743923efaa0580754e821ef83df0a8b710bac68e92d81150aef1f75115652736",
+                "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\ncmp dword ptr [rbp - 4], 0\njs skip_write\ncmp dword ptr [rbp - 4], 15\njg skip_write\nmov eax, dword ptr [rbp - 4]\ncdqe\nmov byte ptr [rbp + rax - 0x20], 0x58\nskip_write:\nmov edi, 0x402004\ncall 0x401060\nleave\nret",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 1399,
+                  "completion_tokens": 208,
+                  "total_tokens": 1607,
+                  "latency_ms": 2142
+                },
+                "latency_ms": 2145,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "cwe787_bad",
+              "va": 4198774,
+              "end": 4198836,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x401176",
+              "cave_va": "0x405000",
+              "method": "new-pt-load",
+              "code_bytes": 65,
+              "code_hex": "f30f1efa554889e54883ec3048897dd8488b45d84889c7e8000000008945fc837dfc007810837dfc0f7f0a8b45fc4898c64405e058bf04204000e800000000c9c3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "f30f1efa",
+                  "mnemonic": "endbr64",
+                  "operands": ""
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x5",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "4883ec30",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0xc",
+                  "bytes": "48897dd8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x28], rdi"
+                },
+                {
+                  "address": "0x10",
+                  "bytes": "488b45d8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x14",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x17",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x1c"
+                },
+                {
+                  "address": "0x1c",
+                  "bytes": "8945fc",
+                  "mnemonic": "mov",
+                  "operands": "dword ptr [rbp - 4], eax"
+                },
+                {
+                  "address": "0x1f",
+                  "bytes": "837dfc00",
+                  "mnemonic": "cmp",
+                  "operands": "dword ptr [rbp - 4], 0"
+                },
+                {
+                  "address": "0x23",
+                  "bytes": "7810",
+                  "mnemonic": "js",
+                  "operands": "0x35"
+                },
+                {
+                  "address": "0x25",
+                  "bytes": "837dfc0f",
+                  "mnemonic": "cmp",
+                  "operands": "dword ptr [rbp - 4], 0xf"
+                },
+                {
+                  "address": "0x29",
+                  "bytes": "7f0a",
+                  "mnemonic": "jg",
+                  "operands": "0x35"
+                },
+                {
+                  "address": "0x2b",
+                  "bytes": "8b45fc",
+                  "mnemonic": "mov",
+                  "operands": "eax, dword ptr [rbp - 4]"
+                },
+                {
+                  "address": "0x2e",
+                  "bytes": "4898",
+                  "mnemonic": "cdqe",
+                  "operands": ""
+                },
+                {
+                  "address": "0x30",
+                  "bytes": "c64405e058",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rbp + rax - 0x20], 0x58"
+                },
+                {
+                  "address": "0x35",
+                  "bytes": "bf04204000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 0x402004"
+                },
+                {
+                  "address": "0x3a",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x3f"
+                },
+                {
+                  "address": "0x3f",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x40",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "2e7cb1a68eb0a76fc6c28a7e1a4cef41aa021c729555ddd82704e665ce00ed8b",
+              "call_targets": [
+                {
+                  "name": "puts",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+                "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+                "poc": [
+                  {
+                    "case_id": "cwe787-index-large",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe787-index-large",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "cwe787-index-5",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe787-index-15",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe787-index-5",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe787-index-15",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe787-index-write/run-1/candidates/cwe787-index-write.bin"
+            },
+            "elapsed_ms": 6030
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-v4-pro",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-v4-pro",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-v4-pro",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-v4-pro",
+        "model_returned": "deepseek-v4-pro",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1399,
+          "completion_tokens": 208,
+          "total_tokens": 1607,
+          "latency_ms": 2142
+        },
+        "request_id": null,
+        "elapsed_ms": 6030,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe787_bad",
+          "va": 4198774,
+          "end": 4198836,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-v4-pro",
+                "status": "not_attempted",
+                "latency_ms": 4489,
+                "plan_sha256": "c26bd4c065fd7cf28cf8ef8d46b39dcf3a1697d335e7657e5f4ad331f72a4780",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 966,
+                  "completion_tokens": 425,
+                  "total_tokens": 1391,
+                  "latency_ms": 4487
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "CWE787",
+                "root_cause": "The function uses the result of atoi as an index into a stack buffer without validating that the index is within bounds. A negative index or an index >= 16 causes an out-of-bounds write.",
+                "affected_function": "cwe787_bad",
+                "affected_addresses": [
+                  "0x4011a0"
+                ],
+                "affected_registers": [
+                  "rax",
+                  "rdi",
+                  "rbp"
+                ],
+                "affected_memory": [
+                  "stack buffer at rbp-0x20, size 16"
+                ],
+                "original_behavior": "Reads an integer from the command-line argument, writes byte 0x58 at dst[index], then prints a fixed string.",
+                "required_invariant": "The write must be within the bounds of the 16-byte stack buffer. For valid indices (0-15), the write occurs and the string is printed. For invalid indices, the write is skipped and the string is still printed.",
+                "repair_strategy": "After calling atoi, check if the index is negative or >= 16. If so, skip the write. Otherwise, perform the write. Always print the string.",
+                "failure_behavior": "If the index is out of bounds, the write is not performed, but the program continues to print the string and returns normally.",
+                "permitted_calls": [
+                  "puts",
+                  "atoi"
+                ],
+                "expected_behavior": "For valid indices, the byte is written and the string is printed. For invalid indices, the write is skipped and the string is printed.",
+                "verification_conditions": [
+                  "Index 0: write at rbp-0x20, print string",
+                  "Index 15: write at rbp-0x11, print string",
+                  "Index -1: no write, print string",
+                  "Index 16: no write, print string"
+                ],
+                "confidence": 0.95
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "CWE787",
+                "root_cause": "The function uses the result of atoi as an index into a stack buffer without validating that the index is within bounds. A negative index or an index >= 16 causes an out-of-bounds write.",
+                "affected_function": "cwe787_bad",
+                "affected_addresses": [
+                  "0x4011a0"
+                ],
+                "affected_registers": [
+                  "rax",
+                  "rdi",
+                  "rbp"
+                ],
+                "affected_memory": [
+                  "stack buffer at rbp-0x20, size 16"
+                ],
+                "original_behavior": "Reads an integer from the command-line argument, writes byte 0x58 at dst[index], then prints a fixed string.",
+                "required_invariant": "The write must be within the bounds of the 16-byte stack buffer. For valid indices (0-15), the write occurs and the string is printed. For invalid indices, the write is skipped and the string is still printed.",
+                "repair_strategy": "After calling atoi, check if the index is negative or >= 16. If so, skip the write. Otherwise, perform the write. Always print the string.",
+                "failure_behavior": "If the index is out of bounds, the write is not performed, but the program continues to print the string and returns normally.",
+                "permitted_calls": [
+                  "puts",
+                  "atoi"
+                ],
+                "expected_behavior": "For valid indices, the byte is written and the string is printed. For invalid indices, the write is skipped and the string is printed.",
+                "verification_conditions": [
+                  "Index 0: write at rbp-0x20, print string",
+                  "Index 15: write at rbp-0x11, print string",
+                  "Index -1: no write, print string",
+                  "Index 16: no write, print string"
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "b465f4876c62b28465c176587a1b29afe4fb4ef3462d5ab377b946c03c6036df",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "puts",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-v4-pro",
+                  "model_requested": "deepseek-v4-pro",
+                  "usage": {
+                    "prompt_tokens": 966,
+                    "completion_tokens": 425,
+                    "total_tokens": 1391,
+                    "latency_ms": 4487
+                  },
+                  "latency_ms": 4489,
+                  "raw_plan": {
+                    "schema_version": 1,
+                    "vulnerability_type": "CWE787",
+                    "root_cause": "The function uses the result of atoi as an index into a stack buffer without validating that the index is within bounds. A negative index or an index >= 16 causes an out-of-bounds write.",
+                    "affected_function": "cwe787_bad",
+                    "affected_addresses": [
+                      "0x4011a0"
+                    ],
+                    "affected_registers": [
+                      "rax",
+                      "rdi",
+                      "rbp"
+                    ],
+                    "affected_memory": [
+                      "stack buffer at rbp-0x20, size 16"
+                    ],
+                    "original_behavior": "Reads an integer from the command-line argument, writes byte 0x58 at dst[index], then prints a fixed string.",
+                    "required_invariant": "The write must be within the bounds of the 16-byte stack buffer. For valid indices (0-15), the write occurs and the string is printed. For invalid indices, the write is skipped and the string is still printed.",
+                    "repair_strategy": "After calling atoi, check if the index is negative or >= 16. If so, skip the write. Otherwise, perform the write. Always print the string.",
+                    "failure_behavior": "If the index is out of bounds, the write is not performed, but the program continues to print the string and returns normally.",
+                    "permitted_calls": [
+                      "puts",
+                      "atoi"
+                    ],
+                    "expected_behavior": "For valid indices, the byte is written and the string is printed. For invalid indices, the write is skipped and the string is printed.",
+                    "verification_conditions": [
+                      "Index 0: write at rbp-0x20, print string",
+                      "Index 15: write at rbp-0x11, print string",
+                      "Index -1: no write, print string",
+                      "Index 16: no write, print string"
+                    ],
+                    "confidence": 0.95
+                  }
+                }
+              ],
+              "elapsed_ms": 4492
+            },
+            "model": "deepseek-v4-pro",
+            "model_requested": "deepseek-v4-pro",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "b465f4876c62b28465c176587a1b29afe4fb4ef3462d5ab377b946c03c6036df",
+            "usage": {
+              "prompt_tokens": 1399,
+              "completion_tokens": 208,
+              "total_tokens": 1607,
+              "latency_ms": 2142
+            },
+            "latency_ms": 2145,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "743923efaa0580754e821ef83df0a8b710bac68e92d81150aef1f75115652736",
+            "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\ncmp dword ptr [rbp - 4], 0\njs skip_write\ncmp dword ptr [rbp - 4], 15\njg skip_write\nmov eax, dword ptr [rbp - 4]\ncdqe\nmov byte ptr [rbp + rax - 0x20], 0x58\nskip_write:\nmov edi, 0x402004\ncall 0x401060\nleave\nret",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "743923efaa0580754e821ef83df0a8b710bac68e92d81150aef1f75115652736",
+                "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x30\nmov qword ptr [rbp - 0x28], rdi\nmov rax, qword ptr [rbp - 0x28]\nmov rdi, rax\ncall 0x401080\nmov dword ptr [rbp - 4], eax\ncmp dword ptr [rbp - 4], 0\njs skip_write\ncmp dword ptr [rbp - 4], 15\njg skip_write\nmov eax, dword ptr [rbp - 4]\ncdqe\nmov byte ptr [rbp + rax - 0x20], 0x58\nskip_write:\nmov edi, 0x402004\ncall 0x401060\nleave\nret",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 1399,
+                  "completion_tokens": 208,
+                  "total_tokens": 1607,
+                  "latency_ms": 2142
+                },
+                "latency_ms": 2145,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "cwe787_bad",
+              "va": 4198774,
+              "end": 4198836,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x401176",
+              "cave_va": "0x405000",
+              "method": "new-pt-load",
+              "code_bytes": 65,
+              "code_hex": "f30f1efa554889e54883ec3048897dd8488b45d84889c7e8000000008945fc837dfc007810837dfc0f7f0a8b45fc4898c64405e058bf04204000e800000000c9c3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "f30f1efa",
+                  "mnemonic": "endbr64",
+                  "operands": ""
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x5",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "4883ec30",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x30"
+                },
+                {
+                  "address": "0xc",
+                  "bytes": "48897dd8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x28], rdi"
+                },
+                {
+                  "address": "0x10",
+                  "bytes": "488b45d8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x28]"
+                },
+                {
+                  "address": "0x14",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x17",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x1c"
+                },
+                {
+                  "address": "0x1c",
+                  "bytes": "8945fc",
+                  "mnemonic": "mov",
+                  "operands": "dword ptr [rbp - 4], eax"
+                },
+                {
+                  "address": "0x1f",
+                  "bytes": "837dfc00",
+                  "mnemonic": "cmp",
+                  "operands": "dword ptr [rbp - 4], 0"
+                },
+                {
+                  "address": "0x23",
+                  "bytes": "7810",
+                  "mnemonic": "js",
+                  "operands": "0x35"
+                },
+                {
+                  "address": "0x25",
+                  "bytes": "837dfc0f",
+                  "mnemonic": "cmp",
+                  "operands": "dword ptr [rbp - 4], 0xf"
+                },
+                {
+                  "address": "0x29",
+                  "bytes": "7f0a",
+                  "mnemonic": "jg",
+                  "operands": "0x35"
+                },
+                {
+                  "address": "0x2b",
+                  "bytes": "8b45fc",
+                  "mnemonic": "mov",
+                  "operands": "eax, dword ptr [rbp - 4]"
+                },
+                {
+                  "address": "0x2e",
+                  "bytes": "4898",
+                  "mnemonic": "cdqe",
+                  "operands": ""
+                },
+                {
+                  "address": "0x30",
+                  "bytes": "c64405e058",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rbp + rax - 0x20], 0x58"
+                },
+                {
+                  "address": "0x35",
+                  "bytes": "bf04204000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 0x402004"
+                },
+                {
+                  "address": "0x3a",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x3f"
+                },
+                {
+                  "address": "0x3f",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x40",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "2e7cb1a68eb0a76fc6c28a7e1a4cef41aa021c729555ddd82704e665ce00ed8b",
+              "call_targets": [
+                {
+                  "name": "puts",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "de7dde066da56878cc8265a3e89781b1432c570150be29bde7942be17876715b",
+                "candidate_sha256": "be0d9647131629464f7458ca0ca3c1b9391e1f0aadc95b5b7d2a6218b0801984",
+                "poc": [
+                  {
+                    "case_id": "cwe787-index-large",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe787-index-large",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "cwe787-index-5",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe787-index-15",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe787-index-5",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe787-index-15",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe787-index-write/run-1/candidates/cwe787-index-write.bin"
+            },
+            "elapsed_ms": 6030
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-v4-pro",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-v4-pro",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-v4-pro",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-v4-pro",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 10808,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "cwe787_bad",
+        "va": 4198774,
+        "end": 4198836,
+        "source": "symbol"
+      },
+      "target_scope_check": "passed",
+      "target_in_scope": true,
+      "ai_increment": true,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 1,
+  "ai_increment": 1,
+  "funnel": {
+    "VERIFIED": 1,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 1,
+  "ai_target_in_scope": 1,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 10808,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

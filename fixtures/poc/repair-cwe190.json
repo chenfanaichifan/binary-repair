@@ -1,0 +1,37 @@
+{
+  "fixture_sha256": "307f2341c22dc246293a3fbff7b9395957199113ecaa3441ce48415586178156",
+  "target": "cwe190_bad",
+  "poc": [
+    {
+      "id": "cwe190-negative",
+      "argv": [
+        "-1"
+      ],
+      "original": {
+        "crashed": true
+      },
+      "candidate": {
+        "crashed": false
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "cwe190-len-4",
+      "argv": [
+        "4"
+      ],
+      "original": {
+        "exit_code": 0,
+        "stdout": "4\n"
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "4\n"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "format": "elf",
+  "arch": "x86_64"
+}

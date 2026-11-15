@@ -33,7 +33,10 @@
     "full runtime TLS/libc errno capture; current errno probe is a syscall-signature proxy and optional",
     "exact TLS errno at arbitrary function return; LD_PRELOAD probe is process-exit only",
     "native semantic feedback retry for future failing candidates; not needed by the 3/3 passing set",
-    "3-repeat cross-binary stability run; current P9 evidence is one run per case"
+    "3-repeat cross-binary stability run; current P9 evidence is one run per case",
+    "register/stack native trace (gdb unavailable)",
+    "CWE-134 AI repair success",
+    "AFL/fuzzing campaign"
   ],
   "non_goals": [
     {
@@ -271,7 +274,12 @@
     "RepairSpec v2 nested schema + consistency validation (v1 compatible)",
     "cross-binary benchmark: 4 binaries / CWE121, CWE122, CWE787; best AI run 4/6",
     "model qualification: flash 2/6, v4-pro 2/6, different cases verified",
-    "versioned repair evidence bundle builder/checker"
+    "versioned repair evidence bundle builder/checker",
+    "P10 assembly diagnostic feedback: CWE-787 native verified",
+    "P11 36-run stability: 19/36 with per-run evidence",
+    "P12 real RepairSpec v2 plan and native trace",
+    "P13 benchmark expansion to 8 binaries / 7 CWE",
+    "hidden-split CWE-476 AI verified"
   ],
   "siliconflow_status": {
     "international": "identity pass; HTTP 402 balance",

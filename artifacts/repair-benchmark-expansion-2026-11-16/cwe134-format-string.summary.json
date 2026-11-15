@@ -1,0 +1,1041 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "cwe134-format-string",
+        "binary_id": "repair-cwe134",
+        "route": "asm_repair",
+        "binary": "fixtures/repair-benchmark/CWE134_format_string/original.elf",
+        "target": "cwe134_bad",
+        "capacity": 16,
+        "arch": "x86_64",
+        "sink_kind": "format_string",
+        "poc": "fixtures/poc/repair-cwe134.json",
+        "reference_fix": "fixtures/repair-benchmark/CWE134_format_string/reference_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "Uncontrolled format string: printf(src, bad ptr); fix format use and preserve valid output",
+        "family": "CWE-134",
+        "cwe": "CWE-134",
+        "required_verification": [
+          "security",
+          "regression"
+        ],
+        "split": "hidden"
+      },
+      "input_sha256": "c74266a421fa3e61f33b1669d3ae22640672a5136cb22871326ab3a5ad16a56d",
+      "baseline": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c74266a421fa3e61f33b1669d3ae22640672a5136cb22871326ab3a5ad16a56d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 194,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "c74266a421fa3e61f33b1669d3ae22640672a5136cb22871326ab3a5ad16a56d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 194,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target cwe134_bad [0x401156,0x40117f)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "cwe134_bad",
+          "va": 4198742,
+          "end": 4198783,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "c74266a421fa3e61f33b1669d3ae22640672a5136cb22871326ab3a5ad16a56d",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 11,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "not_attempted",
+        "disposition": "analysis_only",
+        "verified": false,
+        "elapsed_ms": 0
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "status": "plan_invalid",
+          "error": "affected_address_out_of_scope",
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-flash",
+              "status": "not_attempted",
+              "latency_ms": 2590,
+              "plan_sha256": "b8b34602eda7d0aa18a02faec12e933aafd81a5c40da4170e32df7b53f3112c6",
+              "error": null,
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 1475,
+                "completion_tokens": 511,
+                "total_tokens": 1986,
+                "latency_ms": 2585
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true
+            },
+            "raw_plan": null,
+            "plan": null,
+            "plan_sha256": null,
+            "plan_error": "affected_address_out_of_scope",
+            "error": "affected_address_out_of_scope",
+            "allowed_calls": [
+              {
+                "name": "printf",
+                "target_va": "0x401050",
+                "source": "import"
+              }
+            ],
+            "attempts": [
+              {
+                "attempt": 1,
+                "status": "invalid",
+                "error": "affected_address_out_of_scope",
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "usage": {
+                  "prompt_tokens": 862,
+                  "completion_tokens": 511,
+                  "total_tokens": 1373,
+                  "latency_ms": 3435
+                },
+                "latency_ms": 3436,
+                "raw_plan": {
+                  "schema_version": 2,
+                  "vulnerability": {
+                    "type": "uncontrolled_format_string",
+                    "cwe": "CWE-134",
+                    "root_cause": "The function passes a caller-controlled pointer directly as the printf format string (rdi=src, esi=1) instead of using a fixed format literal, so attacker-controlled bytes are interpreted as format directives."
+                  },
+                  "program_context": {
+                    "function": "cwe134_bad",
+                    "addresses": {
+                      "function_va": "0x401156",
+                      "call_va": "0x401177",
+                      "callee_va": "0x401050",
+                      "ret_va": "0x40117e"
+                    },
+                    "registers": [
+                      "rdi",
+                      "rsi",
+                      "rax",
+                      "rbp",
+                      "rsp"
+                    ],
+                    "memory": [
+                      "[rbp-8] stores incoming rdi (src pointer)"
+                    ],
+                    "capacity": 16,
+                    "allowed_calls": [
+                      {
+                        "name": "printf",
+                        "source": "import",
+                        "target_va": "0x401050"
+                      }
+                    ]
+                  },
+                  "security_invariants": [
+                    "The format string passed to printf must be a fixed, program-controlled literal, never derived from the input pointer.",
+                    "Only a direct call to 0x401050 is permitted; no other calls, syscalls, privileged instructions, or indirect jumps.",
+                    "The function must terminate with ret and preserve the SysV calling convention."
+                  ],
+                  "repair": {
+                    "strategy": "Replace the uncontrolled format-string call with a call to printf using a fixed format literal (e.g. \"%s\") and pass the original input pointer as the corresponding argument, preserving valid output for benign inputs.",
+                    "failure_behavior": "If the input pointer is NULL or invalid, do not dereference it as a format string; the fixed literal prevents format-directive interpretation.",
+                    "expected_behavior": "For valid inputs, print the input string via a fixed \"%s\" format (observable output preserved); format directives in input are treated as literal data, not interpreted."
+                  },
+                  "abi": {
+                    "architecture": "x86_64",
+                    "calling_convention": "SysV"
+                  },
+                  "verification": {
+                    "security_conditions": [
+                      "No caller-controlled data is used as the printf format string.",
+                      "Only direct call to 0x401050 appears; no other call/syscall/indirect jump.",
+                      "Function ends with ret."
+                    ],
+                    "regression_conditions": [
+                      "Valid input string is still emitted to stdout.",
+                      "Calling convention and stack frame discipline preserved."
+                    ]
+                  },
+                  "confidence": 0.9,
+                  "evidence_refs": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ]
+                }
+              },
+              {
+                "attempt": 2,
+                "status": "invalid",
+                "error": "affected_address_out_of_scope",
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "usage": {
+                  "prompt_tokens": 1475,
+                  "completion_tokens": 511,
+                  "total_tokens": 1986,
+                  "latency_ms": 2585
+                },
+                "latency_ms": 2590,
+                "raw_plan": {
+                  "schema_version": 2,
+                  "vulnerability": {
+                    "type": "uncontrolled_format_string",
+                    "cwe": "CWE-134",
+                    "root_cause": "The function passes a caller-controlled pointer directly as the printf format string (rdi=src, esi=1) instead of using a fixed format literal, so attacker-controlled bytes are interpreted as format directives."
+                  },
+                  "program_context": {
+                    "function": "cwe134_bad",
+                    "addresses": {
+                      "function_va": "0x401156",
+                      "call_va": "0x401177",
+                      "callee_va": "0x401050",
+                      "ret_va": "0x40117e"
+                    },
+                    "registers": [
+                      "rdi",
+                      "rsi",
+                      "rax",
+                      "rbp",
+                      "rsp"
+                    ],
+                    "memory": [
+                      "[rbp-8] stores incoming rdi (src pointer)"
+                    ],
+                    "capacity": 16,
+                    "allowed_calls": [
+                      {
+                        "name": "printf",
+                        "source": "import",
+                        "target_va": "0x401050"
+                      }
+                    ]
+                  },
+                  "security_invariants": [
+                    "The format string passed to printf must be a fixed, program-controlled literal, never derived from the input pointer.",
+                    "Only a direct call to 0x401050 is permitted; no other calls, syscalls, privileged instructions, or indirect jumps.",
+                    "The function must terminate with ret and preserve the SysV calling convention."
+                  ],
+                  "repair": {
+                    "strategy": "Replace the uncontrolled format-string call with a call to printf using a fixed format literal (e.g. \"%s\") and pass the original input pointer as the corresponding argument, preserving valid output for benign inputs.",
+                    "failure_behavior": "If the input pointer is NULL or invalid, do not dereference it as a format string; the fixed literal prevents format-directive interpretation.",
+                    "expected_behavior": "For valid inputs, print the input string via a fixed \"%s\" format (observable output preserved); format directives in input are treated as literal data, not interpreted."
+                  },
+                  "abi": {
+                    "architecture": "x86_64",
+                    "calling_convention": "SysV"
+                  },
+                  "verification": {
+                    "security_conditions": [
+                      "No caller-controlled data is used as the printf format string.",
+                      "Only direct call to 0x401050 appears; no other call/syscall/indirect jump.",
+                      "Function ends with ret."
+                    ],
+                    "regression_conditions": [
+                      "Valid input string is still emitted to stdout.",
+                      "Calling convention and stack frame discipline preserved."
+                    ]
+                  },
+                  "confidence": 0.9,
+                  "evidence_refs": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ]
+                }
+              }
+            ],
+            "elapsed_ms": 6030
+          },
+          "assembly_returned": false,
+          "attempted": true,
+          "verified": false,
+          "candidate": {
+            "gate": "plan_invalid",
+            "poc_status": "not_run",
+            "repair_status": "PLAN_INVALID",
+            "plan_error": "affected_address_out_of_scope"
+          },
+          "injection": {},
+          "target_scope": null,
+          "target_scope_check": "not_run",
+          "target_in_scope": false,
+          "elapsed_ms": 6030
+        }
+      ],
+      "injection": {},
+      "candidate": {
+        "gate": "plan_invalid",
+        "poc_status": "not_run",
+        "repair_status": "PLAN_INVALID",
+        "plan_error": "affected_address_out_of_scope"
+      },
+      "ai": {
+        "status": "plan_invalid",
+        "error": "affected_address_out_of_scope"
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "plan_invalid",
+        "error": "affected_address_out_of_scope",
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "plan_invalid",
+          "poc_status": "not_run",
+          "runner": null,
+          "candidate_sha256": null,
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": null,
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": null,
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": null,
+        "request_id": null,
+        "elapsed_ms": 6030,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe134_bad",
+          "va": 4198742,
+          "end": 4198783,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "attempts": [
+          {
+            "repeat": 0,
+            "status": "plan_invalid",
+            "error": "affected_address_out_of_scope",
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 2590,
+                "plan_sha256": "b8b34602eda7d0aa18a02faec12e933aafd81a5c40da4170e32df7b53f3112c6",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1475,
+                  "completion_tokens": 511,
+                  "total_tokens": 1986,
+                  "latency_ms": 2585
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": null,
+              "plan": null,
+              "plan_sha256": null,
+              "plan_error": "affected_address_out_of_scope",
+              "error": "affected_address_out_of_scope",
+              "allowed_calls": [
+                {
+                  "name": "printf",
+                  "target_va": "0x401050",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "invalid",
+                  "error": "affected_address_out_of_scope",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 862,
+                    "completion_tokens": 511,
+                    "total_tokens": 1373,
+                    "latency_ms": 3435
+                  },
+                  "latency_ms": 3436,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "uncontrolled_format_string",
+                      "cwe": "CWE-134",
+                      "root_cause": "The function passes a caller-controlled pointer directly as the printf format string (rdi=src, esi=1) instead of using a fixed format literal, so attacker-controlled bytes are interpreted as format directives."
+                    },
+                    "program_context": {
+                      "function": "cwe134_bad",
+                      "addresses": {
+                        "function_va": "0x401156",
+                        "call_va": "0x401177",
+                        "callee_va": "0x401050",
+                        "ret_va": "0x40117e"
+                      },
+                      "registers": [
+                        "rdi",
+                        "rsi",
+                        "rax",
+                        "rbp",
+                        "rsp"
+                      ],
+                      "memory": [
+                        "[rbp-8] stores incoming rdi (src pointer)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        {
+                          "name": "printf",
+                          "source": "import",
+                          "target_va": "0x401050"
+                        }
+                      ]
+                    },
+                    "security_invariants": [
+                      "The format string passed to printf must be a fixed, program-controlled literal, never derived from the input pointer.",
+                      "Only a direct call to 0x401050 is permitted; no other calls, syscalls, privileged instructions, or indirect jumps.",
+                      "The function must terminate with ret and preserve the SysV calling convention."
+                    ],
+                    "repair": {
+                      "strategy": "Replace the uncontrolled format-string call with a call to printf using a fixed format literal (e.g. \"%s\") and pass the original input pointer as the corresponding argument, preserving valid output for benign inputs.",
+                      "failure_behavior": "If the input pointer is NULL or invalid, do not dereference it as a format string; the fixed literal prevents format-directive interpretation.",
+                      "expected_behavior": "For valid inputs, print the input string via a fixed \"%s\" format (observable output preserved); format directives in input are treated as literal data, not interpreted."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "No caller-controlled data is used as the printf format string.",
+                        "Only direct call to 0x401050 appears; no other call/syscall/indirect jump.",
+                        "Function ends with ret."
+                      ],
+                      "regression_conditions": [
+                        "Valid input string is still emitted to stdout.",
+                        "Calling convention and stack frame discipline preserved."
+                      ]
+                    },
+                    "confidence": 0.9,
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                },
+                {
+                  "attempt": 2,
+                  "status": "invalid",
+                  "error": "affected_address_out_of_scope",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 1475,
+                    "completion_tokens": 511,
+                    "total_tokens": 1986,
+                    "latency_ms": 2585
+                  },
+                  "latency_ms": 2590,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "uncontrolled_format_string",
+                      "cwe": "CWE-134",
+                      "root_cause": "The function passes a caller-controlled pointer directly as the printf format string (rdi=src, esi=1) instead of using a fixed format literal, so attacker-controlled bytes are interpreted as format directives."
+                    },
+                    "program_context": {
+                      "function": "cwe134_bad",
+                      "addresses": {
+                        "function_va": "0x401156",
+                        "call_va": "0x401177",
+                        "callee_va": "0x401050",
+                        "ret_va": "0x40117e"
+                      },
+                      "registers": [
+                        "rdi",
+                        "rsi",
+                        "rax",
+                        "rbp",
+                        "rsp"
+                      ],
+                      "memory": [
+                        "[rbp-8] stores incoming rdi (src pointer)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        {
+                          "name": "printf",
+                          "source": "import",
+                          "target_va": "0x401050"
+                        }
+                      ]
+                    },
+                    "security_invariants": [
+                      "The format string passed to printf must be a fixed, program-controlled literal, never derived from the input pointer.",
+                      "Only a direct call to 0x401050 is permitted; no other calls, syscalls, privileged instructions, or indirect jumps.",
+                      "The function must terminate with ret and preserve the SysV calling convention."
+                    ],
+                    "repair": {
+                      "strategy": "Replace the uncontrolled format-string call with a call to printf using a fixed format literal (e.g. \"%s\") and pass the original input pointer as the corresponding argument, preserving valid output for benign inputs.",
+                      "failure_behavior": "If the input pointer is NULL or invalid, do not dereference it as a format string; the fixed literal prevents format-directive interpretation.",
+                      "expected_behavior": "For valid inputs, print the input string via a fixed \"%s\" format (observable output preserved); format directives in input are treated as literal data, not interpreted."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "No caller-controlled data is used as the printf format string.",
+                        "Only direct call to 0x401050 appears; no other call/syscall/indirect jump.",
+                        "Function ends with ret."
+                      ],
+                      "regression_conditions": [
+                        "Valid input string is still emitted to stdout.",
+                        "Calling convention and stack frame discipline preserved."
+                      ]
+                    },
+                    "confidence": 0.9,
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                }
+              ],
+              "elapsed_ms": 6030
+            },
+            "assembly_returned": false,
+            "attempted": true,
+            "verified": false,
+            "candidate": {
+              "gate": "plan_invalid",
+              "poc_status": "not_run",
+              "repair_status": "PLAN_INVALID",
+              "plan_error": "affected_address_out_of_scope"
+            },
+            "injection": {},
+            "target_scope": null,
+            "target_scope_check": "not_run",
+            "target_in_scope": false,
+            "elapsed_ms": 6030
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "plan_invalid",
+        "error": "affected_address_out_of_scope",
+        "repeats": 1,
+        "verified": false,
+        "checks_summary": {
+          "poc_gate": "plan_invalid",
+          "poc_status": "not_run",
+          "runner": null,
+          "candidate_sha256": null,
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": null,
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": null,
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": null,
+        "request_id": null,
+        "elapsed_ms": 6030,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe134_bad",
+          "va": 4198742,
+          "end": 4198783,
+          "source": "symbol"
+        },
+        "target_scope_check": "not_run",
+        "target_in_scope": false,
+        "attempts": [
+          {
+            "repeat": 0,
+            "status": "plan_invalid",
+            "error": "affected_address_out_of_scope",
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 2590,
+                "plan_sha256": "b8b34602eda7d0aa18a02faec12e933aafd81a5c40da4170e32df7b53f3112c6",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1475,
+                  "completion_tokens": 511,
+                  "total_tokens": 1986,
+                  "latency_ms": 2585
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": null,
+              "plan": null,
+              "plan_sha256": null,
+              "plan_error": "affected_address_out_of_scope",
+              "error": "affected_address_out_of_scope",
+              "allowed_calls": [
+                {
+                  "name": "printf",
+                  "target_va": "0x401050",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "invalid",
+                  "error": "affected_address_out_of_scope",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 862,
+                    "completion_tokens": 511,
+                    "total_tokens": 1373,
+                    "latency_ms": 3435
+                  },
+                  "latency_ms": 3436,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "uncontrolled_format_string",
+                      "cwe": "CWE-134",
+                      "root_cause": "The function passes a caller-controlled pointer directly as the printf format string (rdi=src, esi=1) instead of using a fixed format literal, so attacker-controlled bytes are interpreted as format directives."
+                    },
+                    "program_context": {
+                      "function": "cwe134_bad",
+                      "addresses": {
+                        "function_va": "0x401156",
+                        "call_va": "0x401177",
+                        "callee_va": "0x401050",
+                        "ret_va": "0x40117e"
+                      },
+                      "registers": [
+                        "rdi",
+                        "rsi",
+                        "rax",
+                        "rbp",
+                        "rsp"
+                      ],
+                      "memory": [
+                        "[rbp-8] stores incoming rdi (src pointer)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        {
+                          "name": "printf",
+                          "source": "import",
+                          "target_va": "0x401050"
+                        }
+                      ]
+                    },
+                    "security_invariants": [
+                      "The format string passed to printf must be a fixed, program-controlled literal, never derived from the input pointer.",
+                      "Only a direct call to 0x401050 is permitted; no other calls, syscalls, privileged instructions, or indirect jumps.",
+                      "The function must terminate with ret and preserve the SysV calling convention."
+                    ],
+                    "repair": {
+                      "strategy": "Replace the uncontrolled format-string call with a call to printf using a fixed format literal (e.g. \"%s\") and pass the original input pointer as the corresponding argument, preserving valid output for benign inputs.",
+                      "failure_behavior": "If the input pointer is NULL or invalid, do not dereference it as a format string; the fixed literal prevents format-directive interpretation.",
+                      "expected_behavior": "For valid inputs, print the input string via a fixed \"%s\" format (observable output preserved); format directives in input are treated as literal data, not interpreted."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "No caller-controlled data is used as the printf format string.",
+                        "Only direct call to 0x401050 appears; no other call/syscall/indirect jump.",
+                        "Function ends with ret."
+                      ],
+                      "regression_conditions": [
+                        "Valid input string is still emitted to stdout.",
+                        "Calling convention and stack frame discipline preserved."
+                      ]
+                    },
+                    "confidence": 0.9,
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                },
+                {
+                  "attempt": 2,
+                  "status": "invalid",
+                  "error": "affected_address_out_of_scope",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 1475,
+                    "completion_tokens": 511,
+                    "total_tokens": 1986,
+                    "latency_ms": 2585
+                  },
+                  "latency_ms": 2590,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "uncontrolled_format_string",
+                      "cwe": "CWE-134",
+                      "root_cause": "The function passes a caller-controlled pointer directly as the printf format string (rdi=src, esi=1) instead of using a fixed format literal, so attacker-controlled bytes are interpreted as format directives."
+                    },
+                    "program_context": {
+                      "function": "cwe134_bad",
+                      "addresses": {
+                        "function_va": "0x401156",
+                        "call_va": "0x401177",
+                        "callee_va": "0x401050",
+                        "ret_va": "0x40117e"
+                      },
+                      "registers": [
+                        "rdi",
+                        "rsi",
+                        "rax",
+                        "rbp",
+                        "rsp"
+                      ],
+                      "memory": [
+                        "[rbp-8] stores incoming rdi (src pointer)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        {
+                          "name": "printf",
+                          "source": "import",
+                          "target_va": "0x401050"
+                        }
+                      ]
+                    },
+                    "security_invariants": [
+                      "The format string passed to printf must be a fixed, program-controlled literal, never derived from the input pointer.",
+                      "Only a direct call to 0x401050 is permitted; no other calls, syscalls, privileged instructions, or indirect jumps.",
+                      "The function must terminate with ret and preserve the SysV calling convention."
+                    ],
+                    "repair": {
+                      "strategy": "Replace the uncontrolled format-string call with a call to printf using a fixed format literal (e.g. \"%s\") and pass the original input pointer as the corresponding argument, preserving valid output for benign inputs.",
+                      "failure_behavior": "If the input pointer is NULL or invalid, do not dereference it as a format string; the fixed literal prevents format-directive interpretation.",
+                      "expected_behavior": "For valid inputs, print the input string via a fixed \"%s\" format (observable output preserved); format directives in input are treated as literal data, not interpreted."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "No caller-controlled data is used as the printf format string.",
+                        "Only direct call to 0x401050 appears; no other call/syscall/indirect jump.",
+                        "Function ends with ret."
+                      ],
+                      "regression_conditions": [
+                        "Valid input string is still emitted to stdout.",
+                        "Calling convention and stack frame discipline preserved."
+                      ]
+                    },
+                    "confidence": 0.9,
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                }
+              ],
+              "elapsed_ms": 6030
+            },
+            "assembly_returned": false,
+            "attempted": true,
+            "verified": false,
+            "candidate": {
+              "gate": "plan_invalid",
+              "poc_status": "not_run",
+              "repair_status": "PLAN_INVALID",
+              "plan_error": "affected_address_out_of_scope"
+            },
+            "injection": {},
+            "target_scope": null,
+            "target_scope_check": "not_run",
+            "target_in_scope": false,
+            "elapsed_ms": 6030
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-flash",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-flash",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-flash",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-flash",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 6255,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "cwe134_bad",
+        "va": 4198742,
+        "end": 4198783,
+        "source": "symbol"
+      },
+      "target_scope_check": "not_run",
+      "target_in_scope": false,
+      "ai_increment": false,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 0,
+  "ai_increment": 0,
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 1,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 0,
+  "ai_target_in_scope": 0,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 6255,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

@@ -16,7 +16,8 @@
       "route": "asm_repair",
       "cwe": "CWE-121/122/787 semantic copy",
       "arch": "x86_64",
-      "sink_kind": "unbounded_copy"
+      "sink_kind": "unbounded_copy",
+      "split": "dev"
     },
     {
       "id": "hard-sprintf",
@@ -33,7 +34,8 @@
       "route": "asm_repair",
       "cwe": "CWE-121/122/787 semantic copy",
       "arch": "x86_64",
-      "sink_kind": "unbounded_copy"
+      "sink_kind": "unbounded_copy",
+      "split": "dev"
     },
     {
       "id": "hard-nonconst",
@@ -50,7 +52,8 @@
       "route": "asm_repair",
       "cwe": "CWE-121/122/787 semantic copy",
       "arch": "x86_64",
-      "sink_kind": "unbounded_copy"
+      "sink_kind": "unbounded_copy",
+      "split": "dev"
     },
     {
       "id": "cwe121-unchecked-strcpy",
@@ -71,7 +74,8 @@
       "required_verification": [
         "security",
         "regression"
-      ]
+      ],
+      "split": "dev"
     },
     {
       "id": "cwe122-heap-copy",
@@ -92,7 +96,8 @@
       "required_verification": [
         "security",
         "regression"
-      ]
+      ],
+      "split": "dev"
     },
     {
       "id": "cwe787-index-write",
@@ -113,7 +118,96 @@
       "required_verification": [
         "security",
         "regression"
-      ]
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "cwe125-oob-read",
+      "binary_id": "repair-cwe125",
+      "route": "asm_repair",
+      "binary": "fixtures/repair-benchmark/CWE125_oob_read/original.elf",
+      "target": "cwe125_bad",
+      "capacity": 16,
+      "arch": "x86_64",
+      "sink_kind": "indexed_read",
+      "poc": "fixtures/poc/repair-cwe125.json",
+      "reference_fix": "fixtures/repair-benchmark/CWE125_oob_read/reference_fix.c",
+      "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
+      "contract": "OOB read: index unchecked for dst[16]; block out-of-range read and preserve valid output",
+      "family": "CWE-125",
+      "cwe": "CWE-125",
+      "required_verification": [
+        "security",
+        "regression"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "cwe190-integer-overflow",
+      "binary_id": "repair-cwe190",
+      "route": "asm_repair",
+      "binary": "fixtures/repair-benchmark/CWE190_integer_overflow/original.elf",
+      "target": "cwe190_bad",
+      "capacity": 16,
+      "arch": "x86_64",
+      "sink_kind": "integer_overflow",
+      "poc": "fixtures/poc/repair-cwe190.json",
+      "reference_fix": "fixtures/repair-benchmark/CWE190_integer_overflow/reference_fix.c",
+      "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
+      "contract": "Integer overflow: negative length reaches malloc/memcpy; reject invalid length and preserve normal output",
+      "family": "CWE-190",
+      "cwe": "CWE-190",
+      "required_verification": [
+        "security",
+        "regression"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "cwe476-null-deref",
+      "binary_id": "repair-cwe476",
+      "route": "asm_repair",
+      "binary": "fixtures/repair-benchmark/CWE476_null_deref/original.elf",
+      "target": "cwe476_bad",
+      "capacity": 16,
+      "arch": "x86_64",
+      "sink_kind": "null_deref",
+      "poc": "fixtures/poc/repair-cwe476.json",
+      "reference_fix": "fixtures/repair-benchmark/CWE476_null_deref/reference_fix.c",
+      "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
+      "contract": "NULL dereference: unchecked pointer write; reject null path and preserve normal output",
+      "family": "CWE-476",
+      "cwe": "CWE-476",
+      "required_verification": [
+        "security",
+        "regression"
+      ],
+      "split": "hidden"
+    },
+    {
+      "id": "cwe134-format-string",
+      "binary_id": "repair-cwe134",
+      "route": "asm_repair",
+      "binary": "fixtures/repair-benchmark/CWE134_format_string/original.elf",
+      "target": "cwe134_bad",
+      "capacity": 16,
+      "arch": "x86_64",
+      "sink_kind": "format_string",
+      "poc": "fixtures/poc/repair-cwe134.json",
+      "reference_fix": "fixtures/repair-benchmark/CWE134_format_string/reference_fix.c",
+      "baseline_expected": "rejected",
+      "baseline_expected_target_strict": "analysis_only",
+      "contract": "Uncontrolled format string: printf(src, bad ptr); fix format use and preserve valid output",
+      "family": "CWE-134",
+      "cwe": "CWE-134",
+      "required_verification": [
+        "security",
+        "regression"
+      ],
+      "split": "hidden"
     }
   ]
 }

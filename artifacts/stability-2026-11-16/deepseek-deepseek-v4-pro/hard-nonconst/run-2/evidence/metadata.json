@@ -1,0 +1,106 @@
+{
+  "schema_version": 2,
+  "kind": "repair_evidence",
+  "source_run": "/tmp/stability-p11/deepseek-deepseek-v4-pro/hard-nonconst/run-2",
+  "provided_at": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-v4-pro",
+    "status": "ok"
+  },
+  "funnel": {
+    "VERIFIED": 0,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 1,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "ai_verified": 0,
+  "reference_note": "reference fixes are separate and are not AI evidence",
+  "manifest": {
+    "schema_version": 1,
+    "run_kind": "hard_benchmark",
+    "client": "real",
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-v4-pro",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-v4-pro",
+        "configured": true,
+        "errors": []
+      },
+      "model_configured": "deepseek-v4-pro",
+      "status": "ok"
+    },
+    "case_ids": [
+      "hard-nonconst"
+    ],
+    "model": "deepseek-v4-pro",
+    "repair_plan": true,
+    "abi_strict": true,
+    "funnel": {
+      "VERIFIED": 0,
+      "PLAN_INVALID": 0,
+      "ASSEMBLY_REJECTED": 0,
+      "ABI_REJECTED": 0,
+      "INJECTION_FAILED": 1,
+      "NO_CANDIDATE": 0,
+      "NATIVE_FAILED": 0,
+      "SECURITY_FAILED": 0,
+      "REGRESSION_FAILED": 0
+    },
+    "cases": [
+      {
+        "case_id": "hard-nonconst",
+        "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "candidate_sha256": null,
+        "candidate_artifact": null,
+        "repair_status": "INJECTION_FAILED",
+        "gate": "no_candidate"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "hard-nonconst",
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "gate": "no_candidate",
+      "repair_status": "INJECTION_FAILED",
+      "candidate_sha256": null,
+      "candidate_file": null,
+      "native_failure": null,
+      "plan_status": "valid",
+      "attempts": 1
+    }
+  ],
+  "hashes": {
+    "summary.json": "bcdd05b92663bc25fed6c593b873508ac58c0638c2f380c61f3370097f5ded8d",
+    "run-manifest.json": "036560a0905ad21428894c9199252b189242a87f1d06de5a79ddfd9322de60da"
+  }
+}

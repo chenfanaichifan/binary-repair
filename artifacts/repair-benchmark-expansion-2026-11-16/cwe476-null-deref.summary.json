@@ -1,0 +1,2938 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-flash",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-flash",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "cwe476-null-deref",
+        "binary_id": "repair-cwe476",
+        "route": "asm_repair",
+        "binary": "fixtures/repair-benchmark/CWE476_null_deref/original.elf",
+        "target": "cwe476_bad",
+        "capacity": 16,
+        "arch": "x86_64",
+        "sink_kind": "null_deref",
+        "poc": "fixtures/poc/repair-cwe476.json",
+        "reference_fix": "fixtures/repair-benchmark/CWE476_null_deref/reference_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "NULL dereference: unchecked pointer write; reject null path and preserve normal output",
+        "family": "CWE-476",
+        "cwe": "CWE-476",
+        "required_verification": [
+          "security",
+          "regression"
+        ],
+        "split": "hidden"
+      },
+      "input_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+      "baseline": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 202,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 202,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target cwe476_bad [0x401176,0x4011b2)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "cwe476_bad",
+          "va": 4198774,
+          "end": 4198834,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 11,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "not_attempted",
+        "disposition": "analysis_only",
+        "verified": false,
+        "elapsed_ms": 0
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-flash",
+              "status": "not_attempted",
+              "latency_ms": 4119,
+              "plan_sha256": "f80d7811f43f0a4fa6f04652bc0fc9e63994a1f8744f9e986a9a00f6b08f414e",
+              "error": null,
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 1012,
+                "completion_tokens": 750,
+                "total_tokens": 1762,
+                "latency_ms": 4118
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true
+            },
+            "raw_plan": {
+              "schema_version": 2,
+              "vulnerability": {
+                "type": "null_pointer_dereference",
+                "cwe": "CWE-476",
+                "root_cause": "The function stores a NULL pointer in [rbp-8] and, when atoi(rdi) returns 0, loads that NULL pointer into rax and performs an unchecked write (mov byte ptr [rax], 0x78), dereferencing NULL."
+              },
+              "program_context": {
+                "function": "cwe476_bad",
+                "addresses": [
+                  "0x401176",
+                  "0x40117a",
+                  "0x40117b",
+                  "0x40117e",
+                  "0x401182",
+                  "0x401186",
+                  "0x40118e",
+                  "0x401192",
+                  "0x401195",
+                  "0x40119a",
+                  "0x40119c",
+                  "0x40119e",
+                  "0x4011a2",
+                  "0x4011a5",
+                  "0x4011aa",
+                  "0x4011af",
+                  "0x4011b0",
+                  "0x4011b1"
+                ],
+                "registers": [
+                  "rdi",
+                  "rbp",
+                  "rsp",
+                  "rax",
+                  "eax",
+                  "edi"
+                ],
+                "memory": [
+                  "[rbp-0x18] (saved rdi argument)",
+                  "[rbp-8] (pointer initialized to 0)",
+                  "[rax] (NULL write sink)",
+                  "0x402004 (string literal passed to puts)"
+                ],
+                "capacity": 16,
+                "allowed_calls": [
+                  {
+                    "name": "puts",
+                    "target_va": "0x401060",
+                    "source": "import"
+                  },
+                  {
+                    "name": "atoi",
+                    "target_va": "0x401080",
+                    "source": "import"
+                  }
+                ]
+              },
+              "security_invariants": [
+                "No write may occur through a NULL or otherwise invalid pointer.",
+                "The function must not dereference [rbp-8] when it holds 0.",
+                "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                "Execution must terminate with ret and preserve the SysV calling convention."
+              ],
+              "repair": {
+                "strategy": "Guard the write: after atoi returns 0, check the pointer in [rbp-8] for NULL before storing 0x78; if NULL, skip the write and fall through to the puts call. Preserve the original control flow and output for all non-NULL cases.",
+                "failure_behavior": "On NULL pointer, skip the byte write and continue to puts(0x402004), then return normally without crashing.",
+                "expected_behavior": "For any input, atoi is called on rdi; if it returns 0 and the stored pointer is non-NULL, write 0x78 through it; otherwise skip the write. Always call puts with 0x402004 and return via leave; ret."
+              },
+              "abi": {
+                "architecture": "x86_64",
+                "calling_convention": "SysV"
+              },
+              "verification": {
+                "security_conditions": [
+                  "No memory write occurs when [rbp-8] == 0.",
+                  "No call other than 0x401060 and 0x401080 is emitted.",
+                  "No indirect jumps, syscalls, or privileged instructions are present.",
+                  "Function ends with ret."
+                ],
+                "regression_conditions": [
+                  "atoi is still invoked with the original rdi argument.",
+                  "puts is still invoked with 0x402004 on every path.",
+                  "For non-NULL pointer and atoi==0, byte 0x78 is still written through the pointer.",
+                  "Return value/stack frame behavior (leave; ret) is unchanged."
+                ]
+              },
+              "confidence": 0.95,
+              "evidence_refs": [
+                "static.target",
+                "static.disassembly",
+                "static.abi",
+                "poc.input"
+              ]
+            },
+            "plan": {
+              "schema_version": 2,
+              "vulnerability": {
+                "type": "null_pointer_dereference",
+                "root_cause": "The function stores a NULL pointer in [rbp-8] and, when atoi(rdi) returns 0, loads that NULL pointer into rax and performs an unchecked write (mov byte ptr [rax], 0x78), dereferencing NULL.",
+                "cwe": "CWE-476"
+              },
+              "program_context": {
+                "function": "cwe476_bad",
+                "addresses": [
+                  "0x401176",
+                  "0x40117a",
+                  "0x40117b",
+                  "0x40117e",
+                  "0x401182",
+                  "0x401186",
+                  "0x40118e",
+                  "0x401192",
+                  "0x401195",
+                  "0x40119a",
+                  "0x40119c",
+                  "0x40119e",
+                  "0x4011a2",
+                  "0x4011a5",
+                  "0x4011aa",
+                  "0x4011af",
+                  "0x4011b0",
+                  "0x4011b1"
+                ],
+                "registers": [
+                  "rdi",
+                  "rbp",
+                  "rsp",
+                  "rax",
+                  "eax",
+                  "edi"
+                ],
+                "memory": [
+                  "[rbp-0x18] (saved rdi argument)",
+                  "[rbp-8] (pointer initialized to 0)",
+                  "[rax] (NULL write sink)",
+                  "0x402004 (string literal passed to puts)"
+                ],
+                "capacity": 16,
+                "allowed_calls": [
+                  "puts",
+                  "atoi"
+                ]
+              },
+              "security_invariants": [
+                "No write may occur through a NULL or otherwise invalid pointer.",
+                "The function must not dereference [rbp-8] when it holds 0.",
+                "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                "Execution must terminate with ret and preserve the SysV calling convention."
+              ],
+              "repair": {
+                "strategy": "null_check",
+                "failure_behavior": "On NULL pointer, skip the byte write and continue to puts(0x402004), then return normally without crashing.",
+                "expected_behavior": "For any input, atoi is called on rdi; if it returns 0 and the stored pointer is non-NULL, write 0x78 through it; otherwise skip the write. Always call puts with 0x402004 and return via leave; ret."
+              },
+              "abi": {
+                "architecture": "x86_64",
+                "calling_convention": "sysv_amd64"
+              },
+              "verification": {
+                "security_conditions": [
+                  "No memory write occurs when [rbp-8] == 0.",
+                  "No call other than 0x401060 and 0x401080 is emitted.",
+                  "No indirect jumps, syscalls, or privileged instructions are present.",
+                  "Function ends with ret."
+                ],
+                "regression_conditions": [
+                  "atoi is still invoked with the original rdi argument.",
+                  "puts is still invoked with 0x402004 on every path.",
+                  "For non-NULL pointer and atoi==0, byte 0x78 is still written through the pointer.",
+                  "Return value/stack frame behavior (leave; ret) is unchanged."
+                ],
+                "required_inputs": []
+              },
+              "confidence": "high",
+              "evidence_refs": [
+                "static.target",
+                "static.disassembly",
+                "static.abi",
+                "poc.input"
+              ]
+            },
+            "plan_sha256": "5dc7f7d301748ec14c32503dabe750649c50f71258cb10ef85a0b17e4e2cf976",
+            "plan_error": "",
+            "error": null,
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "attempts": [
+              {
+                "attempt": 1,
+                "status": "valid",
+                "error": "",
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "usage": {
+                  "prompt_tokens": 1012,
+                  "completion_tokens": 750,
+                  "total_tokens": 1762,
+                  "latency_ms": 4118
+                },
+                "latency_ms": 4119,
+                "raw_plan": {
+                  "schema_version": 2,
+                  "vulnerability": {
+                    "type": "null_pointer_dereference",
+                    "cwe": "CWE-476",
+                    "root_cause": "The function stores a NULL pointer in [rbp-8] and, when atoi(rdi) returns 0, loads that NULL pointer into rax and performs an unchecked write (mov byte ptr [rax], 0x78), dereferencing NULL."
+                  },
+                  "program_context": {
+                    "function": "cwe476_bad",
+                    "addresses": [
+                      "0x401176",
+                      "0x40117a",
+                      "0x40117b",
+                      "0x40117e",
+                      "0x401182",
+                      "0x401186",
+                      "0x40118e",
+                      "0x401192",
+                      "0x401195",
+                      "0x40119a",
+                      "0x40119c",
+                      "0x40119e",
+                      "0x4011a2",
+                      "0x4011a5",
+                      "0x4011aa",
+                      "0x4011af",
+                      "0x4011b0",
+                      "0x4011b1"
+                    ],
+                    "registers": [
+                      "rdi",
+                      "rbp",
+                      "rsp",
+                      "rax",
+                      "eax",
+                      "edi"
+                    ],
+                    "memory": [
+                      "[rbp-0x18] (saved rdi argument)",
+                      "[rbp-8] (pointer initialized to 0)",
+                      "[rax] (NULL write sink)",
+                      "0x402004 (string literal passed to puts)"
+                    ],
+                    "capacity": 16,
+                    "allowed_calls": [
+                      {
+                        "name": "puts",
+                        "target_va": "0x401060",
+                        "source": "import"
+                      },
+                      {
+                        "name": "atoi",
+                        "target_va": "0x401080",
+                        "source": "import"
+                      }
+                    ]
+                  },
+                  "security_invariants": [
+                    "No write may occur through a NULL or otherwise invalid pointer.",
+                    "The function must not dereference [rbp-8] when it holds 0.",
+                    "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                    "Execution must terminate with ret and preserve the SysV calling convention."
+                  ],
+                  "repair": {
+                    "strategy": "Guard the write: after atoi returns 0, check the pointer in [rbp-8] for NULL before storing 0x78; if NULL, skip the write and fall through to the puts call. Preserve the original control flow and output for all non-NULL cases.",
+                    "failure_behavior": "On NULL pointer, skip the byte write and continue to puts(0x402004), then return normally without crashing.",
+                    "expected_behavior": "For any input, atoi is called on rdi; if it returns 0 and the stored pointer is non-NULL, write 0x78 through it; otherwise skip the write. Always call puts with 0x402004 and return via leave; ret."
+                  },
+                  "abi": {
+                    "architecture": "x86_64",
+                    "calling_convention": "SysV"
+                  },
+                  "verification": {
+                    "security_conditions": [
+                      "No memory write occurs when [rbp-8] == 0.",
+                      "No call other than 0x401060 and 0x401080 is emitted.",
+                      "No indirect jumps, syscalls, or privileged instructions are present.",
+                      "Function ends with ret."
+                    ],
+                    "regression_conditions": [
+                      "atoi is still invoked with the original rdi argument.",
+                      "puts is still invoked with 0x402004 on every path.",
+                      "For non-NULL pointer and atoi==0, byte 0x78 is still written through the pointer.",
+                      "Return value/stack frame behavior (leave; ret) is unchanged."
+                    ]
+                  },
+                  "confidence": 0.95,
+                  "evidence_refs": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ]
+                }
+              }
+            ],
+            "elapsed_ms": 4122
+          },
+          "model": "deepseek-flash",
+          "model_requested": "deepseek-flash",
+          "status": "accepted",
+          "error": null,
+          "plan_status": "valid",
+          "plan_sha256": "5dc7f7d301748ec14c32503dabe750649c50f71258cb10ef85a0b17e4e2cf976",
+          "usage": {
+            "prompt_tokens": 2220,
+            "completion_tokens": 183,
+            "total_tokens": 2403,
+            "latency_ms": 1078
+          },
+          "latency_ms": 1082,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "35e4fa066f1e5feb2cfcb7ac2d8854d149734b633389d727d0b9b03eb13d8b7b",
+          "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov qword ptr [rbp - 8], 0\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x401080\ntest eax, eax\njne .Lskip\nmov rax, qword ptr [rbp - 8]\ntest rax, rax\nje .Lskip\nmov byte ptr [rax], 0x78\n.Lskip:\nmov edi, 0x402004\ncall 0x401060\nnop\nleave\nret",
+          "assembly_attempts": [
+            {
+              "attempt": 1,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "8812ed7e3e13f4dc8c78101e44cb2d81636ebef088d47a4dc177468afd1d7463",
+              "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov qword ptr [rbp - 8], 0\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x401080\ntest eax, eax\njne 0x4011a5\nmov rax, qword ptr [rbp - 8]\ntest rax, rax\nje 0x4011a5\nmov byte ptr [rax], 0x78\nmov edi, 0x402004\ncall 0x401060\nnop\nleave\nret",
+              "validation_error": "assembly policy violation: absolute_branch_target: branch target is an absolute address; use a local label inside the replacement block",
+              "validation_error_class": "assembly_validation",
+              "diagnostics": [
+                {
+                  "error_class": "absolute_branch_target",
+                  "message": "branch target is an absolute address; use a local label inside the replacement block",
+                  "line": 12,
+                  "column": null,
+                  "token": "0x4011a5",
+                  "raw_stderr": "",
+                  "retryable": true
+                },
+                {
+                  "error_class": "absolute_branch_target",
+                  "message": "branch target is an absolute address; use a local label inside the replacement block",
+                  "line": 15,
+                  "column": null,
+                  "token": "0x4011a5",
+                  "raw_stderr": "",
+                  "retryable": true
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 1673,
+                "completion_tokens": 187,
+                "total_tokens": 1860,
+                "latency_ms": 1516
+              },
+              "latency_ms": 1517,
+              "model": "deepseek-flash",
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true,
+              "request_id": null
+            },
+            {
+              "attempt": 2,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "35e4fa066f1e5feb2cfcb7ac2d8854d149734b633389d727d0b9b03eb13d8b7b",
+              "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov qword ptr [rbp - 8], 0\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x401080\ntest eax, eax\njne .Lskip\nmov rax, qword ptr [rbp - 8]\ntest rax, rax\nje .Lskip\nmov byte ptr [rax], 0x78\n.Lskip:\nmov edi, 0x402004\ncall 0x401060\nnop\nleave\nret",
+              "validation_error": null,
+              "validation_error_class": null,
+              "diagnostics": [],
+              "usage": {
+                "prompt_tokens": 2220,
+                "completion_tokens": 183,
+                "total_tokens": 2403,
+                "latency_ms": 1078
+              },
+              "latency_ms": 1082,
+              "model": "deepseek-flash",
+              "model_requested": "deepseek-flash",
+              "model_identity_ok": true,
+              "request_id": null
+            }
+          ],
+          "validation_error": null,
+          "validation_error_class": null,
+          "allowed_calls": [
+            {
+              "name": "puts",
+              "target_va": "0x401060",
+              "source": "import"
+            },
+            {
+              "name": "atoi",
+              "target_va": "0x401080",
+              "source": "import"
+            }
+          ],
+          "target_in_scope": true,
+          "target_scope_check": "passed",
+          "target_scope": {
+            "name": "cwe476_bad",
+            "va": 4198774,
+            "end": 4198834,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": true,
+          "injection": {
+            "target_va": "0x401176",
+            "cave_va": "0x405000",
+            "method": "new-pt-load",
+            "code_bytes": 65,
+            "code_hex": "f30f1efa554889e54883ec2048897de848c745f800000000488b45e84889c7e80000000085c0750c488b45f84885c07403c60078bf04204000e80000000090c9c3",
+            "code_disassembly": [
+              {
+                "address": "0x0",
+                "bytes": "f30f1efa",
+                "mnemonic": "endbr64",
+                "operands": ""
+              },
+              {
+                "address": "0x4",
+                "bytes": "55",
+                "mnemonic": "push",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x5",
+                "bytes": "4889e5",
+                "mnemonic": "mov",
+                "operands": "rbp, rsp"
+              },
+              {
+                "address": "0x8",
+                "bytes": "4883ec20",
+                "mnemonic": "sub",
+                "operands": "rsp, 0x20"
+              },
+              {
+                "address": "0xc",
+                "bytes": "48897de8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x18], rdi"
+              },
+              {
+                "address": "0x10",
+                "bytes": "48c745f800000000",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 8], 0"
+              },
+              {
+                "address": "0x18",
+                "bytes": "488b45e8",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 0x18]"
+              },
+              {
+                "address": "0x1c",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x1f",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x24"
+              },
+              {
+                "address": "0x24",
+                "bytes": "85c0",
+                "mnemonic": "test",
+                "operands": "eax, eax"
+              },
+              {
+                "address": "0x26",
+                "bytes": "750c",
+                "mnemonic": "jne",
+                "operands": "0x34"
+              },
+              {
+                "address": "0x28",
+                "bytes": "488b45f8",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 8]"
+              },
+              {
+                "address": "0x2c",
+                "bytes": "4885c0",
+                "mnemonic": "test",
+                "operands": "rax, rax"
+              },
+              {
+                "address": "0x2f",
+                "bytes": "7403",
+                "mnemonic": "je",
+                "operands": "0x34"
+              },
+              {
+                "address": "0x31",
+                "bytes": "c60078",
+                "mnemonic": "mov",
+                "operands": "byte ptr [rax], 0x78"
+              },
+              {
+                "address": "0x34",
+                "bytes": "bf04204000",
+                "mnemonic": "mov",
+                "operands": "edi, 0x402004"
+              },
+              {
+                "address": "0x39",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x3e"
+              },
+              {
+                "address": "0x3e",
+                "bytes": "90",
+                "mnemonic": "nop",
+                "operands": ""
+              },
+              {
+                "address": "0x3f",
+                "bytes": "c9",
+                "mnemonic": "leave",
+                "operands": ""
+              },
+              {
+                "address": "0x40",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              }
+            ],
+            "assembly_sha256": "8598eaf272de0c9d0b05dae7554f80b8c63666a39a9c171b746b3717a55524f1",
+            "call_targets": [
+              {
+                "name": "puts",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "call_relocations": 2,
+            "abi": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          "candidate": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "runner": "limactl",
+            "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+            "poc": {
+              "schema_version": 1,
+              "status": "pass",
+              "runner": "limactl",
+              "tier": "emulated_run",
+              "stdout_signature": "matched",
+              "errno_signature": "not_run",
+              "errno_probe": "",
+              "no_input": false,
+              "original_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+              "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+              "poc": [
+                {
+                  "case_id": "cwe476-null",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "",
+                  "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe476-null",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "ok\n",
+                  "stderr": "",
+                  "stdout_hex": "6f6b0a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "regression": [
+                {
+                  "case_id": "cwe476-ok",
+                  "kind": "regression",
+                  "executable": "original",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "ok\n",
+                  "stderr": "",
+                  "stdout_hex": "6f6b0a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe476-ok",
+                  "kind": "regression",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "ok\n",
+                  "stderr": "",
+                  "stdout_hex": "6f6b0a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "limitations": []
+            },
+            "repair_status": "VERIFIED",
+            "candidate_artifact": "/tmp/p13b-cwe476-null-deref/candidates/cwe476-null-deref.bin"
+          },
+          "elapsed_ms": 5700,
+          "evidence_links": {
+            "schema_version": 1,
+            "spec_version": 2,
+            "plan_sha256": "5dc7f7d301748ec14c32503dabe750649c50f71258cb10ef85a0b17e4e2cf976",
+            "assembly_sha256": "35e4fa066f1e5feb2cfcb7ac2d8854d149734b633389d727d0b9b03eb13d8b7b",
+            "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+            "gate": "pass",
+            "links": [
+              {
+                "claim": "No write may occur through a NULL or otherwise invalid pointer.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "The function must not dereference [rbp-8] when it holds 0.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "Execution must terminate with ret and preserve the SysV calling convention.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "No memory write occurs when [rbp-8] == 0.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "No call other than 0x401060 and 0x401080 is emitted.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "No indirect jumps, syscalls, or privileged instructions are present.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              },
+              {
+                "claim": "Function ends with ret.",
+                "evidence": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ],
+                "source": "provided"
+              }
+            ],
+            "native_feedback_class": null
+          }
+        }
+      ],
+      "injection": {
+        "target_va": "0x401176",
+        "cave_va": "0x405000",
+        "method": "new-pt-load",
+        "code_bytes": 65,
+        "code_hex": "f30f1efa554889e54883ec2048897de848c745f800000000488b45e84889c7e80000000085c0750c488b45f84885c07403c60078bf04204000e80000000090c9c3",
+        "code_disassembly": [
+          {
+            "address": "0x0",
+            "bytes": "f30f1efa",
+            "mnemonic": "endbr64",
+            "operands": ""
+          },
+          {
+            "address": "0x4",
+            "bytes": "55",
+            "mnemonic": "push",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x5",
+            "bytes": "4889e5",
+            "mnemonic": "mov",
+            "operands": "rbp, rsp"
+          },
+          {
+            "address": "0x8",
+            "bytes": "4883ec20",
+            "mnemonic": "sub",
+            "operands": "rsp, 0x20"
+          },
+          {
+            "address": "0xc",
+            "bytes": "48897de8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x18], rdi"
+          },
+          {
+            "address": "0x10",
+            "bytes": "48c745f800000000",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 8], 0"
+          },
+          {
+            "address": "0x18",
+            "bytes": "488b45e8",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 0x18]"
+          },
+          {
+            "address": "0x1c",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x1f",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x24"
+          },
+          {
+            "address": "0x24",
+            "bytes": "85c0",
+            "mnemonic": "test",
+            "operands": "eax, eax"
+          },
+          {
+            "address": "0x26",
+            "bytes": "750c",
+            "mnemonic": "jne",
+            "operands": "0x34"
+          },
+          {
+            "address": "0x28",
+            "bytes": "488b45f8",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 8]"
+          },
+          {
+            "address": "0x2c",
+            "bytes": "4885c0",
+            "mnemonic": "test",
+            "operands": "rax, rax"
+          },
+          {
+            "address": "0x2f",
+            "bytes": "7403",
+            "mnemonic": "je",
+            "operands": "0x34"
+          },
+          {
+            "address": "0x31",
+            "bytes": "c60078",
+            "mnemonic": "mov",
+            "operands": "byte ptr [rax], 0x78"
+          },
+          {
+            "address": "0x34",
+            "bytes": "bf04204000",
+            "mnemonic": "mov",
+            "operands": "edi, 0x402004"
+          },
+          {
+            "address": "0x39",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x3e"
+          },
+          {
+            "address": "0x3e",
+            "bytes": "90",
+            "mnemonic": "nop",
+            "operands": ""
+          },
+          {
+            "address": "0x3f",
+            "bytes": "c9",
+            "mnemonic": "leave",
+            "operands": ""
+          },
+          {
+            "address": "0x40",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          }
+        ],
+        "assembly_sha256": "8598eaf272de0c9d0b05dae7554f80b8c63666a39a9c171b746b3717a55524f1",
+        "call_targets": [
+          {
+            "name": "puts",
+            "target_va": "0x401060",
+            "source": "import"
+          },
+          {
+            "name": "atoi",
+            "target_va": "0x401080",
+            "source": "import"
+          }
+        ],
+        "call_relocations": 2,
+        "abi": {
+          "ok": true,
+          "fatal": 0,
+          "findings": []
+        }
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "limactl",
+        "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "stdout_signature": "matched",
+          "errno_signature": "not_run",
+          "errno_probe": "",
+          "no_input": false,
+          "original_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+          "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+          "poc": [
+            {
+              "case_id": "cwe476-null",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe476-null",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "ok\n",
+              "stderr": "",
+              "stdout_hex": "6f6b0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "cwe476-ok",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "ok\n",
+              "stderr": "",
+              "stdout_hex": "6f6b0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe476-ok",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "ok\n",
+              "stderr": "",
+              "stdout_hex": "6f6b0a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "limitations": []
+        },
+        "repair_status": "VERIFIED",
+        "candidate_artifact": "/tmp/p13b-cwe476-null-deref/candidates/cwe476-null-deref.bin"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-flash",
+        "status": "accepted",
+        "latency_ms": 1082,
+        "plan_sha256": "1496ea028932c6c81a5adf159cb7d9541de50180700d73b940dc188856cae84f",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 2220,
+          "completion_tokens": 183,
+          "total_tokens": 2403,
+          "latency_ms": 1078
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-flash",
+        "model_identity_ok": true
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 2220,
+          "completion_tokens": 183,
+          "total_tokens": 2403,
+          "latency_ms": 1078
+        },
+        "request_id": null,
+        "elapsed_ms": 5700,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe476_bad",
+          "va": 4198774,
+          "end": 4198834,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 4119,
+                "plan_sha256": "f80d7811f43f0a4fa6f04652bc0fc9e63994a1f8744f9e986a9a00f6b08f414e",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1012,
+                  "completion_tokens": 750,
+                  "total_tokens": 1762,
+                  "latency_ms": 4118
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "null_pointer_dereference",
+                  "cwe": "CWE-476",
+                  "root_cause": "The function stores a NULL pointer in [rbp-8] and, when atoi(rdi) returns 0, loads that NULL pointer into rax and performs an unchecked write (mov byte ptr [rax], 0x78), dereferencing NULL."
+                },
+                "program_context": {
+                  "function": "cwe476_bad",
+                  "addresses": [
+                    "0x401176",
+                    "0x40117a",
+                    "0x40117b",
+                    "0x40117e",
+                    "0x401182",
+                    "0x401186",
+                    "0x40118e",
+                    "0x401192",
+                    "0x401195",
+                    "0x40119a",
+                    "0x40119c",
+                    "0x40119e",
+                    "0x4011a2",
+                    "0x4011a5",
+                    "0x4011aa",
+                    "0x4011af",
+                    "0x4011b0",
+                    "0x4011b1"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rbp",
+                    "rsp",
+                    "rax",
+                    "eax",
+                    "edi"
+                  ],
+                  "memory": [
+                    "[rbp-0x18] (saved rdi argument)",
+                    "[rbp-8] (pointer initialized to 0)",
+                    "[rax] (NULL write sink)",
+                    "0x402004 (string literal passed to puts)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    {
+                      "name": "puts",
+                      "target_va": "0x401060",
+                      "source": "import"
+                    },
+                    {
+                      "name": "atoi",
+                      "target_va": "0x401080",
+                      "source": "import"
+                    }
+                  ]
+                },
+                "security_invariants": [
+                  "No write may occur through a NULL or otherwise invalid pointer.",
+                  "The function must not dereference [rbp-8] when it holds 0.",
+                  "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                  "Execution must terminate with ret and preserve the SysV calling convention."
+                ],
+                "repair": {
+                  "strategy": "Guard the write: after atoi returns 0, check the pointer in [rbp-8] for NULL before storing 0x78; if NULL, skip the write and fall through to the puts call. Preserve the original control flow and output for all non-NULL cases.",
+                  "failure_behavior": "On NULL pointer, skip the byte write and continue to puts(0x402004), then return normally without crashing.",
+                  "expected_behavior": "For any input, atoi is called on rdi; if it returns 0 and the stored pointer is non-NULL, write 0x78 through it; otherwise skip the write. Always call puts with 0x402004 and return via leave; ret."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "SysV"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "No memory write occurs when [rbp-8] == 0.",
+                    "No call other than 0x401060 and 0x401080 is emitted.",
+                    "No indirect jumps, syscalls, or privileged instructions are present.",
+                    "Function ends with ret."
+                  ],
+                  "regression_conditions": [
+                    "atoi is still invoked with the original rdi argument.",
+                    "puts is still invoked with 0x402004 on every path.",
+                    "For non-NULL pointer and atoi==0, byte 0x78 is still written through the pointer.",
+                    "Return value/stack frame behavior (leave; ret) is unchanged."
+                  ]
+                },
+                "confidence": 0.95,
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "null_pointer_dereference",
+                  "root_cause": "The function stores a NULL pointer in [rbp-8] and, when atoi(rdi) returns 0, loads that NULL pointer into rax and performs an unchecked write (mov byte ptr [rax], 0x78), dereferencing NULL.",
+                  "cwe": "CWE-476"
+                },
+                "program_context": {
+                  "function": "cwe476_bad",
+                  "addresses": [
+                    "0x401176",
+                    "0x40117a",
+                    "0x40117b",
+                    "0x40117e",
+                    "0x401182",
+                    "0x401186",
+                    "0x40118e",
+                    "0x401192",
+                    "0x401195",
+                    "0x40119a",
+                    "0x40119c",
+                    "0x40119e",
+                    "0x4011a2",
+                    "0x4011a5",
+                    "0x4011aa",
+                    "0x4011af",
+                    "0x4011b0",
+                    "0x4011b1"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rbp",
+                    "rsp",
+                    "rax",
+                    "eax",
+                    "edi"
+                  ],
+                  "memory": [
+                    "[rbp-0x18] (saved rdi argument)",
+                    "[rbp-8] (pointer initialized to 0)",
+                    "[rax] (NULL write sink)",
+                    "0x402004 (string literal passed to puts)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    "puts",
+                    "atoi"
+                  ]
+                },
+                "security_invariants": [
+                  "No write may occur through a NULL or otherwise invalid pointer.",
+                  "The function must not dereference [rbp-8] when it holds 0.",
+                  "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                  "Execution must terminate with ret and preserve the SysV calling convention."
+                ],
+                "repair": {
+                  "strategy": "null_check",
+                  "failure_behavior": "On NULL pointer, skip the byte write and continue to puts(0x402004), then return normally without crashing.",
+                  "expected_behavior": "For any input, atoi is called on rdi; if it returns 0 and the stored pointer is non-NULL, write 0x78 through it; otherwise skip the write. Always call puts with 0x402004 and return via leave; ret."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "sysv_amd64"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "No memory write occurs when [rbp-8] == 0.",
+                    "No call other than 0x401060 and 0x401080 is emitted.",
+                    "No indirect jumps, syscalls, or privileged instructions are present.",
+                    "Function ends with ret."
+                  ],
+                  "regression_conditions": [
+                    "atoi is still invoked with the original rdi argument.",
+                    "puts is still invoked with 0x402004 on every path.",
+                    "For non-NULL pointer and atoi==0, byte 0x78 is still written through the pointer.",
+                    "Return value/stack frame behavior (leave; ret) is unchanged."
+                  ],
+                  "required_inputs": []
+                },
+                "confidence": "high",
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan_sha256": "5dc7f7d301748ec14c32503dabe750649c50f71258cb10ef85a0b17e4e2cf976",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "puts",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 1012,
+                    "completion_tokens": 750,
+                    "total_tokens": 1762,
+                    "latency_ms": 4118
+                  },
+                  "latency_ms": 4119,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "null_pointer_dereference",
+                      "cwe": "CWE-476",
+                      "root_cause": "The function stores a NULL pointer in [rbp-8] and, when atoi(rdi) returns 0, loads that NULL pointer into rax and performs an unchecked write (mov byte ptr [rax], 0x78), dereferencing NULL."
+                    },
+                    "program_context": {
+                      "function": "cwe476_bad",
+                      "addresses": [
+                        "0x401176",
+                        "0x40117a",
+                        "0x40117b",
+                        "0x40117e",
+                        "0x401182",
+                        "0x401186",
+                        "0x40118e",
+                        "0x401192",
+                        "0x401195",
+                        "0x40119a",
+                        "0x40119c",
+                        "0x40119e",
+                        "0x4011a2",
+                        "0x4011a5",
+                        "0x4011aa",
+                        "0x4011af",
+                        "0x4011b0",
+                        "0x4011b1"
+                      ],
+                      "registers": [
+                        "rdi",
+                        "rbp",
+                        "rsp",
+                        "rax",
+                        "eax",
+                        "edi"
+                      ],
+                      "memory": [
+                        "[rbp-0x18] (saved rdi argument)",
+                        "[rbp-8] (pointer initialized to 0)",
+                        "[rax] (NULL write sink)",
+                        "0x402004 (string literal passed to puts)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        {
+                          "name": "puts",
+                          "target_va": "0x401060",
+                          "source": "import"
+                        },
+                        {
+                          "name": "atoi",
+                          "target_va": "0x401080",
+                          "source": "import"
+                        }
+                      ]
+                    },
+                    "security_invariants": [
+                      "No write may occur through a NULL or otherwise invalid pointer.",
+                      "The function must not dereference [rbp-8] when it holds 0.",
+                      "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                      "Execution must terminate with ret and preserve the SysV calling convention."
+                    ],
+                    "repair": {
+                      "strategy": "Guard the write: after atoi returns 0, check the pointer in [rbp-8] for NULL before storing 0x78; if NULL, skip the write and fall through to the puts call. Preserve the original control flow and output for all non-NULL cases.",
+                      "failure_behavior": "On NULL pointer, skip the byte write and continue to puts(0x402004), then return normally without crashing.",
+                      "expected_behavior": "For any input, atoi is called on rdi; if it returns 0 and the stored pointer is non-NULL, write 0x78 through it; otherwise skip the write. Always call puts with 0x402004 and return via leave; ret."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "No memory write occurs when [rbp-8] == 0.",
+                        "No call other than 0x401060 and 0x401080 is emitted.",
+                        "No indirect jumps, syscalls, or privileged instructions are present.",
+                        "Function ends with ret."
+                      ],
+                      "regression_conditions": [
+                        "atoi is still invoked with the original rdi argument.",
+                        "puts is still invoked with 0x402004 on every path.",
+                        "For non-NULL pointer and atoi==0, byte 0x78 is still written through the pointer.",
+                        "Return value/stack frame behavior (leave; ret) is unchanged."
+                      ]
+                    },
+                    "confidence": 0.95,
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                }
+              ],
+              "elapsed_ms": 4122
+            },
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "5dc7f7d301748ec14c32503dabe750649c50f71258cb10ef85a0b17e4e2cf976",
+            "usage": {
+              "prompt_tokens": 2220,
+              "completion_tokens": 183,
+              "total_tokens": 2403,
+              "latency_ms": 1078
+            },
+            "latency_ms": 1082,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "35e4fa066f1e5feb2cfcb7ac2d8854d149734b633389d727d0b9b03eb13d8b7b",
+            "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov qword ptr [rbp - 8], 0\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x401080\ntest eax, eax\njne .Lskip\nmov rax, qword ptr [rbp - 8]\ntest rax, rax\nje .Lskip\nmov byte ptr [rax], 0x78\n.Lskip:\nmov edi, 0x402004\ncall 0x401060\nnop\nleave\nret",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "8812ed7e3e13f4dc8c78101e44cb2d81636ebef088d47a4dc177468afd1d7463",
+                "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov qword ptr [rbp - 8], 0\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x401080\ntest eax, eax\njne 0x4011a5\nmov rax, qword ptr [rbp - 8]\ntest rax, rax\nje 0x4011a5\nmov byte ptr [rax], 0x78\nmov edi, 0x402004\ncall 0x401060\nnop\nleave\nret",
+                "validation_error": "assembly policy violation: absolute_branch_target: branch target is an absolute address; use a local label inside the replacement block",
+                "validation_error_class": "assembly_validation",
+                "diagnostics": [
+                  {
+                    "error_class": "absolute_branch_target",
+                    "message": "branch target is an absolute address; use a local label inside the replacement block",
+                    "line": 12,
+                    "column": null,
+                    "token": "0x4011a5",
+                    "raw_stderr": "",
+                    "retryable": true
+                  },
+                  {
+                    "error_class": "absolute_branch_target",
+                    "message": "branch target is an absolute address; use a local label inside the replacement block",
+                    "line": 15,
+                    "column": null,
+                    "token": "0x4011a5",
+                    "raw_stderr": "",
+                    "retryable": true
+                  }
+                ],
+                "usage": {
+                  "prompt_tokens": 1673,
+                  "completion_tokens": 187,
+                  "total_tokens": 1860,
+                  "latency_ms": 1516
+                },
+                "latency_ms": 1517,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              },
+              {
+                "attempt": 2,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "35e4fa066f1e5feb2cfcb7ac2d8854d149734b633389d727d0b9b03eb13d8b7b",
+                "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov qword ptr [rbp - 8], 0\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x401080\ntest eax, eax\njne .Lskip\nmov rax, qword ptr [rbp - 8]\ntest rax, rax\nje .Lskip\nmov byte ptr [rax], 0x78\n.Lskip:\nmov edi, 0x402004\ncall 0x401060\nnop\nleave\nret",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 2220,
+                  "completion_tokens": 183,
+                  "total_tokens": 2403,
+                  "latency_ms": 1078
+                },
+                "latency_ms": 1082,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "cwe476_bad",
+              "va": 4198774,
+              "end": 4198834,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x401176",
+              "cave_va": "0x405000",
+              "method": "new-pt-load",
+              "code_bytes": 65,
+              "code_hex": "f30f1efa554889e54883ec2048897de848c745f800000000488b45e84889c7e80000000085c0750c488b45f84885c07403c60078bf04204000e80000000090c9c3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "f30f1efa",
+                  "mnemonic": "endbr64",
+                  "operands": ""
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x5",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "4883ec20",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x20"
+                },
+                {
+                  "address": "0xc",
+                  "bytes": "48897de8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x18], rdi"
+                },
+                {
+                  "address": "0x10",
+                  "bytes": "48c745f800000000",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 8], 0"
+                },
+                {
+                  "address": "0x18",
+                  "bytes": "488b45e8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x18]"
+                },
+                {
+                  "address": "0x1c",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x1f",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x24"
+                },
+                {
+                  "address": "0x24",
+                  "bytes": "85c0",
+                  "mnemonic": "test",
+                  "operands": "eax, eax"
+                },
+                {
+                  "address": "0x26",
+                  "bytes": "750c",
+                  "mnemonic": "jne",
+                  "operands": "0x34"
+                },
+                {
+                  "address": "0x28",
+                  "bytes": "488b45f8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x2c",
+                  "bytes": "4885c0",
+                  "mnemonic": "test",
+                  "operands": "rax, rax"
+                },
+                {
+                  "address": "0x2f",
+                  "bytes": "7403",
+                  "mnemonic": "je",
+                  "operands": "0x34"
+                },
+                {
+                  "address": "0x31",
+                  "bytes": "c60078",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rax], 0x78"
+                },
+                {
+                  "address": "0x34",
+                  "bytes": "bf04204000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 0x402004"
+                },
+                {
+                  "address": "0x39",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x3e"
+                },
+                {
+                  "address": "0x3e",
+                  "bytes": "90",
+                  "mnemonic": "nop",
+                  "operands": ""
+                },
+                {
+                  "address": "0x3f",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x40",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "8598eaf272de0c9d0b05dae7554f80b8c63666a39a9c171b746b3717a55524f1",
+              "call_targets": [
+                {
+                  "name": "puts",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+                "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+                "poc": [
+                  {
+                    "case_id": "cwe476-null",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe476-null",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "cwe476-ok",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe476-ok",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/p13b-cwe476-null-deref/candidates/cwe476-null-deref.bin"
+            },
+            "elapsed_ms": 5700,
+            "evidence_links": {
+              "schema_version": 1,
+              "spec_version": 2,
+              "plan_sha256": "5dc7f7d301748ec14c32503dabe750649c50f71258cb10ef85a0b17e4e2cf976",
+              "assembly_sha256": "35e4fa066f1e5feb2cfcb7ac2d8854d149734b633389d727d0b9b03eb13d8b7b",
+              "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+              "gate": "pass",
+              "links": [
+                {
+                  "claim": "No write may occur through a NULL or otherwise invalid pointer.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "The function must not dereference [rbp-8] when it holds 0.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "Execution must terminate with ret and preserve the SysV calling convention.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No memory write occurs when [rbp-8] == 0.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No call other than 0x401060 and 0x401080 is emitted.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No indirect jumps, syscalls, or privileged instructions are present.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "Function ends with ret.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                }
+              ],
+              "native_feedback_class": null
+            }
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-flash",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-flash",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-flash",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-flash",
+        "model_returned": "deepseek-flash",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 2220,
+          "completion_tokens": 183,
+          "total_tokens": 2403,
+          "latency_ms": 1078
+        },
+        "request_id": null,
+        "elapsed_ms": 5700,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe476_bad",
+          "va": 4198774,
+          "end": 4198834,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-flash",
+                "status": "not_attempted",
+                "latency_ms": 4119,
+                "plan_sha256": "f80d7811f43f0a4fa6f04652bc0fc9e63994a1f8744f9e986a9a00f6b08f414e",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1012,
+                  "completion_tokens": 750,
+                  "total_tokens": 1762,
+                  "latency_ms": 4118
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "null_pointer_dereference",
+                  "cwe": "CWE-476",
+                  "root_cause": "The function stores a NULL pointer in [rbp-8] and, when atoi(rdi) returns 0, loads that NULL pointer into rax and performs an unchecked write (mov byte ptr [rax], 0x78), dereferencing NULL."
+                },
+                "program_context": {
+                  "function": "cwe476_bad",
+                  "addresses": [
+                    "0x401176",
+                    "0x40117a",
+                    "0x40117b",
+                    "0x40117e",
+                    "0x401182",
+                    "0x401186",
+                    "0x40118e",
+                    "0x401192",
+                    "0x401195",
+                    "0x40119a",
+                    "0x40119c",
+                    "0x40119e",
+                    "0x4011a2",
+                    "0x4011a5",
+                    "0x4011aa",
+                    "0x4011af",
+                    "0x4011b0",
+                    "0x4011b1"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rbp",
+                    "rsp",
+                    "rax",
+                    "eax",
+                    "edi"
+                  ],
+                  "memory": [
+                    "[rbp-0x18] (saved rdi argument)",
+                    "[rbp-8] (pointer initialized to 0)",
+                    "[rax] (NULL write sink)",
+                    "0x402004 (string literal passed to puts)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    {
+                      "name": "puts",
+                      "target_va": "0x401060",
+                      "source": "import"
+                    },
+                    {
+                      "name": "atoi",
+                      "target_va": "0x401080",
+                      "source": "import"
+                    }
+                  ]
+                },
+                "security_invariants": [
+                  "No write may occur through a NULL or otherwise invalid pointer.",
+                  "The function must not dereference [rbp-8] when it holds 0.",
+                  "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                  "Execution must terminate with ret and preserve the SysV calling convention."
+                ],
+                "repair": {
+                  "strategy": "Guard the write: after atoi returns 0, check the pointer in [rbp-8] for NULL before storing 0x78; if NULL, skip the write and fall through to the puts call. Preserve the original control flow and output for all non-NULL cases.",
+                  "failure_behavior": "On NULL pointer, skip the byte write and continue to puts(0x402004), then return normally without crashing.",
+                  "expected_behavior": "For any input, atoi is called on rdi; if it returns 0 and the stored pointer is non-NULL, write 0x78 through it; otherwise skip the write. Always call puts with 0x402004 and return via leave; ret."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "SysV"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "No memory write occurs when [rbp-8] == 0.",
+                    "No call other than 0x401060 and 0x401080 is emitted.",
+                    "No indirect jumps, syscalls, or privileged instructions are present.",
+                    "Function ends with ret."
+                  ],
+                  "regression_conditions": [
+                    "atoi is still invoked with the original rdi argument.",
+                    "puts is still invoked with 0x402004 on every path.",
+                    "For non-NULL pointer and atoi==0, byte 0x78 is still written through the pointer.",
+                    "Return value/stack frame behavior (leave; ret) is unchanged."
+                  ]
+                },
+                "confidence": 0.95,
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan": {
+                "schema_version": 2,
+                "vulnerability": {
+                  "type": "null_pointer_dereference",
+                  "root_cause": "The function stores a NULL pointer in [rbp-8] and, when atoi(rdi) returns 0, loads that NULL pointer into rax and performs an unchecked write (mov byte ptr [rax], 0x78), dereferencing NULL.",
+                  "cwe": "CWE-476"
+                },
+                "program_context": {
+                  "function": "cwe476_bad",
+                  "addresses": [
+                    "0x401176",
+                    "0x40117a",
+                    "0x40117b",
+                    "0x40117e",
+                    "0x401182",
+                    "0x401186",
+                    "0x40118e",
+                    "0x401192",
+                    "0x401195",
+                    "0x40119a",
+                    "0x40119c",
+                    "0x40119e",
+                    "0x4011a2",
+                    "0x4011a5",
+                    "0x4011aa",
+                    "0x4011af",
+                    "0x4011b0",
+                    "0x4011b1"
+                  ],
+                  "registers": [
+                    "rdi",
+                    "rbp",
+                    "rsp",
+                    "rax",
+                    "eax",
+                    "edi"
+                  ],
+                  "memory": [
+                    "[rbp-0x18] (saved rdi argument)",
+                    "[rbp-8] (pointer initialized to 0)",
+                    "[rax] (NULL write sink)",
+                    "0x402004 (string literal passed to puts)"
+                  ],
+                  "capacity": 16,
+                  "allowed_calls": [
+                    "puts",
+                    "atoi"
+                  ]
+                },
+                "security_invariants": [
+                  "No write may occur through a NULL or otherwise invalid pointer.",
+                  "The function must not dereference [rbp-8] when it holds 0.",
+                  "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                  "Execution must terminate with ret and preserve the SysV calling convention."
+                ],
+                "repair": {
+                  "strategy": "null_check",
+                  "failure_behavior": "On NULL pointer, skip the byte write and continue to puts(0x402004), then return normally without crashing.",
+                  "expected_behavior": "For any input, atoi is called on rdi; if it returns 0 and the stored pointer is non-NULL, write 0x78 through it; otherwise skip the write. Always call puts with 0x402004 and return via leave; ret."
+                },
+                "abi": {
+                  "architecture": "x86_64",
+                  "calling_convention": "sysv_amd64"
+                },
+                "verification": {
+                  "security_conditions": [
+                    "No memory write occurs when [rbp-8] == 0.",
+                    "No call other than 0x401060 and 0x401080 is emitted.",
+                    "No indirect jumps, syscalls, or privileged instructions are present.",
+                    "Function ends with ret."
+                  ],
+                  "regression_conditions": [
+                    "atoi is still invoked with the original rdi argument.",
+                    "puts is still invoked with 0x402004 on every path.",
+                    "For non-NULL pointer and atoi==0, byte 0x78 is still written through the pointer.",
+                    "Return value/stack frame behavior (leave; ret) is unchanged."
+                  ],
+                  "required_inputs": []
+                },
+                "confidence": "high",
+                "evidence_refs": [
+                  "static.target",
+                  "static.disassembly",
+                  "static.abi",
+                  "poc.input"
+                ]
+              },
+              "plan_sha256": "5dc7f7d301748ec14c32503dabe750649c50f71258cb10ef85a0b17e4e2cf976",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "puts",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-flash",
+                  "model_requested": "deepseek-flash",
+                  "usage": {
+                    "prompt_tokens": 1012,
+                    "completion_tokens": 750,
+                    "total_tokens": 1762,
+                    "latency_ms": 4118
+                  },
+                  "latency_ms": 4119,
+                  "raw_plan": {
+                    "schema_version": 2,
+                    "vulnerability": {
+                      "type": "null_pointer_dereference",
+                      "cwe": "CWE-476",
+                      "root_cause": "The function stores a NULL pointer in [rbp-8] and, when atoi(rdi) returns 0, loads that NULL pointer into rax and performs an unchecked write (mov byte ptr [rax], 0x78), dereferencing NULL."
+                    },
+                    "program_context": {
+                      "function": "cwe476_bad",
+                      "addresses": [
+                        "0x401176",
+                        "0x40117a",
+                        "0x40117b",
+                        "0x40117e",
+                        "0x401182",
+                        "0x401186",
+                        "0x40118e",
+                        "0x401192",
+                        "0x401195",
+                        "0x40119a",
+                        "0x40119c",
+                        "0x40119e",
+                        "0x4011a2",
+                        "0x4011a5",
+                        "0x4011aa",
+                        "0x4011af",
+                        "0x4011b0",
+                        "0x4011b1"
+                      ],
+                      "registers": [
+                        "rdi",
+                        "rbp",
+                        "rsp",
+                        "rax",
+                        "eax",
+                        "edi"
+                      ],
+                      "memory": [
+                        "[rbp-0x18] (saved rdi argument)",
+                        "[rbp-8] (pointer initialized to 0)",
+                        "[rax] (NULL write sink)",
+                        "0x402004 (string literal passed to puts)"
+                      ],
+                      "capacity": 16,
+                      "allowed_calls": [
+                        {
+                          "name": "puts",
+                          "target_va": "0x401060",
+                          "source": "import"
+                        },
+                        {
+                          "name": "atoi",
+                          "target_va": "0x401080",
+                          "source": "import"
+                        }
+                      ]
+                    },
+                    "security_invariants": [
+                      "No write may occur through a NULL or otherwise invalid pointer.",
+                      "The function must not dereference [rbp-8] when it holds 0.",
+                      "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                      "Execution must terminate with ret and preserve the SysV calling convention."
+                    ],
+                    "repair": {
+                      "strategy": "Guard the write: after atoi returns 0, check the pointer in [rbp-8] for NULL before storing 0x78; if NULL, skip the write and fall through to the puts call. Preserve the original control flow and output for all non-NULL cases.",
+                      "failure_behavior": "On NULL pointer, skip the byte write and continue to puts(0x402004), then return normally without crashing.",
+                      "expected_behavior": "For any input, atoi is called on rdi; if it returns 0 and the stored pointer is non-NULL, write 0x78 through it; otherwise skip the write. Always call puts with 0x402004 and return via leave; ret."
+                    },
+                    "abi": {
+                      "architecture": "x86_64",
+                      "calling_convention": "SysV"
+                    },
+                    "verification": {
+                      "security_conditions": [
+                        "No memory write occurs when [rbp-8] == 0.",
+                        "No call other than 0x401060 and 0x401080 is emitted.",
+                        "No indirect jumps, syscalls, or privileged instructions are present.",
+                        "Function ends with ret."
+                      ],
+                      "regression_conditions": [
+                        "atoi is still invoked with the original rdi argument.",
+                        "puts is still invoked with 0x402004 on every path.",
+                        "For non-NULL pointer and atoi==0, byte 0x78 is still written through the pointer.",
+                        "Return value/stack frame behavior (leave; ret) is unchanged."
+                      ]
+                    },
+                    "confidence": 0.95,
+                    "evidence_refs": [
+                      "static.target",
+                      "static.disassembly",
+                      "static.abi",
+                      "poc.input"
+                    ]
+                  }
+                }
+              ],
+              "elapsed_ms": 4122
+            },
+            "model": "deepseek-flash",
+            "model_requested": "deepseek-flash",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "5dc7f7d301748ec14c32503dabe750649c50f71258cb10ef85a0b17e4e2cf976",
+            "usage": {
+              "prompt_tokens": 2220,
+              "completion_tokens": 183,
+              "total_tokens": 2403,
+              "latency_ms": 1078
+            },
+            "latency_ms": 1082,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "35e4fa066f1e5feb2cfcb7ac2d8854d149734b633389d727d0b9b03eb13d8b7b",
+            "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov qword ptr [rbp - 8], 0\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x401080\ntest eax, eax\njne .Lskip\nmov rax, qword ptr [rbp - 8]\ntest rax, rax\nje .Lskip\nmov byte ptr [rax], 0x78\n.Lskip:\nmov edi, 0x402004\ncall 0x401060\nnop\nleave\nret",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "8812ed7e3e13f4dc8c78101e44cb2d81636ebef088d47a4dc177468afd1d7463",
+                "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov qword ptr [rbp - 8], 0\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x401080\ntest eax, eax\njne 0x4011a5\nmov rax, qword ptr [rbp - 8]\ntest rax, rax\nje 0x4011a5\nmov byte ptr [rax], 0x78\nmov edi, 0x402004\ncall 0x401060\nnop\nleave\nret",
+                "validation_error": "assembly policy violation: absolute_branch_target: branch target is an absolute address; use a local label inside the replacement block",
+                "validation_error_class": "assembly_validation",
+                "diagnostics": [
+                  {
+                    "error_class": "absolute_branch_target",
+                    "message": "branch target is an absolute address; use a local label inside the replacement block",
+                    "line": 12,
+                    "column": null,
+                    "token": "0x4011a5",
+                    "raw_stderr": "",
+                    "retryable": true
+                  },
+                  {
+                    "error_class": "absolute_branch_target",
+                    "message": "branch target is an absolute address; use a local label inside the replacement block",
+                    "line": 15,
+                    "column": null,
+                    "token": "0x4011a5",
+                    "raw_stderr": "",
+                    "retryable": true
+                  }
+                ],
+                "usage": {
+                  "prompt_tokens": 1673,
+                  "completion_tokens": 187,
+                  "total_tokens": 1860,
+                  "latency_ms": 1516
+                },
+                "latency_ms": 1517,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              },
+              {
+                "attempt": 2,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "35e4fa066f1e5feb2cfcb7ac2d8854d149734b633389d727d0b9b03eb13d8b7b",
+                "assembly": ".intel_syntax noprefix\nendbr64\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov qword ptr [rbp - 8], 0\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x401080\ntest eax, eax\njne .Lskip\nmov rax, qword ptr [rbp - 8]\ntest rax, rax\nje .Lskip\nmov byte ptr [rax], 0x78\n.Lskip:\nmov edi, 0x402004\ncall 0x401060\nnop\nleave\nret",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 2220,
+                  "completion_tokens": 183,
+                  "total_tokens": 2403,
+                  "latency_ms": 1078
+                },
+                "latency_ms": 1082,
+                "model": "deepseek-flash",
+                "model_requested": "deepseek-flash",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "puts",
+                "target_va": "0x401060",
+                "source": "import"
+              },
+              {
+                "name": "atoi",
+                "target_va": "0x401080",
+                "source": "import"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "cwe476_bad",
+              "va": 4198774,
+              "end": 4198834,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x401176",
+              "cave_va": "0x405000",
+              "method": "new-pt-load",
+              "code_bytes": 65,
+              "code_hex": "f30f1efa554889e54883ec2048897de848c745f800000000488b45e84889c7e80000000085c0750c488b45f84885c07403c60078bf04204000e80000000090c9c3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "f30f1efa",
+                  "mnemonic": "endbr64",
+                  "operands": ""
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x5",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "4883ec20",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x20"
+                },
+                {
+                  "address": "0xc",
+                  "bytes": "48897de8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x18], rdi"
+                },
+                {
+                  "address": "0x10",
+                  "bytes": "48c745f800000000",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 8], 0"
+                },
+                {
+                  "address": "0x18",
+                  "bytes": "488b45e8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x18]"
+                },
+                {
+                  "address": "0x1c",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x1f",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x24"
+                },
+                {
+                  "address": "0x24",
+                  "bytes": "85c0",
+                  "mnemonic": "test",
+                  "operands": "eax, eax"
+                },
+                {
+                  "address": "0x26",
+                  "bytes": "750c",
+                  "mnemonic": "jne",
+                  "operands": "0x34"
+                },
+                {
+                  "address": "0x28",
+                  "bytes": "488b45f8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x2c",
+                  "bytes": "4885c0",
+                  "mnemonic": "test",
+                  "operands": "rax, rax"
+                },
+                {
+                  "address": "0x2f",
+                  "bytes": "7403",
+                  "mnemonic": "je",
+                  "operands": "0x34"
+                },
+                {
+                  "address": "0x31",
+                  "bytes": "c60078",
+                  "mnemonic": "mov",
+                  "operands": "byte ptr [rax], 0x78"
+                },
+                {
+                  "address": "0x34",
+                  "bytes": "bf04204000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 0x402004"
+                },
+                {
+                  "address": "0x39",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x3e"
+                },
+                {
+                  "address": "0x3e",
+                  "bytes": "90",
+                  "mnemonic": "nop",
+                  "operands": ""
+                },
+                {
+                  "address": "0x3f",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x40",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "8598eaf272de0c9d0b05dae7554f80b8c63666a39a9c171b746b3717a55524f1",
+              "call_targets": [
+                {
+                  "name": "puts",
+                  "target_va": "0x401060",
+                  "source": "import"
+                },
+                {
+                  "name": "atoi",
+                  "target_va": "0x401080",
+                  "source": "import"
+                }
+              ],
+              "call_relocations": 2,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "7f2aa72c92e86af4ed3f1905e3564d53fee32452d89055198c57588c10f66b2c",
+                "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+                "poc": [
+                  {
+                    "case_id": "cwe476-null",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "qemu: uncaught target signal 11 (Segmentation fault) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe476-null",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "cwe476-ok",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe476-ok",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "ok\n",
+                    "stderr": "",
+                    "stdout_hex": "6f6b0a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/p13b-cwe476-null-deref/candidates/cwe476-null-deref.bin"
+            },
+            "elapsed_ms": 5700,
+            "evidence_links": {
+              "schema_version": 1,
+              "spec_version": 2,
+              "plan_sha256": "5dc7f7d301748ec14c32503dabe750649c50f71258cb10ef85a0b17e4e2cf976",
+              "assembly_sha256": "35e4fa066f1e5feb2cfcb7ac2d8854d149734b633389d727d0b9b03eb13d8b7b",
+              "candidate_sha256": "25b93ba34736459b6df67aac127253ad113045b379ce1d40aba0f010be0b934b",
+              "gate": "pass",
+              "links": [
+                {
+                  "claim": "No write may occur through a NULL or otherwise invalid pointer.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "The function must not dereference [rbp-8] when it holds 0.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "Only direct calls to 0x401060 (puts) and 0x401080 (atoi) are permitted.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "Execution must terminate with ret and preserve the SysV calling convention.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No memory write occurs when [rbp-8] == 0.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No call other than 0x401060 and 0x401080 is emitted.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "No indirect jumps, syscalls, or privileged instructions are present.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                },
+                {
+                  "claim": "Function ends with ret.",
+                  "evidence": [
+                    "static.target",
+                    "static.disassembly",
+                    "static.abi",
+                    "poc.input"
+                  ],
+                  "source": "provided"
+                }
+              ],
+              "native_feedback_class": null
+            }
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-flash",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-flash",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-flash",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-flash",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 10068,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "cwe476_bad",
+        "va": 4198774,
+        "end": 4198834,
+        "source": "symbol"
+      },
+      "target_scope_check": "passed",
+      "target_in_scope": true,
+      "ai_increment": true,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 1,
+  "ai_increment": 1,
+  "funnel": {
+    "VERIFIED": 1,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 1,
+  "ai_target_in_scope": 1,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 10068,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

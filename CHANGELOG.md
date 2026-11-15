@@ -49,6 +49,14 @@ simple semantic-versioning policy for delivery snapshots.
   identity; 3 runs each over 12 cases, native PoC.  Both 6/12 (loop 6/6,
   non-loop 0/6), stable.  Evidence `artifacts/multi-model-matrix-2026-11-14/`.
 
+## P10-P15 (2026-11-16)
+
+- absolute branch/assembler diagnostic feedback; CWE-787 verified
+- 36 independent stability runs (19/36)
+- real RepairSpec v2 plan/trace for CWE-787
+- benchmark expansion to 8 binaries / 7 CWE with dev-hidden split
+- native trace plumbing (N1/N2 only), deterministic fuzz plan
+
 ## P5–P9 (2026-11-15)
 
 - native semantic feedback retry with real failure evidence

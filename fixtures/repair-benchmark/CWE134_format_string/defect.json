@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "cwe": "CWE-134",
+  "title": "CWE134_format_string",
+  "mechanism": "bounds-check"
+}

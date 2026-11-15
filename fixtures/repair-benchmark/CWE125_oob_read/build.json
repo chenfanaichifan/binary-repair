@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "compiler": {
+    "name": "gcc",
+    "version": "13.3.0 (x86_64-linux-gnu)"
+  },
+  "flags": [
+    "-O0",
+    "-g",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-no-pie"
+  ],
+  "argv": [
+    "x86_64-linux-gnu-gcc",
+    "-O0",
+    "-g",
+    "-fno-stack-protector",
+    "-fno-pie",
+    "-no-pie",
+    "-o",
+    "original.elf",
+    "vuln.c"
+  ],
+  "source": {
+    "path": "vuln.c",
+    "origin": "project-authored minimal fixture"
+  },
+  "network": false,
+  "output": {
+    "path": "original.elf",
+    "sha256": "27797d8e1c2ab61519b46174cd5bf01fa12e6df8abe36d2bfb1920a67a1f2b1c"
+  }
+}

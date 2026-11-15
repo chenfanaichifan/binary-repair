@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "cwe": "CWE-476",
+  "title": "CWE476_null_deref",
+  "mechanism": "bounds-check"
+}

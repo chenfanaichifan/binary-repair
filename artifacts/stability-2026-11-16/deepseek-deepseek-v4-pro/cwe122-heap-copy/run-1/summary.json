@@ -1,0 +1,2864 @@
+{
+  "schema_version": 1,
+  "provider": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-v4-pro",
+    "status": "ok"
+  },
+  "provider_tag": null,
+  "seed": null,
+  "seed_supported": false,
+  "cost": null,
+  "cost_basis": "provider API exposes token usage only; no price table configured",
+  "cases": [
+    {
+      "case": {
+        "id": "cwe122-heap-copy",
+        "binary_id": "repair-cwe122",
+        "route": "asm_repair",
+        "binary": "fixtures/repair-benchmark/CWE122_heap_copy/original.elf",
+        "target": "cwe122_bad",
+        "capacity": 16,
+        "arch": "x86_64",
+        "sink_kind": "unbounded_copy",
+        "poc": "fixtures/poc/repair-cwe122.json",
+        "reference_fix": "fixtures/repair-benchmark/CWE122_heap_copy/reference_fix.c",
+        "baseline_expected": "rejected",
+        "baseline_expected_target_strict": "analysis_only",
+        "contract": "CWE122 heap overflow: malloc(16) + memcpy(strlen+1); reject oversized input and preserve hi output",
+        "family": "heap copy semantic guard",
+        "cwe": "CWE-122",
+        "required_verification": [
+          "security",
+          "regression"
+        ]
+      },
+      "input_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+      "baseline": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 212,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_whole_image": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "scanned 0 inlined range-check block(s) in the code region",
+        "target_policy": "whole_image",
+        "candidate_available": false,
+        "candidate_sha256": null,
+        "patched_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 212,
+        "allow_whole_image_requested": true,
+        "allow_whole_image_supported": true
+      },
+      "baseline_increment_zero": true,
+      "baseline_target_strict": {
+        "attempted": true,
+        "disposition": "analysis_only",
+        "status": "unsupported",
+        "verified": false,
+        "error": "target-scoped mode: no patchable sink lies inside target cwe122_bad [0x4011f6,0x401263)",
+        "target_policy": "target_strict",
+        "target_scope": {
+          "name": "cwe122_bad",
+          "va": 4198902,
+          "end": 4199011,
+          "source": "symbol"
+        },
+        "target_in_scope": false,
+        "target_scope_check": "not_run",
+        "candidate_sha256": null,
+        "patched_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+        "actions": [],
+        "checks_summary": {
+          "gate_success": false,
+          "gate_outcome": null,
+          "reason": null,
+          "required_checks": null,
+          "required_not_run": null,
+          "failed_checks": [],
+          "not_run_checks": [],
+          "tier": null,
+          "engine": null,
+          "scope": null
+        },
+        "elapsed_ms": 12,
+        "expected": "analysis_only",
+        "expected_source": "baseline_expected_target_strict",
+        "matches_expected": true
+      },
+      "baseline_target_aware": {
+        "attempted": true,
+        "verified": false,
+        "reason": "guard skipped: unsupported x86 guard op: "
+      },
+      "ai_blind": {
+        "status": "not_attempted",
+        "disposition": "analysis_only",
+        "verified": false,
+        "elapsed_ms": 0
+      },
+      "ai_attempts": [
+        {
+          "repeat": 0,
+          "plan": {
+            "ai": {
+              "schema_version": 1,
+              "path": "hard_target_plan",
+              "requested": true,
+              "called": true,
+              "mode": "llm",
+              "provider": "unknown",
+              "model": "deepseek-v4-pro",
+              "status": "not_attempted",
+              "latency_ms": 6032,
+              "plan_sha256": "67f5df682323279e578c8fc1c35aa7290d7455a57d0b0b2ddfc805445fb90f45",
+              "error": null,
+              "validation": {},
+              "usage": {
+                "prompt_tokens": 1271,
+                "completion_tokens": 625,
+                "total_tokens": 1896,
+                "latency_ms": 6027
+              },
+              "request_id": null,
+              "authority": "deterministic_gate",
+              "may_not": [
+                "promote_gate_failure",
+                "emit_verdict",
+                "emit_evidence",
+                "change_gate_evidence"
+              ],
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true
+            },
+            "raw_plan": {
+              "schema_version": 1,
+              "vulnerability_type": "CWE-122: Heap-based Buffer Overflow",
+              "root_cause": "The function allocates a fixed-size buffer of 16 bytes using malloc, then copies the input string (including null terminator) into it using memcpy with length strlen(input)+1. If the input string length is 15 or more, the copy overflows the allocated buffer.",
+              "affected_function": "cwe122_bad",
+              "affected_addresses": [
+                "0x401206",
+                "0x40120b",
+                "0x40122c",
+                "0x401231",
+                "0x401243"
+              ],
+              "affected_registers": [
+                "rax",
+                "rdi",
+                "rsi",
+                "rdx",
+                "rcx"
+              ],
+              "affected_memory": [
+                "Heap buffer allocated at [rbp-8] (size 16)",
+                "Input string pointed by [rbp-0x18]"
+              ],
+              "original_behavior": "Allocates 16 bytes, copies input string (including null terminator) into it, prints the copied string, then frees the buffer. For inputs shorter than 15 characters, it works correctly; for longer inputs, it overflows the heap buffer.",
+              "required_invariant": "The heap buffer must not be overflowed. The copied string must be null-terminated and fit within the allocated buffer. For valid inputs (length < 15), the behavior must be preserved (print the string). For oversized inputs, the function should reject them and preserve the 'hi' output as per contract.",
+              "repair_strategy": "After allocating 16 bytes, check the length of the input string using strlen. If the length is greater than or equal to 15 (i.e., strlen >= 15), then free the allocated buffer and call exit(1) to reject the input. Otherwise, proceed with memcpy and puts as before.",
+              "failure_behavior": "If the input string is too long (length >= 15), the function frees the allocated buffer and exits with status 1, preventing overflow. No output is produced for oversized inputs.",
+              "permitted_calls": [
+                "malloc",
+                "strlen",
+                "memcpy",
+                "puts",
+                "free",
+                "exit"
+              ],
+              "expected_behavior": "For inputs with length < 15, the function prints the input string and returns normally. For inputs with length >= 15, the function exits with status 1 without printing.",
+              "verification_conditions": [
+                "Input length < 15: output equals input, no crash, heap intact.",
+                "Input length >= 15: process exits with code 1, no heap overflow.",
+                "No calls other than allowed ones are made.",
+                "Function returns normally for valid inputs."
+              ],
+              "confidence": 0.95
+            },
+            "plan": {
+              "schema_version": 1,
+              "vulnerability_type": "CWE-122: Heap-based Buffer Overflow",
+              "root_cause": "The function allocates a fixed-size buffer of 16 bytes using malloc, then copies the input string (including null terminator) into it using memcpy with length strlen(input)+1. If the input string length is 15 or more, the copy overflows the allocated buffer.",
+              "affected_function": "cwe122_bad",
+              "affected_addresses": [
+                "0x401206",
+                "0x40120b",
+                "0x40122c",
+                "0x401231",
+                "0x401243"
+              ],
+              "affected_registers": [
+                "rax",
+                "rdi",
+                "rsi",
+                "rdx",
+                "rcx"
+              ],
+              "affected_memory": [
+                "Heap buffer allocated at [rbp-8] (size 16)",
+                "Input string pointed by [rbp-0x18]"
+              ],
+              "original_behavior": "Allocates 16 bytes, copies input string (including null terminator) into it, prints the copied string, then frees the buffer. For inputs shorter than 15 characters, it works correctly; for longer inputs, it overflows the heap buffer.",
+              "required_invariant": "The heap buffer must not be overflowed. The copied string must be null-terminated and fit within the allocated buffer. For valid inputs (length < 15), the behavior must be preserved (print the string). For oversized inputs, the function should reject them and preserve the 'hi' output as per contract.",
+              "repair_strategy": "After allocating 16 bytes, check the length of the input string using strlen. If the length is greater than or equal to 15 (i.e., strlen >= 15), then free the allocated buffer and call exit(1) to reject the input. Otherwise, proceed with memcpy and puts as before.",
+              "failure_behavior": "If the input string is too long (length >= 15), the function frees the allocated buffer and exits with status 1, preventing overflow. No output is produced for oversized inputs.",
+              "permitted_calls": [
+                "malloc",
+                "strlen",
+                "memcpy",
+                "puts",
+                "free",
+                "exit"
+              ],
+              "expected_behavior": "For inputs with length < 15, the function prints the input string and returns normally. For inputs with length >= 15, the function exits with status 1 without printing.",
+              "verification_conditions": [
+                "Input length < 15: output equals input, no crash, heap intact.",
+                "Input length >= 15: process exits with code 1, no heap overflow.",
+                "No calls other than allowed ones are made.",
+                "Function returns normally for valid inputs."
+              ],
+              "confidence": "high"
+            },
+            "plan_sha256": "dcdb7b96f7f2d11009c4ead3b99057070c4828afedbbafa2c1f55e780babc73a",
+            "plan_error": "",
+            "error": null,
+            "allowed_calls": [
+              {
+                "name": "free",
+                "target_va": "0x4010a0",
+                "source": "import"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x4010b0",
+                "source": "import"
+              },
+              {
+                "name": "strlen",
+                "target_va": "0x4010c0",
+                "source": "import"
+              },
+              {
+                "name": "memcpy",
+                "target_va": "0x4010e0",
+                "source": "import"
+              },
+              {
+                "name": "malloc",
+                "target_va": "0x4010f0",
+                "source": "import"
+              },
+              {
+                "name": "exit",
+                "target_va": "0x401100",
+                "source": "import"
+              }
+            ],
+            "attempts": [
+              {
+                "attempt": 1,
+                "status": "valid",
+                "error": "",
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "usage": {
+                  "prompt_tokens": 1271,
+                  "completion_tokens": 625,
+                  "total_tokens": 1896,
+                  "latency_ms": 6027
+                },
+                "latency_ms": 6032,
+                "raw_plan": {
+                  "schema_version": 1,
+                  "vulnerability_type": "CWE-122: Heap-based Buffer Overflow",
+                  "root_cause": "The function allocates a fixed-size buffer of 16 bytes using malloc, then copies the input string (including null terminator) into it using memcpy with length strlen(input)+1. If the input string length is 15 or more, the copy overflows the allocated buffer.",
+                  "affected_function": "cwe122_bad",
+                  "affected_addresses": [
+                    "0x401206",
+                    "0x40120b",
+                    "0x40122c",
+                    "0x401231",
+                    "0x401243"
+                  ],
+                  "affected_registers": [
+                    "rax",
+                    "rdi",
+                    "rsi",
+                    "rdx",
+                    "rcx"
+                  ],
+                  "affected_memory": [
+                    "Heap buffer allocated at [rbp-8] (size 16)",
+                    "Input string pointed by [rbp-0x18]"
+                  ],
+                  "original_behavior": "Allocates 16 bytes, copies input string (including null terminator) into it, prints the copied string, then frees the buffer. For inputs shorter than 15 characters, it works correctly; for longer inputs, it overflows the heap buffer.",
+                  "required_invariant": "The heap buffer must not be overflowed. The copied string must be null-terminated and fit within the allocated buffer. For valid inputs (length < 15), the behavior must be preserved (print the string). For oversized inputs, the function should reject them and preserve the 'hi' output as per contract.",
+                  "repair_strategy": "After allocating 16 bytes, check the length of the input string using strlen. If the length is greater than or equal to 15 (i.e., strlen >= 15), then free the allocated buffer and call exit(1) to reject the input. Otherwise, proceed with memcpy and puts as before.",
+                  "failure_behavior": "If the input string is too long (length >= 15), the function frees the allocated buffer and exits with status 1, preventing overflow. No output is produced for oversized inputs.",
+                  "permitted_calls": [
+                    "malloc",
+                    "strlen",
+                    "memcpy",
+                    "puts",
+                    "free",
+                    "exit"
+                  ],
+                  "expected_behavior": "For inputs with length < 15, the function prints the input string and returns normally. For inputs with length >= 15, the function exits with status 1 without printing.",
+                  "verification_conditions": [
+                    "Input length < 15: output equals input, no crash, heap intact.",
+                    "Input length >= 15: process exits with code 1, no heap overflow.",
+                    "No calls other than allowed ones are made.",
+                    "Function returns normally for valid inputs."
+                  ],
+                  "confidence": 0.95
+                }
+              }
+            ],
+            "elapsed_ms": 6036
+          },
+          "model": "deepseek-v4-pro",
+          "model_requested": "deepseek-v4-pro",
+          "status": "accepted",
+          "error": null,
+          "plan_status": "valid",
+          "plan_sha256": "dcdb7b96f7f2d11009c4ead3b99057070c4828afedbbafa2c1f55e780babc73a",
+          "usage": {
+            "prompt_tokens": 1875,
+            "completion_tokens": 370,
+            "total_tokens": 2245,
+            "latency_ms": 3725
+          },
+          "latency_ms": 3727,
+          "request_id": null,
+          "assembly_returned": true,
+          "assembly_sha256": "7d8e4a1ff41a49fded1925ade6d39ce1802259f028f499df7e4d8ff397ad3c82",
+          "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov edi, 0x10\ncall 0x4010f0\nmov qword ptr [rbp - 8], rax\ncmp qword ptr [rbp - 8], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010c0\ncmp rax, 15\njae .Ltoo_long\nmov rdx, rax\nadd rdx, 1\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 8]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010e0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Ltoo_long:\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+          "assembly_attempts": [
+            {
+              "attempt": 1,
+              "status": "accepted",
+              "error": null,
+              "assembly_returned": true,
+              "assembly_sha256": "7d8e4a1ff41a49fded1925ade6d39ce1802259f028f499df7e4d8ff397ad3c82",
+              "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov edi, 0x10\ncall 0x4010f0\nmov qword ptr [rbp - 8], rax\ncmp qword ptr [rbp - 8], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010c0\ncmp rax, 15\njae .Ltoo_long\nmov rdx, rax\nadd rdx, 1\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 8]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010e0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Ltoo_long:\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+              "validation_error": null,
+              "validation_error_class": null,
+              "diagnostics": [],
+              "usage": {
+                "prompt_tokens": 1875,
+                "completion_tokens": 370,
+                "total_tokens": 2245,
+                "latency_ms": 3725
+              },
+              "latency_ms": 3727,
+              "model": "deepseek-v4-pro",
+              "model_requested": "deepseek-v4-pro",
+              "model_identity_ok": true,
+              "request_id": null
+            }
+          ],
+          "validation_error": null,
+          "validation_error_class": null,
+          "allowed_calls": [
+            {
+              "name": "free",
+              "target_va": "0x4010a0",
+              "source": "import"
+            },
+            {
+              "name": "puts",
+              "target_va": "0x4010b0",
+              "source": "import"
+            },
+            {
+              "name": "strlen",
+              "target_va": "0x4010c0",
+              "source": "import"
+            },
+            {
+              "name": "memcpy",
+              "target_va": "0x4010e0",
+              "source": "import"
+            },
+            {
+              "name": "malloc",
+              "target_va": "0x4010f0",
+              "source": "import"
+            },
+            {
+              "name": "exit",
+              "target_va": "0x401100",
+              "source": "import"
+            }
+          ],
+          "target_in_scope": true,
+          "target_scope_check": "passed",
+          "target_scope": {
+            "name": "cwe122_bad",
+            "va": 4198902,
+            "end": 4199011,
+            "source": "symbol"
+          },
+          "attempted": true,
+          "verified": true,
+          "injection": {
+            "target_va": "0x4011f6",
+            "cave_va": "0x405000",
+            "method": "new-pt-load",
+            "code_bytes": 137,
+            "code_hex": "554889e54883ec2048897de8bf10000000e800000000488945f848837df800750abf01000000e800000000488b45e84889c7e8000000004883f80f73344889c24883c201488b4de8488b45f84889ce4889c7e800000000488b45f84889c7e800000000488b45f84889c7e800000000c9c3488b45f84889c7e800000000bf01000000e800000000c9c3",
+            "code_disassembly": [
+              {
+                "address": "0x0",
+                "bytes": "55",
+                "mnemonic": "push",
+                "operands": "rbp"
+              },
+              {
+                "address": "0x1",
+                "bytes": "4889e5",
+                "mnemonic": "mov",
+                "operands": "rbp, rsp"
+              },
+              {
+                "address": "0x4",
+                "bytes": "4883ec20",
+                "mnemonic": "sub",
+                "operands": "rsp, 0x20"
+              },
+              {
+                "address": "0x8",
+                "bytes": "48897de8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 0x18], rdi"
+              },
+              {
+                "address": "0xc",
+                "bytes": "bf10000000",
+                "mnemonic": "mov",
+                "operands": "edi, 0x10"
+              },
+              {
+                "address": "0x11",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x16"
+              },
+              {
+                "address": "0x16",
+                "bytes": "488945f8",
+                "mnemonic": "mov",
+                "operands": "qword ptr [rbp - 8], rax"
+              },
+              {
+                "address": "0x1a",
+                "bytes": "48837df800",
+                "mnemonic": "cmp",
+                "operands": "qword ptr [rbp - 8], 0"
+              },
+              {
+                "address": "0x1f",
+                "bytes": "750a",
+                "mnemonic": "jne",
+                "operands": "0x2b"
+              },
+              {
+                "address": "0x21",
+                "bytes": "bf01000000",
+                "mnemonic": "mov",
+                "operands": "edi, 1"
+              },
+              {
+                "address": "0x26",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x2b"
+              },
+              {
+                "address": "0x2b",
+                "bytes": "488b45e8",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 0x18]"
+              },
+              {
+                "address": "0x2f",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x32",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x37"
+              },
+              {
+                "address": "0x37",
+                "bytes": "4883f80f",
+                "mnemonic": "cmp",
+                "operands": "rax, 0xf"
+              },
+              {
+                "address": "0x3b",
+                "bytes": "7334",
+                "mnemonic": "jae",
+                "operands": "0x71"
+              },
+              {
+                "address": "0x3d",
+                "bytes": "4889c2",
+                "mnemonic": "mov",
+                "operands": "rdx, rax"
+              },
+              {
+                "address": "0x40",
+                "bytes": "4883c201",
+                "mnemonic": "add",
+                "operands": "rdx, 1"
+              },
+              {
+                "address": "0x44",
+                "bytes": "488b4de8",
+                "mnemonic": "mov",
+                "operands": "rcx, qword ptr [rbp - 0x18]"
+              },
+              {
+                "address": "0x48",
+                "bytes": "488b45f8",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 8]"
+              },
+              {
+                "address": "0x4c",
+                "bytes": "4889ce",
+                "mnemonic": "mov",
+                "operands": "rsi, rcx"
+              },
+              {
+                "address": "0x4f",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x52",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x57"
+              },
+              {
+                "address": "0x57",
+                "bytes": "488b45f8",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 8]"
+              },
+              {
+                "address": "0x5b",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x5e",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x63"
+              },
+              {
+                "address": "0x63",
+                "bytes": "488b45f8",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 8]"
+              },
+              {
+                "address": "0x67",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x6a",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x6f"
+              },
+              {
+                "address": "0x6f",
+                "bytes": "c9",
+                "mnemonic": "leave",
+                "operands": ""
+              },
+              {
+                "address": "0x70",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              },
+              {
+                "address": "0x71",
+                "bytes": "488b45f8",
+                "mnemonic": "mov",
+                "operands": "rax, qword ptr [rbp - 8]"
+              },
+              {
+                "address": "0x75",
+                "bytes": "4889c7",
+                "mnemonic": "mov",
+                "operands": "rdi, rax"
+              },
+              {
+                "address": "0x78",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x7d"
+              },
+              {
+                "address": "0x7d",
+                "bytes": "bf01000000",
+                "mnemonic": "mov",
+                "operands": "edi, 1"
+              },
+              {
+                "address": "0x82",
+                "bytes": "e800000000",
+                "mnemonic": "call",
+                "operands": "0x87"
+              },
+              {
+                "address": "0x87",
+                "bytes": "c9",
+                "mnemonic": "leave",
+                "operands": ""
+              },
+              {
+                "address": "0x88",
+                "bytes": "c3",
+                "mnemonic": "ret",
+                "operands": ""
+              }
+            ],
+            "assembly_sha256": "0fec694ea207dc3195adf32c32e6092f8b437cd3cf2e3d555cb71e34dea6341d",
+            "call_targets": [
+              {
+                "name": "free",
+                "target_va": "0x4010a0",
+                "source": "import"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x4010b0",
+                "source": "import"
+              },
+              {
+                "name": "strlen",
+                "target_va": "0x4010c0",
+                "source": "import"
+              },
+              {
+                "name": "memcpy",
+                "target_va": "0x4010e0",
+                "source": "import"
+              },
+              {
+                "name": "malloc",
+                "target_va": "0x4010f0",
+                "source": "import"
+              },
+              {
+                "name": "exit",
+                "target_va": "0x401100",
+                "source": "import"
+              }
+            ],
+            "call_relocations": 8,
+            "abi": {
+              "ok": true,
+              "fatal": 0,
+              "findings": []
+            }
+          },
+          "candidate": {
+            "gate": "pass",
+            "poc_status": "pass",
+            "runner": "limactl",
+            "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+            "poc": {
+              "schema_version": 1,
+              "status": "pass",
+              "runner": "limactl",
+              "tier": "emulated_run",
+              "stdout_signature": "matched",
+              "errno_signature": "not_run",
+              "errno_probe": "",
+              "no_input": false,
+              "original_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+              "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+              "poc": [
+                {
+                  "case_id": "cwe122-overflow-64",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "",
+                  "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe122-overflow-256",
+                  "kind": "poc",
+                  "executable": "original",
+                  "exit_code": 255,
+                  "crashed": true,
+                  "stdout": "",
+                  "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe122-overflow-64",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 1,
+                  "crashed": false,
+                  "stdout": "",
+                  "stderr": "",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe122-overflow-256",
+                  "kind": "poc",
+                  "executable": "candidate",
+                  "exit_code": 1,
+                  "crashed": false,
+                  "stdout": "",
+                  "stderr": "",
+                  "stdout_hex": "",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "regression": [
+                {
+                  "case_id": "cwe122-short",
+                  "kind": "regression",
+                  "executable": "original",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "hi\n",
+                  "stderr": "",
+                  "stdout_hex": "68690a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                },
+                {
+                  "case_id": "cwe122-short",
+                  "kind": "regression",
+                  "executable": "candidate",
+                  "exit_code": 0,
+                  "crashed": false,
+                  "stdout": "hi\n",
+                  "stderr": "",
+                  "stdout_hex": "68690a",
+                  "timed_out": false,
+                  "error": null,
+                  "expected_ok": true,
+                  "syscall_errors": [],
+                  "errno_value": null
+                }
+              ],
+              "limitations": []
+            },
+            "repair_status": "VERIFIED",
+            "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe122-heap-copy/run-1/candidates/cwe122-heap-copy.bin"
+          },
+          "elapsed_ms": 8095
+        }
+      ],
+      "injection": {
+        "target_va": "0x4011f6",
+        "cave_va": "0x405000",
+        "method": "new-pt-load",
+        "code_bytes": 137,
+        "code_hex": "554889e54883ec2048897de8bf10000000e800000000488945f848837df800750abf01000000e800000000488b45e84889c7e8000000004883f80f73344889c24883c201488b4de8488b45f84889ce4889c7e800000000488b45f84889c7e800000000488b45f84889c7e800000000c9c3488b45f84889c7e800000000bf01000000e800000000c9c3",
+        "code_disassembly": [
+          {
+            "address": "0x0",
+            "bytes": "55",
+            "mnemonic": "push",
+            "operands": "rbp"
+          },
+          {
+            "address": "0x1",
+            "bytes": "4889e5",
+            "mnemonic": "mov",
+            "operands": "rbp, rsp"
+          },
+          {
+            "address": "0x4",
+            "bytes": "4883ec20",
+            "mnemonic": "sub",
+            "operands": "rsp, 0x20"
+          },
+          {
+            "address": "0x8",
+            "bytes": "48897de8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 0x18], rdi"
+          },
+          {
+            "address": "0xc",
+            "bytes": "bf10000000",
+            "mnemonic": "mov",
+            "operands": "edi, 0x10"
+          },
+          {
+            "address": "0x11",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x16"
+          },
+          {
+            "address": "0x16",
+            "bytes": "488945f8",
+            "mnemonic": "mov",
+            "operands": "qword ptr [rbp - 8], rax"
+          },
+          {
+            "address": "0x1a",
+            "bytes": "48837df800",
+            "mnemonic": "cmp",
+            "operands": "qword ptr [rbp - 8], 0"
+          },
+          {
+            "address": "0x1f",
+            "bytes": "750a",
+            "mnemonic": "jne",
+            "operands": "0x2b"
+          },
+          {
+            "address": "0x21",
+            "bytes": "bf01000000",
+            "mnemonic": "mov",
+            "operands": "edi, 1"
+          },
+          {
+            "address": "0x26",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x2b"
+          },
+          {
+            "address": "0x2b",
+            "bytes": "488b45e8",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 0x18]"
+          },
+          {
+            "address": "0x2f",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x32",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x37"
+          },
+          {
+            "address": "0x37",
+            "bytes": "4883f80f",
+            "mnemonic": "cmp",
+            "operands": "rax, 0xf"
+          },
+          {
+            "address": "0x3b",
+            "bytes": "7334",
+            "mnemonic": "jae",
+            "operands": "0x71"
+          },
+          {
+            "address": "0x3d",
+            "bytes": "4889c2",
+            "mnemonic": "mov",
+            "operands": "rdx, rax"
+          },
+          {
+            "address": "0x40",
+            "bytes": "4883c201",
+            "mnemonic": "add",
+            "operands": "rdx, 1"
+          },
+          {
+            "address": "0x44",
+            "bytes": "488b4de8",
+            "mnemonic": "mov",
+            "operands": "rcx, qword ptr [rbp - 0x18]"
+          },
+          {
+            "address": "0x48",
+            "bytes": "488b45f8",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 8]"
+          },
+          {
+            "address": "0x4c",
+            "bytes": "4889ce",
+            "mnemonic": "mov",
+            "operands": "rsi, rcx"
+          },
+          {
+            "address": "0x4f",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x52",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x57"
+          },
+          {
+            "address": "0x57",
+            "bytes": "488b45f8",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 8]"
+          },
+          {
+            "address": "0x5b",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x5e",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x63"
+          },
+          {
+            "address": "0x63",
+            "bytes": "488b45f8",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 8]"
+          },
+          {
+            "address": "0x67",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x6a",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x6f"
+          },
+          {
+            "address": "0x6f",
+            "bytes": "c9",
+            "mnemonic": "leave",
+            "operands": ""
+          },
+          {
+            "address": "0x70",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          },
+          {
+            "address": "0x71",
+            "bytes": "488b45f8",
+            "mnemonic": "mov",
+            "operands": "rax, qword ptr [rbp - 8]"
+          },
+          {
+            "address": "0x75",
+            "bytes": "4889c7",
+            "mnemonic": "mov",
+            "operands": "rdi, rax"
+          },
+          {
+            "address": "0x78",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x7d"
+          },
+          {
+            "address": "0x7d",
+            "bytes": "bf01000000",
+            "mnemonic": "mov",
+            "operands": "edi, 1"
+          },
+          {
+            "address": "0x82",
+            "bytes": "e800000000",
+            "mnemonic": "call",
+            "operands": "0x87"
+          },
+          {
+            "address": "0x87",
+            "bytes": "c9",
+            "mnemonic": "leave",
+            "operands": ""
+          },
+          {
+            "address": "0x88",
+            "bytes": "c3",
+            "mnemonic": "ret",
+            "operands": ""
+          }
+        ],
+        "assembly_sha256": "0fec694ea207dc3195adf32c32e6092f8b437cd3cf2e3d555cb71e34dea6341d",
+        "call_targets": [
+          {
+            "name": "free",
+            "target_va": "0x4010a0",
+            "source": "import"
+          },
+          {
+            "name": "puts",
+            "target_va": "0x4010b0",
+            "source": "import"
+          },
+          {
+            "name": "strlen",
+            "target_va": "0x4010c0",
+            "source": "import"
+          },
+          {
+            "name": "memcpy",
+            "target_va": "0x4010e0",
+            "source": "import"
+          },
+          {
+            "name": "malloc",
+            "target_va": "0x4010f0",
+            "source": "import"
+          },
+          {
+            "name": "exit",
+            "target_va": "0x401100",
+            "source": "import"
+          }
+        ],
+        "call_relocations": 8,
+        "abi": {
+          "ok": true,
+          "fatal": 0,
+          "findings": []
+        }
+      },
+      "candidate": {
+        "gate": "pass",
+        "poc_status": "pass",
+        "runner": "limactl",
+        "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+        "poc": {
+          "schema_version": 1,
+          "status": "pass",
+          "runner": "limactl",
+          "tier": "emulated_run",
+          "stdout_signature": "matched",
+          "errno_signature": "not_run",
+          "errno_probe": "",
+          "no_input": false,
+          "original_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+          "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+          "poc": [
+            {
+              "case_id": "cwe122-overflow-64",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe122-overflow-256",
+              "kind": "poc",
+              "executable": "original",
+              "exit_code": 255,
+              "crashed": true,
+              "stdout": "",
+              "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe122-overflow-64",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe122-overflow-256",
+              "kind": "poc",
+              "executable": "candidate",
+              "exit_code": 1,
+              "crashed": false,
+              "stdout": "",
+              "stderr": "",
+              "stdout_hex": "",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "regression": [
+            {
+              "case_id": "cwe122-short",
+              "kind": "regression",
+              "executable": "original",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "hi\n",
+              "stderr": "",
+              "stdout_hex": "68690a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            },
+            {
+              "case_id": "cwe122-short",
+              "kind": "regression",
+              "executable": "candidate",
+              "exit_code": 0,
+              "crashed": false,
+              "stdout": "hi\n",
+              "stderr": "",
+              "stdout_hex": "68690a",
+              "timed_out": false,
+              "error": null,
+              "expected_ok": true,
+              "syscall_errors": [],
+              "errno_value": null
+            }
+          ],
+          "limitations": []
+        },
+        "repair_status": "VERIFIED",
+        "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe122-heap-copy/run-1/candidates/cwe122-heap-copy.bin"
+      },
+      "ai": {
+        "schema_version": 1,
+        "path": "hard_target_asm",
+        "requested": true,
+        "called": true,
+        "mode": "llm",
+        "provider": "unknown",
+        "model": "deepseek-v4-pro",
+        "status": "accepted",
+        "latency_ms": 3727,
+        "plan_sha256": "6f360774a17426ac285ee33a37c57e0c83f1daf532b5e3eabe1a2d5b1871ebf3",
+        "error": null,
+        "validation": {},
+        "usage": {
+          "prompt_tokens": 1875,
+          "completion_tokens": 370,
+          "total_tokens": 2245,
+          "latency_ms": 3725
+        },
+        "request_id": null,
+        "authority": "deterministic_gate",
+        "may_not": [
+          "promote_gate_failure",
+          "emit_verdict",
+          "emit_evidence",
+          "change_gate_evidence"
+        ],
+        "model_requested": "deepseek-v4-pro",
+        "model_identity_ok": true
+      },
+      "ai_target": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-v4-pro",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-v4-pro",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-v4-pro",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-v4-pro",
+        "model_returned": "deepseek-v4-pro",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1875,
+          "completion_tokens": 370,
+          "total_tokens": 2245,
+          "latency_ms": 3725
+        },
+        "request_id": null,
+        "elapsed_ms": 8095,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe122_bad",
+          "va": 4198902,
+          "end": 4199011,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-v4-pro",
+                "status": "not_attempted",
+                "latency_ms": 6032,
+                "plan_sha256": "67f5df682323279e578c8fc1c35aa7290d7455a57d0b0b2ddfc805445fb90f45",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1271,
+                  "completion_tokens": 625,
+                  "total_tokens": 1896,
+                  "latency_ms": 6027
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "CWE-122: Heap-based Buffer Overflow",
+                "root_cause": "The function allocates a fixed-size buffer of 16 bytes using malloc, then copies the input string (including null terminator) into it using memcpy with length strlen(input)+1. If the input string length is 15 or more, the copy overflows the allocated buffer.",
+                "affected_function": "cwe122_bad",
+                "affected_addresses": [
+                  "0x401206",
+                  "0x40120b",
+                  "0x40122c",
+                  "0x401231",
+                  "0x401243"
+                ],
+                "affected_registers": [
+                  "rax",
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "Heap buffer allocated at [rbp-8] (size 16)",
+                  "Input string pointed by [rbp-0x18]"
+                ],
+                "original_behavior": "Allocates 16 bytes, copies input string (including null terminator) into it, prints the copied string, then frees the buffer. For inputs shorter than 15 characters, it works correctly; for longer inputs, it overflows the heap buffer.",
+                "required_invariant": "The heap buffer must not be overflowed. The copied string must be null-terminated and fit within the allocated buffer. For valid inputs (length < 15), the behavior must be preserved (print the string). For oversized inputs, the function should reject them and preserve the 'hi' output as per contract.",
+                "repair_strategy": "After allocating 16 bytes, check the length of the input string using strlen. If the length is greater than or equal to 15 (i.e., strlen >= 15), then free the allocated buffer and call exit(1) to reject the input. Otherwise, proceed with memcpy and puts as before.",
+                "failure_behavior": "If the input string is too long (length >= 15), the function frees the allocated buffer and exits with status 1, preventing overflow. No output is produced for oversized inputs.",
+                "permitted_calls": [
+                  "malloc",
+                  "strlen",
+                  "memcpy",
+                  "puts",
+                  "free",
+                  "exit"
+                ],
+                "expected_behavior": "For inputs with length < 15, the function prints the input string and returns normally. For inputs with length >= 15, the function exits with status 1 without printing.",
+                "verification_conditions": [
+                  "Input length < 15: output equals input, no crash, heap intact.",
+                  "Input length >= 15: process exits with code 1, no heap overflow.",
+                  "No calls other than allowed ones are made.",
+                  "Function returns normally for valid inputs."
+                ],
+                "confidence": 0.95
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "CWE-122: Heap-based Buffer Overflow",
+                "root_cause": "The function allocates a fixed-size buffer of 16 bytes using malloc, then copies the input string (including null terminator) into it using memcpy with length strlen(input)+1. If the input string length is 15 or more, the copy overflows the allocated buffer.",
+                "affected_function": "cwe122_bad",
+                "affected_addresses": [
+                  "0x401206",
+                  "0x40120b",
+                  "0x40122c",
+                  "0x401231",
+                  "0x401243"
+                ],
+                "affected_registers": [
+                  "rax",
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "Heap buffer allocated at [rbp-8] (size 16)",
+                  "Input string pointed by [rbp-0x18]"
+                ],
+                "original_behavior": "Allocates 16 bytes, copies input string (including null terminator) into it, prints the copied string, then frees the buffer. For inputs shorter than 15 characters, it works correctly; for longer inputs, it overflows the heap buffer.",
+                "required_invariant": "The heap buffer must not be overflowed. The copied string must be null-terminated and fit within the allocated buffer. For valid inputs (length < 15), the behavior must be preserved (print the string). For oversized inputs, the function should reject them and preserve the 'hi' output as per contract.",
+                "repair_strategy": "After allocating 16 bytes, check the length of the input string using strlen. If the length is greater than or equal to 15 (i.e., strlen >= 15), then free the allocated buffer and call exit(1) to reject the input. Otherwise, proceed with memcpy and puts as before.",
+                "failure_behavior": "If the input string is too long (length >= 15), the function frees the allocated buffer and exits with status 1, preventing overflow. No output is produced for oversized inputs.",
+                "permitted_calls": [
+                  "malloc",
+                  "strlen",
+                  "memcpy",
+                  "puts",
+                  "free",
+                  "exit"
+                ],
+                "expected_behavior": "For inputs with length < 15, the function prints the input string and returns normally. For inputs with length >= 15, the function exits with status 1 without printing.",
+                "verification_conditions": [
+                  "Input length < 15: output equals input, no crash, heap intact.",
+                  "Input length >= 15: process exits with code 1, no heap overflow.",
+                  "No calls other than allowed ones are made.",
+                  "Function returns normally for valid inputs."
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "dcdb7b96f7f2d11009c4ead3b99057070c4828afedbbafa2c1f55e780babc73a",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "free",
+                  "target_va": "0x4010a0",
+                  "source": "import"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x4010b0",
+                  "source": "import"
+                },
+                {
+                  "name": "strlen",
+                  "target_va": "0x4010c0",
+                  "source": "import"
+                },
+                {
+                  "name": "memcpy",
+                  "target_va": "0x4010e0",
+                  "source": "import"
+                },
+                {
+                  "name": "malloc",
+                  "target_va": "0x4010f0",
+                  "source": "import"
+                },
+                {
+                  "name": "exit",
+                  "target_va": "0x401100",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-v4-pro",
+                  "model_requested": "deepseek-v4-pro",
+                  "usage": {
+                    "prompt_tokens": 1271,
+                    "completion_tokens": 625,
+                    "total_tokens": 1896,
+                    "latency_ms": 6027
+                  },
+                  "latency_ms": 6032,
+                  "raw_plan": {
+                    "schema_version": 1,
+                    "vulnerability_type": "CWE-122: Heap-based Buffer Overflow",
+                    "root_cause": "The function allocates a fixed-size buffer of 16 bytes using malloc, then copies the input string (including null terminator) into it using memcpy with length strlen(input)+1. If the input string length is 15 or more, the copy overflows the allocated buffer.",
+                    "affected_function": "cwe122_bad",
+                    "affected_addresses": [
+                      "0x401206",
+                      "0x40120b",
+                      "0x40122c",
+                      "0x401231",
+                      "0x401243"
+                    ],
+                    "affected_registers": [
+                      "rax",
+                      "rdi",
+                      "rsi",
+                      "rdx",
+                      "rcx"
+                    ],
+                    "affected_memory": [
+                      "Heap buffer allocated at [rbp-8] (size 16)",
+                      "Input string pointed by [rbp-0x18]"
+                    ],
+                    "original_behavior": "Allocates 16 bytes, copies input string (including null terminator) into it, prints the copied string, then frees the buffer. For inputs shorter than 15 characters, it works correctly; for longer inputs, it overflows the heap buffer.",
+                    "required_invariant": "The heap buffer must not be overflowed. The copied string must be null-terminated and fit within the allocated buffer. For valid inputs (length < 15), the behavior must be preserved (print the string). For oversized inputs, the function should reject them and preserve the 'hi' output as per contract.",
+                    "repair_strategy": "After allocating 16 bytes, check the length of the input string using strlen. If the length is greater than or equal to 15 (i.e., strlen >= 15), then free the allocated buffer and call exit(1) to reject the input. Otherwise, proceed with memcpy and puts as before.",
+                    "failure_behavior": "If the input string is too long (length >= 15), the function frees the allocated buffer and exits with status 1, preventing overflow. No output is produced for oversized inputs.",
+                    "permitted_calls": [
+                      "malloc",
+                      "strlen",
+                      "memcpy",
+                      "puts",
+                      "free",
+                      "exit"
+                    ],
+                    "expected_behavior": "For inputs with length < 15, the function prints the input string and returns normally. For inputs with length >= 15, the function exits with status 1 without printing.",
+                    "verification_conditions": [
+                      "Input length < 15: output equals input, no crash, heap intact.",
+                      "Input length >= 15: process exits with code 1, no heap overflow.",
+                      "No calls other than allowed ones are made.",
+                      "Function returns normally for valid inputs."
+                    ],
+                    "confidence": 0.95
+                  }
+                }
+              ],
+              "elapsed_ms": 6036
+            },
+            "model": "deepseek-v4-pro",
+            "model_requested": "deepseek-v4-pro",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "dcdb7b96f7f2d11009c4ead3b99057070c4828afedbbafa2c1f55e780babc73a",
+            "usage": {
+              "prompt_tokens": 1875,
+              "completion_tokens": 370,
+              "total_tokens": 2245,
+              "latency_ms": 3725
+            },
+            "latency_ms": 3727,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "7d8e4a1ff41a49fded1925ade6d39ce1802259f028f499df7e4d8ff397ad3c82",
+            "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov edi, 0x10\ncall 0x4010f0\nmov qword ptr [rbp - 8], rax\ncmp qword ptr [rbp - 8], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010c0\ncmp rax, 15\njae .Ltoo_long\nmov rdx, rax\nadd rdx, 1\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 8]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010e0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Ltoo_long:\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "7d8e4a1ff41a49fded1925ade6d39ce1802259f028f499df7e4d8ff397ad3c82",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov edi, 0x10\ncall 0x4010f0\nmov qword ptr [rbp - 8], rax\ncmp qword ptr [rbp - 8], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010c0\ncmp rax, 15\njae .Ltoo_long\nmov rdx, rax\nadd rdx, 1\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 8]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010e0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Ltoo_long:\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 1875,
+                  "completion_tokens": 370,
+                  "total_tokens": 2245,
+                  "latency_ms": 3725
+                },
+                "latency_ms": 3727,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "free",
+                "target_va": "0x4010a0",
+                "source": "import"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x4010b0",
+                "source": "import"
+              },
+              {
+                "name": "strlen",
+                "target_va": "0x4010c0",
+                "source": "import"
+              },
+              {
+                "name": "memcpy",
+                "target_va": "0x4010e0",
+                "source": "import"
+              },
+              {
+                "name": "malloc",
+                "target_va": "0x4010f0",
+                "source": "import"
+              },
+              {
+                "name": "exit",
+                "target_va": "0x401100",
+                "source": "import"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "cwe122_bad",
+              "va": 4198902,
+              "end": 4199011,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x4011f6",
+              "cave_va": "0x405000",
+              "method": "new-pt-load",
+              "code_bytes": 137,
+              "code_hex": "554889e54883ec2048897de8bf10000000e800000000488945f848837df800750abf01000000e800000000488b45e84889c7e8000000004883f80f73344889c24883c201488b4de8488b45f84889ce4889c7e800000000488b45f84889c7e800000000488b45f84889c7e800000000c9c3488b45f84889c7e800000000bf01000000e800000000c9c3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x1",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "4883ec20",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x20"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "48897de8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x18], rdi"
+                },
+                {
+                  "address": "0xc",
+                  "bytes": "bf10000000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 0x10"
+                },
+                {
+                  "address": "0x11",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x16"
+                },
+                {
+                  "address": "0x16",
+                  "bytes": "488945f8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 8], rax"
+                },
+                {
+                  "address": "0x1a",
+                  "bytes": "48837df800",
+                  "mnemonic": "cmp",
+                  "operands": "qword ptr [rbp - 8], 0"
+                },
+                {
+                  "address": "0x1f",
+                  "bytes": "750a",
+                  "mnemonic": "jne",
+                  "operands": "0x2b"
+                },
+                {
+                  "address": "0x21",
+                  "bytes": "bf01000000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 1"
+                },
+                {
+                  "address": "0x26",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x2b"
+                },
+                {
+                  "address": "0x2b",
+                  "bytes": "488b45e8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x18]"
+                },
+                {
+                  "address": "0x2f",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x32",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x37"
+                },
+                {
+                  "address": "0x37",
+                  "bytes": "4883f80f",
+                  "mnemonic": "cmp",
+                  "operands": "rax, 0xf"
+                },
+                {
+                  "address": "0x3b",
+                  "bytes": "7334",
+                  "mnemonic": "jae",
+                  "operands": "0x71"
+                },
+                {
+                  "address": "0x3d",
+                  "bytes": "4889c2",
+                  "mnemonic": "mov",
+                  "operands": "rdx, rax"
+                },
+                {
+                  "address": "0x40",
+                  "bytes": "4883c201",
+                  "mnemonic": "add",
+                  "operands": "rdx, 1"
+                },
+                {
+                  "address": "0x44",
+                  "bytes": "488b4de8",
+                  "mnemonic": "mov",
+                  "operands": "rcx, qword ptr [rbp - 0x18]"
+                },
+                {
+                  "address": "0x48",
+                  "bytes": "488b45f8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x4c",
+                  "bytes": "4889ce",
+                  "mnemonic": "mov",
+                  "operands": "rsi, rcx"
+                },
+                {
+                  "address": "0x4f",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x52",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x57"
+                },
+                {
+                  "address": "0x57",
+                  "bytes": "488b45f8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x5b",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x5e",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x63"
+                },
+                {
+                  "address": "0x63",
+                  "bytes": "488b45f8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x67",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x6a",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x6f"
+                },
+                {
+                  "address": "0x6f",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x70",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                },
+                {
+                  "address": "0x71",
+                  "bytes": "488b45f8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x75",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x78",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x7d"
+                },
+                {
+                  "address": "0x7d",
+                  "bytes": "bf01000000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 1"
+                },
+                {
+                  "address": "0x82",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x87"
+                },
+                {
+                  "address": "0x87",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x88",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "0fec694ea207dc3195adf32c32e6092f8b437cd3cf2e3d555cb71e34dea6341d",
+              "call_targets": [
+                {
+                  "name": "free",
+                  "target_va": "0x4010a0",
+                  "source": "import"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x4010b0",
+                  "source": "import"
+                },
+                {
+                  "name": "strlen",
+                  "target_va": "0x4010c0",
+                  "source": "import"
+                },
+                {
+                  "name": "memcpy",
+                  "target_va": "0x4010e0",
+                  "source": "import"
+                },
+                {
+                  "name": "malloc",
+                  "target_va": "0x4010f0",
+                  "source": "import"
+                },
+                {
+                  "name": "exit",
+                  "target_va": "0x401100",
+                  "source": "import"
+                }
+              ],
+              "call_relocations": 8,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+                "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+                "poc": [
+                  {
+                    "case_id": "cwe122-overflow-64",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe122-overflow-256",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe122-overflow-64",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 1,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe122-overflow-256",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 1,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "cwe122-short",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe122-short",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe122-heap-copy/run-1/candidates/cwe122-heap-copy.bin"
+            },
+            "elapsed_ms": 8095
+          }
+        ]
+      },
+      "ai_result": {
+        "attempted": true,
+        "status": "accepted",
+        "error": null,
+        "repeats": 1,
+        "verified": true,
+        "checks_summary": {
+          "poc_gate": "pass",
+          "poc_status": "pass",
+          "runner": "limactl",
+          "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+          "no_candidate_reason": null,
+          "injection_error_class": null
+        },
+        "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+        "provider": {
+          "requested": "real",
+          "client_class": "HttpJsonClient",
+          "provider": "deepseek",
+          "model_requested": "deepseek-v4-pro",
+          "base_url": "https://api.deepseek.com/v1",
+          "configured": true,
+          "errors": [],
+          "provider_config": {
+            "provider": "deepseek",
+            "title": "DeepSeek official / compatible endpoint",
+            "base_url": "https://api.deepseek.com/v1",
+            "model": "deepseek-v4-pro",
+            "configured": true,
+            "errors": []
+          },
+          "model_configured": "deepseek-v4-pro",
+          "status": "ok"
+        },
+        "model_requested": "deepseek-v4-pro",
+        "model_returned": "deepseek-v4-pro",
+        "seed": null,
+        "seed_supported": false,
+        "cost": null,
+        "cost_basis": "provider API exposes token usage only; no price table configured",
+        "usage": {
+          "prompt_tokens": 1875,
+          "completion_tokens": 370,
+          "total_tokens": 2245,
+          "latency_ms": 3725
+        },
+        "request_id": null,
+        "elapsed_ms": 8095,
+        "target_policy": "target",
+        "target_scope": {
+          "name": "cwe122_bad",
+          "va": 4198902,
+          "end": 4199011,
+          "source": "symbol"
+        },
+        "target_scope_check": "passed",
+        "target_in_scope": true,
+        "attempts": [
+          {
+            "repeat": 0,
+            "plan": {
+              "ai": {
+                "schema_version": 1,
+                "path": "hard_target_plan",
+                "requested": true,
+                "called": true,
+                "mode": "llm",
+                "provider": "unknown",
+                "model": "deepseek-v4-pro",
+                "status": "not_attempted",
+                "latency_ms": 6032,
+                "plan_sha256": "67f5df682323279e578c8fc1c35aa7290d7455a57d0b0b2ddfc805445fb90f45",
+                "error": null,
+                "validation": {},
+                "usage": {
+                  "prompt_tokens": 1271,
+                  "completion_tokens": 625,
+                  "total_tokens": 1896,
+                  "latency_ms": 6027
+                },
+                "request_id": null,
+                "authority": "deterministic_gate",
+                "may_not": [
+                  "promote_gate_failure",
+                  "emit_verdict",
+                  "emit_evidence",
+                  "change_gate_evidence"
+                ],
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true
+              },
+              "raw_plan": {
+                "schema_version": 1,
+                "vulnerability_type": "CWE-122: Heap-based Buffer Overflow",
+                "root_cause": "The function allocates a fixed-size buffer of 16 bytes using malloc, then copies the input string (including null terminator) into it using memcpy with length strlen(input)+1. If the input string length is 15 or more, the copy overflows the allocated buffer.",
+                "affected_function": "cwe122_bad",
+                "affected_addresses": [
+                  "0x401206",
+                  "0x40120b",
+                  "0x40122c",
+                  "0x401231",
+                  "0x401243"
+                ],
+                "affected_registers": [
+                  "rax",
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "Heap buffer allocated at [rbp-8] (size 16)",
+                  "Input string pointed by [rbp-0x18]"
+                ],
+                "original_behavior": "Allocates 16 bytes, copies input string (including null terminator) into it, prints the copied string, then frees the buffer. For inputs shorter than 15 characters, it works correctly; for longer inputs, it overflows the heap buffer.",
+                "required_invariant": "The heap buffer must not be overflowed. The copied string must be null-terminated and fit within the allocated buffer. For valid inputs (length < 15), the behavior must be preserved (print the string). For oversized inputs, the function should reject them and preserve the 'hi' output as per contract.",
+                "repair_strategy": "After allocating 16 bytes, check the length of the input string using strlen. If the length is greater than or equal to 15 (i.e., strlen >= 15), then free the allocated buffer and call exit(1) to reject the input. Otherwise, proceed with memcpy and puts as before.",
+                "failure_behavior": "If the input string is too long (length >= 15), the function frees the allocated buffer and exits with status 1, preventing overflow. No output is produced for oversized inputs.",
+                "permitted_calls": [
+                  "malloc",
+                  "strlen",
+                  "memcpy",
+                  "puts",
+                  "free",
+                  "exit"
+                ],
+                "expected_behavior": "For inputs with length < 15, the function prints the input string and returns normally. For inputs with length >= 15, the function exits with status 1 without printing.",
+                "verification_conditions": [
+                  "Input length < 15: output equals input, no crash, heap intact.",
+                  "Input length >= 15: process exits with code 1, no heap overflow.",
+                  "No calls other than allowed ones are made.",
+                  "Function returns normally for valid inputs."
+                ],
+                "confidence": 0.95
+              },
+              "plan": {
+                "schema_version": 1,
+                "vulnerability_type": "CWE-122: Heap-based Buffer Overflow",
+                "root_cause": "The function allocates a fixed-size buffer of 16 bytes using malloc, then copies the input string (including null terminator) into it using memcpy with length strlen(input)+1. If the input string length is 15 or more, the copy overflows the allocated buffer.",
+                "affected_function": "cwe122_bad",
+                "affected_addresses": [
+                  "0x401206",
+                  "0x40120b",
+                  "0x40122c",
+                  "0x401231",
+                  "0x401243"
+                ],
+                "affected_registers": [
+                  "rax",
+                  "rdi",
+                  "rsi",
+                  "rdx",
+                  "rcx"
+                ],
+                "affected_memory": [
+                  "Heap buffer allocated at [rbp-8] (size 16)",
+                  "Input string pointed by [rbp-0x18]"
+                ],
+                "original_behavior": "Allocates 16 bytes, copies input string (including null terminator) into it, prints the copied string, then frees the buffer. For inputs shorter than 15 characters, it works correctly; for longer inputs, it overflows the heap buffer.",
+                "required_invariant": "The heap buffer must not be overflowed. The copied string must be null-terminated and fit within the allocated buffer. For valid inputs (length < 15), the behavior must be preserved (print the string). For oversized inputs, the function should reject them and preserve the 'hi' output as per contract.",
+                "repair_strategy": "After allocating 16 bytes, check the length of the input string using strlen. If the length is greater than or equal to 15 (i.e., strlen >= 15), then free the allocated buffer and call exit(1) to reject the input. Otherwise, proceed with memcpy and puts as before.",
+                "failure_behavior": "If the input string is too long (length >= 15), the function frees the allocated buffer and exits with status 1, preventing overflow. No output is produced for oversized inputs.",
+                "permitted_calls": [
+                  "malloc",
+                  "strlen",
+                  "memcpy",
+                  "puts",
+                  "free",
+                  "exit"
+                ],
+                "expected_behavior": "For inputs with length < 15, the function prints the input string and returns normally. For inputs with length >= 15, the function exits with status 1 without printing.",
+                "verification_conditions": [
+                  "Input length < 15: output equals input, no crash, heap intact.",
+                  "Input length >= 15: process exits with code 1, no heap overflow.",
+                  "No calls other than allowed ones are made.",
+                  "Function returns normally for valid inputs."
+                ],
+                "confidence": "high"
+              },
+              "plan_sha256": "dcdb7b96f7f2d11009c4ead3b99057070c4828afedbbafa2c1f55e780babc73a",
+              "plan_error": "",
+              "error": null,
+              "allowed_calls": [
+                {
+                  "name": "free",
+                  "target_va": "0x4010a0",
+                  "source": "import"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x4010b0",
+                  "source": "import"
+                },
+                {
+                  "name": "strlen",
+                  "target_va": "0x4010c0",
+                  "source": "import"
+                },
+                {
+                  "name": "memcpy",
+                  "target_va": "0x4010e0",
+                  "source": "import"
+                },
+                {
+                  "name": "malloc",
+                  "target_va": "0x4010f0",
+                  "source": "import"
+                },
+                {
+                  "name": "exit",
+                  "target_va": "0x401100",
+                  "source": "import"
+                }
+              ],
+              "attempts": [
+                {
+                  "attempt": 1,
+                  "status": "valid",
+                  "error": "",
+                  "model": "deepseek-v4-pro",
+                  "model_requested": "deepseek-v4-pro",
+                  "usage": {
+                    "prompt_tokens": 1271,
+                    "completion_tokens": 625,
+                    "total_tokens": 1896,
+                    "latency_ms": 6027
+                  },
+                  "latency_ms": 6032,
+                  "raw_plan": {
+                    "schema_version": 1,
+                    "vulnerability_type": "CWE-122: Heap-based Buffer Overflow",
+                    "root_cause": "The function allocates a fixed-size buffer of 16 bytes using malloc, then copies the input string (including null terminator) into it using memcpy with length strlen(input)+1. If the input string length is 15 or more, the copy overflows the allocated buffer.",
+                    "affected_function": "cwe122_bad",
+                    "affected_addresses": [
+                      "0x401206",
+                      "0x40120b",
+                      "0x40122c",
+                      "0x401231",
+                      "0x401243"
+                    ],
+                    "affected_registers": [
+                      "rax",
+                      "rdi",
+                      "rsi",
+                      "rdx",
+                      "rcx"
+                    ],
+                    "affected_memory": [
+                      "Heap buffer allocated at [rbp-8] (size 16)",
+                      "Input string pointed by [rbp-0x18]"
+                    ],
+                    "original_behavior": "Allocates 16 bytes, copies input string (including null terminator) into it, prints the copied string, then frees the buffer. For inputs shorter than 15 characters, it works correctly; for longer inputs, it overflows the heap buffer.",
+                    "required_invariant": "The heap buffer must not be overflowed. The copied string must be null-terminated and fit within the allocated buffer. For valid inputs (length < 15), the behavior must be preserved (print the string). For oversized inputs, the function should reject them and preserve the 'hi' output as per contract.",
+                    "repair_strategy": "After allocating 16 bytes, check the length of the input string using strlen. If the length is greater than or equal to 15 (i.e., strlen >= 15), then free the allocated buffer and call exit(1) to reject the input. Otherwise, proceed with memcpy and puts as before.",
+                    "failure_behavior": "If the input string is too long (length >= 15), the function frees the allocated buffer and exits with status 1, preventing overflow. No output is produced for oversized inputs.",
+                    "permitted_calls": [
+                      "malloc",
+                      "strlen",
+                      "memcpy",
+                      "puts",
+                      "free",
+                      "exit"
+                    ],
+                    "expected_behavior": "For inputs with length < 15, the function prints the input string and returns normally. For inputs with length >= 15, the function exits with status 1 without printing.",
+                    "verification_conditions": [
+                      "Input length < 15: output equals input, no crash, heap intact.",
+                      "Input length >= 15: process exits with code 1, no heap overflow.",
+                      "No calls other than allowed ones are made.",
+                      "Function returns normally for valid inputs."
+                    ],
+                    "confidence": 0.95
+                  }
+                }
+              ],
+              "elapsed_ms": 6036
+            },
+            "model": "deepseek-v4-pro",
+            "model_requested": "deepseek-v4-pro",
+            "status": "accepted",
+            "error": null,
+            "plan_status": "valid",
+            "plan_sha256": "dcdb7b96f7f2d11009c4ead3b99057070c4828afedbbafa2c1f55e780babc73a",
+            "usage": {
+              "prompt_tokens": 1875,
+              "completion_tokens": 370,
+              "total_tokens": 2245,
+              "latency_ms": 3725
+            },
+            "latency_ms": 3727,
+            "request_id": null,
+            "assembly_returned": true,
+            "assembly_sha256": "7d8e4a1ff41a49fded1925ade6d39ce1802259f028f499df7e4d8ff397ad3c82",
+            "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov edi, 0x10\ncall 0x4010f0\nmov qword ptr [rbp - 8], rax\ncmp qword ptr [rbp - 8], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010c0\ncmp rax, 15\njae .Ltoo_long\nmov rdx, rax\nadd rdx, 1\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 8]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010e0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Ltoo_long:\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+            "assembly_attempts": [
+              {
+                "attempt": 1,
+                "status": "accepted",
+                "error": null,
+                "assembly_returned": true,
+                "assembly_sha256": "7d8e4a1ff41a49fded1925ade6d39ce1802259f028f499df7e4d8ff397ad3c82",
+                "assembly": ".intel_syntax noprefix\npush rbp\nmov rbp, rsp\nsub rsp, 0x20\nmov qword ptr [rbp - 0x18], rdi\nmov edi, 0x10\ncall 0x4010f0\nmov qword ptr [rbp - 8], rax\ncmp qword ptr [rbp - 8], 0\njne .Lalloc_ok\nmov edi, 1\ncall 0x401100\n.Lalloc_ok:\nmov rax, qword ptr [rbp - 0x18]\nmov rdi, rax\ncall 0x4010c0\ncmp rax, 15\njae .Ltoo_long\nmov rdx, rax\nadd rdx, 1\nmov rcx, qword ptr [rbp - 0x18]\nmov rax, qword ptr [rbp - 8]\nmov rsi, rcx\nmov rdi, rax\ncall 0x4010e0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010b0\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nleave\nret\n.Ltoo_long:\nmov rax, qword ptr [rbp - 8]\nmov rdi, rax\ncall 0x4010a0\nmov edi, 1\ncall 0x401100\nleave\nret\n",
+                "validation_error": null,
+                "validation_error_class": null,
+                "diagnostics": [],
+                "usage": {
+                  "prompt_tokens": 1875,
+                  "completion_tokens": 370,
+                  "total_tokens": 2245,
+                  "latency_ms": 3725
+                },
+                "latency_ms": 3727,
+                "model": "deepseek-v4-pro",
+                "model_requested": "deepseek-v4-pro",
+                "model_identity_ok": true,
+                "request_id": null
+              }
+            ],
+            "validation_error": null,
+            "validation_error_class": null,
+            "allowed_calls": [
+              {
+                "name": "free",
+                "target_va": "0x4010a0",
+                "source": "import"
+              },
+              {
+                "name": "puts",
+                "target_va": "0x4010b0",
+                "source": "import"
+              },
+              {
+                "name": "strlen",
+                "target_va": "0x4010c0",
+                "source": "import"
+              },
+              {
+                "name": "memcpy",
+                "target_va": "0x4010e0",
+                "source": "import"
+              },
+              {
+                "name": "malloc",
+                "target_va": "0x4010f0",
+                "source": "import"
+              },
+              {
+                "name": "exit",
+                "target_va": "0x401100",
+                "source": "import"
+              }
+            ],
+            "target_in_scope": true,
+            "target_scope_check": "passed",
+            "target_scope": {
+              "name": "cwe122_bad",
+              "va": 4198902,
+              "end": 4199011,
+              "source": "symbol"
+            },
+            "attempted": true,
+            "verified": true,
+            "injection": {
+              "target_va": "0x4011f6",
+              "cave_va": "0x405000",
+              "method": "new-pt-load",
+              "code_bytes": 137,
+              "code_hex": "554889e54883ec2048897de8bf10000000e800000000488945f848837df800750abf01000000e800000000488b45e84889c7e8000000004883f80f73344889c24883c201488b4de8488b45f84889ce4889c7e800000000488b45f84889c7e800000000488b45f84889c7e800000000c9c3488b45f84889c7e800000000bf01000000e800000000c9c3",
+              "code_disassembly": [
+                {
+                  "address": "0x0",
+                  "bytes": "55",
+                  "mnemonic": "push",
+                  "operands": "rbp"
+                },
+                {
+                  "address": "0x1",
+                  "bytes": "4889e5",
+                  "mnemonic": "mov",
+                  "operands": "rbp, rsp"
+                },
+                {
+                  "address": "0x4",
+                  "bytes": "4883ec20",
+                  "mnemonic": "sub",
+                  "operands": "rsp, 0x20"
+                },
+                {
+                  "address": "0x8",
+                  "bytes": "48897de8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 0x18], rdi"
+                },
+                {
+                  "address": "0xc",
+                  "bytes": "bf10000000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 0x10"
+                },
+                {
+                  "address": "0x11",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x16"
+                },
+                {
+                  "address": "0x16",
+                  "bytes": "488945f8",
+                  "mnemonic": "mov",
+                  "operands": "qword ptr [rbp - 8], rax"
+                },
+                {
+                  "address": "0x1a",
+                  "bytes": "48837df800",
+                  "mnemonic": "cmp",
+                  "operands": "qword ptr [rbp - 8], 0"
+                },
+                {
+                  "address": "0x1f",
+                  "bytes": "750a",
+                  "mnemonic": "jne",
+                  "operands": "0x2b"
+                },
+                {
+                  "address": "0x21",
+                  "bytes": "bf01000000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 1"
+                },
+                {
+                  "address": "0x26",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x2b"
+                },
+                {
+                  "address": "0x2b",
+                  "bytes": "488b45e8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 0x18]"
+                },
+                {
+                  "address": "0x2f",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x32",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x37"
+                },
+                {
+                  "address": "0x37",
+                  "bytes": "4883f80f",
+                  "mnemonic": "cmp",
+                  "operands": "rax, 0xf"
+                },
+                {
+                  "address": "0x3b",
+                  "bytes": "7334",
+                  "mnemonic": "jae",
+                  "operands": "0x71"
+                },
+                {
+                  "address": "0x3d",
+                  "bytes": "4889c2",
+                  "mnemonic": "mov",
+                  "operands": "rdx, rax"
+                },
+                {
+                  "address": "0x40",
+                  "bytes": "4883c201",
+                  "mnemonic": "add",
+                  "operands": "rdx, 1"
+                },
+                {
+                  "address": "0x44",
+                  "bytes": "488b4de8",
+                  "mnemonic": "mov",
+                  "operands": "rcx, qword ptr [rbp - 0x18]"
+                },
+                {
+                  "address": "0x48",
+                  "bytes": "488b45f8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x4c",
+                  "bytes": "4889ce",
+                  "mnemonic": "mov",
+                  "operands": "rsi, rcx"
+                },
+                {
+                  "address": "0x4f",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x52",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x57"
+                },
+                {
+                  "address": "0x57",
+                  "bytes": "488b45f8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x5b",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x5e",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x63"
+                },
+                {
+                  "address": "0x63",
+                  "bytes": "488b45f8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x67",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x6a",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x6f"
+                },
+                {
+                  "address": "0x6f",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x70",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                },
+                {
+                  "address": "0x71",
+                  "bytes": "488b45f8",
+                  "mnemonic": "mov",
+                  "operands": "rax, qword ptr [rbp - 8]"
+                },
+                {
+                  "address": "0x75",
+                  "bytes": "4889c7",
+                  "mnemonic": "mov",
+                  "operands": "rdi, rax"
+                },
+                {
+                  "address": "0x78",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x7d"
+                },
+                {
+                  "address": "0x7d",
+                  "bytes": "bf01000000",
+                  "mnemonic": "mov",
+                  "operands": "edi, 1"
+                },
+                {
+                  "address": "0x82",
+                  "bytes": "e800000000",
+                  "mnemonic": "call",
+                  "operands": "0x87"
+                },
+                {
+                  "address": "0x87",
+                  "bytes": "c9",
+                  "mnemonic": "leave",
+                  "operands": ""
+                },
+                {
+                  "address": "0x88",
+                  "bytes": "c3",
+                  "mnemonic": "ret",
+                  "operands": ""
+                }
+              ],
+              "assembly_sha256": "0fec694ea207dc3195adf32c32e6092f8b437cd3cf2e3d555cb71e34dea6341d",
+              "call_targets": [
+                {
+                  "name": "free",
+                  "target_va": "0x4010a0",
+                  "source": "import"
+                },
+                {
+                  "name": "puts",
+                  "target_va": "0x4010b0",
+                  "source": "import"
+                },
+                {
+                  "name": "strlen",
+                  "target_va": "0x4010c0",
+                  "source": "import"
+                },
+                {
+                  "name": "memcpy",
+                  "target_va": "0x4010e0",
+                  "source": "import"
+                },
+                {
+                  "name": "malloc",
+                  "target_va": "0x4010f0",
+                  "source": "import"
+                },
+                {
+                  "name": "exit",
+                  "target_va": "0x401100",
+                  "source": "import"
+                }
+              ],
+              "call_relocations": 8,
+              "abi": {
+                "ok": true,
+                "fatal": 0,
+                "findings": []
+              }
+            },
+            "candidate": {
+              "gate": "pass",
+              "poc_status": "pass",
+              "runner": "limactl",
+              "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+              "poc": {
+                "schema_version": 1,
+                "status": "pass",
+                "runner": "limactl",
+                "tier": "emulated_run",
+                "stdout_signature": "matched",
+                "errno_signature": "not_run",
+                "errno_probe": "",
+                "no_input": false,
+                "original_sha256": "69a83e45d8fbd400014c5ef6ea086eb735c5951d69a247088e4b230e79aa7ae2",
+                "candidate_sha256": "0d250e3d43ce8b5a1659ece3f140fcc7e42776fcb5f6a3e896325ffc7be0a873",
+                "poc": [
+                  {
+                    "case_id": "cwe122-overflow-64",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe122-overflow-256",
+                    "kind": "poc",
+                    "executable": "original",
+                    "exit_code": 255,
+                    "crashed": true,
+                    "stdout": "",
+                    "stderr": "malloc(): corrupted top size\nqemu: uncaught target signal 6 (Aborted) - core dumped\n",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe122-overflow-64",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 1,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe122-overflow-256",
+                    "kind": "poc",
+                    "executable": "candidate",
+                    "exit_code": 1,
+                    "crashed": false,
+                    "stdout": "",
+                    "stderr": "",
+                    "stdout_hex": "",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "regression": [
+                  {
+                    "case_id": "cwe122-short",
+                    "kind": "regression",
+                    "executable": "original",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  },
+                  {
+                    "case_id": "cwe122-short",
+                    "kind": "regression",
+                    "executable": "candidate",
+                    "exit_code": 0,
+                    "crashed": false,
+                    "stdout": "hi\n",
+                    "stderr": "",
+                    "stdout_hex": "68690a",
+                    "timed_out": false,
+                    "error": null,
+                    "expected_ok": true,
+                    "syscall_errors": [],
+                    "errno_value": null
+                  }
+                ],
+                "limitations": []
+              },
+              "repair_status": "VERIFIED",
+              "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/cwe122-heap-copy/run-1/candidates/cwe122-heap-copy.bin"
+            },
+            "elapsed_ms": 8095
+          }
+        ]
+      },
+      "provider": {
+        "requested": "real",
+        "client_class": "HttpJsonClient",
+        "provider": "deepseek",
+        "model_requested": "deepseek-v4-pro",
+        "base_url": "https://api.deepseek.com/v1",
+        "configured": true,
+        "errors": [],
+        "provider_config": {
+          "provider": "deepseek",
+          "title": "DeepSeek official / compatible endpoint",
+          "base_url": "https://api.deepseek.com/v1",
+          "model": "deepseek-v4-pro",
+          "configured": true,
+          "errors": []
+        },
+        "model_configured": "deepseek-v4-pro",
+        "status": "ok"
+      },
+      "provider_tag": null,
+      "model": "deepseek-v4-pro",
+      "seed": null,
+      "seed_supported": false,
+      "cost": null,
+      "cost_basis": "provider API exposes token usage only; no price table configured",
+      "elapsed_ms": 14394,
+      "target_policy": {
+        "whole_image_baseline": "whole_image",
+        "target_strict_baseline": "target_strict",
+        "ai_target": "target"
+      },
+      "target_scope": {
+        "name": "cwe122_bad",
+        "va": 4198902,
+        "end": 4199011,
+        "source": "symbol"
+      },
+      "target_scope_check": "passed",
+      "target_in_scope": true,
+      "ai_increment": true,
+      "contract_level": "full",
+      "repeats": 1
+    }
+  ],
+  "baseline_verified": 0,
+  "ai_verified": 1,
+  "ai_increment": 1,
+  "funnel": {
+    "VERIFIED": 1,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "baseline_target_aware_verified": 0,
+  "baseline_target_strict_analysis_only": 1,
+  "baseline_target_strict_verified": 0,
+  "baseline_target_strict_out_of_scope_actions": 0,
+  "baseline_target_strict_expected_matches": 1,
+  "baseline_target_strict_expected_match_rate": 1.0,
+  "baseline_target_strict_target_in_scope": 0,
+  "baseline_target_strict_target_in_scope_rate": 0.0,
+  "target_strict_enforced": false,
+  "ai_target_verified": 1,
+  "ai_target_in_scope": 1,
+  "ai_no_candidate_reasons": {},
+  "ai_injection_error_classes": {},
+  "ai_blind_verified": 0,
+  "reference_evaluated": 0,
+  "reference_verified": 0,
+  "reference_source_only": 0,
+  "elapsed_ms": 14394,
+  "note": "baseline is deterministic; AI target assembly is accepted only by native/qemu PoC+regression. baseline_target_strict calls repair_any(target=<case target>, require_target=True) and records the resolved target_scope plus target_in_scope (every produced action inside the target; empty action lists are not in scope). baseline_target_aware receives the same target/capacity hint; ai_blind uses the public AI path without target. allow_calls only permits direct calls already present in the target function.",
+  "evaluation_note": "deterministic baselines run on the host; PoC evaluation and the unstripped x86-64 target execution run in the Linux guest (Lima) via the poc/guest runner. Provider prompts/responses are never stored.",
+  "contract_level": "full",
+  "repeats": 1
+}

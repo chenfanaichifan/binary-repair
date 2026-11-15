@@ -1,0 +1,106 @@
+{
+  "schema_version": 2,
+  "kind": "repair_evidence",
+  "source_run": "/tmp/stability-p11/deepseek-deepseek-v4-pro/hard-sprintf/run-3",
+  "provided_at": "real",
+  "provider_metadata": {
+    "requested": "real",
+    "client_class": "HttpJsonClient",
+    "provider": "deepseek",
+    "model_requested": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/v1",
+    "configured": true,
+    "errors": [],
+    "provider_config": {
+      "provider": "deepseek",
+      "title": "DeepSeek official / compatible endpoint",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "configured": true,
+      "errors": []
+    },
+    "model_configured": "deepseek-v4-pro",
+    "status": "ok"
+  },
+  "funnel": {
+    "VERIFIED": 1,
+    "PLAN_INVALID": 0,
+    "ASSEMBLY_REJECTED": 0,
+    "ABI_REJECTED": 0,
+    "INJECTION_FAILED": 0,
+    "NO_CANDIDATE": 0,
+    "NATIVE_FAILED": 0,
+    "SECURITY_FAILED": 0,
+    "REGRESSION_FAILED": 0
+  },
+  "ai_verified": 1,
+  "reference_note": "reference fixes are separate and are not AI evidence",
+  "manifest": {
+    "schema_version": 1,
+    "run_kind": "hard_benchmark",
+    "client": "real",
+    "provider": {
+      "requested": "real",
+      "client_class": "HttpJsonClient",
+      "provider": "deepseek",
+      "model_requested": "deepseek-v4-pro",
+      "base_url": "https://api.deepseek.com/v1",
+      "configured": true,
+      "errors": [],
+      "provider_config": {
+        "provider": "deepseek",
+        "title": "DeepSeek official / compatible endpoint",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-v4-pro",
+        "configured": true,
+        "errors": []
+      },
+      "model_configured": "deepseek-v4-pro",
+      "status": "ok"
+    },
+    "case_ids": [
+      "hard-sprintf"
+    ],
+    "model": "deepseek-v4-pro",
+    "repair_plan": true,
+    "abi_strict": true,
+    "funnel": {
+      "VERIFIED": 1,
+      "PLAN_INVALID": 0,
+      "ASSEMBLY_REJECTED": 0,
+      "ABI_REJECTED": 0,
+      "INJECTION_FAILED": 0,
+      "NO_CANDIDATE": 0,
+      "NATIVE_FAILED": 0,
+      "SECURITY_FAILED": 0,
+      "REGRESSION_FAILED": 0
+    },
+    "cases": [
+      {
+        "case_id": "hard-sprintf",
+        "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+        "candidate_sha256": "bca941c4ab48d0bcc21c1e5170957940f0524572fcb8774ab8d99aede0e2c507",
+        "candidate_artifact": "/tmp/stability-p11/deepseek-deepseek-v4-pro/hard-sprintf/run-3/candidates/hard-sprintf__r0a2.bin",
+        "repair_status": "VERIFIED",
+        "gate": "pass"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "hard-sprintf",
+      "input_sha256": "7e915860fce0d54c0c06ec0211f933dd85a4212af88e6e312362db232f1dfd4f",
+      "gate": "pass",
+      "repair_status": "VERIFIED",
+      "candidate_sha256": "bca941c4ab48d0bcc21c1e5170957940f0524572fcb8774ab8d99aede0e2c507",
+      "candidate_file": "candidates/hard-sprintf.bin",
+      "native_failure": null,
+      "plan_status": "valid",
+      "attempts": 2
+    }
+  ],
+  "hashes": {
+    "summary.json": "7cd0b1fd1e3b03f3c2f9be0b551f6679858512a614233eacecfaa48db3435bdc",
+    "run-manifest.json": "0bc30d596cd94c696857664aae33e3dc2c0c33e2c07b41fe03babc4aba28a6d0"
+  }
+}
