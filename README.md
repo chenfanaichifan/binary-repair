@@ -8,7 +8,8 @@
 > docs/evidence only.
 
 > **Current feature line (2026-11-15)**: structured RepairSpec planner +
-> ABI-strict assembly gives **3/3 AI-verified non-loop hard cases** and a
+> ABI-strict assembly gives **3/3 AI-verified non-loop hard cases** (~3/6 in the
+> 12-case matrix; single model, deepseek-flash; v4-pro 0/3) and a
 > cross-binary benchmark (8 binaries / 7 CWE; 36-run stability 19/36); 4-model
 > matrix (DeepSeek 6/12; CN free Qwen8B/7B 0/12), CWE121, auto ELF symbols and
 > optional errno probe. Verification boundaries: [docs/limitations.md](docs/limitations.md);

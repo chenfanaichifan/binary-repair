@@ -211,7 +211,12 @@ no SiliconFlow/Bailian key is configured.  See
 ## 17. Path A does not lift non-loop verified success
 
 The selective call whitelist was tested on 12 cases with both DeepSeek models.
-Loop remains 6/12 verified; non-loop remains 0/6.  Heap security PoC passed but
+Loop remains 6/12 verified; non-loop remains 0/6 **as of that Path A experiment
+(2026-11-14)**.  After a8934fe (2026-11-15) the three hard non-loop cases
+(hard-multicall / hard-sprintf / hard-nonconst) became AI-verified, i.e. **3/6** in
+the 12-case matrix with a single model (deepseek-flash; deepseek-v4-pro 0/3);
+CWE-121 public / UAF-noinput / heap-canary remain 0 and multi-model multi-binary
+generalisation is not proven.  Heap security PoC passed but
 the valid-input stdout regression failed; CWE121 was injectable but behavior
 failed.  A **minimal function-level loop** paradigm-A closure passes roundtrip
 and fixed gates; non-loop A remains unimplemented because the target lacks
@@ -496,7 +501,12 @@ no SiliconFlow/Bailian key is configured.  See
 ## 17. Path A does not lift non-loop verified success
 
 The selective call whitelist was tested on 12 cases with both DeepSeek models.
-Loop remains 6/12 verified; non-loop remains 0/6.  Heap security PoC passed but
+Loop remains 6/12 verified; non-loop remains 0/6 **as of that Path A experiment
+(2026-11-14)**.  After a8934fe (2026-11-15) the three hard non-loop cases
+(hard-multicall / hard-sprintf / hard-nonconst) became AI-verified, i.e. **3/6** in
+the 12-case matrix with a single model (deepseek-flash; deepseek-v4-pro 0/3);
+CWE-121 public / UAF-noinput / heap-canary remain 0 and multi-model multi-binary
+generalisation is not proven.  Heap security PoC passed but
 the valid-input stdout regression failed; CWE121 was injectable but behavior
 failed.  A **minimal function-level loop** paradigm-A closure passes roundtrip
 and fixed gates; non-loop A remains unimplemented because the target lacks
