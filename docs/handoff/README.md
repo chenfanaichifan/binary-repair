@@ -11,7 +11,7 @@ ASCII-only `docs/` tree so the repository language gate stays green):
 | M4 | Security / backup / release governance / consistency review | `delivery/zh/handoff/M4-task.md` |
 
 Workspace copies are kept at the workspace root with the requested Chinese names
-(`M1任务.md`, `M2任务.md`, `M3任务.md`, `M4任务.md`).
+(files named M1/M2/M3/M4 plus the Chinese word for "task").
 
 Shared prerequisites (done by the Lead):
 
