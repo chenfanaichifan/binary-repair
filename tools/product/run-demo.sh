@@ -17,7 +17,18 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PY="$ROOT/.venv/bin/python"
+if [[ -n "${BINARYREPAIR_PYTHON:-}" && -x "${BINARYREPAIR_PYTHON}" ]]; then
+  PY="$BINARYREPAIR_PYTHON"
+elif [[ -x "$ROOT/.venv/bin/python" ]]; then
+  PY="$ROOT/.venv/bin/python"
+elif command -v python3 >/dev/null 2>&1; then
+  PY="$(command -v python3)"
+elif command -v python >/dev/null 2>&1; then
+  PY="$(command -v python)"
+else
+  echo "ERROR: no Python interpreter found (set BINARYREPAIR_PYTHON)" >&2
+  exit 2
+fi
 ENTRY="$ROOT/scripts/product/demo_repair.py"
 DEFAULT_OUT="artifacts/m3-product-2026-11-17/demo"
 
@@ -28,7 +39,7 @@ fi
 
 if [[ "${1:-}" == "--list" || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   if [[ ! -x "$PY" ]]; then
-    echo "ERROR: python venv not found at $PY (run ./start-gui.sh first)" >&2
+    echo "ERROR: Python interpreter is not executable: $PY" >&2
     exit 2
   fi
   exec "$PY" "$ENTRY" "$@"
@@ -42,8 +53,8 @@ if [[ -z "$FIXTURE" ]]; then
   exit 2
 fi
 if [[ ! -x "$PY" ]]; then
-  echo "ERROR: python venv not found at $PY" >&2
-  echo "       create it with ./start-gui.sh (the demo itself needs no network)" >&2
+  echo "ERROR: Python interpreter is not executable: $PY" >&2
+  echo "       set BINARYREPAIR_PYTHON or create .venv (the demo needs no network)" >&2
   exit 2
 fi
 
